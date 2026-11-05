@@ -94,8 +94,8 @@ class ProfileFiles:
         return replace(profile, access=access)
 
     def defaults(self, profile: AgentProfile) -> AgentProfile:
-        return replace(profile, model=profile.model or self.settings.text(CLAUDE_MODEL_SETTING, None),
-                       codex_model=profile.codex_model or self.settings.text(CODEX_MODEL_SETTING, None))
+        return replace(profile, model=profile.model or self.settings.project.text(CLAUDE_MODEL_SETTING),
+                       codex_model=profile.codex_model or self.settings.project.text(CODEX_MODEL_SETTING))
 
     def fields(self, path: Path) -> ProfileFields:
         fields = ProfileFormat.fields(FileAccess.shared().read(path))

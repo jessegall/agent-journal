@@ -14,19 +14,14 @@ class ChatMarkQuery(Query[ChatMark]):
         super().__init__(database, tables, ChatMark)
         self.kept = kept
 
-    def keyed(self, environment_id: int, key: str) -> ChatMark | None:
-        return self.kept.read(self.table.name, self.filter(environment_id=environment_id, key=key).first,
-                              "environment_id = ? AND key = ?", [environment_id, key], name="chat.keyed_mark")
+    def keyed(self, key: str) -> ChatMark | None:
+        return self.kept.scoped_read(self.table.name, self.filter(key=key).first, "key = ?", [key], name="chat.keyed_mark")
 
     def remember(self, mark: ChatMark) -> None:
-        self.kept.update(self.table.name, lambda previous: mark, "environment_id = ? AND key = ?",
-                         [mark.environment_id, mark.key], name="chat.keyed_mark")
-
-    def environment_marks(self, environment_id: int) -> Self:
-        return self.filter(environment_id=environment_id)
+        self.kept.scoped_update(self.table.name, lambda previous: mark, "key = ?", [mark.key], name="chat.keyed_mark")
 
     def agent_marks(self, agent_id: int) -> Self:
-        return self.filter(agent_id=agent_id)
+        return self.filter(session_agent_id=agent_id)
 
     def run_marks(self, run_key: str) -> Self:
         return self.filter(run_key=run_key).ordered("run_step")

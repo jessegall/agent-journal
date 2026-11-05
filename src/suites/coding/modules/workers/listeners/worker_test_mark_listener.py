@@ -35,7 +35,7 @@ class WorkerTestMarkListener(MarkListener[Moved[Proof]]):
         proofs = tuple(self.queries.query(Proof).filter(worktree_id=worktree.id, task_id=proof.task_id).all_rows())
         round = WorkerTestRound.build(change for row in proofs if row.test_command
                                            for change in self.events.row_events(logged.row_table, row.id) if change.id <= logged.id)
-        worker = worktree.agent_id
+        worker = worktree.session_agent_id
         if event.move is ProofLifecycle.queue:
             self.mark(logged, worktree, proof, WorkerMarkVariant.QUEUED, f"Tests of worker {worker} queued", False)
         elif not round.waiting_count:
@@ -43,5 +43,5 @@ class WorkerTestMarkListener(MarkListener[Moved[Proof]]):
             self.mark(logged, worktree, proof, WorkerMarkVariant.FAILED if failed else WorkerMarkVariant.PASSED, f"Tests of worker {worker}: {failed} failed, back with the worker" if failed else f"Tests of worker {worker} passed", not failed)
 
     def mark(self, logged: LoggedEvent, worktree: Worktree, proof: Proof, variant: WorkerMarkVariant, text: str, ended: bool) -> None:
-        self.show(logged, WorkerMarkType.TESTS, variant, text, worktree.environment_id, worktree.agent_id,
+        self.show(logged, WorkerMarkType.TESTS, variant, text, worktree.session_agent_id,
                   key=f"worker-tests:{worktree.id}:{proof.task_id}", ended=ended)

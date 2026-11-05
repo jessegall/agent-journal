@@ -1,3 +1,4 @@
+from core.base.scope.scopes import Scopes
 from dataclasses import replace
 
 from core.base.dotted_path.dotted_path import DottedPath
@@ -12,13 +13,13 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 class SecondAssigner:
     """A task assigner of another suite: it hands out nothing by itself."""
 
-    def is_automatic(self, environment_id: int) -> bool:
+    def is_automatic(self) -> bool:
         return False
 
-    def urgent(self, environment_id: int, excluded_id: int | None = None) -> Task | None:
+    def urgent(self, excluded_id: int | None = None) -> Task | None:
         return None
 
-    def following(self, environment_id: int, excluded_id: int | None = None) -> Task | None:
+    def following(self, excluded_id: int | None = None) -> Task | None:
         return None
 
 
@@ -38,7 +39,7 @@ def test_a_suite_names_its_own_task_assigner(new_story):
     story = new_story(fixture=BuilderStarted)
     coding = story.container.get(Registry).suite("coding")
     second = assigners(story, replace(coding, task_assigner=DottedPath.class_path(SecondAssigner).text))
-    expect_isinstance_3(second, 1)
+    expect_isinstance_3(story, second, 1)
 
 
 def test_a_suite_with_no_task_assigner_hands_out_nothing(new_story):
@@ -48,15 +49,18 @@ def test_a_suite_with_no_task_assigner_hands_out_nothing(new_story):
 
 
 def expect_assigner_assigners(story, coding, text, number, expected) -> None:
-    actual = assigners(story, replace(coding, task_assigner=text)).assigner(number)
+    with story.container.get(Scopes).read_scope((), None, number):
+        actual = assigners(story, replace(coding, task_assigner=text)).assigner()
     assert actual is expected, actual
 
 
-def expect_isinstance_3(second, number) -> None:
-    actual = isinstance(second.assigner(number), SecondAssigner)
+def expect_isinstance_3(story, second, number) -> None:
+    with story.container.get(Scopes).read_scope((), None, number):
+        actual = isinstance(second.assigner(), SecondAssigner)
     assert actual, actual
 
 
 def expect_isinstance_4(story, number) -> None:
-    actual = isinstance(story.container.get(SuiteTaskAssigners).assigner(number), NextTask)
+    with story.container.get(Scopes).read_scope((), None, number):
+        actual = isinstance(story.container.get(SuiteTaskAssigners).assigner(), NextTask)
     assert actual, actual

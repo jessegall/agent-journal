@@ -7,7 +7,6 @@ from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.query.query import Query
-from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.driver.hook_event_name import HookEventName
@@ -24,15 +23,13 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
 
     cli_name = "usage"
     name = "show"
+    environment_refusal = "usage is shown for one environment"
 
     def __init__(self, queries: Queries, files: StatusFiles) -> None:
         self.queries, self.files = queries, files
 
     def read(self, arguments: Namespace, caller: Caller) -> EnvironmentUsage:
-        environment_id = caller.environment_id
-        if environment_id is None:
-            raise Refusal("usage is shown for one environment", "name it with --environment")
-        agents = self.queries.query(Agent).filter(environment_id=environment_id)
+        agents = self.queries.query(Agent)
         opened = tuple(agents.matching(IsNull("ended_at")).oldest().all_rows())
         counted = (*opened, *self.ended_helpers(agents, opened))
         statuses = {agent.session: self.files.status(agent.session) for agent in counted}
@@ -54,7 +51,7 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
                                         "windows": [output.values(window) for window in value.windows], "cost_dollars": value.cost_dollars})
 
     def last_compacted(self, agent: Agent) -> str | None:
-        calls = self.queries.query(HookCall).filter(agent_id=agent.id, hook=HookEventName.COMPACT).newest().limited(1)
+        calls = self.queries.query(HookCall).filter(session_agent_id=agent.id, hook=HookEventName.COMPACT).newest().limited(1)
         return calls[0].creation_timestamp().text if calls else None
 
     @staticmethod

@@ -23,9 +23,9 @@ class WorkerStopResultListener(SaveListener[StopAllowed | StopDenied]):
 
     def handle(self, event: StopAllowed | StopDenied, context: Context) -> None:
         call = event.row
-        if self.queries.query(Agent).find(call.agent_id).role != AgentRole.WORKER:
+        if self.queries.query(Agent).find(call.session_agent_id).role != AgentRole.WORKER:
             return
-        worktree = self.worktrees.worker_worktree(call.agent_id)
+        worktree = self.worktrees.worker_worktree(call.session_agent_id)
         if worktree is None:
             return
         if call.answer is HookAnswer.REFUSED:

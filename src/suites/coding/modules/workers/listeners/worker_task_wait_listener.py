@@ -34,9 +34,9 @@ class WorkerTaskWaitListener(SaveListener[AgentEnded | Updated[Agent] | Changed[
 
     @changed.register
     def worktree_changed(self, row: Worktree, context: Context) -> None:
-        self.targets.resolve_waits(row.agent_id, context)
+        self.targets.resolve_waits(row.session_agent_id, context)
 
     @changed.register
     def proof_changed(self, row: Proof, context: Context) -> None:
         worktree = self.rows.required(Worktree, row.worktree_id)
-        self.targets.resolve_waits(worktree.agent_id, context)
+        self.targets.resolve_waits(worktree.session_agent_id, context)

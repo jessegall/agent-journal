@@ -25,8 +25,6 @@ class QuestionListSubcommand(ReadSubcommand[Page[Question]]):
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[Question]:
         query = self.questions if arguments.all else self.questions.open_ones()
-        if caller.environment_id is not None:
-            query = query.environment(caller.environment_id)
         if arguments.row:
             row = self.refs.parsed(arguments.row)
             query = query.filter(row_model=row.model, row_id=row.row_id)

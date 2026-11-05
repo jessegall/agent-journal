@@ -70,7 +70,7 @@ def test_a_slot_timeout_ends_failed_and_resuming_only_admits_a_new_retry(new_sto
     expect_absent_slot(story, expired)
     message = "queue slot wait expired: no command was started\n"
     story.container.get(OutputFolder).write_output(expired.id, 1, message)
-    story.expect_success(f"process end {expired.id} --exit-code 124 --bytes {len(message)} --lines 1", actor=Actor(expired.agent_id, ActorType.AGENT))
+    story.expect_success(f"process end {expired.id} --exit-code 124 --bytes {len(message)} --lines 1", actor=Actor(expired.session_agent_id, ActorType.AGENT))
     story.expect_text(f"process show {expired.id}", "state: failed", "exit_code: 124")
     story.expect_success("queue resume", actor=story.agent)
     expect_absent_slot(story, expired)

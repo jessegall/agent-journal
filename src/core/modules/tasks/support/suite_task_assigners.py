@@ -12,8 +12,8 @@ class SuiteTaskAssigners:
     def __init__(self, suites: SuiteChoice, registry: Registry, container: Container) -> None:
         self.suites, self.registry, self.container = suites, registry, container
 
-    def assigner(self, environment_id: int) -> TaskAssigner | None:
-        running = self.suites.suite(environment_id)
+    def assigner(self) -> TaskAssigner | None:
+        running = self.suites.suite()
         names = self.registry.lineage(running) if running is not None else ()
         entries = (self.registry.suite(name) for name in names)
         paths = [entry.task_assigner for entry in entries if entry is not None and entry.task_assigner]

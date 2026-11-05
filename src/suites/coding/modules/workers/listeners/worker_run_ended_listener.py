@@ -25,7 +25,7 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
 
     def handle(self, event: ProcessEnded, context: Context) -> None:
         process = event.row
-        agent = self.agents.find(process.agent_id)
+        agent = self.agents.find(process.session_agent_id)
         if agent.role != AgentRole.WORKER or agent.ended_at is None:
             return
         worktree = self.worktrees.worker_worktree(agent.id)

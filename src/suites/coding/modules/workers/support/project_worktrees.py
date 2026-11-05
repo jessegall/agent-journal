@@ -1,3 +1,4 @@
+from collections import Counter
 from pathlib import Path
 
 from core.base.query.conditions.is_null import IsNull
@@ -23,11 +24,12 @@ class ProjectWorktrees:
 
     def listed(self, environment_id: int | None) -> list[ProjectWorktree]:
         environments = {str(Path(row.folder).resolve()): row for row in self.queries.query(Environment).all_rows()}
-        workers = {str(Path(row.folder).resolve()): row.agent_id for environment in environments.values() for row in self.worktrees.environment_worktrees(environment.id)}
+        workers = {str(Path(row.folder).resolve()): row.session_agent_id for row in self.worktrees.open_worktrees()}
+        running = Counter(agent.environment_id for agent in self.queries.query(Agent).matching(IsNull("ended_at")).all_rows())
         folders = self.git.folders(self.folder(environment_id))
-        return [self.worktree(folder, branch, not index, environments.get(str(Path(folder).resolve())), workers.get(str(Path(folder).resolve())))
+        return [self.worktree(folder, branch, not index, environments.get(str(Path(folder).resolve())), workers.get(str(Path(folder).resolve())), running)
                 for index, (folder, branch) in enumerate(folders)]
 
-    def worktree(self, folder: str, branch: str | None, is_checkout: bool, environment: Environment | None, worker_id: int | None) -> ProjectWorktree:
-        agent_count = self.queries.query(Agent).filter(environment_id=environment.id).matching(IsNull("ended_at")).count() if environment else 0
+    def worktree(self, folder: str, branch: str | None, is_checkout: bool, environment: Environment | None, worker_id: int | None, running: Counter[int]) -> ProjectWorktree:
+        agent_count = running[environment.id] if environment else 0
         return ProjectWorktree(folder, branch, is_checkout, environment.name if environment else None, worker_id, agent_count)

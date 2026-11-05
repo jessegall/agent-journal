@@ -3,6 +3,8 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.listener.event_rows import EventRows
+from core.base.scope.actor_scope import ActorScope
+from core.base.scope.environment_scope import EnvironmentScope
 from core.modules.docking.commands.schedule_dock_item_leave.schedule_dock_item_leave import ScheduleDockItemLeave
 from core.modules.docking.listeners.environment_dock_listener import MODULE_NAME
 from core.modules.docking.models.dock import Dock
@@ -17,6 +19,7 @@ class DockItemLeaveListener(CommitListener[Touched[Model]]):
     """Schedules departure for the docked items whose row ended."""
 
     name = "docking.item-leave"
+    disabled_scopes = [ActorScope, EnvironmentScope]
 
     def __init__(self, bus: Bus, actors: ModuleActors, items: PendingDockItems, leave_time: LeaveTime, rows: EventRows) -> None:
         self.bus, self.actors, self.items, self.leave_time, self.rows = bus, actors, items, leave_time, rows

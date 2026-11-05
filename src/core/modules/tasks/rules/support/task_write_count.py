@@ -20,6 +20,6 @@ class TaskWriteCount:
         if current is None:
             return None
         count = self.kept.read("hook_calls", lambda: self.calls.write_count(hook.agent_id, current.count_start),
-                               "agent_id = ? AND writes_files = ? AND answer = ? AND created_at >= ?",
+                               "session_agent_id = ? AND writes_files = ? AND answer = ? AND created_at >= ?",
                                [hook.agent_id, True, HookAnswer.ALLOWED, current.count_start.text], name="tasks.write_count")
         return current, count + 1

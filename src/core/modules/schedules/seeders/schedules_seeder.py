@@ -14,5 +14,5 @@ class SchedulesSeeder(Seeder):
     def seed(self, demo: Demo) -> None:
         main = demo.people["main"]
         environment_id = self.queries.query(Agent).find(main.id).environment_id
-        demo.bus.run(RecordScheduledJob(main.id, environment_id, "demo-review", "17 */2 * * *", "Review the commits of the last two hours", True), main, environment_id=environment_id)
-        demo.bus.run(RecordScheduledJob(main.id, environment_id, "demo-check", "40 20 * * *", "Check that the release notes went out", False), main, environment_id=environment_id)
+        demo.bus.run(RecordScheduledJob(main.id, "demo-review", "17 */2 * * *", "Review the commits of the last two hours", True), main, environment_id=environment_id)
+        demo.bus.run(RecordScheduledJob(main.id, "demo-check", "40 20 * * *", "Check that the release notes went out", False), main, environment_id=environment_id)

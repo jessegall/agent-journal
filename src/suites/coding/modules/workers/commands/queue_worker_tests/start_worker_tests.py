@@ -7,4 +7,3 @@ from core.base.command.command import Command
 class StartWorkerTests(Command[None]):
     """Starts the next queued test of each worker the setting has room for, one test at a time per worker."""
 
-    environment_id: int

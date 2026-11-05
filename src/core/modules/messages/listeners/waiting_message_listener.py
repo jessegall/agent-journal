@@ -24,4 +24,4 @@ class WaitingMessageListener(CommitListener[Created[Message]]):
             return
         agent = self.targets.recipient(event.row)
         if agent is not None:
-            self.bus.run(RecordWaitingMessageLine(logged.environment_id, agent.id), Actor(logged.actor_id, ActorType.USER), environment_id=logged.environment_id)
+            self.bus.run(RecordWaitingMessageLine(agent.id), Actor(logged.actor_id, ActorType.USER))

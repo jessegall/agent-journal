@@ -1,3 +1,5 @@
+from core.modules.messages.migrations.m015_main_message_targets import MainMessageTargetsMigration
+from core.modules.messages.migrations.m016_message_session import MessageSessionMigration
 from core.modules.messages.migrations.m013_visible_message_index import VisibleMessageIndexMigration
 from core.modules.messages.migrations.m012_message_reply_index import MessageReplyIndexMigration
 from core.base.viewer.window_read_search import WindowReadSearch
@@ -91,7 +93,7 @@ class MessagesModule(Module):
     bindings = {EnvironmentActivity: MessageEnvironmentActivity}
     moves = [MessagesMove]
     views = [AttachedFile, ChatMessage, MainChatMark]
-    migrations = [MessageTargetMigration, VisibleMessageIndexMigration, MessageReplyIndexMigration, MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration, MessageVisibilityMigration]
+    migrations = [MainMessageTargetsMigration, MessageSessionMigration, MessageTargetMigration, VisibleMessageIndexMigration, MessageReplyIndexMigration, MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration, MessageVisibilityMigration]
     guards = [OneReplyPerMessageGuard, QuestionMessageGuard]
     handlers = [RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler]
     driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]

@@ -18,7 +18,7 @@ class Watch(Model):
     cli_name = "watch"
     lifecycle = WatchLifecycle
 
-    agent_id: int
+    session_agent_id: int
     process_id: int
     creator_id: int
     given_percent: int = 0

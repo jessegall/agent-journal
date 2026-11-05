@@ -27,5 +27,5 @@ class MergeChecks:
     def check_base_branch(self, worktree: Worktree) -> None:
         environment = self.environments.find(worktree.environment_id)
         if worktree.base_branch != environment.branch:
-            raise Refusal(f"environment {environment.name} now builds on {environment.branch}; worker worker-{worktree.agent_id} was cut from"
+            raise Refusal(f"environment {environment.name} now builds on {environment.branch}; worker worker-{worktree.session_agent_id} was cut from"
                           f" {worktree.base_branch}", "release it and dispatch the task again")

@@ -30,12 +30,12 @@ class SequenceRowTriggerListener(CommitListener[Touched[Model]]):
             return
         agent_id = self.acting_agent_id(logged)
         if agent_id is not None and self.runs.current(agent_id) is None:
-            self.bus.run(MoveSequenceRun(START, matched.sequence.id, subject_id=logged.row_id), Actor(agent_id, ActorType.AGENT), cause_id=logged.id, environment_id=logged.environment_id)
+            self.bus.run(MoveSequenceRun(START, matched.sequence.id, subject_id=logged.row_id), Actor(agent_id, ActorType.AGENT), cause_id=logged.id)
 
     def acting_agent_id(self, logged: LoggedEvent) -> int | None:
         if self.queries.query(ActorRecord).find(logged.actor_id).type is ActorType.AGENT:
             return logged.actor_id
-        agents = MainAgentFinder.rows(self.queries, logged.environment_id) if logged.environment_id is not None else ()
+        agents = MainAgentFinder.rows(self.queries) if logged.environment_id is not None else ()
         return agents[0].id if agents else None
 
     def is_linked(self, trigger: SequenceTrigger, logged: LoggedEvent) -> bool:

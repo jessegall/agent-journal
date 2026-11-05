@@ -262,7 +262,7 @@ def test_a_line_whose_typing_breaks_goes_to_the_next_hook(new_story):
 
 def test_a_line_left_in_typing_by_a_stopped_server_waits_again_when_the_journal_starts(untyped_idle_message):
     story = untyped_idle_message
-    line = story.container.get(Queries).query(AgentLine).filter(agent_id=story.agent.id, state=AgentLineState.WAITING).newest().first()
+    line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, state=AgentLineState.WAITING).newest().first()
     story.run(f"agent-line claim {line.id}", actor=story.user)
     story.expect_text(f"agent-line list --agent {story.agent.id} --state typing", "new message 1", actor=story.user)
     BootingWork().run(story.container)
@@ -457,9 +457,9 @@ def test_the_main_chat_leaves_out_the_marks_of_a_worker(new_story):
     worker = hook_agent(story, story.hook("s-2", HookSamples.session_start()))
     story.container.get(Database).connection.execute("UPDATE agents SET role = 'worker' WHERE id = ?", [worker.id])
     bus, module = story.container.get(Bus), story.container.get(ModuleActors).actor("journal.core.processes")
-    bus.run(ShowMark(1, ProcessMarkType.COMMAND, ProcessMarkVariant.FINISHED, "from-main", "From the builder", agent_id=main_id), module, environment_id=1)
-    bus.run(ShowMark(1, ProcessMarkType.COMMAND, ProcessMarkVariant.FINISHED, "from-worker", "From the worker", agent_id=worker.id), module, environment_id=1)
-    bus.run(ShowMark(1, ProcessMarkType.COMMAND, ProcessMarkVariant.FINISHED, "from-nobody", "From the journal"), module, environment_id=1)
+    bus.run(ShowMark(ProcessMarkType.COMMAND, ProcessMarkVariant.FINISHED, "from-main", "From the builder", agent_id=main_id), module, environment_id=1)
+    bus.run(ShowMark(ProcessMarkType.COMMAND, ProcessMarkVariant.FINISHED, "from-worker", "From the worker", agent_id=worker.id), module, environment_id=1)
+    bus.run(ShowMark(ProcessMarkType.COMMAND, ProcessMarkVariant.FINISHED, "from-nobody", "From the journal"), module, environment_id=1)
     text = story.run("chat-mark main --environment main --json", actor=story.user)
     text.expect_text("From the builder")
     text.expect_text("From the journal")

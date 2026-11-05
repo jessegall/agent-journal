@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.actor import Actor
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
@@ -8,7 +9,7 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 
 
 @dataclass(frozen=True, kw_only=True)
-class Worktree(Model):
+class Worktree(EnvironmentScoped, Model):
     """The git worktree a worker writes in for its task: its folder and branch, cut from the environment's
     branch."""
 
@@ -17,8 +18,8 @@ class Worktree(Model):
     cli_name = "worker-worktree"
     lifecycle = WorktreeLifecycle
 
-    agent_id: int
-    environment_id: int
+    session_agent_id: int
+    environment_id: int = 0
     task_id: int
     creator_id: int
     folder: str

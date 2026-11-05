@@ -35,10 +35,10 @@ def test_hook_feed_windows_receive_each_named_hook_and_read_its_row(hook_feed_vi
                                    (HookSamples.session_start(), "session_start")]:
                 story.hook("s-1", sample)
                 expect_event(response, f"hook_call.{change}")
-                value = server.viewer_line_value(cookie, {"window": window_name, "environment": "main", "line": ["hook-call", "feed", "--agent-id", str(story.agent.id)]})
+                value = server.viewer_line_value(cookie, {"window": window_name, "environment": "main", "line": ["hook-call", "feed", "--session-agent-id", str(story.agent.id)]})
                 expect_value(value["rows"][0]["hook"], sample.body["event"])
             story.expect_success("setting set samples.refuse-stops true --project")
             story.hook("s-1", HookSamples.stop())
             expect_event(response, "hook_call.stop_refused")
-            value = server.viewer_line_value(cookie, {"window": window_name, "environment": "main", "line": ["hook-call", "feed", "--agent-id", str(story.agent.id)]})
+            value = server.viewer_line_value(cookie, {"window": window_name, "environment": "main", "line": ["hook-call", "feed", "--session-agent-id", str(story.agent.id)]})
             expect_value(value["rows"][0]["answer"], "refused")

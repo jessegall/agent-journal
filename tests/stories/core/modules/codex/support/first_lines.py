@@ -76,11 +76,11 @@ def expect_worker_commands(story) -> None:
     story.expect_success("task overview 1", actor=worker)
     story.expect_success(f"skill require {worker.id} journal-memory", actor=worker)
     story.expect_success("skill write", actor=worker)
-    rows = story.container.get(Queries).query(AgentSkill).filter(agent_id=worker.id, skill="journal-memory")
+    rows = story.container.get(Queries).query(AgentSkill).filter(session_agent_id=worker.id, skill="journal-memory")
     assert next(rows.all_rows()).state is AgentSkillState.DUE
     code, text = story.synced()
     assert code == 0, text
-    rows = story.container.get(Queries).query(AgentSkill).filter(agent_id=worker.id, skill="journal-memory")
+    rows = story.container.get(Queries).query(AgentSkill).filter(session_agent_id=worker.id, skill="journal-memory")
     assert next(rows.all_rows()).state is AgentSkillState.DUE
     instructions = story.container.get(SkillFiles).readable("journal-workers").read_text()
     assert "skill write" in instructions and "module sync" in instructions and "same point" in instructions, instructions

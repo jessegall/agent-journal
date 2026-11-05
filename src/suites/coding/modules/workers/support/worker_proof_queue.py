@@ -34,8 +34,8 @@ class WorkerProofQueue:
                 self.repository.save_change(proof, proof.moved(ProofLifecycle.queue), context)
                 queued_count += 1
         self.send_untested_line(worktree, context)
-        picker = self.settings.text(AFFECTED_TESTS_COMMAND, worktree.environment_id).strip()
-        test = self.settings.text(PROJECT_TEST_COMMAND, worktree.environment_id).strip()
+        picker = self.settings.text(AFFECTED_TESTS_COMMAND).strip()
+        test = self.settings.text(PROJECT_TEST_COMMAND).strip()
         if picker and test:
             line = shlex.join([*shlex.split(picker), *self.git.changed_files(worktree)])
             self.repository.save(AffectedTest(worktree_id=worktree.id, task_id=worktree.task_id, picker_command=line, test_command=test), context)
@@ -45,4 +45,4 @@ class WorkerProofQueue:
     def send_untested_line(self, worktree: Worktree, context: Context) -> None:
         proofs = [str(proof.id) for proof in self.proofs.untested_proofs(worktree.id).oldest().all_rows()]
         if proofs:
-            self.main_agent_line.send(worktree.environment_id, PROOF_WAITS.nudge(worker=worktree.agent_id, proofs=" ".join(proofs)).text, PROOF_WAITS_SOURCE, context)
+            self.main_agent_line.send(PROOF_WAITS.nudge(worker=worktree.session_agent_id, proofs=" ".join(proofs)).text, PROOF_WAITS_SOURCE, context)

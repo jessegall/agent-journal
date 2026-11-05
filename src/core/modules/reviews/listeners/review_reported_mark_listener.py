@@ -31,7 +31,8 @@ class ReviewReportedMarkListener(CommitListener[Moved[Review]]):
     def handle(self, event: Moved[Review], logged: LoggedEvent) -> None:
         variant, outcome = REPORTED[event.move.name]
         review = event.row
-        self.bus.run(ShowMark(review.environment_id, ReviewMarkType.REVIEW, variant, f"{variant.value}:{review.id}:{logged.id}",
+        key = f"{variant.value}:{review.id}:{logged.id}"
+        self.bus.run(ShowMark(ReviewMarkType.REVIEW, variant, key,
                               f"Reviewer {review.reviewer_id} reports on {review.subject_model} {review.subject_id}: {review.report}", agent_id=review.requester_id,
                               row_model="review", row_id=review.id, outcome=outcome, ended=True),
-                     self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=review.environment_id)
+                     self.actors.actor(MODULE_NAME), cause_id=logged.id)

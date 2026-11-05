@@ -30,4 +30,4 @@ class CritiqueReportListener(CommitListener[Created[Link]]):
         plan = self.queries.query(Plan).find(link.target_id)
         if plan.state != REVIEWING:
             return
-        self.bus.run(MoveRow(Plan.model_name, plan.id, REVIEWED_MOVE.name), self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=plan.environment_id)
+        self.bus.run(MoveRow(Plan.model_name, plan.id, REVIEWED_MOVE.name), self.actors.actor(MODULE_NAME), cause_id=logged.id)

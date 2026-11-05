@@ -68,7 +68,7 @@ class RecoveryCase:
         self.story.run_listeners()
 
     def lines(self, agent_id, source=RECOVERY_SOURCE):
-        return list(self.story.container.get(Queries).query(AgentLine).filter(agent_id=agent_id, source=source).all_rows())
+        return list(self.story.container.get(Queries).query(AgentLine).filter(session_agent_id=agent_id, source=source).all_rows())
 
 
 @pytest.fixture

@@ -27,7 +27,7 @@ def test_a_users_message_read_by_the_agent_shows_no_mark_in_the_chat_its_ticks_s
 
 def test_a_failed_send_shows_no_mark(new_story):
     story = new_story(fixture=UnansweredMessage)
-    story.expect_refusal('message send "no environment"', "a message is sent in an environment", actor=story.user)
+    story.expect_refusal('message send "no environment"', "a message needs an environment", actor=story.user)
     story.run_listeners()
     expect_mark_count(story, 0)
 
@@ -35,8 +35,8 @@ def test_a_failed_send_shows_no_mark(new_story):
 def test_the_messages_module_writes_only_its_own_marks(new_story):
     story = new_story(fixture=UnansweredMessage)
     with pytest.raises(Refusal, match="only journal.core.tasks writes a mark of tasks.task"):
-        story.container.get(Bus).run(ShowMark(1, TaskMarkType.TASK, TaskMarkVariant.STARTED, "task:1", "A mark"), module_actor(story, "journal.core.messages"))
-    story.container.get(Bus).run(ShowMark(1, MessageMarkType.SUMMARY, MessageMarkVariant.SUMMARY, "thought:9", "A mark"), module_actor(story, "journal.core.messages"))
+        story.container.get(Bus).run(ShowMark(TaskMarkType.TASK, TaskMarkVariant.STARTED, "task:1", "A mark"), module_actor(story, "journal.core.messages"), environment_id=1)
+    story.container.get(Bus).run(ShowMark(MessageMarkType.SUMMARY, MessageMarkVariant.SUMMARY, "thought:9", "A mark"), module_actor(story, "journal.core.messages"), environment_id=1)
 
 
 def test_the_thought_mark_is_declared_as_version_4_showed_it(new_story):

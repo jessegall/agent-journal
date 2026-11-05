@@ -18,6 +18,6 @@ class SubagentStopListener(CommitListener[StopAllowed]):
 
     def handle(self, event: StopAllowed, logged: LoggedEvent) -> None:
         call = event.row
-        agent = self.agents.find(call.agent_id)
+        agent = self.agents.find(call.session_agent_id)
         if agent.role == AgentRole.SUBAGENT and agent.ended_at is None:
-            self.bus.run(EndAgent(agent.id), Actor.core(), cause_id=logged.id, environment_id=logged.environment_id)
+            self.bus.run(EndAgent(agent.id), Actor.core(), cause_id=logged.id)

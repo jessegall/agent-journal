@@ -40,5 +40,5 @@ class FileEditsMove(VersionFourMove):
 
     def insert(self, rows: RowInsert, row: sqlite3.Row, agent_id: int, creator_id: int, context: MoveContext) -> int:
         created = row["created_at"] or context.timestamp
-        return rows.insert(TARGET, {"id": row["id"], "environment_id": row["environment_id"], "agent_id": agent_id, "creator_id": creator_id, "path": row["path"] or "",
+        return rows.insert(TARGET, {"id": row["id"], "environment_id": row["environment_id"], "session_agent_id": agent_id, "creator_id": creator_id, "path": row["path"] or "",
                                     "added": row["added"] or 0, "removed": row["removed"] or 0, "created_at": created, "updated_at": row["updated_at"] or created})

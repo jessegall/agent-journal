@@ -63,7 +63,7 @@ class UsageAgentSubcommand(ReadSubcommand[AgentInspection]):
         return f"{name}, the main agent" if parent.role == AgentRole.MAIN else name
 
     def last_activity(self, agent_id: int) -> str:
-        calls = self.queries.query(HookCall).filter(agent_id=agent_id).newest().limited(1)
+        calls = self.queries.query(HookCall).filter(session_agent_id=agent_id).newest().limited(1)
         return calls[0].creation_timestamp().text if calls else ""
 
     def failed_run_query(self, agent_id: int) -> ProcessQuery:

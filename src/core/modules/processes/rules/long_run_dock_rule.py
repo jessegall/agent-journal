@@ -34,7 +34,7 @@ class LongRunDockRule(DriverRule):
         due = [process for process in running if self.needs_dock(process, hook)]
         docked = {item.target_id for item in self.items.type_items(ProcessDockType.OUTPUT.value).filter(state=DockItemState.DOCKED, target_model="process").all_rows()}
         shown = [process for process in running if process.id in docked or process in due]
-        return RuleAnswer.with_nudges(*self.title_nudges(shown)).running(*(AddDockItem(process.environment_id, ProcessDockType.OUTPUT.value, "process", process.id) for process in due))
+        return RuleAnswer.with_nudges(*self.title_nudges(shown)).running(*(AddDockItem(ProcessDockType.OUTPUT.value, process.model_name, process.id) for process in due))
 
     def title_nudges(self, due: list[Process]) -> list[Nudge]:
         return [RUN_NAME.nudge(process=process.id) for process in due if not self.has_title(process)]

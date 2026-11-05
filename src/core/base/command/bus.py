@@ -34,10 +34,10 @@ class Bus:
         handler.prepare(command, actor)
         with self.scopes.command_scope(handler.disabled_scopes, actor, environment_id):
             if not handler.transactional:
-                return self.result(handler.handle(command, Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, environment_id)), command)
+                return self.result(handler.handle(command, Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, self.scopes.environment_id or environment_id)), command)
             with self.database.transaction():
                 self.timing.stamp("write_started")
-                context = Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, environment_id)
+                context = Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, self.scopes.environment_id or environment_id)
                 command_output = self.result(handler.handle(command, context), command)
                 self.timing.stamp("handled")
                 self.deadline.check()
@@ -49,8 +49,8 @@ class Bus:
             raise TransactionError(f"{command.label()} was explained inside a transaction")
         handler, explanation = self.handler(command), Explanation()
         try:
-            with self.database.transaction():
-                handler.handle(command, Context(actor, self.clock.timestamp(), command, skipped_guards, None, environment_id, explanation))
+            with self.scopes.command_scope(handler.disabled_scopes, actor, environment_id), self.database.transaction():
+                handler.handle(command, Context(actor, self.clock.timestamp(), command, skipped_guards, None, self.scopes.environment_id or environment_id, explanation))
                 raise ExplanationRollbackError()
         except ExplanationRollbackError:
             return explanation

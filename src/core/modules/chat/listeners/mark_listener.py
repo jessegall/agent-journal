@@ -30,22 +30,21 @@ class MarkListener(CommitListener[E]):
     def is_agent_command(self, logged: LoggedEvent, command: str) -> bool:
         return logged.command == command and self.queries.query(ActorRecord).find(logged.actor_id).type is ActorType.AGENT
 
-    def show(self, logged: LoggedEvent, type: StrEnum, variant: StrEnum, text: str, environment_id: int | None = None, agent_id: int | None = None,
+    def show(self, logged: LoggedEvent, type: StrEnum, variant: StrEnum, text: str, agent_id: int | None = None,
              row_model: str = "", row_id: int | None = None, detail: str = "", key: str | None = None, ended: bool = True, outcome: MarkOutcome = MarkOutcome.NONE) -> None:
-        environment_id = environment_id or logged.environment_id
-        if environment_id is None:
+        if self.bus.scopes.environment_id is None:
             return
-        command: ShowMark | None = ShowMark(environment_id, type, variant, key if key is not None else f"{variant.value}:{logged.row_id}:{logged.id}", text,
+        command: ShowMark | None = ShowMark(type, variant, key if key is not None else f"{variant.value}:{logged.row_id}:{logged.id}", text,
                                           agent_id=agent_id, detail=detail, row_model=row_model, row_id=row_id, ended=ended, outcome=outcome)
         if key is not None:
             command = self.round_mark(logged, command)
         if command is None:
             return
-        self.bus.run(command, self.actors.actor(self.module_name), cause_id=logged.id, environment_id=environment_id)
+        self.bus.run(command, self.actors.actor(self.module_name), cause_id=logged.id)
 
     def round_mark(self, logged: LoggedEvent, command: ShowMark) -> ShowMark | None:
         keys = MarkRoundKey(command.key)
-        mark = self.queries.query(ChatMark).filter(environment_id=command.environment_id).matching(keys).newest().first()
+        mark = self.queries.query(ChatMark).matching(keys).newest().first()
         if mark is None:
             return command
         if mark.state is ChatMarkState.ENDED and command.ended:

@@ -26,5 +26,5 @@ class ReviewerEndedListener(CommitListener[AgentEnded]):
             return
         actor = self.actors.actor(MODULE_NAME)
         for review in tuple(self.reviews.reviewer(logged.row_id).reviewing().all_rows()):
-            self.bus.run(AbandonReview(review.id), actor, cause_id=logged.id, environment_id=logged.environment_id)
-        self.bus.run(EndReviewer(logged.row_id), actor, cause_id=logged.id, environment_id=logged.environment_id)
+            self.bus.run(AbandonReview(review.id), actor, cause_id=logged.id)
+        self.bus.run(EndReviewer(logged.row_id), actor, cause_id=logged.id)

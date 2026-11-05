@@ -23,7 +23,7 @@ class MissingProcessRule(DriverRule):
         self.queries, self.processes = queries, processes
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        agents = self.queries.query(Agent).filter(environment_id=hook.environment_id, role=AgentRole.WORKER).matching(IsNull("ended_at")).all_rows()
+        agents = self.queries.query(Agent).filter(role=AgentRole.WORKER).matching(IsNull("ended_at")).all_rows()
         recorded = [agent for agent in agents if agent.pid is not None and agent.process_started_at is not None]
         if not recorded:
             return RuleAnswer.allowed()

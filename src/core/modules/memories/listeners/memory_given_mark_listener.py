@@ -1,5 +1,4 @@
 from core.base.change.logged_event import LoggedEvent
-from core.modules.agents.models.agent import Agent
 from core.modules.memories.listeners.memory_mark_listener import MemoryMarkListener
 from core.modules.memories.models.enums.delivery_cause import DeliveryCause
 from core.modules.memories.models.enums.memory_mark_type import MemoryMarkType
@@ -21,5 +20,4 @@ class MemoryGivenMarkListener(MemoryMarkListener[Created[MemoryDelivery]]):
         delivery = event.row
         memory = self.queries.query(Memory).find(delivery.memory_id)
         if delivery.cause in REMINDING_CAUSES:
-            environment_id = self.event_rows.required(Agent, delivery.agent_id).environment_id
-            self.show_memory(logged, MemoryMarkVariant.GIVEN, f"Reminded the agent: {memory.text}", MemoryMarkType.REMINDER, environment_id, delivery.agent_id, row_id=memory.id)
+            self.show_memory(logged, MemoryMarkVariant.GIVEN, f"Reminded the agent: {memory.text}", MemoryMarkType.REMINDER, delivery.session_agent_id, row_id=memory.id)

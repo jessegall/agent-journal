@@ -15,5 +15,4 @@ class GitOverviewBranchesSubcommand(GitPageSubcommand):
     name = "branches"
 
     def read(self, arguments: Namespace, caller: Caller) -> GitRows:
-        environment_id = caller.environment_id
-        return self.git.branches(environment_id, arguments.skip, arguments.limit)
+        return self.git.branches(arguments.skip, arguments.limit)

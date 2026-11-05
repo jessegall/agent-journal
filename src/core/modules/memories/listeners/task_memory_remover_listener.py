@@ -26,4 +26,4 @@ class TaskMemoryRemoverListener(CommitListener[Moved[Task]]):
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
         for memory in self.queries.query(Memory).filter(task_id=logged.row_id, state=MemoryState.ACTIVE).all_rows():
-            self.bus.run(RemoveMemory(memory.id, f"task {logged.row_id} ended"), Actor.core(), cause_id=logged.id, environment_id=logged.environment_id)
+            self.bus.run(RemoveMemory(memory.id, f"task {logged.row_id} ended"), Actor.core(), cause_id=logged.id)

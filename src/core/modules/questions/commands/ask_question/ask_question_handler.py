@@ -25,8 +25,6 @@ class AskQuestionHandler(Handler[AskQuestion, Question]):
         self.bus, self.repository, self.queries = bus, repository, queries
 
     def handle(self, command: AskQuestion, context: Context) -> Question:
-        if context.environment_id is None:
-            raise Refusal("a question needs an environment", "name it with --environment")
         if not 1 <= len(command.text) <= TEXT_LIMIT_CHARACTERS:
             raise Refusal(f"a question's text is 1 to {TEXT_LIMIT_CHARACTERS} characters, not {len(command.text)}", "say it shorter")
         for option in command.options:
@@ -36,7 +34,7 @@ class AskQuestionHandler(Handler[AskQuestion, Question]):
             raise Refusal(f"the recommended choice is not one of the options: {command.recommended}", "write it word for word as one of --options")
         choices = [command.recommended, *(option for option in command.options if option != command.recommended)] if command.recommended else list(command.options)
         place = self.checked_place(command.place)
-        question = self.repository.save(Question(environment_id=context.environment_id, agent_id=context.actor.id, creator_id=context.actor.id,
+        question = self.repository.save(Question(session_agent_id=context.actor.id, creator_id=context.actor.id,
                                              text=command.text, options=tuple(choices), recommended=command.recommended,
                                              row_model=place.row.model.model_name if place.row is not None else "", row_id=place.row.row_id if place.row is not None else None,
                                              quote=place.quote, position=place.position, selection_type=place.selection_type), context)

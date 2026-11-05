@@ -28,4 +28,4 @@ class WorkerStop:
         return bool(endings) and self.is_final(worker, endings[-1].actor_id)
 
     def has_open_help_request(self, worker_id: int) -> bool:
-        return self.queries.query(Wait).filter(agent_id=worker_id, state=WaitState.OPEN, type=WaitType.HELP_REQUEST).exists()
+        return self.queries.query(Wait).filter(session_agent_id=worker_id, state=WaitState.OPEN, type=WaitType.HELP_REQUEST).exists()

@@ -2,6 +2,7 @@ import json
 from collections.abc import Generator
 from contextlib import contextmanager
 
+from core.base.scope.scopes import Scopes
 from core.modules.settings.support.setting_rows import SettingRows
 from core.base.registry.setting_entry import SettingEntry
 from core.base.type_guards import is_list
@@ -22,8 +23,8 @@ class SettingReader:
     environment, else for the project, else the declared default; a secret is read from its own table. Inside
     keep_rows(), each row is read once and kept, until a setting is written."""
 
-    def __init__(self, setting_rows: SettingRows, declared: SettingCatalogue) -> None:
-        self.setting_rows, self.declared = setting_rows, declared
+    def __init__(self, setting_rows: SettingRows, declared: SettingCatalogue, scopes: Scopes) -> None:
+        self.setting_rows, self.declared, self.scopes = setting_rows, declared, scopes
         self.cache: dict[tuple[str, int | None], StoredValue] | None = None
 
     @contextmanager
@@ -41,10 +42,16 @@ class SettingReader:
         if self.cache is not None:
             self.cache.clear()
 
-    def current(self, key: str, environment_id: int | None) -> CurrentSetting:
+    def current(self, key: str) -> CurrentSetting:
+        return self.resolved(key, self.scopes.environment_id)
+
+    def project(self, key: str) -> CurrentSetting:
+        return self.resolved(key, None)
+
+    def resolved(self, key: str, environment_id: int | None) -> CurrentSetting:
         entry = self.declared.entry(key)
         for group in self.declared.enclosing_groups(entry):
-            if group.toggleable and self.current(group.key, environment_id).value is False:
+            if group.toggleable and self.resolved(group.key, environment_id).value is False:
                 return CurrentSetting(entry, False, f"group {group.key} is off")
         model = SecretSetting if entry.secret else Setting
         if environment_id is not None:

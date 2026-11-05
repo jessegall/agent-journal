@@ -17,4 +17,4 @@ class MessageEditedMarkListener(MarkListener[Updated[Message]]):
     def handle(self, event: Updated[Message], logged: LoggedEvent) -> None:
         if self.is_agent_command(logged, EDIT_COMMAND):
             message = event.row
-            self.show(logged, MessageMarkType.EDITED, MessageMarkVariant.EDITED, f"Message {message.id} edited", message.environment_id, None, "message", message.id)
+            self.show(logged, MessageMarkType.EDITED, MessageMarkVariant.EDITED, f"Message {message.id} edited", None, "message", message.id)

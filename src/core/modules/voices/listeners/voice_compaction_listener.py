@@ -20,5 +20,5 @@ class VoiceCompactionListener(SaveListener[AgentCompacted]):
 
     def handle(self, event: AgentCompacted, context: Context) -> None:
         call = event.row
-        if self.queries.query(Agent).find(call.agent_id).role == AgentRole.MAIN:
-            self.lines.deliver(call.agent_id, VOICE_LINE, context)
+        if self.queries.query(Agent).find(call.session_agent_id).role == AgentRole.MAIN:
+            self.lines.deliver(call.session_agent_id, VOICE_LINE, context)

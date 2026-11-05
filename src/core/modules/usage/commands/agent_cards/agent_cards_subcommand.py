@@ -7,7 +7,6 @@ from core.base.query.conditions.among import Among
 from core.base.query.conditions.equal import Equal
 from core.base.query.conditions.contains_every import ContainsEvery
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.usage.conditions.agent_activity import AgentActivity
@@ -23,6 +22,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState]]):
 
     cli_name = "agent"
     name = "cards"
+    environment_refusal = "the agents are shown for one environment"
 
     def __init__(self, queries: Queries, activity: AgentActivity) -> None:
         self.queries, self.activity = queries, activity
@@ -34,10 +34,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState]]):
         parser.add_argument("--limit", type=int, default=25)
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[AgentListingState]:
-        environment_id = caller.environment_id
-        if environment_id is None:
-            raise Refusal("the agents are shown for one environment", "name it with --environment")
-        rows = self.queries.query(AgentListing).filter(environment_id=environment_id).matching(Equal("role", AgentRole.MAIN, negated=True))
+        rows = self.queries.query(AgentListing).matching(Equal("role", AgentRole.MAIN, negated=True))
         match arguments.show:
             case AgentListState.RUNNING:
                 rows = rows.matching(self.activity)

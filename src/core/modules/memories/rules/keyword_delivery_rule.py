@@ -34,7 +34,7 @@ class KeywordDeliveryRule(DriverRule):
         if not hook_terms:
             return RuleAnswer.allowed()
         memory_ids = [keyword.memory_id for keyword in self.queries.query(KeywordMemory).matching(Among("word", hook_terms)).all_rows()]
-        limit = self.settings.number(KEYWORD_LIMIT, hook.environment_id)
+        limit = self.settings.number(KEYWORD_LIMIT)
         rows = self.memories.among(memory_ids).absent_memories(hook.agent_id).weight_order().all_rows()
         memories = list(rows)[:limit]
         if not memories:

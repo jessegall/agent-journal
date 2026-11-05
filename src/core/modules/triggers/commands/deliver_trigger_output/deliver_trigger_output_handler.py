@@ -26,5 +26,5 @@ class DeliverTriggerOutputHandler(Handler[DeliverTriggerOutput, TriggerActionRun
         lines = self.folder.numbered_lines(process.id, 1, 200)
         text = "\n".join(line for _, line in lines)[:OUTPUT_LIMIT_CHARACTERS]
         message = f"Trigger {run.trigger_id} command output {process.id}, {process.state}, exit {process.exit_code}:\n{text}\nFirst 200 lines, up to {OUTPUT_LIMIT_CHARACTERS} characters. Full output: journal output read {process.id} --all"
-        self.nudger.send_text(process.agent_id, message, "triggers.command-output", context, wakes_agent=True)
+        self.nudger.send_text(process.session_agent_id, message, "triggers.command-output", context, wakes_agent=True)
         return self.repository.update(run, context, delivered_at=context.timestamp)

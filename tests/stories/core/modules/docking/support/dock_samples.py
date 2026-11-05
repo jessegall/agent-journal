@@ -44,7 +44,7 @@ def running_task(story: Story, title: str) -> int:
 
 
 def docked(story: Story, task_id: int, type: SampleDockType = SampleDockType.TASK) -> DockItem:
-    return story.container.get(Bus).run(AddDockItem(1, type, "task", task_id), story.user)
+    return story.container.get(Bus).run(AddDockItem(type, "task", task_id), story.user, environment_id=1)
 
 
 def docked_state(story: Story, item: DockItem) -> str:

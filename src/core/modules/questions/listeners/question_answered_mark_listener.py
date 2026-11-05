@@ -19,9 +19,9 @@ class QuestionAnsweredMarkListener(QuestionMarkListener[Moved[Question]]):
     def handle(self, event: Moved[Question], logged: LoggedEvent) -> None:
         question = event.row
         side = self.variant(logged)
-        self.show(logged, QuestionMarkType.QUESTION, side, f"Question {question.id} answered", question.environment_id,
-                  question.agent_id, "question", question.id, key=f"question:{question.id}", ended=True)
-        self.show(logged, QuestionMarkType.ANSWER, side, f"Question {question.id} answered", question.environment_id, question.agent_id, "question", question.id)
+        self.show(logged, QuestionMarkType.QUESTION, side, f"Question {question.id} answered",
+                  question.session_agent_id, "question", question.id, key=f"question:{question.id}", ended=True)
+        self.show(logged, QuestionMarkType.ANSWER, side, f"Question {question.id} answered", question.session_agent_id, "question", question.id)
 
     def variant(self, logged: LoggedEvent) -> QuestionMarkVariant:
         is_user = self.queries.query(ActorRecord).find(logged.actor_id).type is ActorType.USER

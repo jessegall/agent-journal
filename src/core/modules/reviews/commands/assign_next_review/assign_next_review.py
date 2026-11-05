@@ -7,4 +7,3 @@ from core.base.command.command import Command
 class AssignNextReview(Command[None]):
     """Gives the oldest queued review of an environment to its oldest idle reviewer, if there is both."""
 
-    environment_id: int

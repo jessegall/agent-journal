@@ -22,4 +22,4 @@ class StartedTaskPlanListener(CommitListener[Moved[Task]]):
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
         plan = self.plans.find(event.row.id)
         if plan is not None and plan.state is PlanState.APPROVED:
-            self.bus.run(StartPlan(plan.id), Actor.core(), cause_id=logged.id, environment_id=plan.environment_id)
+            self.bus.run(StartPlan(plan.id), Actor.core(), cause_id=logged.id)

@@ -12,7 +12,7 @@ class LongRunCandidate:
     start_cutoff: str
 
     def statement(self) -> Statement:
-        return Statement("((started_at < ? AND (creator_id != agent_id OR EXISTS "
+        return Statement("((started_at < ? AND (creator_id != session_agent_id OR EXISTS "
                          "(SELECT 1 FROM process_parts WHERE process_id = processes.id AND is_visible = 1))) "
                          "OR id IN (SELECT target_id FROM dock_items "
                          "WHERE type = ? AND target_model = ? AND state = ?))",

@@ -22,14 +22,14 @@ class ReviewSettings:
     def __init__(self, settings: SettingValues) -> None:
         self.settings = settings
 
-    def enabled(self, environment_id: int) -> bool:
-        return self.settings.flag(REVIEWER_SETTING, environment_id)
+    def enabled(self) -> bool:
+        return self.settings.flag(REVIEWER_SETTING)
 
-    def limit(self, environment_id: int) -> int:
-        return self.settings.number(REVIEWERS_MOST_SETTING, environment_id)
+    def limit(self) -> int:
+        return self.settings.number(REVIEWERS_MOST_SETTING)
 
-    def program(self, environment_id: int) -> str:
-        return self.settings.text(PROGRAM_SETTING, environment_id)
+    def program(self) -> str:
+        return self.settings.text(PROGRAM_SETTING)
 
-    def model(self, environment_id: int) -> str:
-        return self.settings.text(MODEL_SETTING, environment_id)
+    def model(self) -> str:
+        return self.settings.text(MODEL_SETTING)

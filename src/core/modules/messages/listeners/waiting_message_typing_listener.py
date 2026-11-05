@@ -29,11 +29,11 @@ class WaitingMessageTypingListener(CommitListener[Created[AgentLine]]):
         line = event.row
         if line.source != WAITING_MESSAGE_SOURCE or line.state is not AgentLineState.WAITING:
             return
-        agent = self.rows.required(Agent, line.agent_id)
-        message = self.lines.waking_message(agent.environment_id, agent.id)
+        agent = self.rows.required(Agent, line.session_agent_id)
+        message = self.lines.waking_message(agent.id)
         if message is None or not self.lines.names(line, message):
             self.lines.drop(line, logged)
             return
         actor = Actor(logged.actor_id, ActorType.USER)
-        if self.typing.enter_line(line, actor, logged.environment_id) and self.rows.required(Message, message.id).delivered_at is None:
-            self.bus.run(RecordMessageDelivery(message.id), actor, environment_id=logged.environment_id)
+        if self.typing.enter_line(line, actor) and self.rows.required(Message, message.id).delivered_at is None:
+            self.bus.run(RecordMessageDelivery(message.id), actor)

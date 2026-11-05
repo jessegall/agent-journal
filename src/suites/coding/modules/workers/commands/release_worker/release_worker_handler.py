@@ -35,9 +35,9 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
             raise Refusal(f"worker {command.worker_id} has no worktree out", "journal worker-worktree list shows the worktrees")
         abandoned = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.abandon), context)
         task = self.rows.required(Task, worktree.task_id)
-        if task.delegated_to == worktree.agent_id:
+        if task.delegated_to == worktree.session_agent_id:
             self.repository.save_change(task, replace(task.release(context.timestamp, context.actor, command.reason), delegated_to=None), context)
-        for delegated in tuple(self.queries.query(Task).filter(delegated_to=worktree.agent_id).matching(Among("state", WAITING_STATES)).all_rows()):
+        for delegated in tuple(self.queries.query(Task).filter(delegated_to=worktree.session_agent_id).matching(Among("state", WAITING_STATES)).all_rows()):
             self.repository.update(delegated, context, delegated_to=None)
         unmerged = self.git.remove(self.environments.find(abandoned.environment_id).folder, abandoned)
         removed = self.repository.save_change(abandoned, abandoned.remove(context.timestamp, context.actor), context)

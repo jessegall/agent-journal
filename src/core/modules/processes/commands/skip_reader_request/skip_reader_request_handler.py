@@ -27,5 +27,5 @@ class SkipReaderRequestHandler(Handler[SkipReaderRequest, ReaderRequest]):
         if request.completed_at is not None:
             return request
         completed = self.repository.save(replace(request, completed_at=context.timestamp, skip_reason=command.reason.strip()), context)
-        self.slots.grant(request.environment_id, context)
+        self.slots.grant(context)
         return completed

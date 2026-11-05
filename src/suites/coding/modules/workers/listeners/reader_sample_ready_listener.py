@@ -33,5 +33,5 @@ class ReaderSampleReadyListener(SaveListener[Updated[ReaderRequest]]):
         if sample.ended_at is None:
             return
         reader = self.queries.query(Reader).find(request.reader_id)
-        if self.queries.query(Agent).find(sample.agent_id).role == AgentRole.WORKER:
-            self.nudger.send(sample.agent_id, READER_SAMPLE_READY, WORKER_JOB_SOURCE, context, output=sample.id, reader=reader.name)
+        if self.queries.query(Agent).find(sample.session_agent_id).role == AgentRole.WORKER:
+            self.nudger.send(sample.session_agent_id, READER_SAMPLE_READY, WORKER_JOB_SOURCE, context, output=sample.id, reader=reader.name)

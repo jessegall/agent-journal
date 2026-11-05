@@ -10,6 +10,7 @@ from core.modules.viewer.commands.support.window_allowances import WindowAllowan
 from core.modules.viewer.models.enums.window_permission_type import WindowPermissionType
 from server.viewer.button_permission import ButtonPermission
 from server.viewer.buttons_listing import ButtonsListing
+from core.base.scope.scopes import Scopes
 from server.viewer.unknown_environment_error import UnknownEnvironmentError
 
 
@@ -29,15 +30,16 @@ class ButtonsRoute:
             registry = container.get(Registry)
             active = container.get(ActiveModules)
             allowances = container.get(WindowAllowances)
-            buttons = tuple(button.listed() for button in registry.buttons if active.is_active(button.module, environment_id))
             missing: dict[str, list[ButtonPermission]] = {}
-            for button in registry.button_lines(ButtonWindow.MARKS):
-                if button.shipped or not active.is_active(button.module, environment_id):
-                    continue
-                allowed = allowances.allowed_lines(person_id, environment_id, button.subject, WindowPermissionType.RUNS)
-                if button.permission_line in allowed:
-                    continue
-                missing.setdefault(button.module, []).append(ButtonPermission(button.label, button.permission_line))
+            with container.get(Scopes).read_scope((), None, environment_id):
+                buttons = tuple(button.listed() for button in registry.buttons if active.is_active(button.module))
+                for button in registry.button_lines(ButtonWindow.MARKS):
+                    if button.shipped or not active.is_active(button.module):
+                        continue
+                    allowed = allowances.allowed_lines(person_id, button.subject, WindowPermissionType.RUNS)
+                    if button.permission_line in allowed:
+                        continue
+                    missing.setdefault(button.module, []).append(ButtonPermission(button.label, button.permission_line))
             return ButtonsListing(buttons, missing)
         finally:
             container.get(Database).close()

@@ -22,5 +22,4 @@ class ProjectFileListSubcommand(ReadSubcommand[ProjectFileRows]):
         parser.add_argument("folder", nargs="?", default="")
 
     def read(self, arguments: Namespace, caller: Caller) -> ProjectFileRows:
-        environment_id = caller.environment_id
-        return self.files.listed(environment_id, arguments.folder)
+        return self.files.listed(arguments.folder)

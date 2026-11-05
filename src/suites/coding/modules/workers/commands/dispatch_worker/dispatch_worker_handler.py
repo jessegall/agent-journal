@@ -15,6 +15,7 @@ from core.base.profile.agent_profile import AgentProfile
 from core.base.refusal import Refusal
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.base.repository.repository import Repository
+from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
@@ -43,20 +44,24 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     command = DispatchWorker
 
     def __init__(self, queries: Queries, repository: Repository, bus: Bus, settings: SettingValues, git: WorktreeGit,
-                 worker_command: WorkerCommand, worktrees: WorktreeQuery, providers: Providers, models: AllowedModels, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles) -> None:
+                 worker_command: WorkerCommand, worktrees: WorktreeQuery, providers: Providers, models: AllowedModels, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes) -> None:
         self.queries, self.repository, self.bus, self.settings = queries, repository, bus, settings
         self.git, self.worker_command, self.worktrees, self.providers, self.models = git, worker_command, worktrees, providers, models
-        self.environments, self.rows, self.types, self.profiles = environments, rows, types, profiles
+        self.environments, self.rows, self.types, self.profiles, self.scopes = environments, rows, types, profiles, scopes
 
     def handle(self, command: DispatchWorker, context: Context) -> WorkerLaunch:
         tasks = self.queries.query(Task).find_many([command.task_id, *command.delegated_ids])
+        with self.scopes.row_scope(tasks[0]):
+            return self.dispatched(command, tasks, context)
+
+    def dispatched(self, command: DispatchWorker, tasks: list[Task], context: Context) -> WorkerLaunch:
         task = tasks[0]
         for listed in tasks:
             if listed.state is not TaskState.OPEN:
                 raise Refusal(f"task {listed.id} is {listed.state.value}", "a worker is dispatched to an open task")
         environment = self.environments.find(task.environment_id)
-        worker_limit = self.settings.number(WORKER_LIMIT, environment.id)
-        if len(self.worktrees.environment_worktrees(environment.id)) >= worker_limit:
+        worker_limit = self.settings.number(WORKER_LIMIT)
+        if len(self.worktrees.open_worktrees()) >= worker_limit:
             raise Refusal(f"{worker_limit} workers are out already", "merge or release one first, or raise journal.suites.coding.workers.worker-limit")
         worker_context = replace(context, environment_id=environment.id)
         caller = self.rows.find(Agent, context.actor.id)
@@ -66,11 +71,11 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         parent_id = caller.id if caller is not None else None
         profile = self.worker_profile(command.profile)
         model = command.program_model or profile.program_model(program)
-        self.check_model(program, model, environment.id)
+        self.check_model(program, model)
         start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
         worker = self.bus.dispatch(start, worker_context)
         name = f"worker-{worker.id}"
-        worktree = self.repository.save(Worktree(agent_id=worker.id, environment_id=environment.id, task_id=task.id, creator_id=context.actor.id,
+        worktree = self.repository.save(Worktree(session_agent_id=worker.id, task_id=task.id, creator_id=context.actor.id,
                                                  folder=str(Path(environment.folder) / WORKTREES_FOLDER / environment.name / name),
                                                  branch=f"journal/{environment.name}/{name}", base_branch=environment.branch), worker_context)
         base_commit = self.git.tip(environment.folder, environment.branch)
@@ -93,7 +98,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             raise Refusal(f"{profile.name} is a {self.types.find(profile.agent_type).label}: journal helper start runs it")
         return profile
 
-    def check_model(self, program: str, model: str, environment_id: int) -> None:
-        names = self.models.allowed(self.providers.provider(program), environment_id)
+    def check_model(self, program: str, model: str) -> None:
+        names = self.models.allowed(self.providers.provider(program))
         if model not in names:
             raise Refusal(f"a worker is dispatched on a model {program} may run: {', '.join(names)}", "add --model <model>; journal worker models lists them")

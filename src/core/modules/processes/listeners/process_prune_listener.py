@@ -17,5 +17,4 @@ class ProcessPruneListener(SaveListener[OutputEnded]):
 
     def handle(self, event: OutputEnded, context: Context) -> None:
         output = event.row
-        process = self.rows.required(Process, output.process_id)
-        self.bus.dispatch(PruneProcesses(process.environment_id), context)
+        self.bus.dispatch(PruneProcesses(), context)

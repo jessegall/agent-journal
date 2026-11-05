@@ -13,7 +13,7 @@ from core.base.query.condition import Condition
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.equal import Equal
 from core.base.query.conditions.is_null import IsNull
-from core.base.query.conditions.own_rows import OwnRows
+from core.base.query.conditions.session_rows import SessionRows
 from core.base.page import Page
 from core.base.query.select import Select
 from core.base.scope.row_owner import RowOwner
@@ -23,6 +23,7 @@ from core.base.query.unknown_column_error import UnknownColumnError
 M = TypeVar("M", bound=Model | ViewModel, covariant=True)
 PAGE_SIZE_ROWS = 25
 AGENT_COLUMN = "agent_id"
+SESSION_COLUMN = "session_agent_id"
 ENVIRONMENT_COLUMN = "environment_id"
 class Query(Generic[M]):
     """Reads the rows of one model or view model: by key, by its own columns, in an order, one page at a time.
@@ -78,6 +79,9 @@ class Query(Generic[M]):
     def limited(self, size: int) -> list[M]:
         return self.rows(self.select.sliced(size, 0))
 
+    def rows_without(self, column: str) -> list[M]:
+        return list(self.matching(IsNull(column)).oldest().all_rows())
+
     def first(self) -> M | None:
         rows = self.limited(1)
         return rows[0] if rows else None
@@ -119,12 +123,12 @@ class Query(Generic[M]):
             select = self.environment_rows(select, owner)
         if issubclass(self.model, AgentScoped):
             return self.owner_rows(select, owner)
-        actor_id = self.database.read_actor_id
-        if actor_id is None or self.model.shared_rows or not self.table.has_column(AGENT_COLUMN):
+        return self.session_rows(select, owner)
+
+    def session_rows(self, select: Select, owner: RowOwner | None) -> Select:
+        if owner is None or self.database.read_actor_id is None or self.model.shared_rows or not self.table.has_column(SESSION_COLUMN):
             return select
-        if self.table.has_nullable_column(AGENT_COLUMN):
-            return select.matching(OwnRows(actor_id))
-        return select.matching(Equal(AGENT_COLUMN, actor_id))
+        return select.matching(SessionRows(owner, self.table.has_nullable_column(SESSION_COLUMN)))
 
     def environment_rows(self, select: Select, owner: RowOwner) -> Select:
         return select if owner.environment_id is None else select.matching(Equal(ENVIRONMENT_COLUMN, owner.environment_id))

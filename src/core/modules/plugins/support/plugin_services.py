@@ -66,7 +66,7 @@ class PluginServices:
             return []
         environment = self.environment(key, manifest)
         if process is None and service.condition:
-            limit_seconds = self.setting_values.number(CONDITION_LIMIT_SETTING, None)
+            limit_seconds = self.setting_values.project.number(CONDITION_LIMIT_SETTING)
             try:
                 passed = subprocess.run(["sh", "-c", service.condition], cwd=folder, env=environment, capture_output=True, timeout=limit_seconds).returncode == 0
             except subprocess.TimeoutExpired:

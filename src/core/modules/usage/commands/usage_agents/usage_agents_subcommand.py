@@ -9,7 +9,6 @@ from core.base.provider.providers import Providers
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.usage.models.agent_card import AgentCard
@@ -28,6 +27,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
 
     cli_name = "usage"
     name = "agents"
+    environment_refusal = "the agents are shown for one environment"
 
     def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice) -> None:
         self.queries, self.files, self.providers, self.home, self.suites = queries, files, providers, home, suites
@@ -36,13 +36,10 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         parser.add_argument("--closed", action="store_true", help="also the agents that ended most recently")
 
     def read(self, arguments: Namespace, caller: Caller) -> AgentFactsList:
-        environment_id = caller.environment_id
-        if environment_id is None:
-            raise Refusal("the agents are shown for one environment", "name it with --environment")
-        cards = self.queries.query(AgentCard).filter(environment_id=environment_id)
+        cards = self.queries.query(AgentCard)
         running = tuple(cards.matching(IsNull("ended_at")).oldest().all_rows())
         ended = tuple(cards.matching(Greater("ended_at", "")).newest().page(1, CLOSED_AGENTS_SHOWN).rows) if arguments.closed else ()
-        job_roles = self.suites.agent_policy(environment_id).job_roles
+        job_roles = self.suites.agent_policy().job_roles
         return AgentFactsList(tuple(self.facts(card, job_roles) for card in (*running, *ended)))
 
     def facts(self, card: AgentCard, job_roles: Collection[str]) -> AgentFacts:

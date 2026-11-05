@@ -17,7 +17,7 @@ ROWS = [{"line_type": "del", "line": 1, "text": "TOTAL = 0"}, {"line_type": "add
 def test_an_agent_that_edits_a_file_leaves_a_file_edit_with_its_path_and_counts(new_story):
     story = new_story(fixture=BuilderStarted)
     scanned_edit(story, "s-1", "src/cart.py", 3, 1)
-    story.expect_success("file-edit show 1", "path: src/cart.py", "added: 3", "removed: 1", f"agent_id: {story.agent.id}")
+    story.expect_success("file-edit show 1", "path: src/cart.py", "added: 3", "removed: 1", f"session_agent_id: {story.agent.id}")
 
 
 def edit_rows(story) -> list[dict[str, object]]:
@@ -34,7 +34,7 @@ def test_a_scan_of_a_shell_line_keeps_each_file_for_the_agent_of_its_process(new
         {"diff": {"path": "fresh.py", "existed": False, "lines_added": 2, "lines_removed": 0}, "rows": []},
         {"diff": {"path": "old.py", "existed": True, "lines_added": 0, "lines_removed": 3}, "rows": []}]}))
     story.expect_success(f"file-edit record-changes {report} --process {process_id}")
-    story.expect_success("file-edit show 1", "edit_type: new", f"agent_id: {story.agent.id}")
+    story.expect_success("file-edit show 1", "edit_type: new", f"session_agent_id: {story.agent.id}")
     story.expect_success("file-edit show 2", "removed: 3", "edit_type: edit")
 
 

@@ -37,7 +37,7 @@ def expect_tag_settles(story, message, line, *parts):
     story.expect_rows(MessageCaptions.decoded(story.row(Message, message.id))["cart.png"] == "The cart total is wrong")
     story.expect_success('memory skip "Nothing to keep"', actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
-    story.expect_rows(not story.container.get(Queries).query(AgentBlock).filter(agent_id=story.agent.id, condition_text=f"journal message tag {message.id}").matching(IsNull("closed_at")).exists())
+    story.expect_rows(not story.container.get(Queries).query(AgentBlock).filter(session_agent_id=story.agent.id, condition_text=f"journal message tag {message.id}").matching(IsNull("closed_at")).exists())
 
 
 def test_a_tag_in_a_shell_chain_during_memory_weighing_clears_its_due_mark(new_story):

@@ -8,5 +8,4 @@ from core.modules.drivers.models.agent_line import AgentLine
 class RecordWaitingMessageLine(Command[AgentLine | None]):
     """Tells the environment's idle main agent of the first message waiting for it."""
 
-    environment_id: int
     agent_id: int | None = None

@@ -20,4 +20,4 @@ class ReviewStartedMarkListener(MarkListener[Moved[Review]]):
     def handle(self, event: Moved[Review], logged: LoggedEvent) -> None:
         review = event.row
         self.show(logged, ReviewMarkType.REVIEW, ReviewMarkVariant.STARTED, f"Reviewer {review.reviewer_id} is reviewing {review.subject_model} {review.subject_id}",
-                  review.environment_id, review.requester_id, "review", review.id)
+                  review.requester_id, "review", review.id)

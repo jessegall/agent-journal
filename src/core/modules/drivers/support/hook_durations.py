@@ -20,12 +20,12 @@ class HookDurations:
     def begin(self) -> None:
         self.start_points = self.tools.begin()
 
-    def measured(self, event: HookEvent, environment_id: int, nudges: Sequence[str]) -> str:
+    def measured(self, event: HookEvent, nudges: Sequence[str]) -> str:
         shown: list[str] = []
         cost = self.tools.cost(self.start_points)
-        if cost is not None and self.settings.value(HOOK_DURATIONS_SETTING, environment_id) is True:
+        if cost is not None and self.settings.value(HOOK_DURATIONS_SETTING) is True:
             cost_line = self.tools.run(HookCostTool, event, cost)
             shown.extend([cost_line] if isinstance(cost_line, str) else [])
-        if self.settings.value(HOOK_NUDGES_SETTING, environment_id) is True:
+        if self.settings.value(HOOK_NUDGES_SETTING) is True:
             shown.extend(nudge[:TERMINAL_NUDGE_CHARACTERS] for nudge in nudges if nudge)
         return "\n".join(shown)

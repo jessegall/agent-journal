@@ -57,7 +57,7 @@ def test_a_run_over_the_limit_is_stopped_when_its_collected_line_is_read(limited
     story.container.get(OutputFolder).write_output(process.id, 1, "collected 8 items\n")
     OutputReading()(story.container)
     story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED)
-    lines = tuple(story.container.get(Queries).query(AgentLine).filter(agent_id=process.agent_id, source="processes.worker-test-limit").all_rows())
+    lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=process.session_agent_id, source="processes.worker-test-limit").all_rows())
     story.expect_rows(len(lines) == 1, "8 tests" in lines[0].text, "5" in lines[0].text)
 
 
@@ -183,7 +183,7 @@ def test_a_chain_lists_each_test_part_and_adds_the_counts(limited_run):
                        ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/two.py"])))
     story.expect_rows(not reply.refusal, "--count" in str(reply.updated_input), "JOURNAL_COUNT_PART_1" in str(reply.updated_input),
                       "JOURNAL_COUNT_PART_2" in str(reply.updated_input))
-    process = story.container.get(Queries).query(Process).filter(agent_id=worker.id).newest().page(1, 1).rows[0]
+    process = story.container.get(Queries).query(Process).filter(session_agent_id=worker.id).newest().page(1, 1).rows[0]
     folder = story.container.get(OutputFolder)
     folder.write_count(process.id, "\nJOURNAL_COUNT_PART_1\ncollected 3 items\nJOURNAL_COUNT_PART_2\ncollected 3 items\n", 0)
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)

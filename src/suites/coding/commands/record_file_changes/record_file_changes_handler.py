@@ -25,12 +25,12 @@ class RecordFileChangesHandler(Handler[RecordFileChanges, None]):
         agent = self.scan_agent(command)
         report = FileChangeReport.parsed(self.files.read(command.report_path))
         for change in report.changes:
-            self.bus.dispatch(RecordFileEdit(agent.id, agent.environment_id, change.diff, change.rows), context)
-            self.bus.dispatch(DeliverFileEdit(agent.id, agent.environment_id, change.diff.path, report.folder, change.rows), context)
+            self.bus.dispatch(RecordFileEdit(agent.id, change.diff, change.rows), context)
+            self.bus.dispatch(DeliverFileEdit(agent.id, change.diff.path, report.folder, change.rows), context)
 
     def scan_agent(self, command: RecordFileChanges) -> Agent:
         if command.process_id is not None:
-            return self.queries.query(Agent).find(self.queries.query(Process).find(command.process_id).agent_id)
+            return self.queries.query(Agent).find(self.queries.query(Process).find(command.process_id).session_agent_id)
         agent = self.queries.query(Agent).filter(session=command.session).first()
         if agent is None:
             raise Refusal(f"no agent has session {command.session}", "name a process or a session the journal knows")

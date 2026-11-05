@@ -1,5 +1,4 @@
 from core.base.change.logged_event import LoggedEvent
-from core.modules.agents.models.agent import Agent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.waits.models.enums.wait_mark_type import WaitMarkType
 from core.modules.waits.models.enums.wait_mark_variant import WaitMarkVariant
@@ -17,5 +16,4 @@ class ReportedWaitMarkListener(MarkListener[Created[Wait]]):
     def handle(self, event: Created[Wait], logged: LoggedEvent) -> None:
         wait = event.row
         if wait.type is WaitType.HELP_REQUEST:
-            environment_id = self.event_rows.required(Agent, wait.agent_id).environment_id
-            self.show(logged, WaitMarkType.REPORTED_WAIT, WaitMarkVariant.REPORTED, f"Stuck: {wait.focus}", environment_id, wait.agent_id, "wait", wait.id)
+            self.show(logged, WaitMarkType.REPORTED_WAIT, WaitMarkVariant.REPORTED, f"Stuck: {wait.focus}", wait.session_agent_id, "wait", wait.id)

@@ -1,18 +1,19 @@
 from dataclasses import dataclass
 
 from core.base.driver.command_category import CommandCategory
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
 
 
 @dataclass(frozen=True, kw_only=True)
-class ReaderRequest(Model):
+class ReaderRequest(EnvironmentScoped, Model):
     """A command waiting for a proper reader."""
 
     model_name = "reader_request"
     cli_name = "reader-request"
 
-    environment_id: int
+    environment_id: int = 0
     creator_id: int
     command_key: str
     command: str

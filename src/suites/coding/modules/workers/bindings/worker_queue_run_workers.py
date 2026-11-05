@@ -17,7 +17,7 @@ class WorkerQueueRunWorkers(QueueRunWorkers):
         if not proofs:
             return owners
         worktree_ids = tuple({proof.worktree_id for proof in proofs})
-        workers = {worktree.id: worktree.agent_id for worktree in self.queries.query(Worktree).matching(Among("id", worktree_ids)).limited(page.size)}
+        workers = {worktree.id: worktree.session_agent_id for worktree in self.queries.query(Worktree).matching(Among("id", worktree_ids)).limited(page.size)}
         for proof in proofs:
             worker_id = workers.get(proof.worktree_id)
             if worker_id is not None and proof.process_id is not None:

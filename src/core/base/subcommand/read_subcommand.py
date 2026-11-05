@@ -16,6 +16,7 @@ class ReadSubcommand(Generic[R]):
     row_line: ClassVar[str] = ""
     empty_line: ClassVar[str] = ""
     disabled_scopes: ClassVar[WholeScopes] = ()
+    environment_refusal: ClassVar[str] = ""
 
     cli_name: str
     name: str

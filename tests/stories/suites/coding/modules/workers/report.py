@@ -65,5 +65,5 @@ def test_a_workers_report_stays_out_of_the_chat_and_the_main_agent_reads_it(new_
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success('worker report "The cart needs a tax rate"', actor=worker)
-    story.expect_absent("message feed --environment-id 1", "The cart needs a tax rate", actor=story.user)
+    story.expect_absent("message feed --environment 1", "The cart needs a tax rate", actor=story.user)
     story.expect_text("message show 1", "The cart needs a tax rate", actor=story.agent)

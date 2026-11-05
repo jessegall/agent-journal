@@ -134,7 +134,7 @@ class ReaderJudge:
 
     def samples(self, reader: Reader) -> tuple[ProcessPart, ...]:
         patterns = tuple(pattern.strip() for pattern in reader.commands.split(","))
-        parts = self.parts.kept_samples(patterns, reader.environment_id).limited(SAMPLE_PARTS)
+        parts = self.parts.kept_samples(patterns).limited(SAMPLE_PARTS)
         return tuple(part for part in parts if ReaderSelection.reads(reader, part))
 
     def reader_samples(self, readers: Sequence[Reader]) -> dict[int, tuple[ProcessPart, ...]]:
@@ -145,5 +145,5 @@ class ReaderJudge:
         return ColourCodes.removed(self.folder.output(process_id, position) if position else self.folder.all_output(process_id))
 
     def command_samples(self, reader: Reader, scope: ReaderSampleScope) -> tuple[ProcessPart, ...]:
-        parts = self.parts.kept_samples(["*"], scope.environment_id).matching(scope).limited(SAMPLE_PARTS)
+        parts = self.parts.kept_samples(["*"]).matching(scope).limited(SAMPLE_PARTS)
         return tuple(part for part in parts if ReaderSelection.reads(reader, part))

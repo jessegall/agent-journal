@@ -7,12 +7,12 @@ from core.modules.messages.conditions.main_message_target import MainMessageTarg
 
 
 class ChatMessagesSubcommand(ViewRowsSubcommand):
-    """`journal message feed [--environment-id <n>] [--before-id <n>] [--after-id <n>]`: a page of the chat's
+    """`journal message feed [--before-id <n>] [--after-id <n>]`: a page of the chat's
     messages,
     newest first, with the fields the chat draws."""
 
     model = ChatMessage
-    filters = ["environment_id", "target_agent_id"]
+    filters = ["target_agent_id"]
     cli_name = "message"
     name = "feed"
 

@@ -29,4 +29,4 @@ class TextMentionListener(CommitListener[E]):
         if self.library.is_copy(row.model_name, row.id):
             return
         text = "\n".join(str(getattr(row, field)) for field in self.text_fields)
-        self.bus.run(RecordMentions(RowRef(row.model_name, row.id), text), self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=logged.environment_id)
+        self.bus.run(RecordMentions(RowRef(row.model_name, row.id), text), self.actors.actor(MODULE_NAME), cause_id=logged.id)

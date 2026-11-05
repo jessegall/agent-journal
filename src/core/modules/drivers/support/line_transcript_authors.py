@@ -17,7 +17,7 @@ class LineTranscriptAuthors(TranscriptAuthors):
         self.queries = queries
 
     def sender(self, agent: Agent, row: TranscriptRow) -> str:
-        lines = self.queries.query(AgentLine).filter(agent_id=agent.id).oldest().all_rows()
+        lines = self.queries.query(AgentLine).filter(session_agent_id=agent.id).oldest().all_rows()
         line = next((candidate for candidate in lines if candidate.text and (candidate.text in row.text or row.text in candidate.text)), None)
         if line is None:
             return JOURNAL_AUTHOR

@@ -25,6 +25,6 @@ class HelperAllowanceRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         starts = shell is not None and any(part.classification.category is CommandCategory.JOURNAL and tuple(part.arguments[:2]) == HELPER_START_ARGUMENTS for part in shell.parts)
-        if not starts or self.settings.value(SENDS_SUBAGENTS_SETTING, hook.environment_id) is not False:
+        if not starts or self.settings.value(SENDS_SUBAGENTS_SETTING) is not False:
             return RuleAnswer.allowed()
         return RuleAnswer.refused(BUILDER_SUBAGENT_BAN.nudge())

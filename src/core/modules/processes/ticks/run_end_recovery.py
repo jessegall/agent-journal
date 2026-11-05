@@ -10,6 +10,7 @@ from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.rules.support.run_folder_ends import RunFolderEnds
 from core.modules.processes.support.output_folder import OutputFolder
+from core.base.scope.scopes import Scopes
 from core.modules.processes.support.process_settings import ProcessSettings
 
 LEADER_MISSING_SECONDS = 10
@@ -38,7 +39,10 @@ class RunEndRecovery:
         folder = container.get(OutputFolder)
         last_sign = folder.heartbeat(process.id) or process.created_at
         has_pid = folder.pid(process.id) is not None
-        limit_seconds = LEADER_MISSING_SECONDS if has_pid else container.get(ProcessSettings).integer(ProcessSetting.ORPHAN_SECONDS, process.environment_id)
-        if last_sign is None or folder.has_leader_process(process.id) or last_sign.elapsed_seconds(container.get(Clock).timestamp()) <= limit_seconds:
+        with container.get(Scopes).read_scope((), None, process.environment_id):
+            limit_seconds = LEADER_MISSING_SECONDS if has_pid else container.get(ProcessSettings).integer(ProcessSetting.ORPHAN_SECONDS)
+        if last_sign is None or folder.has_leader_process(process.id):
+            return []
+        if last_sign.elapsed_seconds(container.get(Clock).timestamp()) <= limit_seconds:
             return []
         return container.get(RunFolderEnds).commands(process) or [OrphanProcess(process.id)]

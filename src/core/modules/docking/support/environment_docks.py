@@ -9,9 +9,8 @@ class EnvironmentDocks:
     def __init__(self, queries: Queries, kept: KeptRows) -> None:
         self.queries, self.kept = queries, kept
 
-    def find(self, environment_id: int) -> Dock | None:
-        return self.kept.read("docks", self.queries.query(Dock).filter(environment_id=environment_id).first,
-                              "environment_id = ?", [environment_id], name="docking.environment_dock")
+    def find(self) -> Dock | None:
+        return self.kept.scoped_read("docks", self.queries.query(Dock).first, name="docking.environment_dock")
 
     def remember(self, dock: Dock) -> None:
-        self.kept.update("docks", lambda previous: dock, "environment_id = ?", [dock.environment_id], name="docking.environment_dock")
+        self.kept.scoped_update("docks", lambda previous: dock, name="docking.environment_dock")

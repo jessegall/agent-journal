@@ -22,5 +22,4 @@ class ProjectFileFindSubcommand(ReadSubcommand[ProjectFileRows]):
         parser.add_argument("words")
 
     def read(self, arguments: Namespace, caller: Caller) -> ProjectFileRows:
-        environment_id = caller.environment_id
-        return self.files.found(environment_id, arguments.words)
+        return self.files.found(arguments.words)

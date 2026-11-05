@@ -153,7 +153,7 @@ def test_a_hand_in_leaves_another_workers_stash_untouched(new_story):
     story.expect_success('task make "Another job" --environment main', actor=story.agent)
     sibling = dispatched_worker(story, "worker dispatch --model sonnet 2")
     repository.changed(sibling.id, "sibling.py", "OTHER = 1\n")
-    worktree = story.container.get(Queries).query(Worktree).filter(agent_id=sibling.id).first()
+    worktree = story.container.get(Queries).query(Worktree).filter(session_agent_id=sibling.id).first()
     stash = story.container.get(WorktreeGit).stash(worktree)
 
     story.expect_success(DELIVERY, actor=worker)

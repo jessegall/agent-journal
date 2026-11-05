@@ -24,7 +24,7 @@ def test_a_shell_hook_of_the_builder_is_answered_with_the_runner_line_and_a_proc
     story = install_runner(new_story(fixture=BuilderStarted))
     reply = story.hook("s-1", SERVER)
     expect_updated_input_reply(reply, {"command": runner_line(story, 1, "node serve.js")})
-    story.expect_success("process show 1", "line: node serve.js", "state: running", "limit_seconds: 15", f"agent_id: {story.agent.id}")
+    story.expect_success("process show 1", "line: node serve.js", "state: running", "limit_seconds: 15", f"session_agent_id: {story.agent.id}")
     story.expect_text(f"hook-call show {reply.hook_call_id}", "processes.runner-rewrite: rewritten")
 
 
@@ -61,7 +61,7 @@ def test_a_subagent_s_line_runs_through_the_runner_as_a_run_of_its_own(new_story
     story = install_runner(new_story(fixture=SubagentStarted))
     story.hook("s-1", SERVER)
     expect_updated_input_hook_6(story, "s-1", SERVER, "sub-1", {"command": runner_line(story, 2, "node serve.js", session="sub-1")})
-    story.expect_success("process show 2", "line: node serve.js", "state: running", f"agent_id: {story.subagent.id}")
+    story.expect_success("process show 2", "line: node serve.js", "state: running", f"session_agent_id: {story.subagent.id}")
     story.expect_success("process part-start 2 --position 1", actor=story.subagent)
     story.expect_refusal("process part-end 2 --position 1 --exit-code 0", "only the agent that ran a line reports on it", actor=story.agent)
 

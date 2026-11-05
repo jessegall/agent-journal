@@ -12,10 +12,10 @@ class UnreadSkills:
 
     def names(self, agent_id: int) -> list[str]:
         declared = {skill.folder for skill in self.catalogue.skills()}
-        rows = self.queries.query(AgentSkill).filter(agent_id=agent_id, state=AgentSkillState.DUE).oldest().all_rows()
+        rows = self.queries.query(AgentSkill).filter(session_agent_id=agent_id, state=AgentSkillState.DUE).oldest().all_rows()
         return [row.skill for row in rows if row.skill in declared]
 
     def unread(self, agent_id: int) -> list[str]:
         current = {skill.folder: skill.digest for skill in self.catalogue.skills()}
-        rows = self.queries.query(AgentSkill).filter(agent_id=agent_id).oldest().all_rows()
+        rows = self.queries.query(AgentSkill).filter(session_agent_id=agent_id).oldest().all_rows()
         return [row.skill for row in rows if row.skill in current and (row.state is AgentSkillState.DUE or row.digest != current[row.skill])]

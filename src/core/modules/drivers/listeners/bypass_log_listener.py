@@ -31,7 +31,7 @@ class BypassLogListener(CommitListener[Changed[HookCall]]):
         log = self.home.bypass_log
         if not log.is_file():
             return
-        agent = self.queries.query(Agent).find(event.row.agent_id)
+        agent = self.queries.query(Agent).find(event.row.session_agent_id)
         if agent.role != AgentRole.MAIN:
             return
         claimed = log.with_suffix(".taken")
@@ -42,6 +42,7 @@ class BypassLogListener(CommitListener[Changed[HookCall]]):
             return
         actor = self.actors.actor(MODULE_NAME)
         text = f"{count} hook{'s' if count != 1 else ''} went through unchecked while the journal did not answer"
-        self.bus.run(ShowMark(agent.environment_id, BypassMarkType.BYPASS, BypassMarkVariant.UNCHECKED, f"bypass:{logged.id}", text, agent_id=agent.id, outcome=MarkOutcome.FAILED, ended=True),
-                     actor, cause_id=logged.id, environment_id=agent.environment_id)
-        self.bus.run(RecordBypassLine(agent.id, count), actor, cause_id=logged.id, environment_id=agent.environment_id)
+        key = f"bypass:{logged.id}"
+        self.bus.run(ShowMark(BypassMarkType.BYPASS, BypassMarkVariant.UNCHECKED, key, text, agent_id=agent.id, outcome=MarkOutcome.FAILED, ended=True),
+                     actor, cause_id=logged.id)
+        self.bus.run(RecordBypassLine(agent.id, count), actor, cause_id=logged.id)

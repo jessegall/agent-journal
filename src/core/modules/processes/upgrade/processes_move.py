@@ -52,7 +52,7 @@ class ProcessesMove(VersionFourMove):
     def insert(self, rows: RowInsert, row: sqlite3.Row, agent_id: int, creator_id: int, environment_id: int | None, context: MoveContext) -> int:
         created = row["created_at"] or context.timestamp
         ended = row["updated_at"] or created
-        process_id = rows.insert("processes", {"id": row["id"], "environment_id": environment_id, "agent_id": agent_id, "creator_id": creator_id, "line": row["command"] or "",
+        process_id = rows.insert("processes", {"id": row["id"], "environment_id": environment_id, "session_agent_id": agent_id, "creator_id": creator_id, "line": row["command"] or "",
                                                "folder": row["ran_in"] or "", "shell": SHELL, "category": CommandCategory.UNKNOWN.value, "limit_seconds": 0,
                                                "exit_code": row["status"] if row["ended"] else None, "created_at": created, "updated_at": ended,
                                                "moved_at": created if row["moved"] else None, "ended_at": ended if row["ended"] else None})

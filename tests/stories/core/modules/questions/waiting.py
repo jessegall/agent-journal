@@ -37,7 +37,7 @@ class CodexBuilderStarted(StoryFixture):
 
 def test_asking_opens_a_wait_whose_one_target_is_the_question(new_story):
     story = new_story(fixture=BuilderQuestion)
-    story.expect_success("wait show 1", "type: rows", "state: open", f"agent_id: {story.agent.id}")
+    story.expect_success("wait show 1", "type: rows", "state: open", f"session_agent_id: {story.agent.id}")
     story.expect_success("wait-target show 1", "wait_id: 1", "row_table: questions", "row_id: 1")
 
 

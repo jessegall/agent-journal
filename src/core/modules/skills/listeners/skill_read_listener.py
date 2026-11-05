@@ -28,4 +28,4 @@ class SkillReadListener(SaveListener[Created[HookCall]]):
         folder = PurePath(call.summary).parent.name
         skill = next((entry for entry in self.catalogue.skills() if entry.folder == folder), None)
         if skill is not None:
-            self.bus.dispatch(LoadSkill(call.agent_id, skill.folder, skill.digest), context)
+            self.bus.dispatch(LoadSkill(call.session_agent_id, skill.folder, skill.digest), context)

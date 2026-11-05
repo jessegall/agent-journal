@@ -24,4 +24,4 @@ class SwitchSettingGroupHandler(Handler[SwitchSettingGroup, CurrentSetting]):
         if not command.project and context.environment_id is None:
             raise Refusal(f"{entry.key} needs an environment or the whole project", "name --environment, or add --project")
         self.store.write(entry.key, command.enabled, None if command.project else context.environment_id, context)
-        return self.values.current(entry.key, context.environment_id)
+        return self.values.current(entry.key)

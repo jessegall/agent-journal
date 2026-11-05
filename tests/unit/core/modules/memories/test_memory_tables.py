@@ -29,7 +29,7 @@ def test_a_keyword_is_lowercase_and_2_to_40_characters(tmp_path):
 def test_an_agent_has_one_open_mark_at_a_time(tmp_path):
     journal = MemoryJournal.synced(tmp_path)
     db = journal.database
-    insert = Statement("INSERT INTO memory_marks (agent_id, creator_id, percent, opened_at, created_at, updated_at) VALUES (?, 1, 50, ?, ?, ?)",
+    insert = Statement("INSERT INTO memory_marks (session_agent_id, creator_id, percent, opened_at, created_at, updated_at) VALUES (?, 1, 50, ?, ?, ?)",
                        (journal.first_agent, NOW, NOW, NOW))
     db.insert(insert)
     with pytest.raises(sqlite3.IntegrityError):

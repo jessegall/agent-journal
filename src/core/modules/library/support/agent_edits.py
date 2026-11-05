@@ -15,7 +15,7 @@ class AgentEdits:
         self.settings, self.events, self.tables, self.actors = settings, events, tables, actors
 
     def edit_waits(self, row: Model) -> bool:
-        return self.settings.flag(AGENT_EDITS_WAIT_SETTING, None) and self.agent_edited_last(row)
+        return self.settings.project.flag(AGENT_EDITS_WAIT_SETTING) and self.agent_edited_last(row)
 
     def agent_edited_last(self, row: Model) -> bool:
         history = self.events.row_events(self.tables.table(type(row)).name, row.id)

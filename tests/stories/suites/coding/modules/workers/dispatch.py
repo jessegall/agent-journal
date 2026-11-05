@@ -13,7 +13,7 @@ def test_a_dispatch_cuts_the_worktree_from_the_environments_branch_while_the_che
     base_commit = repository.tip(ENVIRONMENT_BRANCH)
     worker_id = dispatched_worker(story).id
     story.expect_success(f"agent show {worker_id}", "role: worker", f"parent_id: {story.agent.id}")
-    story.expect_success("worker-worktree show 1", "state: cut", f"agent_id: {worker_id}", "task_id: 1", f"folder: {repository.worktree_folder(worker_id)}",
+    story.expect_success("worker-worktree show 1", "state: cut", f"session_agent_id: {worker_id}", "task_id: 1", f"folder: {repository.worktree_folder(worker_id)}",
                          f"branch: {repository.worker_branch(worker_id)}", f"base_branch: {ENVIRONMENT_BRANCH}", f"base_commit: {base_commit}")
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker_id}")
     repository.expect_branch_tip(repository.worker_branch(worker_id), base_commit)

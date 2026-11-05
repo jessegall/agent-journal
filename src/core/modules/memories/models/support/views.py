@@ -4,10 +4,10 @@ ACTIVE_MEMORIES_SELECT = (
 )
 
 CONTEXT_MEMORIES_SELECT = (
-    "SELECT memory_deliveries.id AS delivery_id, memory_deliveries.agent_id, memory_deliveries.memory_id, memory_deliveries.cause,"
+    "SELECT memory_deliveries.id AS delivery_id, memory_deliveries.session_agent_id, memory_deliveries.memory_id, memory_deliveries.cause,"
     " memory_deliveries.created_at AS delivered_at FROM memory_deliveries"
     " WHERE memory_deliveries.created_at > coalesce((SELECT max(hook_calls.created_at) FROM hook_calls"
-    " WHERE hook_calls.agent_id = memory_deliveries.agent_id AND hook_calls.hook = 'compact'), '')"
+    " WHERE hook_calls.session_agent_id = memory_deliveries.session_agent_id AND hook_calls.hook = 'compact'), '')"
 )
 
 KEYWORD_MEMORIES_SELECT = (

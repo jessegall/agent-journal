@@ -21,8 +21,7 @@ class TemplateShowSubcommand(ReadSubcommand[Template]):
         parser.add_argument("id", type=int)
 
     def read(self, arguments: Namespace, caller: Caller) -> Template:
-        environment_id = caller.environment_id
-        return self.templates.active(environment_id).find(arguments.id)
+        return self.templates.active().find(arguments.id)
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, Template):

@@ -7,4 +7,3 @@ from core.base.command.command import Command
 class EndSilentHelpers(Command[None]):
     """Ends the helpers of an environment that have sent no hook for a long time."""
 
-    environment_id: int

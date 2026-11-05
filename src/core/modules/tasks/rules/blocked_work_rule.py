@@ -25,9 +25,9 @@ class BlockedWorkRule(DriverRule):
         self.current = current
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if self.current.started_tasks(hook.agent_id) or self.tasks.open_tasks(hook.environment_id).exists():
+        if self.current.started_tasks(hook.agent_id) or self.tasks.open_tasks().exists():
             return RuleAnswer.allowed()
-        blocked = self.tasks.unopenable_blocks(hook.environment_id).oldest().page(1, BLOCKED_TASK_PAGE_SIZE).rows
+        blocked = self.tasks.unopenable_blocks().oldest().page(1, BLOCKED_TASK_PAGE_SIZE).rows
         if not blocked or self.calls.last_stop_refused(hook.agent_id):
             return RuleAnswer.allowed()
         return RuleAnswer.refused(BLOCKED_TASKS.nudge(tasks=', '.join(str(task.id) for task in blocked)))

@@ -24,20 +24,20 @@ class WorkerTaskAdvance:
 
     def next_task(self, worktree: Worktree, following: Task, context: Context) -> None:
         self.start(worktree, following, context)
-        self.nudger.send(worktree.agent_id, WORKER_NEXT_TASK, WORKER_JOB_SOURCE, context, task=following.id)
+        self.nudger.send(worktree.session_agent_id, WORKER_NEXT_TASK, WORKER_JOB_SOURCE, context, task=following.id)
 
     def after_reassigned_task(self, worktree: Worktree, reassigned: Task, following: Task, context: Context) -> None:
         self.start(worktree, following, context)
-        self.nudger.send(worktree.agent_id, WORKER_TASK_REASSIGNED, WORKER_JOB_SOURCE, context, task=reassigned.id)
-        self.nudger.send(worktree.agent_id, WORKER_TASK_AFTER_REASSIGNED, WORKER_JOB_SOURCE, context, task=following.id)
+        self.nudger.send(worktree.session_agent_id, WORKER_TASK_REASSIGNED, WORKER_JOB_SOURCE, context, task=reassigned.id)
+        self.nudger.send(worktree.session_agent_id, WORKER_TASK_AFTER_REASSIGNED, WORKER_JOB_SOURCE, context, task=following.id)
 
     def start(self, worktree: Worktree, following: Task, context: Context) -> None:
-        self.bus.dispatch(StartTask(following.id), replace(context, actor=Actor(worktree.agent_id, ActorType.AGENT)))
+        self.bus.dispatch(StartTask(following.id), replace(context, actor=Actor(worktree.session_agent_id, ActorType.AGENT)))
         self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
 
     def restart_task(self, worktree: Worktree, task: Task, context: Context) -> None:
         if task.state is TaskState.COMPLETED:
             self.repository.save_change(task, task.reopen(context.timestamp, context.actor), context)
-            self.bus.dispatch(StartTask(task.id), replace(context, actor=Actor(worktree.agent_id, ActorType.AGENT)))
+            self.bus.dispatch(StartTask(task.id), replace(context, actor=Actor(worktree.session_agent_id, ActorType.AGENT)))
             return
-        self.repository.save_change(task, task.moved(TaskLifecycle.retest, holder_id=worktree.agent_id), context)
+        self.repository.save_change(task, task.moved(TaskLifecycle.retest, holder_id=worktree.session_agent_id), context)

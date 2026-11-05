@@ -27,12 +27,11 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
         self.labels, self.scopes = labels, scopes
 
     def handle(self, command: AddDockItem, context: Context) -> DockItem:
-        environment_id = command.environment_id or context.environment_id
-        if environment_id is None:
+        if context.environment_id is None:
             raise Refusal("an item is docked in an environment", "name it with --environment")
         title, text = self.labels.read(command.type, command.row_model, command.row_id)
-        dock = self.docks.find(environment_id)
-        dock = dock or self.repository.save(Dock(environment_id=environment_id, creator_id=context.actor.id), context)
+        dock = self.docks.find()
+        dock = dock or self.repository.save(Dock(creator_id=context.actor.id), context)
         self.docks.remember(dock)
         chat_items = self.items.docked(dock.id).same_chat(self.scopes.actor_id)
         type_capacity = self.limits.type_capacity(command.type)

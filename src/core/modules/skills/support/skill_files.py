@@ -25,7 +25,7 @@ class SkillFiles:
     def path(self, folder: str, hook: AgentHook) -> Path:
         project = self.projects.agent_folder(hook.agent_id, hook.environment_id)
         path = Path(self.providers.provider(hook.event.program).skills_folder) / folder / SKILL_FILE
-        return project / path if hook.role in self.suites.agent_policy(hook.environment_id).project_skill_roles else path
+        return project / path if hook.role in self.suites.agent_policy().project_skill_roles else path
 
     def readable(self, folder: str) -> Path:
         return self.readable_paths([folder])[folder]

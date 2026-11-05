@@ -43,12 +43,12 @@ class WorkerMoveMarkListener(MarkListener[Moved[Worktree]]):
 
     def handle(self, event: Moved[Worktree], logged: LoggedEvent) -> None:
         worktree = event.row
-        agent = self.event_rows.required(Agent, worktree.agent_id)
+        agent = self.event_rows.required(Agent, worktree.session_agent_id)
         task = self.event_rows.required(Task, worktree.task_id)
         queued = self.tasks.queued_tasks(agent.id)
         variant, move = MOVE_TEXTS[event.move.name]
         name = agent.given_name or f"Worker {agent.id}"
-        self.show(logged, WorkerMarkType.WORKER, variant, f"{name} {move.format(tasks=self.tasks_text(event.move, worktree, task))}", worktree.environment_id, None, AGENTS_TABLE, agent.id, detail=f"On {agent.program} {agent.program_model}{self.queue_text(queued)}\n\nTask {task.id}: {task.title}\n\n{task.brief}")
+        self.show(logged, WorkerMarkType.WORKER, variant, f"{name} {move.format(tasks=self.tasks_text(event.move, worktree, task))}", None, AGENTS_TABLE, agent.id, detail=f"On {agent.program} {agent.program_model}{self.queue_text(queued)}\n\nTask {task.id}: {task.title}\n\n{task.brief}")
         if event.move is WorktreeLifecycle.cut:
             self.show_plan(logged, worktree, agent, name, (worktree.task_id, *(row.id for row in queued)))
 
@@ -57,7 +57,7 @@ class WorkerMoveMarkListener(MarkListener[Moved[Worktree]]):
         plan_ids = {row.plan_id for row in plan_tasks}
         if len(task_ids) > 1 and len(plan_tasks) == len(task_ids) and len(plan_ids) == 1:
             plan_id = plan_ids.pop()
-            self.show(logged, WorkerMarkType.WORKER, WorkerMarkVariant.HANDED_PLAN, f"{name} was handed plan {plan_id}", worktree.environment_id, None, AGENTS_TABLE, agent.id,
+            self.show(logged, WorkerMarkType.WORKER, WorkerMarkVariant.HANDED_PLAN, f"{name} was handed plan {plan_id}", None, AGENTS_TABLE, agent.id,
                       detail=", ".join(f"task {task_id}" for task_id in task_ids))
 
     def queue_text(self, queued: tuple[Task, ...]) -> str:
@@ -67,5 +67,5 @@ class WorkerMoveMarkListener(MarkListener[Moved[Worktree]]):
     def tasks_text(self, move: Move, worktree: Worktree, task: Task) -> str:
         if move is not WorktreeLifecycle.deliver:
             return f"task {task.id}"
-        delivered = self.queries.query(Task).filter(delegated_to=worktree.agent_id).matching(Among("state", (TaskState.TESTING, TaskState.COMPLETED))).all_rows()
+        delivered = self.queries.query(Task).filter(delegated_to=worktree.session_agent_id).matching(Among("state", (TaskState.TESTING, TaskState.COMPLETED))).all_rows()
         return ", ".join(f"task {row.id}" for row in sorted(delivered, key=lambda row: row.id))

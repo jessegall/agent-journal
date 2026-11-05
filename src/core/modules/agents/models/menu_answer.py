@@ -10,7 +10,7 @@ class MenuAnswer(Model):
     model_name = "menu_answer"
     cli_name = "menu-answer"
 
-    agent_id: int
+    session_agent_id: int
     creator_id: int
     question: str
     answer: str

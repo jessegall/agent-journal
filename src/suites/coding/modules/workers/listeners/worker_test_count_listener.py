@@ -39,10 +39,10 @@ class WorkerTestCountListener(SaveListener[Changed[Output]]):
         if event.old_row is not None and event.old_row.test_count == output.test_count:
             return
         process = self.rows.required(Process, output.process_id)
-        if process.state not in RUNNING_STATES or process.creator_id != process.agent_id:
+        if process.state not in RUNNING_STATES or process.creator_id != process.session_agent_id:
             return
-        agent = self.rows.required(Agent, process.agent_id)
-        limit = self.settings.number(WORKER_TEST_LIMIT, process.environment_id)
+        agent = self.rows.required(Agent, process.session_agent_id)
+        limit = self.settings.number(WORKER_TEST_LIMIT)
         if agent.role != AgentRole.WORKER or not 0 < limit < output.test_count:
             return
         parts = self.queries.query(ProcessPart).filter(process_id=process.id, category=CommandCategory.TEST_RUN)
@@ -50,5 +50,5 @@ class WorkerTestCountListener(SaveListener[Changed[Output]]):
             parts = parts.filter(position=output.reader_position)
         if not parts.exists():
             return
-        self.nudger.send(process.agent_id, TEST_LIMIT_STOP, self.name, context, output=process.id, count=output.test_count, limit=limit)
+        self.nudger.send(process.session_agent_id, TEST_LIMIT_STOP, self.name, context, output=process.id, count=output.test_count, limit=limit)
         self.bus.dispatch(StopProcess(process.id), context)

@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.view_model import ViewModel
 from core.base.timestamp import Timestamp
 from core.modules.messages.models.support.views import ATTACHED_FILES_SELECT
 
 
 @dataclass(frozen=True, kw_only=True)
-class AttachedFile(ViewModel):
+class AttachedFile(EnvironmentScoped, ViewModel):
     """One file sent with a message, as the Attachments window lists it, read from the attached_files view."""
 
     cli_name = "attachment"

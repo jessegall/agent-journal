@@ -18,19 +18,12 @@ class OutputAccess:
             return None
         return self.rows.required(Agent, actor.id)
 
-    def environment(self, actor: Actor, fallback: int | None) -> int:
-        agent = self.agent(actor)
-        environment_id = agent.environment_id if agent is not None else fallback
-        if environment_id is None:
-            raise Refusal("outputs are read in an environment", "name one with --environment")
-        return environment_id
-
     def has_private_outputs(self, actor: Actor) -> bool:
         agent = self.agent(actor)
-        return agent is not None and agent.role in self.suites.agent_policy(agent.environment_id).private_output_roles
+        return agent is not None and agent.role in self.suites.agent_policy().private_output_roles
 
     def process(self, actor: Actor, process_id: int) -> Process:
         process = self.rows.required(Process, process_id)
-        if self.has_private_outputs(actor) and process.agent_id != actor.id:
+        if self.has_private_outputs(actor) and process.session_agent_id != actor.id:
             raise Refusal(f"output {process_id} is not yours", "your suite allows you to read only your own outputs")
         return process

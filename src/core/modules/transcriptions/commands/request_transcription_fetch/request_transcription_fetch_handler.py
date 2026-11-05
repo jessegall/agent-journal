@@ -20,13 +20,11 @@ class RequestTranscriptionFetchHandler(Handler[RequestTranscriptionFetch, Task])
         self.servers, self.catalogue, self.repository, self.line = servers, catalogue, repository, line
 
     def handle(self, command: RequestTranscriptionFetch, context: Context) -> Task:
-        if context.environment_id is None:
-            raise Refusal("transcriptions are fetched for one environment", "name it with --environment")
         server = self.servers.find_name(command.server)
         if command.server not in {suggestion.name for suggestion in self.catalogue.with_transcripts()}:
             raise Refusal(f"{command.server} has no transcriptions to fetch")
         brief = (f"Use the tools of the MCP server {server.name} to find transcripts not yet here: journal transcription list shows those that are. "
                  f'Add each with journal transcription make "<title>" --text "<the whole transcript>" --source {server.name}.')
-        task = self.repository.save(Task(environment_id=context.environment_id, creator_id=context.actor.id, title=f"Fetch transcriptions from {server.title}", brief=brief), context)
-        self.line.send(context.environment_id, TRANSCRIPTION_IMPORT_REQUEST.nudge(task=task.id).text, LINE_SOURCE, context)
+        task = self.repository.save(Task(creator_id=context.actor.id, title=f"Fetch transcriptions from {server.title}", brief=brief), context)
+        self.line.send(TRANSCRIPTION_IMPORT_REQUEST.nudge(task=task.id).text, LINE_SOURCE, context)
         return task

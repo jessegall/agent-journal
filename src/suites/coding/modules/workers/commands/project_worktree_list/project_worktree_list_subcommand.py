@@ -2,6 +2,7 @@ from argparse import Namespace
 
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
+from core.base.scope.environment_scope import EnvironmentScope
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.subcommand.row_list import RowList
 from suites.coding.modules.workers.support.project_worktrees import ProjectWorktrees
@@ -12,6 +13,7 @@ class ProjectWorktreeListSubcommand(ReadSubcommand[RowList]):
 
     cli_name = "project-worktree"
     name = "list"
+    disabled_scopes = [EnvironmentScope]
 
     def __init__(self, worktrees: ProjectWorktrees) -> None:
         self.worktrees = worktrees

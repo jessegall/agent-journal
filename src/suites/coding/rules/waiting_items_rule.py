@@ -29,8 +29,8 @@ class WaitingItemsRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         environment_id = hook.environment_id
-        counts = (("open tasks", self.queries.query(Task).filter(environment_id=environment_id, state=TaskState.OPEN).count()),
-                  ("unread messages", self.queries.query(Message).filter(environment_id=environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).count()),
-                  ("open questions", self.queries.query(Question).filter(environment_id=environment_id, state=QuestionState.OPEN).count()))
+        counts = (("open tasks", self.queries.query(Task).filter(state=TaskState.OPEN).count()),
+                  ("unread messages", self.queries.query(Message).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).count()),
+                  ("open questions", self.queries.query(Question).filter(state=QuestionState.OPEN).count()))
         items = ", ".join(f"{count} {name}" for name, count in counts if count)
         return RuleAnswer.with_nudges(WAITING_ITEMS.nudge(items=items)) if items else RuleAnswer.allowed()

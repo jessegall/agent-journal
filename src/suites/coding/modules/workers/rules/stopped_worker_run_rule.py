@@ -25,9 +25,9 @@ class StoppedWorkerRunRule(DriverRule):
         self.queries, self.processes, self.unfinished = queries, processes, unfinished
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        runs = list(self.processes.running().environment(hook.environment_id).oldest().all_rows())
-        workers = {worker.id: worker for worker in self.queries.query(Agent).find_many([run.agent_id for run in runs])}
-        return RuleAnswer.with_nudges(*(WORKER_RUN_OUTLASTS.nudge(worker=run.agent_id, output=run.id) for run in runs if self.is_outlasting(workers[run.agent_id], hook)))
+        runs = list(self.processes.running().oldest().all_rows())
+        workers = {worker.id: worker for worker in self.queries.query(Agent).find_many([run.session_agent_id for run in runs])}
+        return RuleAnswer.with_nudges(*(WORKER_RUN_OUTLASTS.nudge(worker=run.session_agent_id, output=run.id) for run in runs if self.is_outlasting(workers[run.session_agent_id], hook)))
 
     def is_outlasting(self, worker: Agent, hook: AgentHook) -> bool:
         ended_at = worker.ended_at

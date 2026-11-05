@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.model.environment_scoped import EnvironmentScoped
 
@@ -12,7 +13,7 @@ class ViewerLayout(EnvironmentScoped, Model):
     model_name = "viewer_layout"
     cli_name = "viewer-layout"
 
-    environment_id: int
+    environment_id: int = 0
     person_id: int
     creator_id: int
     suite: str

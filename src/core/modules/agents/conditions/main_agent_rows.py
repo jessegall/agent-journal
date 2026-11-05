@@ -8,4 +8,4 @@ class MainAgentRows:
     """Matches rows owned by main agents."""
 
     def statement(self) -> Statement:
-        return Statement("agent_id IN (SELECT id FROM agents WHERE role = 'main')")
+        return Statement("session_agent_id IN (SELECT id FROM agents WHERE role = 'main')")

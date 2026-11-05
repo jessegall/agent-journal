@@ -29,7 +29,7 @@ class WaitingMessageRunListener(CommitListener[Created[Message]]):
         target = self.targets.recipient(message)
         if target is None:
             return
-        processes = self.kept.read("processes", lambda: tuple(self.processes.environment(message.environment_id).filter(agent_id=target.id, state=ProcessState.RUNNING).all_rows()),
-                                   "environment_id = ? AND agent_id = ? AND state = ?", [message.environment_id, target.id, ProcessState.RUNNING], name="processes.message_foreground_runs")
+        processes = self.kept.scoped_read("processes", lambda: tuple(self.processes.agent(target.id).filter(state=ProcessState.RUNNING).all_rows()),
+                                            "session_agent_id = ? AND state = ?", [target.id, ProcessState.RUNNING], name="processes.message_foreground_runs")
         for process in processes:
             self.folder.write(process.id, MOVE_FILE, "1")

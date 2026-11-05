@@ -30,7 +30,7 @@ class SkillPartReadListener(SaveListener[Created[ProcessPart]]):
         folders = self.skill_folders(part.text)
         if not folders:
             return
-        agent_id = self.queries.query(Process).find(part.process_id).agent_id
+        agent_id = self.queries.query(Process).find(part.process_id).session_agent_id
         for skill in self.catalogue.skills():
             if skill.folder in folders:
                 self.bus.dispatch(LoadSkill(agent_id, skill.folder, skill.digest), context)

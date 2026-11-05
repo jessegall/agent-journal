@@ -26,5 +26,5 @@ class StopScheduledJobHandler(Handler[StopScheduledJob, ScheduledJob]):
         job = self.queries.query(ScheduledJob).find(command.row_id)
         if job.ended_at is not None:
             raise Refusal(f"job {job.job_id} has ended already")
-        self.nudger.send(job.agent_id, JOB_STOPPED, LINE_SOURCE, context, job=job.job_id)
+        self.nudger.send(job.session_agent_id, JOB_STOPPED, LINE_SOURCE, context, job=job.job_id)
         return self.repository.save(job.changed(stop_requested_at=context.timestamp), context)

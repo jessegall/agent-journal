@@ -17,4 +17,4 @@ class TaskEditedMarkListener(MarkListener[Updated[Task]]):
     def handle(self, event: Updated[Task], logged: LoggedEvent) -> None:
         if self.is_agent_command(logged, EDIT_COMMAND):
             task = event.row
-            self.show(logged, TaskMarkType.TASK, TaskMarkVariant.EDITED, f"Task {task.id} edited: {task.title}", task.environment_id, None, "task", task.id)
+            self.show(logged, TaskMarkType.TASK, TaskMarkVariant.EDITED, f"Task {task.id} edited: {task.title}", None, "task", task.id)

@@ -26,7 +26,7 @@ class SmallBatchRule(DriverRule):
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         dispatches = [part for part in shell.parts if part.classification.category is CommandCategory.JOURNAL and tuple(part.arguments[:2]) == DISPATCH_ARGUMENTS] if shell is not None else []
         counts = [self.task_count(list(part.arguments[2:])) for part in dispatches]
-        batch_size = self.settings.number(WORKER_BATCH_SIZE, hook.environment_id)
+        batch_size = self.settings.number(WORKER_BATCH_SIZE)
         return RuleAnswer.with_nudges(*(SMALL_BATCH.nudge(count=count) for count in counts if count < batch_size))
 
     @staticmethod

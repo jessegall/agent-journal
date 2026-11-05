@@ -26,10 +26,10 @@ class UnmergedWorkerRule(DriverRule):
         nudges: list[Nudge] = []
         for worktree in self.delivered.delivered(hook.agent_id):
             proofs = tuple(self.proofs.waiting_proofs(worktree.id).oldest().all_rows())
-            action = f"journal worker merge {worktree.agent_id}, or journal worker release {worktree.agent_id}"
+            action = f"journal worker merge {worktree.session_agent_id}, or journal worker release {worktree.session_agent_id}"
             if proofs:
                 action = f"journal proof check {', '.join(str(proof.id) for proof in proofs)}"
-            nudges.append(WORKER_UNMERGED.nudge(worker=worktree.agent_id, tasks=self.task_names(worktree.agent_id), action=action))
+            nudges.append(WORKER_UNMERGED.nudge(worker=worktree.session_agent_id, tasks=self.task_names(worktree.session_agent_id), action=action))
         return RuleAnswer.with_nudges(*nudges)
 
     def task_names(self, worker_id: int) -> str:

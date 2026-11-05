@@ -32,4 +32,4 @@ class JournalExceptionMarkListener(MarkListener[Created[JournalException]]):
         if exception.creation_timestamp().elapsed_seconds(self.clock.timestamp()) > BACKLOG_LIMIT_SECONDS:
             return
         variant = ChatMarkVariant.LISTENER_FAILED if exception.source.startswith(LISTENER_SOURCE) else ChatMarkVariant.COMMAND_FAILED
-        self.show(logged, ChatMarkType.EXCEPTION, variant, f"{exception.message} ({exception.source})", exception.environment_id, None, "journal-exception", exception.id)
+        self.show(logged, ChatMarkType.EXCEPTION, variant, f"{exception.message} ({exception.source})", None, "journal-exception", exception.id)

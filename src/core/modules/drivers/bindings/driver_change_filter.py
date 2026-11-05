@@ -23,5 +23,5 @@ class DriverChangeFilter(ChangeFilter):
         if actor.type is not ActorType.AGENT:
             return False
         agent = self.rows.find(Agent, actor.id)
-        driver = self.choice.driver(agent.environment_id, agent.role) if agent is not None else None
+        driver = self.choice.driver(agent.role) if agent is not None else None
         return driver is not None and driver.name in listing

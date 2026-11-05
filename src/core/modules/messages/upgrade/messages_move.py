@@ -79,7 +79,7 @@ class MessagesMove(VersionFourMove):
     def insert(self, rows: RowInsert, row: sqlite3.Row, creators: CreatorResolver, sessions: ActorTable, parent: int | None, context: MoveContext) -> int:
         created = row["created_at"] or context.timestamp
         agent = sessions.agent_actor_id(row["session"]) if row["author"] == MessageType.AGENT.value and row["session"] else None
-        return rows.insert(TABLE, {"id": row["id"], "environment_id": row["environment_id"], "agent_id": agent, "parent_id": parent,
+        return rows.insert(TABLE, {"id": row["id"], "environment_id": row["environment_id"], "session_agent_id": agent, "parent_id": parent,
                                    "creator_id": creators.actor_id(row["creator"]), "type": TYPES[row["author"]].value, "text": row["text"] or "",
                                    "read_at": row["read_at"], "created_at": created, "updated_at": row["updated_at"] or created})
 

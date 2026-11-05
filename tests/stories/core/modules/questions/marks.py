@@ -16,7 +16,7 @@ def with_question(story) -> None:
 def test_asking_shows_a_process_mark_with_the_question(new_story):
     story = new_story(fixture=AgentQuestion)
     expect_mark_count(story, 1)
-    story.expect_success("chat-mark show 1", "text: Question 1: Which database?", "state: shown", f"agent_id: {story.agent.id}")
+    story.expect_success("chat-mark show 1", "text: Question 1: Which database?", "state: shown", f"session_agent_id: {story.agent.id}")
 
 
 def test_the_process_mark_is_updated_in_place_while_the_question_waits(new_story):

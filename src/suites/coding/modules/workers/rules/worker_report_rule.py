@@ -25,6 +25,6 @@ class WorkerReportRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         text = f"{hook.event.raw.get(REPORT_FIELD, '')}".strip()
         main_agent_id = self.agents.find(hook.agent_id).parent_id
-        if not text or main_agent_id is None or self.tasks.holder(hook.agent_id).started().exists() or self.tasks.next_delegated(hook.agent_id) is not None:
+        if not text or main_agent_id is None or self.tasks.started_tasks(hook.agent_id) or self.tasks.next_delegated(hook.agent_id) is not None:
             return RuleAnswer.allowed()
-        return RuleAnswer.allowed().running(RecordWorkerReport(hook.agent_id, hook.environment_id, main_agent_id, text))
+        return RuleAnswer.allowed().running(RecordWorkerReport(hook.agent_id, main_agent_id, text))

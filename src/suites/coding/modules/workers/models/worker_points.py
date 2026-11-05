@@ -16,7 +16,7 @@ class WorkerPoints(ViewModel):
     select = WORKER_POINTS_SELECT
 
     worktree_id: int
-    agent_id: int
+    session_agent_id: int
     task_title: str
     task_brief: str
     proofs: str

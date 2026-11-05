@@ -56,7 +56,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
 
     def handle(self, command: RecordHookCall, context: Context) -> HookReply:
         agent = self.agents.find(command.agent_id)
-        suite, driver = self.choice.suite(agent.environment_id), self.choice.driver(agent.environment_id, agent.role)
+        suite, driver = self.choice.suite(), self.choice.driver(agent.role)
         hook = AgentHook(command.event, agent.id, agent.environment_id, agent.role, driver.name if driver is not None else "", context.timestamp,
                          suite=suite.name if suite is not None else "")
         self.timing.stamp("hook_built")
@@ -68,11 +68,11 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         self.timing.stamp("history_recorded")
         if command.event.event == HookEventName.TICK and not (answers.refusal or answers.lines or answers.commands):
             return HookReply.allowed()
-        waiting = self.queries.query(AgentLine).filter(agent_id=agent.id, state=AgentLineState.WAITING).oldest().all_rows()
+        waiting = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).oldest().all_rows()
         handed_lines = DeliveredLines.chosen(command.event, answers, tuple(waiting))
         moves = OneMovePerRow.split(answers.commands)
         tool = command.event.tool
-        call = self.repository.save(HookCall(agent_id=agent.id, environment_id=agent.environment_id, creator_id=context.actor.id, hook=command.event.event,
+        call = self.repository.save(HookCall(session_agent_id=agent.id, creator_id=context.actor.id, hook=command.event.event,
                                              firing=command.event.firing, tool=tool.name if tool is not None else "", summary=self.summary(command),
                                              writes_files=tool is not None and tool.is_writing_files(), lines_added=tool.lines_added if tool is not None else 0,
                                              lines_removed=tool.lines_removed if tool is not None else 0, suite=suite.name if suite is not None else "",

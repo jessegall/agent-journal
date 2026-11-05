@@ -37,7 +37,7 @@ class WorkerResume:
         worktree = self.worktrees.worker_worktree(worker.id)
         if worktree is None or self.is_job_delivering(worker, worker.ended_at):
             return
-        lines = self.queries.query(AgentLine).filter(agent_id=worker.id, state=AgentLineState.WAITING).oldest().all_rows()
+        lines = self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.WAITING).oldest().all_rows()
         job = next((line for line in sorted(lines, key=lambda line: line.source != WORKER_TEST_LIMIT_SOURCE) if line.source in RESUMING_SOURCES), None)
         job = job or self.lost_job(worker, worker.ended_at)
         if job is None:
@@ -63,8 +63,8 @@ class WorkerResume:
 
     def is_job_delivering(self, worker: Agent, ended_at: Timestamp) -> bool:
         delivery_cutoff_at = max(ended_at.text, Timestamp(self.clock.timestamp().value - timedelta(seconds=JOB_DELIVERY_SECONDS)).text)
-        return self.queries.query(AgentLine).filter(agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", delivery_cutoff_at)).exists()
+        return self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", delivery_cutoff_at)).exists()
 
     def lost_job(self, worker: Agent, ended_at: Timestamp) -> AgentLine | None:
-        entered = self.queries.query(AgentLine).filter(agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", ended_at.text)).newest().all_rows()
+        entered = self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", ended_at.text)).newest().all_rows()
         return next((line for line in entered if line.source in RESUMING_SOURCES), None)

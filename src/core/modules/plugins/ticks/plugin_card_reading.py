@@ -25,7 +25,7 @@ class PluginCardReading:
                     agent = queries.query(Agent).filter(id=claim.answer.agent_id).first()
                     if agent is None:
                         continue
-                    bus.run(AddPluginOutput(plugin.id, agent.environment_id, agent.id, claim.answer.output), Actor.core(), environment_id=agent.environment_id)
+                    bus.run(AddPluginOutput(plugin.id, agent.id, claim.answer.output), Actor.core(), environment_id=agent.environment_id)
                     claim.remove_cards()
                     outputs_added += 1
         return outputs_added > 0

@@ -34,20 +34,20 @@ class WorkerReuseRule(DriverRule):
         for part in shell.parts if shell is not None else ():
             if part.arguments[:2] != DISPATCH_ARGUMENTS or NEW_WORKER_FLAG in part.arguments:
                 continue
-            worker_id = self.worker_with_files(part, hook.environment_id)
+            worker_id = self.worker_with_files(part)
             if worker_id is not None:
                 return RuleAnswer.refused(WORKER_REUSE.nudge(worker=worker_id))
         return RuleAnswer.allowed()
 
-    def worker_with_files(self, part: Part, environment_id: int) -> int | None:
+    def worker_with_files(self, part: Part) -> int | None:
         task_ids = [int(argument) for argument in part.arguments[2:] if argument.isdigit()]
         paths = PathMentions.found(" ".join(task.brief for task in self.queries.query(Task).find_many(task_ids)))
         if not paths:
             return None
-        worktrees = list(self.queries.query(Worktree).filter(environment_id=environment_id).matching(IsNull("removed_at")).all_rows())
-        workers = {worker.id: worker for worker in self.queries.query(Agent).find_many([worktree.agent_id for worktree in worktrees])}
+        worktrees = list(self.queries.query(Worktree).matching(IsNull("removed_at")).all_rows())
+        workers = {worker.id: worker for worker in self.queries.query(Agent).find_many([worktree.session_agent_id for worktree in worktrees])}
         for worktree in worktrees:
-            is_ended = workers[worktree.agent_id].ended_at is not None
+            is_ended = workers[worktree.session_agent_id].ended_at is not None
             if is_ended and PathMentions.overlap(paths, frozenset(self.git.changed_files(worktree))):
-                return worktree.agent_id
+                return worktree.session_agent_id
         return None

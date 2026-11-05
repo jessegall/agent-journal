@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.view_model import ViewModel
 from core.base.timestamp import Timestamp
 from core.modules.usage.models.support.views import AGENT_CARDS_SELECT
 
 
 @dataclass(frozen=True, kw_only=True)
-class AgentCard(ViewModel):
+class AgentCard(EnvironmentScoped, ViewModel):
     """An agent with what its card shows besides its status line: its started task, its tasks as a JSON list, whether
     a block holds it, and what its dispatch gave it, read from the agent_cards view."""
 

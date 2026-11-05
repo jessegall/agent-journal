@@ -24,4 +24,4 @@ class EndedWorkerJobListener(CommitListener[Created[AgentLine]]):
         line = event.row
         if line.source not in RESUMING_SOURCES:
             return
-        self.worker_resume.resume(self.agents.find(line.agent_id), Actor(logged.actor_id, ActorType.AGENT))
+        self.worker_resume.resume(self.agents.find(line.session_agent_id), Actor(logged.actor_id, ActorType.AGENT))

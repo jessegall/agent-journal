@@ -64,7 +64,7 @@ class PluginRule(DriverRule):
                 self.queued(hook, plugin, lines, commands)
             for event in [event for event in events if event.name in manifest.event_names and self.reaches(hook, manifest, event.name)]:
                 if event.name not in manifest.window_names():
-                    commands.append(DeliverPluginEvent(plugin.id, hook.environment_id, hook.agent_id, event.name, json.dumps(dict(event.data))))
+                    commands.append(DeliverPluginEvent(plugin.id, hook.agent_id, event.name, json.dumps(dict(event.data))))
                     continue
                 refusal = self.refusal_text(hook, plugin, manifest, event, lines, commands, values)
                 if refusal:
@@ -77,7 +77,7 @@ class PluginRule(DriverRule):
         read = queue.reserve(hook.event.environment, hook.agent_id, hook.event.firing, committed)
         for name, answer in read.answers:
             lines.extend([f"[plugin {plugin.name}] {answer.line}"] if answer.line else [])
-            commands.extend([AddPluginOutput(plugin.id, hook.environment_id, hook.agent_id, answer.output)] if answer.has_output() else [])
+            commands.extend([AddPluginOutput(plugin.id, hook.agent_id, answer.output)] if answer.has_output() else [])
             commands.append(ClearPluginQueueFile(plugin.id, name))
         commands.extend(RecordPluginFault(plugin.id, f"its queue file {name} is not JSON") for name in read.unreadable)
 
@@ -91,7 +91,7 @@ class PluginRule(DriverRule):
             values[plugin.id] = self.settings.values(plugin, manifest)
         call = PluginCall(manifest, event, hook.event.environment, hook.timestamp, values[plugin.id], hook.agent_id)
         try:
-            answer = self.program.run(call, manifest.window_ms(event.name, self.setting_values.number(CEILING_SETTING, hook.environment_id)))
+            answer = self.program.run(call, manifest.window_ms(event.name, self.setting_values.number(CEILING_SETTING)))
         except PluginLateError:
             return ""
         except PluginFaultError as fault:
@@ -100,7 +100,7 @@ class PluginRule(DriverRule):
         if plugin.fault_count:
             commands.append(ClearPluginFaults(plugin.id))
         if answer.has_output():
-            commands.append(AddPluginOutput(plugin.id, hook.environment_id, hook.agent_id, answer.output))
+            commands.append(AddPluginOutput(plugin.id, hook.agent_id, answer.output))
         answer_text = answer.reason if answer.is_refusal() else answer.line
         journal_line = hook.event.tool is not None and hook.event.tool.is_journal_line
         refusing = answer.is_refusal() and event.name in [refusable.value for refusable in RefusableEvent]

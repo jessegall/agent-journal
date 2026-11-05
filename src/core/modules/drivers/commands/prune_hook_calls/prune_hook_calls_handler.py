@@ -24,7 +24,7 @@ class PruneHookCallsHandler(Handler[PruneHookCalls, int]):
         self.queries, self.repository, self.settings = queries, repository, settings
 
     def handle(self, command: PruneHookCalls, context: Context) -> int:
-        days = self.settings.number(DAYS_SETTING, None)
+        days = self.settings.project.number(DAYS_SETTING)
         cutoff = Timestamp(context.timestamp.value - timedelta(days=days))
         calls = tuple(self.queries.query(HookCall).matching(Less("created_at", cutoff.text)).all_rows())
         for call in calls:

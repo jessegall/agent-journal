@@ -16,5 +16,5 @@ class RecordPeerMessageHandler(Handler[RecordPeerMessage, Message]):
         self.repository = repository
 
     def handle(self, command: RecordPeerMessage, context: Context) -> Message:
-        return self.repository.save(Message(environment_id=command.environment_id, agent_id=command.agent_id, creator_id=context.actor.id, type=MessageType.PEER, text=command.text,
+        return self.repository.save(Message(session_agent_id=command.agent_id, creator_id=context.actor.id, type=MessageType.PEER, text=command.text,
                                             read_at=context.timestamp, delivered_at=context.timestamp, peer="" if command.outgoing else command.sender, recipient=command.sender if command.outgoing else "", peer_key=command.key), context)

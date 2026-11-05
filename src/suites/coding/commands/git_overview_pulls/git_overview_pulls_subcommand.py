@@ -20,5 +20,4 @@ class GitOverviewPullsSubcommand(ReadSubcommand[GitPullRows]):
 
 
     def read(self, arguments: Namespace, caller: Caller) -> GitPullRows:
-        environment_id = caller.environment_id
-        return self.git.pulls(environment_id)
+        return self.git.pulls()

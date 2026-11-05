@@ -22,7 +22,7 @@ class TunlerTunnel(Tunnel):
         self.problem = ""
 
     def place(self) -> str:
-        return self.settings.text(SUBDOMAIN_SETTING, None)
+        return self.settings.project.text(SUBDOMAIN_SETTING)
 
     def open(self, port: int) -> None:
         self.problem = self.obstacle()

@@ -25,4 +25,4 @@ class ReadMessageEditListener(CommitListener[Updated[Message]]):
             return
         message = event.row
         if message.type in PERSON_MESSAGE_TYPES and message.read_at is not None:
-            self.bus.run(RecordMessageUpdatedLine(message.id, message.environment_id), Actor(logged.actor_id, ActorType.USER), environment_id=message.environment_id)
+            self.bus.run(RecordMessageUpdatedLine(message.id), Actor(logged.actor_id, ActorType.USER))

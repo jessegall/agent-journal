@@ -8,4 +8,3 @@ class RecordMessageUpdatedLine(Command[None]):
     """Tells the main agent a person changed a message it has read."""
 
     message_id: int
-    environment_id: int

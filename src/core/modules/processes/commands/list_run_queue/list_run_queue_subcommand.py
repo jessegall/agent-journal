@@ -5,7 +5,6 @@ from core.base.page import Page
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.query.query import Query
-from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.drivers.support.suite_choice import SuiteChoice
@@ -29,27 +28,25 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
 
     cli_name = "queue"
     name = "list"
+    environment_refusal = "the process queue needs an environment"
 
     def __init__(self, queries: Queries, settings: ProcessSettings, halt: RunQueueHalt, suites: SuiteChoice, catalogue: SettingCatalogue, values: SettingValues) -> None:
         self.queries, self.settings, self.halt = queries, settings, halt
         self.suites, self.catalogue, self.values = suites, catalogue, values
 
-    def suite_limits(self, environment_id: int) -> list[dict[str, object]]:
-        entries = (self.catalogue.value(key) for key in self.suites.agent_policy(environment_id).queue_limit_settings)
-        return [{"key": entry.key, "title": entry.title, "description": entry.description, "value": self.values.value(entry.key, environment_id)} for entry in entries]
+    def suite_limits(self) -> list[dict[str, object]]:
+        entries = (self.catalogue.value(key) for key in self.suites.agent_policy().queue_limit_settings)
+        return [{"key": entry.key, "title": entry.title, "description": entry.description, "value": self.values.value(entry.key)} for entry in entries]
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--environment-id", type=int)
         parser.add_argument("--limit", type=int, default=50)
         parser.add_argument("--page", type=int, default=1)
         parser.add_argument("--recent", type=int, default=RECENT_RUNS)
 
     def read(self, arguments: Namespace, caller: Caller) -> ProcessQueuePage:
-        environment_id = arguments.environment_id if arguments.environment_id is not None else caller.environment_id
-        if environment_id is None:
-            raise Refusal("the process queue needs an environment", "queue list --environment-id <number>")
-        main_spots = self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS, environment_id)
-        query = self.queries.query(ProcessQueueRow).filter(environment_id=environment_id)
+        environment_id = self.queries.database.scope_environment_id
+        main_spots = self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS)
+        query = self.queries.query(ProcessQueueRow)
         active = tuple(query.matching(IsNull("ended_at")).oldest().all_rows())
         running = [row.inspector_json(main_spots) for row in active if row.section is QueueSection.RUNNING]
         waiting = [row.inspector_json(main_spots) for row in active if row.section is QueueSection.WAITING]
@@ -57,8 +54,8 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         inspector: QueueInspectorJson = {
             "environment_id": environment_id,
             "environment_name": self.queries.query(Environment).find(environment_id).name,
-            "parallel_limit": self.settings.integer(ProcessSetting.RUN_BATCH_SIZE, environment_id),
-            "limit_setting": ProcessSetting.RUN_BATCH_SIZE.key, "suite_limits": self.suite_limits(environment_id),
+            "parallel_limit": self.settings.integer(ProcessSetting.RUN_BATCH_SIZE),
+            "limit_setting": ProcessSetting.RUN_BATCH_SIZE.key, "suite_limits": self.suite_limits(),
             "count_main_runs": main_spots, "main_spots_setting": ProcessSetting.MAIN_RUNS_USE_SLOTS.key,
             "used_slots": sum(bool(row["uses_slot"]) for row in running), "waiting_count": len(waiting),
             "halted": self.halt.is_halted, "halt_reason": self.halt.reason,
@@ -72,4 +69,4 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ProcessQueuePage):
-            output.write("\n".join(f"{process.id}  {process.agent_id}  {process.category.value}  {process.line}" for process in value.page.rows) or "No command waits or runs in this process queue.", value.json())
+            output.write("\n".join(f"{process.id}  {process.session_agent_id}  {process.category.value}  {process.line}" for process in value.page.rows) or "No command waits or runs in this process queue.", value.json())

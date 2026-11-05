@@ -1,7 +1,6 @@
 from argparse import Namespace
 
 from core.base.caller.caller import Caller
-from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.reviews.commands.support.reviewer_listing import ReviewerListing
@@ -15,16 +14,14 @@ class ReviewerListSubcommand(ReadSubcommand[ReviewerListing]):
 
     cli_name = "reviewer"
     name = "list"
+    environment_refusal = "reviewers are listed for an environment"
 
     def __init__(self, reviewers: ReviewerQuery, reviews: ReviewQuery) -> None:
         self.reviewers, self.reviews = reviewers, reviews
 
     def read(self, arguments: Namespace, caller: Caller) -> ReviewerListing:
-        environment_id = caller.environment_id
-        if environment_id is None:
-            raise Refusal("reviewers are listed for an environment", "name one with --environment <id>")
-        reviewers = tuple(self.reviewers.environment(environment_id).active().oldest().all_rows())
-        waiting = tuple(self.reviews.queued(environment_id).all_rows())
+        reviewers = tuple(self.reviewers.active().oldest().all_rows())
+        waiting = tuple(self.reviews.queued().all_rows())
         return ReviewerListing((*(f"reviewer {reviewer.id}: {reviewer.state}" for reviewer in reviewers),
                                 *(f"waiting {place}: review {review.id}" for place, review in enumerate(waiting, 1)),
                                 f"reviewers: {len(reviewers)}, reviews waiting: {len(waiting)}"))

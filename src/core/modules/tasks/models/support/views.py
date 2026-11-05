@@ -34,10 +34,10 @@ TASK_INSPECTIONS_SELECT = (
 )
 
 TASK_BLOCK_REVIEWS_SELECT = (
-    "SELECT tasks.id AS task_id, agents.id AS agent_id, tasks.environment_id, tasks.state, tasks.version AS task_version,"
+    "SELECT tasks.id AS task_id, agents.id AS session_agent_id, tasks.environment_id, tasks.state, tasks.version AS task_version,"
     " coalesce((SELECT max(task_version) FROM task_block_renewals WHERE task_id = tasks.id), 0) AS block_version,"
     " max(coalesce((SELECT max(created_at) FROM task_block_renewals WHERE task_id = tasks.id), tasks.updated_at),"
-    " coalesce((SELECT max(last_delivered_at) FROM nudge_records WHERE agent_id = agents.id"
+    " coalesce((SELECT max(last_delivered_at) FROM nudge_records WHERE session_agent_id = agents.id"
     " AND key = 'tasks.block_review.' || tasks.id), '')) AS reviewed_at,"
     " EXISTS(SELECT 1 FROM task_waits WHERE task_id = tasks.id AND ended_at IS NULL AND target = 'user') AS user_wait,"
     " EXISTS(SELECT 1 FROM task_waits WHERE task_id = tasks.id AND ended_at IS NULL"
@@ -55,4 +55,4 @@ ENVIRONMENT_CARDS_SELECT = (
 
 def closed_task_counts_select(start_count: int) -> str:
     sums = ", ".join("coalesce(sum(closed_at > ?), 0)" for _ in range(start_count))
-    return f"SELECT {sums} FROM tasks WHERE environment_id = ? AND closed_at > ?"
+    return f"SELECT {sums} FROM tasks WHERE environment_id = COALESCE(?, environment_id) AND closed_at > ?"

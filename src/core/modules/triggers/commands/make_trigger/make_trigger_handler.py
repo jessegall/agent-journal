@@ -20,4 +20,4 @@ class MakeTriggerHandler(Handler[MakeTrigger, Trigger]):
     def handle(self, command: MakeTrigger, context: Context) -> Trigger:
         if not command.phrases:
             raise Refusal("a trigger needs a phrase", "give them as 'deploy, release'")
-        return self.repository.save(Trigger(creator_id=context.actor.id, phrases=tuple(command.phrases), action=command.action, text=command.text, needs_enabling=self.approval.needs_user(context.actor, context.environment_id), **asdict(command.details)), context)
+        return self.repository.save(Trigger(creator_id=context.actor.id, phrases=tuple(command.phrases), action=command.action, text=command.text, needs_enabling=self.approval.needs_user(context.actor), **asdict(command.details)), context)

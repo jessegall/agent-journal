@@ -1,3 +1,4 @@
+from core.modules.skills.migrations.m003_skill_session import SkillSessionMigration
 from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.skills.listeners.skill_publish_listener import SkillPublishListener
@@ -56,7 +57,7 @@ class SkillsModule(Module):
     skills = [SkillDeclaration("journal", "Find your way in the journal: what it is, its basic ideas and which skill to read for what; read at the start of every session, with the etiquette skill"),
               SkillDeclaration("journal-etiquette", "Behave in the chat with the user and keep the journal's own mechanics out of it; read at the start of every session, with the journal skill")]
     models = [ModelDeclaration(AgentSkill, commands=[LoadAgentSkill]), ModelDeclaration(SkillRequest, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
-    migrations = [SkillsTablesMigration, SkillRequestsTableMigration]
+    migrations = [SkillSessionMigration, SkillsTablesMigration, SkillRequestsTableMigration]
     subcommands = [SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand, AgentSkillUnreadSubcommand, SkillRequiredSubcommand]
     handlers = [RequireSkillHandler, LoadSkillHandler, ResetSkillsHandler, RequestSkillHandler]
     listeners = [SkillPublishListener, SkillReadListener, SkillPartReadListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener]

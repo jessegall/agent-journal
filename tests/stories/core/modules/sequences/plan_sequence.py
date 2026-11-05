@@ -26,7 +26,7 @@ def worker_of(story) -> Actor:
 
 
 def run_agent_ids(story) -> list[int]:
-    return [run.agent_id for run in story.container.get(Queries).query(SequenceRun).all_rows()]
+    return [run.session_agent_id for run in story.container.get(Queries).query(SequenceRun).all_rows()]
 
 
 def test_the_main_agent_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_a_mark(new_story):
@@ -70,7 +70,7 @@ def test_making_a_plan_ready_ends_its_sequence_and_the_run_on_another_plan_stays
 
 
 def expect_open_run_agents(story, expected) -> None:
-    actual = [run.agent_id for run in story.container.get(Queries).query(SequenceRun).all_rows() if run.ended_at is None]
+    actual = [run.session_agent_id for run in story.container.get(Queries).query(SequenceRun).all_rows() if run.ended_at is None]
     assert actual == expected, actual
 
 

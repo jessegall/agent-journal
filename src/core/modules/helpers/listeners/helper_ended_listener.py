@@ -35,7 +35,7 @@ class HelperEndedListener(CommitListener[AgentEnded]):
         open_jobs = [job for job in self.jobs.helper_jobs(helper.id) if job.ended_at is None]
         if not open_jobs:
             return
-        waiting = self.queries.query(AgentLine).filter(agent_id=helper.id, state=AgentLineState.WAITING, source=HELPER_JOB_SOURCE).oldest().first()
+        waiting = self.queries.query(AgentLine).filter(session_agent_id=helper.id, state=AgentLineState.WAITING, source=HELPER_JOB_SOURCE).oldest().first()
         if waiting is not None:
             self.resume.resume(helper, waiting.text)
             return

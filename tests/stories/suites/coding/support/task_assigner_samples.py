@@ -23,7 +23,7 @@ class OldestTaskFirstListener(CommitListener[Moved[Task]]):
         self.bus, self.tasks = bus, tasks
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
-        waiting = self.tasks.open_tasks(self.tasks.find(logged.row_id).environment_id).oldest().page(1, 1).rows
+        waiting = self.tasks.open_tasks().oldest().page(1, 1).rows
         if waiting:
             self.bus.run(StartTask(waiting[0].id), Actor(logged.actor_id, ActorType.AGENT), cause_id=logged.id, environment_id=logged.environment_id)
 

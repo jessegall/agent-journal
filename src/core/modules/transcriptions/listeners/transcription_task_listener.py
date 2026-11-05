@@ -38,7 +38,7 @@ class TranscriptionTaskListener(SaveListener[Changed[Transcription]]):
         if not has_new_text or not row.text.strip():
             return
         task_id = self.unfinished_task_id(row) or self.new_task_id(row, context)
-        self.line.send(row.environment_id, TRANSCRIPTION_CHANGED.nudge(transcription=row.id, task=task_id).text, LINE_SOURCE, context)
+        self.line.send(TRANSCRIPTION_CHANGED.nudge(transcription=row.id, task=task_id).text, LINE_SOURCE, context)
 
     def unfinished_task_id(self, row: Transcription) -> int | None:
         linked = self.queries.query(Link).filter(source_model=row.model_name, source_id=row.id, target_model=Task.model_name).all_rows()
@@ -52,6 +52,6 @@ class TranscriptionTaskListener(SaveListener[Changed[Transcription]]):
         title = f"Summarize transcript {row.id}: {row.title}"[:TITLE_CHARACTERS]
         brief = (f"Read transcription {row.id} with journal transcription show {row.id}, and write what it calls for: a summary, meeting notes, a document, tasks or a plan. "
                  f"Link each row you make to it with journal transcription link {row.id} <model> <number>.")
-        task = self.repository.save(Task(environment_id=row.environment_id, creator_id=context.actor.id, title=title, brief=brief, priority=URGENT_PRIORITY), context)
+        task = self.repository.save(Task(creator_id=context.actor.id, title=title, brief=brief, priority=URGENT_PRIORITY), context)
         self.repository.save(Link(creator_id=context.actor.id, source_model=row.model_name, source_id=row.id, target_model=Task.model_name, target_id=task.id, link_type=LinkType.SUBJECT), context)
         return task.id

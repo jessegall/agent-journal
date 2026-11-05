@@ -1,3 +1,4 @@
+from core.modules.questions.migrations.m005_question_session import QuestionSessionMigration
 from core.modules.questions.migrations.m003_question_agent_state_index import QuestionAgentStateIndexMigration
 from core.modules.questions.support.question_nudges import QUESTION_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
@@ -46,7 +47,7 @@ class QuestionsModule(Module):
     block_conditions = [QuestionAnswered, QuestionsClosed]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages", "journal.core.waits", "journal.core.chat", "journal.core.documents"]
     models = [ModelDeclaration(Question, query=QuestionQuery, commands=(AnswerQuestion, CloseQuestion), excluded_subcommands=["make", "list", "show"])]
-    migrations = [QuestionAgentStateIndexMigration, QuestionsTablesMigration, AnswerMessageMigration, QuestionPlaceMigration]
+    migrations = [QuestionSessionMigration, QuestionAgentStateIndexMigration, QuestionsTablesMigration, AnswerMessageMigration, QuestionPlaceMigration]
     moves = [QuestionsMove]
     subcommands = [AskQuestionSubcommand, QuestionListSubcommand, QuestionShowSubcommand]
     handlers = [AskQuestionHandler]

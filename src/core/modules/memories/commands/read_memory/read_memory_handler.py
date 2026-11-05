@@ -21,5 +21,5 @@ class ReadMemoryHandler(Handler[ReadMemory, Memory]):
     def handle(self, command: ReadMemory, context: Context) -> Memory:
         memory = self.queries.query(Memory).find(command.memory_id)
         if context.actor.type is ActorType.AGENT:
-            self.repository.save(MemoryDelivery(memory_id=memory.id, agent_id=context.actor.id, creator_id=context.actor.id, cause=DeliveryCause.READ), context)
+            self.repository.save(MemoryDelivery(memory_id=memory.id, session_agent_id=context.actor.id, creator_id=context.actor.id, cause=DeliveryCause.READ), context)
         return memory

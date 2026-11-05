@@ -10,6 +10,7 @@ from core.base.database.database import Database
 from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.modules.drivers.models.agent_line import AgentLine
+from core.base.scope.scopes import Scopes
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
 from tests.stories.suites.coding.modules.workers.support.helper_types import ClerkStarted, HelperStarted, NativeSubagentStarted, WorkerStarted
@@ -42,7 +43,7 @@ def test_an_inactive_helper_of_any_registered_descendant_type_wakes_its_parent(n
     story.tick("s-1")
     wanted = f"{role}:{helper['id']} has used no tool for 5 minutes"
     story.expect_text(f"agent-line list --agent {story.agent.id}", wanted)
-    lines = story.container.get(Queries).query(AgentLine).filter(agent_id=story.agent.id).all_rows()
+    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows()
     story.expect_rows(any(wanted in line.text and line.wakes_agent for line in lines))
 
 
@@ -58,5 +59,6 @@ def test_an_ended_helper_is_left_out_of_the_inactive_notice(new_story):
 
 def test_a_helper_has_saved_commands_from_its_first_start(new_story):
     story = new_story(fixture=HelperStarted)
-    policy = story.container.get(SuiteChoice).agent_policy(1)
+    with story.container.get(Scopes).read_scope((), None, 1):
+        policy = story.container.get(SuiteChoice).agent_policy()
     story.expect_rows("helper" in policy.saved_command_roles, "subagent" in policy.saved_command_roles)

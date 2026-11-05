@@ -35,4 +35,4 @@ class ReaderBlockListener(SaveListener[Created[ProcessPart]]):
         process = self.queries.query(Process).find(part.process_id)
         nudge = READER_BLOCK.nudge(output=part.process_id, request=request.id)
         ends = AnyCondition(ReaderRequestCompleted(request.id), TimeReached(request.expires_at.text))
-        self.bus.dispatch(BlockUntil(process.agent_id, replace(nudge, key=f"{nudge.key}.{request.id}"), ends), context)
+        self.bus.dispatch(BlockUntil(process.session_agent_id, replace(nudge, key=f"{nudge.key}.{request.id}"), ends), context)

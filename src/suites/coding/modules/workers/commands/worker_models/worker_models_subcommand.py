@@ -23,7 +23,7 @@ class WorkerModelsSubcommand(ReadSubcommand[RowList]):
 
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
         return RowList([{"id": f"{provider.name} {model.name}", "program": provider.name, "title": provider.title, "model": model.name, "tier": model.tier.value,
-                         "allowed": model.name in self.models.allowed(provider, caller.environment_id)}
+                         "allowed": model.name in self.models.allowed(provider)}
                         for provider in self.providers.all() for model in provider.models])
 
     def write_output(self, value: object, output: Output) -> None:

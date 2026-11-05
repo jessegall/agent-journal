@@ -13,7 +13,7 @@ class RunVisibility:
     def visible_part(self, process: Process) -> ProcessPart | None:
         parts = self.parts(process.id)
         categorized = next((part for part in parts if part.is_visible), None)
-        return categorized or (parts[0] if parts and process.creator_id != process.agent_id else None)
+        return categorized or (parts[0] if parts and process.creator_id != process.session_agent_id else None)
 
     def parts(self, process_id: int) -> tuple[ProcessPart, ...]:
         return self.kept.read("process_parts", lambda: tuple(self.queries.query(ProcessPart).filter(process_id=process_id).oldest().all_rows()),

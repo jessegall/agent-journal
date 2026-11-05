@@ -64,7 +64,7 @@ class DriverRules:
             if rule.start_line_rule and hook.event.is_resume:
                 return RuleOutcome.answered(RuleAnswer.allowed())
             control_return = rule.history and self.history.control_return(RuleHistoryKey(hook.agent_id, entry.name, hook.layer_ref))
-            with self.scopes.read_scope(rule.disabled_scopes, hook.agent_id):
+            with self.scopes.read_scope(rule.disabled_scopes, hook.agent_id, hook.environment_id):
                 answer = rule.answer(replace(hook, control_return=control_return))
         except Exception as error:
             self.errors.reported(["driver rule", entry.name], error, hook.environment_id)

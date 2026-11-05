@@ -1,6 +1,7 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
+from core.base.scope.environment_scope import EnvironmentScope
 from suites.coding.modules.workers.commands.remove_project_worktree.remove_project_worktree import RemoveProjectWorktree
 from suites.coding.modules.workers.support.project_worktrees import ProjectWorktrees
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -11,6 +12,7 @@ class RemoveProjectWorktreeHandler(Handler[RemoveProjectWorktree, str]):
     agent runs in stay, and git refuses one with changes."""
 
     command = RemoveProjectWorktree
+    disabled_scopes = [EnvironmentScope]
     transactional = False
 
     def __init__(self, worktrees: ProjectWorktrees, git: WorktreeGit) -> None:

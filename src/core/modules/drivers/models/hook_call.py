@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.foreign_run import ForeignRun
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.module.driver_entries import DRIVERS_MODULE
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
@@ -16,7 +17,7 @@ HOOK_CHANGE_NAMES = {HookEventName.COMPACT: COMPACTION, HookEventName.SESSION_ST
 
 
 @dataclass(frozen=True, kw_only=True)
-class HookCall(Model):
+class HookCall(EnvironmentScoped, Model):
     """One hook an agent program sent, or one tick on which a rule spoke, with the driver that answered and
     its answer; the rules asked, the layers and any command dropped are in its metadata."""
 
@@ -24,8 +25,8 @@ class HookCall(Model):
     model_name = "hook_call"
     cli_name = "hook-call"
 
-    agent_id: int
-    environment_id: int
+    session_agent_id: int
+    environment_id: int = 0
     creator_id: int
     hook: str
     firing: str

@@ -20,11 +20,11 @@ class SaveViewerLayoutHandler(Handler[SaveViewerLayout, ViewerLayout]):
     def handle(self, command: SaveViewerLayout, context: Context) -> ViewerLayout:
         if context.environment_id is None:
             raise Refusal("a layout belongs to an environment", "name one with --environment")
-        rows = self.queries.query(ViewerLayout).filter(environment_id=context.environment_id, person_id=context.actor.id, suite=command.suite,
+        rows = self.queries.query(ViewerLayout).filter(person_id=context.actor.id, suite=command.suite,
                                                        page=command.page, driver=command.driver).limited(1)
         if rows and command.base_version is not None and rows[0].version != command.base_version:
             raise Refusal(f"the layout was saved again since version {command.base_version}; it is at version {rows[0].version}",
                           f"journal viewer-layout current --suite {command.suite} --page {command.page} reads it")
-        layout = ViewerLayout(environment_id=context.environment_id, person_id=context.actor.id, creator_id=context.actor.id, suite=command.suite,
+        layout = ViewerLayout(person_id=context.actor.id, creator_id=context.actor.id, suite=command.suite,
                               page=command.page, driver=command.driver, layout=command.layout)
         return self.repository.merge(rows[0] if rows else None, layout, context)

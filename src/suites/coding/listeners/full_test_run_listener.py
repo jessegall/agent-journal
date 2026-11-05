@@ -49,8 +49,8 @@ class FullTestRunListener(SaveListener[Created[Process] | ProcessEnded]):
     def send_line(self, run: Process, tasks: tuple[Task, ...], declaration: NudgeDeclaration, context: Context) -> None:
         if tasks:
             names = ", ".join(f"task:{task.id}" for task in tasks)
-            self.nudger.send(run.agent_id, declaration, SOURCE, context, tasks=names)
+            self.nudger.send(run.session_agent_id, declaration, SOURCE, context, tasks=names)
 
     def testing_tasks(self, run: Process) -> tuple[Task, ...]:
-        waiting = self.queries.query(Task).filter(environment_id=run.environment_id, state=TaskState.TESTING).matching(IsNull("delegated_to")).oldest().all_rows()
+        waiting = self.queries.query(Task).filter(state=TaskState.TESTING).matching(IsNull("delegated_to")).oldest().all_rows()
         return tuple(task for task in waiting if task.updated_at is not None and run.created_at is not None and task.updated_at <= run.created_at)

@@ -19,7 +19,7 @@ class LoadSkillHandler(Handler[LoadSkill, AgentSkill]):
     def handle(self, command: LoadSkill, context: Context) -> AgentSkill:
         row = self.rows.find(command.agent_id, command.skill)
         if row is None:
-            row = self.repository.save(AgentSkill(agent_id=command.agent_id, creator_id=context.actor.id, skill=command.skill), context)
+            row = self.repository.save(AgentSkill(session_agent_id=command.agent_id, creator_id=context.actor.id, skill=command.skill), context)
         if row.state is AgentSkillState.LOADED and row.digest == command.digest:
             return row
         if row.state is AgentSkillState.LOADED:

@@ -1,6 +1,6 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-4b1a824a91a0")) { const style = document.createElement("style"); style.id = "window-styles-4b1a824a91a0"; style.textContent = ".step-cards[data-v-e37eba39]{display:flex;flex-direction:column;gap:8px;margin:0 0 8px;padding:0;list-style:none}.step-card[data-v-e37eba39]{display:flex;gap:8px;align-items:flex-start}.step-number[data-v-e37eba39]{flex:none;width:18px;padding-top:8px;color:var(--text-3);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}.step-moves[data-v-e37eba39]{display:flex;flex:none;gap:2px}textarea[data-v-e37eba39]{flex:1;box-sizing:border-box;min-width:0;padding:6px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;resize:vertical}.new-sequence[data-v-d20a3a95]{display:flex;flex-direction:column;gap:14px}.field[data-v-d20a3a95]{display:flex;flex-direction:column;gap:6px}.label[data-v-d20a3a95],.note[data-v-d20a3a95]{color:var(--text-3);font-size:12px}.note[data-v-d20a3a95]{flex:1}input[data-v-d20a3a95]{box-sizing:border-box;width:100%;padding:7px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:14px;font-weight:600}.runs[data-v-3929f0d4]{margin-top:20px}.runs-title[data-v-3929f0d4]{margin:0 0 8px;color:var(--text-3);font-size:12px;font-weight:600}.run[data-v-3929f0d4]{margin-bottom:10px;padding:12px 14px;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--border-2));border-radius:9px;background:var(--raised)}.run-head[data-v-3929f0d4]{display:flex;justify-content:space-between;color:var(--text-2);font-size:12.5px}.run-count[data-v-3929f0d4]{color:var(--text-3);font-size:11.5px}.run-steps[data-v-3929f0d4]{display:flex;flex-direction:column;gap:4px;margin:10px 0 0;padding-left:20px;color:var(--text-3);font-size:12.5px}.run-steps .done[data-v-3929f0d4]{text-decoration:line-through}.run-steps .current[data-v-3929f0d4]{color:var(--text);font-weight:500}.stop-guard[data-v-a947b5e6]{display:block;color:var(--text-3);font-size:12px}.guard[data-v-a947b5e6]{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0;font-size:12.5px}.guard-commands[data-v-a947b5e6]{flex:1;min-width:160px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}.steps-head[data-v-a947b5e6]{display:flex;gap:8px;align-items:center;margin-bottom:14px}.steps-title[data-v-a947b5e6]{color:var(--text-3);font-size:12px;font-weight:600}.steps-count[data-v-a947b5e6]{flex:1;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.track[data-v-a947b5e6]{margin:0;padding:0;list-style:none}.stop[data-v-a947b5e6]{--node: 24px;position:relative;display:flex;gap:14px;padding-bottom:18px}.stop[data-v-a947b5e6]:before{content:\"\";position:absolute;top:var(--node);bottom:0;left:calc(var(--node) / 2 - .5px);width:1px;background:var(--border-2)}.stop.end[data-v-a947b5e6]{align-items:center;padding-bottom:0}.stop.end[data-v-a947b5e6]:before{display:none}.node[data-v-a947b5e6]{display:inline-grid;flex:none;place-items:center;box-sizing:border-box;width:var(--node);height:var(--node);border:1px solid var(--border-2);border-radius:50%;background:var(--bg);color:var(--text-2);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums}.stop.start .node[data-v-a947b5e6]{border-color:color-mix(in srgb,var(--accent) 55%,transparent);background:color-mix(in srgb,var(--accent) 14%,var(--bg));color:var(--accent-text)}.stop.now .node[data-v-a947b5e6]{border-color:var(--accent);background:var(--accent);color:#fff}.stop.end .node[data-v-a947b5e6]{--node: 12px;margin:0 6px;background:var(--border-2)}.stop-body[data-v-a947b5e6]{display:flex;flex-direction:column;gap:4px;min-width:0;padding-top:2px}.stop-title[data-v-a947b5e6]{color:var(--accent-text);font-size:12px;font-weight:600}.stop-text[data-v-a947b5e6]{color:var(--text-2)}.now-label[data-v-a947b5e6]{align-self:flex-start;padding:0 7px;border-radius:99px;background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent-text);font-size:10.5px;font-weight:500;line-height:17px}.end-label[data-v-a947b5e6],.editor-note[data-v-a947b5e6]{color:var(--text-3);font-size:12px}.editor-foot[data-v-a947b5e6]{display:flex;gap:8px;align-items:center;margin-top:12px}.sequence-triggers[data-v-5cb0e0b8]{margin-bottom:14px}.head[data-v-5cb0e0b8]{display:flex;gap:8px;align-items:center;margin-bottom:6px}.title[data-v-5cb0e0b8],.label[data-v-5cb0e0b8],.note[data-v-5cb0e0b8]{color:var(--text-3);font-size:12px}.line[data-v-5cb0e0b8]{margin:0 0 2px;font-size:13px}.card[data-v-5cb0e0b8]{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:8px;padding:10px;border:1px solid var(--border);border-radius:8px}.card input[data-v-5cb0e0b8]{width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:13px}.foot[data-v-5cb0e0b8]{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.note[data-v-08a4dbfc]{flex:1;color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { openBlock as r, createElementBlock as f, Fragment as O, createElementVNode as l, renderList as D, toDisplayString as S, createVNode as c, unref as o, withCtx as y, createTextVNode as C, ref as N, computed as A, createBlock as R, withDirectives as B, vModelText as E, normalizeClass as z, createCommentVNode as T, vModelCheckbox as K } from "vue";
+if (!document.getElementById("window-styles-de47497477a0")) { const style = document.createElement("style"); style.id = "window-styles-de47497477a0"; style.textContent = ".step-cards[data-v-e37eba39]{display:flex;flex-direction:column;gap:8px;margin:0 0 8px;padding:0;list-style:none}.step-card[data-v-e37eba39]{display:flex;gap:8px;align-items:flex-start}.step-number[data-v-e37eba39]{flex:none;width:18px;padding-top:8px;color:var(--text-3);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}.step-moves[data-v-e37eba39]{display:flex;flex:none;gap:2px}textarea[data-v-e37eba39]{flex:1;box-sizing:border-box;min-width:0;padding:6px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;resize:vertical}.new-sequence[data-v-d20a3a95]{display:flex;flex-direction:column;gap:14px}.field[data-v-d20a3a95]{display:flex;flex-direction:column;gap:6px}.label[data-v-d20a3a95],.note[data-v-d20a3a95]{color:var(--text-3);font-size:12px}.note[data-v-d20a3a95]{flex:1}input[data-v-d20a3a95]{box-sizing:border-box;width:100%;padding:7px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:14px;font-weight:600}.runs[data-v-7b0ad51f]{margin-top:20px}.runs-title[data-v-7b0ad51f]{margin:0 0 8px;color:var(--text-3);font-size:12px;font-weight:600}.run[data-v-7b0ad51f]{margin-bottom:10px;padding:12px 14px;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--border-2));border-radius:9px;background:var(--raised)}.run-head[data-v-7b0ad51f]{display:flex;justify-content:space-between;color:var(--text-2);font-size:12.5px}.run-count[data-v-7b0ad51f]{color:var(--text-3);font-size:11.5px}.run-steps[data-v-7b0ad51f]{display:flex;flex-direction:column;gap:4px;margin:10px 0 0;padding-left:20px;color:var(--text-3);font-size:12.5px}.run-steps .done[data-v-7b0ad51f]{text-decoration:line-through}.run-steps .current[data-v-7b0ad51f]{color:var(--text);font-weight:500}.stop-guard[data-v-a947b5e6]{display:block;color:var(--text-3);font-size:12px}.guard[data-v-a947b5e6]{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0;font-size:12.5px}.guard-commands[data-v-a947b5e6]{flex:1;min-width:160px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}.steps-head[data-v-a947b5e6]{display:flex;gap:8px;align-items:center;margin-bottom:14px}.steps-title[data-v-a947b5e6]{color:var(--text-3);font-size:12px;font-weight:600}.steps-count[data-v-a947b5e6]{flex:1;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.track[data-v-a947b5e6]{margin:0;padding:0;list-style:none}.stop[data-v-a947b5e6]{--node: 24px;position:relative;display:flex;gap:14px;padding-bottom:18px}.stop[data-v-a947b5e6]:before{content:\"\";position:absolute;top:var(--node);bottom:0;left:calc(var(--node) / 2 - .5px);width:1px;background:var(--border-2)}.stop.end[data-v-a947b5e6]{align-items:center;padding-bottom:0}.stop.end[data-v-a947b5e6]:before{display:none}.node[data-v-a947b5e6]{display:inline-grid;flex:none;place-items:center;box-sizing:border-box;width:var(--node);height:var(--node);border:1px solid var(--border-2);border-radius:50%;background:var(--bg);color:var(--text-2);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums}.stop.start .node[data-v-a947b5e6]{border-color:color-mix(in srgb,var(--accent) 55%,transparent);background:color-mix(in srgb,var(--accent) 14%,var(--bg));color:var(--accent-text)}.stop.now .node[data-v-a947b5e6]{border-color:var(--accent);background:var(--accent);color:#fff}.stop.end .node[data-v-a947b5e6]{--node: 12px;margin:0 6px;background:var(--border-2)}.stop-body[data-v-a947b5e6]{display:flex;flex-direction:column;gap:4px;min-width:0;padding-top:2px}.stop-title[data-v-a947b5e6]{color:var(--accent-text);font-size:12px;font-weight:600}.stop-text[data-v-a947b5e6]{color:var(--text-2)}.now-label[data-v-a947b5e6]{align-self:flex-start;padding:0 7px;border-radius:99px;background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent-text);font-size:10.5px;font-weight:500;line-height:17px}.end-label[data-v-a947b5e6],.editor-note[data-v-a947b5e6]{color:var(--text-3);font-size:12px}.editor-foot[data-v-a947b5e6]{display:flex;gap:8px;align-items:center;margin-top:12px}.sequence-triggers[data-v-5cb0e0b8]{margin-bottom:14px}.head[data-v-5cb0e0b8]{display:flex;gap:8px;align-items:center;margin-bottom:6px}.title[data-v-5cb0e0b8],.label[data-v-5cb0e0b8],.note[data-v-5cb0e0b8]{color:var(--text-3);font-size:12px}.line[data-v-5cb0e0b8]{margin:0 0 2px;font-size:13px}.card[data-v-5cb0e0b8]{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:8px;padding:10px;border:1px solid var(--border);border-radius:8px}.card input[data-v-5cb0e0b8]{width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:13px}.foot[data-v-5cb0e0b8]{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.note[data-v-08a4dbfc]{flex:1;color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { openBlock as r, createElementBlock as _, Fragment as O, createElementVNode as l, renderList as D, toDisplayString as S, createVNode as c, unref as o, withCtx as y, createTextVNode as C, ref as N, computed as A, createBlock as R, withDirectives as B, vModelText as E, normalizeClass as z, createCommentVNode as T, vModelCheckbox as K } from "vue";
 import { Btn as w, Icon as V, useWindow as P, Dialog as F, TextDisplay as L, Segmented as H, useRows as U, RowCards as Y, removed as Q } from "@journal/window-kit";
 const W = (e, p) => {
   const u = e.__vccOpts || e;
@@ -20,10 +20,10 @@ const W = (e, p) => {
       const d = [...u.steps], [t] = d.splice(v, 1);
       d.splice(v + m, 0, t), a("steps", d);
     }
-    const _ = (v) => a("steps", u.steps.filter((m, d) => d !== v));
-    return (v, m) => (r(), f(O, null, [
+    const f = (v) => a("steps", u.steps.filter((m, d) => d !== v));
+    return (v, m) => (r(), _(O, null, [
       l("ol", X, [
-        (r(!0), f(O, null, D(e.steps, (d, t) => (r(), f("li", {
+        (r(!0), _(O, null, D(e.steps, (d, t) => (r(), _("li", {
           key: t,
           class: "step-card"
         }, [
@@ -72,7 +72,7 @@ const W = (e, p) => {
               disabled: e.steps.length === 1,
               "aria-label": `Remove step ${t + 1}`,
               "data-step-remove": "",
-              onClick: (i) => _(t)
+              onClick: (i) => f(t)
             }, {
               default: y(() => [
                 c(o(V), {
@@ -105,17 +105,17 @@ const W = (e, p) => {
   __name: "NewSequence",
   emits: ["close"],
   setup(e, { emit: p }) {
-    const u = p, a = P(), $ = N(""), q = N([""]), _ = N(""), v = A(() => $.value.trim() ? q.value.some((d) => !d.trim()) ? "Add instructions for each step." : "" : "Give the sequence a title.");
+    const u = p, a = P(), $ = N(""), q = N([""]), f = N(""), v = A(() => $.value.trim() ? q.value.some((d) => !d.trim()) ? "Add instructions for each step." : "" : "Give the sequence a title.");
     async function m() {
       const d = await a.run(["sequence", "make", $.value.trim(), "--steps", q.value.map((t) => t.trim()).join(" | ")]);
-      _.value = d.ok ? "" : d.error, d.ok && u("close");
+      f.value = d.ok ? "" : d.error, d.ok && u("close");
     }
     return (d, t) => (r(), R(o(F), {
       title: "New sequence",
       onClose: t[3] || (t[3] = (i) => u("close"))
     }, {
       foot: y(() => [
-        l("span", oe, S(_.value || v.value), 1),
+        l("span", oe, S(f.value || v.value), 1),
         c(o(w), {
           onClick: t[2] || (t[2] = (i) => u("close"))
         }, {
@@ -168,18 +168,18 @@ const W = (e, p) => {
   __name: "SequenceRuns",
   props: { runs: { type: Array, required: !0 } },
   setup(e) {
-    return (p, u) => e.runs.length ? (r(), f("section", de, [
+    return (p, u) => e.runs.length ? (r(), _("section", de, [
       u[0] || (u[0] = l("h3", { class: "runs-title" }, "Running now", -1)),
-      (r(!0), f(O, null, D(e.runs, (a) => (r(), f("div", {
+      (r(!0), _(O, null, D(e.runs, (a) => (r(), _("div", {
         key: a.id,
         class: "run"
       }, [
         l("div", ie, [
-          l("span", null, "Agent " + S(a.agent_id), 1),
+          l("span", null, "Agent " + S(a.session_agent_id), 1),
           l("span", ce, S(a.step_started ? `Step ${a.step_number} of ${JSON.parse(a.steps).length}` : `Step ${a.step_number} of ${JSON.parse(a.steps).length}, not started yet`), 1)
         ]),
         l("ol", pe, [
-          (r(!0), f(O, null, D(JSON.parse(a.steps), ($, q) => (r(), f("li", {
+          (r(!0), _(O, null, D(JSON.parse(a.steps), ($, q) => (r(), _("li", {
             key: q,
             class: z({ done: q + 1 < a.step_number, current: q + 1 === a.step_number })
           }, S($), 3))), 128))
@@ -187,7 +187,7 @@ const W = (e, p) => {
       ]))), 128))
     ])) : T("", !0);
   }
-}, ve = /* @__PURE__ */ W(me, [["__scopeId", "data-v-3929f0d4"]]), fe = { class: "sequence-steps" }, _e = { class: "steps-head" }, ge = { class: "steps-count" }, be = {
+}, ve = /* @__PURE__ */ W(me, [["__scopeId", "data-v-7b0ad51f"]]), _e = { class: "sequence-steps" }, fe = { class: "steps-head" }, ge = { class: "steps-count" }, be = {
   key: 0,
   class: "track"
 }, ke = { class: "node" }, ye = { class: "stop-body" }, qe = {
@@ -203,7 +203,7 @@ const W = (e, p) => {
   __name: "SequenceSteps",
   props: { sequence: { type: Object, required: !0 }, runs: { type: Array, required: !0 } },
   setup(e) {
-    const p = e, u = P(), a = N(null), $ = N(""), q = A(() => new Set(p.runs.map((k) => k.step_number))), _ = A(() => {
+    const p = e, u = P(), a = N(null), $ = N(""), q = A(() => new Set(p.runs.map((k) => k.step_number))), f = A(() => {
       var k;
       return (k = a.value) != null && k.some((s) => !s.trim()) ? "Add instructions for each step." : "";
     }), v = A(() => JSON.parse(p.sequence.step_guards || "[]")), m = N([]), d = (k) => v.value[k] ?? { file_edits_allowed: !0, allowed_commands: [] }, t = (k) => [d(k).file_edits_allowed ? "File edits allowed" : "File edits wait", ...d(k).allowed_commands].join(", ");
@@ -217,8 +217,8 @@ const W = (e, p) => {
       const k = m.value.map((n) => ({ file_edits_allowed: n.file_edits_allowed, allowed_commands: n.commands.split(",").map((g) => g.trim()).filter(Boolean) })), s = await u.run(["sequence", "edit", String(p.sequence.id), "--steps", ...a.value.map((n) => n.trim()), "--step-guards", JSON.stringify(k)]);
       $.value = s.ok ? "" : s.error, s.ok && (a.value = null);
     }
-    return (k, s) => (r(), f("section", fe, [
-      l("header", _e, [
+    return (k, s) => (r(), _("section", _e, [
+      l("header", fe, [
         s[2] || (s[2] = l("span", { class: "steps-title" }, "Steps", -1)),
         l("span", ge, S((a.value || e.sequence.steps).length), 1),
         a.value ? T("", !0) : (r(), R(o(w), {
@@ -237,12 +237,12 @@ const W = (e, p) => {
           _: 1
         }))
       ]),
-      a.value ? (r(), f(O, { key: 1 }, [
+      a.value ? (r(), _(O, { key: 1 }, [
         c(M, {
           steps: a.value,
           onSteps: b
         }, null, 8, ["steps"]),
-        (r(!0), f(O, null, D(m.value, (n, g) => (r(), f("div", {
+        (r(!0), _(O, null, D(m.value, (n, g) => (r(), _("div", {
           key: n.step,
           class: "guard",
           "data-step-guard-edit": ""
@@ -271,7 +271,7 @@ const W = (e, p) => {
           c(o(w), {
             kind: "primary",
             small: "",
-            disabled: !!_.value,
+            disabled: !!f.value,
             "data-sequence-save": "",
             onClick: h
           }, {
@@ -289,10 +289,10 @@ const W = (e, p) => {
             ])]),
             _: 1
           }),
-          l("span", Ne, S($.value || _.value), 1)
+          l("span", Ne, S($.value || f.value), 1)
         ])
-      ], 64)) : (r(), f("ol", be, [
-        (r(!0), f(O, null, D(e.sequence.steps, (n, g) => (r(), f("li", {
+      ], 64)) : (r(), _("ol", be, [
+        (r(!0), _(O, null, D(e.sequence.steps, (n, g) => (r(), _("li", {
           key: g,
           class: z(["stop", { now: q.value.has(g + 1) }])
         }, [
@@ -303,7 +303,7 @@ const W = (e, p) => {
               text: n
             }, null, 8, ["text"]),
             l("span", qe, S(t(g)), 1),
-            q.value.has(g + 1) ? (r(), f("span", $e, "In progress")) : T("", !0)
+            q.value.has(g + 1) ? (r(), _("span", $e, "In progress")) : T("", !0)
           ])
         ], 2))), 128)),
         s[3] || (s[3] = l("li", { class: "stop end" }, [
@@ -347,15 +347,15 @@ const Be = {
   __name: "SequenceTriggers",
   props: { sequence: { type: Object, required: !0 } },
   setup(e) {
-    const p = e, u = P(), a = x.map((i) => ({ key: i.value, label: i.label })), $ = A(() => JSON.parse(p.sequence.triggers || "[]")), q = A(() => G($.value)), _ = N(null), v = N(""), m = A(() => _.value ? Ve(_.value) : ""), d = () => _.value = $.value.map((i) => ({ ...j(), ...i }));
+    const p = e, u = P(), a = x.map((i) => ({ key: i.value, label: i.label })), $ = A(() => JSON.parse(p.sequence.triggers || "[]")), q = A(() => G($.value)), f = N(null), v = N(""), m = A(() => f.value ? Ve(f.value) : ""), d = () => f.value = $.value.map((i) => ({ ...j(), ...i }));
     async function t() {
-      const i = await u.run(["sequence", "edit", String(p.sequence.id), "--triggers", JSON.stringify(_.value.map(Te))]);
-      v.value = i.ok ? "" : i.error, i.ok && (_.value = null);
+      const i = await u.run(["sequence", "edit", String(p.sequence.id), "--triggers", JSON.stringify(f.value.map(Te))]);
+      v.value = i.ok ? "" : i.error, i.ok && (f.value = null);
     }
-    return (i, b) => (r(), f("section", Be, [
+    return (i, b) => (r(), _("section", Be, [
       l("header", Je, [
         b[3] || (b[3] = l("span", { class: "title" }, "Starts", -1)),
-        _.value ? T("", !0) : (r(), R(o(w), {
+        f.value ? T("", !0) : (r(), R(o(w), {
           key: 0,
           small: "",
           "data-sequence-triggers-edit": "",
@@ -371,8 +371,8 @@ const Be = {
           _: 1
         }))
       ]),
-      _.value ? (r(), f(O, { key: 1 }, [
-        (r(!0), f(O, null, D(_.value, (h, k) => (r(), f("div", {
+      f.value ? (r(), _(O, { key: 1 }, [
+        (r(!0), _(O, null, D(f.value, (h, k) => (r(), _("div", {
           key: k,
           class: "card",
           "data-sequence-trigger-card": ""
@@ -382,7 +382,7 @@ const Be = {
             value: h.trigger_type,
             onPick: (s) => h.trigger_type = s
           }, null, 8, ["options", "value", "onPick"]),
-          (r(!0), f(O, null, D(o(J)(h.trigger_type).fields, (s) => (r(), f(O, {
+          (r(!0), _(O, null, D(o(J)(h.trigger_type).fields, (s) => (r(), _(O, {
             key: s.name
           }, [
             l("label", xe, S(s.label), 1),
@@ -398,7 +398,7 @@ const Be = {
           c(o(w), {
             small: "",
             "data-sequence-trigger-remove": "",
-            onClick: (s) => _.value.splice(k, 1)
+            onClick: (s) => f.value.splice(k, 1)
           }, {
             default: y(() => [...b[4] || (b[4] = [
               C("Remove", -1)
@@ -410,7 +410,7 @@ const Be = {
           c(o(w), {
             small: "",
             "data-sequence-trigger-add": "",
-            onClick: b[0] || (b[0] = (h) => _.value.push(o(j)()))
+            onClick: b[0] || (b[0] = (h) => f.value.push(o(j)()))
           }, {
             default: y(() => [...b[5] || (b[5] = [
               C("Add a trigger", -1)
@@ -431,7 +431,7 @@ const Be = {
           }, 8, ["disabled"]),
           c(o(w), {
             small: "",
-            onClick: b[1] || (b[1] = (h) => _.value = null)
+            onClick: b[1] || (b[1] = (h) => f.value = null)
           }, {
             default: y(() => [...b[7] || (b[7] = [
               C("Cancel", -1)
@@ -440,7 +440,7 @@ const Be = {
           }),
           l("span", Ue, S(v.value || m.value), 1)
         ])
-      ], 64)) : (r(!0), f(O, { key: 0 }, D(q.value, (h) => (r(), f("p", {
+      ], 64)) : (r(!0), _(O, { key: 0 }, D(q.value, (h) => (r(), _("p", {
         key: h,
         class: "line",
         "data-sequence-trigger": ""
@@ -453,7 +453,7 @@ const Be = {
 }, Me = {
   __name: "SequenceCards",
   setup(e) {
-    const { rows: p, failure: u, loaded: a, act: $ } = U("sequence list", ["sequence.*"]), { rows: q } = U("sequence-run list", ["sequence_run.*", "sequence.*"]), _ = N(!1), v = N(null), m = N(!1), d = N(""), t = (n) => `${n.steps.length} steps · ${h(n) ? `${h(n)} running now` : G(JSON.parse(n.triggers || "[]"))[0]}`, i = A(() => p.value.find((n) => n.id === v.value) || null), b = A(() => q.value.filter((n) => n.sequence_id === v.value)), h = (n) => q.value.filter((g) => g.sequence_id === n.id).length;
+    const { rows: p, failure: u, loaded: a, act: $ } = U("sequence list", ["sequence.*"]), { rows: q } = U("sequence-run list", ["sequence_run.*", "sequence.*"]), f = N(!1), v = N(null), m = N(!1), d = N(""), t = (n) => `${n.steps.length} steps · ${h(n) ? `${h(n)} running now` : G(JSON.parse(n.triggers || "[]"))[0]}`, i = A(() => p.value.find((n) => n.id === v.value) || null), b = A(() => q.value.filter((n) => n.sequence_id === v.value)), h = (n) => q.value.filter((g) => g.sequence_id === n.id).length;
     function k(n) {
       d.value = "", m.value = !1, v.value = n.id;
     }
@@ -471,13 +471,13 @@ const Be = {
       head: (I) => `Sequence ${I.id}`,
       title: (I) => I.title,
       foot: t,
-      onNew: g[3] || (g[3] = (I) => _.value = !0),
+      onNew: g[3] || (g[3] = (I) => f.value = !0),
       onOpen: k
     }, {
       default: y(() => [
-        _.value ? (r(), R(ue, {
+        f.value ? (r(), R(ue, {
           key: 0,
-          onClose: g[0] || (g[0] = (I) => _.value = !1)
+          onClose: g[0] || (g[0] = (I) => f.value = !1)
         })) : T("", !0),
         i.value ? (r(), R(o(F), {
           key: 1,

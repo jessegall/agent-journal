@@ -28,7 +28,7 @@ class SetSettingHandler(Handler[SetSetting, CurrentSetting]):
             self.store.write_secret(entry.key, str(value), environment_id, context)
         else:
             self.store.write(entry.key, value, environment_id, context)
-        return self.values.current(entry.key, context.environment_id)
+        return self.values.current(entry.key)
 
     @staticmethod
     def environment(entry: SettingEntry, project: bool, environment_id: int | None) -> int | None:

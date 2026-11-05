@@ -2,6 +2,7 @@ import json
 from collections.abc import Sequence
 
 from core.base.query.queries import Queries
+from core.base.scope.scopes import Scopes
 from core.base.registry.setting_entry import SettingEntry
 from core.base.setting.setting_declaration import ANY_KEY
 from core.modules.settings.models.secret_setting import SecretSetting
@@ -19,8 +20,8 @@ class UndeclaredSettings:
     """Finds the stored setting rows the installed modules' declarations do not cover, by key and module; it
     only reads, and no row is ever deleted."""
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, queries: Queries, scopes: Scopes) -> None:
+        self.queries, self.scopes = queries, scopes
 
     def found(self, entries: Sequence[SettingEntry]) -> list[UndeclaredSetting]:
         reports: list[UndeclaredSetting] = []
@@ -53,7 +54,8 @@ class UndeclaredSettings:
         segments = key.split(".")
         return ".".join(segments[:MODULE_SEGMENTS]) if key.startswith(JOURNAL_PREFIX) else segments[0]
 
-    def current(self, entries: Sequence[SettingEntry], key: str, environment_id: int | None) -> CurrentSetting | None:
+    def current(self, entries: Sequence[SettingEntry], key: str) -> CurrentSetting | None:
+        environment_id = self.scopes.environment_id
         reports = [report for report in self.found(entries) if report.key == key]
         matching = next((report for report in reports if report.environment_id == environment_id), None) or next((report for report in reports if report.environment_id is None), None)
         if matching is None:

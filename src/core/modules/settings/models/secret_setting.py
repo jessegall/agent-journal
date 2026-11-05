@@ -8,6 +8,8 @@ class SecretSetting(Model):
     """The value of a setting declared secret, such as a token, for one environment or the whole project; the
     event log keeps its value out."""
 
+    shared_rows = True
+
     model_name = "secret_setting"
     cli_name = "secret-setting"
     hidden_fields = frozenset({"value"})

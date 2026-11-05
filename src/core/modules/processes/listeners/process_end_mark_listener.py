@@ -54,7 +54,7 @@ class ProcessEndMarkListener(CommitListener[Touched[Process]]):
         if process is None:
             return
         key = f"process:{process.id}"
-        shown = self.marks.keyed(process.environment_id, key)
+        shown = self.marks.keyed(key)
         if shown is not None and shown.state is ChatMarkState.ENDED:
             return
         part = self.visibility.visible_part(process)
@@ -71,10 +71,10 @@ class ProcessEndMarkListener(CommitListener[Touched[Process]]):
         if process.state in ENDED and output and reader:
             if reader.failed_pattern and re.search(reader.failed_pattern, self.folder.reader_text(process.id, output.reader_position), re.MULTILINE):
                 outcome = MarkOutcome.FAILED
-        self.bus.run(ShowMark(process.environment_id, ProcessMarkType.COMMAND, variant, key, text, agent_id=process.agent_id, detail=self.detail(process, logged),
+        self.bus.run(ShowMark(ProcessMarkType.COMMAND, variant, key, text, agent_id=process.session_agent_id, detail=self.detail(process, logged),
                               row_model="process", row_id=process.id, outcome=outcome, figure=figure,
                               fraction=process.progress / 100 if process.state not in ENDED else 0.0, ended=process.state in ENDED),
-                     self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=process.environment_id)
+                     self.actors.actor(MODULE_NAME), cause_id=logged.id)
 
     @staticmethod
     def text(process: Process, title: str, line: str) -> str:

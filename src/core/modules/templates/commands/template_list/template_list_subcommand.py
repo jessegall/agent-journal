@@ -25,8 +25,7 @@ class TemplateListSubcommand(ReadSubcommand[Sequence[Template]]):
         parser.add_argument("--purpose", help="Show templates with this purpose")
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[Template]:
-        environment_id = caller.environment_id
-        query = self.templates.active(environment_id).oldest()
+        query = self.templates.active().oldest()
         if arguments.target is not None:
             query = query.matching(TemplateTarget(arguments.target))
         if arguments.purpose is not None:

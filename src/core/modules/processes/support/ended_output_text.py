@@ -28,7 +28,7 @@ class EndedOutputText:
 
     def nudges(self, process: Process) -> tuple[Nudge, ...]:
         ended = (OUTPUT_ENDED.nudge(output=process.id, result=self.result(process)), *self.silent_failure_nudges(process))
-        if not self.writers.allows(Actor(process.agent_id, ActorType.AGENT)) or not self.visibility.is_visible(process):
+        if not self.writers.allows(Actor(process.session_agent_id, ActorType.AGENT)) or not self.visibility.is_visible(process):
             return ended
         program = self.read_program(process)
         draft = [READER_DRAFT.nudge(name=PurePath(program).name)] if self.needs_reader(process) and program else []

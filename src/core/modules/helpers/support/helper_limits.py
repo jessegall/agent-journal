@@ -25,27 +25,27 @@ class HelperLimits:
             return self.checked_agent(self.agents.find(context.actor.id))
         if context.environment_id is None:
             raise Refusal("a helper starts in one environment", "name it with --environment")
-        main = MainAgentFinder.newest(self.queries, context.environment_id)
+        main = MainAgentFinder.newest(self.queries)
         if main is None:
             raise Refusal("a helper starts under a running main agent", "start one with journal launch")
         return main
 
     def checked_agent(self, agent: Agent) -> Agent:
-        if agent.role not in self.suites.agent_policy(agent.environment_id).dispatch_roles:
+        if agent.role not in self.suites.agent_policy().dispatch_roles:
             raise Refusal("a helper starts no helper", "say in your report what should be done next")
         return agent
 
     def checked_slot(self, environment_id: int) -> None:
-        running = tuple(self.queries.query(Agent).filter(environment_id=environment_id, role=AgentRole.HELPER).matching(IsNull("ended_at")).all_rows())
-        limit = self.settings.number(HELPER_LIMIT, environment_id)
+        running = tuple(self.queries.query(Agent).filter(role=AgentRole.HELPER).matching(IsNull("ended_at")).all_rows())
+        limit = self.settings.number(HELPER_LIMIT)
         if len(running) >= limit:
             names = ", ".join(f"agent:{helper.id}" for helper in running)
             raise Refusal(f"{limit} helpers run here: {names}", "stop now: each report wakes you, then start again")
 
-    def checked_model(self, program: str, model: str, environment_id: int) -> str:
+    def checked_model(self, program: str, model: str) -> str:
         if not model:
             raise Refusal(f"this profile has no model for {program}", "add --model <model>")
-        names = self.models.allowed(self.providers.provider(program), environment_id)
+        names = self.models.allowed(self.providers.provider(program))
         if model not in names:
             raise Refusal(f"choose a model {program} may run: {', '.join(names)}", "add --model <model>")
         return model

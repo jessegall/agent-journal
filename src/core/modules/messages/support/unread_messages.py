@@ -14,10 +14,10 @@ class UnreadMessages:
     def __init__(self, queries: Queries, kept: KeptRows, agents: AgentRows) -> None:
         self.queries, self.kept, self.agents = queries, kept, agents
 
-    def addressed(self, environment_id: int, agent_id: int) -> tuple[Message, ...]:
-        messages = self.kept.read("messages", lambda: tuple(self.queries.query(Message).filter(environment_id=environment_id)
-                                  .matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().all_rows()),
-                                  "environment_id = ? AND read_at IS NULL", [environment_id], name="messages.unread_person_messages")
+    def addressed(self, agent_id: int) -> tuple[Message, ...]:
+        messages = self.kept.scoped_read("messages", lambda: tuple(self.queries.query(Message)
+                                           .matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().all_rows()),
+                                           "read_at IS NULL", name="messages.unread_person_messages")
         agent = self.agents.find(agent_id)
         return tuple(message for message in messages if message.target_agent_id == agent_id
                      or (message.target_agent_id is None and agent.role == AgentRole.MAIN))
@@ -29,5 +29,5 @@ class UnreadMessages:
         self.replace_cached(message, ())
 
     def replace_cached(self, message: Message, pending: tuple[Message, ...]) -> None:
-        self.kept.update("messages", lambda messages: tuple(sorted([row for row in messages if row.id != message.id] + list(pending), key=lambda row: row.id)),
-                         "environment_id = ? AND read_at IS NULL", [message.environment_id], name="messages.unread_person_messages")
+        self.kept.scoped_update("messages", lambda messages: tuple(sorted([row for row in messages if row.id != message.id] + list(pending), key=lambda row: row.id)),
+                                  "read_at IS NULL", name="messages.unread_person_messages")

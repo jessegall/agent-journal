@@ -1,6 +1,7 @@
 import re
 from dataclasses import dataclass
 
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.base.timestamp import Timestamp
@@ -12,7 +13,7 @@ COMMAND = re.compile(r"^!\s*\S")
 
 
 @dataclass(frozen=True, kw_only=True)
-class Pin(Model):
+class Pin(EnvironmentScoped, Model):
     """A link pinned above an environment's chat for the person to open on their return: an outside address, a
     row of the journal or a command written ! <command> that its button runs in the agent's terminal, with the
     words on its button, until it is closed."""
@@ -21,7 +22,7 @@ class Pin(Model):
     cli_name = "pin"
     search_fields = ["title"]
 
-    environment_id: int
+    environment_id: int = 0
     creator_id: int
     title: str
     link: str

@@ -6,7 +6,6 @@ from core.base.model.state_book import StateBook
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.query.query import PAGE_SIZE_ROWS
-from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plans.models.enums.plan_state import PlanState
@@ -26,6 +25,7 @@ class PlanBoardSubcommand(ReadSubcommand[PlanBoard]):
 
     cli_name = "plan"
     name = "board"
+    environment_refusal = "the board is shown for one environment"
 
     def __init__(self, queries: Queries, book: StateBook) -> None:
         self.queries, self.book = queries, book
@@ -41,10 +41,7 @@ class PlanBoardSubcommand(ReadSubcommand[PlanBoard]):
         parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
 
     def read(self, arguments: Namespace, caller: Caller) -> PlanBoard:
-        environment_id = caller.environment_id
-        if environment_id is None:
-            raise Refusal("the board is shown for one environment", "name it with --environment")
-        plans = self.queries.query(PlanCard).filter(environment_id=environment_id)
+        plans = self.queries.query(PlanCard)
         opened, closed = plans.matching(Among("state", self.open_states())), plans.matching(Among("state", CLOSED_STATES))
         shown = closed if arguments.closed else opened
         older = shown.matching(Less("id", arguments.before_id)) if arguments.before_id is not None else shown

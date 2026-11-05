@@ -26,5 +26,5 @@ class CurrentTasks:
         return CurrentTask(current[0], log)
 
     def has_brief_read(self, task_id: int, agent_id: int) -> bool:
-        return self.kept.read("task_reads", self.queries.query(TaskRead).filter(task_id=task_id, agent_id=agent_id).exists,
-                              "task_id = ? AND agent_id = ?", [task_id, agent_id], name="tasks.brief_read")
+        return self.kept.read("task_reads", self.queries.query(TaskRead).filter(task_id=task_id, session_agent_id=agent_id).exists,
+                              "task_id = ? AND session_agent_id = ?", [task_id, agent_id], name="tasks.brief_read")

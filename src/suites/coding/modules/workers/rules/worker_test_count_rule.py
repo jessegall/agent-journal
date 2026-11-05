@@ -24,14 +24,14 @@ class WorkerTestCountRule(DriverRule):
         self.listings, self.settings = listings, settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        limit = self.settings.number(WORKER_TEST_LIMIT, hook.environment_id)
+        limit = self.settings.number(WORKER_TEST_LIMIT)
         tool = hook.event.tool
         if limit <= 0 or tool is None or tool.shell is None:
             return RuleAnswer.allowed()
         for part in tool.shell.parts:
             if part.classification.category is not CommandCategory.TEST_RUN or ASKING_FLAGS.intersection(part.arguments):
                 continue
-            count = self.listings.previous_count(hook.environment_id, part.text)
+            count = self.listings.previous_count(part.text)
             if count > limit:
                 return RuleAnswer.refused(TEST_LIMIT_REFUSAL.nudge(count=count, limit=limit))
         return RuleAnswer.allowed()

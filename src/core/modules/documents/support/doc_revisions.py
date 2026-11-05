@@ -26,7 +26,7 @@ class DocRevisions:
         return next(iter(self.queries.query(DocRevision).filter(doc_id=doc_id).descending("number").limited(1)), None)
 
     def record(self, doc: Doc, context: Context) -> None:
-        latest, closes_at = self.latest(doc.id), Timestamp(context.timestamp.value + timedelta(minutes=self.settings.number(WINDOW_SETTING, None)))
+        latest, closes_at = self.latest(doc.id), Timestamp(context.timestamp.value + timedelta(minutes=self.settings.project.number(WINDOW_SETTING)))
         if latest is None:
             self.repository.save(DocRevision(doc_id=doc.id, creator_id=context.actor.id, number=1, title=doc.title, abstract=doc.abstract, body=doc.body,
                                              change=FIRST_CHANGE, closes_at=closes_at), context)

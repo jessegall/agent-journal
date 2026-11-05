@@ -55,7 +55,7 @@ __pycache__/
 /.agents/skills/commandments*
 /.claude/skills/style-*
 /.codex/skills/journal*
-.venv/
+.venv
 
 /.env
 # machine-specific: written by the installer with this machine's paths

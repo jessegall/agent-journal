@@ -17,7 +17,7 @@ class SequenceStartedMarkListener(MarkListener[Created[SequenceRun]]):
 
     def handle(self, event: Created[SequenceRun], logged: LoggedEvent) -> None:
         run = event.row
-        if self.event_rows.required(Agent, run.agent_id).role != AgentRole.MAIN:
+        if self.event_rows.required(Agent, run.session_agent_id).role != AgentRole.MAIN:
             return
         sequence = self.event_rows.required(Sequence, run.sequence_id)
-        self.show(logged, SequenceMarkType.SEQUENCE, SequenceMarkVariant.STARTED, f"Sequence {sequence.id} started: {sequence.title}", run.environment_id, None, "sequence", sequence.id)
+        self.show(logged, SequenceMarkType.SEQUENCE, SequenceMarkVariant.STARTED, f"Sequence {sequence.id} started: {sequence.title}", None, "sequence", sequence.id)

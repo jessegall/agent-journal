@@ -30,7 +30,7 @@ class RecordWorkerReportSubcommand(Subcommand[RecordWorkerReport, Message]):
         worker = workers[0]
         if worker.parent_id is None:
             raise Refusal("the worker has no main agent", f"journal agent show {worker.id}")
-        return RecordWorkerReport(worker.id, worker.environment_id, worker.parent_id, arguments.text)
+        return RecordWorkerReport(worker.id, worker.parent_id, arguments.text)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Message):

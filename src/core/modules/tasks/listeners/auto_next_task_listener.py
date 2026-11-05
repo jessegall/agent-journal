@@ -28,8 +28,8 @@ class AutoNextTaskListener(CommitListener[Moved[Task]]):
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
         closed_task = event.row
-        assigner = self.assigners.assigner(closed_task.environment_id)
-        if assigner is None or not assigner.is_automatic(closed_task.environment_id):
+        assigner = self.assigners.assigner()
+        if assigner is None or not assigner.is_automatic():
             return
         holder_id = event.old_row.holder_id
         if holder_id is None:
@@ -39,6 +39,6 @@ class AutoNextTaskListener(CommitListener[Moved[Task]]):
             return
         excluded_id = closed_task.id if event.move is TaskLifecycle.release else None
         select_next = assigner.urgent if self.current.started_tasks(holder_id) else assigner.following
-        next_row = select_next(closed_task.environment_id, excluded_id)
+        next_row = select_next(excluded_id)
         if next_row is not None:
-            self.bus.run(StartTask(next_row.id), Actor(holder_id, ActorType.AGENT), cause_id=logged.id, environment_id=logged.environment_id)
+            self.bus.run(StartTask(next_row.id), Actor(holder_id, ActorType.AGENT), cause_id=logged.id)

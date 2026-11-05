@@ -21,11 +21,11 @@ class ShowMarkHandler(Handler[ShowMark, ChatMark]):
         self.marks, self.repository = marks, repository
 
     def handle(self, command: ShowMark, context: Context) -> ChatMark:
-        existing = self.marks.keyed(command.environment_id, command.key)
+        existing = self.marks.keyed(command.key)
         detail = command.detail[:DETAIL_CHARACTERS]
         if existing is None:
             ended_at = context.timestamp if command.ended else None
-            saved = self.repository.save(ChatMark(environment_id=command.environment_id, agent_id=command.agent_id, creator_id=context.actor.id, type=command.type.value,
+            saved = self.repository.save(ChatMark(session_agent_id=command.agent_id, creator_id=context.actor.id, type=command.type.value,
                                                  variant=command.variant.value, key=command.key, text=command.text, detail=detail, lines=command.detail,
                                                  target_model=command.row_model, target_id=command.row_id, outcome=command.outcome, figure=command.figure,
                                                  fraction=command.fraction, state=ChatMarkState.ENDED if command.ended else ChatMarkState.SHOWN, ended_at=ended_at), context)
@@ -33,7 +33,7 @@ class ShowMarkHandler(Handler[ShowMark, ChatMark]):
             return saved
         if existing.state is ChatMarkState.ENDED:
             raise Refusal(f"chat mark {command.key} has ended", "show a mark under a new key")
-        edited = existing.changed(agent_id=command.agent_id or existing.agent_id, variant=command.variant.value, text=command.text, detail=detail, lines=command.detail, target_model=command.row_model, target_id=command.row_id,
+        edited = existing.changed(session_agent_id=command.agent_id or existing.session_agent_id, variant=command.variant.value, text=command.text, detail=detail, lines=command.detail, target_model=command.row_model, target_id=command.row_id,
                                   outcome=command.outcome, figure=command.figure, fraction=command.fraction)
         saved = self.repository.save_change(existing, edited.end(context.timestamp, context.actor) if command.ended else edited, context)
         self.marks.remember(saved)

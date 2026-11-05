@@ -63,7 +63,7 @@ def test_the_last_delivery_queues_the_tests_and_the_journal_starts_them(new_stor
     expect_answers(started, 1)
     story.expect_text("proof show 1", "state: running", "test_command: pytest tests/cart.py", actor=story.agent)
     expect_marks_text(story, "queued")
-    queue = json.loads(story.run("queue list --environment-id 1 --json").output_text)
+    queue = json.loads(story.run("queue list --environment 1 --json").output_text)
     story.expect_rows(queue["total"] == 1, queue["rows"][0]["owner_agent_id"] == worker.id,
                       queue["rows"][0]["output_id"] == started[0])
     story.expect_rows(queue["running"][0]["owner_agent_id"] == worker.id, queue["running"][0]["task_id"] == 1)

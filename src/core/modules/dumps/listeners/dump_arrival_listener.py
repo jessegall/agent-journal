@@ -21,7 +21,5 @@ class DumpArrivalListener(SaveListener[Created[Dump]]):
 
     def handle(self, event: Created[Dump], context: Context) -> None:
         dump = event.row
-        environment_id = context.environment_id
-        agents = self.agents.main_agents(environment_id) if environment_id is not None else self.agents.running_mains()
-        for agent in agents:
+        for agent in self.agents.running_mains():
             self.nudger.send(agent.id, DUMP_ARRIVED, LINE_SOURCE, context, dump=dump.id)

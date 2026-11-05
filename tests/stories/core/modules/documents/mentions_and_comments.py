@@ -34,7 +34,7 @@ def test_a_comment_goes_to_the_chat_naming_the_text_and_lists_on_the_text(new_st
     story.run('doc make "Cart rules" --abstract "How the cart counts money" --body "## Totals\\nin cents"', actor=story.user)
     story.expect_text("doc comment 1 \"Use cents everywhere\" --environment main", "comment written as message", actor=story.user)
     story.expect_text("doc comments 1", "Use cents everywhere", actor=story.user)
-    story.expect_text("message feed --environment-id 1", "Use cents everywhere", actor=story.user)
+    story.expect_text("message feed --environment 1", "Use cents everywhere", actor=story.user)
 
 
 def test_a_comment_on_a_report_and_an_empty_comment(new_story):

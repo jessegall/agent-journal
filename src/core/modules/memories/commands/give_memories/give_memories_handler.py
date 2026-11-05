@@ -15,4 +15,4 @@ class GiveMemoriesHandler(Handler[GiveMemories, None]):
 
     def handle(self, command: GiveMemories, context: Context) -> None:
         for memory_id in command.memory_ids:
-            self.repository.save(MemoryDelivery(memory_id=memory_id, agent_id=command.agent_id, creator_id=context.actor.id, cause=command.cause), context)
+            self.repository.save(MemoryDelivery(memory_id=memory_id, session_agent_id=command.agent_id, creator_id=context.actor.id, cause=command.cause), context)

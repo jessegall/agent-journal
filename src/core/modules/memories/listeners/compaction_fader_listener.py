@@ -19,4 +19,4 @@ class CompactionFaderListener(CommitListener[AgentCompacted]):
 
     def handle(self, event: AgentCompacted, logged: LoggedEvent) -> None:
         call = event.row
-        self.bus.run(FadeMemories(call.agent_id), Actor.core(), cause_id=logged.id, environment_id=logged.environment_id)
+        self.bus.run(FadeMemories(call.session_agent_id), Actor.core(), cause_id=logged.id)

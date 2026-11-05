@@ -18,14 +18,14 @@ class MarkTracker:
         self.queries = queries
 
     def open_marks(self, agent_id: int) -> list[MemoryMark]:
-        return list(self.queries.query(MemoryMark).filter(agent_id=agent_id, state=MarkState.OPEN).all_rows())
+        return list(self.queries.query(MemoryMark).filter(session_agent_id=agent_id, state=MarkState.OPEN).all_rows())
 
     def next_reached(self, agent_id: int, percent: int, marks: Sequence[int]) -> int | None:
         passed = [mark for mark in marks if mark <= percent]
         if not passed:
             return None
-        compactions = self.queries.query(HookCall).filter(agent_id=agent_id, hook=HookEventName.COMPACT).descending("id").limited(1)
+        compactions = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.COMPACT).descending("id").limited(1)
         compaction_text = next((call.created_at.text for call in compactions if call.created_at is not None), "")
         highest = max(passed)
-        reached = self.queries.query(MemoryMark).filter(agent_id=agent_id).matching(Greater("opened_at", compaction_text)).matching(Minimum("percent", highest))
+        reached = self.queries.query(MemoryMark).filter(session_agent_id=agent_id).matching(Greater("opened_at", compaction_text)).matching(Minimum("percent", highest))
         return None if reached.exists() else highest

@@ -24,14 +24,14 @@ class WorkerStepCheck:
 
     def check(self, worktree: Worktree, events: Sequence[str], hint: str) -> None:
         changes = self.git.comparison(worktree)
-        data = {"worker": worktree.agent_id, "task": worktree.task_id, "branch": worktree.branch, "base": changes.base,
+        data = {"worker": worktree.session_agent_id, "task": worktree.task_id, "branch": worktree.branch, "base": changes.base,
                 "worktree": worktree.folder, "files": list(changes.files)}
         environment = self.environments.find(worktree.environment_id).name
         for event in events:
-            refusal = self.step_check.refusal(event, data, environment, self.clock.timestamp(), worktree.agent_id)
+            refusal = self.step_check.refusal(event, data, environment, self.clock.timestamp(), worktree.session_agent_id)
             if refusal:
                 if event in DELIVERY_EVENTS:
-                    self.bus.run(RecordWorkerRefusal(worktree.id), Actor(worktree.agent_id, ActorType.AGENT), environment_id=worktree.environment_id)
+                    self.bus.run(RecordWorkerRefusal(worktree.id), Actor(worktree.session_agent_id, ActorType.AGENT), environment_id=worktree.environment_id)
                 raise Refusal(refusal, hint)
         if any(event in DELIVERY_EVENTS for event in events):
-            self.bus.run(ClearWorkerRefusals(worktree.id), Actor(worktree.agent_id, ActorType.AGENT), environment_id=worktree.environment_id)
+            self.bus.run(ClearWorkerRefusals(worktree.id), Actor(worktree.session_agent_id, ActorType.AGENT), environment_id=worktree.environment_id)

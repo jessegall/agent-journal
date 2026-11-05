@@ -25,7 +25,7 @@ def test_the_process_queue_runs_live_in_the_viewer_with_saved_controls_and_inlin
     for process in (running, waiting):
         story.container.get(OutputFolder).beat(process.id, Timestamp(datetime.now(timezone.utc)))
     story.run_listeners()
-    story.expect_text("queue list --json --environment-id 1", '"waiting_count": 1', '"line": "make package"')
+    story.expect_text("queue list --json --environment 1", '"waiting_count": 1', '"line": "make package"')
     with server_story(story) as server:
         expect_browser(server, "processQueue.browser.mjs", ["/tmp/journal-worker-464-process-queue.png"])
 

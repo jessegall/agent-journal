@@ -23,6 +23,6 @@ class SilentWorkerLineListener(CommitListener[Created[AgentLine]]):
     def handle(self, event: Created[AgentLine], logged: LoggedEvent) -> None:
         if event.row.source != SILENT_AGENT_SOURCE:
             return
-        worker = self.queries.query(Agent).find(event.row.agent_id)
+        worker = self.queries.query(Agent).find(event.row.session_agent_id)
         if worker.role == CodingAgentRole.WORKER:
             self.worker_resume.restart(worker, event.row, Actor.core())

@@ -29,7 +29,7 @@ class Memory(AgentScoped, EnvironmentScoped, Model):
     lifecycle = MemoryLifecycle
     table = "memories"
 
-    environment_id: int
+    environment_id: int = 0
     agent_id: int | None = None
     task_id: int | None = None
     creator_id: int

@@ -20,8 +20,7 @@ class ProjectFileShowSubcommand(ReadSubcommand[ProjectFileText]):
         parser.add_argument("path")
 
     def read(self, arguments: Namespace, caller: Caller) -> ProjectFileText:
-        environment_id = caller.environment_id
-        return self.files.shown(environment_id, arguments.path)
+        return self.files.shown(arguments.path)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ProjectFileText):

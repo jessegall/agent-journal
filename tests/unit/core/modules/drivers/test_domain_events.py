@@ -20,7 +20,7 @@ def test_each_hook_event_has_its_name():
 
 
 def test_a_new_hook_call_names_its_change_and_a_second_save_does_not():
-    call = HookCall(agent_id=1, environment_id=1, creator_id=1, hook=HookEventName.STOP, firing="f", answer=HookAnswer.REFUSED)
+    call = HookCall(session_agent_id=1, environment_id=1, creator_id=1, hook=HookEventName.STOP, firing="f", answer=HookAnswer.REFUSED)
     assert call.change_name(None) == "stop_refused"
     assert replace(call, answer=HookAnswer.ALLOWED).change_name(None) == "stop_allowed"
     assert replace(call, hook=HookEventName.COMPACT).change_name(None) == "compact"

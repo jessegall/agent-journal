@@ -14,4 +14,4 @@ class RecordMenuAnswerHandler(Handler[RecordMenuAnswer, MenuAnswer]):
         self.repository = repository
 
     def handle(self, command: RecordMenuAnswer, context: Context) -> MenuAnswer:
-        return self.repository.save(MenuAnswer(agent_id=command.agent_id, creator_id=context.actor.id, question=command.question, answer=command.answer), context)
+        return self.repository.save(MenuAnswer(session_agent_id=command.agent_id, creator_id=context.actor.id, question=command.question, answer=command.answer), context)

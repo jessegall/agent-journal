@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.chat.mark_outcome import MarkOutcome
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.view_model import ViewModel
 from core.base.timestamp import Timestamp
 from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
@@ -8,7 +9,7 @@ from core.modules.messages.models.support.views import MAIN_CHAT_MARKS_SELECT
 
 
 @dataclass(frozen=True, kw_only=True)
-class MainChatMark(ViewModel):
+class MainChatMark(EnvironmentScoped, ViewModel):
     """A mark shown in the environment's main chat."""
 
     cli_name = "chat-mark"
@@ -18,7 +19,7 @@ class MainChatMark(ViewModel):
 
     id: int
     environment_id: int
-    agent_id: int | None
+    session_agent_id: int | None
     type: str
     variant: str
     mark_key: str

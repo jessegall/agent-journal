@@ -35,10 +35,10 @@ class PeerMessageRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         provider = self.providers.provider(hook.event.program)
         path = provider.transcript_path(hook.event)
-        commands = [RecordPeerMessage(hook.environment_id, hook.agent_id, note.sender, note.text, note.key) for note in self.new_notes(hook.agent_id, provider.peer_notes(path))] if path is not None else []
+        commands = [RecordPeerMessage(hook.agent_id, note.sender, note.text, note.key) for note in self.new_notes(hook.agent_id, provider.peer_notes(path))] if path is not None else []
         if self.is_agent_message(hook):
             tool_input = hook.event.tool_input()
-            commands.append(RecordPeerMessage(hook.environment_id, hook.agent_id, f"{tool_input.get('to', '')}", f"{tool_input.get('message', '')}", f"{hook.event.firing}", True))
+            commands.append(RecordPeerMessage(hook.agent_id, f"{tool_input.get('to', '')}", f"{tool_input.get('message', '')}", f"{hook.event.firing}", True))
         return RuleAnswer.allowed().running(*commands)
 
     def is_agent_message(self, hook: AgentHook) -> bool:
@@ -48,5 +48,5 @@ class PeerMessageRule(DriverRule):
     def new_notes(self, agent_id: int, notes: Sequence[PeerNote]) -> list[PeerNote]:
         if not notes:
             return []
-        saved_keys = {message.peer_key for message in self.queries.query(Message).filter(agent_id=agent_id, type=MessageType.PEER).matching(Among("peer_key", tuple(note.key for note in notes))).all_rows()}
+        saved_keys = {message.peer_key for message in self.queries.query(Message).filter(session_agent_id=agent_id, type=MessageType.PEER).matching(Among("peer_key", tuple(note.key for note in notes))).all_rows()}
         return [note for note in notes if note.key not in saved_keys]

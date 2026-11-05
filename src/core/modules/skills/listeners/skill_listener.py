@@ -24,4 +24,4 @@ class SkillListener(CommitListener[E]):
         self.agents = agents
 
     def run(self, logged: LoggedEvent, command: Command[object]) -> None:
-        self.bus.run(command, self.actors.actor(self.module_name), cause_id=logged.id, environment_id=logged.environment_id)
+        self.bus.run(command, self.actors.actor(self.module_name), cause_id=logged.id)

@@ -35,4 +35,4 @@ class MergeWorkerSubcommand(Subcommand[MergeWorker, MergeOutcome]):
         output.row(value.worktree)
         if value.conflicts:
             output.line(f"merging {value.worktree.base_branch} in clashed on {', '.join(value.conflicts)}: task {value.worktree.task_id} went back to"
-                        f" worker {value.worktree.agent_id}")
+                        f" worker {value.worktree.session_agent_id}")

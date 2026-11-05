@@ -165,8 +165,8 @@ def test_a_test_reader_with_no_count_is_not_proper_and_a_build_reader_with_none_
     story = new_story(fixture=BuilderStarted)
     reader = Reader(creator_id=story.agent.id, name="proper", type=ReaderType.PATTERN, commands="custom*", title="Building", lines_pattern="done", summary_pattern="done")
     demands = story.container.get(ReaderDemands)
-    story.expect_rows("--count" in demands.reason(PartSpec("custom test", "custom", category=CommandCategory.TEST_RUN), reader, ReaderSampleScope(1, story.agent.id, "custom test")))
-    story.expect_rows(not demands.reason(PartSpec("custom build", "custom", category=CommandCategory.BUILD), reader, ReaderSampleScope(1, story.agent.id, "custom build")))
+    story.expect_rows("--count" in demands.reason(PartSpec("custom test", "custom", category=CommandCategory.TEST_RUN), reader, ReaderSampleScope(story.agent.id, "custom test")))
+    story.expect_rows(not demands.reason(PartSpec("custom build", "custom", category=CommandCategory.BUILD), reader, ReaderSampleScope(story.agent.id, "custom build")))
 
 
 def test_a_run_the_journal_started_is_never_held(new_story):

@@ -17,8 +17,6 @@ class OwnEnvironmentGuard(Guard[Changed[DockItem]]):
         self.rows = rows
 
     def check(self, event: Changed[DockItem], context: Context) -> None:
-        item, environment_id = event.row, context.environment_id
-        if environment_id is None:
-            return
-        if self.rows.required(Dock, item.dock_id).environment_id != environment_id:
+        item = event.row
+        if self.rows.find(Dock, item.dock_id) is None:
             raise Refusal(f"dock item {item.id} belongs to another environment's dock", "name its own environment with --environment")

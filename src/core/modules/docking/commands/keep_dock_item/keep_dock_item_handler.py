@@ -15,4 +15,5 @@ class KeepDockItemHandler(Handler[KeepDockItem, DockItem]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: KeepDockItem, context: Context) -> DockItem:
-        return self.repository.save(self.queries.query(DockItem).find(command.item_id).changed(kept=True, leaves_at=None), context)
+        item = self.queries.query(DockItem).find(command.item_id)
+        return self.repository.save_change(item, item.changed(kept=True, leaves_at=None), context)

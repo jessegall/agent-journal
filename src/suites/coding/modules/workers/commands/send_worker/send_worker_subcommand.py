@@ -28,5 +28,5 @@ class SendWorkerSubcommand(Subcommand[SendWorker, AgentLine]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, AgentLine):
-            needs_launcher = self.agents.find(value.agent_id).ended_at is not None and not self.home.socket(LAUNCHER_SOCKET).exists()
-            output.line(f"worker {value.agent_id} has the job waiting; an ended worker needs the launcher to start again" if needs_launcher else f"worker {value.agent_id} takes the job")
+            needs_launcher = self.agents.find(value.session_agent_id).ended_at is not None and not self.home.socket(LAUNCHER_SOCKET).exists()
+            output.line(f"worker {value.session_agent_id} has the job waiting; an ended worker needs the launcher to start again" if needs_launcher else f"worker {value.session_agent_id} takes the job")

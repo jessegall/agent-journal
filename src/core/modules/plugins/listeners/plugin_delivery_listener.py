@@ -46,7 +46,7 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         environment = self.queries.query(Environment).find(delivery.environment_id).name
         data: object = json.loads(delivery.data)
         plugin_event = PluginEvent(delivery.event, {str(key): value for key, value in data.items()} if is_mapping(data) else {})
-        call = PluginCall(manifest, plugin_event, environment, self.clock.timestamp(), self.settings.values(plugin, manifest), delivery.agent_id)
+        call = PluginCall(manifest, plugin_event, environment, self.clock.timestamp(), self.settings.values(plugin, manifest), delivery.session_agent_id)
         try:
             answer = self.program.run(call, DELIVERY_LIMIT_MS)
         except PluginFaultError as fault:
@@ -55,9 +55,9 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         if plugin.fault_count:
             self.record(logged, delivery, ClearPluginFaults(delivery.plugin_id))
         if answer.line:
-            PluginQueue(self.folders.data(plugin.name)).add(environment, delivery.agent_id, answer.line, f"delivery-{delivery.id}")
+            PluginQueue(self.folders.data(plugin.name)).add(environment, delivery.session_agent_id, answer.line, f"delivery-{delivery.id}")
         if answer.has_output():
-            self.record(logged, delivery, AddPluginOutput(plugin.id, delivery.environment_id, delivery.agent_id, answer.output))
+            self.record(logged, delivery, AddPluginOutput(plugin.id, delivery.session_agent_id, answer.output))
 
     def record(self, logged: LoggedEvent, delivery: PluginDelivery, command: Command[object]) -> None:
-        self.bus.run(command, self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=delivery.environment_id)
+        self.bus.run(command, self.actors.actor(MODULE_NAME), cause_id=logged.id)

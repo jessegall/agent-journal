@@ -20,13 +20,13 @@ class ProcessPartQuery(Query[ProcessPart]):
     def process(self, process_id: int) -> Self:
         return self.filter(process_id=process_id).ordered("position")
 
-    def kept_samples(self, patterns: Sequence[str], environment_id: int | None = None) -> Self:
-        return self.matching(KeptOutputPart(environment_id)).matching(CommandMatches(patterns)).newest()
+    def kept_samples(self, patterns: Sequence[str]) -> Self:
+        return self.matching(KeptOutputPart(self.database.scope_environment_id)).matching(CommandMatches(patterns)).newest()
 
     def reader_samples(self, readers: Sequence[Reader], limit: int) -> dict[int, tuple[ProcessPart, ...]]:
         if not readers:
             return {}
-        queries = {reader.id: self.kept_samples(tuple(pattern.strip() for pattern in reader.commands.split(",")), reader.environment_id).select.sliced(limit, 0).statement()
+        queries = {reader.id: self.kept_samples(tuple(pattern.strip() for pattern in reader.commands.split(","))).select.sliced(limit, 0).statement()
                    for reader in readers}
         samples: dict[int, list[ProcessPart]] = {reader.id: [] for reader in readers}
         for row in self.database.rows(ReaderSampleQueries(queries).statement()):

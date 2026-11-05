@@ -3,6 +3,7 @@ from enum import StrEnum
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import STATE, Model
 from core.base.model.state_book import StateBook
 from core.base.model.table import Table
@@ -13,6 +14,9 @@ from core.base.query.queries import Queries
 from core.base.query.query import PAGE_SIZE_ROWS
 from core.base.cli.subcommand_columns import FOREIGN_KEY_SUFFIX, parser_argument
 from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
+
+
+SESSION_PREFIX = "session_"
 
 
 class ListSubcommand(ReadSubcommand[Page[Model]]):
@@ -61,10 +65,11 @@ class ListSubcommand(ReadSubcommand[Page[Model]]):
             output.page(value, self.columns)
 
     def filter_columns(self) -> tuple[str, ...]:
-        return tuple(column for column, value_type in self.table.types.items()
-                     if column != "id" and (column in self.table.model.filter_fields or issubclass(value_type, StrEnum)
-                                            or (column.endswith(FOREIGN_KEY_SUFFIX) and value_type is int)))
+        columns = (column for column, value_type in self.table.types.items()
+                   if column != "id" and (column in self.table.model.filter_fields or issubclass(value_type, StrEnum)
+                                          or (column.endswith(FOREIGN_KEY_SUFFIX) and value_type is int)))
+        return tuple(column for column in columns if column != ENVIRONMENT_COLUMN or not issubclass(self.table.model, EnvironmentScoped))
 
 
 def filter_flag(column: str) -> str:
-    return column.removesuffix(FOREIGN_KEY_SUFFIX).replace("_", "-")
+    return column.removeprefix(SESSION_PREFIX).removesuffix(FOREIGN_KEY_SUFFIX).replace("_", "-")

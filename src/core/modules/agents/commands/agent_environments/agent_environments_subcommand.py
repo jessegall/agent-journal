@@ -2,6 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
+from core.base.scope.environment_scope import EnvironmentScope
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.support.active_environments import ActiveEnvironments
@@ -13,6 +14,7 @@ class AgentEnvironmentsSubcommand(ReadSubcommand[ActiveEnvironments]):
 
     cli_name = "agent"
     name = "environments"
+    disabled_scopes = [EnvironmentScope]
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

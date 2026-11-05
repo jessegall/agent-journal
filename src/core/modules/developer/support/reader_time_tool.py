@@ -13,9 +13,9 @@ class ReaderTimeTool(PerformanceTool):
         self.numbers, self.settings = numbers, settings
 
     def measure(self, *values: object) -> object:
-        reader, points, environment_id = values
-        if not isinstance(reader, str) or not isinstance(points, int) or not isinstance(environment_id, int):
-            raise TypeError("a reader's cost needs its name, points and environment")
-        if self.settings.value(HOOK_DURATIONS_SETTING, environment_id) is True:
+        reader, points = values
+        if not isinstance(reader, str) or not isinstance(points, int):
+            raise TypeError("a reader's cost needs its name and points")
+        if self.settings.value(HOOK_DURATIONS_SETTING) is True:
             self.numbers.add(f"reader {reader}", points)
         return None

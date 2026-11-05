@@ -29,7 +29,7 @@ class SendReadersNoticeHandler(Handler[SendReadersNotice, None]):
         samples = self.judge.reader_samples(readers)
         count = sum(self.has_missing_fields(reader, samples[reader.id]) for reader in readers)
         if count:
-            for agent in MainAgentFinder.rows(self.queries, command.environment_id):
+            for agent in MainAgentFinder.rows(self.queries):
                 self.nudger.send(agent.id, READERS_MISSING_FIELDS, SOURCE, context, count=count)
 
     def has_missing_fields(self, reader: Reader, samples: Sequence[ProcessPart]) -> bool:

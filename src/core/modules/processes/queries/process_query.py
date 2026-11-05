@@ -27,14 +27,11 @@ class ProcessQuery(Query[Process]):
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, Process)
 
-    def environment(self, environment_id: int) -> Self:
-        return self.filter(environment_id=environment_id)
-
     def running(self) -> Self:
         return self.matching(Among("state", OPEN))
 
     def agent(self, agent_id: int) -> Self:
-        return self.filter(agent_id=agent_id)
+        return self.filter(session_agent_id=agent_id)
 
     def ended(self) -> Self:
         return self.matching(Among("state", [state for state in ProcessState if state not in OPEN]))
@@ -56,8 +53,8 @@ class ProcessQuery(Query[Process]):
         cutoff = Timestamp(present.value - timedelta(seconds=seconds))
         return self.matching(LongRunCandidate(cutoff.text))
 
-    def has_moved_run(self, environment_id: int, text: str, seconds: int = 0) -> bool:
+    def has_moved_run(self, text: str, seconds: int = 0) -> bool:
         conditions: list[Condition] = [Equal("text", text)]
         if seconds > 0:
             conditions.append(PartRunSeconds(seconds))
-        return self.environment(environment_id).with_part(*conditions).moved().exists()
+        return self.with_part(*conditions).moved().exists()

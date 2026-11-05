@@ -17,9 +17,9 @@ class KeywordSkillsListener(SkillListener[PromptSubmitted]):
         call = event.row
         if call.summary.lstrip().startswith(NOTICE_OPENING):
             return
-        if self.agents.find(call.agent_id).role not in self.suites.agent_policy(call.environment_id).prompt_roles:
+        if self.agents.find(call.session_agent_id).role not in self.suites.agent_policy().prompt_roles:
             return
         terms = text_keywords(call.summary)
         for skill in self.catalogue.skills():
             if any(keyword.lower() in terms for keyword in skill.keywords):
-                self.run(logged, RequireSkill(call.agent_id, skill.folder))
+                self.run(logged, RequireSkill(call.session_agent_id, skill.folder))

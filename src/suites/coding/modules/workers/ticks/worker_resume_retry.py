@@ -24,9 +24,9 @@ class WorkerResumeRetry:
         InternetConnection.shared(container.get(JournalHome)).check(container.get(ConnectionProbe), container.get(Clock).timestamp())
         queries, resume = container.get(Queries), container.get(WorkerResume)
         waiting = list(queries.query(AgentLine).filter(state=AgentLineState.WAITING).matching(Among("source", tuple(RESUMING_SOURCES))).oldest().all_rows())
-        for agent_id in dict.fromkeys(line.agent_id for line in waiting):
+        for agent_id in dict.fromkeys(line.session_agent_id for line in waiting):
             worker = queries.query(Agent).find(agent_id)
-            if self.may_resume(container, worker, [line for line in waiting if line.agent_id == agent_id]):
+            if self.may_resume(container, worker, [line for line in waiting if line.session_agent_id == agent_id]):
                 resume.resume(worker, Actor.core())
 
     def may_resume(self, container: Container, worker: Agent, lines: list[AgentLine]) -> bool:

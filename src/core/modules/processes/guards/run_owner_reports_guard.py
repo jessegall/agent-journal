@@ -17,5 +17,5 @@ class RunOwnerReportsGuard(Guard[Changed[Process]]):
 
     def check(self, event: Changed[Process], context: Context) -> None:
         process = event.row
-        if event.move in ENDING_MOVES and context.actor.type is ActorType.AGENT and context.actor.id != process.agent_id:
-            raise Refusal(f"process {process.id} is agent {process.agent_id}'s run, and agent {context.actor.id} cannot report its end", "only the agent that ran a line reports on it")
+        if event.move in ENDING_MOVES and context.actor.type is ActorType.AGENT and context.actor.id != process.session_agent_id:
+            raise Refusal(f"process {process.id} is agent {process.session_agent_id}'s run, and agent {context.actor.id} cannot report its end", "only the agent that ran a line reports on it")

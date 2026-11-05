@@ -30,7 +30,7 @@ def test_document_and_report_reads_show_one_clickable_mark_per_row_in_a_turn(new
         finished_read(story, line)
     story.run_listeners()
     marks = read_marks(story)
-    expect_value([(mark.text, mark.target_model, mark.target_id, mark.agent_id) for mark in marks],
+    expect_value([(mark.text, mark.target_model, mark.target_id, mark.session_agent_id) for mark in marks],
                  [("Read report 1", "report", 1, story.agent.id), ("Read document 1", "doc", 1, story.agent.id)])
     declaration = next(mark for mark in Registry.read(story.container.get(Database)).marks if mark.type == "documents.read")
     expect_value(declaration.click, "open row")

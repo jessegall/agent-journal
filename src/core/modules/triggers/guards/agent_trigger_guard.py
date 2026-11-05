@@ -23,7 +23,7 @@ class AgentTriggerGuard(Guard[Changed[Trigger]]):
         if isinstance(event, Deleted):
             return
         old, new = event.old_row, event.row
-        if not self.approval.needs_user(context.actor, context.environment_id):
+        if not self.approval.needs_user(context.actor):
             return
         if not new.needs_enabling and (old is None or old is not None and old.needs_enabling):
             raise Refusal("only the user enables a trigger an agent made", "the user enables it in the chat or on the Triggers page")

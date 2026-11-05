@@ -31,5 +31,5 @@ class ShortProofHandler(Handler[ShortProof, Proof]):
         if worktree.state is WorktreeState.DELIVERED:
             self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)
             self.repository.save(self.queries.query(Task).find(proof.task_id).moved(TaskLifecycle.retest), context)
-        self.nudger.send(worktree.agent_id, WORKER_PROOF_SHORT, SHORT_PROOF_SOURCE, context, proof=proof.id, task=proof.task_id)
+        self.nudger.send(worktree.session_agent_id, WORKER_PROOF_SHORT, SHORT_PROOF_SOURCE, context, proof=proof.id, task=proof.task_id)
         return proof

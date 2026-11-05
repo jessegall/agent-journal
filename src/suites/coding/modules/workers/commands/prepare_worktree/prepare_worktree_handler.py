@@ -42,8 +42,8 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
 
     def handle(self, command: PrepareWorktree, context: Context) -> None:
         environment_id = self.environment_names.environment_id(command.environment)
-        links = (*self.settings.texts(LIBRARY_LINKS, environment_id), *command.library_links)
-        copies = (*self.settings.texts(LIBRARY_COPIES, environment_id), *command.library_copies)
+        links = (*self.settings.texts(LIBRARY_LINKS), *command.library_links)
+        copies = (*self.settings.texts(LIBRARY_COPIES), *command.library_copies)
         self.libraries.check(command.source, (*links, *copies))
         self.libraries.place(command.source, command.folder, links, copies)
         self.place_codex_hooks(command)
@@ -52,4 +52,4 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
         for provider in self.providers.all():
             manager.import_hooks(type(provider), Path(command.folder))
         self.libraries.exclude(command.folder, list(self.skills.place(Path(command.folder))))
-        self.commands.run(command.folder, self.git.head(command.folder), self.settings.texts(WORKTREE_COMMANDS, environment_id), (*links, *copies))
+        self.commands.run(command.folder, self.git.head(command.folder), self.settings.texts(WORKTREE_COMMANDS), (*links, *copies))

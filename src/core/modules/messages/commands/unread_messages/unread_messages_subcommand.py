@@ -3,7 +3,6 @@ from argparse import Namespace
 from core.base.caller.caller import Caller
 from core.base.cli.row_links import RowLinks
 from core.base.query.conditions.is_null import IsNull
-from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_tuple
@@ -20,17 +19,15 @@ class UnreadMessagesSubcommand(ReadSubcommand[tuple[MessageText, ...]]):
 
     cli_name = "message"
     name = "unread"
+    environment_refusal = "unread messages are read for one environment"
 
     def __init__(self, links: RowLinks, messages: MessageQuery) -> None:
         self.links = links
         self.messages = messages
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[MessageText, ...]:
-        environment_id = caller.environment_id
-        if environment_id is None:
-            raise Refusal("unread messages are read for one environment", "name it with --environment")
         agent_id = caller.read_actor_id
-        addressed = self.messages.unread(agent_id, environment_id) if agent_id is not None else self.messages.filter(environment_id=environment_id).matching(MainMessageTarget()).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at"))
+        addressed = self.messages.unread(agent_id) if agent_id is not None else self.messages.matching(MainMessageTarget()).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at"))
         unread = addressed.oldest().all_rows()
         return tuple(MessageText.built(message, self.links) for message in unread)
 

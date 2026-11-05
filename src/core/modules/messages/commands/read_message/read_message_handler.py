@@ -20,7 +20,7 @@ class ReadMessageHandler(Handler[ReadMessage, Message]):
 
     def handle(self, command: ReadMessage, context: Context) -> Message:
         message = self.rows.required(Message, command.message_id)
-        if context.actor.type is ActorType.AGENT and not self.messages.addressed(context.actor.id, message.environment_id).filter(id=message.id).exists():
+        if context.actor.type is ActorType.AGENT and not self.messages.addressed(context.actor.id).filter(id=message.id).exists():
             raise Refusal("this message is addressed to another agent", "read your messages with journal message unread")
         if message.read_at is not None:
             return message

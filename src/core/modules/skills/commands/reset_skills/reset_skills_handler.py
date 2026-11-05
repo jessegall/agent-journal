@@ -16,6 +16,6 @@ class ResetSkillsHandler(Handler[ResetSkills, AgentSkill | None]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: ResetSkills, context: Context) -> AgentSkill | None:
-        for row in tuple(self.queries.query(AgentSkill).filter(agent_id=command.agent_id, state=AgentSkillState.LOADED).all_rows()):
+        for row in tuple(self.queries.query(AgentSkill).filter(session_agent_id=command.agent_id, state=AgentSkillState.LOADED).all_rows()):
             self.repository.delete(row, context)
         return None

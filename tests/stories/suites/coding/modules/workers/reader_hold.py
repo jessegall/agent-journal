@@ -89,7 +89,7 @@ def test_a_worker_run_with_a_poor_reader_or_none_gets_only_the_ended_line(new_st
         nudges = story.container.get(EndedOutputText).nudges(ended)
         story.expect_rows(len(nudges) == 1, nudges[0] == OUTPUT_ENDED.nudge(output=ended.id, result="finished"))
     story.hook("s-8", HookSamples.stop())
-    blocks = story.container.get(Queries).query(AgentBlock).filter(agent_id=worker.id, closed_at=None).all_rows()
+    blocks = story.container.get(Queries).query(AgentBlock).filter(session_agent_id=worker.id, closed_at=None).all_rows()
     story.expect_rows(not tuple(blocks))
 
 
@@ -99,7 +99,7 @@ def test_a_worker_with_no_reader_is_held_and_cannot_skip_the_block(new_story):
     worker = reader_worker(story)
     requests = story.container.get(ReaderRequestQuery)
     story.expect_rows(requests.has_active_requests(worker.id, story.clock.timestamp()))
-    blocks = tuple(story.container.get(Queries).query(AgentBlock).filter(agent_id=worker.id).all_rows())
+    blocks = tuple(story.container.get(Queries).query(AgentBlock).filter(session_agent_id=worker.id).all_rows())
     story.expect_rows(len(blocks) == 1, blocks[0].grace_tool_uses == 0, blocks[0].grace_seconds == 0)
     story.expect_refusal(f'agent-block skip {blocks[0].id} --reason "skip the reader"', "cannot", actor=worker)
     story.expect_hook_refusal("s-reader", HookSamples.shell("touch skip", ShellPart("touch", CommandCategory.EDIT, ["skip"])), "no proper reader")
@@ -158,7 +158,7 @@ def test_readers_forced_off_creates_no_request_block_or_wait(new_story):
     story.run("setting set journal.core.processes.readers-forced off --environment main", actor=story.agent)
     process = worker_run(story)
     story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists(), story.container.get(OutputFolder).has_slot(process.id))
-    story.expect_rows(not story.container.get(Queries).query(AgentBlock).filter(agent_id=reader_worker(story).id).exists())
+    story.expect_rows(not story.container.get(Queries).query(AgentBlock).filter(session_agent_id=reader_worker(story).id).exists())
 
 
 def test_with_no_main_agent_the_worker_is_not_held_and_its_run_goes_on(new_story):
@@ -167,7 +167,7 @@ def test_with_no_main_agent_the_worker_is_not_held_and_its_run_goes_on(new_story
     process = worker_run(story, "alone-build run")
     request = story.container.get(ReaderRequestQuery).open().page(1, 1).rows[0]
     story.expect_rows(request.expires_at == story.clock.timestamp(), story.container.get(OutputFolder).has_slot(process.id))
-    story.expect_rows(not story.container.get(Queries).query(AgentBlock).filter(agent_id=reader_worker(story).id).exists())
+    story.expect_rows(not story.container.get(Queries).query(AgentBlock).filter(session_agent_id=reader_worker(story).id).exists())
 
 
 def test_a_stopped_worker_is_started_again_when_its_waiting_run_ends(new_story):
@@ -215,14 +215,14 @@ def test_the_main_agent_is_held_after_five_tool_uses_with_a_countdown(notified_r
 
 def test_a_skipped_block_does_not_free_the_worker_and_comes_back(notified_reader_story):
     story = notified_reader_story
-    blocks = story.container.get(Queries).query(AgentBlock).filter(agent_id=story.agent.id, closed_at=None).all_rows()
+    blocks = story.container.get(Queries).query(AgentBlock).filter(session_agent_id=story.agent.id, closed_at=None).all_rows()
     block = next(block for block in blocks if block.nudge_key.startswith("processes.reader_request"))
     story.run(f'agent-block skip {block.id} --reason "finish another change"', actor=story.agent)
     story.expect_rows(story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
     story.advance(timedelta(minutes=11))
     reply = story.hook("s-1", HookSamples.prompt("continue"))
     expect_reply_line(reply, "reader request")
-    story.expect_rows(story.container.get(Queries).query(AgentBlock).filter(agent_id=story.agent.id, closed_at=None).exists())
+    story.expect_rows(story.container.get(Queries).query(AgentBlock).filter(session_agent_id=story.agent.id, closed_at=None).exists())
 
 
 def test_with_no_main_agent_the_worker_is_not_held_and_the_next_main_agent_is_told(new_story):
@@ -251,10 +251,10 @@ def test_an_idle_main_agent_gets_the_reader_request_on_tick(requested_reader_sto
     story = requested_reader_story
     reply = story.tick("s-1")
     story.expect_rows(not reply.lines)
-    lines = tuple(story.container.get(Queries).query(AgentLine).filter(agent_id=story.agent.id, source="processes.reader-request.1").all_rows())
+    lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, source="processes.reader-request.1").all_rows())
     story.expect_rows(len(lines) == 1, lines[0].wakes_agent, "reader request 1" in lines[0].text)
     story.tick("s-1")
-    story.expect_rows(story.container.get(Queries).query(AgentLine).filter(agent_id=story.agent.id, source="processes.reader-request.1").count() == 1)
+    story.expect_rows(story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, source="processes.reader-request.1").count() == 1)
 
 
 def test_reader_sample_changes_make_no_chat_mark(requested_reader_story):

@@ -11,4 +11,4 @@ class CompactionResetListener(SkillListener[AgentCompacted]):
 
     def handle(self, event: AgentCompacted, logged: LoggedEvent) -> None:
         call = event.row
-        self.run(logged, ResetSkills(call.agent_id))
+        self.run(logged, ResetSkills(call.session_agent_id))

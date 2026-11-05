@@ -21,6 +21,6 @@ class AliasAccess:
         if alias.agent_access or caller.actor.type is not ActorType.AGENT or (alias.category and alias.category.is_long_running):
             return None
         agent = self.queries.query(Agent).find(caller.actor.id)
-        if agent.role in self.suites.agent_policy(agent.environment_id).restricted_alias_roles:
+        if agent.role in self.suites.agent_policy().restricted_alias_roles:
             return Refusal(f"a {agent.role} runs only the aliases marked for agents, and {alias.name} is not", f"ask the main agent to mark it: journal alias edit {alias.name} --agents")
         return None

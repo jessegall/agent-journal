@@ -31,38 +31,38 @@ class LinkPinCheck:
     def __init__(self, queries: Queries, clock: Clock) -> None:
         self.queries, self.clock = queries, clock
 
-    def nudges(self, environment_id: int, agent_text: str, tool_output: str = "") -> list[Nudge]:
-        if self.claims_unmade_pin(environment_id, agent_text):
+    def nudges(self, agent_text: str, tool_output: str = "") -> list[Nudge]:
+        if self.claims_unmade_pin(agent_text):
             return [UNPINNED_CLAIM.nudge()]
-        unpinned = self.first_unpinned(environment_id, f"{agent_text}\n{tool_output}")
+        unpinned = self.first_unpinned(f"{agent_text}\n{tool_output}")
         nudges = [self.keyed(LINK_PIN_REQUEST.nudge(url=unpinned), unpinned)] if unpinned is not None else []
-        command = self.first_unpinned_command(environment_id, agent_text)
+        command = self.first_unpinned_command(agent_text)
         return [*nudges, self.keyed(BANG_BUTTON_REQUEST.nudge(), command)] if command is not None else nudges
 
     @staticmethod
     def keyed(nudge: Nudge, name: str) -> Nudge:
         return replace(nudge, key=f"{nudge.key}.{name}")
 
-    def first_unpinned_command(self, environment_id: int, text: str) -> str | None:
+    def first_unpinned_command(self, text: str) -> str | None:
         commands = dict.fromkeys(f"! {line.strip()}" for line in BANG_COMMAND.findall(text))
-        pins = self.queries.query(Pin).filter(environment_id=environment_id).matching(IsNull("closed_at"))
+        pins = self.queries.query(Pin).matching(IsNull("closed_at"))
         return next((command for command in commands if not pins.filter(link=command).exists()), None)
 
-    def pull_request_pins(self, environment_id: int, text: str) -> list[MakePin]:
-        pins = self.queries.query(Pin).filter(environment_id=environment_id)
+    def pull_request_pins(self, text: str) -> list[MakePin]:
+        pins = self.queries.query(Pin)
         links = dict.fromkeys(PR_ADDRESS.findall(text))
         return [MakePin(f"Pull request {url.rsplit('/', 1)[-1]}", url, OPEN_LABEL) for url in links if not pins.matching(Among("link", (url, f"{url}/"))).exists()]
 
-    def first_unpinned(self, environment_id: int, text: str) -> str | None:
+    def first_unpinned(self, text: str) -> str | None:
         links = dict.fromkeys(url.rstrip(".,;:") for url in LINK.findall(text) if not LOCAL_ADDRESS.match(url) and not PR_ADDRESS.match(url))
-        pins = self.queries.query(Pin).filter(environment_id=environment_id).matching(IsNull("closed_at"))
+        pins = self.queries.query(Pin).matching(IsNull("closed_at"))
         return next((url for url in links if not pins.matching(Among("link", (url.rstrip("/"), f"{url.rstrip('/')}/"))).exists()), None)
 
-    def claims_unmade_pin(self, environment_id: int, text: str) -> bool:
+    def claims_unmade_pin(self, text: str) -> bool:
         if not PIN_CLAIM.search(text):
             return False
         window_start = Timestamp(self.clock.timestamp().value - timedelta(seconds=CLAIM_WINDOW_SECONDS)).text
-        return not self.queries.query(Pin).filter(environment_id=environment_id).matching(Greater("created_at", window_start)).exists()
+        return not self.queries.query(Pin).matching(Greater("created_at", window_start)).exists()
 
     def joined_text(self, value: object) -> str:
         if isinstance(value, str):

@@ -24,11 +24,10 @@ class SettingShowSubcommand(CurrentSettingOutput, ReadSubcommand[CurrentSetting]
         parser.add_argument("key")
 
     def read(self, arguments: Namespace, caller: Caller) -> CurrentSetting:
-        environment_id = caller.environment_id
         try:
-            return self.values.current(arguments.key, environment_id)
+            return self.values.current(arguments.key)
         except Refusal:
-            kept = self.undeclared.current(self.declared.all(), arguments.key, environment_id)
+            kept = self.undeclared.current(self.declared.all(), arguments.key)
             if kept is None:
                 raise
             return kept

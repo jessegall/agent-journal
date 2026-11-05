@@ -14,5 +14,5 @@ class RecordScheduledJobHandler(Handler[RecordScheduledJob, ScheduledJob]):
         self.repository = repository
 
     def handle(self, command: RecordScheduledJob, context: Context) -> ScheduledJob:
-        return self.repository.save(ScheduledJob(agent_id=command.agent_id, environment_id=command.environment_id, creator_id=command.agent_id, job_id=command.job_id, cron=command.cron,
+        return self.repository.save(ScheduledJob(session_agent_id=command.agent_id, creator_id=command.agent_id, job_id=command.job_id, cron=command.cron,
                                                  prompt=command.prompt, is_recurring=command.is_recurring), context)

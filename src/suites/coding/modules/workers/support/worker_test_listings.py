@@ -32,12 +32,12 @@ class WorkerTestListings(RunCounts):
         self.bus, self.nudger = bus, nudger
 
     def parts(self, process: Process) -> tuple[TestListing, ...]:
-        return self.agent_parts(process, self.rows.required(Agent, process.agent_id))
+        return self.agent_parts(process, self.rows.required(Agent, process.session_agent_id))
 
     def agent_parts(self, process: Process, agent: Agent) -> tuple[TestListing, ...]:
-        if not process.is_queue_run or process.creator_id != process.agent_id:
+        if not process.is_queue_run or process.creator_id != process.session_agent_id:
             return ()
-        if self.settings.number(WORKER_TEST_LIMIT, process.environment_id) <= 0:
+        if self.settings.number(WORKER_TEST_LIMIT) <= 0:
             return ()
         if agent.role != AgentRole.WORKER:
             return ()
@@ -63,8 +63,8 @@ class WorkerTestListings(RunCounts):
         return sum(counts) if counts and all(count > 0 for count in counts) else 0
 
     def requires_count(self, process: Process, agent: Agent) -> bool:
-        return (process.is_queue_run and process.creator_id == process.agent_id and agent.role == AgentRole.WORKER
-                and self.settings.number(WORKER_TEST_LIMIT, process.environment_id) > 0
+        return (process.is_queue_run and process.creator_id == process.session_agent_id and agent.role == AgentRole.WORKER
+                and self.settings.number(WORKER_TEST_LIMIT) > 0
                 and any(part.category is CommandCategory.TEST_RUN for part in self.visibility.parts(process.id)))
 
     def reject_unknown(self, process: Process, agent: Agent, status: int | None, count: int, context: Context) -> None:
@@ -72,7 +72,7 @@ class WorkerTestListings(RunCounts):
             return
         if not self.requires_count(process, agent):
             return
-        self.nudger.send(process.agent_id, TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE, context, output=process.id)
+        self.nudger.send(process.session_agent_id, TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE, context, output=process.id)
         self.bus.dispatch(StopProcess(process.id), context)
 
     def counting_reader(self, part: ProcessPart, output: Output | None, readers: tuple[Reader, ...]) -> Reader | None:
@@ -89,8 +89,8 @@ class WorkerTestListings(RunCounts):
             return selected.reader if selected else None
         return self.rows.required(Reader, output.reader_id)
 
-    def previous_count(self, environment_id: int, command: str) -> int:
-        outputs = self.outputs.kept().matching_part(environment_id, command).newest().all_rows()
+    def previous_count(self, command: str) -> int:
+        outputs = self.outputs.kept().matching_part(command).newest().all_rows()
         for output in outputs:
             count = self.recorded_count(output, command)
             if count is not None:

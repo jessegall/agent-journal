@@ -26,8 +26,8 @@ class NewDriverLinesListener(SaveListener[Changed[Setting]]):
         setting = event.row
         if setting.environment_id is None or not (setting.key == SUITE_SETTING or setting.key.startswith(DRIVER_SETTINGS)):
             return
-        agents = self.queries.query(Agent).filter(environment_id=setting.environment_id).matching(IsNull("ended_at")).all_rows()
+        agents = self.queries.query(Agent).matching(IsNull("ended_at")).all_rows()
         for agent in tuple(agents):
-            driver = self.choice.driver(setting.environment_id, agent.role)
+            driver = self.choice.driver(agent.role)
             for line in driver.opening_lines if driver is not None else ():
                 self.nudger.send_text(agent.id, line, self.name, context)

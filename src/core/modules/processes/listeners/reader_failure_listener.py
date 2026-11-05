@@ -27,7 +27,7 @@ class ReaderFailureListener(SaveListener[OutputEnded]):
         if not output.line_count:
             return
         process = self.rows.required(Process, output.process_id)
-        agent = self.rows.required(Agent, process.agent_id)
+        agent = self.rows.required(Agent, process.session_agent_id)
         if not self.requests.needed(process, agent):
             return
         reader = self.queries.query(Reader).find(output.reader_id) if output.reader_id is not None else None

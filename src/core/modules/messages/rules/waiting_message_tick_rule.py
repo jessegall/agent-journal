@@ -15,4 +15,4 @@ class WaitingMessageTickRule(DriverRule):
     drivers = ["*"]
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.allowed().running(RecordWaitingMessageLine(hook.environment_id, hook.agent_id))
+        return RuleAnswer.allowed().running(RecordWaitingMessageLine(hook.agent_id))

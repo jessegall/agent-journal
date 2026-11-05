@@ -12,6 +12,6 @@ class MemoryDelivery(Model):
     cli_name = "memory-delivery"
 
     memory_id: int
-    agent_id: int
+    session_agent_id: int
     creator_id: int
     cause: DeliveryCause

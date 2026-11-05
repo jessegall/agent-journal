@@ -45,7 +45,7 @@ def test_the_inactive_line_wakes_the_main_agent(new_story):
     story, worker = idle_worker(new_story)
     story.advance(minutes(DEFAULT_MINUTES))
     story.tick(MAIN_SESSION)
-    line = next(row for row in story.container.get(Queries).query(AgentLine).filter(agent_id=story.agent.id).all_rows() if f"worker:{worker.id} has used no tool" in row.text)
+    line = next(row for row in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows() if f"worker:{worker.id} has used no tool" in row.text)
     story.expect_rows(line.wakes_agent)
 
 
@@ -55,7 +55,7 @@ def test_a_worker_that_never_made_a_call_is_named_with_the_command_for_its_log_a
     worker = dispatched_worker(story)
     story.advance(timedelta(seconds=START_SECONDS))
     story.tick(MAIN_SESSION)
-    line = next(row for row in story.container.get(Queries).query(AgentLine).filter(agent_id=story.agent.id).all_rows() if f"worker:{worker.id} made no call" in row.text)
+    line = next(row for row in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows() if f"worker:{worker.id} made no call" in row.text)
     story.expect_rows(line.wakes_agent, f"journal agent terminal {worker.id}" in line.text)
 
 

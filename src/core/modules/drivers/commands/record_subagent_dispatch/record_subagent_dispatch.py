@@ -8,7 +8,6 @@ from core.modules.drivers.models.helper_job import HelperJob
 class RecordSubagentDispatch(Command[HelperJob]):
     """Keeps a dispatch when it is sent, or records what it returned when one with this key has ended."""
 
-    environment_id: int
     agent_id: int
     tool_key: str
     profile: str

@@ -4,7 +4,6 @@ from core.base.caller.caller import Caller
 from core.base.page import Page, is_page
 from core.base.query.queries import Queries
 from core.base.query.query import PAGE_SIZE_ROWS
-from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.docking.models.dock import Dock
@@ -18,6 +17,7 @@ class MainDockItemsSubcommand(ReadSubcommand[Page[DockItem]]):
 
     cli_name = "dock-item"
     name = "main"
+    environment_refusal = "the main chat is shown for one environment"
 
     def __init__(self, queries: Queries, items: DockItemQuery) -> None:
         self.queries, self.items = queries, items
@@ -26,10 +26,7 @@ class MainDockItemsSubcommand(ReadSubcommand[Page[DockItem]]):
         parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[DockItem]:
-        environment_id = caller.environment_id
-        if environment_id is None:
-            raise Refusal("the main chat is shown for one environment", "name it with --environment")
-        dock = next(self.queries.query(Dock).filter(environment_id=environment_id).all_rows(), None)
+        dock = next(self.queries.query(Dock).all_rows(), None)
         return self.items.filter(dock_id=dock.id if dock else 0).same_chat(None).newest().page(1, arguments.limit)
 
     def write_output(self, value: object, output: Output) -> None:

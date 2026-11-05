@@ -34,5 +34,5 @@ class RepeatReads:
         return self.queries.query(Process).find(process_id).ended_at is not None
 
     def last_compaction(self, agent_id: int) -> str:
-        calls = self.queries.query(HookCall).filter(agent_id=agent_id, hook=HookEventName.COMPACT).descending("id").limited(1)
+        calls = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.COMPACT).descending("id").limited(1)
         return next((call.created_at.text for call in calls if call.created_at is not None), "")

@@ -41,8 +41,8 @@ class RecordAffectedTestHandler(Handler[RecordAffectedTest, None]):
             arguments = [line.strip() for line in self.output.all_output(command.process_id).splitlines() if line.strip()]
             if arguments:
                 line = f"{selected.test_command} {shlex.join(arguments)}"
-                start = StartProcess.single_part(worktree.agent_id, line, worktree.folder, CommandCategory.TEST_RUN, 3600)
-                process = self.bus.dispatch(replace(start, owner_agent_id=worktree.agent_id, task_id=selected.task_id), context)
+                start = StartProcess.single_part(worktree.session_agent_id, line, worktree.folder, CommandCategory.TEST_RUN, 3600)
+                process = self.bus.dispatch(replace(start, owner_agent_id=worktree.session_agent_id, task_id=selected.task_id), context)
                 self.repository.save_change(selected, selected.changed(state=AffectedTestState.TESTING, process_id=process.id), context)
                 return
         self.repository.save_change(selected, selected.changed(state=AffectedTestState.PASSED), context)
@@ -55,4 +55,4 @@ class RecordAffectedTestHandler(Handler[RecordAffectedTest, None]):
             self.repository.save_change(task, task.moved(TaskLifecycle.retest), context)
         if worktree.state is WorktreeState.DELIVERED:
             self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)
-        self.nudger.send(worktree.agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=str(process_id))
+        self.nudger.send(worktree.session_agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=str(process_id))

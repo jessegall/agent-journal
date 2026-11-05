@@ -35,7 +35,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
     def handle(self, command: StartProcess, context: Context) -> Process:
         timeouts = tuple(Duration.parse(value).seconds for value in command.timeout_durations)
         agent = self.rows.required(Agent, command.agent_id)
-        process = self.repository.save(Process(environment_id=agent.environment_id, agent_id=agent.id, hook_call_id=command.hook_call_id, creator_id=context.actor.id,
+        process = self.repository.save(Process(session_agent_id=agent.id, hook_call_id=command.hook_call_id, creator_id=context.actor.id,
                                                line=command.line, folder=command.folder, shell=command.shell, category=command.category,
                                                limit_seconds=command.limit_seconds, is_full_test_run=command.is_full_test_run,
                                                queued_at=context.timestamp, is_queue_run=bool(command.parts) and all(part.category.is_long_running for part in command.parts),
@@ -59,6 +59,6 @@ class StartProcessHandler(Handler[StartProcess, Process]):
                                         reader_position=part_reader.part.position if part_reader else 0, title=RunTitle.title(part_reader.reader, part_reader.part.text) if part_reader else ""), context)
         self.folder.write_start(process.id, command.line, [part.text for part in command.parts])
         self.slots.remember(process)
-        self.slots.grant(process.environment_id, context)
+        self.slots.grant(context)
         return self.rows.required(Process, process.id)
 

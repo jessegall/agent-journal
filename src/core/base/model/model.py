@@ -64,6 +64,3 @@ class Model:
 
     def current_state(self) -> StateValue:
         return getattr(self, STATE)
-
-    def scoped(self, actor_id: int) -> Self:
-        return self

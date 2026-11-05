@@ -15,6 +15,6 @@ class QueueRunWorkers:
     def read(self, page: Page[Process]) -> dict[int, int]:
         if not page.rows:
             return {}
-        agent_ids = tuple({process.agent_id for process in page.rows})
+        agent_ids = tuple({process.session_agent_id for process in page.rows})
         workers = {worker.id for worker in self.queries.query(Agent).filter(role=AgentRole.WORKER).matching(Among("id", agent_ids)).limited(page.size)}
-        return {process.id: process.agent_id for process in page.rows if process.agent_id in workers}
+        return {process.id: process.session_agent_id for process in page.rows if process.session_agent_id in workers}

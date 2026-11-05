@@ -14,4 +14,4 @@ class SkillRequestListener(SkillListener[Created[SkillRequest]]):
     def handle(self, event: Created[SkillRequest], logged: LoggedEvent) -> None:
         request = event.row
         if request.skill in {skill.folder for skill in self.catalogue.skills()}:
-            self.run(logged, RequireSkill(request.agent_id, request.skill))
+            self.run(logged, RequireSkill(request.session_agent_id, request.skill))

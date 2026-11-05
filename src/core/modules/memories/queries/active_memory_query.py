@@ -25,5 +25,5 @@ class ActiveMemoryQuery(Query[ActiveMemory]):
         return self.descending("weight").ordered("memory_id")
 
     def absent_memories(self, agent_id: int) -> Self:
-        context_memory_ids = Select(ContextMemory.view).matching(Equal("agent_id", agent_id)).column("memory_id")
+        context_memory_ids = Select(ContextMemory.view).matching(Equal("session_agent_id", agent_id)).column("memory_id")
         return self.matching(SubqueryMatch("memory_id", context_memory_ids, negated=True))

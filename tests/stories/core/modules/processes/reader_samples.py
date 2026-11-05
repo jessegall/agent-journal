@@ -1,5 +1,6 @@
 from core.base.database.database import Database
 from core.base.driver.command_category import CommandCategory
+from core.base.scope.scopes import Scopes
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted
@@ -19,8 +20,11 @@ def test_a_sample_is_found_in_its_environment_only(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     kept_runs(story)
     parts = story.container.get(ProcessPartQuery)
-    story.expect_rows(parts.kept_samples(["make part-3*"], 1).page(1, 1).rows[0].text.startswith("make part-3"),
-                      not parts.kept_samples(["make part-3*"], SECOND_ENVIRONMENT_ID).page(1, 1).rows)
+    scopes = story.container.get(Scopes)
+    with scopes.read_scope((), None, 1):
+        story.expect_rows(parts.kept_samples(["make part-3*"]).page(1, 1).rows[0].text.startswith("make part-3"))
+    with scopes.read_scope((), None, SECOND_ENVIRONMENT_ID):
+        story.expect_rows(not parts.kept_samples(["make part-3*"]).page(1, 1).rows)
 
 
 def test_a_command_with_no_sample_reads_no_part_row_into_python(new_story):
@@ -28,7 +32,7 @@ def test_a_command_with_no_sample_reads_no_part_row_into_python(new_story):
     kept_runs(story)
     database = story.container.get(Database)
     start = database.tally.points()
-    rows = story.container.get(ProcessPartQuery).kept_samples(["cargo test*"], 1).page(1, 1).rows
+    rows = story.container.get(ProcessPartQuery).kept_samples(["cargo test*"]).page(1, 1).rows
     cost = database.tally.points().minus(start)
     expect_absent_value(rows)
     expect_total_cost_less(cost, READ_LIMIT_POINTS)

@@ -40,7 +40,7 @@ class SavedCommandRule(DriverRule):
             return RuleAnswer.refused(SAVED_COMMAND_TIMEOUT.nudge())
         if not shell.aliases_loaded:
             return RuleAnswer.allowed()
-        if hook.role not in self.suites.agent_policy(hook.environment_id).saved_command_roles:
+        if hook.role not in self.suites.agent_policy().saved_command_roles:
             return RuleAnswer.allowed()
         refusals = (self.refusal(part, hook.role) for part in shell.parts)
         refusal = next((nudge for nudge in refusals if nudge and not (shell.is_skip_line and nudge.key in SKIPPED_KEYS)), None)

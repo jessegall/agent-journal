@@ -1,3 +1,4 @@
+from core.modules.docking.migrations.m008_dock_item_session import DockItemSessionMigration
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.ticker.tick_handler import TickHandler
@@ -46,7 +47,7 @@ class DockingModule(Module):
     settings = DOCKING_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.settings"]
     models = [ModelDeclaration(Dock), ModelDeclaration(DockItem, query=DockItemQuery)]
-    migrations = [DocksTableMigration, ExistingEnvironmentDocksMigration, DockItemLabelsMigration, DockItemIndexesMigration, DockItemAgentsMigration, DockItemDueIndexMigration, PendingDockItemsIndexMigration]
+    migrations = [DockItemSessionMigration, DocksTableMigration, ExistingEnvironmentDocksMigration, DockItemLabelsMigration, DockItemIndexesMigration, DockItemAgentsMigration, DockItemDueIndexMigration, PendingDockItemsIndexMigration]
     handlers = [MakeDockHandler, AddDockItemHandler, KeepDockItemHandler, ReleaseDockItemHandler, RemoveDockItemHandler, ScheduleDockItemLeaveHandler]
     subcommands = [AddDockItemSubcommand, KeepDockItemSubcommand, ReleaseDockItemSubcommand, RemoveDockItemSubcommand, MainDockItemsSubcommand]
     listeners = [EnvironmentDockListener, DockItemLeaveListener, PendingDockItemsListener]

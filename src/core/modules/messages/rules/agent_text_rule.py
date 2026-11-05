@@ -32,7 +32,7 @@ class AgentTextRule(DriverRule):
         text = raw.get("delta")
         if raw.get("final") is not True or not isinstance(text, str) or not text.strip():
             return RuleAnswer.allowed()
-        prompts = self.queries.query(HookCall).filter(agent_id=hook.agent_id, hook=HookEventName.PROMPT.value).newest().limited(1)
+        prompts = self.queries.query(HookCall).filter(session_agent_id=hook.agent_id, hook=HookEventName.PROMPT.value).newest().limited(1)
         if prompts and (self.has_reply(hook.agent_id, prompts[0]) or self.is_acknowledgement(text.strip(), prompts[0])):
             return RuleAnswer.allowed()
         return RuleAnswer.allowed().running(SendMessage(text.strip()))
@@ -44,7 +44,7 @@ class AgentTextRule(DriverRule):
     def is_acknowledgement(self, text: str, prompt: HookCall) -> bool:
         if len(text) > SHORT_CHARACTERS or "?" in text or not prompt.summary.startswith(JOURNAL_LINE) or self.is_user_act(prompt.summary):
             return False
-        calls = self.queries.query(HookCall).filter(agent_id=prompt.agent_id, writes_files=True).newest().limited(1)
+        calls = self.queries.query(HookCall).filter(session_agent_id=prompt.session_agent_id, writes_files=True).newest().limited(1)
         return not calls or calls[0].id < prompt.id
 
     def is_user_act(self, prompt_text: str) -> bool:

@@ -83,7 +83,7 @@ class ReleaseSource:
         return folder / "src"
 
     def address(self) -> str:
-        return self.settings.text(UpdateSetting.RELEASE_ADDRESS.key, None).rstrip("/")
+        return self.settings.project.text(UpdateSetting.RELEASE_ADDRESS.key).rstrip("/")
 
     @staticmethod
     def fetched(address: str) -> tuple[bytes, str]:
