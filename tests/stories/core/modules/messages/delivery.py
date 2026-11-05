@@ -12,6 +12,7 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
+from core.modules.drivers.queries.hook_call_query import COMPACTION_LIMIT_SECONDS
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.processes.models.enums.process_mark_type import ProcessMarkType
@@ -31,7 +32,12 @@ from tests.stories.support.story_checks import expect_lines_2, expect_lines_3, e
 
 
 READ_MESSAGE_HOOK = HookSamples.shell("journal message read 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")).with_fields(event="post_tool_use")
+COMPACTION = HookSamples.sample("compact")
 MESSAGE_DISPLAY_HOOK = HookSamples.shell("journal message show 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "show", "1"], subcommand="message"))
+
+
+def send_message(story, text: str) -> None:
+    story.run(f'message send "{text}" --environment main', actor=story.user)
 
 
 class MessagingSession(StoryFixture):
@@ -92,7 +98,7 @@ class KeptTyping(TerminalTyping):
 
 def test_a_message_to_an_agent_at_work_goes_by_its_next_hook_and_nothing_is_typed(delivery_typing):
     story, typing = delivery_typing
-    story.run('message send "One more thing" --environment main', actor=story.user)
+    send_message(story, "One more thing")
     expect_row(typing, typed=[])
     story.expect_hook_allowed("s-1", HookSamples.edit("cart.py"), "new message 1")
 
@@ -100,8 +106,8 @@ def test_a_message_to_an_agent_at_work_goes_by_its_next_hook_and_nothing_is_type
 def test_only_the_first_message_is_typed_to_an_agent_the_stop_hook_let_stop_and_it_is_not_said_again(idle_delivery_typing):
     story, typing = idle_delivery_typing
     agent = story.agent
-    story.run('message send "Are you there" --environment main', actor=story.user)
-    story.run('message send "Hello" --environment main', actor=story.user)
+    send_message(story, "Are you there")
+    send_message(story, "Hello")
     expect_row(typing, typed=[(agent.id, "[journal] new message 1")])
     delivered_lines = story.hook("s-1", HookSamples.prompt("[journal] new message 1"))
     expect_reply_line(delivered_lines, "new message 2")
@@ -112,11 +118,11 @@ def test_a_new_message_is_typed_to_an_idle_agent_though_an_older_one_was_told_an
     story, typing = idle_delivery_typing
     story.advance(timedelta(minutes=1))
     agent = story.agent
-    story.run('message send "Are you there" --environment main', actor=story.user)
+    send_message(story, "Are you there")
     story.advance(timedelta(seconds=1))
     story.hook("s-1", HookSamples.prompt("[journal] new message 1"))
     story.advance(timedelta(minutes=10))
-    story.run('message send "Hello" --environment main', actor=story.user)
+    send_message(story, "Hello")
     story.run_listeners()
     expect_row(typing, typed=[(agent.id, "[journal] new message 1"), (agent.id, "[journal] new message 2")])
 
@@ -124,7 +130,7 @@ def test_a_new_message_is_typed_to_an_idle_agent_though_an_older_one_was_told_an
 def test_a_message_reaches_an_agent_that_waits_on_a_question(new_story):
     story = delivery_story(new_story)
     story.run('question ask "Which one" --options "a" "b"', actor=story.agent)
-    story.run('message send "Are you still there" --environment main', actor=story.user)
+    send_message(story, "Are you still there")
     story.expect_hook_allowed("s-1", HookSamples.edit("cart.py"), "new message 1")
 
 
@@ -132,7 +138,7 @@ def test_a_fresh_session_that_has_not_been_given_a_prompt_is_idle_too(new_story)
     story = started_story(new_story)
     typing = KeptTyping()
     story.container.bind(TerminalTyping, typing)
-    story.run('message send "Are you there" --environment main', actor=story.user)
+    send_message(story, "Are you there")
     expect_terminal_lines(typing, ["[journal] new message 1"])
 
 
@@ -140,14 +146,14 @@ def test_a_message_to_an_agent_with_no_hook_for_half_a_minute_is_typed_since_an_
     story, typing = delivery_typing
     story.hook("s-1", HookSamples.edit("cart.py"))
     story.advance(timedelta(seconds=31))
-    story.run('message send "Are you there" --environment main', actor=story.user)
+    send_message(story, "Are you there")
     expect_terminal_lines(typing, ["[journal] new message 1"])
 
 
 def test_a_message_sent_just_after_an_interrupted_turn_is_typed_at_the_next_tick(delivery_typing):
     story, typing = delivery_typing
     story.hook("s-1", HookSamples.edit("cart.py"))
-    story.run('message send "Are you there" --environment main', actor=story.user)
+    send_message(story, "Are you there")
     expect_row(typing, typed=[])
     story.advance(timedelta(seconds=61))
     story.tick("s-1")
@@ -162,14 +168,14 @@ def tool_failure(interrupted: bool):
 def test_a_message_sent_right_after_the_user_interrupted_a_tool_is_typed_since_the_program_reports_the_interrupt_with_its_failed_tool(delivery_typing):
     story, typing = delivery_typing
     story.hook("s-1", tool_failure(interrupted=True))
-    story.run('message send "Are you there" --environment main', actor=story.user)
+    send_message(story, "Are you there")
     expect_terminal_lines(typing, ["[journal] new message 1"])
 
 
 def test_a_message_sent_after_a_tool_failed_without_an_interrupt_is_not_typed(delivery_typing):
     story, typing = delivery_typing
     story.hook("s-1", tool_failure(interrupted=False))
-    story.run('message send "Are you there" --environment main', actor=story.user)
+    send_message(story, "Are you there")
     expect_row(typing, typed=[])
 
 
@@ -177,7 +183,7 @@ def test_a_message_sent_after_the_agent_went_on_from_an_interrupt_is_not_typed(d
     story, typing = delivery_typing
     story.hook("s-1", tool_failure(interrupted=True))
     story.hook("s-1", HookSamples.edit("cart.py"))
-    story.run('message send "Are you there" --environment main', actor=story.user)
+    send_message(story, "Are you there")
     expect_row(typing, typed=[])
 
 
@@ -199,7 +205,7 @@ def test_a_line_the_agents_own_hook_took_while_it_was_typed_is_typed_once_and_no
     story = new_story(SAMPLES, fixture=StoppedMessagingTurn)
     typing = PromptDuringTerminalLine(story)
     story.container.bind(TerminalTyping, typing)
-    story.run('message send "Are you there" --environment main', actor=story.user)
+    send_message(story, "Are you there")
     story.hook("s-1", READ_MESSAGE_HOOK)
     for _ in range(4):
         story.run_listeners()
@@ -224,7 +230,7 @@ def test_a_hook_during_the_typing_does_not_give_the_line_too(new_story):
     typing = HookDuringTerminalLine(story)
     story.container.bind(TerminalTyping, typing)
     agent = story.agent
-    story.run('message send "Are you there" --environment main', actor=story.user)
+    send_message(story, "Are you there")
     story.run_listeners()
     expect_terminal_lines(typing, ["[journal] new message 1"])
     expect_hook_lines_typing_without_line(typing, "new message 1")
@@ -249,7 +255,7 @@ class BrokenTyping(TerminalTyping):
 def test_a_line_whose_typing_breaks_goes_to_the_next_hook(new_story):
     story = stopped_lead_story(new_story)
     story.container.bind(TerminalTyping, BrokenTyping())
-    story.run('message send "Are you there" --environment main', actor=story.user)
+    send_message(story, "Are you there")
     story.run_listeners()
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"), "new message 1")
 
@@ -266,10 +272,26 @@ def test_a_line_left_in_typing_by_a_stopped_server_waits_again_when_the_journal_
 
 def test_a_refused_stop_is_not_idle_since_the_agent_goes_on(delivery_typing):
     story, typing = delivery_typing
-    story.run('message send "First" --environment main', actor=story.user)
+    send_message(story, "First")
     expect_refusal_hook(story, "s-1")
-    story.run('message send "Second" --environment main', actor=story.user)
+    send_message(story, "Second")
     expect_row(typing, typed=[])
+
+
+def test_a_line_is_not_typed_while_the_agent_compacts_and_its_next_hook_gives_it(idle_delivery_typing):
+    story, typing = idle_delivery_typing
+    story.hook("s-1", COMPACTION)
+    send_message(story, "Are you there")
+    expect_row(typing, typed=[])
+    story.expect_hook_allowed("s-1", HookSamples.edit("cart.py"), "new message 1")
+
+
+def test_a_compaction_that_sends_no_further_hook_stops_holding_lines_after_its_limit(idle_delivery_typing):
+    story, typing = idle_delivery_typing
+    story.hook("s-1", COMPACTION)
+    story.advance(timedelta(seconds=COMPACTION_LIMIT_SECONDS))
+    send_message(story, "Are you there")
+    expect_terminal_lines(typing, ["[journal] new message 1"])
 
 
 def test_a_paused_agent_that_is_idle_is_typed_a_message_so_the_user_can_chat(idle_delivery_typing):
@@ -277,7 +299,7 @@ def test_a_paused_agent_that_is_idle_is_typed_a_message_so_the_user_can_chat(idl
     agent = story.agent
     story.run(f"agent pause {agent.id}", actor=story.user)
     typing.typed.clear()
-    story.run('message send "Are you there" --environment main', actor=story.user)
+    send_message(story, "Are you there")
     expect_row(typing, typed=[(agent.id, "[journal] new message 1")])
 
 
@@ -285,7 +307,7 @@ def test_an_agent_waiting_on_a_question_is_woken_by_a_new_message(delivery_typin
     story, typing = delivery_typing
     story.run('question ask "Which database?" --environment main', actor=story.agent)
     agent = hook_agent(story, story.hook("s-1", HookSamples.stop()))
-    story.run('message send "Use sqlite" --environment main', actor=story.user)
+    send_message(story, "Use sqlite")
     expect_row(typing, typed=[(agent.id, "[journal] new message 1")])
 
 
@@ -293,7 +315,7 @@ def test_with_no_terminal_the_line_waits_for_the_next_hook(new_story):
     story = delivery_story(new_story)
     story.container.bind(TerminalTyping, KeptTyping(working=False))
     story.hook("s-1", HookSamples.stop())
-    story.run('message send "Are you there" --environment main', actor=story.user)
+    send_message(story, "Are you there")
     story.expect_hook_allowed("s-1", HookSamples.prompt("Carry on"), "new message 1")
 
 
@@ -324,7 +346,7 @@ def test_a_stop_is_refused_while_a_message_is_unread_and_goes_through_once_it_is
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
-ACT_ON_IT = "act on what you read:"
+READ_ADVICE_START = "act on what you read:"
 
 
 def test_reading_a_message_shows_only_its_text_and_marks_it_read(new_story):
@@ -337,17 +359,17 @@ def test_reading_a_message_shows_only_its_text_and_marks_it_read(new_story):
 def test_only_read_tells_the_agent_how_to_act_and_only_the_first_time(new_story):
     story = new_story(SAMPLES, fixture=UnreadCartMessage)
     reply = story.hook("s-1", READ_MESSAGE_HOOK)
-    line = next(line for line in reply.lines if line.startswith(ACT_ON_IT))
+    line = next(line for line in reply.lines if line.startswith(READ_ADVICE_START))
     expect_value_with(line, "steering")
     expect_value_with(line, "update")
-    expect_absent_startswith_lines_hook(ACT_ON_IT, story, "s-1", READ_MESSAGE_HOOK)
+    expect_absent_startswith_lines_hook(READ_ADVICE_START, story, "s-1", READ_MESSAGE_HOOK)
 
 
 def test_each_new_message_read_in_one_turn_tells_the_agent_how_to_act(new_story):
     story = new_story(SAMPLES, fixture=ReadCartMessage)
-    story.run('message send "And the checkout" --environment main', actor=story.user)
+    send_message(story, "And the checkout")
     reply = story.hook("s-1", HookSamples.shell("journal message read 2", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "2"], subcommand="message")).with_fields(event="post_tool_use"))
-    expect_startswith_lines_reply(ACT_ON_IT, reply)
+    expect_startswith_lines_reply(READ_ADVICE_START, reply)
 
 
 def test_the_agent_cannot_show_a_message_it_has_not_read_and_is_told_to_read_it(new_story):
@@ -418,14 +440,14 @@ UNREAD_MESSAGE_HOOK = HookSamples.shell("journal message unread", ShellPart("jou
 
 def test_unread_prints_every_unread_message_and_marks_them_read(new_story):
     story = new_story(SAMPLES, fixture=CartMessage)
-    story.run('message send "And the totals" --environment main', actor=story.user)
+    send_message(story, "And the totals")
     reply = story.hook("s-1", HookSamples.stop())
     expect_reply_line(reply, "2 new messages")
     text = story.run("message unread --environment main", actor=story.user)
     text.expect_text("message 1:\nFix the cart")
     text.expect_text("message 2:\nAnd the totals")
     lines = story.hook("s-1", UNREAD_MESSAGE_HOOK).lines
-    expect_sum_startswith_lines(ACT_ON_IT, lines, 1)
+    expect_sum_startswith_lines(READ_ADVICE_START, lines, 1)
     story.expect_text("message show 2", "read_at: 2026", actor=story.user)
 
 
@@ -455,7 +477,7 @@ def test_a_line_that_only_mentions_the_command_marks_nothing_read(new_story):
 def test_a_message_not_yet_announced_is_not_marked_read_by_unread(new_story):
     story = new_story(SAMPLES, fixture=CartMessage)
     story.hook("s-1", UNREAD_MESSAGE_HOOK.with_fields(event="post_tool_use"))
-    story.run('message send "And the totals" --environment main', actor=story.user)
+    send_message(story, "And the totals")
     story.expect_no_text("message show 2", "read_at: 2026", actor=story.user)
 
 
@@ -512,7 +534,7 @@ def test_a_line_that_could_not_be_typed_is_typed_at_a_later_tick_and_then_never_
     typing = RefusingThenTyping()
     story.container.bind(TerminalTyping, typing)
     agent = story.agent
-    story.run('message send "Are you there" --environment main', actor=story.user)
+    send_message(story, "Are you there")
     expect_row(typing, typed=[])
     typing.working = True
     story.advance(timedelta(seconds=11))
@@ -530,7 +552,7 @@ def test_a_failed_typing_is_asked_again_only_after_ten_seconds(new_story):
     story = stopped_lead_story(new_story)
     typing = RefusingThenTyping()
     story.container.bind(TerminalTyping, typing)
-    story.run('message send "Are you there" --environment main', actor=story.user)
+    send_message(story, "Are you there")
     for _ in range(5):
         story.advance(timedelta(seconds=1))
         story.tick("s-1")
@@ -567,7 +589,7 @@ def test_a_message_read_before_its_line_was_typed_is_never_typed_nor_told_again(
     story = stopped_lead_story(new_story)
     typing = RefusingThenTyping()
     story.container.bind(TerminalTyping, typing)
-    story.run('message send "Are you there" --environment main', actor=story.user)
+    send_message(story, "Are you there")
     story.hook("s-1", READ_MESSAGE_HOOK)
     typing.working = True
     story.advance(timedelta(seconds=11))
@@ -581,14 +603,14 @@ class UnreadCartMessage(StoryFixture):
     parent = MessagingTurn
 
     def steps(self, story):
-        story.run('message send "Fix the cart first" --environment main', actor=story.user)
+        send_message(story, "Fix the cart first")
 
 
 class CartMessage(StoryFixture):
     parent = MessagingTurn
 
     def steps(self, story):
-        story.run('message send "Fix the cart" --environment main', actor=story.user)
+        send_message(story, "Fix the cart")
 
 
 @pytest.fixture
@@ -603,7 +625,7 @@ def delivery_typing(new_story):
 def untyped_idle_message(new_story):
     story = stopped_lead_story(new_story)
     story.container.bind(TerminalTyping, KeptTyping(working=False))
-    story.run('message send "Are you there" --environment main', actor=story.user)
+    send_message(story, "Are you there")
     story.run_listeners()
     return story
 
@@ -612,7 +634,7 @@ def untyped_idle_message(new_story):
 def editable_message(new_story):
     story = delivery_story(new_story)
     story.container.bind(TerminalTyping, KeptTyping())
-    story.run('message send "First words" --environment main', actor=story.user)
+    send_message(story, "First words")
     return story
 
 
@@ -633,7 +655,7 @@ class ReadCartMessage(StoryFixture):
 @pytest.fixture
 def image_message(new_story):
     story = delivery_story(new_story)
-    story.run('message send "Look at this" --environment main', actor=story.user)
+    send_message(story, "Look at this")
     return story
 
 
@@ -656,7 +678,7 @@ def idle_delivery_typing(new_story):
 def untyped_message_after_tick(new_story):
     story = stopped_lead_story(new_story)
     story.container.bind(TerminalTyping, RefusingThenTyping())
-    story.run('message send "Are you there" --environment main', actor=story.user)
+    send_message(story, "Are you there")
     story.advance(timedelta(seconds=11))
     story.tick("s-1")
     story.run_listeners()

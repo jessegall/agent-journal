@@ -69,5 +69,9 @@ class HookCall(Model):
         return self.hook == HookEventName.COMPACT
 
     @property
+    def is_compaction_start(self) -> bool:
+        return self.metadata.module_part(DRIVERS_MODULE).get("compaction_start") is True
+
+    @property
     def is_session_start(self) -> bool:
         return self.hook == HookEventName.SESSION_START

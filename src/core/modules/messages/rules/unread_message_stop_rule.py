@@ -19,6 +19,7 @@ class UnreadMessageStopRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN]
     overlay_proof = True
+    is_notice = True
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

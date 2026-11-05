@@ -27,6 +27,7 @@ class PeerMessageRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN]
     overlay_proof = True
+    is_notice = True
 
     def __init__(self, queries: Queries, providers: Providers) -> None:
         self.queries, self.providers = queries, providers

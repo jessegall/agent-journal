@@ -200,12 +200,14 @@ async function recordDrawn(answer) {
     return {element, window};
 }
 
-test("what a plugin did lists its outputs and its last fault", async () => {
-    const {window} = await recordDrawn({ok: true, value: {name: "sins", outputs: [{id: 1, output: "Judged 3 files"}], fault_count: 2, last_fault: "it timed out"}});
+test("what a plugin did lists its outputs with their times and no last fault", async () => {
+    const createdAt = "2026-11-05T14:56:10.000000+00:00";
+    const {window} = await recordDrawn({ok: true, value: {name: "sins", outputs: [{id: 1, output: "Judged 3 files", created_at: createdAt}], fault_count: 2, last_fault: "it timed out"}});
     expect(window.reads).toContain("plugin record sins");
     const body = document.querySelector("[data-plugin-record-body]");
     expect(body.querySelector("[data-plugin-output]").textContent).toBe("Judged 3 files");
-    expect(body.textContent).toContain("it timed out");
+    expect(body.querySelector("[data-plugin-output-time]").textContent).toBe(new Date(createdAt).toLocaleString([], {dateStyle: "medium", timeStyle: "medium"}));
+    expect(body.textContent).not.toContain("it timed out");
 });
 
 test("a plugin that did nothing says so, and a refused read says why", async () => {

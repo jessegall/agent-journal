@@ -42,6 +42,19 @@ def test_a_card_read_on_the_tick_is_not_kept_a_second_time_by_the_next_hook(new_
     expect_value(outcome.output_text.count("Queue was judged"), 1)
 
 
+def test_the_plugin_log_runs_oldest_first(new_story):
+    story = installed_story(new_story)
+    story.hook("s-1", LISTING_SAMPLE)
+    queued_card(story, "1.json", {"cards": [{**CARD, "label": "the first sin"}]})
+    PluginCardReading()(story.container)
+    story.run_listeners()
+    queued_card(story, "2.json", {"cards": [{**CARD, "label": "the second sin"}]})
+    PluginCardReading()(story.container)
+    story.run_listeners()
+    log = story.run("plugin record sample", actor=story.user).output_text
+    expect_value(log.index("the first sin") < log.index("the second sin"), True)
+
+
 def test_a_queued_file_with_no_agent_waits_for_a_hook(new_story):
     story = installed_story(new_story)
     story.hook("s-1", LISTING_SAMPLE)
