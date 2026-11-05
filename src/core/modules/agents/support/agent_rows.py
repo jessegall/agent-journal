@@ -1,7 +1,9 @@
 from core.base.database.kept_rows import KeptRows
 from core.base.listener.event_rows import EventRows
 from core.base.query.queries import Queries
+from core.base.agent_role import AgentRole
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
 
 class AgentRows:
@@ -16,3 +18,7 @@ class AgentRows:
 
     def find(self, agent_id: int) -> Agent:
         return self.rows.required(Agent, agent_id)
+
+    def running_mains(self) -> tuple[Agent, ...]:
+        return self.kept.read("agents", lambda: MainAgentFinder.all_running(self.queries),
+                              "role = ? AND ended_at IS NULL", [AgentRole.MAIN], name="agents.running_mains")

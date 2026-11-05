@@ -9,7 +9,6 @@ from core.base.driver.command_category import CommandCategory
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.event_rows import EventRows
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
@@ -20,6 +19,7 @@ from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.reader import Reader
+from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.run_visibility import RunVisibility
 from core.modules.processes.support.run_title import RunTitle
@@ -43,10 +43,11 @@ class ProcessEndMarkListener(CommitListener[Touched[Process]]):
 
     name = "processes.process-mark"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, folder: OutputFolder, visibility: RunVisibility, rows: EventRows, marks: ChatMarkQuery) -> None:
-        self.bus, self.actors, self.queries, self.folder, self.visibility = bus, actors, queries, folder, visibility
+    def __init__(self, bus: Bus, actors: ModuleActors, folder: OutputFolder, visibility: RunVisibility, rows: EventRows, marks: ChatMarkQuery, outputs: OutputQuery) -> None:
+        self.bus, self.actors, self.folder, self.visibility = bus, actors, folder, visibility
         self.rows = rows
         self.marks = marks
+        self.outputs = outputs
 
     def handle(self, event: Touched[Process], logged: LoggedEvent) -> None:
         process = self.rows.find(Process, logged.row_id)
@@ -59,7 +60,7 @@ class ProcessEndMarkListener(CommitListener[Touched[Process]]):
         part = self.visibility.visible_part(process)
         if part is None:
             return
-        output = next(self.queries.query(Output).filter(process_id=process.id).all_rows(), None)
+        output = self.outputs.process_output(process.id)
         reader = self.rows.required(Reader, output.reader_id) if output and output.reader_id else None
         variant = ProcessMarkVariant.QUEUED if process.queued_at is not None else ProcessMarkVariant(process.state.value)
         figure = self.figure(process, output)
@@ -96,4 +97,4 @@ class ProcessEndMarkListener(CommitListener[Touched[Process]]):
             return "\n".join(self.folder.last_lines(process.id, LAST_LINES))
         if process.expired_at is not None:
             return f"It ran past its timeout of {process.timeout_seconds} seconds"
-        return f"{ACTOR_LABELS.get(self.queries.query(ActorRecord).find(logged.actor_id).type, 'The journal')} stopped it"
+        return f"{ACTOR_LABELS.get(self.rows.required(ActorRecord, logged.actor_id).type, 'The journal')} stopped it"

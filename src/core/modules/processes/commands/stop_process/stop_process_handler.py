@@ -17,6 +17,7 @@ class StopProcessHandler(Handler[StopProcess, Process]):
         self.queries, self.repository, self.group, self.folder = queries, repository, group, folder
 
     def handle(self, command: StopProcess, context: Context) -> Process:
-        process = self.repository.save(self.queries.query(Process).find(command.row_id).stop(context.timestamp, context.actor), context)
+        current = self.queries.query(Process).find(command.row_id)
+        process = self.repository.save_change(current, current.stop(context.timestamp, context.actor), context)
         self.group.stop(process.pid or self.folder.pid(process.id), process.id)
         return process

@@ -24,5 +24,8 @@ class SettingRows:
     def remember(self, row: Setting | SecretSetting) -> None:
         self.kept.update(TABLES[type(row)], lambda rows: {**rows, (row.key, row.environment_id): row}, name="settings.rows")
 
+    def remove(self, row: Setting | SecretSetting) -> None:
+        self.kept.update(TABLES[type(row)], lambda rows: {key: value for key, value in rows.items() if key != (row.key, row.environment_id)}, name="settings.rows")
+
     def stored_keys(self) -> list[str]:
         return list(dict.fromkeys(row.key for model in (Setting, SecretSetting) for row in self.queries.query(model).oldest().all_rows()))

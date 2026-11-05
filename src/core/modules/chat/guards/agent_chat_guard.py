@@ -1,8 +1,6 @@
 from core.base.guard.guard import Guard
-from core.base.model.model import Model
-from core.base.query.queries import Queries
 from core.base.refusal import Refusal
-from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.chat.models.chat_mark import ChatMark
 from core.base.change.changed import Changed
 from core.base.change.deleted import Deleted
@@ -14,8 +12,8 @@ class AgentChatGuard(Guard[Changed[ChatMark]]):
 
     name = "chat.agent-chat"
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, agents: AgentRows) -> None:
+        self.agents = agents
 
     def check(self, event: Changed[ChatMark], context: Context) -> None:
         if isinstance(event, Deleted):
@@ -23,5 +21,5 @@ class AgentChatGuard(Guard[Changed[ChatMark]]):
         mark = event.row
         if mark.agent_id is None:
             return
-        if self.queries.query(Agent).find(mark.agent_id).environment_id != mark.environment_id:
+        if self.agents.find(mark.agent_id).environment_id != mark.environment_id:
             raise Refusal(f"agent {mark.agent_id} works in another environment than the mark's", "a mark for an agent is shown in its own environment's chat")

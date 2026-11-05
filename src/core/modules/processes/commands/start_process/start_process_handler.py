@@ -59,6 +59,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
             self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), reader_id=part_reader.reader.id if part_reader else None,
                                         reader_position=part_reader.part.position if part_reader else 0, title=RunTitle.title(part_reader.reader, part_reader.part.text) if part_reader else ""), context)
         self.folder.write_start(process.id, command.line, [part.text for part in command.parts])
+        self.slots.remember(process)
         self.slots.grant(process.environment_id, context)
         return self.rows.required(Process, process.id)
 
