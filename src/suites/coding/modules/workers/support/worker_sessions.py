@@ -14,18 +14,19 @@ from core.base.leftover_process import LeftoverProcess
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
+from core.modules.agents.support.agent_session_state import AgentSessionState
 from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.commands.report_silent_agent.report_silent_agent import ReportSilentAgent
-from suites.coding.modules.workers.support.worker_session_state import WorkerSessionState
 from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES
 
 STOP_WAIT_SECONDS = 5
 STOP_POLL_SECONDS = 0.05
 
 
-class WorkerSessions:
+class WorkerSessions(AgentLaunchGuard):
     """Serializes session launches and confirms its previous process tree has ended before a resume."""
 
     def __init__(self, home: JournalHome, queries: Queries, processes: ProcessQuery, settings: SettingValues,
@@ -49,22 +50,22 @@ class WorkerSessions:
             finally:
                 fcntl.flock(opened, fcntl.LOCK_UN)
 
-    def prepare(self, worker: Agent) -> WorkerSessionState:
+    def prepare(self, worker: Agent) -> AgentSessionState:
         current = self.queries.query(Agent).find(worker.id)
         if current.pid is None:
-            return WorkerSessionState.READY
+            return AgentSessionState.READY
         program = self.providers.provider(current.program).executable
         command = LeftoverProcess.command_line(current.pid)
         if program not in command or current.session not in command:
-            return WorkerSessionState.READY
+            return AgentSessionState.READY
         span = self.settings.minutes(SILENT_AGENT_MINUTES, current.environment_id)
         activity = self.queries.query(AgentActivity).find(current.id)
         if not activity.is_inactive(self.clock.timestamp(), span.count) or self.processes.agent(current.id).running().exists():
-            return WorkerSessionState.RUNNING
+            return AgentSessionState.RUNNING
         if self.stop_tree(current.pid, program):
-            return WorkerSessionState.READY
+            return AgentSessionState.READY
         self.bus.run(ReportSilentAgent(current.id, "its process could not be stopped", activity.last_hook_at if activity.last_hook_at is not None else activity.created_at), Actor.core(), environment_id=current.environment_id)
-        return WorkerSessionState.BLOCKED
+        return AgentSessionState.BLOCKED
 
     def stop_tree(self, pid: int, program: str) -> bool:
         children = self.descendants(pid)

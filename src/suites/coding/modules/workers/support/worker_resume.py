@@ -13,10 +13,10 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.environments.models.environment import Environment
 from suites.coding.modules.workers.support.test_limit_nudges import WORKER_TEST_LIMIT_SOURCE
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.launch_answer import LaunchAnswer
+from core.modules.agents.support.launch_answer import LaunchAnswer
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
-from suites.coding.modules.workers.support.worker_launcher import WorkerLauncher
+from core.modules.agents.support.agent_launcher import AgentLauncher
 from suites.coding.modules.workers.models.worktree import Worktree
 
 JOB_DELIVERY_SECONDS = 120
@@ -28,7 +28,7 @@ class WorkerResume:
     failed to start, and the next job starts it again. With no launcher the line stays waiting, and a paused
     worker stays stopped until it is resumed."""
 
-    def __init__(self, launcher: WorkerLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock) -> None:
+    def __init__(self, launcher: AgentLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock) -> None:
         self.launcher, self.queries, self.worktrees, self.worker_command, self.bus, self.clock = launcher, queries, worktrees, worker_command, bus, clock
 
     def resume(self, worker: Agent, actor: Actor) -> None:

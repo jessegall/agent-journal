@@ -8,7 +8,6 @@ from suites.coding.modules.workers.migrations.m014_worker_queue_read_indexes imp
 from suites.coding.modules.workers.migrations.m013_worker_read_indexes import WorkerReadIndexesMigration
 from suites.coding.modules.workers.listeners.reader_sample_ready_listener import ReaderSampleReadyListener
 from suites.coding.modules.workers.commands.record_worker_report.record_worker_report_subcommand import RecordWorkerReportSubcommand
-from suites.coding.modules.workers.commands.record_worker_launch_failure.record_worker_launch_failure_handler import RecordWorkerLaunchFailureHandler
 from suites.coding.modules.workers.models.worker_refusal_count import WorkerRefusalCount
 from suites.coding.modules.workers.migrations.m006_worker_refusals import WorkerRefusalsMigration
 from suites.coding.modules.workers.migrations.m007_process_work import ProofProcessWorkMigration
@@ -17,7 +16,6 @@ from suites.coding.modules.workers.commands.record_worker_refusal.record_worker_
 from suites.coding.modules.workers.commands.clear_worker_refusals.clear_worker_refusals_handler import ClearWorkerRefusalsHandler
 from suites.coding.modules.workers.listeners.main_agent_workers_listener import MainAgentWorkersListener
 from suites.coding.modules.workers.listeners.blocked_worker_task_listener import BlockedWorkerTaskListener
-from suites.coding.modules.workers.commands.record_worker_launch_failure.record_worker_launch_failure import LAUNCH_FAILURE_NUDGES
 from suites.coding.modules.workers.listeners.worker_help_request_listener import WorkerHelpRequestListener
 from suites.coding.modules.workers.listeners.worker_move_mark_listener import WorkerMoveMarkListener
 from suites.coding.modules.workers.listeners.worker_job_mark_listener import WorkerJobMarkListener
@@ -144,6 +142,10 @@ from suites.coding.modules.workers.commands.short_proof.short_proof_subcommand i
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from core.modules.agents.support.agent_folders import AgentFolders
+from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
+from suites.coding.modules.workers.support.worker_folders import WorkerFolders
+from suites.coding.modules.workers.support.worker_sessions import WorkerSessions
 from suites.coding.modules.workers.support.worker_settings import WORKER_SETTINGS
 from suites.coding.modules.workers.upgrade.workers_move import WorkersMove
 
@@ -181,7 +183,7 @@ class WorkersModule(Module):
                                                    WindowSource("queue", "proof list --limit 50", ["proof.*"])]) for name in ("agents.agents", "agents.subagents")),
                          WindowExtension("viewer.shell", reads=["worker-worktree points", "worker-worktree list", "proof list"],
                                          runs=["worker send", "worker merge", "worker release"])]
-    nudges = [*WORKER_NUDGES, *LAUNCH_FAILURE_NUDGES, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]
+    nudges = [*WORKER_NUDGES, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]
     seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS
@@ -193,12 +195,12 @@ class WorkersModule(Module):
     migrations = [WorkerQueueReadIndexesMigration, WorkerReadIndexesMigration, AffectedTestsMigration, ProcessOwnerMigration, ProofProcessWorkMigration, WorkerRefusalsMigration, WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration, WorkerTestSettingMigration, ReportVisibilityMigration, AliasAccessMigration]
     views = [WorkerPoints, WorkerWait, WorkerProgress]
     moves = [WorkersMove, AliasPermissionsMove]
-    handlers = [SendSilentAgentLinesHandler, ReportSilentAgentHandler, RecordAffectedTestHandler, EndGoneWorkerHandler, RecordWorkerLaunchFailureHandler, RecordWorkerRefusalHandler, ClearWorkerRefusalsHandler, StartWorkerTestsHandler, RecordWorkerTestHandler, SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, StartNextWorkerTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler, RecordWorkerReportHandler, RemoveOrphanWorktreesHandler]
+    handlers = [SendSilentAgentLinesHandler, ReportSilentAgentHandler, RecordAffectedTestHandler, EndGoneWorkerHandler, RecordWorkerRefusalHandler, ClearWorkerRefusalsHandler, StartWorkerTestsHandler, RecordWorkerTestHandler, SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, StartNextWorkerTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler, RecordWorkerReportHandler, RemoveOrphanWorktreesHandler]
     subcommands = [ShortProofSubcommand, WorkerProgressSubcommand,WorkerWaitsSubcommand, RecordWorkerReportSubcommand, WorkerStatusSubcommand, SendWorkerSubcommand, WorkerPointsSubcommand, ProofPointsSubcommand, DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, EditProofSubcommand, DeliverTaskSubcommand, StartNextWorkerTaskSubcommand, MergeWorkerSubcommand, PrepareWorktreeSubcommand, WorkerModelsSubcommand, ProjectWorktreeListSubcommand, RemoveProjectWorktreeSubcommand]
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
     driver_rules = [WorkerStatusFirstRule, MissingProcessRule, WorkerTestCountRule, WorkerJudgeScopeRule, WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, UnstartedWorkerRule, StoppedWorkerRunRule, UnmergedWorkerRule, SmallBatchRule, InactiveWorkerRetireRule, OrphanWorktreeRule, WorkerReportRule]
     marks = WORKER_MARKS
-    bindings = {AgentWriteFolder: WorkerWriteFolder, AgentActivity: WorkerAgentActivity, TaskTakers: WorkerTaskTakers, SkillProjects: WorkerSkillProjects, TaskWaitTargets: WorkerTaskWaitTargets, QueueRunWorkers: WorkerQueueRunWorkers, RunCounts: WorkerTestListings, PartVisibility: WorkerPartVisibility}
+    bindings = {AgentFolders: WorkerFolders, AgentLaunchGuard: WorkerSessions, AgentWriteFolder: WorkerWriteFolder, AgentActivity: WorkerAgentActivity, TaskTakers: WorkerTaskTakers, SkillProjects: WorkerSkillProjects, TaskWaitTargets: WorkerTaskWaitTargets, QueueRunWorkers: WorkerQueueRunWorkers, RunCounts: WorkerTestListings, PartVisibility: WorkerPartVisibility}
     listeners = [SilentWorkerLineListener, WorkerTestCountListener, RemovedWorktreeAgentListener, ReaderSampleReadyListener,WorkerHelpRequestListener, WorkerStoppedMarkListener, WorkerHelpRequestMarkListener, WorkerStopResultListener, MainAgentWorkersListener, BlockedWorkerTaskListener, ReassignedTaskListener, DelegatedTaskCommentListener, WorkerCountRaisedListener, WorkerMoveMarkListener, WorkerJobMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerTaskWaitListener]
     tick_handlers = [TickHandler(TickInterval(seconds=10), WorkerResumeRetry(), "worker resume retry")]
     windows =[WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, skeleton=WORKERS_POINTS_SKELETON, icon=WindowIcon.CHECK, shows=WindowShows.SELECTED_AGENT,

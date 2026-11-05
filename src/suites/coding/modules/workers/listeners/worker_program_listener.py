@@ -6,7 +6,7 @@ from core.modules.environments.models.environment import Environment
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
-from suites.coding.modules.workers.support.worker_launcher import WorkerLauncher
+from core.modules.agents.support.agent_launcher import AgentLauncher
 from core.base.change.moved import Moved
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 
@@ -17,7 +17,7 @@ class WorkerProgramListener(CommitListener[Moved[Worktree]]):
     name = "workers.worker-program-request"
     moves = tuple([WorktreeLifecycle.cut])
 
-    def __init__(self, launcher: WorkerLauncher, queries: Queries, worker_command: WorkerCommand) -> None:
+    def __init__(self, launcher: AgentLauncher, queries: Queries, worker_command: WorkerCommand) -> None:
         self.launcher, self.queries, self.worker_command = launcher, queries, worker_command
 
     def handle(self, event: Moved[Worktree], logged: LoggedEvent) -> None:
