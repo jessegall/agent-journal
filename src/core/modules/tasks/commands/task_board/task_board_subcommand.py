@@ -2,6 +2,8 @@ from core.base.query.conditions.among import Among
 from core.base.query.conditions.has_value import HasValue
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.less import Less
+from core.base.query.condition import Condition
+from core.modules.tasks.conditions.closed_task_cursor import ClosedTaskCursor
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
@@ -54,7 +56,7 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
             raise Refusal("the board is shown for one environment", "name it with --environment")
         if arguments.state is not None:
             if arguments.state in FINISHED_STATES:
-                return TaskBoard(tuple([self.finished_group(environment_id, arguments.state, arguments.before_closed_at, arguments.limit or FINISHED_PAGE_ROWS)]))
+                return TaskBoard(tuple([self.finished_group(environment_id, arguments.state, self.finished_cursor(arguments), arguments.limit or FINISHED_PAGE_ROWS)]))
             return TaskBoard(tuple([self.group(environment_id, arguments.state, arguments.before_id, arguments.limit or PAGE_SIZE_ROWS)]))
         active_groups = tuple(self.group(environment_id, state, None, arguments.limit or PAGE_SIZE_ROWS) for state in (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED, DELEGATED, TaskState.OPEN, *self.added_states()))
         finished = tuple(self.finished_group(environment_id, state, None, arguments.limit or FINISHED_PAGE_ROWS) for state in FINISHED_STATES)
@@ -63,12 +65,20 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
     def group(self, environment_id: int, state: TaskState | str, previous_id: int | None, size: int) -> TaskGroup:
         cards = self.cards(environment_id, state)
         rows = cards.matching(Less("id", previous_id)) if previous_id is not None else cards
-        return TaskGroup(str(state), cards.count(), tuple(rows.newest().page(1, size).rows))
+        return TaskGroup(str(state), cards.count(), tuple(rows.newest().limited(size)))
 
-    def finished_group(self, environment_id: int, state: TaskState, closed_limit: str | None, size: int) -> TaskGroup:
+    @staticmethod
+    def finished_cursor(arguments: Namespace) -> Condition | None:
+        if arguments.before_closed_at is None:
+            return None
+        if arguments.before_id is None:
+            return Less("closed_at", arguments.before_closed_at)
+        return ClosedTaskCursor(arguments.before_closed_at, arguments.before_id)
+
+    def finished_group(self, environment_id: int, state: TaskState, cursor: Condition | None, size: int) -> TaskGroup:
         cards = self.cards(environment_id, state)
-        rows = cards.matching(Less("closed_at", closed_limit)) if closed_limit is not None else cards
-        return TaskGroup(state.value, cards.count(), tuple(rows.descending("closed_at").page(1, size).rows))
+        rows = cards.matching(cursor) if cursor is not None else cards
+        return TaskGroup(state.value, cards.count(), tuple(rows.descending("closed_at", "id").limited(size)))
 
     def cards(self, environment_id: int, state: TaskState | str) -> Query[TaskCard]:
         cards = self.queries.query(TaskCard).filter(environment_id=environment_id)

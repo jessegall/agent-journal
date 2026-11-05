@@ -4,6 +4,7 @@ from core.base.model.model import Model
 from core.base.model.state_holder import StateHolder
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.lifecycles.question_lifecycle import QuestionLifecycle
+from core.modules.documents.models.enums.comment_selection_type import CommentSelectionType
 
 TEXT_LIMIT_CHARACTERS = 500
 OPTION_LIMIT_CHARACTERS = 120
@@ -29,4 +30,9 @@ class Question(Model, StateHolder):
     answer: str = ""
     message_id: int | None = None
     state: QuestionState = QuestionState.OPEN
+    row_model: str = ""
+    row_id: int | None = None
+    quote: str = ""
+    position: int | None = None
+    selection_type: CommentSelectionType = CommentSelectionType.TEXT
 

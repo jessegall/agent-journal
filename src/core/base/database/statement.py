@@ -18,6 +18,10 @@ class Statement:
     def is_false(self) -> bool:
         return self.sql == "0"
 
+    @property
+    def is_read(self) -> bool:
+        return self.sql.lstrip().upper().startswith(("SELECT", "WITH", "EXPLAIN", "PRAGMA"))
+
     def joined(self, tail: "Statement", separator: str = " ") -> "Statement":
         return self.all_joined((self, tail), separator)
 

@@ -36,7 +36,8 @@ class ReaderDrafting:
                          count_pattern=stock.count, count_command=stock.count_command, step_pattern=stock.step) for stock in STOCK_READERS)
         matching_stock = tuple(reader for reader in stock_readers if ReaderSelection.matches(reader.commands, request.command))
         stock_names = {reader.name for reader in stock_readers}
-        project_readers = tuple(reader for reader in self.readers.newest().all_rows() if reader.name not in stock_names)
+        project_readers = tuple(reader for reader in self.readers.newest().all_rows()
+                                if reader.name not in stock_names and ReaderSelection.matches(reader.commands, request.command))
         readers = matching_stock if matching_stock else project_readers + stock_readers
         for reader in readers:
             if not self.judge.fields_missing(reader, request.category) and not self.judge.misses(reader, request.category, text):

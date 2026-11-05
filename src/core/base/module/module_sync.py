@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 from collections.abc import Sequence
 
 from core.base.clock import Clock
@@ -111,11 +112,11 @@ class ModuleSync:
             registry_changed = self.registry_table.write(registry.fingerprint, registry.entries_text(), timestamp)
             if registry_changed:
                 self.events.write_registry_sync(CORE_ACTOR_ID, registry.fingerprint, timestamp)
-            for module in modules:
-                for listener in module.listeners:
-                    if self.timing(listener) is ListenerTiming.COMMIT:
-                        self.cursors.start(listener.name)
-        self.home.program_table.write_text(ProgramTable([provider for module in modules for provider in module.providers]).text())
+            listeners = [entry.name for entry in registry.listeners if entry.timing is ListenerTiming.COMMIT]
+            self.cursors.remove_absent(listeners)
+            for listener in listeners:
+                self.cursors.start(listener)
+        FileAccess.shared().write(self.home.program_table, ProgramTable([provider for module in modules for provider in module.providers]).text())
         return SyncReport(tuple(module.name for module in modules), migrations, registry_changed, (*retired, *self.notes.lines(modules)))
 
     def migrations(self, module: type[Module]) -> tuple[Migration, ...]:
@@ -196,7 +197,7 @@ class ModuleSync:
             for skill in module.skills:
                 path = module.folder() / SKILLS_FOLDER / skill.folder / skill.file
                 entries.append(SkillEntry(skill.folder, module.name, skill.description, tuple(skill.keywords), tuple(skill.commands), tuple(skill.events),
-                                          SkillDigest.digest(path.read_text()), str(path), module in shipped))
+                                          SkillDigest.digest(FileAccess.shared().read(path)), str(path), module in shipped))
         return tuple(entries)
 
     def buttons(self, modules: tuple[type[Module], ...]) -> tuple[ButtonEntry, ...]:

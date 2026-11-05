@@ -21,6 +21,7 @@ type TerminalInputs struct {
 	keyedAt  map[int]time.Time
 	typedAt  map[int]time.Time
 	programs map[int]*exec.Cmd
+	starting map[int]bool
 }
 
 // keyboardReader notes when keys come from the keyboard.
@@ -39,7 +40,7 @@ func (reader keyboardReader) Read(buffer []byte) (int, error) {
 
 // NewTerminalInputs makes the inputs of no program yet.
 func NewTerminalInputs() *TerminalInputs {
-	return &TerminalInputs{writers: map[int]*io.PipeWriter{}, keyedAt: map[int]time.Time{}, typedAt: map[int]time.Time{}, programs: map[int]*exec.Cmd{}}
+	return &TerminalInputs{writers: map[int]*io.PipeWriter{}, keyedAt: map[int]time.Time{}, typedAt: map[int]time.Time{}, programs: map[int]*exec.Cmd{}, starting: map[int]bool{}}
 }
 
 // Open keeps an input for the agent, fed by the source as well, and returns what the program's terminal reads.
@@ -52,12 +53,22 @@ func (inputs *TerminalInputs) Open(agentID int, source io.Reader) io.Reader {
 	return reader
 }
 
-// IsOpen says whether a program of the agent runs.
+// Reserve admits one startup for an agent until Close releases it.
+func (inputs *TerminalInputs) Reserve(agentID int) bool {
+	inputs.mutex.Lock()
+	defer inputs.mutex.Unlock()
+	if inputs.starting[agentID] || inputs.writers[agentID] != nil || inputs.programs[agentID] != nil {
+		return false
+	}
+	inputs.starting[agentID] = true
+	return true
+}
+
+// IsOpen says whether a program of the agent is starting or running.
 func (inputs *TerminalInputs) IsOpen(agentID int) bool {
 	inputs.mutex.Lock()
 	defer inputs.mutex.Unlock()
-	_, ok := inputs.writers[agentID]
-	return ok
+	return inputs.starting[agentID] || inputs.writers[agentID] != nil || inputs.programs[agentID] != nil
 }
 
 // Close ends the agent's input once its program has ended.
@@ -69,6 +80,7 @@ func (inputs *TerminalInputs) Close(agentID int) {
 		delete(inputs.writers, agentID)
 	}
 	delete(inputs.programs, agentID)
+	delete(inputs.starting, agentID)
 }
 
 // Track keeps the agent's running program, so a request can stop it.
@@ -76,6 +88,7 @@ func (inputs *TerminalInputs) Track(agentID int, program *exec.Cmd) {
 	inputs.mutex.Lock()
 	defer inputs.mutex.Unlock()
 	inputs.programs[agentID] = program
+	delete(inputs.starting, agentID)
 }
 
 // StopProgram ends the agent's running program and says whether it had one.

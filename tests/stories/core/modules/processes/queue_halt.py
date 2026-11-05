@@ -3,6 +3,7 @@ from datetime import timedelta
 from core.base.driver.command_category import CommandCategory
 from core.base.module.module_finder import ModuleFinder
 from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 from core.testing.hook_samples import HookSamples
@@ -11,6 +12,7 @@ from tests.stories.core.modules.processes.run_queue import has_slot, queued, wai
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
 from tests.stories.core.modules.processes.support.queue_fixtures import QueueAgents as BuilderStarted
 from tests.stories.support.story_checks import expect_value_with
+from core.modules.processes.support.output_folder import OutputFolder
 
 VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
 HALT = 'queue halt "a deploy is going"'
@@ -59,6 +61,31 @@ def test_resuming_grants_the_spots_oldest_first(new_story):
     first, second, third = queued(story, "make one"), queued(story, "make two"), queued(story, "make three")
     story.expect_success("queue resume", actor=story.agent)
     expect_slot_3(story, first, second, third, (True, True, False))
+
+
+def test_a_slot_timeout_ends_failed_and_resuming_only_admits_a_new_retry(new_story):
+    story = halted_story(new_story)
+    expired = queued(story, "make timed-out")
+    story.advance(timedelta(minutes=30))
+    expect_absent_slot(story, expired)
+    message = "queue slot wait expired: no command was started\n"
+    story.container.get(OutputFolder).write_output(expired.id, 1, message)
+    story.expect_success(f"process end {expired.id} --exit-code 124 --bytes {len(message)} --lines 1", actor=Actor(expired.agent_id, ActorType.AGENT))
+    story.expect_text(f"process show {expired.id}", "state: failed", "exit_code: 124")
+    story.expect_success("queue resume", actor=story.agent)
+    expect_absent_slot(story, expired)
+    retry = queued(story, "make retry")
+    expect_slot(story, retry)
+
+
+def test_a_cancelled_queued_run_never_receives_a_slot_when_the_queue_resumes(new_story):
+    story = halted_story(new_story)
+    cancelled = queued(story, "make cancelled")
+    story.expect_success(f"output stop {cancelled.id}", actor=story.agent)
+    story.expect_success("queue resume", actor=story.agent)
+    expect_absent_slot(story, cancelled)
+    story.expect_text(f"process show {cancelled.id}", "state: stopped")
+    expect_slot(story, queued(story, "make fresh"))
 
 
 def test_resuming_a_queue_that_is_not_halted_says_so(new_story):

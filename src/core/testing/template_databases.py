@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import fcntl
 import hashlib
 import inspect
@@ -47,8 +48,10 @@ class TemplateDatabases:
             if not (folder / STATE_FILE).is_file():
                 shutil.rmtree(folder, ignore_errors=True)
                 built = self.fixture_template(folder, modules, fixture) if fixture else self.synced_template(folder, modules)
-                (folder / STATE_FILE).write_bytes(pickle.dumps(built.state))
-            return Template(JournalHome(folder), pickle.loads((folder / STATE_FILE).read_bytes()))
+                state = folder / (STATE_FILE + ".new")
+                FileAccess.shared().write_binary(state, pickle.dumps(built.state))
+                FileAccess.shared().replace(state, folder / STATE_FILE)
+            return Template(JournalHome(folder), pickle.loads(FileAccess.shared().binary(folder / STATE_FILE)))
 
     @staticmethod
     def template_key(modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> list[object]:
@@ -56,21 +59,21 @@ class TemplateDatabases:
         current = fixture
         while current is not None:
             source = inspect.getsourcefile(current)
-            key += [current.__module__, current.__qualname__, Path(source).read_text() if source else ""]
+            key += [current.__module__, current.__qualname__, FileAccess.shared().read(Path(source)) if source else ""]
             current = current.parent
         return key
 
     @staticmethod
     @contextmanager
     def locked(path: Path) -> Generator[None]:
-        with path.open("w") as lock_file:
+        with FileAccess.shared().writer(path) as lock_file:
             fcntl.flock(lock_file, fcntl.LOCK_EX)
             yield
 
     def synced_template(self, folder: Path, modules: tuple[str, ...]) -> Template:
         home = JournalHome(folder)
         home.folder.mkdir(parents=True)
-        home.module_list.write_text(json.dumps(list(modules)))
+        FileAccess.shared().write(home.module_list, json.dumps(list(modules)))
         container = opened_container(home)
         container.bind(Clock, ManualClock())
         container.get(ModuleSync).run()

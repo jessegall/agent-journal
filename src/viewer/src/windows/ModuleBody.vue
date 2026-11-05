@@ -1,5 +1,5 @@
 <script setup>
-import {computed, inject, onUnmounted} from "vue";
+import {computed, inject, watch} from "vue";
 import FrameWindow from "./FrameWindow.vue";
 import PageWindow from "./PageWindow.vue";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
@@ -12,8 +12,10 @@ const ANY_EVENT = "*.*";
 const host = inject(WINDOW_CONTEXT, null);
 const subscriptions = new WindowSubscriptions();
 // the page's event stream feeds the follows of the window that draws the body, which hands each event on to the body's own
-const stopHearing = host?.subscriptions?.follow(`body of ${props.declaration.type}`, [ANY_EVENT], (event) => subscriptions.dispatch(event));
-onUnmounted(() => stopHearing?.());
+watch(() => subscriptions.patterns, (patterns, previous, cleanup) => {
+    const stop = host?.subscriptions?.follow(`body of ${props.declaration.type}`, patterns, (event) => subscriptions.dispatch(event));
+    cleanup(() => stop?.());
+}, {immediate: true, flush: "sync"});
 // the body reads in the environment of the window that draws it
 const env = host?.environment ?? props.environment;
 const permissions = {reads: [], runs: [], missing: [], ask: async () => true};

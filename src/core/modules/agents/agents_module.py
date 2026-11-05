@@ -76,7 +76,7 @@ class AgentsModule(Module):
                WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, skeleton=AGENTS_SUBAGENTS_SKELETON, icon=WindowIcon.SUBAGENT, shows=WindowShows.SELECTED_AGENT, search=WindowSearch(AgentSearcher, "Search the agents"), reads=CARD_READS,
                                  events=CARD_EVENTS, tabs=CARD_TABS),
                WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, skeleton=AGENTS_TRANSCRIPT_SKELETON, icon=WindowIcon.DOCUMENT, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM,
-                                 reads=["agent transcript", "hook-call feed"], events=["hook_call.create"])]
+                                 reads=["agent transcript", "hook-call feed"], events=["hook_call.*"])]
     listeners = [MenuAnswerMarkListener]
     marks = AGENT_MARKS
     seeders = [AgentsSeeder]

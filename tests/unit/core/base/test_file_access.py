@@ -81,3 +81,14 @@ def test_a_private_writer_creates_a_file_readable_only_by_its_owner(tmp_path):
         output.write("secret")
     assert stat.S_IMODE(path.stat().st_mode) == 0o600
     assert files.read(path) == "secret"
+
+
+def test_temporary_writer_creates_private_file_and_cleans_it(tmp_path):
+    files = FileAccess()
+    with files.temporary_writer(tmp_path) as output:
+        path = Path(output.name)
+        output.write("temporary")
+        output.flush()
+        assert stat.S_IMODE(path.stat().st_mode) == 0o600
+        assert files.read(path) == "temporary"
+    assert not path.exists()

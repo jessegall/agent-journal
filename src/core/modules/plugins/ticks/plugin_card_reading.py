@@ -1,3 +1,5 @@
+from contextlib import closing
+
 from core.base.actor import Actor
 from core.base.command.bus import Bus
 from core.base.container import Container
@@ -17,9 +19,13 @@ class PluginCardReading:
         queries, bus = container.get(Queries), container.get(Bus)
         outputs_added = 0
         for plugin in container.get(PluginQuery).enabled_ones():
-            for card_answer in PluginQueue(container.get(PluginFolders).data(plugin.name)).claim_cards():
-                agent = queries.query(Agent).filter(id=card_answer.agent_id).first()
-                if agent is not None:
-                    bus.run(AddPluginOutput(plugin.id, agent.environment_id, agent.id, card_answer.output), Actor.core(), environment_id=agent.environment_id)
+            queue = PluginQueue(container.get(PluginFolders).data(plugin.name))
+            with closing(queue.claim_cards()) as claims:
+                for claim in claims:
+                    agent = queries.query(Agent).filter(id=claim.answer.agent_id).first()
+                    if agent is None:
+                        continue
+                    bus.run(AddPluginOutput(plugin.id, agent.environment_id, agent.id, claim.answer.output), Actor.core(), environment_id=agent.environment_id)
+                    claim.remove_cards()
                     outputs_added += 1
         return outputs_added > 0

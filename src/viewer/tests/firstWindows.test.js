@@ -69,7 +69,7 @@ test("the plans window shows each plan's title and state", async () => {
     const window = {...context({"plan board": {ok: true, value: {open_total: 1, closed_total: 0, plans: [{id: 3, title: "Checkout", state: "started", task_count: 0, completed_count: 0, current_phase: 0}]}}}), tabs: [{key: "open", read: "plan board"}]};
     const text = await drawn(PlanList, window);
     expect(text).toContain("Checkout");
-    expect(text).toContain("started");
+    expect(text).toContain("Started");
 });
 
 test("the agents window shows each helper's role", async () => {
@@ -121,7 +121,7 @@ test("the terminal window lists its agent's commands in order, marks journal lin
         {id: 8, agent_id: 2, hook: "pre_tool_use", tool: "Read", summary: "a.py", refusal: ""},
     ])}, 2);
     const element = await mounted(Terminal, {...windowContext, option: () => ref("journal")});
-    expect(windowContext.reads[0]).toBe("hook-call feed --agent-id 2");
+    expect(windowContext.reads[0]).toBe("hook-call feed --agent-id 2 --limit 200");
     const rows = [...element.querySelectorAll("[data-terminal-command]")];
     expect(rows.map((row) => row.querySelector(".terminal-text").textContent)).toEqual(["pytest -q", "journal task list", "rm -rf build"]);
     expect(rows.map((row) => row.querySelector(".terminal-mark").textContent)).toEqual(["$", "#", "$"]);

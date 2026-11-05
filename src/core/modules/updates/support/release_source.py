@@ -60,7 +60,7 @@ class ReleaseSource:
 
     def kept(self, address: str) -> dict[str, object] | None:
         try:
-            saved = json.loads(self.home.newest_release_file.read_text())
+            saved = json.loads(FileAccess.shared().read(self.home.newest_release_file))
             age = (self.clock.timestamp().value - Timestamp.parsed(str(saved["at"])).value).total_seconds()
         except (OSError, ValueError, KeyError):
             return None
@@ -75,7 +75,7 @@ class ReleaseSource:
         archive, _ = self.fetched(f"{release.address}/{ARCHIVE}")
         if hashlib.sha256(archive).hexdigest() != release.checksum:
             raise Refusal(f"the checksum of {ARCHIVE} does not match the release's, so nothing was installed", "check the release address, then try again")
-        with tempfile.NamedTemporaryFile(suffix=".tar.gz") as download:
+        with FileAccess.shared().temporary_writer(Path(tempfile.gettempdir()), mode="w+b", suffix=".tar.gz") as download:
             download.write(archive)
             download.flush()
             with tarfile.open(download.name, "r:gz") as unpacking:

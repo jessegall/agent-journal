@@ -154,5 +154,5 @@ class DriversModule(Module):
                 EssentialAllowances: SettingEssentialAllowances}
     windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, skeleton=DRIVERS_NUDGES_SKELETON, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),
                WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, skeleton=DRIVERS_HOOK_CALLS_SKELETON, icon=WindowIcon.RUNS, shows=WindowShows.SELECTED_AGENT,
-                                 reads=["hook-call feed", "hook-call show"], events=["hook_call.create"])]
+                                 reads=["hook-call feed", "hook-call show"], events=["hook_call.*"])]
     seed_reason = "each suite chooses the drivers used by its demo"

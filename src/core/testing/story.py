@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import io
 import json
 import re
@@ -123,7 +124,8 @@ class Story:
 
     def run_listeners(self) -> None:
         self.steps.append("listeners")
-        self.container.get(CommitListenerRunner).run()
+        with self.repeated_work.request():
+            self.container.get(CommitListenerRunner).run()
 
     def tick(self, session: str) -> HookReply:
         return self.hook(session, HookSamples.tick())
@@ -219,10 +221,10 @@ class Story:
 
     def report_context_percent(self, session: str, percent: int) -> None:
         self.home.status_folder.mkdir(parents=True, exist_ok=True)
-        (self.home.status_folder / f"{session}.json").write_text(json.dumps({"session_id": session, "context_window": {"used_percentage": percent}}))
+        FileAccess.shared().write(self.home.status_folder / f"{session}.json", json.dumps({"session_id": session, "context_window": {"used_percentage": percent}}))
 
     def error_log_text(self) -> str:
-        return self.home.error_log.read_text() if self.home.error_log.exists() else ""
+        return FileAccess.shared().read(self.home.error_log) if self.home.error_log.exists() else ""
 
     def expect_sync_refusal(self, module: str, text: str) -> None:
         code, output_text = self.synced_with(module)
@@ -245,8 +247,8 @@ class Story:
         assert name in names, f"no {name} event among {names}"
 
     def synced_with(self, module: str) -> tuple[int, str]:
-        modules = json.loads(self.home.module_list.read_text())
-        self.home.module_list.write_text(json.dumps([*modules, module]))
+        modules = json.loads(FileAccess.shared().read(self.home.module_list))
+        FileAccess.shared().write(self.home.module_list, json.dumps([*modules, module]))
         return self.synced()
 
     def synced(self) -> tuple[int, str]:

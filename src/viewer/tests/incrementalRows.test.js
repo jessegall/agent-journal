@@ -2,11 +2,11 @@ import {createApp, defineComponent, h} from "vue";
 import {expect, test} from "vitest";
 import {WINDOW_CONTEXT, useRows} from "@journal/window-kit";
 
-function rowsOf(reads) {
+function rowsOf(reads, total = 2) {
     const heard = [];
     const context = {
         shared: null,
-        read: async (line) => (reads.push(line), {ok: true, value: {rows: reads.answers.shift()}}),
+        read: async (line) => (reads.push(line), {ok: true, value: {rows: reads.answers.shift(), page: 1, size: 2, total}}),
         follow: (_patterns, handler) => heard.push(handler),
     };
     let rows;
@@ -43,7 +43,7 @@ test("a held row that changed is read alone, also one past the first page, and l
 test("older rows are read before the oldest held and added behind them", async () => {
     const reads = [];
     reads.answers = [[{id: 5}, {id: 4}], [{id: 3}, {id: 2}], []];
-    const {rows} = rowsOf(reads);
+    const {rows} = rowsOf(reads, 5);
     await new Promise((resolve) => setTimeout(resolve));
     expect(await rows.older()).toBe(true);
     expect(rows.rows.value.map((row) => row.id)).toEqual([5, 4, 3, 2]);
@@ -54,7 +54,7 @@ test("older rows are read before the oldest held and added behind them", async (
 test("loading the newest page drops older pages and ignores an earlier incremental answer", async () => {
     const reads = [];
     reads.answers = [[{id: 5}, {id: 4}], [{id: 3}, {id: 2}], [{id: 6}], [{id: 50}, {id: 49}]];
-    const {rows, heard} = rowsOf(reads);
+    const {rows, heard} = rowsOf(reads, 5);
     await new Promise((resolve) => setTimeout(resolve));
     await rows.older();
     const catchingUp = heard[0]({event: "message.create"});

@@ -30,6 +30,7 @@ class AliasFileListener(CommitListener[FilePublishing | Touched[Alias]]):
     def handle(self, event: FilePublishing | Touched[Alias], logged: LoggedEvent) -> None:
         commands = self.names.command_names()
         lines = {alias.name: self.line(alias) for alias in self.aliases.all_rows() if alias.name not in commands}
+        self.home.alias_file.parent.mkdir(parents=True, exist_ok=True)
         FileAccess.shared().write(self.home.alias_file, json.dumps(lines))
         FileAccess.shared().write(self.home.saved_command_file, json.dumps([alias.name for alias in self.aliases.all_rows() if alias.name in lines and alias.category and alias.category.is_long_running]))
 

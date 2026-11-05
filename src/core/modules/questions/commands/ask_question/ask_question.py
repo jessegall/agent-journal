@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from core.base.command.command import Command
 from core.modules.questions.models.question import Question
+from core.modules.questions.support.question_place import QuestionPlace
 
 
 @dataclass(frozen=True)
@@ -13,3 +14,4 @@ class AskQuestion(Command[Question]):
     text: str
     options: Sequence[str] = ()
     recommended: str = ""
+    place: QuestionPlace = QuestionPlace()

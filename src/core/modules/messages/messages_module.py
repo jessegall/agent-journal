@@ -15,6 +15,7 @@ from core.modules.messages.listeners.message_edited_mark_listener import Message
 from core.modules.messages.listeners.read_message_edit_listener import ReadMessageEditListener
 from core.modules.messages.support.message_nudges import MESSAGE_NUDGES
 from core.modules.messages.guards.one_reply_per_message_guard import OneReplyPerMessageGuard
+from core.modules.messages.guards.question_message_guard import QuestionMessageGuard
 from core.modules.messages.commands.read_message.read_message_handler import ReadMessageHandler
 from core.modules.messages.commands.read_message.read_message_subcommand import ReadMessageSubcommand
 from core.modules.messages.migrations.m006_message_reactions import MessageReactionsMigration
@@ -89,7 +90,7 @@ class MessagesModule(Module):
     moves = [MessagesMove]
     views = [AttachedFile, ChatMessage, MainChatMark]
     migrations = [VisibleMessageIndexMigration, MessageReplyIndexMigration, MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration, MessageVisibilityMigration]
-    guards = [OneReplyPerMessageGuard]
+    guards = [OneReplyPerMessageGuard, QuestionMessageGuard]
     handlers = [RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler]
     driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]
     subcommands = [AttachmentListSubcommand, CommentMessageSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand]

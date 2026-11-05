@@ -10,6 +10,7 @@ from core.modules.processes.models.output import Output
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
+from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.run_slots import RunSlots
@@ -33,7 +34,8 @@ class ReaderRequestCompleteListener(SaveListener[Changed[Reader]]):
             return
         reader = event.row
         for request in tuple(self.requests.open().all_rows()):
-            if not ReaderSelection.reads_command(reader, request.command, request.category) or not self.judge.judged(reader, request.category).is_proper:
+            scope = ReaderSampleScope(request.environment_id, request.creator_id, request.command)
+            if not ReaderSelection.reads_command(reader, request.command, request.category) or not self.judge.judged_command(reader, request.category, scope).is_proper:
                 continue
             self.repository.save(replace(request, reader_id=reader.id, completed_at=self.clock.timestamp()), context)
             for waiting in self.queries.query(ProcessPart).filter(reader_request_id=request.id).all_rows():

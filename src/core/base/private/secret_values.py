@@ -1,5 +1,7 @@
 from core.base.file_access import FileAccess
 import json
+from functools import lru_cache
+from core.base.file_version import FileVersion
 from pathlib import Path
 
 from core.base.private.private_folder import PrivateFolder
@@ -23,7 +25,12 @@ class SecretValues:
         path = self.folder.file(VALUES_SUFFIX)
         if path is None or not path.is_file():
             return {}
-        return dict(pair for pair in map(self.parsed, FileAccess.shared().read(path).splitlines()) if pair is not None)
+        return dict(self.loaded_values(path, FileAccess.shared().version(path)))
+
+    @staticmethod
+    @lru_cache(maxsize=128)
+    def loaded_values(path: Path, version: FileVersion) -> tuple[tuple[str, str], ...]:
+        return tuple(pair for pair in map(SecretValues.parsed, FileAccess.shared().read(path).splitlines()) if pair is not None)
 
     def hidden_values(self) -> dict[str, str]:
         shown = self.shown()
@@ -47,7 +54,14 @@ class SecretValues:
 
     def shown(self) -> set[str]:
         path = self.folder.file(SHOWN_SUFFIX)
-        return set(FileAccess.shared().read(path).split()) if path is not None and path.is_file() else set()
+        if path is None or not path.is_file():
+            return set()
+        return set(self.loaded_shown(path, FileAccess.shared().version(path)))
+
+    @staticmethod
+    @lru_cache(maxsize=128)
+    def loaded_shown(path: Path, version: FileVersion) -> frozenset[str]:
+        return frozenset(FileAccess.shared().read(path).split())
 
     def write(self, values: dict[str, str]) -> None:
         self.write_file(self.folder.made_file(VALUES_SUFFIX), HEADER + "".join(f"{name}={json.dumps(value)}\n" for name, value in values.items()))

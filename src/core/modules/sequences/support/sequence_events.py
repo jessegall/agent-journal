@@ -18,7 +18,7 @@ class SequenceEvents:
         return self.index().ends.get(event, frozenset())
 
     def index(self) -> SequenceEventIndex:
-        return self.kept.read("sequences", self.load)
+        return self.kept.read("sequences", self.load, name="sequences.event-index")
 
     def load(self) -> SequenceEventIndex:
         return SequenceEventIndex.built(self.queries.query(Sequence).all_rows())

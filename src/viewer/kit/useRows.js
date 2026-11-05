@@ -1,6 +1,7 @@
 import {afterSkeletonMinimum} from "./skeletonMinimum.js";
 import {ref} from "vue";
 import {useWindow} from "./windowContextKey.js";
+import {runChanged} from "./runChanged.js";
 
 // the rows a window lists from one read line (in a share, the one row it is shared for, read by its model's show line), read again whenever an event it follows arrives, with the reason a read
 // failed in place of the rows, and whether the first read has answered
@@ -50,7 +51,7 @@ export function useRows(line, patterns, {incremental = false} = {}) {
 
     // the page of rows older than the oldest held, added behind them; false when there are none, and `more` says whether the server holds another page behind it
     async function older() {
-        if (!rows.value.length) return false;
+        if (!more.value || !rows.value.length) return false;
         const turn = latestLoad;
         const oldest = Math.min(...rows.value.map((row) => row.id));
         const result = await context.read(`${line} --before-id ${oldest}`);
@@ -90,10 +91,7 @@ export function useRows(line, patterns, {incremental = false} = {}) {
     // runs a command the window declares, keeps what it answered or why it failed, and reads the rows again; a change, from the rows held to
     // the rows the command will leave, shows at once, and is put back with the reason when the command fails
     async function act(words, change = null) {
-        const before = rows.value;
-        if (change) rows.value = change(before);
-        const result = await context.run(words);
-        if (change && !result.ok) rows.value = before;
+        const result = await runChanged(change && {target: rows, fields: {value: change(rows.value)}}, words, context.run);
         actionFailure.value = result.ok ? "" : result.error;
         answer.value = result.ok ? result.value : null;
         await load();

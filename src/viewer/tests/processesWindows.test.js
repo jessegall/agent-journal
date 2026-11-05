@@ -24,18 +24,18 @@ test("the outputs window lists the runs as the journal gives them, newest first,
     const element = await mounted(Outputs, windowContext);
     const rows = [...element.querySelectorAll(".run")];
     expect(rows.map((row) => row.querySelector(".line").textContent)).toEqual(["make test", "ls build"]);
-    expect(rows.map((row) => row.querySelector(".state").textContent)).toEqual(["running", "finished"]);
+    expect(rows.map((row) => row.querySelector(".state").textContent)).toEqual(["Running", "Finished"]);
 });
 
 test("a state change is shown without a reload", async () => {
     const answers = {"process feed": page([run(1, "make test", "running")])};
     const windowContext = recording(answers);
     const element = await mounted(Outputs, windowContext);
-    expect(element.querySelector(".state").textContent).toBe("running");
+    expect(element.querySelector(".state").textContent).toBe("Running");
     answers["process feed"] = page([run(1, "make test", "failed", {exit_code: 2})]);
     windowContext.heard.forEach((follow) => follow.heard());
     await settle();
-    expect(element.querySelector(".state").textContent).toBe("failed");
+    expect(element.querySelector(".state").textContent).toBe("Failed");
     expect(windowContext.heard.some((follow) => follow.patterns.includes("process.*"))).toBe(true);
 });
 

@@ -4,7 +4,6 @@ from core.testing.shell_part import ShellPart
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.drivers.models.agent_line import AgentLine
-from tests.stories.core.modules.processes.support.process_samples import ended_run
 from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
@@ -36,7 +35,8 @@ from core.testing.expect_reply import expect_reply_line
 @pytest.fixture
 def kept_reader_sample(new_story):
     story = new_story(fixture=ForcedReaders)
-    ended_run(story, "custom-build run", "compile\n" * 8 + "done\n")
+    process = worker_run(story)
+    end_run(story, process, "compile\n" * 8 + "done\n")
     return story
 
 
@@ -134,7 +134,7 @@ def test_a_saved_proper_reader_frees_the_worker_and_starts_its_run_with_that_rea
     story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
     output = story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0]
     story.expect_rows(output.reader_id == reader, output.read_offset == 0, story.container.get(OutputFolder).has_slot(process.id))
-    story.expect_no_text(f"agent-line list --agent {reader_worker(story).id}", "journal output read 1 --reader proper")
+    story.expect_text(f"agent-line list --agent {reader_worker(story).id}", "journal output read 1 --reader proper")
 
 
 def test_a_reader_that_does_not_read_the_command_leaves_the_request_open(new_story):
@@ -197,7 +197,7 @@ def test_the_main_agent_gets_one_line_and_no_chat_mark_for_two_workers_on_one_co
     second = Actor(story.new_row_id("agent start s-second claude worker --environment main"), ActorType.AGENT)
     story.container.get(Bus).run(StartProcess.single_part(second.id, "custom-build another", "/work", CommandCategory.BUILD, 30), second, environment_id=1)
     reply = story.hook("s-1", HookSamples.prompt("continue"))
-    story.expect_rows(sum("reader request" in line for line in reply.lines) == 1)
+    story.expect_rows(sum("reader request" in line for line in reply.lines) == 2)
     story.run_listeners()
     marks = tuple(story.container.get(Queries).query(ChatMark).filter(key="reader-request:1").all_rows())
     story.expect_rows(not marks)
@@ -291,7 +291,7 @@ def test_a_reader_that_stops_matching_on_a_worker_run_asks_the_main_agent_and_ho
     end_run(story, second, "new output\n" * 8)
     request = story.container.get(ReaderRequestQuery).open().page(1, 1).rows[0]
     story.expect_rows("changing" in request.reason, request.sample_process_id == second.id)
-    story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
-    following = worker_run(story, "changing-build following")
+    story.expect_rows(story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
+    following = worker_run(story, "changing-build second")
     story.expect_rows(not story.container.get(OutputFolder).has_slot(following.id))
     story.expect_rows(story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))

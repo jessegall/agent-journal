@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
+from urllib.parse import urlencode
 
 from core.base.cli.console import ERROR_CODE
 from core.base.journal_home import JournalHome
@@ -19,6 +20,7 @@ from core.base.timestamp import Timestamp
 from core.base.timing import TIMING_HEADER, Timing
 from core.base.timing_log import TimingLog
 from core.testing.story import Story
+from core.testing.story_line_run import StoryLineRun
 from core.testing.line_outcome import LineOutcome
 from core.base.query.queries import Queries
 from core.modules.skills.models.agent_skill import AgentSkill
@@ -174,6 +176,20 @@ class ServerStory:
     def expect_viewer_event_ids(self, cookie: str, cursor_id: int, count: int, ids: list[int]) -> None:
         assert self.viewer_event_ids(cookie, cursor_id, count) == ids
 
+    @contextmanager
+    def viewer_stream(self, cookie: str, cursor_id: int, patterns: list[str]):
+        port = self.viewer_port()
+        follows = [("follow", pattern) for pattern in patterns] or [("follow", "")]
+        query = urlencode([("cursor", str(cursor_id)), ("environment", "main"), *follows])
+        connection = http.client.HTTPConnection("127.0.0.1", port, timeout=TIMEOUT_SECONDS)
+        try:
+            connection.request("GET", f"/api/events?{query}", headers={"Host": f"127.0.0.1:{port}", "Cookie": cookie})
+            response = connection.getresponse()
+            assert response.status == 200, response.status
+            yield response
+        finally:
+            connection.close()
+
     def expect_health(self) -> None:
         answer = request_answer(self.socket_path, "GET", "/health")
         health = answer.json()
@@ -297,6 +313,7 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
     login = ViewerLogin(phones, ShareSessions(phones.journal_output))
     context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
                             HookDatabase(home), ViewerListener(login, ViewerRoutes(home, listener_thread, login)), ServerTunnel(home), STORY_HOOK_LIMIT_SECONDS)
+    context.viewer.routes.line_route.line_run = StoryLineRun(home, listener_runner=ListenerWake(listener_thread))
     server = JournalServer(str(files.socket), RequestHandler, context)
     if listener_thread_started:
         listener_thread.start()

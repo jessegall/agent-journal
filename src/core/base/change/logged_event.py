@@ -6,6 +6,8 @@ from types import MappingProxyType
 
 from core.base.timestamp import Timestamp
 
+CREATION = ".create"
+
 
 @dataclass(frozen=True)
 class LoggedEvent:
@@ -22,6 +24,10 @@ class LoggedEvent:
     skipped_guards: frozenset[str]
     timestamp: Timestamp
     data: Mapping[str, tuple[object, object]]
+
+    @property
+    def is_creation(self) -> bool:
+        return self.event.endswith(CREATION) or ("id" in self.data and self.data["id"][0] is None)
 
     @classmethod
     def parsed(cls, row: sqlite3.Row) -> "LoggedEvent":

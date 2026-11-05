@@ -65,12 +65,12 @@ function stretches(nodes, start, end) {
     return parts;
 }
 
-function numberButton(number, id) {
+function numberButton(number, id, label = "Comment") {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "comment-number";
     button.dataset.commentNumber = id;
-    button.setAttribute("aria-label", `Comment ${number}`);
+    button.setAttribute("aria-label", `${label} ${number}`);
     button.textContent = number;
     return button;
 }
@@ -98,9 +98,9 @@ function drawn(root, mark) {
         if (mark.id) element.dataset.comment = mark.id;
     }
     if (!mark.number || !elements.length) return true;
-    if (mark.selection_type === "row") elements.at(-1).lastElementChild.append(numberButton(mark.number, mark.id));
-    else if (mark.selection_type === "code") elements[0].prepend(numberButton(mark.number, mark.id));
-    else elements.at(-1).append(numberButton(mark.number, mark.id));
+    if (mark.selection_type === "row") elements.at(-1).lastElementChild.append(numberButton(mark.number, mark.id, mark.label));
+    else if (mark.selection_type === "code") elements[0].prepend(numberButton(mark.number, mark.id, mark.label));
+    else elements.at(-1).append(numberButton(mark.number, mark.id, mark.label));
     return true;
 }
 

@@ -21,6 +21,7 @@ class Database:
         self.nested: list[str] = []
         self.tally = PointTally()
         self.read_actor_id: int | None = None
+        self.rollback_count = 0
 
     @classmethod
     def opened(cls, home: JournalHome) -> "Database":
@@ -59,6 +60,7 @@ class Database:
             yield
             self.connection.execute("COMMIT")
         except BaseException:
+            self.rollback_count += 1
             if self.connection.in_transaction:
                 self.connection.execute("ROLLBACK")
             raise
@@ -74,6 +76,7 @@ class Database:
             yield
             self.connection.execute(f"RELEASE {name}")
         except BaseException:
+            self.rollback_count += 1
             if self.connection.in_transaction:
                 self.connection.execute(f"ROLLBACK TO {name}")
                 self.connection.execute(f"RELEASE {name}")
@@ -85,6 +88,8 @@ class Database:
         return self.connection.execute("PRAGMA data_version").fetchone()[0], self.connection.total_changes
 
     def rows(self, statement: Statement) -> list[sqlite3.Row]:
+        if not statement.is_read:
+            self.tally.count_write(statement.sql)
         rows = statement.result(self.connection).fetchall()
         self.tally.loaded(rows, statement)
         return rows

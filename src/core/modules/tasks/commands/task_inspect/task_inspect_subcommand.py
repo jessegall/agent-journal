@@ -27,7 +27,7 @@ class TaskInspectSubcommand(ReadSubcommand[TaskInspection]):
     def read(self, arguments: Namespace, caller: Caller) -> TaskInspection:
         task = self.queries.query(Task).find(arguments.task_id)
         row = self.queries.query(TaskInspectionRow).find(arguments.task_id)
-        return TaskInspection(task, tuple(json.loads(row.waits)), tuple(reversed(json.loads(row.logs))), tuple(TaskOpener.parsed(wait).text for wait in json.loads(row.openers)), row.helper_id, row.helper_name)
+        return TaskInspection(task, tuple(json.loads(row.waits)), tuple(reversed(json.loads(row.logs))), tuple(TaskOpener.parsed(wait).text for wait in json.loads(row.openers)), row.helper_id, row.helper_name, tuple(json.loads(row.block_renewals)))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, TaskInspection):

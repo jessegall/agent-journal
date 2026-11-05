@@ -15,7 +15,8 @@ from core.base.file_access import FILE_READ_EVENT, FILE_CHANGE_EVENT
 from core.testing.repeated_calls_error import RepeatedCallsError
 
 READ_LIMIT_REPEATS = 5
-COMMAND_LIMIT_REPEATS = 5
+READ_TEXT_LIMIT_REPEATS = 10
+COMMAND_LIMIT_REPEATS = 3
 CALLER_FRAMES = 14
 COMMAND_AUDIT_EVENT = "subprocess.Popen"
 OPEN_REQUEST: ContextVar["RepeatedWork | None"] = ContextVar("open_request", default=None)
@@ -37,16 +38,25 @@ SMALL_TABLES = {
     "plugins": "Installed plugins form a small configuration catalogue, not event history.",
     "releases": "Available releases form a small upstream catalogue, not event history.",
 }
+ALLOWED_READ_REPEATS = {
+    ("core/base/database/kept_rows.py", "read"): "A write changes the database mark; cached rows must check their table signature again.",
+    ("core/base/database/listener_cursor_table.py", "has_unhandled_events"): "Each listener round checks whether earlier listeners created more events.",
+    ("core/base/database/listener_cursor_table.py", "has_pending_events"): "Startup completion must be checked as listener cursors advance.",
+    ("core/base/change/event_log.py", "newest_id"): "Urgent listeners must notice events written by the previous listener.",
+    ("core/base/change/event_log.py", "events_past"): "Listener rounds read new events written by earlier listeners.",
+}
+READ_HELPERS = ("core/base/database/database.py", "core/base/database/bookkeeping_table.py")
 
 
 class RepeatedWork(PointTally):
-    """Counts the points of a story's database and raises when one request runs the same read too often with no
-    write in between, or starts the same command too often. A hook and a command line are each one request."""
+    """Counts database work and rejects repeated reads and commands within each story request."""
 
-    def __init__(self, database: Database) -> None:
+    def __init__(self, database: Database | None = None, read_text_limit: int | None = None) -> None:
         super().__init__()
         self.database = database
+        self.read_text_limit = read_text_limit
         self.reads: Counter[Statement] = Counter()
+        self.read_texts: Counter[str] = Counter()
         self.commands: Counter[str] = Counter()
         self.findings: list[str] = []
         self.checked_plans: set[Statement] = set()
@@ -55,7 +65,7 @@ class RepeatedWork(PointTally):
 
     @contextmanager
     def request(self) -> Generator[None]:
-        self.reads, self.commands, self.findings = Counter(), Counter(), []
+        self.reads, self.read_texts, self.commands, self.findings = Counter(), Counter(), Counter(), []
         self.checked_plans.clear()
         self.allowed_scans.clear()
         self.file_reads.clear()
@@ -72,10 +82,37 @@ class RepeatedWork(PointTally):
         super().loaded(rows, statement)
         if OPEN_REQUEST.get() is not self:
             return
-        self.check_scan(statement)
+        if not statement.is_read:
+            return
+        if self.database is not None:
+            self.check_scan(statement)
+        if self.is_allowed_read():
+            return
         self.reads[statement] += 1
+        self.read_texts[statement.sql] += 1
         if self.reads[statement] == READ_LIMIT_REPEATS + 1:
-            self.findings.append(f"one request read this more than {READ_LIMIT_REPEATS} times with no write in between: {statement.sql} {statement.parameters}\n{self.caller_lines()}")
+            self.reject(f"one request read this more than {READ_LIMIT_REPEATS} times without a write: {statement.sql} {statement.parameters}\n{self.caller_lines()}")
+        if self.read_text_limit is not None and self.read_texts[statement.sql] == self.read_text_limit + 1:
+            self.reject(f"one request read this SQL more than {self.read_text_limit} times without a write: {statement.sql}\n{self.caller_lines()}")
+
+    def count_write(self, sql: str) -> None:
+        super().count_write(sql)
+        self.reads.clear()
+        self.read_texts.clear()
+
+    def reject(self, finding: str) -> None:
+        self.findings.append(finding)
+        raise RepeatedCallsError(finding)
+
+    @staticmethod
+    def is_allowed_read() -> bool:
+        frame = sys._getframe(2)
+        while frame is not None:
+            filename = frame.f_code.co_filename
+            if not filename.endswith(READ_HELPERS):
+                return any(filename.endswith(path) and frame.f_code.co_name == method for path, method in ALLOWED_READ_REPEATS)
+            frame = frame.f_back
+        return False
 
     def check_scan(self, statement: Statement) -> None:
         if statement in self.checked_plans:
@@ -117,14 +154,10 @@ class RepeatedWork(PointTally):
     def caller_lines() -> str:
         return "".join(f"  {frame.filename}:{frame.lineno} {frame.name}\n" for frame in traceback.extract_stack(limit=CALLER_FRAMES))
 
-    def count_write(self, sql: str) -> None:
-        super().count_write(sql)
-        self.reads.clear()
-
     def note_command(self, command: str) -> None:
         self.commands[command] += 1
         if self.commands[command] == COMMAND_LIMIT_REPEATS + 1:
-            self.findings.append(f"one request started this more than {COMMAND_LIMIT_REPEATS} times: {command}")
+            self.reject(f"one request started this more than {COMMAND_LIMIT_REPEATS} times: {command}")
 
     def note_file_read(self, path: str) -> None:
         self.file_reads[path] += 1

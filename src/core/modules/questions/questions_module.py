@@ -28,6 +28,7 @@ from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.modules.questions.migrations.m001_questions import QuestionsTablesMigration
 from core.modules.questions.migrations.m002_answer_message import AnswerMessageMigration
+from core.modules.questions.migrations.m004_question_place import QuestionPlaceMigration
 from core.modules.questions.models.question import Question
 from core.modules.questions.seeders.questions_seeder import QuestionsSeeder
 from core.modules.questions.upgrade.questions_move import QuestionsMove
@@ -45,7 +46,7 @@ class QuestionsModule(Module):
     block_conditions = [QuestionAnswered, QuestionsClosed]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages", "journal.core.waits", "journal.core.chat", "journal.core.documents"]
     models = [ModelDeclaration(Question, query=QuestionQuery, commands=(AnswerQuestion, CloseQuestion), excluded_subcommands=["make", "list", "show"])]
-    migrations = [QuestionAgentStateIndexMigration, QuestionsTablesMigration, AnswerMessageMigration]
+    migrations = [QuestionAgentStateIndexMigration, QuestionsTablesMigration, AnswerMessageMigration, QuestionPlaceMigration]
     moves = [QuestionsMove]
     subcommands = [AskQuestionSubcommand, QuestionListSubcommand, QuestionShowSubcommand]
     handlers = [AskQuestionHandler]

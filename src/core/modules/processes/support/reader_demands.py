@@ -3,6 +3,7 @@ import shlex
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.process_query import ProcessQuery
+from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
 from core.modules.processes.support.reader_judge import ReaderJudge
 
 ASKING_FLAGS = frozenset(("--help", "-h", "--version", "-V", "--collect-only", "--list-tests", "--list"))
@@ -19,8 +20,8 @@ class ReaderDemands:
             return False
         return part.category.is_long_running or self.processes.has_moved_run(environment_id, part.text)
 
-    def reason(self, part: PartSpec, reader: Reader | None) -> str:
+    def reason(self, part: PartSpec, reader: Reader | None, scope: ReaderSampleScope) -> str:
         if reader is None:
             return f"no reader reads {part.command or part.text}"
-        judgement = self.judge.judged(reader, part.category)
+        judgement = self.judge.judged_command(reader, part.category, scope)
         return "" if judgement.is_proper else f"reader {reader.name}: {judgement.text}"

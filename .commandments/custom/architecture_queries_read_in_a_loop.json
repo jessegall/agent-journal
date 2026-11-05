@@ -1,0 +1,23 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {"nameIn": ["find", "first"]},
+            {"fileMatches": "(^|/)src/(core/modules|suites)/"},
+            {"of": "child:func", "is": "member-access"},
+            {"inside": {"any": [{"kind": "For"}, {"kind": "AsyncFor"}, {"kind": "ListComp"}, {"kind": "SetComp"}, {"kind": "DictComp"}, {"kind": "GeneratorExp"}]}}
+        ],
+        "reject": [
+            {"testCode": true},
+            {"fileMatches": "/(dump_dock_listener|agent_ticks|subagent_reuse_rule|next_plan_tasks|plan_task_line_rule|rule_dock_listener|plugin_card_reading|run_slots|run_admission|start_process_handler|waiting_message_run_listener|fade_memories_handler|broken_task_wait_rule|worker_resume_retry|unstarted_worker_rule|worker_reuse_rule|merge_checkout_rule|workers_out_rule|record_worker_test_handler|dispatch_worker_handler|main_agent_workers_listener)\\.py$"}
+        ]
+    },
+    "sin": {
+        "name": "read-in-a-loop",
+        "description": "A loop reads one row on each turn.",
+        "rule": "Read the rows together with find_many before the loop, then work on the held rows. The exact files named in reject are the existing reads recorded in output 94409; task 6613 and the final judge after both workers merge must resolve them and remove these temporary exceptions.",
+        "skill": "plain-code-words"
+    }
+}

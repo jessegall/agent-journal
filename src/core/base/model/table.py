@@ -72,7 +72,10 @@ class Table(Generic[R]):
         return self.model(**values)
 
     def row_model(self, row: sqlite3.Row) -> R:
-        return self.model(**{column: loaded_state(self.types[column], row[column]) if column == STATE else loaded(self.types[column], row[column]) for column in self.columns})
+        return self.model(**{column: self.loaded_column(column, row[column]) for column in self.columns})
+
+    def loaded_column(self, column: str, value: object) -> Any:
+        return loaded_state(self.types[column], value) if column == STATE else loaded(self.types[column], value)
 
 
 def plural(name: str) -> str:

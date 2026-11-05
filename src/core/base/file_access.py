@@ -1,6 +1,7 @@
 import io
 import os
 import sys
+import tempfile
 from collections import OrderedDict
 from collections.abc import Generator
 from contextlib import contextmanager
@@ -111,6 +112,17 @@ class FileAccess:
         with self.descriptor_writer(file, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600) as descriptor:
             with os.fdopen(descriptor, "w", closefd=False) as output:
                 yield output
+
+    @contextmanager
+    def temporary_writer(self, folder: Path, mode: str = "w", suffix: str = "") -> Generator[IO[Any]]:
+        with tempfile.NamedTemporaryFile(mode=mode, suffix=suffix, dir=folder, delete=False) as output:
+            path = Path(output.name)
+            self.invalidate(path)
+            try:
+                yield output
+            finally:
+                self.invalidate(path)
+                path.unlink(missing_ok=True)
 
     def replace(self, source: Path | str, target: Path | str) -> Path:
         source_path, target_path = Path(source), Path(target)

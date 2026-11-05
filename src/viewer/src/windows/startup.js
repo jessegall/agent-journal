@@ -1,5 +1,5 @@
 import {transport} from "../api/transport.js";
-import {shallowRef} from "vue";
+import {computed, shallowRef} from "vue";
 import {readMarkDeclarations} from "../domain/markRegistry.js";
 import {loadStates} from "@journal/window-kit";
 import {startButtons} from "@journal/window-kit";
@@ -50,11 +50,12 @@ export function startWindows({environment, catalogue = null, events = followEven
     const buttons = startButtons(environment, prompts);
     loadStates();
     const listeners = [];
+    const patterns = computed(() => ["registry.sync", "setting.*", "viewer_layout.*", ...subscriptions.patterns]);
     const stop = events(environment, async (event) => {
         await Promise.all([offers.heard(event), buttons.heard(event).catch(() => {})]);
         listeners.forEach((listener) => listener(event));
         subscriptions.dispatch(event);
-    });
+    }, patterns);
     const face = shallowRef(null);
     const opened = session().then((answer) => {
         face.value = answer.type;

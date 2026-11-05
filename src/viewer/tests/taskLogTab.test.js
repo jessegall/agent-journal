@@ -20,7 +20,7 @@ afterEach(() => {
     vi.unstubAllGlobals();
 });
 
-async function inspector(logs = async () => ({ok: true, value: {rows: [], is_last_page: true}})) {
+async function inspector(logs = async () => ({ok: true, value: {rows: [], is_last_page: true}}), block_renewals = []) {
     const id = ref(7);
     const changes = ref(0);
     const read = vi.fn(async (line) => {
@@ -38,6 +38,7 @@ async function inspector(logs = async () => ({ok: true, value: {rows: [], is_las
                     brief: "Check the task details",
                     waits: [],
                     logs: [{id: 1, line: "An embedded log that belongs in the Log tab"}],
+                    block_renewals,
                 },
             };
         if (line[1] === "comments")
@@ -53,6 +54,22 @@ async function inspector(logs = async () => ({ok: true, value: {rows: [], is_las
     await settled();
     return {element, read, id, changes};
 }
+
+test("the task inspector shows every block renewal with its reason and time", async () => {
+    const renewals = [
+        {id: 1, reason: "Needs the price list", created_at: "2026-11-03T12:00:00Z"},
+        {id: 2, reason: "The supplier is checking", created_at: "2026-11-03T13:00:00Z"},
+        {id: 3, reason: "Delivery is now tomorrow", created_at: "2026-11-03T14:00:00Z"},
+    ];
+    const {element} = await inspector(undefined, renewals);
+    const rows = [...element.querySelectorAll("[data-task-block-renewal]")];
+    expect(rows).toHaveLength(3);
+    for (const [index, row] of rows.entries()) {
+        expect(row.textContent).toContain(renewals[index].reason);
+        expect(row.querySelector("time").dateTime).toBe(renewals[index].created_at);
+        expect(row.querySelector("time").textContent).toBe(new Date(renewals[index].created_at).toLocaleString());
+    }
+});
 
 async function choose(element, label) {
     const tab = [...element.querySelectorAll("[data-task-tabs] button")].find((button) => button.textContent.trim() === label);

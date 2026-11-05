@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Dashboard, Dialog, Btn, Icon, Skeleton, TextInput, usePoll, useReadLine, useRows, useWindow} from "@journal/window-kit";
+import {Dashboard, Dialog, Btn, Icon, Skeleton, TextInput, runChanged, usePoll, useReadLine, useRows, useWindow} from "@journal/window-kit";
 import {fileAddress} from "./fileAddress.js";
 import PluginCard from "./PluginCard.vue";
 import PluginGuide from "./PluginGuide.vue";
@@ -34,10 +34,11 @@ const settings = ref([]);
 const settingsOf = ref("");
 const openedPlugin = computed(() => rows.value.find((row) => row.name === settingsOf.value) ?? null);
 
-const switchOver = (row) => run(`plugin ${row.enabled ? "disable" : "enable"} ${row.name}`);
+const switchOver = (row) => run(["plugin", row.enabled ? "disable" : "enable", row.name], {target: row, fields: {enabled: !row.enabled}});
 
-async function run(line) {
-    const answer = await context.run(line);
+async function run(line, change = null) {
+    refusal.value = "";
+    const answer = await runChanged(change, line, context.run);
     refusal.value = answer.ok ? "" : answer.error;
     if (answer.ok) load();
     return answer.ok;

@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 from core.base.change.logged_event import LoggedEvent
 from core.base.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener
@@ -19,6 +20,6 @@ class HookWaitFileListener(CommitListener[Touched[Setting]]):
     def handle(self, event: Touched[Setting], logged: LoggedEvent) -> None:
         settings = self.queries.query(Setting).filter(key=HOOK_WAIT_SECONDS).newest().limited(1)
         if settings:
-            self.home.hook_wait_file.write_text(f"{settings[0].value}\n")
+            FileAccess.shared().write(self.home.hook_wait_file, f"{settings[0].value}\n")
         else:
             self.home.hook_wait_file.unlink(missing_ok=True)

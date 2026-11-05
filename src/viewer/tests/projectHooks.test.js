@@ -46,7 +46,7 @@ afterEach(() => document.body.replaceChildren());
 
 async function drawn({data = DATA, answer = {ok: true, value: {}}, face = "person"} = {}) {
     const ran = [];
-    const window = context({"managed-hook list": {ok: true, value: data}});
+    const window = context({"managed-hook list": {ok: true, value: structuredClone(data)}});
     window.face = face;
     window.run = async (words) => {
         ran.push(words);
@@ -86,6 +86,24 @@ test("switching state calls the set command with the current time limit", async 
     element.querySelector('[data-managed-hook="first"] [role="switch"]').click();
     await settle();
     expect(ran).toEqual([["managed-hook", "set", "first", "off", "30"]]);
+});
+
+test.each(["on", "off"])("a managed switch changes before the answer and returns on refusal, state=%s", async (state) => {
+    let reply;
+    const pending = new Promise((resolve) => (reply = resolve));
+    const data = structuredClone(DATA);
+    data.managed[0].hook.state = state;
+    const {element, ran} = await drawn({data, answer: pending});
+    const row = element.querySelector('[data-managed-hook="first"]');
+    const control = row.querySelector('[role="switch"]');
+    control.click();
+    await settle();
+    expect(control.getAttribute("aria-checked")).toBe(String(state !== "on"));
+    reply({ok: false, error: "Command change refused"});
+    await settle();
+    expect(control.getAttribute("aria-checked")).toBe(String(state === "on"));
+    expect(row.querySelector('[role="alert"]').textContent).toBe("Command change refused");
+    expect(ran).toEqual([["managed-hook", "set", "first", state === "on" ? "off" : "on", "30"]]);
 });
 
 test("changing a time limit calls set and shows a refusal beside the entry", async () => {

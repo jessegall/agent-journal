@@ -19,7 +19,9 @@ LOGIN_VARIABLE = "USER"
 
 
 class AgentCallerResolver(CallerResolver):
-    """Identifies the caller from its session, ancestor processes or login name."""
+    """Resolves explicit sessions, then ancestors matching PID and start time or open program sessions.
+    Login and folder resolve callers; unresolved programs and inferred agents with open subagents use core.
+    Runner sessions may name ended agents."""
 
     def __init__(self, queries: Queries, chain: ProcessChain, environments: EnvironmentQuery, actors: ActorQuery, providers: Providers) -> None:
         self.queries, self.chain, self.environments, self.actors, self.providers = queries, chain, environments, actors, providers

@@ -16,6 +16,13 @@ function updates(check, notes = {ok: true, value: {notes: [NOTE], is_last_page: 
 
 test("a journal behind names the release it updates to, then says to reload", async () => {
     const window = updates({line: "a newer release v2 is out", tag: "v2", is_current: false});
+    window.run = async (line) => {
+        window.lines.push(line);
+        window.read = async (line) => String(line).startsWith("update check")
+            ? {ok: true, value: {line: "up to date", tag: "v2", is_current: true, installation: {step: "finished"}}}
+            : page([]);
+        return {ok: true, value: null};
+    };
     const element = await mounted(UpdatesPanel, window);
     expect(element.querySelector("[data-update-install]").textContent).toContain("Update to v2");
     element.querySelector("[data-update-install]").click();
@@ -23,6 +30,25 @@ test("a journal behind names the release it updates to, then says to reload", as
     expect(window.lines).toEqual([["update", "install"]]);
     expect(element.querySelector("[data-update-cover]")).toBeNull();
     expect(element.querySelector("[data-update-arrived]")).not.toBeNull();
+});
+
+test("a pending installation never says it is installed and a failure offers retry", async () => {
+    const standing = {line: "installation started", tag: "v2", is_current: false, installation: {step: "proof", detail: ""}};
+    const window = updates(standing);
+    const element = await mounted(UpdatesPanel, window);
+    element.querySelector("[data-update-install]").click();
+    await settle();
+    expect(element.querySelector("[data-update-arrived]")).toBeNull();
+    standing.line = "update failed: proof refused; retry with journal update install";
+    standing.installation = {step: "failed", detail: "proof refused"};
+    window.read = async (line) => String(line).startsWith("update check")
+        ? {ok: true, value: {...standing}}
+        : page([]);
+    element.querySelector(".standing > button").click();
+    await settle();
+    expect(element.textContent).toContain("proof refused");
+    expect(element.querySelector("[data-update-install]").textContent).toContain("Retry update");
+    expect(element.querySelector("[data-update-arrived]")).toBeNull();
 });
 
 test("a journal up to date can install the release again", async () => {

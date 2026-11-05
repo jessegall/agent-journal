@@ -6,6 +6,7 @@ from typing import ClassVar
 from core.base.journal import Journal
 from core.base.module.folder_listing import FolderListing
 from core.base.module.module import Module
+from core.base.module.source_hash import SourceHash
 from core.base.version import CORE_VERSION
 
 CORE_FOLDER = Path(__file__).resolve().parents[2]
@@ -18,7 +19,8 @@ class CodeFingerprint:
     appears, changes or is gone is a change, never an error. The folder listing of each set of folders is
     kept, so it is walked again only when a folder changed. A long running server's ticker refreshes the text,
     so a request reads the kept one and never the files; under unit tests, whose code does not change, the
-    text is worked out once. A module's own text also counts its built window files, since it is the version
+    text uses relative paths and content hashes, so identical checkouts share test templates. A module's own
+    text also counts its built window files, since it is the version
     on their addresses, which a browser keeps for a year."""
 
     ticked: ClassVar[bool] = False
@@ -32,7 +34,7 @@ class CodeFingerprint:
 
     def refreshed(self, modules: Sequence[type[Module]]) -> str:
         folders = self.folders(modules)
-        self.kept_texts[folders] = self.folder_text(folders)
+        self.kept_texts[folders] = SourceHash.text(folders) if Journal.is_running_unit_tests() else self.folder_text(folders)
         return self.selected_text(self.kept_texts[folders], modules)
 
     @staticmethod

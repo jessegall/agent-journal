@@ -38,3 +38,5 @@ The following named lists in `custom/lists.json` hold the exact paths. Each list
 
 These exceptions permit reads only. Move their writes through FileAccess too. Do not add a read exception
 because a file is read repeatedly; combine the reads at their owner instead.
+
+Use `temporary_writer(folder, mode, suffix)` for temporary files. The funnel removes the temporary path when its context closes. Use `replace` to publish its contents atomically. Parsed values may be retained by path and `FileAccess.shared().version(path)`; that version also changes after writes which preserve file metadata.

@@ -1,4 +1,7 @@
+from core.base.file_access import FileAccess
 import subprocess
+from functools import lru_cache
+from core.base.file_version import FileVersion
 import shutil
 from pathlib import Path
 
@@ -36,9 +39,8 @@ class WorktreeGit:
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "-m", message, "-m", trailer)
         return True
 
-    # Commits the worktree on the latest of its base branch and returns the files that clash, which keep
-    # their conflict markers. A merge the worker settled is finished by the commit.
     def rebased_commit(self, worktree: Worktree, message: str, trailer: str) -> tuple[str, ...]:
+        self.restore_stashes(worktree)
         self.refuse_conflicts(worktree)
         if self.is_merging(worktree):
             self.commit(worktree, message, trailer)
@@ -111,18 +113,26 @@ class WorktreeGit:
             raise Refusal(f"the web build produced no files in {', '.join(missing)}", "fix the web build before merging")
         self.commit(worktree, "Rebuild web files from merged sources", f"Journal: worker worker-{worktree.agent_id}")
 
-    # Stashes the uncommitted changes of the worktree, rebases its branch on the base branch and puts the
-    # stash back; a rebase that clashes is aborted and False is returned, with the changes back as they were. A
-    # stash that clashes leaves conflict markers; one that applies not at all stays in the stash list and refuses
-    # the merge.
     def rebase(self, worktree: Worktree) -> bool:
         stash = self.stash(worktree)
-        rebased = self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "rebase", worktree.base_branch).returncode == 0
-        if not rebased:
-            self.git(worktree.folder, GIT_LIMIT_SECONDS, "rebase", "--abort")
-        if stash:
+        rebased = False
+        try:
+            rebased = self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "rebase", worktree.base_branch).returncode == 0
+            return rebased
+        finally:
+            if not rebased:
+                self.git(worktree.folder, GIT_LIMIT_SECONDS, "rebase", "--abort")
+            if stash:
+                self.unstash(worktree, stash)
+
+    def restore_stashes(self, worktree: Worktree) -> None:
+        entries = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H%x00%gs").stdout.splitlines()
+        stashes = [entry.partition("\0")[0] for entry in entries if entry.partition("\0")[2].endswith(f": journal merge of {worktree.branch}")]
+        if not stashes:
+            return
+        self.git(worktree.folder, GIT_LIMIT_SECONDS, "rebase", "--abort")
+        for stash in reversed(stashes):
             self.unstash(worktree, stash)
-        return rebased
 
     def stash(self, worktree: Worktree) -> str:
         if not self.checked(worktree.folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.strip():
@@ -156,17 +166,27 @@ class WorktreeGit:
         git_folder = self.git_folder(folder)
         exclude_file = git_folder / WORKTREE_EXCLUDE_FILE
         worktree_config = git_folder / WORKTREE_CONFIG_FILE
-        if worktree_config.exists() and str(exclude_file) in worktree_config.read_text():
+        if worktree_config.exists() and self.has_exclusion(worktree_config, FileAccess.shared().version(worktree_config), exclude_file):
             return exclude_file
         self.checked(folder, GIT_LIMIT_SECONDS, "config", "extensions.worktreeConfig", "true")
         self.checked(folder, GIT_LIMIT_SECONDS, "config", "--worktree", "core.excludesFile", str(exclude_file))
         return exclude_file
 
+    @staticmethod
+    @lru_cache(maxsize=128)
+    def has_exclusion(path: Path, version: FileVersion, excluded: Path) -> bool:
+        return str(excluded) in FileAccess.shared().read(path)
+
     def git_folder(self, folder: str) -> Path:
         link = Path(folder) / ".git"
         if link.is_file():
-            return (Path(folder) / link.read_text().removeprefix(GIT_FOLDER_PREFIX).strip()).resolve()
+            return (Path(folder) / self.linked_folder(link, FileAccess.shared().version(link))).resolve()
         return Path(self.checked(folder, GIT_LIMIT_SECONDS, "rev-parse", "--absolute-git-dir").stdout.strip())
+
+    @staticmethod
+    @lru_cache(maxsize=128)
+    def linked_folder(path: Path, version: FileVersion) -> str:
+        return FileAccess.shared().read(path).removeprefix(GIT_FOLDER_PREFIX).strip()
 
     def remove(self, folder: str, worktree: Worktree) -> bool:
         if Path(worktree.folder).exists():

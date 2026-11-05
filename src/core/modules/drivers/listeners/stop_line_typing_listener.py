@@ -7,7 +7,7 @@ from core.modules.drivers.listeners.typed_line_listener import TERMINAL_SOURCES
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.support.line_typing import LineTyping
-from core.modules.drivers.support.waking_lines import WakingLines
+from core.modules.drivers.conditions.waking_lines import WakingLines
 from core.modules.drivers.events.stop_allowed import StopAllowed
 
 
