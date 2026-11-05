@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from core.base.actor import CORE_ACTOR_ID
 from core.base.cli.console import Console
 from core.base.database.database import Database
@@ -29,6 +31,26 @@ def test_the_chat_module_declares_the_exception_and_upgrade_marks_under_the_jour
     story = new_story(fixture=UserJoined)
     marks = [mark for mark in Registry.read(story.container.get(Database)).marks if mark.module == "journal.core.chat"]
     expect_type_mark_family(marks, [("chat.exception", "chat.exceptions", "journal", True), ("chat.upgrade", "chat.upgrade", "journal", True)])
+
+
+def test_a_repeated_exception_shows_once_within_a_minute_and_again_after_it(new_story):
+    story = new_story(EXCEPTION_SAMPLE, fixture=UserJoined)
+    story.run("chat-mark fail", environment_id=1)
+    story.run("chat-mark fail", environment_id=1)
+    story.run_listeners()
+    expect_count_marks(story, "RuntimeError: the sample command broke", 1)
+    story.advance(timedelta(seconds=61))
+    story.run("chat-mark fail", environment_id=1)
+    story.run_listeners()
+    expect_count_marks(story, "RuntimeError: the sample command broke", 2)
+
+
+def test_an_exception_older_than_a_minute_when_its_listener_reaches_it_shows_no_mark(new_story):
+    story = new_story(EXCEPTION_SAMPLE, fixture=UserJoined)
+    story.run("chat-mark fail", environment_id=1)
+    story.advance(timedelta(seconds=61))
+    story.run_listeners()
+    expect_count_marks(story, "RuntimeError: the sample command broke", 0)
 
 
 def test_a_failing_command_shows_one_exception_mark_and_the_file_keeps_the_trace(new_story):
