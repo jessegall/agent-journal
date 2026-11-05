@@ -1,26 +1,19 @@
 <script setup>
-import {ref} from "vue";
-import TaskStatusIcon from "./TaskStatusIcon.vue";
-import {statusIcon as iconOf} from "../domain/taskStatus.js";
+import {computed, ref} from "vue";
+import TaskWaitList from "./TaskWaitList.vue";
 
 const LONG_BRIEF = 180;
-defineProps({task: {type: Object, required: true}});
+const FINISHED_STATES = new Set(["completed", "cancelled"]);
+const props = defineProps({task: {type: Object, required: true}});
 const emit = defineEmits(["select"]);
 const briefWhole = ref(false);
+const waitingOn = computed(() => props.task.waits.filter((wait) => !FINISHED_STATES.has(wait.state)));
+const waitedOn = computed(() => props.task.waits.filter((wait) => FINISHED_STATES.has(wait.state)));
 </script>
 
 <template>
-    <template v-if="task.waits.length">
-        <section class="part" data-resource-waits>
-            <h4>Waits on</h4>
-            <template v-for="wait in task.waits" :key="wait.id">
-                <button type="button" class="wait" @click="emit('select', wait.id)">
-                    <TaskStatusIcon :status="iconOf(wait.state)" :size="12" />
-                    <span class="wait-id">{{ wait.id }}</span>
-                    <span class="wait-title">{{ wait.title }}</span>
-                </button>
-            </template>
-        </section>
+    <template v-if="waitingOn.length">
+        <TaskWaitList title="Waits on" :waits="waitingOn" @select="emit('select', $event)" />
     </template>
     <template v-if="task.state === 'completed' && task.outcome">
         <section class="part" data-task-outcome>
@@ -36,6 +29,9 @@ const briefWhole = ref(false);
                 <button type="button" class="more" @click="briefWhole = true">Show the whole brief</button>
             </template>
         </section>
+    </template>
+    <template v-if="waitedOn.length">
+        <TaskWaitList title="Waited on" :waits="waitedOn" @select="emit('select', $event)" />
     </template>
 </template>
 
@@ -79,35 +75,4 @@ const briefWhole = ref(false);
     color: var(--text);
 }
 
-.wait {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    width: 100%;
-    padding: 5px 8px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--text-2);
-    font: inherit;
-    font-size: 13px;
-    text-align: left;
-    cursor: pointer;
-}
-
-.wait:hover {
-    background: var(--hover);
-    color: var(--text);
-}
-
-.wait-id {
-    flex: none;
-    color: var(--text-3);
-    font-size: 12px;
-}
-
-.wait-title {
-    min-width: 0;
-    overflow-wrap: anywhere;
-}
 </style>
