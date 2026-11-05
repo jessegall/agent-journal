@@ -64,7 +64,10 @@ export function windowContext({window, environment, agent, visible, permissions,
         upload: (file) => uploaded(file, requests.signal),
         cancel: () => requests.abort(),
         subscriptions,
-        follow: (patterns, heard) => subscriptions.follow(window, patterns.filter((pattern) => events.some((declared) => matches(declared, pattern))), heard, visible),
+        follow: (patterns, heard) => subscriptions.follow(window, patterns.filter((pattern) => events.some((declared) => matches(declared, pattern))), (event) => {
+            recent.clear();
+            heard(event);
+        }, visible),
         open,
         face: document.documentElement.classList.contains("phone") ? "phone" : "person",
         option: (key) => computed(() => options.value[key] ?? declared.find((option) => option.key === key)?.default),
