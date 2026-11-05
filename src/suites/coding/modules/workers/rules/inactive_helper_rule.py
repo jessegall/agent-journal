@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from suites.coding.modules.workers.commands.recover_silent_agents.recover_silent_agents import RecoverSilentAgents
+from suites.coding.modules.workers.commands.send_silent_agent_lines.send_silent_agent_lines import SendSilentAgentLines
 
 from suites.coding.modules.workers.support.worker_nudges import HELPER_INACTIVE
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_MINUTES
@@ -42,7 +42,7 @@ class InactiveHelperRule(DriverRule):
         self.requests = requests
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return self.warning(hook).running(RecoverSilentAgents(hook.environment_id))
+        return self.warning(hook).running(SendSilentAgentLines(hook.environment_id))
 
     def warning(self, hook: AgentHook) -> RuleAnswer:
         span = self.settings.minutes(INACTIVE_HELPER_MINUTES, hook.environment_id)

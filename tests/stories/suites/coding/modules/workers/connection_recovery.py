@@ -123,6 +123,8 @@ def recovered_live_worker(live_recovery, request):
 
 @pytest.fixture
 def nested_recovery(recovery):
+    recovery.story.expect_success(f"agent end {recovery.worker.id}", actor=recovery.worker)
+    recovery.launches.clear()
     recovery.on_launch = lambda: recovery.story.expect_success(
         f'worker send {recovery.worker.id} "Continue the assigned task"', actor=recovery.story.agent)
     recovery.advance(SILENT_SECONDS)

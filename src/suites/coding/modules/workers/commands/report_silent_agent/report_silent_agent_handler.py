@@ -6,9 +6,7 @@ from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.main_agent_line import MainAgentLine
-from suites.coding.modules.workers.commands.recover_silent_agents.report_silent_agent import ReportSilentAgent
-from suites.coding.modules.workers.support.worker_nudges import SILENT_AGENT_FAILED
-from suites.coding.modules.workers.support.worker_job import SILENT_FAILURE_SOURCE
+from suites.coding.modules.workers.commands.report_silent_agent.report_silent_agent import ReportSilentAgent, SILENT_AGENT_FAILED, SILENT_FAILURE_SOURCE
 
 
 class ReportSilentAgentHandler(Handler[ReportSilentAgent, None]):
@@ -23,6 +21,6 @@ class ReportSilentAgentHandler(Handler[ReportSilentAgent, None]):
     def handle(self, command: ReportSilentAgent, context: Context) -> None:
         agent = self.queries.query(Agent).find(command.agent_id)
         text = SILENT_AGENT_FAILED.nudge(agent=agent.id, reason=command.reason).text
-        notices = self.queries.query(AgentLine).filter(source=SILENT_FAILURE_SOURCE, text=text).matching(Minimum("created_at", command.since_at.text))
+        notices = self.queries.query(AgentLine).filter(source=SILENT_FAILURE_SOURCE, text=text).matching(Minimum("created_at", command.inactive_at.text))
         if not notices.exists():
             self.main_agent_line.send(agent.environment_id, text, SILENT_FAILURE_SOURCE, context)

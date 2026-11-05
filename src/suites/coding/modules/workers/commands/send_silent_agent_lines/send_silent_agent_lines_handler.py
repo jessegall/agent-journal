@@ -23,8 +23,8 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.waits.models.wait import Wait
 from core.modules.waits.models.enums.wait_state import WaitState
-from suites.coding.modules.workers.commands.recover_silent_agents.recover_silent_agents import RecoverSilentAgents
-from suites.coding.modules.workers.commands.recover_silent_agents.report_silent_agent import ReportSilentAgent
+from suites.coding.modules.workers.commands.send_silent_agent_lines.send_silent_agent_lines import SendSilentAgentLines
+from suites.coding.modules.workers.commands.report_silent_agent.report_silent_agent import ReportSilentAgent
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_STATES
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -37,10 +37,10 @@ from suites.coding.support.coding_agent_role import CodingAgentRole
 RECOVERY_ATTEMPTS = 3
 
 
-class RecoverSilentAgentsHandler(Handler[RecoverSilentAgents, None]):
+class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
     """Sends a bounded sequence of waking lines to silent agents with work, excluding explicit waits and runs."""
 
-    command = RecoverSilentAgents
+    command = SendSilentAgentLines
     disabled_scopes = [ActorScope]
 
     def __init__(self, home: JournalHome, queries: Queries, settings: SettingValues,
@@ -48,7 +48,7 @@ class RecoverSilentAgentsHandler(Handler[RecoverSilentAgents, None]):
         self.home, self.queries, self.settings = home, queries, settings
         self.processes, self.nudger, self.bus, self.stop = processes, nudger, bus, stop
 
-    def handle(self, command: RecoverSilentAgents, context: Context) -> None:
+    def handle(self, command: SendSilentAgentLines, context: Context) -> None:
         connection = InternetConnection.shared(self.home)
         if connection.status is not ConnectionStatus.ONLINE:
             return
