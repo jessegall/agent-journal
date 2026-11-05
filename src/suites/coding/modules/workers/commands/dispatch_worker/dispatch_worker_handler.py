@@ -44,8 +44,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         self.git, self.worker_command, self.worktrees, self.providers, self.models = git, worker_command, worktrees, providers, models
 
     def handle(self, command: DispatchWorker, context: Context) -> WorkerLaunch:
-        task = self.queries.query(Task).find(command.task_id)
-        tasks = [task, *(self.queries.query(Task).find(task_id) for task_id in command.delegated_ids)]
+        tasks = self.queries.query(Task).find_many([command.task_id, *command.delegated_ids])
+        task = tasks[0]
         for listed in tasks:
             if listed.state is not TaskState.OPEN:
                 raise Refusal(f"task {listed.id} is {listed.state.value}", "a worker is dispatched to an open task")

@@ -56,6 +56,8 @@ def database(tmp_path):
     (Statement("SELECT * FROM sequence_run_rows ORDER BY id DESC LIMIT 25"), "sequence_runs_open_id"),
     (Statement("SELECT * FROM chat_messages ORDER BY id DESC LIMIT 25"), "messages_chat_visible_id"),
     (Statement("SELECT * FROM nudge_totals LIMIT 25"), "nudge_records_key_delivery"),
+    (Statement("SELECT count(*) FROM refusals WHERE reason GLOB ?", ["reader request 1 save failed: *"]), "refusals_reason"),
+    (Statement("SELECT * FROM task_edges LIMIT 25 OFFSET 0"), "task_waits_open_edges"),
 ])
 def test_a_hot_read_uses_its_index(database, statement, index):
     plans = [row[3] for row in database.connection.execute(f"EXPLAIN QUERY PLAN {statement.sql}", statement.parameters)]
