@@ -587,7 +587,7 @@
         "\"<job>\"`; if not, repeat the command with `--why \"<why>\"`",
         "% of context: `journal memory weigh <numbers> <weights>` or `journal memory skip \"<why>\"`",
         "%: keep, raise or correct",
-        "&& … )` or pass the folder, such as `git -C`",
+        "&& \u2026 )` or pass the folder, such as `git -C`",
         "'[{\"ask\": \"<question>\", \"label\": \"<button>\"}]' --summary \"<what you filed and where>\"`, `'[]'` for no buttons",
         "'s and stays open",
         "'s queue: `journal worker queue",
@@ -1204,5 +1204,26 @@
         "It printed nothing yet",
         "Send away",
         "ships this profile"
+    ],
+    "file_reads_process_output_uses_bounded_ranges": [
+        "src/core/modules/processes/support/output_folder.py"
+    ],
+    "file_reads_transcripts_seek_large_logs": [
+        "src/core/base/provider/transcript_index.py",
+        "src/core/base/provider/transcript_tail.py",
+        "src/core/modules/codex/providers/support/codex_session_effort.py",
+        "src/core/modules/claude_code/providers/support/claude_peer_notes.py"
+    ],
+    "file_reads_conflicts_stream_lines": [
+        "src/core/base/conflict_files.py"
+    ],
+    "file_reads_shell_uses_nonblocking_budget": [
+        "src/suites/coding/support/shell_file_state.py"
+    ],
+    "file_reads_shell_handoff_streams_child_output": [
+        "src/core/base/cli/shell_handoff.py"
+    ],
+    "file_reads_release_archives_stream_entries": [
+        "src/core/modules/updates/support/release_source.py"
     ]
 }

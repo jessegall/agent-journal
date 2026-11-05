@@ -11,6 +11,7 @@ import traceback
 from core.base.database.point_tally import PointTally
 from core.base.database.database import Database
 from core.base.database.statement import Statement
+from core.base.file_access import FILE_READ_EVENT, FILE_CHANGE_EVENT
 from core.testing.repeated_calls_error import RepeatedCallsError
 
 READ_LIMIT_REPEATS = 5
@@ -50,12 +51,14 @@ class RepeatedWork(PointTally):
         self.findings: list[str] = []
         self.checked_plans: set[Statement] = set()
         self.allowed_scans: dict[Statement, str] = {}
+        self.file_reads: Counter[str] = Counter()
 
     @contextmanager
     def request(self) -> Generator[None]:
         self.reads, self.commands, self.findings = Counter(), Counter(), []
         self.checked_plans.clear()
         self.allowed_scans.clear()
+        self.file_reads.clear()
         watch_commands()
         token = OPEN_REQUEST.set(self)
         try:
@@ -123,11 +126,23 @@ class RepeatedWork(PointTally):
         if self.commands[command] == COMMAND_LIMIT_REPEATS + 1:
             self.findings.append(f"one request started this more than {COMMAND_LIMIT_REPEATS} times: {command}")
 
+    def note_file_read(self, path: str) -> None:
+        self.file_reads[path] += 1
+        if self.file_reads[path] == 2:
+            self.findings.append(f"one request read file twice: {path}\n{self.caller_lines()}")
+
+    def note_file_write(self, path: str) -> None:
+        self.file_reads.pop(path, None)
+
 
 def audited(event: str, details: tuple[object, ...]) -> None:
     request = OPEN_REQUEST.get()
     if event == COMMAND_AUDIT_EVENT and request is not None:
         request.note_command(f"{details[1]} in {details[2]}")
+    if event == FILE_READ_EVENT and request is not None:
+        request.note_file_read(str(details[0]))
+    if event == FILE_CHANGE_EVENT and request is not None:
+        request.note_file_write(str(details[0]))
 
 
 @cache
