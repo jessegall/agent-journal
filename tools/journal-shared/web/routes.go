@@ -24,7 +24,7 @@ type Server struct {
 func Routes(database *store.Store, protocol int) http.Handler {
 	server := &Server{store: database, protocol: protocol}
 	routes := http.NewServeMux()
-	routes.HandleFunc("GET /info", server.info)
+	routes.HandleFunc("GET /info", server.serverInfo)
 	routes.HandleFunc("GET /me", server.guard(store.RoleRead, server.me))
 	routes.HandleFunc("GET /users", server.guard(store.RoleAdmin, server.listUsers))
 	routes.HandleFunc("POST /users", server.guard(store.RoleAdmin, server.addUser))
@@ -48,7 +48,7 @@ func Routes(database *store.Store, protocol int) http.Handler {
 	return routes
 }
 
-func (server *Server) info(response http.ResponseWriter, _ *http.Request) {
+func (server *Server) serverInfo(response http.ResponseWriter, _ *http.Request) {
 	writeJSON(response, http.StatusOK, map[string]any{"server_key": server.store.ServerKey, "name": server.store.ServerName, "protocol": server.protocol, "kinds": store.KindNames()})
 }
 

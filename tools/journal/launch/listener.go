@@ -56,9 +56,9 @@ type Starter interface {
 // ProcessStarter starts a program in a pseudo terminal of its own in its folder, its output kept in its agent's
 // terminal log under the journal's folder and read for its status file.
 type ProcessStarter struct {
-	Home   string
-	Inputs *TerminalInputs
-	OnAnswer   func(agentID int, question, explanation string)
+	Home     string
+	Inputs   *TerminalInputs
+	OnAnswer func(agentID int, question, explanation string)
 }
 
 // Start starts the program and leaves it running.

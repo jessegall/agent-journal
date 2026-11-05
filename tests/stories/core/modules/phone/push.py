@@ -185,7 +185,7 @@ def built_service(story, address: str | None):
 def test_the_real_push_sends_an_empty_request_signed_with_the_kept_keys_and_the_tunnels_address(new_story):
     story = paired_story(new_story)
     requests, service = built_service(story, "journal.example.test")
-    expect_send_service(service, ENDPOINT, 201)
+    expect_push_status(service, ENDPOINT, 201)
     [(endpoint, headers)] = requests.posts
     public = story.run("phone push-key", actor=Actor.core()).output_text.strip()
     authorization = headers["Authorization"]
@@ -202,15 +202,15 @@ def test_the_real_push_sends_an_empty_request_signed_with_the_kept_keys_and_the_
 def test_the_real_push_sends_only_to_a_known_push_service_and_only_with_a_tunnel_address(new_story):
     story = paired_story(new_story)
     requests, service = built_service(story, "journal.example.test")
-    expect_send_service(service, "https://evil.example.test/push", 0)
-    expect_send_service(service, "http://fcm.googleapis.com/x", 0)
+    expect_push_status(service, "https://evil.example.test/push", 0)
+    expect_push_status(service, "http://fcm.googleapis.com/x", 0)
     expect_posts_requests(requests, [])
     requests, service = built_service(story, None)
-    expect_send_service(service, ENDPOINT, 0)
+    expect_push_status(service, ENDPOINT, 0)
     expect_posts_requests(requests, [])
 
 
-def expect_send_service(service, item, expected) -> None:
+def expect_push_status(service, item, expected) -> None:
     actual = service.send(item)
     assert actual == expected, actual
 

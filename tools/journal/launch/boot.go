@@ -39,9 +39,9 @@ type Environment struct {
 
 // Conversation is one past session of a program in an environment, with the role of its agent.
 type Conversation struct {
-	Session string
-	Role    string
-	Title   string
+	Session    string
+	Role       string
+	Title      string
 	ModifiedAt time.Time
 }
 

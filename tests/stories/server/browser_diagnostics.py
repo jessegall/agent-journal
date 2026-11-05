@@ -20,7 +20,7 @@ def test_a_browser_timeout_keeps_the_script_output_and_playwright_action(monkeyp
     expect_failure_with_2(failure, "example.browser.mjs")
     if output is not None:
         expect_failure_with_2(failure, "before navigation")
-    expect_debug_env_kwargs_with(run, "pw:api")
+    expect_debug_variables(run, "pw:api")
 
 
 def test_a_browser_timeout_can_report_missing_output_and_invalid_bytes():
@@ -35,7 +35,7 @@ def expect_failure_with(failure, expected) -> None:
     assert expected in actual, actual
 
 
-def expect_debug_env_kwargs_with(run, expected) -> None:
+def expect_debug_variables(run, expected) -> None:
     actual = run.call_args.kwargs['env']['DEBUG']
     assert expected in actual, actual
 

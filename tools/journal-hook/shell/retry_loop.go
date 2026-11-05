@@ -20,17 +20,17 @@ func IsRetryLoop(line string) bool {
 	if err != nil {
 		return false
 	}
-	found := false
+	hasMatch := false
 	syntax.Walk(file, func(node syntax.Node) bool {
 		switch loop := node.(type) {
 		case *syntax.WhileClause:
-			found = found || waits(loop.Do)
+			hasMatch = hasMatch || waits(loop.Do)
 		case *syntax.ForClause:
-			found = found || (waits(loop.Do) && leaves(loop.Do))
+			hasMatch = hasMatch || (waits(loop.Do) && leaves(loop.Do))
 		}
-		return !found
+		return !hasMatch
 	})
-	return found
+	return hasMatch
 }
 
 func waits(body []*syntax.Stmt) bool {
@@ -55,12 +55,12 @@ func leaves(body []*syntax.Stmt) bool {
 }
 
 func bodyHas(body []*syntax.Stmt, matches func(syntax.Node) bool) bool {
-	found := false
+	hasMatch := false
 	for _, statement := range body {
 		syntax.Walk(statement, func(node syntax.Node) bool {
-			found = found || (node != nil && matches(node))
-			return !found
+			hasMatch = hasMatch || (node != nil && matches(node))
+			return !hasMatch
 		})
 	}
-	return found
+	return hasMatch
 }

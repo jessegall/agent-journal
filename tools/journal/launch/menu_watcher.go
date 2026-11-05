@@ -22,9 +22,9 @@ const (
 
 // MenuAnswer is what the watcher pressed on a menu and the words for it.
 type MenuAnswer struct {
-	Keys     string
-	Question string
-	Explanation     string
+	Keys        string
+	Question    string
+	Explanation string
 }
 
 // MenuWatcher reads an agent's screen and keeps the agent from sitting at a menu: one the journal or the person caused is
@@ -32,26 +32,26 @@ type MenuAnswer struct {
 // person opened at the keyboard that asks no yes or no is theirs, and a permission question or a list of past sessions
 // is left alone.
 type MenuWatcher struct {
-	mutex     sync.Mutex
-	screen    []byte
-	changedAt time.Time
-	menuSignature      string
-	menuDetectedAt    time.Time
-	Now       func() time.Time
-	KeyedAt   func() time.Time
-	TypedAt   func() time.Time
-	Press     func(keys string) bool
-	OnAnswer      func(question, explanation string)
+	mutex          sync.Mutex
+	screen         []byte
+	changedAt      time.Time
+	menuSignature  string
+	menuDetectedAt time.Time
+	Now            func() time.Time
+	KeyedAt        func() time.Time
+	TypedAt        func() time.Time
+	Press          func(keys string) bool
+	OnAnswer       func(question, explanation string)
 }
 
 // NewMenuWatcher watches the agent's terminal through its input, and tells of what it pressed.
 func NewMenuWatcher(inputs *TerminalInputs, agentID int, onAnswer func(question, explanation string)) *MenuWatcher {
 	return &MenuWatcher{
-		Now:     time.Now,
-		KeyedAt: func() time.Time { return inputs.KeyedAt(agentID) },
-		TypedAt: func() time.Time { return inputs.TypedAt(agentID) },
-		Press:   func(keys string) bool { return inputs.PressKeys(agentID, keys) },
-		OnAnswer:    onAnswer,
+		Now:      time.Now,
+		KeyedAt:  func() time.Time { return inputs.KeyedAt(agentID) },
+		TypedAt:  func() time.Time { return inputs.TypedAt(agentID) },
+		Press:    func(keys string) bool { return inputs.PressKeys(agentID, keys) },
+		OnAnswer: onAnswer,
 	}
 }
 

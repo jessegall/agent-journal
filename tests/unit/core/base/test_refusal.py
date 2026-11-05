@@ -1,4 +1,4 @@
-from core.base.guard.guard_refusal import GuardRefusal
+from core.base.guard_refusal import GuardRefusal
 from core.base.missing_rows_error import MissingRowsError
 from core.base.refusal import Refusal
 

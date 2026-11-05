@@ -27,7 +27,7 @@ func shortHome(t *testing.T) string {
 	return resolved
 }
 
-func listening(t *testing.T, socket string, handler http.Handler) {
+func startListener(t *testing.T, socket string, handler http.Handler) {
 	t.Helper()
 	listener, err := net.Listen("unix", socket)
 	if err != nil {
@@ -57,7 +57,7 @@ func TestASocketPathTooLongBecomesAShortOneNamedByItsHashAsTheServerNamesIt(t *t
 
 func TestAHealthyServerIsUsedAndNothingIsStarted(t *testing.T) {
 	home := shortHome(t)
-	listening(t, socket.Path(home), healthHandler())
+	startListener(t, socket.Path(home), healthHandler())
 	_, started, err := Connect(home, func(string) (*os.Process, error) {
 		t.Error("a server was started beside a healthy one")
 		return nil, nil
@@ -72,7 +72,7 @@ func TestWithNothingAnsweringAndTheLockFreeTheClientStartsTheServer(t *testing.T
 	starts := 0
 	_, _, err := Connect(home, func(string) (*os.Process, error) {
 		starts++
-		listening(t, socket.Path(home), healthHandler())
+		startListener(t, socket.Path(home), healthHandler())
 		return &os.Process{Pid: os.Getpid()}, nil
 	})
 	if err != nil || starts != 1 {
@@ -93,7 +93,7 @@ func TestAHeldLockMeansWaitAndAServerLettingItGoIsReplacedAtOnce(t *testing.T) {
 	starts := 0
 	_, _, err = Connect(home, func(string) (*os.Process, error) {
 		starts++
-		listening(t, socket.Path(home), healthHandler())
+		startListener(t, socket.Path(home), healthHandler())
 		return &os.Process{Pid: os.Getpid()}, nil
 	})
 	if err != nil || starts != 1 {
@@ -143,7 +143,7 @@ func TestAMaintenanceMarkLongForgottenIsIgnored(t *testing.T) {
 	starts := 0
 	_, _, err := Connect(home, func(string) (*os.Process, error) {
 		starts++
-		listening(t, socket.Path(home), healthHandler())
+		startListener(t, socket.Path(home), healthHandler())
 		return &os.Process{Pid: os.Getpid()}, nil
 	})
 	if err != nil || starts != 1 {
@@ -210,7 +210,7 @@ func TestSourceFolderPutsInPlaceTheLinkAStoppedSwitchLeft(t *testing.T) {
 
 func TestTheViewerLineAsksForAKeyAndPrintsTheLinkToItsEnvironmentOnTheViewersPort(t *testing.T) {
 	home := shortHome(t)
-	listening(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+	startListener(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if request.URL.Path == "/viewer/key" {
 			writer.Write([]byte(`{"key": "one-time", "environment": "main"}`))
 			return
@@ -226,7 +226,7 @@ func TestTheViewerLineAsksForAKeyAndPrintsTheLinkToItsEnvironmentOnTheViewersPor
 
 func TestTheViewerLineSaysWhyNoKeyIsGiven(t *testing.T) {
 	home := shortHome(t)
-	listening(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+	startListener(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		writer.Write([]byte(`{"error": "only a person opens the viewer"}`))
 	}))
 	var stdout, stderr strings.Builder
@@ -240,7 +240,7 @@ func TestTheViewerLineStopsWaitingForAServerThatNeverAnswers(t *testing.T) {
 	home := shortHome(t)
 	released := make(chan struct{})
 	t.Cleanup(func() { close(released) })
-	listening(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) { <-released }))
+	startListener(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) { <-released }))
 	previous := ViewerLimit
 	ViewerLimit = 100 * time.Millisecond
 	t.Cleanup(func() { ViewerLimit = previous })

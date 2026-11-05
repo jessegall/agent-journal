@@ -11,6 +11,6 @@ type aliasReplacement struct {
 type savedRun struct {
 	name            string
 	line            string
-	selection         string
+	selection       string
 	timeoutDuration *string
 }

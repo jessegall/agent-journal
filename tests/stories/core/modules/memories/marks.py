@@ -52,7 +52,7 @@ def test_a_fade_shows_how_many_memories_are_still_shown(new_story):
     starting_count = mark_count(story)
     story.hook("s-1", HookSamples.sample("compact"))
     story.run_listeners()
-    expect_mark_count_more(story, starting_count)
+    expect_mark_count_greater(story, starting_count)
     expect_marks_text(story, "Memories faded by one: 1 of 2 still shown")
 
 
@@ -113,6 +113,6 @@ def fact_memory(new_story):
     return story, memory_id
 
 
-def expect_mark_count_more(story, expected) -> None:
+def expect_mark_count_greater(story, expected) -> None:
     actual = mark_count(story)
     assert actual > expected, actual

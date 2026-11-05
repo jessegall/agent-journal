@@ -19,5 +19,5 @@ class BlockUntil(Command[object]):
     condition: BlockCondition
     after: Interval | None = None
     countdown: Nudge | None = None
-    stop_only: bool = False
+    blocks_stop: bool = False
     strict: bool = False

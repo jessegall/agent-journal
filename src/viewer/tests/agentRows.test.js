@@ -435,7 +435,7 @@ test("a worker's card shows the task it works on as its job and no queued count,
     const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null};
     const lines = {"usage tool --agent 4": {ok: true, value: {tool: "", note: ""}}};
     const tasks = [{id: 1, title: "Add the tax", state: "started"}, {id: 2, title: "Print the receipt", state: "open"}, {id: 3, title: "Ship it", state: "open"}];
-    const element = await mounted({render: () => h(AgentCard, {row: worker, facts: {task_id: 1, task_title: "Add the tax", tasks}})}, context(lines));
+    const element = await mounted({render: () => h(AgentCard, {row: worker, facts: {show_job: true, task_id: 1, task_title: "Add the tax", tasks}})}, context(lines));
     expect(element.querySelector("[data-agent-job]").textContent).toBe("Add the tax");
     expect(element.querySelector("[data-agent-identity]").compareDocumentPosition(element.querySelector("[data-agent-job]")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(element.querySelector("[data-agent-job]").parentElement.querySelector("[data-agent-tasks]")).not.toBeNull();
@@ -448,6 +448,6 @@ test("a worker's card shows the task it works on as its job and no queued count,
 test("a worker with nothing started takes the first task queued for it as its job", async () => {
     const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null};
     const lines = {"usage tool --agent 4": {ok: true, value: {tool: "", note: ""}}};
-    const element = await mounted({render: () => h(AgentCard, {row: worker, facts: {task_id: null, task_title: "", tasks: [{id: 2, title: "Print the receipt", state: "open"}]}})}, context(lines));
+    const element = await mounted({render: () => h(AgentCard, {row: worker, facts: {show_job: true, task_id: null, task_title: "", tasks: [{id: 2, title: "Print the receipt", state: "open"}]}})}, context(lines));
     expect(element.querySelector("[data-agent-job]").textContent).toBe("Print the receipt");
 });

@@ -60,7 +60,7 @@ type ProgramStatus struct {
 	model        string
 	tokens       int
 	windowTokens int
-	hasReport      bool
+	hasReport    bool
 }
 
 // NewProgramStatus keeps status files in the status folder under the journal's folder.

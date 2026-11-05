@@ -48,10 +48,10 @@ func (store *Store) ItemVersions(kind Kind, id int64) ([]VersionRow, error) {
 
 // ItemVersionOf reads one version of an item with its fields.
 func (store *Store) ItemVersionOf(kind Kind, id, version int64) (ItemVersion, error) {
-	found := ItemVersion{Kind: kind.Name, ID: id}
+	itemVersion := ItemVersion{Kind: kind.Name, ID: id}
 	var fields string
 	err := store.DB.QueryRow("SELECT "+versionColumns+", v.fields"+versionFrom+" WHERE v.kind = ? AND v.item_id = ? AND v.version = ?", kind.Name, id, version).
-		Scan(&found.Version, &found.Action, &found.User, &found.Token, &found.CreatedAt, &fields)
-	found.Fields = json.RawMessage(fields)
-	return found, foundOrNot(err)
+		Scan(&itemVersion.Version, &itemVersion.Action, &itemVersion.User, &itemVersion.Token, &itemVersion.CreatedAt, &fields)
+	itemVersion.Fields = json.RawMessage(fields)
+	return itemVersion, foundOrNot(err)
 }

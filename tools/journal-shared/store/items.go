@@ -242,7 +242,7 @@ func (store *Store) ListItems(kind Kind, search string, page, size int) (Page, e
 		return Page{}, err
 	}
 	abstract := "''"
-	if kind.carries("abstract") {
+	if kind.hasField("abstract") {
 		abstract = "t.abstract"
 	}
 	columns := "t.id, t.version, t.title, " + abstract + ", t.updated_at, c.name, " + updatedBySQL
@@ -336,8 +336,8 @@ func (store *Store) addVersion(transaction *sql.Tx, kind Kind, id, version int64
 func (kind Kind) checked(fields Fields, creating bool) (Fields, error) {
 	checked := Fields{}
 	for _, field := range kind.Fields {
-		value, sent := fields[field]
-		if !sent {
+		value, exists := fields[field]
+		if !exists {
 			if creating {
 				return nil, fmt.Errorf("%w: %s is missing", ErrBadFields, field)
 			}
@@ -361,7 +361,7 @@ func (kind Kind) checked(fields Fields, creating bool) (Fields, error) {
 	return checked, nil
 }
 
-func (kind Kind) carries(field string) bool {
+func (kind Kind) hasField(field string) bool {
 	for _, name := range kind.Fields {
 		if name == field {
 			return true
@@ -406,9 +406,9 @@ func excerptAround(term string, texts []string) string {
 	return ""
 }
 
-func sameLetters(found, wanted []rune) bool {
+func sameLetters(actual, wanted []rune) bool {
 	for index := range wanted {
-		if unicode.ToLower(found[index]) != wanted[index] {
+		if unicode.ToLower(actual[index]) != wanted[index] {
 			return false
 		}
 	}

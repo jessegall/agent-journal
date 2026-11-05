@@ -13,14 +13,14 @@ func stateFor(made fixture, role store.Role, previous string) *httptest.Response
 	if previous != "" {
 		headers = map[string]string{"If-None-Match": previous}
 	}
-	return made.send("GET", "/state", "", made.tokens[role], headers)
+	return made.requestResponse("GET", "/state", "", made.tokens[role], headers)
 }
 
 func TestTheStateListsEveryItemWithItsVersionAndWhetherItIsRemoved(t *testing.T) {
 	made := newFixture(t)
 	createChecklist(t, made)
-	made.send("POST", "/items/check", `{"fields": {"title": "Suite", "command": "true", "brief": "", "interval_minutes": 0}}`, made.tokens[store.RoleAdmin], nil)
-	made.send("DELETE", "/items/doc/1", "", made.tokens[store.RoleAdmin], nil)
+	made.requestResponse("POST", "/items/check", `{"fields": {"title": "Suite", "command": "true", "brief": "", "interval_minutes": 0}}`, made.tokens[store.RoleAdmin], nil)
+	made.requestResponse("DELETE", "/items/doc/1", "", made.tokens[store.RoleAdmin], nil)
 	response := stateFor(made, store.RoleRead, "")
 	body := decode(t, response)
 	items, _ := body["items"].([]any)
@@ -38,9 +38,9 @@ func TestTheStateListsEveryItemWithItsVersionAndWhetherItIsRemoved(t *testing.T)
 
 func TestTheServerKeyInStateIsTheOneInInfo(t *testing.T) {
 	made := newFixture(t)
-	info := httptest.NewRecorder()
-	made.handler.ServeHTTP(info, httptest.NewRequest("GET", "/info", nil))
-	if decode(t, info)["server_key"] != decode(t, stateFor(made, store.RoleRead, ""))["server_key"] {
+	serverInfo := httptest.NewRecorder()
+	made.handler.ServeHTTP(serverInfo, httptest.NewRequest("GET", "/info", nil))
+	if decode(t, serverInfo)["server_key"] != decode(t, stateFor(made, store.RoleRead, ""))["server_key"] {
 		t.Error("the keys differ")
 	}
 }
@@ -59,7 +59,7 @@ func TestAWriteMovesTheEtag(t *testing.T) {
 	made := newFixture(t)
 	createChecklist(t, made)
 	tag := stateFor(made, store.RoleRead, "").Header().Get("ETag")
-	made.send("PUT", "/items/doc/1", `{"fields": {"body": "new"}}`, made.tokens[store.RoleEdit], ifMatch(`"1"`))
+	made.requestResponse("PUT", "/items/doc/1", `{"fields": {"body": "new"}}`, made.tokens[store.RoleEdit], ifMatch(`"1"`))
 	after := stateFor(made, store.RoleRead, tag)
 	if after.Code != 200 || after.Header().Get("ETag") == tag {
 		t.Fatalf("%d %s", after.Code, after.Header().Get("ETag"))
@@ -69,7 +69,7 @@ func TestAWriteMovesTheEtag(t *testing.T) {
 func TestARoleChangeMovesTheEtagOfThatUser(t *testing.T) {
 	made := newFixture(t)
 	tag := stateFor(made, store.RoleEdit, "").Header().Get("ETag")
-	if made.send("PATCH", "/users/2", `{"role": "read"}`, made.tokens[store.RoleAdmin], nil).Code != 200 {
+	if made.requestResponse("PATCH", "/users/2", `{"role": "read"}`, made.tokens[store.RoleAdmin], nil).Code != 200 {
 		t.Fatal("the role was not changed")
 	}
 	after := stateFor(made, store.RoleEdit, tag)

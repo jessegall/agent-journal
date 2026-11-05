@@ -1,3 +1,4 @@
+from core.modules.drivers.support.suite_choice import SuiteChoice
 import json
 from argparse import ArgumentParser, Namespace
 
@@ -28,8 +29,8 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     cli_name = "usage"
     name = "agents"
 
-    def __init__(self, queries: Queries, files: StatusFiles, environment_names: EnvironmentNames, providers: Providers, home: JournalHome) -> None:
-        self.queries, self.files, self.environment_names, self.providers, self.home = queries, files, environment_names, providers, home
+    def __init__(self, queries: Queries, files: StatusFiles, environment_names: EnvironmentNames, providers: Providers, home: JournalHome, suites: SuiteChoice) -> None:
+        self.queries, self.files, self.environment_names, self.providers, self.home, self.suites = queries, files, environment_names, providers, home, suites
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--environment")
@@ -48,7 +49,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         status = self.files.status(card.session)
         return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.dispatch_model, status.context_percent, status.cost_dollars, card.started_task_id, card.started_task_title,
                           tuple(json.loads(card.tasks)), self.waiting_state(card), card.profile or card.dispatch_profile, card.given_name or card.dispatch_description.split(",", 1)[0],
-                          card.dispatch_instruction, status.effort or self.session_effort(card))
+                          card.dispatch_instruction, status.effort or self.session_effort(card), card.role in self.suites.agent_policy(card.environment_id).job_roles)
 
     def reported_model(self, card: AgentCard) -> str:
         return self.providers.reported_model(card.program, self.home, card.session)

@@ -40,8 +40,8 @@ def test_a_code_change_leaves_a_folder_a_running_suite_uses(tmp_path, monkeypatc
 def test_a_code_change_removes_a_folder_unused_for_an_hour(tmp_path, monkeypatch):
     cache, sample = sample_cache(tmp_path, monkeypatch)
     unused = cache.folder()
-    an_hour_ago = time.time() - RUNNING_FOLDER_SECONDS - 1
-    os.utime(unused, (an_hour_ago, an_hour_ago))
+    expired_at = time.time() - RUNNING_FOLDER_SECONDS - 1
+    os.utime(unused, (expired_at, expired_at))
 
     sample.write_text("class Sample: value = 1\n")
     cache.folder()

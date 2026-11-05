@@ -39,11 +39,11 @@ func (transcripts ClaudeTranscripts) Titled(folder string, conversations []Conve
 	kept := []Conversation{}
 	for _, conversation := range conversations {
 		path := filepath.Join(projectFolder, conversation.Session+".jsonl")
-		info, err := os.Stat(path)
+		fileInfo, err := os.Stat(path)
 		if err != nil {
 			continue
 		}
-		conversation.Title, conversation.ModifiedAt = transcriptTitle(path), info.ModTime()
+		conversation.Title, conversation.ModifiedAt = transcriptTitle(path), fileInfo.ModTime()
 		kept = append(kept, conversation)
 	}
 	sort.SliceStable(kept, func(first, second int) bool { return kept[first].ModifiedAt.After(kept[second].ModifiedAt) })

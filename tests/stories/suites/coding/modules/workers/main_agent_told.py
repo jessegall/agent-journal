@@ -32,7 +32,7 @@ def test_a_workers_report_is_typed_to_an_idle_main_agent(new_story):
     story, worker = story_with_worker(new_story, typing)
     story.advance(timedelta(minutes=5))
     report(story, worker)
-    expect_typed_typing_2("reports in message", typing)
+    expect_terminal_line("reports in message", typing)
 
 
 def test_a_workers_report_says_it_wakes_the_main_agent_and_stays_visible(new_story):
@@ -59,6 +59,6 @@ def expect_wakes_agent_proof(item) -> None:
     assert actual, actual
 
 
-def expect_typed_typing_2(text, typing) -> None:
+def expect_terminal_line(text, typing) -> None:
     actual = any((text in line for _, line in typing.typed))
     assert actual, actual

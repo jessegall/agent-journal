@@ -11,7 +11,7 @@ from core.base.journal_home import JournalHome
 from core.base.refusal import Refusal
 from core.base.seed.demo import DEMO_ENVIRONMENT
 from core.base.seed.demo_link import DemoLink
-from core.modules.demo.support.unix_connection import UnixConnection
+from core.base.unix_connection import UnixConnection
 from core.modules.demo.support.demo_session import DemoSession
 
 STEP_SECONDS = 120
@@ -67,7 +67,7 @@ class DemoScratch:
         return str(self.ask("POST", "/viewer/key", {"variables": {"USER": PERSON}, "folder": str(self.folder)})["key"])
 
     def ask(self, method: str, path: str, body: dict[str, object] | None = None) -> dict[str, object]:
-        connection = UnixConnection(str(self.home.socket("server")), REQUEST_SECONDS)
+        connection = UnixConnection(str(self.home.socket("server")), REQUEST_SECONDS, "localhost")
         try:
             connection.request(method, path, json.dumps(body) if body is not None else None, {"Content-Type": "application/json"})
             answer: dict[str, object] = json.loads(connection.getresponse().read() or b"{}")

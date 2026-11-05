@@ -37,7 +37,9 @@ func TestAPartThatStillRunsIsReportedStartedWhileItRuns(t *testing.T) {
 		var output strings.Builder
 		Run(setup, client, &output)
 	}()
-	waitFor(t, 5*time.Second, "the start of the second part", func() bool { return strings.Contains(strings.Join(client.reported(), "\n"), "process part-start 4 --position 2") })
+	waitFor(t, 5*time.Second, "the start of the second part", func() bool {
+		return strings.Contains(strings.Join(client.reported(), "\n"), "process part-start 4 --position 2")
+	})
 	if strings.Contains(strings.Join(client.reported(), "\n"), "process part-end 4 --position 2") {
 		t.Errorf("the part that still runs was reported ended: %q", client.reported())
 	}

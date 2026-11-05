@@ -20,21 +20,21 @@ func newFlags(name string, errs io.Writer) (*flag.FlagSet, *string) {
 
 // parse reads flags and the given number of plain arguments in any order, as in `user add Ada --role admin`.
 func parse(flags *flag.FlagSet, arguments []string, wanted int) ([]string, error) {
-	var found []string
+	var positional []string
 	for len(arguments) > 0 {
 		if err := flags.Parse(arguments); err != nil {
 			return nil, err
 		}
 		arguments = flags.Args()
 		if len(arguments) > 0 {
-			found = append(found, arguments[0])
+			positional = append(positional, arguments[0])
 			arguments = arguments[1:]
 		}
 	}
-	if len(found) != wanted {
-		return nil, fmt.Errorf("%s takes %d argument(s) besides its flags, got %d", flags.Name(), wanted, len(found))
+	if len(positional) != wanted {
+		return nil, fmt.Errorf("%s takes %d argument(s) besides its flags, got %d", flags.Name(), wanted, len(positional))
 	}
-	return found, nil
+	return positional, nil
 }
 
 func openData(folder string) (*store.Store, error) {
@@ -188,8 +188,8 @@ func itemCommand(name string, arguments []string, out, errs io.Writer) error {
 	if err != nil {
 		return err
 	}
-	kind, found := store.KindByName(positional[0])
-	if !found {
+	kind, matched := store.KindByName(positional[0])
+	if !matched {
 		return fmt.Errorf("there is no kind %q; the kinds are %s", positional[0], strings.Join(store.KindNames(), ", "))
 	}
 	id, err := strconv.ParseInt(positional[1], 10, 64)

@@ -14,7 +14,7 @@ from core.modules.messages.models.main_chat_mark import MainChatMark
 
 
 class MainChatRowsSubcommand(ReadSubcommand[ViewRowPage]):
-    """`journal chat-mark main`: the marks the main chat shows, newest first, a page at a time; --type keeps one type."""
+    """Lists main-chat marks, newest first, with an optional type filter."""
 
     cli_name = "chat-mark"
     name = "main"

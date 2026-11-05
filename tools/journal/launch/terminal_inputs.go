@@ -26,7 +26,7 @@ type TerminalInputs struct {
 // keyboardReader notes when keys come from the keyboard.
 type keyboardReader struct {
 	source io.Reader
-	onRead  func()
+	onRead func()
 }
 
 func (reader keyboardReader) Read(buffer []byte) (int, error) {

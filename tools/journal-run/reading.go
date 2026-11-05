@@ -12,8 +12,8 @@ const readingVariable = "JOURNAL_RUN_READING"
 func parseReading(text string) map[int]string {
 	selection := map[int]string{}
 	for _, item := range strings.Split(text, ",") {
-		position, flag, found := strings.Cut(item, ":")
-		if number, err := strconv.Atoi(position); found && err == nil {
+		position, flag, valid := strings.Cut(item, ":")
+		if number, err := strconv.Atoi(position); valid && err == nil {
 			selection[number] = flag
 		}
 	}
@@ -22,10 +22,10 @@ func parseReading(text string) map[int]string {
 
 // readLines is the lines of an output a reading asks for: tail:N, head:N or cut:A-B, counted from 1.
 func readLines(text, selection string) string {
-	kind, value, _ := strings.Cut(selection, ":")
+	mode, value, _ := strings.Cut(selection, ":")
 	lines := strings.SplitAfter(strings.TrimSuffix(text, "\n"), "\n")
 	first, last := 0, len(lines)
-	switch kind {
+	switch mode {
 	case "tail":
 		count, _ := strconv.Atoi(value)
 		first = max(0, len(lines)-count)

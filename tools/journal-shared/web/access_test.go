@@ -15,11 +15,11 @@ import (
 )
 
 type fixture struct {
-	handler http.Handler
-	store   *store.Store
-	tokens  map[store.Role]string
-	other   store.User
-	otherID int64 // the number of the token of the other user
+	handler       http.Handler
+	store         *store.Store
+	tokens        map[store.Role]string
+	secondaryUser store.User
+	otherID       int64 // the number of the token of the other user
 }
 
 // seeded is a fixture with one document, number 1, made by Ada.
@@ -52,13 +52,13 @@ func newFixture(t *testing.T) fixture {
 		}
 		made.tokens[role], _, _ = database.NewToken(user.ID, "")
 	}
-	made.other, _ = database.AddUser("Other", store.RoleRead)
-	_, token, _ := database.NewToken(made.other.ID, "")
+	made.secondaryUser, _ = database.AddUser("Other", store.RoleRead)
+	_, token, _ := database.NewToken(made.secondaryUser.ID, "")
 	made.otherID = token.ID
 	return made
 }
 
-func (made fixture) send(method, path, body, token string, headers map[string]string) *httptest.ResponseRecorder {
+func (made fixture) requestResponse(method, path, body, token string, headers map[string]string) *httptest.ResponseRecorder {
 	request := httptest.NewRequest(method, path, strings.NewReader(body))
 	request.Header.Set("Journal-Protocol", "1")
 	if token != "" {
@@ -80,15 +80,15 @@ type routeCase struct {
 }
 
 func routeCases(made fixture) []routeCase {
-	other := fmt.Sprint(made.other.ID)
+	secondaryUser := fmt.Sprint(made.secondaryUser.ID)
 	return []routeCase{
 		{"GET", "/me", "", store.RoleRead, 200, nil},
 		{"GET", "/users", "", store.RoleAdmin, 200, nil},
 		{"POST", "/users", `{"name": "New", "role": "read"}`, store.RoleAdmin, 201, nil},
-		{"PATCH", "/users/" + other, `{"role": "edit"}`, store.RoleAdmin, 200, nil},
-		{"DELETE", "/users/" + other, "", store.RoleAdmin, 200, nil},
-		{"GET", "/users/" + other + "/tokens", "", store.RoleAdmin, 200, nil},
-		{"POST", "/users/" + other + "/tokens", `{"label": "laptop"}`, store.RoleAdmin, 201, nil},
+		{"PATCH", "/users/" + secondaryUser, `{"role": "edit"}`, store.RoleAdmin, 200, nil},
+		{"DELETE", "/users/" + secondaryUser, "", store.RoleAdmin, 200, nil},
+		{"GET", "/users/" + secondaryUser + "/tokens", "", store.RoleAdmin, 200, nil},
+		{"POST", "/users/" + secondaryUser + "/tokens", `{"label": "laptop"}`, store.RoleAdmin, 201, nil},
 		{"DELETE", fmt.Sprintf("/tokens/%d", made.otherID), "", store.RoleAdmin, 200, nil},
 		{"GET", "/state", "", store.RoleRead, 200, nil},
 		{"GET", "/items?kind=doc", "", store.RoleRead, 200, nil},
@@ -107,7 +107,7 @@ func TestEveryRoleAgainstEveryRoute(t *testing.T) {
 		for index := range routeCases(newFixture(t)) {
 			made := seeded(t)
 			route := routeCases(made)[index]
-			response := made.send(route.method, route.path, route.body, made.tokens[role], route.headers)
+			response := made.requestResponse(route.method, route.path, route.body, made.tokens[role], route.headers)
 			want := route.success
 			if !role.Allows(route.minimum) {
 				want = http.StatusForbidden
@@ -126,7 +126,7 @@ func TestEveryRouteRefusesNoTokenAWrongTokenAndARevokedToken(t *testing.T) {
 		revokedText, revoked, _ := made.store.NewToken(1, "")
 		made.store.RevokeToken(revoked.ID)
 		for name, token := range map[string]string{"no token": "", "a wrong token": "jsl_wrong", "a revoked token": revokedText} {
-			response := made.send(route.method, route.path, route.body, token, route.headers)
+			response := made.requestResponse(route.method, route.path, route.body, token, route.headers)
 			if response.Code != http.StatusUnauthorized {
 				t.Errorf("%s %s with %s: %d", route.method, route.path, name, response.Code)
 			}
@@ -137,14 +137,14 @@ func TestEveryRouteRefusesNoTokenAWrongTokenAndARevokedToken(t *testing.T) {
 
 func TestARevokedTokenStopsWorkingOnTheNextRequest(t *testing.T) {
 	made := newFixture(t)
-	if made.send("GET", "/me", "", made.tokens[store.RoleEdit], nil).Code != 200 {
+	if made.requestResponse("GET", "/me", "", made.tokens[store.RoleEdit], nil).Code != 200 {
 		t.Fatal("the token did not work before it was revoked")
 	}
 	tokens, _ := made.store.Tokens(2)
-	if response := made.send("DELETE", fmt.Sprintf("/tokens/%d", tokens[0].ID), "", made.tokens[store.RoleEdit], nil); response.Code != 200 {
+	if response := made.requestResponse("DELETE", fmt.Sprintf("/tokens/%d", tokens[0].ID), "", made.tokens[store.RoleEdit], nil); response.Code != 200 {
 		t.Fatalf("a user could not revoke their own token: %d", response.Code)
 	}
-	if made.send("GET", "/me", "", made.tokens[store.RoleEdit], nil).Code != http.StatusUnauthorized {
+	if made.requestResponse("GET", "/me", "", made.tokens[store.RoleEdit], nil).Code != http.StatusUnauthorized {
 		t.Error("the revoked token still works")
 	}
 }
@@ -153,7 +153,7 @@ func TestEveryRouteButInfoRefusesAMissingOrUnsupportedProtocol(t *testing.T) {
 	made := seeded(t)
 	for _, route := range routeCases(made) {
 		for _, version := range []string{"", "2", "0"} {
-			response := made.send(route.method, route.path, route.body, made.tokens[store.RoleAdmin], mergedHeaders(route.headers, "Journal-Protocol", version))
+			response := made.requestResponse(route.method, route.path, route.body, made.tokens[store.RoleAdmin], mergedHeaders(route.headers, "Journal-Protocol", version))
 			if response.Code != http.StatusUpgradeRequired {
 				t.Errorf("%s %s with protocol %q: %d", route.method, route.path, version, response.Code)
 			}
@@ -170,7 +170,7 @@ func TestEveryRouteButInfoRefusesAMissingOrUnsupportedProtocol(t *testing.T) {
 
 func TestAReadUserRevokesOwnTokenButNotSomeoneElses(t *testing.T) {
 	made := newFixture(t)
-	response := made.send("DELETE", fmt.Sprintf("/tokens/%d", made.otherID), "", made.tokens[store.RoleRead], nil)
+	response := made.requestResponse("DELETE", fmt.Sprintf("/tokens/%d", made.otherID), "", made.tokens[store.RoleRead], nil)
 	if response.Code != http.StatusForbidden {
 		t.Errorf("%d", response.Code)
 	}
@@ -192,7 +192,7 @@ func TestAnUnknownRouteAndABadBodyAndALargeBodyAnswerInTheErrorShape(t *testing.
 		{"POST", "/users", `{"name": "` + strings.Repeat("x", 3<<20) + `", "role": "read"}`, 413},
 	}
 	for _, c := range cases {
-		response := made.send(c.method, c.path, c.body, admin, nil)
+		response := made.requestResponse(c.method, c.path, c.body, admin, nil)
 		if response.Code != c.status {
 			t.Errorf("%s %s: %d, wanted %d", c.method, c.path, response.Code, c.status)
 		}
@@ -205,8 +205,8 @@ func TestTheServerNeverLogsTheAuthorizationHeader(t *testing.T) {
 	log.SetOutput(&logged)
 	defer log.SetOutput(os.Stderr)
 	made := newFixture(t)
-	made.send("GET", "/me", "", "jsl_secret", nil)
-	made.send("GET", "/me", "", made.tokens[store.RoleAdmin], nil)
+	made.requestResponse("GET", "/me", "", "jsl_secret", nil)
+	made.requestResponse("GET", "/me", "", made.tokens[store.RoleAdmin], nil)
 	if strings.Contains(logged.String(), "jsl_") || strings.Contains(logged.String(), "Bearer") {
 		t.Errorf("the log holds a token: %s", logged.String())
 	}

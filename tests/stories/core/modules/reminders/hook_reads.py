@@ -4,7 +4,7 @@ from pathlib import Path
 from core.base.database.database import Database
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithUser
-from tests.stories.support.story_checks import expect_count_shown, expect_value, expect_value_more, expect_visited_limit
+from tests.stories.support.story_checks import expect_count_shown, expect_value, expect_greater, expect_visited_limit
 
 PROMPT = HookSamples.prompt("go on")
 REMINDERS = 12
@@ -90,7 +90,7 @@ def test_a_second_hook_over_an_unchanged_transcript_reads_none_of_it(new_story, 
     story, path, hook = transcript_story(new_story, tmp_path)
     first = bytes_read_during(monkeypatch, path, lambda: story.hook("s-1", hook))
     second = bytes_read_during(monkeypatch, path, lambda: story.hook("s-1", hook))
-    expect_value_more(first, 0)
+    expect_greater(first, 0)
     expect_value(second, 0)
 
 

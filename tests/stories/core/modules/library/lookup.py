@@ -22,7 +22,7 @@ pytestmark = pytest.mark.usefixtures("private_folder")
 JSON_HEADERS = {"Content-Type": "application/json"}
 EMPTY_PAGE = b'{"page": 1, "size": 30, "total": 0, "rows": []}'
 ASKS = 10
-NEEDS_GO = pytest.mark.skipif(shutil.which("go") is None, reason="the shared server needs go to build")
+REQUIRES_COMPILER = pytest.mark.skipif(shutil.which("go") is None, reason="the shared server needs go to build")
 
 
 @dataclass(frozen=True)
@@ -103,7 +103,7 @@ def test_a_server_that_answers_has_no_failure_kept(new_story):
         story.expect_rows(len(stub.requests) == 3)
 
 
-@NEEDS_GO
+@REQUIRES_COMPILER
 def test_a_search_finds_items_of_each_share_with_the_text_around_the_match(new_story, shared_server):
     server, tokens = shared_server
     server.send(tokens.admin, "POST", "/items/doc", {"fields": {"title": "Marble lookup", "abstract": "About it", "body": "Before anything, tag the commit and build the xenolith package."}})
@@ -114,7 +114,7 @@ def test_a_search_finds_items_of_each_share_with_the_text_around_the_match(new_s
     story.expect_rows([(hit.share, hit.title) for hit in matches] == [("doc", "Marble lookup"), ("check", "Xenolith check")], "xenolith" in matches[0].excerpt)
 
 
-@NEEDS_GO
+@REQUIRES_COMPILER
 def test_an_item_is_read_by_its_library_number_and_a_title_is_looked_up(new_story, shared_server):
     server, tokens = shared_server
     item = server.send(tokens.admin, "POST", "/items/doc", {"fields": {"title": "Onyx read", "abstract": "About it", "body": "Tag first."}})[1]
@@ -125,7 +125,7 @@ def test_an_item_is_read_by_its_library_number_and_a_title_is_looked_up(new_stor
     story.expect_rows(fetched.fields["body"] == "Tag first.", lookup.title("doc", int(str(item["id"]))) == "Onyx read", lookup.title("doc", 99999) is None)
 
 
-@NEEDS_GO
+@REQUIRES_COMPILER
 def test_a_local_row_that_follows_an_item_is_a_copy_and_others_are_not(new_story, shared_server):
     server, tokens = shared_server
     story = new_story(fixture=UserJoined)

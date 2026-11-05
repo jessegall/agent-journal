@@ -29,7 +29,7 @@ def test_the_first_check_writes_a_copy_that_opens_with_the_journals_rows(new_sto
     backup.follow()
     expect_copies_backup(backup, 1)
     connection = sqlite3.connect(backup.copies()[0])
-    expect_fetchone_execute_connection_more(connection, "select count(*) from actors", 0)
+    expect_query_count_greater(connection, "select count(*) from actors", 0)
     connection.close()
 
 
@@ -104,6 +104,6 @@ def expect_iterdir_folder_backup(backup, expected) -> None:
     assert actual == expected, actual
 
 
-def expect_fetchone_execute_connection_more(connection, text, expected) -> None:
+def expect_query_count_greater(connection, text, expected) -> None:
     actual = connection.execute(text).fetchone()[0]
     assert actual > expected, actual

@@ -57,7 +57,7 @@ def test_the_status_reads_the_programs_answer_and_a_login_it_no_longer_accepts(h
 def test_a_login_hands_the_passwords_through_the_environment_and_never_on_the_command_line(home, tmp_path):
     expect_connected_login_real(home, "tunnels.example", "ada", "right")
     expect_record(tmp_path, ["login ada --host=tunnels.example"])
-    expect_tmp_path_record(tmp_path, "record.secrets", ["right none"])
+    expect_record_file(tmp_path, "record.secrets", ["right none"])
 
 
 def test_a_login_for_an_account_that_does_not_exist_asks_for_the_master_password(home):
@@ -207,7 +207,7 @@ def expect_error_login_with(login, expected) -> None:
     assert expected in actual, actual
 
 
-def expect_tmp_path_record(tmp_path, text, expected) -> None:
+def expect_record_file(tmp_path, text, expected) -> None:
     actual = (tmp_path / text).read_text().splitlines()
     assert actual == expected, actual
 

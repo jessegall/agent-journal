@@ -53,7 +53,7 @@ def test_a_paused_agents_tool_calls_are_refused_until_it_is_resumed(new_story):
 def test_resume_types_that_it_may_carry_on(paused_typing_agent):
     story, typing = paused_typing_agent
     story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
-    expect_split_typed_typing(":", typing, ["[journal] the user paused you", "[journal] the user resumed you"])
+    expect_terminal_line_parts(":", typing, ["[journal] the user paused you", "[journal] the user resumed you"])
 
 
 def test_a_paused_agent_may_read_and_is_not_told_of_the_pause_on_what_it_may_do(new_story):
@@ -194,6 +194,6 @@ def paused_agent_without_terminal(new_story):
     return story
 
 
-def expect_split_typed_typing(text, typing, expected) -> None:
+def expect_terminal_line_parts(text, typing, expected) -> None:
     actual = [line.split(text)[0] for _, line in typing.typed]
     assert actual == expected, actual

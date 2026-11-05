@@ -36,6 +36,36 @@
                         "is": "identifier"
                     }
                 ]
+            },
+            {
+                "nameMatches": "^(ctx|ok|err)$"
+            },
+            {
+                "nameMatches": "^(break|default|func|interface|select|case|defer|go|map|struct|chan|else|goto|package|switch|const|fallthrough|if|range|type|continue|for|import|return|var)$"
+            },
+            {
+                "all": [
+                    {
+                        "nameMatches": "^(append|cap|clear|close|complex|copy|delete|imag|len|make|max|min|new|panic|print|println|real|recover)$"
+                    },
+                    {
+                        "of": "parent",
+                        "kind": "CallExpr"
+                    }
+                ]
+            },
+            {
+                "resolvesLike": "database/sql.Result"
+            },
+            {
+                "all": [
+                    {
+                        "nameMatches": "^(Kind|Kinds|kind)$"
+                    },
+                    {
+                        "fileMatches": "(^|/)tools/journal-shared/"
+                    }
+                ]
             }
         ]
     },

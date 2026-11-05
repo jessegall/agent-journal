@@ -14,14 +14,14 @@ export function lineDiff(before, after) {
     let column = 0;
     while (row < old.length || column < fresh.length) {
         if (row < old.length && column < fresh.length && old[row] === fresh[column]) {
-            lines.push({kind: "same", text: old[row]});
+            lines.push({key: `old:${row}`, kind: "same", text: old[row]});
             row += 1;
             column += 1;
         } else if (column < fresh.length && (row === old.length || lengths[row][column + 1] >= lengths[row + 1][column])) {
-            lines.push({kind: "added", text: fresh[column]});
+            lines.push({key: `new:${column}`, kind: "added", text: fresh[column]});
             column += 1;
         } else {
-            lines.push({kind: "removed", text: old[row]});
+            lines.push({key: `old:${row}`, kind: "removed", text: old[row]});
             row += 1;
         }
     }

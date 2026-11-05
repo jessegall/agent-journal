@@ -15,7 +15,7 @@ var timeoutFlag = regexp.MustCompile(`(?:^|\s)--timeout(?:=|\s+)(?:'([^']*)'|"([
 
 type savedOptions struct {
 	arguments       string
-	selection         string
+	selection       string
 	timeoutDuration *string
 }
 

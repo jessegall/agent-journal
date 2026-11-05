@@ -42,11 +42,11 @@ func (server *Server) addUser(response http.ResponseWriter, request *http.Reques
 }
 
 func (server *Server) changeUser(response http.ResponseWriter, request *http.Request, _ store.Caller) {
-	id, found := pathNumber(request, "id")
+	id, valid := pathNumber(request, "id")
 	var body struct {
 		Role string `json:"role"`
 	}
-	if !found {
+	if !valid {
 		fail(response, store.ErrNotFound)
 		return
 	}
@@ -67,8 +67,8 @@ func (server *Server) changeUser(response http.ResponseWriter, request *http.Req
 }
 
 func (server *Server) removeUser(response http.ResponseWriter, request *http.Request, _ store.Caller) {
-	id, found := pathNumber(request, "id")
-	if !found {
+	id, valid := pathNumber(request, "id")
+	if !valid {
 		fail(response, store.ErrNotFound)
 		return
 	}
@@ -81,8 +81,8 @@ func (server *Server) removeUser(response http.ResponseWriter, request *http.Req
 }
 
 func (server *Server) listTokens(response http.ResponseWriter, request *http.Request, _ store.Caller) {
-	id, found := pathNumber(request, "id")
-	if !found {
+	id, valid := pathNumber(request, "id")
+	if !valid {
 		fail(response, store.ErrNotFound)
 		return
 	}
@@ -99,11 +99,11 @@ func (server *Server) listTokens(response http.ResponseWriter, request *http.Req
 }
 
 func (server *Server) addToken(response http.ResponseWriter, request *http.Request, _ store.Caller) {
-	id, found := pathNumber(request, "id")
+	id, valid := pathNumber(request, "id")
 	var body struct {
 		Label string `json:"label"`
 	}
-	if !found {
+	if !valid {
 		fail(response, store.ErrNotFound)
 		return
 	}
@@ -119,8 +119,8 @@ func (server *Server) addToken(response http.ResponseWriter, request *http.Reque
 }
 
 func (server *Server) revokeToken(response http.ResponseWriter, request *http.Request, caller store.Caller) {
-	id, found := pathNumber(request, "id")
-	if !found {
+	id, valid := pathNumber(request, "id")
+	if !valid {
 		fail(response, store.ErrNotFound)
 		return
 	}

@@ -22,7 +22,7 @@ class WorkerJobMarkListener(MarkListener[Created[Message]]):
         if logged.command != SendWorker.label():
             return
         message = event.row
-        if not WorkerRecipient.is_for_worker(message.recipient):
+        if not WorkerRecipient.matches_worker(message.recipient):
             return
         worker = self.queries.query(Agent).find(WorkerRecipient.worker_id(message.recipient))
         name = worker.given_name or f"Worker {worker.id}"

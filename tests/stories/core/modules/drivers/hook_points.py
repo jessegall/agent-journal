@@ -12,7 +12,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.drivers.hook_durations import BuilderWithUser
 from tests.stories.core.modules.processes.support.process_samples import moved_run
-from tests.stories.support.story_checks import expect_absent_value, expect_total_cost_less, expect_value_more
+from tests.stories.support.story_checks import expect_absent_value, expect_total_cost_less, expect_greater
 
 ROW_COUNT = 40
 READS_MEASURED = 60
@@ -69,7 +69,7 @@ def test_every_read_a_window_asks_of_an_endpoint_costs_under_the_same_points_on_
             if cost.total >= HOOK_LIMIT_POINTS:
                 over[line] = f"{cost.total} points ({cost.line()}); " + "; ".join(f"{rows} rows: {sql[:90]}" for sql, rows in cost.statements.most_common(3))
             break
-    expect_value_more(measured, READS_MEASURED)
+    expect_greater(measured, READS_MEASURED)
     expect_absent_value(over)
 
 

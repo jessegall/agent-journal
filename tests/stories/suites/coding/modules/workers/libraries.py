@@ -3,7 +3,7 @@ from core.modules.agents.models.agent import Agent
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, expect_clean_environment, repository_environment
-from tests.stories.support.story_checks import expect_command_folder_chosen, expect_value_without
+from tests.stories.support.story_checks import expect_command_file, expect_value_without
 LIBRARY_FILE = "index.js"
 LIBRARY_TEXT = "module.exports = 1\n"
 
@@ -87,7 +87,7 @@ def test_a_launch_worktree_is_given_the_libraries_and_commands_of_the_environmen
     expect_resolve_folder_node(folder, "node_modules", (repository.folder / "node_modules").resolve())
     expect_folder_vendor_library(folder, "vendor", LIBRARY_FILE, LIBRARY_TEXT)
     expect_absent_symlink_folder_vendor(folder, "vendor")
-    expect_command_folder_chosen(folder, "prepared.txt", "worktree-cart")
+    expect_command_file(folder, "prepared.txt", "worktree-cart")
     status = repository.git("status", "--porcelain", "--untracked-files=all", folder=folder).stdout
     expect_value_without(status, "node_modules")
     expect_value_without(status, "vendor")

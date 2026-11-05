@@ -29,10 +29,10 @@ def test_a_question_longer_than_version_5_allows_moves_whole_into_a_document_and
     expect_value_4(document)
     expect_upgrade_without(story, "skipped questions 3")
     expect_upgrade_text(story, "1 question texts longer than 500 characters moved whole into documents")
-    expect_output_more(story, f"doc show {document.group(1)} --all", 500)
+    expect_output_length_greater(story, f"doc show {document.group(1)} --all", 500)
 
 
-def expect_output_more(story, text, expected) -> None:
+def expect_output_length_greater(story, text, expected) -> None:
     actual = len(story.run(text).output_text)
     assert actual > expected, actual
 

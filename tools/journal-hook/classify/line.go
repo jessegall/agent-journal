@@ -66,10 +66,11 @@ func (classifier *Classifier) part(command shell.Command, classification Classif
 		prepared.PipedInto = &target
 	}
 	for _, run := range classifier.savedRuns {
-		if run.line == strings.TrimSpace(command.Text) {
-			prepared.SavedCommand, prepared.ReadFlag = run.name, run.selection
-			prepared.TimeoutDuration = run.timeoutDuration
+		if run.line != strings.TrimSpace(command.Text) {
+			continue
 		}
+		prepared.SavedCommand, prepared.ReadFlag = run.name, run.selection
+		prepared.TimeoutDuration = run.timeoutDuration
 	}
 	return prepared
 }

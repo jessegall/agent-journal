@@ -47,7 +47,7 @@ def test_completed_hook_requests_record_the_real_duration_and_decision(recording
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
     value = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})
     request = value["rows"][0]
-    expect_duration_ms_request_more(request, 0)
+    expect_request_duration_greater(request, 0)
     expect_row(request, outcome=outcome.value)
     expect_row(request, body=dict(sample.body))
 
@@ -80,7 +80,7 @@ def expect_part_count(value, expected) -> None:
     assert actual == expected, actual
 
 
-def expect_duration_ms_request_more(request, expected) -> None:
+def expect_request_duration_greater(request, expected) -> None:
     actual = request['duration_ms']
     assert actual > expected, actual
 

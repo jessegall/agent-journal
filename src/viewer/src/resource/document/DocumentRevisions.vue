@@ -35,7 +35,7 @@ async function restore() {
             <template v-if="opened">
                 <Btn small bordered data-text-revision-restore @click="restore">Go back to this revision</Btn>
                 <div class="revision-diff" data-text-revision-diff>
-                    <template v-for="(line, index) in lines" :key="index">
+                    <template v-for="line in lines" :key="line.key">
                         <div :class="['revision-line', line.kind]">{{ line.text || " " }}</div>
                     </template>
                 </div>
