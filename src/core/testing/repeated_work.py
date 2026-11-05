@@ -93,7 +93,7 @@ class RepeatedWork(PointTally):
             self.check_scan(statement)
         if self.is_allowed_read():
             return
-        self.forget_reads_before_a_write()
+        self.clear_reads_on_change()
         self.reads[statement] += 1
         self.read_texts[statement.sql] += 1
         if self.reads[statement] == 1:
@@ -103,7 +103,7 @@ class RepeatedWork(PointTally):
         if self.read_texts[statement.sql] == self.read_text_limit + 1:
             self.reject(f"one request read this SQL more than {self.read_text_limit} times: {statement.sql}\n{self.caller_lines()}")
 
-    def forget_reads_before_a_write(self) -> None:
+    def clear_reads_on_change(self) -> None:
         change_mark = self.database.change_mark() if self.database is not None else None
         if change_mark != self.read_mark:
             self.reads, self.read_mark = Counter(), change_mark
