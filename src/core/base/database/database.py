@@ -25,6 +25,10 @@ class Database:
         self.row_owner: RowOwner | None = None
         self.rollback_count = 0
 
+    @property
+    def scope_environment_id(self) -> int | None:
+        return self.row_owner.environment_id if self.row_owner is not None else None
+
     @classmethod
     def opened(cls, home: JournalHome) -> "Database":
         home.database.parent.mkdir(parents=True, exist_ok=True)

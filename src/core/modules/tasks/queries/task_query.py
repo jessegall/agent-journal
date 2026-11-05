@@ -52,6 +52,6 @@ class TaskQuery(Query[Task]):
     def closed_counts(self, starts: Sequence[Timestamp]) -> list[int]:
         if not starts:
             return []
-        parameters = (*(start.text for start in starts), self.scope_environment_id, min(start.text for start in starts))
+        parameters = (*(start.text for start in starts), self.database.scope_environment_id, min(start.text for start in starts))
         row = self.database.rows(Statement(closed_task_counts_select(len(starts)), parameters))[0]
         return [int(count) for count in row]

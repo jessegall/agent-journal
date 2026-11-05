@@ -23,7 +23,7 @@ def story_with_worker(new_story, typing=None):
 
 
 def report(story, worker) -> None:
-    story.container.get(Bus).run(RecordWorkerReport(worker.id, 1, story.agent.id, "Handed in"), worker, environment_id=1)
+    story.container.get(Bus).run(RecordWorkerReport(worker.id, story.agent.id, "Handed in"), worker, environment_id=1)
     story.run_listeners()
 
 

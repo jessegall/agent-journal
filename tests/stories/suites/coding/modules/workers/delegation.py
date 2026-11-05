@@ -367,7 +367,7 @@ def expect_total_delegated_groups(groups, expected) -> None:
 
 
 def expect_next_open_tasks(tasks, number, text, expected) -> None:
-    actual = tasks.next_open(number, None, IsNull(text))
+    actual = tasks.next_open(None, IsNull(text))
     assert actual is expected, actual
 
 

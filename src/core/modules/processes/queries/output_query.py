@@ -38,4 +38,4 @@ class OutputQuery(Query[Output]):
         return self.matching(SubqueryMatch("process_id", running)).matching(Greater("title", ""))
 
     def matching_part(self, text: str) -> Self:
-        return self.matching(PartOutput(self.scope_environment_id, text))
+        return self.matching(PartOutput(self.database.scope_environment_id, text))

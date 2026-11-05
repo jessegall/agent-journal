@@ -11,6 +11,7 @@ from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
+from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
@@ -39,12 +40,17 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     command = DispatchWorker
 
     def __init__(self, queries: Queries, repository: Repository, bus: Bus, settings: SettingValues, git: WorktreeGit,
-                 worker_command: WorkerCommand, worktrees: WorktreeQuery, providers: Providers, models: AllowedModels) -> None:
+                 worker_command: WorkerCommand, worktrees: WorktreeQuery, providers: Providers, models: AllowedModels, scopes: Scopes) -> None:
         self.queries, self.repository, self.bus, self.settings = queries, repository, bus, settings
         self.git, self.worker_command, self.worktrees, self.providers, self.models = git, worker_command, worktrees, providers, models
+        self.scopes = scopes
 
     def handle(self, command: DispatchWorker, context: Context) -> WorkerLaunch:
         tasks = self.queries.query(Task).find_many([command.task_id, *command.delegated_ids])
+        with self.scopes.row_scope(tasks[0]):
+            return self.dispatched(command, tasks, context)
+
+    def dispatched(self, command: DispatchWorker, tasks: list[Task], context: Context) -> WorkerLaunch:
         task = tasks[0]
         for listed in tasks:
             if listed.state is not TaskState.OPEN:

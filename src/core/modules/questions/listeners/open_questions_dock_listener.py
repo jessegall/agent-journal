@@ -35,7 +35,7 @@ class OpenQuestionsDockListener(CommitListener[Touched[Question]]):
         docks = [dock.id for dock in self.queries.query(Dock).all_rows()]
         docked = [item for item in self.items.type_items(QuestionDockType.OPEN.value).filter(state=DockItemState.DOCKED).all_rows() if item.dock_id in docks]
         if open_ids and not docked:
-            self.bus.run(AddDockItem(QuestionDockType.OPEN.value, "question", min(open_ids)), actor, cause_id=logged.id)
+            self.bus.run(AddDockItem(QuestionDockType.OPEN.value, Question.model_name, min(open_ids)), actor, cause_id=logged.id)
         if not open_ids:
             for item in docked:
                 self.bus.run(RemoveDockItem(item.id), actor, cause_id=logged.id)

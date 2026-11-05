@@ -16,4 +16,4 @@ class WorktreeQuery(Query[Worktree]):
         return rows[0] if rows else None
 
     def open_worktrees(self) -> list[Worktree]:
-        return list(self.matching(IsNull("removed_at")).oldest().all_rows())
+        return self.rows_without("removed_at")

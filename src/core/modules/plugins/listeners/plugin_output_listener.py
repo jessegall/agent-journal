@@ -47,7 +47,8 @@ class PluginOutputListener(CommitListener[Created[PluginOutput]]):
         for card in answer.cards if is_main else ():
             tone = card.tone or (manifest.card_tones[card.card_type] if card.card_type in manifest.card_tones else "")
             if tone in TONES:
-                self.bus.run(ShowMark(PluginMarkType.CARD, TONES[tone], f"plugin:{plugin.name}:{row.agent_id}:{card.key}", f"{plugin.name}: {card.label}",
+                key = f"plugin:{plugin.name}:{row.agent_id}:{card.key}"
+                self.bus.run(ShowMark(PluginMarkType.CARD, TONES[tone], key, f"{plugin.name}: {card.label}",
                                       detail=card.detail, figure="" if tone == PluginCardTone.GOOD else answer.duration_text()), actor, cause_id=logged.id)
         for line in answer.commands[:MOST_COMMAND_LINES]:
             self.console.run(shlex.split(line), Caller(actor), io.StringIO())

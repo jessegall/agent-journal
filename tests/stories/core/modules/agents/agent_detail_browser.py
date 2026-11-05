@@ -28,7 +28,7 @@ def test_agent_details_animate_and_lists_reach_the_edges(new_story, tmp_path, mo
     helper = story.new_row_id(f"agent start s-2 claude worker --parent {story.agent.id} --environment main")
     transcript_of(tmp_path, monkeypatch, "s-2", row("assistant", "The work is complete"))
     environment_id = story.row(Agent, helper).environment_id
-    story.container.get(Bus).run(RecordFileEdit(helper, environment_id, DiffCount("src/cart.py", True, 3, 1)), story.agent, environment_id=environment_id)
+    story.container.get(Bus).run(RecordFileEdit(helper, DiffCount("src/cart.py", True, 3, 1)), story.agent, environment_id=environment_id)
     story.expect_text(f"file-edit list --agent {helper}", "src/cart.py", actor=story.user)
     with server_story(story) as server:
         expect_browser(server, "agentEdges.browser.mjs", [str(helper), "/tmp/journal-worker-481-agent"])

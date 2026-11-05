@@ -14,7 +14,7 @@ class TriggerQuery(Query[Trigger]):
         super().__init__(database, tables, Trigger)
 
     def open(self) -> list[Trigger]:
-        return list(self.matching(IsNull("ended_at")).oldest().all_rows())
+        return self.rows_without("ended_at")
 
     def active(self) -> list[Trigger]:
         return [trigger for trigger in self.open() if trigger.paused_at is None and not trigger.needs_enabling]

@@ -65,5 +65,5 @@ def expect_count_open(story, expected) -> None:
 
 
 def expect_reason_2(story, parts, reader, agent_id, expected) -> None:
-    actual = story.container.get(ReaderDemands).reason(parts[1], reader, ReaderSampleScope(1, agent_id, parts[1].text))
+    actual = story.container.get(ReaderDemands).reason(parts[1], reader, ReaderSampleScope(agent_id, parts[1].text))
     assert actual == expected, actual

@@ -21,7 +21,7 @@ class CheckQuery(Query[Check]):
         super().__init__(database, tables, Check)
 
     def kept(self) -> list[Check]:
-        return list(self.matching(IsNull("removed_at")).oldest().all_rows())
+        return self.rows_without("removed_at")
 
     def running(self) -> list[Check]:
         return [check for check in self.kept() if check.is_running]

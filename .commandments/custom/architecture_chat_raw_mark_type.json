@@ -31,7 +31,7 @@
                             },
                             {
                                 "argument": {
-                                    "at": 1,
+                                    "at": 0,
                                     "is": "literal"
                                 }
                             }
@@ -46,7 +46,7 @@
                             },
                             {
                                 "argument": {
-                                    "at": 2,
+                                    "at": 1,
                                     "is": "literal"
                                 }
                             }
@@ -61,7 +61,7 @@
                             },
                             {
                                 "argument": {
-                                    "at": 1,
+                                    "at": 0,
                                     "is": "literal"
                                 }
                             }

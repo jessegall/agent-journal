@@ -87,9 +87,14 @@ def test_a_new_row_of_an_agent_lands_in_its_environment(new_story):
     story.expect_rows(story.row(Task, task_id).environment_id == 2)
 
 
-def test_an_agent_that_names_another_environment_stays_in_its_own(new_story):
+def test_an_agent_that_names_another_environment_is_refused(new_story):
     story = new_story(fixture=TwoEnvironmentsAtWork)
-    task_id = story.new_row_id('task make "Third" --environment main', staging_agent(story))
+    story.expect_refusal('task make "Third" --environment main', "only in its own environment", actor=staging_agent(story))
+
+
+def test_an_agent_that_names_its_own_environment_goes_on(new_story):
+    story = new_story(fixture=TwoEnvironmentsAtWork)
+    task_id = story.new_row_id('task make "Third" --environment staging', staging_agent(story))
     story.expect_rows(story.row(Task, task_id).environment_id == 2)
 
 
@@ -122,8 +127,8 @@ def test_a_person_with_no_environment_lists_every_environment(new_story):
 
 def test_a_person_s_board_holds_only_the_environment_it_names(new_story):
     story = new_story(fixture=TwoEnvironmentsAtWork)
-    story.expect_text("task board --environment staging", STAGING_TITLE, actor=story.user)
-    story.expect_no_text("task board --environment staging", MAIN_TITLE, actor=story.user)
+    story.expect_text("task board --environment staging --json", STAGING_TITLE, actor=story.user)
+    story.expect_no_text("task board --environment staging --json", MAIN_TITLE, actor=story.user)
 
 
 def test_plans_stay_in_their_environment(new_story):
@@ -149,7 +154,7 @@ def test_a_message_of_a_person_reaches_only_the_agent_of_that_environment(new_st
 
 def test_pins_stay_in_their_environment(new_story):
     story = new_story(fixture=TwoEnvironmentsAtWork)
-    story.run('pin make "Staging docs" https://example.com/staging', actor=staging_agent(story))
+    story.run('pin make "Staging docs" --link "https://example.com/staging" --label "Open"', actor=staging_agent(story))
     story.expect_text("pin list", "Staging docs", actor=staging_agent(story))
     story.expect_no_text("pin list", "Staging docs", actor=story.agent)
 
@@ -178,16 +183,16 @@ def test_environments_are_listed_from_inside_an_environment(new_story):
 
 def test_a_setting_of_the_whole_project_holds_in_every_environment(new_story):
     story = new_story(fixture=TwoEnvironmentsAtWork)
-    story.run("setting set processes.run-batch-size 7 --project", actor=story.user)
-    story.expect_text("setting show processes.run-batch-size", "7", actor=story.agent)
-    story.expect_text("setting show processes.run-batch-size", "7", actor=staging_agent(story))
+    story.run("setting set journal.core.processes.run-batch-size 7 --project", actor=story.user)
+    story.expect_text("setting show journal.core.processes.run-batch-size", "7", actor=story.agent)
+    story.expect_text("setting show journal.core.processes.run-batch-size", "7", actor=staging_agent(story))
 
 
 def test_a_setting_of_one_environment_holds_only_there(new_story):
     story = new_story(fixture=TwoEnvironmentsAtWork)
-    story.run("setting set processes.run-batch-size 7 --environment staging", actor=story.user)
-    story.expect_text("setting show processes.run-batch-size", "7", actor=staging_agent(story))
-    story.expect_no_text("setting show processes.run-batch-size", "value: 7", actor=story.agent)
+    story.run("setting set journal.core.processes.run-batch-size 7 --environment staging", actor=story.user)
+    story.expect_text("setting show journal.core.processes.run-batch-size", "7", actor=staging_agent(story))
+    story.expect_no_text("setting show journal.core.processes.run-batch-size", "value: 7", actor=story.agent)
 
 
 def test_a_project_rule_of_one_environment_is_read_in_another(new_story):

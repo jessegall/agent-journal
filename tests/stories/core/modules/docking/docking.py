@@ -89,7 +89,7 @@ def test_a_dock_holds_no_more_items_than_its_setting_allows(new_story):
 def test_a_type_that_reads_no_such_model_is_refused(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     with pytest.raises(Refusal, match="the dock type docksample.task reads no plan"):
-        story.container.get(Bus).run(AddDockItem(1, SampleDockType.TASK, "plan", 1), story.user)
+        story.container.get(Bus).run(AddDockItem(SampleDockType.TASK, "plan", 1), story.user, environment_id=1)
 
 
 def test_an_environment_cannot_act_on_another_environments_item(new_story):

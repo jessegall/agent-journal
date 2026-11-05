@@ -38,8 +38,7 @@ class Scopes:
 
     @property
     def environment_id(self) -> int | None:
-        owner = self.database.row_owner
-        return owner.environment_id if owner is not None else None
+        return self.database.scope_environment_id
 
     def applied(self, model: M) -> M:
         model = self.with_environment(model)
@@ -57,6 +56,11 @@ class Scopes:
             return model
         raise Refusal(f"{indefinite_article(model.cli_name)} {model.cli_name} needs an environment", "name it with --environment")
 
+    def check_environment(self, actor: Actor, environment_id: int | None) -> None:
+        owner = self.actors.row_owner(actor.id if actor.type is ActorType.AGENT else None)
+        if owner is not None and environment_id is not None and owner.environment_id != environment_id:
+            raise Refusal(f"agent {actor.id} works only in its own environment, environment {owner.environment_id}", "leave out --environment")
+
     def command_scope(self, disabled: WholeScopes, actor: Actor, environment_id: int | None = None) -> ContextManager[None]:
         if self.decided and not disabled and (environment_id is None or self.environment_id is not None):
             return nullcontext()
@@ -69,6 +73,9 @@ class Scopes:
 
     def event_scope(self, disabled: DisabledScopes, event: LoggedEvent) -> ContextManager[None]:
         return self.opened(self.causing_agent(event), event.environment_id, self.passed(disabled, event))
+
+    def row_scope(self, row: EnvironmentScoped) -> ContextManager[None]:
+        return self.opened(self.actor_id, row.environment_id)
 
     def change_scope(self, disabled: DisabledScopes, change: Change[Model]) -> ContextManager[None]:
         passed = self.passed(disabled, change)

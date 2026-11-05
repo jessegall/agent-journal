@@ -8,6 +8,7 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
+from core.base.scope.scopes import Scopes
 from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.messages.models.message import Message
 from core.modules.messages.models.enums.message_type import MessageType
@@ -25,9 +26,9 @@ class SendMessageHandler(Handler[SendMessage, Message]):
 
     command = SendMessage
 
-    def __init__(self, repository: Repository, files: MessageFiles, queries: Queries, targets: MessageTargets) -> None:
+    def __init__(self, repository: Repository, files: MessageFiles, queries: Queries, targets: MessageTargets, scopes: Scopes) -> None:
         self.repository, self.files, self.queries = repository, files, queries
-        self.targets = targets
+        self.targets, self.scopes = targets, scopes
 
     def handle(self, command: SendMessage, context: Context) -> Message:
         if command.parent_id is not None and context.actor.type is ActorType.AGENT and MessageReactions.is_emoji(command.text):
@@ -35,7 +36,14 @@ class SendMessageHandler(Handler[SendMessage, Message]):
         actor = context.actor
         if actor.type is ActorType.AGENT and self.queries.query(Agent).find(actor.id).role != AgentRole.MAIN:
             raise Refusal("only a main agent writes in the chat", "say it in the report to the agent that sent you")
-        parent = self.queries.query(Message).find(command.parent_id) if command.parent_id is not None else None
+        if command.parent_id is None:
+            return self.sent(command, None, context)
+        parent = self.queries.query(Message).find(command.parent_id)
+        with self.scopes.row_scope(parent):
+            return self.sent(command, parent, context)
+
+    def sent(self, command: SendMessage, parent: Message | None, context: Context) -> Message:
+        actor = context.actor
         target_id = command.target_agent_id
         if target_id is None and parent is not None:
             target_id = parent.target_agent_id

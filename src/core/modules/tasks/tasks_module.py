@@ -49,6 +49,7 @@ from core.modules.tasks.commands.close_task.close_task import CloseTask
 from core.modules.tasks.commands.make_task_dependency.make_task_dependency_subcommand import MakeTaskDependencySubcommand
 from core.modules.tasks.commands.remove_task_dependency.remove_task_dependency_subcommand import RemoveTaskDependencySubcommand
 from core.modules.tasks.guards.dependencies_closed_guard import DependenciesClosedGuard
+from core.modules.tasks.guards.visible_dependency_guard import VisibleDependencyGuard
 from core.modules.tasks.guards.no_dependency_loop_guard import NoDependencyLoopGuard
 from core.modules.tasks.guards.user_wait_guard import UserWaitGuard
 from core.modules.tasks.listeners.dependency_remover_listener import DependencyRemoverListener
@@ -112,7 +113,7 @@ class TasksModule(Module):
                    RemoveTaskDependencySubcommand]
     handlers = [AssignTaskHandler, ClearDelegatedTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
     moves = [TasksMove]
-    guards = [NoDependencyLoopGuard, DependenciesClosedGuard, UserWaitGuard]
+    guards = [VisibleDependencyGuard, NoDependencyLoopGuard, DependenciesClosedGuard, UserWaitGuard]
     views = [OpenDependency, TaskCard, TaskEdge, EnvironmentCard, TaskInspectionRow, TaskBlockReview]
     listeners = [TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener]
     marks = TASK_MARKS

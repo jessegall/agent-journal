@@ -51,7 +51,7 @@ def test_a_stock_reader_is_proper_on_a_recorded_output(new_story, name, command,
     part = PartSpec(command, command.split()[0], category=category)
     story.expect_rows(ReaderSelection.reads_command(reader, command, category))
     story.expect_rows(bool(story.container.get(ReaderRun).summary(reader, output)))
-    story.expect_rows(story.container.get(ReaderDemands).reason(part, reader, ReaderSampleScope(1, story.agent.id, part.text)) == "")
+    story.expect_rows(story.container.get(ReaderDemands).reason(part, reader, ReaderSampleScope(story.agent.id, part.text)) == "")
     story.expect_rows(story.container.get(ReaderJudge).judged(reader, category).is_proper)
 
 
@@ -68,7 +68,7 @@ def test_a_quiet_go_build_has_a_reader(new_story):
     reader = story.container.get(ReaderQuery).filter(name="go-build").page(1, 1).rows[0]
     part = PartSpec("go build ./...", "go", category=CommandCategory.BUILD)
     story.expect_rows(ReaderSelection.reads_command(reader, part.text, part.category))
-    story.expect_rows(story.container.get(ReaderDemands).reason(part, reader, ReaderSampleScope(1, story.agent.id, part.text)) == "")
+    story.expect_rows(story.container.get(ReaderDemands).reason(part, reader, ReaderSampleScope(story.agent.id, part.text)) == "")
 
 
 @pytest.mark.parametrize(("name", "output", "count"), [
