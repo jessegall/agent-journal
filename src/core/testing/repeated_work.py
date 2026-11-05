@@ -39,7 +39,7 @@ SMALL_TABLES = {
     "releases": "Available releases form a small upstream catalogue, not event history.",
 }
 ALLOWED_READ_REPEATS = {
-    ("core/base/database/kept_rows.py", "read"): "A write changes the database mark; cached rows must check their table signature again.",
+    ("core/base/database/kept_rows.py", "kept_value"): "A write changes the database mark; cached rows must check their table signature again.",
     ("core/base/database/listener_cursor_table.py", "has_unhandled_events"): "Each listener round checks whether earlier listeners created more events.",
     ("core/base/database/listener_cursor_table.py", "has_pending_events"): "Startup completion must be checked as listener cursors advance.",
     ("core/base/change/event_log.py", "newest_id"): "Urgent listeners must notice events written by the previous listener.",
