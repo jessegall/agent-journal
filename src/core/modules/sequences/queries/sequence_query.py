@@ -13,7 +13,7 @@ class SequenceQuery(Query[Sequence]):
         self.kept = kept
 
     def definitions(self) -> tuple[Sequence, ...]:
-        return self.kept.read("sequences", self.load_definitions)
+        return self.kept.read("sequences", self.load_definitions, name="sequences.definitions")
 
     def load_definitions(self) -> tuple[Sequence, ...]:
         return tuple(self.all_rows())
