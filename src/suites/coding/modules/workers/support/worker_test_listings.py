@@ -3,6 +3,9 @@ from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.driver.command_category import CommandCategory
 from core.base.query.queries import Queries
+from core.base.command.bus import Bus
+from core.base.command.context import Context
+from core.base.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
@@ -13,17 +16,23 @@ from suites.coding.modules.workers.support.worker_settings import WORKER_TEST_LI
 from core.modules.processes.support.run_counts import RunCounts
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.reader_run import ReaderRun
+from core.modules.processes.support.reader_rows import ReaderRows
+from core.modules.processes.support.run_visibility import RunVisibility
+from core.modules.processes.commands.stop_process.stop_process import StopProcess
+from core.modules.drivers.support.nudger import Nudger
+from suites.coding.modules.workers.support.test_limit_nudges import TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE
 from suites.coding.modules.workers.support.test_listing import TestListing
 
 
 class WorkerTestListings(RunCounts):
     """Builds per-part listings and adds their counts for a queued worker run."""
 
-    def __init__(self, queries: Queries, settings: SettingValues, run: ReaderRun, folder: OutputFolder, outputs: OutputQuery) -> None:
-        self.queries, self.settings, self.run, self.folder, self.outputs = queries, settings, run, folder, outputs
+    def __init__(self, queries: Queries, settings: SettingValues, run: ReaderRun, folder: OutputFolder, outputs: OutputQuery, readers: ReaderRows, visibility: RunVisibility, rows: EventRows, bus: Bus, nudger: Nudger) -> None:
+        self.queries, self.settings, self.run, self.folder, self.outputs, self.readers, self.visibility, self.rows = queries, settings, run, folder, outputs, readers, visibility, rows
+        self.bus, self.nudger = bus, nudger
 
     def parts(self, process: Process) -> tuple[TestListing, ...]:
-        return self.agent_parts(process, self.queries.query(Agent).find(process.agent_id))
+        return self.agent_parts(process, self.rows.required(Agent, process.agent_id))
 
     def agent_parts(self, process: Process, agent: Agent) -> tuple[TestListing, ...]:
         if not process.is_queue_run or process.creator_id != process.agent_id:
@@ -32,11 +41,10 @@ class WorkerTestListings(RunCounts):
             return ()
         if agent.role != AgentRole.WORKER:
             return ()
-        readers = tuple(self.queries.query(Reader).all_rows())
-        outputs = self.queries.query(Output).filter(process_id=process.id).limited(1)
-        output = outputs[0] if outputs else None
+        readers = self.readers.all()
+        output = self.outputs.process_output(process.id)
         listings: list[TestListing] = []
-        for part in self.queries.query(ProcessPart).filter(process_id=process.id).oldest().all_rows():
+        for part in self.visibility.parts(process.id):
             if part.category is not CommandCategory.TEST_RUN:
                 continue
             reader = self.counting_reader(part, output, readers)
@@ -54,6 +62,19 @@ class WorkerTestListings(RunCounts):
         counts = [self.run.count(listing.reader, listing.output_text(text), 0) for listing in self.parts(process)]
         return sum(counts) if counts and all(count > 0 for count in counts) else 0
 
+    def requires_count(self, process: Process, agent: Agent) -> bool:
+        return (process.is_queue_run and process.creator_id == process.agent_id and agent.role == AgentRole.WORKER
+                and self.settings.number(WORKER_TEST_LIMIT, process.environment_id) > 0
+                and any(part.category is CommandCategory.TEST_RUN for part in self.visibility.parts(process.id)))
+
+    def reject_unknown(self, process: Process, agent: Agent, status: int | None, count: int, context: Context) -> None:
+        if status == 0 and count > 0:
+            return
+        if not self.requires_count(process, agent):
+            return
+        self.nudger.send(process.agent_id, TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE, context, output=process.id)
+        self.bus.dispatch(StopProcess(process.id), context)
+
     def counting_reader(self, part: ProcessPart, output: Output | None, readers: tuple[Reader, ...]) -> Reader | None:
         selected = self.reader(part, output, readers)
         if selected is not None and selected.count_command:
@@ -66,7 +87,7 @@ class WorkerTestListings(RunCounts):
             return selected.reader if selected else None
         if output.reader_position not in (0, part.position):
             return selected.reader if selected else None
-        return self.queries.query(Reader).find(output.reader_id)
+        return self.rows.required(Reader, output.reader_id)
 
     def previous_count(self, environment_id: int, command: str) -> int:
         outputs = self.outputs.kept().matching_part(environment_id, command).newest().all_rows()

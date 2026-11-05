@@ -52,7 +52,7 @@ from suites.coding.modules.workers.support.worker_part_visibility import WorkerP
 from suites.coding.modules.workers.support.worker_test_listings import WorkerTestListings
 from suites.coding.modules.workers.listeners.worker_test_count_listener import WorkerTestCountListener
 from suites.coding.modules.workers.rules.worker_test_count_rule import WorkerTestCountRule
-from suites.coding.modules.workers.support.test_limit_nudges import TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL
+from suites.coding.modules.workers.support.test_limit_nudges import TEST_COUNT_UNKNOWN, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL
 from suites.coding.modules.workers.migrations.m008_test_limit_setting import WorkerTestSettingMigration
 from suites.coding.modules.workers.migrations.m009_report_visibility import ReportVisibilityMigration
 from suites.coding.modules.workers.migrations.m010_alias_access import AliasAccessMigration
@@ -166,6 +166,8 @@ from suites.coding.modules.workers.support.worker_skill_projects import WorkerSk
 from core.modules.tasks.support.task_wait_targets import TaskWaitTargets
 from suites.coding.modules.workers.support.worker_task_wait_targets import WorkerTaskWaitTargets
 from suites.coding.modules.workers.listeners.worker_task_wait_listener import WorkerTaskWaitListener
+from suites.coding.modules.workers.listeners.worker_proof_rows_listener import WorkerProofRowsListener
+from suites.coding.modules.workers.listeners.affected_test_rows_listener import AffectedTestRowsListener
 from suites.coding.modules.workers.commands.worker_status.worker_status_subcommand import WorkerStatusSubcommand
 from suites.coding.modules.workers.support.worker_templates import WORKER_TEMPLATES
 
@@ -187,7 +189,7 @@ class WorkersModule(Module):
                                                    WindowSource("queue", "proof list --limit 50", ["proof.*"])]) for name in ("agents.agents", "agents.helpers")),
                          WindowExtension("viewer.shell", reads=["worker-worktree points", "worker-worktree list", "proof list"],
                                          runs=["worker send", "worker merge", "worker release"])]
-    nudges = [*WORKER_NUDGES, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]
+    nudges = [*WORKER_NUDGES, TEST_COUNT_UNKNOWN, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]
     seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS
@@ -205,7 +207,7 @@ class WorkersModule(Module):
     driver_rules = [HelperAllowanceRule, WorkerReadRule, WorkerStatusFirstRule, MissingProcessRule, WorkerTestCountRule, WorkerJudgeScopeRule, WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, UnstartedWorkerRule, StoppedWorkerRunRule, UnmergedWorkerRule, SmallBatchRule, InactiveWorkerRetireRule, OrphanWorktreeRule, WorkerReportRule]
     marks = WORKER_MARKS
     bindings = {AgentFolders: WorkerFolders, AgentLaunchGuard: WorkerSessions, AgentWriteFolder: WorkerWriteFolder, AgentActivity: WorkerAgentActivity, TaskTakers: WorkerTaskTakers, SkillProjects: WorkerSkillProjects, TaskWaitTargets: WorkerTaskWaitTargets, QueueRunWorkers: WorkerQueueRunWorkers, RunCounts: WorkerTestListings, PartVisibility: WorkerPartVisibility}
-    listeners = [WorktreeRowsListener, SilentWorkerLineListener, WorkerTestCountListener, RemovedWorktreeAgentListener, ReaderSampleReadyListener,WorkerHelpRequestListener, WorkerStoppedMarkListener, WorkerHelpRequestMarkListener, WorkerStopResultListener, MainAgentWorkersListener, BlockedWorkerTaskListener, ReassignedTaskListener, DelegatedTaskCommentListener, WorkerCountRaisedListener, WorkerMoveMarkListener, WorkerJobMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerTaskWaitListener]
+    listeners = [WorktreeRowsListener, SilentWorkerLineListener, WorkerTestCountListener, RemovedWorktreeAgentListener, ReaderSampleReadyListener,WorkerHelpRequestListener, WorkerStoppedMarkListener, WorkerHelpRequestMarkListener, WorkerStopResultListener, MainAgentWorkersListener, BlockedWorkerTaskListener, ReassignedTaskListener, DelegatedTaskCommentListener, WorkerCountRaisedListener, WorkerMoveMarkListener, WorkerJobMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerProofRowsListener, AffectedTestRowsListener, WorkerTaskWaitListener]
     tick_handlers = [TickHandler(TickInterval(seconds=10), WorkerResumeRetry(), "worker resume retry")]
     windows =[WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, skeleton=WORKERS_POINTS_SKELETON, icon=WindowIcon.CHECK, shows=WindowShows.SELECTED_AGENT,
                                  reads=["worker-worktree points", "proof points"], events=["proof.*", "worker_worktree.*"]),

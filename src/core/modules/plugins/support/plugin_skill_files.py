@@ -36,7 +36,14 @@ class PluginSkillFiles:
             for path in root.glob(f"*/{SKILL_FILE}"):
                 fields = SkillCatalogue.front_matter(SkillContents.read(path).text)
                 if PLUGIN_KEY in fields and fields[PLUGIN_KEY] == plugin_name:
-                    shutil.rmtree(path.parent)
+                    self.remove_folder(path.parent)
+
+    @staticmethod
+    def remove_folder(folder: Path) -> None:
+        if folder.is_symlink():
+            folder.unlink()
+            return
+        shutil.rmtree(folder)
 
     @staticmethod
     def with_plugin_key(text: str, plugin_name: str) -> str:

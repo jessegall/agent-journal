@@ -4,7 +4,7 @@ from core.base.command.move_row import MoveRow
 from core.base.model.model import Model
 from core.base.model.state_book import StateBook
 from core.base.model.unknown_state_error import UnknownStateError
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.registry.registry import Registry
 from core.base.repository.repository import Repository
 
@@ -14,13 +14,13 @@ class MoveRowHandler(Handler[MoveRow, Model]):
 
     command = MoveRow
 
-    def __init__(self, registry: Registry, queries: Queries, repository: Repository, book: StateBook) -> None:
-        self.registry, self.queries, self.repository, self.book = registry, queries, repository, book
+    def __init__(self, registry: Registry, rows: EventRows, repository: Repository, book: StateBook) -> None:
+        self.registry, self.rows, self.repository, self.book = registry, rows, repository, book
 
     def handle(self, command: MoveRow, context: Context) -> Model:
         model = next(entry.model.checked_class(Model) for entry in self.registry.models.values() if entry.model.checked_class(Model).model_name == command.model_name)
         lifecycle = self.book.lifecycle(model)
         if lifecycle is None or not lifecycle.has_move(command.move_name):
             raise UnknownStateError(f"{command.move_name} is no move of {model.__name__}")
-        row = self.queries.query(model).find(command.row_id)
+        row = self.rows.required(model, command.row_id)
         return self.repository.save(row.moved(lifecycle.move(command.move_name)), context)

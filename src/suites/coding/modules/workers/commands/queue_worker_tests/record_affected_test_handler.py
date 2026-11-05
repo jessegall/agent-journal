@@ -43,16 +43,16 @@ class RecordAffectedTestHandler(Handler[RecordAffectedTest, None]):
                 line = f"{selected.test_command} {shlex.join(arguments)}"
                 start = StartProcess.single_part(worktree.agent_id, line, worktree.folder, CommandCategory.TEST_RUN, 3600)
                 process = self.bus.dispatch(replace(start, owner_agent_id=worktree.agent_id, task_id=selected.task_id), context)
-                self.repository.save(selected.changed(state=AffectedTestState.TESTING, process_id=process.id), context)
+                self.repository.save_change(selected, selected.changed(state=AffectedTestState.TESTING, process_id=process.id), context)
                 return
-        self.repository.save(selected.changed(state=AffectedTestState.PASSED), context)
+        self.repository.save_change(selected, selected.changed(state=AffectedTestState.PASSED), context)
         self.results.finish(worktree, context)
 
     def fail(self, selected: AffectedTest, worktree: Worktree, process_id: int, context: Context) -> None:
-        self.repository.save(selected.changed(state=AffectedTestState.FAILED), context)
+        self.repository.save_change(selected, selected.changed(state=AffectedTestState.FAILED), context)
         task = self.queries.query(Task).find(selected.task_id)
         if task.state is TaskState.TESTING:
-            self.repository.save(task.moved(TaskLifecycle.retest), context)
+            self.repository.save_change(task, task.moved(TaskLifecycle.retest), context)
         if worktree.state is WorktreeState.DELIVERED:
-            self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)
+            self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)
         self.nudger.send(worktree.agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=str(process_id))

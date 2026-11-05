@@ -153,13 +153,23 @@ def test_a_queued_run_over_the_limit_by_its_listing_never_gets_a_spot(limited_ru
 
 
 @pytest.mark.parametrize("status", [0, 1, 143])
-def test_a_listing_that_fails_leaves_the_count_to_the_run(limited_run, status):
+def test_a_listing_without_a_known_count_stops_the_run(limited_run, status):
     story, process = limited_run
     folder = story.container.get(OutputFolder)
     folder.write_count(process.id, "no number\n" if status == 0 else "collected 100 items\n", status)
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
-    story.expect_rows(folder.has_slot(process.id), story.container.get(Queries).query(Process).find(process.id).state is ProcessState.RUNNING)
-    story.expect_text(f"output show {process.id}", "test_count: 0", actor=story.agent)
+    lines = tuple(story.container.get(Queries).query(AgentLine).filter(agent_id=process.agent_id, source="processes.worker-test-limit").all_rows())
+    story.expect_rows(not folder.has_slot(process.id), story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED,
+                      len(lines) == 1, "could not count" in lines[0].text)
+
+
+def test_a_worker_test_with_no_listing_is_stopped(new_story):
+    story = new_story(fixture=TestLimitSetup)
+    install_runner(story)
+    process = worker_run(story, "unknown-test tests/cart", CommandCategory.TEST_RUN)
+    lines = tuple(story.container.get(Queries).query(AgentLine).filter(agent_id=process.agent_id, source="processes.worker-test-limit").all_rows())
+    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED,
+                      len(lines) == 1, "could not count" in lines[0].text)
 
 
 def test_a_chain_lists_each_test_part_and_adds_the_counts(limited_run):

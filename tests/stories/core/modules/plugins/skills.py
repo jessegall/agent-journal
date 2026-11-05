@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from core.base.actor import Actor
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
@@ -7,6 +9,8 @@ from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, installed_story
+from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
 GIT_FETCH_SAMPLE = HookSamples.shell("git fetch", ShellPart("git", CommandCategory.VERSION_CONTROL, ["fetch"]))
 UPLOAD_SAMPLE = HookSamples.shell("git push", ShellPart("git", CommandCategory.VERSION_CONTROL, ["push"]))
@@ -65,3 +69,20 @@ def test_a_plugin_skill_published_only_for_codex_is_known(new_story):
     codex_skill.parent.mkdir(parents=True, exist_ok=True)
     codex_skill.write_text("---\nplugin: sample\nname: codex-rules\ndescription: Rules only Codex reads\n---\n")
     story.expect_text("skill list", "codex-rules", actor=story.user)
+
+
+def test_disabling_a_plugin_unlinks_a_worktree_skill_without_removing_its_target(new_story, tmp_path):
+    story = installed_story(new_story)
+    repository_environment(story)
+    story.expect_success('task make "Fix the cart" --environment main', actor=story.agent)
+    worker = dispatched_worker(story)
+    worktree = story.container.get(WorktreeQuery).worker_worktree(worker.id)
+    target = tmp_path / "linked-skill"
+    target.mkdir()
+    skill = target / "SKILL.md"
+    skill.write_text("---\nplugin: sample\nname: linked-rules\n---\nKeep this.\n")
+    link = Path(worktree.folder) / ".claude" / "skills" / "linked-rules"
+    link.parent.mkdir(parents=True, exist_ok=True)
+    link.symlink_to(target, target_is_directory=True)
+    story.expect_success("plugin disable sample", actor=story.user)
+    story.expect_rows(not link.is_symlink(), skill.read_text().endswith("Keep this.\n"))
