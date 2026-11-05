@@ -63,12 +63,12 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
     def group(self, environment_id: int, state: TaskState | str, previous_id: int | None, size: int) -> TaskGroup:
         cards = self.cards(environment_id, state)
         rows = cards.matching(Less("id", previous_id)) if previous_id is not None else cards
-        return TaskGroup(str(state), cards.count(), tuple(rows.newest().page(1, size).rows))
+        return TaskGroup(str(state), cards.count(), tuple(rows.newest().limited(size)))
 
     def finished_group(self, environment_id: int, state: TaskState, closed_limit: str | None, size: int) -> TaskGroup:
         cards = self.cards(environment_id, state)
         rows = cards.matching(Less("closed_at", closed_limit)) if closed_limit is not None else cards
-        return TaskGroup(state.value, cards.count(), tuple(rows.descending("closed_at").page(1, size).rows))
+        return TaskGroup(state.value, cards.count(), tuple(rows.descending("closed_at").limited(size)))
 
     def cards(self, environment_id: int, state: TaskState | str) -> Query[TaskCard]:
         cards = self.queries.query(TaskCard).filter(environment_id=environment_id)
