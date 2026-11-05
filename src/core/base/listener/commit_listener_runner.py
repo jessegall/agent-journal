@@ -15,6 +15,7 @@ from core.base.listener.commit_listener_error import CommitListenerError
 from core.base.listener.event_builder import EventBuilder
 from core.base.database.performance_costs import PerformanceCosts
 from core.base.performance.performance_state import PerformanceState
+from core.base.refusal import Refusal
 
 
 FAILURE_LIMIT_ATTEMPTS = 3
@@ -137,6 +138,9 @@ class CommitListenerRunner:
             cost = tools.cost(start_points)
             if cost is not None and cost.total >= COSTLY_LISTENER_POINTS:
                 self.errors.noted(f"listener {entry.name} cost {cost.line()} on event {event.id} {event.event}")
+        except Refusal as refusal:
+            self.errors.noted(f"listener {entry.name} refused event {event.id}: {refusal}")
+            return True
         except Exception as error:
             failures = self.cursors.failure_count(entry.name, event.id)
             self.errors.reported(["listener", entry.name, "event", str(event.id)], error, event.environment_id)

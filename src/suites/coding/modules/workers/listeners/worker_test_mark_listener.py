@@ -36,11 +36,11 @@ class WorkerTestMarkListener(MarkListener[Moved[Proof]]):
                                            for change in self.events.row_events(logged.row_table, row.id) if change.id <= logged.id)
         worker = worktree.agent_id
         if event.move is ProofLifecycle.queue:
-            self.mark(logged, worktree, proof, round, WorkerMarkVariant.QUEUED, f"Tests of worker {worker} queued", False)
+            self.mark(logged, worktree, proof, WorkerMarkVariant.QUEUED, f"Tests of worker {worker} queued", False)
         elif not round.waiting_count:
             failed = round.failed_count
-            self.mark(logged, worktree, proof, round, WorkerMarkVariant.FAILED if failed else WorkerMarkVariant.PASSED, f"Tests of worker {worker}: {failed} failed, back with the worker" if failed else f"Tests of worker {worker} passed", not failed)
+            self.mark(logged, worktree, proof, WorkerMarkVariant.FAILED if failed else WorkerMarkVariant.PASSED, f"Tests of worker {worker}: {failed} failed, back with the worker" if failed else f"Tests of worker {worker} passed", not failed)
 
-    def mark(self, logged: LoggedEvent, worktree: Worktree, proof: Proof, round: WorkerTestRound, variant: WorkerMarkVariant, text: str, ended: bool) -> None:
-        key = f"worker-tests:{worktree.id}:{proof.task_id}" + (f":{round.number}" if round.number else "")
-        self.show(logged, WorkerMarkType.TESTS, variant, text, worktree.environment_id, worktree.agent_id, key=key, ended=ended)
+    def mark(self, logged: LoggedEvent, worktree: Worktree, proof: Proof, variant: WorkerMarkVariant, text: str, ended: bool) -> None:
+        self.show(logged, WorkerMarkType.TESTS, variant, text, worktree.environment_id, worktree.agent_id,
+                  key=f"worker-tests:{worktree.id}:{proof.task_id}", ended=ended)
