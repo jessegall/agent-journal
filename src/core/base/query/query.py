@@ -25,6 +25,10 @@ PAGE_SIZE_ROWS = 25
 AGENT_COLUMN = "agent_id"
 SESSION_COLUMN = "session_agent_id"
 ENVIRONMENT_COLUMN = "environment_id"
+ROW_KEY = "id"
+VERSION_COLUMN = "version"
+
+
 class Query(Generic[M]):
     """Reads the rows of one model or view model: by key, by its own columns, in an order, one page at a time.
     """
