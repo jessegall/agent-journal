@@ -119,11 +119,11 @@ func (store *Store) AddUser(name string, role Role) (User, error) {
 	if role.level() == 0 {
 		return User{}, ErrBadRole
 	}
-	var taken int
-	if err := store.DB.QueryRow("SELECT count(*) FROM users WHERE name = ?", name).Scan(&taken); err != nil {
+	var matchingUsers int
+	if err := store.DB.QueryRow("SELECT count(*) FROM users WHERE name = ?", name).Scan(&matchingUsers); err != nil {
 		return User{}, err
 	}
-	if taken > 0 {
+	if matchingUsers > 0 {
 		return User{}, ErrNameTaken
 	}
 	now := store.timestamp()

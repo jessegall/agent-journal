@@ -6,10 +6,7 @@ from core.base.registry.unscanned_event_error import UnscannedEventError
 
 
 class EventLookup:
-    """The guards and listeners of each event name, in order, kept in memory: every name a class declares is scanned
-    and every event a model raises is scanned when the registry loads, and each change is one dictionary read. An
-    event found later is an error, since no listener may be looked up lazily; a registry made by hand with no
-    events works its names out as it meets them."""
+    """Guards and listeners indexed by event name and timing when the registry loads."""
 
     def __init__(self, guards: tuple[GuardEntry, ...], listeners: tuple[ListenerEntry, ...], events: tuple[str, ...]) -> None:
         self.guards, self.listeners, self.events = guards, listeners, events
@@ -24,13 +21,13 @@ class EventLookup:
             matching = (listener for listener in self.listeners if listener.timing is timing and listener.event.matches(event))
             self.event_listeners[(event, timing)] = tuple(sorted(matching, key=lambda listener: listener.position))
 
-    def guards_of(self, event: str) -> tuple[GuardEntry, ...]:
+    def matching_guards(self, event: str) -> tuple[GuardEntry, ...]:
         if event not in self.event_guards:
             self.refuse_unscanned(event)
             self.scan(event)
         return self.event_guards[event]
 
-    def listeners_of(self, event: str, timing: ListenerTiming) -> tuple[ListenerEntry, ...]:
+    def matching_listeners(self, event: str, timing: ListenerTiming) -> tuple[ListenerEntry, ...]:
         if (event, timing) not in self.event_listeners:
             self.refuse_unscanned(event)
             self.scan(event)

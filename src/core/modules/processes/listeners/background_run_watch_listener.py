@@ -36,7 +36,7 @@ class BackgroundRunWatchListener(SaveListener[Moved[Process]]):
         if monitor_tool is not None:
             declaration = REQUIRED_MONITOR if monitor_tool is ToolType.MONITOR else REQUIRED_MONITOR_COMMAND
             nudge = declaration.nudge(output=process.id)
-            self.bus.dispatch(BlockUntil(process.agent_id, replace(nudge, key=f"{nudge.key}.{process.id}"), OutputMonitored(process.id), stop_only=True), context)
+            self.bus.dispatch(BlockUntil(process.agent_id, replace(nudge, key=f"{nudge.key}.{process.id}"), OutputMonitored(process.id), blocks_stop=True), context)
 
     def monitor_tool(self, process: Process) -> ToolType | None:
         agent = self.queries.query(Agent).find(process.agent_id)

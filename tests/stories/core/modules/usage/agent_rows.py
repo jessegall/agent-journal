@@ -1,3 +1,4 @@
+import pytest
 import json
 from datetime import timedelta
 
@@ -83,3 +84,12 @@ def expect_states_2(states, worker, expected) -> None:
 def expect_session_matching(matching_rows, expected) -> None:
     actual = [row['session'] for row in matching_rows]
     assert actual == expected, actual
+
+
+@pytest.mark.parametrize(("role", "job_enabled"), [("worker", True), ("main", False), ("subagent", False)])
+def test_the_suite_selects_which_agent_cards_show_their_job(new_story, role, job_enabled):
+    story = new_story(fixture=BuilderWithUser)
+    agent_id = story.new_row_id(f"agent start policy-session codex {role} --environment main")
+    rows = json.loads(story.run("usage agents --environment main --json", actor=story.user).output_text)["rows"]
+    facts = next(row for row in rows if row["id"] == agent_id)
+    story.expect_rows(facts["job_enabled"] is job_enabled)

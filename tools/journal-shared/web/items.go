@@ -20,9 +20,9 @@ type itemBody struct {
 }
 
 func (server *Server) createItem(response http.ResponseWriter, request *http.Request, caller store.Caller) {
-	kind, found := kindOf(response, request.PathValue("kind"))
+	kind, valid := kindOf(response, request.PathValue("kind"))
 	var body itemBody
-	if !found || !readJSON(response, request, &body) {
+	if !valid || !readJSON(response, request, &body) {
 		return
 	}
 	item, err := server.store.CreateItem(kind, body.Fields, caller)
@@ -34,8 +34,8 @@ func (server *Server) createItem(response http.ResponseWriter, request *http.Req
 }
 
 func (server *Server) readItem(response http.ResponseWriter, request *http.Request, _ store.Caller) {
-	kind, id, found := itemOf(response, request)
-	if !found {
+	kind, id, valid := itemOf(response, request)
+	if !valid {
 		return
 	}
 	item, err := server.store.ReadItem(kind, id)
@@ -48,8 +48,8 @@ func (server *Server) readItem(response http.ResponseWriter, request *http.Reque
 
 func (server *Server) listItems(response http.ResponseWriter, request *http.Request, _ store.Caller) {
 	query := request.URL.Query()
-	kind, found := kindOf(response, query.Get("kind"))
-	if !found {
+	kind, valid := kindOf(response, query.Get("kind"))
+	if !valid {
 		return
 	}
 	page, pageValid := number(query.Get("page"), 1)
@@ -67,8 +67,8 @@ func (server *Server) listItems(response http.ResponseWriter, request *http.Requ
 }
 
 func (server *Server) updateItem(response http.ResponseWriter, request *http.Request, caller store.Caller) {
-	kind, id, found := itemOf(response, request)
-	if !found {
+	kind, id, valid := itemOf(response, request)
+	if !valid {
 		return
 	}
 	match := request.Header.Get("If-Match")
@@ -109,17 +109,17 @@ func etag(item store.Item) string {
 
 // kindOf finds the kind a name stands for, or answers 404.
 func kindOf(response http.ResponseWriter, name string) (store.Kind, bool) {
-	kind, found := store.KindByName(name)
-	if !found {
+	kind, valid := store.KindByName(name)
+	if !valid {
 		writeError(response, http.StatusNotFound, "there is no such kind", "the kinds are "+strings.Join(store.KindNames(), ", "))
 	}
-	return kind, found
+	return kind, valid
 }
 
 // itemOf reads the kind and the number from the path, or answers 404.
 func itemOf(response http.ResponseWriter, request *http.Request) (store.Kind, int64, bool) {
-	kind, found := kindOf(response, request.PathValue("kind"))
-	if !found {
+	kind, valid := kindOf(response, request.PathValue("kind"))
+	if !valid {
 		return kind, 0, false
 	}
 	id, valid := pathNumber(request, "id")
@@ -129,17 +129,17 @@ func itemOf(response http.ResponseWriter, request *http.Request) (store.Kind, in
 	return kind, id, valid
 }
 
-func number(text string, otherwise int) (int, bool) {
+func number(text string, defaultValue int) (int, bool) {
 	if text == "" {
-		return otherwise, true
+		return defaultValue, true
 	}
 	parsed, err := strconv.Atoi(text)
 	return parsed, err == nil
 }
 
 func (server *Server) removeItem(response http.ResponseWriter, request *http.Request, caller store.Caller) {
-	kind, id, found := itemOf(response, request)
-	if !found {
+	kind, id, valid := itemOf(response, request)
+	if !valid {
 		return
 	}
 	item, err := server.store.RemoveItem(kind, id, caller)
@@ -151,8 +151,8 @@ func (server *Server) removeItem(response http.ResponseWriter, request *http.Req
 }
 
 func (server *Server) restoreItem(response http.ResponseWriter, request *http.Request, caller store.Caller) {
-	kind, id, found := itemOf(response, request)
-	if !found {
+	kind, id, valid := itemOf(response, request)
+	if !valid {
 		return
 	}
 	item, err := server.store.RestoreItem(kind, id, caller)
@@ -164,8 +164,8 @@ func (server *Server) restoreItem(response http.ResponseWriter, request *http.Re
 }
 
 func (server *Server) listVersions(response http.ResponseWriter, request *http.Request, _ store.Caller) {
-	kind, id, found := itemOf(response, request)
-	if !found {
+	kind, id, valid := itemOf(response, request)
+	if !valid {
 		return
 	}
 	versions, err := server.store.ItemVersions(kind, id)
@@ -177,8 +177,8 @@ func (server *Server) listVersions(response http.ResponseWriter, request *http.R
 }
 
 func (server *Server) readVersion(response http.ResponseWriter, request *http.Request, _ store.Caller) {
-	kind, id, found := itemOf(response, request)
-	if !found {
+	kind, id, valid := itemOf(response, request)
+	if !valid {
 		return
 	}
 	version, valid := pathNumber(request, "version")

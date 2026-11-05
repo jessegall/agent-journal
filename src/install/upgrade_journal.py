@@ -25,7 +25,7 @@ from install.install_journal import InstallJournal
 from install.restore_version_four import RestoreVersionFour
 from install.stray_version_four_error import StrayVersionFourError
 from install.server_wont_stop_error import ServerWontStopError
-from install.unix_connection import UnixConnection
+from core.base.unix_connection import UnixConnection
 from install.upgrade_outcome import UpgradeOutcome
 from install.upgrade_report_file import UpgradeReportFile
 from install.upgrade_text import UpgradeText
@@ -87,7 +87,7 @@ class UpgradeJournal:
         return self.ran and not dry_run and outcome.text != FINISHED_LINE and self.home.folder.is_dir()
 
     def has_answer(self) -> bool:
-        connection = UnixConnection(str(ServerFiles(self.home).socket))
+        connection = UnixConnection(str(ServerFiles(self.home).socket), 5, "journal")
         try:
             connection.request("GET", "/health")
             return connection.getresponse().status == 200

@@ -47,9 +47,9 @@ func TestUserAddPrintsATokenOnceAndTheDatabaseHoldsOnlyItsDigest(t *testing.T) {
 	if err != nil || caller.User.Name != "Ada" || caller.User.Role != store.RoleAdmin {
 		t.Fatalf("%+v, %v", caller, err)
 	}
-	var found int
-	if err := database.DB.QueryRow("SELECT count(*) FROM tokens WHERE token_digest = ? OR label = ?", text, text).Scan(&found); err != nil || found != 0 {
-		t.Fatalf("the token text is in the tokens table: %d, %v", found, err)
+	var matchingTokens int
+	if err := database.DB.QueryRow("SELECT count(*) FROM tokens WHERE token_digest = ? OR label = ?", text, text).Scan(&matchingTokens); err != nil || matchingTokens != 0 {
+		t.Fatalf("the token text is in the tokens table: %d, %v", matchingTokens, err)
 	}
 }
 

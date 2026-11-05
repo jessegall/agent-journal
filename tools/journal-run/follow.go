@@ -147,9 +147,9 @@ func (tracker *Tracker) markStarted(position int) bool {
 	if tracker.Started == nil {
 		tracker.Started = map[int]bool{}
 	}
-	told := tracker.Started[position]
+	hasStarted := tracker.Started[position]
 	tracker.Started[position] = true
-	return told
+	return hasStarted
 }
 
 func (tracker *Tracker) partStarted(position int) {

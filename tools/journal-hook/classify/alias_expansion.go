@@ -104,7 +104,7 @@ func (classifier *Classifier) aliasReplacement(call *syntax.CallExpr, line strin
 		}
 	}
 	if isSaved {
-		classifier.savedRuns = append(classifier.savedRuns, savedRun{name, expanded, options.reading, options.timeoutDuration})
+		classifier.savedRuns = append(classifier.savedRuns, savedRun{name, expanded, options.selection, options.timeoutDuration})
 	}
 	return aliasReplacement{[]string{name}, int(call.Args[first].Pos().Offset()), int(call.Args[len(call.Args)-1].End().Offset()), expanded}, true, err
 }

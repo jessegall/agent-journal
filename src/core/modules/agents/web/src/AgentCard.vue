@@ -1,7 +1,8 @@
 <script setup>
 import {computed, defineAsyncComponent, onUnmounted, ref, watch} from "vue";
-import {age, perHour, EmptyState, FoldGroup, Icon, InnerTabs, loadWindowComponent, peekRef, SwitchCase, TabBody, TaskStatusIcon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
+import {age, perHour, EmptyState, FoldGroup, Icon, InnerTabs, loadWindowComponent, SwitchCase, TabBody, TimeAgo, useNow, useWindow} from "@journal/window-kit";
 import AgentCommand from "./AgentCommand.vue";
+import AgentTaskGroup from "./AgentTaskGroup.vue";
 import TranscriptRows from "./TranscriptRows.vue";
 
 // one agent as a calm two lines: the profile and given name with its time, then the provider, model, kind and task count; a click opens the card on
@@ -17,10 +18,8 @@ const title = computed(() => {
     return name.slice(0, 1).toUpperCase() + name.slice(1);
 });
 const tasks = computed(() => props.facts?.tasks ?? []);
-// a worker's job is the task it works on, or the first one queued for it; Queued counts the tasks that wait behind it
-const isWorker = computed(() => props.row.role === "worker");
 const queuedTasks = computed(() => tasks.value.filter((task) => task.state === "open"));
-const job = computed(() => (isWorker.value ? props.facts?.task_title || queuedTasks.value[0]?.title || "" : ""));
+const job = computed(() => (props.facts?.job_enabled ? props.facts?.task_title || queuedTasks.value[0]?.title || "" : ""));
 const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, props.row.role === "main" ? "" : props.progress ? `${props.row.role} ${props.row.id}` : props.row.role].filter(Boolean).join(" · "));
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
@@ -130,18 +129,7 @@ readCommand();
                         <template #tasks>
                             <template v-if="!tasks.length"><EmptyState title="No tasks">No tasks have been assigned to this agent.</EmptyState></template>
                             <template v-for="section in sections" :key="section.state">
-                                <FoldGroup :label="section.label" :count="section.tasks.length" :open="sectionOpen(section.state)" :data-agent-section="section.state" @toggle="fold(section.state)">
-                                    <template v-for="task in section.tasks" :key="task.id">
-                                        <button type="button" class="agent-task" :data-agent-delegated="task.id" @click="peekRef(`tasks:${task.id}`)">
-                                            <TaskStatusIcon :status="task.state" />
-                                            <span class="agent-task-number">{{ task.id }}</span>
-                                            <span class="agent-task-title">{{ task.title }}</span>
-                                            <template v-if="task.plan_id">
-                                                <span class="agent-task-plan" data-agent-task-plan :title="`Plan ${task.plan_id}: ${task.plan_title}`">Plan {{ task.plan_id }}: {{ task.plan_title }}</span>
-                                            </template>
-                                        </button>
-                                    </template>
-                                </FoldGroup>
+                                <AgentTaskGroup :section="section" :open="sectionOpen(section.state)" @toggle="fold(section.state)" />
                             </template>
                             <template v-if="facts?.instruction">
                                 <p class="agent-label">Instruction</p>
@@ -330,50 +318,15 @@ readCommand();
     font-size: 12px;
 }
 
-.agent-task {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    min-width: 0;
-    padding: 3px 4px;
-    border: 0;
-    border-radius: 4px;
-    background: none;
-    color: var(--text-2);
-    font: inherit;
-    font-size: 12.5px;
-    text-align: left;
-    cursor: pointer;
-}
 
-.agent-task:hover {
-    background: var(--hover);
-    color: var(--text);
-}
 
-.agent-task-number {
-    flex: none;
-    color: var(--text-3);
-    font-variant-numeric: tabular-nums;
-}
 
-.agent-task-title {
-    flex: 0 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
 
-.agent-task-plan {
-    flex: 0 2 auto;
-    min-width: 0;
-    overflow: hidden;
-    color: var(--text-3);
-    font-size: 11px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
+
+
+
+
+
 
 .agent-more {
     display: flex;
@@ -486,8 +439,8 @@ readCommand();
 .agent-card.open .agent-tab-body[data-agent-tab-body="transcript"] :deep(.author) { min-width: 54px; font-size: 11.5px; letter-spacing: .03em; }
 .agent-card.open .agent-tab-body[data-agent-tab-body="file-feed"] :deep(.row-list-row) { padding: 0; }
 .agent-card.open .agent-tab-body > .agent-subagent-brief { padding: 0; }
-.agent-task { width: 100%; padding: 7px 14px; border-radius: 0; }
-.agent-task-number { min-width: 30px; }
+
+
 .agent-label { margin: 12px 14px 0; }
 .agent-card.open .agent-instruction { margin: 12px 14px 16px; padding: 0 0 0 10px; line-height: 1.55; mask-image: none; }
 </style>

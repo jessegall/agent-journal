@@ -24,7 +24,7 @@ type CliRequest struct {
 func NewCliRequest(argv []string, lookup func(string) (string, bool), folder string) CliRequest {
 	variables := map[string]string{}
 	for _, name := range CallerVariables {
-		if value, found := lookup(name); found {
+		if value, exists := lookup(name); exists {
 			variables[name] = value
 		}
 	}

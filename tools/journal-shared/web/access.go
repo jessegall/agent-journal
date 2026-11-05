@@ -20,8 +20,8 @@ func (server *Server) guard(minimum store.Role, next route) http.HandlerFunc {
 			writeError(response, http.StatusUpgradeRequired, "this server speaks protocol "+fmt.Sprint(server.protocol), "update whichever of the journal and the server is behind")
 			return
 		}
-		text, found := strings.CutPrefix(request.Header.Get("Authorization"), "Bearer ")
-		if !found {
+		text, valid := strings.CutPrefix(request.Header.Get("Authorization"), "Bearer ")
+		if !valid {
 			writeError(response, http.StatusUnauthorized, "the token is missing", "send Authorization: Bearer <token>")
 			return
 		}

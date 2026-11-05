@@ -7,7 +7,7 @@ import (
 
 func TestTheRequestCarriesTheCommandLineTheCallerVariablesAndTheFolderButNoPid(t *testing.T) {
 	variables := map[string]string{"JOURNAL_AGENT_SESSION": "s-1", "USER": "ada", "SECRET_TOKEN": "x"}
-	lookup := func(name string) (string, bool) { value, found := variables[name]; return value, found }
+	lookup := func(name string) (string, bool) { value, exists := variables[name]; return value, exists }
 	body, err := NewCliRequest([]string{"task", "list"}, lookup, "/work").Body()
 	if err != nil {
 		t.Fatal(err)
@@ -17,8 +17,8 @@ func TestTheRequestCarriesTheCommandLineTheCallerVariablesAndTheFolderButNoPid(t
 		t.Fatal(err)
 	}
 	want := `{"argv":["task","list"],"folder":"/work","variables":{"JOURNAL_AGENT_SESSION":"s-1","USER":"ada"}}`
-	if got, _ := json.Marshal(decoded); string(got) != want {
-		t.Fatalf("body %s, want %s", got, want)
+	if actual, _ := json.Marshal(decoded); string(actual) != want {
+		t.Fatalf("body %s, want %s", actual, want)
 	}
 }
 

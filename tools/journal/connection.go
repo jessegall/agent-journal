@@ -131,8 +131,8 @@ func PythonPath() string {
 // the change, and counts while that process runs and the mark is not older than MaintenanceLimit.
 func InMaintenance(home string) bool {
 	path := filepath.Join(home, MaintenanceMark)
-	info, err := os.Stat(path)
-	if err != nil || time.Since(info.ModTime()) >= MaintenanceLimit {
+	fileInfo, err := os.Stat(path)
+	if err != nil || time.Since(fileInfo.ModTime()) >= MaintenanceLimit {
 		return false
 	}
 	text, err := os.ReadFile(path)

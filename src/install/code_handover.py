@@ -5,7 +5,7 @@ from pathlib import Path
 from core.base.code_versions import CodeVersions
 from core.base.journal_home import JournalHome
 from core.base.refusal import Refusal
-from install.unix_connection import UnixConnection
+from core.base.unix_connection import UnixConnection
 from install.update_steps import FAILED, FINISHED, HANDOVER, PROOF, SERVING, UpdateSteps
 from server.server_files import ServerFiles
 from server.successor_start import PROOF_LIMIT_SECONDS
@@ -60,7 +60,7 @@ class CodeHandover:
         return self.files.pid_file.read_text().strip() if self.files.pid_file.is_file() else ""
 
     def takeover_status(self, tag: str) -> int:
-        connection = UnixConnection(str(self.files.socket), PROOF_LIMIT_SECONDS + TAKEOVER_LIMIT_SECONDS)
+        connection = UnixConnection(str(self.files.socket), PROOF_LIMIT_SECONDS + TAKEOVER_LIMIT_SECONDS, "journal")
         try:
             connection.request("POST", f"/handover?tag={tag}")
             return connection.getresponse().status

@@ -48,7 +48,7 @@ SettingValue("saved", "Window settings", "Saved window preferences.", TYPE),
 ]''')
     plugin = Path(".journal/plugins/code-commandments/bin/commandments-release")
     executable = next(str(folder / plugin) for folder in (ROOT, *ROOT.parents) if (folder / plugin).is_file())
-    result = subprocess.run([executable, "rule", "prove"], cwd=tmp_path, capture_output=True, text=True, timeout=30)
-    assert result.returncode == 0, result.stdout + result.stderr
+    completed_process = subprocess.run([executable, "rule", "prove"], cwd=tmp_path, capture_output=True, text=True, timeout=30)
+    assert completed_process.returncode == 0, completed_process.stdout + completed_process.stderr
     for name in RULES:
-        assert f"✓ {name}" in result.stdout, result.stdout
+        assert f"✓ {name}" in completed_process.stdout, completed_process.stdout

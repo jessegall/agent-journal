@@ -226,7 +226,7 @@ func (store *Store) PurgeItem(kind Kind, id int64, caller Caller) (int64, error)
 
 // ListItems lists one page of the items of a kind that are not removed, newest change first. Every word of search
 // has to be in one of the kind's search fields, and each row then carries an excerpt around the first word.
-func (store *Store) ListItems(kind Kind, search string, page, size int) (Page, error) {
+func (store *Store) ListItems(kind Kind, search string, pageNumber, size int) (Page, error) {
 	terms := strings.Fields(search)
 	conditions, arguments := "t.removed_at IS NULL", []any{}
 	for _, term := range terms {
@@ -237,12 +237,12 @@ func (store *Store) ListItems(kind Kind, search string, page, size int) (Page, e
 		}
 		conditions += " AND (" + strings.Join(alternatives, " OR ") + ")"
 	}
-	result := Page{Page: page, Size: size, Rows: []ItemRow{}}
-	if err := store.DB.QueryRow("SELECT count(*) FROM "+kind.Table+" t WHERE "+conditions, arguments...).Scan(&result.Total); err != nil {
+	page := Page{Page: pageNumber, Size: size, Rows: []ItemRow{}}
+	if err := store.DB.QueryRow("SELECT count(*) FROM "+kind.Table+" t WHERE "+conditions, arguments...).Scan(&page.Total); err != nil {
 		return Page{}, err
 	}
 	abstract := "''"
-	if kind.carries("abstract") {
+	if kind.hasField("abstract") {
 		abstract = "t.abstract"
 	}
 	columns := "t.id, t.version, t.title, " + abstract + ", t.updated_at, c.name, " + updatedBySQL
@@ -253,7 +253,7 @@ func (store *Store) ListItems(kind Kind, search string, page, size int) (Page, e
 	}
 	query := "SELECT " + columns + " FROM " + kind.Table + " t JOIN users c ON c.id = t.creator_id WHERE " + conditions +
 		" ORDER BY t.updated_at DESC, t.id DESC LIMIT ? OFFSET ?"
-	rows, err := store.DB.Query(query, append([]any{kind.Name}, append(arguments, size, (page-1)*size)...)...)
+	rows, err := store.DB.Query(query, append([]any{kind.Name}, append(arguments, size, (pageNumber-1)*size)...)...)
 	if err != nil {
 		return Page{}, err
 	}
@@ -273,9 +273,9 @@ func (store *Store) ListItems(kind Kind, search string, page, size int) (Page, e
 		if len(terms) > 0 {
 			row.Excerpt = excerptAround(terms[0], texts)
 		}
-		result.Rows = append(result.Rows, row)
+		page.Rows = append(page.Rows, row)
 	}
-	return result, rows.Err()
+	return page, rows.Err()
 }
 
 const updatedBySQL = `COALESCE((SELECT u.name FROM item_versions v JOIN users u ON u.id = v.user_id
@@ -307,15 +307,15 @@ func readItem(database querier, kind Kind, id int64) (Item, error) {
 
 // record adds the history row of a write and reads the item as that write left it.
 func (store *Store) record(transaction *sql.Tx, kind Kind, id int64, action string, caller Caller) (Item, error) {
-	written, err := readItem(transaction, kind, id)
+	recordedItem, err := readItem(transaction, kind, id)
 	if err != nil {
 		return Item{}, err
 	}
-	fields, err := json.Marshal(written.Fields)
+	fields, err := json.Marshal(recordedItem.Fields)
 	if err != nil {
 		return Item{}, err
 	}
-	if err := store.addVersion(transaction, kind, id, written.Version, action, string(fields), caller); err != nil {
+	if err := store.addVersion(transaction, kind, id, recordedItem.Version, action, string(fields), caller); err != nil {
 		return Item{}, err
 	}
 	return readItem(transaction, kind, id)
@@ -336,24 +336,24 @@ func (store *Store) addVersion(transaction *sql.Tx, kind Kind, id, version int64
 func (kind Kind) checked(fields Fields, creating bool) (Fields, error) {
 	checked := Fields{}
 	for _, field := range kind.Fields {
-		value, sent := fields[field]
-		if !sent {
+		value, exists := fields[field]
+		if !exists {
 			if creating {
 				return nil, fmt.Errorf("%w: %s is missing", ErrBadFields, field)
 			}
 			continue
 		}
-		switch typed := value.(type) {
+		switch fieldValue := value.(type) {
 		case string:
-			checked[field] = typed
+			checked[field] = fieldValue
 		case json.Number:
-			number, err := typed.Int64()
+			number, err := fieldValue.Int64()
 			if err != nil {
 				return nil, fmt.Errorf("%w: %s is not a whole number", ErrBadFields, field)
 			}
 			checked[field] = number
 		case int64:
-			checked[field] = typed
+			checked[field] = fieldValue
 		default:
 			return nil, fmt.Errorf("%w: %s is neither text nor a whole number", ErrBadFields, field)
 		}
@@ -361,7 +361,7 @@ func (kind Kind) checked(fields Fields, creating bool) (Fields, error) {
 	return checked, nil
 }
 
-func (kind Kind) carries(field string) bool {
+func (kind Kind) hasField(field string) bool {
 	for _, name := range kind.Fields {
 		if name == field {
 			return true
@@ -392,23 +392,23 @@ func excerptAround(term string, texts []string) string {
 			if !sameLetters(characters[start:start+len(wanted)], wanted) {
 				continue
 			}
-			from, to := max(0, start-excerptReach), min(len(characters), start+len(wanted)+excerptReach)
-			shown := strings.Join(strings.Fields(string(characters[from:to])), " ")
+			from, endIndex := max(0, start-excerptReach), min(len(characters), start+len(wanted)+excerptReach)
+			excerpt := strings.Join(strings.Fields(string(characters[from:endIndex])), " ")
 			if from > 0 {
-				shown = "…" + shown
+				excerpt = "…" + excerpt
 			}
-			if to < len(characters) {
-				shown += "…"
+			if endIndex < len(characters) {
+				excerpt += "…"
 			}
-			return shown
+			return excerpt
 		}
 	}
 	return ""
 }
 
-func sameLetters(found, wanted []rune) bool {
+func sameLetters(actual, wanted []rune) bool {
 	for index := range wanted {
-		if unicode.ToLower(found[index]) != wanted[index] {
+		if unicode.ToLower(actual[index]) != wanted[index] {
 			return false
 		}
 	}

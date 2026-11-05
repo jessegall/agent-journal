@@ -35,7 +35,7 @@ type WorkerRequest struct {
 	Folder      string            `json:"folder"`
 	Command     []string          `json:"command"`
 	Variables   map[string]string `json:"variables"`
-	Typed       string            `json:"typed"`
+	InputLine   string            `json:"typed"`
 	Stop        bool              `json:"stop"`
 }
 
@@ -56,9 +56,9 @@ type Starter interface {
 // ProcessStarter starts a program in a pseudo terminal of its own in its folder, its output kept in its agent's
 // terminal log under the journal's folder and read for its status file.
 type ProcessStarter struct {
-	Home   string
-	Inputs *TerminalInputs
-	Told   func(agentID int, question, said string)
+	Home     string
+	Inputs   *TerminalInputs
+	OnAnswer func(agentID int, question, explanation string)
 }
 
 // Start starts the program and leaves it running.
@@ -77,9 +77,9 @@ func (starter ProcessStarter) Start(start ProgramStart) error {
 	if err != nil {
 		return err
 	}
-	watcher := NewMenuWatcher(starter.Inputs, start.AgentID, func(question, said string) {
-		if starter.Told != nil {
-			starter.Told(start.AgentID, question, said)
+	watcher := NewMenuWatcher(starter.Inputs, start.AgentID, func(question, explanation string) {
+		if starter.OnAnswer != nil {
+			starter.OnAnswer(start.AgentID, question, explanation)
 		}
 	})
 	stop := make(chan struct{})
@@ -125,8 +125,8 @@ func answered(connection net.Conn, starter Starter, inputs *TerminalInputs) {
 		}
 		return
 	}
-	if request.Typed != "" {
-		if inputs.TypeLine(request.AgentID, request.Typed) {
+	if request.InputLine != "" {
+		if inputs.TypeLine(request.AgentID, request.InputLine) {
 			_, _ = io.WriteString(connection, TypedAnswer+"\n")
 		}
 		return

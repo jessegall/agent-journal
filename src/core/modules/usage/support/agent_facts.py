@@ -21,7 +21,8 @@ class AgentFacts:
     given_name: str = ""
     instruction: str = ""
     effort: str = ""
+    job_enabled: bool = False
 
     def json(self) -> Mapping[str, object]:
         return {"id": self.agent_id, "model": self.model, "effort": self.effort, "context_percent": self.context_percent, "cost_dollars": self.cost_dollars, "task_id": self.task_id, "task_title": self.task_title,
-                "tasks": list(self.tasks), "state": self.state, "profile": self.profile, "given_name": self.given_name, "instruction": self.instruction}
+                "job_enabled": self.job_enabled, "tasks": list(self.tasks), "state": self.state, "profile": self.profile, "given_name": self.given_name, "instruction": self.instruction}

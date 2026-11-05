@@ -7,10 +7,10 @@ import (
 )
 
 func TestTheHeaderBarNamesTheEnvironmentTheAgentAndTheViewerLink(t *testing.T) {
-	bar := HeaderBar("development", 7, "http://127.0.0.1:8420/?key=abc")
+	header := HeaderBar("development", 7, "http://127.0.0.1:8420/?key=abc")
 	for _, part := range []string{"development", "agent 7", "http://127.0.0.1:8420/?key=abc"} {
-		if !strings.Contains(bar, part) {
-			t.Fatalf("the bar %q lacks %q", bar, part)
+		if !strings.Contains(header, part) {
+			t.Fatalf("the bar %q lacks %q", header, part)
 		}
 	}
 }

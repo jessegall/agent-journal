@@ -97,10 +97,10 @@ class CommitListenerRunner:
     def run_entry(self, entry: ListenerEntry, urgent_entries: list[ListenerEntry], events: list[LoggedEvent]) -> bool:
         handled = self.run_listener(entry, events)
         if handled and urgent_entries:
-            self.run_urgent_on_newer_events(urgent_entries, events)
+            self.run_urgent_events(urgent_entries, events)
         return handled
 
-    def run_urgent_on_newer_events(self, urgent_entries: list[ListenerEntry], events: list[LoggedEvent]) -> None:
+    def run_urgent_events(self, urgent_entries: list[ListenerEntry], events: list[LoggedEvent]) -> None:
         if self.log.newest_id() == events[-1].id:
             return
         newer_events = self.log.events_past(events[0].id - 1)

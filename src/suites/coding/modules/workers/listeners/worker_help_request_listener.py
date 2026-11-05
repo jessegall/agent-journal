@@ -30,5 +30,6 @@ class WorkerHelpRequestListener(SaveListener[Created[Wait]]):
         if wait.type is not WaitType.HELP_REQUEST:
             return
         worker = self.queries.query(Agent).find(wait.agent_id)
-        if worker.role == AgentRole.WORKER and worker.parent_id is not None and not self.unfinished.has_running_process(worker.id):
+        should_notify = worker.role == AgentRole.WORKER and worker.parent_id is not None and not self.unfinished.has_running_process(worker.id)
+        if should_notify:
             self.nudger.send(worker.parent_id, WORKER_HELP_REQUEST, SOURCE, context, worker=worker.id, tasks=self.unfinished.names(self.unfinished.rows(worker.id)), wait=wait.id)

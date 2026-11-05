@@ -17,7 +17,7 @@ from core.base.model.added_state import AddedState
 from core.base.model.move import Move
 from core.base.model.state_book import StateBook
 from core.base.model.unknown_state_error import UnknownStateError
-from core.base.guard.guard_refusal import GuardRefusal
+from core.base.guard_refusal import GuardRefusal
 from core.base.metadata import Metadata
 from core.base.model.model import Model
 from core.base.dotted_path.dotted_path import DottedPath

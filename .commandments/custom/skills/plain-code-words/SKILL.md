@@ -41,3 +41,10 @@ A class's one line is written for a newcomer reading it cold: what the class is 
 would use, never a summary of its fields. "A command that moves a row from one state to the next", not "A
 command that asks for one move of one row: the move, the row's id, and the move's own fields". A docstring line
 wraps at 110 characters (`long-docstring-line`). The same holds for every document written about the code.
+
+## Standard Go names
+
+Go keywords and built-in calls keep the language's spelling. Use `ctx`, `ok` and `err` for their standard
+context, lookup-success and error roles. The shared resource service uses `Kind`, `Kinds` and `kind` for
+resource kinds. A SQL result may be named `result` when its type is `database/sql.Result` or its function
+uses its `LastInsertId` or `RowsAffected` methods. A string named `result` has no such exception.

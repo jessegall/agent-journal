@@ -79,3 +79,35 @@ def expect_absent_lines_of(story, expected) -> None:
 
 def expect_lines_of(story, expected) -> None:
     expect_reply_line(story.hook("s-1", LISTING), expected)
+
+
+def test_task_intervals_count_each_reminders_start_and_reset_after_firing(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.expect_success('reminder make "Two tasks" --every-tasks 2 --environment main', actor=story.agent)
+    story.advance(timedelta(seconds=1))
+    close_task(story, "First task")
+    story.advance(timedelta(seconds=1))
+    story.expect_success('reminder make "One task" --every-tasks 1 --environment main', actor=story.agent)
+    reply = story.hook("s-1", LISTING)
+    expect_absent_reply_line(reply, "Two tasks")
+    expect_absent_reply_line(reply, "One task")
+    story.advance(timedelta(seconds=1))
+    close_task(story, "Second task")
+    reply = story.hook("s-1", LISTING)
+    expect_reply_line(reply, "Two tasks")
+    expect_reply_line(reply, "One task")
+    close_task(story, "Task at the firing timestamp")
+    reply = story.hook("s-1", LISTING)
+    expect_absent_reply_line(reply, "Two tasks")
+    expect_absent_reply_line(reply, "One task")
+    story.advance(timedelta(seconds=1))
+    close_task(story, "Third task")
+    reply = story.hook("s-1", LISTING)
+    expect_absent_reply_line(reply, "Two tasks")
+    expect_reply_line(reply, "One task")
+
+
+def close_task(story, title: str) -> None:
+    task_id = story.new_row_id(f'task make "{title}" --environment main', actor=story.agent)
+    story.expect_success(f"task start {task_id}", actor=story.agent)
+    story.expect_success(f'task close {task_id} --outcome "Complete"', actor=story.agent)

@@ -5,6 +5,7 @@ from dataclasses import dataclass
 class AgentPolicy:
     """The roles a suite assigns to each kind of core behavior."""
 
+    job_roles: tuple[str, ...] = ()
     task_roles: tuple[str, ...] = tuple(["main"])
     prompt_roles: tuple[str, ...] = tuple(["main"])
     plugin_roles: tuple[str, ...] = tuple(["main"])

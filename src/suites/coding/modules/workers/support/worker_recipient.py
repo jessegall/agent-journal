@@ -13,5 +13,5 @@ class WorkerRecipient:
         return int(recipient.removeprefix(RECIPIENT_PREFIX))
 
     @staticmethod
-    def is_for_worker(recipient: str) -> bool:
+    def matches_worker(recipient: str) -> bool:
         return recipient.startswith(RECIPIENT_PREFIX) and recipient.removeprefix(RECIPIENT_PREFIX).isdigit()

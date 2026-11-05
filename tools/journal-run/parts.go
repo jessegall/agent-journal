@@ -99,8 +99,8 @@ func joinsSources(commands []shell.Command) bool {
 func LastJournal(parts []Part, aliases []string) int {
 	last := 0
 	for _, part := range parts {
-		words := strings.Fields(part.Text)
-		if len(words) > 0 && words[0] == "journal" && !(len(words) > 1 && slices.Contains(aliases, words[1])) {
+		arguments := strings.Fields(part.Text)
+		if len(arguments) > 0 && arguments[0] == "journal" && !(len(arguments) > 1 && slices.Contains(aliases, arguments[1])) {
 			last = part.Position
 		}
 	}

@@ -53,7 +53,7 @@ class AgentBlockRule(DriverRule):
         return not tool.is_skill_read if block.strict else not tool.block_exempt
 
     def is_active(self, block: AgentBlock, hook: AgentHook) -> bool:
-        return not block.stop_only and (block.grace is None or block.grace.has_passed(self.queries, hook.agent_id, block.creation_timestamp(), hook.timestamp))
+        return not block.blocks_stop and (block.grace is None or block.grace.has_passed(self.queries, hook.agent_id, block.creation_timestamp(), hook.timestamp))
 
     def countdown(self, block: AgentBlock, hook: AgentHook) -> Nudge | None:
         if not block.countdown_text or not block.grace_tool_uses:

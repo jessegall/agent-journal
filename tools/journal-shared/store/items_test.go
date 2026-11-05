@@ -87,10 +87,10 @@ func TestAnUpdateOfARemovedItemIsRefusedAsRemoved(t *testing.T) {
 
 func TestAnExcerptShowsTheTextAroundTheTermCutWithDots(t *testing.T) {
 	text := "A long opening that goes on before the Release word and then continues for a good while after it too"
-	got := excerptAround("release", []string{"nothing here", text})
+	actual := excerptAround("release", []string{"nothing here", text})
 	want := "…ening that goes on before the Release word and then continues for a…"
-	if got != want {
-		t.Errorf("%q", got)
+	if actual != want {
+		t.Errorf("%q", actual)
 	}
 	if excerptAround("absent", []string{text}) != "" {
 		t.Error("an excerpt for a term that is not there")
@@ -134,12 +134,12 @@ func TestRemovingAndRestoringEachAddAVersionAndAnItemAlreadyInThatStateStaysAsIt
 	ada, _ := opened.AddUser("Ada", RoleAdmin)
 	caller := Caller{User: ada}
 	item, _ := opened.CreateItem(docKind(), Fields{"title": "T", "abstract": "A", "body": "one"}, caller)
-	same, _ := opened.RestoreItem(docKind(), item.ID, caller)
+	restoredItem, _ := opened.RestoreItem(docKind(), item.ID, caller)
 	removed, _ := opened.RemoveItem(docKind(), item.ID, caller)
-	again, _ := opened.RemoveItem(docKind(), item.ID, caller)
+	removedItem, _ := opened.RemoveItem(docKind(), item.ID, caller)
 	restored, _ := opened.RestoreItem(docKind(), item.ID, caller)
-	if same.Version != 1 || removed.Version != 2 || again.Version != 2 || restored.Version != 3 || restored.RemovedAt != "" {
-		t.Errorf("%d %d %d %d %q", same.Version, removed.Version, again.Version, restored.Version, restored.RemovedAt)
+	if restoredItem.Version != 1 || removed.Version != 2 || removedItem.Version != 2 || restored.Version != 3 || restored.RemovedAt != "" {
+		t.Errorf("%d %d %d %d %q", restoredItem.Version, removed.Version, removedItem.Version, restored.Version, restored.RemovedAt)
 	}
 	if count := countOf(t, opened, "SELECT count(*) FROM item_versions WHERE action IN ('remove', 'restore')"); count != 2 {
 		t.Errorf("%d history rows for removing and restoring", count)

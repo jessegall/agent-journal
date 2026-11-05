@@ -34,7 +34,7 @@ class AgentBlock(Model):
     countdown_key: str = ""
     countdown_text: str = ""
     skip_reason: str = ""
-    stop_only: bool = False
+    blocks_stop: bool = False
     strict: bool = False
 
     def is_finished(self, conditions: BlockConditions, hook: AgentHook, container: Container) -> bool:

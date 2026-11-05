@@ -14,18 +14,18 @@ func TestOnlyKeptConversationsAreOfferedNewestFirstWithTheirTitleAndLastUse(t *t
 	if err := os.MkdirAll(projects, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	write := func(session, lines string, written time.Time) {
+	writeTranscript := func(session, lines string, modifiedAt time.Time) {
 		path := filepath.Join(projects, session+".jsonl")
 		if err := os.WriteFile(path, []byte(lines), 0o644); err != nil {
 			t.Fatal(err)
 		}
-		if err := os.Chtimes(path, written, written); err != nil {
+		if err := os.Chtimes(path, modifiedAt, modifiedAt); err != nil {
 			t.Fatal(err)
 		}
 	}
 	now := time.Now()
-	write("old", `{"type":"ai-title","aiTitle":"Cart totals"}`+"\n", now.Add(-72*time.Hour))
-	write("new", `{"type":"ai-title","aiTitle":"First"}`+"\n"+`{"type":"ai-title","aiTitle":"Checkout fix"}`+"\n", now.Add(-2*time.Hour))
+	writeTranscript("old", `{"type":"ai-title","aiTitle":"Cart totals"}`+"\n", now.Add(-72*time.Hour))
+	writeTranscript("new", `{"type":"ai-title","aiTitle":"First"}`+"\n"+`{"type":"ai-title","aiTitle":"Checkout fix"}`+"\n", now.Add(-2*time.Hour))
 	conversations := ClaudeTranscripts{Home: home}.Titled("/work/shop", []Conversation{{Session: "old"}, {Session: "gone"}, {Session: "new"}})
 	if len(conversations) != 2 || conversations[0].Session != "new" || conversations[1].Session != "old" {
 		t.Fatalf("the conversations offered were %+v", conversations)

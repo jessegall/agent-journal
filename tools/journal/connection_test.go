@@ -27,7 +27,7 @@ func shortHome(t *testing.T) string {
 	return resolved
 }
 
-func listening(t *testing.T, socket string, handler http.Handler) {
+func startListener(t *testing.T, socket string, handler http.Handler) {
 	t.Helper()
 	listener, err := net.Listen("unix", socket)
 	if err != nil {
@@ -46,18 +46,18 @@ func TestASocketPathTooLongBecomesAShortOneNamedByItsHashAsTheServerNamesIt(t *t
 	deep := "/" + strings.Repeat("deep-folder-", 10)
 	path := filepath.Join(deep, "server.sock")
 	sum := sha256.Sum256([]byte(path))
-	if got := socket.Path(deep); got != "/tmp/journal-"+hex.EncodeToString(sum[:])[:16]+".sock" {
-		t.Fatalf("socket path %s", got)
+	if actual := socket.Path(deep); actual != "/tmp/journal-"+hex.EncodeToString(sum[:])[:16]+".sock" {
+		t.Fatalf("socket path %s", actual)
 	}
 	home := shortHome(t)
-	if got := socket.Path(home); got != filepath.Join(home, "server.sock") {
-		t.Fatalf("socket path %s", got)
+	if actual := socket.Path(home); actual != filepath.Join(home, "server.sock") {
+		t.Fatalf("socket path %s", actual)
 	}
 }
 
 func TestAHealthyServerIsUsedAndNothingIsStarted(t *testing.T) {
 	home := shortHome(t)
-	listening(t, socket.Path(home), healthHandler())
+	startListener(t, socket.Path(home), healthHandler())
 	_, started, err := Connect(home, func(string) (*os.Process, error) {
 		t.Error("a server was started beside a healthy one")
 		return nil, nil
@@ -72,7 +72,7 @@ func TestWithNothingAnsweringAndTheLockFreeTheClientStartsTheServer(t *testing.T
 	starts := 0
 	_, _, err := Connect(home, func(string) (*os.Process, error) {
 		starts++
-		listening(t, socket.Path(home), healthHandler())
+		startListener(t, socket.Path(home), healthHandler())
 		return &os.Process{Pid: os.Getpid()}, nil
 	})
 	if err != nil || starts != 1 {
@@ -93,7 +93,7 @@ func TestAHeldLockMeansWaitAndAServerLettingItGoIsReplacedAtOnce(t *testing.T) {
 	starts := 0
 	_, _, err = Connect(home, func(string) (*os.Process, error) {
 		starts++
-		listening(t, socket.Path(home), healthHandler())
+		startListener(t, socket.Path(home), healthHandler())
 		return &os.Process{Pid: os.Getpid()}, nil
 	})
 	if err != nil || starts != 1 {
@@ -143,7 +143,7 @@ func TestAMaintenanceMarkLongForgottenIsIgnored(t *testing.T) {
 	starts := 0
 	_, _, err := Connect(home, func(string) (*os.Process, error) {
 		starts++
-		listening(t, socket.Path(home), healthHandler())
+		startListener(t, socket.Path(home), healthHandler())
 		return &os.Process{Pid: os.Getpid()}, nil
 	})
 	if err != nil || starts != 1 {
@@ -171,8 +171,8 @@ func TestSourceFolderIsTheInstalledCodeInsideTheJournalWhenItHoldsTheServer(t *t
 	if err := os.WriteFile(filepath.Join(server, "server.py"), []byte(""), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if got := SourceFolder(home); got != filepath.Join(home, "src") {
-		t.Fatalf("an installed project's code is %s, not %s", filepath.Join(home, "src"), got)
+	if actual := SourceFolder(home); actual != filepath.Join(home, "src") {
+		t.Fatalf("an installed project's code is %s, not %s", filepath.Join(home, "src"), actual)
 	}
 }
 
@@ -182,8 +182,8 @@ func TestSourceFolderIsTheRepositorysSrcWhenTheJournalHoldsNoServer(t *testing.T
 	if err := os.MkdirAll(filepath.Join(home, "src", "journal"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if got := SourceFolder(home); got != filepath.Join(project, "src") {
-		t.Fatalf("the repository's code is %s, not %s", filepath.Join(project, "src"), got)
+	if actual := SourceFolder(home); actual != filepath.Join(project, "src") {
+		t.Fatalf("the repository's code is %s, not %s", filepath.Join(project, "src"), actual)
 	}
 }
 
@@ -200,8 +200,8 @@ func TestSourceFolderPutsInPlaceTheLinkAStoppedSwitchLeft(t *testing.T) {
 	if err := os.Symlink(filepath.Join("versions", "1"), filepath.Join(home, newSourceLink)); err != nil {
 		t.Fatal(err)
 	}
-	if got := SourceFolder(home); got != filepath.Join(home, "src") {
-		t.Fatalf("the code after a stopped switch is %s, not %s", filepath.Join(home, "src"), got)
+	if actual := SourceFolder(home); actual != filepath.Join(home, "src") {
+		t.Fatalf("the code after a stopped switch is %s, not %s", filepath.Join(home, "src"), actual)
 	}
 	if _, err := os.Stat(filepath.Join(home, "src", "server", "server.py")); err != nil {
 		t.Fatalf("src was not put in place: %v", err)
@@ -210,7 +210,7 @@ func TestSourceFolderPutsInPlaceTheLinkAStoppedSwitchLeft(t *testing.T) {
 
 func TestTheViewerLineAsksForAKeyAndPrintsTheLinkToItsEnvironmentOnTheViewersPort(t *testing.T) {
 	home := shortHome(t)
-	listening(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+	startListener(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if request.URL.Path == "/viewer/key" {
 			writer.Write([]byte(`{"key": "one-time", "environment": "main"}`))
 			return
@@ -226,7 +226,7 @@ func TestTheViewerLineAsksForAKeyAndPrintsTheLinkToItsEnvironmentOnTheViewersPor
 
 func TestTheViewerLineSaysWhyNoKeyIsGiven(t *testing.T) {
 	home := shortHome(t)
-	listening(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+	startListener(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		writer.Write([]byte(`{"error": "only a person opens the viewer"}`))
 	}))
 	var stdout, stderr strings.Builder
@@ -240,7 +240,7 @@ func TestTheViewerLineStopsWaitingForAServerThatNeverAnswers(t *testing.T) {
 	home := shortHome(t)
 	released := make(chan struct{})
 	t.Cleanup(func() { close(released) })
-	listening(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) { <-released }))
+	startListener(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) { <-released }))
 	previous := ViewerLimit
 	ViewerLimit = 100 * time.Millisecond
 	t.Cleanup(func() { ViewerLimit = previous })

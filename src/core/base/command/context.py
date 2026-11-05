@@ -2,7 +2,7 @@ from dataclasses import dataclass, replace
 
 from core.base.actor import Actor
 from core.base.command.command import Command
-from core.base.guard.explanation import Explanation
+from core.base.explanation import Explanation
 from core.base.timestamp import Timestamp
 
 

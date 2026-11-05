@@ -1,14 +1,12 @@
 import http.client
 import socket
 
-CONNECTION_SECONDS = 5
-
 
 class UnixConnection(http.client.HTTPConnection):
-    """An HTTP connection to the journal server's unix socket."""
+    """An HTTP connection over a Unix socket."""
 
-    def __init__(self, path: str, timeout_seconds: float = CONNECTION_SECONDS) -> None:
-        super().__init__("journal", timeout=timeout_seconds)
+    def __init__(self, path: str, timeout: float, host: str) -> None:
+        super().__init__(host, timeout=timeout)
         self.path = path
 
     def connect(self) -> None:

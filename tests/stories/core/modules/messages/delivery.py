@@ -113,7 +113,7 @@ def test_a_fresh_session_that_has_not_been_given_a_prompt_is_idle_too(new_story)
     typing = KeptTyping()
     story.container.bind(TerminalTyping, typing)
     story.run('message send "Are you there" --environment main', actor=story.user)
-    expect_typed_typing(typing, ["[journal] new message 1"])
+    expect_terminal_lines(typing, ["[journal] new message 1"])
 
 
 def test_a_message_to_an_agent_with_no_hook_for_half_a_minute_is_typed_since_an_interrupted_turn_sends_no_stop(delivery_typing):
@@ -121,7 +121,7 @@ def test_a_message_to_an_agent_with_no_hook_for_half_a_minute_is_typed_since_an_
     story.hook("s-1", HookSamples.edit("cart.py"))
     story.advance(timedelta(seconds=31))
     story.run('message send "Are you there" --environment main', actor=story.user)
-    expect_typed_typing(typing, ["[journal] new message 1"])
+    expect_terminal_lines(typing, ["[journal] new message 1"])
 
 
 def test_a_message_sent_just_after_an_interrupted_turn_is_typed_at_the_next_tick(delivery_typing):
@@ -132,7 +132,7 @@ def test_a_message_sent_just_after_an_interrupted_turn_is_typed_at_the_next_tick
     story.advance(timedelta(seconds=61))
     story.tick("s-1")
     story.run_listeners()
-    expect_typed_typing(typing, ["[journal] new message 1"])
+    expect_terminal_lines(typing, ["[journal] new message 1"])
 
 
 def tool_failure(interrupted: bool):
@@ -143,7 +143,7 @@ def test_a_message_sent_right_after_the_user_interrupted_a_tool_is_typed_since_t
     story, typing = delivery_typing
     story.hook("s-1", tool_failure(interrupted=True))
     story.run('message send "Are you there" --environment main', actor=story.user)
-    expect_typed_typing(typing, ["[journal] new message 1"])
+    expect_terminal_lines(typing, ["[journal] new message 1"])
 
 
 def test_a_message_sent_after_a_tool_failed_without_an_interrupt_is_not_typed(delivery_typing):
@@ -183,7 +183,7 @@ def test_a_line_the_agents_own_hook_took_while_it_was_typed_is_typed_once_and_no
     story.hook("s-1", READ_MESSAGE_HOOK)
     for _ in range(4):
         story.run_listeners()
-    expect_typed_typing(typing, ["[journal] new message 1"])
+    expect_terminal_lines(typing, ["[journal] new message 1"])
 
 
 class HookDuringTerminalLine(KeptTyping):
@@ -206,7 +206,7 @@ def test_a_hook_during_the_typing_does_not_give_the_line_too(new_story):
     agent = story.agent
     story.run('message send "Are you there" --environment main', actor=story.user)
     story.run_listeners()
-    expect_typed_typing(typing, ["[journal] new message 1"])
+    expect_terminal_lines(typing, ["[journal] new message 1"])
     expect_hook_lines_typing_without_line(typing, "new message 1")
     story.expect_text(f"agent-line list --agent {agent.id} --state entered", "new message 1", actor=story.user)
 
@@ -688,7 +688,7 @@ def expect_hook_lines_typing_without_line(typing, expected) -> None:
     assert not any(expected in line for line in actual), actual
 
 
-def expect_typed_typing(typing, expected) -> None:
+def expect_terminal_lines(typing, expected) -> None:
     actual = [line for _, line in typing.typed]
     assert actual == expected, actual
 

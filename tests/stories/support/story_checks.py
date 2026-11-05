@@ -172,7 +172,7 @@ def expect_total_cost_less(cost, expected) -> None:
     assert actual < expected, actual
 
 
-def expect_value_more(actual, expected) -> None:
+def expect_greater(actual, expected) -> None:
     assert actual > expected, actual
 
 
@@ -289,7 +289,7 @@ def expect_id_cancelled(cancelled, expected) -> None:
     assert actual == expected, actual
 
 
-def expect_command_folder_chosen(command_folder, text, expected) -> None:
+def expect_command_file(command_folder, text, expected) -> None:
     actual = (command_folder / text).read_text().strip()
     assert actual == expected, actual
 

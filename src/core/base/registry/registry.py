@@ -231,10 +231,10 @@ class Registry:
         return EventLookup(self.guards, self.listeners, self.events)
 
     def event_guards(self, event: str) -> tuple[GuardEntry, ...]:
-        return self.event_lookup.guards_of(event)
+        return self.event_lookup.matching_guards(event)
 
     def event_listeners(self, event: str, timing: ListenerTiming) -> tuple[ListenerEntry, ...]:
-        return self.event_lookup.listeners_of(event, timing)
+        return self.event_lookup.matching_listeners(event, timing)
 
     def has_handler(self, command: type) -> bool:
         return DottedPath.class_path(command).text in self.handlers

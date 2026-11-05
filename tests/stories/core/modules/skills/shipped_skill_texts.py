@@ -29,11 +29,11 @@ def faults_of(story, group: str, subcommand: str, flags: tuple[str, ...]) -> lis
 def test_every_command_and_flag_a_shipped_skill_names_exists(new_story):
     story = new_story(fixture=BuilderStarted)
     commands = commands_in_skill_files()
-    expect_commands_more(commands, 50)
+    expect_commands_count_greater(commands, 50)
     faults = sorted(fault for group, subcommand, flags in commands for fault in faults_of(story, group, subcommand, flags))
     expect_absent_value(faults)
 
 
-def expect_commands_more(commands, expected) -> None:
+def expect_commands_count_greater(commands, expected) -> None:
     actual = len(commands)
     assert actual > expected, actual

@@ -27,7 +27,7 @@ def test_a_managed_hook_state_and_timeout_are_saved_and_raise_a_change_event(imp
     saved = story.container.get(ManagedHooks).all()[0]
     expect_row(saved, state=ManagedState.DISABLED)
     expect_row(saved, timeout=17)
-    expect_event_events_past("managed-hook.changed", events, start)
+    expect_recent_events("managed-hook.changed", events, start)
 
 
 @pytest.mark.parametrize("timeout", [0, -1])
@@ -50,6 +50,6 @@ def expect_bytes_managed_hooks(story, expected) -> None:
     assert actual == expected, actual
 
 
-def expect_event_events_past(text, events, start) -> None:
+def expect_recent_events(text, events, start) -> None:
     actual = any((event.event == text for event in events.events_past(start)))
     assert actual, actual

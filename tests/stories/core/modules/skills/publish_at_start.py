@@ -14,7 +14,7 @@ def test_a_start_logs_journal_booting(new_story):
     newest_event_id = story.container.get(EventLog).newest_id()
     BootingWork().run(story.container)
     story.run_listeners()
-    expect_event_events_past_with(story, newest_event_id, "journal.booting")
+    expect_recent_event(story, newest_event_id, "journal.booting")
 
 
 def test_a_start_writes_a_declared_skill_that_is_missing(new_story):
@@ -87,6 +87,6 @@ def expect_file_skill(story, text) -> None:
     assert actual, actual
 
 
-def expect_event_events_past_with(story, newest_event_id, expected) -> None:
+def expect_recent_event(story, newest_event_id, expected) -> None:
     actual = [event.event for event in story.container.get(EventLog).events_past(newest_event_id)]
     assert expected in actual, actual

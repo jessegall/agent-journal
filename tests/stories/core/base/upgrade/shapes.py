@@ -28,7 +28,7 @@ def test_a_very_large_version_4_journal_upgrades(new_story):
     with_message_rows(version_four_fixture(story.home.folder / "journal.db"), MESSAGE_COUNT)
     outcome = UpgradeJournal(story.home).run(confirmed=True)
     expect_code_outcome(outcome, 0)
-    expect_count_more(story, "version_four_map", MESSAGE_COUNT)
+    expect_table_count_greater(story, "version_four_map", MESSAGE_COUNT)
 
 
 def test_a_table_version_5_does_not_know_stays_in_the_backup_and_is_listed_as_not_claimed(new_story):
@@ -64,6 +64,6 @@ def expect_absent_exists_folder_home(story, text) -> None:
     assert not actual, actual
 
 
-def expect_count_more(story, text, expected) -> None:
+def expect_table_count_greater(story, text, expected) -> None:
     actual = count(story, text)
     assert actual > expected, actual

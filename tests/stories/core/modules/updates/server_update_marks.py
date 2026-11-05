@@ -17,14 +17,14 @@ def update_mark(story) -> ChatMark:
 
 def test_one_mark_moves_through_the_steps_of_a_server_update_and_ends_with_the_version(new_story):
     story = new_story(fixture=UserJoined)
-    marks_by_step = []
+    step_marks = []
     for step in ("proof", "handover", "serving"):
         run_step(story, f"update step {RUN} {step}")
         mark = update_mark(story)
-        marks_by_step.append((mark.variant, mark.figure, mark.fraction, mark.state.value))
+        step_marks.append((mark.variant, mark.figure, mark.fraction, mark.state.value))
     run_step(story, f"update step {RUN} finished abc123")
     last = update_mark(story)
-    expect_value(marks_by_step, [("proof", "step 1 of 4", 0.25, "shown"), ("handover", "step 2 of 4", 0.5, "shown"), ("serving", "step 3 of 4", 0.75, "shown")])
+    expect_value(step_marks, [("proof", "step 1 of 4", 0.25, "shown"), ("handover", "step 2 of 4", 0.5, "shown"), ("serving", "step 3 of 4", 0.75, "shown")])
     expect_value((last.variant, last.text, last.outcome.value, last.state.value), ("finished", "Server updated to abc123", "passed", "ended"))
     expect_value(len(list(story.container.get(Queries).query(ChatMark).filter(type="updates.server-update").all_rows())), 1)
 

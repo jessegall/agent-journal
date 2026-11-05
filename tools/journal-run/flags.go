@@ -54,9 +54,9 @@ func mostOutputBytes() int {
 
 // outputReading reads what the agent reads of each part, and clears it, so a run inside this one starts with none.
 func outputReading() map[int]string {
-	reading := parseReading(os.Getenv(readingVariable))
+	selection := parseReading(os.Getenv(readingVariable))
 	_ = os.Unsetenv(readingVariable)
-	return reading
+	return selection
 }
 
 // binFolder is where a journal keeps this program, inside the journal's folder.

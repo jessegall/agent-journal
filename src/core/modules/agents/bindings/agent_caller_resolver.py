@@ -19,15 +19,7 @@ LOGIN_VARIABLE = "USER"
 
 
 class AgentCallerResolver(CallerResolver):
-    """Names who runs a command line and where: the open agent the session variable names, else the open agent
-    whose pid and process start time match a process above the caller, else the open agent the session
-    variable of its agent program names, in its environment; else the person the login name names, in the
-    environment whose folder holds the working folder. A shell of an agent program is never taken for the
-    person, so a command whose hook timed out is not recorded as theirs. A session variable that names no open
-    agent is refused, never run as anyone else, except in a run the journal started for that agent, such as a
-    worker's test that runs on after the worker has stopped. With no session variable, an agent with an open
-    subagent
-    cannot be told from that subagent, so the command is recorded as the journal's."""
+    """Identifies the caller from its session, ancestor processes or login name."""
 
     def __init__(self, queries: Queries, chain: ProcessChain, environments: EnvironmentQuery, actors: ActorQuery, providers: Providers) -> None:
         self.queries, self.chain, self.environments, self.actors, self.providers = queries, chain, environments, actors, providers

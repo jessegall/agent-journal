@@ -12,7 +12,7 @@ from tests.stories.core.support.coding_fixtures import BuilderWithUser
 PLAN_SEQUENCE = "Building a plan"
 
 
-class ShippedSequences(StoryFixture):
+class StandardSequences(StoryFixture):
     parent = BuilderWithUser
 
     def steps(self, story):
@@ -30,7 +30,7 @@ def run_agent_ids(story) -> list[int]:
 
 
 def test_the_main_agent_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_a_mark(new_story):
-    story = new_story(fixture=ShippedSequences)
+    story = new_story(fixture=StandardSequences)
     story.run(lines.NEW_PLAN, actor=story.agent)
     story.run_listeners()
     expect_run_agents(story, [story.agent.id])
@@ -39,7 +39,7 @@ def test_the_main_agent_making_a_plan_follows_the_plan_sequence_and_the_chat_sho
 
 
 def test_a_worker_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_no_mark(new_story):
-    story = new_story(fixture=ShippedSequences)
+    story = new_story(fixture=StandardSequences)
     worker = worker_of(story)
     story.run(lines.NEW_PLAN, actor=worker)
     story.run_listeners()
@@ -49,7 +49,7 @@ def test_a_worker_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_no_
 
 
 def test_a_subagent_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_no_mark(new_story):
-    story = new_story(fixture=ShippedSequences)
+    story = new_story(fixture=StandardSequences)
     subagent = Actor(story.new_row_id(f"agent start s-2 claude subagent --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.run(lines.NEW_PLAN, actor=subagent)
     story.run_listeners()
@@ -58,7 +58,7 @@ def test_a_subagent_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_n
 
 
 def test_making_a_plan_ready_ends_its_sequence_and_the_run_on_another_plan_stays_open(new_story):
-    story = new_story(fixture=ShippedSequences)
+    story = new_story(fixture=StandardSequences)
     worker = worker_of(story)
     story.run(lines.NEW_PLAN, actor=story.agent)
     story.run(lines.NEW_PLAN, actor=worker)

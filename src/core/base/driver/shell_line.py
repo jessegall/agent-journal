@@ -27,7 +27,7 @@ class ShellLine:
     is_journal_line: bool
     parse_error: str
     alias_names: tuple[str, ...] = ()
-    saved_commands_known: bool = False
+    aliases_loaded: bool = False
     is_retry_loop: bool = False
 
     @classmethod

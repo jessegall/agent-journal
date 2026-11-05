@@ -3,7 +3,7 @@ package classify
 import "testing"
 
 func TestSplitReading(t *testing.T) {
-	cases := []struct{ arguments, kept, reading string }{
+	cases := []struct{ arguments, remaining, selection string }{
 		{"--tail 5", "", "tail:5"},
 		{"--head 12", "", "head:12"},
 		{"--cut 100-160", "", "cut:100-160"},
@@ -19,9 +19,9 @@ func TestSplitReading(t *testing.T) {
 	for _, testCase := range cases {
 		t.Run(testCase.arguments, func(t *testing.T) {
 			options := splitSavedOptions(testCase.arguments)
-			kept, reading := options.arguments, options.reading
-			if kept != testCase.kept || reading != testCase.reading {
-				t.Fatalf("kept %q, reading %q", kept, reading)
+			remaining, selection := options.arguments, options.selection
+			if remaining != testCase.remaining || selection != testCase.selection {
+				t.Fatalf("kept %q, reading %q", remaining, selection)
 			}
 		})
 	}
