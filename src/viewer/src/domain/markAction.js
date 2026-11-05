@@ -1,7 +1,7 @@
 import {meta} from "./tables.js";
 
 // what a mark's one-click action opens, named for the kind of thing it opens: Open the task, Open the output, Open the agent
-const OWN_WORDS = {outputs: "output", skills: "skill", agents: "agent", subagents: "agent", pages: "page"};
+const OWN_WORDS = {outputs: "output", skills: "skill", agents: "agent", helpers: "agent", subagents: "agent", pages: "page"};
 
 export function actionLabel(table) {
     const word = OWN_WORDS[table] || meta(table)?.title.toLowerCase();

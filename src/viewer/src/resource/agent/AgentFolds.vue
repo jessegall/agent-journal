@@ -23,14 +23,14 @@ const nameOf = (agent) => agent.given_name || `${wordLabel(agent.role)} ${agent.
 </script>
 
 <template>
-    <AgentFold v-model:open="shown.subagents" icon="bot" label="Subagents" :count="counts.subagents">
+    <AgentFold v-model:open="shown.subagents" icon="bot" label="Helpers" :count="counts.subagents">
         <template v-for="agent in subagents" :key="agent.id">
             <button type="button" class="row" data-agent-subagent @click="peek('agents', agent.id)">
                 <span class="text">{{ nameOf(agent) }}</span><span class="aside">{{ wordLabel(agent.role) }} {{ agent.id }}</span>
             </button>
         </template>
         <template v-if="!subagents.length">
-            <p class="none">It started no subagents.</p>
+            <p class="none">It started no helpers.</p>
         </template>
     </AgentFold>
     <AgentFold v-model:open="shown.skills" icon="style" label="Skills loaded" :count="counts.skills">

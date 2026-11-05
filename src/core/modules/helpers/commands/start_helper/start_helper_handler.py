@@ -8,12 +8,14 @@ from core.base.repository.repository import Repository
 from core.base.agent_type_book import AgentTypeBook
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.base.profile.agent_profile import AgentProfile
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_reuse import HelperReuse
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from core.modules.helpers.support.helper_limits import HelperLimits
+from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.profiles.commands.count_profile_use.count_profile_use import CountProfileUse
 from core.modules.profiles.support.profile_files import ProfileFiles
 
@@ -26,8 +28,9 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
 
     command = StartHelper
 
-    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, launcher: LauncherLink, bus: Bus, repository: Repository, reuse: HelperReuse) -> None:
+    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, launcher: LauncherLink, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders) -> None:
         self.profiles, self.types, self.limits, self.launcher, self.bus, self.repository, self.reuse = profiles, types, limits, launcher, bus, repository, reuse
+        self.programs, self.folders = programs, folders
 
     def handle(self, command: StartHelper, context: Context) -> Agent:
         if len(command.brief) > BRIEF_LIMIT_CHARACTERS:
@@ -44,6 +47,7 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
             self.check_reuse(parent, profile, command.brief)
         program = command.program or profile.program or parent.program
         model = self.limits.checked_model(program, command.program_model or profile.program_model(program))
+        self.programs.checked(program, self.folders.folder(parent))
         start = StartAgent(str(uuid4()), program, agent_type.key, parent.id, program_model=model, profile=profile.name, given_name=command.given_name, access=profile.access or agent_type.access)
         helper = self.bus.dispatch(start, context)
         self.repository.save(HelperJob(session_agent_id=parent.id, creator_id=context.actor.id, tool_key=helper.session, helper_id=helper.id, profile=profile.name, program_model=model,

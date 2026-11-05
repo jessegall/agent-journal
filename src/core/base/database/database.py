@@ -1,4 +1,7 @@
 import sqlite3
+import sys
+import time
+import traceback
 from contextlib import contextmanager
 
 from core.base.database.nesting_error import NestingError
@@ -59,13 +62,21 @@ class Database:
     def has_transaction(self) -> bool:
         return self.connection.in_transaction
 
+    def note_slow_write(self, started: float) -> None:
+        held = time.monotonic() - started
+        if held > 1:
+            frames = [f"{frame.filename.rsplit('/', 3)[-1]}:{frame.lineno}" for frame in traceback.extract_stack() if "/modules/" in frame.filename or "/base/command/" in frame.filename]
+            print(f"SLOW WRITE {held:.1f}s {' '.join(frames[-6:])}", file=sys.stderr, flush=True)
+
     @contextmanager
     def transaction(self):
         changes = self.connection.total_changes
         self.connection.execute("BEGIN IMMEDIATE")
+        started = time.monotonic()
         try:
             yield
             self.connection.execute("COMMIT")
+            self.note_slow_write(started)
         except BaseException:
             self.record_rollback(changes)
             if self.connection.in_transaction:

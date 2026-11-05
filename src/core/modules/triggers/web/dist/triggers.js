@@ -27,7 +27,7 @@ const R = [
   { key: "pattern", label: "Pattern", hint: "A regular expression" }
 ], xe = [
   { key: "main", value: "main", label: "The main agent" },
-  { key: "helper", value: "helper", label: "An agent or subagent" }
+  { key: "helper", value: "helper", label: "An agent or helper" }
 ], J = [
   { key: "agent", value: "agent", label: "Agent", note: "The main agent or a helper", choices: xe },
   { key: "environment", value: "environment", label: "Environment", note: "Only in one environment", example: "main" },

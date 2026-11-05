@@ -4663,7 +4663,7 @@ function Vm(e, t) {
   }
   return { lines: n, newest: l, follow: i, loadEarlier: u };
 }
-const Gm = { outputs: "output", skills: "skill", agents: "agent", subagents: "agent", pages: "page" };
+const Gm = { outputs: "output", skills: "skill", agents: "agent", helpers: "agent", subagents: "agent", pages: "page" };
 function Er(e) {
   var n;
   const t = Gm[e] || ((n = It(e)) == null ? void 0 : n.title.toLowerCase());
@@ -10298,7 +10298,7 @@ const I2 = /* @__PURE__ */ O2(B2), R2 = ["width", "height", "viewBox"], L2 = ["w
       ce(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, hx = /* @__PURE__ */ Y(P2, [["__scopeId", "data-v-47e67f04"]]), mx = Rl(() => import("./VoiceFigure-BAJO_P1B.js").then((e) => e.V)), px = "1.1.0", gx = "3.5";
+}, hx = /* @__PURE__ */ Y(P2, [["__scopeId", "data-v-47e67f04"]]), mx = Rl(() => import("./VoiceFigure-2PeUEgyr.js").then((e) => e.V)), px = "1.1.0", gx = "3.5";
 export {
   uy as $,
   xe as A,

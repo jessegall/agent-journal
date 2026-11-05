@@ -38,7 +38,7 @@ export const MATCHES = [
 
 const AGENT_CHOICES = [
     {key: "main", value: "main", label: "The main agent"},
-    {key: "helper", value: "helper", label: "An agent or subagent"},
+    {key: "helper", value: "helper", label: "An agent or helper"},
 ];
 
 export const CONDITION_TYPES = [

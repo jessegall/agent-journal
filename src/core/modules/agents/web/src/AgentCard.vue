@@ -383,7 +383,10 @@ readCommand();
     flex-direction: column;
     gap: 6px;
     margin: 0 -22px -11px -27px;
+    overflow-x: hidden;
     overflow-y: auto;
+    min-width: 0;
+    contain: inline-size;
 }
 
 .agent-tab-body[data-agent-tab-body="tasks"] {

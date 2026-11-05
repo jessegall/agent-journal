@@ -53,7 +53,7 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
             <Icon name="terminal" :size="12" />
             {{ processes }}
         </button>
-        <button type="button" class="agent-helpers agent-helpers-count" data-helpers aria-label="Helpers" title="Running: subagents, workers and reviewers" @click="emit('open', 'helpers', $event.currentTarget)">
+        <button type="button" class="agent-helpers agent-helpers-count" data-helpers aria-label="Helpers" title="Running: helpers, workers and reviewers" @click="emit('open', 'helpers', $event.currentTarget)">
             <Icon name="agents" :size="12" />
             {{ helpers }}
         </button>
