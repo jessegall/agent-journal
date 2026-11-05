@@ -19,6 +19,7 @@ class FailedCheckRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN]
     overlay_proof = True
+    is_notice = True
 
     def __init__(self, checks: CheckQuery) -> None:
         self.checks = checks

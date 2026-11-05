@@ -26,7 +26,7 @@ class SkillRequiredSubcommand(ReadSubcommand[tuple[str, ...]]):
         agent_id = caller.read_actor_id
         if agent_id is None:
             return ()
-        return tuple(f"{name}: {self.files.readable(name)}" for name in self.unread_skills.names(agent_id))
+        return tuple(f"{name}: {path}" for name, path in self.files.readable_paths(self.unread_skills.names(agent_id)).items())
 
     def write_output(self, value: object, output: Output) -> None:
         lines = [str(line) for line in value] if is_tuple(value) else []
