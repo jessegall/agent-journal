@@ -201,12 +201,17 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
     color: var(--text);
     font-size: 13px;
     font-weight: 500;
+    line-height: 20px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 .dock-age {
+    display: inline-flex;
     flex: none;
+    align-items: center;
+    align-self: center;
     margin-left: 6px;
+    line-height: 20px;
     color: var(--text-3);
     font-size: 11.5px;
     font-variant-numeric: tabular-nums;

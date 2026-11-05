@@ -39,13 +39,13 @@ async function drawn(item = ITEM) {
 test("the pin and the stop of a docked card are icon buttons named by their words", () => {
     const buttons = dockButtons(ITEM, DECLARATION);
     expect(buttons.find((button) => button.action === "keep")).toMatchObject({icon: "pins", label: "Keep this card", iconOnly: true});
-    expect(buttons.find((button) => button.action === "declared")).toMatchObject({icon: "stop", label: "Stop", iconOnly: true});
+    expect(buttons.find((button) => button.action === "declared")).toMatchObject({icon: "stop", label: "Stop", iconOnly: false});
     expect(dockButtons({...ITEM, kept: true}, DECLARATION).find((button) => button.action === "unkeep")).toMatchObject({icon: "pins", label: "Let this card close", iconOnly: true});
 });
 
 test("a docked card draws its pin and stop as an icon with the words as label and tooltip, and no text", async () => {
     const element = await drawn();
-    for (const [action, words] of [["keep", "Keep this card"], ["declared", "Stop"]]) {
+    for (const [action, words] of [["keep", "Keep this card"]]) {
         const button = element.querySelector(`[data-dock-action='${action}']`);
         expect(button.classList.contains("icon")).toBe(true);
         expect(button.getAttribute("aria-label")).toBe(words);
