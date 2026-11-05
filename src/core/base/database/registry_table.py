@@ -3,7 +3,6 @@ import sqlite3
 from core.base.database.database import Database
 from core.base.database.registry_version import RegistryVersion
 from core.base.database.statement import Statement
-from core.base.registry.stale_registry_error import StaleRegistryError
 
 TABLE = Statement("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'registry'")
 ROW = Statement("SELECT fingerprint, entries FROM registry WHERE id = 1")
@@ -22,15 +21,10 @@ class RegistryTable:
         rows = self.database.rows(ROW) if self.database.rows(TABLE) else []
         return rows[0] if rows else None
 
-    def version(self) -> RegistryVersion:
-        try:
-            rows = self.database.rows(VERSION)
-        except sqlite3.OperationalError as error:
-            if str(error) == "no such table: registry":
-                raise StaleRegistryError("the journal has never been synced: journal module sync") from error
-            raise
+    def version(self) -> RegistryVersion | None:
+        rows = self.database.rows(VERSION)
         if not rows:
-            raise StaleRegistryError("the journal has never been synced: journal module sync")
+            return None
         row = rows[0]
         return RegistryVersion(self.database.identity, row["fingerprint"], row["synced_at"], self.database)
 

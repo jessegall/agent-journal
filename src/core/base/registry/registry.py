@@ -1,4 +1,5 @@
 import json
+import sqlite3
 from collections.abc import Sequence
 from core.base.profile.agent_profile import AgentProfile
 from core.base.agent_policy import AgentPolicy
@@ -86,7 +87,15 @@ class Registry:
 
     @classmethod
     def read(cls, database: Database) -> "Registry":
-        return cls.loaded(RegistryTable(database).version())
+        try:
+            version = RegistryTable(database).version()
+        except sqlite3.OperationalError as error:
+            if str(error) != "no such table: registry":
+                raise
+            raise StaleRegistryError("the journal has never been synced: journal module sync") from error
+        if version is None:
+            raise StaleRegistryError("the journal has never been synced: journal module sync")
+        return cls.loaded(version)
 
     @classmethod
     @lru_cache(maxsize=KEPT_REGISTRIES)
