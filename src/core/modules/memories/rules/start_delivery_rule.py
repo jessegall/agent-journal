@@ -1,5 +1,4 @@
-from core.modules.memories.support.memory_nudges import START_MEMORIES, START_SHARED_MEMORIES
-from core.base.agent_role import AgentRole
+from core.modules.memories.support.memory_nudges import START_MEMORIES
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -9,7 +8,7 @@ from core.base.role_group import RoleGroup
 
 
 class StartDeliveryRule(DriverRule):
-    """At a session start and after a compaction, tells the agent how many active memories of its scope it has;
+    """At a session start and after a compaction, tells the agent how many active memories it is given;
     StartMemoriesListener records them."""
 
     name = "memories.start-delivery"
@@ -23,5 +22,4 @@ class StartDeliveryRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         count = self.memories.query(hook).count()
-        line = START_MEMORIES if hook.role == AgentRole.MAIN else START_SHARED_MEMORIES
-        return RuleAnswer.with_nudges(line.nudge(count=count, agent=hook.agent_id)) if count else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(START_MEMORIES.nudge(count=count, agent=hook.agent_id)) if count else RuleAnswer.allowed()
