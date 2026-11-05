@@ -6,10 +6,12 @@ import pytest
 from unittest.mock import patch
 
 from core.base.command.bus import Bus
+from core.base.database.database import Database
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.reader_run import ReaderRun
+from core.modules.processes.support.reader_step import ReaderStep
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
@@ -178,3 +180,19 @@ def expect_reader_lines(story, process, expected) -> None:
 def expect_reader_lines_folder(folder, process, expected) -> None:
     actual = folder.reader_lines(process.id)
     assert actual == expected, actual
+
+
+def test_a_tick_reads_new_output_with_no_open_transactions(new_story, monkeypatch):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.run(READER, actor=story.agent)
+    process = start_process(story, "make test")
+    database, advance, open_transactions = story.container.get(Database), ReaderStep.advance, []
+
+    def watched_advance(step, *arguments):
+        open_transactions.append(database.has_transaction)
+        return advance(step, *arguments)
+
+    monkeypatch.setattr(ReaderStep, "advance", watched_advance)
+    append(story, process.id, FIRST)
+    tick(story)
+    story.expect_rows(open_transactions == [False])
