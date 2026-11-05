@@ -45,12 +45,12 @@
                                             "is": "literal"
                                         },
                                         {
-                                            "textMatches": "(?i)(\\bsuites[./]|\\bcoding\\b|worker)"
+                                            "textMatches": "(?i)(\\bsuites[./][a-z]|\\bcoding\\b|worker)"
                                         }
                                     ]
                                 },
                                 {
-                                    "commentMatches": "(?i)(\\bsuites[./]|\\bcoding\\b|worker)"
+                                    "commentMatches": "(?i)(\\bsuites[./][a-z]|\\bcoding\\b|worker)"
                                 }
                             ]
                         }

@@ -21,6 +21,9 @@
       },
       {
         "fileMatches": "(^|/)src/viewer/public/voices/figures/draco/"
+      },
+      {
+        "fileMatches": "(^|/)tools/phone-worker/"
       }
     ]
   },
