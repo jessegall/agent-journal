@@ -182,7 +182,7 @@ def test_a_listener_with_nothing_to_handle_does_not_run_the_urgent_listeners_aga
     position = ListenerCursorTable.position
     monkeypatch.setattr(ListenerCursorTable, "position", lambda table, name: (listeners_read.append(name), position(table, name))[1])
     urgent, counter = sorted((entry for entry in runner.registry.listeners), key=runner.run_order)
-    runner.run_entry(counter, [urgent])
+    runner.run_entry(counter, [urgent], 0)
     assert listeners_read == [PausedItemCounter.name]
 
 

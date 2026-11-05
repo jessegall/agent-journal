@@ -34,6 +34,7 @@ class CommitListenerRunner:
     def __init__(self, registry: Registry, log: EventLog, container: Container, errors: ErrorLog, cursors: ListenerCursorTable,
                  exceptions: ExceptionSink, scopes: Scopes) -> None:
         self.registry, self.log, self.container, self.errors, self.cursors, self.exceptions, self.scopes = registry, log, container, errors, cursors, exceptions, scopes
+        self.positions: dict[str, int] = {}
 
     def run(self) -> None:
         try:
@@ -76,15 +77,22 @@ class CommitListenerRunner:
                 return
 
     def run_round(self, entries: list[ListenerEntry], urgent_entries: list[ListenerEntry]) -> bool:
-        positions = self.cursors.positions()
+        positions = self.known_positions(entries)
         events = self.log.events_past(min(positions[entry.name] for entry in entries)) if entries else []
         if not events:
             return False
         due_entries = [entry for entry in entries if any(event.id > positions[entry.name] and entry.event.matches(event.event) for event in events)]
         due_names = {entry.name for entry in due_entries}
         moved_count = self.cursors.advance_all([entry.name for entry in entries if entry.name not in due_names], events[-1].id)
+        positions.update({entry.name: events[-1].id for entry in entries if entry.name not in due_names})
         progress = [self.run_entry(entry, urgent_entries, events[-1].id) for entry in due_entries]
+        positions.update({entry.name: self.cursors.position(entry.name) for entry in due_entries})
         return bool(moved_count) or any(progress)
+
+    def known_positions(self, entries: list[ListenerEntry]) -> dict[str, int]:
+        if any(entry.name not in self.positions for entry in entries):
+            self.positions = self.cursors.positions()
+        return self.positions
 
     def run_entry(self, entry: ListenerEntry, urgent_entries: list[ListenerEntry], newest_seen: int) -> bool:
         handled = self.run_listener(entry)
