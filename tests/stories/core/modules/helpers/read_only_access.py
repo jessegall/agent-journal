@@ -198,3 +198,17 @@ def test_a_long_report_holding_program_names_is_filed_whole(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_success(f'report make Findings --abstract "What was read" --body {shlex.quote(REPORT_TEXT)} --environment main', actor=story.agent)
     story.expect_rows(len(REPORT_TEXT) > 60000, story.container.get(Queries).query(Report).filter(title="Findings").first().body == REPORT_TEXT)
+
+
+@pytest.mark.parametrize("helper_fixture", PROGRAMS)
+@pytest.mark.parametrize("line, arguments", [("git diff", ["diff"]), ("git log -5", ["log", "-5"]), ("git blame a.py", ["blame", "a.py"])], ids=["diff", "log", "blame"])
+def test_a_read_only_helper_reads_version_control(new_story, helper_fixture, line, arguments):
+    story, session = helper_story(new_story, helper_fixture)
+    expect_reply_allowed(story.hook(session, shell(line, part("git", CommandCategory.READ, *arguments))))
+
+
+@pytest.mark.parametrize("helper_fixture", PROGRAMS)
+def test_git_output_to_a_file_is_refused(new_story, helper_fixture):
+    story, session = helper_story(new_story, helper_fixture)
+    sample = shell("git diff --output=a", part("git", CommandCategory.EDIT, "diff", "--output=a", effects=WRITES))
+    story.expect_hook_refusal(session, sample, "reads and searches only")

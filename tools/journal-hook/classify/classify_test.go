@@ -17,7 +17,7 @@ var classifyCases = []struct {
 	effects   []string
 	uncertain bool
 }{
-	{"git status", "version control", []string{"reads_files"}, false},
+	{"git status", "read", []string{"reads_files"}, false},
 	{"nosuchprogram --flag x", "unknown", []string{}, false},
 	{"git checkout main", "version control", []string{"changes_version_control", "writes_files"}, true},
 	{"sed -i s/a/b/ notes.txt", "edit", []string{"writes_files"}, false},
@@ -43,7 +43,7 @@ func TestALineIsNamedByItsWeightiestPartAndKnowsAJournalOnlyLine(t *testing.T) {
 		category string
 		journal  bool
 	}{
-		{"git status && echo hi > out.txt", "version control", false},
+		{"git fetch && echo hi > out.txt", "version control", false},
 		{"ls && pytest -q", "test run", false},
 		{"journal task show 1 | head -5", "journal", true},
 		{"journal task show 1 && ls", "journal", false},
@@ -78,7 +78,7 @@ func TestAMixedLineKeepsTheCategoryOfEachOfItsParts(t *testing.T) {
 		"cat a.txt | grep x":                          "search",
 		"cat a.txt | head -5":                         "read",
 		"grep -rn x src | head":                       "search",
-		"cd src && git log":                           "version control",
+		"cd src && git push":                           "version control",
 		"npm install && npm test":                     "test run",
 		"echo start; make build; ./deploy.sh":         "build",
 		"journal task show 1 && nosuchtool --run":     "journal",

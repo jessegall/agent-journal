@@ -1823,6 +1823,17 @@
    "label": "on github"
   },
   "git": {
+   "modifiers": {
+    "-c": {
+     "uncertain": true
+    },
+    "--config-env": {
+     "uncertain": true
+    },
+    "--exec-path": {
+     "uncertain": true
+    }
+   },
    "base": {
     "kind": "version control",
     "effects": [
@@ -1901,28 +1912,61 @@
      "label": "rebasing"
     },
     "status": {
-     "kind": "version control",
+     "kind": "read",
      "effects": [
       "reads_files"
      ],
      "label": "checking git"
     },
     "diff": {
-     "kind": "version control",
+     "kind": "read",
+     "modifiers": {
+      "--output": {
+       "kind": "edit",
+       "effects": [
+        "writes_files"
+       ]
+      },
+      "--ext-diff": {
+       "uncertain": true
+      }
+     },
      "effects": [
       "reads_files"
      ],
      "label": "reading a diff"
     },
     "show": {
-     "kind": "version control",
+     "kind": "read",
+     "modifiers": {
+      "--output": {
+       "kind": "edit",
+       "effects": [
+        "writes_files"
+       ]
+      },
+      "--ext-diff": {
+       "uncertain": true
+      }
+     },
      "effects": [
       "reads_files"
      ],
      "label": "reading a diff"
     },
     "log": {
-     "kind": "version control",
+     "kind": "read",
+     "modifiers": {
+      "--output": {
+       "kind": "edit",
+       "effects": [
+        "writes_files"
+       ]
+      },
+      "--ext-diff": {
+       "uncertain": true
+      }
+     },
      "effects": [
       "reads_files"
      ],
@@ -1937,6 +1981,14 @@
     },
     "grep": {
      "kind": "search",
+     "modifiers": {
+      "-O": {
+       "uncertain": true
+      },
+      "--open-files-in-pager": {
+       "uncertain": true
+      }
+     },
      "effects": [
       "reads_files"
      ],
@@ -2135,7 +2187,7 @@
      ]
     },
     "blame": {
-     "kind": "version control",
+     "kind": "read",
      "effects": [
       "reads_files"
      ]
