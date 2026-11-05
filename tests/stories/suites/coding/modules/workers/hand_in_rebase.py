@@ -1,4 +1,9 @@
 import json
+import pytest
+
+from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.models.worktree import Worktree
+from core.base.query.queries import Queries
 
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, FIRST_PROOF, dispatched_worker, repository_environment
@@ -8,6 +13,10 @@ from tests.stories.suites.coding.modules.workers.test_queue import recording_lau
 MAIN_TAX = "TAX = 21\n"
 WORKER_TAX = "TAX = 5\n"
 MERGED_TAX = "TAX = 22\n"
+
+
+class HandInStopped(BaseException):
+    pass
 
 
 def worker_on_a_moved_base(story, repository, line="worker dispatch --model sonnet 1"):
@@ -90,3 +99,65 @@ def test_a_proof_runs_on_the_rebased_code(new_story, monkeypatch):
     story.run_listeners()
     story.expect_rows(len(launches) == 1)
     expect_on_the_tip(story, repository, worker)
+
+
+def test_the_next_hand_in_restores_files_left_in_a_stash_by_a_stopped_server(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = worker_on_a_moved_base(story, repository)
+    repository.changed(worker.id, "notes.py", "NOTE = 1\n")
+
+    def stop_restore(git, worktree, stash):
+        raise HandInStopped
+
+    with monkeypatch.context() as patch:
+        patch.setattr(WorktreeGit, "unstash", stop_restore)
+        with pytest.raises(HandInStopped):
+            story.run(DELIVERY, actor=worker)
+    story.expect_rows(not (repository.worktree_folder(worker.id) / "notes.py").exists())
+
+    story.expect_success(DELIVERY, actor=worker)
+
+    repository.expect_file(repository.worker_branch(worker.id), "cart.py", CART_CHANGE)
+    repository.expect_file(repository.worker_branch(worker.id), "notes.py", "NOTE = 1\n")
+    repository.expect_clean(worker.id)
+    repository.expect_no_stash()
+
+
+def test_an_interrupted_rebase_restores_the_uncommitted_files_before_returning(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = worker_on_a_moved_base(story, repository)
+    repository.changed(worker.id, "notes.py", "NOTE = 1\n")
+    original = WorktreeGit.git
+
+    def stop_rebase(git, folder, limit, *arguments):
+        if arguments == ("rebase", ENVIRONMENT_BRANCH):
+            raise HandInStopped
+        return original(git, folder, limit, *arguments)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(WorktreeGit, "git", stop_rebase)
+        with pytest.raises(HandInStopped):
+            story.run(DELIVERY, actor=worker)
+
+    story.expect_rows((repository.worktree_folder(worker.id) / "notes.py").read_text() == "NOTE = 1\n")
+    repository.expect_no_stash()
+    story.expect_success(DELIVERY, actor=worker)
+
+
+def test_a_hand_in_leaves_another_workers_stash_untouched(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = worker_on_a_moved_base(story, repository)
+    story.expect_success('task make "Another job" --environment main', actor=story.agent)
+    other = dispatched_worker(story, "worker dispatch --model sonnet 2")
+    repository.changed(other.id, "other.py", "OTHER = 1\n")
+    worktree = story.container.get(Queries).query(Worktree).filter(agent_id=other.id).first()
+    stash = story.container.get(WorktreeGit).stash(worktree)
+
+    story.expect_success(DELIVERY, actor=worker)
+
+    repository.expect_file(repository.worker_branch(worker.id), "cart.py", CART_CHANGE)
+    story.expect_rows(not (repository.worktree_folder(other.id) / "other.py").exists())
+    story.expect_rows(repository.git("stash", "list", "--format=%H").stdout.splitlines() == [stash])
