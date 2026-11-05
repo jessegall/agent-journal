@@ -18,7 +18,7 @@ class DockLimits:
         self.registry, self.queries, self.settings = registry, queries, settings
 
     def dock_capacity(self, dock_id: int) -> int:
-        return self.settings.number(MOST_ITEMS_SETTING, self.queries.query(Dock).kept_find(dock_id).environment_id)
+        return self.settings.number(MOST_ITEMS_SETTING, self.queries.query(Dock).find(dock_id).environment_id)
 
     def type_capacity(self, type: str) -> int | None:
         declared = next((entry for entry in self.registry.docks if entry.type == type), None)

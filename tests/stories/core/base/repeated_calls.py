@@ -35,7 +35,7 @@ def test_a_request_that_repeats_one_read_past_the_limit_raises_and_names_the_rea
     story = new_story()
     with pytest.raises(RepeatedCallsError, match="SELECT 1"):
         repeat_read(story, 3)
-    assert story.repeated_work.reads[REPEATED_READ] == 2
+    story.expect_rows(story.repeated_work.reads[REPEATED_READ] == 2)
 
 
 def test_a_request_that_stays_at_the_read_limit_passes(new_story):
@@ -67,6 +67,14 @@ def test_ten_reads_with_different_parameters_are_within_the_loop_limit(new_story
             database.rows(Statement("SELECT ?", [row_id]))
 
 
+def test_a_loop_of_query_objects_with_different_ids_still_raises(new_story):
+    story = new_story()
+    query = story.container.get(Queries).query(Environment)
+    with pytest.raises(RepeatedCallsError, match="environments"), story.repeated_work.request():
+        for row_id in range(11):
+            query.filter(id=row_id).first()
+
+
 def test_a_repeat_in_a_listener_round_raises(new_story, monkeypatch):
     story = new_story()
     database = story.container.get(Database)
@@ -94,8 +102,7 @@ def test_a_repeat_in_a_viewer_line_raises(new_story, monkeypatch):
     route.line_run = StoryLineRun(story.home)
     monkeypatch.setattr(Console, "run", run)
     with pytest.raises(RepeatedCallsError, match="SELECT 1"):
-        answer = route.answer("tasks.tasks", ["task", "list"], story.user.id, "main")
-        assert answer.code == 0, answer
+        route.answer("tasks.tasks", ["task", "list"], story.user.id, "main")
 
 
 def test_a_request_that_starts_one_command_past_the_limit_raises_and_names_the_command(new_story):
@@ -114,10 +121,10 @@ def test_a_cached_query_reuses_rows_and_reloads_after_its_table_changes(new_stor
     database = story.container.get(Database)
     query = story.container.get(Queries).query(Environment)
     with story.repeated_work.request():
-        assert query.kept_find(1).name == "main"
-        assert query.kept_find(1).name == "main"
+        story.expect_rows(query.find(1).name == "main")
+        story.expect_rows(query.find(1).name == "main")
         database.update(Statement("UPDATE environments SET name = ?, version = version + 1 WHERE id = ?", ("renamed", 1)))
-        assert query.kept_find(1).name == "renamed"
+        story.expect_rows(query.find(1).name == "renamed")
 
 
 def test_a_cache_of_one_row_does_not_replace_a_cache_of_all_rows(new_story):
@@ -125,5 +132,6 @@ def test_a_cache_of_one_row_does_not_replace_a_cache_of_all_rows(new_story):
     story.expect_success("environment make other /work/other")
     query = story.container.get(Queries).query(Environment).oldest()
     with story.repeated_work.request():
-        assert query.kept_first().name == "main"
-        assert [row.name for row in query.kept_rows()] == ["main", "other"]
+        first = query.first()
+        story.expect_rows(first is not None and first.name == "main")
+        story.expect_rows([row.name for row in query.all_rows()] == ["main", "other"])

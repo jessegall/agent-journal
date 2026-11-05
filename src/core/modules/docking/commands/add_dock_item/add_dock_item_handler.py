@@ -31,7 +31,7 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
         if environment_id is None:
             raise Refusal("an item is docked in an environment", "name it with --environment")
         title, text = self.labels.read(command.type, command.row_model, command.row_id)
-        dock = self.queries.query(Dock).filter(environment_id=environment_id).kept_first()
+        dock = self.queries.query(Dock).filter(environment_id=environment_id).first()
         dock = dock or self.repository.save(Dock(environment_id=environment_id, creator_id=context.actor.id), context)
         chat_items = self.items.docked(dock.id).same_chat(self.scopes.actor_id)
         type_capacity = self.limits.type_capacity(command.type)
@@ -43,7 +43,7 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
         return self.repository.save(item.changed(leaves_at=self.leave_time.departure(item, context.timestamp)), context)
 
     def free_place(self, docked_items: DockItemQuery, capacity: int, limit_text: str, context: Context) -> None:
-        docked = docked_items.oldest().kept_rows()
+        docked = docked_items.oldest().all_rows()
         if len(docked) < capacity:
             return
         leaving = next((item for item in docked if not item.kept and self.row_end.ended(item)), None) or next((item for item in docked if not item.kept and not self.leave_time.is_running(item)), None)

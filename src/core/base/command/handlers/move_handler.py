@@ -17,7 +17,7 @@ class MoveHandler(Handler[MoveCommand[Model], Model]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: MoveCommand[Model], context: Context) -> Model:
-        row = self.queries.query(command.model()).kept_find(command.row_id)
+        row = self.queries.query(command.model()).find(command.row_id)
         fields = command.move_fields()
         method = getattr(row, command.move.name, None)
         if not callable(method):

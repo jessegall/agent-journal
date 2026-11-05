@@ -50,7 +50,7 @@ class ProcessEndMarkListener(CommitListener[Touched[Process]]):
         if process is None:
             return
         key = f"process:{process.id}"
-        shown = self.queries.query(ChatMark).filter(environment_id=process.environment_id, key=key).kept_first()
+        shown = self.queries.query(ChatMark).filter(environment_id=process.environment_id, key=key).first()
         if shown is not None and shown.state is ChatMarkState.ENDED:
             return
         part = self.visibility.visible_part(process)

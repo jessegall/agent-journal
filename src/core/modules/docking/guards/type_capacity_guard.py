@@ -22,6 +22,6 @@ class TypeCapacityGuard(Guard[Changed[DockItem]]):
         capacity = self.limits.type_capacity(item.type) if item is not None else None
         if item is None or capacity is None:
             return
-        docked_items = [sibling for sibling in self.items.docked(item.dock_id).same_chat(item.agent_id).type_items(item.type).kept_rows() if sibling.id != item.id]
+        docked_items = [sibling for sibling in self.items.docked(item.dock_id).same_chat(item.agent_id).type_items(item.type).all_rows() if sibling.id != item.id]
         if len(docked_items) >= capacity:
             raise Refusal(f"{item.type} allows at most {capacity} items", "undock one, or keep fewer items of this type")

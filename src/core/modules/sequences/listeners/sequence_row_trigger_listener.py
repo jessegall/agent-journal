@@ -13,7 +13,7 @@ from core.modules.sequences.support.sequence_triggers import SequenceTriggers
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.sequences.rules.sequence_trigger_rule import EMPTY_TRIGGERS
-from core.modules.sequences.support.sequence_rows import SequenceRows
+from core.modules.sequences.queries.sequence_rows import SequenceRows
 from core.base.change.touched import Touched
 from core.base.model.model import Model
 

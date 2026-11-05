@@ -26,7 +26,7 @@ ALLOWED_READ_REPEATS = {
     ("core/base/change/event_log.py", "event"): "An event's cause chain is discovered one entry at a time; immutable entries are cached after their first read.",
     ("core/testing/repeated_work.py", "reread"): "A cached selection reloads only after its table signature changes; unrelated writes keep the cached value.",
 }
-READ_HELPERS = ("core/base/database/database.py", "core/base/database/bookkeeping_table.py", "core/base/query/query.py")
+READ_HELPERS = ("core/base/database/database.py", "core/base/database/bookkeeping_table.py")
 
 
 class RepeatedWork(PointTally):
@@ -78,8 +78,6 @@ class RepeatedWork(PointTally):
         frame = sys._getframe(2)
         while frame is not None:
             filename = frame.f_code.co_filename
-            if filename.endswith("core/base/query/query.py") and frame.f_code.co_name in ("kept_rows", "load_kept_rows"):
-                return False
             if not filename.endswith(READ_HELPERS):
                 return any(filename.endswith(path) and frame.f_code.co_name == method for path, method in ALLOWED_READ_REPEATS)
             frame = frame.f_back

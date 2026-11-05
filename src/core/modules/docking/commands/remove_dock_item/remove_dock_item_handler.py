@@ -15,5 +15,5 @@ class RemoveDockItemHandler(Handler[RemoveDockItem, DockItem]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: RemoveDockItem, context: Context) -> DockItem:
-        item = self.queries.query(DockItem).kept_find(command.item_id)
+        item = self.queries.query(DockItem).find(command.item_id)
         return self.repository.save_change(item, item.undock(context.timestamp, context.actor), context)

@@ -35,7 +35,7 @@ class EventBuilder:
             return event_type.event_class()
         query = self.queries.query(event_type.model)
         row_ids = self.row_ids.get(logged.row_table, tuple([logged.row_id]))
-        row = next((row for row in query.matching(Among("id", row_ids)).kept_rows() if row.id == logged.row_id), None)
+        row = next((row for row in query.matching(Among("id", row_ids)).all_rows() if row.id == logged.row_id), None)
         if row is None:
             return None
         event_class = self.event_class(event_type.event_class, logged)
