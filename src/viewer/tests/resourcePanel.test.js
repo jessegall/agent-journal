@@ -1,7 +1,7 @@
 import {createApp, h, nextTick} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import ResourcePanel from "../src/resource/ResourcePanel.vue";
-import {cliOf, movesOf} from "../src/domain/resourceKinds.js";
+import {cliOf, movesOf} from "../src/domain/resourceNouns.js";
 import {pageOf} from "../src/sync/paging.js";
 
 const later = () => new Promise((resolve) => setTimeout(resolve, 30));
@@ -44,7 +44,7 @@ const PLAN = {
     "plan approve 5": {ok: true, value: {}},
 };
 
-test("a reference names its kind by table or by model", () => {
+test("a reference names its type by table or by model", () => {
     expect(["plans", "plan", "tasks", "docs", "processes", "dock_items"].map(cliOf)).toEqual(["plan", "plan", "task", "doc", "process", "dock-item"]);
 });
 

@@ -13,5 +13,5 @@ const RENDERERS = {
 };
 
 register((text, context) =>
-    text.replace(MARKER, (whole, kind, value, label) => (RENDERERS[kind] ? RENDERERS[kind](value, label, context) : label))
+    text.replace(MARKER, (whole, type, value, label) => (RENDERERS[type] ? RENDERERS[type](value, label, context) : label))
 );

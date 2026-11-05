@@ -65,7 +65,7 @@ export function groupOptions(declarations) {
     ]);
 }
 
-// a version 4 pane's saved list of hidden kinds as family switches: a family is off when every one of its marks is among them, a kind being
+// a version 4 pane's saved list of hidden types as family switches: a family is off when every one of its marks is among them, a type being
 // named by a mark's type or by its family's short name; any family not named stays on
 export function optionsFromHidden(hidden, declarations) {
     const named = (family, declaration) => hidden.includes(declaration.type) || hidden.includes(family.key.split(".").at(-1));

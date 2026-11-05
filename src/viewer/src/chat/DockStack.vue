@@ -120,7 +120,7 @@ function release(item) {
             />
         </template>
         <template v-if="shared">
-            <ChatDock key="runs-row" :label="`${runs.length} runs`" kind="dock-runs-row">
+            <ChatDock key="runs-row" :label="`${runs.length} runs`" type="dock-runs-row">
                 <template #head>
                     <Icon name="runs" :size="14" />
                     <span class="dock-runs-title">{{ runs.length }} runs</span>

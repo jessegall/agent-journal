@@ -24,7 +24,7 @@ const TABS = [
 const tab = ref("details");
 const plan = ref(null);
 const failure = ref("");
-const textComments = useTextComments(() => (plan.value ? {kind: "plan", id: props.id, title: plan.value.title} : {}), (line) => props.read(line));
+const textComments = useTextComments(() => (plan.value ? {noun: "plan", id: props.id, title: plan.value.title} : {}), (line) => props.read(line));
 let reading = 0;
 
 async function load() {
@@ -64,7 +64,7 @@ async function sendComment(text) {
             <div class="body"><Skeleton /></div>
         </template>
         <template v-else>
-            <RowMoves kind="plan" :id="id" :row="plan" :read="read" @done="load" />
+            <RowMoves noun="plan" :id="id" :row="plan" :read="read" @done="load" />
             <header class="summary">
                 <div class="stamp">Plan {{ plan.id }}</div>
                 <h3 class="title" data-resource-title>{{ plan.title }}</h3>

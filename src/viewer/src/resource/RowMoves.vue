@@ -1,12 +1,12 @@
 <script setup>
 import {computed, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
-import {movesOf} from "../domain/resourceKinds.js";
+import {movesOf} from "../domain/resourceNouns.js";
 
 // what a person can do to a row in its state, as buttons along the foot of its panel; a move that needs words asks for them first
-const props = defineProps({kind: {type: String, required: true}, id: {type: Number, required: true}, row: {type: Object, default: null}, read: {type: Function, required: true}, inline: Boolean});
+const props = defineProps({noun: {type: String, required: true}, id: {type: Number, required: true}, row: {type: Object, default: null}, read: {type: Function, required: true}, inline: Boolean});
 const emit = defineEmits(["done"]);
-const moves = computed(() => movesOf(props.kind, props.row));
+const moves = computed(() => movesOf(props.noun, props.row));
 const refusal = ref("");
 const asking = ref(null);
 const words = ref("");
@@ -18,7 +18,7 @@ watch(() => props.id, () => {
 });
 
 async function run(move, said = "") {
-    const answer = await props.read([move.noun ?? props.kind, move.word, String(props.id), ...(move.flag ? [move.flag, said] : move.positional ? [said] : []), ...(move.opener && target.value.trim() ? ["--on", target.value.trim()] : [])]);
+    const answer = await props.read([move.noun ?? props.noun, move.word, String(props.id), ...(move.flag ? [move.flag, said] : move.positional ? [said] : []), ...(move.opener && target.value.trim() ? ["--on", target.value.trim()] : [])]);
     refusal.value = answer.ok ? "" : answer.error;
     if (!answer.ok) return;
     asking.value = null;
@@ -41,8 +41,8 @@ defineExpose({moves, press});
             <template v-if="asking?.confirm">
                 <div class="ask" data-resource-confirm>
                     <span class="ask-text">{{ asking.confirm }}</span>
-                    <Btn small :kind="asking.danger ? 'ghost' : 'primary'" :bordered="asking.danger" :class="{danger: asking.danger}" data-resource-confirm-yes @click="run(asking)">{{ asking.label }}</Btn>
-                    <Btn small kind="ghost" @click="asking = null">Back</Btn>
+                    <Btn small :variant="asking.danger ? 'ghost' : 'primary'" :bordered="asking.danger" :class="{danger: asking.danger}" data-resource-confirm-yes @click="run(asking)">{{ asking.label }}</Btn>
+                    <Btn small variant="ghost" @click="asking = null">Back</Btn>
                 </div>
             </template>
             <template v-else-if="asking">
@@ -51,14 +51,14 @@ defineExpose({moves, press});
                     <template v-if="asking.opener">
                         <input v-model="target" class="ask-input" data-resource-opener :placeholder="asking.opener" :aria-label="asking.opener" @keydown.esc.stop="asking = null" />
                     </template>
-                    <Btn small kind="primary" type="submit" :disabled="!words.trim()">{{ asking.label }}</Btn>
-                    <Btn small kind="ghost" @click="asking = null">Back</Btn>
+                    <Btn small variant="primary" type="submit" :disabled="!words.trim()">{{ asking.label }}</Btn>
+                    <Btn small variant="ghost" @click="asking = null">Back</Btn>
                 </form>
             </template>
             <template v-else>
                 <div class="moves">
                     <template v-for="move in moves" :key="move.word">
-                        <Btn :small="!move.bordered" :bordered="move.bordered" :icon="move.icon" :kind="move.main ? 'primary' : 'ghost'" :class="{danger: move.danger}" :data-move="move.word" @click="press(move)">{{ move.label }}</Btn>
+                        <Btn :small="!move.bordered" :bordered="move.bordered" :icon="move.icon" :variant="move.main ? 'primary' : 'ghost'" :class="{danger: move.danger}" :data-move="move.word" @click="press(move)">{{ move.label }}</Btn>
                     </template>
                 </div>
             </template>

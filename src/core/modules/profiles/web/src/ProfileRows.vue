@@ -60,7 +60,7 @@ async function save(profile, fields) {
 <template>
     <section class="profiles" data-profiles>
         <SearchBar v-model="query" class="bar" data-profile-find>
-            <Btn kind="ghost" small data-profile-new @click="make">New profile</Btn>
+            <Btn variant="ghost" small data-profile-new @click="make">New profile</Btn>
             <span class="count" data-profile-count>{{ rows.length }} {{ rows.length === 1 ? "profile" : "profiles" }}</span>
             <template v-if="notice">
                 <span class="notice" data-profile-notice>{{ notice }}</span>
@@ -83,7 +83,7 @@ async function save(profile, fields) {
         <template v-else>
             <div class="rows">
                 <template v-for="profile in matching" :key="profile.name">
-                    <Btn kind="text" fill class="profile-open" :aria-label="`Open ${profile.name}`" :data-profile="profile.name" @click="open(profile)">
+                    <Btn variant="text" fill class="profile-open" :aria-label="`Open ${profile.name}`" :data-profile="profile.name" @click="open(profile)">
                         <ListRow :title="profile.name" :text="profile.description">
                             <template #end>
                                 <span class="profile-meta">

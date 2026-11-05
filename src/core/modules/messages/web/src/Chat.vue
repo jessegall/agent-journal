@@ -442,7 +442,7 @@ async function runCommand(pin) {
             </template>
             <RowList :rows="rows" :failure="failure" :loaded="loaded" :arrival="arrival" shape="messages" empty="No messages yet" hint="Send a message below to start a conversation.">
                 <template #default="{row}">
-                    <SwitchCase :value="row.kind">
+                    <SwitchCase :value="row.type">
                         <template #day>
                             <p class="chat-day" data-day-line>{{ row.title }}</p>
                         </template>
@@ -505,7 +505,7 @@ async function runCommand(pin) {
                     <Icon name="clip" :size="16" />
                 </button>
                 <template v-if="sendable">
-                    <Btn kind="primary" small class="composer-send" data-send @click="send">Send</Btn>
+                    <Btn variant="primary" small class="composer-send" data-send @click="send">Send</Btn>
                 </template>
                 <template v-else>
                     <Btn small bordered class="composer-send" data-dump-files @click="dumping = !dumping">Dump files</Btn>

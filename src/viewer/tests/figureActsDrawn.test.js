@@ -12,7 +12,7 @@ const {default: VoiceFigure} = await import("../src/chat/VoiceFigure.vue");
 
 const SIZE = 112;
 const PICTURES = {pictures: ["a.png", "b.png"], width: 30, height: 30, at: {x: 15, y: 15}};
-const ACT_PROPS = {u: 0.5, hand: {x: 0.7, y: 0.5, out: 1, other: {x: 0.3, y: 0.5}}, head: {x: 0.5, y: 0.3}, feet: 0.95, size: SIZE, room: {left: 200, right: 200}, ball: {kind: "bubble", above: 200, hangs: 120}, canopy: {picture: "c.png", width: 80, height: 40, at: {x: 40, y: 20}, ends: [{x: 10, y: 30}, {x: 70, y: 30}]}, bug: PICTURES};
+const ACT_PROPS = {u: 0.5, hand: {x: 0.7, y: 0.5, out: 1, other: {x: 0.3, y: 0.5}}, head: {x: 0.5, y: 0.3}, feet: 0.95, size: SIZE, room: {left: 200, right: 200}, ball: {type: "bubble", above: 200, hangs: 120}, canopy: {picture: "c.png", width: 80, height: 40, at: {x: 40, y: 20}, ends: [{x: 10, y: 30}, {x: 70, y: 30}]}, bug: PICTURES};
 
 let apps = [];
 const mounted = (component, props) => {

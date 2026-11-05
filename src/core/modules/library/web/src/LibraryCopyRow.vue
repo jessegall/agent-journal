@@ -2,7 +2,7 @@
 import {computed} from "vue";
 import {Btn} from "@journal/window-kit";
 
-const KIND_WORDS = {doc: "Document", sequence: "Sequence", check: "Check"};
+const TYPE_WORDS = {doc: "Document", sequence: "Sequence", check: "Check"};
 const BUTTONS = {
     compare: "Compare",
     read: "Read",
@@ -43,14 +43,14 @@ const lines = computed(() => {
 
 <template>
     <li class="copy" :data-library-copy="copy.copy_id" :data-status="copy.status">
-        <span class="copy-title">{{ KIND_WORDS[copy.share] }} {{ copy.row_id }}, {{ copy.local_fields.title }}</span>
+        <span class="copy-title">{{ TYPE_WORDS[copy.share] }} {{ copy.row_id }}, {{ copy.local_fields.title }}</span>
         <span class="copy-facts" data-copy-facts>Status: {{ copy.label }}, Version: {{ copy.version }}</span>
         <template v-for="line in lines" :key="line">
             <span class="copy-line" data-copy-line>{{ line }}</span>
         </template>
         <span class="copy-buttons">
             <template v-for="button in buttons" :key="button.key">
-                <Btn small :kind="button.key === 'library' ? 'primary' : undefined" :data-copy-button="button.key" @click="emit('choose', copy, button.key)">{{ button.label }}</Btn>
+                <Btn small :variant="button.key === 'library' ? 'primary' : undefined" :data-copy-button="button.key" @click="emit('choose', copy, button.key)">{{ button.label }}</Btn>
             </template>
         </span>
     </li>

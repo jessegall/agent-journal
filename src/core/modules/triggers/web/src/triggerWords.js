@@ -13,7 +13,7 @@ export const EXAMPLES = [
     {name: "Tell the agent to stop and ask", phrases: ["migration"], action: "instruct", text: "Stop and ask me before you touch the database."},
 ];
 
-export const WHEN_KINDS = [
+export const WHEN_TYPES = [
     {key: "words", label: "Words appear", hint: "In what you write or what the agent runs"},
     {key: "time", label: "A scheduled time arrives", hint: "Once, or again and again"},
 ];
@@ -83,7 +83,7 @@ const TIME_OPENINGS = {
 
 export function sentence(trigger) {
     const doing = DOING[trigger.action](trigger.text ? quoted(trigger.text) : "(no text yet)");
-    if (trigger.kind === "time") return `${TIME_OPENINGS[trigger.time](trigger)}, ${doing}.`;
+    if (trigger.type === "time") return `${TIME_OPENINGS[trigger.time](trigger)}, ${doing}.`;
     if (!trigger.phrases.length) return "Add the words to watch for and choose what happens.";
     return `When ${wordsText(trigger.phrases)} appears, ${doing}.`;
 }

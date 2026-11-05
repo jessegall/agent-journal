@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 import {airborneFrame, fallingFrom, legEnded, slideAt} from "../src/domain/figureMotion.js";
 
-const floor = (id, top, kind = id === "home" ? "compose" : "bubble") => ({id, kind, left: 0, right: 1000, top, vy: 0});
+const floor = (id, top, type = id === "home" ? "compose" : "bubble") => ({id, type, left: 0, right: 1000, top, vy: 0});
 const FRAME_MS = 1000 / 60;
 
 // the frames of a fall from `airborne`, one every sixtieth of a second, until it lands or a few seconds pass
@@ -63,7 +63,7 @@ describe("letting go of a hang", () => {
         const figure = {size: 112, below: 0.05};
         const bubble = {};
         const hanging = {id: floorOf(bubble), dx: 20, dy: 0, posture: "hang"};
-        const floorsWith = (top) => [{id: floorOf(bubble), kind: "bubble", element: bubble, left: 300, right: 600, top, vy: 0}, floor("home", 500)];
+        const floorsWith = (top) => [{id: floorOf(bubble), type: "bubble", element: bubble, left: 300, right: 600, top, vy: 0}, floor("home", 500)];
         expect(footingNow(hanging, figure, floorsWith(300))).toEqual({x: 320, y: 300});
         expect(footingNow(hanging, figure, floorsWith(460))).toBe(null);
         const box = boxAt({x: 320, y: 460, posture: "hang"}, figure);

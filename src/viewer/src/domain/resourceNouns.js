@@ -3,7 +3,7 @@ import {stateLook, stateOpenMoves} from "@journal/window-kit";
 export {cliOf} from "./modelNames.js";
 const HIDDEN = new Set(["id", "version", "metadata", "title", "brief", "body", "abstract"]);
 
-export const titleOf = (kind, row, id) => row?.title || row?.name || `${kind} ${id}`;
+export const titleOf = (noun, row, id) => row?.title || row?.name || `${noun} ${id}`;
 
 // the fields of a row with no page of its own: everything but what the head and the text already show, empty ones left out
 export const fieldsOf = (row) => Object.entries(row ?? {}).filter(([name, value]) => !HIDDEN.has(name) && value !== null && value !== "" && typeof value !== "object");
@@ -54,11 +54,11 @@ const checkMoves = (row) => (!row || row.removed_at ? [] : [row.stopped ? {word:
 const textMoves = (row) => (!row || row.close_reason ? [] : [{word: "close", label: "Needs no action", icon: "check", bordered: true, flag: "--why", ask: "Why does it need no action?"}]);
 
 // the moves of a plan or a task: an added state keeps those of the state it looks like that it may also take
-function stateMoves(kind, row) {
-    const table = {plan: PLAN_MOVES, task: TASK_MOVES}[kind];
-    const open = row?.state ? stateOpenMoves(kind, row.state) : null;
+function stateMoves(noun, row) {
+    const table = {plan: PLAN_MOVES, task: TASK_MOVES}[noun];
+    const open = row?.state ? stateOpenMoves(noun, row.state) : null;
     if (!open) return table?.[row?.state] ?? [];
-    return (table?.[stateLook(kind, row.state)] ?? []).filter((move) => open.includes(move.word));
+    return (table?.[stateLook(noun, row.state)] ?? []).filter((move) => open.includes(move.word));
 }
 
-export const movesOf = (kind, row) => (kind === "doc" || kind === "report" ? textMoves(row) : kind === "agent" ? [...workerMoves(row), ...agentMoves(row)] : kind === "check" ? checkMoves(row) : kind === "question" ? questionMoves(row) : stateMoves(kind, row));
+export const movesOf = (noun, row) => (noun === "doc" || noun === "report" ? textMoves(row) : noun === "agent" ? [...workerMoves(row), ...agentMoves(row)] : noun === "check" ? checkMoves(row) : noun === "question" ? questionMoves(row) : stateMoves(noun, row));

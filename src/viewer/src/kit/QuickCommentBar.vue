@@ -63,7 +63,7 @@ defineExpose({expand});
                 <div class="actions">
                     <span class="error">{{ error }}</span>
                     <Btn small @click="collapse">Cancel</Btn>
-                    <Btn kind="primary" small :busy="sending" :disabled="!draft.trim() || !ready" @click="submit">Send</Btn>
+                    <Btn variant="primary" small :busy="sending" :disabled="!draft.trim() || !ready" @click="submit">Send</Btn>
                 </div>
             </form>
         </template>

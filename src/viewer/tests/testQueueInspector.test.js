@@ -110,7 +110,7 @@ test("the waiting status of an agent opens the test queue", async () => {
 });
 
 const OUTPUT_LINES = ["building package", "package built"];
-const rowsOf = (kind) => [...document.body.querySelectorAll(`[data-queue-row=${kind}]`)];
+const rowsOf = (type) => [...document.body.querySelectorAll(`[data-queue-row=${type}]`)];
 const reader = async (line) => (line[0] === "output" ? {ok: true, value: {lines: OUTPUT_LINES, first_byte: 0, last_byte: 20, total: 20, cut_bytes: 0}} : {ok: true, value: SNAPSHOT});
 
 test("queue arrivals and departures keep their Vue transition classes", async () => {
@@ -153,7 +153,7 @@ test("the process queue reads its counts and ordered lists together", async () =
     expect(rowsOf("running")[0].textContent).toContain("make package");
     expect(rowsOf("running")[0].textContent).toContain("Agent 21");
     expect(rowsOf("running")[0].textContent).toContain("Task 11");
-    expect(rowsOf("running")[0].querySelector("[data-queue-kind]").textContent).toBe("Build");
+    expect(rowsOf("running")[0].querySelector("[data-queue-type]").textContent).toBe("Build");
     expect(rowsOf("waiting").map((row) => row.querySelector(".command").textContent)).toEqual(["make checks", "make site"]);
     expect(rowsOf("waiting").map((row) => row.querySelector("[data-queue-position]").textContent)).toEqual(["1", "2"]);
     expect(rowsOf("recent")[0].querySelector("[data-queue-time]").textContent).toBe("1 m 5 s");

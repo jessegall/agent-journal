@@ -43,5 +43,5 @@ class ItemSummary:
         return [head, f"    {self.excerpt}"] if self.excerpt else [head]
 
     def json(self) -> Mapping[str, object]:
-        return {"kind": self.share, "id": self.item_id, "version": self.version, "title": self.title, "abstract": self.abstract, "excerpt": self.excerpt,
+        return {"share": self.share, "id": self.item_id, "version": self.version, "title": self.title, "abstract": self.abstract, "excerpt": self.excerpt,
                 "creator": self.creator, "updated_by": self.author, "updated_at": self.changed_at, "copy_id": self.copy_id}

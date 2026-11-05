@@ -9,5 +9,5 @@ defineEmits(["close", "elaborate", "answer"]);
 <template>
     <Btn small data-question-close @click="$emit('close')">Close</Btn>
     <Btn small :disabled="elaborated" data-question-elaborate @click="$emit('elaborate')">{{ elaborated ? "Asked to elaborate" : "Elaborate" }}</Btn>
-    <Btn kind="primary" small data-question-answer @click="$emit('answer')">Answer</Btn>
+    <Btn variant="primary" small data-question-answer @click="$emit('answer')">Answer</Btn>
 </template>

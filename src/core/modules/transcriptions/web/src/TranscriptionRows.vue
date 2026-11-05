@@ -60,7 +60,7 @@ async function fetchFrom(server) {
                 <form class="form" data-transcription-form @submit.prevent="make">
                     <input v-model="draft.title" placeholder="Title" aria-label="Title">
                     <textarea v-model="draft.text" rows="10" placeholder="Paste the transcript" aria-label="Transcript"></textarea>
-                    <Btn small kind="primary" type="submit" :disabled="!canMake">Save</Btn>
+                    <Btn small variant="primary" type="submit" :disabled="!canMake">Save</Btn>
                 </form>
             </template>
             <ListTools :tools="tools" />
@@ -78,7 +78,7 @@ async function fetchFrom(server) {
                     <h3 class="title">{{ opened.title }}</h3>
                     <textarea v-model="openedText" rows="14" aria-label="Transcript"></textarea>
                     <div class="bar">
-                        <Btn small kind="primary" data-transcription-save :disabled="openedText === opened.text" @click="save">Save</Btn>
+                        <Btn small variant="primary" data-transcription-save :disabled="openedText === opened.text" @click="save">Save</Btn>
                         <Btn small @click="opened = null">Close</Btn>
                     </div>
                     <h3 class="note">Created from this transcript</h3>

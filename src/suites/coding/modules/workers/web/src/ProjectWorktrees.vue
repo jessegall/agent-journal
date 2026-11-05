@@ -38,10 +38,10 @@ async function remove(row) {
                     </div>
                     <template v-if="asking === row.id">
                         <Btn small data-worktree-keep @click="asking = ''">Keep it</Btn>
-                        <Btn small kind="danger" data-worktree-confirm @click="remove(row)">Yes, remove the folder</Btn>
+                        <Btn small variant="danger" data-worktree-confirm @click="remove(row)">Yes, remove the folder</Btn>
                     </template>
                     <template v-else-if="!isHeld(row)">
-                        <Btn small kind="danger" title="Remove this worktree folder, keeping its branch" data-worktree-remove @click="remove(row)">Remove worktree</Btn>
+                        <Btn small variant="danger" title="Remove this worktree folder, keeping its branch" data-worktree-remove @click="remove(row)">Remove worktree</Btn>
                     </template>
                 </div>
             </template>

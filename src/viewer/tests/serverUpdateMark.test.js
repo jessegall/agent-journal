@@ -5,7 +5,7 @@ import {markLook} from "../src/domain/markLook.js";
 
 vi.mock("../src/route.js", async (importOriginal) => ({...(await importOriginal()), go: vi.fn(), peekRef: vi.fn()}));
 
-const KIND = {type: "updates.server-update", family_icon: "update", mark_icon: "update", group: "journal", colouring: "outcome", click: "unfold", process: true};
+const TYPE = {type: "updates.server-update", family_icon: "update", mark_icon: "update", group: "journal", colouring: "outcome", click: "unfold", process: true};
 const STEPS = [
     {variant: "proof", figure: "step 1 of 4", fraction: 0.25, state: "shown", outcome: "running"},
     {variant: "handover", figure: "step 2 of 4", fraction: 0.5, state: "shown", outcome: "running"},
@@ -23,7 +23,7 @@ afterEach(() => {
 function drawn(row) {
     host = document.createElement("div");
     document.body.append(host);
-    app = createApp({render: () => h(ChatMark, {mark: markLook({id: 7, text: "Updating the server", created_at: "2026-11-04T10:00:00Z", ...row}, KIND)})});
+    app = createApp({render: () => h(ChatMark, {mark: markLook({id: 7, text: "Updating the server", created_at: "2026-11-04T10:00:00Z", ...row}, TYPE)})});
     app.mount(host);
     return host;
 }

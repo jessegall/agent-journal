@@ -26,7 +26,7 @@ test("the newest dump opens with its phase, the files settled and what each file
     expect(open.querySelectorAll("[data-item]")).toHaveLength(2);
 });
 
-test("a dump that filed its files names each row made, its kind and the file it came from", async () => {
+test("a dump that filed its files names each row made, its type and the file it came from", async () => {
     const {element} = await drawn();
     const made = [...element.querySelectorAll("[data-made]")].map((row) => row.textContent);
     expect(element.querySelector(".made-title").textContent).toBe("2 items created");

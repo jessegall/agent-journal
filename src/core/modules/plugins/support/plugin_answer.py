@@ -43,7 +43,7 @@ class PluginAnswer:
 
     @classmethod
     def card(cls, entry: Mapping[object, object]) -> PluginCard:
-        return PluginCard(cls.text(entry, "key"), cls.text(entry, "kind"), cls.text(entry, "label"), cls.text(entry, "tone"), cls.text(entry, "detail"))
+        return PluginCard(cls.text(entry, "key"), cls.text(entry, "type"), cls.text(entry, "label"), cls.text(entry, "tone"), cls.text(entry, "detail"))
 
     def duration_text(self) -> str:
         return f"{int(self.judged_ms) / 1000:.1f} s" if self.judged_ms else ""

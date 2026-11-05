@@ -86,7 +86,7 @@ onMounted(load);
                 <span class="ended" data-agent-ended>Ended {{ ago(row.ended_at, now) }}. It takes no more actions.</span>
             </template>
             <template v-else-if="row">
-                <RowMoves kind="agent" :id="id" :row="row" :read="read" inline @done="load" />
+                <RowMoves noun="agent" :id="id" :row="row" :read="read" inline @done="load" />
             </template>
         </footer>
     </article>

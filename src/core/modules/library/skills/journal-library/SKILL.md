@@ -13,9 +13,9 @@ number: library doc 12 and local doc 12 are different documents, so a library it
 
 - `journal library status` says whether this journal is connected, to which server, as which user and role, when the
   server was last reached and why sync stopped.
-- `journal library list [--kind doc|sequence|check] [--search "<words>"] [--page n]` lists the items live. A search
+- `journal library list [--type doc|sequence|check] [--search "<words>"] [--page n]` lists the items live. A search
   shows an excerpt of the text around the match. An item that already has a local copy shows `copy <n>`.
-- `journal library show <kind> <id>` reads one item live and saves nothing. `journal library versions <kind> <id>`
+- `journal library show <type> <id>` reads one item live and saves nothing. `journal library versions <type> <id>`
   lists its changes and who made each.
 - `journal doc show library:<n>`, `journal sequence show library:<n>` and `journal check show library:<n>` read a library
   item with the commands you know. A plain number that names no local row and has a library item says so and names the
@@ -25,7 +25,7 @@ number: library doc 12 and local doc 12 are different documents, so a library it
 
 ## Get and follow
 
-- `journal library get <kind> <id>` makes a document, sequence or check of this journal from an item and keeps it
+- `journal library get <type> <id>` makes a document, sequence or check of this journal from an item and keeps it
   following the item. A second get of the same item is refused.
 - A sequence arrives with its steps and what each step holds back, and never with the triggers that start it. A check
   arrives stopped and runs nothing until a person starts it with `journal check start <n>`. A check runs a command on
@@ -51,8 +51,8 @@ sends it, unless the project setting `journal.core.library.agent-edits-wait` is 
 ## Only a person does these
 
 `journal library connect <address> --token <token> [--certificate <file>]`, `disconnect [--forget]`,
-`share <kind> <row>`, `resolve <copy> --keep mine|library`, `leave <copy>`, `remove <kind> <id>`,
-`restore <kind> <id> [--version n]`, and `journal library-user list|add|role|remove|tokens|revoke`, of which the server
+`share <type> <row>`, `resolve <copy> --keep mine|library`, `leave <copy>`, `remove <type> <id>`,
+`restore <type> <id> [--version n]`, and `journal library-user list|add|role|remove|tokens|revoke`, of which the server
 allows an admin only. An agent asks the user to do one on the Teams page and does not try it.
 
 - Resolve: `--keep mine` sends this journal's text as a new version; `--keep library` takes the library's text, and for a

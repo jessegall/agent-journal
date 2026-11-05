@@ -136,7 +136,7 @@ const now = computed(() => clock.value * 1000);
 const currentTask = computed(() => (facts.value.task_id ? {id: facts.value.task_id, title: facts.value.task_title, planId: facts.value.task_plan_id} : null));
 // the window that lists what each count in the bars counts
 const COUNT_WINDOWS = {skills: "skills.skills", jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", agents: "agents.agents", usage: "usage.usage", cost: "usage.cost", context: "usage.context", fitness: "usage.fitness", load: "usage.load"};
-// the agents an agent sends off, one umbrella in the bar: each kind is a group of its dropdown
+// the agents an agent sends off, one umbrella in the bar: each type is a group of its dropdown
 const HELPER_WINDOW = "agents.helpers";
 const usage = ref({agents: [], windows: []});
 const fitness = ref(null);
@@ -201,7 +201,7 @@ const phoneNames = computed(() => {
 const phoneWindows = computed(() => phoneNames.value.map((name) => props.catalogue.window(name) || {name, title: name, icon: "window"}));
 const chosen = ref(null);
 const picked = computed(() => (phoneNames.value.includes(chosen.value) ? chosen.value : phoneNames.value[0]));
-// a row's reference, such as questions:4, names the window that lists its kind, questions.questions
+// a row's reference, such as questions:4, names the window that lists its type, questions.questions
 const windowOfRef = (ref) => `${ref.split(":")[0]}.${ref.split(":")[0]}`;
 const linkedRef = () => new URLSearchParams(location.hash.slice(1)).get("open");
 function openRef(ref) {
@@ -373,8 +373,8 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                         @pick="(key) => pick(id, key)"
                         @close="(key) => closeTab(id, key)"
                     >
-                        <Btn kind="icon" class="pane-add-button" data-add-window aria-label="Add a window" title="Add a window" @click="adding = adding === id ? null : id"><Icon name="plus" :size="13" /></Btn>
-                        <Btn kind="icon" class="pane-menu-button" aria-label="Window settings" title="Window settings" @click="toggleMenu(id)"><Icon name="dots-vertical" :size="13" /></Btn>
+                        <Btn variant="icon" class="pane-add-button" data-add-window aria-label="Add a window" title="Add a window" @click="adding = adding === id ? null : id"><Icon name="plus" :size="13" /></Btn>
+                        <Btn variant="icon" class="pane-menu-button" aria-label="Window settings" title="Window settings" @click="toggleMenu(id)"><Icon name="dots-vertical" :size="13" /></Btn>
                     </PaneTabs>
                     <template v-if="adding === id">
                         <PaneAddBar :windows="barWindows()" @grab="grabWindow" @add="(name) => addWindow(id, name)" />

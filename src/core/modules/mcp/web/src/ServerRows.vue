@@ -100,7 +100,7 @@ async function giveKey(row) {
         <form class="add" data-mcp-add @submit.prevent="add">
             <input v-model="added.name" placeholder="Name" aria-label="Name">
             <input v-model="added.target" placeholder="Its address, or the command that starts it" aria-label="Its address, or the command that starts it">
-            <Btn small kind="primary" type="submit" :disabled="!added.name.trim() || !added.target.trim()">Add</Btn>
+            <Btn small variant="primary" type="submit" :disabled="!added.name.trim() || !added.target.trim()">Add</Btn>
         </form>
         <h3 class="heading">Suggested</h3>
         <RowList :rows="offered" :failure="suggested.failure.value" :loaded="suggested.loaded.value" empty="Every suggested server is installed" hint="Suggested servers appear here until installed.">

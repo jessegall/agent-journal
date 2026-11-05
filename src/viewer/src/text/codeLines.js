@@ -33,7 +33,7 @@ const isCodey = (line) => {
 
 // what one paragraph is: "code" when most of its lines carry the marks of code and few read as a sentence, "line" when it is one
 // line of code or one comment line, which only counts beside code, and "text" otherwise
-export function kindOfParagraph(lines) {
+export function typeOfParagraph(lines) {
     const filled = lines.filter((line) => line.trim());
     if (!filled.length || LIST_ITEM.test(filled[0]) || filled.every((line) => QUOTE.test(line) || TABLE.test(line))) return "text";
     const counted = filled.filter((line) => !COMMENT.test(line.trim()));

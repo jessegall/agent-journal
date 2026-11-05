@@ -25,7 +25,7 @@ const page = ({docked = null, bubbles = [], tabs = []} = {}) => {
     return home;
 };
 
-const kinds = (snapshot) => snapshot.floors.map((floor) => [floor.kind, floor.top]);
+const types = (snapshot) => snapshot.floors.map((floor) => [floor.type, floor.top]);
 
 afterEach(() => {
     delete globalThis.window;
@@ -34,13 +34,13 @@ afterEach(() => {
 
 test("home is the compose box, and only the bars docked over it while they are there, with the window's foot under everything", () => {
     page();
-    expect(kinds(readFloors())).toEqual([
+    expect(types(readFloors())).toEqual([
         ["compose", 600],
         ["build", 600],
         ["foot", 800],
     ]);
     page({docked: {left: 300, right: 700, top: 556, bottom: 600}});
-    expect(kinds(readFloors())).toEqual([
+    expect(types(readFloors())).toEqual([
         ["dock", 556],
         ["build", 600],
         ["foot", 800],
@@ -55,12 +55,12 @@ test("where the figure builds it keeps to the compose box's top, as bars dock ov
     // standing on the compose box it keeps to the compose box's own floor, as bars dock over it and go
     const standing = footingOn({...building, stays: false});
     expect(standing).toMatchObject({home: false, dx: 100, dy: 0});
-    expect(readFloors().floors.find((floor) => floor.id === standing.id)).toMatchObject({kind: "build", top: 600});
+    expect(readFloors().floors.find((floor) => floor.id === standing.id)).toMatchObject({type: "build", top: 600});
     const docked = page({docked: {left: 300, right: 700, top: 556, bottom: 600}});
     const floors = readFloors().floors;
     const under = footingOn({...building, on: docked}, floors);
     expect(under).toMatchObject({home: false, dy: 0});
-    expect(floors.find((floor) => floor.id === under.id)).toMatchObject({kind: "build", top: 600});
+    expect(floors.find((floor) => floor.id === under.id)).toMatchObject({type: "build", top: 600});
 });
 
 test("a bubble keeps its floor's id while the chat scrolls it, and its speed is measured from the read before", () => {
@@ -68,9 +68,9 @@ test("a bubble keeps its floor's id while the chat scrolls it, and its speed is 
     const bubble = element(box);
     page({bubbles: [bubble]});
     const first = readFloors(undefined, 1000);
-    const id = first.floors.find((floor) => floor.kind === "bubble").id;
+    const id = first.floors.find((floor) => floor.type === "bubble").id;
     box.top = 380;
-    const second = readFloors(first, 1100).floors.find((floor) => floor.kind === "bubble");
+    const second = readFloors(first, 1100).floors.find((floor) => floor.type === "bubble");
     expect(second).toMatchObject({id, top: 380, vy: -200});
 });
 
@@ -79,7 +79,7 @@ test("a floor read after a long gap starts still, so the figure is carried to it
     page({bubbles: [element(box)]});
     const first = readFloors(undefined, 1000);
     box.top = 300;
-    expect(readFloors(first, 5000).floors.find((floor) => floor.kind === "bubble").vy).toBe(0);
+    expect(readFloors(first, 5000).floors.find((floor) => floor.type === "bubble").vy).toBe(0);
 });
 
 test("a bubble scrolled out of the chat's view is no floor, and neither is a tab with no size", () => {
@@ -87,7 +87,7 @@ test("a bubble scrolled out of the chat's view is no floor, and neither is a tab
         bubbles: [element({left: 300, right: 600, top: 560, bottom: 620}), element({left: 300, right: 600, top: 200, bottom: 260})],
         tabs: [element({left: 400, right: 400, top: 60, bottom: 60}), element({left: 500, right: 540, top: 60, bottom: 90})],
     });
-    expect(kinds(readFloors())).toEqual([
+    expect(types(readFloors())).toEqual([
         ["compose", 600],
         ["build", 600],
         ["bubble", 200],

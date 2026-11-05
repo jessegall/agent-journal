@@ -13,7 +13,7 @@ test("a figure perched on a bubble that moved since the last frame stands on its
     let top = 400;
     const bubble = {getBoundingClientRect: () => ({left: 260, right: 600, top, bottom: top + 60, width: 340, height: 60})};
     page(bubble);
-    const stay = {where: "bubble", perch: {floor: floorOf(bubble), kind: "stand", side: "right", grip: ""}, until: 1e9};
+    const stay = {where: "bubble", perch: {floor: floorOf(bubble), type: "stand", side: "right", grip: ""}, until: 1e9};
     top = 340;
     const spot = stayingAt(stay, FIGURE, {x: 600, y: 600});
     expect(spot.y).toBe(340);

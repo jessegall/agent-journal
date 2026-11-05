@@ -32,9 +32,9 @@ register(
         const found = attachment(text, context) || path(text);
         if (!found) return null;
         return [
-            {kind: "text", text: text.slice(0, found.at)},
-            {kind: "html", html: found.html},
-            {kind: "text", text: text.slice(found.at + found.length)},
+            {type: "text", text: text.slice(0, found.at)},
+            {type: "html", html: found.html},
+            {type: "text", text: text.slice(found.at + found.length)},
         ];
     },
     {first: true}

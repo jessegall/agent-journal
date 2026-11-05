@@ -44,7 +44,7 @@ async function remove() {
                 <SequenceRuns :runs="openedRuns" />
                 <template #foot>
                     <span class="note" role="status">{{ refusal }}</span>
-                    <Btn kind="danger" data-sequence-delete @click="remove">{{ deleting ? "Delete it for good" : "Delete" }}</Btn>
+                    <Btn variant="danger" data-sequence-delete @click="remove">{{ deleting ? "Delete it for good" : "Delete" }}</Btn>
                     <Btn data-sequence-done @click="openedId = null">Done</Btn>
                 </template>
             </Dialog>

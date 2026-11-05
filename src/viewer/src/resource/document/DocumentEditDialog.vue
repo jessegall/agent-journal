@@ -4,13 +4,13 @@ import Btn from "../../kit/Btn.vue";
 import Dialog from "../../kit/Dialog.vue";
 
 // changing a document's abstract and text, starting from how they are now
-const props = defineProps({kind: {type: String, required: true}, id: {type: Number, required: true}, row: {type: Object, required: true}, read: {type: Function, required: true}});
+const props = defineProps({noun: {type: String, required: true}, id: {type: Number, required: true}, row: {type: Object, required: true}, read: {type: Function, required: true}});
 const emit = defineEmits(["close", "saved"]);
 const edited = reactive({abstract: props.row.abstract, body: props.row.body});
 const failure = ref("");
 
 async function save() {
-    const answer = await props.read([props.kind, "edit", String(props.id), "--abstract", edited.abstract, "--body", edited.body]);
+    const answer = await props.read([props.noun, "edit", String(props.id), "--abstract", edited.abstract, "--body", edited.body]);
     failure.value = answer.ok ? "" : answer.error;
     if (answer.ok) emit("saved");
 }
@@ -25,7 +25,7 @@ async function save() {
         <template #foot>
             <span class="edit-failure" role="alert" data-text-failure>{{ failure }}</span>
             <Btn @click="emit('close')">Cancel</Btn>
-            <Btn kind="primary" data-text-save @click="save">Save</Btn>
+            <Btn variant="primary" data-text-save @click="save">Save</Btn>
         </template>
     </Dialog>
 </template>

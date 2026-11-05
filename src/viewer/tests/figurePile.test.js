@@ -229,7 +229,7 @@ test("every act in the pile and every sequence, one line each: its weight, its c
     ]);
     // every clip of the pile is one the figure has
     const clips = new Set(CLIPS.map((clip) => clip.name));
-    for (const entry of PILE.filter((each) => each.kind === "clip")) expect(clips.has(entry.name), entry.name).toBe(true);
+    for (const entry of PILE.filter((each) => each.type === "clip")) expect(clips.has(entry.name), entry.name).toBe(true);
 });
 
 test("each showpiece waits its own cooldown, listed in one place: the parachute 20 minutes, the disco 2 hours, the rope swing 15, the bug shot and the bug smash 30, the salto 5 to 8, the tickle swats none", () => {
@@ -285,7 +285,7 @@ test("a pass that fixed a failed test run, and only that, may bring a bug the fi
     // drawn, it is not drawn again for its cooldown, and nothing else of a fixed run plays inside the run's own
     const memory = new Map();
     expect(draw({moment: "tests_fixed", memory, now: 0}, () => 0).name).toBe("bug_shot");
-    expect(choicesFor({moment: "tests_fixed", memory, now: 10}).filter((each) => each.kind !== "nothing")).toEqual([]);
+    expect(choicesFor({moment: "tests_fixed", memory, now: 10}).filter((each) => each.type !== "nothing")).toEqual([]);
     expect(bugShot("tests_fixed", {memory, now: 30})).toBe(false);
     expect(bugShot("tests_fixed", {memory, now: SHOWPIECES.bug_shot})).toBe(true);
 });

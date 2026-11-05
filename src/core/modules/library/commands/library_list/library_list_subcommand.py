@@ -8,7 +8,7 @@ from core.modules.library.support.page_request import PageRequest
 
 
 class LibraryListSubcommand(ReadSubcommand[LibraryPage]):
-    """`journal library list [--kind k] [--search words] [--page n]`: a live page of the shared server's items, each
+    """`journal library list [--type t] [--search words] [--page n]`: a live page of the shared server's items, each
     with the number of the local copy that follows it."""
 
     cli_name = "library"
@@ -18,7 +18,7 @@ class LibraryListSubcommand(ReadSubcommand[LibraryPage]):
         self.browse = browse
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--kind", dest="share", default="doc")
+        parser.add_argument("--type", dest="share", default="doc")
         parser.add_argument("--search", default="")
         parser.add_argument("--page", type=int, default=1)
 

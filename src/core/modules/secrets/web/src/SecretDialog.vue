@@ -84,7 +84,7 @@ async function save() {
                         <div class="line">
                             <input :id="`secret-${field.name}`" v-model="values[field.name]" class="value" :type="field.hidden ? 'password' : 'text'" autocomplete="off" :placeholder="placeholder(field)" :data-secret-value="field.name">
                             <template v-if="custom">
-                                <Btn kind="icon" :title="`Remove the field ${field.name}`" :data-secret-field-remove="field.name" @click="removeField(field)"><Icon name="close" :size="12" /></Btn>
+                                <Btn variant="icon" :title="`Remove the field ${field.name}`" :data-secret-field-remove="field.name" @click="removeField(field)"><Icon name="close" :size="12" /></Btn>
                             </template>
                         </div>
                     </div>
@@ -111,7 +111,7 @@ async function save() {
                 <template v-for="program in proposed" :key="program">
                     <div class="proposal">
                         <span>The agent proposed <code>{{ program }}</code></span>
-                        <Btn small kind="primary" :data-secret-allow="program" @click="allow(program)">Allow {{ program }}</Btn>
+                        <Btn small variant="primary" :data-secret-allow="program" @click="allow(program)">Allow {{ program }}</Btn>
                     </div>
                 </template>
                 <form class="line" data-secret-program-add @submit.prevent="allow(newProgram)">
@@ -142,7 +142,7 @@ async function save() {
         </div>
         <template #foot>
             <Btn @click="emit('close')">Cancel</Btn>
-            <Btn kind="primary" :disabled="saving || !title.trim()" data-secret-save @click="save">Save</Btn>
+            <Btn variant="primary" :disabled="saving || !title.trim()" data-secret-save @click="save">Save</Btn>
         </template>
     </Dialog>
 </template>

@@ -87,7 +87,7 @@ test("a refused change keeps the dialog open and says why", async () => {
     expect(element).toBeTruthy();
 });
 
-test("a custom secret adds and removes fields in its dialog, and another kind does not", async () => {
+test("a custom secret adds and removes fields in its dialog, and another type does not", async () => {
     const {element, ran} = await drawn([SECRET, CUSTOM]);
     await update(element, 3);
     expect(document.body.querySelector("[data-secret-field-add]")).toBeNull();
@@ -146,11 +146,11 @@ test("every deleted secret is listed and can be restored", async () => {
     expect(ran).toContainEqual(["secret", "restore", "9"]);
 });
 
-test("a new secret is made with its kind, title and note, and a custom one asks for its first field", async () => {
+test("a new secret is made with its type, title and note, and a custom one asks for its first field", async () => {
     const {element, ran} = await drawn();
     element.querySelector("[data-secret-new]").click();
     await settle();
-    document.body.querySelector('[data-secret-kind="custom"]').click();
+    document.body.querySelector('[data-secret-type="custom"]').click();
     await settle();
     const input = (mark) => document.body.querySelector(`[${mark}] input`) ?? document.body.querySelector(`input[${mark}]`);
     type(input("data-secret-new-title"), "Own");
@@ -161,5 +161,5 @@ test("a new secret is made with its kind, title and note, and a custom one asks 
     await settle();
     document.body.querySelector("[data-secret-create]").click();
     await settle();
-    expect(ran).toContainEqual(["secret", "make", "Own", "--kind", "custom", "--field", "token", "--brief", "For the own server"]);
+    expect(ran).toContainEqual(["secret", "make", "Own", "--type", "custom", "--field", "token", "--brief", "For the own server"]);
 });

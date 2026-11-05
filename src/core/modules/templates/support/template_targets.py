@@ -6,7 +6,7 @@ from core.modules.templates.support.template_row import TemplateRow
 
 
 class TemplateTargets:
-    """Resolves a template's target and checks its kind and environment before any message is written."""
+    """Resolves a template's target and checks its type and environment before any message is written."""
 
     def __init__(self, refs: RowRefs, rows: EventRows) -> None:
         self.refs, self.rows = refs, rows

@@ -5,7 +5,7 @@ import {ListTools, Skeleton, WindowRoom, useListTools, useWindow} from "@journal
 // dumps as version 4 drew them: the list of dumps with a phase pill each, the open one with its title (renamed while it is filing),
 // a bar of the files settled, what each file became and from which file; one read brings them all
 const STATES = {new: "New", noted: "Noted", filed: "Filed", failed: "Failed"};
-const KINDS = {docs: "Document", doc: "Document", plans: "Plan", plan: "Plan", tasks: "Task", task: "Task", reports: "Report", report: "Report"};
+const TYPES = {docs: "Document", doc: "Document", plans: "Plan", plan: "Plan", tasks: "Task", task: "Task", reports: "Report", report: "Report"};
 const SETTLED = ["noted", "filed", "failed"];
 const context = useWindow();
 const cards = ref([]);
@@ -23,7 +23,7 @@ const nameOf = (card) => card.title || `Dump ${card.id}`;
 const phaseOf = (card) => (card.outcome ? "Filed" : "Filing");
 const settledOf = (card) => card.items.filter((item) => SETTLED.includes(item.state)).length;
 const madeOf = (card) => card.items.flatMap((item) => item.refs.map((ref) => ({ref, from: item.text})));
-const kindOf = (ref) => KINDS[ref.split(":")[0]] || ref.split(":")[0];
+const typeOf = (ref) => TYPES[ref.split(":")[0]] || ref.split(":")[0];
 
 async function load() {
     const answer = await context.read("dump board");
@@ -107,7 +107,7 @@ load();
                             <h4 class="made-title">{{ madeOf(card).length }} items created</h4>
                             <template v-for="made in madeOf(card)" :key="`${made.ref}-${made.from}`">
                                 <div class="made" data-made>
-                                    <span class="made-kind">{{ kindOf(made.ref) }}</span>
+                                    <span class="made-type">{{ typeOf(made.ref) }}</span>
                                     <span class="made-ref">{{ made.ref }}</span>
                                     <span class="made-from">From {{ made.from }}</span>
                                 </div>
@@ -271,7 +271,7 @@ load();
     font-size: 12px;
 }
 
-.made-kind {
+.made-type {
     color: var(--accent-text);
 }
 

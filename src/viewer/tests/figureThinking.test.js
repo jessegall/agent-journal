@@ -144,7 +144,7 @@ describe("the thinking act", () => {
             choicesFor({moment: "pondering", memory, now: 1000});
             thinkingAct(memory, 1000, random);
             let at = 1001;
-            while (!choicesFor({moment: "pondering", memory, now: at}).some((entry) => entry.kind !== "nothing")) at++;
+            while (!choicesFor({moment: "pondering", memory, now: at}).some((entry) => entry.type !== "nothing")) at++;
             return at - 1000;
         });
         for (const wait of waits) {

@@ -467,7 +467,7 @@ test("Close window opens the window in a view window, and the dock message bring
     await settled();
     expect(opened.mock.calls[0][0]).toContain("a.tasks");
     expect(store.layout.value.away.map((away) => away.view)).toEqual(["a.tasks"]);
-    new BroadcastChannel("journal-views").postMessage({kind: "dock", id: floatId});
+    new BroadcastChannel("journal-views").postMessage({type: "dock", id: floatId});
     await new Promise((resolve) => setTimeout(resolve, 20));
     await settled();
     expect(store.layout.value.away).toEqual([]);
@@ -486,7 +486,7 @@ test("a window sent away returns to a pane when its browser window closes", asyn
     await settled();
     element.querySelector(`[data-float-away="${floatId}"]`).click();
     await settled();
-    new BroadcastChannel("journal-views").postMessage({kind: "closed", id: floatId});
+    new BroadcastChannel("journal-views").postMessage({type: "closed", id: floatId});
     await new Promise((resolve) => setTimeout(resolve, 20));
     await settled();
     expect(store.layout.value.away).toEqual([]);

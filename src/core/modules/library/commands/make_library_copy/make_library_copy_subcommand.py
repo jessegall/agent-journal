@@ -9,7 +9,7 @@ from core.modules.library.support.new_library_copy import NewLibraryCopy
 
 
 class MakeLibraryCopySubcommand(ItemArguments, Subcommand[MakeLibraryCopy, NewLibraryCopy]):
-    """`journal library get <kind> <id> [--read]`: makes a local row from an item of the shared server and makes it
+    """`journal library get <type> <id> [--read]`: makes a local row from an item of the shared server and makes it
     follow the item."""
 
     cli_name = "library"

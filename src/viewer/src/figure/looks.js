@@ -1,11 +1,11 @@
 // The figure's head turns by weighted looks blended with its act. Each frame it is handed the things it could look at, each a look
-// {key, kind, point} of a kind with its weight in LOOKS; every act declares how strongly it keeps its own head (its clip's `head`, one of
+// {key, type, point} of a type with its weight in LOOKS; every act declares how strongly it keeps its own head (its clip's `head`, one of
 // HEAD). The head turns toward the strongest look, blended with the act's own head pose by the two weights (headBlend), and a new
 // strongest look takes over only once it has led for SWITCH_SECONDS (leadingLook), the head easing toward it as it turns
 // (reactions.js gazeAfter), so it never swings between targets in a moment; and a look it is on is held through a lapse in what it looks
 // at of up to LINGER_SECONDS, so an interest renewed carries the same look on rather than turning away and back.
 
-// The weight of each kind of look: the image attached to a message of the user's that the agent is reading, the strongest of all while it
+// The weight of each type of look: the image attached to a message of the user's that the agent is reading, the strongest of all while it
 // lasts (attachmentRead), the user's new message, the pointer tickling it, a finished run's mark or its docked
 // bar it waits to light the visor for, the bubble it reads or holds its glass to, the agent's new
 // message in the chat, the sin's mark it kneels to, the composer while the user types in it, at full weight while the keystrokes are fresh
@@ -37,7 +37,7 @@ export const MESSAGE_SECONDS = 4;
 export const COMPOSER_SECONDS = 6;
 export const COMPOSER_FULL_SECONDS = 2;
 
-// The kind of look the composer is at `now` seconds when the user last typed in it at `typedAt` (0 when never): typing while the keystrokes
+// The type of look the composer is at `now` seconds when the user last typed in it at `typedAt` (0 when never): typing while the keystrokes
 // are fresh, typing_pause through the pause after them, none once it is over
 export function composerLook(typedAt, now) {
     const pause = now - typedAt;
@@ -51,7 +51,7 @@ export const SCREEN_LOOKS = new Set(["attachment", "said", "run", "confession", 
 
 // the looks the figure may take up this frame playing `clip`: none for an act that keeps its head alone; otherwise each screen target
 // explicitly behind the figure, keeping its mood and any limit on the body's turn
-export const looksFor = (clip, looks) => clip.head === HEAD.alone ? [] : looks.map((look) => SCREEN_LOOKS.has(look.kind) ? {...look, point: {...look.point, behind: true}} : look);
+export const looksFor = (clip, looks) => clip.head === HEAD.alone ? [] : looks.map((look) => SCREEN_LOOKS.has(look.type) ? {...look, point: {...look.point, behind: true}} : look);
 
 // The eased page look in the figure's picture, whose top left is `at` and whose height is `size`. Keep the target's turn limit and
 // other metadata when changing its coordinates, so a limited look stays limited after the figure moves.
@@ -64,7 +64,7 @@ export function lookInFigure(gaze, at, size) {
 export const holdsHead = (clip) => clip.head >= HEAD.holds;
 
 // how far the head turns from the act's own pose toward `look`, 0 to 1, for the clip `clip`: the look's weight against the act's
-export const headBlend = (look, clip) => (look ? LOOKS[look.kind] / (LOOKS[look.kind] + clip.head) : 0);
+export const headBlend = (look, clip) => (look ? LOOKS[look.type] / (LOOKS[look.type] + clip.head) : 0);
 
 // The look the head is on at `now` seconds, from what it was on, `leading` ({look, challenger, since, seen} or none, `seen` when its
 // target was last among the looks), and `looks`, the looks it could take this frame: the strongest of them; but while the look it is on
@@ -77,8 +77,8 @@ export function leadingLook(leading, looks, now) {
     if (!kept.length) return {look: null, challenger: "", since: now, seen: now};
     const held = leading?.look && kept.find((look) => look.key === leading.look.key);
     const seen = (look) => (lingers && look === held ? leading.seen : now);
-    const top = Math.max(...kept.map((look) => LOOKS[look.kind]));
-    const strongest = held && LOOKS[held.kind] === top ? held : kept.find((look) => LOOKS[look.kind] === top);
+    const top = Math.max(...kept.map((look) => LOOKS[look.type]));
+    const strongest = held && LOOKS[held.type] === top ? held : kept.find((look) => LOOKS[look.type] === top);
     if (!held || held === strongest || haltsWalk(strongest)) return {look: strongest, challenger: "", since: now, seen: seen(strongest)};
     const since = leading.challenger === strongest.key ? leading.since : now;
     if (now - since >= SWITCH_SECONDS) return {look: strongest, challenger: "", since: now, seen: now};
@@ -101,7 +101,7 @@ export function walkingGlance(glancing, look, way, head, now) {
 }
 
 // whether `look` halts the figure's walk: the user's new message does
-export const haltsWalk = (look) => look?.kind === "said";
+export const haltsWalk = (look) => look?.type === "said";
 
 // whether the figure, its halt over, goes over to the message it halted for rather than on its way, drawn with `random`
 export const visitsAfterHalt = (random) => random() < LOOKS.said / (LOOKS.said + WALKING.purpose);
@@ -112,15 +112,15 @@ export const visitsAfterHalt = (random) => random() < LOOKS.said / (LOOKS.said +
 export const GLANCE = {every: [6, 14], lasts: 1.6, aside: 0.9, up: 0.12, sides: [-1, 1]};
 export const SEATED_GLANCE = {every: [4, 10], lasts: 2.4, aside: 0.2, up: 0.04, sides: [-1, 0, 1]};
 
-// The glance `glance` ({at, side, kind}, `at` the seconds it begins) as it is at `now`: kept until it is over, then the next of `kind`,
+// The glance `glance` ({at, side, type}, `at` the seconds it begins) as it is at `now`: kept until it is over, then the next of `type`,
 // GLANCE or SEATED_GLANCE, drawn with `random`
-export function glanceAfter(glance, now, random, kind) {
-    if (glance && now < glance.at + glance.kind.lasts) return glance;
-    return {at: now + kind.every[0] + random() * (kind.every[1] - kind.every[0]), side: kind.sides[Math.floor(random() * kind.sides.length)], kind};
+export function glanceAfter(glance, now, random, type) {
+    if (glance && now < glance.at + glance.type.lasts) return glance;
+    return {at: now + type.every[0] + random() * (type.every[1] - type.every[0]), side: type.sides[Math.floor(random() * type.sides.length)], type};
 }
 
 // the point a glance looks at `now` beside a head at `head` on the page, in a picture `size` pixels high, or null outside it
 export function glancePoint(glance, now, head, size) {
-    if (!glance || now < glance.at || now >= glance.at + glance.kind.lasts) return null;
-    return {x: head.x + glance.side * glance.kind.aside * size, y: head.y - glance.kind.up * size};
+    if (!glance || now < glance.at || now >= glance.at + glance.type.lasts) return null;
+    return {x: head.x + glance.side * glance.type.aside * size, y: head.y - glance.type.up * size};
 }

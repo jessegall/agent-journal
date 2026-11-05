@@ -21,7 +21,7 @@ PATTERN_TRIGGERS = (COMMAND_TRIGGER, TOOL_TRIGGER)
 
 @dataclass(frozen=True)
 class SequenceTrigger:
-    """One thing that starts a sequence on its own, by its kind and the fields that kind reads."""
+    """One thing that starts a sequence on its own, by its type and the fields that type reads."""
 
     trigger_type: str = ""
     event: str = ""
@@ -39,7 +39,7 @@ class SequenceTrigger:
     def check(self) -> None:
         category = self.trigger_type
         if category not in REQUIRED_FIELDS:
-            raise Refusal(f"{category} is no kind of trigger", f"the kinds are {', '.join(REQUIRED_FIELDS)}")
+            raise Refusal(f"{category} is no type of trigger", f"the types are {', '.join(REQUIRED_FIELDS)}")
         missing = [name for name in REQUIRED_FIELDS[category] if not getattr(self, name).strip()]
         if missing:
             raise Refusal(f"a {category} trigger needs its {', '.join(missing)}")

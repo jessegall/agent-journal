@@ -11,7 +11,7 @@ const {CLIPS} = await import("../src/figure/figure.js");
 const FIGURE = {size: 112, below: 0.05};
 // the page: a chat from 200 to 900 with its compose box from 300 to 700, its top at 600, so the window's sides lie past both its ends
 const HOME = {left: 300, right: 700, top: 600};
-const floors = () => [{id: "home", kind: "compose", element: document.querySelector("[data-figure-home]"), left: HOME.left, right: HOME.right, top: HOME.top}];
+const floors = () => [{id: "home", type: "compose", element: document.querySelector("[data-figure-home]"), left: HOME.left, right: HOME.right, top: HOME.top}];
 // a picture's corner, as a trip's legs run, for a spot
 const corner = (spot) => {
     const box = boxAt(spot, FIGURE, POSTURES[spot.posture].travels);
@@ -77,7 +77,7 @@ test("a trip never ends past the end of the floor it stands on: a standing spot 
     // a seat with its legs over the end, a hang, or a spot on a floor too narrow to keep in from, stay as they are
     for (const spot of [{x: 690, y: HOME.top, posture: "sit", on: home}, {x: 760, y: HOME.top, posture: "hang", on: home}]) expect(keptOnFloor(spot, floors(), FIGURE)).toBe(spot);
     const tab = {};
-    expect(keptOnFloor({x: 20, y: 40, posture: "stand", on: tab}, [{id: "tab", kind: "tab", element: tab, left: 0, right: 30, top: 40}], FIGURE).x).toBe(20);
+    expect(keptOnFloor({x: 20, y: 40, posture: "stand", on: tab}, [{id: "tab", type: "tab", element: tab, left: 0, right: 30, top: 40}], FIGURE).x).toBe(20);
 });
 
 test("the ladder stands while the figure goes up it, stands on it and climbs down it, and is taken away once it is off it", () => {

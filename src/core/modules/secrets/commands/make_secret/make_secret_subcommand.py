@@ -9,7 +9,7 @@ from core.modules.secrets.models.secret import Secret
 
 
 class MakeSecretSubcommand(Subcommand[MakeSecret, Secret]):
-    """`journal secret make <title> [--kind <kind>] [--field <name>] [--brief "<how it is used>"]`."""
+    """`journal secret make <title> [--type <type>] [--field <name>] [--brief "<how it is used>"]`."""
 
     cli_name = "secret"
     name = "make"
@@ -17,12 +17,12 @@ class MakeSecretSubcommand(Subcommand[MakeSecret, Secret]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("title")
-        parser.add_argument("--kind", default=SecretType.API_KEY.value)
+        parser.add_argument("--type", default=SecretType.API_KEY.value)
         parser.add_argument("--field", action="append", default=[])
         parser.add_argument("--brief", default="")
 
     def command(self, arguments: Namespace, caller: Caller) -> MakeSecret:
-        return MakeSecret(arguments.title, arguments.brief, SecretType.lookup(arguments.kind), tuple(arguments.field))
+        return MakeSecret(arguments.title, arguments.brief, SecretType.lookup(arguments.type), tuple(arguments.field))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Secret):

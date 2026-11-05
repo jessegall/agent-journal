@@ -53,7 +53,7 @@ defineExpose({focus: () => box.value.focus()});
         </template>
         <div class="comment-row">
             <textarea ref="box" v-model="draft" rows="1" maxlength="2000" :class="{on: draft}" :placeholder="placeholder" aria-label="Write a comment" data-comment-input @input="grow" @keydown.enter="submitOnEnter($event, submit)" />
-            <Btn kind="primary" :busy="sending" :disabled="!draft.trim()" data-comment-send @click="submit">Comment</Btn>
+            <Btn variant="primary" :busy="sending" :disabled="!draft.trim()" data-comment-send @click="submit">Comment</Btn>
         </div>
     </div>
 </template>

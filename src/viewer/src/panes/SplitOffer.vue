@@ -12,7 +12,7 @@ const emit = defineEmits(["pick"]);
             <p class="split-offer-title">Split this pane in two?</p>
             <p class="split-offer-text">{{ text }}</p>
             <div class="split-offer-row">
-                <Btn kind="primary" @click="emit('pick', 'right')">
+                <Btn variant="primary" @click="emit('pick', 'right')">
                     <Icon name="columns" :size="13" />
                     Side by side
                 </Btn>

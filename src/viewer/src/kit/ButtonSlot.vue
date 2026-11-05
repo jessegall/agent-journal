@@ -57,7 +57,7 @@ async function press(button) {
                 <template v-if="button.menu.length">
                     <SplitButton
                         small
-                        :kind="button.primary ? 'primary' : 'ghost'"
+                        :variant="button.primary ? 'primary' : 'ghost'"
                         :disabled="sending"
                         :menu-label="button.menu_label || 'More ways'"
                         :title="tip(button)"
@@ -77,7 +77,7 @@ async function press(button) {
                 <template v-else>
                     <Btn
                         small
-                        :kind="button.primary ? 'primary' : 'ghost'"
+                        :variant="button.primary ? 'primary' : 'ghost'"
                         :bordered="!button.primary"
                         :icon="button.icon"
                         :disabled="sending"

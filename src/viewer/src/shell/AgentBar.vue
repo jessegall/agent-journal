@@ -33,7 +33,7 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
             </template>
             <span class="agent-space" />
             <template v-if="running">
-                <Btn kind="icon" :class="['agent-pause', {paused}]" data-agent-pause :aria-label="paused ? 'Resume' : 'Pause'" :title="paused ? 'Resume: the agent carries on where it stopped' : 'Pause: only journal commands, read tools and read commands run until you resume it'" @click="toggle">
+                <Btn variant="icon" :class="['agent-pause', {paused}]" data-agent-pause :aria-label="paused ? 'Resume' : 'Pause'" :title="paused ? 'Resume: the agent carries on where it stopped' : 'Pause: only journal commands, read tools and read commands run until you resume it'" @click="toggle">
                     <Icon :name="paused ? 'resume' : 'pause'" :size="16" />
                 </Btn>
                 <span class="agent-divider" />

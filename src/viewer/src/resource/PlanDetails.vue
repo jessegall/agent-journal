@@ -39,7 +39,7 @@ const emit = defineEmits(["select", "open", "done"]);
         <template v-if="plan.delegated">
             <p class="delegation" data-plan-delegated>{{ delegationWord(plan) }}</p>
         </template>
-        <ButtonSlot name="row.plan" :row="{...plan, kind: 'plan'}" :environment="environment" :read-only="readOnly" @done="emit('done')" />
+        <ButtonSlot name="row.plan" :row="{...plan, noun: 'plan'}" :environment="environment" :read-only="readOnly" @done="emit('done')" />
         <template v-if="plan.brief">
             <section class="part">
                 <h4>The brief</h4>

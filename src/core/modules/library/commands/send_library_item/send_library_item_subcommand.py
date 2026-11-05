@@ -8,14 +8,14 @@ from core.modules.library.support.shared_library_item import SharedLibraryItem
 
 
 class SendLibraryItemSubcommand(Subcommand[SendLibraryItem, SharedLibraryItem]):
-    """`journal library share <kind> <row>`: uploads a local row to the shared server and makes it follow the item."""
+    """`journal library share <type> <row>`: uploads a local row to the shared server and makes it follow the item."""
 
     cli_name = "library"
     name = "share"
     outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("share", metavar="kind")
+        parser.add_argument("share", metavar="type")
         parser.add_argument("row_id", metavar="row", type=int)
 
     def command(self, arguments: Namespace, caller: Caller) -> SendLibraryItem:

@@ -2,26 +2,26 @@
 import {computed, ref} from "vue";
 import {Btn, Dialog, Icon, TextInput} from "@journal/window-kit";
 
-// making a secret: its kind, what it is for, a note, and for a custom one the name of its first field
-const KINDS = [
+// making a secret: its type, what it is for, a note, and for a custom one the name of its first field
+const TYPES = [
     {key: "api key", icon: "key", title: "API key", line: "One hidden value, such as a token."},
     {key: "login", icon: "lock", title: "Login", line: "A username and a password."},
     {key: "custom", icon: "rows", title: "Custom", line: "Fields you name yourself."},
 ];
 const props = defineProps({run: {type: Function, required: true}});
 const emit = defineEmits(["close"]);
-const kind = ref(KINDS[0].key);
+const type = ref(TYPES[0].key);
 const title = ref("");
 const note = ref("");
 const firstField = ref("");
 const refusal = ref("");
-const isCustom = computed(() => kind.value === "custom");
+const isCustom = computed(() => type.value === "custom");
 const isReady = computed(() => title.value.trim() && (!isCustom.value || firstField.value.trim()));
 
 async function make() {
     const field = isCustom.value ? ["--field", firstField.value.trim()] : [];
     const brief = note.value.trim() ? ["--brief", note.value.trim()] : [];
-    const answer = await props.run(["secret", "make", title.value.trim(), "--kind", kind.value, ...field, ...brief]);
+    const answer = await props.run(["secret", "make", title.value.trim(), "--type", type.value, ...field, ...brief]);
     if (answer.ok) return emit("close");
     refusal.value = answer.error;
     return undefined;
@@ -32,10 +32,10 @@ async function make() {
     <Dialog title="New secret" @close="emit('close')">
         <div class="sections">
             <div class="choice">
-                <span class="question">What kind of secret is it?</span>
-                <div class="kinds" role="radiogroup" aria-label="Kind of secret">
-                    <template v-for="choice in KINDS" :key="choice.key">
-                        <button type="button" :class="['kind', {picked: kind === choice.key}]" role="radio" :aria-checked="kind === choice.key" :data-secret-kind="choice.key" @click="kind = choice.key">
+                <span class="question">What type of secret is it?</span>
+                <div class="types" role="radiogroup" aria-label="Type of secret">
+                    <template v-for="choice in TYPES" :key="choice.key">
+                        <button type="button" :class="['type', {picked: type === choice.key}]" role="radio" :aria-checked="type === choice.key" :data-secret-type="choice.key" @click="type = choice.key">
                             <Icon :name="choice.icon" :size="16" />
                             <b>{{ choice.title }}</b>
                             <span>{{ choice.line }}</span>
@@ -55,7 +55,7 @@ async function make() {
         </div>
         <template #foot>
             <Btn @click="emit('close')">Cancel</Btn>
-            <Btn kind="primary" :disabled="!isReady" data-secret-create @click="make">Create secret</Btn>
+            <Btn variant="primary" :disabled="!isReady" data-secret-create @click="make">Create secret</Btn>
         </template>
     </Dialog>
 </template>
@@ -79,13 +79,13 @@ async function make() {
     font-weight: 500;
 }
 
-.kinds {
+.types {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 8px;
 }
 
-.kind {
+.type {
     display: flex;
     flex-direction: column;
     gap: 3px;
@@ -99,24 +99,24 @@ async function make() {
     cursor: pointer;
 }
 
-.kind b {
+.type b {
     color: var(--text);
     font-size: 13px;
     font-weight: 600;
 }
 
-.kind span {
+.type span {
     font-size: 11.5px;
     line-height: 1.4;
 }
 
-.kind.picked {
+.type.picked {
     border-color: var(--accent);
     background: var(--accent-dim);
     color: var(--accent-text);
 }
 
-.kind.picked b {
+.type.picked b {
     color: var(--accent-text);
 }
 

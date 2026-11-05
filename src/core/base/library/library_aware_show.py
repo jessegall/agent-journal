@@ -9,7 +9,7 @@ from core.base.refusal import Refusal
 
 
 class LibraryAwareShow:
-    """What a show command of a shared kind adds to reading its own rows: an item of the team's library read live
+    """What a show command of a shared type adds to reading its own rows: an item of the team's library read live
     by its library number, and, when a plain number names no row here, the library item with that number. The
     command gives its own reading of a row in `local`."""
 

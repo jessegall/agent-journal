@@ -20,7 +20,7 @@ const cards = computed(() =>
             <p data-library-same>The two versions have the same text.</p>
         </template>
         <template v-for="card in cards" :key="card.name">
-            <DiffCard :path="card.name" kind="edit" :added="card.added" :removed="card.removed" :at="at" :rows="card.rows" data-library-diff />
+            <DiffCard :path="card.name" change="edit" :added="card.added" :removed="card.removed" :at="at" :rows="card.rows" data-library-diff />
         </template>
     </div>
 </template>

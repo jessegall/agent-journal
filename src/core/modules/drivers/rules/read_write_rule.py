@@ -5,7 +5,7 @@ from core.modules.drivers.support.access_nudges import FILE_ACCESS_RESTRICTION
 
 
 class ReadWriteRule(AllowedToolsRule):
-    """Allows file reads, searches and changes, and journal commands, without other kinds of work."""
+    """Allows file reads, searches and changes, and journal commands, without other types of work."""
 
     name = "drivers.read-and-writes-only"
     allowed_tools = tuple(tool for tool in ToolType if tool.reads_files or tool.writes_files or tool is ToolType.SHELL)

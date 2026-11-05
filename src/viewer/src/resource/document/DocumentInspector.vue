@@ -2,7 +2,7 @@
 import {computed, ref, watch} from "vue";
 import {shareAddress} from "../../route.js";
 import {render} from "../../text/index.js";
-import {cliOf} from "../../domain/resourceKinds.js";
+import {cliOf} from "../../domain/resourceNouns.js";
 import Btn from "../../kit/Btn.vue";
 import CloseButton from "../../kit/CloseButton.vue";
 import ResourceHeading from "../ResourceHeading.vue";
@@ -23,13 +23,13 @@ import {numbered} from "./documentMarks.js";
 
 // a document or a report: its title, its tabs, its text with the comments beside it, and at the foot the comment box and the actions, which never scroll away
 const NARROW_WIDTH = 760;
-const KIND_LABELS = {doc: "Document", report: "Report"};
+const NOUN_LABELS = {doc: "Document", report: "Report"};
 const props = defineProps({table: {type: String, required: true}, id: {type: Number, required: true}, backed: Boolean, read: {type: Function, required: true}});
 const emit = defineEmits(["close", "back"]);
 const panel = ref(null);
 const width = useMeasuredWidth(panel);
 const narrow = computed(() => width.value !== null && width.value < NARROW_WIDTH);
-const kind = computed(() => cliOf(props.table));
+const noun = computed(() => cliOf(props.table));
 const row = ref(null);
 const failure = ref("");
 const links = ref([]);
@@ -59,13 +59,13 @@ const rowsOf = (answer) => (answer.ok ? answer.value.rows ?? [] : []);
 
 async function load() {
     const turn = ++reading;
-    const answer = await props.read([kind.value, "inspect", String(props.id)]);
+    const answer = await props.read([noun.value, "inspect", String(props.id)]);
     if (turn !== reading) return;
     failure.value = answer.ok ? "" : answer.error;
     row.value = answer.ok ? answer.value : null;
-    const linksAnswer = await props.read(["link", "list", "--source", `${kind.value}:${props.id}`]);
-    const questionsAnswer = await props.read(["question", "list", "--all", "--row", `${kind.value}:${props.id}`]);
-    const revisionsAnswer = kind.value === "doc" ? await props.read(["doc", "revisions", String(props.id)]) : null;
+    const linksAnswer = await props.read(["link", "list", "--source", `${noun.value}:${props.id}`]);
+    const questionsAnswer = await props.read(["question", "list", "--all", "--row", `${noun.value}:${props.id}`]);
+    const revisionsAnswer = noun.value === "doc" ? await props.read(["doc", "revisions", String(props.id)]) : null;
     if (turn !== reading) return;
     links.value = rowsOf(linksAnswer);
     questions.value = rowsOf(questionsAnswer);
@@ -75,7 +75,7 @@ async function load() {
 
 async function send(words) {
     const flags = selection.value ? ["--quote", selection.value.quote, "--position", String(selection.value.position), "--selection-type", selection.value.selection_type] : [];
-    const answer = await props.read([kind.value, "comment", String(props.id), ...flags, "--", words]);
+    const answer = await props.read([noun.value, "comment", String(props.id), ...flags, "--", words]);
     if (!answer.ok) throw new Error(answer.error);
     selection.value = null;
     await load();
@@ -130,7 +130,7 @@ watch(notesMode, () => {
             <template v-if="backed">
                 <button type="button" class="document-back" data-resource-back aria-label="Back" @click="emit('back')">←</button>
             </template>
-            <ResourceHeading :label="`${KIND_LABELS[kind]} ${id}${row ? ` · ${stateLabel}` : ''}`" :title="row?.title" :abstract="row?.abstract" />
+            <ResourceHeading :label="`${NOUN_LABELS[noun]} ${id}${row ? ` · ${stateLabel}` : ''}`" :title="row?.title" :abstract="row?.abstract" />
             <CloseButton title="Close the panel" data-resource-close @click="emit('close')" />
         </header>
         <template v-if="row">
@@ -138,7 +138,7 @@ watch(notesMode, () => {
                 <a class="document-share" data-resource-share :href="shareAddress(`${table}:${id}`)"><Icon name="share" :size="12" />Share</a>
                 <Btn bordered data-text-edit @click="editing = true">Edit</Btn>
                 <span class="document-tabs-space" />
-                <RowMoves inline :kind="kind" :id="id" :row="row" :read="read" @done="load" />
+                <RowMoves inline :noun="noun" :id="id" :row="row" :read="read" @done="load" />
             </div>
         </template>
         <nav class="document-tabs">
@@ -147,7 +147,7 @@ watch(notesMode, () => {
                 <button type="button" :class="['document-tab-button', {on: shownTab === 'comments'}]" data-document-tab="comments" @click="tab = 'comments'">{{ notesMode === 'questions' ? 'Questions' : 'Comments' }} <em>{{ annotations.length || "" }}</em></button>
             </template>
             <button type="button" :class="['document-tab-button', {on: shownTab === 'links'}]" data-document-tab="links" @click="tab = 'links'">Links <em>{{ links.length || "" }}</em></button>
-            <template v-if="kind === 'doc'">
+            <template v-if="noun === 'doc'">
                 <button type="button" :class="['document-tab-button', {on: shownTab === 'revisions'}]" data-document-tab="revisions" @click="tab = 'revisions'">Revisions <em>{{ revisions.length || "" }}</em></button>
             </template>
             <span class="document-tabs-space" />
@@ -197,7 +197,7 @@ watch(notesMode, () => {
             <CommentComposer ref="composer" v-model:draft="draft" :selection="selection" :send="send" :narrow="narrow" @clear="selection = null" />
         </template>
         <template v-if="editing">
-            <DocumentEditDialog :kind="kind" :id="id" :row="row" :read="read" @close="editing = false" @saved="saved" />
+            <DocumentEditDialog :noun="noun" :id="id" :row="row" :read="read" @close="editing = false" @saved="saved" />
         </template>
     </div>
 </template>
@@ -230,7 +230,7 @@ watch(notesMode, () => {
     cursor: pointer;
 }
 
-:deep(.resource-kind) {
+:deep(.resource-noun) {
     margin: 0 0 4px;
     color: var(--text-3);
     font-size: 12px;

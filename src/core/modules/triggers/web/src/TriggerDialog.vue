@@ -1,7 +1,7 @@
 <script setup>
 import {computed, reactive, ref, watch} from "vue";
 import {Btn, Dialog, useWindow} from "@journal/window-kit";
-import {DOES, EXAMPLES, PLACES, TIME_DOES, WHEN_KINDS, doesOf, localTimeInput, sentence} from "./triggerWords.js";
+import {DOES, EXAMPLES, PLACES, TIME_DOES, WHEN_TYPES, doesOf, localTimeInput, sentence} from "./triggerWords.js";
 import TriggerActionFields from "./TriggerActionFields.vue";
 import TriggerConditionFields from "./TriggerConditionFields.vue";
 import TriggerPart from "./TriggerPart.vue";
@@ -18,7 +18,7 @@ const heldTime = () => (held?.cron_line ? "cron" : held?.next_at && !held?.inter
 const draft = reactive({
     name: held?.name ?? "",
     description: held?.description ?? "",
-    kind: held?.next_at ? "time" : "words",
+    type: held?.next_at ? "time" : "words",
     time: heldTime(),
     phrases: [...(held?.phrases ?? [])],
     places: [...(held?.watch_places ?? PLACES.map((place) => place.key))],
@@ -37,32 +37,32 @@ const confirming = ref(false);
 const isNew = computed(() => !held);
 const missing = computed(() => {
     if (!draft.name.trim()) return "Give it a name.";
-    if (draft.kind === "words" && !draft.phrases.length) return "Add at least one word.";
-    if (draft.kind === "words" && !draft.places.length) return "Choose where to look.";
-    if (draft.kind === "time" && !{every: draft.every, once: draft.at, cron: draft.cron}[draft.time]) return "Choose when.";
+    if (draft.type === "words" && !draft.phrases.length) return "Add at least one word.";
+    if (draft.type === "words" && !draft.places.length) return "Choose where to look.";
+    if (draft.type === "time" && !{every: draft.every, once: draft.at, cron: draft.cron}[draft.time]) return "Choose when.";
     return draft.text.trim() ? "" : `Write ${doesOf(draft.action).ask.toLowerCase()}.`;
 });
-const startFrom = ({name, phrases, action, text}) => Object.assign(draft, {name, phrases, action, text, kind: "words"});
+const startFrom = ({name, phrases, action, text}) => Object.assign(draft, {name, phrases, action, text, type: "words"});
 const changeExtra = (position, values) => (draft.extra = draft.extra.map((entry, place) => place === position ? {...entry, ...values} : entry));
-watch(() => draft.kind, (kind) => {
-    if (kind === "time" && draft.action === "deny") draft.action = "nudge";
+watch(() => draft.type, (type) => {
+    if (type === "time" && draft.action === "deny") draft.action = "nudge";
 });
 
 const timeValue = () => (draft.time === "once" ? new Date(draft.at).toISOString() : draft[draft.time]);
 const startFlags = () => [{every: "--every", once: "--at", cron: "--cron"}[draft.time], timeValue()];
 const editFlags = () => [{every: "--interval-minutes", once: "--next-at", cron: "--cron-line"}[draft.time], timeValue()];
 const detailFlags = () => ["--name", draft.name.trim(), "--description", draft.description.trim(), "--conditions", JSON.stringify(draft.conditions), "--extra-actions", JSON.stringify(draft.extra),
-    ...(draft.kind === "words" ? ["--watch-places", ...draft.places, "--match-mode", draft.match] : [])];
+    ...(draft.type === "words" ? ["--watch-places", ...draft.places, "--match-mode", draft.match] : [])];
 const limitFlags = (flag) => (draft.limit ? [flag, draft.limit] : []);
 
 function newLine() {
-    if (draft.kind === "words") return ["trigger", "make", "--do", draft.action, ...detailFlags(), "--", draft.phrases.join(", "), draft.text.trim()];
+    if (draft.type === "words") return ["trigger", "make", "--do", draft.action, ...detailFlags(), "--", draft.phrases.join(", "), draft.text.trim()];
     return ["trigger", "schedule", "--do", draft.action, ...detailFlags(), ...startFlags(), ...limitFlags("--times"), "--", draft.text.trim()];
 }
 
 function editLine() {
     const line = ["trigger", "edit", String(held.id), "--text", draft.text.trim(), "--action", draft.action, ...detailFlags()];
-    return draft.kind === "words" ? [...line, ...draft.phrases.map((phrase) => `--phrases=${phrase}`)] : [...line, ...editFlags(), ...limitFlags("--fire-limit")];
+    return draft.type === "words" ? [...line, ...draft.phrases.map((phrase) => `--phrases=${phrase}`)] : [...line, ...editFlags(), ...limitFlags("--fire-limit")];
 }
 
 async function ran(line) {
@@ -96,9 +96,9 @@ const end = () => ran(["trigger", "strike", String(held.id)]);
             <div class="summary"><small>What this trigger does</small>{{ sentence(draft) }}</div>
             <TriggerPart title="When" hint="What sets it off">
                 <template v-if="isNew">
-                    <TriggerTiles v-model="draft.kind" :options="WHEN_KINDS" mark="trigger-kind" />
+                    <TriggerTiles v-model="draft.type" :options="WHEN_TYPES" mark="trigger-type" />
                 </template>
-                <template v-if="draft.kind === 'words'">
+                <template v-if="draft.type === 'words'">
                     <TriggerWordFields v-model:phrases="draft.phrases" v-model:places="draft.places" v-model:match="draft.match" />
                 </template>
                 <template v-else>
@@ -109,22 +109,22 @@ const end = () => ran(["trigger", "strike", String(held.id)]);
                 <TriggerConditionFields v-model="draft.conditions" />
             </TriggerPart>
             <TriggerPart title="Action" hint="What it does, in order">
-                <TriggerActionFields v-model:action="draft.action" v-model:text="draft.text" v-model:extra="draft.extra" :choices="draft.kind === 'time' ? TIME_DOES : DOES" @change-extra="changeExtra" />
+                <TriggerActionFields v-model:action="draft.action" v-model:text="draft.text" v-model:extra="draft.extra" :choices="draft.type === 'time' ? TIME_DOES : DOES" @change-extra="changeExtra" />
             </TriggerPart>
         </div>
         <template #foot>
             <span class="note" role="status">{{ failure || missing || (isNew ? "" : "Changes apply the next time this trigger runs.") }}</span>
             <template v-if="!isNew">
                 <template v-if="confirming">
-                    <Btn kind="danger" data-trigger-strike-sure @click="end">Yes, end it</Btn>
+                    <Btn variant="danger" data-trigger-strike-sure @click="end">Yes, end it</Btn>
                 </template>
                 <template v-else>
-                    <Btn kind="danger" data-trigger-strike @click="confirming = true">End this trigger</Btn>
+                    <Btn variant="danger" data-trigger-strike @click="confirming = true">End this trigger</Btn>
                 </template>
                 <Btn data-trigger-pause @click="pause">{{ held.paused_at ? "Resume" : "Pause" }}</Btn>
             </template>
             <Btn @click="emit('close')">Cancel</Btn>
-            <Btn kind="primary" :disabled="Boolean(missing)" data-trigger-save @click="save">{{ isNew ? "Create trigger" : "Save" }}</Btn>
+            <Btn variant="primary" :disabled="Boolean(missing)" data-trigger-save @click="save">{{ isNew ? "Create trigger" : "Save" }}</Btn>
         </template>
     </Dialog>
 </template>

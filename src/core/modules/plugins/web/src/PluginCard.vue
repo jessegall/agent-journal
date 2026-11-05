@@ -59,7 +59,7 @@ function pick(event) {
             </template>
             <Btn small data-plugin-record @click="emit('record')">Log</Btn>
             <span ref="more" class="more">
-                <Btn kind="icon" small data-plugin-more title="Check for updates or remove" @click.stop="menu = !menu"><Icon name="dots" :size="14" /></Btn>
+                <Btn variant="icon" small data-plugin-more title="Check for updates or remove" @click.stop="menu = !menu"><Icon name="dots" :size="14" /></Btn>
             </span>
         </footer>
         <template v-if="menu">

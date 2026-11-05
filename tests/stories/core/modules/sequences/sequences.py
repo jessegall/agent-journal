@@ -159,7 +159,7 @@ def test_a_running_sequence_is_not_started_again(new_story):
 
 def test_a_trigger_of_no_known_kind_a_bad_pattern_and_a_missing_field_are_refused(new_story):
     story = new_story(fixture=UserJoined)
-    for trigger, reason in (({"trigger_type": "moon"}, "moon is no kind of trigger"), ({"trigger_type": "command", "pattern": "("}, "does not read"), ({"trigger_type": "phrase"}, "needs its text")):
+    for trigger, reason in (({"trigger_type": "moon"}, "moon is no type of trigger"), ({"trigger_type": "command", "pattern": "("}, "does not read"), ({"trigger_type": "phrase"}, "needs its text")):
         story.expect_refusal(f'sequence make "Bad" --steps "one" --triggers {shlex.quote(json.dumps([trigger]))}', reason, actor=story.user)
 
 

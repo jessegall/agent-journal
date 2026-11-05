@@ -19,7 +19,7 @@ export function withDayLines(turns, nowSeconds = Date.now() / 1000) {
         const start = dayStart(turn.time);
         if (start !== day) {
             day = start;
-            lined.push({id: `day:${start}`, key: `day:${start}`, kind: "day", who: "", time: turn.time, title: dayLine(turn.time, nowSeconds), text: "", data: {}});
+            lined.push({id: `day:${start}`, key: `day:${start}`, type: "day", who: "", time: turn.time, title: dayLine(turn.time, nowSeconds), text: "", data: {}});
         }
         lined.push(turn);
     }

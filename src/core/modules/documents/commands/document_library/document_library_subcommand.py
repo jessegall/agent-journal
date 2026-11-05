@@ -15,7 +15,7 @@ CLOSED = "closed"
 
 
 class DocumentLibrarySubcommand(ReadSubcommand[DocumentLibrary]):
-    """`journal document library [--kind doc|report] [--state open|closed] [--after <id>]`: a page of
+    """`journal document library [--type doc|report] [--state open|closed] [--after <id>]`: a page of
     documents or reports with no text, oldest first, after the number given."""
 
     cli_name = "document"
@@ -25,12 +25,12 @@ class DocumentLibrarySubcommand(ReadSubcommand[DocumentLibrary]):
         self.queries = queries
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--kind", choices=CATEGORIES, default="doc")
+        parser.add_argument("--type", choices=CATEGORIES, default="doc")
         parser.add_argument("--state", choices=(OPEN, CLOSED))
         parser.add_argument("--after", type=int, default=0)
 
     def read(self, arguments: Namespace, caller: Caller) -> DocumentLibrary:
-        category = self.queries.query(DocumentRow).filter(row_type=arguments.kind)
+        category = self.queries.query(DocumentRow).filter(row_type=arguments.type)
         if arguments.state == OPEN:
             category = category.filter(close_reason="")
         if arguments.state == CLOSED:

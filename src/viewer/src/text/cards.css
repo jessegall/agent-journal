@@ -16,7 +16,7 @@
     border-color: var(--accent);
 }
 
-.row-card-kind {
+.row-card-type {
     color: var(--text-3);
     font-size: 11px;
     letter-spacing: 0.04em;

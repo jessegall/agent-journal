@@ -21,7 +21,7 @@ const MESSAGES = [
     {id: "shape-14", width: 36, height: 30, mine: true},
 ];
 const CARD = [
-    {id: "kind", bars: [{width: "64px", height: 8}]},
+    {id: "type", bars: [{width: "64px", height: 8}]},
     {id: "title", bars: [{width: "70%", height: 12}]},
     {id: "line", bars: [{width: "45%", height: 9}]},
 ];

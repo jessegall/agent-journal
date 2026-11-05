@@ -13,27 +13,27 @@ import PlanInspector from "./PlanInspector.vue";
 import ProcessQueueInspector from "./ProcessQueueInspector.vue";
 import RowMoves from "./RowMoves.vue";
 import ResourceHeading from "./ResourceHeading.vue";
-import {cliOf, fieldsOf, titleOf} from "../domain/resourceKinds.js";
+import {cliOf, fieldsOf, titleOf} from "../domain/resourceNouns.js";
 import ModuleBody from "../windows/ModuleBody.vue";
 
 // the inspector: the row the address opens, over the page, as version 4's side panel drew it; each opened row stacks on the one before
 const props = defineProps({read: {type: Function, required: true}, catalogue: {type: Object, required: true}, environment: {type: String, required: true}, readOnly: Boolean});
 
 const opened = computed(() => route.value.open);
-const kind = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
+const noun = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
 const row = ref(null);
 const failure = ref("");
 const fullyOpen = ref(false);
 let reading = 0;
 
-const LONG_KINDS = new Set(["plan"]);
-const DOCUMENT_KINDS = new Set(["doc", "report"]);
-const OWN_INSPECTORS = new Set(["task", "plan", "test-queue", "agent", "agent-skill", ...DOCUMENT_KINDS]);
-const TEXT_KINDS = new Set(["question", "memory", "rule"]);
-const wide = computed(() => LONG_KINDS.has(kind.value));
-const isDocument = computed(() => DOCUMENT_KINDS.has(kind.value));
-const title = computed(() => titleOf(kind.value, row.value, opened.value?.id));
-const text = computed(() => row.value?.body || row.value?.brief || (TEXT_KINDS.has(kind.value) ? row.value?.text : "") || "");
+const LONG_NOUNS = new Set(["plan"]);
+const DOCUMENT_NOUNS = new Set(["doc", "report"]);
+const OWN_INSPECTORS = new Set(["task", "plan", "test-queue", "agent", "agent-skill", ...DOCUMENT_NOUNS]);
+const TEXT_NOUNS = new Set(["question", "memory", "rule"]);
+const wide = computed(() => LONG_NOUNS.has(noun.value));
+const isDocument = computed(() => DOCUMENT_NOUNS.has(noun.value));
+const title = computed(() => titleOf(noun.value, row.value, opened.value?.id));
+const text = computed(() => row.value?.body || row.value?.brief || (TEXT_NOUNS.has(noun.value) ? row.value?.text : "") || "");
 const html = computed(() => (text.value ? render(text.value, {env: "", rowNames: false}) : ""));
 const fields = computed(() => fieldsOf(row.value));
 
@@ -61,9 +61,9 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 <template>
     <Teleport to="body">
         <Transition name="side" appear @before-enter="fullyOpen = false" @after-enter="fullyOpen = true">
-            <div v-if="opened" :class="['veil', {fades: kind === 'test-queue'}]" @click.self="close">
+            <div v-if="opened" :class="['veil', {fades: noun === 'test-queue'}]" @click.self="close">
                 <aside
-                    :class="['panel', {wide, opening: !fullyOpen, task: kind === 'task', document: isDocument, queue: kind === 'test-queue', agent: kind === 'agent'}]"
+                    :class="['panel', {wide, opening: !fullyOpen, task: noun === 'task', document: isDocument, queue: noun === 'test-queue', agent: noun === 'agent'}]"
                     role="dialog"
                     :aria-label="title"
                     data-resource-panel
@@ -71,7 +71,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                     <template v-if="!fullyOpen">
                         <div class="panel-opening" data-resource-opening><Skeleton /></div>
                     </template>
-                    <SwitchCase :value="kind">
+                    <SwitchCase :value="noun">
                         <template #agent-skill>
                             <header class="head">
                                 <ResourceHeading label="Skill" title="Skill" />
@@ -139,7 +139,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                     </button>
                                 </template>
                                 <ResourceHeading
-                                    :label="`${kind} ${opened.id}${row?.state ? ` · ${row.state}` : ''}`"
+                                    :label="`${noun} ${opened.id}${row?.state ? ` · ${row.state}` : ''}`"
                                     :title="title"
                                     :abstract="row?.abstract"
                                 />
@@ -147,9 +147,9 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                     ×
                                 </button>
                             </header>
-                            <RowMoves :kind="kind" :id="opened.id" :row="row" :read="read" @done="load" />
+                            <RowMoves :noun="noun" :id="opened.id" :row="row" :read="read" @done="load" />
                             <div class="row-buttons">
-                                <ButtonSlot :name="`row.${kind}`" :row="{...row, id: opened.id, kind}" :environment="environment" :read-only="readOnly" @done="load" />
+                                <ButtonSlot :name="`row.${noun}`" :row="{...row, id: opened.id, noun}" :environment="environment" :read-only="readOnly" @done="load" />
                             </div>
                             <div class="body">
                                 <template v-if="failure">
@@ -162,7 +162,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                     <template v-if="html">
                                         <div class="md text" data-resource-text v-html="html" />
                                     </template>
-                                    <template v-if="kind === 'memory'">
+                                    <template v-if="noun === 'memory'">
                                         <MemoryFacts :id="opened.id" :read="read" />
                                     </template>
                                     <section class="section" data-resource-fields>
@@ -301,7 +301,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     color: var(--text);
 }
 
-:deep(.resource-kind) {
+:deep(.resource-noun) {
     margin: 0 0 2px;
     color: var(--text-3);
     font-size: 11.5px;

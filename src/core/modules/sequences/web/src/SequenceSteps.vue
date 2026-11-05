@@ -71,7 +71,7 @@ async function save() {
                 </div>
             </template>
             <div class="editor-foot">
-                <Btn kind="primary" small :disabled="Boolean(problem)" data-sequence-save @click="save">Save steps</Btn>
+                <Btn variant="primary" small :disabled="Boolean(problem)" data-sequence-save @click="save">Save steps</Btn>
                 <Btn small @click="draft = null">Cancel</Btn>
                 <span class="editor-note" role="status">{{ refusal || problem }}</span>
             </div>

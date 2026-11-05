@@ -1,6 +1,6 @@
 import {meta} from "./tables.js";
 
-// what a mark's one-click action opens, named for the kind of thing it opens: Open the task, Open the output, Open the agent
+// what a mark's one-click action opens, named for the type of thing it opens: Open the task, Open the output, Open the agent
 const OWN_WORDS = {outputs: "output", skills: "skill", agents: "agent", helpers: "agent", pages: "page"};
 
 export function actionLabel(table) {

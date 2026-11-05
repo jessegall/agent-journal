@@ -35,11 +35,11 @@ export function escape(text) {
 }
 
 function transformed(text, context) {
-    const blocks = [{kind: "text", text: escape(text).replace(/\r\n/g, "\n")}];
+    const blocks = [{type: "text", text: escape(text).replace(/\r\n/g, "\n")}];
     for (const fn of transformers) {
         for (let i = blocks.length - 1; i >= 0; i--) {
             const b = blocks[i];
-            if (b.kind !== "text") continue;
+            if (b.type !== "text") continue;
             const made = fn(b.text, context);
             if (typeof made === "string") b.text = made;
             else if (made) blocks.splice(i, 1, ...made);
@@ -83,9 +83,9 @@ function table(lines) {
     const [head, , ...body] = lines;
     const headCells = cells(head);
     const bodyRows = body.map(cells);
-    const kind = (column) => ([headCells, ...bodyRows].some((row) => (row[column] ?? "").length > TEXT_COLUMN_CHARACTERS) ? ' class="text-column"' : "");
-    const th = headCells.map((c, column) => `<th${kind(column)}>${spans(c)}</th>`).join("");
-    const rows = bodyRows.map((row) => `<tr>${row.map((c, column) => `<td${kind(column)}>${spans(c)}</td>`).join("")}</tr>`).join("");
+    const type = (column) => ([headCells, ...bodyRows].some((row) => (row[column] ?? "").length > TEXT_COLUMN_CHARACTERS) ? ' class="text-column"' : "");
+    const th = headCells.map((c, column) => `<th${type(column)}>${spans(c)}</th>`).join("");
+    const rows = bodyRows.map((row) => `<tr>${row.map((c, column) => `<td${type(column)}>${spans(c)}</td>`).join("")}</tr>`).join("");
     return `<table><thead><tr>${th}</tr></thead><tbody>${rows}</tbody></table>`;
 }
 
@@ -110,7 +110,7 @@ function list(lines) {
     return `${opening}${items.map((i) => `<li>${spans(i.text)}${i.nested.length ? list(i.nested) : ""}</li>`).join("")}</${number ? "ol" : "ul"}>`;
 }
 
-// A blank line between two items of one kind stays inside the list, so a numbered list keeps counting.
+// A blank line between two items of one type stays inside the list, so a numbered list keeps counting.
 function listEnd(lines, start) {
     const numbered = NUMBERED_ITEM.test(lines[start]);
     let end = start + 1;
@@ -198,7 +198,7 @@ function markdown(text) {
 
 // an html piece a transformer made that sits inside a line, such as a row's chip or a link, and not a block of its own
 const BLOCK_HTML = /^\s*<(div|pre|table|figure|section|details|ul|ol|blockquote|hr|p)\b/i;
-const isInline = (block) => block.kind !== "text" && !BLOCK_HTML.test(block.html);
+const isInline = (block) => block.type !== "text" && !BLOCK_HTML.test(block.html);
 
 // the pieces laid out as markdown: inline pieces stay in their text as numbered marks while the markdown is laid out, so a table or a
 // list holding a chip keeps its shape, and are put back after; a block piece stands between the texts around it
@@ -211,7 +211,7 @@ function laidOut(blocks) {
         text = "";
     };
     for (const block of blocks) {
-        if (block.kind === "text") text += block.text;
+        if (block.type === "text") text += block.text;
         else if (isInline(block)) text += `\u0001${inline.push(block.html) - 1}\u0001`;
         else {
             flush();

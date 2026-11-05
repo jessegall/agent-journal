@@ -22,7 +22,7 @@ pages only read. Version 5 on a scratch demo, version 4 on the live journal at p
 
 - Version 4's share page on the live server draws white and empty (its data.json answers the shell's html, four console errors), so
   the version 4 images are blank and say that; the comparison of looks comes from the version 4 source (ShareApp and ShareStrip):
-  version 5 has the same strip (kind, facts, View only, Link ends), the same footer and the same gone words.
+  version 5 has the same strip (type, facts, View only, Link ends), the same footer and the same gone words.
 - A document: version 4 holds no live document share to look at, and version 5 refuses one, because it has no document to share
   yet (journal share make docs:12 answers that the journal has no documents to share), although the documents module now exists.
   Making documents shareable needs a shared window for them.

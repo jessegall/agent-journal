@@ -22,13 +22,13 @@ const DECLARATIONS = {
     edit: {family: "edits", family_title: "Edits", grouping: "row", group_label: "{count} edits"},
 };
 const declarationOf = (type) => DECLARATIONS[type];
-const markItem = (id, type, fields = {}) => ({kind: "mark", id: `mark:${id}`, time: id, row: {id, type, ...fields}});
-const messageItem = (id) => ({kind: "message", id: `message:${id}`, time: id, row: {id}});
-const shape = (items) => items.map((item) => (item.kind === "mark-group" ? `group:${item.marks.length}` : item.id));
+const markItem = (id, type, fields = {}) => ({type: "mark", id: `mark:${id}`, time: id, row: {id, type, ...fields}});
+const messageItem = (id) => ({type: "message", id: `message:${id}`, time: id, row: {id}});
+const shape = (items) => items.map((item) => (item.type === "mark-group" ? `group:${item.marks.length}` : item.id));
 
 test("three marks of a family standing together fold into one, under the label the type declares", () => {
     const [group] = foldedMarks([markItem(1, "reminder"), markItem(2, "reminder"), markItem(3, "reminder")], declarationOf);
-    expect(group).toMatchObject({kind: "mark-group", id: "mark-group:1", label: "3 rules and reminders recalled", time: 1});
+    expect(group).toMatchObject({type: "mark-group", id: "mark-group:1", label: "3 rules and reminders recalled", time: 1});
     expect(group.marks.map((mark) => mark.id)).toEqual([1, 2, 3]);
 });
 

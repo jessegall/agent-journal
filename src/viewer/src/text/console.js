@@ -65,8 +65,8 @@ register((text) => {
     const found = python(plain) || browser(plain);
     if (!found) return null;
     return [
-        {kind: "text", text: found.lead},
-        {kind: "html", html: found.html},
-        {kind: "text", text: found.tail},
+        {type: "text", text: found.lead},
+        {type: "html", html: found.html},
+        {type: "text", text: found.tail},
     ];
 });

@@ -6,7 +6,7 @@ from core.base.refusal import Refusal
 from core.modules.templates.models.template import Template
 from core.modules.templates.support.template_row import TemplateRow
 
-RESERVED_BLANKS = frozenset({"target", "kind", "id", "title"})
+RESERVED_BLANKS = frozenset({"target", "type", "id", "title"})
 
 
 @dataclass(frozen=True)
@@ -18,7 +18,7 @@ class TemplatePurpose:
 
     def text(self, template: Template, target: TemplateRow, supplied: Mapping[str, str]) -> str:
         blanks = {name for _, name, _, _ in Formatter().parse(self.prompt) if name is not None}
-        values = {**supplied, "target": target.words, "kind": target.cli_name, "id": template.id, "title": template.title}
+        values = {**supplied, "target": target.words, "type": target.cli_name, "id": template.id, "title": template.title}
         wrong = sorted((blanks - values.keys()) | (supplied.keys() - blanks) | (supplied.keys() & RESERVED_BLANKS))
         if wrong:
             raise Refusal(f"template {template.id} has missing, unused or reserved values: {', '.join(wrong)}", "journal template show <n> shows its purpose")

@@ -14,8 +14,8 @@ DRIVERS_SETTINGS = [
     SettingValue("hook-wait-seconds", "Tool call wait", "Seconds to wait for the journal before allowing a tool call without checks.", SettingType.NUMBER, default=5, scope=SettingScope.PROJECT),
     SettingValue("hook-call-days", "Call record days", "How many days the journal keeps the record of each call from the agent program.", SettingType.NUMBER, default=30,
                  scope=SettingScope.PROJECT),
-    SettingGroup("driver", "Drivers", "The driver each kind of agent works under in this environment.",
-                 any_key=SettingValue("*", "Driver", "The driver this kind of agent works under.", SettingType.TEXT, default="", scope=SettingScope.ENVIRONMENT)),
+    SettingGroup("driver", "Drivers", "The driver each type of agent works under in this environment.",
+                 any_key=SettingValue("*", "Driver", "The driver this type of agent works under.", SettingType.TEXT, default="", scope=SettingScope.ENVIRONMENT)),
     SettingGroup("essential", "Essential rules", "Essential rules the user allowed to be switched off.",
                  any_key=SettingValue("*", "Allowed", "Whether this essential rule may be switched off.", SettingType.FLAG, default=False, scope=SettingScope.PROJECT)),
 ]

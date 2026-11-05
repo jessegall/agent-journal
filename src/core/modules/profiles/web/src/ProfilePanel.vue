@@ -25,7 +25,7 @@ watch(canWrite, (allowed) => {
     if (!allowed) draft.value.access = "read-only";
 });
 const comparing = ref(false);
-const lineRows = (kind, lines, others) => lines.map((text, index) => ({line_type: kind, line: index + 1, text})).filter((row) => !others.includes(row.text));
+const lineRows = (type, lines, others) => lines.map((text, index) => ({line_type: type, line: index + 1, text})).filter((row) => !others.includes(row.text));
 const compared = computed(() => {
     const yours = props.profile.body.split("\n");
     const journal = (props.profile.module_body || "").split("\n");
@@ -47,7 +47,7 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
             <FormField label="When it is used" for="profile-description" help="The agent reads this to decide when to start it.">
                 <TextArea id="profile-description" rows="3" :value="draft.description" @input="draft.description = $event.target.value" />
             </FormField>
-            <FormField label="Type" for="profile-kind" help="The kind of agent that runs this profile.">
+            <FormField label="Type" for="profile-type" help="The type of agent that runs this profile.">
                 <template v-if="profile.shipped">
                     <span data-profile-type-locked>{{ pickedType?.label }}</span>
                 </template>
@@ -76,9 +76,9 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
             <label class="profile-panel-check"><input v-model="draft.independent" type="checkbox" data-profile-independent /> Must judge fresh</label>
             <template v-if="profile.module_text_changed">
                 <p class="profile-panel-note">Text changed: the journal's instructions have a new version.</p>
-                <Btn kind="ghost" small data-profile-compare @click="comparing = !comparing">Compare</Btn>
+                <Btn variant="ghost" small data-profile-compare @click="comparing = !comparing">Compare</Btn>
                 <template v-if="comparing">
-                    <DiffCard path="Instructions" kind="edit" :added="compared.filter((row) => row.line_type === 'add').length" :removed="compared.filter((row) => row.line_type === 'del').length" at="" :rows="compared" data-profile-diff />
+                    <DiffCard path="Instructions" change="edit" :added="compared.filter((row) => row.line_type === 'add').length" :removed="compared.filter((row) => row.line_type === 'del').length" at="" :rows="compared" data-profile-diff />
                 </template>
             </template>
             <template v-if="profile.shipped">
@@ -87,11 +87,11 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
         </div>
         <template #foot>
             <template v-if="profile.changed.length || profile.problem">
-                <Btn kind="ghost" small data-profile-reset @click="emit('reset', profile)">Use the journal's version</Btn>
+                <Btn variant="ghost" small data-profile-reset @click="emit('reset', profile)">Use the journal's version</Btn>
             </template>
             <span class="profile-panel-grow" />
-            <Btn kind="ghost" small data-profile-cancel @click="emit('close')">Cancel</Btn>
-            <Btn kind="primary" small :disabled="!canSave" data-profile-save @click="emit('save', profile, draft)">Save</Btn>
+            <Btn variant="ghost" small data-profile-cancel @click="emit('close')">Cancel</Btn>
+            <Btn variant="primary" small :disabled="!canSave" data-profile-save @click="emit('save', profile, draft)">Save</Btn>
         </template>
     </SidePanel>
 </template>

@@ -3,8 +3,8 @@ import {playedLeast} from "./timeline.js";
 // The figure's acts, one pile, and the sequences it plays whole. A new act is one entry of PILE, a new sequence one entry of SEQUENCES,
 // never put in another's place.
 //
-// An act is {name, kind, weight, when, group, cooldown, lifetime}. Its kind is a clip the body plays, a look the eyes take on, a gaze the
-// head takes at the message the moment is about (reactions.js readingAt), or a pick, a choice of something that is not a clip: a perch's kind, a digit, a place to go, a spell the
+// An act is {name, type, weight, when, group, cooldown, lifetime}. Its type is a clip the body plays, a look the eyes take on, a gaze the
+// head takes at the message the moment is about (reactions.js readingAt), or a pick, a choice of something that is not a clip: a perch's type, a digit, a place to go, a spell the
 // figure keeps up. Its weight is its tickets, a weight of 3 counting as three. `when` is the condition it may play under: the moment it
 // answers, and anything else it needs, as a voice, a stretch of time the state has lasted, a free hand. Its group, {name, cooldown}, is
 // the moment it answers, and the seconds before any act of the group may play again once one has; its own `cooldown` the seconds before
@@ -73,7 +73,7 @@ const USER_FACES = {
     "⚔️": "angry", "🛡️": "worried", "🏰": "amused",
 };
 
-const act = (name, kind, weight, when) => ({name, kind, weight, when, lifetime: LIFETIME});
+const act = (name, type, weight, when) => ({name, type, weight, when, lifetime: LIFETIME});
 const clip = (name, weight, when = {}) => act(name, "clip", weight, when);
 const look = (name, weight, when = {}) => act(name, "look", weight, when);
 const gaze = (name, weight, when = {}) => act(name, "gaze", weight, when);
@@ -276,12 +276,12 @@ export function choicesFor(scene) {
     const since = (key) => scene.now - (scene.memory.get(key) ?? -Infinity);
     const cooled = (entry) => !scene.memory || cooldownsOf(entry).every(([key, cooldown]) => since(key) >= leastOf(cooldown));
     const roomy = (entry) => !entry.shenanigan || entry.lasts <= (scene.room ?? 0);
-    const choices = PILE.filter((entry) => holds(entry.when, scene) && (entry.kind !== "clip" || has(entry.name)) && cooled(entry) && roomy(entry));
+    const choices = PILE.filter((entry) => holds(entry.when, scene) && (entry.type !== "clip" || has(entry.name)) && cooled(entry) && roomy(entry));
     const due = (scene.tally?.plain ?? 0) >= SHENANIGAN.after && choices.some((entry) => entry.shenanigan);
     const kept = due ? choices.filter((entry) => entry.shenanigan) : choices;
     // the act just played is not drawn again at once, while anything else may play
-    const fresh = kept.filter((entry) => entry.kind === "nothing" || entry.name !== scene.tally?.last);
-    return fresh.some((entry) => entry.kind !== "nothing") ? fresh : kept;
+    const fresh = kept.filter((entry) => entry.type === "nothing" || entry.name !== scene.tally?.last);
+    return fresh.some((entry) => entry.type !== "nothing") ? fresh : kept;
 }
 
 // One entry drawn by weight from those that may play in `scene` (choicesFor), with `random`; null when none may, or when nothing is drawn.
@@ -290,7 +290,7 @@ export function draw(scene, random) {
     const choices = choicesFor(scene);
     let roll = random() * choices.reduce((sum, entry) => sum + entry.weight, 0);
     const drawn = choices.find((entry) => (roll -= entry.weight) < 0) ?? choices.at(-1) ?? null;
-    if (!drawn || drawn.kind === "nothing") return null;
+    if (!drawn || drawn.type === "nothing") return null;
     cool(scene, drawn, random);
     if (scene.tally) Object.assign(scene.tally, {plain: drawn.shenanigan ? 0 : scene.tally.plain + 1, last: drawn.name});
     return drawn;
@@ -302,7 +302,7 @@ function cool(scene, entry, random) {
     for (const [key, cooldown] of cooldownsOf(entry)) scene.memory?.set(key, scene.now + beyondLeast(cooldown, random));
 }
 
-// The entry `name` of the scene's moment taken without being drawn, as a perch's other kind when the drawn one does not fit: its cooldown
+// The entry `name` of the scene's moment taken without being drawn, as a perch's other type when the drawn one does not fit: its cooldown
 // begun as a draw begins it
 export function taken(scene, name, random) {
     cool(scene, PILE.find((entry) => entry.when.moment === scene.moment && entry.name === name), random);
@@ -320,8 +320,8 @@ const secondsOf = (cooldown) => `${[cooldown].flat().join("-")}s`;
 // an entry as a line: what it is, its weight, the condition it plays under, whether it may be cut, its group's cooldown and its own, and
 // its lifetime where it has one of its own
 export const lineOf = (entry) =>
-    `${entry.shenanigan ? `shenanigan of ${entry.lasts}s ` : ""}${entry.kind} ${entry.name} ×${entry.weight} when ${conditions(entry.when)}` +
-    `${entry.kind === "clip" ? ", plays out" : ""}` +
+    `${entry.shenanigan ? `shenanigan of ${entry.lasts}s ` : ""}${entry.type} ${entry.name} ×${entry.weight} when ${conditions(entry.when)}` +
+    `${entry.type === "clip" ? ", plays out" : ""}` +
     `${entry.group.cooldown ? `, group cools ${secondsOf(entry.group.cooldown)}` : ""}${entry.cooldown ? `, cools ${secondsOf(entry.cooldown)}` : ""}` +
     `${entry.lifetime === LIFETIME ? "" : `, lives ${entry.lifetime}s`}`;
 

@@ -11,7 +11,7 @@ const targetRef = (link) => `${link.target_model}:${link.target_id}`;
     <div class="document-tab" data-document-links>
         <template v-if="links.length">
             <template v-for="link in links" :key="link.id">
-                <Btn kind="text" data-text-link @click="peekRef(targetRef(link))">{{ link.link_type }} {{ targetRef(link) }}</Btn>
+                <Btn variant="text" data-text-link @click="peekRef(targetRef(link))">{{ link.link_type }} {{ targetRef(link) }}</Btn>
             </template>
         </template>
         <template v-else>

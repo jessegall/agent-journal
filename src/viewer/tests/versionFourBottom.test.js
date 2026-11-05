@@ -23,7 +23,7 @@ test("a button has no visible border unless it is asked to be bordered", () => {
 });
 
 test("the dock's text action buttons and Dump files are the bordered ones", () => {
-    expect(read("../src/chat/DockWrapper.vue")).toMatch(/<Btn\s+small\s+:kind="button\.primary \? 'primary' : 'ghost'"\s+:bordered="!button\.primary"\s+:data-dock-action="button\.action"/);
+    expect(read("../src/chat/DockWrapper.vue")).toMatch(/<Btn\s+small\s+:type="button\.primary \? 'primary' : 'ghost'"\s+:bordered="!button\.primary"\s+:data-dock-action="button\.action"/);
     expect(read("../../core/modules/messages/web/src/Chat.vue")).toMatch(/<Btn small bordered class="composer-send" data-dump-files/);
 });
 

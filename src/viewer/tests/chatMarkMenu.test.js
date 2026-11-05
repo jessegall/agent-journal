@@ -5,12 +5,12 @@ import {CHAT_WINDOW, withFamilyOptions} from "../src/windows/chatOptions.js";
 import {isMainOnly} from "../src/domain/markFamilies.js";
 import {settled} from "./settled.js";
 
-const KINDS = [
+const TYPES = [
     {type: "memory", family: "memories.memories", family_title: "Memories", group: "memory", group_label: "Memory", shown: true, main: true},
     {type: "reminder", family: "memories.reminders", family_title: "Reminders", group: "memory", group_label: "Memory", shown: false, main: false},
     {type: "task", family: "tasks.tasks", family_title: "Tasks", group: "task", group_label: "Task", shown: true, main: true},
 ];
-const declared = withFamilyOptions([{name: CHAT_WINDOW, options: []}], KINDS)[0].options;
+const declared = withFamilyOptions([{name: CHAT_WINDOW, options: []}], TYPES)[0].options;
 let drawn = [];
 
 // the chat's pane menu over a pane that keeps its options, as the stage keeps them
@@ -38,7 +38,7 @@ afterEach(() => {
     drawn = [];
 });
 
-test("the chat's menu lists each group with Main updates only and a switch for each kind in it, after the presets", async () => {
+test("the chat's menu lists each group with Main updates only and a switch for each type in it, after the presets", async () => {
     const {element} = await opened();
     const keys = [...element.querySelectorAll("[data-option]")].map((control) => control.dataset.option);
     expect(keys).toEqual(["show-preset", "main-only-memory", "show-memories.memories", "show-memories.reminders", "main-only-task", "show-tasks.tasks"]);
@@ -46,21 +46,21 @@ test("the chat's menu lists each group with Main updates only and a switch for e
     expect(element.querySelector('[data-option="main-only-memory"]').textContent).toBe("Main updates only");
 });
 
-test("Main updates only switches a group's kinds without a main mark off on the pane, and again switches them all on", async () => {
+test("Main updates only switches a group's types without a main mark off on the pane, and again switches them all on", async () => {
     const {element, values} = await opened();
     const press = element.querySelector('[data-option="main-only-memory"]');
     press.click();
     await settled();
     expect(values.value).toEqual({"show-memories.memories": true, "show-memories.reminders": false});
     expect(press.getAttribute("aria-pressed")).toBe("true");
-    expect(isMainOnly(KINDS, "memory", (key) => values.value[key])).toBe(true);
+    expect(isMainOnly(TYPES, "memory", (key) => values.value[key])).toBe(true);
     press.click();
     await settled();
     expect(values.value).toEqual({"show-memories.memories": true, "show-memories.reminders": true});
     expect(press.getAttribute("aria-pressed")).toBe("false");
 });
 
-// the kinds as the modules declare them, with the group label every kind carries unformatted and two families that once shared a title
+// the types as the modules declare them, with the group label every type carries unformatted and two families that once shared a title
 const DECLARED = [
     {type: "dispatch", family: "drivers.dispatches", family_title: "Helper dispatches", group: "agent", group_label: "{family}: {count} updates", shown: true, main: true},
     {type: "helper", family: "agents.helpers", family_title: "Helpers", group: "agent", group_label: "{family}: {count} helper updates", shown: true, main: true},
@@ -111,7 +111,7 @@ test("the marks stay behind a fold until it is opened, and the figure and preset
     expect(element.querySelector('[data-option="show-tasks.tasks"]')).toBeNull();
 });
 
-test("a switch for one kind is kept on the pane beside the group's main-only choice", async () => {
+test("a switch for one type is kept on the pane beside the group's main-only choice", async () => {
     const {element, values} = await opened();
     element.querySelector('[data-option="show-tasks.tasks"]').click();
     await settled();

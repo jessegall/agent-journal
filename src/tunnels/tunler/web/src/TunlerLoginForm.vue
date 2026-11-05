@@ -47,7 +47,7 @@ async function connect() {
             <p class="failure" role="alert" data-tunler-login-failure>{{ failure }}</p>
         </template>
         <div class="actions">
-            <Btn small kind="primary" type="submit" :busy="busy" data-tunler-connect>{{ asking ? "Create the account" : "Connect" }}</Btn>
+            <Btn small variant="primary" type="submit" :busy="busy" data-tunler-connect>{{ asking ? "Create the account" : "Connect" }}</Btn>
         </div>
         <p class="fine">A forgotten password can't be recovered: make a new account. Accounts unused for 30 days are deleted with their domains.</p>
     </form>

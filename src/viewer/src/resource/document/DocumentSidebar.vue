@@ -37,7 +37,7 @@ defineEmits(["update:mode", "show", "changed"]);
                         <template v-if="question.answer">
                             <p class="question-answer">Answered: {{ question.answer }}</p>
                         </template>
-                        <RowMoves kind="question" :id="question.id" :row="question" :read="read" @done="$emit('changed')" />
+                        <RowMoves noun="question" :id="question.id" :row="question" :read="read" @done="$emit('changed')" />
                     </section>
                 </template>
             </aside>

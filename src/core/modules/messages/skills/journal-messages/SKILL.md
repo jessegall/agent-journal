@@ -28,7 +28,7 @@ A line typed into your terminal starts with `[journal]`: the journal typed it, n
 - Every message you read is steering, which you follow, or work, which you file with `journal task make`.
 - A message that needs nothing more ("ok", "thanks") gets a reaction, not words: `journal message react N "👍"`.
 - A comment on a document, report or plan is answered and written into that text; it becomes work only when asked.
-- Write a number that names a row with its kind, task 3399 or plan 1032, so the chat links it.
+- Write a number that names a row with its type, task 3399 or plan 1032, so the chat links it.
 - Say in the chat only what the user needs to know.
 
 ## Questions

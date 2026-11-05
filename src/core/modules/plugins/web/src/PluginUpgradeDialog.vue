@@ -19,7 +19,7 @@ const emit = defineEmits(["close", "apply"]);
         </div>
         <template #foot>
             <Btn @click="emit('close')">Cancel</Btn>
-            <Btn kind="primary" data-plugin-upgrade-apply @click="emit('apply')">Upgrade</Btn>
+            <Btn variant="primary" data-plugin-upgrade-apply @click="emit('apply')">Upgrade</Btn>
         </template>
     </Dialog>
 </template>

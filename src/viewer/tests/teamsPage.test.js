@@ -6,10 +6,10 @@ afterEach(() => document.body.replaceChildren());
 
 const LINKED = {is_connected: true, address: "https://library.example.com:8740", is_encrypted: true, server_name: "Acme library", user_name: "Grace", role: "edit", reached_at: "2026-11-04T16:20:00+00:00", failure: "", stopped: ""};
 const ITEMS = [
-    {kind: "doc", id: 12, version: 8, title: "Release checklist", abstract: "What to do before a release", excerpt: "", creator: "Ada", updated_by: "Grace", updated_at: "2026-11-04T16:20:00+00:00", copy_id: null},
-    {kind: "check", id: 12, version: 2, title: "Cut a release", abstract: "", excerpt: "tag first, then build", creator: "Ada", updated_by: "Ada", updated_at: "2026-11-03T10:00:00+00:00", copy_id: 3},
+    {share: "doc", id: 12, version: 8, title: "Release checklist", abstract: "What to do before a release", excerpt: "", creator: "Ada", updated_by: "Grace", updated_at: "2026-11-04T16:20:00+00:00", copy_id: null},
+    {share: "check", id: 12, version: 2, title: "Cut a release", abstract: "", excerpt: "tag first, then build", creator: "Ada", updated_by: "Ada", updated_at: "2026-11-03T10:00:00+00:00", copy_id: 3},
 ];
-const SHOWN = {kind: "doc", id: 12, version: 8, fields: {title: "Release checklist", abstract: "What to do before a release", body: "Tag first."}, creator: "Ada", updated_by: "Grace", updated_at: "2026-11-04T16:20:00+00:00", removed_at: ""};
+const SHOWN = {share: "doc", id: 12, version: 8, fields: {title: "Release checklist", abstract: "What to do before a release", body: "Tag first."}, creator: "Ada", updated_by: "Grace", updated_at: "2026-11-04T16:20:00+00:00", removed_at: ""};
 const VERSIONS = {versions: [{version: 8, action: "update", user: "Grace", token: "", created_at: "2026-11-04T16:20:00+00:00"}, {version: 7, action: "update", user: "Ada", token: "", created_at: "2026-11-03T09:00:00+00:00"}]};
 
 function window(status, extra = {}) {
@@ -98,7 +98,7 @@ test("a stopped sync shows why, with the connect form and no library", async () 
 test("the library lists items live and marks those that are already on this journal", async () => {
     const result = window({});
     const element = await mounted(TeamsPage, result);
-    expect(result.reads).toContain("library list --kind doc");
+    expect(result.reads).toContain("library list --type doc");
     const rows = [...element.querySelectorAll("[data-library-item]")];
     expect(rows.map((row) => row.dataset.libraryItem)).toEqual(["doc:12", "check:12"]);
     expect(rows[0].textContent).toContain("Document, Version: 8, Changed by: Grace");
@@ -107,12 +107,12 @@ test("the library lists items live and marks those that are already on this jour
     expect(rows[1].querySelector("[data-library-excerpt]").textContent).toBe("tag first, then build");
 });
 
-test("choosing a kind reads the library again for that kind", async () => {
+test("choosing a type reads the library again for that type", async () => {
     const result = window({});
     const element = await mounted(TeamsPage, result);
-    [...element.querySelectorAll("[data-library-kind] button")].find((button) => button.textContent.trim() === "Sequences").click();
+    [...element.querySelectorAll("[data-library-type] button")].find((button) => button.textContent.trim() === "Sequences").click();
     await settle();
-    expect(result.reads).toContain("library list --kind sequence");
+    expect(result.reads).toContain("library list --type sequence");
 });
 
 test("typing in the search reads the library with those words", async () => {
@@ -120,7 +120,7 @@ test("typing in the search reads the library with those words", async () => {
     const element = await mounted(TeamsPage, result);
     type(element.querySelector("[data-library-search] input, input[data-library-search]"), "release notes");
     await new Promise((resolve) => setTimeout(resolve, 400));
-    expect(result.reads).toContain('library list --kind doc --search "release notes"');
+    expect(result.reads).toContain('library list --type doc --search "release notes"');
 });
 
 test("only an admin sees Remove, and it removes that item", async () => {
@@ -174,7 +174,7 @@ test("an admin brings back a removed item from its panel", async () => {
     expect(result.lines).toEqual([["library", "restore", "doc", "12"]]);
 });
 
-test("a person who may write shares an item by its kind and number, and sees the warning", async () => {
+test("a person who may write shares an item by its type and number, and sees the warning", async () => {
     const result = window({});
     result.run = async (line) => {
         result.lines.push(line);
@@ -191,7 +191,7 @@ test("a person who may write shares an item by its kind and number, and sees the
     expect(element.querySelector("[data-library-warning]").textContent).toContain("this text names task 6367 and doc 12");
 });
 
-test("a share field that is not a kind and a number is not sent", async () => {
+test("a share field that is not a type and a number is not sent", async () => {
     const result = window({});
     const element = await mounted(TeamsPage, result);
     await openCopies(element);
@@ -200,7 +200,7 @@ test("a share field that is not a kind and a number is not sent", async () => {
     element.querySelector("[data-library-share-submit]").click();
     await settle();
     expect(result.lines).toEqual([]);
-    expect(element.querySelector("[data-library-refusal]").textContent).toBe("Write the kind and the number, such as doc 63.");
+    expect(element.querySelector("[data-library-refusal]").textContent).toBe("Write the type and the number, such as doc 63.");
 });
 
 test("a library that cannot be reached says so in place of the list", async () => {

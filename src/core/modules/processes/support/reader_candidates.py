@@ -5,7 +5,7 @@ from core.base.driver.command_category import CommandCategory
 
 @dataclass(frozen=True)
 class ReaderCandidates:
-    """Patterns to try in order on the output of one command kind."""
+    """Patterns to try in order on the output of one command type."""
 
     title: str
     lines: tuple[str, ...]

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class HookNumber:
-    """The count and database cost of one kind of hook, reader or route."""
+    """The count and database cost of one type of hook, reader or route."""
 
     hook: str
     count: int

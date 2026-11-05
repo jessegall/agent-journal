@@ -15,7 +15,7 @@ afterEach(() => {
 
 const PLUGIN = {id: 1, name: "sins", title: "Sins", release: "1.0", enabled: true, source: "owner/sins", failing: false};
 
-const PREVIEW = {name: "sins", title: "Sins", version: "1.0", source: "owner/repo", rows: [{kind: "setup", label: "packages", command: "npm install"}]};
+const PREVIEW = {name: "sins", title: "Sins", version: "1.0", source: "owner/repo", rows: [{type: "setup", label: "packages", command: "npm install"}]};
 
 async function drawn(refuse = false) {
     const ran = [];

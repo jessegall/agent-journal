@@ -30,10 +30,10 @@ const {EVERY_VOICE_FACES, PILE, VOICE_FACES, givesWay} = await import("../src/fi
 const of = (moment) => PILE.filter((entry) => entry.when.moment === moment);
 
 test("a test run that passed turns the figure to its card and nods, while a failure can startle, dismay or anger it", () => {
-    const passed = of("tests_passed").filter((entry) => entry.kind === "clip" && !entry.shenanigan);
+    const passed = of("tests_passed").filter((entry) => entry.type === "clip" && !entry.shenanigan);
     expect(passed.every((entry) => entry.toward === "card" && entry.onto)).toBe(true);
     expect(passed.map((entry) => entry.name)).toEqual(["nod"]);
-    expect(of("tests_failed").filter((entry) => entry.kind === "clip").map((entry) => [entry.name, entry.toward])).toEqual([["startled", "card"], ["dismay", "card"], ["tantrum", "card"]]);
+    expect(of("tests_failed").filter((entry) => entry.type === "clip").map((entry) => [entry.name, entry.toward])).toEqual([["startled", "card"], ["dismay", "card"], ["tantrum", "card"]]);
 });
 
 test("every voice can throw a tantrum at a test, anticipated run or check failure, with the quieter reactions still available", () => {
@@ -88,9 +88,9 @@ test("a reaction fires only when its roll wins, and not again before its cooldow
 test("typing and reactions change the eyes; messages and work can move the body", () => {
     const user = ["answered", "typing", ...FACES.map((face) => `reacted:${face}`)];
     for (const moment of user) {
-        const reactions = of(moment).filter((entry) => entry.kind !== "nothing");
+        const reactions = of(moment).filter((entry) => entry.type !== "nothing");
         expect(reactions.length, moment).toBeGreaterThan(0);
-        for (const each of reactions) expect(each.kind, moment).toBe("look");
+        for (const each of reactions) expect(each.type, moment).toBe("look");
     }
     expect(reactionTo("reacted:\u2764\ufe0f", new Map(), 0, () => 0.99).look).toBe("hearts");
 });
@@ -98,7 +98,7 @@ test("typing and reactions change the eyes; messages and work can move the body"
 test("every clip and look the figure is ever asked for exists, so no reaction, held state or pastime is dead on arrival", () => {
     const named = new Set(CLIPS.map((clip) => clip.name));
     const asked = [
-        ...PILE.filter((entry) => entry.kind === "clip").map((entry) => entry.name),
+        ...PILE.filter((entry) => entry.type === "clip").map((entry) => entry.name),
         ...Object.values(HELD),
         "walk",
         "jump",
@@ -112,7 +112,7 @@ test("every clip and look the figure is ever asked for exists, so no reaction, h
         "hang_r",
     ];
     for (const clip of asked) expect(named.has(clip), clip).toBe(true);
-    for (const each of PILE.filter((entry) => entry.kind === "look")) expect(EYES[each.name], each.name).toBeDefined();
+    for (const each of PILE.filter((entry) => entry.type === "look")) expect(EYES[each.name], each.name).toBeDefined();
     for (const clip of CLIPS) expect(clip.postures.length, clip.name).toBeGreaterThan(0);
 });
 

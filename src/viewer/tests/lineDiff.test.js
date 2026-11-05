@@ -4,10 +4,10 @@ import {lineDiff} from "../src/domain/lineDiff.js";
 describe("lineDiff", () => {
     it("marks the lines kept, added and removed", () => {
         expect(lineDiff("one\ntwo\nthree", "one\nthree\nfour")).toEqual([
-            {key: "old:0", kind: "same", text: "one"},
-            {key: "old:1", kind: "removed", text: "two"},
-            {key: "old:2", kind: "same", text: "three"},
-            {key: "new:2", kind: "added", text: "four"},
+            {key: "old:0", type: "same", text: "one"},
+            {key: "old:1", type: "removed", text: "two"},
+            {key: "old:2", type: "same", text: "three"},
+            {key: "new:2", type: "added", text: "four"},
         ]);
     });
 

@@ -34,7 +34,7 @@ def test_the_library_lists_the_documents_with_no_text(new_story):
 
 
 def test_the_library_lists_the_reports_when_asked_for_them(new_story):
-    answer = library(new_story(fixture=LibraryStocked), "document library --kind report")
+    answer = library(new_story(fixture=LibraryStocked), "document library --type report")
     expect_row(answer, total=1)
     expect_title_closed(answer, ["Cart review"])
 
@@ -58,7 +58,7 @@ def test_the_library_shows_open_or_closed_texts_when_asked(new_story):
 
 def test_the_documents_window_reads_the_library_and_a_text_by_number(new_story):
     window = WindowStory(new_story(fixture=UserJoined))
-    window.expect_window_allowed("documents.documents", "document library --kind report --state closed --after 25")
+    window.expect_window_allowed("documents.documents", "document library --type report --state closed --after 25")
     window.expect_window_allowed("documents.documents", "doc show 1 --json")
 
 

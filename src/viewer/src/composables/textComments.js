@@ -9,25 +9,25 @@ export function useTextComments(source, read) {
 
     // a comment reaches the chat as "On doc 1, Title: words", and here it is under the document already
     const words = (row) => {
-        const {kind, id, title} = source();
-        const named = `On ${kind} ${id}, ${title}: `;
+        const {noun, id, title} = source();
+        const named = `On ${noun} ${id}, ${title}: `;
         return row.text.startsWith(named) ? row.text.slice(named.length) : row.text;
     };
 
     async function load() {
-        const {kind, id} = source();
+        const {noun, id} = source();
         if (!id) return;
         const turn = ++reading;
-        const answer = await read([kind, "comments", String(id)]);
+        const answer = await read([noun, "comments", String(id)]);
         if (turn === reading) comments.value = answer.ok ? (answer.value.rows ?? []) : [];
     }
 
     async function send(text) {
-        const {kind, id} = source();
+        const {noun, id} = source();
         const shown = {id: `sending-${++sent}`, text};
         comments.value = [...comments.value, shown];
         open.value = true;
-        const answer = await read([kind, "comment", String(id), text]);
+        const answer = await read([noun, "comment", String(id), text]);
         if (!answer.ok) {
             comments.value = comments.value.filter((row) => row !== shown && row.id !== shown.id);
             throw new Error(answer.error);

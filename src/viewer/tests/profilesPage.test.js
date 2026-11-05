@@ -46,7 +46,7 @@ const type = async (element, text) => {
     await settle();
 };
 
-test("the page lists each profile with its description, kind, models and use, under a bar with the find box, New profile and the count", async () => {
+test("the page lists each profile with its description, type, models and use, under a bar with the find box, New profile and the count", async () => {
     await drawn();
     expect(host.querySelector("[data-profile-count]").textContent).toBe("2 profiles");
     const first = host.querySelector('[data-profile="journal-researcher"]').textContent.replace(/\s+/g, " ");

@@ -3,7 +3,7 @@ import {pasteByHand} from "../src/platform/pasteByHand.js";
 
 function paste(field, text) {
     const event = new Event("paste", {bubbles: true, cancelable: true});
-    event.clipboardData = {getData: (kind) => (kind === "text/plain" ? text : ""), files: []};
+    event.clipboardData = {getData: (type) => (type === "text/plain" ? text : ""), files: []};
     field.dispatchEvent(event);
     return event;
 }

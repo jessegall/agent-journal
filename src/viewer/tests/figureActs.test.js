@@ -36,7 +36,7 @@ const {PILE} = await import("../src/figure/pile.js");
 
 // the pile's entries of a moment, those that play something, the chance that one does, and the moment's cooldown
 const of = (moment) => PILE.filter((entry) => entry.when.moment === moment);
-const played = (moment) => of(moment).filter((entry) => entry.kind !== "nothing");
+const played = (moment) => of(moment).filter((entry) => entry.type !== "nothing");
 const oddsOf = (moment) => played(moment).reduce((sum, entry) => sum + entry.weight, 0) / of(moment).reduce((sum, entry) => sum + entry.weight, 0);
 const cooldownOf = (moment) => played(moment)[0].group.cooldown;
 

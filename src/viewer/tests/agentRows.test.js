@@ -89,7 +89,7 @@ test("an idle helper's card opens its report", async () => {
     expect(element.textContent).toContain("The review is complete");
 });
 
-test("a card is two lines: the profile, name and time, then the provider, model and kind, with no task or instruction", async () => {
+test("a card is two lines: the profile, name and time, then the provider, model and type, with no task or instruction", async () => {
     const element = await drawn();
     const card = cardOf(element, 3);
     expect(card.querySelector("[data-agent-title]").textContent).toBe("Journal-researcher");

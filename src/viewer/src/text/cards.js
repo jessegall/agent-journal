@@ -18,7 +18,7 @@ function alone(text) {
 function card(table, id, label, context) {
     const row = rowOf(context, table, id);
     const title = withoutChips(row ? titleOf(row) : label);
-    return `<a class="row-card" href="#" data-peek="${table}:${id}"><span class="row-card-kind">${escape(meta(table).title)} ${id}</span><span class="row-card-title">${escape(title)}</span></a>`;
+    return `<a class="row-card" href="#" data-peek="${table}:${id}"><span class="row-card-type">${escape(meta(table).title)} ${id}</span><span class="row-card-title">${escape(title)}</span></a>`;
 }
 
 register(
@@ -26,9 +26,9 @@ register(
         const found = alone(text);
         if (!found) return null;
         return [
-            {kind: "text", text: text.slice(0, found.at)},
-            {kind: "html", html: card(found.table, found.id, found.label, context)},
-            {kind: "text", text: text.slice(found.at + found.length)},
+            {type: "text", text: text.slice(0, found.at)},
+            {type: "html", html: card(found.table, found.id, found.label, context)},
+            {type: "text", text: text.slice(found.at + found.length)},
         ];
     },
     {first: true}

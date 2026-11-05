@@ -23,7 +23,7 @@ function pick() {
             <span class="mark" aria-hidden="true"><Icon :name="ICONS[row.secret_type]" :size="18" /></span>
             <span class="names">
                 <span class="title">{{ row.title }}</span>
-                <span class="kind">{{ LABELS[row.secret_type] }}</span>
+                <span class="type">{{ LABELS[row.secret_type] }}</span>
             </span>
         </header>
         <p class="note" :title="row.brief">{{ row.brief || "Note: none" }}</p>
@@ -32,7 +32,7 @@ function pick() {
         <footer class="acts">
             <Btn small bordered data-secret-update @click="emit('update')">Edit secret</Btn>
             <span ref="more" class="more">
-                <Btn kind="icon" small title="Secret options" data-secret-more @click.stop="menu = !menu"><Icon name="dots" :size="14" /></Btn>
+                <Btn variant="icon" small title="Secret options" data-secret-more @click.stop="menu = !menu"><Icon name="dots" :size="14" /></Btn>
             </span>
         </footer>
         <template v-if="menu">
@@ -97,7 +97,7 @@ function pick() {
     white-space: nowrap;
 }
 
-.kind {
+.type {
     color: var(--text-3);
     font-size: 11.5px;
 }

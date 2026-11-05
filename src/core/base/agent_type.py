@@ -6,7 +6,7 @@ from core.base.agent_roster import AgentRoster
 
 @dataclass(frozen=True)
 class AgentType:
-    """A kind of agent a module registers, with its file access and how it starts and holds work."""
+    """A type of agent a module registers, with its file access and how it starts and holds work."""
 
     key: str
     label: str

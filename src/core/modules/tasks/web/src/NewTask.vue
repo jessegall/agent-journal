@@ -64,7 +64,7 @@ onMounted(() => input.value.focus());
                 </MenuPanel>
             </template>
             <Btn small @click="emit('cancel')">Cancel</Btn>
-            <Btn small kind="primary" :disabled="!ready" data-file-task @click="file">Create task</Btn>
+            <Btn small variant="primary" :disabled="!ready" data-file-task @click="file">Create task</Btn>
         </div>
     </div>
 </template>

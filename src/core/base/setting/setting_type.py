@@ -2,7 +2,7 @@ from enum import StrEnum
 
 
 class SettingType(StrEnum):
-    """What kind of value a setting holds."""
+    """What type of value a setting holds."""
 
     TEXT = "text"
     NUMBER = "number"

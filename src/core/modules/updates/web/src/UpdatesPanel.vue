@@ -58,7 +58,7 @@ readNotes(1);
         <template v-if="installed">
             <div class="arrived" role="status" data-update-arrived>
                 <span class="line">The update is installed. Reload the page to see it.</span>
-                <Btn small kind="primary" data-update-reload @click="reload">Reload</Btn>
+                <Btn small variant="primary" data-update-reload @click="reload">Reload</Btn>
             </div>
         </template>
         <template v-if="checkFailure || releases.actionFailure.value">
@@ -68,7 +68,7 @@ readNotes(1);
             <span class="line">{{ checkLine }}</span>
             <button type="button" @click="check">Check again</button>
             <template v-if="standing && !standing.is_current">
-                <Btn small kind="primary" data-update-install @click="install">{{ standing.installation?.step === "failed" ? "Retry update" : standing.tag ? `Update to ${standing.tag}` : "Update to the latest" }}</Btn>
+                <Btn small variant="primary" data-update-install @click="install">{{ standing.installation?.step === "failed" ? "Retry update" : standing.tag ? `Update to ${standing.tag}` : "Update to the latest" }}</Btn>
             </template>
             <template v-else-if="standing">
                 <button type="button" data-update-force @click="install">Install it again</button>

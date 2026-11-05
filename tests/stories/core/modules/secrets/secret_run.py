@@ -109,7 +109,7 @@ def test_a_shown_value_goes_with_its_field(new_story):
 
 def test_a_secret_gains_and_loses_a_field_and_a_deleted_one_is_listed(new_story):
     story = new_story(fixture=UserJoined)
-    story.run('secret make "Own" --kind custom --field base', actor=story.user)
+    story.run('secret make "Own" --type custom --field base', actor=story.user)
     story.run("secret update 1 --add-field region --add-field token", actor=story.user)
     story.expect_text("secret list --json", '"region"', '"token"', actor=story.user)
     story.run("secret update 1 --remove-field region", actor=story.user)

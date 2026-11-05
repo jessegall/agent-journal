@@ -51,5 +51,5 @@ def test_a_row_write_holding_a_replaced_value_is_refused_too(new_story):
 
 
 def test_a_shown_field_such_as_a_username_is_no_secret_and_may_be_written(new_story):
-    story = filled_story(new_story, 'secret make "AWS console" --kind login', "secret fill 2 username ada.lovelace")
+    story = filled_story(new_story, 'secret make "AWS console" --type login', "secret fill 2 username ada.lovelace")
     story.expect_success('message send "log in as ada.lovelace" --environment main', actor=story.agent)

@@ -48,7 +48,7 @@ export function finishedWords(facts) {
 
 // every field of the agent with a plain label; the raw fields stay behind the Details fold
 export function detailRows(row, inspection) {
-    const rows = [["Number", String(row.id)], ["Session", row.session, "code"], ["Program", row.program], ["Kind", row.role]];
+    const rows = [["Number", String(row.id)], ["Session", row.session, "code"], ["Program", row.program], ["Type", row.role]];
     if (row.parent_id) rows.push(["Parent agent", `Agent ${row.parent_id}`]);
     rows.push(["Started by", inspection.started_by], ["Started", dated(row.created_at)]);
     if (row.ended_at) rows.push(["Ended", dated(row.ended_at)]);
