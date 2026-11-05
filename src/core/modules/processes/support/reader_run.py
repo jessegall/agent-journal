@@ -46,6 +46,8 @@ class ReaderRun:
             return current
         if not pattern.groups:
             return current + len(hits)
+        if hits[-1].groupdict().get("sum"):
+            return sum(int(number) for hit in hits if (number := hit.groupdict().get("sum")) is not None)
         numbers = [int(group) for group in hits[-1].groups() if group and group.isdigit()]
         return numbers[0] if numbers else current
 

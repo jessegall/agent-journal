@@ -52,7 +52,7 @@ from suites.coding.modules.workers.support.worker_part_visibility import WorkerP
 from suites.coding.modules.workers.support.worker_test_listings import WorkerTestListings
 from suites.coding.modules.workers.listeners.worker_test_count_listener import WorkerTestCountListener
 from suites.coding.modules.workers.rules.worker_test_count_rule import WorkerTestCountRule
-from suites.coding.modules.workers.support.test_limit_nudges import TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL
+from suites.coding.modules.workers.support.test_limit_nudges import TEST_COUNT_UNKNOWN, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL
 from suites.coding.modules.workers.migrations.m008_test_limit_setting import WorkerTestSettingMigration
 from suites.coding.modules.workers.migrations.m009_report_visibility import ReportVisibilityMigration
 from suites.coding.modules.workers.migrations.m010_alias_access import AliasAccessMigration
@@ -189,7 +189,7 @@ class WorkersModule(Module):
                                                    WindowSource("queue", "proof list --limit 50", ["proof.*"])]) for name in ("agents.agents", "agents.helpers")),
                          WindowExtension("viewer.shell", reads=["worker-worktree points", "worker-worktree list", "proof list"],
                                          runs=["worker send", "worker merge", "worker release"])]
-    nudges = [*WORKER_NUDGES, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]
+    nudges = [*WORKER_NUDGES, TEST_COUNT_UNKNOWN, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]
     seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS

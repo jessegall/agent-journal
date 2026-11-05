@@ -36,7 +36,7 @@ class RunSlots:
             if not self.admission.may_start(waiting, agent, self.clock.timestamp()):
                 continue
             process = self.rows.required(Process, waiting.id)
-            self.record_count(process, context)
+            self.record_count(process, agent, context)
             process = self.rows.required(Process, process.id)
             if process.queued_at is None or process.state not in RUNNING_STATES:
                 continue
@@ -63,10 +63,13 @@ class RunSlots:
         for environment_id in dict.fromkeys(process.environment_id for process in tuple(queued)):
             self.grant(environment_id, context)
 
-    def record_count(self, process: Process, context: Context) -> None:
-        if self.folder.count_status(process.id) != 0:
+    def record_count(self, process: Process, agent: Agent, context: Context) -> None:
+        status = self.folder.count_status(process.id)
+        if status is None:
+            self.listings.reject_unknown(process, agent, status, 0, context)
             return
-        count = self.listings.count(process, self.folder.count_text(process.id))
+        count = self.listings.count(process, self.folder.count_text(process.id)) if status == 0 else 0
+        self.listings.reject_unknown(process, agent, status, count, context)
         outputs = self.queries.query(Output).filter(process_id=process.id).limited(1)
         if count and outputs and outputs[0].test_count != count:
             self.repository.update(outputs[0], context, test_count=count)

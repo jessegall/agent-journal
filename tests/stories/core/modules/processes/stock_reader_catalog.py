@@ -5,9 +5,11 @@ import pytest
 
 from core.base.driver.command_category import CommandCategory
 from core.base.database.database import Database
+from core.base.database.statement import Statement
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.migrations.m030_stock_reader_catalog import StockReaderCatalogMigration
 from core.modules.processes.migrations.m037_more_tool_stock_readers import FIRST_BATCH_READERS, NEW_READERS
+from core.modules.processes.migrations.m049_pytest_listing_counts import PytestListingCountsMigration
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
 from core.modules.processes.support.reader_demands import ReaderDemands
@@ -61,6 +63,15 @@ def test_the_catalog_upgrade_keeps_a_project_reader_with_the_same_name(new_story
     original_reader = story.run(f"reader show {reader_id} --json", actor=story.agent).output_text
     StockReaderCatalogMigration().run(story.container.get(Database))
     story.expect_rows(story.run(f"reader show {reader_id} --json", actor=story.agent).output_text == original_reader)
+
+
+def test_the_pytest_listing_upgrade_updates_the_stock_reader(new_story):
+    story = new_story(fixture=BuilderStarted)
+    database = story.container.get(Database)
+    database.update(Statement("UPDATE readers SET count_pattern = ? WHERE name = ? AND creator_id = 1", ["old pattern", "pytest"]))
+    PytestListingCountsMigration().run(database)
+    reader = story.container.get(ReaderQuery).with_name("pytest").first()
+    story.expect_rows(story.container.get(ReaderRun).count(reader, "tests/a.py: 3\ntests/b.py: 4\n", 0) == 7)
 
 
 def test_a_quiet_go_build_has_a_reader(new_story):
