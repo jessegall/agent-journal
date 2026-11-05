@@ -4,7 +4,7 @@ from core.modules.processes.migrations.m039_watch_read_index import WatchReadInd
 from core.modules.processes.listeners.stock_readers_publish_listener import StockReadersPublishListener
 from core.modules.processes.commands.record_sandbox.record_sandbox_handler import RecordSandboxHandler
 from core.modules.processes.commands.record_sandbox.record_sandbox_subcommand import RecordSandboxSubcommand
-from core.modules.processes.migrations.m045_process_sandbox import ProcessSandboxMigration
+from core.modules.processes.migrations.m048_process_sandbox import ProcessSandboxMigration
 from core.modules.processes.commands.update_stock_readers.update_stock_readers_handler import UpdateStockReadersHandler
 from core.modules.processes.commands.send_readers_notice.send_readers_notice_handler import SendReadersNoticeHandler
 from core.modules.processes.listeners.start_readers_listener import StartReadersListener
