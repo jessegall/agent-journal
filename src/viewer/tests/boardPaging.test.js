@@ -103,6 +103,6 @@ test("a plan card shows its state as a badge, and no phase once none is left", a
     const {window} = reader(() => ({ok: true, value: {open_total: 1, closed_total: 0, plans: [finished]}}));
     const element = await mounted(PlanCards, {...window, tabs: [{key: "open", label: "Open", read: "plan board", count_field: "open_total"}, {key: "closed", label: "Closed", read: "plan board --closed", count_field: "closed_total"}]});
     await settle();
-    expect(element.querySelector("[data-plan-state]").textContent).toBe("approved");
+    expect(element.querySelector("[data-plan-state]").textContent).toBe("Approved");
     expect(element.querySelector(".plan-foot").textContent).toBe("3 of 3 tasks done");
 });

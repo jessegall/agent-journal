@@ -7,11 +7,13 @@ import StateRows from "../kit/StateRows.vue";
 import Outputs from "../../core/modules/processes/web/src/Outputs.vue";
 import NudgeList from "../../core/modules/drivers/web/src/NudgeList.vue";
 import HookCallList from "../../core/modules/drivers/web/src/HookCallList.vue";
+import PlanCards from "../../core/modules/plans/web/src/PlanCards.vue";
 
 beforeAll(() => loadStates(async () => ({ok: true, json: async () => ({states: {
     task: {reviewing: {label: "Under review", looks_like: "started"}},
     question: {checking: {label: "Checking the answer", looks_like: "open"}},
     process: {checking: {label: "Checking the result", looks_like: "running"}},
+    plan: {reviewing: {label: "Review required", looks_like: "reviewing"}},
 }})})));
 
 test("a task dock draws an added state by its declared label", async () => {
@@ -47,4 +49,13 @@ test("instruction types have readable labels and keep their stored styling value
 test("agent calls show their readable event label", async () => {
     const element = await mounted(HookCallList, context({"hook-call feed": page([{id: 2, hook: "pre_tool_use", tool: "Read", summary: "cart.py", answer: "allow"}])}, 7));
     expect(element.querySelector(".note").textContent).toBe("Before a tool runs");
+});
+
+test.each([["reviewing", "Review required"], ["approved", "Approved"]])("plan cards label %s and retain its styling", async (state, label) => {
+    const window = context({"plan board": {ok: true, value: {open_total: 1, closed_total: 0, plans: [{id: 3, title: "Cart", state, task_count: 0, completed_count: 0, current_phase: 0}]}}});
+    window.tabs = [{key: "open", label: "Open", read: "plan board", count_field: "open_total"}];
+    const element = await mounted(PlanCards, window);
+    const badge = element.querySelector("[data-plan-state]");
+    expect(badge.textContent).toBe(label);
+    expect(badge.classList.contains(state)).toBe(true);
 });

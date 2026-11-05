@@ -4,8 +4,22 @@
     "find": {
         "select": "kind:Interpolation",
         "where": [
-            {"kind": "PropertyAccessExpression", "of": "child:value"},
-            {"nameIn": ["state", "role"], "of": "child:value"}
+            {"any": [
+                {"all": [
+                    {"kind": "PropertyAccessExpression", "of": "child:value"},
+                    {"nameIn": ["state", "role"], "of": "child:value"}
+                ]},
+                {"of": "child:value", "all": [
+                    {"kind": "ConditionalExpression"},
+                    {"kind": "PropertyAccessExpression", "of": "child:whenTrue"},
+                    {"nameIn": ["state", "role"], "of": "child:whenTrue"}
+                ]},
+                {"of": "child:value", "all": [
+                    {"kind": "ConditionalExpression"},
+                    {"kind": "PropertyAccessExpression", "of": "child:whenFalse"},
+                    {"nameIn": ["state", "role"], "of": "child:whenFalse"}
+                ]}
+            ]}
         ]
     },
     "sin": {
