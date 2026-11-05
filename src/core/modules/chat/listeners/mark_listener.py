@@ -35,7 +35,7 @@ class MarkListener(CommitListener[E]):
         if self.bus.scopes.environment_id is None:
             return
         command: ShowMark | None = ShowMark(type, variant, key if key is not None else f"{variant.value}:{logged.row_id}:{logged.id}", text,
-                                          agent_id=agent_id, detail=detail, row_model=row_model, row_id=row_id, ended=ended, outcome=outcome)
+                                          agent_id=agent_id, detail=detail, row_model=row_model, row_id=row_id, ended=ended, is_new_key=key is None, outcome=outcome)
         if key is not None:
             command = self.round_mark(logged, command)
         if command is None:

@@ -44,6 +44,7 @@ ALLOWED_READ_REPEATS = {
     ("core/base/database/listener_cursor_table.py", "has_pending_events"): "Startup completion must be checked as listener cursors advance.",
     ("core/base/change/event_log.py", "newest_id"): "Urgent listeners must notice events written by the previous listener.",
     ("core/base/change/event_log.py", "events_past"): "Listener rounds read new events written by earlier listeners.",
+    ("core/base/seed/demo.py", "run"): "A demo seeds by running many separate command lines inside one request.",
 }
 READ_HELPERS = ("core/base/database/database.py", "core/base/database/bookkeeping_table.py")
 

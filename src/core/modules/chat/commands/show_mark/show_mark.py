@@ -22,3 +22,4 @@ class ShowMark(Command[ChatMark]):
     figure: str = ""
     fraction: float = 0.0
     ended: bool = False
+    is_new_key: bool = False

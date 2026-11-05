@@ -26,6 +26,7 @@ class AgentListingState:
     job_profile: str
     job_description: str
     job_instruction: str
+    job_returned: str
     parent_id: int | None
     created_at: Timestamp
     updated_at: Timestamp

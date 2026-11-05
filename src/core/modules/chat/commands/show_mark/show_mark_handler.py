@@ -12,8 +12,8 @@ DETAIL_CHARACTERS = 80
 
 class ShowMarkHandler(Handler[ShowMark, ChatMark]):
     """Makes the mark, or edits the shown mark of the same key in the environment, its variant too, and ends
-    it when told to; the detail is cut to its first 80 characters and the lines keep all of it, and a mark
-    that ended is never edited."""
+    it when told to, and reads no row for a key made for this mark alone; the detail is cut to its first 80
+    characters and the lines keep all of it, and a mark that ended is never edited."""
 
     command = ShowMark
 
@@ -21,7 +21,7 @@ class ShowMarkHandler(Handler[ShowMark, ChatMark]):
         self.marks, self.repository = marks, repository
 
     def handle(self, command: ShowMark, context: Context) -> ChatMark:
-        existing = self.marks.keyed(command.key)
+        existing = None if command.is_new_key else self.marks.keyed(command.key)
         detail = command.detail[:DETAIL_CHARACTERS]
         if existing is None:
             ended_at = context.timestamp if command.ended else None
