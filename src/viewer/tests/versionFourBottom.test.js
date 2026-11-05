@@ -28,8 +28,8 @@ test("the dock's text action buttons and Dump files are the bordered ones", () =
 });
 
 // task 5476: the sidebar and the breadcrumb as version 4 drew them
-test("docked cards stand together with a line below the stack", () => {
-    expect(read("../src/chat/DockStack.vue")).toMatch(/\.dock-stack \{[^}]*flex-direction: column;[^}]*border-bottom: 1px solid var\(--border\);/);
+test("docked cards stand together inside the stack's border", () => {
+    expect(read("../src/chat/DockStack.vue")).toMatch(/\.dock-stack \{[^}]*flex-direction: column;[^}]*border: 1px solid var\(--border\);/);
     expect(read("../src/chat/DockStack.vue")).not.toMatch(/\.dock-stack \{[^}]*gap:/);
 });
 
