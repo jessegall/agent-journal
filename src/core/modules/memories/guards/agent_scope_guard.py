@@ -8,8 +8,7 @@ from core.base.command.context import Context
 
 
 class AgentScopeGuard(Guard[Changed[Memory]]):
-    """An agent writes a memory only in its own environment, for the environment or for itself, both as it was
-    and as it becomes."""
+    """An agent writes a memory only in its own environment, both as it was and as it becomes."""
 
     name = "memories.agent-scope"
 

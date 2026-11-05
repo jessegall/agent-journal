@@ -12,8 +12,8 @@ longer true.
   memory belongs to one environment. Every compaction lowers the weight of the memories in your own scope by one, and
   at weight 0 a memory is removed. A higher weight lasts through more compactions.
 - What must keep applying is a rule, not a memory: see the journal-rules skill.
-- A worker, helper or subagent is not given the main agent's memories; it gets the project rules and its brief. What it
-  keeps itself stays its own, fades with its own compactions, and reaches neither the main agent nor another helper.
+- A memory belongs to the agent that made it, and no other agent can see it: every main agent of an environment counts
+  as one agent, and a worker or helper has its own. A worker or helper gets the project rules and its brief.
 - `--task <n>` ties it to a task and `--keywords a,b` to words that bring it back. Something to be told at a time or on an
   interval is a reminder, not a memory: `journal reminder make`.
 - `journal memory list` names every memory; `journal memory read <n>` reads one whole.

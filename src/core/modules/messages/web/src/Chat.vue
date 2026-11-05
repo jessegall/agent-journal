@@ -543,7 +543,7 @@ async function runCommand(pin) {
     min-height: 0;
     overflow-y: auto;
     /* bubbles scrolled under the foot fade out over its last stretch, as in version 4 */
-    mask-image: linear-gradient(to bottom, #000 calc(100% - 20px), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 8px), transparent);
 }
 
 /* version 4's spacing: 10 pixels between items, 18 above the first and 20 below the last, inside the scroll area */

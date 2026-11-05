@@ -9,6 +9,7 @@ from core.base.change.event_log import EventLog
 from core.base.change.logged_event import LoggedEvent
 from core.base.database.actor_table import ActorTable
 from core.base.database.database import Database
+from core.base.model.agent_scoped import AgentScoped
 from core.base.model.model import Model
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.scope import Scope
@@ -31,6 +32,9 @@ class Scopes:
         self.causing_agents: dict[int, int | None] = {}
 
     def applied(self, model: M) -> M:
+        owner = self.database.row_owner
+        if isinstance(model, AgentScoped) and owner is not None and not model.is_saved:
+            return model.changed(agent_id=owner.stored_agent_id)
         return model if self.actor_id is None else model.scoped(self.actor_id)
 
     def command_scope(self, disabled: WholeScopes, actor: Actor) -> ContextManager[None]:
@@ -48,21 +52,22 @@ class Scopes:
 
     @contextmanager
     def read_scope(self, disabled: WholeScopes, actor_id: int | None) -> Generator[None]:
-        previous = self.database.read_actor_id
+        previous = self.database.read_actor_id, self.database.row_owner
         self.database.read_actor_id = None if ActorScope in disabled else actor_id
+        self.database.row_owner = self.actors.row_owner(self.database.read_actor_id)
         try:
             yield
         finally:
-            self.database.read_actor_id = previous
+            self.database.read_actor_id, self.database.row_owner = previous
 
     @contextmanager
     def opened(self, actor_id: int | None) -> Generator[None]:
-        previous = self.actor_id, self.decided
-        self.actor_id, self.decided = actor_id, True
+        previous = self.actor_id, self.decided, self.database.row_owner
+        self.actor_id, self.decided, self.database.row_owner = actor_id, True, self.actors.row_owner(actor_id)
         try:
             yield
         finally:
-            self.actor_id, self.decided = previous
+            self.actor_id, self.decided, self.database.row_owner = previous
 
     def passes(self, disabled: DisabledScopes, subject: LoggedEvent | Change[Model]) -> bool:
         return any(entry is ActorScope or (isinstance(entry, ScopeOpening) and entry.scope is ActorScope and entry.passes(subject)) for entry in disabled)

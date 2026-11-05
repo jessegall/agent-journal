@@ -1,14 +1,17 @@
 from core.base.actor import CORE_ACTOR_ID
 from core.base.actor_type import ActorType
+from core.base.agent_role import AgentRole
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.database.statement import Statement
+from core.base.scope.row_owner import MAIN_AGENT, RowOwner
 
 CORE_ACTOR = Statement("INSERT OR IGNORE INTO actors (id, type, name, created_at, updated_at) VALUES (?, ?, 'core', ?, ?)")
 MODULE_ACTOR = Statement("INSERT OR IGNORE INTO actors (creator_id, type, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")
 MODULE_ACTOR_ID = Statement("SELECT id FROM actors WHERE type = ? AND name = ?")
 MODULE_ACTOR_IDS = Statement("SELECT id, name FROM actors WHERE type = 'module'")
 ACTOR_ROW = Statement("SELECT 1 FROM actors WHERE id = ? AND type = ?")
+AGENT_OWNER = Statement("SELECT role, environment_id FROM agents WHERE id = ?")
 NEWEST_MAIN_AGENT_ID = Statement("SELECT id FROM agents WHERE environment_id = ? AND role = 'main' ORDER BY id DESC LIMIT 1")
 
 
@@ -18,6 +21,7 @@ class ActorTable:
     def __init__(self, database: Database) -> None:
         self.database = database
         self.agent_answers: dict[int, bool] = {}
+        self.row_owners: dict[int, RowOwner | None] = {}
 
     def core_actor(self, timestamp: str) -> None:
         self.database.update(Statement(CORE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.CORE.value, timestamp, timestamp)))
@@ -41,6 +45,20 @@ class ActorTable:
         if actor_id not in self.agent_answers:
             self.agent_answers[actor_id] = bool(self.database.rows(Statement(ACTOR_ROW.sql, (actor_id, ActorType.AGENT.value))))
         return self.agent_answers[actor_id]
+
+    def row_owner(self, actor_id: int | None) -> RowOwner | None:
+        if actor_id is None:
+            return None
+        if actor_id not in self.row_owners:
+            self.row_owners[actor_id] = self.stored_owner(actor_id)
+        return self.row_owners[actor_id]
+
+    def stored_owner(self, actor_id: int) -> RowOwner | None:
+        rows = self.database.rows(Statement(AGENT_OWNER.sql, [actor_id]))
+        if not rows:
+            return None
+        agent = MAIN_AGENT if rows[0]["role"] == AgentRole.MAIN else actor_id
+        return RowOwner(agent, rows[0]["environment_id"])
 
     def newest_main_agent_id(self, environment_id: int) -> int | None:
         rows = self.database.rows(Statement(NEWEST_MAIN_AGENT_ID.sql, [environment_id]))
