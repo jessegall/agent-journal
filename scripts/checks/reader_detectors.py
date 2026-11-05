@@ -5,7 +5,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-RULES = ["architecture_processes_ReaderSavedThroughAddReaderDetector", "architecture_processes_ReaderDemandByPartDetector"]
+RULES = ["architecture_processes_reader-saved-outside-add-reader", "architecture_processes_reader-demand-from-whole-line"]
 ROOT = Path(__file__).resolve().parents[2]
 
 

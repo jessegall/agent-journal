@@ -44,6 +44,16 @@
       "issue": 822,
       "filed": "2026-11-03T18:15:53Z",
       "seen": {}
+    },
+    "9f3f4f36732953a339d448b799a2bc302258ecc2": {
+      "detector": "helper-in-a-kind-folder",
+      "file": "src/core/modules/memories/migrations/m004_memory_types_drop_fades.py",
+      "line": 4,
+      "reason": "A RebuildMigration in a migrations folder is a migration: it extends Migration through RebuildMigration, like src/core/modules/dumps/migrations/m002_project_dumps.py.",
+      "repository": "jessegall/code-commandments",
+      "issue": 824,
+      "filed": "2026-11-05T00:04:30Z",
+      "seen": {}
     }
   }
 }
