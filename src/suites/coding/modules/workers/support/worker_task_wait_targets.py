@@ -1,13 +1,11 @@
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.command.context import Context
 from core.base.database.database import Database
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.models.task_wait import TaskWait
 from core.modules.tasks.support.task_wait_targets import TaskWaitTargets
 from core.modules.tasks.support.task_waits import TaskWaits
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
@@ -51,7 +49,7 @@ class WorkerTaskWaitTargets(TaskWaitTargets):
         return task.started_at is None or task.started_at.value <= worker.ended_at.value
 
     def resolve_waits(self, worker_id: int, context: Context) -> None:
-        waits = tuple(self.queries.query(TaskWait).filter(target=f"workers:{worker_id}").matching(IsNull("ended_at")).all_rows())
+        waits = self.waits.pending_target(f"workers:{worker_id}")
         if not waits or not self.is_finished(self.queries.query(Agent).find(worker_id)):
             return
         for wait in waits:

@@ -1,6 +1,5 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.scope.scopes import Scopes
@@ -12,6 +11,7 @@ from core.modules.docking.support.dock_labels import DockLabels
 from core.modules.docking.support.dock_limits import MOST_ITEMS_SETTING, DockLimits
 from core.modules.docking.support.leave_time import LeaveTime
 from core.modules.docking.support.row_end import RowEnd
+from core.modules.docking.support.environment_docks import EnvironmentDocks
 
 
 class AddDockItemHandler(Handler[AddDockItem, DockItem]):
@@ -21,9 +21,9 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
 
     command = AddDockItem
 
-    def __init__(self, queries: Queries, repository: Repository, items: DockItemQuery, limits: DockLimits, row_end: RowEnd,
+    def __init__(self, docks: EnvironmentDocks, repository: Repository, items: DockItemQuery, limits: DockLimits, row_end: RowEnd,
                  leave_time: LeaveTime, labels: DockLabels, scopes: Scopes) -> None:
-        self.queries, self.repository, self.items, self.limits, self.row_end, self.leave_time = queries, repository, items, limits, row_end, leave_time
+        self.docks, self.repository, self.items, self.limits, self.row_end, self.leave_time = docks, repository, items, limits, row_end, leave_time
         self.labels, self.scopes = labels, scopes
 
     def handle(self, command: AddDockItem, context: Context) -> DockItem:
@@ -31,8 +31,9 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
         if environment_id is None:
             raise Refusal("an item is docked in an environment", "name it with --environment")
         title, text = self.labels.read(command.type, command.row_model, command.row_id)
-        dock = self.queries.query(Dock).filter(environment_id=environment_id).first()
+        dock = self.docks.find(environment_id)
         dock = dock or self.repository.save(Dock(environment_id=environment_id, creator_id=context.actor.id), context)
+        self.docks.remember(dock)
         chat_items = self.items.docked(dock.id).same_chat(self.scopes.actor_id)
         type_capacity = self.limits.type_capacity(command.type)
         if type_capacity is not None:

@@ -11,10 +11,13 @@ class RunVisibility:
         self.kept = kept
 
     def visible_part(self, process: Process) -> ProcessPart | None:
-        parts = self.kept.read("process_parts", lambda: tuple(self.queries.query(ProcessPart).filter(process_id=process.id).oldest().all_rows()),
-                              "process_id = ?", [process.id], name="processes.visible_parts")
+        parts = self.parts(process.id)
         categorized = next((part for part in parts if part.is_visible), None)
         return categorized or (parts[0] if parts and process.creator_id != process.agent_id else None)
+
+    def parts(self, process_id: int) -> tuple[ProcessPart, ...]:
+        return self.kept.read("process_parts", lambda: tuple(self.queries.query(ProcessPart).filter(process_id=process_id).oldest().all_rows()),
+                              "process_id = ?", [process_id], name="processes.visible_parts")
 
     def is_visible(self, process: Process) -> bool:
         return self.visible_part(process) is not None

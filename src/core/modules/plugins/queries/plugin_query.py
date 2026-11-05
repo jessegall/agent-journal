@@ -20,7 +20,8 @@ class PluginQuery(Query[Plugin]):
         return rows[0]
 
     def enabled_ones(self) -> list[Plugin]:
-        return list(self.filter(enabled=True).oldest().all_rows())
+        return list(self.kept.read(self.table.name, lambda: tuple(self.filter(enabled=True).oldest().all_rows()),
+                                   "enabled = ?", [True], name="plugins.enabled_ones"))
 
     def is_installed(self, name: str) -> bool:
         return self.kept.read(self.table.name, self.filter(name=name).exists, "name = ?", [name], name="plugins.installed")

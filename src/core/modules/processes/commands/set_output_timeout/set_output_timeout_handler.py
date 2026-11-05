@@ -1,5 +1,3 @@
-from dataclasses import replace
-
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
@@ -24,4 +22,4 @@ class SetOutputTimeoutHandler(Handler[SetOutputTimeout, Process]):
             raise Refusal(f"output {process.id} is not running", "set a timeout on a running output")
         if process.started_at is not None and command.duration.has_passed(process.started_at, context.timestamp):
             raise Refusal(f"the timeout for output {process.id} has already passed", "choose a longer duration; the run is unchanged")
-        return self.repository.save(replace(process, timeout_seconds=command.duration.seconds), context)
+        return self.repository.update(process, context, timeout_seconds=command.duration.seconds)

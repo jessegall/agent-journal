@@ -1,7 +1,7 @@
 from core.base.command.context import Context
 from core.base.command.delete_command import DeleteCommand
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.repository.repository import Repository
 
 
@@ -10,8 +10,8 @@ class DeleteHandler(Handler[DeleteCommand, None]):
 
     command = DeleteCommand
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, rows: EventRows, repository: Repository) -> None:
+        self.rows, self.repository = rows, repository
 
     def handle(self, command: DeleteCommand, context: Context) -> None:
-        self.repository.delete_stored(self.queries.query(command.model()).find(command.row_id), context)
+        self.repository.delete_stored(self.rows.required(command.model(), command.row_id), context)

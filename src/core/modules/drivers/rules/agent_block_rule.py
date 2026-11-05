@@ -13,7 +13,7 @@ from core.base.query.queries import Queries
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.base.driver.tool_type import ToolType
-from core.modules.drivers.models.support.tool_use_count import ToolUseCount
+from core.modules.drivers.queries.hook_call_query import HookCallQuery
 
 COUNTDOWN_USES = 3
 
@@ -31,8 +31,9 @@ class AgentBlockRule(DriverRule):
     role_group = RoleGroup.PROMPT
     tools = tuple(ToolType)
 
-    def __init__(self, queries: Queries, conditions: BlockConditions, container: Container) -> None:
+    def __init__(self, queries: Queries, conditions: BlockConditions, container: Container, calls: HookCallQuery) -> None:
         self.queries, self.conditions, self.container = queries, conditions, container
+        self.calls = calls
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         blocks = tuple(self.queries.query(AgentBlock).filter(agent_id=hook.agent_id).matching(IsNull("closed_at")).oldest().all_rows())
@@ -40,23 +41,23 @@ class AgentBlockRule(DriverRule):
             return RuleAnswer.allowed()
         finished_blocks = [block for block in blocks if block.is_finished(self.conditions, hook, self.container)]
         waiting_blocks = [block for block in blocks if block not in finished_blocks]
-        active_blocks = [block for block in waiting_blocks if self.is_active(block, hook)]
+        counted_blocks = [block for block in waiting_blocks if block.grace_tool_uses]
+        counts = self.calls.tool_use_counts(hook.agent_id, [block.creation_timestamp() for block in counted_blocks]) if counted_blocks else []
+        tool_uses = dict(zip([block.id for block in counted_blocks], counts))
+        active_blocks = [block for block in waiting_blocks if block.is_active(tool_uses.get(block.id, 0), hook.timestamp)]
         tool = hook.event.tool
         closing = [CloseAgentBlock(block.id) for block in finished_blocks]
         refused_blocks = [block for block in active_blocks if tool is not None and self.refuses(block, tool)]
         if refused_blocks:
             return RuleAnswer.refused(Nudge(refused_blocks[0].nudge_key, NudgeType.REFUSAL, refused_blocks[0].nudge_text.replace("{block}", str(refused_blocks[0].id)))).running(*closing)
-        countdowns = [self.countdown(block, hook) for block in waiting_blocks if block not in active_blocks]
+        countdowns = [self.countdown(block, tool_uses.get(block.id, 0)) for block in waiting_blocks if block not in active_blocks]
         return RuleAnswer.with_nudges(*[nudge for nudge in countdowns if nudge is not None]).running(*closing)
 
     def refuses(self, block: AgentBlock, tool: Tool) -> bool:
         return not tool.is_skill_read if block.strict else not tool.block_exempt
 
-    def is_active(self, block: AgentBlock, hook: AgentHook) -> bool:
-        return not block.blocks_stop and (block.grace is None or block.grace.has_passed(self.queries, hook.agent_id, block.creation_timestamp(), hook.timestamp))
-
-    def countdown(self, block: AgentBlock, hook: AgentHook) -> Nudge | None:
+    def countdown(self, block: AgentBlock, tool_uses: int) -> Nudge | None:
         if not block.countdown_text or not block.grace_tool_uses:
             return None
-        remaining = block.grace_tool_uses - ToolUseCount.after_timestamp(self.queries, hook.agent_id, block.creation_timestamp()) - 1
+        remaining = block.grace_tool_uses - tool_uses - 1
         return Nudge(block.countdown_key, NudgeType.STEERING, block.countdown_text.replace("{left}", str(remaining)), turn_limited=False) if 0 <= remaining < COUNTDOWN_USES else None

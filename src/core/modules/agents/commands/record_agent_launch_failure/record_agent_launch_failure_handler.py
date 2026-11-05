@@ -2,6 +2,7 @@ from core.base.agent_type_book import AgentTypeBook
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
+from core.base.listener.event_rows import EventRows
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
@@ -20,11 +21,12 @@ class RecordAgentLaunchFailureHandler(Handler[RecordAgentLaunchFailure, None]):
     command = RecordAgentLaunchFailure
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, nudger: Nudger, bus: Bus, types: AgentTypeBook) -> None:
+    def __init__(self, queries: Queries, nudger: Nudger, bus: Bus, types: AgentTypeBook, rows: EventRows) -> None:
         self.queries, self.nudger, self.bus, self.types = queries, nudger, bus, types
+        self.rows = rows
 
     def handle(self, command: RecordAgentLaunchFailure, context: Context) -> None:
-        agent = self.queries.query(Agent).find(command.agent_id)
+        agent = self.rows.required(Agent, command.agent_id)
         if agent.ended_at is None and not self.types.find(agent.role).separate_folder:
             self.bus.dispatch(EndAgent(agent.id), context)
         notice = AGENT_START_FAILED.nudge(agent=agent.id)

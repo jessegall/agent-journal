@@ -22,7 +22,7 @@ class EditTextHandler(Handler[EditText, TextRow]):
         body = command.change.applied(text_row.body)
         if command.change.changes_body():
             MarkdownCheck.check(body)
-        edited = self.repository.save(text_row.changed(abstract=text_row.abstract if command.abstract is None else command.abstract, body=body), context)
+        edited = self.repository.update(text_row, context, abstract=text_row.abstract if command.abstract is None else command.abstract, body=body)
         if isinstance(edited, Doc):
             self.revisions.record(edited, context)
         return edited

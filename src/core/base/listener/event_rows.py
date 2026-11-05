@@ -28,3 +28,7 @@ class EventRows:
     def remember(self, row: Model) -> None:
         self.kept.update(self.tables.table(type(row)).name, lambda previous: row,
                           "id = ?", [row.id], name="listeners.event_row")
+
+    def remove(self, row: Model) -> None:
+        self.kept.update(self.tables.table(type(row)).name, lambda previous: None,
+                          "id = ?", [row.id], name="listeners.event_row")

@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.command.move_command import MoveCommand
 from core.base.model.model import Model
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.repository.repository import Repository
 from core.base.command.handlers.move_method_error import MoveMethodError
 
@@ -13,11 +13,11 @@ class MoveHandler(Handler[MoveCommand[Model], Model]):
 
     command = MoveCommand
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, rows: EventRows, repository: Repository) -> None:
+        self.rows, self.repository = rows, repository
 
     def handle(self, command: MoveCommand[Model], context: Context) -> Model:
-        row = self.queries.query(command.model()).find(command.row_id)
+        row = self.rows.required(command.model(), command.row_id)
         fields = command.move_fields()
         method = getattr(row, command.move.name, None)
         if not callable(method):

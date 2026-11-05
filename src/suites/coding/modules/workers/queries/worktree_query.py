@@ -14,8 +14,8 @@ class WorktreeQuery(Query[Worktree]):
         self.kept = kept
 
     def worker_worktree(self, agent_id: int) -> Worktree | None:
-        rows = self.filter(agent_id=agent_id).matching(IsNull("removed_at")).limited(1)
-        return rows[0] if rows else None
+        return self.kept.read(self.table.name, self.filter(agent_id=agent_id).matching(IsNull("removed_at")).first,
+                              "agent_id = ? AND removed_at IS NULL", [agent_id], name="workers.worker_worktree")
 
     def environment_worktrees(self, environment_id: int) -> list[Worktree]:
         return list(self.kept.read(self.table.name, lambda: tuple(self.filter(environment_id=environment_id).matching(IsNull("removed_at")).oldest().all_rows()),

@@ -73,6 +73,7 @@ class Repository:
         deleted_count = self.guarded(lambda: self.database.update(TableStatements(table).delete(model.id, model.version)), table, True)
         if deleted_count == 0:
             raise StaleRowError(model.cli_name, model.id)
+        self.event_rows.remove(model)
         self.log.write(change, skipped)
         self.listeners.run_save_listeners(change)
 
