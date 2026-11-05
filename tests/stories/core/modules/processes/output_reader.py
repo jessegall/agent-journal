@@ -184,7 +184,7 @@ def expect_reader_lines_folder(folder, process, expected) -> None:
 
 def test_a_tick_reads_new_output_with_no_open_transactions(new_story, monkeypatch):
     story = install_runner(new_story(fixture=BuilderStarted))
-    story.run(READER, actor=story.agent)
+    story.run('reader add watched --commands "make*" --lines "FAILED"', actor=story.agent)
     process = start_process(story, "make test")
     database, advance, open_transactions = story.container.get(Database), ReaderStep.advance, []
 
