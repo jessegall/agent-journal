@@ -16,6 +16,7 @@ class NoteMarkAfterListener(CommitListener):
     """A sample that shows a note's mark after the commit, on the listener thread."""
 
     name = "notes.mark-after"
+    # @sin architecture_listeners_listener_event_named_by_a_string
     event = "note.create"
 
     def __init__(self, bus: Bus) -> None:

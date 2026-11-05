@@ -6,6 +6,7 @@ from core.modules.docking.models.dock_item import DockItem
 # @sin naming_class_unnamed_for_its_base
 class SampleDockWriter(CommitListener):
     name = "samples.dock-writer"
+    # @sin architecture_listeners_listener_event_named_by_a_string
     event = "plan.start"
 
     def __init__(self, repository) -> None:

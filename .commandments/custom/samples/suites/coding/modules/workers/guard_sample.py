@@ -9,6 +9,7 @@ LIMIT_SECONDS = 60
 
 class CheckoutGuard(Guard):
     name = "samples.checkout"
+    # @sin architecture_listeners_listener_event_named_by_a_string
     event = "worker_worktree.merge"
 
     # @sin architecture_workers_guard_runs_git

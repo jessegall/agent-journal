@@ -7,6 +7,7 @@ from core.modules.docking.models.dock_item import DockItem
 
 class SampleListener(CommitListener):
     name = "samples.dock"
+    # @sin architecture_listeners_listener_event_named_by_a_string
     event = "plan.start"
 
     def __init__(self, bus: Bus, repository) -> None:

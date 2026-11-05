@@ -15,6 +15,7 @@ class NoteMarkInsideListener(SaveListener):
     """A sample that shows a note's mark inside the writing transaction, holding the hook up."""
 
     name = "notes.mark-inside"
+    # @sin architecture_listeners_listener_event_named_by_a_string
     event = "note.create"
 
     def __init__(self, bus: Bus) -> None:

@@ -26,6 +26,7 @@ class SampleRoute:
 
 class SampleListener(CommitListener):
     name = "samples.mark"
+    # @sin architecture_listeners_listener_event_named_by_a_string
     event = "message.create"
 
     def __init__(self, bus: Bus) -> None:
@@ -38,6 +39,7 @@ class SampleListener(CommitListener):
 
 class SampleRawListener(CommitListener):
     name = "samples.raw-mark"
+    # @sin architecture_listeners_listener_event_named_by_a_string
     event = "message.create"
 
     def __init__(self, bus: Bus) -> None:
