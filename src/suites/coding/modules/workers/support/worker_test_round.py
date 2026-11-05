@@ -1,0 +1,41 @@
+from collections.abc import Iterable
+from dataclasses import dataclass
+from operator import attrgetter
+
+from core.base.change.logged_event import LoggedEvent
+from suites.coding.modules.workers.models.enums.proof_state import ProofState
+
+
+@dataclass(frozen=True)
+class WorkerTestRound:
+    """One task's test round, counted from its proofs through the event being handled."""
+
+    number: int
+    waiting_count: int
+    failed_count: int
+
+    @classmethod
+    def from_events(cls, events: Iterable[LoggedEvent]) -> "WorkerTestRound":
+        waiting: set[int] = set()
+        failed: set[int] = set()
+        number, completed = 0, False
+        for event in sorted(events, key=attrgetter("id")):
+            if "state" not in event.data:
+                continue
+            state = ProofState(event.data["state"][1])
+            if state in (ProofState.SHOWN, ProofState.RUNNING):
+                continue
+            if completed:
+                number += 1
+            match state:
+                case ProofState.QUEUED:
+                    waiting.add(event.row_id)
+                    failed.discard(event.row_id)
+                case ProofState.CHECKED:
+                    waiting.discard(event.row_id)
+                    failed.discard(event.row_id)
+                case ProofState.SHORT:
+                    waiting.discard(event.row_id)
+                    failed.add(event.row_id)
+            completed = not waiting and not failed
+        return cls(number, len(waiting), len(failed))
