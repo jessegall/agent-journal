@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.query.queries import Queries
+from core.base.scope.scopes import Scopes
 from core.base.refusal import Refusal
 from core.base.caller.caller import Caller
 from core.base.subcommand.read_subcommand import ReadSubcommand
@@ -15,8 +16,8 @@ class SuiteCurrentSubcommand(ReadSubcommand[SuiteRun]):
     cli_name = "suite"
     name = "current"
 
-    def __init__(self, choice: SuiteChoice, queries: Queries) -> None:
-        self.choice, self.queries = choice, queries
+    def __init__(self, choice: SuiteChoice, queries: Queries, scopes: Scopes) -> None:
+        self.choice, self.queries, self.scopes = choice, queries, scopes
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("environment")
@@ -25,9 +26,12 @@ class SuiteCurrentSubcommand(ReadSubcommand[SuiteRun]):
         environments = self.queries.query(Environment).filter(name=arguments.environment).limited(1)
         if not environments:
             raise Refusal(f"no environment is called {arguments.environment}", "see every environment with journal environment list")
-        environment_id = environments[0].id
-        suite = self.choice.suite(environment_id)
+        with self.scopes.read_scope((), None, environments[0].id):
+            return self.suite_run()
+
+    def suite_run(self) -> SuiteRun:
+        suite = self.choice.suite()
         if suite is None:
             return SuiteRun.unset(self.choice.suite_names())
-        drivers = [f"{role}: {driver.name}" for role in suite.defaults if (driver := self.choice.driver(environment_id, role)) is not None]
+        drivers = [f"{role}: {driver.name}" for role in suite.defaults if (driver := self.choice.driver(role)) is not None]
         return SuiteRun(suite.name, ", ".join(drivers))

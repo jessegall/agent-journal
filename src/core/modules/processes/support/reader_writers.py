@@ -33,7 +33,7 @@ class ReaderWriters:
         if actor.type is not ActorType.AGENT:
             return ()
         agent = self.agents.find(actor.id)
-        if agent.role not in self.suites.agent_policy(agent.environment_id).reader_request_roles:
+        if agent.role not in self.suites.agent_policy().reader_request_roles:
             return ()
         return tuple(self.requests.open().agent(actor.id).oldest().all_rows())
 

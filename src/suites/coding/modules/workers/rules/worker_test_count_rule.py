@@ -24,7 +24,7 @@ class WorkerTestCountRule(DriverRule):
         self.listings, self.settings = listings, settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        limit = self.settings.number(WORKER_TEST_LIMIT, hook.environment_id)
+        limit = self.settings.number(WORKER_TEST_LIMIT)
         tool = hook.event.tool
         if limit <= 0 or tool is None or tool.shell is None:
             return RuleAnswer.allowed()

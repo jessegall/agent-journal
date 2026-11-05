@@ -15,5 +15,5 @@ class TemplateQuery(Query[Template]):
         super().__init__(database, tables, Template)
         self.modules = modules
 
-    def active(self, environment_id: int | None) -> Self:
-        return self.matching(ExcludedTemplateModules(self.modules.inactive(environment_id)))
+    def active(self) -> Self:
+        return self.matching(ExcludedTemplateModules(self.modules.inactive()))

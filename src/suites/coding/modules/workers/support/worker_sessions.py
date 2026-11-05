@@ -59,7 +59,8 @@ class WorkerSessions(AgentLaunchGuard):
         command = LeftoverProcess.command_line(current.pid)
         if program not in command or current.session not in command:
             return AgentSessionState.READY
-        span = self.settings.minutes(SILENT_AGENT_MINUTES, current.environment_id)
+        with self.bus.scopes.read_scope((), None, current.environment_id):
+            span = self.settings.minutes(SILENT_AGENT_MINUTES)
         activity = self.queries.query(AgentActivity).find(current.id)
         if not activity.is_inactive(self.clock.timestamp(), span.count) or self.processes.agent(current.id).running().exists():
             return AgentSessionState.RUNNING

@@ -12,6 +12,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.seconds import Seconds
+from core.base.page import Page
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
@@ -43,7 +44,7 @@ class InactiveHelperRule(DriverRule):
         return self.warning(hook).running(SendSilentAgentLines())
 
     def warning(self, hook: AgentHook) -> RuleAnswer:
-        span = self.settings.minutes(INACTIVE_HELPER_MINUTES, hook.environment_id)
+        span = self.settings.minutes(INACTIVE_HELPER_MINUTES)
         if self.hook_history.has_recent_answer(self.name, hook, span):
             return RuleAnswer.allowed()
         activities = self.activities.read(hook)
@@ -56,7 +57,8 @@ class InactiveHelperRule(DriverRule):
     def queue_notes(self, helpers: Sequence[Agent]) -> dict[int, str]:
         notes = {helper.id: "" for helper in helpers}
         queue = self.processes.running().filter(is_queue_run=True).oldest()
-        page = queue.page(1, max(1, queue.count()))
+        rows = tuple(queue.all_rows())
+        page = Page(rows, 1, max(1, len(rows)), len(rows))
         workers = self.workers.read(page)
         for position, process in enumerate(page.rows):
             worker_id = workers.get(process.id)

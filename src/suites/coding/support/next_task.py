@@ -15,8 +15,8 @@ class NextTask:
     def __init__(self, tasks: TaskQuery, plan_tasks: NextPlanTasks, queries: Queries, settings: SettingValues) -> None:
         self.tasks, self.plan_tasks, self.queries, self.settings = tasks, plan_tasks, queries, settings
 
-    def is_automatic(self, environment_id: int) -> bool:
-        return self.settings.flag(AUTO_MODE_SETTING, environment_id)
+    def is_automatic(self) -> bool:
+        return self.settings.flag(AUTO_MODE_SETTING)
 
     def urgent(self, excluded_id: int | None = None) -> Task | None:
         most_urgent = self.tasks.next_open(excluded_id, self.plan_tasks.plan_exclusion())

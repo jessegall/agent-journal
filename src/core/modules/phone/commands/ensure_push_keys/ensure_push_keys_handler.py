@@ -20,7 +20,7 @@ class EnsurePushKeysHandler(Handler[EnsurePushKeys, PushKeyPair]):
         self.values, self.store = values, store
 
     def handle(self, command: EnsurePushKeys, context: Context) -> PushKeyPair:
-        secret, public = self.values.value(PRIVATE_KEY, None), self.values.value(PUBLIC_KEY, None)
+        secret, public = self.values.project.value(PRIVATE_KEY), self.values.project.value(PUBLIC_KEY)
         if isinstance(secret, str) and isinstance(public, str):
             return PushKeyPair(secret, public)
         keys = PushKeys.made()

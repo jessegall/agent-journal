@@ -25,6 +25,6 @@ class DispatchAllowanceRule(DriverRule):
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         dispatches = shell is not None and any(part.classification.category is CommandCategory.JOURNAL and part.arguments[:2] == DISPATCH_ARGUMENTS
                                                for part in shell.parts)
-        if not dispatches or self.settings.value(DISPATCHES_WORKERS_SETTING, hook.environment_id) is not False:
+        if not dispatches or self.settings.value(DISPATCHES_WORKERS_SETTING) is not False:
             return RuleAnswer.allowed()
         return RuleAnswer.refused(BUILDER_BUILDS.nudge())

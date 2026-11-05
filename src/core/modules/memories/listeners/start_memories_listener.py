@@ -25,7 +25,7 @@ class StartMemoriesListener(CommitListener[SessionStarted]):
 
     def handle(self, event: SessionStarted, logged: LoggedEvent) -> None:
         call = event.row
-        if self.agents.find(call.session_agent_id).role not in self.suites.agent_policy(call.environment_id).prompt_roles:
+        if self.agents.find(call.session_agent_id).role not in self.suites.agent_policy().prompt_roles:
             return
         with self.scopes.opened(call.session_agent_id):
             memory_ids = tuple(row.memory_id for row in self.memories.absent_memories(call.session_agent_id).weight_order().all_rows())

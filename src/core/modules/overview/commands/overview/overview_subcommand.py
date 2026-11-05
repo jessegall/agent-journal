@@ -26,7 +26,7 @@ class OverviewSubcommand(ReadSubcommand[OverviewPage]):
         pass
 
     def read(self, arguments: Namespace, caller: Caller) -> OverviewPage:
-        commands = self.values.texts(COMMANDS_KEY, caller.environment_id)
+        commands = self.values.texts(COMMANDS_KEY)
         return OverviewPage(tuple(OverviewSection(command, self.command_text(command, caller)) for command in commands))
 
     def command_text(self, command: str, caller: Caller) -> str:

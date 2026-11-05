@@ -37,7 +37,7 @@ class WorkerTestListings(RunCounts):
     def agent_parts(self, process: Process, agent: Agent) -> tuple[TestListing, ...]:
         if not process.is_queue_run or process.creator_id != process.session_agent_id:
             return ()
-        if self.settings.number(WORKER_TEST_LIMIT, process.environment_id) <= 0:
+        if self.settings.number(WORKER_TEST_LIMIT) <= 0:
             return ()
         if agent.role != AgentRole.WORKER:
             return ()
@@ -64,7 +64,7 @@ class WorkerTestListings(RunCounts):
 
     def requires_count(self, process: Process, agent: Agent) -> bool:
         return (process.is_queue_run and process.creator_id == process.session_agent_id and agent.role == AgentRole.WORKER
-                and self.settings.number(WORKER_TEST_LIMIT, process.environment_id) > 0
+                and self.settings.number(WORKER_TEST_LIMIT) > 0
                 and any(part.category is CommandCategory.TEST_RUN for part in self.visibility.parts(process.id)))
 
     def reject_unknown(self, process: Process, agent: Agent, status: int | None, count: int, context: Context) -> None:

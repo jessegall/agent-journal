@@ -11,5 +11,5 @@ class TemplateSearcher(ModelSearcher):
     def __init__(self, templates: TemplateQuery) -> None:
         self.templates = templates
 
-    def query(self, environment_id: int | None) -> TemplateQuery:
-        return self.templates.active(environment_id)
+    def query(self) -> TemplateQuery:
+        return self.templates.active()

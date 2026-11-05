@@ -27,7 +27,7 @@ class SuitePresetsSubcommand(ReadSubcommand[Page[PagePreset]]):
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[PagePreset]:
         environments = self.queries.query(Environment).filter(name=arguments.environment).limited(1)
-        suite = self.choice.suite(environments[0].id) if environments else None
+        suite = self.choice.suite() if environments else None
         presets = self.windows.presets(suite.name, arguments.page) if suite is not None else []
         rows = tuple(PagePreset(preset.key, preset.name, preset.text, stored_layout(preset.shape)) for preset in presets)
         return Page(rows, 1, max(len(rows), 1), len(rows))

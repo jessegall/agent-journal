@@ -57,7 +57,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             if listed.state is not TaskState.OPEN:
                 raise Refusal(f"task {listed.id} is {listed.state.value}", "a worker is dispatched to an open task")
         environment = self.environments.find(task.environment_id)
-        worker_limit = self.settings.number(WORKER_LIMIT, environment.id)
+        worker_limit = self.settings.number(WORKER_LIMIT)
         if len(self.worktrees.open_worktrees()) >= worker_limit:
             raise Refusal(f"{worker_limit} workers are out already", "merge or release one first, or raise journal.suites.coding.workers.worker-limit")
         worker_context = replace(context, environment_id=environment.id)

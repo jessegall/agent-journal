@@ -22,7 +22,7 @@ class TunlerDomainsSubcommand(ReadSubcommand[TunlerDomains]):
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> TunlerDomains:
-        return TunlerDomains(tuple(self.client.domains()), self.settings.text(SUBDOMAIN_SETTING, None))
+        return TunlerDomains(tuple(self.client.domains()), self.settings.project.text(SUBDOMAIN_SETTING))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, TunlerDomains):

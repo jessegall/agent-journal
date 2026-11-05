@@ -30,7 +30,7 @@ class OutputStatusMonitorRule(DriverRule):
         return RuleAnswer.with_nudges(*(note.nudge(output=number) for number in numbers))
 
     def note(self, hook: AgentHook) -> NudgeDeclaration:
-        if hook.role in self.suites.agent_policy(hook.environment_id).automatic_watch_roles:
+        if hook.role in self.suites.agent_policy().automatic_watch_roles:
             return AUTOMATIC_RUN_WATCHED
         return MONITOR_COMMAND_NOTE if self.providers.provider(hook.event.program).monitor_tool is ToolType.SHELL else MONITOR_NOTE
 

@@ -40,6 +40,6 @@ class BackgroundRunWatchListener(SaveListener[Moved[Process]]):
 
     def monitor_tool(self, process: Process) -> ToolType | None:
         agent = self.queries.query(Agent).find(process.session_agent_id)
-        if process.creator_id != process.session_agent_id or agent.role in self.suites.agent_policy(agent.environment_id).automatic_watch_roles:
+        if process.creator_id != process.session_agent_id or agent.role in self.suites.agent_policy().automatic_watch_roles:
             return None
         return self.providers.provider(agent.program).monitor_tool

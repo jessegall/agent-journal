@@ -22,7 +22,7 @@ class ServerTunnel:
     def follow(self, port: int) -> None:
         container = synced_container(self.home)
         try:
-            name = container.get(SettingValues).text(SERVICE_SETTING, None)
+            name = container.get(SettingValues).project.text(SERVICE_SETTING)
             tunnel = container.get(Tunnels).tunnel(name)
             if self.current is not None and self.current.name == name and self.place == tunnel.place() and self.current.state() is not TunnelState.DISCONNECTED:
                 return

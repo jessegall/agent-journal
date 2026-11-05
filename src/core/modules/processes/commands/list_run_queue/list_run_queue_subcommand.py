@@ -34,9 +34,9 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         self.queries, self.settings, self.halt = queries, settings, halt
         self.suites, self.catalogue, self.values = suites, catalogue, values
 
-    def suite_limits(self, environment_id: int) -> list[dict[str, object]]:
-        entries = (self.catalogue.value(key) for key in self.suites.agent_policy(environment_id).queue_limit_settings)
-        return [{"key": entry.key, "title": entry.title, "description": entry.description, "value": self.values.value(entry.key, environment_id)} for entry in entries]
+    def suite_limits(self) -> list[dict[str, object]]:
+        entries = (self.catalogue.value(key) for key in self.suites.agent_policy().queue_limit_settings)
+        return [{"key": entry.key, "title": entry.title, "description": entry.description, "value": self.values.value(entry.key)} for entry in entries]
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--limit", type=int, default=50)
@@ -44,8 +44,8 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         parser.add_argument("--recent", type=int, default=RECENT_RUNS)
 
     def read(self, arguments: Namespace, caller: Caller) -> ProcessQueuePage:
-        environment_id = caller.environment_id
-        main_spots = self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS, environment_id)
+        environment_id = self.queries.database.scope_environment_id
+        main_spots = self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS)
         query = self.queries.query(ProcessQueueRow)
         active = tuple(query.matching(IsNull("ended_at")).oldest().all_rows())
         running = [row.inspector_json(main_spots) for row in active if row.section is QueueSection.RUNNING]
@@ -54,8 +54,8 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         inspector: QueueInspectorJson = {
             "environment_id": environment_id,
             "environment_name": self.queries.query(Environment).find(environment_id).name,
-            "parallel_limit": self.settings.integer(ProcessSetting.RUN_BATCH_SIZE, environment_id),
-            "limit_setting": ProcessSetting.RUN_BATCH_SIZE.key, "suite_limits": self.suite_limits(environment_id),
+            "parallel_limit": self.settings.integer(ProcessSetting.RUN_BATCH_SIZE),
+            "limit_setting": ProcessSetting.RUN_BATCH_SIZE.key, "suite_limits": self.suite_limits(),
             "count_main_runs": main_spots, "main_spots_setting": ProcessSetting.MAIN_RUNS_USE_SLOTS.key,
             "used_slots": sum(bool(row["uses_slot"]) for row in running), "waiting_count": len(waiting),
             "halted": self.halt.is_halted, "halt_reason": self.halt.reason,

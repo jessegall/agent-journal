@@ -17,16 +17,16 @@ class VoiceChoice:
         self.values, self.home = values, home
 
     def is_voiced(self) -> bool:
-        return self.values.flag(VOICE_SWITCH_KEY, None)
+        return self.values.project.flag(VOICE_SWITCH_KEY)
 
     def voice(self) -> Voice:
-        return BuiltinCatalogue.lookup(self.values.text(PROFILE_KEY, None))
+        return BuiltinCatalogue.lookup(self.values.project.text(PROFILE_KEY))
 
     def title(self) -> str:
-        return self.values.text(TITLE_KEY, None)
+        return self.values.project.text(TITLE_KEY)
 
     def first_name(self) -> str:
-        return self.values.text(NAME_KEY, None) or self.git_first_name()
+        return self.values.project.text(NAME_KEY) or self.git_first_name()
 
     def instruction(self) -> str:
         return self.voice().instruction(self.title(), self.first_name())
@@ -35,10 +35,10 @@ class VoiceChoice:
         return self.voice().called(self.title(), self.first_name())
 
     def avatar(self) -> bool:
-        return self.values.flag(AVATAR_KEY, None)
+        return self.values.project.flag(AVATAR_KEY)
 
     def avatar_shown(self) -> str:
-        return self.values.text(AVATAR_SHOWN_KEY, None)
+        return self.values.project.text(AVATAR_SHOWN_KEY)
 
     def git_first_name(self) -> str:
         try:

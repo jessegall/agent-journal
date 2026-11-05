@@ -30,5 +30,4 @@ class WindowSearchSubcommand(ReadSubcommand[Page[Model]]):
         searcher = self.registry.window(arguments.window).search.get("searcher")
         if not isinstance(searcher, str):
             raise Refusal(f"{arguments.window} declares no search", "a window declares one with search=WindowSearch(...) on its WindowDeclaration")
-        environment_id = caller.environment_id
-        return self.container.get(DottedPath(searcher).checked_class(WindowSearcher)).found(arguments.words, environment_id)
+        return self.container.get(DottedPath(searcher).checked_class(WindowSearcher)).found(arguments.words)

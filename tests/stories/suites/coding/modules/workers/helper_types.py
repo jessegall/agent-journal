@@ -10,6 +10,7 @@ from core.base.database.database import Database
 from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.modules.drivers.models.agent_line import AgentLine
+from core.base.scope.scopes import Scopes
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
 from tests.stories.suites.coding.modules.workers.support.helper_types import ClerkStarted, HelperStarted, NativeSubagentStarted, WorkerStarted
@@ -58,5 +59,6 @@ def test_an_ended_helper_is_left_out_of_the_inactive_notice(new_story):
 
 def test_a_helper_has_saved_commands_from_its_first_start(new_story):
     story = new_story(fixture=HelperStarted)
-    policy = story.container.get(SuiteChoice).agent_policy(1)
+    with story.container.get(Scopes).read_scope((), None, 1):
+        policy = story.container.get(SuiteChoice).agent_policy()
     story.expect_rows("helper" in policy.saved_command_roles, "subagent" in policy.saved_command_roles)

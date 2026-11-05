@@ -14,7 +14,7 @@ class Tunnels:
         self.registry, self.container, self.settings = registry, container, settings
 
     def chosen(self) -> Tunnel:
-        return self.tunnel(self.settings.text(SERVICE_SETTING, None))
+        return self.tunnel(self.settings.project.text(SERVICE_SETTING))
 
     def tunnel(self, name: str) -> Tunnel:
         entry = next((entry for entry in self.registry.tunnels if entry.name == name), None)

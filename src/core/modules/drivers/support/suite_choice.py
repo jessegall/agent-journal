@@ -13,8 +13,8 @@ class SuiteChoice:
     def __init__(self, registry: Registry, settings: SettingValues) -> None:
         self.registry, self.settings = registry, settings
 
-    def suite(self, environment_id: int) -> SuiteEntry | None:
-        configured_suite = self.registry.suite(self.settings.text(SUITE_SETTING, environment_id))
+    def suite(self) -> SuiteEntry | None:
+        configured_suite = self.registry.suite(self.settings.text(SUITE_SETTING))
         if configured_suite is not None:
             return configured_suite
         tops = self.registry.default_suite_roots()
@@ -22,19 +22,19 @@ class SuiteChoice:
             tops = self.registry.top_suites()
         return tops[0] if len(tops) == 1 else None
 
-    def runs(self, environment_id: int, suite_name: str) -> bool:
-        suite = self.suite(environment_id)
+    def runs(self, suite_name: str) -> bool:
+        suite = self.suite()
         return suite is not None and suite_name in self.registry.lineage(suite)
 
-    def agent_policy(self, environment_id: int) -> AgentPolicy:
-        suite = self.suite(environment_id)
+    def agent_policy(self) -> AgentPolicy:
+        suite = self.suite()
         return suite.agent_policy if suite is not None else AgentPolicy()
 
-    def driver(self, environment_id: int, role: str) -> DriverEntry | None:
-        suite = self.suite(environment_id)
+    def driver(self, role: str) -> DriverEntry | None:
+        suite = self.suite()
         if suite is None:
             return None
-        configured_driver = self.registry.driver(self.settings.text(f"{DRIVER_SETTINGS}{role}", environment_id))
+        configured_driver = self.registry.driver(self.settings.text(f"{DRIVER_SETTINGS}{role}"))
         if configured_driver is not None:
             return configured_driver
         return self.registry.driver(suite.defaults.get(role, ""))

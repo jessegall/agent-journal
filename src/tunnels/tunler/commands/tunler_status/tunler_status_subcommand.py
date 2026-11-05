@@ -26,7 +26,7 @@ class TunlerStatusSubcommand(ReadSubcommand[TunlerAccount]):
     def read(self, arguments: Namespace, caller: Caller) -> TunlerAccount:
         status = self.client.status()
         return TunlerAccount(status.installed, status.authenticated, status.rejected, status.account, status.host, status.command,
-                             self.settings.text(SUBDOMAIN_SETTING, None), self.settings.text(SERVICE_SETTING, None) == TunlerTunnel.name)
+                             self.settings.project.text(SUBDOMAIN_SETTING), self.settings.project.text(SERVICE_SETTING) == TunlerTunnel.name)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, TunlerAccount):

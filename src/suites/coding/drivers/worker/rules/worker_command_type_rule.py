@@ -18,4 +18,4 @@ class WorkerCommandTypeRule(AllowedCommandTypesRule):
         self.settings = settings
 
     def command_types(self, hook: AgentHook) -> Sequence[str]:
-        return self.settings.texts(COMMAND_TYPES, hook.environment_id)
+        return self.settings.texts(COMMAND_TYPES)

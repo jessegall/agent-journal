@@ -34,8 +34,8 @@ class WorkerProofQueue:
                 self.repository.save_change(proof, proof.moved(ProofLifecycle.queue), context)
                 queued_count += 1
         self.send_untested_line(worktree, context)
-        picker = self.settings.text(AFFECTED_TESTS_COMMAND, worktree.environment_id).strip()
-        test = self.settings.text(PROJECT_TEST_COMMAND, worktree.environment_id).strip()
+        picker = self.settings.text(AFFECTED_TESTS_COMMAND).strip()
+        test = self.settings.text(PROJECT_TEST_COMMAND).strip()
         if picker and test:
             line = shlex.join([*shlex.split(picker), *self.git.changed_files(worktree)])
             self.repository.save(AffectedTest(worktree_id=worktree.id, task_id=worktree.task_id, picker_command=line, test_command=test), context)

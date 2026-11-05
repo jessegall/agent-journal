@@ -35,8 +35,8 @@ class ReaderRequests:
         self.judge = judge
 
     def needed(self, process: Process, agent: Agent) -> bool:
-        return (agent.role in self.suites.agent_policy(agent.environment_id).reader_request_roles and process.creator_id == agent.id
-                and self.settings.flag(ProcessSetting.READERS_FORCED, agent.environment_id))
+        return (agent.role in self.suites.agent_policy().reader_request_roles and process.creator_id == agent.id
+                and self.settings.flag(ProcessSetting.READERS_FORCED))
 
     def request(self, process: Process, spec: PartSpec, reader: Reader | None, context: Context) -> int | None:
         if not self.demands.needs_reader(spec):
@@ -89,7 +89,7 @@ class ReaderRequests:
         if existing is not None:
             return existing.id
         current_time = self.clock.timestamp()
-        minutes = self.settings.integer(ProcessSetting.READER_BLOCK_MINUTES, process.environment_id)
+        minutes = self.settings.integer(ProcessSetting.READER_BLOCK_MINUTES)
         expires_at = Timestamp(current_time.value + timedelta(minutes=minutes)) if MainAgentFinder.newest(self.queries) else current_time
         request = self.repository.save(ReaderRequest(creator_id=process.session_agent_id, command_key=key,
                                                      command=command, category=spec.category, reason=reason, expires_at=expires_at,

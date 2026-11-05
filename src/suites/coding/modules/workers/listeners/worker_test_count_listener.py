@@ -42,7 +42,7 @@ class WorkerTestCountListener(SaveListener[Changed[Output]]):
         if process.state not in RUNNING_STATES or process.creator_id != process.session_agent_id:
             return
         agent = self.rows.required(Agent, process.session_agent_id)
-        limit = self.settings.number(WORKER_TEST_LIMIT, process.environment_id)
+        limit = self.settings.number(WORKER_TEST_LIMIT)
         if agent.role != AgentRole.WORKER or not 0 < limit < output.test_count:
             return
         parts = self.queries.query(ProcessPart).filter(process_id=process.id, category=CommandCategory.TEST_RUN)

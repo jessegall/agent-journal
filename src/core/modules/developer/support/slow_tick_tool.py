@@ -1,4 +1,5 @@
 from core.base.actor import Actor
+from core.modules.agents.models.agent import Agent
 from core.base.command.bus import Bus
 from core.base.performance.performance_tool import PerformanceTool
 from core.base.query.queries import Queries
@@ -23,7 +24,11 @@ class SlowTickTool(PerformanceTool):
         points = int(str(values[0]))
         if points <= TICK_LIMIT_POINTS:
             return False
-        environments = {agent.environment_id for agent in MainAgentFinder.all_running(self.queries) if self.settings.flag(SLOW_TICKS_SETTING, agent.environment_id)}
+        environments = {agent.environment_id for agent in MainAgentFinder.all_running(self.queries) if self.reports_slow_ticks(agent)}
         for environment_id in environments:
             self.bus.run(SendMessage(f"A tick of the journal's clock cost {points} points, over its limit of {TICK_LIMIT_POINTS} points."), Actor.core(), environment_id=environment_id)
         return bool(environments)
+
+    def reports_slow_ticks(self, agent: Agent) -> bool:
+        with self.bus.scopes.read_scope((), None, agent.environment_id):
+            return self.settings.flag(SLOW_TICKS_SETTING)

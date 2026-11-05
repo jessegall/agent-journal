@@ -33,30 +33,29 @@ class SettingTreeSubcommand(ReadSubcommand[Sequence[TreeLine]]):
         self.declared, self.values, self.undeclared, self.rows = declared, values, undeclared, rows
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[TreeLine]:
-        environment_id = caller.environment_id
         lines: list[TreeLine] = []
         for entry in self.declared.all():
             depth = len(list(self.declared.enclosing_groups(entry)))
             if entry.type == REFERENCE_TYPE:
-                lines.extend(self.placed(entry.target, depth, environment_id))
+                lines.extend(self.placed(entry.target, depth))
             elif entry.key.endswith(f".{ANY_KEY}"):
-                lines.extend(self.stored(entry, depth, environment_id))
+                lines.extend(self.stored(entry, depth))
             else:
-                lines.append(self.line(entry, depth, environment_id))
-        kept = [self.undeclared.current(self.declared.all(), key, environment_id) for key in dict.fromkeys(report.key for report in self.undeclared.found(self.declared.all()))]
+                lines.append(self.line(entry, depth))
+        kept = [self.undeclared.current(self.declared.all(), key) for key in dict.fromkeys(report.key for report in self.undeclared.found(self.declared.all()))]
         return (*lines, *(TreeLine(setting, 0) for setting in kept if setting is not None))
 
-    def line(self, entry: SettingEntry, depth: int, environment_id: int | None) -> TreeLine:
-        return TreeLine(self.values.current(entry.key, environment_id), depth)
+    def line(self, entry: SettingEntry, depth: int) -> TreeLine:
+        return TreeLine(self.values.current(entry.key), depth)
 
-    def stored(self, template: SettingEntry, depth: int, environment_id: int | None) -> list[TreeLine]:
+    def stored(self, template: SettingEntry, depth: int) -> list[TreeLine]:
         prefix = template.key.removesuffix(ANY_KEY)
-        return [self.line(self.declared.entry(key), depth, environment_id) for key in sorted(self.rows.stored_keys()) if key.startswith(prefix)]
+        return [self.line(self.declared.entry(key), depth) for key in sorted(self.rows.stored_keys()) if key.startswith(prefix)]
 
-    def placed(self, key: str, depth: int, environment_id: int | None) -> list[TreeLine]:
-        lines = [self.line(self.declared.entry(key), depth, environment_id)]
+    def placed(self, key: str, depth: int) -> list[TreeLine]:
+        lines = [self.line(self.declared.entry(key), depth)]
         for child in self.declared.children(key):
-            lines.extend(self.placed(child.target, depth + 1, environment_id) if child.type == REFERENCE_TYPE else self.placed(child.key, depth + 1, environment_id))
+            lines.extend(self.placed(child.target, depth + 1) if child.type == REFERENCE_TYPE else self.placed(child.key, depth + 1))
         return lines
 
     def write_output(self, value: object, output: Output) -> None:

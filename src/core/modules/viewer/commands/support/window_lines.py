@@ -70,7 +70,7 @@ class WindowLines:
 
     def check_button(self, window_name: str, argv: list[str], parsed: ParsedLine, person: Actor, environment: str) -> None:
         environment_id = self.environment_names.environment_id(environment)
-        buttons = [button for button in self.registry.button_lines(window_name) if self.active.is_active(button.module, environment_id) and button.allows(argv)]
+        buttons = [button for button in self.registry.button_lines(window_name) if self.active.is_active(button.module) and button.allows(argv)]
         if not buttons:
             raise WindowRefusal(f"{window_name} does not declare {parsed.line}")
         if any(button.shipped for button in buttons):

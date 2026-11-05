@@ -62,7 +62,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         lines: dict[int, list[AgentLine]] = defaultdict(list)
         for line in self.queries.query(AgentLine).matching(Among("session_agent_id", agent_ids)).filter(source=SILENT_AGENT_SOURCE).oldest().all_rows():
             lines[line.session_agent_id].append(line)
-        span = self.settings.minutes(SILENT_AGENT_MINUTES, context.environment_id)
+        span = self.settings.minutes(SILENT_AGENT_MINUTES)
         for agent in agents:
             has_work = agent.id in working or (agent.role == CodingAgentRole.MAIN and bool(tasks))
             activity = activities[agent.id]

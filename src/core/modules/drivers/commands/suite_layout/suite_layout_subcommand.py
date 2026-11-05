@@ -28,7 +28,7 @@ class SuiteLayoutSubcommand(ReadSubcommand[PageLayout]):
 
     def read(self, arguments: Namespace, caller: Caller) -> PageLayout:
         environments = self.queries.query(Environment).filter(name=arguments.environment).limited(1)
-        suite = self.choice.suite(environments[0].id) if environments else None
+        suite = self.choice.suite() if environments else None
         if suite is None or not self.windows.has_layout(suite.name, arguments.page, arguments.driver):
             raise Refusal(f"no suite layout for the page {arguments.page} in {arguments.environment}", "the viewer then starts the page from its own default")
         return PageLayout(suite.name, arguments.page, arguments.driver, stored_layout(self.windows.layout(suite.name, arguments.page, arguments.driver)))

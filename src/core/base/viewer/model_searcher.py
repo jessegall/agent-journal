@@ -20,11 +20,11 @@ class ModelSearcher(WindowSearcher):
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def found(self, terms: Sequence[str], environment_id: int | None) -> Page[Model]:
-        query = self.query(environment_id)
+    def found(self, terms: Sequence[str]) -> Page[Model]:
+        query = self.query()
         if terms:
             query = query.matching(ContainsEvery(self.model.search_fields, terms))
         return query.newest().page(1, MAX_ROWS)
 
-    def query(self, environment_id: int | None) -> Query[Model]:
+    def query(self) -> Query[Model]:
         return self.queries.query(self.model)

@@ -31,7 +31,7 @@ class InactiveWorkerRetireRule(DriverRule):
         self.worktrees, self.activities, self.settings = worktrees, activities, settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        hours = self.settings.number(WORKER_IDLE_HOURS, hook.environment_id)
+        hours = self.settings.number(WORKER_IDLE_HOURS)
         activities = self.activities.read(hook)
         idle = [worktree for worktree in self.worktrees.main_worktrees(hook.agent_id) if worktree.state is WorktreeState.CUT and self.is_idle(activities[worktree.session_agent_id], hook, hours)]
         commands = [command for worktree in idle for command in (ReleaseWorker(worktree.session_agent_id, f"idle for {hours} hours"), EndAgent(worktree.session_agent_id))]

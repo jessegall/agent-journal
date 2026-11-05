@@ -30,11 +30,11 @@ class ButtonsRoute:
             registry = container.get(Registry)
             active = container.get(ActiveModules)
             allowances = container.get(WindowAllowances)
-            buttons = tuple(button.listed() for button in registry.buttons if active.is_active(button.module, environment_id))
             missing: dict[str, list[ButtonPermission]] = {}
             with container.get(Scopes).read_scope((), None, environment_id):
+                buttons = tuple(button.listed() for button in registry.buttons if active.is_active(button.module))
                 for button in registry.button_lines(ButtonWindow.MARKS):
-                    if button.shipped or not active.is_active(button.module, environment_id):
+                    if button.shipped or not active.is_active(button.module):
                         continue
                     allowed = allowances.allowed_lines(person_id, button.subject, WindowPermissionType.RUNS)
                     if button.permission_line in allowed:

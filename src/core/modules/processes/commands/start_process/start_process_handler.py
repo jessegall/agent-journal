@@ -59,6 +59,6 @@ class StartProcessHandler(Handler[StartProcess, Process]):
                                         reader_position=part_reader.part.position if part_reader else 0, title=RunTitle.title(part_reader.reader, part_reader.part.text) if part_reader else ""), context)
         self.folder.write_start(process.id, command.line, [part.text for part in command.parts])
         self.slots.remember(process)
-        self.slots.grant(process.environment_id, context)
+        self.slots.grant(context)
         return self.rows.required(Process, process.id)
 

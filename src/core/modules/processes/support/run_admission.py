@@ -20,12 +20,12 @@ class RunAdmission:
         self.suites, self.settings = suites, settings
 
     def needs_slot(self, process: Process, agent: Agent) -> bool:
-        return process.is_queue_run and agent.role in self.suites.agent_policy(process.environment_id).queued_run_roles
+        return process.is_queue_run and agent.role in self.suites.agent_policy().queued_run_roles
 
     def uses_slot(self, process: Process) -> bool:
         if process.slot_assigned:
             return True
-        return (process.is_queue_run and self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS, process.environment_id)
+        return (process.is_queue_run and self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS)
                 and self.queries.query(Agent).find(process.session_agent_id).role == AgentRole.MAIN)
 
     def may_start(self, process: Process, agent: Agent, current_time: Timestamp) -> bool:

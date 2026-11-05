@@ -28,6 +28,6 @@ class NewDriverLinesListener(SaveListener[Changed[Setting]]):
             return
         agents = self.queries.query(Agent).matching(IsNull("ended_at")).all_rows()
         for agent in tuple(agents):
-            driver = self.choice.driver(setting.environment_id, agent.role)
+            driver = self.choice.driver(agent.role)
             for line in driver.opening_lines if driver is not None else ():
                 self.nudger.send_text(agent.id, line, self.name, context)

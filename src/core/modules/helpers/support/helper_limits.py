@@ -25,19 +25,19 @@ class HelperLimits:
             return self.checked_agent(self.agents.find(context.actor.id))
         if context.environment_id is None:
             raise Refusal("a helper starts in one environment", "name it with --environment")
-        main = MainAgentFinder.newest(self.queries, context.environment_id)
+        main = MainAgentFinder.newest(self.queries)
         if main is None:
             raise Refusal("a helper starts under a running main agent", "start one with journal launch")
         return main
 
     def checked_agent(self, agent: Agent) -> Agent:
-        if agent.role not in self.suites.agent_policy(agent.environment_id).dispatch_roles:
+        if agent.role not in self.suites.agent_policy().dispatch_roles:
             raise Refusal("a helper starts no helper", "say in your report what should be done next")
         return agent
 
     def checked_slot(self, environment_id: int) -> None:
         running = tuple(self.queries.query(Agent).filter(role=AgentRole.HELPER).matching(IsNull("ended_at")).all_rows())
-        limit = self.settings.number(HELPER_LIMIT, environment_id)
+        limit = self.settings.number(HELPER_LIMIT)
         if len(running) >= limit:
             names = ", ".join(f"agent:{helper.id}" for helper in running)
             raise Refusal(f"{limit} helpers run here: {names}", "stop now: each report wakes you, then start again")

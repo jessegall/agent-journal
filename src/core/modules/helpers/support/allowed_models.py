@@ -12,5 +12,5 @@ class AllowedModels:
 
     def allowed(self, provider: Provider) -> list[str]:
         names = provider.model_names()
-        listed = self.setting_values.texts(ALLOWED_MODELS, self.scopes.environment_id)
+        listed = self.setting_values.texts(ALLOWED_MODELS)
         return [name for name in names if f"{provider.name} {name}" in listed] or names

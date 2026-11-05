@@ -20,7 +20,7 @@ class OutputAccess:
 
     def has_private_outputs(self, actor: Actor) -> bool:
         agent = self.agent(actor)
-        return agent is not None and agent.role in self.suites.agent_policy(agent.environment_id).private_output_roles
+        return agent is not None and agent.role in self.suites.agent_policy().private_output_roles
 
     def process(self, actor: Actor, process_id: int) -> Process:
         process = self.rows.required(Process, process_id)

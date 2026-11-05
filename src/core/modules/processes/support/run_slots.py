@@ -29,7 +29,7 @@ class RunSlots:
         self.admission, self.clock, self.listings = admission, clock, listings
         self.rows, self.kept, self.scopes = rows, kept, scopes
 
-    def grant(self, environment_id: int, context: Context) -> None:
+    def grant(self, context: Context) -> None:
         runs = self.running()
         for waiting in [process for process in runs if process.queued_at is not None]:
             agent = self.rows.required(Agent, waiting.session_agent_id)
@@ -42,7 +42,7 @@ class RunSlots:
             if process.queued_at is None or process.state not in RUNNING_STATES:
                 continue
             used_slots = sum(self.admission.uses_slot(run) for run in self.running() if run.queued_at is None)
-            room = self.settings.integer(ProcessSetting.RUN_BATCH_SIZE, environment_id) - used_slots
+            room = self.settings.integer(ProcessSetting.RUN_BATCH_SIZE) - used_slots
             if needs_slot and (self.halt.is_halted or room <= 0):
                 continue
             self.folder.write_slot(process.id)
@@ -63,7 +63,7 @@ class RunSlots:
         queued = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(HasValue("queued_at")).oldest().all_rows()
         for environment_id in dict.fromkeys(process.environment_id for process in tuple(queued)):
             with self.scopes.opened(None, environment_id):
-                self.grant(environment_id, context)
+                self.grant(context)
 
     def record_count(self, process: Process, agent: Agent, context: Context) -> None:
         status = self.folder.count_status(process.id)

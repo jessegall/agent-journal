@@ -28,8 +28,8 @@ class AutoNextTaskListener(CommitListener[Moved[Task]]):
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
         closed_task = event.row
-        assigner = self.assigners.assigner(closed_task.environment_id)
-        if assigner is None or not assigner.is_automatic(closed_task.environment_id):
+        assigner = self.assigners.assigner()
+        if assigner is None or not assigner.is_automatic():
             return
         holder_id = event.old_row.holder_id
         if holder_id is None:

@@ -36,11 +36,10 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         parser.add_argument("--closed", action="store_true", help="also the agents that ended most recently")
 
     def read(self, arguments: Namespace, caller: Caller) -> AgentFactsList:
-        environment_id = caller.environment_id
         cards = self.queries.query(AgentCard)
         running = tuple(cards.matching(IsNull("ended_at")).oldest().all_rows())
         ended = tuple(cards.matching(Greater("ended_at", "")).newest().page(1, CLOSED_AGENTS_SHOWN).rows) if arguments.closed else ()
-        job_roles = self.suites.agent_policy(environment_id).job_roles
+        job_roles = self.suites.agent_policy().job_roles
         return AgentFactsList(tuple(self.facts(card, job_roles) for card in (*running, *ended)))
 
     def facts(self, card: AgentCard, job_roles: Collection[str]) -> AgentFacts:

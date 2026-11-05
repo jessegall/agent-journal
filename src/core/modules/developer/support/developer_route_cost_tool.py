@@ -15,6 +15,6 @@ class DeveloperRouteCostTool(RouteCostTool):
         route, points = values
         if not isinstance(route, str) or not isinstance(points, Points):
             raise TypeError("a route's cost needs its path and measured points")
-        if self.settings.value(HOOK_DURATIONS_SETTING, None) is True:
+        if self.settings.project.value(HOOK_DURATIONS_SETTING) is True:
             self.numbers.add(f"route {route}", points.total)
         return None

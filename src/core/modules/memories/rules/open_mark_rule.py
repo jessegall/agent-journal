@@ -35,11 +35,11 @@ class OpenMarkRule(DriverRule):
         percent = self.providers.provider(hook.event.program).context_percent(self.home, hook.event.session)
         if percent is None:
             return RuleAnswer.allowed()
-        marks = self.settings.numbers(MARKS_SETTING, hook.environment_id)
+        marks = self.settings.numbers(MARKS_SETTING)
         reached = self.marks.next_reached(hook.agent_id, percent, marks)
         if reached is None or self.marks.open_marks(hook.agent_id):
             return RuleAnswer.allowed()
-        tool_uses = self.settings.numbers(MARK_TOOL_USES_SETTING, hook.environment_id)
+        tool_uses = self.settings.numbers(MARK_TOOL_USES_SETTING)
         uses = dict(zip(marks, tool_uses)).get(reached, tool_uses[-1])
         memories = list(self.memories.weight_order().all_rows())
         return RuleAnswer.with_nudges(WEIGH_MEMORIES.nudge(percent=reached, uses=uses, count=len(memories), memories=",".join(str(memory.memory_id) for memory in memories))).running(

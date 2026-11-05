@@ -40,4 +40,4 @@ class StopAgentHandler(Handler[StopAgent, Agent]):
 
     def handle(self, command: StopAgent, context: Context) -> Agent:
         agent = self.queries.query(Agent).find(command.agent_id)
-        return agent if agent.ended_at is not None else self.repository.save(agent.ended(context.timestamp, self.suites.agent_policy(agent.environment_id)), context)
+        return agent if agent.ended_at is not None else self.repository.save(agent.ended(context.timestamp, self.suites.agent_policy()), context)

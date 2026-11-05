@@ -29,7 +29,7 @@ class ReaderStep:
         advanced = self.script_advance(process, output, reader, is_final) if reader.type is ReaderType.SCRIPT else self.text_advance(process, output, reader, is_final)
         cost = self.tools.cost(started)
         if cost is not None:
-            self.tools.run(ReaderTimeTool, reader.name, cost.total, process.environment_id)
+            self.tools.run(ReaderTimeTool, reader.name, cost.total)
         return advanced
 
     def text_advance(self, process: Process, output: Output, reader: Reader, is_final: bool) -> ReaderAdvance | None:

@@ -29,7 +29,7 @@ class ServerBackup:
         container = synced_container(self.home)
         try:
             settings = container.get(SettingValues)
-            minutes, count = settings.number(BACKUP_MINUTES_SETTING, None), settings.number(BACKUP_COUNT_SETTING, None)
+            minutes, count = settings.project.number(BACKUP_MINUTES_SETTING), settings.project.number(BACKUP_COUNT_SETTING)
         finally:
             container.get(Database).close()
         copies = self.copies()

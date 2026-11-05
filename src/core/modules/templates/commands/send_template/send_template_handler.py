@@ -28,7 +28,7 @@ class SendTemplateHandler(Handler[SendTemplate, Message]):
         if context.actor.type is not ActorType.USER:
             raise Refusal("only a person sends a template", "journal template show <n> reads one")
         template = self.queries.query(Template).find(command.template_id)
-        if not self.active.is_active(template.module, context.environment_id):
+        if not self.active.is_active(template.module):
             raise Refusal(f"template {template.id} is not offered here", "journal template list shows those that are")
         target = self.targets.row(command.target, template, context.environment_id)
         purpose = PURPOSES.get(template.purpose, PLAIN_PURPOSE)

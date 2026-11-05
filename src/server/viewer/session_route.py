@@ -30,7 +30,7 @@ class SessionRoute:
     def tour_completed(self) -> bool:
         container = synced_container(self.home)
         try:
-            return container.get(SettingValues).flag(TOUR_COMPLETED, None)
+            return container.get(SettingValues).project.flag(TOUR_COMPLETED)
         finally:
             container.get(Database).close()
 

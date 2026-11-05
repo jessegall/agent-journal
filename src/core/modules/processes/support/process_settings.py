@@ -8,8 +8,8 @@ class ProcessSettings:
     def __init__(self, settings: SettingValues) -> None:
         self.settings = settings
 
-    def integer(self, setting: ProcessSetting, environment_id: int) -> int:
-        return self.settings.number(setting.key, environment_id)
+    def integer(self, setting: ProcessSetting) -> int:
+        return self.settings.number(setting.key)
 
-    def flag(self, setting: ProcessSetting, environment_id: int) -> bool:
-        return self.settings.flag(setting.key, environment_id)
+    def flag(self, setting: ProcessSetting) -> bool:
+        return self.settings.flag(setting.key)

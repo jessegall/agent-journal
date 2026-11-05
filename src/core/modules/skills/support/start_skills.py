@@ -25,15 +25,15 @@ class StartSkills:
     def __init__(self, values: SettingValues, registry: Registry) -> None:
         self.values, self.registry = values, registry
 
-    def session_start(self, environment_id: int) -> list[str]:
-        return self.folders(SESSION_START_KEY, environment_id)
+    def session_start(self) -> list[str]:
+        return self.folders(SESSION_START_KEY)
 
-    def after_compaction(self, environment_id: int) -> list[str]:
-        return self.folders(AFTER_COMPACTION_KEY, environment_id)
+    def after_compaction(self) -> list[str]:
+        return self.folders(AFTER_COMPACTION_KEY)
 
-    def main_agent(self, environment_id: int) -> list[str]:
-        return self.folders(MAIN_AGENT_KEY, environment_id)
+    def main_agent(self) -> list[str]:
+        return self.folders(MAIN_AGENT_KEY)
 
-    def folders(self, key: str, environment_id: int) -> list[str]:
+    def folders(self, key: str) -> list[str]:
         declared = {skill.folder for skill in self.registry.skills}
-        return [folder for folder in self.values.texts(key, environment_id) if folder in declared]
+        return [folder for folder in self.values.texts(key) if folder in declared]

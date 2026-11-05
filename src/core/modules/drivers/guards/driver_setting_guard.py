@@ -39,7 +39,7 @@ class DriverSettingGuard(Guard[Created[Setting] | Updated[Setting]]):
         driver = self.registry.driver(value)
         if driver is None:
             raise Refusal(f"no installed module ships driver {value}", "journal suite show <name> lists a suite's drivers")
-        suite = self.choice.suite(environment_id) if environment_id is not None else None
+        suite = self.choice.suite() if environment_id is not None else None
         if suite is None or driver not in self.registry.suite_drivers(suite):
             suite_name = suite.name if suite is not None else "no suite"
             raise Refusal(f"driver {driver.name} belongs to suite {driver.suite}, and this environment runs {suite_name}", f"journal suite choose {driver.suite}")

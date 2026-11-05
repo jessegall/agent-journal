@@ -51,7 +51,7 @@ class WorkerCountRaisedListener(SaveListener[Changed[Setting]]):
             return int(json.loads(old.value))
         if setting.environment_id is None:
             return DEFAULT_WORKER_COUNT
-        return self.settings.number(WORKER_LIMIT, None)
+        return self.settings.project.number(WORKER_LIMIT)
 
     def main_agents(self, setting: Setting) -> tuple[Agent, ...]:
         return tuple(agent for agent in MainAgentFinder.all_running(self.queries) if setting.environment_id in (None, agent.environment_id))
