@@ -1,22 +1,27 @@
+from core.base.actor import Actor
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
-from core.modules.agents.commands.stop_agent.stop_agent import StopAgent
+from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.helpers.commands.stop_helper.stop_helper import StopHelper
 from core.modules.helpers.support.helper_reach import HelperReach
 
 
 class StopHelperHandler(Handler[StopHelper, None]):
-    """Stops a helper's program when its process is known and ends its row; its job ends with it."""
+    """Asks the launcher to stop a helper's program and ends its row; its job ends with it."""
 
     command = StopHelper
 
-    def __init__(self, reach: HelperReach, bus: Bus) -> None:
-        self.reach, self.bus = reach, bus
+    def __init__(self, reach: HelperReach, bus: Bus, launcher: LauncherLink) -> None:
+        self.reach, self.bus, self.launcher = reach, bus, launcher
+
+    def prepare(self, command: StopHelper, actor: Actor) -> None:
+        helper = self.reach.checked_helper(command.helper_id, actor)
+        if helper.ended_at is None:
+            self.launcher.stop(helper.id)
 
     def handle(self, command: StopHelper, context: Context) -> None:
-        helper = self.reach.checked_helper(command.helper_id, context)
-        if helper.ended_at is not None:
-            return
-        self.bus.dispatch(EndAgent(helper.id) if helper.pid is None else StopAgent(helper.id), context)
+        helper = self.reach.checked_helper(command.helper_id, context.actor)
+        if helper.ended_at is None:
+            self.bus.dispatch(EndAgent(helper.id), context)

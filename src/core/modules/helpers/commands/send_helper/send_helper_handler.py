@@ -23,7 +23,7 @@ class SendHelperHandler(Handler[SendHelper, None]):
         self.reach, self.limits, self.jobs, self.nudger, self.repository, self.folders = reach, limits, jobs, nudger, repository, folders
 
     def handle(self, command: SendHelper, context: Context) -> None:
-        helper = self.reach.checked_helper(command.helper_id, context)
+        helper = self.reach.checked_helper(command.helper_id, context.actor)
         last_job = self.jobs.helper_jobs(helper.id)[-1]
         if helper.ended_at is None:
             self.nudger.send_text(helper.id, command.job, HELPER_JOB_SOURCE, context, wakes_agent=True)
