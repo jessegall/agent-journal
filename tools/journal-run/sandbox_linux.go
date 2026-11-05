@@ -27,7 +27,7 @@ func landlockABI() int {
 	return int(version)
 }
 
-func systemSandbox(program string, writable []string) (shellSandbox, error) {
+func systemSandbox(program string, writable []string, _ readLimit) (shellSandbox, error) {
 	if runtime.GOARCH != "amd64" && runtime.GOARCH != "arm64" {
 		return shellSandbox{}, fmt.Errorf("read-only shell sandbox needs Linux amd64 or arm64 syscall support")
 	}

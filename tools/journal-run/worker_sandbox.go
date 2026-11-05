@@ -7,6 +7,42 @@ import (
 	"strings"
 )
 
+// readLimit keeps a shell line from reading Denied, except the folders of Readable under it.
+type readLimit struct {
+	Denied   string
+	Readable []string
+}
+
+// workerReadLimit denies the main checkout, which holds the worktree, and keeps what a worker's programs run from:
+// the worktree, the shared git store, the journal's programs and libraries linked into the worktree.
+func workerReadLimit(worktree, journalHome string) (readLimit, error) {
+	resolved, err := filepath.EvalSymlinks(worktree)
+	if err != nil {
+		return readLimit{}, err
+	}
+	main, err := filepath.EvalSymlinks(filepath.Dir(journalHome))
+	if err != nil {
+		return readLimit{}, err
+	}
+	readable := []string{resolved, filepath.Join(main, ".git"), filepath.Join(main, ".venv"), filepath.Join(main, "node_modules")}
+	for _, name := range []string{"bin", "runtime", "plugins"} {
+		readable = append(readable, filepath.Join(main, filepath.Base(journalHome), name))
+	}
+	entries, err := os.ReadDir(resolved)
+	if err != nil {
+		return readLimit{}, err
+	}
+	for _, entry := range entries {
+		if entry.Type()&os.ModeSymlink == 0 {
+			continue
+		}
+		if target, err := filepath.EvalSymlinks(filepath.Join(resolved, entry.Name())); err == nil {
+			readable = append(readable, target)
+		}
+	}
+	return readLimit{Denied: main, Readable: readable}, nil
+}
+
 func workerFolders(worktree, journalHome string) ([]string, error) {
 	worktree, err := filepath.EvalSymlinks(worktree)
 	if err != nil {
