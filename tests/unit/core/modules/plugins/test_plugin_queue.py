@@ -13,7 +13,7 @@ def test_a_file_that_vanishes_after_the_listing_is_skipped(tmp_path, monkeypatch
     queue = PluginQueue(tmp_path)
     queue.folder.mkdir()
     path = queue.folder / "answer.json"
-    path.write_text(json.dumps({"env": "main", "agent": 1, "cards": [{"key": "card", "type": "state", "label": "Done"}]}))
+    path.write_text(json.dumps({"env": "main", "agent": 1, "cards": [{"key": "card", "kind": "state", "label": "Done"}]}))
     original = getattr(Path, method)
 
     def remove_file(source, *arguments, **options):

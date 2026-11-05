@@ -125,8 +125,8 @@ class PluginManifest:
 
     @staticmethod
     def read_card_tones(cards: object) -> dict[str, str]:
-        entries = [entry for entry in cards if is_mapping(entry) and "type" in entry] if is_list(cards) else []
-        return {str(entry["type"]): str(entry["tone"]) if "tone" in entry else "" for entry in entries}
+        entries = [entry for entry in cards if is_mapping(entry) and "kind" in entry] if is_list(cards) else []
+        return {str(entry["kind"]): str(entry["tone"]) if "tone" in entry else "" for entry in entries}
 
     @staticmethod
     def event_window(entry: object) -> EventWindow:
@@ -150,10 +150,10 @@ class PluginManifest:
 
     @staticmethod
     def manifest_setting(entry: object) -> ManifestSetting:
-        if not is_mapping(entry) or not all(field in entry for field in ("key", "title", "type")):
+        if not is_mapping(entry) or not all(field in entry for field in ("key", "title", "kind")):
             raise Refusal("a setting of a plugin's settings file lacks its key, title or type", "each setting states all three")
         choices: object = entry["choices"] if "choices" in entry else None
-        return ManifestSetting(str(entry["key"]), str(entry["title"]), str(entry["type"]), entry["default"] if "default" in entry else None,
+        return ManifestSetting(str(entry["key"]), str(entry["title"]), str(entry["kind"]), entry["default"] if "default" in entry else None,
                                tuple(str(choice) for choice in choices) if is_list(choices) else (), str(entry.get("help", "")), str(entry.get("group", "")), str(entry.get("parent", "")))
 
     def setting(self, key: str) -> ManifestSetting:

@@ -14,7 +14,7 @@ from core.modules.plugins.ticks.plugin_card_reading import PluginCardReading
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, installed_story
 from tests.stories.support.story_checks import expect_value
 
-CARD = {"type": "state", "key": "queued", "label": "Queue was judged"}
+CARD = {"kind": "state", "key": "queued", "label": "Queue was judged"}
 
 
 def queued_card(story, name: str, fields: dict[str, object]) -> Path:
