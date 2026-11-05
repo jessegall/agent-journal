@@ -1,7 +1,7 @@
 <script setup>
 import {computed} from "vue";
-import {render} from "../text/index.js";
-import {peekChip, route} from "../route.js";
+import {useTextRender} from "../text/useTextRender.js";
+import {peekChip} from "../route.js";
 import "../text/all.js";
 
 const props = defineProps({
@@ -9,13 +9,14 @@ const props = defineProps({
     inline: {type: Boolean, default: false},
     rowNames: {type: Boolean, default: true},
 });
+const render = useTextRender();
 const html = computed(() => {
-    const said = props.inline
+    const text = props.inline
         ? String(props.text || "")
               .split("\n")
               .find((line) => line.trim()) || ""
         : props.text;
-    const made = render(said, {env: route.value.env, rowNames: props.rowNames, inline: props.inline});
+    const made = render(text, {rowNames: props.rowNames, inline: props.inline});
     return props.inline ? made.replace(/^<p>|<\/p>\s*$/g, "") : made;
 });
 </script>

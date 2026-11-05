@@ -1,6 +1,6 @@
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.base.agent_role import AgentRole
-from core.modules.reminders.support.non_helper_rows import NonHelperRows
+from core.modules.reminders.conditions.non_helper_rows import NonHelperRows
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.block_until import BlockUntil
 from core.base.driver.driver_rule import DriverRule

@@ -4,7 +4,7 @@ from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
-from core.modules.agents.support.main_agent_rows import MainAgentRows
+from core.modules.agents.conditions.main_agent_rows import MainAgentRows
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.commands.remove_dock_item.remove_dock_item import RemoveDockItem
 from core.modules.docking.models.dock import Dock

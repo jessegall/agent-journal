@@ -12,7 +12,6 @@ SELECT processes.id, processes.environment_id, processes.agent_id, processes.lin
        CASE WHEN processes.state NOT IN ('running', 'background') THEN 'recent'
             WHEN processes.queued_at IS NOT NULL THEN 'waiting' ELSE 'running' END AS section
 FROM processes JOIN agents ON agents.id = processes.agent_id
-WHERE processes.category != 'journal' AND (processes.is_queue_run = 1
-   OR processes.state NOT IN ('running', 'background')
-   OR agents.role = 'main')
+WHERE processes.is_queue_run = 1
+   OR (agents.role = 'main' AND processes.category IN ('test run', 'build'))
 """

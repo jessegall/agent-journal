@@ -1,5 +1,4 @@
 import {escape, register, rowOf} from "./index.js";
-import {api} from "../api/client.js";
 import {isPicture} from "../format/files.js";
 import {meta, tableOfWord} from "../domain/tables.js";
 import "./cards.css";
@@ -12,8 +11,8 @@ function attachment(text, context) {
     const [, markedType, markedNumber, word, number, name] = found || [];
     const table = found && tableOfWord(markedType || word);
     const row = table && rowOf(context, table, Number(markedNumber || number));
-    if (!row || !(row.files || []).includes(name)) return null;
-    const url = api.in(context.env).fileUrl(table, row.id, name);
+    if (table !== "messages" || !row || !(row.files || []).includes(name)) return null;
+    const url = `/api/files/message/${row.id}/${encodeURIComponent(name)}`;
     const label = `${meta(table).title} ${row.id} · ${escape(name)}`;
     const picture = isPicture(name) ? `<img class="file-card-image" src="${url}" alt="${escape(name)}">` : "";
     return {at: found.index, length: found[0].length, html: `<a class="file-card" href="${url}" data-attached="${escape(name)}">${picture}<span class="file-card-name">${label}</span></a>`};

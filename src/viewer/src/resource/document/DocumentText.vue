@@ -7,6 +7,7 @@ import {blockOf, drawMarks, selectionIn} from "./documentMarks.js";
 const props = defineProps({
     html: {type: String, required: true},
     comments: {type: Array, required: true},
+    annotationLabel: {type: String, default: "Comment"},
     hot: {type: Number, default: 0},
     pending: {type: Object, default: null},
     inline: {type: Number, default: 0},
@@ -22,7 +23,7 @@ const inlineHost = ref(null);
 function draw() {
     if (!text.value || selecting.value) return;
     text.value.innerHTML = props.html;
-    const marks = props.comments.filter((comment) => comment.quote).map((comment) => ({...comment, hot: comment.id === props.hot}));
+    const marks = props.comments.filter((comment) => comment.quote).map((comment) => ({...comment, label: props.annotationLabel, hot: comment.id === props.hot}));
     const lost = drawMarks(text.value, props.pending ? [...marks, {...props.pending, pending: true}] : marks);
     emit("lost", lost);
     const opened = props.inline && text.value.querySelector(`[data-comment="${props.inline}"]`);
@@ -64,7 +65,7 @@ function showHeading(position) {
     text.value.querySelectorAll("h3, h4, h5, h6")[position]?.scrollIntoView({block: "start"});
 }
 
-watch(() => [props.html, props.comments, props.hot, props.inline, selecting.value, props.pending], draw, {flush: "post"});
+watch(() => [props.html, props.comments, props.annotationLabel, props.hot, props.inline, selecting.value, props.pending], draw, {flush: "post"});
 onMounted(() => {
     draw();
     document.addEventListener("selectionchange", selectionChanged);

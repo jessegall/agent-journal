@@ -1,16 +1,16 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-0a636a5ba979")) { const style = document.createElement("style"); style.id = "window-styles-0a636a5ba979"; style.textContent = ".output-dock-more[data-v-f69607f3]{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows var(--move),opacity var(--fade)}.output-dock-more.open[data-v-f69607f3]{grid-template-rows:1fr;opacity:1}.output-dock-inner[data-v-f69607f3]{min-height:0;overflow:hidden}.output-dock-state[data-v-f69607f3]{display:flex;flex:none;justify-content:center;width:16px;color:var(--tone)}.output-dock-label[data-v-f69607f3]{display:flex;flex:1 1 auto;align-items:center;gap:9px;min-width:0;padding:0;border:none;background:none;color:var(--text);font:inherit;font-size:12px;font-weight:500;text-align:left;cursor:pointer}.output-dock-title[data-v-f69607f3]{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.output-dock-figure[data-v-f69607f3]{flex:none;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.output-dock-terminal[data-v-f69607f3]{overflow:auto;max-height:min(280px,calc(40cqh - 72px));margin:0 12px 10px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text-2);font-family:var(--mono, monospace);font-size:11px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.output-dock-bar[data-v-f69607f3]{position:absolute;right:0;bottom:0;left:0;height:2px;border-radius:1px;background:var(--border);overflow:hidden}.output-dock-fill[data-v-f69607f3]{height:100%;transition:width .4s ease}.output[data-v-97d5a832]{display:flex;flex-direction:column;height:100%;min-height:0}.bar[data-v-97d5a832]{display:flex;align-items:baseline;gap:8px;padding:8px 12px;font-size:12px}.line[data-v-97d5a832]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-97d5a832]{border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}.text[data-v-97d5a832]{margin:0;padding:0 12px 12px;font-size:12px;line-height:1.5;white-space:pre-wrap}.run[data-v-b6264537]{display:flex;flex:1;align-items:baseline;gap:8px;font-size:12px}.state[data-v-b6264537]{flex:none;min-width:64px;color:var(--text-3)}.state.failed[data-v-b6264537],.state.lost[data-v-b6264537]{color:var(--red, #d4574b)}.line[data-v-b6264537]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-b6264537]{flex:none;border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
-import { openBlock as c, createBlock as g, unref as e, withCtx as i, createVNode as l, createElementVNode as s, normalizeClass as k, toDisplayString as u, createElementBlock as C, Fragment as b, createCommentVNode as w } from "vue";
-import { useWindow as y, useRows as v, useListTools as x, WindowRoom as $, ListTools as N, RowList as R } from "@journal/window-kit";
+if (!document.getElementById("window-styles-605564fa2f00")) { const style = document.createElement("style"); style.id = "window-styles-605564fa2f00"; style.textContent = ".output-dock-more[data-v-f69607f3]{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows var(--move),opacity var(--fade)}.output-dock-more.open[data-v-f69607f3]{grid-template-rows:1fr;opacity:1}.output-dock-inner[data-v-f69607f3]{min-height:0;overflow:hidden}.output-dock-state[data-v-f69607f3]{display:flex;flex:none;justify-content:center;width:16px;color:var(--tone)}.output-dock-label[data-v-f69607f3]{display:flex;flex:1 1 auto;align-items:center;gap:9px;min-width:0;padding:0;border:none;background:none;color:var(--text);font:inherit;font-size:12px;font-weight:500;text-align:left;cursor:pointer}.output-dock-title[data-v-f69607f3]{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.output-dock-figure[data-v-f69607f3]{flex:none;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.output-dock-terminal[data-v-f69607f3]{overflow:auto;max-height:min(280px,calc(40cqh - 72px));margin:0 12px 10px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text-2);font-family:var(--mono, monospace);font-size:11px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.output-dock-bar[data-v-f69607f3]{position:absolute;right:0;bottom:0;left:0;height:2px;border-radius:1px;background:var(--border);overflow:hidden}.output-dock-fill[data-v-f69607f3]{height:100%;transition:width .4s ease}.output[data-v-97d5a832]{display:flex;flex-direction:column;height:100%;min-height:0}.bar[data-v-97d5a832]{display:flex;align-items:baseline;gap:8px;padding:8px 12px;font-size:12px}.line[data-v-97d5a832]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-97d5a832]{border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}.text[data-v-97d5a832]{margin:0;padding:0 12px 12px;font-size:12px;line-height:1.5;white-space:pre-wrap}.run[data-v-4486ac26]{display:flex;flex:1;align-items:baseline;gap:8px;font-size:12px}.state[data-v-4486ac26]{flex:none;min-width:64px;color:var(--text-3)}.state.failed[data-v-4486ac26],.state.lost[data-v-4486ac26]{color:var(--red, #d4574b)}.line[data-v-4486ac26]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-4486ac26]{flex:none;border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+import { openBlock as c, createBlock as g, unref as e, withCtx as l, createVNode as i, createElementVNode as o, normalizeClass as k, toDisplayString as u, createElementBlock as C, Fragment as b, createCommentVNode as w } from "vue";
+import { useWindow as y, useRows as v, useListTools as x, WindowRoom as $, ListTools as L, RowList as N, stateLabel as R } from "@journal/window-kit";
 import { _ as B } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const L = { class: "run" }, O = { class: "line" }, V = ["onClick"], W = ["onClick"], E = {
+const O = { class: "run" }, V = { class: "line" }, W = ["onClick"], E = ["onClick"], S = {
   __name: "Outputs",
-  setup(S) {
+  setup(T) {
     const n = y(), { rows: r, failure: p, loaded: d } = v(n.agent == null ? "process feed" : `process feed --agent-id ${n.agent}`, ["process.*", "output.*"]), a = x(r, { title: (t) => t.line, isOpen: (t) => t.state === "running" }), _ = (t) => t.state === "running" || t.state === "background", m = (t) => n.run(`output stop ${t.id}`), h = (t) => n.run(`output watch ${t.id}`);
-    return (t, T) => (c(), g(e($), null, {
-      default: i(() => [
-        l(e(N), { tools: e(a) }, null, 8, ["tools"]),
-        l(e(R), {
+    return (t, z) => (c(), g(e($), null, {
+      default: l(() => [
+        i(e(L), { tools: e(a) }, null, 8, ["tools"]),
+        i(e(N), {
           rows: e(a).shown.value,
           failure: e(p),
           loaded: e(d),
@@ -18,23 +18,23 @@ const L = { class: "run" }, O = { class: "line" }, V = ["onClick"], W = ["onClic
           hint: "Commands run by an agent appear here with their output.",
           searching: e(a).filtering.value
         }, {
-          default: i(({ row: o }) => [
-            s("div", L, [
-              s("span", {
-                class: k(["state", o.state])
-              }, u(o.state), 3),
-              s("span", O, u(o.line), 1),
-              _(o) ? (c(), C(b, { key: 0 }, [
-                s("button", {
+          default: l(({ row: s }) => [
+            o("div", O, [
+              o("span", {
+                class: k(["state", s.state])
+              }, u(e(R)("process", s.state)), 3),
+              o("span", V, u(s.line), 1),
+              _(s) ? (c(), C(b, { key: 0 }, [
+                o("button", {
                   class: "stop",
                   type: "button",
-                  onClick: (f) => m(o)
-                }, "Stop", 8, V),
-                s("button", {
+                  onClick: (f) => m(s)
+                }, "Stop", 8, W),
+                o("button", {
                   class: "watch",
                   type: "button",
-                  onClick: (f) => h(o)
-                }, "Watch", 8, W)
+                  onClick: (f) => h(s)
+                }, "Watch", 8, E)
               ], 64)) : w("", !0)
             ])
           ]),
@@ -44,7 +44,7 @@ const L = { class: "run" }, O = { class: "line" }, V = ["onClick"], W = ["onClic
       _: 1
     }));
   }
-}, I = /* @__PURE__ */ B(E, [["__scopeId", "data-v-b6264537"]]);
+}, j = /* @__PURE__ */ B(S, [["__scopeId", "data-v-4486ac26"]]);
 export {
-  I as default
+  j as default
 };

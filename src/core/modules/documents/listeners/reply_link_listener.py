@@ -38,10 +38,10 @@ class ReplyLinkListener(CommitListener[Touched[Model]]):
             self.link_row(logged, model)
 
     def link_row(self, logged: LoggedEvent, model: str) -> None:
-        replies = self.queries.query(Message).filter(creator_id=logged.actor_id, type=MessageType.AGENT).newest().page(1, 1).rows
-        if not replies or replies[0].creation_timestamp().elapsed_seconds(logged.timestamp) > REPLY_WINDOW_SECONDS:
+        reply = self.queries.query(Message).filter(creator_id=logged.actor_id, type=MessageType.AGENT).newest().first()
+        if reply is None or reply.creation_timestamp().elapsed_seconds(logged.timestamp) > REPLY_WINDOW_SECONDS:
             return
-        self.link(replies[0], model, logged.row_id)
+        self.link(reply, model, logged.row_id)
 
     def link_tasks(self, logged: LoggedEvent) -> None:
         reply = self.queries.query(Message).find(logged.row_id)

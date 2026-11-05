@@ -1,0 +1,31 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "vue",
+    "find": {
+        "select": "kind:Interpolation",
+        "where": [
+            {"any": [
+                {"all": [
+                    {"kind": "PropertyAccessExpression", "of": "child:value"},
+                    {"nameIn": ["state", "role"], "of": "child:value"}
+                ]},
+                {"of": "child:value", "all": [
+                    {"kind": "ConditionalExpression"},
+                    {"kind": "PropertyAccessExpression", "of": "child:whenTrue"},
+                    {"nameIn": ["state", "role"], "of": "child:whenTrue"}
+                ]},
+                {"of": "child:value", "all": [
+                    {"kind": "ConditionalExpression"},
+                    {"kind": "PropertyAccessExpression", "of": "child:whenFalse"},
+                    {"nameIn": ["state", "role"], "of": "child:whenFalse"}
+                ]}
+            ]}
+        ]
+    },
+    "sin": {
+        "name": "plain-viewer-text",
+        "description": "A template prints a stored state or agent role directly.",
+        "rule": "Show states through stateLabel with the model kind, and agent roles through their shared display label. Keep stored words for comparisons and styling.",
+        "skill": "plain-viewer-text"
+    }
+}

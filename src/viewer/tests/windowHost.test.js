@@ -3,6 +3,7 @@ import {expect, test} from "vitest";
 import WindowHost from "../src/windows/WindowHost.vue";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 import {useWindow} from "../src/windows/windowContext.js";
+import {perLine, settle} from "./support/windowContext.js";
 
 const following = defineComponent({
     setup() {
@@ -70,4 +71,28 @@ test("a window hears only the events it declared, whatever patterns it asks to f
     subscriptions.dispatch({event: "task.create"});
     subscriptions.dispatch({event: "message.create"});
     expect(heard).toEqual(["task.create"]);
+});
+
+test("a row change makes the next window read fresh even just after the previous read", async () => {
+    const {windowContext} = await import("../src/windows/windowContext.js");
+    const beforeFetch = globalThis.fetch;
+    const requests = [];
+    globalThis.fetch = perLine(async (url, request) => {
+        requests.push(JSON.parse(request.body).line);
+        return {json: async () => ({code: 0, value: {id: 3, title: requests.length === 1 ? "Before" : "After"}})};
+    });
+    try {
+        const subscriptions = new WindowSubscriptions();
+        const context = windowContext({window: "notes.board", environment: "main", agent: null, visible: () => true, permissions: {}, events: ["task.*"], subscriptions, open: () => {}});
+        let latest;
+        context.follow(["task.*"], async () => (latest = await context.read("task show 3")));
+        expect((await context.read("task show 3")).value.title).toBe("Before");
+        subscriptions.dispatch({event: "task.rename", row_id: 3});
+        await settle();
+        expect(latest.value.title).toBe("After");
+        expect(requests).toHaveLength(2);
+        context.cancel();
+    } finally {
+        globalThis.fetch = beforeFetch;
+    }
 });

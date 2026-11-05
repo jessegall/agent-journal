@@ -6,6 +6,7 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.page import Page, is_page
 from core.modules.questions.models.question import Question
 from core.modules.questions.queries.question_query import QuestionQuery
+from core.modules.documents.support.row_refs import RowRefs
 
 
 class QuestionListSubcommand(ReadSubcommand[Page[Question]]):
@@ -15,16 +16,20 @@ class QuestionListSubcommand(ReadSubcommand[Page[Question]]):
     cli_name = "question"
     name = "list"
 
-    def __init__(self, questions: QuestionQuery) -> None:
-        self.questions = questions
+    def __init__(self, questions: QuestionQuery, refs: RowRefs) -> None:
+        self.questions, self.refs = questions, refs
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--all", action="store_true")
+        parser.add_argument("--row")
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[Question]:
         query = self.questions if arguments.all else self.questions.open_ones()
         if caller.environment_id is not None:
             query = query.environment(caller.environment_id)
+        if arguments.row:
+            row = self.refs.parsed(arguments.row)
+            query = query.filter(row_model=row.model, row_id=row.row_id)
         return query.newest().page() if arguments.all else query.oldest().page()
 
     def write_output(self, value: object, output: Output) -> None:

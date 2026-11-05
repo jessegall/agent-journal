@@ -7,7 +7,7 @@ import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
 function mounted(read) {
     const context = {read, follow: () => {}};
     const element = document.createElement("div");
-    createApp({setup: () => () => h(StateRows, {line: "task list", events: [], empty: "No tasks yet"}), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
+    createApp({setup: () => () => h(StateRows, {kind: "task", line: "task list", events: [], empty: "No tasks yet"}), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
     return element;
 }
 

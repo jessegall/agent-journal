@@ -1,5 +1,6 @@
 <script setup>
 import {RowList, WindowRoom, useRows} from "@journal/window-kit";
+import {nudgeTypeLabel} from "./labels.js";
 
 // every line the modules can say to an agent: its key, its type, its words and how often it was said
 const {rows, failure, loaded} = useRows("nudge list", ["nudge_record.*"]);
@@ -12,7 +13,7 @@ const {rows, failure, loaded} = useRows("nudge list", ["nudge_record.*"]);
                 <div class="nudge" data-nudge>
                     <p class="nudge-head">
                         <span class="nudge-key">{{ row.key }}</span>
-                        <span class="nudge-type" :data-type="row.type">{{ row.type }}</span>
+                        <span class="nudge-type" :data-type="row.type">{{ nudgeTypeLabel(row.type) }}</span>
                         <span class="nudge-count">said {{ row.delivery_count }} {{ row.delivery_count === 1 ? "time" : "times" }}</span>
                     </p>
                     <p class="nudge-text">{{ row.text }}</p>

@@ -21,7 +21,7 @@ test("a plugin row shows its title, release and switch, and its button switches 
     expect(row.textContent).toContain("v6.26.0");
     expect(row.querySelector("[role=switch]").getAttribute("aria-checked")).toBe("true");
     row.querySelector("[role=switch]").click();
-    expect(ran).toEqual(["plugin disable code-commandments"]);
+    expect(ran).toEqual([["plugin", "disable", "code-commandments"]]);
 });
 
 test("a suggestion row shows its title and the answer, or that none was given", async () => {

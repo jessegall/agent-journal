@@ -10,7 +10,8 @@ class MainAgentFinder:
 
     @staticmethod
     def rows(queries: Queries, environment_id: int) -> tuple[Agent, ...]:
-        return tuple(queries.query(Agent).filter(environment_id=environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().limited(1))
+        row = queries.query(Agent).filter(environment_id=environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().first()
+        return () if row is None else tuple([row])
 
     @staticmethod
     def all_running(queries: Queries) -> tuple[Agent, ...]:

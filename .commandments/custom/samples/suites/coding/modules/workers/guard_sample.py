@@ -21,6 +21,6 @@ class CheckoutGuard(Guard):
         # @sin architecture_workers_guard_runs_git
         listed = subprocess.run(["ls", change.row.folder], timeout=LIMIT_SECONDS, check=False)
         # @righteous architecture_workers_guard_runs_git
-        rows = self.queries.query(change.row).filter(state="delivered").page(1, 1).rows
-        if head or listed or rows:
+        row = self.queries.query(change.row).filter(state="delivered").first()
+        if head or listed or row:
             raise Refusal("the sample refuses")

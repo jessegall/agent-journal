@@ -40,3 +40,4 @@ class PointTally:
 
     def points(self) -> Points:
         return Points(self.rows, self.writes, self.bytes, Counter(self.tables), Counter(self.statements), Counter(self.update_statements))
+

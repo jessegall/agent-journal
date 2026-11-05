@@ -2,7 +2,6 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.page import Page
-from core.base.query.conditions.among import Among
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.query.query import Query
@@ -12,7 +11,6 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.environments.models.environment import Environment
 from core.modules.processes.models.support.process_setting import ProcessSetting
-from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_queue_row import ProcessQueueRow
 from core.modules.processes.models.enums.queue_section import QueueSection
 from core.modules.processes.support.process_queue_page import ProcessQueuePage
@@ -55,7 +53,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         active = tuple(query.matching(IsNull("ended_at")).oldest().all_rows())
         running = [row.inspector_json(main_spots) for row in active if row.section is QueueSection.RUNNING]
         waiting = [row.inspector_json(main_spots) for row in active if row.section is QueueSection.WAITING]
-        recent = [row.inspector_json(main_spots) for row in self.recent_rows(query, environment_id, max(1, arguments.recent))]
+        recent = [row.inspector_json(main_spots) for row in self.recent_rows(query, max(1, arguments.recent))]
         inspector: QueueInspectorJson = {
             "environment_id": environment_id,
             "environment_name": self.queries.query(Environment).find(environment_id).name,
@@ -69,9 +67,8 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         number, size = max(1, arguments.page), min(MAX_PAGE_SIZE, max(1, arguments.limit))
         return ProcessQueuePage(Page(queue_runs[(number - 1) * size:number * size], number, size, len(queue_runs)), inspector)
 
-    def recent_rows(self, query: Query[ProcessQueueRow], environment_id: int, count: int) -> list[ProcessQueueRow]:
-        ended = self.queries.query(Process).filter(environment_id=environment_id).descending("ended_at", "id").limited(count)
-        return query.matching(Among("id", tuple(process.id for process in ended))).filter(section=QueueSection.RECENT).descending("ended_at", "id").limited(count)
+    def recent_rows(self, query: Query[ProcessQueueRow], count: int) -> list[ProcessQueueRow]:
+        return query.filter(section=QueueSection.RECENT).descending("ended_at", "id").limited(count)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ProcessQueuePage):

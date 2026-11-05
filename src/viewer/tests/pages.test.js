@@ -80,6 +80,7 @@ test("the home page and the agent page both mount the pane stage", async () => {
 test("the agent page loads the layout of that agent's driver and gives its windows the agent id", async () => {
     const {element} = await mount(AgentPage, {agent: 12});
     expect(layoutKeys).toContain("coding:agent:coding.worker");
+    expect(element.querySelector(".agent-page-facts").textContent).toBe("Worker · coding.worker");
     expect(tabs(element)).toEqual(["agents.terminal", "agents.notes"]);
     expect(element.querySelector(`section.window[data-window="agents.terminal"]`).dataset.agent).toBe("12");
 });

@@ -65,7 +65,7 @@ async function withHeldRows(group, held) {
 }
 
 async function more(group) {
-    const before = !group.rows.length ? "" : FINISHED.has(group.state) ? ` --before-closed-at ${group.rows.at(-1).closed_at}` : ` --before-id ${Math.min(...group.rows.map((row) => row.id))}`;
+    const before = !group.rows.length ? "" : FINISHED.has(group.state) ? ` --before-closed-at ${group.rows.at(-1).closed_at} --before-id ${group.rows.at(-1).id}` : ` --before-id ${Math.min(...group.rows.map((row) => row.id))}`;
     const answer = await context.read(`task board --state ${group.state}${before}${pageLimit.value}`);
     if (!answer.ok) return void (failure.value = answer.error);
     extended.value = new Set([...extended.value, group.state]);

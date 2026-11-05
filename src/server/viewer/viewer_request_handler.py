@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 from types import MappingProxyType
 import json
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qsl, parse_qs, urlencode, urlsplit
@@ -10,6 +10,7 @@ from server.server_instance import server_instance
 from server.viewer.event_stream import EventStream
 from server.viewer.file_route import LIMIT_BYTES
 from server.viewer.events_request import EventsRequest
+from core.base.change.event_pattern_error import EventPatternError
 from server.viewer.missing_module_file_error import MissingModuleFileError
 from server.viewer.line_answer import LineAnswer
 from server.viewer.line_route import REFUSED_CODE
@@ -162,7 +163,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(200, {"skills": viewer.routes.skills_route.skills()})
             return
         if route.path == EVENTS_ROUTE:
-            self.answer_events(viewer.routes.event_stream, parse_qs(route.query), session.shared, viewer.login.shares)
+            self.answer_events(viewer.routes.event_stream, parse_qs(route.query, keep_blank_values=True), session.shared, viewer.login.shares)
             return
         if route.path == "/" or route.path.startswith(VIEWER_ROOT):
             self.answer_module_file(viewer, VIEWER_MODULE, route.path.removeprefix(VIEWER_ROOT).strip("/") or SHELL_PAGE)
@@ -226,14 +227,19 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.answer(200, {"subscribed": True})
 
     def answer_events(self, event_stream: EventStream, query: dict[str, list[str]], shared: SharedRow | None, shares: ShareSessions) -> None:
-        request = EventsRequest.parsed(query, self.headers.get("Last-Event-ID"))
-        environment = request.environment if shared is None else shares.environment_name(shared.environment_id)
+        try:
+            request = EventsRequest.parsed(query, self.headers.get("Last-Event-ID"))
+        except EventPatternError as error:
+            self.answer(400, {"error": str(error)})
+            return
+        if shared is not None:
+            request = replace(request, environment=shares.environment_name(shared.environment_id))
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.viewer().untrack_request()
-        event_stream.follow(environment, request.cursor_id, self.stream_message, shared)
+        event_stream.follow(request, self.stream_message, shared)
 
     def answer_lines(self, viewer: ViewerServer, token: str, body: bytes | None) -> None:
         try:

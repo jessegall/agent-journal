@@ -14,7 +14,7 @@ import {useMeasuredWidth} from "../../composables/measuredWidth.js";
 import RowMoves from "../RowMoves.vue";
 import CommentCard from "./CommentCard.vue";
 import CommentComposer from "./CommentComposer.vue";
-import CommentRail from "./CommentRail.vue";
+import DocumentSidebar from "./DocumentSidebar.vue";
 import DocumentEditDialog from "./DocumentEditDialog.vue";
 import DocumentLinks from "./DocumentLinks.vue";
 import DocumentRevisions from "./DocumentRevisions.vue";
@@ -34,6 +34,9 @@ const row = ref(null);
 const failure = ref("");
 const links = ref([]);
 const revisions = ref([]);
+const questions = ref([]);
+const questionFailure = ref("");
+const notesMode = ref("comments");
 const tab = ref("text");
 const hot = ref(0);
 const inline = ref(0);
@@ -46,6 +49,7 @@ const composer = ref(null);
 let reading = 0;
 
 const comments = computed(() => numbered(row.value?.comments ?? []));
+const annotations = computed(() => notesMode.value === "questions" ? numbered(questions.value) : comments.value);
 const html = computed(() => (row.value?.body ? render(row.value.body, {env: "", rowNames: false, document: true}) : ""));
 const chapters = computed(() => (row.value?.body ?? "").split("\n").filter((line) => /^#{1,4} /.test(line)).map((line, position) => ({key: String(position), value: position, label: line.replace(/^#+ /, "")})));
 const inlineComment = computed(() => comments.value.find((comment) => comment.id === inline.value));
@@ -59,8 +63,14 @@ async function load() {
     if (turn !== reading) return;
     failure.value = answer.ok ? "" : answer.error;
     row.value = answer.ok ? answer.value : null;
-    links.value = rowsOf(await props.read(["link", "list", "--source", `${kind.value}:${props.id}`]));
-    if (kind.value === "doc") revisions.value = rowsOf(await props.read(["doc", "revisions", String(props.id)]));
+    const linksAnswer = await props.read(["link", "list", "--source", `${kind.value}:${props.id}`]);
+    const questionsAnswer = await props.read(["question", "list", "--all", "--row", `${kind.value}:${props.id}`]);
+    const revisionsAnswer = kind.value === "doc" ? await props.read(["doc", "revisions", String(props.id)]) : null;
+    if (turn !== reading) return;
+    links.value = rowsOf(linksAnswer);
+    questions.value = rowsOf(questionsAnswer);
+    questionFailure.value = questionsAnswer.ok ? "" : questionsAnswer.error;
+    revisions.value = revisionsAnswer ? rowsOf(revisionsAnswer) : [];
 }
 
 async function send(words) {
@@ -77,8 +87,12 @@ function clearSelection() {
 
 function linked(id) {
     hot.value = id;
+    if (narrow.value && notesMode.value === "questions") {
+        tab.value = "comments";
+        return;
+    }
     if (narrow.value) inline.value = inline.value === id ? 0 : id;
-    else panel.value.querySelector(`[data-comment-id="${id}"]`)?.scrollIntoView({block: "nearest"});
+    else panel.value.querySelector(notesMode.value === "questions" ? `[data-question-id="${id}"]` : `[data-comment-id="${id}"]`)?.scrollIntoView({block: "nearest"});
 }
 
 async function showInText(id) {
@@ -99,8 +113,15 @@ watch(() => `${props.table}:${props.id}`, () => {
     hot.value = 0;
     inline.value = 0;
     selection.value = null;
+    questions.value = [];
+    questionFailure.value = "";
     load();
 }, {immediate: true});
+
+watch(notesMode, () => {
+    hot.value = 0;
+    inline.value = 0;
+});
 </script>
 
 <template>
@@ -123,7 +144,7 @@ watch(() => `${props.table}:${props.id}`, () => {
         <nav class="document-tabs">
             <button type="button" :class="['document-tab-button', {on: shownTab === 'text'}]" data-document-tab="text" @click="tab = 'text'">Text</button>
             <template v-if="narrow">
-                <button type="button" :class="['document-tab-button', {on: shownTab === 'comments'}]" data-document-tab="comments" @click="tab = 'comments'">Comments <em>{{ comments.length || "" }}</em></button>
+                <button type="button" :class="['document-tab-button', {on: shownTab === 'comments'}]" data-document-tab="comments" @click="tab = 'comments'">{{ notesMode === 'questions' ? 'Questions' : 'Comments' }} <em>{{ annotations.length || "" }}</em></button>
             </template>
             <button type="button" :class="['document-tab-button', {on: shownTab === 'links'}]" data-document-tab="links" @click="tab = 'links'">Links <em>{{ links.length || "" }}</em></button>
             <template v-if="kind === 'doc'">
@@ -148,10 +169,10 @@ watch(() => `${props.table}:${props.id}`, () => {
                 <DocumentRevisions :id="id" :revisions="revisions" :text="row.body" :read="read" @restored="load" />
             </template>
             <template v-else-if="shownTab === 'comments'">
-                <CommentRail tab :comments="comments" :hot="hot" :lost="lost" @show="showInText" />
+                <DocumentSidebar v-model:mode="notesMode" tab :comments="comments" :questions="questions" :hot="hot" :lost="lost" :failure="questionFailure" :read="read" @show="showInText" @changed="load" />
             </template>
             <template v-else>
-                <DocumentText ref="words" :html="html" :comments="comments" :hot="hot" :pending="selection" :inline="inline" @select="selection = $event" @clear="clearSelection" @number="linked" @write="composer?.focus()" @lost="lost = $event">
+                <DocumentText ref="words" :html="html" :comments="annotations" :annotation-label="notesMode === 'questions' ? 'Question' : 'Comment'" :hot="hot" :pending="selection" :inline="inline" @select="selection = $event" @clear="clearSelection" @number="linked" @write="composer?.focus()" @lost="lost = $event">
                     <template #inline>
                         <template v-if="inlineComment">
                             <CommentCard :comment="inlineComment" hot @show="showInText(inlineComment.id)" />
@@ -168,7 +189,7 @@ watch(() => `${props.table}:${props.id}`, () => {
                     </dl>
                 </DocumentText>
                 <template v-if="!narrow">
-                    <CommentRail :comments="comments" :hot="hot" :lost="lost" @show="showInText" />
+                    <DocumentSidebar v-model:mode="notesMode" :comments="comments" :questions="questions" :hot="hot" :lost="lost" :failure="questionFailure" :read="read" @show="showInText" @changed="load" />
                 </template>
             </template>
         </div>

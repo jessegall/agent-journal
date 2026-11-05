@@ -91,8 +91,8 @@ test("the skills catalogue searches its skills", async () => {
     expect([...element.querySelectorAll(".skill-name")].map((name) => name.textContent)).toEqual(["cart"]);
 });
 
-test("a new memory is written from its window with its type, and a row opens the panel", async () => {
-    const window_ = {...context({"memory list": page([{id: 4, text: "Totals are in cents", type: "fact", weight: 5, state: "active"}])}), lines: []};
+test("a new memory is written from its window, and a memory opens the panel", async () => {
+    const window_ = {...context({"memory list": page([{id: 4, text: "Totals are in cents", weight: 5, state: "active"}])}), lines: []};
     window_.run = async (line) => (window_.lines.push(line), {ok: true});
     const element = await mounted(MemoryRows, window_);
     element.querySelector("[data-memory-new]").click();
@@ -104,7 +104,7 @@ test("a new memory is written from its window with its type, and a row opens the
     await settle();
     form.dispatchEvent(new Event("submit", {cancelable: true}));
     await settle();
-    expect(window_.lines).toEqual([["memory", "make", "Ship on Friday", "--type", "fact"]]);
+    expect(window_.lines).toEqual([["memory", "make", "Ship on Friday"]]);
     element.querySelector('[data-memory="4"]').click();
     expect(location.href).toContain("memories:4");
 });

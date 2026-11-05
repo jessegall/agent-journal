@@ -74,6 +74,9 @@ def test_a_rejected_command_ends_its_request_without_a_reader(reader_sample_stor
     end_run(story, process, "Usage: journal sins [OPTIONS]\nUnknown option --tail\n", exit_code=2)
     requests = story.container.get(ReaderRequestQuery)
     story.expect_rows(not requests.has_active_requests(reader_worker(story).id, story.clock.timestamp()))
+    retry = worker_run(story, "journal sins --tail", CommandCategory.BUILD)
+    request = requests.open().page(1, 1).rows[0]
+    story.expect_rows(request.sample_process_id == retry.id, story.container.get(OutputFolder).has_slot(retry.id))
 
 
 def test_nothing_to_judge_does_not_make_a_good_reader_poor(reader_sample_story):
