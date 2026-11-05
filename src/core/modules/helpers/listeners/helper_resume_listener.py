@@ -9,7 +9,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.helpers.support.helper_resume import HelperResume
 
-GO_ON = "You were paused and may go on: finish your job."
+RESUME_JOB_TEXT = "You were paused and may go on: finish your job."
 
 
 class HelperResumeListener(CommitListener[Changed[Agent]]):
@@ -27,4 +27,4 @@ class HelperResumeListener(CommitListener[Changed[Agent]]):
         helpers = self.queries.query(Agent).filter(parent_id=event.row.id, role=AgentRole.HELPER).matching(Greater("ended_at", "")).all_rows()
         for helper in tuple(helpers):
             if any(job.ended_at is None for job in self.jobs.helper_jobs(helper.id)):
-                self.resume.resume(helper, GO_ON)
+                self.resume.resume(helper, RESUME_JOB_TEXT)

@@ -6,7 +6,7 @@ from core.base.command.bus import Bus
 from core.base.query.queries import Queries
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.drivers.models.agent_line import AgentLine
-from suites.coding.modules.workers.commands.record_worker_report.record_worker_report import RecordWorkerReport
+from core.modules.agents.commands.record_parent_report.record_parent_report import RecordParentReport
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES, SHORT_PROOF_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import PROOF_WAITS
 from tests.stories.core.modules.messages.delivery import KeptTyping
@@ -23,7 +23,7 @@ def story_with_worker(new_story, typing=None):
 
 
 def report(story, worker) -> None:
-    story.container.get(Bus).run(RecordWorkerReport(worker.id, story.agent.id, "Handed in"), worker, environment_id=1)
+    story.container.get(Bus).run(RecordParentReport(worker.id, story.agent.id, "Handed in"), worker, environment_id=1)
     story.run_listeners()
 
 

@@ -7,7 +7,7 @@ from core.base.actor_type import ActorType
 from core.base.query.queries import Queries
 from core.modules.agents.support.report_nudges import EMPTY_REPORT_TEXT, SHORT_REPORT_CHARACTERS
 from core.modules.messages.models.message import Message
-from core.modules.drivers.ticks.silent_helper_ending import SilentHelperEnding
+from core.modules.drivers.ticks.end_silent_helpers_tick import EndSilentHelpersTick
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, StartedHelper, jobs_of, the_helper
@@ -122,7 +122,7 @@ def test_a_helper_that_ends_with_its_job_open_tells_the_parent(new_story):
 def test_a_silent_helper_ends_with_no_agent_to_carry_the_tick(new_story):
     story = new_story(fixture=StartedHelper)
     story.advance(timedelta(minutes=31))
-    SilentHelperEnding()(story.container)
+    EndSilentHelpersTick()(story.container)
     story.run_listeners()
     story.expect_rows(the_helper(story).ended_at is not None)
 
