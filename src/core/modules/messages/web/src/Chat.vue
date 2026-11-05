@@ -470,10 +470,10 @@ async function runCommand(pin) {
         <template v-if="context.option('floors').value">
             <FigureFloors />
         </template>
+        <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" :idle="waitingFor ? `waiting for ${waitingFor}` : 'waiting'" /></p>
         <div data-figure-chat-foot class="chat-foot">
             <DockStack :items="docked" :folded="short || !docksOpen" :data-figure-docked-bars="dockedRows.size ? '' : null" />
         </div>
-        <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" :idle="waitingFor ? `waiting for ${waitingFor}` : 'waiting'" /></p>
         <template v-if="dumping">
             <DumpForm :run="context.run" @made="dumping = false" @close="dumping = false" />
         </template>
