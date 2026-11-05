@@ -6,7 +6,7 @@ from core.base.database.database import Database
 from core.base.leftover_process import LeftoverProcess
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
+from core.testing.fake_launcher import FakeLauncher
 from tests.stories.support.story_checks import expect_value_with
 
 SLEEP_SECONDS = 300

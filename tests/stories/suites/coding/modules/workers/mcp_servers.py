@@ -7,7 +7,7 @@ from core.base.journal_home import LAUNCHER_SOCKET
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
-from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
+from core.testing.fake_launcher import FakeLauncher
 
 __all__ = ["private_folder"]
 
@@ -44,7 +44,7 @@ def test_workers_receive_the_main_agents_servers_and_keys_outside_the_prompt(new
     story.expect_success("mcp install context7", actor=story.user)
     story.expect_success(f'worker send {worker.id} "Continue with the updated servers"', actor=story.agent)
     story.run_listeners()
-    launcher.expect_worker(worker.id, worker_session(story, worker), folder)
+    launcher.expect_started(worker.id, worker_session(story, worker), folder)
     story.expect_rows(len(launcher.requests) == 2,
                       set(json.loads(claude.read_text())["mcpServers"]) == {"playwright", "linear", "context7"},
                       set(tomllib.loads(codex.read_text())["mcp_servers"]) == {"playwright", "linear", "context7"},

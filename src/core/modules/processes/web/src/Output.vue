@@ -1,6 +1,7 @@
 <script setup>
 import {ref} from "vue";
 import {AutoScrollPane, EmptyState, OutputLines, WindowRoom, useOutputPages, usePoll, useWindow} from "@journal/window-kit";
+import RunButtons from "./RunButtons.vue";
 
 const context = useWindow();
 const outputId = ref(Number(new URLSearchParams(location.search).get("output")) || 0);
@@ -48,8 +49,7 @@ usePoll(load, isRunning);
                     <span class="line">{{ run ? run.line : "" }}</span>
                     <button class="whole" type="button" @click="toggle">{{ isWhole ? "Reader lines" : "Whole output" }}</button>
                     <template v-if="isRunning()">
-                        <button class="stop" type="button" @click="context.run(`output stop ${outputId}`)">Stop</button>
-                        <button class="watch" type="button" @click="context.run(`output watch ${outputId}`)">Watch</button>
+                        <RunButtons :process-id="outputId" />
                     </template>
                 </div>
                 <template v-if="isWhole">
