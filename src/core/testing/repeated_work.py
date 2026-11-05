@@ -19,6 +19,8 @@ CALLER_FRAMES = 14
 COMMAND_AUDIT_EVENT = "subprocess.Popen"
 OPEN_REQUEST: ContextVar["RepeatedWork | None"] = ContextVar("open_request", default=None)
 SCAN_TABLE = re.compile(r"\bSCAN(?: TABLE)? (\w+)")
+SCAN_INDEX = re.compile(r"\bUSING INDEX (\w+)")
+BOUNDED_PAGE = re.compile(r"^SELECT \* FROM (\w+)(?: ORDER BY id (?:ASC|DESC))? LIMIT [1-9]\d* OFFSET \d+$", re.IGNORECASE)
 SMALL_TABLES = {
     "settings": "Project and environment settings are small configuration sets kept on the connection.",
     "secret_settings": "Secret settings are a small configuration set kept on the connection.",
@@ -29,6 +31,8 @@ SMALL_TABLES = {
     "environments": "A project has a small set of environments listed together.",
     "registry": "The registry has one row.",
     "rules": "Standing project instructions are a small set delivered together.",
+    "listener_cursors": "One cursor per declared listener is read together at the start of a listener round.",
+    "mcp_servers": "Configured MCP endpoints form a small catalogue loaded together.",
 }
 
 
@@ -70,11 +74,17 @@ class RepeatedWork(PointTally):
         if statement in self.checked_plans:
             return
         self.checked_plans.add(statement)
+        page = BOUNDED_PAGE.fullmatch(statement.sql)
         for plan in self.database.query_plan(statement):
             if "USING COVERING INDEX" in plan or plan == "SCAN CONSTANT ROW":
                 continue
             match = SCAN_TABLE.search(plan)
             if match is None or match.group(1) in SMALL_TABLES:
+                continue
+            if page is not None and page.group(1) == match.group(1):
+                continue
+            index = SCAN_INDEX.search(plan)
+            if index is not None and self.database.is_partial_index(index.group(1)):
                 continue
             self.findings.append(f"one request scanned {match.group(1)}: {plan}\n{statement.sql} {statement.parameters}\n{self.caller_lines()}")
 

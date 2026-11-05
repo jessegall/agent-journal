@@ -92,6 +92,10 @@ class Database:
     def query_plan(self, statement: Statement) -> tuple[str, ...]:
         return tuple(row[3] for row in self.connection.execute(f"EXPLAIN QUERY PLAN {statement.sql}", statement.parameters))
 
+    def is_partial_index(self, name: str) -> bool:
+        row = self.connection.execute("SELECT partial FROM pragma_index_list((SELECT tbl_name FROM sqlite_master WHERE type = 'index' AND name = ?)) WHERE name = ?", (name, name)).fetchone()
+        return row is not None and bool(row[0])
+
     def insert(self, statement: Statement) -> int:
         self.tally.count_write(statement.sql)
         row_id = statement.result(self.connection).lastrowid

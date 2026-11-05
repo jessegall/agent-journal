@@ -39,3 +39,22 @@ def test_a_covering_index_may_be_scanned_without_reading_the_table(new_story):
     story = new_story()
     with story.repeated_work.request():
         story.container.get(Database).rows(Statement("SELECT id FROM agents WHERE role <> ?", ["main"]))
+
+
+def test_an_unfiltered_primary_key_page_is_a_bounded_read(new_story):
+    story = new_story()
+    with story.repeated_work.request():
+        story.container.get(Database).rows(Statement("SELECT * FROM agents ORDER BY id DESC LIMIT 25 OFFSET 0"))
+
+
+def test_a_page_with_an_unindexed_sort_still_reports_the_table_scan(new_story):
+    story = new_story()
+    with pytest.raises(RepeatedCallsError, match="scanned agents"):
+        with story.repeated_work.request():
+            story.container.get(Database).rows(Statement("SELECT * FROM agents ORDER BY created_at DESC LIMIT 25 OFFSET 0"))
+
+
+def test_a_partial_index_scans_only_the_rows_it_indexes(new_story):
+    story = new_story()
+    with story.repeated_work.request():
+        story.container.get(Database).rows(Statement("SELECT * FROM reader_requests WHERE completed_at IS NULL"))
