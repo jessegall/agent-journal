@@ -1,6 +1,7 @@
 import re
 
 from core.base.change.logged_event import LoggedEvent
+from core.base.change.created import Created
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
@@ -10,8 +11,10 @@ from core.modules.documents.listeners.text_mention_listener import MODULE_NAME
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES, MessageType
 from core.modules.messages.models.message import Message
 from core.modules.tasks.models.task import Task
+from core.modules.plans.models.plan import Plan
+from core.modules.documents.models.doc import Doc
+from core.modules.documents.models.report import Report
 from core.base.change.touched import Touched
-from core.base.model.model import Model
 
 LINKED_MODELS = ("task", "plan", "doc", "report")
 TEXT_FIELDS = ("title", "brief", "body", "abstract")
@@ -20,7 +23,7 @@ REPLY_WINDOW_SECONDS = 120
 TASK_NUMBER = re.compile(r"\btask (\d+)\b", re.IGNORECASE)
 
 
-class ReplyLinkListener(CommitListener[Touched[Model]]):
+class ReplyLinkListener(CommitListener[Created[Message] | Touched[Task] | Touched[Plan] | Touched[Doc] | Touched[Report]]):
     """Links to a person's message the tasks, plans, documents and reports an agent writes within two minutes
     of answering it, and the tasks its answer names, so the chat shows them under that message."""
 
@@ -29,10 +32,10 @@ class ReplyLinkListener(CommitListener[Touched[Model]]):
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries) -> None:
         self.bus, self.actors, self.queries = bus, actors, queries
 
-    def handle(self, event: Touched[Model], logged: LoggedEvent) -> None:
+    def handle(self, event: Created[Message] | Touched[Task] | Touched[Plan] | Touched[Doc] | Touched[Report], logged: LoggedEvent) -> None:
         model, action = logged.event.rsplit(".", 1)
-        if model == Message.model_name and action == CREATION:
-            self.link_tasks(logged)
+        if isinstance(event, Created):
+            self.link_tasks(event.row, logged)
         has_text_change = action == CREATION or any(field in logged.data for field in TEXT_FIELDS)
         if model in LINKED_MODELS and has_text_change:
             self.link_row(logged, model)
@@ -43,8 +46,7 @@ class ReplyLinkListener(CommitListener[Touched[Model]]):
             return
         self.link(replies[0], model, logged.row_id)
 
-    def link_tasks(self, logged: LoggedEvent) -> None:
-        reply = self.queries.query(Message).find(logged.row_id)
+    def link_tasks(self, reply: Message, logged: LoggedEvent) -> None:
         if reply.type is not MessageType.AGENT:
             return
         for number in {int(number) for number in TASK_NUMBER.findall(reply.text)}:

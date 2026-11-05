@@ -1,5 +1,9 @@
 from core.base.actor import Actor
 from core.base.change.logged_event import LoggedEvent
+from core.base.change.changed import Changed
+from core.base.change.created import Created
+from core.base.change.moved import Moved
+from core.base.change.updated import Updated
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
@@ -15,37 +19,39 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
 from suites.coding.modules.workers.commands.queue_worker_tests.record_affected_test import RecordAffectedTest
-from core.base.change.touched import Touched
-from core.base.model.model import Model
+from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 
 QUEUED_EVENT, RUN_EVENT = "proof.queue", "proof.run"
 
 
-class WorkerTestListener(CommitListener[Touched[Model]]):
+class WorkerTestListener(CommitListener[Moved[Proof] | Changed[Process] | Created[AffectedTest] | Updated[AffectedTest]]):
     """Moves a worker's tests along: a queued test starts when there is room, a test moved
     to running is launched, and a test whose process ended is recorded, which makes room for the next."""
 
     name = "workers.tests"
+    moves = [ProofLifecycle.queue, ProofLifecycle.run]
 
     def __init__(self, bus: Bus, queries: Queries, launch: WorkerTestLaunch) -> None:
         self.bus, self.queries, self.launch = bus, queries, launch
 
-    def handle(self, event: Touched[Model], logged: LoggedEvent) -> None:
+    def handle(self, event: Moved[Proof] | Changed[Process] | Created[AffectedTest] | Updated[AffectedTest], logged: LoggedEvent) -> None:
         if logged.event == QUEUED_EVENT:
-            self.start_next(self.queries.query(Worktree).find(self.queries.query(Proof).find(logged.row_id).worktree_id).environment_id, logged)
-        elif logged.event == RUN_EVENT:
-            self.launched(self.queries.query(Proof).find(logged.row_id))
-        elif logged.row_table == "processes":
-            for process in self.queries.query(Process).filter(id=logged.row_id).limited(1):
-                self.ended(process, logged)
-        elif logged.event == "affected_test.create":
-            selected = self.queries.query(AffectedTest).find(logged.row_id)
+            self.start_next(self.queries.query(Worktree).find(event.row.worktree_id).environment_id, logged)
+            return
+        if logged.event == RUN_EVENT:
+            self.launched(event.row)
+            return
+        if logged.row_table == "processes":
+            self.ended(event.row, logged)
+            return
+        selected = event.row
+        if logged.event == "affected_test.create":
             self.start_next(self.queries.query(Worktree).find(selected.worktree_id).environment_id, logged)
-        elif logged.event == "affected_test.update":
-            selected = self.queries.query(AffectedTest).find(logged.row_id)
-            if selected.state in (AffectedTestState.PICKING, AffectedTestState.TESTING) and selected.process_id is not None:
-                process = self.queries.query(Process).find(selected.process_id)
-                self.launch.start(process.id, process.line, process.folder, self.queries.query(Agent).find(process.agent_id).session)
+            return
+        if selected.state not in (AffectedTestState.PICKING, AffectedTestState.TESTING) or selected.process_id is None:
+            return
+        process = self.queries.query(Process).find(selected.process_id)
+        self.launch.start(process.id, process.line, process.folder, self.queries.query(Agent).find(process.agent_id).session)
 
     def start_next(self, environment_id: int, logged: LoggedEvent) -> None:
         self.bus.run(StartWorkerTests(environment_id), Actor.core(), cause_id=logged.id, environment_id=environment_id)

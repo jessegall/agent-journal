@@ -29,7 +29,7 @@
                 "testCode": true
             },
             {
-                "fileMatches": "/(worker_test_listener|reply_link_listener|memory_mark_listener)\\.py$"
+                "fileMatches": "/memory_mark_listener\\.py$"
             }
         ]
     },

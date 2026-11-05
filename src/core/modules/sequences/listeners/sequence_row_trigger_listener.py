@@ -6,13 +6,11 @@ from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
 from core.modules.documents.models.link import Link
 from core.modules.sequences.commands.move_sequence_run.move_sequence_run import MoveSequenceRun, START
-from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
-from core.modules.sequences.support.sequence_trigger import ROW_TRIGGER, SequenceTrigger
-from core.modules.sequences.support.sequence_triggers import SequenceTriggers
+from core.modules.sequences.support.sequence_trigger import SequenceTrigger
+from core.modules.sequences.support.sequence_events import SequenceEvents
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from core.modules.sequences.rules.sequence_trigger_rule import EMPTY_TRIGGERS
 from core.base.change.touched import Touched
 from core.base.model.model import Model
 
@@ -23,25 +21,22 @@ class SequenceRowTriggerListener(CommitListener[Touched[Model]]):
 
     name = "sequences.row-trigger"
 
-    def __init__(self, queries: Queries, runs: SequenceRunQuery, bus: Bus) -> None:
-        self.queries, self.runs, self.bus = queries, runs, bus
+    def __init__(self, queries: Queries, runs: SequenceRunQuery, bus: Bus, events: SequenceEvents) -> None:
+        self.queries, self.runs, self.bus, self.events = queries, runs, bus, events
 
     def handle(self, event: Touched[Model], logged: LoggedEvent) -> None:
-        sequence = next((row for row in self.queries.query(Sequence).all_rows() if row.triggers != EMPTY_TRIGGERS and self.is_triggered(row, logged)), None)
-        if sequence is None:
+        matched = next((row for row in self.events.matching(logged.event) if self.is_linked(row.trigger, logged)), None)
+        if matched is None:
             return
         agent_id = self.acting_agent_id(logged)
         if agent_id is not None and self.runs.current(agent_id) is None:
-            self.bus.run(MoveSequenceRun(START, sequence.id, subject_id=logged.row_id), Actor(agent_id, ActorType.AGENT), cause_id=logged.id, environment_id=logged.environment_id)
+            self.bus.run(MoveSequenceRun(START, matched.sequence.id, subject_id=logged.row_id), Actor(agent_id, ActorType.AGENT), cause_id=logged.id, environment_id=logged.environment_id)
 
     def acting_agent_id(self, logged: LoggedEvent) -> int | None:
         if self.queries.query(ActorRecord).find(logged.actor_id).type is ActorType.AGENT:
             return logged.actor_id
         agents = MainAgentFinder.rows(self.queries, logged.environment_id) if logged.environment_id is not None else ()
         return agents[0].id if agents else None
-
-    def is_triggered(self, sequence: Sequence, logged: LoggedEvent) -> bool:
-        return any(trigger.trigger_type == ROW_TRIGGER and trigger.event == logged.event and self.is_linked(trigger, logged) for trigger in SequenceTriggers.parsed(sequence.triggers))
 
     def is_linked(self, trigger: SequenceTrigger, logged: LoggedEvent) -> bool:
         if not trigger.link_source:
