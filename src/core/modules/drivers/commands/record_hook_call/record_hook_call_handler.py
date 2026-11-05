@@ -58,7 +58,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         agent = self.agents.find(command.agent_id)
         suite, driver = self.choice.suite(), self.choice.driver(agent.role)
         hook = AgentHook(command.event, agent.id, agent.environment_id, agent.role, driver.name if driver is not None else "", context.timestamp,
-                         suite=suite.name if suite is not None else "")
+                         suite=suite.name if suite is not None else "", access=agent.access)
         self.timing.stamp("hook_built")
         with self.settings.keep_rows():
             answers = self.rules.ask(hook)

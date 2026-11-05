@@ -15,6 +15,7 @@ class EditAliasSubcommand(Subcommand[EditAlias, Alias]):
 
     cli_name = "alias"
     name = "edit"
+    outward = True
 
     def __init__(self, registry: Registry) -> None:
         self.registry = registry

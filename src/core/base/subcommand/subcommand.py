@@ -12,12 +12,14 @@ R = TypeVar("R", covariant=True)
 class Subcommand(Generic[C, R]):
     """One `journal <model> <subcommand>` that changes something: its arguments, the command they make, and
     how the result is printed. It holds no rule; the command's guards do. A subcommand that sets background is
-    run in the background at once when an agent types it."""
+    run in the background at once when an agent types it. One that sets outward reaches past the journal, so
+    a read-only agent may not run it."""
 
     cli_name: str
     name: str
     help: str = ""
     background: bool = False
+    outward: bool = False
 
     def arguments(self, parser: ArgumentParser) -> None:
         raise NotImplementedError

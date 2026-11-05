@@ -21,6 +21,7 @@ class ReadSubcommand(Generic[R]):
     cli_name: str
     name: str
     help: str = ""
+    outward: bool = False
 
     def arguments(self, parser: ArgumentParser) -> None:
         return None

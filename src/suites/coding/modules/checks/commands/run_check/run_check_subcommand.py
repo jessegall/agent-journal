@@ -19,6 +19,7 @@ class RunCheckSubcommand(Subcommand[RecordCheckRun, Check]):
 
     cli_name = "check"
     name = "run"
+    outward = True
 
     def __init__(self, checks: KeptChecks, runner: CheckRunner, bus: Bus) -> None:
         self.checks, self.runner, self.bus = checks, runner, bus

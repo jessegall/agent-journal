@@ -1,7 +1,6 @@
 from core.base.agent_role import AgentRole
 from core.base.driver.driver import Driver
 from suites.coding.coding_suite import CodingSuite
-from suites.coding.drivers.subagent.rules.subagent_write_rule import SubagentWriteRule
 
 
 class HelperDriver(Driver):
@@ -10,4 +9,4 @@ class HelperDriver(Driver):
     name = "coding.helper"
     suite = CodingSuite
     role = AgentRole.HELPER
-    rules = [SubagentWriteRule]
+    rules = []

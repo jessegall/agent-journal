@@ -19,6 +19,7 @@ class AgentHook:
     layer: OpenRow | None = None
     suite: str = ""
     control_return: bool = False
+    access: str = ""
 
     @property
     def hook_name(self) -> str:

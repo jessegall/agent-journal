@@ -1,0 +1,51 @@
+from core.base.access import Access
+from core.base.driver.agent_hook import AgentHook
+from core.base.driver.rule_answer import RuleAnswer
+from core.base.driver.tool import Tool
+from core.base.driver.tool_type import ToolType
+from core.base.provider.providers import Providers
+from core.base.query.queries import Queries
+from core.base.registry.registry import Registry
+from core.modules.agents.models.agent import Agent
+from core.modules.drivers.rules.readonly_rule import ReadonlyRule
+from core.modules.drivers.support.access_nudges import LIMITED_TOOL, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, UNJUDGED_LINE
+from core.modules.profiles.support.profile_files import ProfileFiles
+
+MCP_PREFIX = "mcp__"
+LIMITED_TOOL_TYPES = (ToolType.QUESTION, ToolType.UNCATEGORISED)
+
+
+class AccessRule(ReadonlyRule):
+    """An agent with read-only access reads, searches and runs journal commands, on every program and under every
+    overlay; a line no one can judge, and a journal line that reaches past the journal, are refused."""
+
+    name = "drivers.access"
+    drivers = ["*"]
+    overlay_proof = True
+    allowed_tools = (ToolType.READ, ToolType.SEARCH, ToolType.SHELL)
+
+    def __init__(self, registry: Registry, providers: Providers, profiles: ProfileFiles, queries: Queries) -> None:
+        self.registry, self.providers, self.profiles, self.queries = registry, providers, profiles, queries
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        tool = hook.event.tool
+        if hook.access != Access.READ or tool is None or self.is_listed(hook, tool):
+            return RuleAnswer.allowed()
+        if tool.category in LIMITED_TOOL_TYPES:
+            return RuleAnswer.refused(LIMITED_TOOL.nudge(tool=tool.name))
+        shell = tool.shell
+        if shell is not None and shell.has_old_hook_part:
+            return RuleAnswer.refused(OLD_HOOK_LINE.nudge())
+        if shell is not None and shell.has_uncertain_part:
+            return RuleAnswer.refused(UNJUDGED_LINE.nudge())
+        if shell is not None and shell.parts_running_journal_command(*self.registry.outward_lines):
+            return RuleAnswer.refused(OUTWARD_JOURNAL_LINE.nudge())
+        return super().answer(hook)
+
+    def is_listed(self, hook: AgentHook, tool: Tool) -> bool:
+        if tool.name in self.providers.provider(hook.event.program).safe_tools:
+            return True
+        return tool.name.startswith(MCP_PREFIX) and tool.name in self.profile_tools(hook.agent_id)
+
+    def profile_tools(self, agent_id: int) -> tuple[str, ...]:
+        return self.profiles.effective(self.queries.query(Agent).find(agent_id).profile).mcp_tools

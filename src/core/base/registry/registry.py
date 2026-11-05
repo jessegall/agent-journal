@@ -61,6 +61,7 @@ class Registry:
     models: dict[str, ModelEntry]
     handlers: dict[str, DottedPath]
     subcommands: dict[str, DottedPath]
+    outward_lines: tuple[str, ...]
     guards: tuple[GuardEntry, ...]
     listeners: tuple[ListenerEntry, ...]
     bindings: dict[str, DottedPath] = field(default_factory=lambda: {})
@@ -117,6 +118,7 @@ class Registry:
             models={cli_name: ModelEntry(entry["module"], DottedPath(entry["model"]), tuple(entry["commands"]), tuple(entry["excluded_subcommands"])) for cli_name, entry in entries["models"].items()},
             handlers={command: DottedPath(path) for command, path in entries["handlers"].items()},
             subcommands={line: DottedPath(path) for line, path in entries["subcommands"].items()},
+            outward_lines=tuple(entries["outward_lines"]),
             guards=tuple(GuardEntry(guard["name"], EventPattern(guard["event"]), DottedPath(guard["path"]), guard["position"], guard["short_flag"])
                          for guard in entries["guards"]),
             listeners=tuple(ListenerEntry(listener["name"], EventPattern(listener["event"]), ListenerTiming(listener["timing"]), DottedPath(listener["path"]),
@@ -168,6 +170,7 @@ class Registry:
             "models": {cli_name: {"module": entry.module, "model": entry.model.text, "commands": list(entry.commands), "excluded_subcommands": list(entry.excluded_subcommands)} for cli_name, entry in self.models.items()},
             "handlers": {command: path.text for command, path in self.handlers.items()},
             "subcommands": {line: path.text for line, path in self.subcommands.items()},
+            "outward_lines": list(self.outward_lines),
             "guards": [{"name": guard.name, "event": guard.event.text, "path": guard.path.text, "position": guard.position, "short_flag": guard.short_flag}
                        for guard in self.guards],
             "listeners": [{"name": listener.name, "event": listener.event.text, "timing": listener.timing.value, "path": listener.path.text,

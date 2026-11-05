@@ -81,7 +81,7 @@ def test_a_start_keeps_a_job_with_the_whole_brief(new_story):
     story = new_story(fixture=StartedHelper)
     helper_id = running_helper(story)
     job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper_id).first()
-    story.expect_rows(job.brief == "How does the queue hold a run?", job.profile == "journal-researcher", job.agent_id == story.agent.id)
+    story.expect_rows(job.brief == "How does the queue hold a run?", job.profile == "journal-researcher", job.session_agent_id == story.agent.id)
 
 
 def test_the_launcher_gets_the_program_and_brief_in_the_parent_s_folder(new_story):
