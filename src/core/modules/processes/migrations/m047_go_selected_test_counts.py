@@ -7,4 +7,4 @@ class GoSelectedTestCountsMigration(Migration):
     """Counts only the tests selected by a Go run's pattern."""
 
     number = 47
-    statements = (f"UPDATE readers SET count_command = {quoted(GO_TEST_COUNT_COMMAND)} WHERE name = 'go-test' AND creator_id = 1",)
+    statements = [f"UPDATE readers SET count_command = {quoted(GO_TEST_COUNT_COMMAND)} WHERE name = 'go-test' AND creator_id = 1"]
