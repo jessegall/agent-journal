@@ -6,12 +6,16 @@ from pathlib import Path
 
 from core.base.type_guards import is_mapping
 from core.modules.plugins.support.plugin_answer import PluginAnswer
+from core.modules.plugins.support.plugin_card_answer import PluginCardAnswer
 from core.modules.plugins.support.plugin_queue_read import PluginQueueRead
 
 RESERVED_SUFFIX = ".reserved"
 UNREADABLE_SUFFIX = ".bad"
 RESERVATION_LIMIT_SECONDS = 60
 FIRING_UNSAFE = r"[^A-Za-z0-9-]"
+CLAIMED_SUFFIX = ".claimed"
+CARD_FIELDS = frozenset(["cards", "judged_ms", "read_ms", "judged_total_ms"])
+ENVELOPE_FIELDS = frozenset(["v", "env", "agent"])
 
 
 class PluginQueue:
@@ -44,6 +48,35 @@ class PluginQueue:
             path.rename(reserved_file)
             read.answers.append((reserved_file.name, PluginAnswer.parsed(text)))
         return read
+
+    def claim_cards(self) -> list[PluginCardAnswer]:
+        return [answer for path in self.queued_paths() for answer in self.card_answer(path)]
+
+    def queued_paths(self) -> list[Path]:
+        return sorted(self.folder.glob("*.json"), key=lambda path: path.stat().st_mtime_ns) if self.folder.is_dir() else []
+
+    def card_answer(self, path: Path) -> list[PluginCardAnswer]:
+        claimed_file = path.with_suffix(CLAIMED_SUFFIX)
+        try:
+            path.rename(claimed_file)
+        except FileNotFoundError:
+            return []
+        text = claimed_file.read_text()
+        try:
+            fields: object = json.loads(text or "null")
+        except json.JSONDecodeError:
+            claimed_file.rename(path)
+            return []
+        if not is_mapping(fields) or not all(key in fields for key in ("agent", "cards")):
+            claimed_file.rename(path)
+            return []
+        line_fields = {key: value for key, value in fields.items() if key not in CARD_FIELDS}
+        if set(line_fields) <= ENVELOPE_FIELDS:
+            claimed_file.unlink()
+        else:
+            claimed_file.write_text(json.dumps(line_fields))
+            claimed_file.rename(path)
+        return [PluginCardAnswer(int(str(fields["agent"])), json.dumps({key: value for key, value in fields.items() if key in CARD_FIELDS}))]
 
     def remove(self, name: str) -> None:
         (self.folder / name).unlink(missing_ok=True)
