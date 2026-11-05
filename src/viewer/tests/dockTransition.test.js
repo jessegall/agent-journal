@@ -53,7 +53,7 @@ test("a card that undocks stays for the length of its leave transition and then 
 });
 
 test("a card the journal docked by itself leaves with the soft timed look", async () => {
-    const items = reactive([plan(1, {leaves_at: Date.now() / 1000 + 60})]);
+    const items = reactive([plan(1, {leaves_at: new Date(Date.now() + 60000).toISOString()})]);
     const host = stacked(items);
     await nextTick();
     expect(host.querySelector(".chat-dock").classList.contains("timed")).toBe(true);

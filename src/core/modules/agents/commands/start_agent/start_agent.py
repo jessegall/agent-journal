@@ -19,3 +19,4 @@ class StartAgent(Command[Agent]):
     program_model: str = ""
     profile: str = ""
     given_name: str = ""
+    access: str = "writing"

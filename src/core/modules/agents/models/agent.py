@@ -33,6 +33,7 @@ class Agent(Model):
     profile: str = ""
     given_name: str = ""
     ended_at: Timestamp | None = None
+    access: str = "writing"
 
     def change_name(self, old_row: "Agent | None") -> str | None:
         newly_ended = old_row is not None and old_row.ended_at is None and self.ended_at is not None

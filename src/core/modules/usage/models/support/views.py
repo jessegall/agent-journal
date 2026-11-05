@@ -1,5 +1,5 @@
 AGENT_CARDS_SELECT = (
-    "SELECT agents.id, agents.environment_id, agents.session, agents.role, agents.program, agents.program_model, agents.profile, agents.given_name, agents.paused_at, agents.ended_at,"
+    "SELECT agents.id, agents.environment_id, agents.session, agents.role, agents.access, agents.program, agents.program_model, agents.profile, agents.given_name, agents.paused_at, agents.ended_at,"
     " (SELECT tasks.id FROM tasks WHERE tasks.holder_id = agents.id AND tasks.state = 'started' ORDER BY tasks.id DESC LIMIT 1) AS started_task_id,"
     " coalesce((SELECT tasks.title FROM tasks WHERE tasks.holder_id = agents.id AND tasks.state = 'started' ORDER BY tasks.id DESC LIMIT 1), '') AS started_task_title,"
     " (SELECT json_group_array(json_object('id', listed.id, 'title', listed.title, 'state', listed.state,"
@@ -15,7 +15,7 @@ AGENT_CARDS_SELECT = (
     " coalesce(dispatch.program_model, '') AS dispatch_model, coalesce(dispatch.profile, '') AS dispatch_profile,"
     " coalesce(dispatch.description, '') AS dispatch_description, coalesce(dispatch.instruction, '') AS dispatch_instruction"
     " FROM agents"
-    " LEFT JOIN subagent_dispatches AS dispatch ON dispatch.id = (SELECT min(subagent_dispatches.id) FROM subagent_dispatches WHERE subagent_dispatches.subagent_id = agents.id)"
+    " LEFT JOIN helper_jobs AS dispatch ON dispatch.id = (SELECT min(helper_jobs.id) FROM helper_jobs WHERE helper_jobs.helper_id = agents.id)"
 )
 
 AGENT_LISTING_SELECT = (

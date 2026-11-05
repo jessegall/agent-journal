@@ -11,7 +11,7 @@ from core.base.type_guards import is_mapping
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.bind_subagent_dispatch.bind_subagent_dispatch import BindSubagentDispatch
 from core.modules.drivers.commands.record_subagent_dispatch.record_subagent_dispatch import RecordSubagentDispatch
-from core.modules.drivers.models.subagent_dispatch import SubagentDispatch
+from core.modules.drivers.models.helper_job import HelperJob
 
 DEFAULT_PROFILE = "subagent"
 BACKGROUND_INPUT = "run_in_background"
@@ -62,7 +62,7 @@ class DispatchMarkRule(DriverRule):
         parent = self.queries.query(Agent).find(hook.agent_id).parent_id
         raw = hook.event.raw
         profile = f"{raw.get('agent_type') or DEFAULT_PROFILE}"
-        rows = self.queries.query(SubagentDispatch).filter(agent_id=parent, profile=profile).matching(IsNull("ended_at")).oldest().limited(1) if parent is not None else ()
+        rows = self.queries.query(HelperJob).filter(agent_id=parent, profile=profile).matching(IsNull("ended_at")).oldest().limited(1) if parent is not None else ()
         if not rows or parent is None:
             return RuleAnswer.allowed()
         row = rows[0]

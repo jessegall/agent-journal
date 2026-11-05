@@ -19,6 +19,7 @@ class AgentCard(ViewModel):
     environment_id: int
     session: str
     role: str
+    access: str
     program: str
     program_model: str
     profile: str
