@@ -16,7 +16,7 @@ func noVariables(string) (string, bool) { return "", false }
 func cliServer(t *testing.T, status int, body string, exitCode string) *http.Client {
 	t.Helper()
 	home := shortHome(t)
-	listening(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+	startListener(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if status != http.StatusOK {
 			writer.WriteHeader(status)
 			writer.Write([]byte(body))
@@ -72,7 +72,7 @@ func timingNames(header string) []string {
 func timingServer(t *testing.T, status int, headers *[]string) *http.Client {
 	t.Helper()
 	home := shortHome(t)
-	listening(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+	startListener(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		*headers = append(*headers, request.Header.Get(timing.Header))
 		writer.Header().Set("Trailer", ExitCodeTrailer)
 		writer.WriteHeader(status)

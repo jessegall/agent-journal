@@ -160,13 +160,13 @@ func (menu *TerminalMenu) Trusting() bool {
 }
 
 // KeysFor is the arrow keys from the option under the cursor to the one taken, then Enter.
-func (menu *TerminalMenu) KeysFor(option MenuOption) string {
+func (menu *TerminalMenu) KeysFor(target MenuOption) string {
 	cursorIndex, targetIndex := 0, 0
 	for index, option := range menu.Options {
 		if option.Cursor {
 			cursorIndex = index
 		}
-		if option.Number == option.Number {
+		if option.Number == target.Number {
 			targetIndex = index
 		}
 	}
