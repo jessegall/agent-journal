@@ -65,6 +65,7 @@ class RepeatedWork(PointTally):
         self.checked_plans: set[Statement] = set()
         self.allowed_scans: dict[Statement, str] = {}
         self.file_reads: Counter[str] = Counter()
+        self.read_mark: tuple[int, int] | None = None
 
     @contextmanager
     def request(self) -> Generator[None]:
@@ -92,6 +93,7 @@ class RepeatedWork(PointTally):
             self.check_scan(statement)
         if self.is_allowed_read():
             return
+        self.forget_reads_before_a_write()
         self.reads[statement] += 1
         self.read_texts[statement.sql] += 1
         if self.reads[statement] == 1:
@@ -100,6 +102,12 @@ class RepeatedWork(PointTally):
             self.reject(f"one request read this more than {READ_LIMIT_REPEATS} times: {statement.sql} {statement.parameters}\nfirst read:\n{self.read_origins[statement]}repeated read:\n{self.caller_lines()}")
         if self.read_texts[statement.sql] == self.read_text_limit + 1:
             self.reject(f"one request read this SQL more than {self.read_text_limit} times: {statement.sql}\n{self.caller_lines()}")
+
+    def forget_reads_before_a_write(self) -> None:
+        change_mark = self.database.change_mark() if self.database is not None else None
+        if change_mark != self.read_mark:
+            self.reads, self.read_mark = Counter(), change_mark
+            self.read_origins.clear()
 
     def reject(self, finding: str) -> None:
         self.findings.append(finding)
