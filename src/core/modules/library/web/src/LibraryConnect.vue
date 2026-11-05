@@ -34,7 +34,7 @@ async function connect() {
         <template v-if="refusal">
             <p class="connect-failure" role="alert" data-library-refusal>{{ refusal }}</p>
         </template>
-        <Btn kind="primary" :busy="connecting" :disabled="!token.trim()" data-library-submit @click="connect">Connect</Btn>
+        <Btn variant="primary" :busy="connecting" :disabled="!token.trim()" data-library-submit @click="connect">Connect</Btn>
     </form>
 </template>
 

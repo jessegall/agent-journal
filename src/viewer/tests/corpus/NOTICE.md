@@ -54,4 +54,4 @@ with `render` from `src/viewer/src/text`:
 samples are the 500 paragraphs and the 100 lists. Two changes were made after looking at held-out misses (indented bullet lists were read as code), so the held-out
 share is a check, not a clean test.
 
-The test states 98% of all samples, 97% of each kind and 97% of the held-out samples.
+The test states 98% of all samples, 97% of each type and 97% of the held-out samples.

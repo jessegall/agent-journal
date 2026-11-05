@@ -8,7 +8,7 @@ from core.base.library.library_item import LibraryItem
 
 
 class LibraryShowSubcommand(ItemArguments, ReadSubcommand[LibraryItem]):
-    """`journal library show <kind> <id>`: a live read of one item of the shared server; it saves nothing."""
+    """`journal library show <type> <id>`: a live read of one item of the shared server; it saves nothing."""
 
     cli_name = "library"
     name = "show"

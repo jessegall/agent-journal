@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class AgentPolicy:
-    """The roles a suite assigns to each kind of core behavior."""
+    """The roles a suite assigns to each type of core behavior."""
 
     job_roles: tuple[str, ...] = ()
     task_roles: tuple[str, ...] = tuple(["main"])

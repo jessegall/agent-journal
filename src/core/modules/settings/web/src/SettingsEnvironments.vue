@@ -34,10 +34,10 @@ async function remove(row) {
                 </div>
                 <template v-if="asking === row.id">
                     <Btn small data-environment-keep @click="asking = 0">Keep it</Btn>
-                    <Btn small kind="danger" data-environment-confirm @click="remove(row)">Yes, remove</Btn>
+                    <Btn small variant="danger" data-environment-confirm @click="remove(row)">Yes, remove</Btn>
                 </template>
                 <template v-else>
-                    <Btn small kind="danger" data-environment-remove :disabled="here(row)" :title="here(row) ? 'Switch to another environment to remove this one' : 'Remove this environment'" @click="remove(row)">Remove environment</Btn>
+                    <Btn small variant="danger" data-environment-remove :disabled="here(row)" :title="here(row) ? 'Switch to another environment to remove this one' : 'Remove this environment'" @click="remove(row)">Remove environment</Btn>
                 </template>
             </div>
         </template>

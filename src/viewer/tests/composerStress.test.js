@@ -65,7 +65,7 @@ async function scene() {
 
 function pasteEvent(box, text) {
     const event = new Event("paste", {bubbles: true, cancelable: true});
-    event.clipboardData = {files: [], getData: (kind) => (kind === "text/plain" ? text : "")};
+    event.clipboardData = {files: [], getData: (type) => (type === "text/plain" ? text : "")};
     box.dispatchEvent(event);
 }
 
@@ -212,7 +212,7 @@ function dictatedPaste(text) {
     if (!el || el === document.body) return false;
     el.dispatchEvent(new KeyboardEvent("keydown", {key: "v", code: "KeyV", metaKey: true, bubbles: true, cancelable: true}));
     const paste = new Event("paste", {bubbles: true, cancelable: true});
-    paste.clipboardData = {files: [], getData: (kind) => (kind === "text/plain" ? text : "")};
+    paste.clipboardData = {files: [], getData: (type) => (type === "text/plain" ? text : "")};
     if (!el.dispatchEvent(paste)) return true;
     el.setRangeText(text, el.selectionStart, el.selectionEnd, "end");
     el.dispatchEvent(new InputEvent("input", {inputType: "insertFromPaste", bubbles: true}));

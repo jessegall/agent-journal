@@ -41,7 +41,7 @@ function tokenize(text, lang) {
     const keywords = new Set(spec.keywords.split(" ").filter(Boolean));
     const out = [];
     let i = 0;
-    const push = (kind, value) => value && out.push({kind, value});
+    const push = (type, value) => value && out.push({type, value});
     while (i < text.length) {
         const c = text[i];
         if (spec.markdown) {
@@ -124,11 +124,11 @@ function tokenize(text, lang) {
 
 export function highlight(text, lang) {
     const lines = [""];
-    for (const {kind, value} of tokenize(text, lang)) {
+    for (const {type, value} of tokenize(text, lang)) {
         const parts = value.split("\n");
         parts.forEach((part, k) => {
             if (k) lines.push("");
-            if (part) lines[lines.length - 1] += kind === "plain" ? escape(part) : `<span class="tok-${kind}">${escape(part)}</span>`;
+            if (part) lines[lines.length - 1] += type === "plain" ? escape(part) : `<span class="tok-${type}">${escape(part)}</span>`;
         });
     }
     if (text.endsWith("\n")) lines.pop();

@@ -2,7 +2,7 @@
 const GROUP = {working: "working", busy: "working", compacting: "working", waiting: "waiting", you: "waiting", stuck: "waiting", silent: "waiting", stopped: "stopped"};
 const stateGroup = (entry) => GROUP[entry.card.state] || "idle";
 
-const byNumber = (a, b) => a.n - b.n || a.kind.localeCompare(b.kind) || a.key.localeCompare(b.key);
+const byNumber = (a, b) => a.n - b.n || a.type.localeCompare(b.type) || a.key.localeCompare(b.key);
 
 const RANK = {working: 0, waiting: 1, idle: 2, stopped: 3};
 const byRank = (a, b) => RANK[stateGroup(a)] - RANK[stateGroup(b)];

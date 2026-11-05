@@ -17,7 +17,7 @@ function pick(key) {
 
 <template>
     <span ref="opener">
-        <Btn kind="icon" data-presets title="Presets" aria-label="Presets" @click.stop="open = !open">
+        <Btn variant="icon" data-presets title="Presets" aria-label="Presets" @click.stop="open = !open">
             <Icon name="layout" :size="12" />
         </Btn>
     </span>

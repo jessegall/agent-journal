@@ -24,7 +24,7 @@ const reload = () => window.location.reload();
                 <Spinner :size="22" class="spin" />
                 <p class="title">{{ title }}</p>
                 <template v-if="updating.late && !updating.offline">
-                    <Btn small kind="primary" data-server-cover-reload @click="reload">Reload</Btn>
+                    <Btn small variant="primary" data-server-cover-reload @click="reload">Reload</Btn>
                 </template>
                 <template v-else>
                     <p class="step">{{ step }}</p>

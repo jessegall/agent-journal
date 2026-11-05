@@ -25,7 +25,7 @@ WARNING_SHARE = 0.8
 
 class EndHelpersPastLimitsHandler(Handler[EndHelpersPastLimits, None]):
     """Tells a parent once at 80 percent of a limit, and past it reports the job and stops the helper. It reads the
-    status files and stops programs outside any transaction, and leaves every other kind of agent alone."""
+    status files and stops programs outside any transaction, and leaves every other type of agent alone."""
 
     command = EndHelpersPastLimits
     transactional = False

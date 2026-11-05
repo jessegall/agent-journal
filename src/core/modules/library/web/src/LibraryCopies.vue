@@ -43,7 +43,7 @@ const ACTIONS = {
 
 async function share() {
     const [name, number, ...rest] = sharing.value.trim().split(/\s+/);
-    if (!name || !/^\d+$/.test(number ?? "") || rest.length) return void (refusal.value = "Write the kind and the number, such as doc 63.");
+    if (!name || !/^\d+$/.test(number ?? "") || rest.length) return void (refusal.value = "Write the type and the number, such as doc 63.");
     const answer = await run(["library", "share", name, number]);
     shared.value = answer.ok ? answer.value : null;
     if (answer.ok) sharing.value = "";
@@ -54,10 +54,10 @@ async function share() {
     <div class="copies" data-library-copies>
         <template v-if="canWrite">
             <form class="copies-share" data-library-share @submit.prevent="share">
-                <FormField label="Share with the team" for="library-share" help="The kind and the number of the item on this journal, such as doc 63.">
+                <FormField label="Share with the team" for="library-share" help="The type and the number of the item on this journal, such as doc 63.">
                     <TextInput id="library-share" v-model="sharing" placeholder="doc 63" data-library-share-field />
                 </FormField>
-                <Btn kind="primary" :disabled="!sharing.trim()" data-library-share-submit @click="share">Share</Btn>
+                <Btn variant="primary" :disabled="!sharing.trim()" data-library-share-submit @click="share">Share</Btn>
             </form>
         </template>
         <template v-if="shared">
@@ -85,7 +85,7 @@ async function share() {
                     </template>
                     <CopyCompare :here="compared.copy.local_fields" :library="compared.there" :at="new Date().toISOString()" />
                     <template v-if="compared.isTaking">
-                        <Btn kind="primary" data-library-take @click="take(compared.copy)">Use the library's version</Btn>
+                        <Btn variant="primary" data-library-take @click="take(compared.copy)">Use the library's version</Btn>
                     </template>
                 </div>
             </SidePanel>

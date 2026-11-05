@@ -5,7 +5,7 @@ import Icon from "./Icon.vue";
 
 const props = defineProps({
     path: {type: String, required: true},
-    kind: {type: String, required: true},
+    change: {type: String, required: true},
     added: {type: Number, required: true},
     removed: {type: Number, required: true},
     at: {type: [String, Number], required: true},
@@ -37,8 +37,8 @@ const SIGNS = {add: "+", del: "−"};
 const cut = computed(() => props.path.lastIndexOf("/") + 1);
 const dir = computed(() => props.path.slice(0, cut.value));
 const name = computed(() => props.path.slice(cut.value));
-const gone = computed(() => props.kind === "deleted");
-const badge = computed(() => BADGES[props.kind]);
+const gone = computed(() => props.change === "deleted");
+const badge = computed(() => BADGES[props.change]);
 
 const changed = computed(() => new Set(props.rows.filter((row) => row.line_type === "add").map((row) => row.line)));
 const side = ref("after");
@@ -89,7 +89,7 @@ onUnmounted(() => sized && sized.disconnect());
                 <span class="diff-card-dir">{{ dir }}</span>
                 <span class="diff-card-name">{{ name }}</span>
                 <template v-if="badge">
-                    <span :class="['diff-card-badge', kind]">{{ badge }}</span>
+                    <span :class="['diff-card-badge', change]">{{ badge }}</span>
                 </template>
             </span>
             <span :class="['diff-card-count', 'add', {zero: !added}]">+{{ added }}</span>

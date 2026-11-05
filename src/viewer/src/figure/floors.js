@@ -37,12 +37,12 @@ function seenOf(thread, view) {
 // The tops of the chat's bubbles it shows (seenOf) and of the page's tabs, each a floor named by its element, with its bottom too
 function elementFloors(thread, view) {
     const seen = thread && seenOf(thread, view);
-    const bubbles = thread ? [...thread.querySelectorAll(BUBBLE)].map((element) => ({element, kind: "bubble"})) : [];
-    const tabs = [...document.querySelectorAll("[data-tab]")].map((element) => ({element, kind: "tab"}));
+    const bubbles = thread ? [...thread.querySelectorAll(BUBBLE)].map((element) => ({element, type: "bubble"})) : [];
+    const tabs = [...document.querySelectorAll("[data-tab]")].map((element) => ({element, type: "tab"}));
     return [...bubbles, ...tabs]
-        .map(({element, kind}) => ({element, kind, box: element.getBoundingClientRect()}))
-        .filter(({kind, box}) => box.width > 0 && box.height > 0 && (kind !== "bubble" || inView(box, seen)))
-        .map(({element, kind, box}) => ({id: floorOf(element), kind, element, left: box.left, right: box.right, top: box.top, bottom: box.bottom}));
+        .map(({element, type}) => ({element, type, box: element.getBoundingClientRect()}))
+        .filter(({type, box}) => box.width > 0 && box.height > 0 && (type !== "bubble" || inView(box, seen)))
+        .map(({element, type, box}) => ({id: floorOf(element), type, element, left: box.left, right: box.right, top: box.top, bottom: box.bottom}));
 }
 
 const velocity = (prev, floor, at) => {
@@ -59,11 +59,11 @@ export function readFloors(prev = snapshot, at = performance.now()) {
     const view = thread?.getBoundingClientRect() ?? null;
     const {element, docked, edge} = groundEdge();
     const read = [];
-    if (element) read.push({id: "home", kind: docked ? "dock" : "compose", element, left: edge.left, right: edge.left + edge.width, top: edge.top});
+    if (element) read.push({id: "home", type: docked ? "dock" : "compose", element, left: edge.left, right: edge.left + edge.width, top: edge.top});
     const build = composeEdge();
-    if (build.element) read.push({id: floorOf(build.element), kind: "build", element: build.element, left: build.edge.left, right: build.edge.left + build.edge.width, top: build.edge.top});
+    if (build.element) read.push({id: floorOf(build.element), type: "build", element: build.element, left: build.edge.left, right: build.edge.left + build.edge.width, top: build.edge.top});
     read.push(...elementFloors(thread, view));
-    read.push({id: "foot", kind: "foot", left: world.left, right: world.right, top: world.bottom});
+    read.push({id: "foot", type: "foot", left: world.left, right: world.right, top: world.bottom});
     return Object.freeze({at, world, view, floors: Object.freeze(read.map((floor) => Object.freeze({...floor, vy: velocity(prev, floor, at)})))});
 }
 
@@ -114,7 +114,7 @@ export const floorNamed = (floors, id) => floors.find((floor) => floor.id === id
 // so a bar that docks over it slides in past it and never lifts it; null when it rests on no floor on the page
 export function footingOn(spot, floors = readFloors().floors) {
     const home = floorNamed(floors, "home");
-    const docked = home?.kind === "dock";
+    const docked = home?.type === "dock";
     const id = !spot.on ? null : spot.on === home?.element && docked && !spot.stays ? "home" : floorOf(spot.on);
     const floor = id && floorNamed(floors, id);
     if (!floor) return null;

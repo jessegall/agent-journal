@@ -16,7 +16,7 @@ VARIABLE_SEPARATOR = "="
 class Alias(Model):
     """A word of the project's own for a shell line: `journal <name> [args]` runs the line with the arguments
     in place of {args}, or after it, with its variables set; its reader reads the output, and a background one
-    moves to the background at once, and one with a category is held to the turn of that kind of command, such
+    moves to the background at once, and one with a category is held to the turn of that type of command, such
     as the test run."""
 
     model_name = "alias"

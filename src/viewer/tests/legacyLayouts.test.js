@@ -31,13 +31,13 @@ test("a layout that is not valid is skipped", async () => {
     expect(await movedLayout({...OLD, next: "x"})).toBeNull();
 });
 
-test("a chat pane's hidden version 4 kinds become the chat window's family switches", async () => {
-    const kinds = [
+test("a chat pane's hidden version 4 types become the chat window's family switches", async () => {
+    const types = [
         {type: "memory", family: "memories.memories", family_title: "Memories", group: "reminders", shown: true, main: true},
         {type: "reminder", family: "memories.reminders", family_title: "Reminders", group: "reminders", shown: false, main: false},
         {type: "compaction", family: "memories.context", family_title: "Context", group: "agent", shown: true, main: true},
     ];
-    vi.stubGlobal("fetch", async () => ({ok: true, json: async () => ({marks: kinds})}));
+    vi.stubGlobal("fetch", async () => ({ok: true, json: async () => ({marks: types})}));
     const layout = {tree: {id: "a"}, panes: {a: {tabs: ["chat"], active: "chat", hide: ["reminder"]}}, next: 2};
     expect((await movedLayout(layout)).panes.a.options).toEqual({"show-memories.memories": true, "show-memories.reminders": false, "show-memories.context": true});
 });

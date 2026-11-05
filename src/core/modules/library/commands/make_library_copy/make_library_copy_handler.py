@@ -13,7 +13,7 @@ from core.modules.library.support.new_library_copy import NewLibraryCopy
 
 
 class MakeLibraryCopyHandler(Handler[MakeLibraryCopy, NewLibraryCopy]):
-    """Checks the kind and the item, reads the item with no write lock held, then makes the row and its copy in a
+    """Checks the type and the item, reads the item with no write lock held, then makes the row and its copy in a
     short transaction. An item that comes with a warning is made only when it was read first."""
 
     command = MakeLibraryCopy

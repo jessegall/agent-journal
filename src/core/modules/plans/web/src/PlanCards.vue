@@ -72,7 +72,7 @@ load();
                     </template>
                 </div>
                 <template v-if="shown.length && shown.length < total">
-                    <Btn kind="text" data-plans-more @click="more">Show more</Btn>
+                    <Btn variant="text" data-plans-more @click="more">Show more</Btn>
                 </template>
                 </TabBody>
             </template>

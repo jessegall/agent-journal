@@ -1,5 +1,5 @@
 import {withoutChips} from "./words.js";
-import {kindOfParagraph} from "./codeLines.js";
+import {typeOfParagraph} from "./codeLines.js";
 import {highlight} from "./highlight.js";
 import {register} from "./index.js";
 import "./copyBlock.js";
@@ -47,7 +47,7 @@ const inList = (held, line) => LIST_ITEM.test(line) || LIST_ITEM.test([...held].
 function block(lines, lang) {
     const language = lang || guess(lines);
     const code = highlight(unescape(lines.join("\n")), language).map((line) => `<span class="code-line">${line}\n</span>`).join("");
-    return {kind: "html", html: `<div class="chat-code-block" data-language="${language}"><button type="button" class="chat-code-copy">Copy</button><pre class="chat-code"><code>${code}</code></pre></div>`};
+    return {type: "html", html: `<div class="chat-code-block" data-language="${language}"><button type="button" class="chat-code-copy">Copy</button><pre class="chat-code"><code>${code}</code></pre></div>`};
 }
 
 // a fence ends at a line of the same mark, at least as long, with nothing after it
@@ -65,19 +65,19 @@ function fenced(lines, indent, language) {
 // the text with each run of paragraphs that is code without a fence made a block, and the text between them kept as it was: a run holds
 // a paragraph of code, or two lines of code, and may hold blank lines
 function withCodeParagraphs(text) {
-    const paragraphs = text.split(PARAGRAPH_BREAK).map((paragraph) => ({paragraph, kind: kindOfParagraph(unescape(paragraph).split("\n"))}));
+    const paragraphs = text.split(PARAGRAPH_BREAK).map((paragraph) => ({paragraph, type: typeOfParagraph(unescape(paragraph).split("\n"))}));
     const pieces = [];
     let kept = [];
     const keep = () => {
-        if (kept.length) pieces.push({kind: "text", text: kept.join("\n\n")});
+        if (kept.length) pieces.push({type: "text", text: kept.join("\n\n")});
         kept = [];
     };
     let i = 0;
     while (i < paragraphs.length) {
         let stop = i;
-        while (stop < paragraphs.length && paragraphs[stop].kind !== "text") stop += 1;
+        while (stop < paragraphs.length && paragraphs[stop].type !== "text") stop += 1;
         const run = paragraphs.slice(i, stop);
-        if (run.some(({kind}) => kind === "code") || run.length > 1) {
+        if (run.some(({type}) => type === "code") || run.length > 1) {
             keep();
             pieces.push(block(run.map(({paragraph}) => paragraph).join("\n\n").split("\n").map(withoutChips), ""));
             i = stop;
@@ -87,7 +87,7 @@ function withCodeParagraphs(text) {
         i += 1;
     }
     keep();
-    return pieces.length === 1 && pieces[0].kind === "text" ? [{kind: "text", text}] : pieces;
+    return pieces.length === 1 && pieces[0].type === "text" ? [{type: "text", text}] : pieces;
 }
 
 // the text with its fences made blocks; a document is Markdown, so nothing else in it is guessed to be code
@@ -96,7 +96,7 @@ function lift(text, isDocument) {
     const out = [];
     let held = [];
     const flush = () => {
-        if (held.length) out.push(...(isDocument ? [{kind: "text", text: held.join("\n")}] : withCodeParagraphs(held.join("\n"))));
+        if (held.length) out.push(...(isDocument ? [{type: "text", text: held.join("\n")}] : withCodeParagraphs(held.join("\n"))));
         held = [];
     };
     let i = 0;
@@ -128,7 +128,7 @@ function lift(text, isDocument) {
         i += 1;
     }
     flush();
-    return out.length > 1 || (out[0] && out[0].kind === "html") ? out : null;
+    return out.length > 1 || (out[0] && out[0].type === "html") ? out : null;
 }
 
 register((text, context) => lift(text, context.document));

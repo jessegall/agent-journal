@@ -8,7 +8,7 @@ CODEX_PROGRAM = "codex"
 
 @dataclass(frozen=True)
 class AgentProfile:
-    """Instructions and program settings for one kind of agent, with its usage counts."""
+    """Instructions and program settings for one type of agent, with its usage counts."""
 
     name: str
     description: str

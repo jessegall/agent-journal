@@ -10,9 +10,9 @@ const SIZE = 112;
 // the feet may go anywhere across a chat from 56 to 944 pixels, whose top is at 100
 const ROOM = {left: 56, right: 944, top: 100};
 // the chat's floor, the compose box's top at 700 under the chat's whole width, and two bubbles above it, one overhanging the other
-const HOME = {id: "home", kind: "compose", left: 56, right: 944, top: 700, element: "home"};
-const UPPER = {id: "upper", kind: "bubble", left: 100, right: 500, top: 300, bottom: 360, element: "upper"};
-const LOWER = {id: "lower", kind: "bubble", left: 300, right: 800, top: 500, bottom: 560, element: "lower"};
+const HOME = {id: "home", type: "compose", left: 56, right: 944, top: 700, element: "home"};
+const UPPER = {id: "upper", type: "bubble", left: 100, right: 500, top: 300, bottom: 360, element: "upper"};
+const LOWER = {id: "lower", type: "bubble", left: 300, right: 800, top: 500, bottom: 560, element: "lower"};
 const FLOORS = [HOME, UPPER, LOWER];
 
 // the throw flown at 60 frames a second from its first frame at 0 until it lands or is gone, with every frame it passed through in the air,

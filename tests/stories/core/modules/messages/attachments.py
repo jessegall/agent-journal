@@ -33,8 +33,8 @@ def test_every_attached_file_is_listed_newest_first_with_the_counts_of_each_kind
 
 def test_the_kinds_keep_images_or_the_rest(message_attachments):
     story = message_attachments
-    expect_listed_2(story, "--kind images", ["shop.jpg", "cart.png"])
-    expect_listed_2(story, "--kind other", ["notes.txt"])
+    expect_listed_2(story, "--category images", ["shop.jpg", "cart.png"])
+    expect_listed_2(story, "--category other", ["notes.txt"])
 
 
 def test_a_search_finds_a_file_by_its_name_or_its_message_and_counts_only_what_it_found(message_attachments):
@@ -54,7 +54,7 @@ def test_files_are_paged(message_attachments):
 
 
 def test_the_window_declares_its_read(new_story):
-    WindowStory(new_story(fixture=UserJoined)).expect_window_allowed("messages.attachments", 'attachment list --kind images --skip 60 --search "a b"')
+    WindowStory(new_story(fixture=UserJoined)).expect_window_allowed("messages.attachments", 'attachment list --category images --skip 60 --search "a b"')
 
 
 @pytest.fixture

@@ -34,14 +34,14 @@ const moveAddress = (domain) => run(setting(SUBDOMAIN_SETTING, newName.value.tri
         <p class="fine">Share links stop working and a paired phone has to be paired again.</p>
         <form class="row" data-tunler-move @submit.prevent="moveAddress(domain)">
             <input v-model="newName" placeholder="The new name" aria-label="The new name">
-            <Btn small kind="primary" type="submit" :disabled="!newName.trim()">Move to the new address</Btn>
+            <Btn small variant="primary" type="submit" :disabled="!newName.trim()">Move to the new address</Btn>
             <Btn small @click="asking = ''">Keep it</Btn>
         </form>
     </template>
     <template v-else-if="asking === domain.name">
         <p class="fine">Release it? Anyone can claim it after.</p>
         <div class="row">
-            <Btn small kind="primary" data-tunler-release-confirm @click="run(['tunler', 'release', domain.name])">Release the address</Btn>
+            <Btn small variant="primary" data-tunler-release-confirm @click="run(['tunler', 'release', domain.name])">Release the address</Btn>
             <Btn small @click="asking = ''">Keep it</Btn>
         </div>
     </template>

@@ -6,7 +6,7 @@ import Spinner from "./Spinner.vue";
 
 defineOptions({inheritAttrs: false});
 const props = defineProps({
-    kind: {type: String, default: "ghost"},
+    variant: {type: String, default: "ghost"},
     small: Boolean,
     large: Boolean,
     busy: Boolean,
@@ -45,7 +45,7 @@ async function clicked(event) {
         v-bind="passedOn"
         :type="href ? undefined : 'button'"
         :href="href || undefined"
-        :class="['btn', kind, {small, large, busy: shownBusy, fill, bordered}]"
+        :class="['btn', variant, {small, large, busy: shownBusy, fill, bordered}]"
         :aria-busy="shownBusy"
         :disabled="idle"
         @click="clicked"

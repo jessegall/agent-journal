@@ -163,7 +163,7 @@ function heldEager(eager, left) {
 // A jump of more than this many of the figure's own heights is high, and now and then turns over backwards on the way (pile.js jump)
 export const FLIP_OVER = 1;
 
-// the key a reaction's act is answered under, by its kind: a look on the eyes, a gaze of the head, and a clip for the rest
+// the key a reaction's act is answered under, by its type: a look on the eyes, a gaze of the head, and a clip for the rest
 const ANSWERED_AS = {look: "look", gaze: "gaze"};
 
 // The reaction to this moment drawn from the pile, or null when nothing is drawn: a clip the body plays, a look the eyes take on or a gaze
@@ -172,7 +172,7 @@ const ANSWERED_AS = {look: "look", gaze: "gaze"};
 export function reactionTo(moment, memory, now, random, voice = "", has = () => true, tally = null) {
     const drawn = draw({moment, voice, has, memory, now, tally}, random);
     if (!drawn) return null;
-    return {[ANSWERED_AS[drawn.kind] ?? "clip"]: drawn.name, toward: drawn.toward ?? "", onto: Boolean(drawn.onto), holds: Boolean(drawn.holds), lifetime: drawn.lifetime};
+    return {[ANSWERED_AS[drawn.type] ?? "clip"]: drawn.name, toward: drawn.toward ?? "", onto: Boolean(drawn.onto), holds: Boolean(drawn.holds), lifetime: drawn.lifetime};
 }
 
 // The act drawn after `held` seconds of a state, as its entry, or null: the idle acts while the figure has nothing to do, and the

@@ -30,7 +30,7 @@ async function create() {
         <template #foot>
             <span class="note" role="status">{{ failure || missing }}</span>
             <Btn @click="emit('close')">Cancel</Btn>
-            <Btn kind="primary" :disabled="Boolean(missing)" data-environment-create @click="create">Create environment</Btn>
+            <Btn variant="primary" :disabled="Boolean(missing)" data-environment-create @click="create">Create environment</Btn>
         </template>
     </Dialog>
 </template>

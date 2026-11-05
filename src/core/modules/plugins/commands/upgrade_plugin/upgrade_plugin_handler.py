@@ -79,4 +79,4 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
 
     @staticmethod
     def run_lines(manifest: PluginManifest) -> list[str]:
-        return [f"{row['kind']} {row['label']}: {row['command']}" for row in manifest.run_rows()]
+        return [f"{row['category']} {row['label']}: {row['command']}" for row in manifest.run_rows()]

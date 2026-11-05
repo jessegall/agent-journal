@@ -47,7 +47,7 @@ const windowOf = (hit) => WINDOW_OF[hit.cli_name] || "";
 <template>
     <div class="search">
         <SearchBar v-model="terms" @keydown.enter.prevent="find">
-            <Btn kind="primary" small data-search-go @click="find">Search</Btn>
+            <Btn variant="primary" small data-search-go @click="find">Search</Btn>
         </SearchBar>
         <template v-if="models.length">
             <div class="search-chips">

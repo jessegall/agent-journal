@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class AttachmentPage:
-    """A page of attached files, how many there are of each kind, and whether more follow."""
+    """A page of attached files, how many there are of each category, and whether more follow."""
 
     rows: Sequence[Mapping[str, object]]
     counts: Mapping[str, int]

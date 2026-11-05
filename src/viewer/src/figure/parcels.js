@@ -37,8 +37,8 @@ export function litAfter(unit, ends) {
     return end ? end.tone : unit.lit;
 }
 
-// every kind of light a unit shows, each drawn once (chat/VoiceFigure.vue)
-export const LIGHT_KINDS = Object.keys(LIGHT_COLOURS);
+// every type of light a unit shows, each drawn once (chat/VoiceFigure.vue)
+export const LIGHT_TYPES = Object.keys(LIGHT_COLOURS);
 
 // The 0 and 1 digits a blow's dust sprays out, as particles: how many at least and at most; how far from the cloud's middle, `middle`
 // pixels over the unit's base, each starts, in pixels; how far it flies out, how long it takes to slow to a stop and how long it takes to
@@ -152,7 +152,7 @@ export const blowsLanded = (frames, blowFrames, lands) => Math.max(Math.floor(fr
 // While a box the figure built waits to be pushed it goes straight round behind it and pushes, in one move: it answers none of its idle
 // moments meanwhile, the looks about and the breaks from the work, and none of their clips waits to play
 export const IDLE_MOMENTS = new Set(["standing", "building", "typing", "work_done"]);
-export const IDLE_CLIPS = new Set(ANIMATIONS.filter((entry) => IDLE_MOMENTS.has(entry.when.moment) && entry.kind === "clip").map((entry) => entry.name));
+export const IDLE_CLIPS = new Set(ANIMATIONS.filter((entry) => IDLE_MOMENTS.has(entry.when.moment) && entry.type === "clip").map((entry) => entry.name));
 
 // whether a box the figure built waits among `parcels` to be pushed onto the pile
 export const pushWaits = (parcels) => parcels.some((each) => each.state === "built");

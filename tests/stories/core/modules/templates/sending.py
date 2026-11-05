@@ -72,7 +72,7 @@ def test_missing_or_unused_values_are_refused_without_a_message(new_story, value
     expect_empty_messages(story)
 
 
-@pytest.mark.parametrize("name", ["target", "kind", "id", "title"])
+@pytest.mark.parametrize("name", ["target", "type", "id", "title"])
 def test_reserved_prompt_values_cannot_be_supplied(new_story, name):
     story = new_story(fixture=SendingTemplates)
     story.expect_refusal(f"{CRITIQUE} --set={name}=changed", name, actor=story.user)

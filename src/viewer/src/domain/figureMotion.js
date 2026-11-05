@@ -42,14 +42,14 @@ export const CARD_RISE = 30;
 // floor that rose past CARD_RISE is a card sliding up, which leaves the walker where it is
 export function underWalker(floors, id, x, y) {
     const floor = floors.find((each) => each.id === id);
-    if (!floor || (HOME_FLOORS.includes(floor.kind) && floor.top > y + ON_FLOOR)) return {falls: true, dx: 0, dy: 0};
-    if (HOME_FLOORS.includes(floor.kind) && floor.top < y - CARD_RISE) return {falls: false, dx: 0, dy: 0};
+    if (!floor || (HOME_FLOORS.includes(floor.type) && floor.top > y + ON_FLOOR)) return {falls: true, dx: 0, dy: 0};
+    if (HOME_FLOORS.includes(floor.type) && floor.top < y - CARD_RISE) return {falls: false, dx: 0, dy: 0};
     return {falls: false, dx: Math.min(Math.max(x, floor.left), floor.right) - x, dy: floor.top - y};
 }
 
 // The floors a fall can end on: only the floors at home, the docks, the compose box and the foot of the window, since the chat's bubbles
 // are on another plane and a fall passes them; the figure stands on a bubble only by a jump of its own
-export const fallFloors = (floors) => floors.filter((floor) => HOME_FLOORS.includes(floor.kind));
+export const fallFloors = (floors) => floors.filter((floor) => HOME_FLOORS.includes(floor.type));
 
 // The share of the way a leg with `easing` has gone at `share` of its time: as the browser eases a transition, so a CSS cubic-bezier
 // steps the same in code; "linear" or any other easing goes at an even pace
@@ -198,7 +198,7 @@ export const goneUp = (airborne, top) => airborne.speed < 0 && airborne.y <= top
 export function airborneFrame(airborne, floors, now, still = false) {
     const fell = fallFrame(airborne, fallFloors(floors), (now - airborne.at) / 1000, still);
     if (!fell.landed) return {airborne: {...airborne, ...fell, at: now}, landed: null};
-    const posture = landsIn(airborne.posture, fell.landed.kind);
+    const posture = landsIn(airborne.posture, fell.landed.type);
     const spot = {x: fell.x, y: fell.landed.top, posture, face: airborne.face, view: null, on: fell.landed.element ?? null};
     return {airborne: null, landed: {spot, to: airborne.to, standing: posture === "stand"}};
 }

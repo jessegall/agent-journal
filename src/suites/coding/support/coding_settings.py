@@ -13,7 +13,7 @@ CODING_SETTINGS = [
                  scope=SettingScope.ENVIRONMENT),
     SettingValue("builder-starts-helpers", "Builder starts helpers", "Whether the builder may start helpers.",
                  SettingType.FLAG, default=True, scope=SettingScope.PROJECT),
-    SettingValue("worker-command-types", "Worker command types", "The kinds of shell command a worker may run.", SettingType.LIST,
+    SettingValue("worker-command-types", "Worker command types", "The types of shell command a worker may run.", SettingType.LIST,
                  default=(CommandCategory.READ.value, CommandCategory.SEARCH.value, CommandCategory.EDIT.value, CommandCategory.TEST_RUN.value,
                           CommandCategory.BUILD.value)),
 ]

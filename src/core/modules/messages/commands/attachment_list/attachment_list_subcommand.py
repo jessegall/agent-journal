@@ -16,8 +16,8 @@ PAGE_SIZE_ROWS = 60
 
 
 class AttachmentListSubcommand(ReadSubcommand[AttachmentPage]):
-    """`journal attachment list [--kind all|images|other] [--search <words>] [--skip <n>]`: the files sent
-    with messages, newest first, and how many there are of each kind."""
+    """`journal attachment list [--category all|images|other] [--search <words>] [--skip <n>]`: the files sent
+    with messages, newest first, and how many there are of each category."""
 
     row_line = "{name}"
     empty_line = "no attached files"
@@ -30,7 +30,7 @@ class AttachmentListSubcommand(ReadSubcommand[AttachmentPage]):
         self.queries = queries
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--kind", choices=(ALL_CATEGORIES, IMAGE_CATEGORY, FILE_CATEGORY), default=ALL_CATEGORIES)
+        parser.add_argument("--category", choices=(ALL_CATEGORIES, IMAGE_CATEGORY, FILE_CATEGORY), default=ALL_CATEGORIES)
         parser.add_argument("--search", default="")
         parser.add_argument("--skip", type=int, default=0)
         parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
@@ -40,7 +40,7 @@ class AttachmentListSubcommand(ReadSubcommand[AttachmentPage]):
         terms = arguments.search.strip().lower()
         matches = [row for row in files if terms in row.name.lower() or terms in row.message_text.lower()]
         images = sum(1 for row in matches if IMAGE_NAME.search(row.name))
-        kept = [row for row in matches if arguments.kind == ALL_CATEGORIES or (IMAGE_NAME.search(row.name) is not None) == (arguments.kind == IMAGE_CATEGORY)]
+        kept = [row for row in matches if arguments.category == ALL_CATEGORIES or (IMAGE_NAME.search(row.name) is not None) == (arguments.category == IMAGE_CATEGORY)]
         page = kept[arguments.skip:arguments.skip + arguments.limit]
         return AttachmentPage(tuple(self.listed(row) for row in page), {ALL_CATEGORIES: len(matches), IMAGE_CATEGORY: images, FILE_CATEGORY: len(matches) - images}, arguments.skip + arguments.limit >= len(kept))
 

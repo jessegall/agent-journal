@@ -50,8 +50,8 @@ defineProps({
     width: 24px;
     height: 24px;
     border-radius: 6px;
-    background: color-mix(in srgb, var(--kind) 18%, transparent);
-    color: var(--kind);
+    background: color-mix(in srgb, var(--type) 18%, transparent);
+    color: var(--type);
 }
 
 .noun {
@@ -100,7 +100,7 @@ defineProps({
     bottom: -1px;
     left: 0;
     height: 2px;
-    background: var(--kind);
+    background: var(--type);
     transform-origin: left;
     transition: transform 0.12s linear;
 }

@@ -35,7 +35,7 @@ onMounted(async () => take(await transport.raw(ROUTE)));
         <form class="share-comment-form" data-share-comment-form @submit.prevent="send">
             <input v-model="name" maxlength="40" placeholder="Your name" aria-label="Your name" />
             <textarea v-model="text" maxlength="2000" placeholder="Write a comment" aria-label="Your comment"></textarea>
-            <Btn kind="primary" type="submit" :disabled="!name.trim() || !text.trim()">Comment</Btn>
+            <Btn variant="primary" type="submit" :disabled="!name.trim() || !text.trim()">Comment</Btn>
         </form>
         <template v-if="failure">
             <p class="share-comment-failure" role="alert" data-share-comment-failure>{{ failure }}</p>

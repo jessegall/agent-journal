@@ -19,15 +19,15 @@ def test_a_secret_is_made_empty_with_its_field_waiting_for_the_user(new_story):
 
 def test_a_login_has_a_shown_username_and_a_hidden_password(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_success('secret make "AWS console" --kind login', actor=story.agent)
+    story.expect_success('secret make "AWS console" --type login', actor=story.agent)
     story.expect_text("secret show 1", "username  AWS_CONSOLE_USERNAME  waiting for the user\n", "password  AWS_CONSOLE_PASSWORD  waiting for the user, hidden",
                       actor=story.agent)
 
 
 def test_a_custom_secret_has_the_fields_it_names_and_one_without_fields_is_refused(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_refusal('secret make "Deploy" --kind custom', "a custom secret needs at least one field: --field <name>, once for each", actor=story.agent)
-    story.expect_success('secret make "Deploy" --kind custom --field token --field host', actor=story.agent)
+    story.expect_refusal('secret make "Deploy" --type custom', "a custom secret needs at least one field: --field <name>, once for each", actor=story.agent)
+    story.expect_success('secret make "Deploy" --type custom --field token --field host', actor=story.agent)
     story.expect_text("secret show 1", "token  DEPLOY_TOKEN  waiting for the user, hidden", "host  DEPLOY_HOST  waiting for the user, hidden", actor=story.agent)
 
 
@@ -38,7 +38,7 @@ def test_a_field_named_twice_is_refused(new_story):
 
 def test_an_unknown_kind_is_refused_with_the_kinds_there_are(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_refusal('secret make "Github" --kind token', "a secret is one of api key, login, custom, not 'token'", actor=story.agent)
+    story.expect_refusal('secret make "Github" --type token', "a secret is one of api key, login, custom, not 'token'", actor=story.agent)
 
 
 def test_a_request_makes_the_secret_and_asks_the_user_in_the_chat_to_fill_it_on_the_secrets_window(new_story):
@@ -97,7 +97,7 @@ def test_a_store_from_a_missing_or_empty_file_is_refused_and_an_empty_file_is_de
 
 def test_the_list_names_each_secret_what_it_waits_for_and_the_programs_it_goes_to(new_story):
     story = made_story(new_story)
-    story.expect_success('secret make "AWS console" --kind login', actor=story.agent)
+    story.expect_success('secret make "AWS console" --type login', actor=story.agent)
     story.expect_success("secret allow 1 head", actor=story.user)
     story.expect_text("secret list", "1  api key  Github  waiting for the user  given to head", "2  login  AWS console  waiting for the user", actor=story.agent)
 

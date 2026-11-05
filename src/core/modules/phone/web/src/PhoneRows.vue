@@ -24,7 +24,7 @@ readTunnel();
                 <p class="phones-failure" data-phone-tunnel>A phone can't reach this journal yet: {{ tunnel.reason }}</p>
             </template>
             <div class="phones-pair">
-                <Btn kind="primary" @click="act(['phone', 'pair'])">Pair a phone</Btn>
+                <Btn variant="primary" @click="act(['phone', 'pair'])">Pair a phone</Btn>
                 <template v-if="answer">
                     <p class="phones-code">Code: {{ answer.code }}</p>
                     <template v-if="answer.link">

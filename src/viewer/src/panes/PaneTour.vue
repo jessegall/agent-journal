@@ -35,7 +35,7 @@ watchEffect(
             <p class="pane-tour-title">{{ tour.current.value.title }} <span class="pane-tour-step">{{ tour.step.value + 1 }} of {{ tour.count }}</span></p>
             <p class="pane-tour-text">{{ tour.current.value.text }}</p>
             <div class="pane-tour-row">
-                <Btn kind="primary" data-tour="next" @click="tour.next()">{{ tour.step.value + 1 < tour.count ? "Next" : "Done" }}</Btn>
+                <Btn variant="primary" data-tour="next" @click="tour.next()">{{ tour.step.value + 1 < tour.count ? "Next" : "Done" }}</Btn>
                 <Btn data-tour="skip" @click="tour.skip()">Skip</Btn>
             </div>
         </div>

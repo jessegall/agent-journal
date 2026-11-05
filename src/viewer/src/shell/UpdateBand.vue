@@ -26,7 +26,7 @@ async function install() {
     <template v-if="available">
         <div class="band" role="status" data-update-band>
             <span class="text">{{ failure || "A newer version of the journal is out." }}</span>
-            <Btn small kind="primary" :disabled="installing" data-update-install @click="install">{{ installing ? "Installing" : "Install it" }}</Btn>
+            <Btn small variant="primary" :disabled="installing" data-update-install @click="install">{{ installing ? "Installing" : "Install it" }}</Btn>
             <Btn small data-update-later @click="available = false">Not now</Btn>
         </div>
     </template>

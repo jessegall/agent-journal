@@ -10,7 +10,7 @@ import MarkBody from "./MarkBody.vue";
 import {lineResult, WINDOW_CONTEXT} from "../windows/windowContext.js";
 import {useSharedNow} from "../composables/now.js";
 import {ago} from "../format/time.js";
-import {cliOf} from "../domain/resourceKinds.js";
+import {cliOf} from "../domain/resourceNouns.js";
 import {dockDeclaration} from "../domain/dockRegistry.js";
 import {leaveSeconds} from "../domain/dockItems.js";
 import {dockLook} from "../domain/dockLook.js";
@@ -34,21 +34,21 @@ let reading = 0;
 
 async function loadRow() {
     const turn = ++reading;
-    const kind = cliOf(props.item.target_model ?? "");
-    const line = `${kind} show`;
+    const noun = cliOf(props.item.target_model ?? "");
+    const line = `${noun} show`;
     if (!declaration.value?.reads?.includes(line)) return;
-    const answer = await lineResult(props.item.type, [kind, "show", String(props.item.target_id)], context.environment);
+    const answer = await lineResult(props.item.type, [noun, "show", String(props.item.target_id)], context.environment);
     if (turn !== reading) return;
-    row.value = answer.ok ? {...answer.value, id: props.item.target_id, kind} : {id: props.item.target_id, kind};
+    row.value = answer.ok ? {...answer.value, id: props.item.target_id, noun} : {id: props.item.target_id, noun};
 }
 
 watch(
     () => [props.item.type, props.item.target_model, props.item.target_id, declaration.value],
     (_, previous, cleanup) => {
-        const kind = cliOf(props.item.target_model ?? "");
-        row.value = {id: props.item.target_id, kind};
+        const noun = cliOf(props.item.target_model ?? "");
+        row.value = {id: props.item.target_id, noun};
         loadRow();
-        const stop = context.subscriptions?.follow(`dock ${props.item.id}`, [`${kind.replaceAll("-", "_")}.*`], (event) => {
+        const stop = context.subscriptions?.follow(`dock ${props.item.id}`, [`${noun.replaceAll("-", "_")}.*`], (event) => {
             if (!event.row_id || event.row_id === props.item.target_id) loadRow();
         });
         cleanup(() => {
@@ -78,7 +78,7 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
 <template>
     <ChatDock
         :label="look.title + (declaration?.needs_user ? ', waiting for you' : '')"
-        :kind="declaration?.needs_user ? 'waiting' : ''"
+        :type="declaration?.needs_user ? 'waiting' : ''"
         :folded="Boolean(declaration?.folds) && folded"
         :body="Boolean(declaration?.folds)"
         :data-figure-closing="leaving ? '' : null"
@@ -102,7 +102,7 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
                             "
                         >
                             <Btn
-                                kind="icon"
+                                variant="icon"
                                 :class="{kept: button.pressed}"
                                 :aria-pressed="button.pressed"
                                 :aria-label="button.label"
@@ -157,7 +157,7 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
                 <template v-for="button in buttons" :key="button.action + button.runs">
                     <Btn
                         small
-                        :kind="button.primary ? 'primary' : 'ghost'"
+                        :variant="button.primary ? 'primary' : 'ghost'"
                         :bordered="!button.primary"
                         :data-dock-action="button.action"
                         @click="press(button)"

@@ -8,14 +8,14 @@ export function openViewTab(view, id, environment) {
 
 export function listenViewTabs(handlers) {
     const channel = new BroadcastChannel(CHANNEL);
-    channel.onmessage = (e) => e.data && handlers[e.data.kind] && handlers[e.data.kind](e.data.id);
-    return {recall: (id) => channel.postMessage({kind: "recall", id})};
+    channel.onmessage = (e) => e.data && handlers[e.data.type] && handlers[e.data.type](e.data.id);
+    return {recall: (id) => channel.postMessage({type: "recall", id})};
 }
 
 export function useViewTab(id) {
     const channel = new BroadcastChannel(CHANNEL);
-    const tell = (kind) => channel.postMessage({kind, id});
-    channel.onmessage = (e) => e.data && e.data.kind === "recall" && e.data.id === id && window.close();
+    const tell = (type) => channel.postMessage({type, id});
+    channel.onmessage = (e) => e.data && e.data.type === "recall" && e.data.id === id && window.close();
     const closed = () => tell("closed");
     window.addEventListener("pagehide", closed);
     onUnmounted(() => {

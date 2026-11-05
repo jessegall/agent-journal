@@ -89,7 +89,7 @@ onMounted(load);
             >Cancel</Btn
           >
           <Btn
-            kind="danger"
+            variant="danger"
             :disabled="busy"
             data-hooks-confirm
             @click="restore"

@@ -6,7 +6,7 @@ description: Write lasting knowledge as documents and what was checked as report
 # Documents and reports
 
 A doc is lasting knowledge about this project. A report is what was checked or found, at one moment. Both have
-their own numbers, so write the kind with the number: doc 12, report 3.
+their own numbers, so write the type with the number: doc 12, report 3.
 
 - `journal doc make "<title>" --abstract "<one line>" --body "<text>"` writes one; `--file <path>` takes the text from a
   file. `journal report make` takes the same.

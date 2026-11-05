@@ -108,7 +108,7 @@ function savedSecret() {
             <template v-else-if="row.type === 'choice'">
                 <div class="setting-choices">
                     <template v-for="choice in row.choices" :key="choice">
-                        <Btn small :kind="choice === row.value ? 'primary' : 'ghost'" :data-choice="choice" :disabled="readOnly" @click="saveValue(choice)">{{ choice }}</Btn>
+                        <Btn small :variant="choice === row.value ? 'primary' : 'ghost'" :data-choice="choice" :disabled="readOnly" @click="saveValue(choice)">{{ choice }}</Btn>
                     </template>
                 </div>
             </template>

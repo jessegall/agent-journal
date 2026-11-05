@@ -10,17 +10,17 @@ const corpus = JSON.parse(gunzipSync(readFileSync(resolve(__dirname, "corpus/cod
 
 const PERMISSIVE_LICENCES = ["MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "Unlicense", "curl"];
 const STATED_SHARE_OVERALL = 0.98;
-const STATED_SHARE_EACH_KIND = 0.97;
+const STATED_SHARE_EACH_TYPE = 0.97;
 const STATED_SHARE_HELD_OUT = 0.97;
 
 const isShownAsCode = (sample) => render(sample.text).includes('class="chat-code"');
-const isRight = (sample) => isShownAsCode(sample) === (sample.kind === "code");
+const isRight = (sample) => isShownAsCode(sample) === (sample.type === "code");
 const share = (samples) => samples.filter(isRight).length / samples.length;
-const ofKind = (kind) => corpus.samples.filter((sample) => sample.kind === kind);
+const ofType = (type) => corpus.samples.filter((sample) => sample.type === type);
 
 test("the corpus holds about a thousand code samples with prose samples beside them, from repos under permissive licences", () => {
-    expect(ofKind("code").length).toBeGreaterThanOrEqual(1000);
-    expect(ofKind("prose").length).toBeGreaterThanOrEqual(500);
+    expect(ofType("code").length).toBeGreaterThanOrEqual(1000);
+    expect(ofType("prose").length).toBeGreaterThanOrEqual(500);
     expect(corpus.repos.filter((repo) => !PERMISSIVE_LICENCES.includes(repo.license))).toEqual([]);
 });
 
@@ -29,11 +29,11 @@ test("the formatter is right about code or prose in the stated share of all samp
 });
 
 test("code written without a fence is shown as code in the stated share of the code samples", () => {
-    expect(share(ofKind("code"))).toBeGreaterThanOrEqual(STATED_SHARE_EACH_KIND);
+    expect(share(ofType("code"))).toBeGreaterThanOrEqual(STATED_SHARE_EACH_TYPE);
 });
 
 test("prose and lists stay text in the stated share of the prose samples", () => {
-    expect(share(ofKind("prose"))).toBeGreaterThanOrEqual(STATED_SHARE_EACH_KIND);
+    expect(share(ofType("prose"))).toBeGreaterThanOrEqual(STATED_SHARE_EACH_TYPE);
 });
 
 test("the repos the detection was not calibrated on are held to the stated share too", () => {
@@ -49,7 +49,7 @@ test("code with blank lines inside it stays one block", () => {
 
 test("paragraphs that open in bold and hold inline code stay text", () => {
     const element = document.createElement("div");
-    element.innerHTML = render("I would do both, split by risk.\n\n**Attach it ourselves where it changes nothing but timing.** Set `PYTHONUNBUFFERED=1` in the environment of every run. No flags change and the output stays the same, it just arrives as it happens. That covers Python, which is the most common case, and agents never have to think about it.\n\n**Nudge for flags, never force them.** `--reporter=verbose` or removing `-q` changes what the tool prints, so the reader, and any pipe the agent wrote, may then see a different format. Rewriting flags behind the agent is the same kind of hidden change we have just been removing from the pipes. So it stays advice, once per run, naming the exact flag for that tool. A project that wants it permanently can put the flag in an alias.\n\nUnless you prefer otherwise, I will build task 6351 this way.");
+    element.innerHTML = render("I would do both, split by risk.\n\n**Attach it ourselves where it changes nothing but timing.** Set `PYTHONUNBUFFERED=1` in the environment of every run. No flags change and the output stays the same, it just arrives as it happens. That covers Python, which is the most common case, and agents never have to think about it.\n\n**Nudge for flags, never force them.** `--reporter=verbose` or removing `-q` changes what the tool prints, so the reader, and any pipe the agent wrote, may then see a different format. Rewriting flags behind the agent is the same type of hidden change we have just been removing from the pipes. So it stays advice, once per run, naming the exact flag for that tool. A project that wants it permanently can put the flag in an alias.\n\nUnless you prefer otherwise, I will build task 6351 this way.");
     expect(element.querySelector("pre")).toBeNull();
     expect([...element.querySelectorAll("strong")].map((bold) => bold.textContent)).toEqual(["Attach it ourselves where it changes nothing but timing.", "Nudge for flags, never force them."]);
 });

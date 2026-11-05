@@ -17,22 +17,22 @@ const ACTIONS = {"open row": (mark) => refAction(mark.target_model), "open page"
 
 // the mark object ChatMark draws, from a chat mark row and its type's declaration: the fields Turn.vue built in version 4
 export function markLook(mark, declaration) {
-    const kind = declaration || {};
-    const opens = OPENERS[kind.click] && mark.target_model ? kind.click : "";
+    const type = declaration || {};
+    const opens = OPENERS[type.click] && mark.target_model ? type.click : "";
     return {
         key: `chat_mark:${mark.id}`,
-        icon: kind.family_icon || (declaration ? "" : "dot"),
-        markIcon: kind.mark_icon || "",
-        group: kind.group || "",
-        tone: kind.colouring === "outcome" ? OUTCOME_TONES[mark.outcome] || "" : VARIANT_TONES[mark.variant] || "",
+        icon: type.family_icon || (declaration ? "" : "dot"),
+        markIcon: type.mark_icon || "",
+        group: type.group || "",
+        tone: type.colouring === "outcome" ? OUTCOME_TONES[mark.outcome] || "" : VARIANT_TONES[mark.variant] || "",
         label: mark.text,
         // an opened mark shows its whole lines in its body, so their cut-off first part is not a second line
-        detail: kind.body_url || mark.lines ? "" : mark.detail || "",
+        detail: type.body_url || mark.lines ? "" : mark.detail || "",
         figure: mark.figure || "",
         fraction: mark.fraction || 0,
         // only a mark that follows a process ends with a verdict; an event the journal records is a quiet line with no tick
-        ended: Boolean(kind.process) && mark.state === "ended",
-        active: Boolean(kind.process) && mark.state === "shown",
+        ended: Boolean(type.process) && mark.state === "ended",
+        active: Boolean(type.process) && mark.state === "shown",
         time: Date.parse(mark.created_at) / 1000,
         action: opens ? ACTIONS[opens](mark) : "",
         handlers: opens ? {onAct: () => OPENERS[opens](mark)} : {},

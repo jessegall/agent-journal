@@ -105,7 +105,7 @@ async function toggleComments(row) {
                         </template>
                     </div>
                 </template>
-                <Btn kind="primary" type="submit" :disabled="!target.trim()">Create link</Btn>
+                <Btn variant="primary" type="submit" :disabled="!target.trim()">Create link</Btn>
             </form>
             <template v-if="made">
                 <p class="shares-link" data-share-address>{{ made.address }}</p>
@@ -123,7 +123,7 @@ async function toggleComments(row) {
                     <template v-for="row in waiting" :key="row.id">
                         <div class="shares-row" :data-share-row="row.id">
                             <span class="shares-name">An agent asks to share {{ row.row_model }} {{ row.row_id }}, {{ when(row) }}{{ row.locked ? ", with a password" : "" }}{{ row.comments ? ", with comments" : "" }}</span>
-                            <Btn small kind="primary" data-share-accept @click="accept(row)">Accept</Btn>
+                            <Btn small variant="primary" data-share-accept @click="accept(row)">Accept</Btn>
                             <Btn small data-share-deny @click="run(['share', 'deny', String(row.id)])">Deny</Btn>
                         </div>
                     </template>
@@ -155,7 +155,7 @@ async function toggleComments(row) {
                 <template v-if="stoppingAll">
                     <div class="shares-row">
                         <Btn small @click="stoppingAll = false">Keep them</Btn>
-                        <Btn small kind="danger" data-share-stop-every-confirm @click="stopEvery">Yes, stop every share</Btn>
+                        <Btn small variant="danger" data-share-stop-every-confirm @click="stopEvery">Yes, stop every share</Btn>
                     </div>
                 </template>
                 <template v-else>

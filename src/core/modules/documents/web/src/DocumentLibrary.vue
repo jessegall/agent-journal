@@ -32,12 +32,12 @@ const refusal = ref("");
 const groups = computed(() => grouped(sorted(searched(rows.value, words.value), order.value), order.value));
 const label = computed(() => (noun.value === "doc" ? "Document" : "Report"));
 
-// the first page of the kind chosen, in one read; a page more is asked for after the last number held
+// the first page of the type chosen, in one read; a page more is asked for after the last number held
 async function load() {
-    const kind = noun.value;
+    const type = noun.value;
     const shown = state.value;
-    const answer = await context.read(`document library --kind ${kind} --state ${shown}`);
-    if (kind !== noun.value || shown !== state.value) return;
+    const answer = await context.read(`document library --type ${type} --state ${shown}`);
+    if (type !== noun.value || shown !== state.value) return;
     failure.value = answer.ok ? "" : answer.error;
     rows.value = answer.ok ? answer.value.rows : [];
     total.value = answer.ok ? answer.value.total : 0;
@@ -45,11 +45,11 @@ async function load() {
 }
 
 async function more() {
-    const kind = noun.value;
+    const type = noun.value;
     const shown = state.value;
-    const answer = await context.read(`document library --kind ${kind} --state ${shown} --after ${Math.max(...rows.value.map((row) => row.id))}`);
+    const answer = await context.read(`document library --type ${type} --state ${shown} --after ${Math.max(...rows.value.map((row) => row.id))}`);
     if (!answer.ok) return void (failure.value = answer.error);
-    if (kind === noun.value && shown === state.value) rows.value = [...rows.value, ...answer.value.rows];
+    if (type === noun.value && shown === state.value) rows.value = [...rows.value, ...answer.value.rows];
 }
 
 // a row opens in the panel, as every other row does
@@ -113,7 +113,7 @@ load();
                 </template>
                 <div class="library-draft-foot">
                     <Btn small @click="drafting = false">Cancel</Btn>
-                    <Btn small kind="primary" type="submit" :disabled="!draft.title.trim() || !draft.abstract.trim()" data-library-create>Create</Btn>
+                    <Btn small variant="primary" type="submit" :disabled="!draft.title.trim() || !draft.abstract.trim()" data-library-create>Create</Btn>
                 </div>
             </form>
         </template>
@@ -126,7 +126,7 @@ load();
                     <p class="library-note">{{ failure }}</p>
                 </template>
                 <template v-else-if="loaded && !groups.length">
-                    <p class="library-note">{{ words ? "Nothing matches the search" : `No ${LIBRARIES.find((kind) => kind.key === noun).label.toLowerCase()} yet` }}</p>
+                    <p class="library-note">{{ words ? "Nothing matches the search" : `No ${LIBRARIES.find((type) => type.key === noun).label.toLowerCase()} yet` }}</p>
                     <template v-if="words">
                         <Btn small data-library-clear @click="words = ''">Clear the search</Btn>
                     </template>

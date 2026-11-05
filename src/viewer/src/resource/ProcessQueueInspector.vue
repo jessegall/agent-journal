@@ -22,13 +22,13 @@ let reading = 0;
 const items = computed(() => {
     if (!queue.value) return [];
     const sections = [
-        {kind: "running", heading: "Running", icon: "start", rows: queue.value.running, empty: "Nothing is running."},
-        {kind: "waiting", heading: "Waiting", icon: "clock", rows: queue.value.waiting, empty: "Nothing waits. A command that starts now gets a place at once."},
-        {kind: "recent", heading: "Finished", icon: "check", rows: queue.value.recent, empty: "Nothing has run yet."},
+        {type: "running", heading: "Running", icon: "start", rows: queue.value.running, empty: "Nothing is running."},
+        {type: "waiting", heading: "Waiting", icon: "clock", rows: queue.value.waiting, empty: "Nothing waits. A command that starts now gets a place at once."},
+        {type: "recent", heading: "Finished", icon: "check", rows: queue.value.recent, empty: "Nothing has run yet."},
     ];
     return sections.flatMap((section) => [
-        {key: `band:${section.kind}`, section},
-        ...(section.rows.length ? section.rows.map((run, index) => ({key: `run:${run.id}`, run, position: index + 1})) : [{key: `none:${section.kind}`, section, empty: true}]),
+        {key: `band:${section.type}`, section},
+        ...(section.rows.length ? section.rows.map((run, index) => ({key: `run:${run.id}`, run, position: index + 1})) : [{key: `none:${section.type}`, section, empty: true}]),
     ]);
 });
 function toggle(id) {
@@ -65,8 +65,8 @@ onMounted(load);
                 <TransitionGroup name="queue" tag="div" class="queue-list">
                     <template v-for="item in items" :key="item.key">
                         <template v-if="item.run"><ProcessQueueRun :run="item.run" :environment="queue.environment_name" :position="item.position" :read="read" :expanded="open.includes(item.run.id)" @toggle="toggle(item.run.id)" /></template>
-                        <template v-else-if="item.empty"><p class="empty" :data-queue-empty="item.section.kind">{{ item.section.empty }}</p></template>
-                        <template v-else><ProcessQueueBand :icon="item.section.icon" :count="item.section.rows.length" :data-queue-heading="item.section.kind">{{ item.section.heading }}</ProcessQueueBand></template>
+                        <template v-else-if="item.empty"><p class="empty" :data-queue-empty="item.section.type">{{ item.section.empty }}</p></template>
+                        <template v-else><ProcessQueueBand :icon="item.section.icon" :count="item.section.rows.length" :data-queue-heading="item.section.type">{{ item.section.heading }}</ProcessQueueBand></template>
                     </template>
                 </TransitionGroup>
                 <template v-if="hasOlder"><button type="button" class="older" data-queue-older @click="showOlder">Show older commands</button></template>

@@ -2,20 +2,20 @@
 import {ref, watch} from "vue";
 import {Btn, RowList, SearchBar, Segmented, SidePanel, TimeAgo, useRunLine, useWindow} from "@journal/window-kit";
 
-const KINDS = [
+const TYPES = [
     {key: "", label: "All"},
     {key: "doc", label: "Documents"},
     {key: "sequence", label: "Sequences"},
     {key: "check", label: "Checks"},
 ];
 const SHARES = ["doc", "sequence", "check"];
-const KIND_WORDS = {doc: "Document", sequence: "Sequence", check: "Check"};
+const TYPE_WORDS = {doc: "Document", sequence: "Sequence", check: "Check"};
 const SEARCH_DELAY_MILLISECONDS = 300;
 
 // what the shared server holds, read live: the journal reads it for this page, so the browser holds no token
 const props = defineProps({role: {type: String, required: true}, canWrite: Boolean});
 const context = useWindow();
-const kind = ref("");
+const type = ref("");
 const search = ref("");
 const rows = ref([]);
 const loaded = ref(false);
@@ -30,11 +30,11 @@ const {refusal, run} = useRunLine(async () => {
 });
 let delay = 0;
 
-const key = (row) => `${row.kind}:${row.id}`;
+const key = (row) => `${row.share}:${row.id}`;
 
 async function load() {
     const words = search.value.trim();
-    const answers = await Promise.all((kind.value ? [kind.value] : SHARES).map((share) => context.read(`library list --kind ${share}${words ? ` --search ${JSON.stringify(words)}` : ""}`)));
+    const answers = await Promise.all((type.value ? [type.value] : SHARES).map((share) => context.read(`library list --type ${share}${words ? ` --search ${JSON.stringify(words)}` : ""}`)));
     const failed = answers.find((answer) => !answer.ok);
     failure.value = failed ? failed.error : "";
     const listed = failed ? [] : answers.flatMap((answer) => answer.value.rows);
@@ -43,7 +43,7 @@ async function load() {
 }
 
 async function open(row) {
-    const [item, changes] = await Promise.all([context.read(`library show ${row.kind} ${row.item_id}`), context.read(`library versions ${row.kind} ${row.item_id}`)]);
+    const [item, changes] = await Promise.all([context.read(`library show ${row.share} ${row.item_id}`), context.read(`library versions ${row.share} ${row.item_id}`)]);
     refusal.value = item.ok ? "" : item.error;
     opened.value = item.ok ? {...item.value, title: row.title} : null;
     versions.value = changes.ok ? changes.value.versions : [];
@@ -51,16 +51,16 @@ async function open(row) {
 
 async function reopen() {
     const item = opened.value;
-    await open({kind: item.kind, item_id: item.id, title: item.title});
+    await open({share: item.share, item_id: item.id, title: item.title});
 }
 
 async function remove(row) {
-    const answer = await run(["library", "remove", row.kind, String(row.item_id ?? row.id)]);
+    const answer = await run(["library", "remove", row.share, String(row.item_id ?? row.id)]);
     if (answer.ok && opened.value) await reopen();
 }
 
 async function restore(item, version = null) {
-    const answer = await run(["library", "restore", item.kind, String(item.id), ...(version ? ["--version", String(version)] : [])]);
+    const answer = await run(["library", "restore", item.share, String(item.id), ...(version ? ["--version", String(version)] : [])]);
     if (answer.ok) await reopen();
 }
 
@@ -72,12 +72,12 @@ async function openCheck(row) {
 }
 
 async function get(row) {
-    if (row.kind === "check" && checking.value?.id !== row.id) return void (await openCheck(row));
+    if (row.share === "check" && checking.value?.id !== row.id) return void (await openCheck(row));
     checking.value = null;
-    await run(["library", "get", row.kind, String(row.item_id), ...(row.kind === "check" ? ["--read"] : [])]);
+    await run(["library", "get", row.share, String(row.item_id), ...(row.share === "check" ? ["--read"] : [])]);
 }
 
-watch(kind, load, {immediate: true});
+watch(type, load, {immediate: true});
 watch(search, () => {
     clearTimeout(delay);
     delay = setTimeout(load, SEARCH_DELAY_MILLISECONDS);
@@ -87,7 +87,7 @@ watch(search, () => {
 <template>
     <div class="library" data-library>
         <SearchBar v-model="search" placeholder="Search the library" data-library-search />
-        <Segmented :options="KINDS" :value="kind" data-library-kind @pick="kind = $event" />
+        <Segmented :options="TYPES" :value="type" data-library-type @pick="type = $event" />
         <template v-if="refusal">
             <p class="library-failure" role="alert" data-library-refusal>{{ refusal }}</p>
         </template>
@@ -96,10 +96,10 @@ watch(search, () => {
                 <p>This check runs this command on your computer when someone starts it:</p>
                 <pre data-library-command>{{ checking.command }}</pre>
                 <Btn small @click="checking = null">Cancel</Btn>
-                <Btn small kind="primary" data-library-confirm @click="get(checking)">Get the check, stopped</Btn>
+                <Btn small variant="primary" data-library-confirm @click="get(checking)">Get the check, stopped</Btn>
             </div>
         </template>
-        <RowList :rows="rows" :failure="failure" :loaded="loaded" :searching="Boolean(search.trim() || kind)" empty="Nothing in the library yet" hint="Shared documents, sequences and checks appear here.">
+        <RowList :rows="rows" :failure="failure" :loaded="loaded" :searching="Boolean(search.trim() || type)" empty="Nothing in the library yet" hint="Shared documents, sequences and checks appear here.">
             <template #default="{row}">
                 <div class="library-row" :data-library-item="row.id">
                     <button type="button" class="library-open" data-library-open @click="open(row)">
@@ -110,16 +110,16 @@ watch(search, () => {
                         <template v-else>
                             <span class="library-abstract">{{ row.abstract }}</span>
                         </template>
-                        <span class="library-facts">{{ KIND_WORDS[row.kind] }}, Version: {{ row.version }}, Changed by: {{ row.updated_by }}, <TimeAgo :at="row.updated_at" /></span>
+                        <span class="library-facts">{{ TYPE_WORDS[row.share] }}, Version: {{ row.version }}, Changed by: {{ row.updated_by }}, <TimeAgo :at="row.updated_at" /></span>
                     </button>
                     <template v-if="row.copy_id">
                         <span class="library-here" data-library-here>On this journal</span>
                     </template>
                     <template v-else>
-                        <Btn small kind="primary" data-library-get @click="get(row)">Get</Btn>
+                        <Btn small variant="primary" data-library-get @click="get(row)">Get</Btn>
                     </template>
                     <template v-if="role === 'admin'">
-                        <Btn small kind="danger" data-library-remove @click="remove(row)">Remove</Btn>
+                        <Btn small variant="danger" data-library-remove @click="remove(row)">Remove</Btn>
                     </template>
                 </div>
             </template>
@@ -130,10 +130,10 @@ watch(search, () => {
                 <template v-if="opened.removed_at">
                     <p class="library-removed" data-library-removed>Removed from the library</p>
                     <template v-if="role === 'admin'">
-                        <Btn small kind="primary" data-library-restore @click="restore(opened)">Restore</Btn>
+                        <Btn small variant="primary" data-library-restore @click="restore(opened)">Restore</Btn>
                     </template>
                 </template>
-                <p class="library-facts">{{ KIND_WORDS[opened.kind] }}, Version: {{ opened.version }}, Changed by: {{ opened.updated_by }}</p>
+                <p class="library-facts">{{ TYPE_WORDS[opened.share] }}, Version: {{ opened.version }}, Changed by: {{ opened.updated_by }}</p>
                 <dl class="library-fields" data-library-fields>
                     <template v-for="(value, name) in opened.fields" :key="name">
                         <dt>{{ name }}</dt>

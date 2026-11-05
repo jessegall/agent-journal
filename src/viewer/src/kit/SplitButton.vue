@@ -4,7 +4,7 @@ import Btn from "./Btn.vue";
 import Icon from "./Icon.vue";
 import MenuPanel from "./MenuPanel.vue";
 
-defineProps({kind: {type: String, default: "ghost"}, small: Boolean, disabled: Boolean, menuLabel: {type: String, default: "More ways"}});
+defineProps({variant: {type: String, default: "ghost"}, small: Boolean, disabled: Boolean, menuLabel: {type: String, default: "More ways"}});
 const emit = defineEmits(["main"]);
 const arrow = ref(null);
 const open = ref(false);
@@ -13,9 +13,9 @@ const close = () => (open.value = false);
 
 <template>
     <span class="split-button">
-        <Btn :kind="kind" :small="small" :disabled="disabled" class="split-button-main" @click="emit('main')"><slot /></Btn>
+        <Btn :variant="variant" :small="small" :disabled="disabled" class="split-button-main" @click="emit('main')"><slot /></Btn>
         <span ref="arrow" class="split-button-arrow-place">
-            <Btn :kind="kind" :small="small" :disabled="disabled" class="split-button-arrow" :aria-label="menuLabel" :title="menuLabel" :aria-expanded="open" @click="open = !open">
+            <Btn :variant="variant" :small="small" :disabled="disabled" class="split-button-arrow" :aria-label="menuLabel" :title="menuLabel" :aria-expanded="open" @click="open = !open">
                 <Icon name="caret" />
             </Btn>
         </span>

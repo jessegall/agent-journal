@@ -32,7 +32,7 @@ onMounted(() => {
         <p class="pair-text">Type the code the viewer on your computer shows under Phones, Pair a phone.</p>
         <form class="pair-form" @submit.prevent="pair(typed)">
             <input v-model="typed" class="pair-input" placeholder="ABCD-EFGH" autocapitalize="characters" autocomplete="one-time-code" />
-            <Btn kind="primary" :disabled="!typed.trim()" @click="pair(typed)">Pair</Btn>
+            <Btn variant="primary" :disabled="!typed.trim()" @click="pair(typed)">Pair</Btn>
         </form>
         <template v-if="failure">
             <p class="pair-failure">{{ failure }}</p>

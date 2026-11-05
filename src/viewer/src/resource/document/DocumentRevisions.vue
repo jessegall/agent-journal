@@ -27,7 +27,7 @@ async function restore() {
     <div class="document-tab" data-document-revisions>
         <template v-if="revisions.length">
             <template v-for="row in revisions" :key="row.number">
-                <Btn kind="text" :data-text-revision="row.number" @click="open(row)">Revision {{ row.number }}: {{ row.change || row.created_at }}</Btn>
+                <Btn variant="text" :data-text-revision="row.number" @click="open(row)">Revision {{ row.number }}: {{ row.change || row.created_at }}</Btn>
             </template>
             <template v-if="failure">
                 <p class="revision-failure" role="alert" data-text-revision-failure>{{ failure }}</p>
@@ -36,7 +36,7 @@ async function restore() {
                 <Btn small bordered data-text-revision-restore @click="restore">Go back to this revision</Btn>
                 <div class="revision-diff" data-text-revision-diff>
                     <template v-for="line in lines" :key="line.key">
-                        <div :class="['revision-line', line.kind]">{{ line.text || " " }}</div>
+                        <div :class="['revision-line', line.type]">{{ line.text || " " }}</div>
                     </template>
                 </div>
             </template>

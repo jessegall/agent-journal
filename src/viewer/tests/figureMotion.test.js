@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 import {KEPT_WITHIN, SNAP_WAIT_FRAMES, aimedAt, chaseRoom, fallFloors, eased, fallFrame, floorAt, floorBelow, legAt, underWalker} from "../src/domain/figureMotion.js";
 
-const floor = (id, top, left = 0, right = 1000, kind = id === "home" ? "compose" : id) => ({id, kind, left, right, top, vy: 0});
+const floor = (id, top, left = 0, right = 1000, type = id === "home" ? "compose" : id) => ({id, type, left, right, top, vy: 0});
 const FRAME = 1 / 60;
 
 function fallTo(body, floors) {

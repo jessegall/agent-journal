@@ -30,10 +30,10 @@ const sure = ref(false);
 const refusal = ref("");
 const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 
-function opened(kind, event) {
+function opened(type, event) {
     sure.value = false;
     refusal.value = "";
-    menu.value = {kind, anchor: event.currentTarget};
+    menu.value = {type, anchor: event.currentTarget};
 }
 
 const toggled = (state) => emit("states", props.states.includes(state) ? props.states.filter((held) => held !== state) : [...props.states, state]);
@@ -56,7 +56,7 @@ async function remove() {
     <Btn small data-menu-more :disabled="!selected" @click="opened('more', $event)">More</Btn>
     <template v-if="menu">
         <MenuPanel :anchor="menu.anchor" :min-width="240" :max-width="320" @close="menu = null">
-            <SwitchCase :value="menu.kind">
+            <SwitchCase :value="menu.type">
                 <template #filter>
                     <MenuLabel>Show tasks that are</MenuLabel>
                     <template v-for="state in STATES" :key="state">

@@ -28,7 +28,7 @@ class SecretsMove(VersionFourMove):
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
         for row in source.rows(TABLE):
             if row["secret_type"] not in tuple(SecretType):
-                report.skip(TABLE, row["id"], "a browser login moves after the switch" if row["secret_type"] == BROWSER_LOGIN else f"kind {row['secret_type']}")
+                report.skip(TABLE, row["id"], "a browser login moves after the switch" if row["secret_type"] == BROWSER_LOGIN else f"type {row['secret_type']}")
                 continue
             report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row, creators.actor_id(row["creator"]), context)))
         return report

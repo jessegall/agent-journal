@@ -34,7 +34,7 @@ test("the chat marks the places the figure stands on: its world, its scroll, its
     expect(element.querySelectorAll("[data-figure-bubble]")).toHaveLength(3);
 });
 
-test("the floors are drawn as dashed lines named for their kind while Show floors is on, and not drawn while it is off", async () => {
+test("the floors are drawn as dashed lines named for their type while Show floors is on, and not drawn while it is off", async () => {
     const off = await mountedChat();
     expect(off.querySelector(".figure-floors")).toBeNull();
     const on = await mountedChat({floors: true});

@@ -15,7 +15,7 @@ const emit = defineEmits(["close", "remove"]);
         <template #foot>
             <Btn @click="emit('close')">Cancel</Btn>
             <Btn data-plugin-remove-keep @click="emit('remove', false)">Remove, keep data</Btn>
-            <Btn kind="danger" data-plugin-remove-purge @click="emit('remove', true)">Remove everything</Btn>
+            <Btn variant="danger" data-plugin-remove-purge @click="emit('remove', true)">Remove everything</Btn>
         </template>
     </Dialog>
 </template>

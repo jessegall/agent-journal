@@ -3,7 +3,7 @@ import {Btn, Dialog} from "@journal/window-kit";
 
 defineProps({preview: {type: Object, required: true}});
 const emit = defineEmits(["close", "install"]);
-const KINDS = {requires: "Checks", setup: "Sets up", installed: "Asks", program: "On events", service: "Keeps running", alias: "Command"};
+const CATEGORIES = {requires: "Checks", setup: "Sets up", installed: "Asks", program: "On events", service: "Keeps running", alias: "Command"};
 </script>
 
 <template>
@@ -14,9 +14,9 @@ const KINDS = {requires: "Checks", setup: "Sets up", installed: "Asks", program:
             <template v-if="!preview.rows.length">
                 <p class="preview-lead">It runs nothing.</p>
             </template>
-            <template v-for="row in preview.rows" :key="`${row.kind} ${row.label}`">
-                <div class="preview-row" :data-preview-kind="row.kind">
-                    <span class="preview-kind">{{ KINDS[row.kind] }}</span>
+            <template v-for="row in preview.rows" :key="`${row.category} ${row.label}`">
+                <div class="preview-row" :data-preview-category="row.category">
+                    <span class="preview-category">{{ CATEGORIES[row.category] }}</span>
                     <span class="preview-label">{{ row.label }}</span>
                     <code class="preview-command">{{ row.command }}</code>
                 </div>
@@ -24,7 +24,7 @@ const KINDS = {requires: "Checks", setup: "Sets up", installed: "Asks", program:
         </div>
         <template #foot>
             <Btn @click="emit('close')">Cancel</Btn>
-            <Btn kind="primary" data-plugin-preview-install @click="emit('install')">Install</Btn>
+            <Btn variant="primary" data-plugin-preview-install @click="emit('install')">Install</Btn>
         </template>
     </Dialog>
 </template>
@@ -46,7 +46,7 @@ const KINDS = {requires: "Checks", setup: "Sets up", installed: "Asks", program:
     border-top: 1px solid var(--border);
 }
 
-.preview-kind {
+.preview-category {
     flex: 0 0 90px;
     color: var(--text-3);
     font-size: 12px;

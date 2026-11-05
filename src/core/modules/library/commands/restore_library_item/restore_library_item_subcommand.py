@@ -9,7 +9,7 @@ from core.modules.library.support.restored_library_item import RestoredLibraryIt
 
 
 class RestoreLibraryItemSubcommand(ItemArguments, Subcommand[RestoreLibraryItem, RestoredLibraryItem]):
-    """`journal library restore <kind> <id> [--version n]`: brings back a removed item, or puts the text of an old
+    """`journal library restore <type> <id> [--version n]`: brings back a removed item, or puts the text of an old
     version in again as a new version."""
 
     cli_name = "library"

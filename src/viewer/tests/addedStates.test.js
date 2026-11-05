@@ -1,5 +1,5 @@
 import {beforeAll, expect, test} from "vitest";
-import {movesOf} from "../src/domain/resourceKinds.js";
+import {movesOf} from "../src/domain/resourceNouns.js";
 import {loadStates, stateLabel, stateLook} from "../src/domain/states.js";
 
 beforeAll(() => loadStates(async () => ({ok: true, json: async () => ({states: {plan: {reviewing: {label: "Under review", looks_like: "ready", open_moves: ["cancel"], module: "journal.core.templates"}}}})})));

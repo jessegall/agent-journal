@@ -3,7 +3,7 @@ import {createApp, h} from "vue";
 import {settled} from "./settled.js";
 import MemoryFacts from "../src/resource/MemoryFacts.vue";
 import RowMoves from "../src/resource/RowMoves.vue";
-import {movesOf} from "../src/domain/resourceKinds.js";
+import {movesOf} from "../src/domain/resourceNouns.js";
 import {opening, route} from "../src/route.js";
 import QuestionRows from "../../core/modules/questions/web/src/QuestionRows.vue";
 import SuggestionRows from "../../core/modules/suggestions/web/src/SuggestionRows.vue";
@@ -46,7 +46,7 @@ test("a memory with no keywords says what that means", async () => {
 test("a worker's moves go to the worker command, with its words after its number", async () => {
     const lines = [];
     const read = async (line) => (lines.push(line), {ok: true, value: {}});
-    const element = drawn(RowMoves, {kind: "agent", id: 9, row: {role: "worker"}, read});
+    const element = drawn(RowMoves, {type: "agent", id: 9, row: {role: "worker"}, read});
     await settled();
     element.querySelector('[data-move="release"]').click();
     await settled();

@@ -31,7 +31,7 @@ async function make() {
         <template v-if="making">
             <form class="memories-form" data-memory-form @submit.prevent="make">
                 <textarea v-model="text" rows="2" placeholder="What should be remembered?" aria-label="What should be remembered?" />
-                <Btn small kind="primary" type="submit" :disabled="!text.trim()">Save memory</Btn>
+                <Btn small variant="primary" type="submit" :disabled="!text.trim()">Save memory</Btn>
             </form>
         </template>
         <template v-if="refusal">
@@ -42,7 +42,7 @@ async function make() {
             <template #default="{row}">
                 <button type="button" class="memory" :data-memory="row.id" @click="peekRef(`memories:${row.id}`)">
                     <span class="memory-text">{{ row.text }}</span>
-                    <span class="memory-kind">Weight: {{ row.weight }}</span>
+                    <span class="memory-type">Weight: {{ row.weight }}</span>
                 </button>
             </template>
         </RowList>
@@ -86,7 +86,7 @@ async function make() {
     cursor: pointer;
 }
 
-.memory-kind {
+.memory-type {
     color: var(--text-3);
     font-size: 12px;
 }

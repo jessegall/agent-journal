@@ -28,4 +28,4 @@ class PluginPreviewSubcommand(ReadSubcommand[PluginPreview]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PluginPreview):
-            output.write("\n".join(f"{row['kind']} {row['label']}: {row['command']}" for row in value.manifest.run_rows()), value.json())
+            output.write("\n".join(f"{row['category']} {row['label']}: {row['command']}" for row in value.manifest.run_rows()), value.json())

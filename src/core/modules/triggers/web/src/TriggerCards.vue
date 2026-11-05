@@ -20,7 +20,7 @@ const closed = () => {
     <section class="trigger-page">
         <div class="trigger-bar">
             <span class="trigger-sum">{{ rows.length ? `${rows.length} ${rows.length === 1 ? "trigger" : "triggers"}` : "No triggers" }}</span>
-            <Btn kind="primary" icon="plus" data-trigger-new @click="drafting = true">New trigger</Btn>
+            <Btn variant="primary" icon="plus" data-trigger-new @click="drafting = true">New trigger</Btn>
         </div>
         <div class="trigger-body">
             <p class="trigger-lead">A trigger watches for something and then does something. It can remind the agent, tell it what to do now, or block a command or a file change. Click one to see and change how it works.</p>

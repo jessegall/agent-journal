@@ -6,7 +6,7 @@ export const DOCK_ARRIVAL_MS = 700;
 import {onBeforeUnmount, onMounted, ref} from "vue";
 import {useMeasuredHeight} from "../composables/measuredHeight.js";
 
-defineProps({label: {type: String, default: ""}, folded: Boolean, body: Boolean, lifted: Boolean, kind: {type: String, default: ""}});
+defineProps({label: {type: String, default: ""}, folded: Boolean, body: Boolean, lifted: Boolean, type: {type: String, default: ""}});
 const card = ref(null);
 const content = ref(null);
 const height = useMeasuredHeight(content);
@@ -21,7 +21,7 @@ defineExpose({card});
 <template>
     <div :class="['chat-dock', {lifted}]">
         <div class="chat-dock-fold">
-            <section ref="card" :class="['chat-dock-card', kind]" :aria-label="label">
+            <section ref="card" :class="['chat-dock-card', type]" :aria-label="label">
                 <slot name="edge" />
                 <header class="chat-dock-head">
                     <slot name="head" />

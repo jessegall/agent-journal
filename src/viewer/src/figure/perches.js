@@ -45,29 +45,29 @@ const HANG_OUT = 0.3;
 const TURNED_TO_THE_BUBBLE = 180;
 
 // The perch a figure takes now on the bubbles of the floors snapshot `floors`, or null when no bubble in view has one free: the newest
-// bubble first, as the thread keeps it in view while older ones scroll away, and on each the kind the pile draws first (pile.js perch), a
+// bubble first, as the thread keeps it in view while older ones scroll away, and on each the type the pile draws first (pile.js perch), a
 // hang only with a free hand while the figure is `free`, with nothing to do, and not cooling down in its `memory` at `now`, then the
 // other, a hang taken either way starting its cooldown. `hands` are the sides, "l" or "r", of the hands that carry nothing; `random` is a
 // function returning 0 up to 1.
 export function perchOn(floors, figure, hands, random, {memory = null, now = 0, free = false} = {}) {
-    const open = floors.floors.filter((floor) => floor.kind === "bubble" && inView(floor, floors.view, figure));
+    const open = floors.floors.filter((floor) => floor.type === "bubble" && inView(floor, floors.view, figure));
     const scene = {moment: "perch", hands: hands.length > 0, free, memory, now};
     const hangs = choicesFor(scene).some((entry) => entry.name === HANGS);
     const first = draw({moment: "perch", hands: hangs, free}, random).name;
-    const kinds = !hangs ? [STANDS] : first === HANGS ? [HANGS, STANDS] : [STANDS, HANGS];
-    const perches = open.reverse().flatMap((floor) => kinds.map((kind) => perchAt(floor, kind, floors.view, hands)));
+    const types = !hangs ? [STANDS] : first === HANGS ? [HANGS, STANDS] : [STANDS, HANGS];
+    const perches = open.reverse().flatMap((floor) => types.map((type) => perchAt(floor, type, floors.view, hands)));
     const perch = perches.find((each) => perchSpot(each, floors, figure)) ?? null;
-    if (perch?.kind === HANGS) taken(scene, HANGS, random);
+    if (perch?.type === HANGS) taken(scene, HANGS, random);
     return perch;
 }
 
-// A perch of `kind` on a bubble's floor, on its side with more room. A hang there is by the hand on that side, facing the viewer; with
+// A perch of `type` on a bubble's floor, on its side with more room. A hang there is by the hand on that side, facing the viewer; with
 // only the other hand free it turns to face the bubble, as one hangs from a ledge facing the wall, so that hand comes to the corner.
-function perchAt(floor, kind, view, hands) {
+function perchAt(floor, type, view, hands) {
     const side = sideOf(floor, view);
-    if (kind === STANDS) return {floor: floor.id, kind, side, grip: ""};
+    if (type === STANDS) return {floor: floor.id, type, side, grip: ""};
     const grip = hands.find((hand) => HAND_CORNER[hand] === side);
-    return grip ? {floor: floor.id, kind, side, grip, face: 0} : {floor: floor.id, kind, side, grip: hands[0], face: TURNED_TO_THE_BUBBLE};
+    return grip ? {floor: floor.id, type, side, grip, face: 0} : {floor: floor.id, type, side, grip: hands[0], face: TURNED_TO_THE_BUBBLE};
 }
 
 // Where the perch's figure stands now, with the way it faces, or null when its bubble is no floor of `floors` or out of the thread's view,
@@ -80,7 +80,7 @@ export function perchSpot(perch, floors, figure) {
 }
 
 function spotOn(perch, floor, figure) {
-    if (perch.kind === STANDS)
+    if (perch.type === STANDS)
         return {...cornerAt({...floor, width: floor.right - floor.left}, perch.side, figure), on: floor.element};
     const out = (perch.side === "left" ? -1 : 1) * HANG_OUT * figure.size;
     const x = (perch.side === "left" ? floor.left : floor.right) + out;
@@ -103,9 +103,9 @@ export const LEDGE_SLANT = 35;
 // null when it stands on no such floor, the floor is too narrow, or no place along it is free
 export function ledgeSpot(along, figure, near) {
     const floors = readFloors();
-    const floor = floors.floors.find((each) => each.element && each.element === near.on && LEDGES.has(each.kind));
+    const floor = floors.floors.find((each) => each.element && each.element === near.on && LEDGES.has(each.type));
     if (!floor || floor.right - floor.left < LEDGE_WIDTH * figure.size) return null;
-    const faceAt = (share) => (floor.kind !== "compose" ? 0 : share <= 0.5 ? 360 - LEDGE_SLANT : LEDGE_SLANT);
+    const faceAt = (share) => (floor.type !== "compose" ? 0 : share <= 0.5 ? 360 - LEDGE_SLANT : LEDGE_SLANT);
     const spots = [along, ...LEDGE_ALONG.filter((each) => each !== along)].map((share) => ({
         x: floor.left + (floor.right - floor.left) * share, y: floor.top, face: faceAt(share), posture: "sit", leans: true, on: floor.element,
     }));
@@ -121,7 +121,7 @@ export const COMPOSED_ALONG = [0.5, 0.42, 0.58];
 // words and keeps clear of the pile; null when it stands on no such floor or no place near the middle is free
 export function composedSpot(figure, near, way = {turn: 0, leans: 0}) {
     const floors = readFloors();
-    const floor = floors.floors.find((each) => each.element && each.element === near.on && LEDGES.has(each.kind));
+    const floor = floors.floors.find((each) => each.element && each.element === near.on && LEDGES.has(each.type));
     if (!floor) return null;
     const at = (share) => ({x: floor.left + (floor.right - floor.left) * share, y: floor.top, face: way.turn, leans: way.leans, posture: "composed", view: null, on: floor.element});
     const spots = COMPOSED_ALONG.map(at);
@@ -155,7 +155,7 @@ function hangsFree(floor, figure, floors, y, [from, to]) {
     const {seat, clearance} = ACTS.rope_swing;
     const bottom = floor.bottom + (boxAt({x: 0, y, posture: "sit"}, figure).bottom - floor.bottom) * (1 + clearance);
     const reach = ((seat * figure.size) / 2) * (1 + clearance);
-    const below = floors.floors.filter((each) => each.kind === "bubble" && each.bottom > floor.bottom && each.top < bottom);
+    const below = floors.floors.filter((each) => each.type === "bubble" && each.bottom > floor.bottom && each.top < bottom);
     const taken = below.map((each) => [each.left - reach, each.right + reach]);
     const middle = (floor.left + floor.right) / 2;
     const free = (x) => !taken.some(([left, right]) => x > left && x < right);
@@ -183,7 +183,7 @@ export function phoneSide(spot, figure, floors) {
     return right.beyond >= left.beyond ? 1 : -1;
 }
 
-// Where a disco ball hangs over a figure standing at `spot`, as {kind, above, hangs}: "bubble" when it stands on a bubble with another above
+// Where a disco ball hangs over a figure standing at `spot`, as {type, above, hangs}: "bubble" when it stands on a bubble with another above
 // it near enough, the ball's string tied to that one's bottom edge; `above` is how far over the feet the string is tied and `hangs` how far
 // the ball's middle is, in pixels; null with no bubble above to hang it from
 export function discoBall(spot, figure, floors = readFloors()) {
@@ -191,14 +191,14 @@ export function discoBall(spot, figure, floors = readFloors()) {
     const {ball, clear, tie, far} = ACTS.disco;
     const hat = spot.y - heightOf(figure);
     const hangs = heightOf(figure) + (clear + ball / 2) * figure.size;
-    const over = floors.floors.filter((floor) => floor.kind === "bubble" && floor.bottom < spot.y && floor.left < spot.x && floor.right > spot.x);
+    const over = floors.floors.filter((floor) => floor.type === "bubble" && floor.bottom < spot.y && floor.left < spot.x && floor.right > spot.x);
     const tied = over.filter((floor) => floor.bottom <= hat - (clear + ball + tie) * figure.size).sort((a, b) => b.bottom - a.bottom)[0];
-    const onBubble = floors.floors.some((floor) => floor.kind === "bubble" && floor.element === spot.on);
-    return onBubble && tied && hat - tied.bottom <= far * heightOf(figure) ? {kind: "bubble", above: spot.y - tied.bottom, hangs} : null;
+    const onBubble = floors.floors.some((floor) => floor.type === "bubble" && floor.element === spot.on);
+    return onBubble && tied && hat - tied.bottom <= far * heightOf(figure) ? {type: "bubble", above: spot.y - tied.bottom, hangs} : null;
 }
 
 // the bubbles in the thread's view a rope swing can hang free under (swingSpot)
-export const swingFloors = (floors, figure) => floors.floors.filter((floor) => floor.kind === "bubble" && swingSpot(floor, figure, floors));
+export const swingFloors = (floors, figure) => floors.floors.filter((floor) => floor.type === "bubble" && swingSpot(floor, figure, floors));
 
 // how long the figure keeps to the chat mark it went to celebrate on, in seconds
 export const MARK_STAY = 20;
@@ -210,23 +210,23 @@ export function markSpot(card, figure) {
     if (!mark) return null;
     if (groundEdge().element?.contains(mark)) return spotOf(null, figure);
     const floors = readFloors();
-    const floor = floors.floors.find((each) => each.kind === "bubble" && each.element.contains(mark));
+    const floor = floors.floors.find((each) => each.type === "bubble" && each.element.contains(mark));
     if (!floor) return null;
     const roomier = sideOf(floor, floors.view);
     const sides = [roomier, roomier === "left" ? "right" : "left"];
-    return sides.map((side) => perchSpot({floor: floor.id, kind: STANDS, side, grip: ""}, floors, figure)).find(Boolean) ?? null;
+    return sides.map((side) => perchSpot({floor: floor.id, type: STANDS, side, grip: ""}, floors, figure)).find(Boolean) ?? null;
 }
 
 // The footholds a figure with its feet at `from` hops onto to climb up to feet at height `y` (climbs.js climbStops): the corners of the
 // bubbles in the thread's view on the way with a free stand, each a place it stands at; null when it cannot climb that high
 export function climbOf(floors, figure, from, y) {
-    const bubbles = floors.floors.filter((floor) => floor.kind === "bubble" && floor.top < from.y);
-    const stands = bubbles.map((floor) => perchSpot({floor: floor.id, kind: STANDS, side: sideOf(floor, floors.view), grip: ""}, floors, figure)).filter(Boolean);
+    const bubbles = floors.floors.filter((floor) => floor.type === "bubble" && floor.top < from.y);
+    const stands = bubbles.map((floor) => perchSpot({floor: floor.id, type: STANDS, side: sideOf(floor, floors.view), grip: ""}, floors, figure)).filter(Boolean);
     return climbStops(from, y, stands, jumpMost(figure));
 }
 
 // whether `spot` is one the figure stands on on top of a bubble of `floors`, the one place the pogo stick takes it
-const onBubbleTop = (floors, spot) => spot.posture === "stand" && floors.some((floor) => floor.kind === "bubble" && floor.element === spot.on);
+const onBubbleTop = (floors, spot) => spot.posture === "stand" && floors.some((floor) => floor.type === "bubble" && floor.element === spot.on);
 
 // whether a climb from `from` up to `spot` may go on the pogo stick: onto a bubble's top, at least POGO.share of the height of the thread
 // in `floors` as it is now, and the stick not cooling down, as `scene` ({memory, now}) says
@@ -259,7 +259,7 @@ function nextStay(now, figure, hands, random, {tally = null, free = false, room 
     if (where === "rope_swing") return {where, until, floor: swings[Math.floor(random() * swings.length)].id};
     if (where === "bubble") {
         const perch = perchOn(readFloors(), figure, hands, random, {memory, now, free});
-        return {where, until: perch?.kind === HANGS ? now + between(HANG_STAY, random) : until, perch};
+        return {where, until: perch?.type === HANGS ? now + between(HANG_STAY, random) : until, perch};
     }
     if (where === "tab") {
         const tabs = Object.keys(openTabs()).filter((view) => spotOf(view, figure));
@@ -278,7 +278,7 @@ function nextStay(now, figure, hands, random, {tally = null, free = false, room 
 function bubbleLedge(figure, random) {
     const along = draw({moment: "ledge_at"}, random).along;
     const floors = readFloors();
-    const free = floors.floors.filter((floor) => floor.kind === "bubble" && inView(floor, floors.view, figure) && ledgeSpot(along, figure, {on: floor.element}));
+    const free = floors.floors.filter((floor) => floor.type === "bubble" && inView(floor, floors.view, figure) && ledgeSpot(along, figure, {on: floor.element}));
     return {floor: free[Math.floor(random() * free.length)]?.id ?? "", along};
 }
 
@@ -292,7 +292,7 @@ export function leanSpot(figure, near, floors = readFloors()) {
     const contact = floor.top - (hand / FRAMED.height) * figure.size;
     const inboard = FEET_INBOARD * figure.size;
     const walls = floors.floors
-        .filter((each) => each.kind === "bubble" && each.element !== floor.element && each.bottom <= floor.top && each.top <= contact && each.bottom >= contact)
+        .filter((each) => each.type === "bubble" && each.element !== floor.element && each.bottom <= floor.top && each.top <= contact && each.bottom >= contact)
         .flatMap((bubble) => [{wall: bubble.left, way: 1, bubble}, {wall: bubble.right, way: -1, bubble}]);
     const spots = walls
         .map(({wall, way, bubble}) => ({spot: {x: wall - way * away * figure.size, y: floor.top, face: 0, posture: "stand", view: null, on: floor.element, lean: {wall, way}}, bubble}))
@@ -311,7 +311,7 @@ export const GLASS_BUBBLE_NEAR = {reach: 1.1, eyes: 0.72};
 export function bubbleNear(floors, spot, figure) {
     const eyes = spot.y - GLASS_BUBBLE_NEAR.eyes * heightOf(figure);
     const across = (floor) => Math.max(floor.left - spot.x, spot.x - floor.right, 0);
-    const near = floors.floors.filter((floor) => floor.kind === "bubble" && floor.element !== spot.on && floor.top <= eyes && floor.bottom >= eyes && across(floor) <= GLASS_BUBBLE_NEAR.reach * figure.size);
+    const near = floors.floors.filter((floor) => floor.type === "bubble" && floor.element !== spot.on && floor.top <= eyes && floor.bottom >= eyes && across(floor) <= GLASS_BUBBLE_NEAR.reach * figure.size);
     return near.sort((one, other) => across(one) - across(other))[0] ?? null;
 }
 
@@ -451,8 +451,8 @@ export const PERCHED = {seconds: 4};
 // whether a trip's `legs` climb, one of them a hop or the pogo stick up rather than a fall down
 export const climbs = (legs) => legs.some((leg) => leg.hopping && leg.clip !== "fall");
 
-// the stay a trip that `climbed` and ended on a floor of `kind` at `now`, in seconds, holds the figure to, or null when it holds it to none
-export const perchedAfter = (climbed, kind, now) => (climbed && kind === "bubble" ? {until: now + PERCHED.seconds} : null);
+// the stay a trip that `climbed` and ended on a floor of `type` at `now`, in seconds, holds the figure to, or null when it holds it to none
+export const perchedAfter = (climbed, type, now) => (climbed && type === "bubble" ? {until: now + PERCHED.seconds} : null);
 
 // whether the figure may set off on a trip away at `now`, `perched` as it is: once its stay is over, or at once for an `urgent` trip
 export const mayLeave = (perched, now, urgent) => urgent || !perched || now >= perched.until;

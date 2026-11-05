@@ -6,5 +6,5 @@ defineProps({title: {type: String, default: "Close"}});
 </script>
 
 <template>
-    <Btn kind="icon" :aria-label="title"><Icon name="x" /></Btn>
+    <Btn variant="icon" :aria-label="title"><Icon name="x" /></Btn>
 </template>

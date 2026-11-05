@@ -10,7 +10,7 @@ EMOJI_TEXT = re.compile(r"^[\s\U0001F000-\U0001FAFF☀-➿️‍]+$")
 
 
 class MessageReactions:
-    """The faces put on a message, each with the actor and the kind of actor, kept as JSON on the message;
+    """The faces put on a message, each with the actor and the type of actor, kept as JSON on the message;
     putting the
     same face again takes it off."""
 

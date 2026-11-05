@@ -29,5 +29,5 @@ class LibraryItem:
         return [f"{self.share} {self.item_id}  version {self.version}  by {self.author}  {self.changed_at}", *(f"{name}: {value}" for name, value in self.fields.items())]
 
     def json(self) -> Mapping[str, object]:
-        return {"kind": self.share, "id": self.item_id, "version": self.version, "fields": dict(self.fields), "creator": self.creator, "updated_by": self.author,
+        return {"share": self.share, "id": self.item_id, "version": self.version, "fields": dict(self.fields), "creator": self.creator, "updated_by": self.author,
                 "updated_at": self.changed_at, "removed_at": self.removed_at}

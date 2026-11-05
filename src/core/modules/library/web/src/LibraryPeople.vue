@@ -33,7 +33,7 @@ load();
                 <TextInput id="people-name" v-model="name" placeholder="Name" data-people-name />
             </FormField>
             <Segmented :options="ROLES" :value="role" data-people-new-role @pick="role = $event" />
-            <Btn kind="primary" :disabled="!name.trim()" data-people-submit @click="add">Add the user</Btn>
+            <Btn variant="primary" :disabled="!name.trim()" data-people-submit @click="add">Add the user</Btn>
         </form>
         <template v-if="added">
             <p class="people-token" data-people-first-token>{{ added.user.name }} has this token, shown once: {{ added.token_text }}</p>

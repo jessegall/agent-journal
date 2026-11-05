@@ -81,7 +81,7 @@ test("the helpers, the skills and the details are folds that start closed, and t
     const details = [...element.querySelectorAll("[data-agent-fold]")].find((fold) => fold.textContent.includes("Details"));
     details.click();
     await settle();
-    expect(texts(element, "[data-agent-detail] .label")).toEqual(["Number:", "Session:", "Program:", "Kind:", "Started by:", "Started:", "Process:"]);
+    expect(texts(element, "[data-agent-detail] .label")).toEqual(["Number:", "Session:", "Program:", "Type:", "Started by:", "Started:", "Process:"]);
     expect(element.textContent).not.toMatch(/created_at|creator_id|process_started_at|_id\b/);
     expect(text(element, "[data-agent-detail]")).toBe("Number:12");
 });

@@ -132,7 +132,7 @@ const {value: record, failure: recordFailure, load: showRecord} = useReadLine((r
             <form class="install" data-plugin-install-form @submit.prevent="showPreview">
                 <TextInput v-model="source" icon="download" placeholder="Install a plugin from owner/repo, a GitHub link or a folder" aria-label="Install a plugin from">
                     <template #end>
-                        <Btn kind="primary" small type="submit" :disabled="!source.trim()">Check before installing</Btn>
+                        <Btn variant="primary" small type="submit" :disabled="!source.trim()">Check before installing</Btn>
                     </template>
                 </TextInput>
             </form>
@@ -166,7 +166,7 @@ const {value: record, failure: recordFailure, load: showRecord} = useReadLine((r
                         <template v-if="latest[row.name]">
                             <span class="plugin-note" data-plugin-latest-line>{{ latest[row.name].line }}</span>
                             <template v-if="latest[row.name].is_newer">
-                                <Btn small kind="primary" data-plugin-upgrade @click="showUpgrade(row)">See what changes</Btn>
+                                <Btn small variant="primary" data-plugin-upgrade @click="showUpgrade(row)">See what changes</Btn>
                             </template>
                         </template>
                     </PluginCard>

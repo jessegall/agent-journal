@@ -51,7 +51,7 @@ import {SKYWARD, goneMs, skywardAt, skywardHops} from "../figure/skyward.js";
 import {caughtPicture, caughtScale, grabbedInAir, pointerSpeed, releasedFeet, takenBody, thrownFrame, thrownFrom} from "../figure/grab.js";
 import {jumpMost} from "../figure/climbs.js";
 import {BLINK, blinkOpenness, nextBlinkMs} from "../figure/blink.js";
-import {IDLE_CLIPS, LAYER, PARCEL, PILE, PUSH, answeredWith, behind, blowsLanded, boxGapSeconds, buildAim, buildRunAt, isPileLeft, hammering, inspecting, LIGHT_KINDS, litAfter, phasesOf, pileSlot, pushStand, pushedTo, pushWaits, unitsAfter, workLook} from "../figure/parcels.js";
+import {IDLE_CLIPS, LAYER, PARCEL, PILE, PUSH, answeredWith, behind, blowsLanded, boxGapSeconds, buildAim, buildRunAt, isPileLeft, hammering, inspecting, LIGHT_TYPES, litAfter, phasesOf, pileSlot, pushStand, pushedTo, pushWaits, unitsAfter, workLook} from "../figure/parcels.js";
 import CodeParcel from "./CodeParcel.vue";
 import FigureAct from "./FigureAct.vue";
 import {KeptTimes} from "../figure/keptTimes.js";
@@ -186,8 +186,8 @@ const processStates = new Map();
 let visor = null;
 // the soft glow about the lit visor this frame, its colour and strength, or null
 const halo = ref(null);
-// the pictures of a parcel's block for each kind of its lights (parcels.js LIGHT_KINDS), one for each step of their blink, drawn by the
-// figure's own renderer; each parcel shows the kind its own run lit (parcels.js litAfter)
+// the pictures of a parcel's block for each type of its lights (parcels.js LIGHT_TYPES), one for each step of their blink, drawn by the
+// figure's own renderer; each parcel shows the type its own run lit (parcels.js litAfter)
 const blocks = ref(null);
 // the parachute's canopy drawn in 3D as the figure is, and where its lines leave its rim (figure.js Stage.drawCanopy)
 const canopyPicture = ref(null);
@@ -691,7 +691,7 @@ function nextLeg() {
         const {to, footing: held, climbs: climbed} = body.trip;
         const landed = landingOn(to, held, figureSize());
         body.trip = null;
-        perched = perchedAfter(Boolean(climbed), latestFloors().floors.find((floor) => floor.id === held?.id)?.kind, performance.now() / 1000);
+        perched = perchedAfter(Boolean(climbed), latestFloors().floors.find((floor) => floor.id === held?.id)?.type, performance.now() / 1000);
         if (Math.hypot(landed.x - to.x, landed.y - to.y) >= 1) slide();
         settle(landed, held);
         // round behind a box it built, it sets off pushing it at once
@@ -1090,7 +1090,7 @@ function look() {
     const makingRoom = noticeNewest() || Boolean(newestAside);
     const quiet = makingRoom || Boolean(sequence) || pushing || Boolean(eager?.on);
     const over = body.trip ? null : discoBall(body.place, figureSize(), latestFloors());
-    const pastime = quiet ? null : pastimeFor({...scene(), ball: over ? over.kind : ""}, waited, pastimesDue, now.value, Math.random, drawnHere, memory.tally);
+    const pastime = quiet ? null : pastimeFor({...scene(), ball: over ? over.type : ""}, waited, pastimesDue, now.value, Math.random, drawnHere, memory.tally);
     if (pastime?.clip === "disco") ball.value = over;
     if (pastime?.flies) takeOff();
     if (pastime && !pastime.flies) beats.value = [...beats.value, pastime];
@@ -1549,7 +1549,7 @@ function sendAway() {
     making = false;
 }
 
-// The looks the figure could take this frame (looks.js), each {key, kind, point} with its point on the page: the pointer tickling it, the
+// The looks the figure could take this frame (looks.js), each {key, type, point} with its point on the page: the pointer tickling it, the
 // mark or the docked bar of the run whose end the visor waits to light, the bubble it reads or holds its glass
 // to, a new message, the composer while the user types in it, the box it builds, pushes or stacks while it works (parcels.js workLook), a picture it admires, the leading edge of a
 // progress bar on the docks in a stretch it chose to watch it (reactions.js barWatchAt, places.js watchLook), and its own idle glances; none
@@ -1573,7 +1573,7 @@ function lookCandidates(shown) {
         ["bar", "bar", barLook(shown)],
         ["glance", "glance", glanceLook()],
     ];
-    return looksFor(shown.clip, looks.filter(([, , point]) => point).map(([key, kind, point]) => ({key, kind, point})));
+    return looksFor(shown.clip, looks.filter(([, , point]) => point).map(([key, type, point]) => ({key, type, point})));
 }
 
 // the chat's sin mark the figure confesses to, looked at as anything it admires is, its body turned round to it (figure/admire.js
@@ -1610,14 +1610,14 @@ function attachmentLook() {
     return picture ? middleOf(picture.getBoundingClientRect()) : null;
 }
 
-// the newest message `author` said in the chat, for its first seconds there (looks.js MESSAGE_SECONDS), as a look: of the kind said for the
+// the newest message `author` said in the chat, for its first seconds there (looks.js MESSAGE_SECONDS), as a look: of the type said for the
 // user's, message for the agent's, its chat mark, its bubble's box and the middle of it; null with none
 function newMessage(author) {
     const said = chatMessages.value.filter((message) => message.author === author && createdAt(message) > watchedSince);
     const newest = said.reduce((last, message) => (!last || createdAt(message) > createdAt(last) ? message : last), null);
     if (!newest || now.value - createdAt(newest) > MESSAGE_SECONDS) return null;
     const bubble = document.querySelector(`[data-figure-mark="${CSS.escape(refOf(newest))}"]`)?.getBoundingClientRect();
-    return bubble ? {key: refOf(newest), kind: author === "user" ? "said" : "message", card: refOf(newest), box: bubble, point: middleOf(bubble)} : null;
+    return bubble ? {key: refOf(newest), type: author === "user" ? "said" : "message", card: refOf(newest), box: bubble, point: middleOf(bubble)} : null;
 }
 
 // The walk the user's new message halted (looks.js haltsWalk), {card, box, until}, while the figure stands turned to it looking, or null;
@@ -1867,14 +1867,14 @@ async function load(name) {
     }
 }
 
-// the block's pictures for each kind of lights, through the player's stage, so the parcels are drawn as the figure is
+// the block's pictures for each type of lights, through the player's stage, so the parcels are drawn as the figure is
 function drawBlocks() {
     const ratio = window.devicePixelRatio || 1;
     const blockOf = (lit) => {
         const drawn = Array.from({length: phasesOf(lit)}, (_, phase) => player.stage.drawBlock(lit, phase, SIZE, ratio));
         return {pictures: drawn.map((each) => each.canvas.toDataURL()), width: drawn[0].canvas.width / ratio, height: drawn[0].canvas.height / ratio, below: drawn[0].below};
     };
-    blocks.value = Object.fromEntries(LIGHT_KINDS.map((lit) => [lit, blockOf(lit)]));
+    blocks.value = Object.fromEntries(LIGHT_TYPES.map((lit) => [lit, blockOf(lit)]));
 }
 
 // the canopy's picture, through the player's stage

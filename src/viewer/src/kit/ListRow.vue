@@ -1,6 +1,6 @@
 <script setup>
 defineProps({
-    kind: {type: String, default: ""},
+    type: {type: String, default: ""},
     title: {type: String, default: ""},
     text: {type: String, default: ""},
 });
@@ -8,8 +8,8 @@ defineProps({
 
 <template>
     <div class="list-row">
-        <template v-if="kind">
-            <span class="list-row-kind">{{ kind }}</span>
+        <template v-if="type">
+            <span class="list-row-type">{{ type }}</span>
         </template>
         <div class="list-row-main">
             <template v-if="title">
@@ -58,7 +58,7 @@ defineProps({
     opacity: 1;
 }
 
-.list-row-kind {
+.list-row-type {
     color: var(--text-3);
     font-size: 10.5px;
     font-weight: 600;

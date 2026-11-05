@@ -9,25 +9,25 @@ const emit = defineEmits(["sidebar", "view", "count", "activity", "wide"]);
 </script>
 
 <template>
-<Btn kind="icon" data-top-side aria-label="Show or hide the sidebar" title="Show or hide the sidebar" @click="emit('sidebar')"><Icon name="list" :size="13" /></Btn>
-<Btn kind="icon" data-top-search aria-label="Search" title="Search" @click="emit('view', 'search.search')"><Icon name="search" :size="13" /></Btn>
-<Btn kind="icon" class="top-bell" data-top-bell aria-label="Pending requests" title="Pending requests" @click="emit('count', 'waiting')">
+<Btn variant="icon" data-top-side aria-label="Show or hide the sidebar" title="Show or hide the sidebar" @click="emit('sidebar')"><Icon name="list" :size="13" /></Btn>
+<Btn variant="icon" data-top-search aria-label="Search" title="Search" @click="emit('view', 'search.search')"><Icon name="search" :size="13" /></Btn>
+<Btn variant="icon" class="top-bell" data-top-bell aria-label="Pending requests" title="Pending requests" @click="emit('count', 'waiting')">
     <Icon name="bell" :size="13" />
     <template v-if="waiting">
         <span class="top-bell-count" data-top-bell-count>{{ waiting }}</span>
     </template>
 </Btn>
-<Btn kind="icon" class="top-bell" data-top-phone aria-label="Phones" :title="pairedPhones.length ? `${pairedPhones[0].name} is connected` : 'Connect your phone'" @click="emit('view', 'phone.phones')">
+<Btn variant="icon" class="top-bell" data-top-phone aria-label="Phones" :title="pairedPhones.length ? `${pairedPhones[0].name} is connected` : 'Connect your phone'" @click="emit('view', 'phone.phones')">
     <Icon name="phone" :size="13" />
     <template v-if="pairedPhones.length">
         <span class="top-phone-dot" data-top-phone-dot />
     </template>
 </Btn>
 <ColorSchemePicker />
-<Btn kind="icon" data-fullscreen aria-label="Full screen" title="Full screen" @click="emit('wide')">
+<Btn variant="icon" data-fullscreen aria-label="Full screen" title="Full screen" @click="emit('wide')">
     <Icon name="wide" :size="13" />
 </Btn>
-<Btn kind="icon" data-activity-toggle aria-label="Activity" title="Activity" @click="emit('activity')"><Icon name="activity" :size="13" /></Btn>
+<Btn variant="icon" data-activity-toggle aria-label="Activity" title="Activity" @click="emit('activity')"><Icon name="activity" :size="13" /></Btn>
 </template>
 
 <style scoped>

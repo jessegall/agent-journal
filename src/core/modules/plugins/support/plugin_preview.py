@@ -7,7 +7,7 @@ from core.modules.plugins.support.plugin_manifest import PluginManifest
 @dataclass(frozen=True)
 class PluginPreview:
     """What a plugin at a source would do once installed, read from its manifest with nothing run: each thing
-    it runs, by kind, name and command."""
+    it runs, by type, name and command."""
 
     manifest: PluginManifest
     source: str

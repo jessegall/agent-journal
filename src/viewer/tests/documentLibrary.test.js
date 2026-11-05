@@ -15,7 +15,7 @@ const BODY = {id: 1, title: "Cart rules", abstract: "How the cart counts money",
 
 function mounted() {
     const reads = [];
-    const read = async (line) => (reads.push(line), line.startsWith("doc show") ? {ok: true, value: BODY} : {ok: true, value: {total: DOCS.length, rows: line === "document library --kind doc --state open" ? DOCS : []}});
+    const read = async (line) => (reads.push(line), line.startsWith("doc show") ? {ok: true, value: BODY} : {ok: true, value: {total: DOCS.length, rows: line === "document library --type doc --state open" ? DOCS : []}});
     const context = {read, run: async () => ({ok: true}), follow: () => {}, face: "person"};
     const element = document.createElement("div");
     createApp({setup: () => () => h(DocumentLibrary), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
@@ -31,10 +31,10 @@ test("documents are listed with their title, abstract and number", async () => {
     expect(row.textContent).toContain("Document 1");
 });
 
-test("the library is read once, a page of one kind", async () => {
+test("the library is read once, a page of one type", async () => {
     const {reads} = mounted();
     await settled();
-    expect(reads).toEqual(["document library --kind doc --state open"]);
+    expect(reads).toEqual(["document library --type doc --state open"]);
 });
 
 test("choosing a document opens it in the panel, by the mouse or by Enter", async () => {

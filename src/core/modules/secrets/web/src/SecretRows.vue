@@ -33,7 +33,7 @@ async function restore(row) {
     <section class="secrets">
         <div class="bar">
             <span class="count" data-secret-count>{{ count }}</span>
-            <Btn kind="primary" data-secret-new @click="isMaking = true"><Icon name="plus" :size="12" />New secret</Btn>
+            <Btn variant="primary" data-secret-new @click="isMaking = true"><Icon name="plus" :size="12" />New secret</Btn>
         </div>
         <div class="body">
             <p class="lead">Secrets let the agent use keys and logins without seeing them. Add your credentials here. Saved credentials stay hidden and are stored in a file outside the project.</p>
@@ -91,7 +91,7 @@ async function restore(row) {
                 <p class="lead">Deleting this secret stops the agent from using it. You can restore it from Deleted secrets.</p>
                 <template #foot>
                     <Btn @click="removing = null">Cancel</Btn>
-                    <Btn kind="danger" data-secret-confirm @click="remove">Delete secret</Btn>
+                    <Btn variant="danger" data-secret-confirm @click="remove">Delete secret</Btn>
                 </template>
             </Dialog>
         </template>

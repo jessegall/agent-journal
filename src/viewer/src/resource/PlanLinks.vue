@@ -37,7 +37,7 @@ watch(() => props.id, load, {immediate: true});
                 <template v-for="row in linked" :key="`${row.model}:${row.id}`">
                     <li>
                         <button type="button" class="link" data-plan-link @click="emit('open', {table: `${row.model}s`, id: row.id})">
-                            <span class="kind">{{ row.design ? "Design document" : row.model }} {{ row.id }}</span>
+                            <span class="type">{{ row.design ? "Design document" : row.model }} {{ row.id }}</span>
                             <span class="title">{{ row.title }}</span>
                         </button>
                     </li>
@@ -87,7 +87,7 @@ watch(() => props.id, load, {immediate: true});
     color: var(--text);
 }
 
-.kind {
+.type {
     flex: none;
     color: var(--accent-text);
     font-size: 12px;

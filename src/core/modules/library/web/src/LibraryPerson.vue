@@ -38,7 +38,7 @@ const {refusal, run} = useRunLine(readTokens);
         <template v-else>
             <Segmented :options="ROLES" :value="user.role" data-people-role @pick="emit('role', user, $event)" />
             <Btn small data-people-tokens @click="toggle">Tokens</Btn>
-            <Btn small kind="danger" data-people-remove @click="emit('remove', user)">Remove user</Btn>
+            <Btn small variant="danger" data-people-remove @click="emit('remove', user)">Remove user</Btn>
         </template>
         <template v-if="failure || refusal">
             <p class="person-failure" role="alert" data-people-failure>{{ failure || refusal }}</p>
@@ -52,7 +52,7 @@ const {refusal, run} = useRunLine(readTokens);
                             <span data-people-revoked>Revoked</span>
                         </template>
                         <template v-else>
-                            <Btn small kind="danger" data-people-revoke @click="run(['library-user', 'revoke', String(token.id)])">Revoke</Btn>
+                            <Btn small variant="danger" data-people-revoke @click="run(['library-user', 'revoke', String(token.id)])">Revoke</Btn>
                         </template>
                     </li>
                 </template>

@@ -185,7 +185,7 @@ function saved(name) {
                 <div class="preset-link">
                     <span class="preset-link-label">Or copy a link for:</span>
                     <Segmented :options="LASTS" :value="lasting" @pick="(key) => (lasting = key)" />
-                    <Btn small kind="primary" :busy="linking" @click="copyLink(p.key)">
+                    <Btn small variant="primary" :busy="linking" @click="copyLink(p.key)">
                         <Icon name="copy" :size="12" />
                         Copy link
                     </Btn>

@@ -3,8 +3,8 @@ defineProps({floor: {type: Object, required: true}});
 </script>
 
 <template>
-    <div class="figure-floor-line" :data-kind="floor.kind" :style="{left: `${floor.left}px`, top: `${floor.top}px`, width: `${floor.right - floor.left}px`}">
-        <span class="figure-floor-name">{{ floor.kind }}</span>
+    <div class="figure-floor-line" :data-type="floor.type" :style="{left: `${floor.left}px`, top: `${floor.top}px`, width: `${floor.right - floor.left}px`}">
+        <span class="figure-floor-name">{{ floor.type }}</span>
     </div>
 </template>
 
@@ -16,12 +16,12 @@ defineProps({floor: {type: Object, required: true}});
     pointer-events: none;
 }
 
-.figure-floor-line[data-kind="bubble"],
-.figure-floor-line[data-kind="tab"] {
+.figure-floor-line[data-type="bubble"],
+.figure-floor-line[data-type="tab"] {
     border-top-color: var(--text-3);
 }
 
-.figure-floor-line[data-kind="foot"] {
+.figure-floor-line[data-type="foot"] {
     border-top-style: dotted;
 }
 

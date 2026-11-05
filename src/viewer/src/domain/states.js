@@ -1,6 +1,6 @@
 import {wordLabel} from "./labels.js";
 
-// the states the installed modules add, by kind of row and word, read once when the windows start
+// the states the installed modules add, by type of row and word, read once when the windows start
 let added = {};
 
 export async function loadStates(read = fetch) {
@@ -8,9 +8,9 @@ export async function loadStates(read = fetch) {
     if (answer?.ok) added = (await answer.json()).states;
 }
 
-const addedState = (kind, state) => added[kind]?.[state];
+const addedState = (type, state) => added[type]?.[state];
 
 // the words and look of a row's state: an added state's own label and the state it looks like, else the state itself
-export const stateLabel = (kind, state) => addedState(kind, state)?.label ?? wordLabel(state);
-export const stateLook = (kind, state) => addedState(kind, state)?.looks_like ?? state;
-export const stateOpenMoves = (kind, state) => addedState(kind, state)?.open_moves ?? null;
+export const stateLabel = (type, state) => addedState(type, state)?.label ?? wordLabel(state);
+export const stateLook = (type, state) => addedState(type, state)?.looks_like ?? state;
+export const stateOpenMoves = (type, state) => addedState(type, state)?.open_moves ?? null;

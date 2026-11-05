@@ -63,7 +63,7 @@ def test_a_list_page_has_the_shape_the_viewer_rows_read(new_story, shared_server
     listed = json.loads(story.run("library list --search basalt --json", actor=story.agent).output_text)
     row = listed["rows"][0]
     story.expect_rows(sorted(listed) == ["page", "rows", "size", "total"], listed["page"] == 1, listed["total"] == 1,
-                      (row["kind"], row["id"], row["version"], row["title"], row["creator"], row["updated_by"]) == ("doc", item_id, 1, "Basalt page shape", "Ada", "Ada"))
+                      (row["share"], row["id"], row["version"], row["title"], row["creator"], row["updated_by"]) == ("doc", item_id, 1, "Basalt page shape", "Ada", "Ada"))
 
 
 def test_the_list_filters_by_kind(new_story, shared_server):
@@ -71,15 +71,15 @@ def test_the_list_filters_by_kind(new_story, shared_server):
     new_item(server, tokens.admin, "doc", doc_fields("Granite filter"))
     new_item(server, tokens.admin, "sequence", {"title": "Granite filter steps", "steps": '["Read it"]', "step_guards": "[]"})
     story = connected(new_story, server, tokens.editor)
-    story.expect_text("library list --kind sequence --search granite", "Granite filter steps", actor=story.agent)
-    story.expect_no_text("library list --kind sequence --search granite", "Granite filter  ", actor=story.agent)
-    story.expect_text("library list --kind doc --search granite", "Granite filter", actor=story.agent)
+    story.expect_text("library list --type sequence --search granite", "Granite filter steps", actor=story.agent)
+    story.expect_no_text("library list --type sequence --search granite", "Granite filter  ", actor=story.agent)
+    story.expect_text("library list --type doc --search granite", "Granite filter", actor=story.agent)
 
 
 def test_a_kind_the_server_does_not_have_is_refused_with_the_kinds_it_has(new_story, shared_server):
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
-    story.expect_refusal("library list --kind poem", "there is no such kind: the kinds are doc, sequence, check", actor=story.agent)
+    story.expect_refusal("library list --type poem", "there is no such kind: the kinds are doc, sequence, check", actor=story.agent)
 
 
 def test_a_search_shows_the_excerpt_around_the_match(new_story, shared_server):
@@ -100,8 +100,8 @@ def test_a_page_past_the_first_is_asked_for_by_number(new_story, shared_server):
     for number in range(31):
         new_item(server, tokens.admin, "sequence", {"title": f"Slate paging {number:02}", "steps": '["x"]', "step_guards": "[]"})
     story = connected(new_story, server, tokens.editor)
-    story.expect_text("library list --kind sequence --search slate", "--page 2 for the next", actor=story.agent)
-    story.expect_no_text("library list --kind sequence --search slate --page 2", "--page 3", actor=story.agent)
+    story.expect_text("library list --type sequence --search slate", "--page 2 for the next", actor=story.agent)
+    story.expect_no_text("library list --type sequence --search slate --page 2", "--page 3", actor=story.agent)
 
 
 def test_an_item_that_has_a_local_copy_names_it_and_the_others_do_not(new_story, shared_server):

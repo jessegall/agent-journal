@@ -6,13 +6,13 @@ import {Btn, EmptyState, peekRef, Segmented, Skeleton, SearchBar, TimeAgo, useWi
 const SEARCH_WAIT_MILLISECONDS = 250;
 const context = useWindow();
 const words = ref("");
-const kind = ref("all");
+const category = ref("all");
 const rows = ref([]);
 const counts = ref(null);
 const more = ref(false);
 const failure = ref("");
 
-const kinds = computed(() => [
+const categories = computed(() => [
     {key: "all", label: `All ${counts.value?.all ?? ""}`.trim()},
     {key: "images", label: `Images ${counts.value?.images ?? ""}`.trim()},
     {key: "other", label: `Other files ${counts.value?.other ?? ""}`.trim()},
@@ -26,7 +26,7 @@ let reading = 0;
 async function read(skip) {
     const turn = ++reading;
     const search = words.value.trim() ? ` --search ${JSON.stringify(words.value.trim())}` : "";
-    const answer = await context.read(`attachment list --kind ${kind.value} --skip ${skip}${search}`);
+    const answer = await context.read(`attachment list --category ${category.value} --skip ${skip}${search}`);
     if (turn !== reading) return;
     failure.value = answer.ok ? "" : answer.error;
     if (!answer.ok) return;
@@ -36,7 +36,7 @@ async function read(skip) {
 }
 
 let waiting = 0;
-watch([words, kind], () => {
+watch([words, category], () => {
     clearTimeout(waiting);
     waiting = setTimeout(() => read(0), words.value ? SEARCH_WAIT_MILLISECONDS : 0);
 });
@@ -47,7 +47,7 @@ read(0);
 <template>
     <section class="attachments" data-attachments>
         <SearchBar v-model="words" class="bar" data-attachment-search>
-            <Segmented :options="kinds" :value="kind" @pick="kind = $event" />
+            <Segmented :options="categories" :value="category" @pick="category = $event" />
         </SearchBar>
         <template v-if="failure">
             <p class="failure" role="alert">{{ failure }}</p>

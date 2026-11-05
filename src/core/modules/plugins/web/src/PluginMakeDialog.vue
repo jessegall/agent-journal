@@ -16,7 +16,7 @@ const emit = defineEmits(["close", "guide", "ask"]);
         </form>
         <template #foot>
             <Btn data-plugin-guide-open @click="emit('guide')">Read how to make one</Btn>
-            <Btn kind="primary" data-plugin-make-send :disabled="!repository.trim() && !wish.trim()" @click="emit('ask')">Send to the agent</Btn>
+            <Btn variant="primary" data-plugin-make-send :disabled="!repository.trim() && !wish.trim()" @click="emit('ask')">Send to the agent</Btn>
         </template>
     </Dialog>
 </template>

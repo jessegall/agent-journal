@@ -119,9 +119,9 @@ export const SEATED = new Set(["sit", "lounge", "composed"]);
 // the floors with an edge to sit on, the legs hanging over their front: a bubble, the bars docked over the compose box and the compose box
 export const LEDGES = new Set(["bubble", "dock", "compose"]);
 
-// the posture a figure keeps landing in `posture` on a floor of `kind`: sitting on an edge only where it has an edge to sit on (LEDGES),
+// the posture a figure keeps landing in `posture` on a floor of `type`: sitting on an edge only where it has an edge to sit on (LEDGES),
 // sitting composed or lounging on any floor's top; anything else, and a seat with nowhere to sit, lands on its feet
-export const landsIn = (posture, kind) => ((posture === "sit" ? LEDGES.has(kind) : SEATED.has(posture)) ? posture : "stand");
+export const landsIn = (posture, type) => ((posture === "sit" ? LEDGES.has(type) : SEATED.has(posture)) ? posture : "stand");
 
 // The next posture and facing, each {posture, facing}, the figure is drawn in on its way from `from` to `to`: it never turns sitting, so
 // from a seat it first stands up facing as it sat, then turns standing, and only sits again once it faces the way it sits; any other

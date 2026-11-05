@@ -19,7 +19,7 @@ const panel = () => document.body.querySelector(".dialog-panel");
 
 test("a sentence says what a trigger does in plain words", () => {
     expect(sentence(TRIGGER)).toBe("When “deploy” or “release” appears, remind the agent “Run the release sequence”.");
-    expect(sentence({...TRIGGER, kind: "time", time: "every", every: "30"})).toBe("Every 30 minutes, remind the agent “Run the release sequence”.");
+    expect(sentence({...TRIGGER, type: "time", time: "every", every: "30"})).toBe("Every 30 minutes, remind the agent “Run the release sequence”.");
     expect(sentence({...TRIGGER, phrases: []})).toBe("Add the words to watch for and choose what happens.");
 });
 
@@ -48,7 +48,7 @@ test("a trigger is a slip with only its name and line, and a time trigger asks h
     expect(element.querySelector('[data-row="1"]').textContent).not.toContain("deploy");
     element.querySelector("[data-trigger-new]").click();
     await settle();
-    panel().querySelector('[data-trigger-kind="time"]').click();
+    panel().querySelector('[data-trigger-type="time"]').click();
     await settle();
     typed(panel().querySelector("[data-trigger-name]"), "Check the build");
     typed(panel().querySelector("[data-trigger-text]"), "Check the build");
@@ -66,7 +66,7 @@ test("a new time trigger can come by a cron line, saved in one command", async (
     const {element, ran} = await drawn();
     element.querySelector("[data-trigger-new]").click();
     await settle();
-    panel().querySelector('[data-trigger-kind="time"]').click();
+    panel().querySelector('[data-trigger-type="time"]').click();
     await settle();
     panel().querySelector('[data-trigger-time="cron"]').click();
     await settle();

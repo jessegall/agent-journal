@@ -40,7 +40,7 @@ const TABS = [
     {key: "log", label: "Log"},
 ];
 const textComments = useTextComments(
-    () => (task.value ? {kind: "task", id: props.id, title: task.value.title} : {}),
+    () => (task.value ? {noun: "task", id: props.id, title: task.value.title} : {}),
     (line) => props.read(line)
 );
 let reading = 0;
@@ -121,7 +121,7 @@ defineExpose({openStatus});
             <div class="body"><Skeleton /></div>
         </template>
         <template v-else>
-            <RowMoves ref="footer" kind="task" :id="id" :row="task" :read="read" @done="load" />
+            <RowMoves ref="footer" noun="task" :id="id" :row="task" :read="read" @done="load" />
             <header class="summary">
                 <div class="stamp">
                     Task {{ task.id }} · updated

@@ -8,7 +8,7 @@ from core.modules.library.support.library_versions import LibraryVersions
 
 
 class LibraryVersionsSubcommand(ItemArguments, ReadSubcommand[LibraryVersions]):
-    """`journal library versions <kind> <id>`: the changes of an item on the shared server, each with who made it."""
+    """`journal library versions <type> <id>`: the changes of an item on the shared server, each with who made it."""
 
     cli_name = "library"
     name = "versions"

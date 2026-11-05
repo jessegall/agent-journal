@@ -10,7 +10,7 @@ test("triggers read as sentences, and none says it starts by hand", () => {
     expect(startWords([])).toEqual(["Only when you or the agent start it"]);
 });
 
-test("a trigger is sent with only the fields its kind reads, and a missing one is named", () => {
+test("a trigger is sent with only the fields its type reads, and a missing one is named", () => {
     expect(triggerBody({trigger_type: "phrase", text: " go ", pattern: "x", tool: "y", moment: ""})).toEqual({trigger_type: "phrase", text: "go"});
     expect(triggersProblem([{trigger_type: "file", pattern: ""}])).toContain("A file is edited");
     expect(triggersProblem([{trigger_type: "tool", tool: "Edit", pattern: ""}])).toBe("");

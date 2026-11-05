@@ -9,7 +9,7 @@ from core.base.library.library_item import LibraryItem
 
 
 class RemoveLibraryItemSubcommand(ItemArguments, Subcommand[RemoveLibraryItem, LibraryItem]):
-    """`journal library remove <kind> <id>`: marks an item removed on the shared server; every copy stays."""
+    """`journal library remove <type> <id>`: marks an item removed on the shared server; every copy stays."""
 
     cli_name = "library"
     name = "remove"

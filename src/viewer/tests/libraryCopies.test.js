@@ -39,12 +39,12 @@ function window(rows, status = {}, extra = {}) {
     const result = context({
         "library status": {ok: true, value: {...LINKED, ...status}},
         "library list": {ok: true, value: {page: 1, size: 30, total: 2, rows: [
-            {kind: "doc", id: 12, version: 8, title: "Release checklist", abstract: "What to do", excerpt: "", creator: "Ada", updated_by: "Grace", updated_at: "2026-11-04T16:20:00+00:00", copy_id: null},
-            {kind: "check", id: 5, version: 2, title: "Cut a release", abstract: "", excerpt: "", creator: "Ada", updated_by: "Ada", updated_at: "2026-11-03T10:00:00+00:00", copy_id: null},
+            {share: "doc", id: 12, version: 8, title: "Release checklist", abstract: "What to do", excerpt: "", creator: "Ada", updated_by: "Grace", updated_at: "2026-11-04T16:20:00+00:00", copy_id: null},
+            {share: "check", id: 5, version: 2, title: "Cut a release", abstract: "", excerpt: "", creator: "Ada", updated_by: "Ada", updated_at: "2026-11-03T10:00:00+00:00", copy_id: null},
         ]}},
         "library copies": {ok: true, value: {rows}},
-        "library show check 5": {ok: true, value: {kind: "check", id: 5, version: 2, fields: {title: "Cut a release", command: "make release"}, removed_at: ""}},
-        "library show doc 12": {ok: true, value: {kind: "doc", id: 12, version: 8, fields: THEIRS, removed_at: ""}},
+        "library show check 5": {ok: true, value: {share: "check", id: 5, version: 2, fields: {title: "Cut a release", command: "make release"}, removed_at: ""}},
+        "library show doc 12": {ok: true, value: {share: "doc", id: 12, version: 8, fields: THEIRS, removed_at: ""}},
         ...extra,
     });
     result.lines = [];
@@ -269,5 +269,5 @@ test("the dialog of a check shows its command and Cancel gets nothing", async ()
 test("the Library tab with All chosen reads documents, sequences and checks", async () => {
     const result = window([]);
     await mounted(TeamsPage, result);
-    expect(result.reads).toEqual(expect.arrayContaining(["library list --kind doc", "library list --kind sequence", "library list --kind check"]));
+    expect(result.reads).toEqual(expect.arrayContaining(["library list --type doc", "library list --type sequence", "library list --type check"]));
 });

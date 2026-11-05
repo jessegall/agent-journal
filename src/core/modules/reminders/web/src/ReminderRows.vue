@@ -34,7 +34,7 @@ async function make() {
                 <label class="note">At<input v-model="draft.at" type="datetime-local" aria-label="At"></label>
                 <label class="note">Interval (minutes)<input v-model="draft.minutes" type="number" min="1" aria-label="Interval (minutes)"></label>
                 <label class="note"><input v-model="draft.once" type="checkbox" aria-label="Once"> Once</label>
-                <Btn small kind="primary" type="submit" :disabled="!canMake">Add</Btn>
+                <Btn small variant="primary" type="submit" :disabled="!canMake">Add</Btn>
             </form>
             <template v-if="actionFailure">
                 <p class="failure">{{ actionFailure }}</p>

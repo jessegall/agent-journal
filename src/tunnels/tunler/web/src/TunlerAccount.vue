@@ -63,7 +63,7 @@ load();
                         <p class="line">tunler isn't installed on this machine, so sharing and phones can't reach it.</p>
                         <form class="row" data-tunler-install @submit.prevent="run(['tunler', 'install', server.trim()])">
                             <input v-model="server" placeholder="tunler.example.com" aria-label="Tunler server address">
-                            <Btn small kind="primary" type="submit">Install tunler</Btn>
+                            <Btn small variant="primary" type="submit">Install tunler</Btn>
                         </form>
                     </template>
                     <template v-else-if="status.authenticated && !switching">
@@ -96,7 +96,7 @@ load();
                             <span class="line">tunler {{ version.current }}</span>
                             <template v-if="version.update_available">
                                 <span class="fine">{{ version.latest }} is available</span>
-                                <Btn small kind="primary" data-tunler-update @click="run(['tunler', 'update'])">Update tunler</Btn>
+                                <Btn small variant="primary" data-tunler-update @click="run(['tunler', 'update'])">Update tunler</Btn>
                             </template>
                             <template v-else>
                                 <span class="fine">up to date</span>
@@ -110,7 +110,7 @@ load();
                         <p class="line" data-tunler-in-use>{{ status.is_used ? "Phones and share links reach this journal through tunler." : "This journal doesn't use tunler yet." }}</p>
                         <form class="row" data-tunler-use @submit.prevent="useTunler">
                             <input v-model="subdomain" placeholder="The name in front of the server's address" aria-label="Subdomain">
-                            <Btn small kind="primary" type="submit" :disabled="!subdomain.trim()">{{ status.is_used ? "Save" : "Use tunler" }}</Btn>
+                            <Btn small variant="primary" type="submit" :disabled="!subdomain.trim()">{{ status.is_used ? "Save" : "Use tunler" }}</Btn>
                             <template v-if="status.is_used">
                                 <Btn small data-tunler-stop @click="run(setting(SERVICE_SETTING, 'none'))">Stop using tunler</Btn>
                             </template>

@@ -30,7 +30,7 @@ async function move(verb, rule) {
                         <span class="rule-text">{{ row.text }}</span>
                         <template v-if="row.state === PROPOSED">
                             <span class="rule-state">State: proposed</span>
-                            <Btn small kind="primary" @click="move('approve', row)">Approve</Btn>
+                            <Btn small variant="primary" @click="move('approve', row)">Approve</Btn>
                             <Btn small bordered @click="move('deny', row)">Deny</Btn>
                         </template>
                         <template v-else>

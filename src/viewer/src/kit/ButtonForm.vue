@@ -14,7 +14,7 @@ const failure = ref("");
 const complete = computed(() => props.button.fields.every((field) => values.value[field.name].trim().length > 0));
 const heading = computed(() => {
     if (!props.row) return props.button.label;
-    const model = meta(tableOfWord(props.row.kind))?.title || "Item";
+    const model = meta(tableOfWord(props.row.noun))?.title || "Item";
     return `${props.button.label} · ${model} ${props.row.id}`;
 });
 
@@ -44,7 +44,7 @@ async function send() {
             </template>
             <div class="button-form-actions">
                 <Btn small @click="emit('close')">Cancel</Btn>
-                <Btn kind="primary" small :disabled="!complete || sending" :busy="sending" data-button-send @click="send">Send</Btn>
+                <Btn variant="primary" small :disabled="!complete || sending" :busy="sending" data-button-send @click="send">Send</Btn>
             </div>
         </div>
     </Dialog>

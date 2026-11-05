@@ -132,7 +132,7 @@ test("a dropdown opens under the button that asked for it", () => {
     expect(element.querySelector("[data-dropdown-group]")).toBeNull();
 });
 
-test("the helpers dropdown holds every kind under its own header with a count", () => {
+test("the helpers dropdown holds every type under its own header with a count", () => {
     const catalogue = {dropdown: () => null, window: () => null, skeleton: () => [], loaded: {value: false}};
     const groups = [{name: "agents.helpers", title: "Helpers", count: 1}, {name: "workers.workers", title: "Workers", count: 2}, {name: "reviews.reviewers", title: "Reviewers", count: 0}];
     const element = mounted(WindowDropdown, {groups, catalogue, subscriptions: {}, environment: "main"});

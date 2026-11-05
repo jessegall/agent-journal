@@ -35,7 +35,7 @@ async function create() {
         <template #foot>
             <span class="note" role="status">{{ failure || missing }}</span>
             <Btn @click="emit('close')">Cancel</Btn>
-            <Btn kind="primary" :disabled="Boolean(missing)" data-sequence-create @click="create">Create sequence</Btn>
+            <Btn variant="primary" :disabled="Boolean(missing)" data-sequence-create @click="create">Create sequence</Btn>
         </template>
     </Dialog>
 </template>

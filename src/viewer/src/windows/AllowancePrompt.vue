@@ -10,7 +10,7 @@ const emit = defineEmits(["answer"]);
     <div class="allowance-prompt" role="dialog">
         <p class="allowance-prompt-text">{{ promptText(request) }}</p>
         <div class="allowance-prompt-buttons">
-            <Btn kind="primary" @click="emit('answer', true)">Allow</Btn>
+            <Btn variant="primary" @click="emit('answer', true)">Allow</Btn>
             <Btn @click="emit('answer', false)">Not now</Btn>
         </div>
     </div>

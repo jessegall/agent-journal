@@ -10,7 +10,7 @@ folder, outside the project, and never in the journal.
 
 - A task needs a key you do not have: `journal secret request "<name>" --why "<what for>"`. The user fills it on the
   Secrets page; never ask for a value in the chat.
-- `journal secret make "<title>" --kind <kind> --brief "<how it is used>"` makes an empty one;
+- `journal secret make "<title>" --type <type> --brief "<how it is used>"` makes an empty one;
   `journal secret update <n>` changes it.
 - `journal secret list` names the secrets and what each waits for; `journal secret show <n>` shows its fields, which
   are filled in and the programs it may go to.

@@ -14,7 +14,7 @@ def test_a_second_upgrade_moves_no_sequence_again(new_story):
 
 def test_a_sequence_whose_triggers_or_guards_do_not_read_is_skipped_and_told(new_story):
     story = upgraded_story(new_story)
-    expect_upgrade_text(story, "nonsense is no kind of trigger")
+    expect_upgrade_text(story, "nonsense is no type of trigger")
     expect_upgrade_text(story, "does not read")
     story.expect_success("sequence list")
     story.expect_absent("sequence list", "Broken")

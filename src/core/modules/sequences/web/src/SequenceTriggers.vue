@@ -1,12 +1,12 @@
 <script setup>
 import {computed, ref} from "vue";
 import {Btn, Icon, Segmented, useWindow} from "@journal/window-kit";
-import {blankTrigger, kindOf, startWords, triggerBody, triggersProblem, TRIGGER_KINDS} from "./sequenceTriggers.js";
+import {blankTrigger, typeOf, startWords, triggerBody, triggersProblem, TRIGGER_TYPES} from "./sequenceTriggers.js";
 
 // what starts a sequence on its own, read as sentences and edited as cards
 const props = defineProps({sequence: {type: Object, required: true}});
 const context = useWindow();
-const KIND_OPTIONS = TRIGGER_KINDS.map((kind) => ({key: kind.value, label: kind.label}));
+const TYPE_OPTIONS = TRIGGER_TYPES.map((type) => ({key: type.value, label: type.label}));
 const triggers = computed(() => JSON.parse(props.sequence.triggers || "[]"));
 const words = computed(() => startWords(triggers.value));
 const draft = ref(null);
@@ -38,8 +38,8 @@ async function save() {
         <template v-else>
             <template v-for="(trigger, index) in draft" :key="index">
                 <div class="card" data-sequence-trigger-card>
-                    <Segmented :options="KIND_OPTIONS" :value="trigger.trigger_type" @pick="trigger.trigger_type = $event" />
-                    <template v-for="field in kindOf(trigger.trigger_type).fields" :key="field.name">
+                    <Segmented :options="TYPE_OPTIONS" :value="trigger.trigger_type" @pick="trigger.trigger_type = $event" />
+                    <template v-for="field in typeOf(trigger.trigger_type).fields" :key="field.name">
                         <label class="label">{{ field.label }}</label>
                         <input v-model="trigger[field.name]" :placeholder="field.placeholder" :aria-label="field.label" :data-trigger-field="field.name">
                     </template>
@@ -48,7 +48,7 @@ async function save() {
             </template>
             <div class="foot">
                 <Btn small data-sequence-trigger-add @click="draft.push(blankTrigger())">Add a trigger</Btn>
-                <Btn small kind="primary" :disabled="Boolean(problem)" data-sequence-triggers-save @click="save">Save</Btn>
+                <Btn small variant="primary" :disabled="Boolean(problem)" data-sequence-triggers-save @click="save">Save</Btn>
                 <Btn small @click="draft = null">Cancel</Btn>
                 <span class="note" role="status">{{ refusal || problem }}</span>
             </div>

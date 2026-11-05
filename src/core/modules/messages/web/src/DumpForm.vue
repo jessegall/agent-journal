@@ -35,7 +35,7 @@ async function make() {
             <p class="dump-files">{{ dropped.map((file) => file.name).join(", ") }}</p>
         </template>
         <div class="dump-row">
-            <Btn kind="primary" small :disabled="!parts().length" data-dump-make @click="make">Create dump</Btn>
+            <Btn variant="primary" small :disabled="!parts().length" data-dump-make @click="make">Create dump</Btn>
             <Btn small @click="emit('close')">Cancel</Btn>
         </div>
         <template v-if="failure">

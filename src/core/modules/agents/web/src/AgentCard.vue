@@ -5,7 +5,7 @@ import AgentCommand from "./AgentCommand.vue";
 import AgentTaskGroup from "./AgentTaskGroup.vue";
 import TranscriptRows from "./TranscriptRows.vue";
 
-// one agent as a calm two lines: the profile and given name with its time, then the provider, model, kind and task count; a click opens the card on
+// one agent as a calm two lines: the profile and given name with its time, then the provider, model, type and task count; a click opens the card on
 // its number, usage, Inspect and three tabs: its tasks under the state names of the tasks window with its instruction, its transcript and the files it changed;
 // whether the card is open is the window's to say (`open`), and a click asks it to flip that (`toggle`)
 const FALLBACK_TITLES = {helper: "Helper", reviewer: "Reviewer"};
@@ -112,7 +112,7 @@ readCommand();
             <div class="agent-more" data-agent-more @click.stop>
                 <template v-if="usage">
                     <span class="agent-usage" data-agent-card-usage>{{ usage }}</span>
-                    <template v-if="isRunningHelper"><Btn kind="ghost" small data-helper-stop @click="stopHelper">Stop</Btn></template>
+                    <template v-if="isRunningHelper"><Btn variant="ghost" small data-helper-stop @click="stopHelper">Stop</Btn></template>
                 </template>
                 <template v-if="showsCommand"><AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" /></template>
                 <template v-if="endedReason"><p class="agent-ended-reason" data-agent-ended-reason>{{ endedReason }}</p></template>

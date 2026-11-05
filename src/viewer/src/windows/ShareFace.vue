@@ -132,7 +132,7 @@ watch(share, (shown) => shown && look.value && fetchFacts(), {immediate: true});
 }
 
 .share-face {
-    --kind: var(--progress);
+    --type: var(--progress);
     display: flex;
     flex-direction: column;
     height: 100vh;
