@@ -2707,7 +2707,7 @@
    "label": "listing"
   },
   "lsof": {
-   "kind": "process",
+   "kind": "read",
    "effects": []
   },
   "make": {
@@ -3222,7 +3222,7 @@
    }
   },
   "pgrep": {
-   "kind": "process",
+   "kind": "read",
    "effects": []
   },
   "php": {
@@ -3560,7 +3560,7 @@
    "redirected_label": "writing a file"
   },
   "ps": {
-   "kind": "process",
+   "kind": "read",
    "effects": []
   },
   "psalm": {
@@ -4068,7 +4068,15 @@
    }
   },
   "sysctl": {
-   "kind": "process",
+   "kind": "read",
+   "modifiers": {
+    "-w": {
+     "kind": "edit",
+     "effects": [
+      "writes_files"
+     ]
+    }
+   },
    "effects": []
   },
   "tail": {
@@ -4222,7 +4230,7 @@
    "uncertain": true
   },
   "top": {
-   "kind": "process",
+   "kind": "read",
    "effects": []
   },
   "touch": {
@@ -4421,7 +4429,7 @@
    }
   },
   "vm_stat": {
-   "kind": "process",
+   "kind": "read",
    "effects": []
   },
   "wait": {

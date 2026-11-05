@@ -16,6 +16,9 @@ func TestAScriptThatCanWriteIsAnUncertainWrite(t *testing.T) {
 		`sed -n 's/a/b/e' notes.txt`,
 		`sed -n '1e rm a.txt' notes.txt`,
 	}
+	if classification := shippedClassifier.Line("sysctl -w a=1").Parts[0].Classification; !hasEffect(classification.Effects, writesFiles) {
+		t.Errorf("sysctl -w reads as %+v", classification)
+	}
 	for _, line := range lines {
 		classification := shippedClassifier.Line(line).Parts[0].Classification
 		if !classification.Uncertain || !hasEffect(classification.Effects, writesFiles) {
@@ -36,6 +39,11 @@ func TestAPlainScriptStaysARead(t *testing.T) {
 		`sed -n 's/a/b/gp' notes.txt`,
 		`sed -n 's/one/two/p;$p' notes.txt`,
 		`sed -n 1,140p src/features/team/support/team_join.py`,
+		`ps aux`,
+		`pgrep -f server`,
+		`lsof -i :8080`,
+		`sysctl -n hw.memsize`,
+		`vm_stat`,
 	}
 	for _, line := range lines {
 		classification := shippedClassifier.Line(line).Parts[0].Classification
