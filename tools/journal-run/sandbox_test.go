@@ -32,7 +32,7 @@ func TestReadOnlyShell(t *testing.T) {
 	if err := os.Mkdir(writable, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	sandbox, err := checkedSandbox(program, []string{writable})
+	sandbox, err := checkedSandbox(program, []string{writable}, readLimit{})
 	if err != nil {
 		t.Fatal(err)
 	}

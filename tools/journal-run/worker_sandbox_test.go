@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -25,7 +26,11 @@ func TestWorkerShellSandbox(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	sandbox, err := checkedSandbox(program, allowed)
+	limit, err := workerReadLimit(worktree, filepath.Join(main, ".journal"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	sandbox, err := checkedSandbox(program, allowed, limit)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -103,5 +108,65 @@ func TestWorkerSandboxFlag(t *testing.T) {
 	options := flags.runOptions("/journal", "/bin/sh")
 	if !options.ReadOnlyShell || options.WriteFolder != "/worker" {
 		t.Fatalf("sandbox flags were lost: %+v", options)
+	}
+}
+
+func TestWorkerReadLimit(t *testing.T) {
+	if runtime.GOOS != "darwin" {
+		t.Skip("the read limit is enforced by the macOS sandbox only so far")
+	}
+	folder, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	main := filepath.Join(folder, "main")
+	home := filepath.Join(main, ".journal")
+	worktree := filepath.Join(home, "worktrees", "worker")
+	sibling := filepath.Join(home, "worktrees", "other-worker")
+	library := filepath.Join(main, ".venv")
+	for _, path := range []string{worktree, sibling, library, filepath.Join(home, "bin")} {
+		if err := os.MkdirAll(path, 0o700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	files := map[string]string{filepath.Join(main, "secret.txt"): "main", filepath.Join(sibling, "secret.txt"): "other", filepath.Join(library, "lib.txt"): "library", filepath.Join(worktree, "own.txt"): "own"}
+	for path, text := range files {
+		if err := os.WriteFile(path, []byte(text), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.Symlink(library, filepath.Join(worktree, "linked")); err != nil {
+		t.Fatal(err)
+	}
+	program := filepath.Join(home, "bin", "journal-run")
+	if output, err := exec.Command("go", "build", "-o", program, ".").CombinedOutput(); err != nil {
+		t.Fatalf("runner build: %v: %s", err, output)
+	}
+	allowed, err := workerFolders(worktree, home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	limit, err := workerReadLimit(worktree, home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sandbox, err := checkedSandbox(program, allowed, limit)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reads := func(path string) error {
+		command := sandbox.command("cat", path)
+		command.Dir = worktree
+		return command.Run()
+	}
+	for _, path := range []string{filepath.Join(main, "secret.txt"), filepath.Join(sibling, "secret.txt"), "../other-worker/secret.txt"} {
+		if reads(path) == nil {
+			t.Fatalf("a worker read %s", path)
+		}
+	}
+	for _, path := range []string{"own.txt", "linked/lib.txt", filepath.Join(library, "lib.txt")} {
+		if err := reads(path); err != nil {
+			t.Fatalf("a worker could not read %s: %v", path, err)
+		}
 	}
 }

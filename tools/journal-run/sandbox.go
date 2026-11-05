@@ -21,7 +21,7 @@ func (sandbox shellSandbox) command(program string, arguments ...string) *exec.C
 	return exec.Command(sandbox.Program, append(append(append([]string{}, sandbox.Prefix...), program), arguments...)...)
 }
 
-func checkedSandbox(program string, writable []string) (shellSandbox, error) {
+func checkedSandbox(program string, writable []string, limit readLimit) (shellSandbox, error) {
 	resolved := make([]string, 0, len(writable))
 	for _, folder := range writable {
 		path, err := filepath.EvalSymlinks(folder)
@@ -30,7 +30,7 @@ func checkedSandbox(program string, writable []string) (shellSandbox, error) {
 		}
 		resolved = append(resolved, path)
 	}
-	sandbox, err := systemSandbox(program, resolved)
+	sandbox, err := systemSandbox(program, resolved, limit)
 	if err != nil {
 		return sandbox, err
 	}
@@ -75,7 +75,7 @@ func sandboxCheck() int {
 		fmt.Fprintln(os.Stderr, err)
 		return 125
 	}
-	sandbox, err := checkedSandbox(program, []string{folder})
+	sandbox, err := checkedSandbox(program, []string{folder}, readLimit{})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 125
@@ -94,12 +94,16 @@ func runSandbox(options Options, folder Folder) (shellSandbox, error) {
 		return shellSandbox{}, err
 	}
 	writable := []string{folder.Path, temporary}
-	if options.WriteFolder != "" {
-		worker, err := workerFolders(options.WriteFolder, options.Home)
-		if err != nil {
-			return shellSandbox{}, err
-		}
-		writable = append(writable, worker...)
+	if options.WriteFolder == "" {
+		return checkedSandbox(program, writable, readLimit{})
 	}
-	return checkedSandbox(program, writable)
+	worker, err := workerFolders(options.WriteFolder, options.Home)
+	if err != nil {
+		return shellSandbox{}, err
+	}
+	limit, err := workerReadLimit(options.WriteFolder, options.Home)
+	if err != nil {
+		return shellSandbox{}, err
+	}
+	return checkedSandbox(program, append(writable, worker...), limit)
 }
