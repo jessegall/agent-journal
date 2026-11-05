@@ -1,4 +1,5 @@
 from core.modules.drivers.support.suite_choice import SuiteChoice
+from collections.abc import Collection
 import json
 from argparse import ArgumentParser, Namespace
 
@@ -43,13 +44,14 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         cards = self.queries.query(AgentCard).filter(environment_id=environment_id)
         running = tuple(cards.matching(IsNull("ended_at")).oldest().all_rows())
         ended = tuple(cards.matching(Greater("ended_at", "")).newest().page(1, CLOSED_AGENTS_SHOWN).rows) if arguments.closed else ()
-        return AgentFactsList(tuple(self.facts(card) for card in (*running, *ended)))
+        job_roles = self.suites.agent_policy(environment_id).job_roles
+        return AgentFactsList(tuple(self.facts(card, job_roles) for card in (*running, *ended)))
 
-    def facts(self, card: AgentCard) -> AgentFacts:
+    def facts(self, card: AgentCard, job_roles: Collection[str]) -> AgentFacts:
         status = self.files.status(card.session)
         return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.dispatch_model, status.context_percent, status.cost_dollars, card.started_task_id, card.started_task_title,
                           tuple(json.loads(card.tasks)), self.waiting_state(card), card.profile or card.dispatch_profile, card.given_name or card.dispatch_description.split(",", 1)[0],
-                          card.dispatch_instruction, status.effort or self.session_effort(card), card.role in self.suites.agent_policy(card.environment_id).job_roles)
+                          card.dispatch_instruction, status.effort or self.session_effort(card), card.role in job_roles)
 
     def reported_model(self, card: AgentCard) -> str:
         return self.providers.reported_model(card.program, self.home, card.session)

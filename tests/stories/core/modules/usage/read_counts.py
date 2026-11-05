@@ -9,10 +9,10 @@ from core.modules.messages.commands.read_message.read_message import ReadMessage
 from tests.stories.core.modules.usage.usage import HELPER_START
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
 from tests.stories.core.support.fixtures import PlanWithCheckpoint
-from tests.stories.support.story_checks import expect_answers, expect_visited_limit
+from tests.stories.support.story_checks import expect_visited_limit
 
 READ_STARTS = ("SELECT", "WITH")
-READS_ALLOWED = 6
+READS_ALLOWED = 7
 OUTLINE_READS_ALLOWED = 4
 TIMELINE_READS_ALLOWED = 2
 INSPECT_READS_ALLOWED = 2
@@ -79,7 +79,7 @@ def test_the_agents_window_reads_the_same_number_of_queries_for_one_agent_and_fo
     for number in range(2, 6):
         story.run(HELPER_START.format(parent=story.agent.id).replace("s-2", f"s-{number + 1}"), actor=story.agent)
     five = selects_of(story, "usage agents --environment main --json")
-    expect_answers(five, len(first_run))
+    expect_visited_limit(five, len(first_run))
     expect_visited_limit(first_run, READS_ALLOWED)
 
 

@@ -40,8 +40,10 @@ class AliasShellAliases(ShellAliases):
         return alias.shell_line(argv[1:]) if alias else None
 
     def alias(self, name: str) -> Alias | None:
+        if name in self.names.command_names():
+            return None
         return self.kept.read("aliases", lambda: self.saved_alias(name), "name = ?", [name])
 
     def saved_alias(self, name: str) -> Alias | None:
-        rows = self.aliases.with_name(name).page(1, 1).rows if name not in self.names.command_names() else ()
+        rows = self.aliases.with_name(name).page(1, 1).rows
         return rows[0] if rows else None
