@@ -13,3 +13,4 @@ class SendMessage(Command[Message]):
     parent_id: int | None = None
     files: tuple[str, ...] = ()
     commented_row: tuple[str, int] | None = None
+    target_agent_id: int | None = None

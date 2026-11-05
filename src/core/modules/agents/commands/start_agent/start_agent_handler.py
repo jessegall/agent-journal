@@ -11,7 +11,10 @@ from core.base.command.handler import Handler
 from core.modules.agents.support.agent_rows import AgentRows
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from core.base.registry.registry import Registry
+from core.base.agent_type_book import AgentTypeBook
+from core.base.access import Access
+from core.base.actor import Actor
+from core.base.shell_sandbox import ShellSandbox
 
 
 class StartAgentHandler(Handler[StartAgent, Agent]):
@@ -21,15 +24,19 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
 
     command = StartAgent
 
-    def __init__(self, agents: AgentRows, repository: Repository, chain: ProcessChain, registry: Registry) -> None:
+    def __init__(self, agents: AgentRows, repository: Repository, chain: ProcessChain, types: AgentTypeBook, sandbox: ShellSandbox) -> None:
         self.agents, self.repository, self.chain = agents, repository, chain
-        self.registry = registry
+        self.types = types
+        self.sandbox = sandbox
+
+    def prepare(self, command: StartAgent, actor: Actor) -> None:
+        if self.types.find(command.role).access is Access.READ:
+            self.sandbox.check()
 
     def handle(self, command: StartAgent, context: Context) -> Agent:
         if context.environment_id is None:
             raise Refusal("an agent starts in an environment", "name one with --environment")
-        if command.role not in self.registry.role_names:
-            raise Refusal(f"role {command.role} is not declared", "choose a role declared by an installed suite")
+        self.types.find(command.role)
         started = self.agents.session(command.session)
         if started is not None and started.ended_at is None:
             raise Refusal(f"session {command.session} has started already", "journal agent list shows the agents")

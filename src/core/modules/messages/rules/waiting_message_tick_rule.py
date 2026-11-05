@@ -13,7 +13,6 @@ class WaitingMessageTickRule(DriverRule):
     name = "messages.idle-agent-tick"
     hook = HookEventName.TICK
     drivers = ["*"]
-    roles = [AgentRole.MAIN]
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.allowed().running(RecordWaitingMessageLine(hook.environment_id))
+        return RuleAnswer.allowed().running(RecordWaitingMessageLine(hook.environment_id, hook.agent_id))

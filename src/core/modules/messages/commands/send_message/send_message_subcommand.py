@@ -14,6 +14,7 @@ class SendMessageSubcommand(Subcommand[SendMessage, Message]):
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("text")
         parser.add_argument("--file", action="append", default=[], dest="files")
+        parser.add_argument("--target-agent", type=int)
 
     def command(self, arguments: Namespace, caller: Caller) -> SendMessage:
-        return SendMessage(arguments.text, files=tuple(arguments.files))
+        return SendMessage(arguments.text, files=tuple(arguments.files), target_agent_id=arguments.target_agent)

@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
-import { openBlock as o, createElementBlock as l, withModifiers as G, unref as d, createTextVNode as me, toDisplayString as g, createVNode as k, createBlock as x, withCtx as R, Fragment as ae, renderList as re, createElementVNode as w, createCommentVNode as v, computed as i, ref as f, watch as ne, defineAsyncComponent as $e, onUnmounted as fe, withKeys as ce, normalizeClass as oe, createSlots as Se, resolveDynamicComponent as _e, nextTick as de } from "vue";
-import { peekRef as we, Icon as ue, RunningCommand as Ce, FoldGroup as ye, TaskStatusIcon as Te, useNow as xe, age as Re, perHour as Ae, useWindow as ke, loadWindowComponent as Ee, TimeAgo as qe, InnerTabs as Be, TabBody as Oe, SwitchCase as Ie, EmptyState as je, useRows as Ne, useDeclaredRows as ge, SearchBar as Le, Segmented as Ve, RowList as We } from "@journal/window-kit";
-import { _ as se, T as ve } from "./TranscriptRows-1x1Cp9tO.js";
+import { openBlock as o, createElementBlock as l, withModifiers as G, unref as d, createTextVNode as me, toDisplayString as g, createVNode as k, createBlock as x, withCtx as R, Fragment as ae, renderList as re, createElementVNode as w, createCommentVNode as v, computed as i, ref as f, watch as ne, defineAsyncComponent as $e, onUnmounted as fe, withKeys as ce, normalizeClass as oe, createSlots as Se, resolveDynamicComponent as Ce, nextTick as de } from "vue";
+import { peekRef as we, Icon as ue, RunningCommand as _e, FoldGroup as ye, TaskStatusIcon as Te, useNow as xe, age as Re, perHour as Ae, useWindow as ke, loadWindowComponent as Ee, TimeAgo as qe, InnerTabs as Be, TabBody as Oe, SwitchCase as Ie, EmptyState as je, useRows as Ne, useDeclaredRows as ge, SearchBar as Le, Segmented as Ve, RowList as We } from "@journal/window-kit";
+import { _ as se, T as ve } from "./TranscriptRows-BEE3BxfY.js";
 const ze = {
   class: "agent-command",
   "data-agent-command": ""
@@ -26,7 +26,7 @@ const ze = {
           name: "arrow",
           size: 11
         })
-      ])) : n.stopped ? (o(), l("span", De, "Waiting")) : (o(), x(d(Ce), {
+      ])) : n.stopped ? (o(), l("span", De, "Waiting")) : (o(), x(d(_e), {
         key: 2,
         text: n.command,
         idle: n.note || "thinking"
@@ -134,7 +134,7 @@ const ze = {
     }), p = i(() => {
       var e;
       return ((e = a.facts) == null ? void 0 : e.tasks) ?? [];
-    }), A = i(() => p.value.filter((e) => e.state === "open")), C = i(() => {
+    }), A = i(() => p.value.filter((e) => e.state === "open")), _ = i(() => {
       var e, t, s;
       return (e = a.facts) != null && e.job_enabled && (((t = a.facts) == null ? void 0 : t.task_title) || ((s = A.value[0]) == null ? void 0 : s.title)) || "";
     }), M = i(() => {
@@ -161,7 +161,7 @@ const ze = {
     ne(() => a.open, (e) => {
       e && (T.value = y.tabs[0]);
     });
-    const Z = Object.fromEntries(y.tabs.filter((e) => e.component).map((e) => [e.key, $e(() => Ee(e.component))])), V = i(() => a.row.role === "subagent" || a.row.role === "reviewer"), _ = f(!1), W = f(""), K = f(""), B = i(() => a.row.role !== "main" && (!a.row.ended_at || E.value || a.waitReason));
+    const Z = Object.fromEntries(y.tabs.filter((e) => e.component).map((e) => [e.key, $e(() => Ee(e.component))])), V = i(() => a.row.role === "subagent" || a.row.role === "reviewer"), C = f(!1), W = f(""), K = f(""), B = i(() => a.row.role !== "main" && (!a.row.ended_at || E.value || a.waitReason));
     async function ee() {
       if (!B.value) return;
       const e = await y.read(`usage tool --agent ${a.row.id}`);
@@ -220,19 +220,19 @@ const ze = {
         ]),
         w("span", tt, [
           w("span", at, g(M.value), 1),
-          q.value && !C.value ? (o(), l("span", nt, g(Q.value), 1)) : v("", !0)
+          q.value && !_.value ? (o(), l("span", nt, g(Q.value), 1)) : v("", !0)
         ]),
-        C.value ? (o(), l("span", ot, [
+        _.value ? (o(), l("span", ot, [
           w("span", {
             class: "agent-job",
             "data-agent-job": "",
-            title: C.value
-          }, g(C.value), 9, st),
+            title: _.value
+          }, g(_.value), 9, st),
           q.value ? (o(), l("span", lt, g(Q.value), 1)) : v("", !0)
         ])) : v("", !0),
         !n.open && (B.value || q.value && I.value) ? (o(), l("span", {
           key: 1,
-          class: oe(["agent-foot", { "agent-work-start": !C.value }]),
+          class: oe(["agent-foot", { "agent-work-start": !_.value }]),
           "data-agent-foot": ""
         }, [
           B.value ? (o(), x(pe, {
@@ -265,9 +265,9 @@ const ze = {
             (u = n.facts) != null && u.instruction ? (o(), l("div", ct, [
               k(d(ye), {
                 label: "Instruction",
-                open: _.value,
+                open: C.value,
                 "data-agent-section": "instruction",
-                onToggle: t[1] || (t[1] = (c) => _.value = !_.value)
+                onToggle: t[1] || (t[1] = (c) => C.value = !C.value)
               }, {
                 default: R(() => [
                   w("div", dt, g(n.facts.instruction), 1)
@@ -324,15 +324,16 @@ const ze = {
                     transcript: R(() => [
                       k(ve, {
                         line: `agent transcript ${n.row.id}`,
+                        agent: n.row.id,
                         padding: "0"
-                      }, null, 8, ["line"])
+                      }, null, 8, ["line", "agent"])
                     ]),
                     _: 2
                   }, [
                     re(d(Z), (m, h) => ({
                       name: h,
                       fn: R(() => [
-                        (o(), x(_e(m), {
+                        (o(), x(Ce(m), {
                           agent: n.row.id
                         }, null, 8, ["agent"]))
                       ])
@@ -347,7 +348,7 @@ const ze = {
       ], 42, Ye);
     };
   }
-}, pt = /* @__PURE__ */ se(vt, [["__scopeId", "data-v-fbede3d0"]]), mt = ["data-agent-row"], te = "cubic-bezier(0.2, 0.9, 0.25, 1)", ft = {
+}, pt = /* @__PURE__ */ se(vt, [["__scopeId", "data-v-bd9f9dfe"]]), mt = ["data-agent-row"], te = "cubic-bezier(0.2, 0.9, 0.25, 1)", ft = {
   __name: "AgentRows",
   props: { line: { type: String, required: !0 }, empty: { type: String, required: !0 }, texts: { type: Object, default: () => ({}) } },
   setup(n) {
@@ -359,10 +360,10 @@ const ze = {
     ], $ = n, { rows: D } = Ne("usage agents --closed", ["agent.*", "task.*"]), { rows: a } = ge("waits"), { rows: r } = ge("progress"), P = (e) => r.value.find((t) => t.agent_id === e.id) ?? null, le = (e) => {
       var t;
       return ((t = a.value.find((s) => s.agent_id === e.id)) == null ? void 0 : t.reason) ?? "";
-    }, p = f("running"), A = f(""), C = ke(), M = f([]), Y = f(""), J = f(!1), E = f(!1), F = f(25);
+    }, p = f("running"), A = f(""), _ = ke(), M = f([]), Y = f(""), J = f(!1), E = f(!1), F = f(25);
     let U = 0;
     async function O() {
-      const e = ++U, t = await C.read(`${$.line} --show ${p.value} --search ${JSON.stringify(A.value)} --limit ${F.value}`);
+      const e = ++U, t = await _.read(`${$.line} --show ${p.value} --search ${JSON.stringify(A.value)} --limit ${F.value}`);
       e === U && (M.value = t.ok ? t.value.rows : [], Y.value = t.ok ? "" : t.error, E.value = t.ok && t.value.page * t.value.size < t.value.total, J.value = !0);
     }
     async function q() {
@@ -370,12 +371,12 @@ const ze = {
     }
     ne([p, A], () => {
       F.value = 25, O();
-    }), C.follow(["agent.*", "task.*", ...C.sources.flatMap((e) => e.events)], O), O();
+    }), _.follow(["agent.*", "task.*", ..._.sources.flatMap((e) => e.events)], O), O();
     const Q = (e) => D.value.find((t) => t.id === e.id) ?? null, I = M, ie = i(() => !!A.value.trim()), X = i(() => $.texts[p.value] ?? { title: $.empty, hint: "" }), b = f(null), S = f(null), H = f(null), y = i(() => I.value.find((e) => e.id === b.value) ?? null), T = i(() => y.value ? [y.value] : I.value), Z = i(() => I.value.length - T.value.length), V = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let _ = !1, W = 0;
+    let C = !1, W = 0;
     async function K(e) {
-      if (_) return;
-      _ = !0, W = H.value.scrollTop;
+      if (C) return;
+      C = !0, W = H.value.scrollTop;
       const t = S.value.querySelector(`[data-agent-open="${e.id}"]`);
       if (!V()) {
         const c = [...S.value.querySelectorAll(".agent-row")].filter((m) => !m.contains(t));
@@ -391,15 +392,15 @@ const ze = {
           m.animate([{ opacity: 0, transform: "translateY(6px)" }, { opacity: 1, transform: "none" }], { duration: 240, delay: 60, easing: te, fill: "backwards" });
         });
       }
-      _ = !1;
+      C = !1;
     }
     async function B() {
-      if (_ || !y.value) return;
-      _ = !0;
+      if (C || !y.value) return;
+      C = !0;
       const e = S.value.querySelector(`[data-agent-open="${b.value}"]`), t = [...e.children, ...S.value.querySelectorAll(".agents-held")], s = V() ? [] : t.map((u) => u.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: "forwards" }));
       await Promise.all(s.map((u) => u.finished)), b.value = null, await de(), H.value.scrollTop = W, s.forEach((u) => u.cancel()), V() || (e.animate([{ transform: "translateY(-12px)" }, { transform: "none" }], { duration: 280, easing: te }), S.value.querySelectorAll(".agent-row").forEach((u) => {
         u.contains(e) || u.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: te });
-      })), _ = !1;
+      })), C = !1;
     }
     const ee = (e) => b.value === e.id ? B() : K(e);
     ne(A, (e) => e.trim() && (b.value = null)), ne(p, () => {

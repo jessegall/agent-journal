@@ -10,8 +10,8 @@ vi.stubGlobal("ResizeObserver", class {
     unobserve() {}
 });
 
-const RESEARCHER = {name: "journal-researcher", description: "Researches a question and reports what it found", tools: "Read, Grep, Glob", profile_type: "subagent", model: "sonnet", codex_model: "gpt-6.1-sol", body: "You research.", shipped: true, uses: 3, last_used: Date.now() / 1000 - 600};
-const BUILDER = {name: "builder", description: "Writes a bounded change", tools: "Read, Edit, Bash", profile_type: "worker", model: "", codex_model: "gpt-6-luna", body: "You build.", shipped: false, uses: 0, last_used: 0};
+const RESEARCHER = {name: "journal-researcher", description: "Researches a question and reports what it found", agent_type: "helper", model: "sonnet", codex_model: "gpt-6.1-sol", body: "You research.", shipped: true, uses: 3, last_used: Date.now() / 1000 - 600};
+const BUILDER = {name: "builder", description: "Writes a bounded change", agent_type: "worker", model: "", codex_model: "gpt-6-luna", body: "You build.", shipped: false, uses: 0, last_used: 0};
 let app;
 let host;
 
@@ -24,7 +24,7 @@ afterEach(() => {
 // the page drawn in the document, over a journal that lists these profiles and answers each line it runs as the given function says
 async function drawn(profiles = [RESEARCHER, BUILDER], run = async () => ({ok: true, value: null})) {
     const lines = [];
-    const window_ = {...context({"profile list": {...page(profiles), value: {...page(profiles).value, types: ["subagent", "worker", "reader"]}}}), run: async (line) => (lines.push(line), run(line))};
+    const window_ = {...context({"profile list": {...page(profiles), value: {...page(profiles).value, types: ["helper", "worker", "reader"]}}}), run: async (line) => (lines.push(line), run(line))};
     host = document.createElement("div");
     document.body.append(host);
     app = createApp({render: () => h(ProfileRows)});
@@ -51,7 +51,7 @@ test("the page lists each profile with its description, kind, models and use, un
     const first = host.querySelector('[data-profile="journal-researcher"]').textContent.replace(/\s+/g, " ");
     expect(first).toContain("journal-researcher");
     expect(first).toContain("Researches a question and reports what it found");
-    expect(first).toContain("subagent · sonnet on Claude · gpt-6.1-sol on Codex");
+    expect(first).toContain("helper · sonnet on Claude · gpt-6.1-sol on Codex");
     expect(first).toContain("Uses: 3 times, last");
     const second = host.querySelector('[data-profile="builder"]').textContent.replace(/\s+/g, " ");
     expect(second).toContain("worker · chosen at start on Claude · gpt-6-luna on Codex");
@@ -77,13 +77,13 @@ test("a profile opens in a panel at the side with its fields and a model picker 
     expect(document.querySelector("[data-side-panel]")).not.toBeNull();
     expect(document.querySelector('[role="dialog"] h2').textContent).toBe("journal-researcher");
     expect(panel().querySelector("#profile-description").value).toBe(RESEARCHER.description);
-    expect(panel().querySelector("#profile-tools").value).toBe("Read, Grep, Glob");
+    expect(panel().querySelector("#profile-tools")).toBeNull();
     expect(panel().querySelector("#profile-body").value).toBe("You research.");
     const pickers = [...panel().querySelectorAll("[data-drop-head]")].map((head) => head.textContent.trim());
     expect(pickers).toEqual(["sonnet", "gpt-6.1-sol"]);
     expect(panel().querySelector('input[aria-label="Model on Claude Code"]')).toBeNull();
     expect(panel().textContent).toContain("This is a built-in profile");
-    expect([...panel().querySelectorAll(".segmented button")].map((button) => button.textContent.trim())).toEqual(["Subagent", "Worker", "Reader"]);
+    expect([...panel().querySelectorAll(".segmented button")].map((button) => button.textContent.trim())).toEqual(["Helper", "Worker", "Reader"]);
 });
 
 test("Save waits until something changed, and an edit with a new model is saved by the profile's name", async () => {
@@ -100,7 +100,7 @@ test("Save waits until something changed, and an edit with a new model is saved 
     expect(panel().querySelector("[data-drop-head]").textContent.trim()).toBe("opus");
     save.click();
     await settle();
-    expect(lines).toContainEqual(["profile", "save", "journal-researcher", "--description", "Researches a question in the code", "--tools", "Read, Grep, Glob", "--type", "subagent", "--model", "opus", "--codex-model", "gpt-6.1-sol", "--body", "You research."]);
+    expect(lines).toContainEqual(["profile", "save", "journal-researcher", "--description", "Researches a question in the code", "--type", "helper", "--model", "opus", "--codex-model", "gpt-6.1-sol", "--body", "You research."]);
     expect(host.querySelector("[data-profile-notice]").textContent).toBe("journal-researcher saved. The agent will use it the next time it starts a helper with this profile.");
 });
 
@@ -118,7 +118,7 @@ test("a new profile asks for a name and a description before it can be saved, an
     save.click();
     await settle();
     expect(lines.at(-1).slice(0, 3)).toEqual(["profile", "save", "critic"]);
-    expect(lines.at(-1)).toContain("Read, Grep, Glob");
+    expect(lines.at(-1)).toContain("helper");
 });
 
 test("a name with a space cannot be saved", async () => {
@@ -153,5 +153,5 @@ test("Cancel closes the panel and saves nothing", async () => {
 test("a journal with no profiles says what a profile is", async () => {
     await drawn([]);
     expect(host.textContent).toContain("No profiles yet");
-    expect(host.textContent).toContain("A profile gives an agent its instructions, tools and model");
+    expect(host.textContent).toContain("A profile gives an agent its instructions, type and model");
 });

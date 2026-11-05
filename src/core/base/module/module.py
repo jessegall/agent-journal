@@ -3,6 +3,8 @@ import inspect
 from collections.abc import Sequence
 from pathlib import Path
 from typing import ClassVar, Never
+from core.base.agent_type import AgentType
+from core.base.profile.agent_profile import AgentProfile
 
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.chat.dock_declaration import DockDeclaration
@@ -80,6 +82,8 @@ class Module:
     buttons: ClassVar[list[ButtonDeclaration]] = []
     button_slots: ClassVar[list[str]] = []
     added_states: ClassVar[Sequence[StateAddition]] = ()
+    agent_types: ClassVar[list[AgentType]] = []
+    profiles: ClassVar[list[AgentProfile]] = []
     providers: ClassVar[list[type[Provider]]] = []
     settings: ClassVar[Sequence[SettingNode]] = []
     tunnels: ClassVar[list[type[Tunnel]]] = []

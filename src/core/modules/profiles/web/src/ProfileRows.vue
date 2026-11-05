@@ -3,9 +3,7 @@ import {computed, ref} from "vue";
 import {ago, Btn, EmptyState, ListRow, SearchBar, matchesSearch, useRows} from "@journal/window-kit";
 import ProfilePanel from "./ProfilePanel.vue";
 
-// the Agent profiles page as version 4 drew it: a bar with the find box, New profile and the count, a row for each profile with its kind, models and use, and
-// the profile opened in a panel at the side, where it is edited and saved; the person saves, an agent is refused
-const NEW_PROFILE = {name: "", description: "", tools: "Read, Grep, Glob", profile_type: "subagent", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: false, uses: 0};
+const NEW_PROFILE = {name: "", description: "", agent_type: "helper", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: false, uses: 0};
 
 const {rows, listing, failure, loaded, act, actionFailure, context} = useRows("profile list", []);
 const types = computed(() => listing.value ? listing.value.types : []);
@@ -39,7 +37,7 @@ function close() {
 async function save(profile, fields) {
     notice.value = "";
     const name = profile.name || fields.name;
-    const result = await act(["profile", "save", name, "--description", fields.description, "--tools", fields.tools, "--type", fields.profile_type, "--model", fields.model, "--codex-model", fields.codex_model, "--body", fields.body]);
+    const result = await act(["profile", "save", name, "--description", fields.description, "--type", fields.agent_type, "--model", fields.model, "--codex-model", fields.codex_model, "--body", fields.body]);
     if (!result.ok) return;
     making.value = false;
     opened.value = name;
@@ -64,7 +62,7 @@ async function save(profile, fields) {
         </template>
         <template v-else-if="!loaded || !rows.length">
             <EmptyState class="empty" :loading="!loaded" title="No profiles yet">
-                A profile gives an agent its instructions, tools and model. Your suite supplies its standard profiles at setup.
+                A profile gives an agent its instructions, type and model. The journal includes standard profiles.
             </EmptyState>
         </template>
         <template v-else-if="!matching.length">
@@ -77,7 +75,7 @@ async function save(profile, fields) {
                         <ListRow :title="profile.name" :text="profile.description">
                             <template #end>
                                 <span class="profile-meta">
-                                    <span class="profile-model">{{ profile.profile_type }} · {{ profile.model || "chosen at start" }} on Claude · {{ profile.codex_model || "chosen at start" }} on Codex</span>
+                                    <span class="profile-model">{{ profile.agent_type }} · {{ profile.model || "chosen at start" }} on Claude · {{ profile.codex_model || "chosen at start" }} on Codex</span>
                                     <span :class="['profile-used', {never: !profile.uses}]">{{ usedWords(profile) }}</span>
                                 </span>
                             </template>

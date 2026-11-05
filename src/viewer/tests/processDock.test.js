@@ -60,6 +60,28 @@ test("a docked process's card shows the title and steps its output keeps, in pla
     expect(foot.querySelector("[data-output-steps]").textContent).toBe("Steps: 12 passed, 1 failed");
 });
 
+async function dockedHead(run) {
+    const window = context({"process card 3": {ok: true, value: {id: 3, state: "running", line: "pytest -q", ...run}}, "output peek 3": {ok: true, value: {lines: []}}});
+    const head = document.createElement("span");
+    document.body.append(head);
+    const foot = document.createElement("span");
+    const time = document.createElement("span");
+    document.body.append(foot, time);
+    window.option = (key) => ({head: ref(head), foot: ref(foot), time: ref(time), folded: ref(true), row: ref({id: 7, target_id: 3})})[key];
+    await mounted(OutputDock, window);
+    return head;
+}
+
+test("a process with no steps and no percent shows three pending dots", async () => {
+    const head = await dockedHead({});
+    expect(head.querySelectorAll("[data-output-pending] i")).toHaveLength(3);
+});
+
+test("the pending dots go once a run has steps or a percent", async () => {
+    expect((await dockedHead({steps_passed: 1})).querySelector("[data-output-pending]")).toBeNull();
+    expect((await dockedHead({progress: 40})).querySelector("[data-output-pending]")).toBeNull();
+});
+
 test("a chained run's temporary title never shows its script in the header or tooltip", async () => {
     const line = "rm -rf /tmp/example && python3 - <<'PY'\nprint('private script')\nPY";
     const window = context({"process card 3": {ok: true, value: {id: 3, state: "running", line, title: "Removing files"}}});

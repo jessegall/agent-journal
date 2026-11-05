@@ -55,6 +55,58 @@ A third-party button comes after the journal's buttons and names its module. It 
 Its command must belong to its own allowance: sync refuses a line already allowed by a shipped
 window, a shipped button, or another module's button, and refuses person-only administration lines.
 
+## Register an agent type
+
+`agent_types` declares the roles a module supplies. Depend on `journal.core.agents` and give each
+type a unique key made of lowercase letters and dashes and a label:
+
+```python
+from core.base.agent_type import AgentType
+from core.base.module.module import Module
+
+
+class ClerksModule(Module):
+    name = "acme.clerks"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.core.agents"]
+    agent_types = [AgentType("clerk", "Clerk", extends="helper")]
+```
+
+A type can extend another registered type. A helper with `access=Access.WRITING` must have
+`separate_folder=True`. An optional `roster` class implements `AgentRoster.available(environment_id)`
+and returns the agents that can hold work. `start_line` names a separate start command when one
+is needed; `default_profile` names the profile used when a start names none.
+
+Drivers, driver rules, suite defaults and an `AgentPolicy` must name registered types. Sync
+refuses unknown roles, duplicate keys, invalid rosters, missing base types and inheritance loops
+before changing the stored registry. Register a role in `agent_types` before using it elsewhere.
+
+## Register a profile
+
+Declare profiles on the module that owns them. Each profile names a registered agent type:
+
+```python
+from core.base.module.module import Module
+from core.base.profile.agent_profile import AgentProfile
+
+
+class NotesProfilesModule(Module):
+    name = "acme.notes-profiles"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.core.agents"]
+    profiles = [AgentProfile("notes-reader", "Reads and explains notes", "Read the notes and report the findings.",
+                             agent_type="helper")]
+```
+
+A name uses letters, digits, dashes or underscores. Profiles need a description and instructions.
+Sync refuses duplicate names, unknown agent types and writing access above the type's allowance.
+An agent type's `default_profile` must name a profile of that same type. Set `independent=True`
+when each job needs a fresh review. `model` and `codex_model` select models for the two programs.
+
+`Suite.profiles` and `Suite.profile_types` are no longer declarations. Move profiles to
+`Module.profiles` and register their types in `Module.agent_types`; sync names that correction
+when a plugin still uses the old fields. The profile CLI keeps its `--type` option.
+
 ## Join a suite or add one
 
 `parent_suite = "coding"` makes the review module's templates and buttons active in environments

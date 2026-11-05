@@ -33,16 +33,16 @@ class RecoveryCase:
     worker: Actor
     session: str
     online: bool = True
-    live: bool = False
-    stubborn: bool = False
+    process_running: bool = False
+    stop_blocked: bool = False
     launches: list[dict[str, object]] = field(default_factory=list)
-    typed: list[tuple[int, str]] = field(default_factory=list)
+    terminal_lines: list[tuple[int, str]] = field(default_factory=list)
     stopped: list[int] = field(default_factory=list)
     on_launch: Callable[[], None] | None = None
 
     def request(self, link, request, answer_bytes=0):
         if "typed" in request:
-            self.typed.append((request["agent_id"], request["typed"]))
+            self.terminal_lines.append((request["agent_id"], request["typed"]))
             return b"typed"
         if "command" in request:
             self.launches.append(request)
@@ -52,12 +52,12 @@ class RecoveryCase:
         return b"started\n"
 
     def command_line(self, pid):
-        return f"claude -p --resume {self.session}" if self.live and pid == WORKER_PID else ""
+        return f"claude -p --resume {self.session}" if self.process_running and pid == WORKER_PID else ""
 
     def stop(self, pid, program):
         self.stopped.append(pid)
-        if not self.stubborn:
-            self.live = False
+        if not self.stop_blocked:
+            self.process_running = False
 
     def advance(self, seconds):
         self.story.advance(timedelta(seconds=seconds))
@@ -82,7 +82,7 @@ def recovery(new_story, monkeypatch):
     case = RecoveryCase(story, worker, session)
     monkeypatch.setattr(ConnectionProbe, "is_online", lambda probe: case.online)
     monkeypatch.setattr(LauncherLink, "sent", lambda link, request, answer_bytes=0: case.request(link, request, answer_bytes))
-    monkeypatch.setattr(TerminalTyping, "type_line", lambda typing, agent_id, line: case.typed.append((agent_id, line)))
+    monkeypatch.setattr(TerminalTyping, "type_line", lambda typing, agent_id, line: case.terminal_lines.append((agent_id, line)))
     monkeypatch.setattr(LeftoverProcess, "command_line", case.command_line)
     monkeypatch.setattr(LeftoverProcess, "stop", case.stop)
     story.hook(session, HookSamples.prompt("Finish the assigned task"))
@@ -99,9 +99,9 @@ def offline_recovery(recovery):
 
 
 @pytest.fixture
-def live_recovery(recovery):
+def running_recovery(recovery):
     recovery.story.expect_success(f"agent edit {recovery.worker.id} --pid {WORKER_PID}")
-    recovery.live = True
+    recovery.process_running = True
     return recovery
 
 
@@ -113,12 +113,12 @@ def first_recovery(recovery):
 
 
 @pytest.fixture(params=[False, True])
-def recovered_live_worker(live_recovery, request):
-    live_recovery.stubborn = request.param
-    live_recovery.advance(SILENT_SECONDS)
-    live_recovery.tick()
-    live_recovery.tick()
-    return live_recovery
+def resumed_running_worker(running_recovery, request):
+    running_recovery.stop_blocked = request.param
+    running_recovery.advance(SILENT_SECONDS)
+    running_recovery.tick()
+    running_recovery.tick()
+    return running_recovery
 
 
 @pytest.fixture
@@ -137,7 +137,7 @@ def test_a_reconnection_resumes_a_silent_worker_once(offline_recovery):
     recovery.tick()
     recovery.tick()
     recovery.story.expect_rows(len(recovery.launches) == 1, len(recovery.lines(recovery.worker.id)) == 1)
-    recovery.story.expect_rows(not any(agent_id == recovery.worker.id for agent_id, line in recovery.typed))
+    recovery.story.expect_rows(not any(agent_id == recovery.worker.id for agent_id, line in recovery.terminal_lines))
 
 
 def test_a_running_or_queued_shell_command_prevents_recovery(recovery):
@@ -173,17 +173,17 @@ def test_silent_recovery_waits_for_a_growing_gap_and_stops_after_three_attempts(
 
 
 
-def test_a_live_worker_must_stop_before_its_session_can_resume(recovered_live_worker):
-    recovery = recovered_live_worker
+def test_a_live_worker_must_stop_before_its_session_can_resume(resumed_running_worker):
+    recovery = resumed_running_worker
     recovery.story.expect_rows(recovery.stopped == [WORKER_PID])
-    if recovery.stubborn:
-        recovery.story.expect_rows(not recovery.launches, recovery.live)
+    if recovery.stop_blocked:
+        recovery.story.expect_rows(not recovery.launches, recovery.process_running)
         recovery.story.expect_rows(len(recovery.lines(recovery.story.agent.id, FAILED_SOURCE)) == 1)
     else:
-        recovery.story.expect_rows(not recovery.live, len(recovery.launches) == 1)
+        recovery.story.expect_rows(not recovery.process_running, len(recovery.launches) == 1)
 
 def test_worker_send_does_not_resume_a_session_whose_process_is_still_active(recovery):
-    recovery.live = True
+    recovery.process_running = True
     recovery.story.expect_success(f"agent edit {recovery.worker.id} --pid {WORKER_PID}")
     recovery.story.expect_text(f"agent show {recovery.worker.id}", f"pid: {WORKER_PID}")
     recovery.story.expect_success(f"agent end {recovery.worker.id}", actor=recovery.worker)
@@ -200,7 +200,7 @@ def test_a_terminal_agent_with_its_own_task_gets_a_typed_waking_line(recovery):
     recovery.story.expect_success("task start 2", actor=recovery.story.agent)
     recovery.advance(SILENT_SECONDS)
     recovery.tick()
-    recovery.story.expect_rows(any(agent_id == recovery.story.agent.id for agent_id, line in recovery.typed))
+    recovery.story.expect_rows(any(agent_id == recovery.story.agent.id for agent_id, line in recovery.terminal_lines))
 
 
 def test_the_connection_state_is_available_to_the_viewer(offline_recovery):

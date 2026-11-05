@@ -145,7 +145,18 @@ function release(item) {
 .dock-stack {
     display: flex;
     flex-direction: column;
-    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+
+.dock-stack:empty {
+    border: none;
+}
+
+.dock-stack > :first-child,
+.dock-stack > :first-child :deep(.chat-dock-card) {
+    border-top: none;
 }
 
 .dock-runs-chips {

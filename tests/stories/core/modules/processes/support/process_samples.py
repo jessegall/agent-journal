@@ -25,16 +25,24 @@ BYTES_SHORT = 12
 
 
 def start_process(story: Story, line: str = "make test && echo done", piped: bool = False, limit_seconds: int = 30, category: CommandCategory | None = None) -> Process:
-    """Runs StartProcess the way the runner rule does in a hook call's transaction: one part for each command of the line."""
     texts = [text.strip() for text in line.split("&&")]
-    parts = tuple(PartSpec(text, text.split()[0], piped and index == 0, CommandCategory.READ if text.startswith("cd ") else category or (CommandCategory.JOURNAL if text.startswith("journal ") else CommandCategory.UNKNOWN)) for index, text in enumerate(texts))
+    parts = tuple(PartSpec(text, text.split()[0], piped and index == 0, sample_category(text, category)) for index, text in enumerate(texts))
     command = StartProcess(story.agent.id, None, line, "/work/main", "zsh", (category or (CommandCategory.JOURNAL if line.startswith("journal ") else CommandCategory.UNKNOWN)), limit_seconds, parts)
     return story.container.get(Bus).run(command, story.agent, environment_id=1)
 
 
-def runner_line(story: Story, process_id: int, line: str, limit: int = 15, background: bool = False, session: str = "s-1", read_command: bool = False, has_long_part: bool = False, queue_run: bool = True) -> str:
-    """The line the rule gives the agent's tool to run in place of its own."""
+def sample_category(text: str, category: CommandCategory | None) -> CommandCategory:
+    if text.startswith("cd "):
+        return CommandCategory.READ
+    if category is not None:
+        return category
+    return CommandCategory.JOURNAL if text.startswith("journal ") else CommandCategory.UNKNOWN
+
+
+def runner_line(story: Story, process_id: int, line: str, limit: int = 15, background: bool = False, session: str = "s-1", read_command: bool = False, has_long_part: bool = False, queue_run: bool = True, sandbox: bool = False) -> str:
     flag = (" --background" if background else "") + (" --only-reads" if read_command else "")
+    if sandbox or session == "sub-1":
+        flag += " --read-only-shell"
     variables = f" JOURNAL_RUN_MOST_OUTPUT={(100 if has_long_part else 10) << 20}"
     if limit > 0 and has_long_part and not read_command and queue_run:
         flag += " --queue"
@@ -57,13 +65,11 @@ def with_parse_error(sample: HookSample, error: str = "unbalanced quote") -> Hoo
 
 
 def user_waits(story: Story) -> None:
-    """A person sends a message the agent has not read."""
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.run('message send "Fix the cart first" --environment main', actor=story.user)
 
 
 def install_runner(story: Story) -> Story:
-    """Places a runner where the installer does, so the rule rewrites lines."""
     binary = story.home.folder.resolve() / "bin" / "journal-run"
     binary.parent.mkdir(parents=True, exist_ok=True)
     binary.write_text("#!/bin/sh\n")
@@ -72,7 +78,6 @@ def install_runner(story: Story) -> Story:
 
 
 def ended_run(story: Story, line: str, text: str, exit_code: int = 0) -> Process:
-    """A run of the builder that has ended with the output given, kept as the module keeps a long run's."""
     process = start_process(story, line)
     folder = story.container.get(OutputFolder)
     folder.write_output(process.id, 1, text)
@@ -83,7 +88,6 @@ def ended_run(story: Story, line: str, text: str, exit_code: int = 0) -> Process
 
 
 def moved_run(story: Story, line: str = "make build", category: CommandCategory | None = None) -> Process:
-    """A run of the builder that went to the background."""
     process = start_process(story, line, category=category)
     story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
     return process
@@ -99,7 +103,6 @@ def end_run(story: Story, process: Process, text: str, exit_code: int = 0) -> No
 
 
 def tick(story) -> None:
-    """A minute passes and the ticker comes: the one place a reader runs while a run goes on."""
     story.advance(timedelta(minutes=1))
     for process in tuple(story.container.get(ProcessQuery).running().all_rows()):
         story.container.get(OutputFolder).beat(process.id, story.clock.timestamp())

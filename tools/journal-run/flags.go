@@ -13,14 +13,16 @@ import (
 // Flags are what the rewritten command line says: the process, the foreground limit, whether to move at once and the
 // line after --; --follow with --folder and --parts is the detached tracker of a moved run.
 type Flags struct {
-	Count      string
-	Process    int
-	Limit      int
-	Background bool
-	Queue      bool
-	OnlyReads  bool
-	Line       string
-	Follow     bool
+	Count         string
+	Process       int
+	Limit         int
+	Background    bool
+	Queue         bool
+	OnlyReads     bool
+	ReadOnlyShell bool
+	WriteFolder   string
+	Line          string
+	Follow        bool
 	// KeepCutting is the program that keeps a line's outputs under the limit while a part with & outlives the line.
 	KeepCutting bool
 	Folder      string
@@ -113,6 +115,15 @@ func ParseFlags(arguments []string) (Flags, error) {
 			flags.Queue = true
 		case "--only-reads":
 			flags.OnlyReads = true
+		case "--read-only-shell":
+			flags.ReadOnlyShell = true
+		case "--write-folder":
+			if index+1 >= len(arguments) {
+				return flags, fmt.Errorf("%s needs a value", argument)
+			}
+			index++
+			flags.WriteFolder = arguments[index]
+			flags.ReadOnlyShell = true
 		case "--follow":
 			flags.Follow = true
 		case "--keep-cutting":

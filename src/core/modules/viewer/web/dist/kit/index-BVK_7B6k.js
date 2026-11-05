@@ -5983,7 +5983,7 @@ const Qg = {
       _: 1
     }, 8, ["duration"]));
   }
-}, fw = /* @__PURE__ */ Y(n0, [["__scopeId", "data-v-bf8cd8b0"]]), dt = { notice: 0.42, gap: 8, shuffles: 3, seconds: 2.4, frames: 48, fps: 20, lift: 0.12 }, yn = (e) => Math.min(Math.max(e, 0), 1), a0 = (e) => {
+}, fw = /* @__PURE__ */ Y(n0, [["__scopeId", "data-v-6556be66"]]), dt = { notice: 0.42, gap: 8, shuffles: 3, seconds: 2.4, frames: 48, fps: 20, lift: 0.12 }, yn = (e) => Math.min(Math.max(e, 0), 1), a0 = (e) => {
   const t = yn(e);
   return t * t * (3 - 2 * t);
 }, rt = (e, t, n) => a0((e - t) / (n - t));
@@ -10298,7 +10298,7 @@ const B2 = /* @__PURE__ */ A2(T2), I2 = ["width", "height", "viewBox"], R2 = ["w
       ce(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, fx = /* @__PURE__ */ Y(D2, [["__scopeId", "data-v-47e67f04"]]), hx = Il(() => import("./VoiceFigure-DktTPYxc.js").then((e) => e.V)), mx = "1.1.0", px = "3.5";
+}, fx = /* @__PURE__ */ Y(D2, [["__scopeId", "data-v-47e67f04"]]), hx = Il(() => import("./VoiceFigure-CWn93OOl.js").then((e) => e.V)), mx = "1.1.0", px = "3.5";
 export {
   cy as $,
   xe as A,

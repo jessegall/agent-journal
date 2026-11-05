@@ -1,3 +1,4 @@
+from suites.coding.support.shipped_profiles import HELPER_PROFILES
 from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.viewer.window_extension import WindowExtension
 from core.base.viewer.window_tab import WindowTab
@@ -6,6 +7,7 @@ from suites.coding.support.coding_templates import CODING_TEMPLATES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.module.module import Module
+from core.base.agent_type import AgentType
 from core.base.viewer.window_search import WindowSearch
 from suites.coding.support.file_edit_searcher import FileEditSearcher
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -53,6 +55,8 @@ class CodingModule(Module):
     windows; the modules only coding uses live in its modules folder."""
 
     name = "journal.suites.coding"
+    profiles = HELPER_PROFILES
+    agent_types = [AgentType("verifier", "Verifier")]
     templates = CODING_TEMPLATES
     nudges = [*CODING_NUDGES, TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN]
     seeders = [CodingSeeder]

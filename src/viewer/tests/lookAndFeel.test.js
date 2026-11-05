@@ -26,7 +26,7 @@ const SECOND_MESSAGE = {id: 2, type: "agent", text: "On it, **now**", created_at
 const MARK = {id: 1, type: "task", variant: "made", key: "task:1", text: "Task 1 created: Fix the cart total", detail: "", lines: "", target_model: "tasks", target_id: 1, outcome: "none", state: "shown", created_at: NOW - 100};
 const MARK_FAMILY = {type: "task", family_icon: "task", mark_icon: "task", group: "tasks", colouring: "group", click: "open row", process: false};
 const REPORT_DOCK = {id: 1, type: "report", target_model: "reports", target_id: 1146, kept: false, state: "docked", leaves_at: null, title: "Report 1146: What the review found", text: "Two reviewers found 17 gaps in the plan"};
-const REPORT_FAMILY = {type: "report", icon: "report", title: "Report {row_id}: {row_title}", buttons: [], leaves_after_seconds: 0, reads: ["report show"]};
+const REPORT_FAMILY = {type: "report", icon: "report", folds: true, title: "Report {row_id}: {row_title}", buttons: [], leaves_after_seconds: 0, reads: ["report show"]};
 
 let mounted = [];
 let lines;
@@ -134,7 +134,7 @@ test("docked items: a card shows its title, a line of its text, and buttons to o
     mounted.push(element);
     await settled();
     expect(element.textContent).toContain("Report 1146: What the review found");
-    expect(element.textContent).toContain("Two reviewers found 17 gaps in the plan");
+    expect(element.textContent).not.toContain("Two reviewers found 17 gaps in the plan");
     expect(element.querySelector("[data-dock-action='open']")).not.toBeNull();
     expect(element.querySelector("[data-dock-action='undock']")).not.toBeNull();
 });
@@ -157,7 +157,7 @@ test("docked items: a declared button goes the moment it is pressed, and comes b
     answer({json: async () => ({code: 1, error: "only a person approves"})});
     await settled();
     expect(button().textContent).toContain("Approve");
-    expect(element.querySelector("[data-dock-failure]").textContent).toBe("only a person approves");
+    expect(element.querySelector("[data-dock-failure]").textContent).toContain("only a person approves");
 });
 
 test("a refused close of a docked card says why on the card", async () => {
@@ -168,7 +168,7 @@ test("a refused close of a docked card says why on the card", async () => {
     await settled();
     element.querySelector("[data-dock-action='undock']").click();
     await settled();
-    expect(element.querySelector("[data-dock-failure]").textContent).toBe("this card stays");
+    expect(element.querySelector("[data-dock-failure]").textContent).toContain("this card stays");
 });
 
 // task 5498: version 4's docked cards fold as the chat is scrolled up and open again at its foot, and the person folds one by hand
@@ -264,13 +264,13 @@ test("composer: a second file with the same name is left out, so one chip and on
     expect(element.querySelector("[data-send]")).not.toBeNull();
 });
 
-test("the running command bar sits between the docks and the composer", async () => {
+test("the running command bar sits above the docks, and the docks on the composer", async () => {
     const element = await mountedChat();
     const docks = element.querySelector("[data-figure-chat-foot]");
     const running = element.querySelector(".running-strip");
     const composer = element.querySelector("form.composer");
-    expect(docks.compareDocumentPosition(running) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(running.compareDocumentPosition(composer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(running.compareDocumentPosition(docks) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(docks.compareDocumentPosition(composer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 });
 
 test("composer: Dump files opens a form where pasted paragraphs and dropped files become the parts of one dump made through dump make", async () => {
