@@ -3,6 +3,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.driver.command_category import CommandCategory
 from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
@@ -13,17 +14,19 @@ from suites.coding.modules.workers.support.worker_settings import WORKER_TEST_LI
 from core.modules.processes.support.run_counts import RunCounts
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.reader_run import ReaderRun
+from core.modules.processes.support.reader_rows import ReaderRows
+from core.modules.processes.support.run_visibility import RunVisibility
 from suites.coding.modules.workers.support.test_listing import TestListing
 
 
 class WorkerTestListings(RunCounts):
     """Builds per-part listings and adds their counts for a queued worker run."""
 
-    def __init__(self, queries: Queries, settings: SettingValues, run: ReaderRun, folder: OutputFolder, outputs: OutputQuery) -> None:
-        self.queries, self.settings, self.run, self.folder, self.outputs = queries, settings, run, folder, outputs
+    def __init__(self, queries: Queries, settings: SettingValues, run: ReaderRun, folder: OutputFolder, outputs: OutputQuery, readers: ReaderRows, visibility: RunVisibility, rows: EventRows) -> None:
+        self.queries, self.settings, self.run, self.folder, self.outputs, self.readers, self.visibility, self.rows = queries, settings, run, folder, outputs, readers, visibility, rows
 
     def parts(self, process: Process) -> tuple[TestListing, ...]:
-        return self.agent_parts(process, self.queries.query(Agent).find(process.agent_id))
+        return self.agent_parts(process, self.rows.required(Agent, process.agent_id))
 
     def agent_parts(self, process: Process, agent: Agent) -> tuple[TestListing, ...]:
         if not process.is_queue_run or process.creator_id != process.agent_id:
@@ -32,11 +35,10 @@ class WorkerTestListings(RunCounts):
             return ()
         if agent.role != AgentRole.WORKER:
             return ()
-        readers = tuple(self.queries.query(Reader).all_rows())
-        outputs = self.queries.query(Output).filter(process_id=process.id).limited(1)
-        output = outputs[0] if outputs else None
+        readers = self.readers.all()
+        output = self.outputs.process_output(process.id)
         listings: list[TestListing] = []
-        for part in self.queries.query(ProcessPart).filter(process_id=process.id).oldest().all_rows():
+        for part in self.visibility.parts(process.id):
             if part.category is not CommandCategory.TEST_RUN:
                 continue
             reader = self.counting_reader(part, output, readers)
@@ -66,7 +68,7 @@ class WorkerTestListings(RunCounts):
             return selected.reader if selected else None
         if output.reader_position not in (0, part.position):
             return selected.reader if selected else None
-        return self.queries.query(Reader).find(output.reader_id)
+        return self.rows.required(Reader, output.reader_id)
 
     def previous_count(self, environment_id: int, command: str) -> int:
         outputs = self.outputs.kept().matching_part(environment_id, command).newest().all_rows()
