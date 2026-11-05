@@ -18,7 +18,7 @@ class ReaderDemands:
     def needs_reader(self, environment_id: int, part: PartSpec) -> bool:
         if not part.category.is_watched or ASKING_FLAGS.intersection(shlex.split(part.command or part.text)):
             return False
-        return part.category.is_long_running or self.processes.has_moved_run(environment_id, part.text)
+        return part.category.is_long_running or self.processes.has_moved_run(part.text)
 
     def reason(self, part: PartSpec, reader: Reader | None, scope: ReaderSampleScope) -> str:
         if reader is None:

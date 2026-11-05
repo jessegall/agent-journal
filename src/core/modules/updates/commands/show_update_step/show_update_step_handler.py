@@ -28,6 +28,6 @@ class ShowUpdateStepHandler(Handler[ShowUpdateStep, ChatMark]):
             raise Refusal("a server update shows its mark in an environment's chat", "name one with --environment")
         step = command.step
         reason = command.detail if step is UpdateStep.FAILED else ""
-        mark = ShowMark(context.environment_id, UpdateMarkType.SERVER_UPDATE, step, f"server-update:{command.run}", step.text(command.detail), detail=reason,
+        mark = ShowMark(UpdateMarkType.SERVER_UPDATE, step, f"server-update:{command.run}", step.text(command.detail), detail=reason,
                         outcome=step.outcome, figure=step.figure, fraction=step.fraction, ended=step.is_ended)
         return self.bus.dispatch(mark, replace(context, actor=self.actors.actor(MODULE_NAME)))

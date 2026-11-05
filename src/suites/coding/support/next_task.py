@@ -19,14 +19,14 @@ class NextTask:
         return self.settings.flag(AUTO_MODE_SETTING, environment_id)
 
     def urgent(self, environment_id: int, excluded_id: int | None = None) -> Task | None:
-        most_urgent = self.tasks.next_open(environment_id, excluded_id, self.plan_tasks.plan_exclusion())
+        most_urgent = self.tasks.next_open(excluded_id, self.plan_tasks.plan_exclusion())
         return most_urgent if most_urgent is not None and most_urgent.priority >= URGENT_PRIORITY else None
 
     def following(self, environment_id: int, excluded_id: int | None = None) -> Task | None:
         urgent = self.urgent(environment_id, excluded_id)
         if urgent is not None:
             return urgent
-        planned = self.plan_tasks.environment_task(environment_id)
+        planned = self.plan_tasks.environment_task()
         if planned is not None and planned.id != excluded_id:
             return planned
-        return self.tasks.next_open(environment_id, excluded_id, self.plan_tasks.plan_exclusion())
+        return self.tasks.next_open(excluded_id, self.plan_tasks.plan_exclusion())

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import END_CHANGE, Model
 from core.base.timestamp import Timestamp
 from core.base.agent_policy import AgentPolicy
@@ -8,7 +9,7 @@ ENDED_FIELD = "ended_at"
 
 
 @dataclass(frozen=True, kw_only=True)
-class Agent(Model):
+class Agent(EnvironmentScoped, Model):
     """One session of an agent program in an environment; its id is its actor's id, so the session has one
     number in every row and every event. The pid and start time of the agent program's process identify it
     among a command's ancestor processes while the session is open."""
@@ -19,7 +20,7 @@ class Agent(Model):
     search_fields = ["given_name", "program", "program_model", "profile", "session"]
     filter_fields = ["role"]
 
-    environment_id: int
+    environment_id: int = 0
     parent_id: int | None = None
     creator_id: int
     session: str

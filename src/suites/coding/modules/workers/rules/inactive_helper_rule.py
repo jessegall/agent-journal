@@ -55,7 +55,7 @@ class InactiveHelperRule(DriverRule):
 
     def queue_notes(self, helpers: Sequence[Agent], environment_id: int) -> dict[int, str]:
         notes = {helper.id: "" for helper in helpers}
-        queue = self.processes.environment(environment_id).running().filter(is_queue_run=True).oldest()
+        queue = self.processes.running().filter(is_queue_run=True).oldest()
         page = queue.page(1, max(1, queue.count()))
         workers = self.workers.read(page)
         for position, process in enumerate(page.rows):

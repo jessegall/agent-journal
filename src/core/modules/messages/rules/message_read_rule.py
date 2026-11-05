@@ -33,9 +33,9 @@ class MessageReadRule(DriverRule):
         if shell is None:
             return RuleAnswer.allowed()
         numbers = shell.journal_command_numbers("message read")
-        unread = list(self.messages.addressed(hook.agent_id, hook.environment_id).matching(IsNull("read_at")).matching(Among("id", numbers)).all_rows()) if numbers else []
+        unread = list(self.messages.addressed(hook.agent_id).matching(IsNull("read_at")).matching(Among("id", numbers)).all_rows()) if numbers else []
         if shell.parts_running_journal_command("message unread"):
-            all_unread = self.messages.unread(hook.agent_id, hook.environment_id).oldest().all_rows()
+            all_unread = self.messages.unread(hook.agent_id).oldest().all_rows()
             unread = [message for message in all_unread if message.delivered_at is not None]
         images = [nudge for message in unread for nudge in self.image_nudges(message)]
         nudges = [MESSAGE_NOTE.nudge(), REPLY_COMMAND.nudge(), *images] if unread else []

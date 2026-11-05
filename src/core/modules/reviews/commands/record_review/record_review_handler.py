@@ -37,7 +37,7 @@ class RecordReviewHandler(Handler[RecordReview, Review]):
         reviewed = self.reviews.reviewer(context.actor.id).newest().limited(1)
         if reviewed:
             return reviewed[0]
-        reviewing = self.reviews.filter(environment_id=context.environment_id, state=ReviewState.REVIEWING).oldest().limited(1)
+        reviewing = self.reviews.filter(state=ReviewState.REVIEWING).oldest().limited(1)
         if reviewing:
             return reviewing[0]
         raise Refusal("no review is waiting for a report", "a reviewer reports on the review assigned to it")

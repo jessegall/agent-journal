@@ -13,7 +13,7 @@ class MessageTargets:
 
     def selected(self, environment_id: int, agent_id: int | None) -> Agent | None:
         if agent_id is None:
-            return MainAgentFinder.newest(self.queries, environment_id)
+            return MainAgentFinder.newest(self.queries)
         agent = self.queries.query(Agent).find(agent_id)
         if agent.environment_id != environment_id:
             raise Refusal("a message target must belong to its environment", "select an agent in this environment")
@@ -23,6 +23,6 @@ class MessageTargets:
 
     def recipient(self, message: Message) -> Agent | None:
         if message.target_agent_id is None:
-            return MainAgentFinder.newest(self.queries, message.environment_id)
+            return MainAgentFinder.newest(self.queries)
         agent = self.queries.query(Agent).find(message.target_agent_id)
         return agent if agent.ended_at is None else None

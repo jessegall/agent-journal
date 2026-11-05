@@ -35,8 +35,8 @@ class NextPlanTaskStarterListener(CommitListener[Moved[Task]]):
             return
         following = self.next_tasks.following(places[0].plan_id)
         if following is not None:
-            self.bus.run(StartTask(following), Actor(logged.actor_id, ActorType.AGENT), cause_id=logged.id, environment_id=logged.environment_id)
+            self.bus.run(StartTask(following), Actor(logged.actor_id, ActorType.AGENT), cause_id=logged.id)
 
     def urgent_task_waits(self, environment_id: int) -> bool:
-        most_urgent = self.tasks.next_open(environment_id, None, self.next_tasks.plan_exclusion())
+        most_urgent = self.tasks.next_open(None, self.next_tasks.plan_exclusion())
         return most_urgent is not None and most_urgent.priority >= URGENT_PRIORITY

@@ -14,4 +14,4 @@ class PhoneNoticeListener(CommitListener[E]):
         self.bus = bus
 
     def handle(self, event: E, logged: LoggedEvent) -> None:
-        self.bus.run(NotePhoneNotice(), Actor.core(), cause_id=logged.id, environment_id=logged.environment_id)
+        self.bus.run(NotePhoneNotice(), Actor.core(), cause_id=logged.id)

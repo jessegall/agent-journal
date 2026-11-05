@@ -9,6 +9,7 @@ from core.base.database.database import Database
 from core.base.command.context import Context
 from core.base.page import Page
 from core.base.model.table import stored
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.model.tables import Tables
 
@@ -38,9 +39,9 @@ class EventLog:
         self.table = BookkeepingTable(database, "events", "event")
 
     def write(self, change: Change[Model], skipped_guards: frozenset[str]) -> int:
-        context = change.context
+        context, row = change.context, change.row
         return self.table.insert({
-            "actor_id": context.actor.id, "environment_id": context.environment_id, "row_id": change.row.id, "name": change.event,
+            "actor_id": context.actor.id, "environment_id": row.environment_id if isinstance(row, EnvironmentScoped) else context.environment_id, "row_id": row.id, "name": change.event,
             "row_table": self.tables.table(type(change.row)).name, "command": context.command.label(), "cause_id": context.cause_id,
             "skipped_guards": json.dumps(sorted(skipped_guards)), "data": json.dumps(self.data(change)), "created_at": context.timestamp.text,
         })

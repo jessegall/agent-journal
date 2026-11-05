@@ -79,7 +79,7 @@ class ReaderRequests:
         return spec.command_key or Path(spec.program).name
 
     def open_row(self, scope: ReaderSampleScope) -> ReaderRequest | None:
-        return next(iter(self.requests.open().filter(environment_id=scope.environment_id, creator_id=scope.agent_id,
+        return next(iter(self.requests.open().filter(creator_id=scope.agent_id,
                                                      command=scope.command).limited(1)), None)
 
     def open_request(self, process: Process, spec: PartSpec, reason: str, sample_process_id: int, context: Context) -> int:
@@ -90,8 +90,8 @@ class ReaderRequests:
             return existing.id
         current_time = self.clock.timestamp()
         minutes = self.settings.integer(ProcessSetting.READER_BLOCK_MINUTES, process.environment_id)
-        expires_at = Timestamp(current_time.value + timedelta(minutes=minutes)) if MainAgentFinder.newest(self.queries, process.environment_id) else current_time
-        request = self.repository.save(ReaderRequest(environment_id=process.environment_id, creator_id=process.agent_id, command_key=key,
+        expires_at = Timestamp(current_time.value + timedelta(minutes=minutes)) if MainAgentFinder.newest(self.queries) else current_time
+        request = self.repository.save(ReaderRequest(creator_id=process.agent_id, command_key=key,
                                                      command=command, category=spec.category, reason=reason, expires_at=expires_at,
                                                      sample_process_id=sample_process_id), context)
         return request.id

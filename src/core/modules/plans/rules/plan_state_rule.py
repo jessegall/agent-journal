@@ -39,7 +39,7 @@ class PlanStateRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         answered_at = self.hook_history.last_answer(self.name, hook)
         start = answered_at or self.queries.query(Agent).find(hook.agent_id).creation_timestamp()
-        changed = self.plans.environment(hook.environment_id).matching(Greater("updated_at", start.text)).matching(Among("state", tuple(STATE_NUDGES))).oldest().all_rows()
+        changed = self.plans.matching(Greater("updated_at", start.text)).matching(Among("state", tuple(STATE_NUDGES))).oldest().all_rows()
         return RuleAnswer.with_nudges(*(self.plan_nudge(plan) for plan in changed))
 
     def plan_nudge(self, plan: Plan) -> Nudge:

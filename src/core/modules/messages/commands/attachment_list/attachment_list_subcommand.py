@@ -25,6 +25,7 @@ class AttachmentListSubcommand(ReadSubcommand[AttachmentPage]):
 
     cli_name = "attachment"
     name = "list"
+    environment_refusal = "attached files are listed for one environment"
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
@@ -36,10 +37,7 @@ class AttachmentListSubcommand(ReadSubcommand[AttachmentPage]):
         parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
 
     def read(self, arguments: Namespace, caller: Caller) -> AttachmentPage:
-        environment_id = caller.environment_id
-        if environment_id is None:
-            raise Refusal("attached files are listed for one environment", "name it with --environment")
-        files = sorted(self.queries.query(AttachedFile).filter(environment_id=environment_id).all_rows(), key=lambda row: row.message_id, reverse=True)
+        files = sorted(self.queries.query(AttachedFile).all_rows(), key=lambda row: row.message_id, reverse=True)
         terms = arguments.search.strip().lower()
         matches = [row for row in files if terms in row.name.lower() or terms in row.message_text.lower()]
         images = sum(1 for row in matches if IMAGE_NAME.search(row.name))

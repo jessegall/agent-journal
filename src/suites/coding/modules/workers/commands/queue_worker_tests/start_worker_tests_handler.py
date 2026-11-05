@@ -28,7 +28,7 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
         self.queries, self.repository, self.bus = queries, repository, bus
 
     def handle(self, command: StartWorkerTests, context: Context) -> None:
-        worktrees = {worktree.id: worktree for worktree in self.queries.query(Worktree).filter(environment_id=command.environment_id).all_rows()}
+        worktrees = {worktree.id: worktree for worktree in self.queries.query(Worktree).all_rows()}
         proofs = [proof for proof in self.queries.query(Proof).matching(Among("state", TEST_WAITING_STATES)).oldest().all_rows() if proof.worktree_id in worktrees]
         running = {proof.worktree_id for proof in proofs if proof.state is ProofState.RUNNING}
         for proof in proofs:

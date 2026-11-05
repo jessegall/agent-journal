@@ -30,5 +30,5 @@ class WaitingMessageRunListener(CommitListener[Created[Message]]):
         target = self.targets.recipient(message)
         if target is None:
             return
-        for process in tuple(self.processes.environment(message.environment_id).filter(agent_id=target.id, state=ProcessState.RUNNING).all_rows()):
+        for process in tuple(self.processes.filter(agent_id=target.id, state=ProcessState.RUNNING).all_rows()):
             self.folder.write(process.id, MOVE_FILE, "1")

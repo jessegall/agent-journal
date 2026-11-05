@@ -19,4 +19,4 @@ class TriggerOutputListener(CommitListener[Touched[Process]]):
         if "state" not in logged.data:
             return
         for run in self.queries.query(TriggerActionRun).filter(process_id=logged.row_id, notify_agent=True, delivered_at=None).all_rows():
-            self.bus.run(DeliverTriggerOutput(run.id), self.actors.actor("journal.core.triggers"), cause_id=logged.id, environment_id=logged.environment_id)
+            self.bus.run(DeliverTriggerOutput(run.id), self.actors.actor("journal.core.triggers"), cause_id=logged.id)

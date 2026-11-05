@@ -31,8 +31,8 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
         if environment_id is None:
             raise Refusal("an item is docked in an environment", "name it with --environment")
         title, text = self.labels.read(command.type, command.row_model, command.row_id)
-        dock = self.queries.query(Dock).filter(environment_id=environment_id).first()
-        dock = dock or self.repository.save(Dock(environment_id=environment_id, creator_id=context.actor.id), context)
+        dock = self.queries.query(Dock).first()
+        dock = dock or self.repository.save(Dock(creator_id=context.actor.id), context)
         chat_items = self.items.docked(dock.id).same_chat(self.scopes.actor_id)
         type_capacity = self.limits.type_capacity(command.type)
         if type_capacity is not None:

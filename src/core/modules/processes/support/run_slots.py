@@ -46,7 +46,7 @@ class RunSlots:
             self.repository.save(admitted, context)
 
     def running(self, environment_id: int) -> tuple[Process, ...]:
-        return tuple(self.queries.query(Process).filter(environment_id=environment_id).matching(Among("state", RUNNING_STATES)).oldest().all_rows())
+        return tuple(self.queries.query(Process).matching(Among("state", RUNNING_STATES)).oldest().all_rows())
 
     def grant_all_environments(self, context: Context) -> None:
         queued = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(HasValue("queued_at")).oldest().all_rows()

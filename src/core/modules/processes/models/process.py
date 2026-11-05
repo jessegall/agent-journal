@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from core.base.actor import Actor
 from core.base.sandbox_level import SandboxLevel
 from core.base.driver.command_category import CommandCategory
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
 from core.base.duration import Duration
@@ -11,7 +12,7 @@ from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLi
 
 
 @dataclass(frozen=True, kw_only=True)
-class Process(Model):
+class Process(EnvironmentScoped, Model):
     """One shell line an agent ran through the runner: its line, folder and shell, the hook call that started
     it, its foreground limit, and how it ended; its id is the output number the agent reads."""
 
@@ -21,7 +22,7 @@ class Process(Model):
     search_fields = ["line"]
     lifecycle = ProcessLifecycle
 
-    environment_id: int
+    environment_id: int = 0
     agent_id: int
     hook_call_id: int | None = None
     creator_id: int

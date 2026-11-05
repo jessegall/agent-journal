@@ -14,6 +14,7 @@ class WindowSettingSubcommand(CurrentSettingOutput, ReadSubcommand[CurrentSettin
 
     cli_name = "window"
     name = "setting"
+    environment_refusal = "a window's settings belong to an environment"
 
     def __init__(self, reader: SettingReader, keys: WindowSettingKeys) -> None:
         self.reader, self.keys = reader, keys
@@ -24,8 +25,6 @@ class WindowSettingSubcommand(CurrentSettingOutput, ReadSubcommand[CurrentSettin
 
     def read(self, arguments: Namespace, caller: Caller) -> CurrentSetting:
         environment_id = caller.environment_id
-        if environment_id is None:
-            raise Refusal("a window's settings belong to an environment", "name one with --environment")
         setting = self.reader.current(self.keys.key(arguments.window, arguments.key), environment_id)
         if setting.source == DEFAULT_SOURCE:
             raise Refusal(f"{arguments.window} has no setting {arguments.key}", f"journal window save-setting {arguments.window} {arguments.key} <json value> saves one")

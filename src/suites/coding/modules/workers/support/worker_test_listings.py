@@ -69,7 +69,7 @@ class WorkerTestListings(RunCounts):
         return self.queries.query(Reader).find(output.reader_id)
 
     def previous_count(self, environment_id: int, command: str) -> int:
-        outputs = self.outputs.kept().matching_part(environment_id, command).newest().all_rows()
+        outputs = self.outputs.kept().matching_part(command).newest().all_rows()
         for output in outputs:
             count = self.recorded_count(output, command)
             if count is not None:

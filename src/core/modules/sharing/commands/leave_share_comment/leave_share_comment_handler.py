@@ -42,7 +42,7 @@ class LeaveShareCommentHandler(Handler[LeaveShareComment, ShareComment]):
         if self.queries.query(ShareComment).filter(share_link_id=link.id).matching(Greater("created_at", start)).count() >= WINDOW_COMMENT_COUNT:
             raise Refusal("this link has had many comments just now", "try again in a few minutes")
         comment = self.repository.save(ShareComment(share_link_id=link.id, creator_id=link.creator_id, visitor_name=name, text=text), context)
-        self.repository.save(Message(environment_id=link.environment_id, creator_id=link.creator_id, type=MessageType.JOURNAL,
+        self.repository.save(Message(creator_id=link.creator_id, type=MessageType.JOURNAL,
                                      text=self.chat_line(name, text, link)), context)
         return comment
 

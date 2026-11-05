@@ -34,6 +34,7 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
 
     cli_name = "task"
     name = "board"
+    environment_refusal = "the board is shown for one environment"
 
     def __init__(self, queries: Queries, book: StateBook) -> None:
         self.queries, self.book = queries, book
@@ -50,8 +51,6 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
 
     def read(self, arguments: Namespace, caller: Caller) -> TaskBoard:
         environment_id = caller.environment_id
-        if environment_id is None:
-            raise Refusal("the board is shown for one environment", "name it with --environment")
         if arguments.state is not None:
             if arguments.state in FINISHED_STATES:
                 return TaskBoard(tuple([self.finished_group(environment_id, arguments.state, self.finished_cursor(arguments), arguments.limit or FINISHED_PAGE_ROWS)]))
@@ -79,7 +78,7 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
         return TaskGroup(state.value, cards.count(), tuple(rows.descending("closed_at", "id").limited(size)))
 
     def cards(self, environment_id: int, state: TaskState | str) -> Query[TaskCard]:
-        cards = self.queries.query(TaskCard).filter(environment_id=environment_id)
+        cards = self.queries.query(TaskCard)
         if state == DELEGATED:
             return cards.matching(HasValue("delegated_to")).matching(Among("state", [active.value for active in ACTIVE_STATES]))
         cards = cards.filter(state=state)

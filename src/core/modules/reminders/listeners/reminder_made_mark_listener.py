@@ -17,7 +17,7 @@ class ReminderMadeMarkListener(MarkListener[Created[Reminder]]):
 
     def handle(self, event: Created[Reminder], logged: LoggedEvent) -> None:
         reminder = event.row
-        self.show(logged, MemoryMarkType.REMINDER, MemoryMarkVariant.MADE, f"Reminder set: {reminder.text}", reminder.environment_id, None, "reminder", reminder.id, self.firing(reminder))
+        self.show(logged, MemoryMarkType.REMINDER, MemoryMarkVariant.MADE, f"Reminder set: {reminder.text}", None, "reminder", reminder.id, self.firing(reminder))
 
     @staticmethod
     def firing(reminder: Reminder) -> str:

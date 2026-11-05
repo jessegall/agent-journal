@@ -19,5 +19,5 @@ class MakeSuggestionsHandler(Handler[MakeSuggestions, int]):
     def handle(self, command: MakeSuggestions, context: Context) -> int:
         if context.environment_id is None or self.queries.query(Suggestion).filter(key=KEY).exists() or not self.package.is_offered():
             return 0
-        self.repository.save(Suggestion(environment_id=context.environment_id, creator_id=context.actor.id, key=KEY, title=TITLE), context)
+        self.repository.save(Suggestion(creator_id=context.actor.id, key=KEY, title=TITLE), context)
         return 1

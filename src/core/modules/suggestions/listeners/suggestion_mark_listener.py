@@ -14,5 +14,5 @@ class SuggestionMarkListener(MarkListener[Created[Suggestion]]):
 
     def handle(self, event: Created[Suggestion], logged: LoggedEvent) -> None:
         suggestion = event.row
-        self.show(logged, SuggestionMarkType.SUGGESTION, SuggestionMarkVariant.OFFERED, suggestion.title, suggestion.environment_id, row_model="suggestion",
+        self.show(logged, SuggestionMarkType.SUGGESTION, SuggestionMarkVariant.OFFERED, suggestion.title, row_model="suggestion",
                   row_id=suggestion.id, key=f"suggestion:{suggestion.id}", ended=False)

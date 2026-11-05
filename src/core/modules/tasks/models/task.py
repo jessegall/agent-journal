@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from core.base.actor import Actor
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.model.state_holder import StateHolder
 from core.base.timestamp import Timestamp
@@ -14,7 +15,7 @@ def check_title(cli_name: str, title: str) -> None:
     if not 1 <= len(title) <= TASK_TITLE_LIMIT_CHARACTERS:
         raise Refusal(f"a {cli_name}'s title is 1 to {TASK_TITLE_LIMIT_CHARACTERS} characters, not {len(title)}", "say it shorter, and put the rest in --brief")
 @dataclass(frozen=True, kw_only=True)
-class Task(Model, StateHolder):
+class Task(EnvironmentScoped, Model, StateHolder):
     """One unit of work; its state moves only as TaskLifecycle allows."""
 
     model_name = "task"
@@ -23,7 +24,7 @@ class Task(Model, StateHolder):
     lifecycle = TaskLifecycle
     added_state_moves = tuple([TaskLifecycle.cancel])
 
-    environment_id: int
+    environment_id: int = 0
     holder_id: int | None = None
     creator_id: int
     title: str

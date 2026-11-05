@@ -14,7 +14,7 @@ class WindowAllowances:
         self.queries, self.registry = queries, registry
 
     def permission(self, person_id: int, environment_id: int, subject: str, permission_type: WindowPermissionType) -> WindowPermission | None:
-        rows = self.queries.query(WindowPermission).filter(person_id=person_id, environment_id=environment_id, subject=subject, type=permission_type).limited(1)
+        rows = self.queries.query(WindowPermission).filter(person_id=person_id, subject=subject, type=permission_type).limited(1)
         return rows[0] if rows else None
 
     def allowed_lines(self, person_id: int, environment_id: int, window: str, permission_type: WindowPermissionType) -> list[str]:

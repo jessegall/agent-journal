@@ -26,5 +26,5 @@ class TrustWindowHandler(Handler[TrustWindow, WindowPermission]):
         if fingerprint is None:
             raise Refusal(f"no installed module is named {command.module}", "journal module list shows them")
         trust = self.allowances.permission(context.actor.id, context.environment_id, command.module, WindowPermissionType.COMPONENT)
-        return self.repository.merge(trust, WindowPermission(environment_id=context.environment_id, person_id=context.actor.id, creator_id=context.actor.id,
+        return self.repository.merge(trust, WindowPermission(person_id=context.actor.id, creator_id=context.actor.id,
                                                                  subject=command.module, type=WindowPermissionType.COMPONENT, fingerprint=fingerprint), context)

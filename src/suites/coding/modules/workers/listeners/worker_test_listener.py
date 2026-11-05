@@ -54,7 +54,7 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Changed[Process] | Create
         self.launch.start(process.id, process.line, process.folder, self.queries.query(Agent).find(process.agent_id).session)
 
     def start_next(self, environment_id: int, logged: LoggedEvent) -> None:
-        self.bus.run(StartWorkerTests(environment_id), Actor.core(), cause_id=logged.id, environment_id=environment_id)
+        self.bus.run(StartWorkerTests(environment_id), Actor.core(), cause_id=logged.id)
 
     def launched(self, proof: Proof) -> None:
         if proof.process_id is None:
@@ -68,9 +68,9 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Changed[Process] | Create
         proofs = self.queries.query(Proof).filter(process_id=process.id, state=ProofState.RUNNING).limited(1)
         if proofs:
             passed = process.state is ProcessState.FINISHED and process.exit_code == 0
-            self.bus.run(RecordWorkerTest(proofs[0].id, passed, f"failed: journal output read of process {process.id}"), Actor.core(), cause_id=logged.id, environment_id=process.environment_id)
+            self.bus.run(RecordWorkerTest(proofs[0].id, passed, f"failed: journal output read of process {process.id}"), Actor.core(), cause_id=logged.id)
             self.start_next(process.environment_id, logged)
         selected = self.queries.query(AffectedTest).filter(process_id=process.id).matching(Among("state", (AffectedTestState.PICKING, AffectedTestState.TESTING))).limited(1)
         if selected:
             passed = process.state is ProcessState.FINISHED and process.exit_code == 0
-            self.bus.run(RecordAffectedTest(selected[0].id, process.id, passed), Actor.core(), cause_id=logged.id, environment_id=process.environment_id)
+            self.bus.run(RecordAffectedTest(selected[0].id, process.id, passed), Actor.core(), cause_id=logged.id)

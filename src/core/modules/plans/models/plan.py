@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from core.base.actor import Actor
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.model.state_holder import StateHolder
 from core.base.timestamp import Timestamp
@@ -9,7 +10,7 @@ from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
 
 
 @dataclass(frozen=True, kw_only=True)
-class Plan(Model, StateHolder):
+class Plan(EnvironmentScoped, Model, StateHolder):
     """A goal reached by tasks placed in ordered phases; it is made ready, approved by a person, then
     followed. Its design document, when it has one, is linked to it."""
 
@@ -19,7 +20,7 @@ class Plan(Model, StateHolder):
     lifecycle = PlanLifecycle
     added_state_moves = tuple([PlanLifecycle.cancel])
 
-    environment_id: int
+    environment_id: int = 0
     creator_id: int
     title: str
     brief: str = ""

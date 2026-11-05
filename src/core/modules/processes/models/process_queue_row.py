@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.view_model import ViewModel
 from core.base.driver.command_category import CommandCategory
 from core.base.timestamp import Timestamp
@@ -9,7 +10,7 @@ from core.modules.processes.models.support.views import PROCESS_QUEUE_ROWS_SELEC
 
 
 @dataclass(frozen=True, kw_only=True)
-class ProcessQueueRow(ViewModel):
+class ProcessQueueRow(EnvironmentScoped, ViewModel):
     """A command with its queue position, ownership and times for the queue inspector."""
 
     cli_name = "process"

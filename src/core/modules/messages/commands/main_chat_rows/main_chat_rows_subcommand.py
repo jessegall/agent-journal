@@ -17,6 +17,7 @@ class MainChatRowsSubcommand(ReadSubcommand[ViewRowPage]):
 
     cli_name = "chat-mark"
     name = "main"
+    environment_refusal = "the main chat is shown for one environment"
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
@@ -28,10 +29,7 @@ class MainChatRowsSubcommand(ReadSubcommand[ViewRowPage]):
         parser.add_argument("--before-id", type=int, default=None)
 
     def read(self, arguments: Namespace, caller: Caller) -> ViewRowPage:
-        environment_id = caller.environment_id
-        if environment_id is None:
-            raise Refusal("the main chat is shown for one environment", "name it with --environment")
-        marks = self.queries.query(MainChatMark).filter(environment_id=environment_id)
+        marks = self.queries.query(MainChatMark)
         if arguments.type:
             marks = marks.filter(type=arguments.type)
         if arguments.after_id is not None:

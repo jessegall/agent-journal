@@ -15,6 +15,7 @@ class WindowPermissionsSubcommand(ReadSubcommand[WindowAccess]):
 
     cli_name = "window"
     name = "permissions"
+    environment_refusal = "a window's permissions belong to an environment"
 
     def __init__(self, registry: Registry, allowances: WindowAllowances) -> None:
         self.registry, self.allowances = registry, allowances
@@ -26,8 +27,6 @@ class WindowPermissionsSubcommand(ReadSubcommand[WindowAccess]):
         if not self.registry.has_window(arguments.window):
             raise Refusal(f"no installed module declares the window {arguments.window}", "journal window permissions needs a window of an installed module")
         environment_id = caller.environment_id
-        if environment_id is None:
-            raise Refusal("a window's permissions belong to an environment", "name one with --environment")
         window = self.registry.window(arguments.window)
         person_id = caller.actor.id
         reads = self.allowances.allowed_lines(person_id, environment_id, window.name, WindowPermissionType.READS)

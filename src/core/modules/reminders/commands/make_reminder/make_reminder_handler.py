@@ -22,5 +22,5 @@ class MakeReminderHandler(Handler[MakeReminder, Reminder]):
             raise Refusal("a reminder needs a time or an interval", "--at, --every-minutes, --every-tool-uses or --every-tasks")
         if command.block_condition and command.block_condition not in self.conditions.names():
             raise Refusal(f"no block condition is named {command.block_condition}", f"they are {', '.join(sorted(self.conditions.names()))}")
-        return self.repository.save(Reminder(environment_id=context.environment_id, creator_id=context.actor.id, text=command.text, interval_seconds=command.interval_seconds, interval_tool_uses=command.interval_tool_uses,
+        return self.repository.save(Reminder(creator_id=context.actor.id, text=command.text, interval_seconds=command.interval_seconds, interval_tool_uses=command.interval_tool_uses,
                                              interval_tasks=command.interval_tasks, due_at=command.due_at, single_use=command.single_use, block_condition=command.block_condition, block_subject=command.block_subject), context)

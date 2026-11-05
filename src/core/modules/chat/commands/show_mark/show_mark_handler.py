@@ -21,11 +21,11 @@ class ShowMarkHandler(Handler[ShowMark, ChatMark]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: ShowMark, context: Context) -> ChatMark:
-        existing = next(self.queries.query(ChatMark).filter(environment_id=command.environment_id, key=command.key).all_rows(), None)
+        existing = next(self.queries.query(ChatMark).filter(key=command.key).all_rows(), None)
         detail = command.detail[:DETAIL_CHARACTERS]
         if existing is None:
             ended_at = context.timestamp if command.ended else None
-            return self.repository.save(ChatMark(environment_id=command.environment_id, agent_id=command.agent_id, creator_id=context.actor.id, type=command.type.value,
+            return self.repository.save(ChatMark(agent_id=command.agent_id, creator_id=context.actor.id, type=command.type.value,
                                                  variant=command.variant.value, key=command.key, text=command.text, detail=detail, lines=command.detail,
                                                  target_model=command.row_model, target_id=command.row_id, outcome=command.outcome, figure=command.figure,
                                                  fraction=command.fraction, state=ChatMarkState.ENDED if command.ended else ChatMarkState.SHOWN, ended_at=ended_at), context)

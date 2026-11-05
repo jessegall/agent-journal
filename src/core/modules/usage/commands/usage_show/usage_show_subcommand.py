@@ -20,15 +20,13 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
 
     cli_name = "usage"
     name = "show"
+    environment_refusal = "usage is shown for one environment"
 
     def __init__(self, queries: Queries, files: StatusFiles) -> None:
         self.queries, self.files = queries, files
 
     def read(self, arguments: Namespace, caller: Caller) -> EnvironmentUsage:
-        environment_id = caller.environment_id
-        if environment_id is None:
-            raise Refusal("usage is shown for one environment", "name it with --environment")
-        agents = self.queries.query(Agent).filter(environment_id=environment_id).matching(IsNull("ended_at")).oldest().all_rows()
+        agents = self.queries.query(Agent).matching(IsNull("ended_at")).oldest().all_rows()
         return EnvironmentUsage(tuple((agent, self.files.status(agent.session)) for agent in agents), self.files.plan_windows())
 
     def write_output(self, value: object, output: Output) -> None:

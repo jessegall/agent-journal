@@ -11,4 +11,4 @@ class QuestionsClosed(BlockCondition):
     name = "questions-settled"
 
     def is_true(self, check: BlockCheck) -> bool:
-        return not check.container.get(Queries).query(Question).filter(environment_id=check.hook.environment_id, state=QuestionState.OPEN).exists()
+        return not check.container.get(Queries).query(Question).filter(state=QuestionState.OPEN).exists()

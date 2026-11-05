@@ -18,7 +18,7 @@ class MakeMemoryHandler(Handler[MakeMemory, Memory]):
     def handle(self, command: MakeMemory, context: Context) -> Memory:
         if context.environment_id is None:
             raise Refusal("a memory belongs to one environment", "name it with --environment")
-        memory = self.repository.save(Memory(environment_id=context.environment_id, task_id=command.task_id,
+        memory = self.repository.save(Memory(task_id=command.task_id,
                                              creator_id=context.actor.id, text=command.text,
                                              weight=STARTING_WEIGHT if command.weight is None else command.weight), context)
         for word in command.keywords:

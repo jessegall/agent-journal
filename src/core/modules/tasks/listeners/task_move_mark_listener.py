@@ -22,4 +22,4 @@ class TaskMoveMarkListener(MarkListener[Created[Task] | Moved[Task]]):
         variant = MOVE_VARIANTS.get(event.move.name if event.move else "create")
         if variant is not None:
             task = event.row
-            self.show(logged, TaskMarkType.TASK, variant, f"Task {task.id} {VARIANT_LABELS.get(variant, variant.value)}: {task.title}", task.environment_id, None, "task", task.id)
+            self.show(logged, TaskMarkType.TASK, variant, f"Task {task.id} {VARIANT_LABELS.get(variant, variant.value)}: {task.title}", None, "task", task.id)

@@ -49,7 +49,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         if environment_id is None:
             raise Refusal("the process queue needs an environment", "queue list --environment-id <number>")
         main_spots = self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS, environment_id)
-        query = self.queries.query(ProcessQueueRow).filter(environment_id=environment_id)
+        query = self.queries.query(ProcessQueueRow)
         active = tuple(query.matching(IsNull("ended_at")).oldest().all_rows())
         running = [row.inspector_json(main_spots) for row in active if row.section is QueueSection.RUNNING]
         waiting = [row.inspector_json(main_spots) for row in active if row.section is QueueSection.WAITING]

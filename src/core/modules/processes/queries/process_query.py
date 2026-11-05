@@ -27,9 +27,6 @@ class ProcessQuery(Query[Process]):
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, Process)
 
-    def environment(self, environment_id: int) -> Self:
-        return self.filter(environment_id=environment_id)
-
     def running(self) -> Self:
         return self.matching(Among("state", OPEN))
 
@@ -60,4 +57,4 @@ class ProcessQuery(Query[Process]):
         conditions: list[Condition] = [Equal("text", text)]
         if seconds > 0:
             conditions.append(PartRunSeconds(seconds))
-        return self.environment(environment_id).with_part(*conditions).moved().exists()
+        return self.with_part(*conditions).moved().exists()

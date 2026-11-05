@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
 
 
 @dataclass(frozen=True, kw_only=True)
-class ScheduledJob(Model):
+class ScheduledJob(EnvironmentScoped, Model):
     """A prompt an agent scheduled for itself in its own program: the id the program gave it, its cron
     schedule, the prompt, whether it repeats, when it last ran, when a person asked it stopped, and when it
     ended."""
@@ -14,7 +15,7 @@ class ScheduledJob(Model):
     cli_name = "scheduled-job"
 
     agent_id: int
-    environment_id: int
+    environment_id: int = 0
     creator_id: int
     job_id: str
     cron: str

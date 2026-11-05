@@ -15,5 +15,5 @@ class MakeDockHandler(Handler[MakeDock, Dock]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: MakeDock, context: Context) -> Dock:
-        existing = next(self.queries.query(Dock).filter(environment_id=command.environment_id).all_rows(), None)
-        return existing or self.repository.save(Dock(environment_id=command.environment_id, creator_id=context.actor.id), context)
+        existing = next(self.queries.query(Dock).all_rows(), None)
+        return existing or self.repository.save(Dock(creator_id=context.actor.id), context)

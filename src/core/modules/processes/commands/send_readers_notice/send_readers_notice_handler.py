@@ -25,7 +25,7 @@ class SendReadersNoticeHandler(Handler[SendReadersNotice, None]):
     def handle(self, command: SendReadersNotice, context: Context) -> None:
         count = sum(self.has_missing_fields(reader) for reader in self.readers.all_rows())
         if count:
-            for agent in MainAgentFinder.rows(self.queries, command.environment_id):
+            for agent in MainAgentFinder.rows(self.queries):
                 self.nudger.send(agent.id, READERS_MISSING_FIELDS, SOURCE, context, count=count)
 
     def has_missing_fields(self, reader: Reader) -> bool:

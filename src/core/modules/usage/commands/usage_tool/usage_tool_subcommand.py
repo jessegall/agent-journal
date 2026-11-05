@@ -35,6 +35,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
     cli_name = "usage"
     disabled_scopes = [ActorScope]
     name = "tool"
+    environment_refusal = "the tool is shown for one environment"
 
     def __init__(self, queries: Queries, processes: ProcessQuery, outputs: OutputQuery) -> None:
         self.queries, self.processes, self.outputs = queries, processes, outputs
@@ -46,9 +47,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         if arguments.agent is not None:
             return self.agent_tool(arguments.agent, ())
         environment_id = caller.environment_id
-        if environment_id is None:
-            raise Refusal("the tool is shown for one environment", "name it with --environment")
-        mains = MainAgentFinder.rows(self.queries, environment_id)
+        mains = MainAgentFinder.rows(self.queries)
         if not mains:
             return ToolFacts()
         return self.agent_tool(mains[0].id, self.open_question_lines(environment_id, mains[0].id))
@@ -81,7 +80,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         return kept[0].title if kept and kept[0].title else process.line
 
     def open_question_lines(self, environment_id: int, agent_id: int) -> list[str]:
-        open_questions = self.queries.query(Question).filter(environment_id=environment_id, agent_id=agent_id, state=QuestionState.OPEN).oldest().page(1, SHOWN_RUNS)
+        open_questions = self.queries.query(Question).filter(agent_id=agent_id, state=QuestionState.OPEN).oldest().page(1, SHOWN_RUNS)
         if open_questions.total > 1:
             return [f"your answers to {open_questions.total} questions"]
         return [f"your answer to question {question.id}" for question in open_questions.rows]

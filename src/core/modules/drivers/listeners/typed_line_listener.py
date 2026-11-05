@@ -39,7 +39,7 @@ class TypedLineListener(CommitListener[Created[AgentLine]]):
             return
         actor = Actor(logged.actor_id, ActorType.USER)
         if self.has_entered_repeat(line):
-            self.bus.run(EnterAgentLine(line.id), actor, environment_id=logged.environment_id)
+            self.bus.run(EnterAgentLine(line.id), actor)
         else:
             self.typing.enter_line(line, actor, logged.environment_id)
 

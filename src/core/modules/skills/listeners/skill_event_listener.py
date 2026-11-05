@@ -18,6 +18,6 @@ class SkillEventListener(SkillListener[Touched[Model]]):
         called = [skill.folder for skill in self.catalogue.registry.skills if skill.covers_event(logged.event)]
         if not called:
             return
-        for agent in MainAgentFinder.rows(self.queries, logged.environment_id):
+        for agent in MainAgentFinder.rows(self.queries):
             for folder in called:
                 self.run(logged, RequireSkill(agent.id, folder))

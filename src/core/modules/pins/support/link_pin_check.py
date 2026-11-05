@@ -45,24 +45,24 @@ class LinkPinCheck:
 
     def first_unpinned_command(self, environment_id: int, text: str) -> str | None:
         commands = dict.fromkeys(f"! {line.strip()}" for line in BANG_COMMAND.findall(text))
-        pins = self.queries.query(Pin).filter(environment_id=environment_id).matching(IsNull("closed_at"))
+        pins = self.queries.query(Pin).matching(IsNull("closed_at"))
         return next((command for command in commands if not pins.filter(link=command).exists()), None)
 
     def pull_request_pins(self, environment_id: int, text: str) -> list[MakePin]:
-        pins = self.queries.query(Pin).filter(environment_id=environment_id)
+        pins = self.queries.query(Pin)
         links = dict.fromkeys(PR_ADDRESS.findall(text))
         return [MakePin(f"Pull request {url.rsplit('/', 1)[-1]}", url, OPEN_LABEL) for url in links if not pins.matching(Among("link", (url, f"{url}/"))).exists()]
 
     def first_unpinned(self, environment_id: int, text: str) -> str | None:
         links = dict.fromkeys(url.rstrip(".,;:") for url in LINK.findall(text) if not LOCAL_ADDRESS.match(url) and not PR_ADDRESS.match(url))
-        pins = self.queries.query(Pin).filter(environment_id=environment_id).matching(IsNull("closed_at"))
+        pins = self.queries.query(Pin).matching(IsNull("closed_at"))
         return next((url for url in links if not pins.matching(Among("link", (url.rstrip("/"), f"{url.rstrip('/')}/"))).exists()), None)
 
     def claims_unmade_pin(self, environment_id: int, text: str) -> bool:
         if not PIN_CLAIM.search(text):
             return False
         window_start = Timestamp(self.clock.timestamp().value - timedelta(seconds=CLAIM_WINDOW_SECONDS)).text
-        return not self.queries.query(Pin).filter(environment_id=environment_id).matching(Greater("created_at", window_start)).exists()
+        return not self.queries.query(Pin).matching(Greater("created_at", window_start)).exists()
 
     def joined_text(self, value: object) -> str:
         if isinstance(value, str):

@@ -71,7 +71,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         handed_lines = DeliveredLines.chosen(command.event, answers, tuple(waiting))
         moves = OneMovePerRow.split(answers.commands)
         tool = command.event.tool
-        call = self.repository.save(HookCall(agent_id=agent.id, environment_id=agent.environment_id, creator_id=context.actor.id, hook=command.event.event,
+        call = self.repository.save(HookCall(agent_id=agent.id, creator_id=context.actor.id, hook=command.event.event,
                                              firing=command.event.firing, tool=tool.name if tool is not None else "", summary=self.summary(command),
                                              writes_files=tool is not None and tool.is_writing_files(), lines_added=tool.lines_added if tool is not None else 0,
                                              lines_removed=tool.lines_removed if tool is not None else 0, suite=suite.name if suite is not None else "",

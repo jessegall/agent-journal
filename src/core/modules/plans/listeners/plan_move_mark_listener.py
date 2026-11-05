@@ -24,4 +24,4 @@ class PlanMoveMarkListener(MarkListener[Created[Plan] | Moved[Plan]]):
         variant = MOVE_VARIANTS.get(event.move.name if event.move else "create")
         if variant is not None:
             plan = event.row
-            self.show(logged, PlanMarkType.PLAN, variant, f"Plan {plan.id} {VARIANT_LABELS.get(variant, variant.value)}: {plan.title}", plan.environment_id, None, "plan", plan.id)
+            self.show(logged, PlanMarkType.PLAN, variant, f"Plan {plan.id} {VARIANT_LABELS.get(variant, variant.value)}: {plan.title}", None, "plan", plan.id)

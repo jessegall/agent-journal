@@ -40,7 +40,7 @@ class WorkerCountRaisedListener(SaveListener[Changed[Setting]]):
         if limit <= self.previous_limit(event.old_row, setting):
             return
         for agent in self.main_agents(setting):
-            self.nudger.send(agent.id, WORKER_LIMIT_RAISED, self.name, context, limit=limit, workers=len(self.worktrees.environment_worktrees(agent.environment_id)), count=self.undelegated(agent.environment_id))
+            self.nudger.send(agent.id, WORKER_LIMIT_RAISED, self.name, context, limit=limit, workers=len(self.worktrees.environment_worktrees()), count=self.undelegated(agent.environment_id))
 
     # The limit the row replaces: its own old value, else what an environment's row falls back to, the project's.
     def previous_limit(self, old: Model | None, setting: Setting) -> int:
@@ -53,7 +53,7 @@ class WorkerCountRaisedListener(SaveListener[Changed[Setting]]):
     def main_agents(self, setting: Setting) -> tuple[Agent, ...]:
         if setting.environment_id is None:
             return MainAgentFinder.all_running(self.queries)
-        return MainAgentFinder.rows(self.queries, setting.environment_id)
+        return MainAgentFinder.rows(self.queries)
 
     def undelegated(self, environment_id: int) -> int:
-        return self.queries.query(Task).filter(environment_id=environment_id, state=TaskState.OPEN).matching(IsNull("delegated_to")).count()
+        return self.queries.query(Task).filter(state=TaskState.OPEN).matching(IsNull("delegated_to")).count()

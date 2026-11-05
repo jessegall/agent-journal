@@ -10,7 +10,7 @@ class MainAgentFinder:
 
     @staticmethod
     def rows(queries: Queries, environment_id: int) -> tuple[Agent, ...]:
-        row = queries.query(Agent).filter(environment_id=environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().first()
+        row = queries.query(Agent).filter(role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().first()
         return () if row is None else tuple([row])
 
     @staticmethod
@@ -19,7 +19,7 @@ class MainAgentFinder:
 
     @staticmethod
     def newest(queries: Queries, environment_id: int) -> Agent | None:
-        return next(iter(MainAgentFinder.rows(queries, environment_id)), None)
+        return next(iter(MainAgentFinder.rows(queries)), None)
 
     @staticmethod
     def main_ids(queries: Queries, agent_ids: tuple[int, ...]) -> set[int]:

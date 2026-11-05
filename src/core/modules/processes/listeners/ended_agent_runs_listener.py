@@ -26,4 +26,4 @@ class EndedAgentRunsListener(CommitListener[AgentEnded]):
         if agent.role in self.suites.agent_policy(agent.environment_id).continuing_run_roles:
             return
         for process in tuple(self.processes.agent(logged.row_id).running().all_rows()):
-            self.bus.run(OrphanProcess(process.id), self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=logged.environment_id)
+            self.bus.run(OrphanProcess(process.id), self.actors.actor(MODULE_NAME), cause_id=logged.id)

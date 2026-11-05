@@ -60,9 +60,9 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         if waiting:
             for task_id in sorted({row.task_id for row in waiting}):
                 proof_ids = ', '.join(str(row.id) for row in waiting if row.task_id == task_id)
-                self.main_agent_line.send(worktree.environment_id, PROOF_CHECK.nudge(worker=worktree.agent_id, task=task_id, proofs=proof_ids).text, LINE_SOURCE, context)
+                self.main_agent_line.send(PROOF_CHECK.nudge(worker=worktree.agent_id, task=task_id, proofs=proof_ids).text, LINE_SOURCE, context)
             return
-        self.main_agent_line.send(worktree.environment_id, WORKER_TESTS_PASSED.nudge(worker=worktree.agent_id).text, LINE_SOURCE, context)
+        self.main_agent_line.send(WORKER_TESTS_PASSED.nudge(worker=worktree.agent_id).text, LINE_SOURCE, context)
 
     def complete_tested(self, proofs: tuple[Proof, ...], context: Context) -> None:
         for task_id in sorted({row.task_id for row in proofs if row.test_command}):

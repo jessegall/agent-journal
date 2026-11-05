@@ -21,8 +21,8 @@ class ClosedTasks(Span):
 
     def has_passed(self, queries: Queries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool:
         environment_id = queries.query(Agent).find(agent_id).environment_id
-        return queries.query(Task).filter(environment_id=environment_id).matching(Greater("closed_at", start.text)).count() >= self.count
+        return queries.query(Task).matching(Greater("closed_at", start.text)).count() >= self.count
 
     def has_passed_many(self, queries: Queries, agent_id: int, starts: Sequence[Timestamp], checked_at: Timestamp) -> list[bool]:
         environment_id = queries.query(Agent).find(agent_id).environment_id
-        return [count >= self.count for count in TaskQuery(queries.database, queries.tables).closed_counts(environment_id, starts)]
+        return [count >= self.count for count in TaskQuery(queries.database, queries.tables).closed_counts(starts)]

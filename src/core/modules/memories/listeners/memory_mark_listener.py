@@ -21,4 +21,4 @@ class MemoryMarkListener(MarkListener[E]):
 
     def show_memory(self, logged: LoggedEvent, variant: MemoryMarkVariant, text: str, type: StrEnum = MemoryMarkType.MEMORY, environment_id: int | None = None,
              agent_id: int | None = None, row_model: str = "memory", row_id: int | None = None, detail: str = "") -> None:
-        self.show(logged, type, variant, text, environment_id, agent_id, row_model, row_id, detail)
+        self.show(logged, type, variant, text, agent_id, row_model, row_id, detail)

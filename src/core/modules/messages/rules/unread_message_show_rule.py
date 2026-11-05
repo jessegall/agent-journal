@@ -26,5 +26,5 @@ class UnreadMessageShowRule(DriverRule):
         numbers = shell.journal_command_numbers("message show") if shell is not None else ()
         if not numbers:
             return RuleAnswer.allowed()
-        unread = self.messages.unread(hook.agent_id, hook.environment_id).matching(Among("id", numbers)).oldest().limited(1)
+        unread = self.messages.unread(hook.agent_id).matching(Among("id", numbers)).oldest().limited(1)
         return RuleAnswer.refused(UNREAD_DISPLAY_REFUSAL.nudge(message=unread[0].id)) if unread else RuleAnswer.allowed()

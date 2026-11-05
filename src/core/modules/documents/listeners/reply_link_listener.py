@@ -58,4 +58,4 @@ class ReplyLinkListener(CommitListener[Created[Message] | Touched[Task] | Touche
             return
         answered = self.queries.query(Message).find(reply.parent_id)
         if answered.type in PERSON_MESSAGE_TYPES:
-            self.bus.run(RecordSubjectLink(answered.id, model, row_id), self.actors.actor(MODULE_NAME), environment_id=answered.environment_id)
+            self.bus.run(RecordSubjectLink(answered.id, model, row_id), self.actors.actor(MODULE_NAME))

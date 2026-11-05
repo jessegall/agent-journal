@@ -17,15 +17,13 @@ class TaskGraphSubcommand(ReadSubcommand[TaskGraph]):
 
     cli_name = "task"
     name = "graph"
+    environment_refusal = "the graph is shown for one environment"
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
     def read(self, arguments: Namespace, caller: Caller) -> TaskGraph:
-        environment_id = caller.environment_id
-        if environment_id is None:
-            raise Refusal("the graph is shown for one environment", "name it with --environment")
-        tasks = {task.id: task for task in self.queries.query(TaskCard).filter(environment_id=environment_id).matching(Among("state", UNFINISHED_STATES)).all_rows()}
+        tasks = {task.id: task for task in self.queries.query(TaskCard).matching(Among("state", UNFINISHED_STATES)).all_rows()}
         edges = tuple(edge for edge in self.queries.query(TaskEdge).all_rows() if edge.task_id in tasks and edge.blocker_id in tasks)
         linked = {task_id for edge in edges for task_id in (edge.task_id, edge.blocker_id)}
         return TaskGraph(tuple(tasks[task_id] for task_id in sorted(linked)), edges)

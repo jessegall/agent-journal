@@ -44,7 +44,7 @@ class FitnessMeasures:
         return AgentFitness(agent.id, is_measured, score, measures, workload, self.workload_level(workload), arrivals_hourly, answers_hourly, self.waiting_messages(agent))
 
     def message_wait(self, agent: Agent, current_time: Timestamp) -> FitnessMeasure:
-        waiting = self.queries.query(Message).filter(environment_id=agent.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().limited(1)
+        waiting = self.queries.query(Message).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().limited(1)
         minutes = waiting[0].creation_timestamp().elapsed_seconds(current_time) / 60 if waiting else 0.0
         return FitnessMeasure("message_wait", "Oldest message waiting, minutes", round(minutes, 1), MESSAGE_WAIT_PASS_MINUTES, self.minutes_score(minutes), MESSAGE_WEIGHT)
 
@@ -61,7 +61,7 @@ class FitnessMeasures:
 
     def completion_rate(self, agent: Agent, current_time: Timestamp) -> FitnessMeasure:
         start = Timestamp(current_time.value - timedelta(hours=COMPLETION_WINDOW_HOURS)).text
-        closed = self.queries.query(Task).filter(environment_id=agent.environment_id, state=TaskState.COMPLETED).matching(Greater("closed_at", start)).count()
+        closed = self.queries.query(Task).filter(state=TaskState.COMPLETED).matching(Greater("closed_at", start)).count()
         return FitnessMeasure("completion_rate", "Tasks completed an hour", closed / COMPLETION_WINDOW_HOURS, None, 1.0, 0)
 
     @staticmethod
@@ -72,14 +72,14 @@ class FitnessMeasures:
 
     def message_rates(self, agent: Agent, current_time: Timestamp) -> tuple[float, float]:
         start = Timestamp(current_time.value - timedelta(minutes=WORKLOAD_WINDOW_MINUTES)).text
-        recent = self.queries.query(Message).filter(environment_id=agent.environment_id).matching(Greater("created_at", start))
+        recent = self.queries.query(Message).matching(Greater("created_at", start))
         hourly = 60 / WORKLOAD_WINDOW_MINUTES
         arrivals = recent.matching(Among("type", PERSON_MESSAGE_TYPES)).count() * hourly
         answers = recent.filter(type=MessageType.AGENT).count() * hourly
         return arrivals, answers
 
     def waiting_messages(self, agent: Agent) -> int:
-        return self.queries.query(Message).filter(environment_id=agent.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).count()
+        return self.queries.query(Message).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).count()
 
     @staticmethod
     def minutes_score(minutes: float) -> float:

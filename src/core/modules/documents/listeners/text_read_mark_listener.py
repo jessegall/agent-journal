@@ -43,6 +43,6 @@ class TextReadMarkListener(MarkListener[Changed[ProcessPart]]):
             return
         prompt = self.queries.query(HookCall).filter(agent_id=agent.id, hook=HookEventName.PROMPT).matching(Maximum("created_at", process.creation_timestamp().text)).newest().first()
         key = f"text-read:{agent.id}:{prompt.id if prompt is not None else 0}:{model.model_name}:{row_id}"
-        if self.queries.query(ChatMark).filter(environment_id=agent.environment_id, key=key).exists():
+        if self.queries.query(ChatMark).filter(key=key).exists():
             return
-        self.show(logged, TextMarkType.READ, TextMarkVariant.READ, f"Read {READ_LABELS[tokens[1]]} {row_id}", agent.environment_id, agent.id, model.model_name, row_id, key=key)
+        self.show(logged, TextMarkType.READ, TextMarkVariant.READ, f"Read {READ_LABELS[tokens[1]]} {row_id}", agent.id, model.model_name, row_id, key=key)

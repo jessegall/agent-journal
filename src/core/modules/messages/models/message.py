@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
 from core.modules.messages.models.enums.message_type import MessageType
@@ -7,7 +8,7 @@ TITLE_CHARACTERS = 60
 
 
 @dataclass(frozen=True, kw_only=True)
-class Message(Model):
+class Message(EnvironmentScoped, Model):
     """One message in an environment's chat; a reply names the message it answers as its parent. Its title,
     which a comment on it names it by, is the first line of its text."""
 
@@ -17,7 +18,7 @@ class Message(Model):
     search_fields = ["text"]
     hidden_fields = frozenset(["is_chat_visible"])
 
-    environment_id: int
+    environment_id: int = 0
     agent_id: int | None = None
     target_agent_id: int | None = None
     parent_id: int | None = None

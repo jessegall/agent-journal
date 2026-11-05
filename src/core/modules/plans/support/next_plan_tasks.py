@@ -29,7 +29,7 @@ class NextPlanTasks:
         return first.task_id if first is not None else None
 
     def environment_task(self, environment_id: int) -> Task | None:
-        plans = self.queries.query(Plan).filter(environment_id=environment_id, state=PlanState.STARTED).ordered("started_at", "id").all_rows()
+        plans = self.queries.query(Plan).filter(state=PlanState.STARTED).ordered("started_at", "id").all_rows()
         for plan in tuple(plans):
             following = self.following(plan.id)
             if following is not None:

@@ -21,5 +21,5 @@ class MenuAnswerMarkListener(MarkListener[Created[MenuAnswer]]):
         menu_answer = event.row
         agent = self.queries.query(Agent).find(menu_answer.agent_id)
         text = f'A menu in the agent\'s terminal was answered: "{menu_answer.question}" The journal {menu_answer.answer}.'
-        self.bus.run(ShowMark(agent.environment_id, AgentMarkType.MENU, AgentMarkVariant.ANSWERED, f"menu:{menu_answer.id}", text, agent_id=agent.id, outcome=MarkOutcome.PASSED, ended=True),
-                     self.actors.actor(self.module_name), cause_id=logged.id, environment_id=agent.environment_id)
+        self.bus.run(ShowMark(AgentMarkType.MENU, AgentMarkVariant.ANSWERED, f"menu:{menu_answer.id}", text, agent_id=agent.id, outcome=MarkOutcome.PASSED, ended=True),
+                     self.actors.actor(self.module_name), cause_id=logged.id)

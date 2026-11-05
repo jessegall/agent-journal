@@ -41,4 +41,4 @@ class AutoNextTaskListener(CommitListener[Moved[Task]]):
         select_next = assigner.urgent if self.tasks.holder(holder_id).started().exists() else assigner.following
         next_row = select_next(closed_task.environment_id, excluded_id)
         if next_row is not None:
-            self.bus.run(StartTask(next_row.id), Actor(holder_id, ActorType.AGENT), cause_id=logged.id, environment_id=logged.environment_id)
+            self.bus.run(StartTask(next_row.id), Actor(holder_id, ActorType.AGENT), cause_id=logged.id)

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
 from core.modules.sharing.models.enums.share_link_state import ShareLinkState
@@ -7,7 +8,7 @@ from core.modules.sharing.models.lifecycles.share_link_lifecycle import ShareLin
 
 
 @dataclass(frozen=True, kw_only=True)
-class ShareLink(Model):
+class ShareLink(EnvironmentScoped, Model):
     """A link to show one row read-only, until it expires, if it does, or is revoked; an agent's waits for a
     person to
     accept it. It keeps only the digests of its token and password, never the two themselves."""
@@ -18,7 +19,7 @@ class ShareLink(Model):
     lifecycle = ShareLinkLifecycle
     hidden_fields = frozenset({"token_digest", "password_digest"})
 
-    environment_id: int
+    environment_id: int = 0
     creator_id: int
     token_digest: str
     row_model: str

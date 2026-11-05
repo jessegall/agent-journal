@@ -32,9 +32,9 @@ class DumpDockListener(CommitListener[Changed[Dump]]):
         if isinstance(event, Created):
             docks = self.queries.query(Dock)
             if logged.environment_id is not None:
-                docks = docks.filter(environment_id=logged.environment_id)
+                docks = docks
             for dock in docks.all_rows():
-                self.bus.run(AddDockItem(dock.environment_id, DumpDockType.DUMP.value, "dump", dump.id), actor, cause_id=logged.id, environment_id=dock.environment_id)
+                self.bus.run(AddDockItem(DumpDockType.DUMP.value, "dump", dump.id), actor, cause_id=logged.id, environment_id=dock.environment_id)
         if dump.closed_at is not None:
             for item in self.items.type_items(DumpDockType.DUMP.value).row_items("dump", dump.id).all_rows():
                 if item.state != DockItemState.DOCKED:

@@ -44,7 +44,7 @@ class WorkerReuseRule(DriverRule):
         paths = PathMentions.found(" ".join(task.brief for task in self.queries.query(Task).find_many(task_ids)))
         if not paths:
             return None
-        worktrees = list(self.queries.query(Worktree).filter(environment_id=environment_id).matching(IsNull("removed_at")).all_rows())
+        worktrees = list(self.queries.query(Worktree).matching(IsNull("removed_at")).all_rows())
         workers = {worker.id: worker for worker in self.queries.query(Agent).find_many([worktree.agent_id for worktree in worktrees])}
         for worktree in worktrees:
             is_ended = workers[worktree.agent_id].ended_at is not None

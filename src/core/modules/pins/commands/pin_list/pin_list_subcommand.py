@@ -15,15 +15,13 @@ class PinListSubcommand(ReadSubcommand[Sequence[Pin]]):
 
     cli_name = "pin"
     name = "list"
+    environment_refusal = "pins belong to an environment"
 
     def __init__(self, pins: PinQuery) -> None:
         self.pins = pins
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[Pin]:
-        environment_id = caller.environment_id
-        if environment_id is None:
-            raise Refusal("pins belong to an environment", "name it with --environment")
-        return tuple(self.pins.open_ones(environment_id).oldest().all_rows())
+        return tuple(self.pins.open_ones().oldest().all_rows())
 
     def write_output(self, value: object, output: Output) -> None:
         listed = [row for row in value if isinstance(row, Pin)] if is_tuple(value) else []

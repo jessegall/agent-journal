@@ -42,5 +42,5 @@ class WorkerTestMarkListener(MarkListener[Moved[Proof]]):
             self.mark(logged, worktree, proof, WorkerMarkVariant.FAILED if failed else WorkerMarkVariant.PASSED, f"Tests of worker {worker}: {failed} failed, back with the worker" if failed else f"Tests of worker {worker} passed", not failed)
 
     def mark(self, logged: LoggedEvent, worktree: Worktree, proof: Proof, variant: WorkerMarkVariant, text: str, ended: bool) -> None:
-        self.show(logged, WorkerMarkType.TESTS, variant, text, worktree.environment_id, worktree.agent_id,
+        self.show(logged, WorkerMarkType.TESTS, variant, text, worktree.agent_id,
                   key=f"worker-tests:{worktree.id}:{proof.task_id}", ended=ended)

@@ -60,4 +60,4 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
             self.record(logged, delivery, AddPluginOutput(plugin.id, delivery.environment_id, delivery.agent_id, answer.output))
 
     def record(self, logged: LoggedEvent, delivery: PluginDelivery, command: Command[object]) -> None:
-        self.bus.run(command, self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=delivery.environment_id)
+        self.bus.run(command, self.actors.actor(MODULE_NAME), cause_id=logged.id)

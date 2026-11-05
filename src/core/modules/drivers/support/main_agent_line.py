@@ -11,5 +11,5 @@ class MainAgentLine:
         self.queries, self.nudger = queries, nudger
 
     def send(self, environment_id: int, text: str, source: str, context: Context) -> None:
-        for agent in MainAgentFinder.rows(self.queries, environment_id):
+        for agent in MainAgentFinder.rows(self.queries):
             self.nudger.send_text(agent.id, text, source, context, wakes_agent=True)

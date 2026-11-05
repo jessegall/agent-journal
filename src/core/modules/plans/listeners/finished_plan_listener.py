@@ -34,6 +34,6 @@ class FinishedPlanListener(CommitListener[Moved[Task]]):
             return
         progress = self.queries.query(PlanProgress).find(plan.id)
         if not progress.task_count:
-            self.bus.run(CancelPlan(plan.id, CANCEL_REASON), Actor.core(), cause_id=logged.id, environment_id=plan.environment_id)
+            self.bus.run(CancelPlan(plan.id, CANCEL_REASON), Actor.core(), cause_id=logged.id)
         elif progress.completed_count == progress.task_count:
-            self.bus.run(ClosePlan(plan.id), Actor.core(), cause_id=logged.id, environment_id=plan.environment_id)
+            self.bus.run(ClosePlan(plan.id), Actor.core(), cause_id=logged.id)

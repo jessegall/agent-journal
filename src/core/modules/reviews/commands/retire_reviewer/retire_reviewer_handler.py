@@ -20,7 +20,7 @@ class RetireReviewerHandler(Handler[RetireReviewer, Reviewer]):
     def handle(self, command: RetireReviewer, context: Context) -> Reviewer:
         if context.environment_id is None:
             raise Refusal("a reviewer is retired in an environment", "name one with --environment")
-        idle = self.reviewers.environment(context.environment_id).idle().newest().limited(1)
+        idle = self.reviewers.idle().newest().limited(1)
         if not idle:
             raise Refusal("no reviewer is idle", "a reviewer is retired once it has finished its review; journal reviewer list shows them")
         retired = self.repository.save(idle[0].retire(context.timestamp, context.actor), context)

@@ -23,4 +23,4 @@ class PersonPresetListSubcommand(ReadSubcommand[Page[PersonPreset]]):
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[PersonPreset]:
         environment_id = caller.environment_id
-        return self.queries.query(PersonPreset).filter(environment_id=environment_id, person_id=caller.actor.id, page=arguments.page).page(1, PAGE_SIZE_ROWS)
+        return self.queries.query(PersonPreset).filter(person_id=caller.actor.id, page=arguments.page).page(1, PAGE_SIZE_ROWS)

@@ -22,9 +22,6 @@ class TaskQuery(Query[Task]):
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, Task)
 
-    def environment(self, environment_id: int) -> Self:
-        return self.filter(environment_id=environment_id)
-
     def unclosed(self) -> Self:
         return self.matching(IsNull("closed_at"))
 
@@ -35,7 +32,7 @@ class TaskQuery(Query[Task]):
         return self.filter(state=TaskState.STARTED)
 
     def unopenable_blocks(self, environment_id: int) -> Self:
-        return self.environment(environment_id).filter(state=TaskState.BLOCKED).matching(SubqueryMatch("id", Select("task_waits").matching(IsNull("ended_at")).column("task_id"), negated=True))
+        return self.filter(state=TaskState.BLOCKED).matching(SubqueryMatch("id", Select("task_waits").matching(IsNull("ended_at")).column("task_id"), negated=True))
 
     def no_open_dependency(self) -> Condition:
         return SubqueryMatch("id", Select(OpenDependency.view).column("task_id"), negated=True)
@@ -45,10 +42,10 @@ class TaskQuery(Query[Task]):
         return min(delegated, key=lambda task: (-task.priority, task.id), default=None)
 
     def open_tasks(self, environment_id: int) -> Self:
-        return self.environment(environment_id).filter(state=TaskState.OPEN)
+        return self.filter(state=TaskState.OPEN)
 
     def next_open(self, environment_id: int, excluded_id: int | None, exclusion: Condition) -> Task | None:
-        free_tasks = self.open_tasks(environment_id).matching(IsNull("delegated_to")).matching(self.no_open_dependency()).matching(exclusion).all_rows()
+        free_tasks = self.open_tasks().matching(IsNull("delegated_to")).matching(self.no_open_dependency()).matching(exclusion).all_rows()
         return min((task for task in free_tasks if task.id != excluded_id), key=lambda task: (-task.priority, task.id), default=None)
 
 

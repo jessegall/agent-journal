@@ -9,4 +9,4 @@ class MessageEnvironmentActivity(EnvironmentActivity):
         self.messages = messages
 
     def count(self, environment_id: int) -> int:
-        return self.messages.filter(environment_id=environment_id).count()
+        return self.messages.count()

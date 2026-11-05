@@ -18,4 +18,4 @@ class CompactionMarkListener(MemoryMarkListener[AgentCompacted]):
 
     def handle(self, event: AgentCompacted, logged: LoggedEvent) -> None:
         call = event.row
-        self.show_memory(logged, MemoryMarkVariant.COMPACTED, "Conversation compacted", MemoryMarkType.COMPACTION, call.environment_id, call.agent_id, row_model="")
+        self.show_memory(logged, MemoryMarkVariant.COMPACTED, "Conversation compacted", MemoryMarkType.COMPACTION, call.agent_id, row_model="")

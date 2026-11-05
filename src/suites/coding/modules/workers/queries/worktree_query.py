@@ -16,4 +16,4 @@ class WorktreeQuery(Query[Worktree]):
         return rows[0] if rows else None
 
     def environment_worktrees(self, environment_id: int) -> list[Worktree]:
-        return list(self.filter(environment_id=environment_id).matching(IsNull("removed_at")).oldest().all_rows())
+        return list(self.matching(IsNull("removed_at")).oldest().all_rows())

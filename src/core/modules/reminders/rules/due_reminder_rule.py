@@ -31,10 +31,10 @@ class DueReminderRule(DriverRule):
         self.queries, self.conditions, self.hook_calls, self.tasks = queries, conditions, hook_calls, tasks
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        reminders = self.queries.query(Reminder).filter(environment_id=hook.environment_id).matching(IsNull("ended_at")).matching(NonHelperRows()).oldest().limited(OPEN_REMINDERS_READ)
+        reminders = self.queries.query(Reminder).matching(IsNull("ended_at")).matching(NonHelperRows()).oldest().limited(OPEN_REMINDERS_READ)
         tool_uses = self.tool_uses(reminders, hook)
         counting = [reminder for reminder in reminders if reminder.due_at is None and reminder.interval_tasks]
-        counts = self.tasks.closed_counts(hook.environment_id, [reminder.interval_timestamp() for reminder in counting])
+        counts = self.tasks.closed_counts([reminder.interval_timestamp() for reminder in counting])
         closed_tasks = {reminder.id: count for reminder, count in zip(counting, counts)}
         due = [reminder for reminder in reminders if reminder.should_fire(hook.timestamp, tool_uses.get(reminder.id, 0), closed_tasks.get(reminder.id, 0))]
         if not due:

@@ -24,7 +24,7 @@ class ReviewBoardSubcommand(ReadSubcommand[ReviewerBoard]):
     def read(self, arguments: Namespace, caller: Caller) -> ReviewerBoard:
         rows = self.queries.query(ReviewerRow)
         if caller.environment_id is not None:
-            rows = rows.filter(environment_id=caller.environment_id)
+            rows = rows
         return ReviewerBoard(tuple(rows.ordered("review_id", "row_type", "step_id").all_rows()))
 
     def write_output(self, value: object, output: Output) -> None:

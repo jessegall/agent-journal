@@ -16,9 +16,6 @@ class ReaderRequestQuery(Query[ReaderRequest]):
     def open(self) -> Self:
         return self.filter(completed_at=None)
 
-    def environment(self, environment_id: int) -> Self:
-        return self.filter(environment_id=environment_id)
-
     def agent(self, agent_id: int) -> Self:
         return self.filter(creator_id=agent_id)
 

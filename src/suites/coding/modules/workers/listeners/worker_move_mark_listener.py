@@ -38,7 +38,7 @@ class WorkerMoveMarkListener(MarkListener[Moved[Worktree]]):
         task = self.queries.query(Task).find(worktree.task_id)
         variant, move = MOVE_TEXTS[event.move.name]
         name = agent.given_name or f"Worker {agent.id}"
-        self.show(logged, WorkerMarkType.WORKER, variant, f"{name} {move.format(tasks=self.tasks_text(event.move, worktree, task))}", worktree.environment_id, None, AGENTS_TABLE, agent.id, detail=f"On {agent.program} {agent.program_model}{self.queue_text(agent)}\n\nTask {task.id}: {task.title}\n\n{task.brief}")
+        self.show(logged, WorkerMarkType.WORKER, variant, f"{name} {move.format(tasks=self.tasks_text(event.move, worktree, task))}", None, AGENTS_TABLE, agent.id, detail=f"On {agent.program} {agent.program_model}{self.queue_text(agent)}\n\nTask {task.id}: {task.title}\n\n{task.brief}")
         if event.move is WorktreeLifecycle.cut:
             self.show_plan(logged, worktree, agent, name)
 
@@ -49,7 +49,7 @@ class WorkerMoveMarkListener(MarkListener[Moved[Worktree]]):
         plan_ids = {row.plan_id for row in plan_tasks}
         if len(task_ids) > 1 and len(plan_tasks) == len(task_ids) and len(plan_ids) == 1:
             plan_id = plan_ids.pop()
-            self.show(logged, WorkerMarkType.WORKER, WorkerMarkVariant.HANDED_PLAN, f"{name} was handed plan {plan_id}", worktree.environment_id, None, AGENTS_TABLE, agent.id,
+            self.show(logged, WorkerMarkType.WORKER, WorkerMarkVariant.HANDED_PLAN, f"{name} was handed plan {plan_id}", None, AGENTS_TABLE, agent.id,
                       detail=", ".join(f"task {task_id}" for task_id in task_ids))
 
     def queue_text(self, agent: Agent) -> str:

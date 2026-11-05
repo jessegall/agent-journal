@@ -22,7 +22,7 @@ class EndSilentHelpersHandler(Handler[EndSilentHelpers, None]):
         self.queries, self.hook_calls, self.bus = queries, hook_calls, bus
 
     def handle(self, command: EndSilentHelpers, context: Context) -> None:
-        helpers = self.queries.query(Agent).filter(environment_id=command.environment_id, role=AgentRole.SUBAGENT).matching(IsNull("ended_at")).all_rows()
+        helpers = self.queries.query(Agent).filter(role=AgentRole.SUBAGENT).matching(IsNull("ended_at")).all_rows()
         for helper in tuple(helpers):
             calls = self.hook_calls.agent(helper.id).newest().limited(1)
             last_call_time = calls[0].creation_timestamp() if calls else helper.creation_timestamp()

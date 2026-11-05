@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.view_model import ViewModel
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.support.views import PROCESS_ROWS_SELECT
 
 
 @dataclass(frozen=True, kw_only=True)
-class ProcessRow(ViewModel):
+class ProcessRow(EnvironmentScoped, ViewModel):
     """A process as the commands and output windows draw it, read from the process_rows view without its
     folder, shell and process number."""
 

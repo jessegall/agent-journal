@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.actor import Actor
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.model.state_holder import StateHolder
 from core.base.timestamp import Timestamp
@@ -9,7 +10,7 @@ from core.modules.reviews.models.lifecycles.review_lifecycle import ReviewLifecy
 
 
 @dataclass(frozen=True, kw_only=True)
-class Review(Model, StateHolder):
+class Review(EnvironmentScoped, Model, StateHolder):
     """One request to have a row's work checked, point by point; its state moves only as ReviewLifecycle
     allows."""
 
@@ -18,7 +19,7 @@ class Review(Model, StateHolder):
     lifecycle = ReviewLifecycle
     added_state_moves = tuple([ReviewLifecycle.abandon])
 
-    environment_id: int
+    environment_id: int = 0
     subject_model: str
     subject_id: int
     requester_id: int

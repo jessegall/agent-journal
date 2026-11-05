@@ -21,6 +21,6 @@ class DispatchMarkListener(MarkListener[Changed[HelperJob]]):
         key = f"dispatch:{row.id}"
         table = AGENTS_TABLE if row.helper_id is not None else ""
         if row.ended_at is None:
-            self.show(logged, DispatchMarkType.DISPATCH, DispatchMarkVariant.DISPATCHED, f"Dispatched {row.profile} . {row.program_model}: {row.description}", row.environment_id, row.agent_id, table, row.helper_id, detail=row.instruction, key=key, ended=False)
+            self.show(logged, DispatchMarkType.DISPATCH, DispatchMarkVariant.DISPATCHED, f"Dispatched {row.profile} . {row.program_model}: {row.description}", row.agent_id, table, row.helper_id, detail=row.instruction, key=key, ended=False)
         else:
-            self.show(logged, DispatchMarkType.DISPATCH, DispatchMarkVariant.FINISHED, f"Finished {row.profile}: {row.description}", row.environment_id, row.agent_id, table, row.helper_id, detail=row.returned, key=key, ended=True)
+            self.show(logged, DispatchMarkType.DISPATCH, DispatchMarkVariant.FINISHED, f"Finished {row.profile}: {row.description}", row.agent_id, table, row.helper_id, detail=row.returned, key=key, ended=True)

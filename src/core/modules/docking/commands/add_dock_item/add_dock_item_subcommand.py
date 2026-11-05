@@ -18,4 +18,4 @@ class AddDockItemSubcommand(Subcommand[AddDockItem, DockItem]):
         parser.add_argument("row_id", type=int)
 
     def command(self, arguments: Namespace, caller: Caller) -> AddDockItem:
-        return AddDockItem(None, arguments.type, arguments.row_model, arguments.row_id)
+        return AddDockItem(arguments.type, arguments.row_model, arguments.row_id)

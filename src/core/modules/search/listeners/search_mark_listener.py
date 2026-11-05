@@ -44,4 +44,4 @@ class SearchMarkListener(MarkListener[Created[ProcessPart]]):
         hits = [{"cli_name": hit.cli_name, "id": hit.row_id, "excerpt": hit.excerpt} for hit in matching_hits[:SHOWN_HITS]]
         detail = json.dumps({"terms": list(line.terms), "total": total, "hits": hits})
         row_count = f"{total} {'row' if total == 1 else 'rows'}"
-        self.show(logged, SearchMarkType.SEARCH, SearchMarkVariant.MATCHED, f"Searched for {' '.join(line.terms)}: {row_count}", run.environment_id, run.agent_id, detail=detail)
+        self.show(logged, SearchMarkType.SEARCH, SearchMarkVariant.MATCHED, f"Searched for {' '.join(line.terms)}: {row_count}", run.agent_id, detail=detail)

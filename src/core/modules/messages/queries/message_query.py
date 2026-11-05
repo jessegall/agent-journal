@@ -24,7 +24,7 @@ class MessageQuery(Query[Message]):
         return self.filter(type=MessageType.AGENT)
 
     def addressed(self, agent_id: int, environment_id: int) -> Self:
-        return self.filter(environment_id=environment_id).matching(MessageTarget(agent_id))
+        return self.matching(MessageTarget(agent_id))
 
     def unread(self, agent_id: int, environment_id: int) -> Self:
-        return self.addressed(agent_id, environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at"))
+        return self.addressed(agent_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at"))

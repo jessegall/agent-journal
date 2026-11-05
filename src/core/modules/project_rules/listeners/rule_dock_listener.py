@@ -32,7 +32,7 @@ class RuleDockListener(CommitListener[Changed[ProjectRule]]):
         actor = self.actors.actor(MODULE_NAME)
         if rule.state is RuleState.PROPOSED:
             environment_id = logged.environment_id or self.queries.query(Agent).find(rule.creator_id).environment_id
-            self.bus.run(AddDockItem(environment_id, RuleDockType.PROPOSED.value, ProjectRule.model_name, rule.id), actor, cause_id=logged.id, environment_id=environment_id)
+            self.bus.run(AddDockItem(RuleDockType.PROPOSED.value, ProjectRule.model_name, rule.id), actor, cause_id=logged.id, environment_id=environment_id)
             return
         for item in self.items.type_items(RuleDockType.PROPOSED.value).row_items(ProjectRule.model_name, rule.id).filter(state=DockItemState.DOCKED).all_rows():
             dock = self.queries.query(Dock).find(item.dock_id)

@@ -31,4 +31,4 @@ class StartMemoriesListener(CommitListener[SessionStarted]):
         with self.scopes.opened(call.agent_id):
             memory_ids = tuple(row.memory_id for row in self.memories.absent_memories(call.agent_id).weight_order().all_rows())
         if memory_ids:
-            self.bus.run(GiveMemories(call.agent_id, memory_ids, DeliveryCause.START), self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=call.environment_id)
+            self.bus.run(GiveMemories(call.agent_id, memory_ids, DeliveryCause.START), self.actors.actor(MODULE_NAME), cause_id=logged.id)

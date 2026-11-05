@@ -12,9 +12,6 @@ class ChatMarkQuery(Query[ChatMark]):
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, ChatMark)
 
-    def environment_marks(self, environment_id: int) -> Self:
-        return self.filter(environment_id=environment_id)
-
     def agent_marks(self, agent_id: int) -> Self:
         return self.filter(agent_id=agent_id)
 

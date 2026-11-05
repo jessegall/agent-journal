@@ -22,4 +22,4 @@ class ReviewStartedStepListener(CommitListener[Moved[Review]]):
     def handle(self, event: Moved[Review], logged: LoggedEvent) -> None:
         review = event.row
         self.bus.run(MakeReviewStep(review.id, f"Started reviewing {review.subject_model} {review.subject_id}"), self.actors.actor(MODULE_NAME),
-                     cause_id=logged.id, environment_id=logged.environment_id)
+                     cause_id=logged.id)

@@ -16,4 +16,4 @@ class StandardSequencesListener(CommitListener[FilePublishing]):
         self.bus = bus
 
     def handle(self, event: FilePublishing, logged: LoggedEvent) -> None:
-        self.bus.run(SaveStandardSequences(), Actor.core(), cause_id=logged.id, environment_id=logged.environment_id)
+        self.bus.run(SaveStandardSequences(), Actor.core(), cause_id=logged.id)

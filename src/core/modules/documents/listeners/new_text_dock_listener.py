@@ -30,4 +30,4 @@ class NewTextDockListener(CommitListener[E]):
         environment_id = logged.environment_id or next((agent.environment_id for agent in self.queries.query(Agent).filter(id=row.creator_id).limited(1)), None)
         if environment_id is None:
             return
-        self.bus.run(AddDockItem(environment_id, self.dock_type.value, row.model_name, row.id), self.actors.actor(DOCUMENTS_MODULE), cause_id=logged.id, environment_id=environment_id)
+        self.bus.run(AddDockItem(self.dock_type.value, row.model_name, row.id), self.actors.actor(DOCUMENTS_MODULE), cause_id=logged.id)

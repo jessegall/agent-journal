@@ -44,7 +44,7 @@ class MakeShareLinkHandler(Handler[MakeShareLink, ShareInvitation]):
             raise Refusal(f"{command.target} belongs to no environment and neither does this caller", "run it from an environment")
         token = secrets.token_urlsafe(TOKEN_BYTES)
         is_person = context.actor.type is ActorType.USER
-        link = self.repository.save(ShareLink(environment_id=environment_id, creator_id=context.actor.id, token_digest=TextDigest().hex_digest(token),
+        link = self.repository.save(ShareLink(creator_id=context.actor.id, token_digest=TextDigest().hex_digest(token),
                                               row_model=shared.model_name, row_id=shared.id, expires_at=self.end_time(command.ends), comments=command.comments,
                                               password_digest=SharePassword.digest(command.password) if command.password else None, locked=bool(command.password),
                                               state=ShareLinkState.ACTIVE if is_person else ShareLinkState.WAITING), context)
