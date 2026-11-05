@@ -242,12 +242,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(400, {"error": str(error)})
             return
         session, person_id = viewer.login.session(token), viewer.login.person_id(token)
-        answers: list[dict[str, object]] = []
-        for line in request.lines:
-            try:
-                answers.append(asdict(viewer.routes.line_route.answer(line.window, line.line, person_id, line.environment, session.shared)))
-            except ShareRefusal as refusal:
-                answers.append(asdict(LineAnswer(REFUSED_CODE, error=refusal.reason)))
+        answers = [asdict(answer) for answer in viewer.routes.line_route.answers(request, person_id, session.shared)]
         self.answer(200, {"answers": answers})
 
     def answer_share_comments(self, viewer: ViewerServer, session: ViewerSession, body: bytes | None) -> None:
