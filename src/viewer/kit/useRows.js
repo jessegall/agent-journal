@@ -51,7 +51,7 @@ export function useRows(line, patterns, {incremental = false} = {}) {
 
     // the page of rows older than the oldest held, added behind them; false when there are none, and `more` says whether the server holds another page behind it
     async function older() {
-        if (!rows.value.length) return false;
+        if (!more.value || !rows.value.length) return false;
         const turn = latestLoad;
         const oldest = Math.min(...rows.value.map((row) => row.id));
         const result = await context.read(`${line} --before-id ${oldest}`);
