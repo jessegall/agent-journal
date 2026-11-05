@@ -1,8 +1,6 @@
-from typing import TypeVar
 from uuid import uuid4
 
 from core.base.command.bus import Bus
-from core.base.command.command import Command
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.provider.providers import Providers
@@ -27,13 +25,10 @@ from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from suites.coding.modules.workers.commands.open_worker_worktree.open_worker_worktree import OpenWorkerWorktree
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
 from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_cut import RecordWorktreeCut
-from suites.coding.modules.workers.commands.undo_worker_opening.undo_worker_opening import UndoWorkerOpening
+from suites.coding.modules.workers.commands.cancel_worker_opening.cancel_worker_opening import CancelWorkerOpening
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.worker_settings import WORKER_LIMIT
-
-R = TypeVar("R")
-
 
 class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     """Starts a worker: its agent row, a worktree cut from the environment's branch, its first task and the tasks
@@ -72,20 +67,17 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         model = command.program_model or profile.program_model(program)
         self.check_model(program, model)
         start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
-        opened = self.recorded(OpenWorkerWorktree(start, task.id), context)
+        opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id), context)
         try:
             base_commit = self.git.tip(environment.folder, environment.branch)
             self.git.cut(environment.folder, opened.worktree)
-            self.recorded(PrepareWorktree(opened.worktree.folder, environment.folder, environment.name, command.library_links, command.library_copies), context)
-            worktree = self.recorded(RecordWorktreeCut(opened.worktree.id, base_commit, tuple(listed.id for listed in tasks)), context)
+            self.bus.run_with_context(PrepareWorktree(opened.worktree.folder, environment.folder, environment.name, command.library_links, command.library_copies), context)
+            worktree = self.bus.run_with_context(RecordWorktreeCut(opened.worktree.id, base_commit, tuple(listed.id for listed in tasks)), context)
         except Exception:
             self.git.remove(environment.folder, opened.worktree)
-            self.recorded(UndoWorkerOpening(opened.worktree.id), context)
+            self.bus.run_with_context(CancelWorkerOpening(opened.worktree.id), context)
             raise
         return WorkerLaunch(opened.worker, worktree, self.worker_command.command(opened.worker, worktree, environment, task))
-
-    def recorded(self, command: Command[R], context: Context) -> R:
-        return self.bus.run(command, context.actor, environment_id=context.environment_id)
 
     def worker_profile(self, name: str) -> AgentProfile:
         worker_type = self.types.find(AgentRole.WORKER)
