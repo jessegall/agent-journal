@@ -83,7 +83,7 @@ class DefaultRole(DriverRole):
 
 
 class PolicySuite(SampleSuite):
-    agent_policy = AgentPolicy(job_roles=("missing-policy-role",))
+    agent_policy = AgentPolicy(job_roles=tuple(["missing-policy-role"]))
 
 
 class PolicyRole(Clerk):

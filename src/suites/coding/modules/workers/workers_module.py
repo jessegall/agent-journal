@@ -160,7 +160,7 @@ class WorkersModule(Module):
     """
 
     name = "journal.suites.coding.workers"
-    agent_types = [AgentType("worker", "Worker", extends="helper", access=Access.WRITING, own_folder=True,
+    agent_types = [AgentType("worker", "Worker", extends="helper", access=Access.WRITING, separate_folder=True,
                              default_profile="journal-worker", start_line="journal worker dispatch")]
     parent_suite = "coding"
     templates = WORKER_TEMPLATES

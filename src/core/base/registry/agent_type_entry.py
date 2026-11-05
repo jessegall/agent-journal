@@ -16,7 +16,7 @@ class AgentTypeEntry:
     label: str
     extends: str
     access: Access
-    own_folder: bool
+    separate_folder: bool
     default_profile: str
     start_line: str
     roster: DottedPath | None
@@ -25,10 +25,10 @@ class AgentTypeEntry:
     def declared(cls, module: str, declaration: AgentType) -> "AgentTypeEntry":
         roster = DottedPath.class_path(declaration.roster) if declaration.roster is not None else None
         return cls(module, declaration.key, declaration.label, declaration.extends, declaration.access,
-                   declaration.own_folder, declaration.default_profile, declaration.start_line, roster)
+                   declaration.separate_folder, declaration.default_profile, declaration.start_line, roster)
 
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "AgentTypeEntry":
         roster = DottedPath(stored["roster"]["text"]) if stored["roster"] is not None else None
         return cls(stored["module"], stored["key"], stored["label"], stored["extends"], Access(stored["access"]),
-                   stored["own_folder"], stored["default_profile"], stored["start_line"], roster)
+                   stored["separate_folder"], stored["default_profile"], stored["start_line"], roster)

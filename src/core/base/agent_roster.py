@@ -1,11 +1,10 @@
-from typing import Protocol, TYPE_CHECKING, runtime_checkable
+from typing import Protocol, TypeVar, runtime_checkable
 
-if TYPE_CHECKING:
-    from core.modules.agents.models.agent import Agent
+AgentRecord = TypeVar("AgentRecord", covariant=True)
 
 
 @runtime_checkable
-class AgentRoster(Protocol):
+class AgentRoster(Protocol[AgentRecord]):
     """Lists the agents of a type that can hold work in an environment."""
 
-    def available(self, environment_id: int) -> tuple["Agent", ...]: ...
+    def available(self, environment_id: int) -> tuple[AgentRecord, ...]: ...

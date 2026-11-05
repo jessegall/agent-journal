@@ -73,7 +73,7 @@ class ClerksModule(Module):
 ```
 
 A type can extend another registered type. A helper with `access=Access.WRITING` must have
-`own_folder=True`. An optional `roster` class implements `AgentRoster.available(environment_id)`
+`separate_folder=True`. An optional `roster` class implements `AgentRoster.available(environment_id)`
 and returns the agents that can hold work. `start_line` names a separate start command when one
 is needed; `default_profile` names the profile used when a start names none.
 

@@ -29,7 +29,7 @@ class AgentTypeBook:
             key = self.entries[key].extends
         return tuple(chain)
 
-    def kinds_of(self, base: str) -> tuple[str, ...]:
+    def derived_types(self, base: str) -> tuple[str, ...]:
         return tuple(key for key in self.entries if self.extends(key, base))
 
     def startable(self) -> tuple[AgentTypeEntry, ...]:

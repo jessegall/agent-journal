@@ -38,7 +38,7 @@ def test_a_registered_type_survives_registry_storage_and_can_start(new_story):
     book = story.container.get(AgentTypeBook)
     clerk = book.find("clerk")
     story.expect_rows(clerk.module == "sample.clerk", clerk.label == "Clerk",
-                      book.extends("clerk", "helper"), "clerk" in book.kinds_of("helper"),
+                      book.extends("clerk", "helper"), "clerk" in book.derived_types("helper"),
                       "main" not in tuple(entry.key for entry in book.startable()),
                       clerk.roster is not None, story.container.get(clerk.roster.loaded()).available(1) == ())
     story.expect_success("agent start clerk-session claude clerk --environment main", "role: clerk")

@@ -11,8 +11,8 @@ class AgentType:
     key: str
     label: str
     extends: str = ""
-    access: Access = Access.READ_ONLY
-    own_folder: bool = False
+    access: Access = Access.READING
+    separate_folder: bool = False
     default_profile: str = ""
     start_line: str = ""
     roster: type[AgentRoster] | None = None

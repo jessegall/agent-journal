@@ -64,6 +64,6 @@ class AgentTypeCheck:
         chain = book.type_chain(declaration.key)
         if len(set(chain)) != len(chain):
             return [f"{name}: extends loop through {chain[-1]}"]
-        if book.extends(declaration.key, "helper") and declaration.access is Access.WRITING and not declaration.own_folder:
+        if book.extends(declaration.key, "helper") and declaration.access is Access.WRITING and not declaration.separate_folder:
             return [f"{name}: a writing helper needs its own folder"]
         return []
