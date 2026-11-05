@@ -31,7 +31,7 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
         if environment_id is None:
             raise Refusal("an item is docked in an environment", "name it with --environment")
         title, text = self.labels.read(command.type, command.row_model, command.row_id)
-        dock = next(self.queries.query(Dock).filter(environment_id=environment_id).all_rows(), None)
+        dock = self.queries.query(Dock).filter(environment_id=environment_id).first()
         dock = dock or self.repository.save(Dock(environment_id=environment_id, creator_id=context.actor.id), context)
         chat_items = self.items.docked(dock.id).same_chat(self.scopes.actor_id)
         type_capacity = self.limits.type_capacity(command.type)
@@ -49,4 +49,4 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
         leaving = next((item for item in docked if not item.kept and self.row_end.ended(item)), None) or next((item for item in docked if not item.kept and not self.leave_time.is_running(item)), None)
         if leaving is None:
             raise Refusal(limit_text, f"every item is pinned or still running: pin fewer, or raise {MOST_ITEMS_SETTING}")
-        self.repository.save(leaving.undock(context.timestamp, context.actor), context)
+        self.repository.save_change(leaving, leaving.undock(context.timestamp, context.actor), context)

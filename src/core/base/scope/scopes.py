@@ -75,4 +75,8 @@ class Scopes:
     def found_agent(self, event: LoggedEvent) -> int | None:
         if self.actors.is_agent(event.actor_id):
             return event.actor_id
-        return None if event.cause_id is None else self.causing_agent(self.log.event(event.cause_id))
+        if event.cause_id is None:
+            return None
+        if event.cause_id in self.causing_agents:
+            return self.causing_agents[event.cause_id]
+        return self.causing_agent(self.log.event(event.cause_id))

@@ -123,7 +123,8 @@ class Story:
 
     def run_listeners(self) -> None:
         self.steps.append("listeners")
-        self.container.get(CommitListenerRunner).run()
+        with self.repeated_work.request():
+            self.container.get(CommitListenerRunner).run()
 
     def tick(self, session: str) -> HookReply:
         return self.hook(session, HookSamples.tick())

@@ -13,8 +13,10 @@ the views a module declares in its `views.py`, and a module's `conditions/`. Eve
 
 ## When it fires
 
-- **`sql-outside-database-layer`** - a string that starts with `SELECT`, `INSERT`, `UPDATE`, `DELETE`,
-  `CREATE`, `DROP`, `ALTER` or `WITH` sits in any other file.
+- **`sql-outside-database-layer`** - a statement or SQL string, including a nested `SELECT`, sits in any
+  other file. A function in `views.py` is a query builder, not a declared view.
+- **`sql-condition-outside-conditions`** - a module embeds a `SELECT` condition outside its conditions
+  folder. Move the condition to that folder and use its named type.
 
 ## How to fix it
 

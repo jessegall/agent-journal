@@ -13,6 +13,7 @@ from core.modules.sequences.support.sequence_triggers import SequenceTriggers
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.sequences.rules.sequence_trigger_rule import EMPTY_TRIGGERS
+from core.modules.sequences.queries.sequence_query import SequenceQuery
 from core.base.change.touched import Touched
 from core.base.model.model import Model
 
@@ -23,11 +24,11 @@ class SequenceRowTriggerListener(CommitListener[Touched[Model]]):
 
     name = "sequences.row-trigger"
 
-    def __init__(self, queries: Queries, runs: SequenceRunQuery, bus: Bus) -> None:
-        self.queries, self.runs, self.bus = queries, runs, bus
+    def __init__(self, queries: Queries, runs: SequenceRunQuery, bus: Bus, sequences: SequenceQuery) -> None:
+        self.queries, self.runs, self.bus, self.sequences = queries, runs, bus, sequences
 
     def handle(self, event: Touched[Model], logged: LoggedEvent) -> None:
-        sequence = next((row for row in self.queries.query(Sequence).all_rows() if row.triggers != EMPTY_TRIGGERS and self.is_triggered(row, logged)), None)
+        sequence = next((row for row in self.sequences.definitions() if row.triggers != EMPTY_TRIGGERS and self.is_triggered(row, logged)), None)
         if sequence is None:
             return
         agent_id = self.acting_agent_id(logged)

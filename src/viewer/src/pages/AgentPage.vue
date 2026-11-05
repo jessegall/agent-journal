@@ -4,6 +4,7 @@ import PaneStage from "../windows/PaneStage.vue";
 import {followEvents} from "../windows/windowCatalogue.js";
 import {startWindows} from "../windows/startup.js";
 import {driverOf, useHomeLayout} from "../windows/homeLayout.js";
+import {wordLabel} from "../domain/labels.js";
 
 const PHONE_WIDTH = 700;
 const props = defineProps({
@@ -62,7 +63,7 @@ onUnmounted(() => {
         <template v-if="facts">
             <header class="agent-page-head">
                 <span class="agent-page-title">Agent {{ agent }}</span>
-                <span class="agent-page-facts">{{ facts.role }} · {{ facts.driver }}</span>
+                <span class="agent-page-facts">{{ wordLabel(facts.role) }} · {{ facts.driver }}</span>
             </header>
             <template v-if="narrow">
                 <nav class="agent-tabbar">

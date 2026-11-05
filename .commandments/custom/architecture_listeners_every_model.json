@@ -1,0 +1,28 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {"extendsAny": "CommitListener"},
+            {"of": "child:bases", "all": [
+                {"of": "child:slice", "all": [
+                    {"kind": "Subscript"},
+                    {"of": "child:value", "nameIn": ["Touched", "Changed"]},
+                    {"of": "child:slice", "name": "Model"}
+                ]}
+            ]}
+        ],
+        "reject": [
+            {"testCode": true},
+            {"fileMatches": "/(dock_item_leave_listener|skill_event_listener|reply_link_listener|worker_test_listener)\\.py$"},
+            {"fileMatches": "/sequence_(end|row_trigger)_listener\\.py$"}
+        ]
+    },
+    "sin": {
+        "name": "listener-hears-every-model",
+        "description": "A commit listener hears every model change.",
+        "rule": "Declare the specific row or domain event the listener needs. Temporary named exceptions: dock_item_leave_listener and skill_event_listener await task 6607; reply_link_listener and worker_test_listener await task 6608. Sequence end and row trigger listeners cover row types declared by installed sequence steps and triggers, so their model set is open.",
+        "skill": "plain-code-words"
+    }
+}

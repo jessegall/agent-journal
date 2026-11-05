@@ -28,6 +28,14 @@ else: no docstring inside a method, no comment inside a method, no docstring und
 
 ## The fix
 
+- A commit listener declares the specific row or domain event it needs. `Touched[Model]` and
+  `Changed[Model]` hear every model and require a named exception with a reason.
+- Read rows together with `find_many` before a loop. Use `first()` for one row instead of a counted
+  `.page(1, 1).rows` read.
+- Restore stored model values through `Table`, whose state handling includes states added by modules.
+- A commit listener uses declarations read when files change. It does not scan files or ask the skill
+  catalogue to scan them on every event.
+
 Trace the name to where the thing is born and name it there for what it is. A docstring or a comment in a body goes;
 what it said goes into the name of the method, the field or a helper, or into the class's one line at the top.
 

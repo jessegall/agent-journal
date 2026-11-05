@@ -1,5 +1,4 @@
 import "./table.css";
-import {rows} from "../sync/rows.js";
 
 const transformers = [];
 // the renders kept, newest last, each with the rows it read, so a text drawn again is scanned once until one of them changes
@@ -18,12 +17,12 @@ export function register(fn, {first = false} = {}) {
 
 // a row a transformer shows, read through the render so a kept render is drawn again once the store holds a new copy of it
 export function rowOf(context, table, id) {
-    const row = rows(table).find((r) => r.id === id);
+    const row = context.row?.(table, id);
     context.reads?.push({table, id, row});
     return row;
 }
 
-const isCurrent = (read) => rows(read.table).find((r) => r.id === read.id) === read.row;
+const isCurrent = (read, context) => context.row?.(read.table, read.id) === read.row;
 
 const renderKey = (text, context) => [context.env ?? "", context.inline ? "inline" : "block", context.rowNames === false ? "plain" : "names", context.document ? "document" : "note", text].join("\u0000");
 
@@ -227,13 +226,13 @@ export function render(text, context = {env: ""}) {
     const key = renderKey(text, context);
     const kept = renders.get(key);
     renders.delete(key);
-    if (kept && kept.reads.every(isCurrent)) {
+    if (kept && kept.source === context.source && kept.reads.every((read) => isCurrent(read, context))) {
         renders.set(key, kept);
         return kept.html;
     }
     const reads = [];
     const html = laidOut(transformed(text, {...context, reads}));
-    renders.set(key, {html, reads});
+    renders.set(key, {html, reads, source: context.source});
     if (renders.size > RENDERS_KEPT) renders.delete(renders.keys().next().value);
     return html;
 }

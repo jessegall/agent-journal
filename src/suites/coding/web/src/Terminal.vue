@@ -12,7 +12,7 @@ const PAGE_CALLS = 200;
 const TOP_PIXELS = 8;
 
 const context = useWindow();
-const {rows, failure, loaded, older} = useRows(`hook-call feed --agent-id ${context.agent} --limit ${PAGE_CALLS}`, ["hook_call.create"], {incremental: true});
+const {rows, failure, loaded, older} = useRows(`hook-call feed --agent-id ${context.agent} --limit ${PAGE_CALLS}`, ["hook_call.*"], {incremental: true});
 const typed = ref("");
 const refusal = ref("");
 const input = ref(null);

@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import { Btn, WindowRoom, useReadLine, useWindow } from "@journal/window-kit";
+import { Btn, WindowRoom, runChanged, useReadLine, useWindow } from "@journal/window-kit";
 import HookDetails from "./HookDetails.vue";
 import HookGroup from "./HookGroup.vue";
 import ManagedHookRow from "./ManagedHookRow.vue";
@@ -21,10 +21,11 @@ const managedKey = (item) => item.hook.id;
 const itemFailure = (item) =>
   failed.value.hook_id === item.hook.id ? failed.value.text : "";
 
-async function act(words, hookId = null) {
+async function act(words, hookId = null, change = null) {
   busy.value = true;
+  failed.value = { hook_id: null, text: "" };
   try {
-    const reply = await context.run(words);
+    const reply = await runChanged(change, words, context.run);
     failed.value = { hook_id: hookId, text: reply.ok ? "" : reply.error };
     if (reply.ok) await load();
     return reply;
@@ -33,7 +34,7 @@ async function act(words, hookId = null) {
   }
 }
 
-const save = (change) =>
+const save = (hook, change) =>
   act(
     [
       "managed-hook",
@@ -43,6 +44,7 @@ const save = (change) =>
       String(change.timeout),
     ],
     change.hook_id,
+    { target: hook, fields: { state: change.state, timeout: change.timeout } },
   );
 async function scan() {
   const reply = await act(["managed-hook", "scan"]);
@@ -123,7 +125,7 @@ onMounted(load);
               :history="item.history"
               :disabled="readOnly || busy"
               :failure="itemFailure(item)"
-              @save="save"
+              @save="save(item.hook, $event)"
             />
           </template>
         </HookGroup>

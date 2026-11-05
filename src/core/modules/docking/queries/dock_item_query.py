@@ -7,7 +7,7 @@ from core.base.query.query import Query
 from core.base.timestamp import Timestamp
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
-from core.modules.docking.support.same_chat import SameChat
+from core.modules.docking.conditions.same_chat import SameChat
 
 
 class DockItemQuery(Query[DockItem]):

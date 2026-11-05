@@ -1,25 +1,19 @@
 import {computed, ref} from "vue";
+import {runChanged} from "../../kit/runChanged.js";
 
 // pausing and resuming an agent: it shows in the client at once, the server is told after, and a refusal puts it back
 export function useAgentPause(agent, run, changed) {
     const failure = ref("");
     const paused = computed(() => Boolean(agent.value) && !agent.value.ended_at && Boolean(agent.value.paused_at));
 
-    async function send(word, undo) {
+    async function toggle() {
         failure.value = "";
-        const answer = await run(["agent", word, String(agent.value.id)]);
-        if (!answer.ok) {
-            undo();
-            failure.value = answer.error;
-        }
-        changed();
-    }
-
-    function toggle() {
-        const before = agent.value.paused_at;
         const row = agent.value;
-        row.paused_at = before ? null : new Date().toISOString();
-        return send(before ? "resume" : "pause", () => (row.paused_at = before));
+        const word = row.paused_at ? "resume" : "pause";
+        const answer = await runChanged({target: row, fields: {paused_at: row.paused_at ? null : new Date().toISOString()}}, ["agent", word, String(row.id)], run);
+        failure.value = answer.ok ? "" : answer.error;
+        changed();
+        return answer;
     }
 
     return {failure, paused, toggle};

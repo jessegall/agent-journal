@@ -1,11 +1,13 @@
 from core.base.actor import CORE_ACTOR_ID
 from core.base.actor_type import ActorType
 from core.base.database.database import Database
+from core.base.database.kept_rows import KeptRows
 from core.base.database.statement import Statement
 
 CORE_ACTOR = Statement("INSERT OR IGNORE INTO actors (id, type, name, created_at, updated_at) VALUES (?, ?, 'core', ?, ?)")
 MODULE_ACTOR = Statement("INSERT OR IGNORE INTO actors (creator_id, type, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")
 MODULE_ACTOR_ID = Statement("SELECT id FROM actors WHERE type = ? AND name = ?")
+MODULE_ACTOR_IDS = Statement("SELECT id, name FROM actors WHERE type = 'module'")
 ACTOR_ROW = Statement("SELECT 1 FROM actors WHERE id = ? AND type = ?")
 NEWEST_MAIN_AGENT_ID = Statement("SELECT id FROM agents WHERE environment_id = ? AND role = 'main' ORDER BY id DESC LIMIT 1")
 
@@ -25,7 +27,10 @@ class ActorTable:
         return self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.MODULE.value, module)))[0]["id"]
 
     def module_actor_id(self, module: str) -> int:
-        return self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.MODULE.value, module)))[0]["id"]
+        return KeptRows(self.database).read("actors", self.module_actor_ids, "type = ?", [ActorType.MODULE.value])[module]
+
+    def module_actor_ids(self) -> dict[str, int]:
+        return {row["name"]: row["id"] for row in self.database.rows(MODULE_ACTOR_IDS)}
 
     def agent_actor_id(self, session: str) -> int | None:
         rows = self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.AGENT.value, session)))
