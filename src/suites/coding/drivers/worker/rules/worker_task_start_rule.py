@@ -17,6 +17,6 @@ class WorkerTaskStartRule(DriverRule):
         self.tasks = tasks
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if self.tasks.holder(hook.agent_id).started().exists():
+        if self.tasks.started_tasks(hook.agent_id):
             return RuleAnswer.allowed()
         return RuleAnswer.blocked(hook, WORKER_TASK_UNSTARTED.nudge(), StartedTaskExists())

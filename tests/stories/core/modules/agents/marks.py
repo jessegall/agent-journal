@@ -5,7 +5,6 @@ from core.base.change.event_log import EventLog
 from core.base.command.bus import Bus
 from core.base.refusal import Refusal
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
-from core.modules.drivers.commands.bind_helper_dispatch.bind_helper_dispatch import BindSubagentDispatch
 from core.base.change.created import Created
 from core.base.query.queries import Queries
 from core.modules.helpers.listeners.helper_job_mark_listener import HelperJobMarkListener

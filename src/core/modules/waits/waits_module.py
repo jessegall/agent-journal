@@ -4,6 +4,7 @@ from core.base.module.module import Module
 from core.modules.waits.migrations.m001_waits import WaitsTablesMigration
 from core.modules.waits.migrations.m002_wait_target_wait_index import WaitTargetWaitIndexMigration
 from core.modules.waits.migrations.m003_pending_targets_index import PendingTargetsIndexMigration
+from core.modules.waits.migrations.m005_open_wait_index import OpenWaitIndexMigration
 from core.modules.waits.models.waiting_row import WaitingRow
 from core.modules.waits.commands.waiting_wait.waiting_wait_subcommand import WaitingWaitSubcommand
 from core.modules.waits.overlays.help_request_overlay import HelpRequestOverlay
@@ -32,7 +33,7 @@ class WaitsModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.chat"]
     models = [ModelDeclaration(Wait, commands=[EndWait, ResumeWait], excluded_subcommands=["make"]), ModelDeclaration(WaitTarget, excluded_subcommands=["make", "edit"])]
-    migrations = [WaitSessionMigration, WaitsTablesMigration, WaitTargetWaitIndexMigration, PendingTargetsIndexMigration]
+    migrations = [WaitSessionMigration, WaitsTablesMigration, WaitTargetWaitIndexMigration, PendingTargetsIndexMigration, OpenWaitIndexMigration]
     views = [WaitingRow]
     handlers = [OpenWaitHandler]
     subcommands = [OpenWaitSubcommand, RequestHelpSubcommand, WaitingWaitSubcommand]

@@ -14,10 +14,10 @@ class PluginQuery(Query[Plugin]):
         self.kept = kept
 
     def find_name(self, name: str) -> Plugin:
-        rows = self.filter(name=name).limited(1)
-        if not rows:
+        plugin = self.kept.read(self.table.name, lambda: self.filter(name=name).first(), "name = ?", [name], name="plugins.find_name")
+        if plugin is None:
             raise Refusal(f"no plugin named {name} is installed", "journal plugin list shows them")
-        return rows[0]
+        return plugin
 
     def enabled_ones(self) -> list[Plugin]:
         return list(self.kept.read(self.table.name, lambda: tuple(self.filter(enabled=True).oldest().all_rows()),

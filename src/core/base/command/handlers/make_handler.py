@@ -1,5 +1,6 @@
 from typing import Any
 
+from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.command.make_command import MakeCommand
@@ -24,4 +25,6 @@ class MakeHandler(Handler[MakeCommand[Model], Model]):
         values: dict[str, Any] = dict(command.model_fields())
         if table.has_column(CREATOR_COLUMN):
             values.setdefault(CREATOR_COLUMN, context.actor.id)
+        if table.model.shared_rows and table.has_column(ENVIRONMENT_COLUMN):
+            values.setdefault(ENVIRONMENT_COLUMN, context.environment_id)
         return self.repository.save(table.new_model(values), context)

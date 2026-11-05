@@ -27,6 +27,7 @@ from core.modules.secrets.commands.store_secret.store_secret_subcommand import S
 from core.modules.secrets.commands.edit_secret.edit_secret_subcommand import EditSecretSubcommand
 from core.modules.secrets.guards.secret_value_guard import SecretValueGuard
 from core.modules.secrets.migrations.m001_secrets import SecretsTableMigration
+from core.modules.secrets.migrations.m003_deleted_secret_index import DeletedSecretIndexMigration
 from core.modules.secrets.models.secret import Secret
 from core.modules.secrets.queries.secret_query import SecretQuery
 from core.modules.secrets.rules.secrets_folder_rule import SecretsFolderRule
@@ -47,7 +48,7 @@ class SecretsModule(Module):
     skills = [SkillDeclaration("journal-secrets", "Use keys and logins without seeing them; read it when a task needs a key or a login", keywords=("secret", "secrets", "api key", "token", "password", "login"), commands=["secret"])]
     seeders = [SecretsSeeder]
     models = [ModelDeclaration(Secret, query=SecretQuery, excluded_subcommands=ALL_SUBCOMMANDS)]
-    migrations = [ActiveSecretIndexMigration, SecretsTableMigration]
+    migrations = [ActiveSecretIndexMigration, SecretsTableMigration, DeletedSecretIndexMigration]
     moves = [SecretsMove]
     handlers = [MakeSecretHandler, EditSecretHandler, FillSecretHandler, ProposeProgramHandler, AllowProgramHandler, ChangeSecretDeletionHandler]
     subcommands = [MakeSecretSubcommand, RequestSecretSubcommand, EditSecretSubcommand, FillSecretSubcommand, StoreSecretSubcommand, SecretListSubcommand,

@@ -22,7 +22,8 @@ class WaitTaskHandler(Handler[WaitTask, Task]):
         self.bus, self.queries, self.repository, self.targets = bus, queries, repository, targets
 
     def handle(self, command: WaitTask, context: Context) -> Task:
-        targets = tuple(self.target(text, command.task_id) for text in command.targets)
+        edges = tuple(self.queries.query(TaskEdge).all_rows()) if command.targets else ()
+        targets = tuple(self.target(text, command.task_id, edges) for text in command.targets)
         if command.user_wait and not command.reason.strip():
             raise Refusal("say what the user must do", "--until-user --reason '<words>'")
         if not (command.reason.strip() or targets or command.wait_command):
@@ -37,8 +38,7 @@ class WaitTaskHandler(Handler[WaitTask, Task]):
             self.repository.save(TaskWait(task_id=task.id, creator_id=context.actor.id, command=command.wait_command, interval_minutes=command.interval_minutes), context)
         return task
 
-    def reaches_task(self, task_id: int, target_id: int) -> bool:
-        edges = tuple(self.queries.query(TaskEdge).all_rows())
+    def reaches_task(self, task_id: int, target_id: int, edges: tuple[TaskEdge, ...]) -> bool:
         visited: set[int] = set()
         waiting = [task_id]
         while waiting:
@@ -50,12 +50,12 @@ class WaitTaskHandler(Handler[WaitTask, Task]):
                 waiting += [edge.blocker_id for edge in edges if edge.task_id == current]
         return False
 
-    def target(self, text: str, task_id: int) -> str:
+    def target(self, text: str, task_id: int, edges: tuple[TaskEdge, ...]) -> str:
         target_type, _, row_id = text.partition(":")
         if not row_id.isdigit():
             raise Refusal(f"{text} gives nothing to wait on", self.targets.target_help)
         if target_type == "task" and int(row_id) == task_id:
             raise Refusal(f"task {task_id} cannot wait on itself", "name another task")
-        if target_type == "task" and self.reaches_task(int(row_id), task_id):
+        if target_type == "task" and self.reaches_task(int(row_id), task_id, edges):
             raise Refusal(f"task {row_id} waits on task {task_id} already, so this would be a loop", "end one of the two waits first")
         return self.targets.target(target_type, int(row_id))

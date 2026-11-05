@@ -17,4 +17,4 @@ class WorkerHelpRequestMarkListener(WorkerStopMarkListener[Created[Wait]]):
         wait = event.row
         worker = self.event_rows.required(Agent, wait.session_agent_id)
         if wait.type is WaitType.HELP_REQUEST and worker.role == AgentRole.WORKER:
-            self.show_stop(logged, worker, WorkerMarkVariant.HELP_REQUEST, f"is stuck: {wait.focus}")
+            self.show_stop(logged, worker, WorkerMarkVariant.HELP_REQUEST, f"is stuck: {wait.focus}", self.unfinished.rows(worker.id))

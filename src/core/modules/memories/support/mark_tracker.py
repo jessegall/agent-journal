@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from core.base.driver.hook_event_name import HookEventName
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.minimum import Minimum
+from core.base.database.kept_rows import KeptRows
 from core.base.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.memories.models.enums.mark_state import MarkState
@@ -14,11 +15,12 @@ class MarkTracker:
     """An agent's context marks: the one open now, and the next mark its context passed that it has not
     reached since its last compaction."""
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, queries: Queries, kept: KeptRows) -> None:
+        self.queries, self.kept = queries, kept
 
     def open_marks(self, agent_id: int) -> list[MemoryMark]:
-        return list(self.queries.query(MemoryMark).filter(session_agent_id=agent_id, state=MarkState.OPEN).all_rows())
+        return list(self.kept.read("memory_marks", lambda: tuple(self.queries.query(MemoryMark).filter(session_agent_id=agent_id, state=MarkState.OPEN).all_rows()),
+                                   "session_agent_id = ? AND state = ?", [agent_id, MarkState.OPEN], name="memories.open_marks"))
 
     def next_reached(self, agent_id: int, percent: int, marks: Sequence[int]) -> int | None:
         passed = [mark for mark in marks if mark <= percent]

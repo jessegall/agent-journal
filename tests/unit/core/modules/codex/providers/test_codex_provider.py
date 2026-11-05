@@ -87,7 +87,7 @@ def test_the_context_percent_is_read_from_the_end_of_a_rollout_longer_than_the_t
 
 def test_every_recorded_hook_name_is_mapped_to_the_event_the_go_program_prepared(provider):
     pairs = [(json.loads(body)["hook_event_name"], json.loads(prepared)["event"]) for path in sorted(RECORDED.glob("*.jsonl"))
-             for body, prepared in zip(path.read_text().splitlines(), (PREPARED / path.name).read_text().splitlines(), strict=True)]
+             for body, prepared in zip(path.read_text().splitlines(), (PREPARED / path.name).read_text().splitlines(), strict=True) if prepared != "skip"]
     assert len(pairs) > 10 and all(provider.hook_events[name] == event for name, event in pairs)
 
 

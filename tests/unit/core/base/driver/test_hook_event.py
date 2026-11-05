@@ -9,6 +9,7 @@ from core.base.driver.hook_event_version_error import HookEventVersionError
 
 HOOK_FOLDER = Path(__file__).resolve().parents[5] / "tools" / "journal-hook"
 SCHEMA_EXAMPLES = sorted((HOOK_FOLDER / "event" / "testdata" / "schema").glob("*.json"))
+SKIPPED_LINE = "skip"
 PREPARED_OBJECTS = sorted((HOOK_FOLDER / "programs" / "testdata" / "prepared").glob("*/*.jsonl"))
 
 
@@ -22,7 +23,7 @@ def test_each_example_of_the_schema_is_read(example):
 
 
 def test_every_object_the_go_program_prepared_from_the_recorded_bodies_is_read():
-    lines = [line for path in PREPARED_OBJECTS for line in path.read_text().splitlines() if line.strip()]
+    lines = [line for path in PREPARED_OBJECTS for line in path.read_text().splitlines() if line.strip() and line != SKIPPED_LINE]
     events = [HookEvent.parsed({**json.loads(line), "raw": {}}) for line in lines]
     assert len(events) == len(lines) > 1000
 

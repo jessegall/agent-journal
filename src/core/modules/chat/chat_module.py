@@ -17,6 +17,7 @@ from core.modules.chat.commands.show_mark.show_mark_handler import ShowMarkHandl
 from core.modules.chat.guards.agent_chat_guard import AgentChatGuard
 from core.modules.chat.guards.mark_type_guard import MarkTypeGuard
 from core.modules.chat.migrations.m001_chat_marks import ChatMarkTableMigration
+from core.modules.chat.migrations.m008_chat_mark_all_key_index import ChatMarkAnyEnvironmentKeyIndexMigration
 from core.modules.chat.queries.chat_mark_query import ChatMarkQuery
 from core.modules.chat.models.chat_mark import ChatMark
 
@@ -30,7 +31,7 @@ class ChatModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments"]
     models = [ModelDeclaration(ChatMark, query=ChatMarkQuery), ModelDeclaration(JournalException, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [ChatMarkSessionMigration, JournalExceptionCreatedIndexMigration, ChatMarkAgentIndexMigration, ChatMarkTableMigration, JournalExceptionTableMigration, ChatMarkKeyIndexMigration, JournalExceptionRenameMigration]
+    migrations = [ChatMarkSessionMigration, JournalExceptionCreatedIndexMigration, ChatMarkAgentIndexMigration, ChatMarkTableMigration, JournalExceptionTableMigration, ChatMarkKeyIndexMigration, JournalExceptionRenameMigration, ChatMarkAnyEnvironmentKeyIndexMigration]
     handlers = [ShowMarkHandler, RecordJournalExceptionHandler]
     guards = [MarkTypeGuard, AgentChatGuard]
     marks = CHAT_MARKS

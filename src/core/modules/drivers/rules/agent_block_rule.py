@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from core.base.role_group import RoleGroup
 from core.base.container import Container
 from core.base.driver.agent_hook import AgentHook
@@ -39,7 +40,7 @@ class AgentBlockRule(DriverRule):
         blocks = tuple(self.queries.query(AgentBlock).filter(session_agent_id=hook.agent_id).matching(IsNull("closed_at")).oldest().all_rows())
         if not blocks:
             return RuleAnswer.allowed()
-        finished_blocks = [block for block in blocks if block.is_finished(self.conditions, hook, self.container)]
+        finished_blocks = self.finished(blocks, hook)
         waiting_blocks = [block for block in blocks if block not in finished_blocks]
         counted_blocks = [block for block in waiting_blocks if block.grace_tool_uses]
         counts = self.calls.tool_use_counts(hook.agent_id, [block.creation_timestamp() for block in counted_blocks]) if counted_blocks else []
@@ -52,6 +53,17 @@ class AgentBlockRule(DriverRule):
             return RuleAnswer.refused(Nudge(refused_blocks[0].nudge_key, NudgeType.REFUSAL, refused_blocks[0].nudge_text.replace("{block}", str(refused_blocks[0].id)))).running(*closing)
         countdowns = [self.countdown(block, tool_uses.get(block.id, 0)) for block in waiting_blocks if block not in active_blocks]
         return RuleAnswer.with_nudges(*[nudge for nudge in countdowns if nudge is not None]).running(*closing)
+
+    def finished(self, blocks: Sequence[AgentBlock], hook: AgentHook) -> list[AgentBlock]:
+        answers: dict[tuple[str, str, str], bool] = {}
+        finished_blocks: list[AgentBlock] = []
+        for block in blocks:
+            condition = (block.condition_name, block.condition_text, block.creation_timestamp().text)
+            if condition not in answers:
+                answers[condition] = block.is_finished(self.conditions, hook, self.container)
+            if answers[condition]:
+                finished_blocks.append(block)
+        return finished_blocks
 
     def refuses(self, block: AgentBlock, tool: Tool) -> bool:
         return not tool.is_skill_read if block.strict else not tool.block_exempt

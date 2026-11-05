@@ -67,7 +67,7 @@ class ServerProcess:
 
     def expect_stop_with_an_idle_connection(self) -> None:
         assert self.process is not None
-        idle = UnixConnection(str(self.socket))
+        idle = UnixConnection(str(self.socket), TIMEOUT_SECONDS, "journal")
         try:
             idle.request("GET", "/health")
             idle.getresponse().read()

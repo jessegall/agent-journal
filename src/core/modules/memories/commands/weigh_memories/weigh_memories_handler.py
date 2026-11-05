@@ -22,6 +22,6 @@ class WeighMemoriesHandler(Handler[WeighMemories, list[Memory]]):
             raise Refusal(f"{len(command.memory_ids)} memories and {len(command.weights)} weights", "give one weight for all, or one for each")
         weights = command.weights * len(command.memory_ids) if len(command.weights) == 1 else command.weights
         memories = self.queries.query(Memory).find_many(command.memory_ids)
-        saved = [self.repository.save(memory.weighed(weight), context) for memory, weight in zip(memories, weights)]
+        saved = [self.repository.update(memory, context, weight=weight) for memory, weight in zip(memories, weights)]
         self.closer.close(context)
         return saved

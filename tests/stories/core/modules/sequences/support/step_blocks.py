@@ -36,7 +36,7 @@ def repair_legacy_blocks(story) -> None:
     database = story.container.get(Database)
     database.update(Statement("DELETE FROM migrations WHERE module = ? AND number > 3", [SequencesModule.name]))
     schema = story.container.get(Schema)
-    migrations = [ModuleMigrations(SequencesModule.name, [migration() for migration in SequencesModule.migrations[:4]])]
+    migrations = [ModuleMigrations(SequencesModule.name, [migration() for migration in SequencesModule.migrations if migration.number <= 4])]
     assert schema.migrate(migrations) == [f"{SequencesModule.name} 4"]
     query = story.container.get(Queries).query(AgentBlock)
     assert query.find(legacy.id).closed_at is not None

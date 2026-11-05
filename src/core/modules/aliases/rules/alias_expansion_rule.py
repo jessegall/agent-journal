@@ -29,9 +29,9 @@ class AliasExpansionRule(DriverRule):
         if shell.parse_error:
             return RuleAnswer.refused(ALIAS_UNEXPANDED.nudge())
         for name in shell.alias_names:
-            rows = self.aliases.with_name(name).limited(1)
-            if not rows:
+            alias = self.aliases.saved(name)
+            if alias is None:
                 return RuleAnswer.refused(ALIAS_MISSING.nudge())
-            if self.access.refusal(rows[0], Caller(Actor(hook.agent_id, ActorType.AGENT))):
+            if self.access.refusal(alias, Caller(Actor(hook.agent_id, ActorType.AGENT))):
                 return RuleAnswer.refused(ALIAS_ACCESS_REFUSED.nudge())
         return RuleAnswer.allowed()

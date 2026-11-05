@@ -15,7 +15,6 @@ from core.modules.plans.support.plan_board import PlanBoard
 
 CLOSED_STATES = (PlanState.COMPLETED, PlanState.CANCELLED)
 OPEN_STATES = tuple(state for state in PlanState if state not in CLOSED_STATES)
-COUNT_PAGE_ROWS = 1
 
 
 class PlanBoardSubcommand(ReadSubcommand[PlanBoard]):
@@ -45,8 +44,8 @@ class PlanBoardSubcommand(ReadSubcommand[PlanBoard]):
         opened, closed = plans.matching(Among("state", self.open_states())), plans.matching(Among("state", CLOSED_STATES))
         shown = closed if arguments.closed else opened
         older = shown.matching(Less("id", arguments.before_id)) if arguments.before_id is not None else shown
-        cards = tuple(older.newest().page(1, arguments.limit).rows)
-        return PlanBoard(opened.page(1, COUNT_PAGE_ROWS).total, closed.page(1, COUNT_PAGE_ROWS).total, cards)
+        cards = tuple(older.newest().limited(arguments.limit))
+        return PlanBoard(opened.count(), closed.count(), cards)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PlanBoard):

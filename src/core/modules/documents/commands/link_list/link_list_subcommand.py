@@ -35,7 +35,8 @@ class LinkListSubcommand(ReadSubcommand[Sequence[Link]]):
 
     def write_output(self, value: object, output: Output) -> None:
         links = [row for row in value if isinstance(row, Link)] if is_tuple(value) else []
-        output.write("\n".join(f"{row.source_model}:{row.source_id}  {row.link_type}  {row.target_model}:{row.target_id}" for row in links), {"rows": [{**output.values(row), "source_title": self.title(row.source_model, row.source_id), "target_title": self.title(row.target_model, row.target_id)} for row in links]})
+        titles = {end: self.title(*end) for end in {end for row in links for end in ((row.source_model, row.source_id), (row.target_model, row.target_id))}}
+        output.write("\n".join(f"{row.source_model}:{row.source_id}  {row.link_type}  {row.target_model}:{row.target_id}" for row in links), {"rows": [{**output.values(row), "source_title": titles[(row.source_model, row.source_id)], "target_title": titles[(row.target_model, row.target_id)]} for row in links]})
 
     def title(self, model_name: str, row_id: int) -> str:
         model = self.row_refs.model(model_name)

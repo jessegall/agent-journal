@@ -7,6 +7,7 @@ from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
+from core.base.scope.scopes import Scopes
 from core.base.timestamp import Timestamp
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
@@ -26,8 +27,8 @@ class LeaveShareCommentHandler(Handler[LeaveShareComment, ShareComment]):
 
     command = LeaveShareComment
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, queries: Queries, repository: Repository, scopes: Scopes) -> None:
+        self.queries, self.repository, self.scopes = queries, repository, scopes
 
     def handle(self, command: LeaveShareComment, context: Context) -> ShareComment:
         if context.actor.type is not ActorType.CORE:
@@ -42,8 +43,8 @@ class LeaveShareCommentHandler(Handler[LeaveShareComment, ShareComment]):
         if self.queries.query(ShareComment).filter(share_link_id=link.id).matching(Greater("created_at", start)).count() >= WINDOW_COMMENT_COUNT:
             raise Refusal("this link has had many comments just now", "try again in a few minutes")
         comment = self.repository.save(ShareComment(share_link_id=link.id, creator_id=link.creator_id, visitor_name=name, text=text), context)
-        self.repository.save(Message(creator_id=link.creator_id, type=MessageType.JOURNAL,
-                                     text=self.chat_line(name, text, link)), context)
+        with self.scopes.opened(None, link.environment_id):
+            self.repository.save(Message(creator_id=link.creator_id, type=MessageType.JOURNAL, text=self.chat_line(name, text, link)), context)
         return comment
 
     @staticmethod

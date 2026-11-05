@@ -38,6 +38,9 @@ SMALL_TABLES = {
     "mcp_servers": "Configured MCP endpoints form a small catalogue loaded together.",
     "plugins": "Installed plugins form a small configuration catalogue, not event history.",
     "releases": "Available releases form a small upstream catalogue, not event history.",
+    "statistics": "One row per named statistic, listed together.",
+    "docs": "The document library is read and counted as one small list.",
+    "reports": "The report library is read and counted as one small list.",
 }
 ALLOWED_READ_REPEATS = {
     ("core/base/database/kept_rows.py", "kept_value"): "A write changes the database mark; cached rows must check their table signature again.",
@@ -163,8 +166,8 @@ class RepeatedWork(PointTally):
 
     @staticmethod
     def is_logical_scan(table: str, plans: Sequence[str]) -> bool:
-        if table == "json_each":
-            return any(plan.startswith("SCAN json_each VIRTUAL TABLE INDEX") for plan in plans)
+        if any(plan.startswith(f"SCAN {table} VIRTUAL TABLE INDEX") for plan in plans):
+            return True
         return any(plan in (f"CO-ROUTINE {table}", f"MATERIALIZE {table}") for plan in plans)
 
     @staticmethod

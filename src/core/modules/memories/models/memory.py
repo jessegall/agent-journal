@@ -51,9 +51,6 @@ class Memory(AgentScoped, EnvironmentScoped, Model):
             return memory.remove(timestamp, actor, FADING_REMOVAL_REASON)
         return memory
 
-    def weighed(self, weight: int) -> "Memory":
-        return self.changed(weight=weight)
-
     def remove(self, timestamp: Timestamp, actor: Actor, reason: str) -> "Memory":
         return self.moved(MemoryLifecycle.remove, reason=reason, removed_at=timestamp)
 

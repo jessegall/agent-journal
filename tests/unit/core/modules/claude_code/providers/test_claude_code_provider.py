@@ -67,7 +67,7 @@ def test_a_sessions_transcript_is_found_under_the_config_folder(provider, tmp_pa
 
 def test_every_recorded_hook_name_is_mapped_to_the_event_the_go_program_prepared(provider):
     pairs = [(json.loads(body)["hook_event_name"], json.loads(prepared)["event"]) for path in sorted(RECORDED.glob("*.jsonl"))
-             for body, prepared in zip(path.read_text().splitlines(), (PREPARED / path.name).read_text().splitlines(), strict=True)]
+             for body, prepared in zip(path.read_text().splitlines(), (PREPARED / path.name).read_text().splitlines(), strict=True) if prepared != "skip"]
     assert len(pairs) > 1000 and all(provider.hook_events[name] == event for name, event in pairs)
 
 

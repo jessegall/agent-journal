@@ -11,6 +11,7 @@ from core.modules.suggestions.commands.make_suggestions.make_suggestions_handler
 from core.modules.suggestions.commands.suggestion_list.suggestion_list_subcommand import SuggestionListSubcommand
 from core.modules.suggestions.listeners.suggestion_mark_listener import SuggestionMarkListener
 from core.modules.suggestions.migrations.m001_suggestions import SuggestionsTableMigration
+from core.modules.suggestions.migrations.m002_open_suggestion_index import OpenSuggestionIndexMigration
 from core.modules.suggestions.models.suggestion import Suggestion
 from core.modules.suggestions.rules.suggestion_round_rule import SuggestionRoundRule
 from core.modules.suggestions.support.suggestion_marks import SUGGESTION_MARKS
@@ -30,7 +31,7 @@ class SuggestionsModule(Module):
     moves = [SuggestionsMove]
     windows = [WindowDeclaration("suggestions.suggestions", "Suggestions", "suggestions.js", WindowLoading.COMPONENT, skeleton=SUGGESTIONS_SUGGESTIONS_SKELETON, search=WindowSearch(SuggestionSearcher, "Search the suggestions"), icon=WindowIcon.BULB, reads=["suggestion list"],
                                  events=["suggestion.*"])]
-    migrations = [SuggestionsTableMigration]
+    migrations = [SuggestionsTableMigration, OpenSuggestionIndexMigration]
     handlers = [MakeSuggestionsHandler, AnswerSuggestionHandler]
     subcommands = [SuggestionListSubcommand, AnswerSuggestionSubcommand]
     driver_rules = [SuggestionRoundRule]

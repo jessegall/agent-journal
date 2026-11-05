@@ -9,7 +9,7 @@ def settings_rows_read(story) -> int:
     return story.container.get(Database).tally.points().tables["settings"]
 
 
-def test_the_settings_are_read_once_and_again_only_when_one_changes(new_story):
+def test_the_settings_are_read_once_and_a_change_keeps_them_current(new_story):
     story = new_story(fixture=UserJoined)
     story.run(f"setting set {KEY} 20 --project", actor=story.user)
     story.expect_success(SETTING_READ_LINE, "value: 20", actor=story.user)
@@ -18,14 +18,9 @@ def test_the_settings_are_read_once_and_again_only_when_one_changes(new_story):
     expect_settings_rows_read(story, first_read_rows)
     story.run(f"setting set {KEY} 30 --project", actor=story.user)
     story.expect_success(SETTING_READ_LINE, "value: 30", actor=story.user)
-    expect_settings_count_greater(story, first_read_rows)
+    expect_settings_rows_read(story, first_read_rows)
 
 
 def expect_settings_rows_read(story, expected) -> None:
     actual = settings_rows_read(story)
     assert actual == expected, actual
-
-
-def expect_settings_count_greater(story, expected) -> None:
-    actual = settings_rows_read(story)
-    assert actual > expected, actual

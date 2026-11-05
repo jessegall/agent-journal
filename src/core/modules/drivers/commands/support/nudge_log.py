@@ -1,7 +1,6 @@
 from dataclasses import replace
 
 from core.base.command.context import Context
-from core.base.database.kept_rows import KeptRows
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.nudge import Nudge
 from core.base.driver.rule_answers import RuleAnswers
@@ -11,6 +10,7 @@ from core.base.repository.repository import Repository
 from core.base.timestamp import Timestamp
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.models.nudge_record import NudgeRecord
+from core.modules.drivers.support.nudge_records import NudgeRecords
 
 
 class NudgeLog:
@@ -18,8 +18,8 @@ class NudgeLog:
     repeat within the hook; and what was said, kept per agent. A line on a clock is held by its key, so a
     number that changes in its text does not start it again. A refusal is never held back."""
 
-    def __init__(self, queries: Queries, repository: Repository, kept: KeptRows, spans: SpanQueries) -> None:
-        self.queries, self.repository, self.kept = queries, repository, kept
+    def __init__(self, queries: Queries, repository: Repository, records: NudgeRecords, spans: SpanQueries) -> None:
+        self.queries, self.repository, self.records = queries, repository, records
         self.spans = spans
 
     def skipped_lines(self, agent_id: int, answers: RuleAnswers, timestamp: Timestamp) -> frozenset[tuple[str, str]]:
@@ -42,21 +42,13 @@ class NudgeLog:
         return prompts[0].created_at if prompts else None
 
     def record(self, agent_id: int, nudge: Nudge) -> NudgeRecord:
-        rows = self.queries.query(NudgeRecord).filter(session_agent_id=agent_id, key=nudge.key)
-        query = (rows if nudge.interval else rows.filter(text=nudge.text)).descending("last_delivered_at")
-        condition, parameters = "session_agent_id = ? AND key = ?", [agent_id, nudge.key]
-        if not nudge.interval:
-            condition += " AND text = ?"
-            parameters.append(nudge.text)
-        record = self.kept.read("nudge_records", query.first, condition, parameters,
-                                name=f"drivers.nudge:{nudge.key if nudge.interval else nudge.text}")
+        record = self.records.newest_row(agent_id, nudge.key) if nudge.interval else self.records.newest_text_row(agent_id, nudge.key, nudge.text)
         return record if record is not None else NudgeRecord(session_agent_id=agent_id, creator_id=0, key=nudge.key, text=nudge.text)
 
     def write(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
         for nudge in (*answers.delivered_nudges, *answers.refusal_nudges):
             current = self.record(agent_id, nudge)
             if nudge.interval and current.text != nudge.text:
-                matching_records = self.queries.query(NudgeRecord).filter(session_agent_id=agent_id, key=nudge.key, text=nudge.text).limited(1)
-                current = matching_records[0] if matching_records else current
+                current = self.records.newest_text_row(agent_id, nudge.key, nudge.text) or current
             self.repository.save_change(current if current.is_saved else None,
                                         replace(current, creator_id=context.actor.id, text=nudge.text, delivery_count=current.delivery_count + 1, last_delivered_at=context.timestamp), context)

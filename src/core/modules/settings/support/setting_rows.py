@@ -16,7 +16,10 @@ class SettingRows:
         self.queries, self.kept = queries, kept
 
     def row(self, model: SettingModel, key: str, environment_id: int | None) -> Setting | SecretSetting | None:
-        return self.kept.read(TABLES[model], lambda: self.table(model), name="settings.rows").get((key, environment_id))
+        return self.kept_table(model).get((key, environment_id))
+
+    def kept_table(self, model: SettingModel) -> dict[tuple[str, int | None], Setting | SecretSetting]:
+        return self.kept.read(TABLES[model], lambda: self.table(model), name="settings.rows")
 
     def table(self, model: SettingModel) -> dict[tuple[str, int | None], Setting | SecretSetting]:
         return {(row.key, row.environment_id): row for row in self.queries.query(model).all_rows()}
@@ -28,4 +31,4 @@ class SettingRows:
         self.kept.update(TABLES[type(row)], lambda rows: {key: value for key, value in rows.items() if key != (row.key, row.environment_id)}, name="settings.rows")
 
     def stored_keys(self) -> list[str]:
-        return list(dict.fromkeys(row.key for model in (Setting, SecretSetting) for row in self.queries.query(model).oldest().all_rows()))
+        return list(dict.fromkeys(key for model in (Setting, SecretSetting) for key, _ in self.kept_table(model)))

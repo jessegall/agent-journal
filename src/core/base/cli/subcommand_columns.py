@@ -17,6 +17,7 @@ STATE_COLUMN = "state"
 
 
 HANDLER_COLUMNS = (CREATOR_COLUMN, ENVIRONMENT_COLUMN)
+EDITED_ROW_COLUMN = "row_id"
 
 
 def generic_base(base: object) -> type:
@@ -24,7 +25,7 @@ def generic_base(base: object) -> type:
 
 
 def editable_columns(table: Table[Model]) -> tuple[str, ...]:
-    return tuple(column for column in (*argument_columns(table), *flag_columns(table)) if column != STATE_COLUMN)
+    return tuple(column for column in (*argument_columns(table), *flag_columns(table)) if column not in (STATE_COLUMN, EDITED_ROW_COLUMN))
 
 
 def argument_columns(table: Table[Model]) -> tuple[str, ...]:

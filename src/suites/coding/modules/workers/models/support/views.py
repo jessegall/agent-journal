@@ -48,5 +48,5 @@ FROM worker_worktrees AS worktree
 LEFT JOIN tasks ON (tasks.delegated_to = worktree.session_agent_id OR tasks.holder_id = worktree.session_agent_id)
     AND (tasks.closed_at IS NULL OR tasks.closed_at >= coalesce(worktree.cut_at, worktree.created_at))
 WHERE worktree.id = (SELECT max(latest.id) FROM worker_worktrees AS latest WHERE latest.session_agent_id = worktree.session_agent_id)
-GROUP BY worktree.id
+GROUP BY worktree.environment_id, worktree.id
 """

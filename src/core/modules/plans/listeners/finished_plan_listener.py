@@ -8,6 +8,7 @@ from core.base.query.queries import Queries
 from core.modules.plans.commands.cancel_plan.cancel_plan import CancelPlan
 from core.modules.plans.commands.close_plan.close_plan import ClosePlan
 from core.modules.plans.models.enums.plan_state import PlanState
+from core.modules.plans.guards.plan_close_guard import PlanCloseGuard
 from core.modules.plans.models.plan_progress import PlanProgress
 from core.modules.plans.support.task_plans import TaskPlans
 from core.modules.tasks.models.task import Task
@@ -35,4 +36,4 @@ class FinishedPlanListener(CommitListener[Moved[Task]]):
         if not progress.task_count:
             self.bus.run(CancelPlan(plan.id, CANCEL_REASON), Actor.core(), cause_id=logged.id)
         elif progress.completed_count == progress.task_count:
-            self.bus.run(ClosePlan(plan.id), Actor.core(), cause_id=logged.id)
+            self.bus.run(ClosePlan(plan.id), Actor.core(), frozenset([PlanCloseGuard.name]), cause_id=logged.id)

@@ -25,7 +25,7 @@ def test_a_stop_during_a_running_request_lets_it_finish_while_an_idle_connection
 
     monkeypatch.setattr(RequestHandler, "answer_get", slow_get)
     with running_server(new_story(fixture=ThreeTasks).home) as (server, socket_path, _):
-        idle = UnixConnection(str(socket_path))
+        idle = UnixConnection(str(socket_path), WAIT_SECONDS, "journal")
         idle.request("GET", "/health")
         idle.getresponse().read()
         runner = threading.Thread(target=lambda: statuses.append(request_answer(socket_path, "GET", "/held").status))

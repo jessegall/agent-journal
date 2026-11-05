@@ -8,14 +8,16 @@ from core.modules.drivers.models.enums.rule_due_outcome import RuleDueOutcome
 
 class TableHookHistory(HookHistory):
     """Reads the rule history table: whether a rule with history was silenced for a layer the last time it was
-    due, and when it last answered; each row is read once, and kept until the hook's histories are written."""
+    due, and when it last answered; an agent's rows of a layer are read once, and kept until the hook's histories are written."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
-        self.kept: dict[RuleHistoryKey, RuleHistory | None] = {}
+        self.kept: dict[RuleHistoryKey, RuleHistory] = {}
+        self.layers_read: set[tuple[int, str]] = set()
 
     def clear(self) -> None:
         self.kept.clear()
+        self.layers_read.clear()
 
     def control_return(self, key: RuleHistoryKey) -> bool:
         history = self.history(key)
@@ -29,7 +31,8 @@ class TableHookHistory(HookHistory):
         return self.history(key)
 
     def history(self, key: RuleHistoryKey) -> RuleHistory | None:
-        if key not in self.kept:
-            rows = self.queries.query(RuleHistory).filter(session_agent_id=key.agent_id, rule=key.rule, layer=key.layer).limited(1)
-            self.kept[key] = rows[0] if rows else None
-        return self.kept[key]
+        if (key.agent_id, key.layer) not in self.layers_read:
+            self.layers_read.add((key.agent_id, key.layer))
+            rows = self.queries.query(RuleHistory).filter(session_agent_id=key.agent_id, layer=key.layer).all_rows()
+            self.kept.update({RuleHistoryKey(key.agent_id, row.rule, key.layer): row for row in rows})
+        return self.kept.get(key)

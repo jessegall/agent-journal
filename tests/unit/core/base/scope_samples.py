@@ -7,5 +7,7 @@ from core.base.scope.scopes import Scopes
 
 def empty_database_scopes() -> Scopes:
     container = Container()
-    container.bind(Database, Database.configured(sqlite3.connect(":memory:")))
+    connection = sqlite3.connect(":memory:")
+    connection.execute("CREATE TABLE agents (id INTEGER PRIMARY KEY, role TEXT, environment_id INTEGER)")
+    container.bind(Database, Database.configured(connection))
     return container.get(Scopes)

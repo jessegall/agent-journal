@@ -28,7 +28,7 @@ def test_a_client_that_leaves_before_its_answer_writes_no_traceback(new_story, m
     monkeypatch.setattr(RequestHandler, "answer_get", stalled_get)
     story = new_story(fixture=ThreeTasks)
     with running_server(story.home) as (_, socket_path, _):
-        leaving = UnixConnection(str(socket_path))
+        leaving = UnixConnection(str(socket_path), WAIT_SECONDS, "journal")
         leaving.request("GET", "/held")
         expect_wait_arrived(arrived, WAIT_SECONDS)
         leaving.close()

@@ -35,7 +35,7 @@ class ReaderWriters:
         agent = self.agents.find(actor.id)
         if agent.role not in self.suites.agent_policy().reader_request_roles:
             return ()
-        return tuple(self.requests.open().agent(actor.id).oldest().all_rows())
+        return self.requests.agent_open_rows(actor.id)
 
     def check_request(self, actor: Actor, request: ReaderRequest) -> None:
         if self.allows(actor):

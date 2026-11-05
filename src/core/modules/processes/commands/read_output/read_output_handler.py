@@ -1,4 +1,3 @@
-from dataclasses import replace
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -23,7 +22,7 @@ class ReadOutputHandler(Handler[ReadOutput, OutputLines]):
         self.repeats.check(command, context.actor)
         lines = self.texts.lines(context.actor, command)
         self.repeats.note(command, context.actor, context.timestamp.text)
-        kept = self.outputs.process(command.process_id).filter(state=OutputState.KEPT).limited(1)
-        if kept and kept[0].read_at is None:
-            self.repository.save(replace(kept[0], read_at=context.timestamp), context)
+        kept = self.outputs.process_output(command.process_id)
+        if kept is not None and kept.state is OutputState.KEPT and kept.read_at is None:
+            self.repository.update(kept, context, read_at=context.timestamp)
         return OutputLines(lines)

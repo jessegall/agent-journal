@@ -1,12 +1,12 @@
 import json
 from collections.abc import Sequence
 
-from core.base.query.queries import Queries
 from core.base.scope.scopes import Scopes
 from core.base.registry.setting_entry import SettingEntry
 from core.base.setting.setting_declaration import ANY_KEY
 from core.modules.settings.models.secret_setting import SecretSetting
 from core.modules.settings.models.setting import Setting
+from core.modules.settings.support.setting_rows import SettingRows
 from core.modules.settings.support.current_setting import CurrentSetting
 from core.modules.settings.support.undeclared_setting import UndeclaredSetting
 
@@ -20,14 +20,14 @@ class UndeclaredSettings:
     """Finds the stored setting rows the installed modules' declarations do not cover, by key and module; it
     only reads, and no row is ever deleted."""
 
-    def __init__(self, queries: Queries, scopes: Scopes) -> None:
-        self.queries, self.scopes = queries, scopes
+    def __init__(self, rows: SettingRows, scopes: Scopes) -> None:
+        self.rows, self.scopes = rows, scopes
 
     def found(self, entries: Sequence[SettingEntry]) -> list[UndeclaredSetting]:
         reports: list[UndeclaredSetting] = []
-        for row in self.queries.query(Setting).oldest().all_rows():
+        for row in self.rows.kept_table(Setting).values():
             reports.extend(self.reports(entries, row.key, row.environment_id, row.value, False))
-        for secret in self.queries.query(SecretSetting).oldest().all_rows():
+        for secret in self.rows.kept_table(SecretSetting).values():
             reports.extend(self.reports(entries, secret.key, secret.environment_id, "", True))
         return sorted(reports, key=lambda report: (report.key, report.environment_id or 0))
 

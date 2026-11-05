@@ -30,9 +30,5 @@ def test_fading_lowers_the_weight_by_one_and_never_below_0():
     assert memory(weight=LOWEST_WEIGHT).faded(timestamp, Actor.core()).weight == LOWEST_WEIGHT
 
 
-def test_weighing_sets_the_weight():
-    assert memory(weight=2).weighed(8).weight == 8
-
-
 def test_memories_live_in_the_memories_table():
     assert Memory.table == "memories"

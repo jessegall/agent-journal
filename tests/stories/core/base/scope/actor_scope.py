@@ -166,16 +166,22 @@ def expect_agent_id_mark(mark, expected) -> None:
     assert actual is expected, actual
 
 
+def applied_for(story, model, actor_id):
+    scopes = story.container.get(Scopes)
+    with scopes.opened(actor_id):
+        return scopes.applied(model)
+
+
 def expect_agent_id_scoped(mark, text, story, expected) -> None:
-    actual = mark.changed(text=text).scoped(story.helper.id).agent_id
+    actual = applied_for(story, mark.changed(text=text), story.helper.id).session_agent_id
     assert actual is expected, actual
 
 
 def expect_state_scoped(line, story, expected) -> None:
-    actual = line.scoped(story.agent.id).state
+    actual = applied_for(story, line, story.agent.id).state
     assert actual is expected, actual
 
 
 def expect_state_scoped_2(line, story, expected) -> None:
-    actual = line.scoped(story.helper.id).state
+    actual = applied_for(story, line, story.helper.id).state
     assert actual is expected, actual

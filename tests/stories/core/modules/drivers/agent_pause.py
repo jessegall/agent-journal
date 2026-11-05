@@ -13,6 +13,7 @@ from core.base.actor_type import ActorType
 from core.base.database.database import Database
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.overlays.paused_overlay import PausedOverlay
 from tests.stories.core.support import story_lines as lines
 from core.base.actor import Actor
@@ -149,7 +150,7 @@ def test_a_worker_pauses_on_its_own_and_not_with_the_agent_that_sent_it(new_stor
     story = paused_story(new_story, HelperUnderBuilder)
     worker = next(agent for agent in story.container.get(Queries).query(Agent).all_rows() if agent.parent_id == story.agent.id)
     story.container.get(Database).connection.execute("UPDATE agents SET role = 'worker' WHERE id = ?", [worker.id])
-    overlay = PausedOverlay(story.container.get(Queries))
+    overlay = PausedOverlay(story.container.get(AgentRows))
     story.expect_rows(overlay.open_rows(worker.id) == [])
     story.expect_success(f"agent pause {worker.id}", f"paused agent {worker.id}", actor=story.user)
     story.expect_rows(overlay.open_rows(worker.id) != [])

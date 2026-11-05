@@ -158,7 +158,7 @@ def test_a_quick_check_needs_no_reader_until_a_run_of_it_moved_to_the_background
 def test_a_help_or_version_line_of_a_test_tool_needs_no_reader(new_story):
     story = new_story(fixture=BuilderStarted)
     for flag in ("--help", "--version", "--collect-only", "--list-tests"):
-        story.expect_rows(not story.container.get(ReaderDemands).needs_reader(1, PartSpec(f"pytest {flag}", "pytest", category=CommandCategory.TEST_RUN)))
+        story.expect_rows(not story.container.get(ReaderDemands).needs_reader(PartSpec(f"pytest {flag}", "pytest", category=CommandCategory.TEST_RUN)))
 
 
 def test_a_test_reader_with_no_count_is_not_proper_and_a_build_reader_with_none_is(new_story):
