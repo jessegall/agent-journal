@@ -10,6 +10,8 @@ class Reader(Model):
     with the commands it reads, how it sees progress, a finish, a failure and a summary, its card's title,
     and the plugin it came with, if any."""
 
+    shared_rows = True
+
     model_name = "reader"
     cli_name = "reader"
 

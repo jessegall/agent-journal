@@ -21,4 +21,4 @@ class EndedWorkerJobListener(CommitListener[Created[AgentLine]]):
 
     def handle(self, event: Created[AgentLine], logged: LoggedEvent) -> None:
         line = event.row
-        self.worker_resume.resume(self.agents.find(line.agent_id), Actor(logged.actor_id, ActorType.AGENT))
+        self.worker_resume.resume(self.agents.find(line.session_agent_id), Actor(logged.actor_id, ActorType.AGENT))

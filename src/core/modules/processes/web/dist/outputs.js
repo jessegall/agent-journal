@@ -7,7 +7,7 @@ import { _ as L } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const N = { class: "run" }, R = { class: "line" }, O = {
   __name: "Outputs",
   setup(V) {
-    const a = h(), { rows: d, failure: p, loaded: _ } = w(a.agent == null ? "process feed" : `process feed --agent-id ${a.agent}`, ["process.*", "output.*"]), o = x(d, { title: (t) => t.line, isOpen: (t) => t.state === "running" }), m = (t) => t.state === "running" || t.state === "background";
+    const a = h(), { rows: d, failure: p, loaded: _ } = w(a.agent == null ? "process feed" : `process feed --session-agent-id ${a.agent}`, ["process.*", "output.*"]), o = x(d, { title: (t) => t.line, isOpen: (t) => t.state === "running" }), m = (t) => t.state === "running" || t.state === "background";
     return (t, B) => (i(), r(e(y), null, {
       default: l(() => [
         c(e(b), { tools: e(o) }, null, 8, ["tools"]),

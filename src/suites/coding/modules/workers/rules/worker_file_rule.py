@@ -26,5 +26,5 @@ class WorkerFileRule(DriverRule):
             return RuleAnswer.allowed()
         for worktree in self.worktrees.main_worktrees(hook.agent_id):
             if any(Path(path).is_relative_to(worktree.folder) for path in tool.files):
-                return RuleAnswer.refused(WORKER_FILE.nudge(worker=worktree.agent_id))
+                return RuleAnswer.refused(WORKER_FILE.nudge(worker=worktree.session_agent_id))
         return RuleAnswer.allowed()

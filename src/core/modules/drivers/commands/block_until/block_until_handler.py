@@ -21,9 +21,9 @@ class BlockUntilHandler(Handler[BlockUntil, AgentBlock]):
         self.kept = kept
 
     def handle(self, command: BlockUntil, context: Context) -> AgentBlock:
-        line_blocks = self.queries.query(AgentBlock).filter(agent_id=command.agent_id, nudge_key=command.nudge.key).matching(IsNull("closed_at"))
+        line_blocks = self.queries.query(AgentBlock).filter(session_agent_id=command.agent_id, nudge_key=command.nudge.key).matching(IsNull("closed_at"))
         query = line_blocks.filter(condition_text=command.condition.text) if command.condition.subject_scoped else line_blocks
-        condition, parameters = "agent_id = ? AND nudge_key = ? AND closed_at IS NULL", [command.agent_id, command.nudge.key]
+        condition, parameters = "session_agent_id = ? AND nudge_key = ? AND closed_at IS NULL", [command.agent_id, command.nudge.key]
         if command.condition.subject_scoped:
             condition += " AND condition_text = ?"
             parameters.append(command.condition.text)
@@ -35,7 +35,7 @@ class BlockUntilHandler(Handler[BlockUntil, AgentBlock]):
     def save_block(self, command: BlockUntil, context: Context, existing: AgentBlock | None) -> AgentBlock:
         if existing is not None:
             return self.repository.update(existing, context, nudge_text=command.nudge.text, condition_name=command.condition.name, condition_text=command.condition.text)
-        return self.repository.save(AgentBlock(agent_id=command.agent_id, creator_id=context.actor.id, nudge_key=command.nudge.key, nudge_text=command.nudge.text,
+        return self.repository.save(AgentBlock(session_agent_id=command.agent_id, creator_id=context.actor.id, nudge_key=command.nudge.key, nudge_text=command.nudge.text,
                                                condition_name=command.condition.name, condition_text=command.condition.text, grace_tool_uses=self.tool_uses(command.after),
                                                grace_seconds=command.after.seconds if command.after is not None else 0, countdown_key=command.countdown.key if command.countdown else "",
                                                countdown_text=command.countdown.text if command.countdown else "", blocks_stop=command.blocks_stop, strict=command.strict), context)

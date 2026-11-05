@@ -1,3 +1,4 @@
+from core.modules.waits.migrations.m004_wait_session import WaitSessionMigration
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.waits.migrations.m001_waits import WaitsTablesMigration
@@ -31,7 +32,7 @@ class WaitsModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.chat"]
     models = [ModelDeclaration(Wait, commands=[EndWait, ResumeWait], excluded_subcommands=["make"]), ModelDeclaration(WaitTarget, excluded_subcommands=["make", "edit"])]
-    migrations = [WaitsTablesMigration, WaitTargetWaitIndexMigration, PendingTargetsIndexMigration]
+    migrations = [WaitSessionMigration, WaitsTablesMigration, WaitTargetWaitIndexMigration, PendingTargetsIndexMigration]
     views = [WaitingRow]
     handlers = [OpenWaitHandler]
     subcommands = [OpenWaitSubcommand, RequestHelpSubcommand, WaitingWaitSubcommand]

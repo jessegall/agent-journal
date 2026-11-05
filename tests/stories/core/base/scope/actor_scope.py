@@ -55,7 +55,7 @@ def test_a_task_move_of_the_journal_itself_has_no_scope_and_shows(new_story):
 
 def test_a_line_another_agent_caused_is_hidden_and_its_own_is_not(new_story):
     story = new_story(fixture=SubagentStarted)
-    line = AgentLine(agent_id=story.agent.id, creator_id=story.subagent.id, text="words")
+    line = AgentLine(session_agent_id=story.agent.id, creator_id=story.subagent.id, text="words")
     expect_state_scoped_2(line, story, AgentLineState.HIDDEN)
     expect_state_scoped(line, story, AgentLineState.WAITING)
 
@@ -110,7 +110,7 @@ def test_the_commands_of_the_main_agent_leave_out_a_helpers_and_the_helpers_page
     worker_run(story, story.subagent, "make build")
     story.expect_absent("process feed", "make build")
     story.expect_text("process feed", "pytest -q")
-    story.expect_text(f"process feed --agent-id {story.subagent.id}", "make build")
+    story.expect_text(f"process feed --session-agent-id {story.subagent.id}", "make build")
 
 
 def test_a_helper_reads_only_its_own_rows_and_a_person_reads_them_all(subagent_task):
@@ -162,7 +162,7 @@ class GlobalTaskMark(StoryFixture):
 
 
 def expect_agent_id_mark(mark, expected) -> None:
-    actual = mark.agent_id
+    actual = mark.session_agent_id
     assert actual is expected, actual
 
 

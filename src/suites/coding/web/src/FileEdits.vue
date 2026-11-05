@@ -18,7 +18,7 @@ const shown = computed(() => {
                 <span class="main">{{ row.path }}</span>
                 <span class="note">+{{ row.added }}</span>
                 <span class="note">-{{ row.removed }}</span>
-                <span class="note">agent {{ row.agent_id }}</span>
+                <span class="note">agent {{ row.session_agent_id }}</span>
             </template>
         </RowList>
     </WindowRoom>

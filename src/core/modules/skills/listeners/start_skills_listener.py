@@ -27,18 +27,18 @@ class StartSkillsListener(SkillListener[SessionStarted]):
 
     def handle(self, event: SessionStarted, logged: LoggedEvent) -> None:
         call = event.row
-        if self.agents.find(call.agent_id).role not in self.suites.agent_policy(call.environment_id).prompt_roles:
+        if self.agents.find(call.session_agent_id).role not in self.suites.agent_policy(call.environment_id).prompt_roles:
             return
         if call.metadata.module_part(DRIVERS_MODULE).get("resumed"):
             return
         for skill in self.skills(call):
-            self.run(logged, RequireSkill(call.agent_id, skill))
+            self.run(logged, RequireSkill(call.session_agent_id, skill))
 
     def skills(self, call: HookCall) -> list[str]:
         start = self.start.after_compaction(call.environment_id) if self.compacted(call) else self.start.session_start(call.environment_id)
-        is_main = self.agents.find(call.agent_id).role == AgentRole.MAIN
+        is_main = self.agents.find(call.session_agent_id).role == AgentRole.MAIN
         return [*start, *self.start.main_agent(call.environment_id)] if is_main and self.main_skills.is_required else start
 
     def compacted(self, call: HookCall) -> bool:
-        recent = self.queries.query(HookCall).filter(agent_id=call.agent_id).newest().limited(2)
+        recent = self.queries.query(HookCall).filter(session_agent_id=call.session_agent_id).newest().limited(2)
         return len(recent) == 2 and recent[1].is_compaction

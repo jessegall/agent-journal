@@ -62,7 +62,7 @@ class DispatchMarkRule(DriverRule):
         parent = self.agents.find(hook.agent_id).parent_id
         raw = hook.event.raw
         profile = f"{raw.get('agent_type') or DEFAULT_PROFILE}"
-        rows = self.queries.query(HelperJob).filter(agent_id=parent, profile=profile).matching(IsNull("ended_at")).oldest().limited(1) if parent is not None else ()
+        rows = self.queries.query(HelperJob).filter(session_agent_id=parent, profile=profile).matching(IsNull("ended_at")).oldest().limited(1) if parent is not None else ()
         if not rows or parent is None:
             return RuleAnswer.allowed()
         row = rows[0]

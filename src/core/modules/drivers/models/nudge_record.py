@@ -11,7 +11,7 @@ class NudgeRecord(Model):
     model_name = "nudge_record"
     cli_name = "nudge-record"
 
-    agent_id: int
+    session_agent_id: int
     creator_id: int
     key: str
     text: str

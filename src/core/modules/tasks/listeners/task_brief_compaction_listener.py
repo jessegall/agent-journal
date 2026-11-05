@@ -18,5 +18,5 @@ class TaskBriefCompactionListener(SaveListener[AgentCompacted]):
 
     def handle(self, event: AgentCompacted, context: Context) -> None:
         call = event.row
-        self.bus.dispatch(ResetTaskReads(call.agent_id), context)
-        self.blocks.block_current(call.agent_id, context)
+        self.bus.dispatch(ResetTaskReads(call.session_agent_id), context)
+        self.blocks.block_current(call.session_agent_id, context)

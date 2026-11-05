@@ -43,7 +43,7 @@ class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
         waiting = self.queries.query(Question).filter(state=QuestionState.OPEN).page(1, PAGE_ROWS).total
         mains = MainAgentFinder.rows(self.queries)
         started_tasks = self.tasks.holder(mains[0].id).started().descending("started_at").page(1, PAGE_ROWS).rows if mains else ()
-        jobs = self.queries.query(ScheduledJob).filter(agent_id=mains[0].id).matching(IsNull("ended_at")).page(1, PAGE_ROWS).total if mains else 0
+        jobs = self.queries.query(ScheduledJob).filter(session_agent_id=mains[0].id).matching(IsNull("ended_at")).page(1, PAGE_ROWS).total if mains else 0
         processes = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(IsNull("queued_at")).page(1, PAGE_ROWS).total
         plans = self.queries.query(PlanTask).filter(task_id=started_tasks[0].id).page(1, PAGE_ROWS).rows if started_tasks else ()
         return BarFacts(helpers, tasks, waiting, started_tasks[0].id if started_tasks else None, started_tasks[0].title if started_tasks else "", jobs, processes,

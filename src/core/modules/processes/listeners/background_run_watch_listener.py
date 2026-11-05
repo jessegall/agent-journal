@@ -31,15 +31,15 @@ class BackgroundRunWatchListener(SaveListener[Moved[Process]]):
 
     def handle(self, event: Moved[Process], context: Context) -> None:
         process = event.row
-        self.repository.save(Watch(agent_id=process.agent_id, process_id=process.id, creator_id=process.agent_id, given_percent=UNANNOUNCED_PERCENT), context)
+        self.repository.save(Watch(session_agent_id=process.session_agent_id, process_id=process.id, creator_id=process.session_agent_id, given_percent=UNANNOUNCED_PERCENT), context)
         monitor_tool = self.monitor_tool(process)
         if monitor_tool is not None:
             declaration = REQUIRED_MONITOR if monitor_tool is ToolType.MONITOR else REQUIRED_MONITOR_COMMAND
             nudge = declaration.nudge(output=process.id)
-            self.bus.dispatch(BlockUntil(process.agent_id, replace(nudge, key=f"{nudge.key}.{process.id}"), OutputMonitored(process.id), blocks_stop=True), context)
+            self.bus.dispatch(BlockUntil(process.session_agent_id, replace(nudge, key=f"{nudge.key}.{process.id}"), OutputMonitored(process.id), blocks_stop=True), context)
 
     def monitor_tool(self, process: Process) -> ToolType | None:
-        agent = self.queries.query(Agent).find(process.agent_id)
-        if process.creator_id != process.agent_id or agent.role in self.suites.agent_policy(agent.environment_id).automatic_watch_roles:
+        agent = self.queries.query(Agent).find(process.session_agent_id)
+        if process.creator_id != process.session_agent_id or agent.role in self.suites.agent_policy(agent.environment_id).automatic_watch_roles:
             return None
         return self.providers.provider(agent.program).monitor_tool

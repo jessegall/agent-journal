@@ -14,4 +14,4 @@ class OpenMemoryMarkHandler(Handler[OpenMemoryMark, MemoryMark]):
         self.repository = repository
 
     def handle(self, command: OpenMemoryMark, context: Context) -> MemoryMark:
-        return self.repository.save(MemoryMark(agent_id=command.agent_id, creator_id=context.actor.id, percent=command.percent, opened_at=context.timestamp), context)
+        return self.repository.save(MemoryMark(session_agent_id=command.agent_id, creator_id=context.actor.id, percent=command.percent, opened_at=context.timestamp), context)

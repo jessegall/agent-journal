@@ -21,7 +21,7 @@ class ProcessQueueRow(EnvironmentScoped, ViewModel):
 
     id: int
     environment_id: int
-    agent_id: int
+    session_agent_id: int
     line: str
     category: CommandCategory
     state: ProcessState

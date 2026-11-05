@@ -13,7 +13,7 @@ class RuleHistory(Model):
     model_name = "rule_history"
     cli_name = "rule-history"
 
-    agent_id: int
+    session_agent_id: int
     creator_id: int
     rule: str
     layer: str = ""

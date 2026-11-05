@@ -17,5 +17,5 @@ class SequenceRunQuery(Query[SequenceRun]):
         return self.filter(sequence_id=sequence_id).matching(IsNull("ended_at")).exists()
 
     def current(self, agent_id: int) -> SequenceRun | None:
-        query = self.filter(agent_id=agent_id).matching(IsNull("ended_at")).newest()
-        return self.kept.read(self.table.name, query.first, "agent_id = ? AND ended_at IS NULL", [agent_id], name="sequences.current_run")
+        query = self.filter(session_agent_id=agent_id).matching(IsNull("ended_at")).newest()
+        return self.kept.read(self.table.name, query.first, "session_agent_id = ? AND ended_at IS NULL", [agent_id], name="sequences.current_run")

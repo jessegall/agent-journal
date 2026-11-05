@@ -45,7 +45,7 @@ class OutputQuery(Query[Output]):
         return self.filter(process_id=process_id)
 
     def running_titles(self, agent_id: int) -> Self:
-        running = Select("processes").matching(Equal("agent_id", agent_id)).matching(Among("state", OPEN)).column("id")
+        running = Select("processes").matching(Equal("session_agent_id", agent_id)).matching(Among("state", OPEN)).column("id")
         return self.matching(SubqueryMatch("process_id", running)).matching(Greater("title", ""))
 
     def matching_part(self, text: str) -> Self:

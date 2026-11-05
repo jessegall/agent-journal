@@ -50,15 +50,15 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         return self.agent_tool(mains[0].id, self.open_question_lines(mains[0].id))
 
     def agent_tool(self, agent_id: int, question_lines: Sequence[str]) -> ToolFacts:
-        calls = self.queries.query(HookCall).filter(agent_id=agent_id).matching(Among("hook", TURN_HOOKS)).newest().limited(1)
+        calls = self.queries.query(HookCall).filter(session_agent_id=agent_id).matching(Among("hook", TURN_HOOKS)).newest().limited(1)
         if calls and calls[0].hook == HookEventName.PRE_TOOL_USE:
             return ToolFacts(" ".join(part for part in (calls[0].tool, ProjectPaths.short_paths(self.running_part_text(calls[0]) or calls[0].summary), self.line_changes(calls[0])) if part))
         wait_target = " and ".join((*self.running_titles(agent_id), *question_lines))
-        has_run_command = self.queries.query(HookCall).filter(agent_id=agent_id, hook=HookEventName.PRE_TOOL_USE).exists()
+        has_run_command = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.PRE_TOOL_USE).exists()
         return ToolFacts(wait_target=wait_target, note="" if wait_target or has_run_command else IDLE_NOTE, thinking=bool(calls) and calls[0].hook == HookEventName.PROMPT, asking=bool(question_lines))
 
     def running_part_text(self, call: HookCall) -> str:
-        runs = self.processes.agent(call.agent_id).newest().limited(1)
+        runs = self.processes.agent(call.session_agent_id).newest().limited(1)
         if not runs or runs[0].creation_timestamp().value < call.creation_timestamp().value:
             return ""
         if runs[0].queued_at is not None:

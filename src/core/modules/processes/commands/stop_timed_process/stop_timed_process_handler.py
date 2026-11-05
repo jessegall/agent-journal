@@ -27,5 +27,5 @@ class StopTimedProcessHandler(Handler[StopTimedProcess, Process]):
             return process
         self.repository.save(replace(process, expired_at=context.timestamp), context)
         process = self.bus.dispatch(StopProcess(process.id), context)
-        self.nudger.send(process.agent_id, OUTPUT_TIMEOUT, "processes.timeout", context, output=process.id, seconds=process.timeout_seconds)
+        self.nudger.send(process.session_agent_id, OUTPUT_TIMEOUT, "processes.timeout", context, output=process.id, seconds=process.timeout_seconds)
         return process

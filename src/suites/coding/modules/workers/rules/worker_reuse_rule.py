@@ -45,9 +45,9 @@ class WorkerReuseRule(DriverRule):
         if not paths:
             return None
         worktrees = list(self.queries.query(Worktree).matching(IsNull("removed_at")).all_rows())
-        workers = {worker.id: worker for worker in self.queries.query(Agent).find_many([worktree.agent_id for worktree in worktrees])}
+        workers = {worker.id: worker for worker in self.queries.query(Agent).find_many([worktree.session_agent_id for worktree in worktrees])}
         for worktree in worktrees:
-            is_ended = workers[worktree.agent_id].ended_at is not None
+            is_ended = workers[worktree.session_agent_id].ended_at is not None
             if is_ended and PathMentions.overlap(paths, frozenset(self.git.changed_files(worktree))):
-                return worktree.agent_id
+                return worktree.session_agent_id
         return None

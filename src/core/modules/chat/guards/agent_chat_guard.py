@@ -19,7 +19,7 @@ class AgentChatGuard(Guard[Changed[ChatMark]]):
         if isinstance(event, Deleted):
             return
         mark = event.row
-        if mark.agent_id is None:
+        if mark.session_agent_id is None:
             return
-        if not self.agents.is_in_scope(mark.agent_id):
-            raise Refusal(f"agent {mark.agent_id} works in another environment than the mark's", "a mark for an agent is shown in its own environment's chat")
+        if not self.agents.is_in_scope(mark.session_agent_id):
+            raise Refusal(f"agent {mark.session_agent_id} works in another environment than the mark's", "a mark for an agent is shown in its own environment's chat")

@@ -19,4 +19,4 @@ class JobRunMarkListener(MarkListener[Updated[ScheduledJob]]):
         if JOB_RUN_FIELD not in logged.data:
             return
         job = event.row
-        self.show(logged, ScheduleMarkType.RUN, ScheduleMarkVariant.RUN, f"Scheduled job {job.job_id} ran", job.agent_id, "scheduled_job", job.id, detail=job.prompt)
+        self.show(logged, ScheduleMarkType.RUN, ScheduleMarkVariant.RUN, f"Scheduled job {job.job_id} ran", job.session_agent_id, "scheduled_job", job.id, detail=job.prompt)

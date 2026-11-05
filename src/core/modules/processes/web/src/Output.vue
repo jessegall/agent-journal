@@ -15,7 +15,7 @@ const isRunning = () => run.value !== null && (run.value.state === "running" || 
 async function load() {
     outputId.value = outputId.value || (await context.setting("output", 0));
     if (!outputId.value) {
-        const listed = await context.read(context.agent == null ? "process feed --limit 1" : `process feed --limit 1 --agent-id ${context.agent}`);
+        const listed = await context.read(context.agent == null ? "process feed --limit 1" : `process feed --limit 1 --session-agent-id ${context.agent}`);
         outputId.value = listed.ok && listed.value.rows.length ? listed.value.rows[0].id : 0;
     }
     if (!outputId.value) return;

@@ -14,7 +14,7 @@ class SequenceRun(EnvironmentScoped, Model):
     cli_name = "sequence-run"
 
     environment_id: int = 0
-    agent_id: int
+    session_agent_id: int
     sequence_id: int
     step_number: int = 1
     step_started: bool = False

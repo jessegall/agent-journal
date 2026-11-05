@@ -2,13 +2,14 @@ from dataclasses import dataclass
 
 from core.base.actor import Actor
 from core.base.model.model import Model
+from core.base.model.session_owned import SessionOwned
 from core.base.timestamp import Timestamp
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.docking.models.lifecycles.dock_item_lifecycle import DockItemLifecycle
 
 
 @dataclass(frozen=True, kw_only=True)
-class DockItem(Model):
+class DockItem(SessionOwned, Model):
     """One item docked above the chat: an item of a type a module declared, about one row it points at and
     never copies, kept by a person or leaving by itself once its row ends."""
 
@@ -17,7 +18,7 @@ class DockItem(Model):
     lifecycle = DockItemLifecycle
 
     dock_id: int
-    agent_id: int | None = None
+    session_agent_id: int | None = None
     creator_id: int
     type: str
     target_model: str
@@ -35,5 +36,3 @@ class DockItem(Model):
     def dock(self, timestamp: Timestamp, actor: Actor) -> "DockItem":
         return self.moved(DockItemLifecycle.dock, undocked_at=None)
 
-    def scoped(self, actor_id: int) -> "DockItem":
-        return self if self.is_saved else self.changed(agent_id=actor_id)

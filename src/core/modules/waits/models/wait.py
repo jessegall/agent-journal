@@ -17,7 +17,7 @@ class Wait(Model):
     cli_name = "wait"
     lifecycle = WaitLifecycle
 
-    agent_id: int
+    session_agent_id: int
     creator_id: int
     type: WaitType
     focus: str

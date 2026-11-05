@@ -9,11 +9,11 @@ from core.modules.processes.models.process_row import ProcessRow
 
 class ProcessFeedSubcommand(ViewRowsSubcommand):
     """`journal process feed`: a page of processes, newest first, with the line and state the commands windows
-    draw, by --id, --agent-id, --before-id and --after-id; the main agent's unless it names
+    draw, by --id, --session-agent-id, --before-id and --after-id; the main agent's unless it names
     an agent or a process."""
 
     model = ProcessRow
-    filters = ("id", "agent_id")
+    filters = ("id", "session_agent_id")
     cli_name = "process"
     name = "feed"
 

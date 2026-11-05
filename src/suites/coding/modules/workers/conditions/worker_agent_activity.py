@@ -15,4 +15,4 @@ class WorkerAgentActivity(AgentActivity):
         idle = super().idle()
         active = self.statement()
         return Statement(f"({idle.sql} OR (NOT {active.sql} AND role = 'worker' AND EXISTS (SELECT 1 FROM worker_worktrees"
-                         " WHERE worker_worktrees.agent_id = agent_listing.id AND worker_worktrees.removed_at IS NULL)))", idle.parameters + active.parameters)
+                         " WHERE worker_worktrees.session_agent_id = agent_listing.id AND worker_worktrees.removed_at IS NULL)))", idle.parameters + active.parameters)

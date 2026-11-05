@@ -18,7 +18,7 @@ const ne = {
 }, b = 100, ue = 200, $ = 8, ce = {
   __name: "Terminal",
   setup(me) {
-    const d = /* @__PURE__ */ new Set(["Bash", "Monitor", "shell", "exec_command"]), A = /^(\S+=\S+\s+)*(\S*\/)?journal(\s|$)/, c = q(), { rows: I, failure: S, loaded: x, older: M } = Q(`hook-call feed --agent-id ${c.agent} --limit ${ue}`, ["hook_call.*"], { incremental: !0 }), r = l(""), f = l(""), w = l(null), p = l(/* @__PURE__ */ new Set()), T = l(null), v = l(!1), _ = l(!1), P = {
+    const d = /* @__PURE__ */ new Set(["Bash", "Monitor", "shell", "exec_command"]), A = /^(\S+=\S+\s+)*(\S*\/)?journal(\s|$)/, c = q(), { rows: I, failure: S, loaded: x, older: M } = Q(`hook-call feed --session-agent-id ${c.agent} --limit ${ue}`, ["hook_call.*"], { incremental: !0 }), r = l(""), f = l(""), w = l(null), p = l(/* @__PURE__ */ new Set()), T = l(null), v = l(!1), _ = l(!1), P = {
       commands: (e) => d.has(e.tool) && !C(e),
       journal: (e) => d.has(e.tool),
       everything: () => !0

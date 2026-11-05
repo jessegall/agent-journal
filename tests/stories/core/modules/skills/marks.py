@@ -26,7 +26,7 @@ def test_a_skill_read_shows_one_mark_in_the_agents_chat(cleared_skill_requiremen
     read_skill(story, "journal-notes")
     expect_mark_count(story, 1)
     expect_marks_text(story, "Skill journal-notes loaded")
-    story.expect_success("chat-mark show 1", f"agent_id: {story.agent.id}", "type: skills.skill")
+    story.expect_success("chat-mark show 1", f"session_agent_id: {story.agent.id}", "type: skills.skill")
 
 
 def test_four_loaded_skills_show_four_marks_which_the_group_label_folds_into_one_line(cleared_skill_requirements):

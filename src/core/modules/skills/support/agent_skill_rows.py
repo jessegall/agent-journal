@@ -10,7 +10,7 @@ class AgentSkillRows:
         self.queries = queries
 
     def find(self, agent_id: int, skill: str) -> AgentSkill | None:
-        return next(self.queries.query(AgentSkill).filter(agent_id=agent_id, skill=skill).all_rows(), None)
+        return next(self.queries.query(AgentSkill).filter(session_agent_id=agent_id, skill=skill).all_rows(), None)
 
     def is_loaded(self, agent_id: int, skill: str, digest: str) -> bool:
         row = self.find(agent_id, skill)

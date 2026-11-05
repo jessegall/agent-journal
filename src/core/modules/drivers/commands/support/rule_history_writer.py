@@ -29,7 +29,7 @@ class RuleHistoryWriter:
     def write(self, agent_id: int, record: RuleRecord, context: Context) -> None:
         kept = self.history.row(RuleHistoryKey(agent_id, record.name, record.layer))
         stored_history = kept if isinstance(kept, RuleHistory) else None
-        current = stored_history or RuleHistory(agent_id=agent_id, creator_id=context.actor.id, rule=record.name, layer=record.layer)
+        current = stored_history or RuleHistory(session_agent_id=agent_id, creator_id=context.actor.id, rule=record.name, layer=record.layer)
         due_outcome = RuleDueOutcome.SILENCED if record.outcome == SILENCED else RuleDueOutcome.CONSULTED
         answer_at = context.timestamp if record.outcome in ANSWERED_OUTCOMES else current.last_answer_at
         if stored_history is not None and stored_history.last_due_outcome == due_outcome and stored_history.last_answer_at == answer_at:

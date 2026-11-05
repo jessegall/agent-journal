@@ -23,10 +23,10 @@ class WorkerTestListings(RunCounts):
         self.queries, self.settings, self.run, self.folder, self.outputs = queries, settings, run, folder, outputs
 
     def parts(self, process: Process) -> tuple[TestListing, ...]:
-        return self.agent_parts(process, self.queries.query(Agent).find(process.agent_id))
+        return self.agent_parts(process, self.queries.query(Agent).find(process.session_agent_id))
 
     def agent_parts(self, process: Process, agent: Agent) -> tuple[TestListing, ...]:
-        if not process.is_queue_run or process.creator_id != process.agent_id:
+        if not process.is_queue_run or process.creator_id != process.session_agent_id:
             return ()
         if self.settings.number(WORKER_TEST_LIMIT, process.environment_id) <= 0:
             return ()

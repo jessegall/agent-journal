@@ -38,25 +38,25 @@ class NudgeLog:
         return nudge.turn_limited and (turn_start is None or delivered_at.text >= turn_start.text)
 
     def turn_start(self, agent_id: int) -> Timestamp | None:
-        prompts = self.queries.query(HookCall).filter(agent_id=agent_id, hook=HookEventName.PROMPT).newest().limited(1)
+        prompts = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.PROMPT).newest().limited(1)
         return prompts[0].created_at if prompts else None
 
     def record(self, agent_id: int, nudge: Nudge) -> NudgeRecord:
-        rows = self.queries.query(NudgeRecord).filter(agent_id=agent_id, key=nudge.key)
+        rows = self.queries.query(NudgeRecord).filter(session_agent_id=agent_id, key=nudge.key)
         query = (rows if nudge.interval else rows.filter(text=nudge.text)).descending("last_delivered_at")
-        condition, parameters = "agent_id = ? AND key = ?", [agent_id, nudge.key]
+        condition, parameters = "session_agent_id = ? AND key = ?", [agent_id, nudge.key]
         if not nudge.interval:
             condition += " AND text = ?"
             parameters.append(nudge.text)
         record = self.kept.read("nudge_records", query.first, condition, parameters,
                                 name=f"drivers.nudge:{nudge.key if nudge.interval else nudge.text}")
-        return record if record is not None else NudgeRecord(agent_id=agent_id, creator_id=0, key=nudge.key, text=nudge.text)
+        return record if record is not None else NudgeRecord(session_agent_id=agent_id, creator_id=0, key=nudge.key, text=nudge.text)
 
     def write(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
         for nudge in (*answers.delivered_nudges, *answers.refusal_nudges):
             current = self.record(agent_id, nudge)
             if nudge.interval and current.text != nudge.text:
-                matching_records = self.queries.query(NudgeRecord).filter(agent_id=agent_id, key=nudge.key, text=nudge.text).limited(1)
+                matching_records = self.queries.query(NudgeRecord).filter(session_agent_id=agent_id, key=nudge.key, text=nudge.text).limited(1)
                 current = matching_records[0] if matching_records else current
             self.repository.save_change(current if current.is_saved else None,
                                         replace(current, creator_id=context.actor.id, text=nudge.text, delivery_count=current.delivery_count + 1, last_delivered_at=context.timestamp), context)

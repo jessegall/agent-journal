@@ -34,5 +34,5 @@ class MergeCheckoutRule(DriverRule):
         for worktree in self.delivered.delivered(hook.agent_id):
             environment = self.queries.query(Environment).find(worktree.environment_id)
             if not self.proofs.waiting_proofs(worktree.id).exists() and self.git.head(environment.folder) != worktree.base_branch:
-                nudges.append(MERGE_WAITS.nudge(worker=worktree.agent_id, environment=environment.name, branch=worktree.base_branch))
+                nudges.append(MERGE_WAITS.nudge(worker=worktree.session_agent_id, environment=environment.name, branch=worktree.base_branch))
         return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

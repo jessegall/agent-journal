@@ -1,3 +1,4 @@
+from core.modules.schedules.migrations.m004_schedule_session import ScheduleSessionMigration
 from core.modules.schedules.migrations.m002_stop_requested import StopRequestedMigration
 from core.modules.schedules.support.schedule_marks import SCHEDULE_MARKS
 from core.modules.schedules.support.schedule_nudges import SCHEDULE_NUDGES
@@ -37,7 +38,7 @@ class SchedulesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.environments", "journal.core.drivers"]
     seeders = [SchedulesSeeder]
     models = [ModelDeclaration(ScheduledJob, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [ScheduledJobsTableMigration, StopRequestedMigration, JobRunTimeMigration]
+    migrations = [ScheduleSessionMigration, ScheduledJobsTableMigration, StopRequestedMigration, JobRunTimeMigration]
     handlers = [RecordScheduledJobHandler, RecordScheduledJobRunHandler, EndScheduledJobHandler, StopScheduledJobHandler]
     subcommands = [ScheduledJobStateSubcommand, StopScheduledJobSubcommand]
     driver_rules = [ScheduledJobRule, ScheduledJobRunRule]

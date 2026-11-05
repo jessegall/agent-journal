@@ -31,7 +31,7 @@ class HookCallQuery(Query[HookCall]):
         self.kept = kept
 
     def agent(self, agent_id: int) -> Self:
-        return self.filter(agent_id=agent_id)
+        return self.filter(session_agent_id=agent_id)
 
     def stop_refusal_count(self, agent_id: int) -> int:
         stops = self.agent(agent_id).filter(hook=HookEventName.STOP).newest().limited(STOPS_READ)
@@ -44,7 +44,7 @@ class HookCallQuery(Query[HookCall]):
 
     def is_idle(self, agent_id: int, checked_at: Timestamp) -> bool:
         call = self.kept.read(self.table.name, self.agent(agent_id).matching(Among("hook", TURN_HOOKS)).newest().first,
-                              "agent_id = ? AND hook IN (?, ?, ?, ?, ?, ?)", [agent_id, *TURN_HOOKS], name="drivers.latest_turn")
+                              "session_agent_id = ? AND hook IN (?, ?, ?, ?, ?, ?)", [agent_id, *TURN_HOOKS], name="drivers.latest_turn")
         if call is None:
             return False
         is_silent = call.creation_timestamp().elapsed_seconds(checked_at) >= IDLE_LIMIT_SECONDS
@@ -52,7 +52,7 @@ class HookCallQuery(Query[HookCall]):
 
     def is_compacting(self, agent_id: int, checked_at: Timestamp) -> bool:
         call = self.kept.read(self.table.name, self.agent(agent_id).matching(Among("hook", (*TURN_HOOKS, HookEventName.COMPACT))).newest().first,
-                              "agent_id = ? AND hook IN (?, ?, ?, ?, ?, ?, ?)", [agent_id, *TURN_HOOKS, HookEventName.COMPACT], name="drivers.latest_compaction_turn")
+                              "session_agent_id = ? AND hook IN (?, ?, ?, ?, ?, ?, ?)", [agent_id, *TURN_HOOKS, HookEventName.COMPACT], name="drivers.latest_compaction_turn")
         return call is not None and call.is_compaction and call.creation_timestamp().elapsed_seconds(checked_at) < COMPACTION_LIMIT_SECONDS
 
     def write_count(self, agent_id: int, timestamp: Timestamp) -> int:
@@ -68,4 +68,4 @@ class HookCallQuery(Query[HookCall]):
 
     def newest_agent_hook(self, agent_id: int) -> HookCall | None:
         return self.kept.read(self.table.name, self.agent(agent_id).matching(Equal("hook", HookEventName.TICK, negated=True)).newest().first,
-                              "agent_id = ? AND hook <> ?", [agent_id, HookEventName.TICK], name="drivers.latest_agent_hook")
+                              "session_agent_id = ? AND hook <> ?", [agent_id, HookEventName.TICK], name="drivers.latest_agent_hook")

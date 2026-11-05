@@ -9,7 +9,7 @@ from core.modules.processes.models.process import Process
 
 NOW = Timestamp(datetime(2026, 11, 1, tzinfo=timezone.utc))
 ACTOR = Actor(2, ActorType.AGENT)
-RUNNING = Process(id=1, version=1, environment_id=1, agent_id=2, creator_id=2, line="make test", folder="/work", shell="zsh", category=CommandCategory.UNKNOWN, limit_seconds=30)
+RUNNING = Process(id=1, version=1, environment_id=1, session_agent_id=2, creator_id=2, line="make test", folder="/work", shell="zsh", category=CommandCategory.UNKNOWN, limit_seconds=30)
 
 
 def test_moving_to_the_background_notes_when():

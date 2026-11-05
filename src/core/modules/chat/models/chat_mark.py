@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from core.base.actor import Actor
 from core.base.chat.mark_outcome import MarkOutcome
 from core.base.model.environment_scoped import EnvironmentScoped
+from core.base.model.session_owned import SessionOwned
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
 from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
@@ -10,7 +11,7 @@ from core.modules.chat.models.lifecycles.chat_mark_lifecycle import ChatMarkLife
 
 
 @dataclass(frozen=True, kw_only=True)
-class ChatMark(EnvironmentScoped, Model):
+class ChatMark(EnvironmentScoped, SessionOwned, Model):
     """One mark in an environment's chat, of a type a module declared: its words, the row it is about, how it
     stands, and, for a mark that follows a process, whether it still runs. Its lines are kept one to a line of
     text."""
@@ -20,7 +21,7 @@ class ChatMark(EnvironmentScoped, Model):
     lifecycle = ChatMarkLifecycle
 
     environment_id: int = 0
-    agent_id: int | None = None
+    session_agent_id: int | None = None
     creator_id: int
     type: str
     variant: str
@@ -41,5 +42,3 @@ class ChatMark(EnvironmentScoped, Model):
     def end(self, timestamp: Timestamp, actor: Actor) -> "ChatMark":
         return self.moved(ChatMarkLifecycle.end, ended_at=timestamp)
 
-    def scoped(self, actor_id: int) -> "ChatMark":
-        return self if self.is_saved or self.agent_id is not None else self.changed(agent_id=actor_id)

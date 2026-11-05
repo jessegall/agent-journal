@@ -20,10 +20,10 @@ class WorkerWorktrees:
         if not workers:
             return []
         worker_ids = {worker.id for worker in workers}
-        worktrees = [worktree for worktree in self.worktrees.open_worktrees() if worktree.agent_id in worker_ids]
+        worktrees = [worktree for worktree in self.worktrees.open_worktrees() if worktree.session_agent_id in worker_ids]
         worktree_index: dict[int, Worktree] = {}
         for worktree in worktrees:
-            worktree_index.setdefault(worktree.agent_id, worktree)
+            worktree_index.setdefault(worktree.session_agent_id, worktree)
         return [worktree_index[worker.id] for worker in workers if worker.id in worktree_index]
 
     def delivered(self, main_id: int) -> list[Worktree]:

@@ -14,7 +14,7 @@ class ScheduledJob(EnvironmentScoped, Model):
     model_name = "scheduled_job"
     cli_name = "scheduled-job"
 
-    agent_id: int
+    session_agent_id: int
     environment_id: int = 0
     creator_id: int
     job_id: str

@@ -30,6 +30,6 @@ class ChatMessage(EnvironmentScoped, ViewModel):
     peer: str
     recipient: str
     commented_row: str
-    agent_id: int | None
+    session_agent_id: int | None
     target_agent_id: int | None
     created_at: Timestamp

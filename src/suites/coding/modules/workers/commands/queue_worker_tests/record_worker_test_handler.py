@@ -65,9 +65,9 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         if waiting:
             for task_id in sorted({row.task_id for row in waiting}):
                 proof_ids = ', '.join(str(row.id) for row in waiting if row.task_id == task_id)
-                self.main_agent_line.send(PROOF_CHECK.nudge(worker=worktree.agent_id, task=task_id, proofs=proof_ids).text, LINE_SOURCE, context)
+                self.main_agent_line.send(PROOF_CHECK.nudge(worker=worktree.session_agent_id, task=task_id, proofs=proof_ids).text, LINE_SOURCE, context)
             return
-        self.main_agent_line.send(WORKER_TESTS_PASSED.nudge(worker=worktree.agent_id).text, LINE_SOURCE, context)
+        self.main_agent_line.send(WORKER_TESTS_PASSED.nudge(worker=worktree.session_agent_id).text, LINE_SOURCE, context)
 
     def complete_tested(self, proofs: tuple[Proof, ...], context: Context) -> None:
         for task_id in sorted({row.task_id for row in proofs if row.test_command}):
@@ -76,11 +76,11 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
                 self.repository.save_change(task, task.close(context.timestamp, context.actor, "its tests passed"), context)
 
     def start_next(self, worktree: Worktree, context: Context) -> None:
-        started_task = next(iter(self.tasks.started_tasks(worktree.agent_id)), None)
+        started_task = next(iter(self.tasks.started_tasks(worktree.session_agent_id)), None)
         if started_task is not None:
             self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, task_id=started_task.id), context)
             return
-        following = self.tasks.next_delegated(worktree.agent_id)
+        following = self.tasks.next_delegated(worktree.session_agent_id)
         if following is None:
             return
         self.advance.next_task(worktree, following, context)
@@ -93,4 +93,4 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         if worktree.state is WorktreeState.DELIVERED:
             self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)
         outputs = ", ".join(str(row.process_id) for row in failed)
-        self.nudger.send(worktree.agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=outputs)
+        self.nudger.send(worktree.session_agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=outputs)

@@ -2,7 +2,7 @@ from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.lifecycles.question_lifecycle import QuestionLifecycle
 from core.modules.questions.models.question import Question
 
-OPEN = Question(id=1, version=1, environment_id=1, agent_id=2, creator_id=2, text="Which database?", options=("sqlite", "postgres"), recommended="sqlite")
+OPEN = Question(id=1, version=1, environment_id=1, session_agent_id=2, creator_id=2, text="Which database?", options=("sqlite", "postgres"), recommended="sqlite")
 
 
 def test_a_question_opens_and_moves_to_answered_or_closed():

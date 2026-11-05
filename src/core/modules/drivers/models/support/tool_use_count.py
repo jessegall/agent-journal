@@ -10,4 +10,4 @@ class ToolUseCount:
 
     @staticmethod
     def after_timestamp(queries: Queries, agent_id: int, timestamp: Timestamp) -> int:
-        return queries.query(HookCall).filter(agent_id=agent_id, hook=HookEventName.PRE_TOOL_USE).matching(Greater("created_at", timestamp.text)).count()
+        return queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.PRE_TOOL_USE).matching(Greater("created_at", timestamp.text)).count()

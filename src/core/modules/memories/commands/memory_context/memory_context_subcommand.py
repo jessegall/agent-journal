@@ -21,4 +21,4 @@ class MemoryContextSubcommand(ReadSubcommand[Page[ContextMemory]]):
         page_arguments(parser)
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[ContextMemory]:
-        return self.queries.query(ContextMemory).filter(agent_id=caller.actor.id).page(arguments.page, arguments.limit)
+        return self.queries.query(ContextMemory).filter(session_agent_id=caller.actor.id).page(arguments.page, arguments.limit)

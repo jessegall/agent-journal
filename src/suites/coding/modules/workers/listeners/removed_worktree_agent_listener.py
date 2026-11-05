@@ -24,5 +24,5 @@ class RemovedWorktreeAgentListener(SaveListener[Changed[Worktree]]):
         worktree = event.row
         if worktree.state is not WorktreeState.REMOVED:
             return
-        if self.rows.required(Agent, worktree.agent_id).ended_at is None:
-            self.bus.dispatch(EndAgent(worktree.agent_id), context)
+        if self.rows.required(Agent, worktree.session_agent_id).ended_at is None:
+            self.bus.dispatch(EndAgent(worktree.session_agent_id), context)

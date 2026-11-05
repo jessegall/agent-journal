@@ -22,7 +22,7 @@ class WorkerRefusals:
             return
         if counts.notice_at is not None and counts.notice_at.elapsed_seconds(context.timestamp) < WORKER_REFUSAL_INTERVAL.seconds:
             return
-        notice = WORKER_REFUSED.nudge(worker=worktree.agent_id, count=counts.count, task=worktree.task_id)
+        notice = WORKER_REFUSED.nudge(worker=worktree.session_agent_id, count=counts.count, task=worktree.task_id)
         self.main_agent_line.send(notice.text, "workers.repeated-refusal", context)
         self.repository.save(counts.changed(notice_at=context.timestamp), context)
 

@@ -16,7 +16,7 @@ class ContextMemory(ViewModel):
     select = CONTEXT_MEMORIES_SELECT
 
     delivery_id: int
-    agent_id: int
+    session_agent_id: int
     memory_id: int
     cause: DeliveryCause
     delivered_at: Timestamp

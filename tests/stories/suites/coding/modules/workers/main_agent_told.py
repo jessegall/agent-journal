@@ -38,7 +38,7 @@ def test_a_workers_report_is_typed_to_an_idle_main_agent(new_story):
 def test_a_workers_report_says_it_wakes_the_main_agent_and_stays_visible(new_story):
     story, worker = story_with_worker(new_story)
     report(story, worker)
-    line = next(story.container.get(Queries).query(AgentLine).filter(agent_id=story.agent.id).newest().all_rows())
+    line = next(story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).newest().all_rows())
     expect_wakes_agent_proof(line)
     expect_outcome_with(line, "reports in message")
 

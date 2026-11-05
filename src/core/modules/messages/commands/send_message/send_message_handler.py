@@ -51,8 +51,8 @@ class SendMessageHandler(Handler[SendMessage, Message]):
         names = self.files.check(command.files)
         message_type = ACTOR_MESSAGE_TYPES.get(actor.type, MessageType.JOURNAL)
         metadata = Metadata({MESSAGES_MODULE: {"commented_row": {"model": command.commented_row[0], "id": command.commented_row[1]}}}) if command.commented_row else Metadata()
-        message = Message(agent_id=actor.id if actor.type is ActorType.AGENT else None,
-                          target_agent_id=target.id if target is not None else target_id,
+        message = Message(session_agent_id=actor.id if actor.type is ActorType.AGENT else None,
+                          target_agent_id=self.targets.stored_id(target, target_id),
                           parent_id=command.parent_id, creator_id=actor.id, type=MessageType.COMMENT if command.commented_row and message_type is MessageType.USER else message_type,
                           text=command.text, files=names, metadata=metadata)
         saved = self.repository.save(message, context)

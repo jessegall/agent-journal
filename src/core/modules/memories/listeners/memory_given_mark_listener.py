@@ -20,4 +20,4 @@ class MemoryGivenMarkListener(MemoryMarkListener[Created[MemoryDelivery]]):
         delivery = event.row
         memory = self.queries.query(Memory).find(delivery.memory_id)
         if delivery.cause in REMINDING_CAUSES:
-            self.show_memory(logged, MemoryMarkVariant.GIVEN, f"Reminded the agent: {memory.text}", MemoryMarkType.REMINDER, delivery.agent_id, row_id=memory.id)
+            self.show_memory(logged, MemoryMarkVariant.GIVEN, f"Reminded the agent: {memory.text}", MemoryMarkType.REMINDER, delivery.session_agent_id, row_id=memory.id)

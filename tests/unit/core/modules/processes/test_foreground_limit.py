@@ -66,7 +66,7 @@ class Messages:
     def __init__(self, waiting: bool) -> None:
         self.waiting = waiting
 
-    def unread(self, agent_id: int, environment_id: int) -> "Messages":
+    def unread(self, agent_id: int) -> "Messages":
         return self
 
     def exists(self) -> bool:

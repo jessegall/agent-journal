@@ -15,7 +15,7 @@ class MemoryMark(Model):
     cli_name = "memory-mark"
     lifecycle = MarkLifecycle
 
-    agent_id: int
+    session_agent_id: int
     creator_id: int
     percent: int
     state: MarkState = MarkState.OPEN

@@ -25,7 +25,7 @@ class MemoryFadedMarkListener(MemoryMarkListener[AgentCompacted]):
         changes = [change for change in self.events.child_events(logged.id) if change.event in ("memory.update", "memory.remove") and change.command == FadeMemories.label()]
         if changes:
             shown = sum(change.data["weight"][1] != LOWEST_WEIGHT for change in changes)
-            self.show_memory(logged, MemoryMarkVariant.FADED, f"Memories faded by one: {shown} of {len(changes)} still shown", agent_id=call.agent_id, row_model="",
+            self.show_memory(logged, MemoryMarkVariant.FADED, f"Memories faded by one: {shown} of {len(changes)} still shown", agent_id=call.session_agent_id, row_model="",
                              detail=self.round(changes))
 
     @staticmethod

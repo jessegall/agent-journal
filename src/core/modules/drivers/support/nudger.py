@@ -16,4 +16,4 @@ class Nudger:
         return self.send_text(agent_id, declaration.nudge(**values).text, source, context, declaration.wakes_agent, declaration.repeats_without_hook)
 
     def send_text(self, agent_id: int, text: str, source: str, context: Context, wakes_agent: bool = False, repeats_without_hook: bool = False) -> AgentLine:
-        return self.repository.save(AgentLine(agent_id=agent_id, creator_id=context.actor.id, text=text, source=source, wakes_agent=wakes_agent, repeats_without_hook=repeats_without_hook), context)
+        return self.repository.save(AgentLine(session_agent_id=agent_id, creator_id=context.actor.id, text=text, source=source, wakes_agent=wakes_agent, repeats_without_hook=repeats_without_hook), context)

@@ -43,7 +43,7 @@ class WorkerMoveMarkListener(MarkListener[Moved[Worktree]]):
 
     def handle(self, event: Moved[Worktree], logged: LoggedEvent) -> None:
         worktree = event.row
-        agent = self.event_rows.required(Agent, worktree.agent_id)
+        agent = self.event_rows.required(Agent, worktree.session_agent_id)
         task = self.event_rows.required(Task, worktree.task_id)
         queued = self.tasks.queued_tasks(agent.id)
         variant, move = MOVE_TEXTS[event.move.name]
@@ -67,5 +67,5 @@ class WorkerMoveMarkListener(MarkListener[Moved[Worktree]]):
     def tasks_text(self, move: Move, worktree: Worktree, task: Task) -> str:
         if move is not WorktreeLifecycle.deliver:
             return f"task {task.id}"
-        delivered = self.queries.query(Task).filter(delegated_to=worktree.agent_id).matching(Among("state", (TaskState.TESTING, TaskState.COMPLETED))).all_rows()
+        delivered = self.queries.query(Task).filter(delegated_to=worktree.session_agent_id).matching(Among("state", (TaskState.TESTING, TaskState.COMPLETED))).all_rows()
         return ", ".join(f"task {row.id}" for row in sorted(delivered, key=lambda row: row.id))

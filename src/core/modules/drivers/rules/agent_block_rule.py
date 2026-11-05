@@ -36,7 +36,7 @@ class AgentBlockRule(DriverRule):
         self.calls = calls
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        blocks = tuple(self.queries.query(AgentBlock).filter(agent_id=hook.agent_id).matching(IsNull("closed_at")).oldest().all_rows())
+        blocks = tuple(self.queries.query(AgentBlock).filter(session_agent_id=hook.agent_id).matching(IsNull("closed_at")).oldest().all_rows())
         if not blocks:
             return RuleAnswer.allowed()
         finished_blocks = [block for block in blocks if block.is_finished(self.conditions, hook, self.container)]

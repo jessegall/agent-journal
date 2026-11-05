@@ -36,7 +36,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
     def handle(self, command: StartProcess, context: Context) -> Process:
         timeouts = tuple(Duration.parse(value).seconds for value in command.timeout_durations)
         agent = self.rows.required(Agent, command.agent_id)
-        process = self.repository.save(Process(agent_id=agent.id, hook_call_id=command.hook_call_id, creator_id=context.actor.id,
+        process = self.repository.save(Process(session_agent_id=agent.id, hook_call_id=command.hook_call_id, creator_id=context.actor.id,
                                                line=command.line, folder=command.folder, shell=command.shell, category=command.category,
                                                limit_seconds=command.limit_seconds, is_full_test_run=command.is_full_test_run,
                                                queued_at=context.timestamp, is_queue_run=bool(command.parts) and all(part.category.is_long_running for part in command.parts),

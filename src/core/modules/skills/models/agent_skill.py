@@ -16,7 +16,7 @@ class AgentSkill(Model):
     cli_name = "agent-skill"
     lifecycle = AgentSkillLifecycle
 
-    agent_id: int
+    session_agent_id: int
     creator_id: int
     skill: str
     digest: str = ""

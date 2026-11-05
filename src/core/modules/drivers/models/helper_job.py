@@ -14,7 +14,7 @@ class HelperJob(EnvironmentScoped, Model):
     cli_name = "helper-job"
 
     environment_id: int = 0
-    agent_id: int
+    session_agent_id: int
     creator_id: int
     tool_key: str
     profile: str

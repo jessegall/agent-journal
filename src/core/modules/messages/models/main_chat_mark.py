@@ -19,7 +19,7 @@ class MainChatMark(EnvironmentScoped, ViewModel):
 
     id: int
     environment_id: int
-    agent_id: int | None
+    session_agent_id: int | None
     type: str
     variant: str
     mark_key: str

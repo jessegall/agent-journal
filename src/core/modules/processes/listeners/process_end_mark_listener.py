@@ -71,7 +71,7 @@ class ProcessEndMarkListener(CommitListener[Touched[Process]]):
         if process.state in ENDED and output and reader:
             if reader.failed_pattern and re.search(reader.failed_pattern, self.folder.reader_text(process.id, output.reader_position), re.MULTILINE):
                 outcome = MarkOutcome.FAILED
-        self.bus.run(ShowMark(ProcessMarkType.COMMAND, variant, key, text, agent_id=process.agent_id, detail=self.detail(process, logged),
+        self.bus.run(ShowMark(ProcessMarkType.COMMAND, variant, key, text, agent_id=process.session_agent_id, detail=self.detail(process, logged),
                               row_model="process", row_id=process.id, outcome=outcome, figure=figure,
                               fraction=process.progress / 100 if process.state not in ENDED else 0.0, ended=process.state in ENDED),
                      self.actors.actor(MODULE_NAME), cause_id=logged.id)

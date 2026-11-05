@@ -9,7 +9,7 @@ defineProps({runs: {type: Array, required: true}});
             <template v-for="run in runs" :key="run.id">
                 <div class="run">
                     <div class="run-head">
-                        <span>Agent {{ run.agent_id }}</span>
+                        <span>Agent {{ run.session_agent_id }}</span>
                         <span class="run-count">{{ run.step_started ? `Step ${run.step_number} of ${JSON.parse(run.steps).length}` : `Step ${run.step_number} of ${JSON.parse(run.steps).length}, not started yet` }}</span>
                     </div>
                     <ol class="run-steps">

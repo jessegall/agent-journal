@@ -25,7 +25,7 @@ class HookCall(EnvironmentScoped, Model):
     model_name = "hook_call"
     cli_name = "hook-call"
 
-    agent_id: int
+    session_agent_id: int
     environment_id: int = 0
     creator_id: int
     hook: str

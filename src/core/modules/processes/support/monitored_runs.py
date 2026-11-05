@@ -19,7 +19,7 @@ class MonitoredRuns(WatchedRuns):
 
     def is_watching(self, agent_id: int) -> bool:
         runs = self.processes.agent(agent_id).running().newest().limited(1)
-        monitors = self.queries.query(HookCall).filter(agent_id=agent_id, hook=HookEventName.PRE_TOOL_USE, tool=MONITOR_TOOL, answer=HookAnswer.ALLOWED).newest().limited(1)
+        monitors = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.PRE_TOOL_USE, tool=MONITOR_TOOL, answer=HookAnswer.ALLOWED).newest().limited(1)
         if not runs or not monitors or monitors[0].creation_timestamp().value < runs[0].creation_timestamp().value:
             return False
         return monitors[0].creation_timestamp().elapsed_seconds(self.clock.timestamp()) < MONITOR_LIFE_SECONDS

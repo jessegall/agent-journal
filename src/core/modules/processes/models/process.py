@@ -23,7 +23,7 @@ class Process(EnvironmentScoped, Model):
     lifecycle = ProcessLifecycle
 
     environment_id: int = 0
-    agent_id: int
+    session_agent_id: int
     hook_call_id: int | None = None
     creator_id: int
     line: str

@@ -20,5 +20,5 @@ class ManageHooksListener(CommitListener[SessionStarted]):
 
     def handle(self, event: SessionStarted, logged: LoggedEvent) -> None:
         call = event.row
-        program = self.agents.find(call.agent_id).program
+        program = self.agents.find(call.session_agent_id).program
         self.bus.run(ManageProgram(program, call.folder or str(self.home.project_folder)), self.actors.actor(DRIVERS_MODULE), cause_id=logged.id)

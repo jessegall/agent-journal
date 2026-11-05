@@ -21,7 +21,7 @@ def test_command_output_goes_to_the_agent_that_fired_it_once(new_story, tmp_path
     story.run_listeners()
     process = next(story.container.get(Queries).query(Process).all_rows())
     expect_row(process, folder=str(tmp_path))
-    expect_row(process, agent_id=story.agent.id)
+    expect_row(process, session_agent_id=story.agent.id)
     end_run(story, process, "chosen folder output\ncommand warning\n", exit_code=3)
     story.run_listeners()
     story.expect_hook_allowed("s-1", HookSamples.prompt("Continue"), "chosen folder output", "command warning", "exit 3")

@@ -13,5 +13,5 @@ class HelperReuse:
         paths = PathMentions.found(text)
         if not paths:
             return None
-        jobs = self.queries.query(HelperJob).filter(agent_id=parent_id, profile=profile).newest().all_rows()
+        jobs = self.queries.query(HelperJob).filter(session_agent_id=parent_id, profile=profile).newest().all_rows()
         return next((job for job in jobs if job.ended_at is not None and job.helper_id is not None and PathMentions.overlap(paths, PathMentions.found(job.instruction))), None)

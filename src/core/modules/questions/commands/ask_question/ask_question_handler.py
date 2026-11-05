@@ -34,7 +34,7 @@ class AskQuestionHandler(Handler[AskQuestion, Question]):
             raise Refusal(f"the recommended choice is not one of the options: {command.recommended}", "write it word for word as one of --options")
         choices = [command.recommended, *(option for option in command.options if option != command.recommended)] if command.recommended else list(command.options)
         place = self.checked_place(command.place)
-        question = self.repository.save(Question(agent_id=context.actor.id, creator_id=context.actor.id,
+        question = self.repository.save(Question(session_agent_id=context.actor.id, creator_id=context.actor.id,
                                              text=command.text, options=tuple(choices), recommended=command.recommended,
                                              row_model=place.row.model.model_name if place.row is not None else "", row_id=place.row.row_id if place.row is not None else None,
                                              quote=place.quote, position=place.position, selection_type=place.selection_type), context)

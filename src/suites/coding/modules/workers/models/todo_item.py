@@ -11,7 +11,7 @@ class TodoItem(Model):
     model_name = "todo_item"
     cli_name = "todo-item"
 
-    agent_id: int
+    session_agent_id: int
     creator_id: int
     position: int
     text: str

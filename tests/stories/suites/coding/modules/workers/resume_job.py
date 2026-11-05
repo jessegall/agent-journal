@@ -35,7 +35,7 @@ def test_a_resumed_workers_job_is_entered_once(new_story, monkeypatch, entered_d
         return original_run(bus, command, *arguments, **options)
 
     def record_launch(launcher, agent, environment, command):
-        job = story.container.get(Queries).query(AgentLine).filter(agent_id=agent.id, source=WORKER_JOB_SOURCE).newest().first()
+        job = story.container.get(Queries).query(AgentLine).filter(session_agent_id=agent.id, source=WORKER_JOB_SOURCE).newest().first()
         job_ids.append(job.id)
         if entered_during_hand:
             story.container.get(Bus).run(EnterAgentLine(job.id), Actor(agent.id, ActorType.AGENT), environment_id=environment.id)

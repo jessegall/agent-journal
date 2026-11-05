@@ -52,7 +52,7 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Moved[Process] | Created[
         if selected.state not in (AffectedTestState.PICKING, AffectedTestState.TESTING) or selected.process_id is None:
             return
         process = self.rows.required(Process, selected.process_id)
-        self.launch.start(process.id, process.line, process.folder, self.rows.required(Agent, process.agent_id).session)
+        self.launch.start(process.id, process.line, process.folder, self.rows.required(Agent, process.session_agent_id).session)
 
     def start_next(self, logged: LoggedEvent) -> None:
         self.bus.run(StartWorkerTests(), Actor.core(), cause_id=logged.id)
@@ -61,7 +61,7 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Moved[Process] | Created[
         if proof.process_id is None:
             return
         process = self.rows.required(Process, proof.process_id)
-        self.launch.start(process.id, proof.test_command, process.folder, self.rows.required(Agent, process.agent_id).session)
+        self.launch.start(process.id, proof.test_command, process.folder, self.rows.required(Agent, process.session_agent_id).session)
 
     def ended(self, process: Process, logged: LoggedEvent) -> None:
         if process.ended_at is None:

@@ -8,6 +8,8 @@ class Setting(Model):
     """One setting: a key and its value as JSON, for one environment or, without one, for the whole project.
     """
 
+    shared_rows = True
+
     model_name = "setting"
     cli_name = "setting"
 

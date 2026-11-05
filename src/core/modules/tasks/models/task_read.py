@@ -11,5 +11,5 @@ class TaskRead(Model):
     cli_name = "task-read"
 
     task_id: int
-    agent_id: int
+    session_agent_id: int
     creator_id: int

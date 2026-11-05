@@ -17,7 +17,7 @@ class QuestionQuery(Query[Question]):
         return self.filter(state=QuestionState.OPEN)
 
     def agent(self, agent_id: int) -> Self:
-        return self.filter(agent_id=agent_id)
+        return self.filter(session_agent_id=agent_id)
 
     def state(self, state: QuestionState) -> Self:
         return self.filter(state=state)

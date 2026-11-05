@@ -45,12 +45,12 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         uncommitted = self.git.uncommitted_overlap(environment.folder, worktree)
         if uncommitted:
             raise Refusal(f"the checkout of environment {environment.name} has uncommitted changes to {', '.join(uncommitted)}",
-                          f"worker {worktree.agent_id} changes them too: commit or stash them, then merge again")
-        conflicts = self.git.rebased_commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.agent_id}")
+                          f"worker {worktree.session_agent_id} changes them too: commit or stash them, then merge again")
+        conflicts = self.git.rebased_commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.session_agent_id}")
         if conflicts:
             return MergeOutcome(self.returned(worktree, task, conflicts, context), conflicts)
         self.git.rebuild(worktree, environment.folder)
-        self.git.merge(environment.folder, worktree, f"task {task.id}: {task.title}, from worker {worktree.agent_id}")
+        self.git.merge(environment.folder, worktree, f"task {task.id}: {task.title}, from worker {worktree.session_agent_id}")
         for delivered in self.delivered_tasks(worktree, task):
             self.repository.save(delivered.close(context.timestamp, context.actor, f"merged into {worktree.base_branch}"), context)
         merged = self.repository.save(worktree.merge(context.timestamp, context.actor), context)
@@ -58,7 +58,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         return MergeOutcome(self.repository.save(merged.remove(context.timestamp, context.actor), context), ())
 
     def delivered_tasks(self, worktree: Worktree, task: Task) -> list[Task]:
-        delivered = tuple(self.queries.query(Task).filter(delegated_to=worktree.agent_id, state=TaskState.TESTING).all_rows())
+        delivered = tuple(self.queries.query(Task).filter(delegated_to=worktree.session_agent_id, state=TaskState.TESTING).all_rows())
         return [row for row in (task, *delivered) if row.state is TaskState.TESTING and (row is task or row.id != task.id)]
 
     def check(self, worktree: Worktree, environment: Environment) -> None:
@@ -72,5 +72,5 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
 
     def returned(self, worktree: Worktree, task: Task, conflicts: tuple[str, ...], context: Context) -> Worktree:
         self.advance.restart_task(worktree, task, context)
-        self.nudger.send(worktree.agent_id, WORKER_MERGE_CONFLICT, MERGE_CONFLICT_SOURCE, context, branch=worktree.base_branch, lines=", ".join(conflicts))
+        self.nudger.send(worktree.session_agent_id, WORKER_MERGE_CONFLICT, MERGE_CONFLICT_SOURCE, context, branch=worktree.base_branch, lines=", ".join(conflicts))
         return self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)

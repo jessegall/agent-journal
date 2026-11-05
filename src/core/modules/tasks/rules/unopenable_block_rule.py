@@ -30,10 +30,10 @@ class UnopenableBlockRule(DriverRule):
         self.queries, self.spans = queries, spans
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        tasks = tuple(self.queries.query(TaskBlockReview).filter(agent_id=hook.agent_id, state=TaskState.BLOCKED, automatic=False).all_rows())
+        tasks = tuple(self.queries.query(TaskBlockReview).filter(session_agent_id=hook.agent_id, state=TaskState.BLOCKED, automatic=False).all_rows())
         if not tasks:
             return RuleAnswer.allowed()
-        blocks = self.queries.query(AgentBlock).filter(agent_id=hook.agent_id, nudge_key=BLOCK_REVIEW_REQUIRED.key).matching(IsNull("closed_at")).page(1, 1).rows
+        blocks = self.queries.query(AgentBlock).filter(session_agent_id=hook.agent_id, nudge_key=BLOCK_REVIEW_REQUIRED.key).matching(IsNull("closed_at")).page(1, 1).rows
         if blocks and TaskBlocksReviewed.stored(blocks[0].condition_text).pending(tasks):
             return RuleAnswer.allowed()
         passed = BLOCK_REVIEW_INTERVAL.has_passed_many(self.spans, hook.agent_id, [task.reviewed_at for task in tasks], hook.timestamp)

@@ -70,7 +70,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=command.program_model, profile=command.profile, given_name=command.given_name)
         worker = self.bus.dispatch(start, worker_context)
         name = f"worker-{worker.id}"
-        worktree = self.repository.save(Worktree(agent_id=worker.id, task_id=task.id, creator_id=context.actor.id,
+        worktree = self.repository.save(Worktree(session_agent_id=worker.id, task_id=task.id, creator_id=context.actor.id,
                                                  folder=str(Path(environment.folder) / WORKTREES_FOLDER / environment.name / name),
                                                  branch=f"journal/{environment.name}/{name}", base_branch=environment.branch), worker_context)
         base_commit = self.git.tip(environment.folder, environment.branch)

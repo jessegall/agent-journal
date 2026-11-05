@@ -34,10 +34,10 @@ TASK_INSPECTIONS_SELECT = (
 )
 
 TASK_BLOCK_REVIEWS_SELECT = (
-    "SELECT tasks.id AS task_id, agents.id AS agent_id, tasks.environment_id, tasks.state, tasks.version AS task_version,"
+    "SELECT tasks.id AS task_id, agents.id AS session_agent_id, tasks.environment_id, tasks.state, tasks.version AS task_version,"
     " coalesce((SELECT max(task_version) FROM task_block_renewals WHERE task_id = tasks.id), 0) AS block_version,"
     " max(coalesce((SELECT max(created_at) FROM task_block_renewals WHERE task_id = tasks.id), tasks.updated_at),"
-    " coalesce((SELECT max(last_delivered_at) FROM nudge_records WHERE agent_id = agents.id"
+    " coalesce((SELECT max(last_delivered_at) FROM nudge_records WHERE session_agent_id = agents.id"
     " AND key = 'tasks.block_review.' || tasks.id), '')) AS reviewed_at,"
     " EXISTS(SELECT 1 FROM task_waits WHERE task_id = tasks.id AND ended_at IS NULL AND target = 'user') AS user_wait,"
     " EXISTS(SELECT 1 FROM task_waits WHERE task_id = tasks.id AND ended_at IS NULL"

@@ -69,4 +69,4 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ProcessQueuePage):
-            output.write("\n".join(f"{process.id}  {process.agent_id}  {process.category.value}  {process.line}" for process in value.page.rows) or "No command waits or runs in this process queue.", value.json())
+            output.write("\n".join(f"{process.id}  {process.session_agent_id}  {process.category.value}  {process.line}" for process in value.page.rows) or "No command waits or runs in this process queue.", value.json())

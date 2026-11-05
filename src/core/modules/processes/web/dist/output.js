@@ -16,7 +16,7 @@ const W = {
     const t = y(), e = i(Number(new URLSearchParams(location.search).get("output")) || 0), o = i(null), p = i([]), n = i(!1), d = x((a) => t.read(a.join(" ")), () => e.value), m = () => o.value !== null && (o.value.state === "running" || o.value.state === "background");
     async function v() {
       if (e.value = e.value || await t.setting("output", 0), !e.value) {
-        const _ = await t.read(t.agent == null ? "process feed --limit 1" : `process feed --limit 1 --agent-id ${t.agent}`);
+        const _ = await t.read(t.agent == null ? "process feed --limit 1" : `process feed --limit 1 --session-agent-id ${t.agent}`);
         e.value = _.ok && _.value.rows.length ? _.value.rows[0].id : 0;
       }
       if (!e.value) return;

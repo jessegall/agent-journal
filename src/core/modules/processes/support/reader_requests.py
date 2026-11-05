@@ -41,7 +41,7 @@ class ReaderRequests:
     def request(self, process: Process, spec: PartSpec, reader: Reader | None, context: Context) -> int | None:
         if not self.demands.needs_reader(spec):
             return None
-        scope = ReaderSampleScope(process.agent_id, spec.command or spec.text)
+        scope = ReaderSampleScope(process.session_agent_id, spec.command or spec.text)
         reason = self.demands.reason(spec, reader, scope)
         if not reason:
             return None
@@ -69,7 +69,7 @@ class ReaderRequests:
         spec = PartSpec(part.text, part.program, category=part.category, command=part.command)
         if not self.demands.needs_reader(spec):
             return
-        scope = ReaderSampleScope(process.agent_id, spec.command or spec.text)
+        scope = ReaderSampleScope(process.session_agent_id, spec.command or spec.text)
         reason = self.demands.reason(spec, reader, scope)
         if reason:
             self.open_request(process, spec, reason, process.id, context)
@@ -85,13 +85,13 @@ class ReaderRequests:
     def open_request(self, process: Process, spec: PartSpec, reason: str, sample_process_id: int, context: Context) -> int:
         key = self.command_key(spec)
         command = spec.command or spec.text
-        existing = self.open_row(ReaderSampleScope(process.agent_id, command))
+        existing = self.open_row(ReaderSampleScope(process.session_agent_id, command))
         if existing is not None:
             return existing.id
         current_time = self.clock.timestamp()
         minutes = self.settings.integer(ProcessSetting.READER_BLOCK_MINUTES, process.environment_id)
         expires_at = Timestamp(current_time.value + timedelta(minutes=minutes)) if MainAgentFinder.newest(self.queries) else current_time
-        request = self.repository.save(ReaderRequest(creator_id=process.agent_id, command_key=key,
+        request = self.repository.save(ReaderRequest(creator_id=process.session_agent_id, command_key=key,
                                                      command=command, category=spec.category, reason=reason, expires_at=expires_at,
                                                      sample_process_id=sample_process_id), context)
         return request.id

@@ -97,7 +97,7 @@ def end_run(story: Story, process: Process, text: str, exit_code: int = 0) -> No
     folder = story.container.get(OutputFolder)
     folder.write_output(process.id, 1, text)
     bus = story.container.get(Bus)
-    actor = Actor(process.agent_id, ActorType.AGENT)
+    actor = Actor(process.session_agent_id, ActorType.AGENT)
     bus.run(EndProcessPart(process.id, 1, exit_code), actor, environment_id=1)
     bus.run(EndProcess(process.id, exit_code, max(len(text), BYTES_LONG), text.count("\n")), actor, environment_id=1)
 

@@ -23,7 +23,7 @@ class ReadTaskBriefHandler(Handler[ReadTaskBrief, TaskBrief]):
     def handle(self, command: ReadTaskBrief, context: Context) -> TaskBrief:
         task = self.queries.query(Task).find(command.task_id)
         agent_id = context.actor.id
-        if context.actor.type is ActorType.AGENT and not self.queries.query(TaskRead).filter(task_id=task.id, agent_id=agent_id).exists():
-            self.repository.save(TaskRead(task_id=task.id, agent_id=agent_id, creator_id=agent_id), context)
+        if context.actor.type is ActorType.AGENT and not self.queries.query(TaskRead).filter(task_id=task.id, session_agent_id=agent_id).exists():
+            self.repository.save(TaskRead(task_id=task.id, session_agent_id=agent_id, creator_id=agent_id), context)
         log_lines = tuple(log.line for log in self.queries.query(TaskLog).filter(task_id=task.id).oldest().all_rows())
         return TaskBrief(task, tuple(TaskComment(message.id, message.text) for message in self.comments.comments(task)), log_lines)

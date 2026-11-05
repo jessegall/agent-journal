@@ -24,7 +24,7 @@ class RequireSkillHandler(Handler[RequireSkill, AgentSkill]):
             raise Refusal(f"no module declares the skill {command.skill}", "journal skill list shows the skills")
         row = self.rows.find(command.agent_id, command.skill)
         if row is None:
-            return self.repository.save(AgentSkill(agent_id=command.agent_id, creator_id=context.actor.id, skill=command.skill), context)
+            return self.repository.save(AgentSkill(session_agent_id=command.agent_id, creator_id=context.actor.id, skill=command.skill), context)
         if row.state is AgentSkillState.LOADED and row.digest != current.digest:
             return self.repository.save(row.reset(context.timestamp, context.actor), context)
         return row

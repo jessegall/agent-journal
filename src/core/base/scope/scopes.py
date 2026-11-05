@@ -1,5 +1,6 @@
 from collections.abc import Generator, Sequence
 from contextlib import contextmanager, nullcontext
+from dataclasses import replace
 from typing import ContextManager, TypeVar
 
 from core.base.actor import Actor
@@ -12,6 +13,8 @@ from core.base.database.database import Database
 from core.base.model.agent_scoped import AgentScoped
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
+from core.base.model.session_owned import SessionOwned
+from core.base.model.session_private import SessionPrivate
 from core.base.model.table import indefinite_article
 from core.base.refusal import Refusal
 from core.base.scope.actor_scope import ActorScope
@@ -45,7 +48,7 @@ class Scopes:
         owner = self.database.row_owner
         if isinstance(model, AgentScoped) and owner is not None and not model.is_saved:
             return model.changed(agent_id=owner.stored_agent_id)
-        return model if self.actor_id is None else model.scoped(self.actor_id)
+        return model if self.actor_id is None or model.is_saved else self.with_session(model, self.actor_id)
 
     def with_environment(self, model: M) -> M:
         if model.is_saved or not isinstance(model, EnvironmentScoped):
@@ -55,6 +58,13 @@ class Scopes:
         if model.environment_id:
             return model
         raise Refusal(f"{indefinite_article(model.cli_name)} {model.cli_name} needs an environment", "name it with --environment")
+
+    def with_session(self, model: M, actor_id: int) -> M:
+        if isinstance(model, SessionOwned) and model.session_agent_id is None:
+            return replace(model, session_agent_id=actor_id)
+        if isinstance(model, SessionPrivate) and model.session_agent_id != actor_id:
+            return replace(model, state=model.hidden_state)
+        return model
 
     def check_environment(self, actor: Actor, environment_id: int | None) -> None:
         owner = self.actors.row_owner(actor.id if actor.type is ActorType.AGENT else None)

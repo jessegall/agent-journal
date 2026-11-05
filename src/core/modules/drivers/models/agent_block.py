@@ -22,7 +22,7 @@ class AgentBlock(Model):
     model_name = "agent_block"
     cli_name = "agent-block"
 
-    agent_id: int
+    session_agent_id: int
     creator_id: int
     nudge_key: str
     nudge_text: str

@@ -22,6 +22,6 @@ class WorkerProgramListener(CommitListener[Moved[Worktree]]):
 
     def handle(self, event: Moved[Worktree], logged: LoggedEvent) -> None:
         worktree = event.row
-        worker = self.rows.required(Agent, worktree.agent_id)
+        worker = self.rows.required(Agent, worktree.session_agent_id)
         environment = self.environments.find(worktree.environment_id)
         self.launcher.hand(worker, environment, self.worker_command.command(worker, worktree, environment, self.rows.required(Task, worktree.task_id)))

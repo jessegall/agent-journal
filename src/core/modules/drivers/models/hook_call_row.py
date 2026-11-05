@@ -16,7 +16,7 @@ class HookCallRow(ViewModel):
     select = HOOK_CALL_ROWS_SELECT
 
     id: int
-    agent_id: int
+    session_agent_id: int
     hook: str
     tool: str
     summary: str

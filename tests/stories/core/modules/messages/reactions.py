@@ -57,7 +57,7 @@ def test_the_agent_is_told_of_a_face_the_user_puts_on_but_not_of_its_own_or_one_
 def test_a_face_the_user_puts_on_wakes_the_agent(new_story):
     story = reaction_story(new_story)
     story.run('message react 1 "🎉"', actor=story.user)
-    line = next(story.container.get(Queries).query(AgentLine).filter(agent_id=story.agent.id, source=REACTION_SOURCE).all_rows())
+    line = next(story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, source=REACTION_SOURCE).all_rows())
     story.expect_rows(line.wakes_agent)
 
 

@@ -42,7 +42,7 @@ def test_an_inactive_helper_of_any_registered_descendant_type_wakes_its_parent(n
     story.tick("s-1")
     wanted = f"{role}:{helper['id']} has used no tool for 5 minutes"
     story.expect_text(f"agent-line list --agent {story.agent.id}", wanted)
-    lines = story.container.get(Queries).query(AgentLine).filter(agent_id=story.agent.id).all_rows()
+    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows()
     story.expect_rows(any(wanted in line.text and line.wakes_agent for line in lines))
 
 

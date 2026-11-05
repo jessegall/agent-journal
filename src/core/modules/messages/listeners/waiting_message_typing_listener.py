@@ -29,7 +29,7 @@ class WaitingMessageTypingListener(CommitListener[Created[AgentLine]]):
         line = event.row
         if line.source != WAITING_MESSAGE_SOURCE or line.state is not AgentLineState.WAITING:
             return
-        agent = self.rows.required(Agent, line.agent_id)
+        agent = self.rows.required(Agent, line.session_agent_id)
         message = self.lines.waking_message(agent.id)
         if message is None or not self.lines.names(line, message):
             self.lines.drop(line, logged)

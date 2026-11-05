@@ -21,7 +21,7 @@ class RecordWorkerReportHandler(Handler[RecordWorkerReport, Message]):
         self.repository, self.nudger = repository, nudger
 
     def handle(self, command: RecordWorkerReport, context: Context) -> Message:
-        message = self.repository.save(Message(agent_id=command.agent_id, creator_id=context.actor.id,
+        message = self.repository.save(Message(session_agent_id=command.agent_id, creator_id=context.actor.id,
                                                type=MessageType.AGENT, text=command.text, is_chat_visible=False), context)
         self.nudger.send(command.main_agent_id, WORKER_REPORT, SOURCE, context, worker=command.agent_id, message=message.id)
         return message

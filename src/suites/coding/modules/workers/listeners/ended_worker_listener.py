@@ -42,7 +42,7 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
         tasks = self.unfinished.names(unfinished)
         help_requested = self.stop.has_open_help_request(new.id)
         progress = Minimum("created_at", self.unfinished.last_progress_text(new.id))
-        resume_count = self.queries.query(AgentLine).filter(agent_id=new.id, source=UNFINISHED_TASKS_SOURCE).matching(progress).count()
+        resume_count = self.queries.query(AgentLine).filter(session_agent_id=new.id, source=UNFINISHED_TASKS_SOURCE).matching(progress).count()
         should_resume = delegated and not self.stop.is_final(new, context.actor.id) and resume_count < RESUME_LIMIT_COUNT
         if should_resume:
             if self.unfinished.has_running_process(new.id):

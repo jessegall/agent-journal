@@ -25,10 +25,10 @@ class DeliveredWorkStopRule(DriverRule):
         for worktree in self.delivered.main_worktrees(hook.agent_id):
             untested = [proof.id for proof in self.proofs.untested_proofs(worktree.id).oldest().all_rows()]
             if untested:
-                return RuleAnswer.refused(PROOF_CHECK.nudge(worker=worktree.agent_id, task=worktree.task_id, proofs=', '.join(map(str, untested))))
+                return RuleAnswer.refused(PROOF_CHECK.nudge(worker=worktree.session_agent_id, task=worktree.task_id, proofs=', '.join(map(str, untested))))
         refused_at = self.hook_history.last_answer(self.name, hook)
         for worktree in self.delivered.delivered(hook.agent_id):
             proofs = [proof.id for proof in self.proofs.waiting_proofs(worktree.id).oldest().all_rows()]
             if proofs and (refused_at is None or worktree.updated_at is None or refused_at < worktree.updated_at):
-                return RuleAnswer.refused(PROOF_CHECK.nudge(worker=worktree.agent_id, task=worktree.task_id, proofs=', '.join(map(str, proofs))))
+                return RuleAnswer.refused(PROOF_CHECK.nudge(worker=worktree.session_agent_id, task=worktree.task_id, proofs=', '.join(map(str, proofs))))
         return RuleAnswer.allowed()

@@ -24,7 +24,7 @@ class WorkerTaskCommit:
         if unproved:
             raise Refusal(f"point {', '.join(unproved)} has no proof", f"journal proof make {unproved[0]} \"<file:line, and the test that shows it>\"")
         base_commit = self.git.tip(worktree.folder, worktree.base_branch)
-        conflicts = self.git.rebased_commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.agent_id}")
+        conflicts = self.git.rebased_commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.session_agent_id}")
         if conflicts:
             raise Refusal(f"your work clashes with {worktree.base_branch} in {', '.join(conflicts)}", "settle the conflict markers in those files, then hand in again")
         current = worktree.moved(WorktreeLifecycle.advance, base_commit=base_commit)

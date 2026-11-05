@@ -15,7 +15,7 @@ def user_story(new_story):
 def test_a_message_is_sent_as_the_caller_in_the_callers_environment(new_story):
     story = user_story(new_story)
     story.expect_success(lines.USER_MESSAGE, "type: user", "text: Fix the cart first", "environment_id: 1", actor=story.user)
-    story.expect_success('message send "On it" --environment main', "type: agent", f"agent_id: {story.agent.id}", actor=story.agent)
+    story.expect_success('message send "On it" --environment main', "type: agent", f"session_agent_id: {story.agent.id}", actor=story.agent)
 
 
 def test_reading_a_message_marks_it_read_once(new_story):

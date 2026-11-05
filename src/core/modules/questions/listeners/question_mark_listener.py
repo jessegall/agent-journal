@@ -17,5 +17,5 @@ class QuestionMarkListener(MarkListener[E]):
         self.process(logged, event.row, ended=False)
 
     def process(self, logged: LoggedEvent, question: Question, ended: bool) -> None:
-        self.show(logged, QuestionMarkType.QUESTION, QuestionMarkVariant.OPEN, f"Question {question.id}: {question.text}", question.agent_id,
+        self.show(logged, QuestionMarkType.QUESTION, QuestionMarkVariant.OPEN, f"Question {question.id}: {question.text}", question.session_agent_id,
                   "question", question.id, key=f"question:{question.id}", ended=ended)

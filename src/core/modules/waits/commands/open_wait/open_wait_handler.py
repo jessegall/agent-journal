@@ -23,7 +23,7 @@ class OpenWaitHandler(Handler[OpenWait, Wait]):
             raise Refusal("only an agent waits", "an agent runs journal wait on or journal wait stuck")
         if command.type is WaitType.ROWS and not command.targets:
             raise Refusal("a wait for rows needs the rows that end it", "add --target tasks:<id>")
-        wait = self.repository.save(Wait(agent_id=context.actor.id, creator_id=context.actor.id, type=command.type, focus=command.focus,
+        wait = self.repository.save(Wait(session_agent_id=context.actor.id, creator_id=context.actor.id, type=command.type, focus=command.focus,
                                          opened_at=context.timestamp), context)
         for target in command.targets:
             table, _, row_id = target.partition(":")

@@ -61,7 +61,7 @@ class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
         if agent is None:
             raise Refusal("only an agent runs a sequence", "the agent runs journal sequence run <n>")
         sequence = self.rows.required(Sequence, command.sequence_id)
-        run = self.repository.save(SequenceRun(agent_id=context.actor.id, sequence_id=sequence.id, subject_id=command.subject_id), context)
+        run = self.repository.save(SequenceRun(session_agent_id=context.actor.id, sequence_id=sequence.id, subject_id=command.subject_id), context)
         return SequenceLine(StepLine.text(sequence, run))
 
     def require_checks(self, sequence: Sequence, current: SequenceRun) -> None:

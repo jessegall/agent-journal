@@ -2,7 +2,7 @@
 import {RowList, WindowRoom, useRows, useWindow} from "@journal/window-kit";
 import {hookEventLabel} from "./labels.js";
 
-const {rows, failure, loaded} = useRows(`hook-call feed --agent-id ${useWindow().agent}`, ["hook_call.*"], {incremental: true});
+const {rows, failure, loaded} = useRows(`hook-call feed --session-agent-id ${useWindow().agent}`, ["hook_call.*"], {incremental: true});
 </script>
 
 <template>

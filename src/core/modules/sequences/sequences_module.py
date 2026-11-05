@@ -1,3 +1,4 @@
+from core.modules.sequences.migrations.m008_sequence_session import SequenceSessionMigration
 from core.modules.sequences.migrations.m007_open_run_order_index import OpenRunOrderIndexMigration
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.sequences.support.sequence_nudges import SEQUENCE_NUDGES
@@ -60,7 +61,7 @@ class SequencesModule(Module):
     skills = [SkillDeclaration("journal-sequences", "Follow a sequence of steps one at a time; read it when a sequence is run or written", keywords=("sequence", "sequences"), commands=["sequence"])]
     library_shares = [SequenceLibraryShare]
     models = [ModelDeclaration(Sequence, excluded_subcommands=BUILT), ModelDeclaration(SequenceRun, query=SequenceRunQuery, excluded_subcommands=RUN_BUILT)]
-    migrations = [OpenRunOrderIndexMigration, SequencesTablesMigration, SequenceTriggersMigration, TriggerEventMigration, CloseLegacyStepBlocksMigration, RunSubjectMigration, OpenRunSubjectIndexMigration]
+    migrations = [SequenceSessionMigration, OpenRunOrderIndexMigration, SequencesTablesMigration, SequenceTriggersMigration, TriggerEventMigration, CloseLegacyStepBlocksMigration, RunSubjectMigration, OpenRunSubjectIndexMigration]
     moves = [SequencesMove]
     handlers = [MakeSequenceHandler, MoveSequenceRunHandler, SaveStandardSequencesHandler]
     guards = [StandardSequenceGuard]

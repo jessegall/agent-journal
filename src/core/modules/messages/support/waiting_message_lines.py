@@ -36,12 +36,12 @@ class WaitingMessageLines:
         return next((message for message in self.messages.addressed(agent_id) if message.delivered_at is None), None)
 
     def waiting(self, agent_id: int):
-        return self.queries.query(AgentLine).filter(agent_id=agent_id, source=WAITING_MESSAGE_SOURCE, state=AgentLineState.WAITING).newest()
+        return self.queries.query(AgentLine).filter(session_agent_id=agent_id, source=WAITING_MESSAGE_SOURCE, state=AgentLineState.WAITING).newest()
 
     def names(self, line: AgentLine, message: Message) -> bool:
         return line.text == NEW_MESSAGE.nudge(message=message.id).text
 
     def drop(self, line: AgentLine, event: LoggedEvent) -> None:
-        call = self.hook_calls.newest_agent_hook(line.agent_id)
+        call = self.hook_calls.newest_agent_hook(line.session_agent_id)
         if call is not None:
             self.bus.run(DeliverAgentLine(line.id, call.id, event.timestamp), Actor(event.actor_id, ActorType.USER), environment_id=event.environment_id)

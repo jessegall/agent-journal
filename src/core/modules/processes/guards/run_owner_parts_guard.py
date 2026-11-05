@@ -22,5 +22,5 @@ class RunOwnerPartsGuard(Guard[Changed[ProcessPart]]):
         if event.old_row is None or context.actor.type is not ActorType.AGENT:
             return
         process = self.queries.query(Process).find(part.process_id)
-        if context.actor.id != process.agent_id:
-            raise Refusal(f"process {process.id} is agent {process.agent_id}'s run, and agent {context.actor.id} cannot report its parts", "only the agent that ran a line reports on it")
+        if context.actor.id != process.session_agent_id:
+            raise Refusal(f"process {process.id} is agent {process.session_agent_id}'s run, and agent {context.actor.id} cannot report its parts", "only the agent that ran a line reports on it")

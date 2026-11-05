@@ -16,4 +16,4 @@ class SkillLoadedMarkListener(MarkListener[Moved[AgentSkill]]):
 
     def handle(self, event: Moved[AgentSkill], logged: LoggedEvent) -> None:
         row = event.row
-        self.show(logged, SkillMarkType.SKILL, SkillMarkVariant.LOADED, f"Skill {row.skill} loaded", row.agent_id, "agent_skill", row.id)
+        self.show(logged, SkillMarkType.SKILL, SkillMarkVariant.LOADED, f"Skill {row.skill} loaded", row.session_agent_id, "agent_skill", row.id)

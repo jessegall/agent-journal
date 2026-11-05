@@ -32,7 +32,7 @@ def worker_of(story) -> int:
 
 def deliver_line(story, agent_id: int, creator_id: int, text: str) -> None:
     with story.container.get(Database).transaction():
-        story.container.get(Repository).save(AgentLine(agent_id=agent_id, creator_id=creator_id, text=text), Context(Actor.core(), story.clock.timestamp(), ReadMessage(1)))
+        story.container.get(Repository).save(AgentLine(session_agent_id=agent_id, creator_id=creator_id, text=text), Context(Actor.core(), story.clock.timestamp(), ReadMessage(1)))
 
 
 def test_a_workers_own_rows_say_worker_and_not_assistant(new_story, tmp_path, monkeypatch):

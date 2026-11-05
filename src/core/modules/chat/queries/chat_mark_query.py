@@ -21,7 +21,7 @@ class ChatMarkQuery(Query[ChatMark]):
         self.kept.update_in_scope(self.table.name, lambda previous: mark, "key = ?", [mark.key], name="chat.keyed_mark")
 
     def agent_marks(self, agent_id: int) -> Self:
-        return self.filter(agent_id=agent_id)
+        return self.filter(session_agent_id=agent_id)
 
     def run_marks(self, run_key: str) -> Self:
         return self.filter(run_key=run_key).ordered("run_step")

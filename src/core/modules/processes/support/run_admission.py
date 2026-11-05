@@ -26,7 +26,7 @@ class RunAdmission:
         if process.slot_assigned:
             return True
         return (process.is_queue_run and self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS, process.environment_id)
-                and self.queries.query(Agent).find(process.agent_id).role == AgentRole.MAIN)
+                and self.queries.query(Agent).find(process.session_agent_id).role == AgentRole.MAIN)
 
     def may_start(self, process: Process, agent: Agent, current_time: Timestamp) -> bool:
         parts = tuple(self.queries.query(ProcessPart).filter(process_id=process.id).all_rows())

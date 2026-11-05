@@ -92,7 +92,7 @@ test("the hook calls window shows its agent's hook calls with their answers", as
     const windowContext = context({"hook-call feed": page([{id: 9, hook: "pre_tool_use", tool: "Edit", summary: "src/cart.py", answer: "refused", refusal: "start a task first"}])}, 2);
     const text = await drawn(HookCallList, windowContext);
     expect(text).toContain("start a task first");
-    expect(windowContext.reads[0]).toContain("--agent-id 2");
+    expect(windowContext.reads[0]).toContain("--session-agent-id 2");
 });
 
 test("the file feed shows its agent's edits with their counts", async () => {
@@ -121,7 +121,7 @@ test("the terminal window lists its agent's commands in order, marks journal lin
         {id: 8, agent_id: 2, hook: "pre_tool_use", tool: "Read", summary: "a.py", refusal: ""},
     ])}, 2);
     const element = await mounted(Terminal, {...windowContext, option: () => ref("journal")});
-    expect(windowContext.reads[0]).toBe("hook-call feed --agent-id 2 --limit 200");
+    expect(windowContext.reads[0]).toBe("hook-call feed --session-agent-id 2 --limit 200");
     const rows = [...element.querySelectorAll("[data-terminal-command]")];
     expect(rows.map((row) => row.querySelector(".terminal-text").textContent)).toEqual(["pytest -q", "journal task list", "rm -rf build"]);
     expect(rows.map((row) => row.querySelector(".terminal-mark").textContent)).toEqual(["$", "#", "$"]);

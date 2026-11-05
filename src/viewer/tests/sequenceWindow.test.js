@@ -5,7 +5,7 @@ import SequenceCards from "../../core/modules/sequences/web/src/SequenceCards.vu
 afterEach(() => (document.body.innerHTML = ""));
 
 const SEQUENCE = {id: 1, title: "Release", steps: ["Run the suite", "Tag it"], created_at: "2026-11-01T10:00:00Z"};
-const RUN = {id: 9, sequence_id: 1, agent_id: 3, title: "Release", steps: JSON.stringify(SEQUENCE.steps), step_number: 2, step_started: true};
+const RUN = {id: 9, sequence_id: 1, session_agent_id: 3, title: "Release", steps: JSON.stringify(SEQUENCE.steps), step_number: 2, step_started: true};
 
 async function drawn(runs = []) {
     const ran = [];

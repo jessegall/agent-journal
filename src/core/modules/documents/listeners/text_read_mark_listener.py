@@ -35,13 +35,13 @@ class TextReadMarkListener(MarkListener[Changed[ProcessPart]]):
         if len(tokens) < 4 or PurePath(tokens[0]).name != "journal" or tokens[1] not in READ_MODELS or tokens[2] != "show" or not tokens[3].isdigit():
             return
         process = self.queries.query(Process).find(part.process_id)
-        agent = self.event_rows.required(Agent, process.agent_id)
+        agent = self.event_rows.required(Agent, process.session_agent_id)
         if agent.role != AgentRole.MAIN:
             return
         model, row_id = READ_MODELS[tokens[1]], int(tokens[3])
         if not self.queries.query(model).filter(id=row_id).exists():
             return
-        prompt = self.queries.query(HookCall).filter(agent_id=agent.id, hook=HookEventName.PROMPT).matching(Maximum("created_at", process.creation_timestamp().text)).newest().first()
+        prompt = self.queries.query(HookCall).filter(session_agent_id=agent.id, hook=HookEventName.PROMPT).matching(Maximum("created_at", process.creation_timestamp().text)).newest().first()
         key = f"text-read:{agent.id}:{prompt.id if prompt is not None else 0}:{model.model_name}:{row_id}"
         if self.queries.query(ChatMark).filter(key=key).exists():
             return

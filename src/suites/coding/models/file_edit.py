@@ -14,7 +14,7 @@ class FileEdit(EnvironmentScoped, Model):
     search_fields = ["path"]
 
     environment_id: int = 0
-    agent_id: int
+    session_agent_id: int
     creator_id: int
     path: str
     added: int

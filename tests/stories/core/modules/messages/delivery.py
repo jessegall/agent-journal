@@ -262,7 +262,7 @@ def test_a_line_whose_typing_breaks_goes_to_the_next_hook(new_story):
 
 def test_a_line_left_in_typing_by_a_stopped_server_waits_again_when_the_journal_starts(untyped_idle_message):
     story = untyped_idle_message
-    line = story.container.get(Queries).query(AgentLine).filter(agent_id=story.agent.id, state=AgentLineState.WAITING).newest().first()
+    line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, state=AgentLineState.WAITING).newest().first()
     story.run(f"agent-line claim {line.id}", actor=story.user)
     story.expect_text(f"agent-line list --agent {story.agent.id} --state typing", "new message 1", actor=story.user)
     BootingWork().run(story.container)

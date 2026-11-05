@@ -3,7 +3,7 @@ import {ListTools, RowList, WindowRoom, stateLabel, useListTools, useRows, useWi
 import RunButtons from "./RunButtons.vue";
 
 const context = useWindow();
-const {rows, failure, loaded} = useRows(context.agent == null ? "process feed" : `process feed --agent-id ${context.agent}`, ["process.*", "output.*"]);
+const {rows, failure, loaded} = useRows(context.agent == null ? "process feed" : `process feed --session-agent-id ${context.agent}`, ["process.*", "output.*"]);
 const tools = useListTools(rows, {title: (row) => row.line, isOpen: (row) => row.state === "running"});
 
 const isRunning = (row) => row.state === "running" || row.state === "background";

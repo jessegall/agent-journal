@@ -18,7 +18,7 @@ class Worktree(EnvironmentScoped, Model):
     cli_name = "worker-worktree"
     lifecycle = WorktreeLifecycle
 
-    agent_id: int
+    session_agent_id: int
     environment_id: int = 0
     task_id: int
     creator_id: int

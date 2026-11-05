@@ -35,7 +35,7 @@ class TypedLineListener(CommitListener[Created[AgentLine]]):
         line = event.row
         if not (line.wakes_agent or line.source in TERMINAL_SOURCES) or line.state is not AgentLineState.WAITING:
             return
-        if line.source not in (PAUSE_SOURCE, RESUME_SOURCE) and not self.hook_calls.is_idle(line.agent_id, logged.timestamp):
+        if line.source not in (PAUSE_SOURCE, RESUME_SOURCE) and not self.hook_calls.is_idle(line.session_agent_id, logged.timestamp):
             return
         actor = Actor(logged.actor_id, ActorType.USER)
         if self.has_entered_repeat(line):
@@ -46,6 +46,6 @@ class TypedLineListener(CommitListener[Created[AgentLine]]):
     def has_entered_repeat(self, line: AgentLine) -> bool:
         if line.repeats_without_hook:
             return False
-        entered_lines = self.queries.query(AgentLine).filter(agent_id=line.agent_id, source=line.source, text=line.text, state=AgentLineState.ENTERED)
-        hook = self.hook_calls.newest_agent_hook(line.agent_id)
+        entered_lines = self.queries.query(AgentLine).filter(session_agent_id=line.session_agent_id, source=line.source, text=line.text, state=AgentLineState.ENTERED)
+        hook = self.hook_calls.newest_agent_hook(line.session_agent_id)
         return (entered_lines if hook is None else entered_lines.matching(Greater("created_at", hook.creation_timestamp().text))).exists()

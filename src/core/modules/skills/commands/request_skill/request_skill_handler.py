@@ -14,4 +14,4 @@ class RequestSkillHandler(Handler[RequestSkill, SkillRequest]):
         self.repository = repository
 
     def handle(self, command: RequestSkill, context: Context) -> SkillRequest:
-        return self.repository.save(SkillRequest(agent_id=command.agent_id, creator_id=context.actor.id, skill=command.skill), context)
+        return self.repository.save(SkillRequest(session_agent_id=command.agent_id, creator_id=context.actor.id, skill=command.skill), context)

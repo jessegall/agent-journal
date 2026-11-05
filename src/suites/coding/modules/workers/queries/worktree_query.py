@@ -14,8 +14,8 @@ class WorktreeQuery(Query[Worktree]):
         self.kept = kept
 
     def worker_worktree(self, agent_id: int) -> Worktree | None:
-        return self.kept.read(self.table.name, self.filter(agent_id=agent_id).matching(IsNull("removed_at")).first,
-                              "agent_id = ? AND removed_at IS NULL", [agent_id], name="workers.worker_worktree")
+        return self.kept.read(self.table.name, self.filter(session_agent_id=agent_id).matching(IsNull("removed_at")).first,
+                              "session_agent_id = ? AND removed_at IS NULL", [agent_id], name="workers.worker_worktree")
 
     def open_worktrees(self) -> list[Worktree]:
         return list(self.kept.read_in_scope(self.table.name, lambda: tuple(self.rows_without("removed_at")), "removed_at IS NULL", name="workers.open_worktrees"))
@@ -31,8 +31,8 @@ class WorktreeQuery(Query[Worktree]):
 
     def replace_cached(self, worktree: Worktree, present: tuple[Worktree, ...]) -> None:
         active = [row for row in present if row.removed_at is None]
-        self.kept.update(self.table.name, lambda previous: next(iter(active), None), "agent_id = ? AND removed_at IS NULL",
-                         [worktree.agent_id], name="workers.worker_worktree")
+        self.kept.update(self.table.name, lambda previous: next(iter(active), None), "session_agent_id = ? AND removed_at IS NULL",
+                         [worktree.session_agent_id], name="workers.worker_worktree")
         self.kept.update_in_scope(self.table.name, lambda worktrees: tuple(sorted([row for row in worktrees if row.id != worktree.id] + list(active), key=lambda row: row.id)),
                                   "removed_at IS NULL", name="workers.open_worktrees")
         self.kept.update_in_scope(self.table.name, lambda worktrees: tuple(sorted([row for row in worktrees if row.id != worktree.id] + list(present), key=lambda row: row.id)),

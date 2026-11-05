@@ -11,6 +11,6 @@ class SkillRequest(Model):
     model_name = "skill_request"
     cli_name = "skill-request"
 
-    agent_id: int
+    session_agent_id: int
     creator_id: int
     skill: str

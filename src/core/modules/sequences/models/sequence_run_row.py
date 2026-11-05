@@ -18,7 +18,7 @@ class SequenceRunRow(EnvironmentScoped, ViewModel):
 
     id: int
     environment_id: int
-    agent_id: int
+    session_agent_id: int
     sequence_id: int
     title: str
     steps: str

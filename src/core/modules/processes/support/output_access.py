@@ -24,6 +24,6 @@ class OutputAccess:
 
     def process(self, actor: Actor, process_id: int) -> Process:
         process = self.rows.required(Process, process_id)
-        if self.has_private_outputs(actor) and process.agent_id != actor.id:
+        if self.has_private_outputs(actor) and process.session_agent_id != actor.id:
             raise Refusal(f"output {process_id} is not yours", "your suite allows you to read only your own outputs")
         return process

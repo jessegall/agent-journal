@@ -17,7 +17,7 @@ class TaskBlockReview(EnvironmentScoped, ViewModel):
     select = TASK_BLOCK_REVIEWS_SELECT
 
     task_id: int
-    agent_id: int
+    session_agent_id: int
     environment_id: int
     state: TaskState
     task_version: int

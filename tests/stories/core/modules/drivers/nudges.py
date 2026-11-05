@@ -92,7 +92,7 @@ def test_a_clock_nudge_going_back_to_an_older_text_keeps_one_row_for_that_text(n
     write(Nudge("sample.clock", NudgeType.STEERING, "first text", turn_limited=False))
     write(Nudge("sample.clock", NudgeType.STEERING, "second text", turn_limited=False))
     write(Nudge("sample.clock", NudgeType.STEERING, "first text", interval=Interval(Seconds(60)), turn_limited=False))
-    rows = story.container.get(Queries).query(NudgeRecord).filter(agent_id=story.agent.id, key="sample.clock").all_rows()
+    rows = story.container.get(Queries).query(NudgeRecord).filter(session_agent_id=story.agent.id, key="sample.clock").all_rows()
     expect_delivery_count(rows, [("first text", 2), ("second text", 1)])
 
 

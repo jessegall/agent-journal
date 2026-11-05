@@ -15,7 +15,7 @@ class WatchQuery(Query[Watch]):
         super().__init__(database, tables, Watch)
 
     def open(self, agent_id: int) -> Self:
-        return self.filter(agent_id=agent_id, state=WatchState.OPEN)
+        return self.filter(session_agent_id=agent_id, state=WatchState.OPEN)
 
     def process(self, process_id: int) -> Self:
         return self.filter(process_id=process_id)

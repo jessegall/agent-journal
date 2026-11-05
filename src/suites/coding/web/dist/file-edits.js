@@ -32,7 +32,7 @@ const N = { class: "main" }, C = { class: "note" }, E = { class: "note" }, F = {
             s("span", N, l(t.path), 1),
             s("span", C, "+" + l(t.added), 1),
             s("span", E, "-" + l(t.removed), 1),
-            s("span", F, "agent " + l(t.agent_id), 1)
+            s("span", F, "agent " + l(t.session_agent_id), 1)
           ]),
           _: 1
         }, 8, ["rows", "failure", "loaded", "more", "older", "searching"])

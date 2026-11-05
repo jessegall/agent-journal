@@ -46,7 +46,7 @@ def test_only_the_owner_is_told_to_read_a_shared_sample(new_story):
     end_run(story, sample, "compile\n" * 8 + "done\n")
     story.expect_success('reader add custom --commands "custom-build*" --title Building --lines done --summary done', actor=story.agent)
     story.run_listeners()
-    story.expect_text(f"agent-line list --agent {sample.agent_id}", f"journal output read {sample.id} --reader custom")
+    story.expect_text(f"agent-line list --agent {sample.session_agent_id}", f"journal output read {sample.id} --reader custom")
     story.expect_no_text(f"agent-line list --agent {second.id}", f"journal output read {sample.id}")
 
 

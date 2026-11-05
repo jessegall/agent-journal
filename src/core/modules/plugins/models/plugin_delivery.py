@@ -14,7 +14,7 @@ class PluginDelivery(EnvironmentScoped, Model):
 
     plugin_id: int
     environment_id: int = 0
-    agent_id: int
+    session_agent_id: int
     creator_id: int
     event: str
     data: str

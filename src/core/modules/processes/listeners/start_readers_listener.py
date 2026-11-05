@@ -20,5 +20,5 @@ class StartReadersListener(CommitListener[SessionStarted]):
 
     def handle(self, event: SessionStarted, logged: LoggedEvent) -> None:
         call = event.row
-        if self.agents.find(call.agent_id).role == AgentRole.MAIN:
+        if self.agents.find(call.session_agent_id).role == AgentRole.MAIN:
             self.bus.run(SendReadersNotice(), self.actors.actor(MODULE_NAME), cause_id=logged.id)

@@ -175,7 +175,7 @@ const W = (e, p) => {
         class: "run"
       }, [
         l("div", ie, [
-          l("span", null, "Agent " + S(a.agent_id), 1),
+          l("span", null, "Agent " + S(a.session_agent_id), 1),
           l("span", ce, S(a.step_started ? `Step ${a.step_number} of ${JSON.parse(a.steps).length}` : `Step ${a.step_number} of ${JSON.parse(a.steps).length}, not started yet`), 1)
         ]),
         l("ol", pe, [

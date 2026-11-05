@@ -30,7 +30,7 @@ class RecordFileChangesHandler(Handler[RecordFileChanges, None]):
 
     def scan_agent(self, command: RecordFileChanges) -> Agent:
         if command.process_id is not None:
-            return self.queries.query(Agent).find(self.queries.query(Process).find(command.process_id).agent_id)
+            return self.queries.query(Agent).find(self.queries.query(Process).find(command.process_id).session_agent_id)
         agent = self.queries.query(Agent).filter(session=command.session).first()
         if agent is None:
             raise Refusal(f"no agent has session {command.session}", "name a process or a session the journal knows")

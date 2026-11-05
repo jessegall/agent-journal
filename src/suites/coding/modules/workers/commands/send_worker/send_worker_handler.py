@@ -39,7 +39,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
             self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)
         task = self.queries.query(Task).find(worktree.task_id)
         if not self.git.conflict_files(worktree):
-            self.git.commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.agent_id}")
+            self.git.commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.session_agent_id}")
         conflicts = self.git.sync(worktree)
         job = f"{command.job}\n{worktree.base_branch} is merged into your worktree and clashes on {', '.join(conflicts)}: settle the conflict markers first." if conflicts else command.job
         self.repository.save(Message(creator_id=context.actor.id, type=MessageType.PEER, text=command.job, read_at=context.timestamp, delivered_at=context.timestamp,

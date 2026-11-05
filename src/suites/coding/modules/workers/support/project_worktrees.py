@@ -24,7 +24,7 @@ class ProjectWorktrees:
 
     def listed(self, environment_id: int | None) -> list[ProjectWorktree]:
         environments = {str(Path(row.folder).resolve()): row for row in self.queries.query(Environment).all_rows()}
-        workers = {str(Path(row.folder).resolve()): row.agent_id for row in self.worktrees.open_worktrees()}
+        workers = {str(Path(row.folder).resolve()): row.session_agent_id for row in self.worktrees.open_worktrees()}
         running = Counter(agent.environment_id for agent in self.queries.query(Agent).matching(IsNull("ended_at")).all_rows())
         folders = self.git.folders(self.folder(environment_id))
         return [self.worktree(folder, branch, not index, environments.get(str(Path(folder).resolve())), workers.get(str(Path(folder).resolve())), running)

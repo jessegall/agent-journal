@@ -1,8 +1,8 @@
-HOOK_CALL_ROWS_SELECT = "SELECT id, agent_id, hook, tool, summary, answer, refusal FROM hook_calls"
+HOOK_CALL_ROWS_SELECT = "SELECT id, session_agent_id, hook, tool, summary, answer, refusal FROM hook_calls"
 
 AGENT_ACTIVITIES_SELECT = (
     "SELECT agents.id, agents.parent_id, agents.created_at, agents.ended_at,"
-    " (SELECT hook_calls.created_at FROM hook_calls WHERE hook_calls.agent_id = agents.id AND hook_calls.hook <> 'tick'"
+    " (SELECT hook_calls.created_at FROM hook_calls WHERE hook_calls.session_agent_id = agents.id AND hook_calls.hook <> 'tick'"
     " ORDER BY hook_calls.id DESC LIMIT 1) AS last_hook_at FROM agents"
 )
 
@@ -14,4 +14,4 @@ NUDGE_TOTALS_SELECT = (
 
 def tool_use_counts_select(start_count: int) -> str:
     sums = ", ".join("coalesce(sum(created_at > ?), 0)" for _ in range(start_count))
-    return f"SELECT {sums} FROM hook_calls WHERE agent_id = ? AND hook = ? AND created_at > ?"
+    return f"SELECT {sums} FROM hook_calls WHERE session_agent_id = ? AND hook = ? AND created_at > ?"

@@ -16,4 +16,4 @@ class ReportedWaitMarkListener(MarkListener[Created[Wait]]):
     def handle(self, event: Created[Wait], logged: LoggedEvent) -> None:
         wait = event.row
         if wait.type is WaitType.HELP_REQUEST:
-            self.show(logged, WaitMarkType.REPORTED_WAIT, WaitMarkVariant.REPORTED, f"Stuck: {wait.focus}", wait.agent_id, "wait", wait.id)
+            self.show(logged, WaitMarkType.REPORTED_WAIT, WaitMarkVariant.REPORTED, f"Stuck: {wait.focus}", wait.session_agent_id, "wait", wait.id)

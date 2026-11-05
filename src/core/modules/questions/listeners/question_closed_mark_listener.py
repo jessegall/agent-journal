@@ -16,4 +16,4 @@ class QuestionClosedMarkListener(QuestionMarkListener[Moved[Question]]):
     def handle(self, event: Moved[Question], logged: LoggedEvent) -> None:
         question = event.row
         self.show(logged, QuestionMarkType.QUESTION, QuestionMarkVariant.CLOSED, f"Question {question.id} closed without an answer", 
-                  question.agent_id, "question", question.id, key=f"question:{question.id}", ended=True)
+                  question.session_agent_id, "question", question.id, key=f"question:{question.id}", ended=True)

@@ -11,7 +11,7 @@ AGENT_CARDS_SELECT = (
     " ORDER BY part, id) AS listed"
     " LEFT JOIN phase_tasks ON phase_tasks.task_id = listed.id LEFT JOIN phases ON phases.id = phase_tasks.phase_id"
     " LEFT JOIN plans AS task_plan ON task_plan.id = phases.plan_id) AS tasks,"
-    " EXISTS (SELECT 1 FROM agent_blocks WHERE agent_blocks.agent_id = agents.id AND agent_blocks.closed_at IS NULL) AS is_blocked,"
+    " EXISTS (SELECT 1 FROM agent_blocks WHERE agent_blocks.session_agent_id = agents.id AND agent_blocks.closed_at IS NULL) AS is_blocked,"
     " coalesce(dispatch.program_model, '') AS dispatch_model, coalesce(dispatch.profile, '') AS dispatch_profile,"
     " coalesce(dispatch.description, '') AS dispatch_description, coalesce(dispatch.instruction, '') AS dispatch_instruction"
     " FROM agents"

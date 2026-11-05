@@ -15,8 +15,8 @@ class RecordTodoListHandler(Handler[RecordTodoList, int]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: RecordTodoList, context: Context) -> int:
-        for item in list(self.queries.query(TodoItem).filter(agent_id=command.agent_id).all_rows()):
+        for item in list(self.queries.query(TodoItem).filter(session_agent_id=command.agent_id).all_rows()):
             self.repository.delete(item, context)
         for position, (text, state) in enumerate(command.items, start=1):
-            self.repository.save(TodoItem(agent_id=command.agent_id, creator_id=context.actor.id, position=position, text=text, state=state), context)
+            self.repository.save(TodoItem(session_agent_id=command.agent_id, creator_id=context.actor.id, position=position, text=text, state=state), context)
         return len(command.items)
