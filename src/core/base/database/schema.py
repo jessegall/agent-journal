@@ -13,7 +13,7 @@ from core.base.database.module_migrations import ModuleMigrations
 
 
 MIGRATIONS_TABLE = "CREATE TABLE IF NOT EXISTS migrations (module TEXT NOT NULL, number INTEGER NOT NULL, ran_at TEXT NOT NULL, PRIMARY KEY (module, number)) STRICT"
-LAST_NUMBERS = Statement("SELECT module, max(number) AS number FROM migrations GROUP BY module")
+APPLIED_NUMBERS = Statement("SELECT module, number FROM migrations")
 VIEWS = Statement("SELECT name FROM sqlite_master WHERE type = 'view'")
 class Schema:
     """Updates the database's tables, views and checks to match the code."""
@@ -23,23 +23,23 @@ class Schema:
 
     def migrate(self, ordered: Sequence[ModuleMigrations]) -> list[str]:
         self.database.update(Statement(MIGRATIONS_TABLE))
-        highest_numbers = self.highest_numbers()
+        applied = self.applied_numbers()
         run_names: list[str] = []
         for module in ordered:
-            for migration in self.pending(module, highest_numbers):
+            for migration in self.pending(module, applied):
                 self.run_one(module.module, migration)
                 run_names.append(f"{module.module} {migration.number}")
         return run_names
 
     def has_pending(self, ordered: Sequence[ModuleMigrations]) -> bool:
-        highest_numbers = self.highest_numbers()
-        return any(self.pending(module, highest_numbers) for module in ordered)
+        applied = self.applied_numbers()
+        return any(self.pending(module, applied) for module in ordered)
 
-    def highest_numbers(self) -> dict[str, int]:
-        return {row["module"]: row["number"] for row in self.database.rows(LAST_NUMBERS)}
+    def applied_numbers(self) -> set[tuple[str, int]]:
+        return {(row["module"], row["number"]) for row in self.database.rows(APPLIED_NUMBERS)}
 
-    def pending(self, module: ModuleMigrations, highest_numbers: dict[str, int]) -> list[Migration]:
-        return [migration for migration in sorted(module.migrations, key=lambda migration: migration.number) if migration.number > highest_numbers.get(module.module, 0)]
+    def pending(self, module: ModuleMigrations, applied: set[tuple[str, int]]) -> list[Migration]:
+        return [migration for migration in sorted(module.migrations, key=lambda migration: migration.number) if (module.module, migration.number) not in applied]
 
     def run_one(self, module: str, migration: Migration) -> None:
         record = Statement("INSERT INTO migrations (module, number, ran_at) VALUES (?, ?, ?)", (module, migration.number, datetime.now(timezone.utc).isoformat()))
