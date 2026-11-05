@@ -1,5 +1,6 @@
 import sqlite3
 import sys
+import threading
 import time
 import traceback
 from contextlib import contextmanager
@@ -13,6 +14,18 @@ from core.base.scope.row_owner import RowOwner
 PRAGMAS = ("foreign_keys = ON", "journal_mode = WAL", "synchronous = NORMAL")
 BUSY_TIMEOUT_SECONDS = 5.0
 NESTING_LIMIT_LEVELS = 8
+OPEN_WRITES: dict[int, float] = {}
+WRITE_SAMPLER: list[threading.Thread] = []
+
+
+def sample_open_writes() -> None:
+    while True:
+        time.sleep(0.5)
+        frames = sys._current_frames()
+        for thread_id, started in tuple(OPEN_WRITES.items()):
+            if time.monotonic() - started > 1 and thread_id in frames:
+                lines = [f"{frame.filename.rsplit('/', 2)[-1]}:{frame.lineno}" for frame in traceback.extract_stack(frames[thread_id]) if "/versions/" in frame.filename or "/src/" in frame.filename]
+                print(f"SLOW SAMPLE {time.monotonic() - started:.1f}s {' '.join(lines[-9:])}", file=sys.stderr, flush=True)
 
 
 class Database:
@@ -69,6 +82,10 @@ class Database:
         changes = self.connection.total_changes
         self.connection.execute("BEGIN IMMEDIATE")
         started = time.monotonic()
+        if not WRITE_SAMPLER:
+            WRITE_SAMPLER.append(threading.Thread(target=sample_open_writes, daemon=True))
+            WRITE_SAMPLER[0].start()
+        OPEN_WRITES[threading.get_ident()] = started
         try:
             yield
             self.connection.execute("COMMIT")
@@ -78,6 +95,8 @@ class Database:
             if self.connection.in_transaction:
                 self.connection.execute("ROLLBACK")
             raise
+        finally:
+            OPEN_WRITES.pop(threading.get_ident(), None)
 
     @contextmanager
     def savepoint(self, label: str):
