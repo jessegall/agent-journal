@@ -53,7 +53,7 @@ func TestAPlainScriptStaysARead(t *testing.T) {
 	}
 }
 
-func TestAProgramTheLineCannotJudgeSendsItsDoubt(t *testing.T) {
+func TestAProgramTheLineCannotJudgeIsUncertain(t *testing.T) {
 	if !shippedClassifier.Line("aws s3 ls").Parts[0].Classification.Uncertain {
 		t.Error("an uncertain row reached the part as certain")
 	}

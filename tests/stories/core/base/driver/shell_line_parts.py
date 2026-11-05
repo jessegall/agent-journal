@@ -116,19 +116,19 @@ def expect_test_part(text, item, item_2) -> None:
     assert actual, actual
 
 
-def expect_doubt(line: ShellLine, uncertain: bool, old_hook: bool) -> None:
+def expect_uncertainty(line: ShellLine, uncertain: bool, old_hook: bool) -> None:
     assert (line.has_uncertain_part, line.has_old_hook_part) == (uncertain, old_hook)
 
 
 def test_a_part_the_hook_could_not_judge_reaches_the_shell_line():
-    expect_doubt(line_of("""awk 'BEGIN { system("rm a") }' notes""", ShellPart("awk", CommandCategory.READ, ["notes"], uncertain=True)), True, False)
+    expect_uncertainty(line_of("""awk 'BEGIN { system("rm a") }' notes""", ShellPart("awk", CommandCategory.READ, ["notes"], uncertain=True)), True, False)
 
 
 def test_a_line_of_plain_reads_has_no_uncertain_part():
-    expect_doubt(line_of("cat notes", LISTING), False, False)
+    expect_uncertainty(line_of("cat notes", LISTING), False, False)
 
 
 def test_an_old_hook_sends_no_doubt_so_its_parts_count_as_uncertain_and_the_line_says_why():
     shell = HookSamples.shell("cat notes", LISTING).body["tool"]["shell"]
     del shell["parts"][0]["classification"]["uncertain"]
-    expect_doubt(ShellLine.parsed(shell), True, True)
+    expect_uncertainty(ShellLine.parsed(shell), True, True)

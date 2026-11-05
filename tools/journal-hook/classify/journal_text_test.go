@@ -5,6 +5,7 @@ import "testing"
 func TestTextGivenToAJournalLineIsNotJudgedAsCommands(t *testing.T) {
 	lines := []string{
 		"journal report make x --body - <<'EOF'\nrm -rf a; python3 tests/stories/x.py\n`curl b` and $HOME\nEOF",
+		"journal report make \"Words\" --abstract \"Names\" --body - <<'EOF'\n# Words\n\n- take, a/b.py:10 Use c > d.\n- it's | a pipe, \"quoted\" && more\nEOF",
 		`journal report make x --body "rm -rf a; python3 tests/stories/x.py and curl b"`,
 		`journal doc make x --body 'pytest tests/a.py > out.txt'`,
 	}

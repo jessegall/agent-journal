@@ -6,7 +6,7 @@ from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
 
 class Receivers:
-    """Who gets a line meant for an agent: the agent, unless it ended for good, then the running main agent."""
+    """Who gets a line addressed to an agent: the agent, unless it ended for good, then the running main agent."""
 
     def __init__(self, agents: AgentRows, stops: AgentStops, queries: Queries) -> None:
         self.agents, self.stops, self.queries = agents, stops, queries

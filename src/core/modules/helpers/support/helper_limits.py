@@ -45,7 +45,7 @@ class HelperLimits:
         limit = self.settings.number(HELPER_LIMIT)
         if len(running) >= limit:
             names = ", ".join(f"agent:{helper.id}" for helper in running)
-            raise Refusal(f"{limit} helpers run here: {names}", self.way_on())
+            raise Refusal(f"{limit} helpers run here: {names}", self.limit_advice())
 
     def checked_model(self, program: str, model: str) -> str:
         if not model:
@@ -55,5 +55,5 @@ class HelperLimits:
             raise Refusal(f"choose a model {program} may run: {', '.join(names)}", "add --model <model>")
         return model
 
-    def way_on(self) -> str:
+    def limit_advice(self) -> str:
         return TERMINAL_LIMIT_TEXT if self.launcher.is_running else NEXT_HOOK_LIMIT_TEXT
