@@ -63,7 +63,7 @@
   ]
  },
  "interpreted": {
-  "note": "code handed to an interpreter (python -c, node -e, a heredoc body, sh -c) cannot be judged from the table: a row marked interpreted is a write, and uncertain, only when its line carries the write check's content markers"
+  "note": "code handed to an interpreter (python -c, node -e, a heredoc body, sh -c) cannot be judged from the table: a row marked interpreted is a write, and uncertain, only when its line carries the write check's content markers; a row with a script_language has markers of its own, so a search for a word such as mkdir stays a read"
  },
  "unknown": {
   "kind": "unknown",
@@ -467,6 +467,8 @@
    "effects": [
     "reads_files"
    ],
+   "interpreted": true,
+   "script_language": "awk",
    "modifiers": {
     "-i": {
      "kind": "edit",
@@ -3844,6 +3846,8 @@
     "reads_files",
     "prints_files"
    ],
+   "interpreted": true,
+   "script_language": "sed",
    "modifiers": {
     "-i": {
      "kind": "edit",

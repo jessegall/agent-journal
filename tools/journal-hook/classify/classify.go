@@ -98,7 +98,7 @@ func (classifier *Classifier) redirected(classification Classification, text str
 
 // interpreted makes code handed to an interpreter a write, and uncertain, when the line carries a sign of writing.
 func interpreted(classification Classification, row *Row, text string) Classification {
-	if row.Interpreted && writeMarkers.MatchString(text) {
+	if row.carriesWriteSign(text) {
 		changed := classification.withEffect(writesFiles)
 		changed.Uncertain = true
 		return changed

@@ -18,6 +18,19 @@ import (
 // What code handed to an interpreter does when it writes a file, which no table row can tell.
 var writeMarkers = regexp.MustCompile(`write_text|write_bytes|open\([^)]*["'][wax]|\.write\(|unlink|os\.remove|shutil\.|os\.rename|\.rename\(|mkdir|writeFileSync|writeFile\(|fs\.write|File\.(write|open|delete)|rm_rf|\.truncate\(`)
 
+// sedCommandStart is where a sed command starts in a script, with the lines it is addressed to.
+const sedCommandStart = `(^|[;{'"\s])(\d+(,(\d+|\$))?|\$|/[^/]*/)?`
+
+// sedWritingFlags ends a sed substitution whose flags write its result or run it.
+const sedWritingFlags = `[a-zA-Z0-9]*[we]([\s;}'"]|$)`
+
+// What writes, or runs another program, in an awk or sed script. Each language has its own, since a pattern in a
+// script is often the very word the other markers look for.
+var scriptWriteMarkers = map[string]*regexp.Regexp{
+	"awk": regexp.MustCompile(`system\(|printf?[^;}]*(>|\|)\s*"|\|\s*getline`),
+	"sed": regexp.MustCompile(sedCommandStart + `([wWe]\s+[^\s'"]|s/[^/]*/[^/]*/` + sedWritingFlags + `|s\|[^|]*\|[^|]*\|` + sedWritingFlags + `|s#[^#]*#[^#]*#` + sedWritingFlags + `|s,[^,]*,[^,]*,` + sedWritingFlags + `)`),
+}
+
 // A path written in quotes in code handed to an interpreter, which the code may write.
 var quotedPath = regexp.MustCompile(`['"]([^'"\s]*/[^'"\s]*)['"]`)
 
@@ -316,7 +329,7 @@ func (classifier *Classifier) targetArguments(text string) []string {
 
 func (classifier *Classifier) runsWritingCode(text string) bool {
 	row := classifier.row(classifier.tokens(text))
-	return row != nil && row.Interpreted && writeMarkers.MatchString(text)
+	return row != nil && row.carriesWriteSign(text)
 }
 
 // WritePaths are the files a part writes: its redirects' targets and the arguments that name what it writes, for each

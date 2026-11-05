@@ -42,6 +42,7 @@ class Provider(ABC):
     plain_output_events: ClassVar[Sequence[HookEventName]] = ()
     refusals: ClassVar[Mapping[HookEventName, RefusalStyle]] = {}
     tool_categories: ClassVar[Mapping[str, ToolType]]
+    safe_tools: ClassVar[tuple[str, ...]] = ()
     monitor_tool: ClassVar[ToolType | None] = None
     rewrites: ClassVar[Mapping[HookEventName, Mapping[str, object]]] = {}
     refusal_output_tools: ClassVar[Sequence[ToolType]] = ()

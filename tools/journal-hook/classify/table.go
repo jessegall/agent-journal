@@ -32,6 +32,7 @@ type Row struct {
 	Effects         []string
 	Uncertain       bool
 	Interpreted     bool
+	ScriptLanguage  string
 	RunsScriptFile  bool
 	StartsProcesses bool
 	RedirectedLabel string
@@ -184,6 +185,7 @@ func parsedRow(rows map[string]json.RawMessage, name string) *Row {
 	row.Effects = stringsOf(base["effects"])
 	row.Uncertain = boolOf(base["uncertain"])
 	row.Interpreted = boolOf(base["interpreted"])
+	row.ScriptLanguage = textOf(base["script_language"])
 	row.RunsScriptFile = boolOf(base["runs_script_file"])
 	row.StartsProcesses = boolOf(base["starts_processes"])
 	row.RedirectedLabel = textOf(base["redirected_label"])
@@ -450,4 +452,12 @@ func contains(items []string, word string) bool {
 		return true
 	}
 	return false
+}
+
+// carriesWriteSign says a line handed to the row's interpreter shows a sign of writing.
+func (row *Row) carriesWriteSign(text string) bool {
+	if markers, scripted := scriptWriteMarkers[row.ScriptLanguage]; scripted {
+		return markers.MatchString(text)
+	}
+	return row.Interpreted && writeMarkers.MatchString(text)
 }

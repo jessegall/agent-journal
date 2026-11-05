@@ -79,8 +79,9 @@ type Part struct {
 }
 
 type Classification struct {
-	Category string   `json:"category"`
-	Effects  []string `json:"effects"`
+	Category  string   `json:"category"`
+	Effects   []string `json:"effects"`
+	Uncertain bool     `json:"uncertain"`
 }
 
 type DiffCount struct {
