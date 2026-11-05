@@ -62,7 +62,7 @@ class CodingModule(Module):
     nudges = [*CODING_NUDGES, TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN]
     seeders = [CodingSeeder]
     window_extensions = [*(WindowExtension(name, reads=["file-edit list"], events=["file_edit.create"],
-                                          tabs=[WindowTab("file-feed", "File feed", "file-edit list", component="/modules/journal.suites.coding/agent-file-edits.js")]) for name in ("agents.agents", "agents.subagents")),
+                                          tabs=[WindowTab("file-feed", "File feed", "file-edit list", component="/modules/journal.suites.coding/agent-file-edits.js")]) for name in ("agents.agents", "agents.helpers")),
                          WindowExtension("viewer.shell", reads=["git-overview current"]),
                          WindowExtension("plugins.plugins", links={"files": "coding.files"})]
     requires_core = ">=5,<6"

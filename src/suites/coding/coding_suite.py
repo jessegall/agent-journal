@@ -6,7 +6,7 @@ from suites.coding.modules.workers.support.worker_settings import WORKER_TEST_LI
 from suites.coding.support.next_task import NextTask
 from core.base.agent_policy import AgentPolicy
 
-AGENT_WORK_TABS = ("coding.terminal", "coding.file-feed", "tasks.tasks", "drivers.hook-calls", "agents.subagents")
+AGENT_WORK_TABS = ("coding.terminal", "coding.file-feed", "tasks.tasks", "drivers.hook-calls", "agents.helpers")
 
 
 class CodingSuite(Suite):
@@ -31,13 +31,13 @@ class CodingSuite(Suite):
     )
     defaults = {AgentRole.MAIN: "coding.builder", AgentRole.WORKER: "coding.worker", AgentRole.SUBAGENT: "coding.subagent", AgentRole.REVIEWER: "coding.reviewer",
                 AgentRole.VERIFIER: "coding.verifier"}
-    windows = ["messages.chat", "questions.waiting", "questions.questions", "tasks.tasks", "plans.plans", "agents.agents", "agents.subagents", "schedules.jobs", "memories.memories", "project-rules.rules", "workers.workers", "reviews.reviewers", "agents.transcript", "drivers.hook-calls", "coding.file-feed",
+    windows = ["messages.chat", "questions.waiting", "questions.questions", "tasks.tasks", "plans.plans", "agents.agents", "agents.helpers", "schedules.jobs", "memories.memories", "project-rules.rules", "workers.workers", "reviews.reviewers", "agents.transcript", "drivers.hook-calls", "coding.file-feed",
                "coding.file-edits", "coding.files", "coding.git", "workers.worktrees", "workers.models", "messages.attachments", "coding.terminal", "processes.outputs", "processes.output", "search.search", "dumps.dumps", "secrets.secrets", "skills.skills", "mcp.integrations", "profiles.profiles", "transcriptions.transcriptions", "reminders.reminders", "sharing.shares", "library.teams", "tunnel.tunnel", "reviews.reviewer", "updates.updates", "developer.numbers", "developer.hook-requests", "drivers.nudges", "workers.points", "workers.todos", "documents.documents", "sequences.sequences", "templates.templates", "plugins.plugins", "suggestions.suggestions", "phone.phones", "settings.settings", "settings.project-hooks", "triggers.triggers", "checks.checks", "usage.fitness", "usage.load", "usage.usage", "usage.cost", "usage.context", "coding.work-mode"]
     layouts = {
         "home": split("row", 0.5, tabs("messages.chat", "coding.terminal"), tabs("tasks.tasks", "plans.plans", "questions.questions", "coding.file-feed", active="coding.file-feed")),
         "home@coding.orchestrator": split("row", 0.5, tabs("agents.agents", "coding.file-edits"),
                                           split("col", 0.5, tabs("tasks.tasks", "plans.plans"), tabs("messages.chat"))),
-        "agent": split("row", 0.5, tabs("messages.chat"), tabs("coding.file-feed", "drivers.hook-calls", "agents.subagents", "coding.terminal")),
+        "agent": split("row", 0.5, tabs("messages.chat"), tabs("coding.file-feed", "drivers.hook-calls", "agents.helpers", "coding.terminal")),
         "phone": tabs("messages.chat", "questions.waiting", "questions.questions", "tasks.tasks", "plans.plans", "agents.agents", "coding.file-feed"),
         "agent@coding.worker": split("row", 0.5, tabs("coding.file-feed", "coding.terminal"),
                                      tabs("workers.points", "workers.todos", "drivers.hook-calls", "tasks.tasks")),

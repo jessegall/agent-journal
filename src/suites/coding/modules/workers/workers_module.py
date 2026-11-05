@@ -184,7 +184,7 @@ class WorkersModule(Module):
                                           events=["proof.*", "worker_worktree.*"],
                                           sources=[WindowSource("waits", "worker waits", ["agent.*", "task.*", "proof.*", "worker_worktree.*"]),
                                                    WindowSource("progress", "worker progress", ["task.*", "worker_worktree.*"]),
-                                                   WindowSource("queue", "proof list --limit 50", ["proof.*"])]) for name in ("agents.agents", "agents.subagents")),
+                                                   WindowSource("queue", "proof list --limit 50", ["proof.*"])]) for name in ("agents.agents", "agents.helpers")),
                          WindowExtension("viewer.shell", reads=["worker-worktree points", "worker-worktree list", "proof list"],
                                          runs=["worker send", "worker merge", "worker release"])]
     nudges = [*WORKER_NUDGES, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]

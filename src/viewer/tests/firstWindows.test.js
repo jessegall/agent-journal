@@ -5,7 +5,7 @@ import Chat from "../../core/modules/messages/web/src/Chat.vue";
 import TaskList from "../../core/modules/tasks/web/src/tasks.js";
 import PlanList from "../../core/modules/plans/web/src/plans.js";
 import AgentList from "../../core/modules/agents/web/src/agents.js";
-import SubagentList from "../../core/modules/agents/web/src/subagents.js";
+import SubagentList from "../../core/modules/agents/web/src/helpers.js";
 import Transcript from "../../core/modules/agents/web/src/transcript.js";
 import HookCallList from "../../core/modules/drivers/web/src/HookCallList.vue";
 import FileFeed from "../../suites/coding/web/src/FileFeed.vue";
@@ -76,14 +76,14 @@ test("the agents window shows each helper's role", async () => {
     const rows = page([{id: 6, role: "worker", session: "s-3", program: "claude"}, {id: 7, role: "subagent", session: "s-4", program: "claude"}]);
     const text = await drawn(AgentList, context({"agent cards": rows}));
     expect(text).toContain("Worker6");
-    expect(text).toContain("Subagent");
+    expect(text).toContain("Helper");
 });
 
 test("the helpers window lists every agent but the main one", async () => {
     const rows = page([{id: 2, role: "main", session: "s-1", program: "claude"}, {id: 5, role: "subagent", session: "s-1/a", program: "claude"}, {id: 6, role: "worker", session: "w-1", program: "claude"}]);
     const windowContext = context({"agent cards": page(rows.value.rows.filter((row) => row.role !== "main"))});
     const text = await drawn(SubagentList, windowContext);
-    expect(text).toContain("Subagent5");
+    expect(text).toContain("Helper5");
     expect(text).toContain("Worker6");
     expect(text).not.toContain("Main agent");
 });

@@ -77,7 +77,7 @@ def test_searches_over_read_commands_declare_the_command_placeholder_and_matchin
 def test_worker_and_subagent_windows_declare_the_same_agent_search(new_story):
     story = new_story(fixture=UserJoined)
     windows = {window.name: window for window in Registry.read(story.container.get(Database)).windows}
-    expect_row(windows["agents.agents"], search=windows["agents.subagents"].search)
+    expect_row(windows["agents.agents"], search=windows["agents.helpers"].search)
 
 
 class DatabaseQuestions(StoryFixture):

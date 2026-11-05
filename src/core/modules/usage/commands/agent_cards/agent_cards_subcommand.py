@@ -48,7 +48,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState]]):
             case _:
                 pass
         if arguments.search.strip():
-            rows = rows.matching(ContainsEvery(("session", "program", "role", "program_model", "profile", "given_name", "dispatch_profile", "dispatch_description"), arguments.search.split()))
+            rows = rows.matching(ContainsEvery(("session", "program", "role", "program_model", "profile", "given_name", "job_profile", "job_description"), arguments.search.split()))
         page = rows.ordered("created_at", "id").page(arguments.page, arguments.limit)
         selected = self.queries.query(AgentListing).matching(Among("id", tuple(row.id for row in page.rows)))
         running = {row.id for row in selected.matching(self.activity).all_rows()}

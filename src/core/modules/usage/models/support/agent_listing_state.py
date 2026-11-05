@@ -22,10 +22,10 @@ class AgentListingState:
     started_task_title: str
     tasks: str
     is_blocked: bool
-    dispatch_model: str
-    dispatch_profile: str
-    dispatch_description: str
-    dispatch_instruction: str
+    job_model: str
+    job_profile: str
+    job_description: str
+    job_instruction: str
     parent_id: int | None
     created_at: Timestamp
     updated_at: Timestamp

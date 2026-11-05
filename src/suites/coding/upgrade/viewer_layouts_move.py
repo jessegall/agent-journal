@@ -12,7 +12,7 @@ from core.base.upgrade.version_four_source import VersionFourSource
 from core.base.viewer.layout_shape import LayoutTabs, stored_layout
 
 LAYOUT_PAGES = {"layout": "home", "inspector_layout": "inspector", "worker_layout": "worker"}
-VIEW_WINDOWS = {"chat": "messages.chat", "tasks": "tasks.tasks", "plans": "plans.plans", "agents": "agents.agents", "subagents": "agents.subagents",
+VIEW_WINDOWS = {"chat": "messages.chat", "tasks": "tasks.tasks", "plans": "plans.plans", "agents": "agents.agents", "subagents": "agents.helpers",
                 "transcript": "agents.transcript", "hooks": "drivers.hook-calls", "questions": "questions.questions", "skills": "skills.skills"}
 ABSENT_PREFIX = "gone."
 KEY_PREFIX = "viewer."

@@ -23,7 +23,7 @@ PLACEHOLDERS = {
     "coding.file-feed": "Filter files",
     "coding.file-edits": "Filter files",
     "questions.questions": "Search the questions",
-    "agents.subagents": "Search the agents",
+    "agents.helpers": "Search the agents",
     "settings.settings": "Find a setting",
     "messages.attachments": "Search file names and their messages",
     "skills.skills": "Search the skills",

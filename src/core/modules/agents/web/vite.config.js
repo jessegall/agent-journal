@@ -6,7 +6,7 @@ const here = (path) => fileURLToPath(new URL(path, import.meta.url));
 export default windowBuild({
     entries: {
         "agents": here("./src/agents.js"),
-        "subagents": here("./src/subagents.js"),
+        "subagents": here("./src/helpers.js"),
         "transcript": here("./src/transcript.js"),
     },
     outDir: here("./dist"),

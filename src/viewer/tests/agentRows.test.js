@@ -7,7 +7,7 @@ import {TimeAgo} from "@journal/window-kit";
 import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
 import Agents from "../../core/modules/agents/web/src/agents.js";
-import Subagents from "../../core/modules/agents/web/src/subagents.js";
+import Subagents from "../../core/modules/agents/web/src/helpers.js";
 import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue";
 import {age, ago} from "../src/format/time.js";
 
