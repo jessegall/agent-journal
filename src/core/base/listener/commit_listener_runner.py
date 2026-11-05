@@ -123,9 +123,9 @@ class CommitListenerRunner:
         start_points = tools.begin()
         try:
             with self.scopes.event_scope(listener_class.disabled_scopes, event):
-                typed = self.container.get(EventBuilder).built(listener_class.event_type(event.event), event)
-                if typed is not None:
-                    self.container.get(listener_class).handle(typed, event)
+                built_event = self.container.get(EventBuilder).built(listener_class.event_type(event.event), event)
+                if built_event is not None:
+                    self.container.get(listener_class).handle(built_event, event)
             cost = tools.cost(start_points)
             if cost is not None and cost.total >= COSTLY_LISTENER_POINTS:
                 self.errors.noted(f"listener {entry.name} cost {cost.line()} on event {event.id} {event.event}")

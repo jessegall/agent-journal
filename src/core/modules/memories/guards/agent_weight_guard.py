@@ -15,7 +15,7 @@ class AgentWeightGuard(Guard[Updated[Memory]]):
 
     def check(self, event: Updated[Memory], context: Context) -> None:
         old, new = event.old_row, event.row
-        if context.actor.type is not ActorType.AGENT or not isinstance(old, Memory) or not isinstance(new, Memory) or new.weight >= old.weight:
+        if context.actor.type is not ActorType.AGENT or old is None or new.weight >= old.weight:
             return
         raise Refusal(f"memory {old.id} weighs {old.weight}, and a weight is never lowered",
                       f"journal memory edit {old.id} --text '<the words anew>', or journal memory remove {old.id} --reason '<why>'")

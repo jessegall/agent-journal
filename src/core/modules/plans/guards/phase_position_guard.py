@@ -14,7 +14,7 @@ class PhasePositionGuard(Guard[Updated[Phase]]):
     name = "plans.phase-position-by-move"
 
     def check(self, event: Updated[Phase], context: Context) -> None:
-        if not isinstance(event.old_row, Phase) or not isinstance(event.row, Phase) or event.old_row.position == event.row.position:
+        if event.old_row is None or event.old_row.position == event.row.position:
             return
         if isinstance(context.command, EditCommand):
             raise Refusal("a phase changes its place only with journal phase move", f"journal phase move {event.row.id} --to <place>")

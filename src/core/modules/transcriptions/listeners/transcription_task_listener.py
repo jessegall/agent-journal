@@ -34,9 +34,7 @@ class TranscriptionTaskListener(SaveListener[Changed[Transcription]]):
         if isinstance(event, Deleted):
             return
         row, old_row = event.row, event.old_row
-        if not isinstance(row, Transcription):
-            return
-        has_new_text = old_row is None or (isinstance(old_row, Transcription) and old_row.text != row.text and context.actor.type is ActorType.USER)
+        has_new_text = old_row is None or (old_row is not None and old_row.text != row.text and context.actor.type is ActorType.USER)
         if not has_new_text or not row.text.strip():
             return
         task_id = self.unfinished_task_id(row) or self.new_task_id(row, context)

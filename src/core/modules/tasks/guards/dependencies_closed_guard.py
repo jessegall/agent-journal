@@ -13,7 +13,7 @@ class DependenciesClosedGuard(Guard[Moved[Task]]):
     """Refuses to start a task that waits on a task not yet closed."""
 
     name = "tasks.dependencies-closed"
-    moves = (TaskLifecycle.start,)
+    moves = tuple([TaskLifecycle.start])
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

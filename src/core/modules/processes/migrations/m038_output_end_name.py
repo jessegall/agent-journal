@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class NamedOutputEndMigration(Migration):
+class OutputEndNameMigration(Migration):
     """Gives the output events no listener has passed yet the name of their change."""
 
     number = 38

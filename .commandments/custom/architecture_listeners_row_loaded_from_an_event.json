@@ -1,0 +1,42 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "find"
+            },
+            {
+                "fileMatches": "(^|/)src/(core/modules|suites)/.+/(listeners|guards)/[^/]+\\.py$"
+            },
+            {
+                "argument": {
+                    "at": 0,
+                    "all": [
+                        {
+                            "is": "member-access"
+                        },
+                        {
+                            "name": "row_id"
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "/(worker_test_listener|reply_link_listener|memory_mark_listener)\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "row-loaded-from-an-event",
+        "description": "A listener loads the row its event names, which the runner has already loaded.",
+        "rule": "Declare the row's event as the type parameter and read event.row.",
+        "skill": "plain-code-words"
+    }
+}

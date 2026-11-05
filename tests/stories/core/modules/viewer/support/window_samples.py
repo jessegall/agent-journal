@@ -27,7 +27,7 @@ class NotesStartCheck(Guard[Moved[Task]]):
     """A sample guard on a task start that a short flag lets a person pass."""
 
     name = "notes.start-check"
-    moves = (TaskLifecycle.start,)
+    moves = tuple([TaskLifecycle.start])
     short_flag = "anyway"
 
     def check(self, event: Moved[Task], context: Context) -> None:

@@ -17,7 +17,7 @@ class OldestTaskFirstListener(CommitListener[Moved[Task]]):
     """A sample suite's own way of handing out tasks: the oldest open one, whatever its priority."""
 
     name = "assignersample.oldest-first"
-    moves = (TaskLifecycle.close,)
+    moves = tuple([TaskLifecycle.close])
 
     def __init__(self, bus: Bus, tasks: TaskQuery) -> None:
         self.bus, self.tasks = bus, tasks

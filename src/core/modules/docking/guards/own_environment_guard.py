@@ -19,7 +19,7 @@ class OwnEnvironmentGuard(Guard[Changed[DockItem]]):
 
     def check(self, event: Changed[DockItem], context: Context) -> None:
         item, environment_id = event.row, context.environment_id
-        if not isinstance(item, DockItem) or environment_id is None:
+        if environment_id is None:
             return
         if self.queries.query(Dock).find(item.dock_id).environment_id != environment_id:
             raise Refusal(f"dock item {item.id} belongs to another environment's dock", "name its own environment with --environment")

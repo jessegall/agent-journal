@@ -23,7 +23,7 @@ class MarkTypeGuard(Guard[Changed[ChatMark]]):
         if isinstance(event, Deleted):
             return
         mark, old = event.row, event.old_row
-        if not isinstance(mark, ChatMark) or (isinstance(old, ChatMark) and old.state is not mark.state):
+        if (old is not None and old.state is not mark.state):
             return
         declared = next((entry for entry in self.registry.marks if entry.type == mark.type), None)
         if declared is None:

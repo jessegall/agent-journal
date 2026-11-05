@@ -16,7 +16,7 @@ class UserWaitGuard(Guard[Moved[Task]]):
     """Only a person opens a task that waits on the user."""
 
     name = "tasks.user-wait"
-    moves = (TaskLifecycle.unblock,)
+    moves = tuple([TaskLifecycle.unblock])
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

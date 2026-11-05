@@ -33,9 +33,9 @@ class WorkerTestCountListener(SaveListener[Changed[Output]]):
         if isinstance(event, Deleted):
             return
         output = event.row
-        if not isinstance(output, Output) or not output.test_count:
+        if not output.test_count:
             return
-        if isinstance(event.old_row, Output) and event.old_row.test_count == output.test_count:
+        if event.old_row is not None and event.old_row.test_count == output.test_count:
             return
         process = self.queries.query(Process).find(output.process_id)
         if process.state not in RUNNING_STATES or process.creator_id != process.agent_id:

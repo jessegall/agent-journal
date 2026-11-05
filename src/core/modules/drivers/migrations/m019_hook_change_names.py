@@ -3,7 +3,7 @@ from core.base.database.migration import Migration
 UNHANDLED = "id > (SELECT coalesce(min(event_id), 0) FROM listener_cursors)"
 
 
-class NamedHookChangesMigration(Migration):
+class HookChangeNamesMigration(Migration):
     """Gives the hook events no listener has passed yet the name of their change."""
 
     number = 19

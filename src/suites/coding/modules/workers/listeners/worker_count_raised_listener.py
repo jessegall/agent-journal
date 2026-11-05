@@ -34,7 +34,7 @@ class WorkerCountRaisedListener(SaveListener[Changed[Setting]]):
         if isinstance(event, Deleted):
             return
         setting = event.row
-        if not isinstance(setting, Setting) or setting.key != WORKER_LIMIT:
+        if setting.key != WORKER_LIMIT:
             return
         limit = int(json.loads(setting.value))
         if limit <= self.previous_limit(event.old_row, setting):
@@ -44,7 +44,7 @@ class WorkerCountRaisedListener(SaveListener[Changed[Setting]]):
 
     # The limit the row replaces: its own old value, else what an environment's row falls back to, the project's.
     def previous_limit(self, old: Model | None, setting: Setting) -> int:
-        if isinstance(old, Setting):
+        if old is not None:
             return int(json.loads(old.value))
         if setting.environment_id is None:
             return DEFAULT_WORKER_COUNT

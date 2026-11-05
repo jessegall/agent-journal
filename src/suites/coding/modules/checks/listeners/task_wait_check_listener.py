@@ -20,7 +20,7 @@ class TaskWaitCheckListener(SaveListener[Changed[TaskWait]]):
 
     def handle(self, event: Changed[TaskWait], context: Context) -> None:
         wait = event.row
-        if not isinstance(wait, TaskWait) or not wait.command:
+        if not wait.command:
             return
         if wait.ended_at is None:
             self.repository.save(Check(creator_id=wait.creator_id, title=f"Task {wait.task_id} waits until this passes", command=wait.command,

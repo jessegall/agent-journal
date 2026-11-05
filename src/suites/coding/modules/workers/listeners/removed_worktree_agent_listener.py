@@ -23,7 +23,7 @@ class RemovedWorktreeAgentListener(SaveListener[Changed[Worktree]]):
 
     def handle(self, event: Changed[Worktree], context: Context) -> None:
         worktree = event.row
-        if not isinstance(worktree, Worktree) or worktree.state is not WorktreeState.REMOVED:
+        if worktree.state is not WorktreeState.REMOVED:
             return
         if self.queries.query(Agent).find(worktree.agent_id).ended_at is None:
             self.bus.dispatch(EndAgent(worktree.agent_id), context)

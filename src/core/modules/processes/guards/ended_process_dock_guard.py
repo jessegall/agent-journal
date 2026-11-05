@@ -19,7 +19,7 @@ class EndedProcessDockGuard(Guard[Changed[DockItem]]):
 
     def check(self, event: Changed[DockItem], context: Context) -> None:
         item = event.row
-        if not isinstance(item, DockItem) or event.old_row is not None or item.target_model != Process.model_name:
+        if event.old_row is not None or item.target_model != Process.model_name:
             return
         if self.queries.query(Process).find(item.target_id).state not in RUNNING_STATES:
             raise Refusal(f"process {item.target_id} has ended, so it cannot be docked", f"read it with journal output read {item.target_id}")

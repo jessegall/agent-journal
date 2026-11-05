@@ -16,5 +16,4 @@ class PhaseRenumberingListener(SaveListener[Deleted[Phase]]):
 
     def handle(self, event: Deleted[Phase], context: Context) -> None:
         phase = event.row
-        if isinstance(phase, Phase):
-            self.positions.renumber(Phase, "plan_id", phase.plan_id, phase.position, context)
+        self.positions.renumber(Phase, "plan_id", phase.plan_id, phase.position, context)

@@ -19,5 +19,5 @@ class KeywordScopeGuard(Guard[Changed[MemoryKeyword]]):
 
     def check(self, event: Changed[MemoryKeyword], context: Context) -> None:
         keyword = event.row
-        if context.actor.type is ActorType.AGENT and isinstance(keyword, MemoryKeyword):
+        if context.actor.type is ActorType.AGENT:
             self.scope.check(self.queries.query(Memory).find(keyword.memory_id), context.actor, False)

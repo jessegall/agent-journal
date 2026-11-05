@@ -6,7 +6,7 @@ from core.modules.drivers.events.agent_compacted import AgentCompacted
 from core.modules.drivers.events.prompt_submitted import PromptSubmitted
 from core.modules.drivers.events.session_started import SessionStarted
 from core.modules.drivers.events.stop_allowed import StopAllowed
-from core.modules.drivers.events.stop_refused import StopRefused
+from core.modules.drivers.events.stop_denied import StopDenied
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 
@@ -15,7 +15,7 @@ def test_each_hook_event_has_its_name():
     assert EventType.parsed(AgentCompacted).pattern(()) == "hook_call.compact"
     assert EventType.parsed(SessionStarted).pattern(()) == "hook_call.session_start"
     assert EventType.parsed(StopAllowed).pattern(()) == "hook_call.stop_allowed"
-    assert EventType.parsed(StopRefused).pattern(()) == "hook_call.stop_refused"
+    assert EventType.parsed(StopDenied).pattern(()) == "hook_call.stop_refused"
     assert EventType.parsed(PromptSubmitted).pattern(()) == "hook_call.prompt"
 
 

@@ -20,5 +20,5 @@ class AgentScopeGuard(Guard[Changed[Memory]]):
         if context.actor.type is not ActorType.AGENT:
             return
         for memory in (event.old_row, event.row):
-            if isinstance(memory, Memory):
+            if memory is not None:
                 self.scope.check(memory, context.actor, event.old_row is None)

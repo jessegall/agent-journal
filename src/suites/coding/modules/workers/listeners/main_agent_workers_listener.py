@@ -21,7 +21,7 @@ class MainAgentWorkersListener(SaveListener[Created[Agent]]):
 
     def handle(self, event: Created[Agent], context: Context) -> None:
         agent = event.row
-        if not isinstance(agent, Agent) or agent.role != AgentRole.MAIN:
+        if agent.role != AgentRole.MAIN:
             return
         for worktree in self.worktrees.environment_worktrees(agent.environment_id):
             worker = self.queries.query(Agent).find(worktree.agent_id)

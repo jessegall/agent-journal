@@ -15,7 +15,7 @@ class WorkerProgramListener(CommitListener[Moved[Worktree]]):
     """A worktree just cut hands the running launcher its worker's program, folder and agent row to start."""
 
     name = "workers.worker-program-request"
-    moves = (WorktreeLifecycle.cut,)
+    moves = tuple([WorktreeLifecycle.cut])
 
     def __init__(self, launcher: WorkerLauncher, queries: Queries, worker_command: WorkerCommand) -> None:
         self.launcher, self.queries, self.worker_command = launcher, queries, worker_command

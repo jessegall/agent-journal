@@ -11,7 +11,7 @@ class OrchestratorStartGuard(Guard[Moved[Task]]):
     """An agent the orchestrator drives starts no task itself; every task goes to a worker."""
 
     name = "coding.orchestrator-starts-no-task"
-    moves = (TaskLifecycle.start,)
+    moves = tuple([TaskLifecycle.start])
 
     def check(self, event: Moved[Task], context: Context) -> None:
         raise Refusal(f"task {event.row.id} goes to a worker", "leave it open for a worker, or choose the builder with journal driver choose coding.builder")

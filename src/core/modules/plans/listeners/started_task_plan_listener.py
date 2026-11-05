@@ -16,7 +16,7 @@ class StartedTaskPlanListener(CommitListener[Moved[Task]]):
     """A task started inside an approved plan starts the plan, so a plan never stays approved while its work goes."""
 
     name = "plans.started-task-plan"
-    moves = (TaskLifecycle.start,)
+    moves = tuple([TaskLifecycle.start])
 
     def __init__(self, bus: Bus, queries: Queries) -> None:
         self.bus, self.queries = bus, queries

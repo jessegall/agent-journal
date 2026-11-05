@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class NamedAgentEndMigration(Migration):
+class AgentEndNameMigration(Migration):
     """Gives the agent events no listener has passed yet the name of their change."""
 
     number = 6

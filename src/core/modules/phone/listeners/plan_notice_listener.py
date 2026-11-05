@@ -8,4 +8,4 @@ class PlanNoticeListener(PhoneNoticeListener[Moved[Plan]]):
     """When a plan becomes ready for the user's approval, the subscribed phones are pushed."""
 
     name = "phone.plan-notice"
-    moves = (PlanLifecycle.ready,)
+    moves = tuple([PlanLifecycle.ready])

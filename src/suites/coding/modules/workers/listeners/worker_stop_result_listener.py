@@ -1,5 +1,5 @@
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
-from core.modules.drivers.events.stop_refused import StopRefused
+from core.modules.drivers.events.stop_denied import StopDenied
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries
@@ -12,7 +12,7 @@ from core.modules.drivers.events.stop_allowed import StopAllowed
 from core.base.command.context import Context
 
 
-class WorkerStopResultListener(SaveListener[StopAllowed | StopRefused]):
+class WorkerStopResultListener(SaveListener[StopAllowed | StopDenied]):
     """Counts refused worker stops and clears their count when a stop is allowed."""
 
     name = "workers.stop-refusals"
@@ -21,7 +21,7 @@ class WorkerStopResultListener(SaveListener[StopAllowed | StopRefused]):
     def __init__(self, queries: Queries, worktrees: WorktreeQuery, refusals: WorkerRefusals) -> None:
         self.queries, self.worktrees, self.refusals = queries, worktrees, refusals
 
-    def handle(self, event: StopAllowed | StopRefused, context: Context) -> None:
+    def handle(self, event: StopAllowed | StopDenied, context: Context) -> None:
         call = event.row
         if self.queries.query(Agent).find(call.agent_id).role != AgentRole.WORKER:
             return

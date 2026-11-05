@@ -70,7 +70,7 @@ class SignedTaskGuard(Guard[Moved[Task]]):
     """A task with a signoff requested closes only once the signoff has passed."""
 
     name = "signoffs.task-closes-after-its-signoff"
-    moves = (TaskLifecycle.close,)
+    moves = tuple([TaskLifecycle.close])
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

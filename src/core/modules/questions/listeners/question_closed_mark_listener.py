@@ -11,7 +11,7 @@ class QuestionClosedMarkListener(QuestionMarkListener[Moved[Question]]):
     """When a question is closed, its mark ends in place and says so."""
 
     name = "questions.closed-mark"
-    moves = (QuestionLifecycle.close,)
+    moves = tuple([QuestionLifecycle.close])
 
     def handle(self, event: Moved[Question], logged: LoggedEvent) -> None:
         question = event.row

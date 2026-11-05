@@ -32,7 +32,7 @@ class SecondBase(SharedBase[F], Generic[F]):
 class ItemMovedLeaf(SecondBase[Moved[Item]]):
     """A leaf under two layers of generic bases."""
 
-    moves = (ItemLifecycle.pause,)
+    moves = tuple([ItemLifecycle.pause])
 
 
 class UnionLeaf(EventSubscriber[Created[Item] | Updated[Item]]):

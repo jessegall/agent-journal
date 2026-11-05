@@ -214,7 +214,11 @@
         "story_step_duplicate",
         "naming_docstring_in_method",
         "naming_field_docstring",
-        "architecture_corpus_go_corpus_read_outside_its_tests"
+        "architecture_corpus_go_corpus_read_outside_its_tests",
+        "architecture_listeners_row_type_guessed_in_a_listener",
+        "architecture_listeners_row_loaded_from_an_event",
+        "architecture_listeners_change_read_in_a_listener",
+        "architecture_listeners_listener_event_named_by_a_string"
     ],
     "parallel": 2,
     "configure": {

@@ -22,11 +22,11 @@ class TaskBriefAssignedListener(SaveListener[Changed[Task]]):
         if self.is_agent_start(event, context) and task.holder_id is not None:
             self.blocks.block_unread(task.holder_id, task, context)
         previous = event.old_row
-        if isinstance(previous, Task) and self.left_its_holder(previous, task):
+        if previous is not None and self.holder_changed(previous, task):
             self.blocks.block_current(previous.holder_id, context)
 
     @staticmethod
-    def left_its_holder(previous: Task, task: Task) -> bool:
+    def holder_changed(previous: Task, task: Task) -> bool:
         return previous.holder_id is not None and previous.state is TaskState.STARTED and task.state is not TaskState.STARTED
 
     @staticmethod

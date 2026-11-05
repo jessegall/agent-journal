@@ -37,7 +37,7 @@ from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
 
 class PausedItemGuard(Guard[Moved[Item]]):
     name = "items.paused-only"
-    moves = (ItemLifecycle.pause,)
+    moves = tuple([ItemLifecycle.pause])
 
     def check(self, event: Moved[Item], context: Context) -> None:
         return None
@@ -45,7 +45,7 @@ class PausedItemGuard(Guard[Moved[Item]]):
 
 class ArchivedItemGuard(Guard[Moved[Item]]):
     name = "items.archived-only"
-    moves = (Move("archive", [ItemState.OPEN], ItemState.OPEN),)
+    moves = tuple([Move("archive", [ItemState.OPEN], ItemState.OPEN)])
 
     def check(self, event: Moved[Item], context: Context) -> None:
         return None

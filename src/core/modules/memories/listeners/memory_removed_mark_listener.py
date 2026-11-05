@@ -11,7 +11,7 @@ class MemoryRemovedMarkListener(MemoryMarkListener[Moved[Memory]]):
     """When a memory is removed, its chat shows a mark naming the memory."""
 
     name = "memories.removed-mark"
-    moves = (MemoryLifecycle.remove,)
+    moves = tuple([MemoryLifecycle.remove])
 
     def handle(self, event: Moved[Memory], logged: LoggedEvent) -> None:
         if logged.command == FadeMemories.label():

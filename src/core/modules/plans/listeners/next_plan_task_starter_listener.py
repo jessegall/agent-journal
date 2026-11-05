@@ -23,7 +23,7 @@ class NextPlanTaskStarterListener(CommitListener[Moved[Task]]):
     has an open task. A suite with no task assigner hands out nothing."""
 
     name = "plans.next-plan-task-starter"
-    moves = (TaskLifecycle.close,)
+    moves = tuple([TaskLifecycle.close])
 
     def __init__(self, bus: Bus, queries: Queries, next_tasks: NextPlanTasks, tasks: TaskQuery, assigners: SuiteTaskAssigners) -> None:
         self.bus, self.queries, self.next_tasks, self.tasks, self.assigners = bus, queries, next_tasks, tasks, assigners

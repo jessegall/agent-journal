@@ -25,7 +25,8 @@ class AgentCallerResolver(CallerResolver):
     environment whose folder holds the working folder. A shell of an agent program is never taken for the
     person, so a command whose hook timed out is not recorded as theirs. A session variable that names no open
     agent is refused, never run as anyone else, except in a run the journal started for that agent, such as a
-    worker's test that runs on after the worker has stopped. With no session variable, an agent with an open subagent
+    worker's test that runs on after the worker has stopped. With no session variable, an agent with an open
+    subagent
     cannot be told from that subagent, so the command is recorded as the journal's."""
 
     def __init__(self, queries: Queries, chain: ProcessChain, environments: EnvironmentQuery, actors: ActorQuery, providers: Providers) -> None:

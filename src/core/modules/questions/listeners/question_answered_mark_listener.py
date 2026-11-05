@@ -14,7 +14,7 @@ class QuestionAnsweredMarkListener(QuestionMarkListener[Moved[Question]]):
     at this moment; both are on the side of whoever answered."""
 
     name = "questions.answered-mark"
-    moves = (QuestionLifecycle.answer,)
+    moves = tuple([QuestionLifecycle.answer])
 
     def handle(self, event: Moved[Question], logged: LoggedEvent) -> None:
         question = event.row

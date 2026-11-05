@@ -19,7 +19,7 @@ class RunOwnerPartsGuard(Guard[Changed[ProcessPart]]):
 
     def check(self, event: Changed[ProcessPart], context: Context) -> None:
         part = event.row
-        if not isinstance(part, ProcessPart) or event.old_row is None or context.actor.type is not ActorType.AGENT:
+        if event.old_row is None or context.actor.type is not ActorType.AGENT:
             return
         process = self.queries.query(Process).find(part.process_id)
         if context.actor.id != process.agent_id:

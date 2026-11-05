@@ -26,7 +26,7 @@ class EventType:
 
     @staticmethod
     def alternatives(hint: object) -> tuple[object, ...]:
-        return get_args(hint) if get_origin(hint) in (Union, UnionType) else (hint,)
+        return get_args(hint) if get_origin(hint) in (Union, UnionType) else tuple([hint])
 
     @classmethod
     def parsed(cls, hint: object) -> "EventType":
@@ -35,10 +35,10 @@ class EventType:
             return cls(origin, get_args(hint)[0])
         if not isinstance(hint, type):
             raise TypeError(f"{hint} is no event")
-        return cls(hint, cls.named_model(hint))
+        return cls(hint, cls.event_model(hint))
 
     @staticmethod
-    def named_model(event_class: type) -> type[Model] | None:
+    def event_model(event_class: type) -> type[Model] | None:
         for owner in event_class.__mro__:
             for parent in owner.__dict__.get("__orig_bases__", ()):
                 arguments = get_args(parent)

@@ -58,7 +58,7 @@ class PausedItemCounter(CommitListener[Moved[Item]]):
     """Counts the items paused."""
 
     name = "items.paused-count"
-    moves = (ItemLifecycle.pause,)
+    moves = tuple([ItemLifecycle.pause])
 
     def handle(self, event: Moved[Item], logged: LoggedEvent) -> None:
         HANDLED.append(f"counted {logged.row_id}")

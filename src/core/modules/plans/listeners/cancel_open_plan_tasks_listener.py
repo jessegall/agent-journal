@@ -16,7 +16,7 @@ class CancelOpenPlanTasksListener(SaveListener[Moved[Plan]]):
     transaction, so a refusal on any of them undoes the whole cancel."""
 
     name = "plans.cancel-open-plan-tasks"
-    moves = (PlanLifecycle.cancel,)
+    moves = tuple([PlanLifecycle.cancel])
 
     def __init__(self, bus: Bus, queries: Queries) -> None:
         self.bus, self.queries = bus, queries

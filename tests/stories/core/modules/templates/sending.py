@@ -23,7 +23,7 @@ def test_a_person_sends_the_same_critique_request_as_the_button(new_story):
     expect_row(message, text="Please have 2 agents give plan 1 a normal read, following template 1 (Plan critique), "
                              "and compile what they find into a report linked to the plan.", creator_id=story.user.id)
     story.expect_text("plan comments 1", "Please have 2 agents give plan 1 a normal read", "Plan critique")
-    story.expect_text("plan show 1", "state: ready")
+    story.expect_text("plan show 1", "state: reviewing")
 
 
 @pytest.mark.parametrize("count", [1, 2, 3, 4, 5])

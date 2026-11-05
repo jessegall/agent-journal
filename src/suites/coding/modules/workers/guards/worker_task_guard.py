@@ -15,7 +15,7 @@ class WorkerTaskGuard(Guard[Moved[Task]]):
     """Refuses a worker a second started task: a worker works on one task."""
 
     name = "workers.one-task-per-worker"
-    moves = (TaskLifecycle.start,)
+    moves = tuple([TaskLifecycle.start])
 
     def __init__(self, queries: Queries, tasks: TaskQuery) -> None:
         self.queries, self.tasks = queries, tasks

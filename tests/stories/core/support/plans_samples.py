@@ -14,7 +14,7 @@ class ProtectedTaskGuard(Guard[Moved[Task]]):
     """Refuses to cancel a task titled Keep, so a story can see a refused cancel undo the whole plan cancel."""
 
     name = "samples.protected-task"
-    moves = (TaskLifecycle.cancel,)
+    moves = tuple([TaskLifecycle.cancel])
 
     def check(self, event: Moved[Task], context: Context) -> None:
         if isinstance(event.old_row, Task) and event.old_row.title == "Keep":
@@ -33,7 +33,7 @@ class FailingWorkerNotice(CommitListener[Moved[Task]]):
     after three failures while the cancel stands."""
 
     name = "samples.failing-worker-notice"
-    moves = (TaskLifecycle.cancel,)
+    moves = tuple([TaskLifecycle.cancel])
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
         raise ConnectionError(f"the worker on task {logged.row_id} cannot be reached")

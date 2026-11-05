@@ -7,6 +7,6 @@ def test_reads_the_decoded_answer():
                                                             "updated_input": {"command": "safe"}, "terminal": "notice"})
     answer = ForeignAnswer.read(run)
     assert answer.reason() == "check: unsafe"
-    assert answer.lines == ("note",)
+    assert answer.lines == tuple(["note"])
     assert answer.updated_input == {"command": "safe"}
     assert answer.terminal == "notice"

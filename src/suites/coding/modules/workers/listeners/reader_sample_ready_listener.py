@@ -25,9 +25,9 @@ class ReaderSampleReadyListener(SaveListener[Updated[ReaderRequest]]):
 
     def handle(self, event: Updated[ReaderRequest], context: Context) -> None:
         request = event.row
-        if not isinstance(request, ReaderRequest) or request.reader_id is None or request.sample_process_id is None:
+        if request.reader_id is None or request.sample_process_id is None:
             return
-        if isinstance(event.old_row, ReaderRequest) and event.old_row.completed_at is not None:
+        if event.old_row is not None and event.old_row.completed_at is not None:
             return
         sample = self.queries.query(Process).find(request.sample_process_id)
         if sample.ended_at is None:

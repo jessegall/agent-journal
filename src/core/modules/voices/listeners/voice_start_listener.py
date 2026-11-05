@@ -19,5 +19,5 @@ class VoiceStartListener(SaveListener[Created[Agent]]):
 
     def handle(self, event: Created[Agent], context: Context) -> None:
         agent = event.row
-        if isinstance(agent, Agent) and agent.role == AgentRole.MAIN:
+        if agent.role == AgentRole.MAIN:
             self.lines.deliver(agent.id, VOICE_LINE if agent.launch_agent_id is None else VOICE_INTRODUCTION, context)

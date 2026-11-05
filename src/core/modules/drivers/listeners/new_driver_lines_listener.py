@@ -24,7 +24,7 @@ class NewDriverLinesListener(SaveListener[Changed[Setting]]):
 
     def handle(self, event: Changed[Setting], context: Context) -> None:
         setting = event.row
-        if not isinstance(setting, Setting) or setting.environment_id is None or not (setting.key == SUITE_SETTING or setting.key.startswith(DRIVER_SETTINGS)):
+        if setting.environment_id is None or not (setting.key == SUITE_SETTING or setting.key.startswith(DRIVER_SETTINGS)):
             return
         agents = self.queries.query(Agent).filter(environment_id=setting.environment_id).matching(IsNull("ended_at")).all_rows()
         for agent in tuple(agents):

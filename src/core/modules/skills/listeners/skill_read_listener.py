@@ -23,7 +23,7 @@ class SkillReadListener(SaveListener[Created[HookCall]]):
 
     def handle(self, event: Created[HookCall], context: Context) -> None:
         call = event.row
-        if not isinstance(call, HookCall) or call.tool == "" or " " in call.summary or PurePath(call.summary).name != SKILL_FILE:
+        if call.tool == "" or " " in call.summary or PurePath(call.summary).name != SKILL_FILE:
             return
         folder = PurePath(call.summary).parent.name
         skill = next((entry for entry in self.catalogue.skills() if entry.folder == folder), None)

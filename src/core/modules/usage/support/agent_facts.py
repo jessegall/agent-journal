@@ -5,7 +5,8 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class AgentFacts:
     """What an agent's card says beyond its row: its model and effort, context in use, what its session cost so
-    far (none when its program reports no cost), the task it works on, the tasks given to it or held by it, whether it waits or is blocked, and the
+    far (none when its program reports no cost), the task it works on, the tasks given to it or held by it,
+    whether it waits or is blocked, and the
     profile, given name and instruction its dispatch gave it."""
 
     agent_id: int

@@ -27,7 +27,7 @@ class WorkerHelpRequestListener(SaveListener[Created[Wait]]):
 
     def handle(self, event: Created[Wait], context: Context) -> None:
         wait = event.row
-        if not isinstance(wait, Wait) or wait.type is not WaitType.HELP_REQUEST:
+        if wait.type is not WaitType.HELP_REQUEST:
             return
         worker = self.queries.query(Agent).find(wait.agent_id)
         if worker.role == AgentRole.WORKER and worker.parent_id is not None and not self.unfinished.has_running_process(worker.id):

@@ -8,7 +8,8 @@ from core.modules.sequences.support.sequence_trigger import SequenceTrigger
 class SequenceTriggers:
     """What starts a sequence on its own, kept as JSON on the sequence: a record made, words in the user's
     prompt,
-    a command, an edited file, a text an edit adds, or a tool used. A row trigger can also name the events that end
+    a command, an edited file, a text an edit adds, or a tool used. A row trigger can also name the events
+    that end
     the sequence it started."""
 
     @staticmethod

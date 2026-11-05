@@ -13,7 +13,7 @@ class BlockedWorkerTaskListener(SaveListener[Moved[Task]]):
     """Tells the main agent when a worker blocks its task, with the reason and the task to read."""
 
     name = "workers.blocked-task"
-    moves = (TaskLifecycle.block,)
+    moves = tuple([TaskLifecycle.block])
     disabled_scopes = [ActorScope]
 
     def __init__(self, main_agent_line: MainAgentLine) -> None:
@@ -21,7 +21,7 @@ class BlockedWorkerTaskListener(SaveListener[Moved[Task]]):
 
     def handle(self, event: Moved[Task], context: Context) -> None:
         task = event.row
-        if not isinstance(task, Task) or task.delegated_to is None or task.delegated_to != context.actor.id:
+        if task.delegated_to is None or task.delegated_to != context.actor.id:
             return
         notice = WORKER_TASK_BLOCKED.nudge(worker=task.delegated_to, task=task.id)
         self.main_agent_line.send(task.environment_id, notice.text, self.name, context)

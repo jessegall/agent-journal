@@ -19,7 +19,7 @@ class OneReplyPerMessageGuard(Guard[Created[Message]]):
 
     def check(self, event: Created[Message], context: Context) -> None:
         message = event.row
-        if not isinstance(message, Message) or message.type is not MessageType.AGENT or message.parent_id is None:
+        if message.type is not MessageType.AGENT or message.parent_id is None:
             return
         answered = self.messages.replies(message.parent_id).agent_messages().page(1, 1).rows
         if answered:

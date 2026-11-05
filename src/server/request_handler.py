@@ -36,7 +36,8 @@ HANDOVER_FAILED_STATUS = 422
 
 class RequestHandler(BaseHTTPRequestHandler):
     """Reads one HTTP request on the journal's socket and sends it to its endpoint: GET /health, POST /cli,
-    POST /hook, POST /stop and POST /handover; a request the server's code is older than is answered 409 and runs nothing,
+    POST /hook, POST /stop and POST /handover; a request the server's code is older than is answered 409 and
+    runs nothing,
     and the server releases its files at once so a new one can start while it finishes its open requests.
     Each request's timing starts with the sender's stamps from its Journal-Timing header, and once its answer
     is flushed one line goes to the timing log; a line that cannot be written is noted in server.log and never

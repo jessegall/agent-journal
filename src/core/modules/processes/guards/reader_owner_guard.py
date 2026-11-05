@@ -20,7 +20,7 @@ class ReaderOwnerGuard(Guard[Deleted[Reader]]):
 
     def check(self, event: Deleted[Reader], context: Context) -> None:
         reader = event.row
-        if not isinstance(reader, Reader) or reader.creator_id == context.actor.id:
+        if reader.creator_id == context.actor.id:
             return
         owner = self.queries.query(ActorRecord).find(reader.creator_id)
         if owner.type in (ActorType.MODULE, ActorType.CORE):

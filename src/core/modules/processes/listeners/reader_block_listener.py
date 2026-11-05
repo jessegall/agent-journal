@@ -27,7 +27,7 @@ class ReaderBlockListener(SaveListener[Created[ProcessPart]]):
 
     def handle(self, event: Created[ProcessPart], context: Context) -> None:
         part = event.row
-        if not isinstance(part, ProcessPart) or part.reader_request_id is None:
+        if part.reader_request_id is None:
             return
         request = self.queries.query(ReaderRequest).find(part.reader_request_id)
         if request.completed_at is not None or request.expires_at <= self.clock.timestamp():

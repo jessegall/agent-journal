@@ -21,7 +21,7 @@ class TaskWaitPassListener(SaveListener[Updated[Check]]):
 
     def handle(self, event: Updated[Check], context: Context) -> None:
         check = event.row
-        if not isinstance(check, Check) or check.task_wait_id is None or not (check.last_passed is True or check.stopped or check.removed_at is not None):
+        if check.task_wait_id is None or not (check.last_passed is True or check.stopped or check.removed_at is not None):
             return
         wait = self.queries.query(TaskWait).find(check.task_wait_id)
         if wait.ended_at is None:

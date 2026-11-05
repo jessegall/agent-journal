@@ -32,7 +32,7 @@ class DelegatedTaskCommentListener(SaveListener[Created[Link]]):
 
     def handle(self, event: Created[Link], context: Context) -> None:
         link = event.row
-        if not isinstance(link, Link) or link.link_type != LinkType.COMMENT or link.target_model != Task.model_name:
+        if link.link_type != LinkType.COMMENT or link.target_model != Task.model_name:
             return
         worker_id = self.queries.query(Task).find(link.target_id).delegated_to
         if worker_id is None or self.queries.query(ActorRecord).find(context.actor.id).type is not ActorType.USER:

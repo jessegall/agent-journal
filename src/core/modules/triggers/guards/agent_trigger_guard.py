@@ -23,9 +23,9 @@ class AgentTriggerGuard(Guard[Changed[Trigger]]):
         if isinstance(event, Deleted):
             return
         old, new = event.old_row, event.row
-        if not isinstance(new, Trigger) or not self.approval.needs_user(context.actor, context.environment_id):
+        if not self.approval.needs_user(context.actor, context.environment_id):
             return
-        if not new.needs_enabling and (old is None or isinstance(old, Trigger) and old.needs_enabling):
+        if not new.needs_enabling and (old is None or old is not None and old.needs_enabling):
             raise Refusal("only the user enables a trigger an agent made", "the user enables it in the chat or on the Triggers page")
-        if isinstance(old, Trigger) and not old.needs_enabling and any(getattr(old, name) != getattr(new, name) for name in ACTING_FIELDS):
+        if old is not None and not old.needs_enabling and any(getattr(old, name) != getattr(new, name) for name in ACTING_FIELDS):
             raise Refusal(f"only the user changes what enabled trigger {old.id} does", "make a new trigger, which waits for the user to enable it")

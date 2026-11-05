@@ -4,7 +4,8 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class BarFacts:
     """What the viewer's bars show: the helpers still running, the tasks not done, the questions
-    waiting, the main agent's task and the plan it belongs to, its scheduled jobs and the processes running now."""
+    waiting, the main agent's task and the plan it belongs to, its scheduled jobs and the processes running
+    now."""
 
     helpers: int
     tasks: int

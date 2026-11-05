@@ -15,5 +15,5 @@ class LibraryAddressGuard(Guard[Changed[Setting]]):
 
     def check(self, event: Changed[Setting], context: Context) -> None:
         setting = event.row
-        if isinstance(setting, Setting) and setting.key == ADDRESS_SETTING and context.actor.type is not ActorType.USER:
+        if setting.key == ADDRESS_SETTING and context.actor.type is not ActorType.USER:
             raise Refusal("only a person changes the address of the shared server", "ask the user to set it on the Teams page or with journal setting set")
