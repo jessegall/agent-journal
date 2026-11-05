@@ -7,6 +7,7 @@ from core.base.query.conditions.among import Among
 from core.base.query.query import Query
 from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_STATES, ProofState
 from suites.coding.modules.workers.models.proof import Proof
+from suites.coding.modules.workers.conditions.proof_task_testing import ProofTaskTesting
 
 
 class ProofQuery(Query[Proof]):
@@ -27,6 +28,9 @@ class ProofQuery(Query[Proof]):
 
     def waiting_proofs(self, worktree_id: int) -> Self:
         return self.worktree_proofs(worktree_id).filter(state=ProofState.SHOWN)
+
+    def delivered_proofs(self, worktree_id: int) -> Self:
+        return self.waiting_proofs(worktree_id).matching(ProofTaskTesting())
 
     def test_rows(self) -> tuple[Proof, ...]:
         return self.kept.read(self.table.name, lambda: tuple(self.matching(Among("state", TEST_WAITING_STATES)).oldest().all_rows()),

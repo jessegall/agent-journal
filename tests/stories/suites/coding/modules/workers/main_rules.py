@@ -21,3 +21,14 @@ def test_a_worker_is_refused_a_second_started_task(new_story):
     worker = dispatched_worker(story)
     story.expect_success('task make "Fix the till" --environment main', "state: open")
     story.expect_refusal("task start 2", f"worker {worker.id} has task 1 started already", actor=worker)
+
+
+def test_a_proof_waits_for_the_task_to_be_handed_in(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = dispatched_worker(story)
+    repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
+    story.expect_success('proof make 1 "cart.py:1, the cart total story"', actor=worker)
+    story.expect_hook_allowed(MAIN_SESSION, HookSamples.stop())
+    story.expect_success("worker deliver", actor=worker)
+    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), f"worker:{worker.id} delivered task:1: journal proof check 1")
