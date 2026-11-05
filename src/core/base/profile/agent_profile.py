@@ -21,6 +21,7 @@ class AgentProfile:
     module: str = ""
     changed: tuple[str, ...] = ()
     module_text_changed: bool = False
+    module_body: str = ""
     path: str = ""
     source_digest: str = ""
     problem: str = ""

@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, FormField, ModelPicker, Segmented, SidePanel, TextArea, TextInput} from "@journal/window-kit";
+import {Btn, DiffCard, FormField, ModelPicker, Segmented, SidePanel, TextArea, TextInput} from "@journal/window-kit";
 
 const props = defineProps({profile: {type: Object, required: true}, used: {type: String, default: ""}, types: {type: Array, default: () => []}});
 const emit = defineEmits(["close", "save", "reset"]);
@@ -23,6 +23,13 @@ const canWrite = computed(() => pickedType.value?.access === WRITING);
 const accesses = computed(() => [{key: "read-only", label: "Read-only"}, ...(canWrite.value ? [{key: WRITING, label: "Writing"}] : [])]);
 watch(canWrite, (allowed) => {
     if (!allowed) draft.value.access = "read-only";
+});
+const comparing = ref(false);
+const lineRows = (kind, lines, others) => lines.map((text, index) => ({line_type: kind, line: index + 1, text})).filter((row) => !others.includes(row.text));
+const compared = computed(() => {
+    const yours = props.profile.body.split("\n");
+    const journal = (props.profile.module_body || "").split("\n");
+    return [...lineRows("del", yours, journal), ...lineRows("add", journal, yours)];
 });
 const saved = computed(() => ({...props.profile, mcp_tools: props.profile.mcp_tools.join(",")}));
 const dirty = computed(() => FIELDS.some((key) => draft.value[key] !== saved.value[key]) || !props.profile.name);
@@ -67,6 +74,13 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
                 <TextInput id="profile-mcp" :value="draft.mcp_tools" @input="draft.mcp_tools = $event.target.value" />
             </FormField>
             <label class="profile-panel-check"><input v-model="draft.independent" type="checkbox" data-profile-independent /> Must judge fresh</label>
+            <template v-if="profile.module_text_changed">
+                <p class="profile-panel-note">Text changed: the journal's instructions have a new version.</p>
+                <Btn kind="ghost" small data-profile-compare @click="comparing = !comparing">Compare</Btn>
+                <template v-if="comparing">
+                    <DiffCard path="Instructions" kind="edit" :added="compared.filter((row) => row.line_type === 'add').length" :removed="compared.filter((row) => row.line_type === 'del').length" at="" :rows="compared" data-profile-diff />
+                </template>
+            </template>
             <template v-if="profile.shipped">
                 <p class="profile-panel-note">This comes with the journal. Your changes are kept through updates.</p>
             </template>

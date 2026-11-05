@@ -126,7 +126,7 @@ class ProfileFiles:
     def overlaid_fields(self, registered: AgentProfile, path: Path, fields: ProfileFields) -> AgentProfile:
         changed = tuple(name for name in OVERLAID_FIELDS if name in fields)
         text_changed = "body" in changed and fields.get("module_text") != self.digest.hex_digest(registered.body)
-        return replace(registered, **{name: fields[name] for name in changed}, changed=changed, module_text_changed=text_changed,
+        return replace(registered, **{name: fields[name] for name in changed}, changed=changed, module_text_changed=text_changed, module_body=registered.body,
                        path=str(path.relative_to(self.home.project_folder)), notes=self.notes(path, fields), source_digest=fields.get("source_digest", ""))
 
     def save(self, profile: AgentProfile) -> AgentProfile:

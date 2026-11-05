@@ -160,6 +160,14 @@ test("a type that cannot write offers no Writing and moves the access to Read-on
     expect(panel().querySelector("[data-profile-access]").textContent).not.toContain("Writing");
 });
 
+test("a changed text shows Compare with the journal's new version", async () => {
+    await drawn([{...RESEARCHER, changed: ["body"], module_text_changed: true, body: "Mine", module_body: "The journal's"}, BUILDER]);
+    await open("journal-researcher");
+    panel().querySelector("[data-profile-compare]").click();
+    await settle();
+    expect(panel().textContent).toContain("The journal's");
+});
+
 test("a row names what stands in the way", async () => {
     await drawn([{...BUILDER, notes: ["Could write before"]}, {...RESEARCHER, name: "broken", problem: "Unreadable: bad front matter"}, {...RESEARCHER, name: "moved", module_text_changed: true}]);
     expect(host.textContent).toContain("Could write before");
