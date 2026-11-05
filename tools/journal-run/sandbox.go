@@ -84,7 +84,7 @@ func sandboxCheck() int {
 	return 0
 }
 
-func runSandbox(folder Folder) (shellSandbox, error) {
+func runSandbox(options Options, folder Folder) (shellSandbox, error) {
 	temporary := filepath.Join(folder.Path, "tmp")
 	if err := os.MkdirAll(temporary, 0o700); err != nil {
 		return shellSandbox{}, err
@@ -93,5 +93,13 @@ func runSandbox(folder Folder) (shellSandbox, error) {
 	if err != nil {
 		return shellSandbox{}, err
 	}
-	return checkedSandbox(program, []string{folder.Path, temporary})
+	writable := []string{folder.Path, temporary}
+	if options.WriteFolder != "" {
+		worker, err := workerFolders(options.WriteFolder, options.Home)
+		if err != nil {
+			return shellSandbox{}, err
+		}
+		writable = append(writable, worker...)
+	}
+	return checkedSandbox(program, writable)
 }

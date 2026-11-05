@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.support.part_command import PartCommand
@@ -16,6 +17,7 @@ class ForegroundRun:
     queued: bool = False
     read_command: bool = False
     shell_sandbox: bool = False
+    folder: Path | None = None
     part_commands: tuple[PartCommand, ...] = ()
 
     count_line: str = ""

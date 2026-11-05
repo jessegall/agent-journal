@@ -20,6 +20,7 @@ type Flags struct {
 	Queue         bool
 	OnlyReads     bool
 	ReadOnlyShell bool
+	WriteFolder   string
 	Line          string
 	Follow        bool
 	// KeepCutting is the program that keeps a line's outputs under the limit while a part with & outlives the line.
@@ -115,6 +116,13 @@ func ParseFlags(arguments []string) (Flags, error) {
 		case "--only-reads":
 			flags.OnlyReads = true
 		case "--read-only-shell":
+			flags.ReadOnlyShell = true
+		case "--write-folder":
+			if index+1 >= len(arguments) {
+				return flags, fmt.Errorf("%s needs a value", argument)
+			}
+			index++
+			flags.WriteFolder = arguments[index]
 			flags.ReadOnlyShell = true
 		case "--follow":
 			flags.Follow = true
