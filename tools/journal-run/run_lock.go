@@ -70,23 +70,12 @@ func isJournalLine(parts []Part, aliases []string) bool {
 const CountLimitSeconds = 120
 
 // CountWait runs a test listing before the run waits for its queue slot.
-func CountWait(folder string, line string) string {
+func CountWait(folder string, line string, values ...ListingOptions) string {
 	if line == "" {
 		return ""
 	}
-	output := quoted(filepath.Join(folder, "count.out"))
+	options := listingOptions(values)
 	counted := quoted(filepath.Join(folder, "counted"))
-	return fmt.Sprintf(`( %s ) > %s 2>&1 &
-__journal_count=$!
-__journal_count_waited=0
-while kill -0 "$__journal_count" 2>/dev/null && [ "$__journal_count_waited" -lt %d ]; do
-    sleep 1
-    __journal_count_waited=$((__journal_count_waited + 1))
-done
-if kill -0 "$__journal_count" 2>/dev/null; then
-    kill "$__journal_count" 2>/dev/null || :
-fi
-if wait "$__journal_count"; then __journal_count_status=0; else __journal_count_status=$?; fi
-printf '%%s' "$__journal_count_status" > %s
-`, line, output, CountLimitSeconds, counted)
+	return fmt.Sprintf("if ! %s --count-listing %s %s %d %d %s; then printf '125' > %s || :; fi\n",
+		quoted(options.Program), quoted(folder), quoted(options.Shell), options.LimitSeconds, options.KillGraceMilliseconds, quoted(line), counted)
 }
