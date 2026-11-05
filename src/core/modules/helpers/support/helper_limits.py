@@ -11,13 +11,18 @@ from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.helpers.support.allowed_models import AllowedModels
 from core.modules.helpers.support.helper_settings import HELPER_LIMIT
+from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.settings.bindings.support.setting_values import SettingValues
+
+WAIT_WAY_ON = "stop now: each report wakes you, then start again"
+WORK_WAY_ON = "keep working and read journal overview: each report arrives at your next hook"
 
 
 class HelperLimits:
     """Who may start a helper, on which model, and how many run in an environment at one time."""
 
-    def __init__(self, queries: Queries, settings: SettingValues, suites: SuiteChoice, models: AllowedModels, providers: Providers, agents: AgentRows) -> None:
+    def __init__(self, queries: Queries, settings: SettingValues, suites: SuiteChoice, models: AllowedModels, providers: Providers, agents: AgentRows, launcher: LauncherLink) -> None:
+        self.launcher = launcher
         self.queries, self.settings, self.suites, self.models, self.providers, self.agents = queries, settings, suites, models, providers, agents
 
     def checked_parent(self, context: Context) -> Agent:
@@ -40,7 +45,7 @@ class HelperLimits:
         limit = self.settings.number(HELPER_LIMIT)
         if len(running) >= limit:
             names = ", ".join(f"agent:{helper.id}" for helper in running)
-            raise Refusal(f"{limit} helpers run here: {names}", "stop now: each report wakes you, then start again")
+            raise Refusal(f"{limit} helpers run here: {names}", self.way_on())
 
     def checked_model(self, program: str, model: str) -> str:
         if not model:
@@ -49,3 +54,6 @@ class HelperLimits:
         if model not in names:
             raise Refusal(f"choose a model {program} may run: {', '.join(names)}", "add --model <model>")
         return model
+
+    def way_on(self) -> str:
+        return WAIT_WAY_ON if self.launcher.is_running else WORK_WAY_ON

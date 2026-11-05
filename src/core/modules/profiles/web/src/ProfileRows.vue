@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref} from "vue";
 import {ago, Btn, EmptyState, ListRow, SearchBar, matchesSearch, useRows} from "@journal/window-kit";
+import HelperStartForm from "./HelperStartForm.vue";
 import ProfilePanel from "./ProfilePanel.vue";
 
 const NEW_PROFILE = {name: "", description: "", agent_type: "helper", access: "read-only", program: "", independent: false, mcp_tools: [], changed: [], notes: [], problem: "", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: false, uses: 0};
@@ -100,6 +101,7 @@ async function save(profile, fields) {
         </template>
         <template v-if="panel">
             <ProfilePanel :types="types" :profile="panel" :used="usedWords(panel)" @close="close" @save="save" @reset="reset" />
+            <template v-if="panel.name && panel.agent_type === \'helper\'"><HelperStartForm :profile="panel.name" /></template>
         </template>
     </section>
 </template>

@@ -18,6 +18,8 @@ from core.base.ticker.tick_interval import TickInterval
 from core.modules.helpers.commands.end_helpers_past_limits.end_helpers_past_limits_handler import EndHelpersPastLimitsHandler
 from core.modules.helpers.commands.send_helper_limit_warning.send_helper_limit_warning_handler import HELPER_LIMIT_WARNING, SendHelperLimitWarningHandler
 from core.modules.helpers.ticks.helper_limits_tick import HelperLimitsTick
+from core.base.skill.skill_declaration import SkillDeclaration
+from core.modules.helpers.commands.helper_availability.helper_availability_subcommand import HelperAvailabilitySubcommand
 from core.modules.helpers.rules.helper_report_rule import HelperReportRule
 from core.modules.helpers.rules.unstarted_helper_rule import UnstartedHelperRule
 from core.modules.helpers.support.helper_settings import HELPER_SETTINGS
@@ -35,6 +37,7 @@ class HelpersModule(Module):
     handlers = [StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler]
     tick_handlers = [TickHandler(TickInterval(seconds=60), HelperLimitsTick(), "helper limits")]
     nudges = [HELPER_LIMIT_WARNING]
-    subcommands = [StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand]
+    skills = [SkillDeclaration("journal-helpers", "Start a helper for a bounded read, send it more, stop it, and read its report; read it before the first helper command of a session", keywords=("helper start",))]
+    subcommands = [StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand, HelperAvailabilitySubcommand]
     listeners = [NewMainHelpersListener, HelperResumeListener, HelperProgramListener, HelperEndedListener, HelperJobMarkListener]
     driver_rules = [UnstartedHelperRule, HelperReportRule]

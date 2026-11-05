@@ -1,4 +1,7 @@
 from core.base.database.database import Database
+from core.base.viewer.person_lines import PERSON_LINES
+from core.modules.helpers.support.helper_settings import HELPER_LIMIT
+from core.testing.fake_launcher import FakeLauncher
 from core.modules.viewer.migrations.m003_helpers_window_key import HelpersWindowKeyMigration
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, StartedHelper, the_helper
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
@@ -41,3 +44,38 @@ def test_a_saved_layout_moves_to_the_helpers_window(new_story):
     HelpersWindowKeyMigration().run(story.container.get(Database))
     story.expect_text(LAYOUT, "agents.helpers", actor=story.user)
     story.expect_no_text(LAYOUT, "agents.subagents", actor=story.user)
+
+
+def test_the_profiles_window_may_start_a_helper_and_read_whether_it_can(new_story):
+    window = WindowStory(new_story(fixture=StartedHelper))
+    window.expect_window_allowed("profiles.profiles", 'helper start journal-researcher --brief "x"')
+    window.expect_window_allowed("profiles.profiles", "helper availability")
+
+
+def test_a_start_with_no_launcher_says_what_to_do(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_text("helper availability --environment main", "journal launch", actor=story.user)
+
+
+def test_a_start_with_no_main_agent_says_what_to_do(new_story):
+    story = new_story(fixture=UserJoined)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.run(f"agent end {story.agent.id}", actor=story.user)
+    story.expect_text("helper availability --environment main", "main agent", actor=story.user)
+    launcher.server.close()
+
+
+def test_a_start_at_the_limit_says_so(new_story):
+    story = new_story(fixture=StartedHelper)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.run(f"setting set {HELPER_LIMIT} 1 --project", actor=story.user)
+    story.expect_text("helper availability --environment main", "All 1 helpers are running", actor=story.user)
+    launcher.server.close()
+
+
+def test_helper_start_is_a_persons_line():
+    assert_person_line()
+
+
+def assert_person_line():
+    assert "helper start" in PERSON_LINES
