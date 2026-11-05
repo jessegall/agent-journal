@@ -6,6 +6,7 @@ from functools import cache
 import sqlite3
 import re
 import sys
+from types import FrameType
 import traceback
 
 from core.base.database.point_tally import PointTally
@@ -44,8 +45,8 @@ ALLOWED_READ_REPEATS = {
     ("core/base/database/listener_cursor_table.py", "has_pending_events"): "Startup completion must be checked as listener cursors advance.",
     ("core/base/change/event_log.py", "newest_id"): "Urgent listeners must notice events written by the previous listener.",
     ("core/base/change/event_log.py", "events_past"): "Listener rounds read new events written by earlier listeners.",
-    ("core/base/seed/demo.py", "run"): "A demo seeds by running many separate command lines inside one request.",
 }
+BULK_SEEDS = "core/base/seed/demo.py"
 READ_HELPERS = ("core/base/database/database.py", "core/base/database/bookkeeping_table.py")
 
 
@@ -107,10 +108,18 @@ class RepeatedWork(PointTally):
     @staticmethod
     def is_allowed_read() -> bool:
         frame = sys._getframe(2)
+        while frame is not None and frame.f_code.co_filename.endswith(READ_HELPERS):
+            frame = frame.f_back
+        if frame is None:
+            return False
+        is_allowed = any(frame.f_code.co_filename.endswith(path) and frame.f_code.co_name == method for path, method in ALLOWED_READ_REPEATS)
+        return is_allowed or RepeatedWork.is_bulk_seed(frame)
+
+    @staticmethod
+    def is_bulk_seed(frame: FrameType | None) -> bool:
         while frame is not None:
-            filename = frame.f_code.co_filename
-            if not filename.endswith(READ_HELPERS):
-                return any(filename.endswith(path) and frame.f_code.co_name == method for path, method in ALLOWED_READ_REPEATS)
+            if frame.f_code.co_filename.endswith(BULK_SEEDS):
+                return True
             frame = frame.f_back
         return False
 

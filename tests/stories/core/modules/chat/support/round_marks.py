@@ -16,7 +16,7 @@ class TaskRoundListener(MarkListener[Changed[Task]]):
 
     def handle(self, event: Changed[Task], logged: LoggedEvent) -> None:
         self.show(logged, SampleMarkType.PROCESS, SampleMarkVariant.PLAIN, f"Task {event.row.id}",
-                  event.row.environment_id, key=f"sample-task:{event.row.id}", ended=event.row.state is TaskState.COMPLETED)
+                  key=f"sample-task:{event.row.id}", ended=event.row.state is TaskState.COMPLETED)
 
 
 class GuardedMarkListener(MarkListener[Created[Task]]):
