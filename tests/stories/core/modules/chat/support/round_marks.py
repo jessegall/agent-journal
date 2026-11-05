@@ -6,7 +6,7 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from tests.stories.core.modules.chat.support.mark_samples import ChatSampleModule, SampleMarkType, SampleMarkVariant
 
-PATH = "tests.stories.core.modules.chat.support.round_marks:RoundMarksModule"
+PATH = "tests.stories.core.modules.chat.support.round_marks:TaskMarkSampleModule"
 KEY = "sample-task:1"
 
 
@@ -19,7 +19,7 @@ class TaskRoundListener(MarkListener[Changed[Task]]):
                   event.row.environment_id, key=f"sample-task:{event.row.id}", ended=event.row.state is TaskState.COMPLETED)
 
 
-class RefusedMarkListener(MarkListener[Created[Task]]):
+class GuardedMarkListener(MarkListener[Created[Task]]):
     name = "chatsample.refused-mark"
     module_name = "journal.core.memories"
 
@@ -27,5 +27,5 @@ class RefusedMarkListener(MarkListener[Created[Task]]):
         self.show(logged, SampleMarkType.EVENT_TYPE, SampleMarkVariant.PLAIN, "Refused mark", event.row.environment_id)
 
 
-class RoundMarksModule(ChatSampleModule):
-    listeners = [TaskRoundListener, RefusedMarkListener]
+class TaskMarkSampleModule(ChatSampleModule):
+    listeners = [TaskRoundListener, GuardedMarkListener]

@@ -22,7 +22,7 @@ class SuiteCurrentSubcommand(ReadSubcommand[SuiteRun]):
         parser.add_argument("environment")
 
     def read(self, arguments: Namespace, caller: Caller) -> SuiteRun:
-        environments = self.queries.query(Environment).filter(name=arguments.environment).page(1, 1).rows
+        environments = self.queries.query(Environment).filter(name=arguments.environment).limited(1)
         if not environments:
             raise Refusal(f"no environment is called {arguments.environment}", "see every environment with journal environment list")
         environment_id = environments[0].id

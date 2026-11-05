@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import os
 import shutil
 import signal
@@ -33,7 +34,7 @@ class DemoFolders:
 
     def running_pid(self, folder: Path) -> int | None:
         pid_file = folder / ".journal" / "server.pid"
-        text = pid_file.read_text().strip() if pid_file.is_file() else ""
+        text = FileAccess.shared().read(pid_file).strip() if pid_file.is_file() else ""
         if not text.isdigit():
             return None
         try:

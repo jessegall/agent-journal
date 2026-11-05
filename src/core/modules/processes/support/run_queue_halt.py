@@ -1,5 +1,6 @@
 from core.base.journal_home import JournalHome
 from core.base.server_restart_state import ServerRestartState
+from core.base.file_access import FileAccess
 
 
 class RunQueueHalt:
@@ -24,11 +25,11 @@ class RunQueueHalt:
     @property
     def reason(self) -> str:
         if self.command_halted:
-            return self.home.run_queue_halt_file.read_text().strip()
+            return FileAccess.shared().read(self.home.run_queue_halt_file).strip()
         return "Server restart" if self.is_restarting else ""
 
     def halt(self, reason: str) -> None:
-        self.home.run_queue_halt_file.write_text(reason)
+        FileAccess.shared().write(self.home.run_queue_halt_file, reason)
 
     def resume(self) -> None:
         self.home.run_queue_halt_file.unlink(missing_ok=True)

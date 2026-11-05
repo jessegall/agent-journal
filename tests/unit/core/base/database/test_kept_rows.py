@@ -54,13 +54,13 @@ def test_unchanged_reads_run_the_loader_once_and_read_no_more_table_rows(databas
     kept = KeptRows(database)
     calls = []
 
-    def load_texts():
+    def collect_texts():
         calls.append(True)
         return texts(database)
 
-    assert kept.read("notes", load_texts, name="notes.text") == tuple(["Saved"])
+    assert kept.read("notes", collect_texts, name="notes.text") == tuple(["Saved"])
     table_reads = dict(database.tally.points().tables)
-    assert kept.read("notes", load_texts, name="notes.text") == tuple(["Saved"])
+    assert kept.read("notes", collect_texts, name="notes.text") == tuple(["Saved"])
     assert len(calls) == 1 and database.tally.points().tables == table_reads
 
 
@@ -83,13 +83,13 @@ def test_a_write_transaction_reuses_reads_until_another_write(database):
     kept = KeptRows(database)
     calls = []
 
-    def load_texts():
+    def collect_texts():
         calls.append(True)
         return texts(database)
 
     with database.transaction():
         database.update(Statement("UPDATE notes SET text = 'Temporary', version = version + 1"))
-        assert kept.read("notes", load_texts, name="notes.text") == tuple(["Temporary"])
+        assert kept.read("notes", collect_texts, name="notes.text") == tuple(["Temporary"])
         table_reads = dict(database.tally.points().tables)
-        assert kept.read("notes", load_texts, name="notes.text") == tuple(["Temporary"])
+        assert kept.read("notes", collect_texts, name="notes.text") == tuple(["Temporary"])
         assert len(calls) == 1 and database.tally.points().tables == table_reads

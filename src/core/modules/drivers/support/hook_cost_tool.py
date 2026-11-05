@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import time
 
 from core.base.database.database import Database
@@ -28,7 +29,7 @@ class HookCostTool(PerformanceTool):
             return f"hook {event.event.value} {points.total} points ({points.line()})"
         line = f"hook {event.event.value} {points.total} points ({points.line()}), over the {HOOK_LIMIT_POINTS} a hook may cost"
         self.home.costly_hooks_log.parent.mkdir(parents=True, exist_ok=True)
-        with self.home.costly_hooks_log.open("a") as log:
+        with FileAccess.shared().writer(self.home.costly_hooks_log, "a") as log:
             log.write(f"{time.strftime('%H:%M:%S')} {line}\n")
             log.writelines(f"    {rows} rows: {sql}\n" for sql, rows in points.statements.most_common(STATEMENTS_LOGGED))
             log.writelines(f"    {count} writes: {sql}\n" for sql, count in points.update_statements.most_common(STATEMENTS_LOGGED))

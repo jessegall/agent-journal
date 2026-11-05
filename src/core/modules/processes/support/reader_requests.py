@@ -48,7 +48,7 @@ class ReaderRequests:
         existing = self.open_row(scope)
         if existing is not None:
             return existing.id
-        samples = self.parts.kept_samples(["*"], process.environment_id).matching(scope).page(1, 5).rows
+        samples = self.parts.kept_samples(["*"], process.environment_id).matching(scope).limited(5)
         sample_id = next((sample.process_id for sample in samples if sample.exit_code != 2 or not self.judge.is_rejected(
             sample.exit_code, self.judge.output_text(sample.process_id, sample.position))), process.id)
         return self.open_request(process, spec, reason, sample_id, context)
@@ -80,7 +80,7 @@ class ReaderRequests:
 
     def open_row(self, scope: ReaderSampleScope) -> ReaderRequest | None:
         return next(iter(self.requests.open().filter(environment_id=scope.environment_id, creator_id=scope.agent_id,
-                                                     command=scope.command).page(1, 1).rows), None)
+                                                     command=scope.command).limited(1)), None)
 
     def open_request(self, process: Process, spec: PartSpec, reason: str, sample_process_id: int, context: Context) -> int:
         key = self.command_key(spec)

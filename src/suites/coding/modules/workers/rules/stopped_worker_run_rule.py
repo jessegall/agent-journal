@@ -25,12 +25,12 @@ class StoppedWorkerRunRule(DriverRule):
         self.queries, self.processes, self.unfinished = queries, processes, unfinished
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        runs = self.processes.running().oldest().all_rows()
-        return RuleAnswer.with_nudges(*(WORKER_RUN_OUTLASTS.nudge(worker=run.agent_id, output=run.id) for run in runs if self.is_outlasting(run.agent_id, hook)))
+        runs = list(self.processes.running().environment(hook.environment_id).oldest().all_rows())
+        workers = {worker.id: worker for worker in self.queries.query(Agent).find_many([run.agent_id for run in runs])}
+        return RuleAnswer.with_nudges(*(WORKER_RUN_OUTLASTS.nudge(worker=run.agent_id, output=run.id) for run in runs if self.is_outlasting(workers[run.agent_id], hook)))
 
-    def is_outlasting(self, agent_id: int, hook: AgentHook) -> bool:
-        worker = self.queries.query(Agent).find(agent_id)
+    def is_outlasting(self, worker: Agent, hook: AgentHook) -> bool:
         ended_at = worker.ended_at
         if worker.parent_id != hook.agent_id or worker.role != AgentRole.WORKER or ended_at is None:
             return False
-        return ended_at.elapsed_seconds(hook.timestamp) > STOPPED_LIMIT_SECONDS and bool(self.unfinished.rows(agent_id))
+        return ended_at.elapsed_seconds(hook.timestamp) > STOPPED_LIMIT_SECONDS and bool(self.unfinished.rows(worker.id))

@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import difflib
 from pathlib import Path
 
@@ -30,7 +31,7 @@ class PluginCodeDiff:
 
     @staticmethod
     def has_changed_bytes(old: Path, new: Path) -> bool:
-        return old.exists() and new.exists() and old.read_bytes() != new.read_bytes()
+        return old.exists() and new.exists() and FileAccess.shared().binary(old) != FileAccess.shared().binary(new)
 
     @staticmethod
     def presence(relative: str, old: Path, new: Path) -> list[str]:
@@ -43,6 +44,6 @@ class PluginCodeDiff:
         if not path.exists():
             return ""
         try:
-            return path.read_text()
+            return FileAccess.shared().read(path)
         except UnicodeDecodeError:
             return None

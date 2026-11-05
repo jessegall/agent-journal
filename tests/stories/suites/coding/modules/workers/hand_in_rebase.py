@@ -151,13 +151,13 @@ def test_a_hand_in_leaves_another_workers_stash_untouched(new_story):
     repository = repository_environment(story)
     worker = worker_on_a_moved_base(story, repository)
     story.expect_success('task make "Another job" --environment main', actor=story.agent)
-    other = dispatched_worker(story, "worker dispatch --model sonnet 2")
-    repository.changed(other.id, "other.py", "OTHER = 1\n")
-    worktree = story.container.get(Queries).query(Worktree).filter(agent_id=other.id).first()
+    sibling = dispatched_worker(story, "worker dispatch --model sonnet 2")
+    repository.changed(sibling.id, "sibling.py", "OTHER = 1\n")
+    worktree = story.container.get(Queries).query(Worktree).filter(agent_id=sibling.id).first()
     stash = story.container.get(WorktreeGit).stash(worktree)
 
     story.expect_success(DELIVERY, actor=worker)
 
     repository.expect_file(repository.worker_branch(worker.id), "cart.py", CART_CHANGE)
-    story.expect_rows(not (repository.worktree_folder(other.id) / "other.py").exists())
+    story.expect_rows(not (repository.worktree_folder(sibling.id) / "sibling.py").exists())
     story.expect_rows(repository.git("stash", "list", "--format=%H").stdout.splitlines() == [stash])

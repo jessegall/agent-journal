@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 from pathlib import Path
 
 from core.base.actor_type import ActorType
@@ -40,7 +41,7 @@ class FillSecretHandler(Handler[FillSecret, FilledField]):
         file = Path(name)
         if not file.is_file():
             raise Refusal(f"no file at {name}", "write the value you made to a file, and the journal moves it into the secret")
-        value = file.read_text().strip()
+        value = FileAccess.shared().read(file).strip()
         file.unlink()
         if not value:
             raise Refusal(f"{name} held no value; it is deleted all the same")

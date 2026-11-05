@@ -46,7 +46,7 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
                                         "windows": [output.values(window) for window in value.windows], "cost_dollars": value.cost_dollars})
 
     def last_compacted(self, agent: Agent) -> str | None:
-        calls = self.queries.query(HookCall).filter(agent_id=agent.id, hook=HookEventName.COMPACT).newest().page(1, 1).rows
+        calls = self.queries.query(HookCall).filter(agent_id=agent.id, hook=HookEventName.COMPACT).newest().limited(1)
         return calls[0].creation_timestamp().text if calls else None
 
     @staticmethod

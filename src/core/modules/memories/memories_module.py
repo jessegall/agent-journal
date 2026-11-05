@@ -1,3 +1,4 @@
+from core.modules.memories.migrations.m005_memory_scope_index import MemoryScopeIndexMigration
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.memories.support.memory_nudges import MEMORY_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
@@ -73,7 +74,7 @@ class MemoriesModule(Module):
     models = [ModelDeclaration(Memory, commands=[RemoveMemory], excluded_subcommands=["make"]), ModelDeclaration(MemoryKeyword),
               ModelDeclaration(MemoryDelivery, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(MemoryMark, excluded_subcommands=["make", "edit", "delete", "weigh", "skip"])]
-    migrations = [MemoriesTablesMigration, MemoryTypesDropAgentWritableMigration, RemoveFadedMemoriesMigration, MemoryTypesDropFadesMigration]
+    migrations = [MemoryScopeIndexMigration, MemoriesTablesMigration, MemoryTypesDropAgentWritableMigration, RemoveFadedMemoriesMigration, MemoryTypesDropFadesMigration]
     moves = [MemoriesMove]
     views = [ActiveMemory, ContextMemory, KeywordMemory]
     guards = [AgentScopeGuard, AgentWeightGuard, KeywordScopeGuard]

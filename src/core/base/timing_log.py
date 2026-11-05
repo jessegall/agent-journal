@@ -1,5 +1,6 @@
 import json
 import os
+from core.base.file_access import FileAccess
 
 from core.base.journal_home import JournalHome
 from core.base.rotated_file import RotatedFile
@@ -21,11 +22,8 @@ class TimingLog:
         if not self.state.can_measure:
             return
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        descriptor = os.open(self.path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o644)
-        try:
+        with FileAccess.shared().descriptor_writer(self.path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o644) as descriptor:
             os.write(descriptor, (json.dumps(fields, separators=(",", ":")) + "\n").encode())
-        finally:
-            os.close(descriptor)
 
     def rotate(self) -> None:
         RotatedFile(self.path, self.limit_bytes).rotate()

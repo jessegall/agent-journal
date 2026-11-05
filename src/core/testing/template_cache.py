@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import shutil
 import time
 from pathlib import Path
@@ -21,7 +22,7 @@ class TemplateCache:
         if not current.is_dir():
             self.remove_old()
         current.mkdir(parents=True, exist_ok=True)
-        current.touch()
+        FileAccess.shared().update_timestamp(current)
         return current
 
     def remove_old(self) -> None:

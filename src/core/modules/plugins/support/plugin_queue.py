@@ -1,10 +1,11 @@
+from core.base.file_access import FileAccess
 import json
 import fcntl
 import os
 import re
 import time
 from collections.abc import Collection, Generator
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from typing import TextIO
 
@@ -48,7 +49,7 @@ class PluginQueue:
         with self.lock_file(path) as source:
             if source is None:
                 return
-            text = source.read()
+            text = FileAccess.shared().read(path)
             try:
                 fields: object = json.loads(text or "null")
             except json.JSONDecodeError:
@@ -81,7 +82,7 @@ class PluginQueue:
             with self.lock_file(path) as source:
                 if source is None:
                     continue
-                claim = self.card_answer(path, source.read())
+                claim = self.card_answer(path, FileAccess.shared().read(path))
                 if claim is None:
                     continue
                 try:
@@ -144,12 +145,13 @@ class PluginQueue:
 
     @contextmanager
     def lock_file(self, path: Path) -> Generator[TextIO | None]:
+        stack = ExitStack()
         try:
-            source = path.open("r+")
+            source = stack.enter_context(FileAccess.shared().writer(path, "r+"))
         except FileNotFoundError:
             yield None
             return
-        with source:
+        with stack:
             try:
                 fcntl.flock(source, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError:
@@ -163,5 +165,5 @@ class PluginQueue:
     def add(self, environment: str, agent_id: int, text: str, name: str) -> None:
         self.folder.mkdir(parents=True, exist_ok=True)
         draft = self.folder / f"{name}.tmp"
-        draft.write_text(json.dumps({"v": 1, "env": environment, "agent": agent_id, "tell": text}))
+        FileAccess.shared().write(draft, json.dumps({"v": 1, "env": environment, "agent": agent_id, "tell": text}))
         draft.rename(self.folder / f"{name}.json")

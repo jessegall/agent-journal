@@ -27,7 +27,7 @@ class PluginRecordSubcommand(ReadSubcommand[PluginRecord]):
         parser.add_argument("name")
 
     def read(self, arguments: Namespace, caller: Caller) -> PluginRecord:
-        plugins = self.queries.query(Plugin).filter(name=arguments.name).page(1, 1).rows
+        plugins = self.queries.query(Plugin).filter(name=arguments.name).limited(1)
         if not plugins:
             raise Refusal(f"no plugin is called {arguments.name}", "journal plugin list shows them")
         plugin = plugins[0]

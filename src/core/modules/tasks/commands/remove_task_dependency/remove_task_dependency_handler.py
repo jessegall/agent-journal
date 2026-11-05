@@ -16,7 +16,7 @@ class RemoveTaskDependencyHandler(Handler[RemoveTaskDependency, None]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: RemoveTaskDependency, context: Context) -> None:
-        rows = self.queries.query(TaskDependency).filter(task_id=command.task_id, dependency_id=command.dependency_id).page(1, 1).rows
+        rows = self.queries.query(TaskDependency).filter(task_id=command.task_id, dependency_id=command.dependency_id).limited(1)
         if not rows:
             raise Refusal(f"task {command.task_id} does not wait on task {command.dependency_id}", f"journal task-dependency list --task {command.task_id}")
         self.repository.delete(rows[0], context)

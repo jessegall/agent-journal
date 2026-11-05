@@ -11,4 +11,5 @@ class Prefix:
     prefix: str
 
     def statement(self) -> Statement:
-        return Statement(f"substr({self.column}, 1, ?) = ?", [len(self.prefix), self.prefix])
+        escaped = self.prefix.replace("[", "[[]").replace("*", "[*]").replace("?", "[?]")
+        return Statement(f"{self.column} GLOB ?", [escaped + "*"])

@@ -22,6 +22,6 @@ class DriverChangeFilter(ChangeFilter):
         actor = change.context.actor
         if actor.type is not ActorType.AGENT:
             return False
-        agents = self.queries.query(Agent).filter(id=actor.id).page(1, 1).rows
+        agents = self.queries.query(Agent).filter(id=actor.id).limited(1)
         driver = self.choice.driver(agents[0].environment_id, agents[0].role) if agents else None
         return driver is not None and driver.name in listing

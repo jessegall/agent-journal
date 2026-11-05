@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import ssl
 import urllib.request
 from pathlib import Path
@@ -26,7 +27,7 @@ class LibraryCertificate:
 
     def keep(self, file: Path) -> None:
         kept = self.folder.made_file(SUFFIX)
-        kept.write_text(file.read_text())
+        FileAccess.shared().write(kept, FileAccess.shared().read(file))
         kept.chmod(0o600)
 
     def remove(self) -> None:

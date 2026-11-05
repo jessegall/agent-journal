@@ -1,4 +1,3 @@
-from core.base.change.event_pattern import EventPattern
 from core.base.change.logged_event import LoggedEvent
 from core.modules.skills.commands.require_skill.require_skill import RequireSkill
 from core.modules.skills.listeners.skill_listener import SkillListener
@@ -16,7 +15,9 @@ class SkillEventListener(SkillListener[Touched[Model]]):
     def handle(self, event: Touched[Model], logged: LoggedEvent) -> None:
         if logged.environment_id is None:
             return
-        called = [skill.folder for skill in self.catalogue.skills() if any(EventPattern(pattern).matches(logged.event) for pattern in skill.events)]
+        called = [skill.folder for skill in self.catalogue.registry.skills if skill.covers_event(logged.event)]
+        if not called:
+            return
         for agent in MainAgentFinder.rows(self.queries, logged.environment_id):
             for folder in called:
                 self.run(logged, RequireSkill(agent.id, folder))

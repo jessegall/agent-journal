@@ -1,3 +1,7 @@
+from core.base.connection_probe import ConnectionProbe
+from core.base.internet_connection import InternetConnection
+from core.base.journal_home import JournalHome
+from core.base.clock import Clock
 from core.base.actor import Actor
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.container import Container
@@ -17,6 +21,7 @@ class WorkerResumeRetry:
     before a person or another agent stopped the worker stays waiting."""
 
     def __call__(self, container: Container) -> None:
+        InternetConnection.shared(container.get(JournalHome)).check(container.get(ConnectionProbe), container.get(Clock).timestamp())
         queries, resume = container.get(Queries), container.get(WorkerResume)
         waiting = list(queries.query(AgentLine).filter(state=AgentLineState.WAITING).matching(Among("source", tuple(RESUMING_SOURCES))).oldest().all_rows())
         for agent_id in dict.fromkeys(line.agent_id for line in waiting):

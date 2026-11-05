@@ -24,7 +24,7 @@ class LargeOutputReadRule(DriverRule):
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         full_reads = [part for part in shell.parts_running_journal_command("output read") if "--all" in part.arguments] if shell is not None else []
         numbers = [int(term) for part in full_reads for term in part.arguments if term.isdigit()]
-        kept = self.queries.query(Output).filter(process_id=numbers[0]).page(1, 1).rows if numbers else ()
+        kept = self.queries.query(Output).filter(process_id=numbers[0]).limited(1) if numbers else ()
         if not kept or kept[0].line_count <= self.settings.integer(ProcessSetting.LARGE_OUTPUT_LINES, hook.environment_id):
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(LARGE_OUTPUT_READ.nudge(output=kept[0].process_id, lines=kept[0].line_count))

@@ -18,7 +18,7 @@ class ShareTargets:
         if table not in MODELS or not row.isdigit():
             raise Refusal(f"only a document, a report or a plan can be shared, not {target!r}", "write it as docs:12, reports:4 or plans:2")
         model, target_type = MODELS[table]
-        matches = self.queries.query(model).filter(id=int(row)).page(1, 1).rows
+        matches = self.queries.query(model).filter(id=int(row)).limited(1)
         if not matches:
             raise Refusal(f"{target_type} {row} does not exist", f"list them with journal {model.cli_name} list")
         return matches[0]

@@ -37,7 +37,7 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
         if context.environment_id is None:
             raise Refusal("an agent starts in an environment", "name one with --environment")
         self.types.find(command.role)
-        started = self.queries.query(Agent).filter(session=command.session).page(1, 1).rows
+        started = self.queries.query(Agent).filter(session=command.session).limited(1)
         if started and started[0].ended_at is None:
             raise Refusal(f"session {command.session} has started already", "journal agent list shows the agents")
         if started:

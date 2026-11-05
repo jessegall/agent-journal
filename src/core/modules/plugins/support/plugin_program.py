@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import json
 import os
 import signal
@@ -73,7 +74,7 @@ class PluginProgram:
     def write_settings(self, plugin_name: str, settings: Mapping[str, object]) -> None:
         data = self.folders.data(plugin_name)
         data.mkdir(parents=True, exist_ok=True)
-        (data / SETTINGS_FILE).write_text(json.dumps(dict(settings)))
+        FileAccess.shared().write(data / SETTINGS_FILE, json.dumps(dict(settings)))
 
     def environment(self, plugin_name: str, environment: str) -> dict[str, str]:
         passed = {variable: os.environ[variable] for variable in PASSED_VARIABLES if variable in os.environ}

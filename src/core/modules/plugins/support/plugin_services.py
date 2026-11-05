@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import subprocess
 import time
 from datetime import timedelta
@@ -78,10 +79,10 @@ class PluginServices:
         self.sockets.folder.mkdir(parents=True, exist_ok=True)
         program, pid_file = str(folder / service.command[0]), self.sockets.pid(*key)
         if process is None and pid_file.is_file():
-            LeftoverProcess.stop(int(pid_file.read_text()), program)
+            LeftoverProcess.stop(int(FileAccess.shared().read(pid_file)), program)
         processes.running[key] = ChildProcess(subprocess.Popen([program, *service.command[1:]], cwd=folder, env=environment, stdin=subprocess.DEVNULL,
                                                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True))
-        pid_file.write_text(str(processes.running[key].pid))
+        FileAccess.shared().write(pid_file, str(processes.running[key].pid))
         processes.digests[key] = digest
         if service.answers:
             self.poll_socket(self.sockets.answers(*key), processes.running[key])

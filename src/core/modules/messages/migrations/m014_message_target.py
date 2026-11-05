@@ -3,7 +3,7 @@ from core.modules.messages.models.support.views import CHAT_MESSAGES_SELECT
 
 
 class MessageTargetMigration(Migration):
-    number = 12
+    number = 14
     statements = [
         "ALTER TABLE messages ADD COLUMN target_agent_id INTEGER REFERENCES agents(id)",
         "CREATE INDEX messages_target_unread ON messages(environment_id, target_agent_id, type, read_at, delivered_at, id)",

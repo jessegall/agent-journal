@@ -9,5 +9,5 @@ class OutputRead(BlockCondition):
     name = "output-read"
 
     def is_true(self, check: BlockCheck) -> bool:
-        outputs = check.container.get(OutputQuery).process(int(self.text)).page(1, 1).rows
+        outputs = check.container.get(OutputQuery).process(int(self.text)).limited(1)
         return not outputs or outputs[0].read_at is not None

@@ -45,5 +45,5 @@ class AliasShellAliases(ShellAliases):
         return self.kept.read("aliases", lambda: self.saved_alias(name), "name = ?", [name], name="aliases.row")
 
     def saved_alias(self, name: str) -> Alias | None:
-        rows = self.aliases.with_name(name).page(1, 1).rows
+        rows = self.aliases.with_name(name).limited(1)
         return rows[0] if rows else None

@@ -63,6 +63,7 @@ class SignoffsTable(Migration):
         " creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT, state TEXT NOT NULL DEFAULT 'requested', note TEXT NOT NULL DEFAULT '',"
         " version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)),"
         " created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT",
+        "CREATE INDEX signoffs_task_state ON signoffs (task_id, state)",
     )
 
 

@@ -22,7 +22,7 @@ class ReaderHintRule(DriverRule):
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         full_reads = [part for part in shell.parts_running_journal_command("output read") if "--all" in part.arguments] if shell is not None else []
         numbers = [int(term) for part in full_reads for term in part.arguments if term.isdigit()]
-        kept = self.queries.query(Output).filter(process_id=numbers[0]).page(1, 1).rows if numbers else ()
+        kept = self.queries.query(Output).filter(process_id=numbers[0]).limited(1) if numbers else ()
         if not kept or kept[0].reader_id is None or not kept[0].reader_lines:
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(READER_HINT.nudge(reader=self.queries.query(Reader).find(kept[0].reader_id).name, output=kept[0].process_id))

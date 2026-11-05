@@ -34,13 +34,13 @@ class PlanTaskLineRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         numbers = shell.journal_command_numbers("task close", "task cancel", "task block", "task release") if shell is not None else ()
-        ended = [task for task in (self.queries.query(Task).find(number) for number in numbers) if task.state is not TaskState.STARTED]
+        ended = [task for task in self.queries.query(Task).find_many(numbers) if task.state is not TaskState.STARTED]
         if not ended:
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(*(nudge for task in ended for nudge in self.plan_nudges(task.id)))
 
     def plan_nudges(self, task_id: int) -> list[Nudge]:
-        places = self.queries.query(PlanTask).filter(task_id=task_id).page(1, 1).rows
+        places = self.queries.query(PlanTask).filter(task_id=task_id).limited(1)
         if not places:
             return []
         place = places[0]

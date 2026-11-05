@@ -14,7 +14,7 @@ class MergeChecks:
         self.queries, self.proofs = queries, proofs
 
     def check_proofs(self, worktree: Worktree) -> None:
-        selected = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).newest().page(1, 1).rows
+        selected = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).newest().limited(1)
         if selected and selected[0].state not in (AffectedTestState.PASSED, AffectedTestState.CANCELLED):
             raise Refusal("selected tests have not passed", "wait for the selected tests to finish")
         unchecked = [str(proof.point) for proof in self.proofs.worktree_proofs(worktree.id).oldest().all_rows() if proof.state is not ProofState.CHECKED]

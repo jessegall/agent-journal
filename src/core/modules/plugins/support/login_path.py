@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import os
 import subprocess
 
@@ -19,13 +20,13 @@ class LoginPath:
         self.file = home.folder / "runtime" / "login-path"
 
     def value(self) -> str:
-        return self.file.read_text() if self.file.is_file() else os.pathsep.join(FALLBACK_FOLDERS)
+        return FileAccess.shared().read(self.file) if self.file.is_file() else os.pathsep.join(FALLBACK_FOLDERS)
 
     def read_shell(self) -> None:
         path = self.shell_path()
         if path:
             self.file.parent.mkdir(parents=True, exist_ok=True)
-            self.file.write_text(path)
+            FileAccess.shared().write(self.file, path)
 
     def fill_missing(self) -> None:
         if not self.file.is_file():

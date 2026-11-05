@@ -3,7 +3,6 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
-from core.modules.docking.commands.remove_dock_item.remove_dock_item import RemoveDockItem
 from core.modules.docking.commands.schedule_dock_item_leave.schedule_dock_item_leave import ScheduleDockItemLeave
 from core.modules.docking.listeners.environment_dock_listener import MODULE_NAME
 from core.modules.docking.models.dock import Dock
@@ -15,9 +14,7 @@ from core.base.model.model import Model
 
 
 class DockItemLeaveListener(CommitListener[Touched[Model]]):
-    """Whenever a change is committed, the items whose row it ended get the time they leave at, and the
-    items whose time has come leave the dock, each in its own dock's environment. Time passing raises no
-    event, so the next change of any kind, in any environment, is when the dock is checked."""
+    """Schedules departure for the docked items whose row ended."""
 
     name = "docking.item-leave"
 
@@ -31,11 +28,9 @@ class DockItemLeaveListener(CommitListener[Touched[Model]]):
             leaves_at = self.leave_time.departure(item, logged.timestamp)
             if leaves_at is not None:
                 self.bus.run(ScheduleDockItemLeave(item.id, leaves_at), actor, cause_id=logged.id, environment_id=self.dock_environment(item))
-        for item in self.items.leaving(logged.timestamp):
-            self.bus.run(RemoveDockItem(item.id), actor, cause_id=logged.id, environment_id=self.dock_environment(item))
 
     def dock_environment(self, item: DockItem) -> int:
         return self.queries.query(Dock).find(item.dock_id).environment_id
 
     def pending(self, model_name: str, row_id: int) -> list[DockItem]:
-        return [item for item in self.items.waiting().all_rows() if item.target_model.replace("-", "_") == model_name and item.target_id == row_id]
+        return list(self.items.row_items(model_name.replace("_", "-"), row_id).waiting().all_rows())

@@ -23,7 +23,7 @@ class ReadOutputHandler(Handler[ReadOutput, OutputLines]):
         self.repeats.check(command, context.actor)
         lines = self.texts.lines(context.actor, command)
         self.repeats.note(command, context.actor, context.timestamp.text)
-        kept = self.outputs.process(command.process_id).filter(state=OutputState.KEPT).page(1, 1).rows
+        kept = self.outputs.process(command.process_id).filter(state=OutputState.KEPT).limited(1)
         if kept and kept[0].read_at is None:
             self.repository.save(replace(kept[0], read_at=context.timestamp), context)
         return OutputLines(lines)

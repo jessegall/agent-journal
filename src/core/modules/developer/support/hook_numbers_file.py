@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import json
 
 from core.base.journal_home import JournalHome
@@ -16,7 +17,7 @@ class HookNumbersFile:
     def read(self) -> list[HookNumber]:
         if not self.path.exists():
             return []
-        rows = json.loads(self.path.read_text())
+        rows = json.loads(FileAccess.shared().read(self.path))
         return [HookNumber(**row) for row in rows if "most_points" in row]
 
     def add(self, hook: str, points: int) -> None:
@@ -24,7 +25,7 @@ class HookNumbersFile:
         kept = rows.get(hook, HookNumber(hook, 0, 0, 0))
         rows[hook] = HookNumber(hook, kept.count + 1, kept.total_points + points, max(kept.most_points, points))
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(json.dumps([vars(row) for row in rows.values()]))
+        FileAccess.shared().write(self.path, json.dumps([vars(row) for row in rows.values()]))
 
     def reset(self) -> None:
         self.path.unlink(missing_ok=True)

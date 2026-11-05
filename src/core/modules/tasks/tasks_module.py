@@ -26,6 +26,8 @@ from core.modules.tasks.migrations.m006_task_started_at import TaskStartTimeMigr
 from core.modules.tasks.migrations.m007_task_delegated_to import TaskDelegationMigration
 from core.modules.tasks.migrations.m008_delegated_task_index import DelegatedTaskIndexMigration
 from core.modules.tasks.migrations.m009_task_reads import TaskReadsTableMigration
+from core.modules.tasks.migrations.m010_closed_task_index import ClosedTaskIndexMigration
+from core.modules.tasks.migrations.m012_open_task_edge_index import OpenTaskEdgeIndexMigration
 from core.modules.tasks.migrations.m013_task_closed_cursor_index import TaskClosedCursorIndexMigration
 from core.modules.tasks.models.task_read import TaskRead
 from core.modules.tasks.commands.read_task_brief.read_task_brief_handler import ReadTaskBriefHandler
@@ -105,7 +107,7 @@ class TasksModule(Module):
     skills = [SkillDeclaration("journal-tasks", "Declare, log and finish the current work; read it before the first task command of a session", keywords=("task", "tasks", "todo"), commands=["task"])]
     models = [ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(TaskBlockRenewal, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(TaskRead, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
-    migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration, DelegatedTaskIndexMigration, TaskReadsTableMigration, TaskBlockRenewalsMigration, TaskClosedCursorIndexMigration]
+    migrations = [OpenTaskEdgeIndexMigration, ClosedTaskIndexMigration, TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration, DelegatedTaskIndexMigration, TaskReadsTableMigration, TaskBlockRenewalsMigration, TaskClosedCursorIndexMigration]
     subcommands = [AssignTaskSubcommand, CommentTaskSubcommand, TaskCommentsSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, ReadTaskBriefSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand]
     handlers = [AssignTaskHandler, ClearDelegatedTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]

@@ -9,6 +9,7 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from core.base.query.queries import Queries
 from core.modules.processes.commands.end_process.end_process import EndProcess
+from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK
 from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_marks_text
@@ -91,6 +92,24 @@ def test_a_failed_test_goes_back_to_the_worker_and_its_next_delivery_runs_it_aga
     expect_answers(started, 2)
     story.expect_text("proof show 1", "state: running", actor=story.agent)
 
+
+
+def test_an_orphaned_proof_returns_to_the_worker_and_runs_again_at_delivery(new_story, monkeypatch):
+    story, _, worker, started = queued_story(new_story, monkeypatch)
+    orphaned_process_id = started[0]
+    story.container.get(Bus).run(OrphanProcess(orphaned_process_id), Actor.core(), environment_id=1)
+    story.run_listeners()
+    story.expect_text("proof show 1", "state: short", actor=story.agent)
+    story.expect_text("task show 1", "state: started", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {worker.id}", f"your tests failed: journal output read {orphaned_process_id} --summary")
+    story.expect_success("worker deliver", actor=worker)
+    story.run_listeners()
+    expect_answers(started, 2)
+    story.expect_rows(started[1] != orphaned_process_id)
+    story.expect_text("proof show 1", "state: running", f"process_id: {started[1]}", actor=story.agent)
+    ended(story, started[1], 0)
+    story.expect_text("proof show 1", "state: checked", actor=story.agent)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 def mixed_proof_story(new_story, monkeypatch):
     story = new_story(fixture=OrchestratorWithOpenTask)

@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 from core.base.journal_home import JournalHome
 
 KEY = "code-commandments-as-plugin"
@@ -18,6 +19,6 @@ class CommandmentsPackage:
     def is_offered(self) -> bool:
         project = self.home.project_folder
         lock = project / "composer.lock"
-        lock_match = lock.is_file() and PACKAGE in lock.read_text(errors="replace")
-        settings_match = any((project / name).is_file() and MANAGED_MARK in (project / name).read_text(errors="replace") for name in SETTINGS_FILES)
+        lock_match = lock.is_file() and PACKAGE in FileAccess.shared().read(lock, errors="replace")
+        settings_match = any((project / name).is_file() and MANAGED_MARK in FileAccess.shared().read(project / name, errors="replace") for name in SETTINGS_FILES)
         return (lock_match or settings_match) and not (self.home.folder / "plugins" / PLUGIN_NAME).is_dir()

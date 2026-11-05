@@ -56,7 +56,7 @@ class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
             raise Refusal(f"sequence {current.sequence_id} is running", "finish it with journal sequence next, or give it up with journal sequence abandon")
         if command.sequence_id is None:
             raise Refusal("name the sequence to run", "journal sequence run <n>")
-        agents = self.queries.query(Agent).filter(id=context.actor.id).page(1, 1).rows
+        agents = self.queries.query(Agent).filter(id=context.actor.id).limited(1)
         if not agents:
             raise Refusal("only an agent runs a sequence", "the agent runs journal sequence run <n>")
         sequence = self.queries.query(Sequence).find(command.sequence_id)
