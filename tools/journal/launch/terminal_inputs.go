@@ -5,13 +5,18 @@ import (
 	"os/exec"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 )
 
 // keyPause is how long a typed line waits before its Enter, because a program reading a terminal takes a line and its
 // Enter sent at once as pasted text.
 const keyPause = 80 * time.Millisecond
+
+const (
+	stopWait       = 5 * time.Second
+	forcedStopWait = 2 * time.Second
+	stopPoll       = 50 * time.Millisecond
+)
 
 // TerminalInputs keeps the input of each running program by its agent row, so a line typed in the viewer reaches the
 // program's pseudo terminal beside what the person types at the keyboard, with when each last came.
@@ -91,15 +96,36 @@ func (inputs *TerminalInputs) Track(agentID int, program *exec.Cmd) {
 	delete(inputs.starting, agentID)
 }
 
-// StopProgram ends the agent's running program and says whether it had one.
+// StopProgram asks the agent's program and the children in its process group to end, waits for them, then forces
+// them, and says whether it had a program.
 func (inputs *TerminalInputs) StopProgram(agentID int) bool {
 	inputs.mutex.Lock()
-	defer inputs.mutex.Unlock()
 	program, ok := inputs.programs[agentID]
+	inputs.mutex.Unlock()
 	if !ok || program.Process == nil {
 		return false
 	}
-	return program.Process.Signal(syscall.SIGTERM) == nil
+	signalGroup(program.Process.Pid, false)
+	if inputs.waitForExit(agentID, stopWait) {
+		return true
+	}
+	signalGroup(program.Process.Pid, true)
+	inputs.waitForExit(agentID, forcedStopWait)
+	return true
+}
+
+func (inputs *TerminalInputs) waitForExit(agentID int, limit time.Duration) bool {
+	deadline := time.Now().Add(limit)
+	for time.Now().Before(deadline) {
+		inputs.mutex.Lock()
+		_, running := inputs.programs[agentID]
+		inputs.mutex.Unlock()
+		if !running {
+			return true
+		}
+		time.Sleep(stopPoll)
+	}
+	return false
 }
 
 // TypeLine types the line and its Enter into the agent's terminal, and says whether the agent has one.

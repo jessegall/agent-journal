@@ -8,7 +8,7 @@ from core.base.caller.caller_request import SESSION_VARIABLE
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.command_effect import CommandEffect
 from core.base.driver.tool_type import ToolType
-from core.modules.drivers.support.access_nudges import OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, UNJUDGED_LINE
+from core.modules.drivers.support.access_nudges import ENDED_HELPER, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, UNJUDGED_LINE
 from core.base.query.queries import Queries
 from core.modules.documents.models.report import Report
 from core.testing.expect_reply import expect_reply_allowed
@@ -212,3 +212,15 @@ def test_git_output_to_a_file_is_refused(new_story, helper_fixture):
     story, session = helper_story(new_story, helper_fixture)
     sample = shell("git diff --output=a", part("git", CommandCategory.EDIT, "diff", "--output=a", effects=WRITES))
     story.expect_hook_refusal(session, sample, "reads and searches only")
+
+
+@pytest.mark.parametrize("helper_fixture", PROGRAMS)
+def test_an_ended_helper_is_refused_its_next_tool_and_writes_no_second_report(new_story, helper_fixture):
+    story, session = helper_story(new_story, helper_fixture)
+    story.expect_success(f"agent end {the_helper(story).id}", actor=story.user)
+    story.run_listeners()
+    story.expect_hook_refusal(session, tool("Edit", ToolType.EDIT), ENDED_HELPER.nudge().text)
+    before = story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text
+    story.hook(session, HookSamples.stop())
+    story.run_listeners()
+    story.expect_rows(story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text == before)

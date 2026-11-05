@@ -4,7 +4,7 @@ from collections.abc import Mapping
 
 from core.base.journal_home import LAUNCHER_SOCKET, JournalHome
 
-ANSWER_LIMIT_SECONDS = 5
+ANSWER_LIMIT_SECONDS = 9
 ANSWER_BYTES = 16
 STOPPED_ANSWER = b"stopped\n"
 

@@ -15,6 +15,7 @@ from core.modules.agents.commands.bind_agent_session.bind_agent_session import B
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.hook_call import HookCall
+from core.modules.drivers.support.access_nudges import ENDED_HELPER
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
 from core.modules.drivers.support.hook_durations import HookDurations
 from core.modules.environments.models.environment import Environment
@@ -43,11 +44,17 @@ class AgentHookRoute(HookRoute):
             return HookReply.stored(stored_calls[0])
         agent = self.agent(event)
         if agent is None:
-            return HookReply.allowed()
+            return self.ended_helper_reply(event)
         reply = self.bus.run(RecordHookCall(event, agent.id), Actor(agent.id, ActorType.AGENT), environment_id=agent.environment_id)
         with self.bus.scopes.read_scope((), None, agent.environment_id):
             measured = self.durations.measured(event, reply.labelled_lines or [*reply.lines, reply.refusal])
         return replace(reply, terminal="\n".join(line for line in (reply.terminal, measured) if line))
+
+    def ended_helper_reply(self, event: HookEvent) -> HookReply:
+        row = self.agents.session(event.session)
+        if row is None or row.role != AgentRole.HELPER or event.event != HookEventName.PRE_TOOL_USE:
+            return HookReply.allowed()
+        return HookReply(refusal=ENDED_HELPER.nudge().text)
 
     def agent(self, event: HookEvent) -> Agent | None:
         main = self.open_agent(event.session) or self.launch_name_agent(event)

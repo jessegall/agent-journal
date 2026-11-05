@@ -15,6 +15,7 @@ UNJUDGED_LINE = NudgeDeclaration("drivers.unjudged_line", NudgeType.REFUSAL, "th
 OLD_HOOK_LINE = NudgeDeclaration("drivers.old_hook_line", NudgeType.REFUSAL, "your hooks are too old to judge this line: update the journal, then start the agent again")
 OUTWARD_JOURNAL_LINE = NudgeDeclaration("drivers.outward_journal_line", NudgeType.REFUSAL, "this journal command reaches past the journal: say in your report what should be run")
 LIMITED_TOOL = NudgeDeclaration("drivers.limited_tool", NudgeType.REFUSAL, "a read-only agent has no {tool}: say in your report what you need")
+ENDED_HELPER = NudgeDeclaration("drivers.ended_helper", NudgeType.REFUSAL, "this helper has ended: stop your work, nothing more is recorded")
 
-ACCESS_NUDGES = [UNJUDGED_LINE, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, TOOL_RESTRICTION, COMMAND_RESTRICTION, READONLY, FILE_ACCESS_RESTRICTION, JOURNAL_RESTRICTION,
+ACCESS_NUDGES = [ENDED_HELPER, UNJUDGED_LINE, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, TOOL_RESTRICTION, COMMAND_RESTRICTION, READONLY, FILE_ACCESS_RESTRICTION, JOURNAL_RESTRICTION,
                  SHELL_RESTRICTION, SUBAGENT_RESTRICTION, PROGRAM_RESTRICTION, GIT_RESTRICTION, FULL_TEST_RESTRICTION]
