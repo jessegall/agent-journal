@@ -1,5 +1,7 @@
 from core.base.actor import CORE_ACTOR_ID
 import pytest
+
+from core.testing.fake_launcher import FakeLauncher
 from core.base.change.event_log import EventLog
 from core.base.database.database import Database
 from core.modules.profiles.support.profile_files import ProfileFiles
@@ -101,8 +103,9 @@ def test_native_module_profiles_are_published_for_codex_only_where_it_has_a_fold
 
 def test_starting_a_helper_under_a_profile_counts_its_use(new_story):
     story = saved_profile_story(new_story)
-    start = HookSamples.helper().with_raw({"tool_input": {"model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted", "subagent_type": "critic"}})
-    story.hook("s-1", start)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.run('helper start critic --model haiku --brief "Find where totals are counted" --environment main', actor=story.agent)
+    launcher.server.close()
     story.expect_text("profile list", "critic  helper  sonnet  used 1", actor=story.user)
 
 

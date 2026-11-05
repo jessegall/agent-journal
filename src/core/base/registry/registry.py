@@ -62,7 +62,6 @@ class Registry:
     models: dict[str, ModelEntry]
     handlers: dict[str, DottedPath]
     subcommands: dict[str, DottedPath]
-    outward_lines: tuple[str, ...]
     guards: tuple[GuardEntry, ...]
     listeners: tuple[ListenerEntry, ...]
     bindings: dict[str, DottedPath] = field(default_factory=lambda: {})
@@ -90,6 +89,7 @@ class Registry:
     module_fingerprints: dict[str, str] = field(default_factory=lambda: {})
     module_suites: dict[str, tuple[str, ...]] = field(default_factory=dict)
     events: tuple[str, ...] = ()
+    outward_lines: tuple[str, ...] = ()
 
     @classmethod
     def read(cls, database: Database) -> "Registry":
@@ -119,7 +119,7 @@ class Registry:
             models={cli_name: ModelEntry(entry["module"], DottedPath(entry["model"]), tuple(entry["commands"]), tuple(entry["excluded_subcommands"])) for cli_name, entry in entries["models"].items()},
             handlers={command: DottedPath(path) for command, path in entries["handlers"].items()},
             subcommands={line: DottedPath(path) for line, path in entries["subcommands"].items()},
-            outward_lines=tuple(entries["outward_lines"]),
+            outward_lines=tuple(entries.get("outward_lines", ())),
             guards=tuple(GuardEntry(guard["name"], EventPattern(guard["event"]), DottedPath(guard["path"]), guard["position"], guard["short_flag"])
                          for guard in entries["guards"]),
             listeners=tuple(ListenerEntry(listener["name"], EventPattern(listener["event"]), ListenerTiming(listener["timing"]), DottedPath(listener["path"]),

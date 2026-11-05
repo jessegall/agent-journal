@@ -11,7 +11,6 @@ from core.modules.drivers.rules.journal_commands_rule import JournalCommandsRule
 from core.modules.drivers.rules.no_full_test_run_rule import NoFullTestRunRule
 from core.modules.drivers.rules.no_git_rule import NoGitRule
 from core.modules.drivers.rules.no_shell_rule import NoShellRule
-from core.modules.drivers.rules.no_helpers_rule import NoSubagentsRule
 from core.modules.drivers.rules.read_write_rule import ReadWriteRule
 from core.modules.drivers.rules.readonly_rule import ReadonlyRule
 from core.testing.hook_samples import HookSamples
@@ -52,11 +51,6 @@ class JournalDriver(AccessDriver):
 class NoShellDriver(AccessDriver):
     name = "access.no-shell"
     rules = [NoShellRule]
-
-
-class NoSubagentsDriver(AccessDriver):
-    name = "access.no-helpers"
-    rules = [NoSubagentsRule]
 
 
 class NoGitDriver(AccessDriver):
@@ -109,7 +103,7 @@ class AccessModule(Module):
     requires_core = ">=5.0,<6"
     dependencies = ["journal.core.drivers"]
     suites = [AccessSuite]
-    drivers = [ReaderDriver, WriterDriver, JournalDriver, NoShellDriver, NoSubagentsDriver, NoGitDriver,
+    drivers = [ReaderDriver, WriterDriver, JournalDriver, NoShellDriver, NoGitDriver,
                FileTestsDriver, ReadToolDriver, ReadCommandsDriver, NoCurlDriver, UnrestrictedDriver]
 
 

@@ -1,11 +1,15 @@
 import sqlite3
 from contextlib import contextmanager
+from typing import TYPE_CHECKING
 
 from core.base.database.nesting_error import NestingError
 from core.base.database.point_tally import PointTally
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
 from core.base.scope.row_owner import RowOwner
+
+if TYPE_CHECKING:
+    from core.base.database.kept_rows import KeptRows
 
 PRAGMAS = ("foreign_keys = ON", "journal_mode = WAL", "synchronous = NORMAL")
 BUSY_TIMEOUT_SECONDS = 5.0
@@ -24,6 +28,7 @@ class Database:
         self.read_actor_id: int | None = None
         self.write_rollback_count = 0
         self.row_owner: RowOwner | None = None
+        self.kept_rows: "KeptRows | None" = None
 
     @property
     def scope_environment_id(self) -> int | None:

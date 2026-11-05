@@ -8,12 +8,15 @@ from core.base.database.statement import Statement
 
 T = TypeVar("T")
 
+KEPT_ROW_COUNT = 20000
+
 
 class KeptRows:
     """Keeps each caller's table reads until the table changes or a transaction rolls back."""
 
     def __init__(self, database: Database) -> None:
         self.database = database
+        database.kept_rows = self
         self.kept: dict[str, KeptValue] = {}
         self.write_rollback_count = database.write_rollback_count
 
@@ -32,6 +35,8 @@ class KeptRows:
         if cache_key in self.kept and self.kept[cache_key].signature == signature:
             self.kept[cache_key] = replace(self.kept[cache_key], change_mark=change_mark)
             return cast(T, self.kept[cache_key].value)
+        if len(self.kept) >= KEPT_ROW_COUNT:
+            self.kept.clear()
         loaded = loader()
         self.kept[cache_key] = KeptValue(signature, change_mark, loaded)
         return loaded

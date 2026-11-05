@@ -34,7 +34,11 @@ class Query(Generic[M]):
         self.select = Select(self.table.name)
 
     def find(self, row_id: int) -> M:
-        return self.find_many([row_id])[0]
+        kept = self.database.kept_rows
+        if kept is None or self.table.key != ROW_KEY or not self.table.has_column(VERSION_COLUMN):
+            return self.find_many([row_id])[0]
+        statement = self.scoped(self.select).conditions
+        return kept.read_newest(self.table.name, lambda: self.find_many([row_id])[0], f"{self.table.key} = ?", [row_id], name=f"query.find:{statement}")
 
     def find_many(self, row_ids: Sequence[int]) -> list[M]:
         row_index = {getattr(row, self.table.key): row for row in self.rows(self.select.matching(Among(self.table.key, row_ids)))}
