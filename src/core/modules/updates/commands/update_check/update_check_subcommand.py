@@ -5,6 +5,7 @@ from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.updates.models.release import Release
+from core.modules.updates.models.release_install import ReleaseInstall
 from core.modules.updates.support.release_source import ReleaseSource
 from core.modules.updates.support.update_standing import UpdateStanding
 
@@ -23,8 +24,10 @@ class UpdateCheckSubcommand(ReadSubcommand[UpdateStanding]):
 
     def read(self, arguments: Namespace, caller: Caller) -> UpdateStanding:
         installed = self.queries.query(Release).newest().page(1, 1).rows
-        return UpdateStanding(self.source.newest(), installed[0] if installed else None)
+        installations = self.queries.query(ReleaseInstall).newest().page(1, 1).rows
+        return UpdateStanding(self.source.newest(), installed[0] if installed else None, installations[0] if installations else None)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, UpdateStanding):
-            output.write(value.line, {"line": value.line, "tag": value.newest.tag, "is_current": value.installed is not None and value.installed.checksum == value.newest.checksum})
+            output.write(value.line, {"line": value.line, "tag": value.newest.tag, "is_current": value.installed is not None and value.installed.checksum == value.newest.checksum,
+                                      "installation": {"step": value.installation.step.value, "detail": value.installation.detail} if value.installation else None})

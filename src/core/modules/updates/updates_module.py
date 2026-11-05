@@ -1,3 +1,7 @@
+from core.modules.updates.models.release_install import ReleaseInstall
+from core.modules.updates.migrations.m002_release_installs import ReleaseInstallsMigration
+from core.modules.updates.commands.record_release_install.record_release_install_handler import RecordReleaseInstallHandler
+from core.modules.updates.listeners.release_install_listener import ReleaseInstallListener
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -27,10 +31,11 @@ class UpdatesModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.chat", "journal.core.settings"]
     settings = UPDATE_SETTINGS
-    models = [ModelDeclaration(Release, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [ReleasesTableMigration]
-    handlers = [InstallReleaseHandler, ShowUpdateStepHandler]
+    models = [ModelDeclaration(ReleaseInstall, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(Release, excluded_subcommands=["make", "edit", "delete"])]
+    migrations = [ReleasesTableMigration, ReleaseInstallsMigration]
+    listeners = [ReleaseInstallListener]
+    handlers = [RecordReleaseInstallHandler, InstallReleaseHandler, ShowUpdateStepHandler]
     subcommands = [UpdateCheckSubcommand, InstallReleaseSubcommand, UpdateNotesSubcommand, ShowUpdateStepSubcommand]
     marks = UPDATE_MARKS
     windows = [WindowDeclaration("updates.updates", "Updates", "updates.js", WindowLoading.COMPONENT, skeleton=UPDATES_UPDATES_SKELETON, group="project", icon=WindowIcon.UPDATE,
-                                 reads=["update check", "update notes", "release list"], runs=["update install"], events=["release.*"])]
+                                 reads=["update check", "update notes", "release list"], runs=["update install"], events=["release.*", "release_install.*"])]

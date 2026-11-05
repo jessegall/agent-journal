@@ -6,7 +6,8 @@ const releases = useRows("release list", ["release.*"]);
 const standing = ref(null);
 const checkFailure = ref("");
 const installing = ref(false);
-const installed = ref(false);
+const installationRequested = ref(false);
+const installed = computed(() => installationRequested.value && standing.value?.is_current && standing.value?.installation?.step === "finished");
 const notes = ref([]);
 const notesPage = ref(1);
 const lastPage = ref(true);
@@ -30,7 +31,7 @@ async function install() {
     installing.value = false;
     if (!result.ok) return;
     await check();
-    installed.value = true;
+    installationRequested.value = true;
 }
 
 async function readNotes(page) {
@@ -44,6 +45,7 @@ async function readNotes(page) {
 
 const reload = () => window.location.reload();
 
+releases.context.follow(["release.*", "release_install.*"], check);
 check();
 readNotes(1);
 </script>
@@ -66,7 +68,7 @@ readNotes(1);
             <span class="line">{{ checkLine }}</span>
             <button type="button" @click="check">Check again</button>
             <template v-if="standing && !standing.is_current">
-                <Btn small kind="primary" data-update-install @click="install">{{ standing.tag ? `Update to ${standing.tag}` : "Update to the latest" }}</Btn>
+                <Btn small kind="primary" data-update-install @click="install">{{ standing.installation?.step === "failed" ? "Retry update" : standing.tag ? `Update to ${standing.tag}` : "Update to the latest" }}</Btn>
             </template>
             <template v-else-if="standing">
                 <button type="button" data-update-force @click="install">Install it again</button>
