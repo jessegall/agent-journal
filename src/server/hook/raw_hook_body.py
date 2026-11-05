@@ -28,7 +28,7 @@ class RawHookBody:
     @classmethod
     def parsed(cls, data: object) -> "RawHookBody":
         fields = mapping(data, "a raw hook body")
-        return cls(text(fields, "hook_event_name"), text(fields, "session_id"), text(fields, "tool_name"), text(fields, "prompt"), text(fields, "agent_id"), fields)
+        return cls(text(fields, "hook_event_name"), text(fields, "session_id"), text(fields, "tool_name"), text(fields, "prompt"), fields)
 
     def event(self, program: str, hook_events: Mapping[str, HookEventName], headers: HookHeaders) -> HookEvent:
         if self.hook_name not in hook_events:

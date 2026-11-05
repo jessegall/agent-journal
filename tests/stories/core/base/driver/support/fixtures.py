@@ -39,7 +39,7 @@ class LeadLocked(StoryFixture):
         story.run(f"edit-lock make {story.agent.id}")
 
     def expect(self, story: Story) -> None:
-        story.expect_success("edit-lock show 1", f"session_agent_id: {story.agent.id}", "state: open")
+        story.expect_success("edit-lock show 1", f"agent_id: {story.agent.id}", "state: open")
 
 
 class LeadWaiting(StoryFixture):

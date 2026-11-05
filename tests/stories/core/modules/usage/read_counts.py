@@ -43,7 +43,7 @@ def test_the_nudge_list_loads_one_row_for_each_nudge_however_often_it_was_said(n
     repository, context = story.container.get(Repository), Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
     with story.container.get(Database).transaction():
         for number in range(6):
-            repository.save(NudgeRecord(agent_id=story.agent.id, creator_id=story.agent.id, key="samples.said", text=f"said {number}", delivery_count=1, last_delivered_at=story.clock.timestamp()), context)
+            repository.save(NudgeRecord(session_agent_id=story.agent.id, creator_id=story.agent.id, key="samples.said", text=f"said {number}", delivery_count=1, last_delivered_at=story.clock.timestamp()), context)
     expect_rows_loaded(story, "nudge list --json", previous_count + 1)
 
 

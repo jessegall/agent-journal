@@ -18,6 +18,7 @@ from core.base.timestamp import Timestamp
 TIMESTAMP = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 ITEMS = ("CREATE TABLE items (id INTEGER PRIMARY KEY, title TEXT NOT NULL UNIQUE, state TEXT NOT NULL, version INTEGER NOT NULL,"
          " metadata TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT")
+AGENTS = "CREATE TABLE agents (id INTEGER PRIMARY KEY, role TEXT NOT NULL, environment_id INTEGER NOT NULL) STRICT"
 
 
 def sample_container(folder: Path, registry: Registry) -> Container:
@@ -26,6 +27,7 @@ def sample_container(folder: Path, registry: Registry) -> Container:
     database = Database.opened(home)
     Schema(database, Tables()).migrate([CORE_MIGRATIONS])
     database.update(Statement(ITEMS))
+    database.update(Statement(AGENTS))
     container = Container()
     container.bind(JournalHome, home)
     container.bind(Database, database)

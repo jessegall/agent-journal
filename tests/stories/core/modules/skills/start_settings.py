@@ -32,12 +32,12 @@ def test_an_environment_setting_wins_over_the_projects(new_story):
 
 
 def expect_after_compaction(story, number, expected) -> None:
-    actual = story.container.get(StartSkills).after_compaction(number)
+    actual = story.container.get(StartSkills).after_compaction()
     assert actual == expected, actual
 
 
 def expect_session_start(start, number, expected) -> None:
-    actual = start.session_start(number)
+    actual = start.session_start()
     assert actual == expected, actual
 
 

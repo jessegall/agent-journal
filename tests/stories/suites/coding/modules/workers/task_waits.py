@@ -149,7 +149,7 @@ def test_a_crashed_worker_opens_the_task_at_the_next_process_check(new_story):
 def test_a_worker_that_never_started_is_retired_and_opens_the_task(new_story):
     story, _, worker = working_story(new_story)
     task_id = waiting_task(story, worker)
-    hours = story.container.get(SettingValues).number(WORKER_IDLE_HOURS, 1)
+    hours = story.container.get(SettingValues).number(WORKER_IDLE_HOURS)
     story.clock.advance(timedelta(seconds=hours * HOUR_SECONDS))
     story.tick(MAIN_SESSION)
     story.expect_success(f"task show {task_id}", "state: open", actor=story.agent)

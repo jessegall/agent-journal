@@ -1,3 +1,4 @@
+from core.testing.fake_launcher import FakeLauncher
 import json
 import shlex
 
@@ -277,7 +278,9 @@ def test_default_models_are_effective_and_native_profiles_still_publish(profile_
     native = story.home.project_folder / ".claude/agents/journal-researcher.md"
     expect_value(native.is_file(), True)
     expect_value("tools:" in FileAccess.shared().read(native), False)
-    story.hook("s-1", HookSamples.helper().with_raw({"tool_input": {"subagent_type": "journal-researcher", "model": "haiku", "description": "Read one question", "prompt": "Read one question"}}))
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.run('helper start journal-researcher --model haiku --brief "Read the cart" --environment main', actor=story.agent)
+    launcher.server.close()
     expect_value(profile_row(story, "journal-researcher")["uses"], 1)
 
 

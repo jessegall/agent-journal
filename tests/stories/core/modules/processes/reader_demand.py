@@ -143,16 +143,16 @@ def test_a_read_a_search_and_a_journal_command_never_need_a_reader(new_story):
     story = new_story(fixture=BuilderStarted)
     demands = story.container.get(ReaderDemands)
     for category in (CommandCategory.READ, CommandCategory.SEARCH, CommandCategory.JOURNAL):
-        story.expect_rows(not demands.needs_reader(1, PartSpec("read", "read", category=category)))
+        story.expect_rows(not demands.needs_reader(PartSpec("read", "read", category=category)))
 
 
 def test_a_quick_check_needs_no_reader_until_a_run_of_it_moved_to_the_background(new_story):
     story = new_story(fixture=BuilderStarted)
     demands = story.container.get(ReaderDemands)
     part = PartSpec("custom-check src", "custom-check", category=CommandCategory.CHECK)
-    story.expect_rows(not demands.needs_reader(1, part))
+    story.expect_rows(not demands.needs_reader(part))
     moved_run(story, part.text, CommandCategory.CHECK)
-    story.expect_rows(demands.needs_reader(1, part))
+    story.expect_rows(demands.needs_reader(part))
 
 
 def test_a_help_or_version_line_of_a_test_tool_needs_no_reader(new_story):
