@@ -75,7 +75,7 @@ onMounted(load);
                 <AgentWho :name="givenName(row, facts)" :state="agentState(row, facts)" :parts="identityParts(row, facts)" :started-by="inspection.started_by" />
                 <AgentStrip :cells="stripCells({row, facts, inspection, now})" />
                 <AgentNow :inspection="inspection" :tool="tool" :nothing="nothing" />
-                <AgentBrief :label="row.role === 'subagent' ? 'Instruction' : 'Brief'" :text="facts?.instruction ?? ''" :points="points" />
+                <AgentBrief :label="row.access === 'read-only' || row.role === 'subagent' ? 'Instruction' : 'Brief'" :text="facts?.instruction ?? ''" :points="points" />
                 <AgentRecent :moves="inspection.recent" />
                 <AgentFolds :id="id" :read="read" :counts="counts" :loads="loads" :details="detailRows(row, inspection)" />
             </template>
