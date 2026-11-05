@@ -1,3 +1,4 @@
+from core.base.skill.skill_contents import SkillContents
 from core.base.file_access import FileAccess
 import shutil
 from collections.abc import Sequence
@@ -40,12 +41,12 @@ class SkillFiles:
         projects = self.projects.projects()
         published: dict[str, bool] = {}
         for skill in skills:
-            text = FileAccess.shared().read(Path(skill.path))
+            text = SkillContents.read(Path(skill.path)).text
             published[skill.folder] = any(tuple(self.publish(project, skill, text) for project in projects))
         return published
 
     def write(self, project: Path, skill: SkillEntry) -> bool:
-        return self.publish(project, skill, FileAccess.shared().read(Path(skill.path)))
+        return self.publish(project, skill, SkillContents.read(Path(skill.path)).text)
 
     def publish(self, project: Path, skill: SkillEntry, text: str) -> bool:
         changed = False
@@ -53,7 +54,7 @@ class SkillFiles:
             target = project / program_folder / skill.folder / SKILL_FILE
             if target.resolve() == Path(skill.path).resolve():
                 continue
-            if target.exists() and SkillDigest.digest(FileAccess.shared().read(target)) == SkillDigest.digest(text):
+            if target.exists() and SkillContents.read(target).digest == SkillDigest.digest(text):
                 continue
             target.parent.mkdir(parents=True, exist_ok=True)
             FileAccess.shared().write(target, text)

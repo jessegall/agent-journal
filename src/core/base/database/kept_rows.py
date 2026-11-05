@@ -15,7 +15,7 @@ class KeptRows:
     def __init__(self, database: Database) -> None:
         self.database = database
         self.kept: dict[str, KeptValue] = {}
-        self.rollback_count = database.rollback_count
+        self.write_rollback_count = database.write_rollback_count
 
     def read(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> T:
         self.check_rollback()
@@ -40,9 +40,9 @@ class KeptRows:
         self.read(table, lambda: updater(cast(T, previous.value)), condition, parameters, name=name)
 
     def check_rollback(self) -> None:
-        if self.rollback_count != self.database.rollback_count:
+        if self.write_rollback_count != self.database.write_rollback_count:
             self.kept.clear()
-            self.rollback_count = self.database.rollback_count
+            self.write_rollback_count = self.database.write_rollback_count
 
     @staticmethod
     def key(table: str, condition: str, parameters: Sequence[object], name: str) -> str:

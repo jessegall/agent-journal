@@ -42,12 +42,19 @@ class NudgeLog:
     def record(self, agent_id: int, nudge: Nudge) -> NudgeRecord:
         rows = self.queries.query(NudgeRecord).filter(agent_id=agent_id, key=nudge.key)
         query = (rows if nudge.interval else rows.filter(text=nudge.text)).descending("last_delivered_at")
-        record = self.kept.read("nudge_records", query.first, "agent_id = ? AND key = ?", [agent_id, nudge.key],
+        condition, parameters = "agent_id = ? AND key = ?", [agent_id, nudge.key]
+        if not nudge.interval:
+            condition += " AND text = ?"
+            parameters.append(nudge.text)
+        record = self.kept.read("nudge_records", query.first, condition, parameters,
                                 name=f"drivers.nudge:{nudge.key if nudge.interval else nudge.text}")
         return record if record is not None else NudgeRecord(agent_id=agent_id, creator_id=0, key=nudge.key, text=nudge.text)
 
     def write(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
         for nudge in (*answers.delivered_nudges, *answers.refusal_nudges):
-            matching_records = self.queries.query(NudgeRecord).filter(agent_id=agent_id, key=nudge.key, text=nudge.text).limited(1)
-            current = matching_records[0] if matching_records else self.record(agent_id, nudge)
-            self.repository.save(replace(current, creator_id=context.actor.id, text=nudge.text, delivery_count=current.delivery_count + 1, last_delivered_at=context.timestamp), context)
+            current = self.record(agent_id, nudge)
+            if nudge.interval and current.text != nudge.text:
+                matching_records = self.queries.query(NudgeRecord).filter(agent_id=agent_id, key=nudge.key, text=nudge.text).limited(1)
+                current = matching_records[0] if matching_records else current
+            self.repository.save_change(current if current.is_saved else None,
+                                        replace(current, creator_id=context.actor.id, text=nudge.text, delivery_count=current.delivery_count + 1, last_delivered_at=context.timestamp), context)

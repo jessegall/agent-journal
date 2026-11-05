@@ -1,3 +1,4 @@
+from core.base.skill.skill_contents import SkillContents
 from core.base.file_access import FileAccess
 import shutil
 from pathlib import Path
@@ -24,7 +25,7 @@ class PluginSkillFiles:
     def publish(self, folder: Path, manifest: PluginManifest) -> None:
         roots = self.projects.roots(self.providers.skill_folders())
         for name in self.names(folder, manifest):
-            text = self.with_plugin_key(FileAccess.shared().read(folder / manifest.skills_folder / name / SKILL_FILE), manifest.name)
+            text = self.with_plugin_key(SkillContents.read(folder / manifest.skills_folder / name / SKILL_FILE).text, manifest.name)
             for root in roots:
                 target = root / name / SKILL_FILE
                 target.parent.mkdir(parents=True, exist_ok=True)
@@ -33,7 +34,7 @@ class PluginSkillFiles:
     def withdraw(self, plugin_name: str) -> None:
         for root in self.projects.roots(self.providers.skill_folders()):
             for path in root.glob(f"*/{SKILL_FILE}"):
-                fields = SkillCatalogue.front_matter(FileAccess.shared().read(path))
+                fields = SkillCatalogue.front_matter(SkillContents.read(path).text)
                 if PLUGIN_KEY in fields and fields[PLUGIN_KEY] == plugin_name:
                     shutil.rmtree(path.parent)
 

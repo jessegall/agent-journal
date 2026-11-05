@@ -60,12 +60,19 @@ class Repository:
         return self.save(replace(existing, **{field.name: getattr(model, field.name) for field in fields(model) if field.name not in IDENTITY_FIELDS}), context)
 
     def delete(self, model: Model, context: Context) -> None:
-        stored = self.stored(model)
+        self.delete_change(self.stored(model), model, context)
+
+    def delete_stored(self, model: Model, context: Context) -> None:
+        self.delete_change(model, model, context)
+
+    def delete_change(self, stored: Model | None, model: Model, context: Context) -> None:
         change: Change[Model] = Change(stored, None, context)
         skipped = self.guards.ask(change)
         self.listeners.run_deletion_listeners(change)
         table = self.tables.table(type(model))
-        self.guarded(lambda: self.database.update(TableStatements(table).delete(model.id, model.version)), table, True)
+        deleted_count = self.guarded(lambda: self.database.update(TableStatements(table).delete(model.id, model.version)), table, True)
+        if deleted_count == 0:
+            raise StaleRowError(model.cli_name, model.id)
         self.log.write(change, skipped)
         self.listeners.run_save_listeners(change)
 

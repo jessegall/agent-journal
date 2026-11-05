@@ -17,5 +17,5 @@ class ReportedWaitMarkListener(MarkListener[Created[Wait]]):
     def handle(self, event: Created[Wait], logged: LoggedEvent) -> None:
         wait = event.row
         if wait.type is WaitType.HELP_REQUEST:
-            environment_id = self.queries.query(Agent).find(wait.agent_id).environment_id
+            environment_id = self.event_rows.required(Agent, wait.agent_id).environment_id
             self.show(logged, WaitMarkType.REPORTED_WAIT, WaitMarkVariant.REPORTED, f"Stuck: {wait.focus}", environment_id, wait.agent_id, "wait", wait.id)

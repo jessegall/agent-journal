@@ -79,6 +79,21 @@ def test_a_known_write_refreshes_the_kept_value_without_reloading_rows(database)
     assert len(calls) == 1
 
 
+def test_a_rollback_without_writes_keeps_the_loaded_rows(database):
+    kept = KeptRows(database)
+    calls = []
+
+    def collect_texts():
+        calls.append(True)
+        return texts(database)
+
+    assert kept.read("notes", collect_texts, name="notes.text") == tuple(["Saved"])
+    with pytest.raises(RollbackRequested), database.transaction():
+        raise RollbackRequested
+    assert kept.read("notes", collect_texts, name="notes.text") == tuple(["Saved"])
+    assert len(calls) == 1
+
+
 def test_a_read_only_transaction_reuses_the_kept_value(database):
     kept = KeptRows(database)
     assert kept.read("notes", lambda: texts(database), name="notes.text") == tuple(["Saved"])

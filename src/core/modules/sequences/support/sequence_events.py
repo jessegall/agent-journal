@@ -22,3 +22,9 @@ class SequenceEvents:
 
     def load(self) -> SequenceEventIndex:
         return SequenceEventIndex.built(self.queries.query(Sequence).all_rows())
+
+    def remember(self, sequence: Sequence) -> None:
+        self.kept.update("sequences", lambda index: index.saved(sequence), name="sequences.event-index")
+
+    def remove(self, sequence_id: int) -> None:
+        self.kept.update("sequences", lambda index: index.removed(sequence_id), name="sequences.event-index")

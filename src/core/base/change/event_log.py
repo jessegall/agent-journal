@@ -1,4 +1,5 @@
 import json
+from collections.abc import Sequence
 from pathlib import Path
 from dataclasses import fields
 
@@ -95,6 +96,9 @@ class EventLog:
 
     def row_events(self, row_table: str, row_id: int) -> list[LoggedEvent]:
         return [LoggedEvent.parsed(row) for row in self.table.row_rows(row_table, row_id)]
+
+    def row_events_many(self, row_table: str, row_ids: Sequence[int]) -> list[LoggedEvent]:
+        return [LoggedEvent.parsed(row) for row in self.table.row_rows_many(row_table, row_ids)]
 
     def child_events(self, event_id: int) -> list[LoggedEvent]:
         return [LoggedEvent.parsed(row) for row in self.table.child_rows(event_id)]

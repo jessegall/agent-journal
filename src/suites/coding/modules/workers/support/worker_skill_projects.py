@@ -1,8 +1,7 @@
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
-from core.base.database.kept_rows import KeptRows
-from core.base.query.queries import Queries
+from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.skills.support.skill_projects import SkillProjects
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -11,8 +10,8 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 class WorkerSkillProjects(SkillProjects):
     """Include Git worktrees when publishing skills and select a worker's own folder for reminders."""
 
-    def __init__(self, home: JournalHome, queries: Queries, worktrees: WorktreeQuery, git: WorktreeGit, kept: KeptRows) -> None:
-        super().__init__(home, queries, kept)
+    def __init__(self, home: JournalHome, environments: EnvironmentRows, worktrees: WorktreeQuery, git: WorktreeGit) -> None:
+        super().__init__(home, environments)
         self.worktrees, self.git = worktrees, git
 
     def projects(self) -> tuple[Path, ...]:

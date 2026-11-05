@@ -19,4 +19,4 @@ class AgentBlockSkipMarkListener(MarkListener[Changed[AgentBlock]]):
         if SKIP_FIELD not in logged.data or not logged.data[SKIP_FIELD][1]:
             return
         block = event.row
-        self.show(logged, RequiredCommandMarkType.SKIPPED, RequiredCommandMarkVariant.SKIPPED, f"Skipped {block.condition_text}: {block.skip_reason}", self.queries.query(Agent).find(block.agent_id).environment_id, block.agent_id)
+        self.show(logged, RequiredCommandMarkType.SKIPPED, RequiredCommandMarkVariant.SKIPPED, f"Skipped {block.condition_text}: {block.skip_reason}", self.event_rows.required(Agent, block.agent_id).environment_id, block.agent_id)

@@ -1,3 +1,4 @@
+from core.base.skill.skill_contents import SkillContents
 from core.base.file_access import FileAccess
 from collections.abc import Sequence
 
@@ -44,7 +45,6 @@ from core.base.registry.button_entry import ButtonEntry
 from core.base.registry.move_entry import MoveEntry
 from core.base.registry.skill_entry import SkillEntry
 from core.base.skill.skill_declaration import SKILLS_FOLDER
-from core.base.skill.skill_digest import SkillDigest
 from core.base.registry.mark_entry import MarkEntry
 from core.base.registry.nudge_entry import NudgeEntry
 from core.base.registry.window_entry import WindowEntry
@@ -197,7 +197,7 @@ class ModuleSync:
             for skill in module.skills:
                 path = module.folder() / SKILLS_FOLDER / skill.folder / skill.file
                 entries.append(SkillEntry(skill.folder, module.name, skill.description, tuple(skill.keywords), tuple(skill.commands), tuple(skill.events),
-                                          SkillDigest.digest(FileAccess.shared().read(path)), str(path), module in shipped))
+                                          SkillContents.read(path).digest, str(path), module in shipped))
         return tuple(entries)
 
     def buttons(self, modules: tuple[type[Module], ...]) -> tuple[ButtonEntry, ...]:

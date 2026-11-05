@@ -1,9 +1,6 @@
 from core.base.driver.block_check import BlockCheck
 from core.base.driver.block_condition import BlockCondition
-from core.base.query.queries import Queries
-from core.modules.tasks.models.enums.task_state import TaskState
-from core.modules.tasks.models.task import Task
-from core.modules.tasks.models.task_read import TaskRead
+from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 
 
 class TaskBriefRead(BlockCondition):
@@ -13,7 +10,7 @@ class TaskBriefRead(BlockCondition):
     subject_scoped = True
 
     def is_true(self, check: BlockCheck) -> bool:
-        queries = check.container.get(Queries)
+        tasks = check.container.get(CurrentTasks)
         task_id, agent_id = int(self.text), check.hook.agent_id
-        current = queries.query(Task).filter(holder_id=agent_id, state=TaskState.STARTED).descending("started_at").limited(1)
-        return not current or current[0].id != task_id or queries.query(TaskRead).filter(task_id=task_id, agent_id=agent_id).exists()
+        current = tasks.started_tasks(agent_id)
+        return not current or current[0].id != task_id or tasks.has_brief_read(task_id, agent_id)

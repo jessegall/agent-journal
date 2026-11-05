@@ -14,4 +14,4 @@ class DeleteHandler(Handler[DeleteCommand, None]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: DeleteCommand, context: Context) -> None:
-        self.repository.delete(self.queries.query(command.model()).find(command.row_id), context)
+        self.repository.delete_stored(self.queries.query(command.model()).find(command.row_id), context)
