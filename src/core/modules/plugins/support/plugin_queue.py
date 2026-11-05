@@ -34,8 +34,11 @@ class PluginQueue:
         for expired in [path for path in self.folder.glob(f"*{RESERVED_SUFFIX}")
                         if path.name not in committed_names and time.time() - path.stat().st_mtime > RESERVATION_LIMIT_SECONDS]:
             expired.rename(self.folder / expired.name.rsplit(".", 2)[0])
-        for path in sorted(self.folder.glob("*.json"), key=lambda path: path.stat().st_mtime_ns):
-            text = path.read_text()
+        for path in self.queued_paths():
+            try:
+                text = path.read_text()
+            except FileNotFoundError:
+                continue
             try:
                 fields: object = json.loads(text or "null")
             except json.JSONDecodeError:
@@ -45,7 +48,10 @@ class PluginQueue:
             if is_mapping(fields) and (("env" in fields and fields["env"] != environment) or ("agent" in fields and fields["agent"] != agent_id)):
                 continue
             reserved_file = self.folder / f"{path.name}.{re.sub(FIRING_UNSAFE, '-', firing)}{RESERVED_SUFFIX}"
-            path.rename(reserved_file)
+            try:
+                path.rename(reserved_file)
+            except FileNotFoundError:
+                continue
             read.answers.append((reserved_file.name, PluginAnswer.parsed(text)))
         return read
 
@@ -53,7 +59,15 @@ class PluginQueue:
         return [answer for path in self.queued_paths() for answer in self.card_answer(path)]
 
     def queued_paths(self) -> list[Path]:
-        return sorted(self.folder.glob("*.json"), key=lambda path: path.stat().st_mtime_ns) if self.folder.is_dir() else []
+        stamped = [(self.modified_ns(path), path) for path in self.folder.glob("*.json")] if self.folder.is_dir() else []
+        return [path for modified_ns, path in sorted(stamped) if modified_ns >= 0]
+
+    @staticmethod
+    def modified_ns(path: Path) -> int:
+        try:
+            return path.stat().st_mtime_ns
+        except FileNotFoundError:
+            return -1
 
     def card_answer(self, path: Path) -> list[PluginCardAnswer]:
         claimed_file = path.with_suffix(CLAIMED_SUFFIX)

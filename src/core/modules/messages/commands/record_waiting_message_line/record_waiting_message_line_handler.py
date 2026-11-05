@@ -28,8 +28,8 @@ class RecordWaitingMessageLineHandler(Handler[RecordWaitingMessageLine, AgentLin
         agent = MainAgentFinder.newest(self.queries, command.environment_id)
         if agent is None or not self.hook_calls.is_idle(agent.id, context.timestamp):
             return None
-        message = self.lines.oldest_unread(command.environment_id)
-        if message is None or message.delivered_at is not None:
+        message = self.lines.waking_message(command.environment_id, agent.id)
+        if message is None:
             return None
         waiting = self.lines.waiting(agent.id).limited(MOST_WAITING_LINES)
         if len(waiting) == MOST_WAITING_LINES or (waiting and waiting[0].creation_timestamp().elapsed_seconds(context.timestamp) < RETRY_SECONDS):

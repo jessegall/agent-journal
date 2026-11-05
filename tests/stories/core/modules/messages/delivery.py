@@ -108,6 +108,26 @@ def test_only_the_first_message_is_typed_to_an_agent_the_stop_hook_let_stop_and_
     expect_absent_reply_line(delivered_lines, "new message 1")
 
 
+def test_a_new_message_is_typed_to_an_idle_agent_though_an_older_one_was_told_and_is_unread(idle_delivery_typing):
+    story, typing = idle_delivery_typing
+    story.advance(timedelta(minutes=1))
+    agent = story.agent
+    story.run('message send "Are you there" --environment main', actor=story.user)
+    story.advance(timedelta(seconds=1))
+    story.hook("s-1", HookSamples.prompt("[journal] new message 1"))
+    story.advance(timedelta(minutes=10))
+    story.run('message send "Hello" --environment main', actor=story.user)
+    story.run_listeners()
+    expect_row(typing, typed=[(agent.id, "[journal] new message 1"), (agent.id, "[journal] new message 2")])
+
+
+def test_a_message_reaches_an_agent_that_waits_on_a_question(new_story):
+    story = delivery_story(new_story)
+    story.run('question ask "Which one" --options "a" "b"', actor=story.agent)
+    story.run('message send "Are you still there" --environment main', actor=story.user)
+    story.expect_hook_allowed("s-1", HookSamples.edit("cart.py"), "new message 1")
+
+
 def test_a_fresh_session_that_has_not_been_given_a_prompt_is_idle_too(new_story):
     story = started_story(new_story)
     typing = KeptTyping()
