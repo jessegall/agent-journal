@@ -15,7 +15,7 @@ from core.modules.processes.commands.support.part_spec import PartSpec
 from core.base.journal_home import LAUNCHER_SOCKET
 from core.testing.hook_samples import HookSamples
 from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
-from suites.coding.modules.workers.support.worker_launcher import WorkerLauncher
+from core.modules.agents.support.agent_launcher import AgentLauncher
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment, worker_session
@@ -118,7 +118,7 @@ def test_a_worker_stopped_past_the_limit_on_a_run_that_goes_on_is_named_to_the_m
 def test_a_paused_worker_stays_stopped_when_its_run_ends(new_story, monkeypatch):
     story, worker, run, bus = worker_with_background_run(new_story)
     hands = []
-    monkeypatch.setattr(WorkerLauncher, "hand", lambda self, *arguments: hands.append(arguments))
+    monkeypatch.setattr(AgentLauncher, "hand", lambda self, *arguments: hands.append(arguments))
     story.expect_success(f"agent pause {worker.id}", actor=story.agent)
     story.run(f"agent end {worker.id}", actor=worker)
     bus.run(EndProcess(run.id, 0, 10, 1), worker, environment_id=1)

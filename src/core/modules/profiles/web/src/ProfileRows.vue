@@ -3,7 +3,8 @@ import {computed, ref} from "vue";
 import {ago, Btn, EmptyState, ListRow, SearchBar, matchesSearch, useRows} from "@journal/window-kit";
 import ProfilePanel from "./ProfilePanel.vue";
 
-const NEW_PROFILE = {name: "", description: "", agent_type: "helper", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: false, uses: 0};
+const NEW_PROFILE = {name: "", description: "", agent_type: "helper", access: "read-only", program: "", independent: false, mcp_tools: [], changed: [], notes: [], problem: "", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: false, uses: 0};
+const ACCESS_WORDS = {"read-only": "Read-only", writing: "Writing"};
 
 const {rows, listing, failure, loaded, act, actionFailure, context} = useRows("profile list", []);
 const types = computed(() => listing.value ? listing.value.types : []);
@@ -17,6 +18,10 @@ const matching = computed(() => {
     return rows.value.filter((row) => words.every((word) => matchesSearch(row, word, context.search?.fields)));
 });
 const panel = computed(() => (making.value ? NEW_PROFILE : rows.value.find((row) => row.name === opened.value) || null));
+const typeLabel = (row) => types.value.find((type) => type.key === row.agent_type)?.label || row.agent_type;
+const origin = (row) => (row.shipped ? "Comes with the journal" : row.module);
+const rowLine = (row) => [`Type: ${typeLabel(row)}`, `Access: ${ACCESS_WORDS[row.access]}`, `${row.model || "chosen at start"} on Claude`, `${row.codex_model || "chosen at start"} on Codex`, row.changed.length ? "Changed" : "", origin(row)].filter(Boolean).join(" · ");
+const warnings = (row) => [row.problem, row.module_text_changed ? "Text changed: the journal's instructions have a new version" : "", ...row.notes].filter(Boolean);
 const usedWords = (row) => (row.uses ? `Uses: ${row.uses} ${row.uses === 1 ? "time" : "times"}, last ${ago(new Date(row.last_used * 1000).toISOString())}` : "Uses: none");
 
 function make() {
@@ -34,10 +39,16 @@ function close() {
     opened.value = "";
 }
 
+async function reset(profile) {
+    notice.value = "";
+    const result = await act(["profile", "reset", profile.name]);
+    if (result.ok) notice.value = `${profile.name} is back to the journal's version.`;
+}
+
 async function save(profile, fields) {
     notice.value = "";
     const name = profile.name || fields.name;
-    const result = await act(["profile", "save", name, "--description", fields.description, "--type", fields.agent_type, "--model", fields.model, "--codex-model", fields.codex_model, "--body", fields.body]);
+    const result = await act(["profile", "save", name, "--description", fields.description, "--type", fields.agent_type, "--access", fields.access, "--program", fields.program, "--model", fields.model, "--codex-model", fields.codex_model, "--mcp-tools", fields.mcp_tools, fields.independent ? "--independent" : "--no-independent", "--body", fields.body]);
     if (!result.ok) return;
     making.value = false;
     opened.value = name;
@@ -49,7 +60,7 @@ async function save(profile, fields) {
     <section class="profiles" data-profiles>
         <SearchBar v-model="query" class="bar" data-profile-find>
             <Btn kind="ghost" small data-profile-new @click="make">New profile</Btn>
-            <span class="count" data-profile-count>{{ rows.length }} {{ rows.length === 1 ? "profile" : "profiles" }} in .claude/agents</span>
+            <span class="count" data-profile-count>{{ rows.length }} {{ rows.length === 1 ? "profile" : "profiles" }}</span>
             <template v-if="notice">
                 <span class="notice" data-profile-notice>{{ notice }}</span>
             </template>
@@ -75,7 +86,10 @@ async function save(profile, fields) {
                         <ListRow :title="profile.name" :text="profile.description">
                             <template #end>
                                 <span class="profile-meta">
-                                    <span class="profile-model">{{ profile.agent_type }} · {{ profile.model || "chosen at start" }} on Claude · {{ profile.codex_model || "chosen at start" }} on Codex</span>
+                                    <span class="profile-model">{{ rowLine(profile) }}</span>
+                                    <template v-for="warning in warnings(profile)" :key="warning">
+                                        <span class="profile-warning" data-profile-warning>{{ warning }}</span>
+                                    </template>
                                     <span :class="['profile-used', {never: !profile.uses}]">{{ usedWords(profile) }}</span>
                                 </span>
                             </template>
@@ -85,7 +99,7 @@ async function save(profile, fields) {
             </div>
         </template>
         <template v-if="panel">
-            <ProfilePanel :types="types" :profile="panel" :used="usedWords(panel)" @close="close" @save="save" />
+            <ProfilePanel :types="types" :profile="panel" :used="usedWords(panel)" @close="close" @save="save" @reset="reset" />
         </template>
     </section>
 </template>
@@ -146,6 +160,10 @@ async function save(profile, fields) {
 .profile-used {
     color: var(--text-3);
     white-space: nowrap;
+}
+
+.profile-warning {
+    color: var(--tone-warn);
 }
 
 .profile-used.never {

@@ -11,9 +11,9 @@ from core.base.query.queries import Queries
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
-from suites.coding.modules.workers.support.launch_answer import LaunchAnswer
+from core.modules.agents.support.launch_answer import LaunchAnswer
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
-from suites.coding.modules.workers.support.worker_launcher import WorkerLauncher
+from core.modules.agents.support.agent_launcher import AgentLauncher
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 
@@ -42,7 +42,7 @@ def test_a_resumed_workers_job_is_entered_once(new_story, monkeypatch, entered_d
         return LaunchAnswer.STARTED
 
     monkeypatch.setattr(Bus, "run", record_enter)
-    monkeypatch.setattr(WorkerLauncher, "hand", record_launch)
+    monkeypatch.setattr(AgentLauncher, "hand", record_launch)
     story.expect_success(f'worker send {worker.id} "Continue the task"', actor=story.agent)
     story.run_listeners()
 

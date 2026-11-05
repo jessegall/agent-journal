@@ -1,5 +1,5 @@
 import {beforeAll, expect, test} from "vitest";
-import {context, mounted, page, settle} from "./support/windowContext.js";
+import {context, mounted, mountedDock, page, settle} from "./support/windowContext.js";
 import {loadStates} from "../src/domain/states.js";
 import TaskDock from "../../core/modules/tasks/web/src/TaskDock.vue";
 import QuestionDock from "../../core/modules/questions/web/src/QuestionDock.vue";
@@ -18,9 +18,8 @@ beforeAll(() => loadStates(async () => ({ok: true, json: async () => ({states: {
 
 test("a task dock draws an added state by its declared label", async () => {
     const window = context({"task show 3": {ok: true, value: {id: 3, state: "reviewing", title: "Check the cart"}}});
-    window.option = () => ({value: {target_id: 3}});
-    const element = await mounted(TaskDock, window);
-    expect(element.querySelector(".task-dock-state").textContent).toBe("Under review");
+    const element = await mountedDock(TaskDock, window, {target_id: 3});
+    expect(element.querySelector("footer").textContent).toBe("Task: under review");
 });
 
 test("shared state rows draw an added state for their declared model", async () => {
@@ -31,8 +30,9 @@ test("shared state rows draw an added state for their declared model", async () 
 });
 
 test("a question dock uses question state labels", async () => {
-    const element = await mounted(QuestionDock, context({}), {row: {id: 2, state: "checking", text: "Is the cart ready?"}});
-    expect(element.querySelector(".question-dock-state").textContent).toBe("Checking the answer");
+    const window = context({"question show 2": {ok: true, value: {id: 2, state: "checking", text: "Is the cart ready?"}}});
+    const element = await mountedDock(QuestionDock, window, {target_id: 2});
+    expect(element.querySelector("footer").textContent).toBe("Question: checking the answer");
 });
 
 test("command output uses process state labels", async () => {

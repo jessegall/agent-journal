@@ -148,6 +148,7 @@ function release(item) {
     overflow: hidden;
     border: 1px solid var(--border);
     border-radius: 10px;
+    background: var(--raised);
 }
 
 .dock-stack:empty {

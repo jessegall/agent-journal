@@ -20,7 +20,7 @@ test("a mark that did not stop shows no reason for its detail", async () => {
 
 test("a mark about a task opens that task and its proofs", async () => {
     const element = await drawn({id: 3, type: "tasks.task", variant: "made", target_model: "task", target_id: 12});
-    expect(element.querySelector("[data-mark-task]").textContent).toBe("Open task 12 and its proofs");
+    expect(element.querySelector("[data-mark-task]").textContent.trim()).toBe("Open task 12 and its proofs");
 });
 
 test("a mark about something else offers no task", async () => {

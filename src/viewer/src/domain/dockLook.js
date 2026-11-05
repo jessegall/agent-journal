@@ -12,7 +12,7 @@ const leavesByItself = (item, declaration) => Boolean(item.leaves_at || item.kep
 const pin = (item) => ({...(item.kept ? own("unkeep", "pins", "Let this card close", `dock unkeep ${item.id}`) : own("keep", "pins", "Keep this card", `dock keep ${item.id}`)), pressed: Boolean(item.kept)});
 
 // the buttons drawn as their icon alone, with their words as the tooltip and the screen reader label
-const ICON_ONLY = ["pins", "stop"];
+const ICON_ONLY = ["pins"];
 const withLook = (button) => ({...button, iconOnly: ICON_ONLY.includes(button.icon)});
 
 // the buttons of a docked item: the pin while the item leaves by itself; the declaration's own; open when its row has an inspector, unless its body draws the head and unfolds there; then undock

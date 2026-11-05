@@ -1,4 +1,4 @@
-import {createApp, h, nextTick} from "vue";
+import {createApp, h, nextTick, ref} from "vue";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
 import {WindowSubscriptions} from "../../src/windows/windowSubscriptions.js";
 
@@ -62,6 +62,16 @@ export async function mounted(component, windowContext, props = {}) {
 
 export async function drawn(component, windowContext) {
     return (await mounted(component, windowContext)).textContent;
+}
+
+export async function mountedDock(component, windowContext, item) {
+    const foot = ref(null);
+    const row = ref(item);
+    const option = windowContext.option;
+    return mounted({render: () => h("div", [h("footer", {ref: foot}), h(component)])}, {
+        ...windowContext,
+        option: (key) => ({foot, row}[key] ?? option(key)),
+    });
 }
 
 export async function pickButton(element, label, selector = "button") {
