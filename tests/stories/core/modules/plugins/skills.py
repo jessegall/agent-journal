@@ -1,9 +1,14 @@
+from core.base.actor import Actor
+from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
+from core.modules.skills.commands.load_skill.load_skill import LoadSkill
+from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, installed_story
 
+FETCH_SAMPLE = HookSamples.shell("git fetch", ShellPart("git", CommandCategory.VERSION_CONTROL, ["fetch"]))
 UPLOAD_SAMPLE = HookSamples.shell("git push", ShellPart("git", CommandCategory.VERSION_CONTROL, ["push"]))
 
 
@@ -20,6 +25,31 @@ def test_a_skill_a_plugins_answer_requires_holds_the_agents_next_tool_after_the_
     story.hook("s-1", UPLOAD_SAMPLE)
     story.run_listeners()
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "read this first")
+
+
+def skill_digest(story, name):
+    return next(skill.digest for skill in story.container.get(SkillCatalogue).skills() if skill.folder == name)
+
+
+def load_rules(story, digest):
+    story.container.get(Bus).run(LoadSkill(story.agent.id, "sample-rules", digest), Actor.core(), environment_id=1)
+
+
+def test_a_plugin_is_told_the_skills_the_agent_has_loaded(new_story):
+    story = installed_story(new_story)
+    load_rules(story, skill_digest(story, "sample-rules"))
+    story.expect_hook_allowed("s-1", FETCH_SAMPLE, "[plugin sample] the rules are loaded")
+
+
+def test_a_skill_the_agent_has_not_loaded_is_not_listed(new_story):
+    story = installed_story(new_story)
+    story.expect_hook_allowed("s-1", FETCH_SAMPLE, "[plugin sample] the rules are not loaded")
+
+
+def test_a_skill_read_in_an_older_text_is_not_listed(new_story):
+    story = installed_story(new_story)
+    load_rules(story, "an-older-text")
+    story.expect_hook_allowed("s-1", FETCH_SAMPLE, "[plugin sample] the rules are not loaded")
 
 
 def test_a_switched_off_plugin_takes_its_skills_away(new_story):
