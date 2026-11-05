@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-fdb739d70e79")) { const style = document.createElement("style"); style.id = "window-styles-fdb739d70e79"; style.textContent = ".releases[data-v-65d1eb8c]{position:relative;min-height:100px}.failure[data-v-65d1eb8c]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.cover[data-v-65d1eb8c]{margin-bottom:8px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px;font-size:13px}.arrived[data-v-65d1eb8c]{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px}.note[data-v-65d1eb8c]{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;font-size:13px}.standing[data-v-65d1eb8c],.release[data-v-65d1eb8c]{display:flex;align-items:baseline;gap:10px;font-size:13px}.line[data-v-65d1eb8c],.title[data-v-65d1eb8c]{flex:1}.heading[data-v-65d1eb8c]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.detail[data-v-65d1eb8c]{color:var(--text-3);font-size:12px}button[data-v-65d1eb8c]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-2fc8f9b5a01d")) { const style = document.createElement("style"); style.id = "window-styles-2fc8f9b5a01d"; style.textContent = ".releases[data-v-065e3ed5]{position:relative;min-height:100px}.failure[data-v-065e3ed5]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.cover[data-v-065e3ed5]{margin-bottom:8px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px;font-size:13px}.arrived[data-v-065e3ed5]{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px}.note[data-v-065e3ed5]{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;font-size:13px}.standing[data-v-065e3ed5],.release[data-v-065e3ed5]{display:flex;align-items:baseline;gap:10px;font-size:13px}.line[data-v-065e3ed5],.title[data-v-065e3ed5]{flex:1}.heading[data-v-065e3ed5]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.detail[data-v-065e3ed5]{color:var(--text-3);font-size:12px}button[data-v-065e3ed5]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
 import { ref as r, computed as R, openBlock as o, createBlock as N, unref as i, withCtx as h, createElementBlock as u, createCommentVNode as v, createElementVNode as s, createVNode as y, createTextVNode as D, toDisplayString as d, Fragment as I, renderList as P } from "vue";
 import { useRows as S, WindowRoom as T, Btn as F, RowList as V, TextDisplay as $ } from "@journal/window-kit";
 const E = (f, n) => {
@@ -36,17 +36,17 @@ const E = (f, n) => {
       const l = await n.context.read("update check");
       a.value = l.ok ? l.value : null, c.value = l.ok ? "" : l.error;
     }
-    async function b() {
+    async function C() {
       p.value = !0;
       const l = await n.act(["update", "install"]);
       p.value = !1, l.ok && (await _(), m.value = !0);
     }
-    async function C(l) {
+    async function b(l) {
       const e = await n.context.read(`update notes --page ${l}`);
       g.value = e.ok ? "" : e.error, e.ok && (k.value = [...k.value, ...e.value.notes], w.value = l, x.value = e.value.is_last_page);
     }
     const B = () => window.location.reload();
-    return n.context.follow(["release.*", "release_install.*"], _), _(), C(1), (l, e) => (o(), N(i(T), null, {
+    return n.context.follow(["release.*", "release_install.*"], _), _(), b(1), (l, e) => (o(), N(i(T), null, {
       default: h(() => [
         p.value ? (o(), u("div", W, "Updating the journal. This takes a short while.")) : v("", !0),
         L.value ? (o(), u("div", j, [
@@ -75,7 +75,7 @@ const E = (f, n) => {
             small: "",
             kind: "primary",
             "data-update-install": "",
-            onClick: b
+            onClick: C
           }, {
             default: h(() => {
               var t;
@@ -88,7 +88,7 @@ const E = (f, n) => {
             key: 1,
             type: "button",
             "data-update-force": "",
-            onClick: b
+            onClick: C
           }, "Install it again")) : v("", !0)
         ]),
         e[3] || (e[3] = s("h3", { class: "heading" }, "Installed releases", -1)),
@@ -131,13 +131,13 @@ const E = (f, n) => {
           key: 4,
           type: "button",
           "data-update-older": "",
-          onClick: e[0] || (e[0] = (t) => C(w.value + 1))
+          onClick: e[0] || (e[0] = (t) => b(w.value + 1))
         }, "Show older releases"))
       ]),
       _: 1
     }));
   }
-}, te = /* @__PURE__ */ E(Y, [["__scopeId", "data-v-65d1eb8c"]]);
+}, te = /* @__PURE__ */ E(Y, [["__scopeId", "data-v-065e3ed5"]]);
 export {
   te as default
 };
