@@ -2,11 +2,27 @@ import sys
 from inspect import Parameter, signature
 from typing import TypeVar, get_type_hints
 
+from functools import cache
+
 from core.base.missing_hint_error import MissingHintError
 from core.base.unbound_value_error import UnboundValueError
 from core.base.wrong_instance_error import WrongInstanceError
 
 T = TypeVar("T")
+
+
+UNBUILT_MODULES = sys.stdlib_module_names | {"builtins"}
+
+
+@cache
+def needed_values(class_type: type) -> tuple[tuple[str, type], ...]:
+    hints = get_type_hints(class_type.__init__) if class_type.__init__ is not object.__init__ else {}
+    needed = [parameter.name for parameter in signature(class_type.__init__).parameters.values()
+              if parameter.name != "self" and parameter.default is Parameter.empty and parameter.kind not in (Parameter.VAR_POSITIONAL, Parameter.VAR_KEYWORD)]
+    for name in needed:
+        if name not in hints:
+            raise MissingHintError(class_type, name)
+    return tuple((name, hints[name]) for name in needed)
 
 
 class Container:
@@ -36,12 +52,6 @@ class Container:
         raise WrongInstanceError(class_type, instance)
 
     def constructed(self, class_type: type[T]) -> T:
-        if class_type.__module__.partition(".")[0] in sys.stdlib_module_names | {"builtins"}:
+        if class_type.__module__.partition(".")[0] in UNBUILT_MODULES:
             raise UnboundValueError(class_type)
-        hints = get_type_hints(class_type.__init__) if class_type.__init__ is not object.__init__ else {}
-        needed = [parameter.name for parameter in signature(class_type.__init__).parameters.values()
-                  if parameter.name != "self" and parameter.default is Parameter.empty and parameter.kind not in (Parameter.VAR_POSITIONAL, Parameter.VAR_KEYWORD)]
-        for name in needed:
-            if name not in hints:
-                raise MissingHintError(class_type, name)
-        return class_type(**{name: self.get(hints[name]) for name in needed})
+        return class_type(**{name: self.get(hint) for name, hint in needed_values(class_type)})

@@ -87,8 +87,9 @@ class CommitListenerRunner:
         return bool(moved_count) or any(progress)
 
     def run_entry(self, entry: ListenerEntry, urgent_entries: list[ListenerEntry]) -> bool:
+        newest_before = self.log.newest_id() if urgent_entries else 0
         handled = self.run_listener(entry)
-        if handled:
+        if handled and urgent_entries and self.log.newest_id() != newest_before:
             for listener in urgent_entries:
                 self.run_listener(listener)
         return handled

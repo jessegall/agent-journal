@@ -1,3 +1,4 @@
+from functools import cache
 import inspect
 from collections.abc import Sequence
 from pathlib import Path
@@ -91,6 +92,7 @@ class Module:
     seed_reason: ClassVar[str] = ""
 
     @classmethod
+    @cache
     def folder(cls) -> Path:
         return Path(inspect.getfile(cls)).resolve().parent
 
