@@ -1,7 +1,7 @@
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.documents.commands.comment_text.comment_text import CommentText
@@ -23,14 +23,14 @@ class CommentTextHandler(Handler[CommentText, Message]):
 
     command = CommentText
 
-    def __init__(self, bus: Bus, queries: Queries, repository: Repository, revisions: DocRevisions) -> None:
-        self.bus, self.queries, self.repository, self.revisions = bus, queries, repository, revisions
+    def __init__(self, bus: Bus, rows: EventRows, repository: Repository, revisions: DocRevisions) -> None:
+        self.bus, self.rows, self.repository, self.revisions = bus, rows, repository, revisions
 
     def handle(self, command: CommentText, context: Context) -> Message:
         body = command.text.strip()
         if not body:
             raise Refusal("give the comment's text")
-        text_row = self.queries.query(command.text_model).find(command.row_id)
+        text_row = self.rows.required(command.text_model, command.row_id)
         quoted = f'"{command.quote[:QUOTE_LIMIT_CHARACTERS]}": ' if command.quote else ""
         message = self.bus.dispatch(SendMessage(f"{quoted}{body}", commented_row=(text_row.model_name, text_row.id)), context)
         self.repository.save(Link(creator_id=context.actor.id, source_model=message.model_name, source_id=message.id, target_model=text_row.model_name, target_id=text_row.id,

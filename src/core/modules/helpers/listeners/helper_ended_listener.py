@@ -6,6 +6,7 @@ from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.events.agent_ended import AgentEnded
+from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
@@ -18,13 +19,14 @@ STOPPED = "Stopped"
 
 
 class HelperEndedListener(CommitListener[AgentEnded]):
-    """A helper that ends with a job line still waiting resumes for it; otherwise its open job ends with it."""
+    """A helper that ends with a job line still waiting resumes for it; otherwise its open job ends with it, and one
+    ended by another agent or a person has its program stopped."""
 
     name = "helpers.helper-ended"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, jobs: HelperJobRows, resume: HelperResume, bus: Bus) -> None:
-        self.queries, self.jobs, self.resume, self.bus = queries, jobs, resume, bus
+    def __init__(self, queries: Queries, jobs: HelperJobRows, resume: HelperResume, bus: Bus, launcher: LauncherLink) -> None:
+        self.queries, self.jobs, self.resume, self.bus, self.launcher = queries, jobs, resume, bus, launcher
 
     def handle(self, event: AgentEnded, logged: LoggedEvent) -> None:
         helper = event.row
@@ -37,5 +39,7 @@ class HelperEndedListener(CommitListener[AgentEnded]):
         if waiting is not None:
             self.resume.resume(helper, waiting.text)
             return
-        returned = "" if logged.actor_id == helper.id else STOPPED
-        self.bus.run(EndHelperJob(open_jobs[-1].id, returned), Actor.core(), cause_id=logged.id, environment_id=helper.environment_id)
+        stopped = logged.actor_id != helper.id
+        self.bus.run(EndHelperJob(open_jobs[-1].id, STOPPED if stopped else ""), Actor.core(), cause_id=logged.id, environment_id=helper.environment_id)
+        if stopped:
+            self.launcher.stop(helper.id)

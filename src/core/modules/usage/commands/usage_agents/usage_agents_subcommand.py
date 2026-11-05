@@ -45,9 +45,9 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
 
     def facts(self, card: AgentCard, job_roles: Collection[str]) -> AgentFacts:
         status = self.files.status(card.session)
-        return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.dispatch_model, status.context_percent, status.cost_dollars, card.started_task_id, card.started_task_title,
-                          tuple(json.loads(card.tasks)), self.waiting_state(card), card.profile or card.dispatch_profile, card.given_name or card.dispatch_description.split(",", 1)[0],
-                          card.dispatch_instruction, status.effort or self.session_effort(card), card.role in job_roles)
+        return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.job_model, status.context_percent, status.cost_dollars, card.started_task_id, card.started_task_title,
+                          tuple(json.loads(card.tasks)), self.waiting_state(card), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
+                          card.job_instruction, status.effort or self.session_effort(card), card.role in job_roles)
 
     def reported_model(self, card: AgentCard) -> str:
         return self.providers.reported_model(card.program, self.home, card.session)

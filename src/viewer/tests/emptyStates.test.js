@@ -8,7 +8,7 @@ import RowList from "../kit/RowList.vue";
 import {useListTools} from "../kit/useListTools.js";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
 import MemoryRows from "../../core/modules/memories/web/src/MemoryRows.vue";
-import {default as helpers} from "../../core/modules/agents/web/src/subagents.js";
+import {default as helpers} from "../../core/modules/agents/web/src/helpers.js";
 
 let app;
 let host;
@@ -84,7 +84,7 @@ const type = async (element, text) => {
 
 test("the running tab of the helpers window with none running says so and what brings one, though closed helpers exist", async () => {
     const element = await agents(helpers);
-    expect(words()).toEqual(["No helpers running", "Active subagents and reviewers appear here."]);
+    expect(words()).toEqual(["No helpers running", "Running helpers and reviewers appear here."]);
     expect(element.textContent).not.toContain("Nothing matches");
 });
 

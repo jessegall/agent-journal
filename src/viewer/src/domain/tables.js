@@ -113,7 +113,7 @@ export const TABLES = {
     verifiers: kind("Verifier", "verifier", "An agent that checks whether an output reader report was correctly closed"),
     test_turns: kind("Test turn", "terminal", "A worker's turn to run the tests it named, under the test budget"),
     reviewers: kind("Reviewer", "reviewer", "An agent that tests and reviews worker changes and reports the results to the main agent"),
-    subagents: kind("Subagent", "bot", "A helper started by the agent for a specific job", {nested: true}),
+    helpers: kind("Helper", "bot", "A helper started by the agent for a specific job", {nested: true}),
     sequences: kind("Sequence", "list", "Steps the agent follows in order, one at a time, started by hand or by its triggers", {
         view: "document",
         scope: "project",

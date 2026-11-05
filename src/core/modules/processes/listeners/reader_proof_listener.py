@@ -7,7 +7,8 @@ from core.base.model.model import Model
 from core.base.repository.repository import Repository
 from core.modules.processes.models.output import Output
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
-from core.modules.processes.queries.reader_query import ReaderQuery
+from core.base.listener.event_rows import EventRows
+from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.base.command.context import Context
 
@@ -17,14 +18,14 @@ class ReaderProofListener(SaveListener[OutputEnded | Updated[Output]]):
 
     name = "processes.reader-proof"
 
-    def __init__(self, readers: ReaderQuery, parts: ProcessPartQuery, judge: ReaderJudge, repository: Repository) -> None:
-        self.readers, self.parts, self.judge, self.repository = readers, parts, judge, repository
+    def __init__(self, rows: EventRows, parts: ProcessPartQuery, judge: ReaderJudge, repository: Repository) -> None:
+        self.rows, self.parts, self.judge, self.repository = rows, parts, judge, repository
 
     def handle(self, event: OutputEnded | Updated[Output], context: Context) -> None:
         output = event.row
         if output.ended_at is None or output.reader_id is None or not output.line_count:
             return
-        reader = self.readers.find(output.reader_id)
+        reader = self.rows.required(Reader, output.reader_id)
         if reader.proved_on is not None:
             return
         parts = self.parts.process(output.process_id).filter(position=output.reader_position).limited(1)

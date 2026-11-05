@@ -1,5 +1,6 @@
 from core.modules.processes.events.output_ended import OutputEnded
 from core.base.listener.save_listener import SaveListener
+from core.base.listener.event_rows import EventRows
 from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
@@ -18,15 +19,15 @@ class ReaderFailureListener(SaveListener[OutputEnded]):
     name = "processes.reader-failure"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, requests: ReaderRequests) -> None:
-        self.queries, self.requests = queries, requests
+    def __init__(self, queries: Queries, requests: ReaderRequests, rows: EventRows) -> None:
+        self.queries, self.requests, self.rows = queries, requests, rows
 
     def handle(self, event: OutputEnded, context: Context) -> None:
         output = event.row
         if not output.line_count:
             return
-        process = self.queries.query(Process).find(output.process_id)
-        agent = self.queries.query(Agent).find(process.session_agent_id)
+        process = self.rows.required(Process, output.process_id)
+        agent = self.rows.required(Agent, process.session_agent_id)
         if not self.requests.needed(process, agent):
             return
         reader = self.queries.query(Reader).find(output.reader_id) if output.reader_id is not None else None

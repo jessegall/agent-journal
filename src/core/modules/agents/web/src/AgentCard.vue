@@ -1,6 +1,6 @@
 <script setup>
 import {computed, defineAsyncComponent, onUnmounted, ref, watch} from "vue";
-import {age, perHour, EmptyState, FoldGroup, Icon, InnerTabs, loadWindowComponent, SwitchCase, TabBody, TimeAgo, useNow, useWindow} from "@journal/window-kit";
+import {age, perHour, Btn, EmptyState, FoldGroup, Icon, InnerTabs, loadWindowComponent, SwitchCase, TabBody, TimeAgo, useNow, useWindow} from "@journal/window-kit";
 import AgentCommand from "./AgentCommand.vue";
 import AgentTaskGroup from "./AgentTaskGroup.vue";
 import TranscriptRows from "./TranscriptRows.vue";
@@ -8,7 +8,7 @@ import TranscriptRows from "./TranscriptRows.vue";
 // one agent as a calm two lines: the profile and given name with its time, then the provider, model, kind and task count; a click opens the card on
 // its number, usage, Inspect and three tabs: its tasks under the state names of the tasks window with its instruction, its transcript and the files it changed;
 // whether the card is open is the window's to say (`open`), and a click asks it to flip that (`toggle`)
-const FALLBACK_TITLES = {subagent: "Subagent", reviewer: "Reviewer"};
+const FALLBACK_TITLES = {subagent: "Helper", helper: "Helper", reviewer: "Reviewer"};
 const TASK_STATES = ["started", "blocked", "open", "completed"];
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, open: Boolean});
 const emit = defineEmits(["toggle"]);
@@ -20,7 +20,7 @@ const title = computed(() => {
 const tasks = computed(() => props.facts?.tasks ?? []);
 const queuedTasks = computed(() => tasks.value.filter((task) => task.state === "open"));
 const job = computed(() => (props.facts?.job_enabled ? props.facts?.task_title || queuedTasks.value[0]?.title || "" : ""));
-const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, props.row.role === "main" ? "" : props.progress ? `${props.row.role} ${props.row.id}` : props.row.role].filter(Boolean).join(" · "));
+const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, props.row.role === "main" ? "" : props.progress ? `${props.row.role} ${props.row.id}` : props.row.role, props.row.access === "read-only" ? "Access: Read-only" : ""].filter(Boolean).join(" · "));
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
 const stoppedWithWork = computed(() => Boolean(props.row.ended_at) && props.row.role !== "main" && tasks.value.some((task) => UNFINISHED_STATES.has(task.state)));
@@ -49,7 +49,9 @@ const tab = ref(context.tabs[0]);
 watch(() => props.open, (open) => { if (open) tab.value = context.tabs[0]; });
 const components = Object.fromEntries(context.tabs.filter((tab) => tab.component).map((tab) => [tab.key, defineAsyncComponent(() => loadWindowComponent(tab.component))]));
 // a subagent has no tasks and writes no files, so its card holds its transcript under its folded instruction, with no tabs
-const isSubagent = computed(() => props.row.role === "subagent" || props.row.role === "reviewer");
+const isRunningHelper = computed(() => props.row.role === "helper" && !props.row.ended_at);
+const stopHelper = () => context.run(["helper", "stop", String(props.row.id)]);
+const isReader = computed(() => props.row.access === "read-only" || props.row.role === "subagent" || props.row.role === "reviewer");
 const instructionOpen = ref(false);
 const runningCommand = ref("");
 const noCommandNote = ref("");
@@ -108,9 +110,10 @@ readCommand();
             <div class="agent-more" data-agent-more @click.stop>
                 <template v-if="usage">
                     <span class="agent-usage" data-agent-card-usage>{{ usage }}</span>
+                    <template v-if="isRunningHelper"><Btn kind="ghost" small data-helper-stop @click="stopHelper">Stop</Btn></template>
                 </template>
                 <template v-if="showsCommand"><AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" /></template>
-                <template v-if="isSubagent">
+                <template v-if="isReader">
                     <div class="agent-tab-body" data-agent-tab-body="transcript" data-agent-only-transcript>
                         <template v-if="facts?.instruction">
                             <div class="agent-subagent-brief">
@@ -119,7 +122,7 @@ readCommand();
                                 </FoldGroup>
                             </div>
                         </template>
-                        <TranscriptRows :line="`agent transcript ${row.id}`" padding="0" />
+                        <TranscriptRows :line="`agent transcript ${row.id}`" :agent="isRunningHelper ? row.id : null" :helper="isRunningHelper" padding="0" />
                     </div>
                 </template>
                 <template v-else>

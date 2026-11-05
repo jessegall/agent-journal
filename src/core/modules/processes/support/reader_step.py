@@ -6,7 +6,7 @@ from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.reader import Reader
-from core.modules.processes.queries.reader_query import ReaderQuery
+from core.base.listener.event_rows import EventRows
 from core.modules.processes.support.colour_codes import ColourCodes
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.output_page import NEWLINE
@@ -18,13 +18,13 @@ from core.modules.processes.support.step_tally import StepTally
 class ReaderStep:
     """Reads new complete lines for counts and progress, and runs a reader's script when the output ends."""
 
-    def __init__(self, folder: OutputFolder, readers: ReaderQuery, run: ReaderRun, tools: PerformanceTools) -> None:
-        self.folder, self.readers, self.run, self.tools = folder, readers, run, tools
+    def __init__(self, folder: OutputFolder, rows: EventRows, run: ReaderRun, tools: PerformanceTools) -> None:
+        self.folder, self.rows, self.run, self.tools = folder, rows, run, tools
 
     def advance(self, process: Process, output: Output, is_final: bool) -> ReaderAdvance | None:
         if output.reader_id is None:
             return None
-        reader = self.readers.find(output.reader_id)
+        reader = self.rows.required(Reader, output.reader_id)
         started = self.tools.begin()
         advanced = self.script_advance(process, output, reader, is_final) if reader.type is ReaderType.SCRIPT else self.text_advance(process, output, reader, is_final)
         cost = self.tools.cost(started)

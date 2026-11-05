@@ -8,6 +8,7 @@ from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.environments.models.environment import Environment
+from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.merge_worker.merge_worker import MergeWorker
@@ -31,15 +32,15 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     command = MergeWorker
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, checks: MergeChecks, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance) -> None:
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, checks: MergeChecks, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, environments: EnvironmentRows) -> None:
         self.queries, self.worktrees, self.checks, self.repository, self.git, self.nudger = queries, worktrees, checks, repository, git, nudger
-        self.advance = advance
+        self.advance, self.environments = advance, environments
 
     def handle(self, command: MergeWorker, context: Context) -> MergeOutcome:
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None or worktree.state is not WorktreeState.DELIVERED:
             raise Refusal(f"worker {command.worker_id} has delivered nothing to merge", "journal worker-worktree list shows the worktrees")
-        environment = self.queries.query(Environment).find(worktree.environment_id)
+        environment = self.environments.find(worktree.environment_id)
         self.check(worktree, environment)
         task = self.queries.query(Task).find(worktree.task_id)
         uncommitted = self.git.uncommitted_overlap(environment.folder, worktree)
@@ -52,10 +53,10 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         self.git.rebuild(worktree, environment.folder)
         self.git.merge(environment.folder, worktree, f"task {task.id}: {task.title}, from worker {worktree.session_agent_id}")
         for delivered in self.delivered_tasks(worktree, task):
-            self.repository.save(delivered.close(context.timestamp, context.actor, f"merged into {worktree.base_branch}"), context)
-        merged = self.repository.save(worktree.merge(context.timestamp, context.actor), context)
+            self.repository.save_change(delivered, delivered.close(context.timestamp, context.actor, f"merged into {worktree.base_branch}"), context)
+        merged = self.repository.save_change(worktree, worktree.merge(context.timestamp, context.actor), context)
         self.git.remove(environment.folder, merged)
-        return MergeOutcome(self.repository.save(merged.remove(context.timestamp, context.actor), context), ())
+        return MergeOutcome(self.repository.save_change(merged, merged.remove(context.timestamp, context.actor), context), ())
 
     def delivered_tasks(self, worktree: Worktree, task: Task) -> list[Task]:
         delivered = tuple(self.queries.query(Task).filter(delegated_to=worktree.session_agent_id, state=TaskState.TESTING).all_rows())
@@ -73,4 +74,4 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     def returned(self, worktree: Worktree, task: Task, conflicts: tuple[str, ...], context: Context) -> Worktree:
         self.advance.restart_task(worktree, task, context)
         self.nudger.send(worktree.session_agent_id, WORKER_MERGE_CONFLICT, MERGE_CONFLICT_SOURCE, context, branch=worktree.base_branch, lines=", ".join(conflicts))
-        return self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)
+        return self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)

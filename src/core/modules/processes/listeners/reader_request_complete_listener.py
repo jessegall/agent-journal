@@ -12,6 +12,7 @@ from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
 from core.modules.processes.support.reader_judge import ReaderJudge
+from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.run_slots import RunSlots
 from core.modules.processes.support.run_title import RunTitle
@@ -26,13 +27,15 @@ class ReaderRequestCompleteListener(SaveListener[Changed[Reader]]):
     name = "processes.reader-request-complete"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, requests: ReaderRequestQuery, judge: ReaderJudge, repository: Repository, clock: Clock, slots: RunSlots) -> None:
-        self.queries, self.requests, self.judge, self.repository, self.clock, self.slots = queries, requests, judge, repository, clock, slots
+    def __init__(self, queries: Queries, requests: ReaderRequestQuery, judge: ReaderJudge, repository: Repository, clock: Clock, slots: RunSlots, rows: ReaderRows) -> None:
+        self.queries, self.requests, self.judge, self.repository, self.clock, self.slots, self.rows = queries, requests, judge, repository, clock, slots, rows
 
     def handle(self, event: Changed[Reader], context: Context) -> None:
         if isinstance(event, Deleted):
+            self.rows.remove(event.row)
             return
         reader = event.row
+        self.rows.save(reader)
         for request in self.requests.open_rows():
             scope = ReaderSampleScope(request.creator_id, request.command)
             if not ReaderSelection.reads_command(reader, request.command, request.category) or not self.judge.judged_command(reader, request.category, scope).is_proper:

@@ -1,7 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.duration import Duration
-from core.base.database.kept_rows import KeptRows
 from core.base.listener.event_rows import EventRows
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
@@ -10,7 +9,7 @@ from core.modules.processes.models.output import Output
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
-from core.modules.processes.queries.reader_query import ReaderQuery
+from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.run_title import RunTitle
@@ -26,8 +25,8 @@ class StartProcessHandler(Handler[StartProcess, Process]):
 
     command = StartProcess
 
-    def __init__(self, repository: Repository, folder: OutputFolder, readers: ReaderQuery, kept: KeptRows, requests: ReaderRequests, slots: RunSlots, visibility: PartVisibility, rows: EventRows) -> None:
-        self.repository, self.folder, self.readers, self.kept = repository, folder, readers, kept
+    def __init__(self, repository: Repository, folder: OutputFolder, readers: ReaderRows, requests: ReaderRequests, slots: RunSlots, visibility: PartVisibility, rows: EventRows) -> None:
+        self.repository, self.folder, self.readers = repository, folder, readers
         self.requests = requests
         self.slots = slots
         self.visibility = visibility
@@ -44,7 +43,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
         parts: list[ProcessPart] = []
         for position, spec in enumerate(command.parts, 1):
             part = ProcessPart(process_id=process.id, position=position, text=spec.text, program=spec.program, command=spec.command, piped=spec.piped, category=spec.category, is_visible=self.visibility.is_visible(spec))
-            selected = ReaderSelection.choose(self.all_readers(), [part])
+            selected = ReaderSelection.choose(self.readers.all(), [part])
             explicit_reader_id = spec.named_reader_id if spec.named_reader_id is not None else command.reader_id
             reader = selected.reader if selected else None
             if explicit_reader_id is not None:
@@ -55,7 +54,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
             reader = self.rows.required(Reader, command.reader_id)
             self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), reader_id=reader.id, title=RunTitle.title(reader, command.line)), context)
         else:
-            part_reader = ReaderSelection.choose(self.all_readers(), [part for part in parts if part.reader_request_id is None])
+            part_reader = ReaderSelection.choose(self.readers.all(), [part for part in parts if part.reader_request_id is None])
             self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), reader_id=part_reader.reader.id if part_reader else None,
                                         reader_position=part_reader.part.position if part_reader else 0, title=RunTitle.title(part_reader.reader, part_reader.part.text) if part_reader else ""), context)
         self.folder.write_start(process.id, command.line, [part.text for part in command.parts])
@@ -63,5 +62,3 @@ class StartProcessHandler(Handler[StartProcess, Process]):
         self.slots.grant(process.environment_id, context)
         return self.rows.required(Process, process.id)
 
-    def all_readers(self) -> tuple[Reader, ...]:
-        return self.kept.read("readers", lambda: tuple(self.readers.all_rows()), name="processes.readers")

@@ -33,11 +33,11 @@ class WorkerTaskAdvance:
 
     def start(self, worktree: Worktree, following: Task, context: Context) -> None:
         self.bus.dispatch(StartTask(following.id), replace(context, actor=Actor(worktree.session_agent_id, ActorType.AGENT)))
-        self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
+        self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
 
     def restart_task(self, worktree: Worktree, task: Task, context: Context) -> None:
         if task.state is TaskState.COMPLETED:
-            self.repository.save(task.reopen(context.timestamp, context.actor), context)
+            self.repository.save_change(task, task.reopen(context.timestamp, context.actor), context)
             self.bus.dispatch(StartTask(task.id), replace(context, actor=Actor(worktree.session_agent_id, ActorType.AGENT)))
             return
-        self.repository.save(task.moved(TaskLifecycle.retest, holder_id=worktree.session_agent_id), context)
+        self.repository.save_change(task, task.moved(TaskLifecycle.retest, holder_id=worktree.session_agent_id), context)

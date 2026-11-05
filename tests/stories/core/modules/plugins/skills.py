@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from core.base.actor import Actor
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
@@ -7,8 +9,10 @@ from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, installed_story
+from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
-FETCH_SAMPLE = HookSamples.shell("git fetch", ShellPart("git", CommandCategory.VERSION_CONTROL, ["fetch"]))
+GIT_FETCH_SAMPLE = HookSamples.shell("git fetch", ShellPart("git", CommandCategory.VERSION_CONTROL, ["fetch"]))
 UPLOAD_SAMPLE = HookSamples.shell("git push", ShellPart("git", CommandCategory.VERSION_CONTROL, ["push"]))
 
 
@@ -31,25 +35,25 @@ def skill_digest(story, name):
     return next(skill.digest for skill in story.container.get(SkillCatalogue).skills() if skill.folder == name)
 
 
-def load_rules(story, digest):
+def mark_rules_loaded(story, digest):
     story.container.get(Bus).run(LoadSkill(story.agent.id, "sample-rules", digest), Actor.core(), environment_id=1)
 
 
 def test_a_plugin_is_told_the_skills_the_agent_has_loaded(new_story):
     story = installed_story(new_story)
-    load_rules(story, skill_digest(story, "sample-rules"))
-    story.expect_hook_allowed("s-1", FETCH_SAMPLE, "[plugin sample] the rules are loaded")
+    mark_rules_loaded(story, skill_digest(story, "sample-rules"))
+    story.expect_hook_allowed("s-1", GIT_FETCH_SAMPLE, "[plugin sample] the rules are loaded")
 
 
 def test_a_skill_the_agent_has_not_loaded_is_not_listed(new_story):
     story = installed_story(new_story)
-    story.expect_hook_allowed("s-1", FETCH_SAMPLE, "[plugin sample] the rules are not loaded")
+    story.expect_hook_allowed("s-1", GIT_FETCH_SAMPLE, "[plugin sample] the rules are not loaded")
 
 
 def test_a_skill_read_in_an_older_text_is_not_listed(new_story):
     story = installed_story(new_story)
-    load_rules(story, "an-older-text")
-    story.expect_hook_allowed("s-1", FETCH_SAMPLE, "[plugin sample] the rules are not loaded")
+    mark_rules_loaded(story, "an-older-text")
+    story.expect_hook_allowed("s-1", GIT_FETCH_SAMPLE, "[plugin sample] the rules are not loaded")
 
 
 def test_a_switched_off_plugin_takes_its_skills_away(new_story):
@@ -65,3 +69,20 @@ def test_a_plugin_skill_published_only_for_codex_is_known(new_story):
     codex_skill.parent.mkdir(parents=True, exist_ok=True)
     codex_skill.write_text("---\nplugin: sample\nname: codex-rules\ndescription: Rules only Codex reads\n---\n")
     story.expect_text("skill list", "codex-rules", actor=story.user)
+
+
+def test_disabling_a_plugin_unlinks_a_worktree_skill_without_removing_its_target(new_story, tmp_path):
+    story = installed_story(new_story)
+    repository_environment(story)
+    story.expect_success('task make "Fix the cart" --environment main', actor=story.agent)
+    worker = dispatched_worker(story)
+    worktree = story.container.get(WorktreeQuery).worker_worktree(worker.id)
+    target = tmp_path / "linked-skill"
+    target.mkdir()
+    skill = target / "SKILL.md"
+    skill.write_text("---\nplugin: sample\nname: linked-rules\n---\nKeep this.\n")
+    link = Path(worktree.folder) / ".claude" / "skills" / "linked-rules"
+    link.parent.mkdir(parents=True, exist_ok=True)
+    link.symlink_to(target, target_is_directory=True)
+    story.expect_success("plugin disable sample", actor=story.user)
+    story.expect_rows(not link.is_symlink(), skill.read_text().endswith("Keep this.\n"))

@@ -137,7 +137,7 @@ def expect_events_agents_declared_with(declared, expected) -> None:
 
 
 def expect_events_agents_subagents_with(declared, expected) -> None:
-    actual = declared['agents.subagents'].events
+    actual = declared['agents.helpers'].events
     assert expected in actual, actual
 
 

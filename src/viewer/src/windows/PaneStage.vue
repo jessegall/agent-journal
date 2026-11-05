@@ -137,7 +137,7 @@ const currentTask = computed(() => (facts.value.task_id ? {id: facts.value.task_
 // the window that lists what each count in the bars counts
 const COUNT_WINDOWS = {skills: "skills.skills", jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", agents: "agents.agents", usage: "usage.usage", cost: "usage.cost", context: "usage.context", fitness: "usage.fitness", load: "usage.load"};
 // the agents an agent sends off, one umbrella in the bar: each kind is a group of its dropdown
-const HELPER_WINDOW = "agents.subagents";
+const HELPER_WINDOW = "agents.helpers";
 const usage = ref({agents: [], windows: []});
 const fitness = ref(null);
 const branch = ref("");
