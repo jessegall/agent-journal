@@ -292,8 +292,8 @@ async function send() {
     commenting.value = null;
     const result = await context.run(sentLine(answering, commented, line, files));
     if (!result.ok) (sendFailure.value = result.error, text.value = sent.text, attached.value = sent.attached, commenting.value = commented);
-    outgoing.value = outgoing.value.filter((other) => other.id !== echo.id);
     await load();
+    outgoing.value = outgoing.value.filter((other) => other.id !== echo.id);
 }
 
 // enter sends, with or without the command key; shift enter is a new line, and an open input method keeps its enter
