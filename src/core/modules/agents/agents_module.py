@@ -39,6 +39,8 @@ from core.modules.agents.commands.record_menu_answer.record_menu_answer_subcomma
 from core.modules.agents.support.agent_marks import AGENT_MARKS
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.module.module import Module
+from core.base.access import Access
+from core.base.agent_type import AgentType
 from core.base.viewer.auto_scroll import AutoScroll
 from core.base.viewer.window_search import WindowSearch
 from core.modules.agents.support.agent_searcher import AgentSearcher
@@ -62,6 +64,8 @@ class AgentsModule(Module):
     """Adds agents, one per session of an agent program, each an actor with the same number."""
 
     name = "journal.core.agents"
+    agent_types = [AgentType("main", "Main agent", access=Access.WRITING), AgentType("helper", "Helper"),
+                   AgentType("subagent", "Subagent", extends="helper"), AgentType("reviewer", "Reviewer")]
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [ModelDeclaration(Agent, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"])]

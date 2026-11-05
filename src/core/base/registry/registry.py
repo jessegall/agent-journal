@@ -3,7 +3,8 @@ from collections.abc import Sequence
 from core.base.profile.agent_profile import AgentProfile
 from core.base.agent_policy import AgentPolicy
 from core.base.role_group import RoleGroup
-from core.base.agent_role import AgentRole
+from core.base.agent_type_book import AgentTypeBook
+from core.base.registry.agent_type_entry import AgentTypeEntry
 from dataclasses import asdict, dataclass, field, replace
 from functools import cached_property, lru_cache
 
@@ -74,6 +75,7 @@ class Registry:
     buttons: tuple[ButtonEntry, ...] = ()
     button_slots: tuple[str, ...] = ()
     state_additions: tuple[StateAdditionEntry, ...] = ()
+    agent_types: tuple[AgentTypeEntry, ...] = ()
     providers: tuple[ProviderEntry, ...] = ()
     settings: tuple[SettingEntry, ...] = ()
     tunnels: tuple[TunnelEntry, ...] = ()
@@ -132,6 +134,7 @@ class Registry:
             templates=tuple(TemplateEntry.restored(template) for template in entries.get("templates", [])),
             buttons=tuple(ButtonEntry.restored(button) for button in entries.get("buttons", [])),
             state_additions=tuple(StateAdditionEntry.restored(addition) for addition in entries.get("state_additions", [])),
+            agent_types=tuple(AgentTypeEntry.restored(entry) for entry in entries.get("agent_types", [])),
             button_slots=tuple(entries.get("button_slots", [])),
             events=tuple(entries.get("events", [])),
             providers=tuple(ProviderEntry(provider["name"], DottedPath(provider["path"]), provider["module"], provider["title"]) for provider in entries.get("providers", [])),
@@ -179,6 +182,7 @@ class Registry:
             "templates": [asdict(template) for template in self.templates],
             "buttons": [asdict(button) for button in self.buttons],
             "state_additions": [asdict(addition) for addition in self.state_additions],
+            "agent_types": [asdict(entry) for entry in self.agent_types],
             "button_slots": list(self.button_slots),
             "providers": [{"name": provider.name, "path": provider.path.text, "module": provider.module, "title": provider.title} for provider in self.providers],
             "settings": [asdict(setting) for setting in self.settings],
@@ -222,6 +226,9 @@ class Registry:
     def state_book(self) -> StateBook:
         return StateBook(tuple(entry.addition() for entry in self.state_additions))
 
+    def agent_type_book(self) -> AgentTypeBook:
+        return AgentTypeBook(self.agent_types)
+
     def require_current(self, code_fingerprint: str) -> None:
         if code_fingerprint != self.fingerprint:
             raise StaleRegistryError("the journal's modules changed: journal module sync")
@@ -247,8 +254,7 @@ class Registry:
 
     @property
     def role_names(self) -> tuple[str, ...]:
-        return tuple(dict.fromkeys((*(role.value for role in AgentRole), *(driver.role for driver in self.drivers),
-                                    *(role for suite in self.suites for role in suite.defaults))))
+        return tuple(entry.key for entry in self.agent_types)
 
     @property
     def alias_permission_names(self) -> tuple[str, ...]:

@@ -55,6 +55,32 @@ A third-party button comes after the journal's buttons and names its module. It 
 Its command must belong to its own allowance: sync refuses a line already allowed by a shipped
 window, a shipped button, or another module's button, and refuses person-only administration lines.
 
+## Register an agent type
+
+`agent_types` declares the roles a module supplies. Depend on `journal.core.agents` and give each
+type a unique key made of lowercase letters and dashes and a label:
+
+```python
+from core.base.agent_type import AgentType
+from core.base.module.module import Module
+
+
+class ClerksModule(Module):
+    name = "acme.clerks"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.core.agents"]
+    agent_types = [AgentType("clerk", "Clerk", extends="helper")]
+```
+
+A type can extend another registered type. A helper with `access=Access.WRITING` must have
+`own_folder=True`. An optional `roster` class implements `AgentRoster.available(environment_id)`
+and returns the agents that can hold work. `start_line` names a separate start command when one
+is needed; `default_profile` names the profile used when a start names none.
+
+Drivers, driver rules, suite defaults and an `AgentPolicy` must name registered types. Sync
+refuses unknown roles, duplicate keys, invalid rosters, missing base types and inheritance loops
+before changing the stored registry. Register a role in `agent_types` before using it elsewhere.
+
 ## Join a suite or add one
 
 `parent_suite = "coding"` makes the review module's templates and buttons active in environments

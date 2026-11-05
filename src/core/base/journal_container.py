@@ -1,4 +1,5 @@
 from core.base.container import Container
+from core.base.agent_type_book import AgentTypeBook
 from core.base.database.database import Database
 from core.base.journal_home import JournalHome
 from core.base.model.state_book import StateBook
@@ -34,5 +35,6 @@ def synced_database_container(home: JournalHome, database: Database) -> Containe
     registry = Registry.read(container.get(Database))
     container.bind(Registry, registry)
     container.bind(StateBook, registry.state_book())
+    container.bind(AgentTypeBook, registry.agent_type_book())
     registry.bind(container)
     return container
