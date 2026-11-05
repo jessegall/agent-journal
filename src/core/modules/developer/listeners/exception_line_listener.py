@@ -3,9 +3,8 @@ from core.base.change.created import Created
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
-from core.modules.agents.support.main_agent_finder import MainAgentFinder
+from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.chat.models.journal_exception import JournalException
 from core.modules.developer.commands.send_exception_line.send_exception_line import SendExceptionLine
 from core.modules.developer.support.developer_settings import EXCEPTION_LINES_SETTING
@@ -18,11 +17,11 @@ class ExceptionLineListener(CommitListener[Created[JournalException]]):
     name = "developer.exception-line"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, settings: SettingValues, queries: Queries, bus: Bus) -> None:
-        self.settings, self.queries, self.bus = settings, queries, bus
+    def __init__(self, settings: SettingValues, agents: AgentRows, bus: Bus) -> None:
+        self.settings, self.agents, self.bus = settings, agents, bus
 
     def handle(self, event: Created[JournalException], logged: LoggedEvent) -> None:
-        main_agent = MainAgentFinder.newest(self.queries)
+        main_agent = self.agents.main_agent()
         if main_agent is None or not self.settings.flag(EXCEPTION_LINES_SETTING):
             return
         command = SendExceptionLine(main_agent.id, event.row.source, event.row.message)
