@@ -35,6 +35,6 @@ class AddReaderSubcommand(Subcommand[AddReader, Reader]):
             return
         if value.creator_id == CORE_ACTOR_ID:
             output.line("This is a stock reader. Apply the same fix to src/core/modules/processes/support/stock_reader.py, or file a task for it.")
-        for request in self.requests.open().all_rows():
+        for request in self.requests.open_rows():
             if not ReaderSelection.reads_command(value, request.command, request.category):
                 output.line(f"reader {value.name} does not read {request.command}; reader request {request.id} stays open")

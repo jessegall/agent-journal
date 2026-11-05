@@ -21,5 +21,8 @@ class SettingRows:
     def table(self, model: SettingModel) -> dict[tuple[str, int | None], Setting | SecretSetting]:
         return {(row.key, row.environment_id): row for row in self.queries.query(model).all_rows()}
 
+    def remember(self, row: Setting | SecretSetting) -> None:
+        self.kept.update(TABLES[type(row)], lambda rows: {**rows, (row.key, row.environment_id): row}, name="settings.rows")
+
     def stored_keys(self) -> list[str]:
         return list(dict.fromkeys(row.key for model in (Setting, SecretSetting) for row in self.queries.query(model).oldest().all_rows()))

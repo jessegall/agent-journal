@@ -11,6 +11,7 @@ from core.base.database.database import Database
 from core.base.database.table_statements import TableStatements
 from core.base.guard.guards import Guards
 from core.base.listener.listeners import Listeners
+from core.base.listener.event_rows import EventRows
 from core.base.model.model import Model
 from core.base.model.table import Table
 from core.base.model.tables import Tables
@@ -29,9 +30,10 @@ class Repository:
     reading it a second time."""
 
     def __init__(self, database: Database, tables: Tables, queries: Queries, guards: Guards, listeners: Listeners, log: EventLog,
-                 constraint_refusals: ConstraintRefusals, scopes: Scopes) -> None:
+                 constraint_refusals: ConstraintRefusals, scopes: Scopes, event_rows: EventRows) -> None:
         self.database, self.tables, self.queries = database, tables, queries
         self.guards, self.listeners, self.log, self.constraint_refusals, self.scopes = guards, listeners, log, constraint_refusals, scopes
+        self.event_rows = event_rows
 
     def save(self, model: M, context: Context) -> M:
         return self.save_change(self.stored(model), model, context)
@@ -46,6 +48,7 @@ class Repository:
             return change.old_row
         skipped = self.guards.ask(change)
         saved = self.persist(model, change)
+        self.event_rows.remember(saved)
         saved_change = replace(change, new_row=replace(saved, move=model.move))
         self.log.write(saved_change, skipped)
         self.listeners.run_save_listeners(saved_change)

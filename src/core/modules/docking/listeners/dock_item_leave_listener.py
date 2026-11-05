@@ -7,7 +7,7 @@ from core.modules.docking.commands.schedule_dock_item_leave.schedule_dock_item_l
 from core.modules.docking.listeners.environment_dock_listener import MODULE_NAME
 from core.modules.docking.models.dock import Dock
 from core.modules.docking.models.dock_item import DockItem
-from core.modules.docking.queries.dock_item_query import DockItemQuery
+from core.modules.docking.support.pending_dock_items import PendingDockItems
 from core.modules.docking.support.leave_time import LeaveTime
 from core.base.change.touched import Touched
 from core.base.model.model import Model
@@ -18,13 +18,13 @@ class DockItemLeaveListener(CommitListener[Touched[Model]]):
 
     name = "docking.item-leave"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, items: DockItemQuery, leave_time: LeaveTime, queries: Queries) -> None:
+    def __init__(self, bus: Bus, actors: ModuleActors, items: PendingDockItems, leave_time: LeaveTime, queries: Queries) -> None:
         self.bus, self.actors, self.items, self.leave_time, self.queries = bus, actors, items, leave_time, queries
 
     def handle(self, event: Touched[Model], logged: LoggedEvent) -> None:
         actor = self.actors.actor(MODULE_NAME)
         model_name = logged.event.split(".")[0]
-        for item in self.pending(model_name, logged.row_id):
+        for item in self.items.matching(model_name.replace("_", "-"), logged.row_id):
             leaves_at = self.leave_time.departure(item, logged.timestamp)
             if leaves_at is not None:
                 self.bus.run(ScheduleDockItemLeave(item.id, leaves_at), actor, cause_id=logged.id, environment_id=self.dock_environment(item))
@@ -32,5 +32,3 @@ class DockItemLeaveListener(CommitListener[Touched[Model]]):
     def dock_environment(self, item: DockItem) -> int:
         return self.queries.query(Dock).find(item.dock_id).environment_id
 
-    def pending(self, model_name: str, row_id: int) -> list[DockItem]:
-        return list(self.items.row_items(model_name.replace("_", "-"), row_id).waiting().all_rows())

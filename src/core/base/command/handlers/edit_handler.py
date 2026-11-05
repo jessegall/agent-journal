@@ -16,4 +16,4 @@ class EditHandler(Handler[EditCommand[Model], Model]):
 
     def handle(self, command: EditCommand[Model], context: Context) -> Model:
         row = self.queries.query(command.model()).find(command.row_id)
-        return self.repository.save(row.changed(**command.changed_fields()), context)
+        return self.repository.update(row, context, **command.changed_fields())

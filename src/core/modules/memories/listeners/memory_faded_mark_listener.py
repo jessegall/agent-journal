@@ -3,6 +3,7 @@ from core.base.change.event_log import EventLog
 from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.modules.memories.listeners.memory_mark_listener import MemoryMarkListener
 from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVariant
 from core.modules.memories.models.memory import LOWEST_WEIGHT
@@ -15,8 +16,8 @@ class MemoryFadedMarkListener(MemoryMarkListener[AgentCompacted]):
 
     name = "memories.faded-mark"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, events: EventLog) -> None:
-        super().__init__(bus, actors, queries)
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, events: EventLog, event_rows: EventRows) -> None:
+        super().__init__(bus, actors, queries, event_rows)
         self.events = events
 
     def handle(self, event: AgentCompacted, logged: LoggedEvent) -> None:

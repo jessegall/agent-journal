@@ -14,7 +14,7 @@ class SkillProjects:
         self.home, self.queries, self.kept = home, queries, kept
 
     def projects(self) -> tuple[Path, ...]:
-        environments = self.kept.read("environments", self.queries.query(Environment).all_rows, name="skills.projects")
+        environments = self.kept.read("environments", lambda: tuple(self.queries.query(Environment).all_rows()), name="skills.projects")
         folders = (self.home.project_folder, *(Path(environment.folder) for environment in environments))
         return tuple(dict.fromkeys(folder.resolve() for folder in folders if folder.is_dir()))
 

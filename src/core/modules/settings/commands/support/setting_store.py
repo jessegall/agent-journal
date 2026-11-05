@@ -19,10 +19,14 @@ class SettingStore:
         setting = Setting(environment_id=environment_id, creator_id=context.actor.id, key=key, value=json.dumps(value))
         existing = self.rows.row(Setting, key, environment_id)
         self.reader.clear()
-        return self.repository.merge(existing if isinstance(existing, Setting) else None, setting, context)
+        saved = self.repository.merge(existing if isinstance(existing, Setting) else None, setting, context)
+        self.rows.remember(saved)
+        return saved
 
     def write_secret(self, key: str, text: str, environment_id: int | None, context: Context) -> SecretSetting:
         secret = SecretSetting(environment_id=environment_id, creator_id=context.actor.id, key=key, value=text)
         existing = self.rows.row(SecretSetting, key, environment_id)
         self.reader.clear()
-        return self.repository.merge(existing if isinstance(existing, SecretSetting) else None, secret, context)
+        saved = self.repository.merge(existing if isinstance(existing, SecretSetting) else None, secret, context)
+        self.rows.remember(saved)
+        return saved
