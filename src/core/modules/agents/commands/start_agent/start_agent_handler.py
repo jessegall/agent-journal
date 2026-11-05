@@ -8,7 +8,7 @@ from core.base.caller.process_chain import ProcessChain
 from core.base.timestamp import Timestamp
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.modules.agents.support.agent_sessions import AgentSessions
+from core.modules.agents.support.agent_rows import AgentRows
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.registry.registry import Registry
@@ -21,8 +21,8 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
 
     command = StartAgent
 
-    def __init__(self, sessions: AgentSessions, repository: Repository, chain: ProcessChain, registry: Registry) -> None:
-        self.sessions, self.repository, self.chain = sessions, repository, chain
+    def __init__(self, agents: AgentRows, repository: Repository, chain: ProcessChain, registry: Registry) -> None:
+        self.agents, self.repository, self.chain = agents, repository, chain
         self.registry = registry
 
     def handle(self, command: StartAgent, context: Context) -> Agent:
@@ -30,7 +30,7 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
             raise Refusal("an agent starts in an environment", "name one with --environment")
         if command.role not in self.registry.role_names:
             raise Refusal(f"role {command.role} is not declared", "choose a role declared by an installed suite")
-        started = self.sessions.find(command.session)
+        started = self.agents.session(command.session)
         if started is not None and started.ended_at is None:
             raise Refusal(f"session {command.session} has started already", "journal agent list shows the agents")
         if started is not None:

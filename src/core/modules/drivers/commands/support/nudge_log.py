@@ -1,6 +1,7 @@
 from dataclasses import replace
 
 from core.base.command.context import Context
+from core.base.database.kept_rows import KeptRows
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.nudge import Nudge
 from core.base.driver.rule_answers import RuleAnswers
@@ -16,8 +17,8 @@ class NudgeLog:
     repeat within the hook; and what was said, kept per agent. A line on a clock is held by its key, so a
     number that changes in its text does not start it again. A refusal is never held back."""
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, queries: Queries, repository: Repository, kept: KeptRows) -> None:
+        self.queries, self.repository, self.kept = queries, repository, kept
 
     def skipped_lines(self, agent_id: int, answers: RuleAnswers, timestamp: Timestamp) -> frozenset[tuple[str, str]]:
         lines = answers.line_nudges
@@ -40,8 +41,10 @@ class NudgeLog:
 
     def record(self, agent_id: int, nudge: Nudge) -> NudgeRecord:
         rows = self.queries.query(NudgeRecord).filter(agent_id=agent_id, key=nudge.key)
-        kept = (rows if nudge.interval else rows.filter(text=nudge.text)).descending("last_delivered_at").limited(1)
-        return kept[0] if kept else NudgeRecord(agent_id=agent_id, creator_id=0, key=nudge.key, text=nudge.text)
+        query = (rows if nudge.interval else rows.filter(text=nudge.text)).descending("last_delivered_at")
+        record = self.kept.read("nudge_records", query.first, "agent_id = ? AND key = ?", [agent_id, nudge.key],
+                                name=f"drivers.nudge:{nudge.key if nudge.interval else nudge.text}")
+        return record if record is not None else NudgeRecord(agent_id=agent_id, creator_id=0, key=nudge.key, text=nudge.text)
 
     def write(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
         for nudge in (*answers.delivered_nudges, *answers.refusal_nudges):

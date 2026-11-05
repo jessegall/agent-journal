@@ -8,7 +8,7 @@ from core.base.driver.tool_type import ToolType
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.type_guards import is_mapping
-from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.commands.bind_subagent_dispatch.bind_subagent_dispatch import BindSubagentDispatch
 from core.modules.drivers.commands.record_subagent_dispatch.record_subagent_dispatch import RecordSubagentDispatch
 from core.modules.drivers.models.subagent_dispatch import SubagentDispatch
@@ -27,8 +27,8 @@ class DispatchMarkRule(DriverRule):
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, queries: Queries, agents: AgentRows) -> None:
+        self.queries, self.agents = queries, agents
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if hook.role == AgentRole.SUBAGENT and hook.event.event is HookEventName.SESSION_START:
@@ -53,13 +53,13 @@ class DispatchMarkRule(DriverRule):
         return bool(hook.event.tool_input().get(BACKGROUND_INPUT)) or (is_mapping(response) and response.get(ASYNC_RESPONSE) is True)
 
     def subagent_started(self, hook: AgentHook) -> RuleAnswer:
-        parent = self.queries.query(Agent).find(hook.agent_id).parent_id
+        parent = self.agents.find(hook.agent_id).parent_id
         if parent is None:
             return RuleAnswer.allowed()
         return RuleAnswer.allowed().running(BindSubagentDispatch(parent, f"{hook.event.raw.get('agent_type') or DEFAULT_PROFILE}", hook.agent_id))
 
     def subagent_stopped(self, hook: AgentHook) -> RuleAnswer:
-        parent = self.queries.query(Agent).find(hook.agent_id).parent_id
+        parent = self.agents.find(hook.agent_id).parent_id
         raw = hook.event.raw
         profile = f"{raw.get('agent_type') or DEFAULT_PROFILE}"
         rows = self.queries.query(SubagentDispatch).filter(agent_id=parent, profile=profile).matching(IsNull("ended_at")).oldest().limited(1) if parent is not None else ()
