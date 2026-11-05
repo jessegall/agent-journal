@@ -9,6 +9,7 @@ from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.base.change.created import Created
+from core.modules.messages.support.message_targets import MessageTargets
 
 MOVE_FILE = "move"
 
@@ -19,13 +20,15 @@ class WaitingMessageRunListener(CommitListener[Created[Message]]):
 
     name = "processes.waiting-message-run"
 
-    def __init__(self, queries: Queries, processes: ProcessQuery, folder: OutputFolder) -> None:
-        self.queries, self.processes, self.folder = queries, processes, folder
+    def __init__(self, targets: MessageTargets, processes: ProcessQuery, folder: OutputFolder) -> None:
+        self.targets, self.processes, self.folder = targets, processes, folder
 
     def handle(self, event: Created[Message], logged: LoggedEvent) -> None:
         message = event.row
         if message.type not in PERSON_MESSAGE_TYPES:
             return
-        for process in tuple(self.processes.environment(message.environment_id).filter(state=ProcessState.RUNNING).all_rows()):
-            if self.queries.query(Agent).find(process.agent_id).role == AgentRole.MAIN:
-                self.folder.write(process.id, MOVE_FILE, "1")
+        target = self.targets.recipient(message)
+        if target is None:
+            return
+        for process in tuple(self.processes.environment(message.environment_id).filter(agent_id=target.id, state=ProcessState.RUNNING).all_rows()):
+            self.folder.write(process.id, MOVE_FILE, "1")

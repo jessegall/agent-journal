@@ -4,6 +4,7 @@ import TranscriptRows from "./TranscriptRows.vue";
 
 export default {
     setup() {
-        return () => h(TranscriptRows, {line: `agent transcript ${useWindow().agent}`});
+        const agent = useWindow().agent;
+        return () => h(TranscriptRows, {line: `agent transcript ${agent}`, agent: Number(agent)});
     },
 };

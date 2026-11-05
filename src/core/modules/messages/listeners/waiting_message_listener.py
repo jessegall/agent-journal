@@ -7,6 +7,7 @@ from core.modules.messages.commands.record_waiting_message_line.record_waiting_m
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.base.change.created import Created
 from core.modules.messages.models.message import Message
+from core.modules.messages.support.message_targets import MessageTargets
 
 
 class WaitingMessageListener(CommitListener[Created[Message]]):
@@ -15,9 +16,12 @@ class WaitingMessageListener(CommitListener[Created[Message]]):
     name = "messages.idle-message"
     run_order = -2
 
-    def __init__(self, bus: Bus) -> None:
-        self.bus = bus
+    def __init__(self, bus: Bus, targets: MessageTargets) -> None:
+        self.bus, self.targets = bus, targets
 
     def handle(self, event: Created[Message], logged: LoggedEvent) -> None:
-        if logged.environment_id is not None and logged.data["type"][1] in PERSON_MESSAGE_TYPES:
-            self.bus.run(RecordWaitingMessageLine(logged.environment_id), Actor(logged.actor_id, ActorType.USER), environment_id=logged.environment_id)
+        if logged.environment_id is None or event.row.type not in PERSON_MESSAGE_TYPES:
+            return
+        agent = self.targets.recipient(event.row)
+        if agent is not None:
+            self.bus.run(RecordWaitingMessageLine(logged.environment_id, agent.id), Actor(logged.actor_id, ActorType.USER), environment_id=logged.environment_id)

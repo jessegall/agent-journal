@@ -7,7 +7,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
-from core.base.query.queries import Queries
+from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES, MessageType
 from core.modules.messages.models.message import Message
@@ -28,11 +28,11 @@ class UnansweredMessageRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, queries: Queries, hook_calls: HookCallQuery) -> None:
-        self.queries, self.hook_calls = queries, hook_calls
+    def __init__(self, messages: MessageQuery, hook_calls: HookCallQuery) -> None:
+        self.messages, self.hook_calls = messages, hook_calls
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        unanswered = self.unanswered(hook.environment_id)
+        unanswered = self.unanswered(hook.environment_id, hook.agent_id)
         tool = hook.event.tool
         if not unanswered or (tool is not None and tool.shell is not None and tool.shell.parts_running_journal_command("message", "task make")):
             return RuleAnswer.allowed()
@@ -43,9 +43,9 @@ class UnansweredMessageRule(DriverRule):
             return RuleAnswer.blocked(hook, UNANSWERED_REFUSAL.nudge(messages=message_numbers, message=unanswered[0].id), MessagesAnswered([message.id for message in unanswered]))
         return RuleAnswer.with_nudges(UNANSWERED_COUNTDOWN.nudge(remaining_calls, messages=message_numbers) if remaining_calls <= COUNTDOWN_CALL_COUNT else UNANSWERED.nudge(messages=message_numbers))
 
-    def unanswered(self, environment_id: int) -> tuple[Message, ...]:
-        agent_messages = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.AGENT).newest().limited(1)
-        read_messages = self.queries.query(Message).filter(environment_id=environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(Greater("read_at", agent_messages[0].creation_timestamp().text if agent_messages else ""))
+    def unanswered(self, environment_id: int, agent_id: int) -> tuple[Message, ...]:
+        agent_messages = self.messages.addressed(agent_id, environment_id).filter(type=MessageType.AGENT).newest().limited(1)
+        read_messages = self.messages.addressed(agent_id, environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(Greater("read_at", agent_messages[0].creation_timestamp().text if agent_messages else ""))
         candidates = tuple(read_messages.oldest().all_rows())
-        answered: set[int | None] = {reply.parent_id for reply in self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.AGENT).matching(Among("parent_id", tuple(message.id for message in candidates))).all_rows()} if candidates else set()
+        answered: set[int | None] = {reply.parent_id for reply in self.messages.addressed(agent_id, environment_id).filter(type=MessageType.AGENT).matching(Among("parent_id", tuple(message.id for message in candidates))).all_rows()} if candidates else set()
         return tuple(message for message in candidates if message.id not in answered and not MessageReactions.has_actor(message, ActorType.AGENT.value))

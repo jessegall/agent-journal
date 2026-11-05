@@ -290,7 +290,12 @@ async function send() {
     focusComposer();
     replying.value = null;
     commenting.value = null;
-    const result = await context.run(sentLine(answering, commented, line, files));
+    const words = sentLine(answering, commented, line, files);
+    if (!answering && !commented) {
+        const target = await context.read("agent main");
+        if (target.ok && target.value?.id) words.push("--target-agent", String(target.value.id));
+    }
+    const result = await context.run(words);
     if (!result.ok) (sendFailure.value = result.error, text.value = sent.text, attached.value = sent.attached, commenting.value = commented);
     await load();
     outgoing.value = outgoing.value.filter((other) => other.id !== echo.id);

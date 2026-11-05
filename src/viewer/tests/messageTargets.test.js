@@ -3,9 +3,9 @@ import {context, mounted, page, settle} from "./support/windowContext.js";
 import Chat from "../../core/modules/messages/web/src/Chat.vue";
 import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue";
 
-test("main chat sends the current main agent as the message target", async () => {
+test.each([{agent: {id: 42}, flags: ["--target-agent", "42"]}, {agent: null, flags: []}])("main chat sends the current target when one exists: $agent", async ({agent, flags}) => {
     const sent = [];
-    const window = {...context({"message feed": page([]), "agent main": {ok: true, value: {id: 42}}}), run: async (line) => { sent.push(line); return {ok: true, value: {}}; }};
+    const window = {...context({"message feed": page([]), "agent main": {ok: true, value: agent}}), run: async (line) => { sent.push(line); return {ok: true, value: {}}; }};
     const element = await mounted(Chat, window);
     const box = element.querySelector(".composer-input");
     box.value = "Please check this";
@@ -13,7 +13,7 @@ test("main chat sends the current main agent as the message target", async () =>
     await settle();
     box.dispatchEvent(new KeyboardEvent("keydown", {key: "Enter"}));
     await settle();
-    expect(sent).toContainEqual(["message", "send", "Please check this", "--target-agent", "42"]);
+    expect(sent).toContainEqual(["message", "send", "Please check this", ...flags]);
 });
 
 test("an agent conversation sends its own agent as the message target", async () => {

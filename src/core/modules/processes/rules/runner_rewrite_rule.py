@@ -53,7 +53,7 @@ class RunnerRewriteRule(DriverRule):
             if sandbox:
                 return RuleAnswer.refused(SANDBOX_RUNNER_MISSING.nudge())
             return self.missing(hook)
-        decided = self.limits.decide(hook.environment_id, shell, hook.role)
+        decided = self.limits.decide(hook.environment_id, shell, hook.agent_id)
         folder = self.folders.folder(hook.agent_id) if agent_type.separate_folder and agent_type.access is Access.WRITING else None
         if agent_type.separate_folder and agent_type.access is Access.WRITING and folder is None:
             return RuleAnswer.refused(SANDBOX_FOLDER_MISSING.nudge())

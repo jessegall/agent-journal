@@ -19,6 +19,7 @@ class Message(Model):
 
     environment_id: int
     agent_id: int | None = None
+    target_agent_id: int | None = None
     parent_id: int | None = None
     creator_id: int
     type: MessageType

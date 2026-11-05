@@ -5,13 +5,16 @@ import pytest
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
+from core.base.query.queries import Queries
+from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.processes.support.output_folder import OutputFolder
 from core.testing.expect_reply import expect_absent_reply_line, expect_absent_reply_refusal, expect_reply_line, expect_reply_refusal
 from core.testing.expect_row import expect_row
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.modules.messages.delivery import KeptTyping
+from core.testing.story_fixture import StoryFixture
+from tests.stories.core.modules.messages.delivery import KeptTyping, READ_MESSAGE_HOOK
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.core.support.fixtures import UserJoined
@@ -22,18 +25,34 @@ from tests.stories.support.story_checks import expect_value
 READ = HookSamples.shell("cat cart.py", ShellPart("cat", CommandCategory.READ, ["cart.py"]))
 
 
+class TargetedSession(StoryFixture):
+    parent = OrchestratorWithOpenTask
+
+    def steps(self, story):
+        install_runner(story)
+        story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+        repository_environment(story)
+        story.worker = dispatched_worker(story)
+        story.worker_session = worker_session(story, story.worker)
+        story.helper = Actor(story.new_row_id(f"agent start h-1 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
+        story.run("task overview 1", actor=story.worker)
+        story.hook(story.worker_session, HookSamples.prompt("Work"))
+        story.hook("h-1", HookSamples.prompt("Read"))
+        story.hook("s-1", HookSamples.prompt("Coordinate"))
+
+    def expect(self, story):
+        agents = story.container.get(Queries).query(Agent)
+        worker = next(iter(agents.filter(role="worker").all_rows()))
+        story.worker = Actor(worker.id, ActorType.AGENT)
+        story.worker_session = worker.session
+        helper = next(iter(agents.filter(session="h-1").all_rows()))
+        story.helper = Actor(helper.id, ActorType.AGENT)
+
+
 @pytest.fixture
 def targeted_chat(new_story, monkeypatch):
-    story = install_runner(new_story(fixture=OrchestratorWithOpenTask))
-    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    repository_environment(story)
-    story.worker = dispatched_worker(story)
-    story.worker_session = worker_session(story, story.worker)
-    story.helper = Actor(story.new_row_id(f"agent start h-1 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
-    story.run("task overview 1", actor=story.worker)
-    story.hook(story.worker_session, HookSamples.prompt("Work"))
-    story.hook("h-1", HookSamples.prompt("Read"))
-    story.hook("s-1", HookSamples.prompt("Coordinate"))
+    story = new_story(fixture=TargetedSession)
+    TargetedSession().expect(story)
     typing = KeptTyping()
     monkeypatch.setattr(TerminalTyping, "type_line", typing.type_line)
     with server_story(story, listener_thread_started=False) as server:
@@ -131,6 +150,7 @@ def test_a_read_message_edit_wakes_the_same_worker(targeted_chat):
     story = server.story
     send_target(server, cookie, story.worker, "Worker text before editing")
     story.run("message read 1", actor=story.worker)
+    story.hook(story.worker_session, READ_MESSAGE_HOOK)
     story.advance(timedelta(seconds=31))
     server.viewer_line_value(cookie, {"window": "messages.chat", "environment": "main", "line": ["message", "edit", "1", "--text", "Worker text after editing"]})
     story.run_listeners()

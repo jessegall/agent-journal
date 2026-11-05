@@ -11,6 +11,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
+from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.support.message_nudges import NEW_MESSAGE
 
 WAITING_MESSAGE_SOURCE = "messages.waiting"
@@ -21,20 +22,21 @@ class WaitingMessageLines:
     the lines of an agent that still wait, and the dropping of a line whose message was read or told by a
     hook."""
 
-    def __init__(self, queries: Queries, hook_calls: HookCallQuery, bus: Bus) -> None:
+    def __init__(self, queries: Queries, hook_calls: HookCallQuery, bus: Bus, messages: MessageQuery) -> None:
         self.queries, self.hook_calls, self.bus = queries, hook_calls, bus
+        self.messages = messages
 
-    def oldest_unread(self, environment_id: int) -> Message | None:
-        return self.queries.query(Message).filter(environment_id=environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().first()
+    def oldest_unread(self, environment_id: int, agent_id: int) -> Message | None:
+        return self.messages.unread(agent_id, environment_id).oldest().first()
 
     def waking_message(self, environment_id: int, agent_id: int) -> Message | None:
-        message = self.oldest_unread(environment_id)
+        message = self.oldest_unread(environment_id, agent_id)
         if message is None or message.delivered_at is None:
             return message
         call = self.hook_calls.newest_agent_hook(agent_id)
         if call is None or call.creation_timestamp() <= message.delivered_at:
             return None
-        return self.queries.query(Message).filter(environment_id=environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).matching(IsNull("delivered_at")).oldest().first()
+        return self.messages.unread(agent_id, environment_id).matching(IsNull("delivered_at")).oldest().first()
 
     def waiting(self, agent_id: int):
         return self.queries.query(AgentLine).filter(agent_id=agent_id, source=WAITING_MESSAGE_SOURCE, state=AgentLineState.WAITING).newest()
