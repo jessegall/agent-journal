@@ -13,7 +13,6 @@ from core.base.model.tables import Tables
 from core.base.query.queries import Queries
 
 M = TypeVar("M", bound=Model)
-CREATION = ".create"
 
 
 class EventBuilder:
@@ -37,7 +36,7 @@ class EventBuilder:
     def event_class(self, declared: type, logged: LoggedEvent) -> type:
         if declared is not Changed:
             return declared
-        return Created if logged.event.endswith(CREATION) else Updated
+        return Created if logged.is_creation else Updated
 
     def old_row(self, row: M, logged: LoggedEvent) -> M:
         table = self.tables.table(type(row))

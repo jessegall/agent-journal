@@ -4,7 +4,7 @@ import pytest
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.change.event_log import EventLog
+from core.base.change.event_log import EventLog, PAGE_SIZE_EVENTS
 from core.base.change.event_pattern import EventPattern
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
@@ -158,6 +158,19 @@ def test_a_listener_a_person_waits_on_goes_first_and_again_after_each_other_list
     container.get(Bus).run(MakeItem(title="Dune"), AGENT)
     container.get(CommitListenerRunner).run()
     assert HANDLED == ["urgent 1", "slow 1", "urgent 2", "slow 2"]
+
+
+def test_urgent_listeners_see_events_created_after_a_full_page_in_the_same_round(tmp_path):
+    container = container_with(tmp_path, SlowCounter, UrgentCounter)
+    for number in range(PAGE_SIZE_EVENTS):
+        container.get(Bus).run(MakeItem(title=f"Item {number}"), AGENT)
+    runner = container.get(CommitListenerRunner)
+    entries = runner.commit_entries()
+
+    runner.run_round(entries, [entry for entry in entries if runner.is_urgent(entry)])
+
+    assert HANDLED[-1] == f"urgent {PAGE_SIZE_EVENTS + 1}"
+    assert f"slow {PAGE_SIZE_EVENTS + 1}" not in HANDLED
 
 
 def test_the_urgent_listeners_and_the_ordinary_ones_run_apart(tmp_path):

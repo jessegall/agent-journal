@@ -1,5 +1,12 @@
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from types import MappingProxyType
 
+import pytest
+
+from core.base.actor import Actor
+from core.base.change.change import Change
+from core.base.change.changed import Changed
 from core.base.change.created import Created
 from core.base.change.event_type import EventType
 from core.base.change.journal_booting import JournalBooting
@@ -7,6 +14,8 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.change.moved import Moved
 from core.base.change.touched import Touched
 from core.base.listener.event_builder import EventBuilder
+from core.base.listener.commit_listener import CommitListener
+from core.base.command.context import Context
 from core.base.model.added_state import AddedState
 from core.base.model.move import Move
 from core.base.model.state_addition import StateAddition
@@ -15,6 +24,8 @@ from core.base.model.tables import Tables
 from core.base.timestamp import Timestamp
 from tests.unit.core.base.model.test_model import Item
 from tests.unit.core.base.model.test_lifecycle import ItemState
+from tests.unit.core.base.command.test_commands import MakeItem
+from tests.unit.core.base.change.test_event_log import log
 
 STAMP = Timestamp.parsed("2026-11-01T09:00:00+00:00")
 
@@ -39,8 +50,21 @@ class HiddenTitleItem(Item):
     hidden_fields = frozenset(["title"])
 
 
-def logged(event: str, data: dict[str, tuple[object, object]]) -> LoggedEvent:
-    return LoggedEvent(id=1, event=event, row_table="items", row_id=7, actor_id=1, environment_id=1, command="", timestamp=STAMP, data=MappingProxyType(data), cause_id=None, skipped_guards=())
+@dataclass(frozen=True, kw_only=True)
+class OptionalTitleItem(Item):
+    title: str | None = None
+
+    def change_name(self, old_row: "OptionalTitleItem | None") -> str:
+        return "prompt"
+
+
+class OptionalItemChanges(CommitListener[Changed[OptionalTitleItem]]):
+    name = "items.optional-changes"
+
+
+def logged(event: str, data: Mapping[str, Sequence[object]]) -> LoggedEvent:
+    return LoggedEvent(id=1, event=event, row_table="items", row_id=7, actor_id=1, environment_id=1, command="", timestamp=STAMP,
+                       data=MappingProxyType({name: (values[0], values[1]) for name, values in data.items()}), cause_id=None, skipped_guards=())
 
 
 def item() -> Item:
@@ -91,3 +115,14 @@ def test_an_added_move_is_read_from_the_state_book():
     row = Item(id=7, title="New title", state=reviewing)
     event = EventBuilder(ItemRows(row), Tables(), StateBook([addition])).built(EventType(Moved, Item), logged("item.review", {"state": ("open", "reviewing")}))
     assert event.move is move
+
+
+@pytest.mark.parametrize("old_row", [None, OptionalTitleItem(id=7)], ids=["named-creation", "nullable-field-update"])
+def test_a_named_event_has_the_same_kind_as_the_saved_change(old_row, log):
+    row = OptionalTitleItem(id=7, title="New title")
+    change = Change(old_row, row, Context(Actor.core(), STAMP, MakeItem(title="New title")))
+    event = logged(change.event, log.data(change))
+
+    built = EventBuilder(ItemRows(row), Tables(), StateBook()).built(EventType(Changed, OptionalTitleItem), event)
+
+    assert built == change.typed_event(OptionalItemChanges)

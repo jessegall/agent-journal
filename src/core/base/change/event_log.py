@@ -3,7 +3,7 @@ from pathlib import Path
 from dataclasses import fields
 
 from core.base.change.change import BOOKKEEPING_FIELDS, Change
-from core.base.change.logged_event import LoggedEvent
+from core.base.change.logged_event import CREATION, LoggedEvent
 from core.base.database.bookkeeping_table import BookkeepingTable
 from core.base.database.database import Database
 from core.base.command.context import Context
@@ -81,8 +81,11 @@ class EventLog:
     def data(self, change: Change[Model]) -> dict[str, list[object]]:
         names = change.fields if change.old_row and change.new_row else tuple(field.name for field in fields(change.row) if field.name not in BOOKKEEPING_FIELDS)
         hidden = type(change.row).hidden_fields
-        return {name: [HIDDEN, HIDDEN] if name in hidden else [stored(getattr(change.old_row, name, None)), stored(getattr(change.new_row, name, None))]
+        data = {name: [HIDDEN, HIDDEN] if name in hidden else [stored(getattr(change.old_row, name, None)), stored(getattr(change.new_row, name, None))]
                 for name in names}
+        if change.old_row is None and not change.event.endswith(CREATION):
+            data["id"] = [None, change.row.id]
+        return data
 
     def event(self, event_id: int) -> LoggedEvent:
         return LoggedEvent.parsed(self.table.row(event_id))
