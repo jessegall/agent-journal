@@ -1,0 +1,19 @@
+from core.base.change.changed import Changed
+from core.base.change.deleted import Deleted
+from core.base.command.context import Context
+from core.base.listener.save_listener import SaveListener
+from core.modules.docking.models.dock_item import DockItem
+from core.modules.docking.support.pending_dock_items import PendingDockItems
+
+
+class PendingDockItemsListener(SaveListener[Changed[DockItem]]):
+    name = "docking.pending-items"
+
+    def __init__(self, pending: PendingDockItems) -> None:
+        self.pending = pending
+
+    def handle(self, event: Changed[DockItem], context: Context) -> None:
+        if isinstance(event, Deleted):
+            self.pending.remove(event.row)
+            return
+        self.pending.remember(event.row)

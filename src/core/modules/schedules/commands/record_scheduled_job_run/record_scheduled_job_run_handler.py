@@ -16,4 +16,4 @@ class RecordScheduledJobRunHandler(Handler[RecordScheduledJobRun, ScheduledJob])
 
     def handle(self, command: RecordScheduledJobRun, context: Context) -> ScheduledJob:
         job = self.queries.query(ScheduledJob).find(command.scheduled_job_id)
-        return self.repository.save(job.changed(last_run_at=context.timestamp, ended_at=job.ended_at if job.is_recurring else context.timestamp), context)
+        return self.repository.update(job, context, last_run_at=context.timestamp, ended_at=job.ended_at if job.is_recurring else context.timestamp)

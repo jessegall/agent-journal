@@ -19,3 +19,9 @@ class PendingDockItems:
 
     def remove(self, scheduled: DockItem) -> None:
         self.kept.update("dock_items", lambda items: tuple(item for item in items if item.id != scheduled.id), WAITING_CONDITION, WAITING_PARAMETERS, name="docking.pending_items")
+
+    def remember(self, saved: DockItem) -> None:
+        self.kept.update("dock_items", lambda items: (*[item for item in items if item.id != saved.id], saved)
+                         if saved.state is DockItemState.DOCKED and not saved.kept and saved.leaves_at is None
+                         else tuple(item for item in items if item.id != saved.id),
+                         WAITING_CONDITION, WAITING_PARAMETERS, name="docking.pending_items")

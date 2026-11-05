@@ -7,12 +7,13 @@ from core.base.command.bus import Bus
 from core.base.driver.project_paths import ProjectPaths
 from core.base.driver.command_category import CommandCategory
 from core.base.listener.commit_listener import CommitListener
+from core.base.listener.event_rows import EventRows
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
-from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
+from core.modules.chat.queries.chat_mark_query import ChatMarkQuery
 from core.modules.processes.models.enums.process_mark_type import ProcessMarkType
 from core.modules.processes.models.enums.process_mark_variant import ProcessMarkVariant
 from core.modules.processes.models.enums.process_state import ProcessState
@@ -42,22 +43,24 @@ class ProcessEndMarkListener(CommitListener[Touched[Process]]):
 
     name = "processes.process-mark"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, folder: OutputFolder, visibility: RunVisibility) -> None:
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, folder: OutputFolder, visibility: RunVisibility, rows: EventRows, marks: ChatMarkQuery) -> None:
         self.bus, self.actors, self.queries, self.folder, self.visibility = bus, actors, queries, folder, visibility
+        self.rows = rows
+        self.marks = marks
 
     def handle(self, event: Touched[Process], logged: LoggedEvent) -> None:
-        process = self.queries.query(Process).filter(id=logged.row_id).first()
+        process = self.rows.find(Process, logged.row_id)
         if process is None:
             return
         key = f"process:{process.id}"
-        shown = self.queries.query(ChatMark).filter(environment_id=process.environment_id, key=key).first()
+        shown = self.marks.keyed(process.environment_id, key)
         if shown is not None and shown.state is ChatMarkState.ENDED:
             return
         part = self.visibility.visible_part(process)
         if part is None:
             return
         output = next(self.queries.query(Output).filter(process_id=process.id).all_rows(), None)
-        reader = self.queries.query(Reader).find(output.reader_id) if output and output.reader_id else None
+        reader = self.rows.required(Reader, output.reader_id) if output and output.reader_id else None
         variant = ProcessMarkVariant.QUEUED if process.queued_at is not None else ProcessMarkVariant(process.state.value)
         figure = self.figure(process, output)
         text = self.text(process, output.title if output else "", ProjectPaths.relative_line(part.text, process.folder)[:LINE_CHARACTERS])

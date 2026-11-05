@@ -1,6 +1,5 @@
 from core.base.actor import Actor
 from core.base.change.logged_event import LoggedEvent
-from core.base.change.changed import Changed
 from core.base.change.created import Created
 from core.base.change.moved import Moved
 from core.base.change.updated import Updated
@@ -11,6 +10,7 @@ from core.base.query.conditions.among import Among
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
+from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
 from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test import RecordWorkerTest
 from suites.coding.modules.workers.commands.queue_worker_tests.start_worker_tests import StartWorkerTests
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
@@ -24,17 +24,17 @@ from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import Proo
 QUEUED_EVENT, RUN_EVENT = "proof.queue", "proof.run"
 
 
-class WorkerTestListener(CommitListener[Moved[Proof] | Changed[Process] | Created[AffectedTest] | Updated[AffectedTest]]):
+class WorkerTestListener(CommitListener[Moved[Proof] | Moved[Process] | Created[AffectedTest] | Updated[AffectedTest]]):
     """Moves a worker's tests along: a queued test starts when there is room, a test moved
     to running is launched, and a test whose process ended is recorded, which makes room for the next."""
 
     name = "workers.tests"
-    moves = [ProofLifecycle.queue, ProofLifecycle.run]
+    moves = [ProofLifecycle.queue, ProofLifecycle.run, ProcessLifecycle.finish, ProcessLifecycle.fail, ProcessLifecycle.stop, ProcessLifecycle.orphan]
 
     def __init__(self, bus: Bus, queries: Queries, launch: WorkerTestLaunch) -> None:
         self.bus, self.queries, self.launch = bus, queries, launch
 
-    def handle(self, event: Moved[Proof] | Changed[Process] | Created[AffectedTest] | Updated[AffectedTest], logged: LoggedEvent) -> None:
+    def handle(self, event: Moved[Proof] | Moved[Process] | Created[AffectedTest] | Updated[AffectedTest], logged: LoggedEvent) -> None:
         if logged.event == QUEUED_EVENT:
             self.start_next(self.queries.query(Worktree).find(event.row.worktree_id).environment_id, logged)
             return

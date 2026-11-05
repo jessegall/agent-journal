@@ -41,7 +41,7 @@ class KeptRows:
 
     def check_rollback(self) -> None:
         if self.write_rollback_count != self.database.write_rollback_count:
-            self.kept.clear()
+            self.kept = {key: replace(value, change_mark=(-1, -1)) for key, value in self.kept.items()}
             self.write_rollback_count = self.database.write_rollback_count
 
     @staticmethod

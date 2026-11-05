@@ -35,7 +35,7 @@ class WaitTaskHandler(Handler[WaitTask, Task]):
             self.repository.save(TaskWait(task_id=task.id, creator_id=context.actor.id, target=target), context)
         if command.wait_command:
             self.repository.save(TaskWait(task_id=task.id, creator_id=context.actor.id, command=command.wait_command, interval_minutes=command.interval_minutes), context)
-        return self.queries.query(Task).find(task.id)
+        return task
 
     def reaches_task(self, task_id: int, target_id: int) -> bool:
         edges = tuple(self.queries.query(TaskEdge).all_rows())

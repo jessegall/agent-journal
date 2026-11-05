@@ -1,6 +1,5 @@
 from core.base.guard.guard import Guard
-from core.base.model.model import Model
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
 from core.modules.docking.models.dock import Dock
 from core.modules.docking.models.dock_item import DockItem
@@ -14,12 +13,12 @@ class OwnEnvironmentGuard(Guard[Changed[DockItem]]):
 
     name = "docking.own-environment"
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, rows: EventRows) -> None:
+        self.rows = rows
 
     def check(self, event: Changed[DockItem], context: Context) -> None:
         item, environment_id = event.row, context.environment_id
         if environment_id is None:
             return
-        if self.queries.query(Dock).find(item.dock_id).environment_id != environment_id:
+        if self.rows.required(Dock, item.dock_id).environment_id != environment_id:
             raise Refusal(f"dock item {item.id} belongs to another environment's dock", "name its own environment with --environment")

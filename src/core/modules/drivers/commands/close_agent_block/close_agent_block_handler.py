@@ -21,4 +21,4 @@ class CloseAgentBlockHandler(Handler[CloseAgentBlock, AgentBlock]):
             raise Refusal(f"agent_block {block.id} is settled already")
         if command.skip_reason and block.grace is None:
             raise Refusal(f"agent_block {block.id} cannot be skipped", "run what it waits for, or answer what it waits on")
-        return self.repository.save(block.changed(closed_at=context.timestamp, skip_reason=command.skip_reason), context)
+        return self.repository.update(block, context, closed_at=context.timestamp, skip_reason=command.skip_reason)

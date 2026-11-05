@@ -29,6 +29,6 @@ class RowSearch:
             raise Refusal(f"{unknown[0]} is no model search reads", f"name one of: {', '.join(sorted(searched))}")
         search_models = [searched[name] for name in model_names] or list(searched.values())
         model_queries = [self.queries.query(model).matching(ContainsEvery(model.search_fields, terms)) for model in search_models]
-        hits = [SearchHit.matched(row, terms[0]) for query in model_queries for row in query.newest().page(1, HIT_LIMIT_ROWS).rows]
+        hits = [SearchHit.matched(row, terms[0]) for query in model_queries for row in query.newest().limited(HIT_LIMIT_ROWS)]
         newest = sorted(hits, key=lambda hit: hit.created_at, reverse=True)[:HIT_LIMIT_ROWS]
         return SearchResult(terms, newest, sum(query.count() for query in model_queries))
