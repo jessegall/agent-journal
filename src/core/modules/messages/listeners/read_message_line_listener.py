@@ -5,6 +5,7 @@ from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.waiting_message_lines import WaitingMessageLines
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
+from core.modules.messages.support.message_targets import MessageTargets
 from core.base.change.updated import Updated
 
 READ_FIELD = "read_at"
@@ -16,8 +17,9 @@ class ReadMessageLineListener(CommitListener[Updated[Message]]):
 
     name = "messages.read-message-line"
 
-    def __init__(self, queries: Queries, lines: WaitingMessageLines) -> None:
-        self.queries, self.lines = queries, lines
+    def __init__(self, lines: WaitingMessageLines, targets: MessageTargets) -> None:
+        self.lines = lines
+        self.targets = targets
 
     def handle(self, event: Updated[Message], logged: LoggedEvent) -> None:
         if READ_FIELD not in logged.data:
@@ -25,7 +27,9 @@ class ReadMessageLineListener(CommitListener[Updated[Message]]):
         message = event.row
         if message.type not in PERSON_MESSAGE_TYPES or message.read_at is None:
             return
-        for agent in MainAgentFinder.rows(self.queries, message.environment_id):
-            for line in tuple(self.lines.waiting(agent.id).all_rows()):
-                if self.lines.names(line, message):
-                    self.lines.drop(line, logged)
+        agent = self.targets.recipient(message)
+        if agent is None:
+            return
+        for line in tuple(self.lines.waiting(agent.id).all_rows()):
+            if self.lines.names(line, message):
+                self.lines.drop(line, logged)

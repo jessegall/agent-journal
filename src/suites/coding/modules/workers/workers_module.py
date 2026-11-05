@@ -1,3 +1,6 @@
+from core.base.agent_write_folder import AgentWriteFolder
+from suites.coding.modules.workers.support.worker_write_folder import WorkerWriteFolder
+from suites.coding.support.shipped_profiles import WORKER_PROFILES
 from suites.coding.modules.workers.listeners.silent_worker_line_listener import SilentWorkerLineListener
 from suites.coding.modules.workers.commands.send_silent_agent_lines.send_silent_agent_lines_handler import SendSilentAgentLinesHandler
 from suites.coding.modules.workers.commands.report_silent_agent.report_silent_agent_handler import ReportSilentAgentHandler
@@ -42,6 +45,9 @@ from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResume
 from core.base.viewer.window_icon import WindowIcon
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.base.access import Access
+from core.base.agent_type import AgentType
+from suites.coding.modules.workers.support.worker_roster import WorkerRoster
 from core.modules.processes.support.run_counts import RunCounts
 from core.modules.processes.support.part_visibility import PartVisibility
 from suites.coding.modules.workers.support.worker_part_visibility import WorkerPartVisibility
@@ -163,6 +169,9 @@ class WorkersModule(Module):
     """
 
     name = "journal.suites.coding.workers"
+    profiles = WORKER_PROFILES
+    agent_types = [AgentType("worker", "Worker", extends="helper", access=Access.WRITING, separate_folder=True,
+                             default_profile="journal-worker", start_line="journal worker dispatch", roster=WorkerRoster)]
     parent_suite = "coding"
     templates = WORKER_TEMPLATES
     window_extensions = [*(WindowExtension(name, reads=["proof list", "worker waits", "worker progress"],
@@ -189,14 +198,14 @@ class WorkersModule(Module):
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
     driver_rules = [WorkerStatusFirstRule, MissingProcessRule, WorkerTestCountRule, WorkerJudgeScopeRule, WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, UnstartedWorkerRule, StoppedWorkerRunRule, UnmergedWorkerRule, SmallBatchRule, InactiveWorkerRetireRule, OrphanWorktreeRule, WorkerReportRule]
     marks = WORKER_MARKS
-    bindings = {AgentActivity: WorkerAgentActivity, TaskTakers: WorkerTaskTakers, SkillProjects: WorkerSkillProjects, TaskWaitTargets: WorkerTaskWaitTargets, QueueRunWorkers: WorkerQueueRunWorkers, RunCounts: WorkerTestListings, PartVisibility: WorkerPartVisibility}
+    bindings = {AgentWriteFolder: WorkerWriteFolder, AgentActivity: WorkerAgentActivity, TaskTakers: WorkerTaskTakers, SkillProjects: WorkerSkillProjects, TaskWaitTargets: WorkerTaskWaitTargets, QueueRunWorkers: WorkerQueueRunWorkers, RunCounts: WorkerTestListings, PartVisibility: WorkerPartVisibility}
     listeners = [SilentWorkerLineListener, WorkerTestCountListener, RemovedWorktreeAgentListener, ReaderSampleReadyListener,WorkerHelpRequestListener, WorkerStoppedMarkListener, WorkerHelpRequestMarkListener, WorkerStopResultListener, MainAgentWorkersListener, BlockedWorkerTaskListener, ReassignedTaskListener, DelegatedTaskCommentListener, WorkerCountRaisedListener, WorkerMoveMarkListener, WorkerJobMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerTaskWaitListener]
     tick_handlers = [TickHandler(TickInterval(seconds=10), WorkerResumeRetry(), "worker resume retry")]
     windows =[WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, skeleton=WORKERS_POINTS_SKELETON, icon=WindowIcon.CHECK, shows=WindowShows.SELECTED_AGENT,
                                  reads=["worker-worktree points", "proof points"], events=["proof.*", "worker_worktree.*"]),
                WindowDeclaration("workers.todos", "Tasks", "todos.js", WindowLoading.COMPONENT, skeleton=WORKERS_TODOS_SKELETON, icon=WindowIcon.TASK, shows=WindowShows.SELECTED_AGENT, reads=["todo-item list"],
                                  events=["todo_item.*"]),
-               WindowDeclaration("workers.workers", "Workers", "workers.js", WindowLoading.COMPONENT, skeleton=WORKERS_WORKERS_SKELETON, icon=WindowIcon.AGENT, place=WindowPlace.DROPDOWN, reads=["agent list", "chat-mark main"], events=["agent.*", "chat_mark.*"],
+               WindowDeclaration("workers.workers", "Workers", "workers.js", WindowLoading.COMPONENT, skeleton=WORKERS_WORKERS_SKELETON, icon=WindowIcon.AGENT, place=WindowPlace.DROPDOWN, reads=["agent list", "chat-mark main"], runs=["message send"], events=["agent.*", "chat_mark.*"],
                                  tabs=[WindowTab("workers", "Workers", "agent list --role worker"), WindowTab("recent", "Recent activity", "chat-mark main --type workers.worker")]),
                WindowDeclaration("workers.models", "Worker models", "models.js", WindowLoading.COMPONENT, skeleton=WORKERS_MODELS_SKELETON, group="project", icon=WindowIcon.MENU, reads=["worker models", "setting show"],
                                  runs=["setting set"], events=["setting.*"]),

@@ -2,8 +2,6 @@ from core.base.driver.nudge import Nudge
 from core.modules.messages.support.message_nudges import MESSAGE_NOTE, REPLY_COMMAND, IMAGE_TAG_REQUEST
 from pathlib import PurePath
 
-from core.base.agent_role import AgentRole
-from core.base.journal_home import JournalHome
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -11,6 +9,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
+from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
@@ -20,25 +19,23 @@ IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif", ".webp")
 
 
 class MessageReadRule(DriverRule):
-    """A message the main agent has read with journal message read is marked read, the first time, and the
-    agent is told how to act on it."""
+    """Marks messages read by their target agent and explains how to answer them."""
 
     name = "messages.read-marks-read"
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
-    roles = [AgentRole.MAIN]
 
-    def __init__(self, queries: Queries, home: JournalHome) -> None:
-        self.queries, self.home = queries, home
+    def __init__(self, messages: MessageQuery) -> None:
+        self.messages = messages
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is None:
             return RuleAnswer.allowed()
         numbers = shell.journal_command_numbers("message read")
-        unread = list(self.queries.query(Message).matching(IsNull("read_at")).matching(Among("id", numbers)).all_rows()) if numbers else []
+        unread = list(self.messages.addressed(hook.agent_id, hook.environment_id).matching(IsNull("read_at")).matching(Among("id", numbers)).all_rows()) if numbers else []
         if shell.parts_running_journal_command("message unread"):
-            all_unread = self.queries.query(Message).filter(environment_id=hook.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().all_rows()
+            all_unread = self.messages.unread(hook.agent_id, hook.environment_id).oldest().all_rows()
             unread = [message for message in all_unread if message.delivered_at is not None]
         images = [nudge for message in unread for nudge in self.image_nudges(message)]
         nudges = [MESSAGE_NOTE.nudge(), REPLY_COMMAND.nudge(), *images] if unread else []

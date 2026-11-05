@@ -14,6 +14,15 @@ import (
 var version = "dev"
 
 func main() {
+	if len(os.Args) == 2 && os.Args[1] == "--sandbox-check" {
+		os.Exit(sandboxCheck())
+	}
+	if len(os.Args) == 3 && os.Args[1] == "--sandbox-probe" {
+		os.Exit(sandboxProbe(os.Args[2]))
+	}
+	if len(os.Args) > 2 && os.Args[1] == "--sandbox-exec" {
+		os.Exit(sandboxExec(os.Args[2:]))
+	}
 	if len(os.Args) > 1 && os.Args[1] == "--count-listing" {
 		os.Exit(countListingMain(os.Args[2:]))
 	}
@@ -43,7 +52,7 @@ func main() {
 
 // runOptions are the options of a run from its flags.
 func (flags Flags) runOptions(home, shell string) Options {
-	return Options{Count: flags.Count, Process: flags.Process, LimitSeconds: flags.Limit, Background: flags.Background, Queue: flags.Queue, OnlyReads: flags.OnlyReads, Line: flags.Line, Aliases: flags.Aliases, Home: home, Shell: shell,
+	return Options{WriteFolder: flags.WriteFolder, ReadOnlyShell: flags.ReadOnlyShell, Count: flags.Count, Process: flags.Process, LimitSeconds: flags.Limit, Background: flags.Background, Queue: flags.Queue, OnlyReads: flags.OnlyReads, Line: flags.Line, Aliases: flags.Aliases, Home: home, Shell: shell,
 		MostOutputBytes: mostOutputBytes(), ReadFlags: outputReading(), QueueWait: queueWait(), HeartbeatEvery: HeartbeatInterval, Detach: Detach, ScanFiles: ScanFiles}
 }
 

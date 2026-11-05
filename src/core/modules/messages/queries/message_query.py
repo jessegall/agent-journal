@@ -5,6 +5,10 @@ from core.base.model.tables import Tables
 from core.base.query.query import Query
 from core.modules.messages.models.message import Message
 from core.modules.messages.models.enums.message_type import MessageType
+from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
+from core.base.query.conditions.among import Among
+from core.base.query.conditions.is_null import IsNull
+from core.modules.messages.conditions.message_target import MessageTarget
 
 
 class MessageQuery(Query[Message]):
@@ -18,3 +22,9 @@ class MessageQuery(Query[Message]):
 
     def agent_messages(self) -> Self:
         return self.filter(type=MessageType.AGENT)
+
+    def addressed(self, agent_id: int, environment_id: int) -> Self:
+        return self.filter(environment_id=environment_id).matching(MessageTarget(agent_id))
+
+    def unread(self, agent_id: int, environment_id: int) -> Self:
+        return self.addressed(agent_id, environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at"))

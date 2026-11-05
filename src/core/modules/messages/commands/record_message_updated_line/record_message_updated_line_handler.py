@@ -7,6 +7,8 @@ from core.modules.drivers.support.nudger import Nudger
 from core.modules.messages.commands.record_message_updated_line.record_message_updated_line import RecordMessageUpdatedLine
 from core.modules.messages.support.message_nudges import MESSAGE_UPDATED
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
+from core.modules.messages.models.message import Message
+from core.modules.messages.support.message_targets import MessageTargets
 
 UPDATED_SOURCE = "messages.updated"
 
@@ -16,12 +18,13 @@ class RecordMessageUpdatedLineHandler(Handler[RecordMessageUpdatedLine, None]):
 
     command = RecordMessageUpdatedLine
 
-    def __init__(self, queries: Queries, nudger: Nudger, hook_calls: HookCallQuery) -> None:
+    def __init__(self, queries: Queries, nudger: Nudger, hook_calls: HookCallQuery, targets: MessageTargets) -> None:
         self.queries, self.nudger, self.hook_calls = queries, nudger, hook_calls
+        self.targets = targets
 
     def handle(self, command: RecordMessageUpdatedLine, context: Context) -> None:
-        agents = MainAgentFinder.rows(self.queries, command.environment_id)
-        if not agents:
+        agent = self.targets.recipient(self.queries.query(Message).find(command.message_id))
+        if agent is None:
             return
-        source = IDLE_MESSAGE_SOURCE if self.hook_calls.is_idle(agents[0].id, context.timestamp) else UPDATED_SOURCE
-        self.nudger.send(agents[0].id, MESSAGE_UPDATED, source, context, message=command.message_id)
+        source = IDLE_MESSAGE_SOURCE if self.hook_calls.is_idle(agent.id, context.timestamp) else UPDATED_SOURCE
+        self.nudger.send(agent.id, MESSAGE_UPDATED, source, context, message=command.message_id)

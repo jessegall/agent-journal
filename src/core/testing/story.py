@@ -8,6 +8,8 @@ from uuid import uuid4
 from typing import TypeVar, cast
 from datetime import timedelta
 from core.base.actor import Actor
+from core.base.shell_sandbox import ShellSandbox
+from core.testing.story_shell_sandbox import StoryShellSandbox
 from core.base.cli.console import Console
 from core.base.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
 from core.base.registry.registry import Registry
@@ -227,8 +229,10 @@ class Story:
         return FileAccess.shared().read(self.home.error_log) if self.home.error_log.exists() else ""
 
     def expect_sync_refusal(self, module: str, text: str) -> None:
+        registry_text = Registry.read(self.container.get(Database)).entries_text()
         code, output_text = self.synced_with(module)
         assert code != 0 and text in output_text, f"module sync with {module} gave {code}: {output_text}"
+        assert Registry.read(self.container.get(Database)).entries_text() == registry_text, "a refused sync changed the registry"
 
     def expect_sync_success(self, module: str) -> None:
         code, output_text = self.synced_with(module)
@@ -267,6 +271,7 @@ def story_container(home: JournalHome, clock: ManualClock, process_table: "Fixed
     container = synced_container(home)
     container.bind(Clock, clock)
     container.bind(ProcessTable, process_table)
+    container.bind(ShellSandbox, StoryShellSandbox(home))
     container.bind(OverviewFirst, StoryOverviewFirst())
     container.bind(SkillRequirement, StorySkillRequirement())
     container.bind(MainAgentSkills, StoryMainAgentSkills())

@@ -1,0 +1,93 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+)
+
+func workerFolders(worktree, journalHome string) ([]string, error) {
+	worktree, err := filepath.EvalSymlinks(worktree)
+	if err != nil {
+		return nil, err
+	}
+	main, err := filepath.EvalSymlinks(filepath.Dir(journalHome))
+	if err != nil {
+		return nil, err
+	}
+	if containsFolder(worktree, main) {
+		return nil, fmt.Errorf("worker sandbox folder must not contain the main checkout")
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
+	cache, err := os.UserCacheDir()
+	if err != nil {
+		return nil, err
+	}
+	goPath := filepath.Join(home, "go")
+	if configured := filepath.SplitList(os.Getenv("GOPATH")); len(configured) > 0 {
+		goPath = configured[0]
+	}
+	caches := []string{
+		configuredCache("GOCACHE", filepath.Join(cache, "go-build")),
+		configuredCache("GOMODCACHE", filepath.Join(goPath, "pkg", "mod")),
+		filepath.Join(goPath, "pkg", "sumdb"),
+		configuredCache("npm_config_cache", configuredCache("NPM_CONFIG_CACHE", filepath.Join(home, ".npm"))),
+		configuredCache("PIP_CACHE_DIR", filepath.Join(cache, "pip")),
+	}
+	writable := []string{worktree}
+	for _, path := range caches {
+		if path == "off" {
+			continue
+		}
+		resolved, err := resolvedFolder(path)
+		if err != nil {
+			return nil, err
+		}
+		if containsFolder(resolved, main) || (containsFolder(main, resolved) && !containsFolder(worktree, resolved)) {
+			return nil, fmt.Errorf("worker cache %s must not grant writes in the main checkout", path)
+		}
+		if err := os.MkdirAll(resolved, 0o700); err != nil {
+			return nil, err
+		}
+		writable = append(writable, resolved)
+	}
+	return writable, nil
+}
+
+func configuredCache(variable, fallback string) string {
+	if value := os.Getenv(variable); value != "" {
+		return value
+	}
+	return fallback
+}
+
+func containsFolder(parent, child string) bool {
+	relative, err := filepath.Rel(parent, child)
+	return err == nil && relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator))
+}
+
+func resolvedFolder(path string) (string, error) {
+	absolute, err := filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
+	var missing []string
+	for {
+		resolved, err := filepath.EvalSymlinks(absolute)
+		if err == nil {
+			for index := len(missing) - 1; index >= 0; index-- {
+				resolved = filepath.Join(resolved, missing[index])
+			}
+			return resolved, nil
+		}
+		if !os.IsNotExist(err) {
+			return "", err
+		}
+		missing = append(missing, filepath.Base(absolute))
+		absolute = filepath.Dir(absolute)
+	}
+}

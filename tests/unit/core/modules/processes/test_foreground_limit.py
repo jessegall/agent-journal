@@ -66,13 +66,7 @@ class Messages:
     def __init__(self, waiting: bool) -> None:
         self.waiting = waiting
 
-    def query(self, model: type) -> "Messages":
-        return self
-
-    def filter(self, **values: object) -> "Messages":
-        return self
-
-    def matching(self, condition: object) -> "Messages":
+    def unread(self, agent_id: int, environment_id: int) -> "Messages":
         return self
 
     def exists(self) -> bool:
@@ -92,66 +86,66 @@ def limit(over_limit: bool = False, waiting: bool = False, journal_commands: boo
 
 
 def test_a_journal_only_line_has_no_limit_to_move_at():
-    assert limit().decide(1, line(part("journal", CommandCategory.JOURNAL), journal_shell=True)) == ForegroundRun(0, False, part_commands=tuple([PartCommand("journal", CommandCategory.JOURNAL)]), most_output_bytes=10 << 20)
+    assert limit().decide(1, line(part("journal", CommandCategory.JOURNAL), journal_shell=True), 1) == ForegroundRun(0, False, part_commands=tuple([PartCommand("journal", CommandCategory.JOURNAL)]), most_output_bytes=10 << 20)
 
 
 def test_a_journal_line_never_goes_to_the_background():
-    assert limit(journal_commands=True).decide(1, line(part("journal", CommandCategory.JOURNAL), journal_shell=True)) == ForegroundRun(0, False, part_commands=tuple([PartCommand("journal", CommandCategory.JOURNAL)]), most_output_bytes=10 << 20)
+    assert limit(journal_commands=True).decide(1, line(part("journal", CommandCategory.JOURNAL), journal_shell=True), 1) == ForegroundRun(0, False, part_commands=tuple([PartCommand("journal", CommandCategory.JOURNAL)]), most_output_bytes=10 << 20)
 
 
 def test_a_test_run_and_a_build_run_in_line_up_to_the_foreground_seconds():
-    assert limit().decide(1, line(part("pytest", CommandCategory.TEST_RUN))).seconds == 15
-    assert not limit().decide(1, line(part("pytest", CommandCategory.TEST_RUN))).background
-    assert not limit().decide(1, line(part("make", CommandCategory.BUILD))).background
+    assert limit().decide(1, line(part("pytest", CommandCategory.TEST_RUN)), 1).seconds == 15
+    assert not limit().decide(1, line(part("pytest", CommandCategory.TEST_RUN)), 1).background
+    assert not limit().decide(1, line(part("make", CommandCategory.BUILD)), 1).background
 
 
 def test_a_test_run_gets_fewer_seconds_while_a_message_waits():
-    assert limit(waiting=True).decide(1, line(part("pytest", CommandCategory.TEST_RUN))).seconds == 10
+    assert limit(waiting=True).decide(1, line(part("pytest", CommandCategory.TEST_RUN)), 1).seconds == 10
 
 
 def test_a_test_run_that_went_past_the_limit_before_goes_to_the_background_at_once():
-    assert limit(over_limit=True).decide(1, line(part("pytest", CommandCategory.TEST_RUN))).background
+    assert limit(over_limit=True).decide(1, line(part("pytest", CommandCategory.TEST_RUN)), 1).background
 
 
 def test_a_pipe_that_ran_after_a_long_command_sends_no_quick_test_to_the_background():
     head = Part("pytest", "pytest", "", (), Classification(CommandCategory.TEST_RUN, ()), (), (), "", 1)
     rows = Rows(over_limit=False)
     rows.has_moved_run = lambda environment_id, text, seconds=0: text == "tail"
-    decided = ForegroundLimit(Settings(), Background(), rows, Messages(False)).decide(1, line(head, part("tail", CommandCategory.READ)))  # type: ignore[arg-type]
+    decided = ForegroundLimit(Settings(), Background(), rows, Messages(False)).decide(1, line(head, part("tail", CommandCategory.READ)), 1)  # type: ignore[arg-type]
     assert not decided.background
 
 
 def test_a_command_whose_last_run_went_past_the_limit_goes_to_the_background_at_once():
-    assert limit(over_limit=True).decide(1, line(part("ls", CommandCategory.SEARCH))).background
+    assert limit(over_limit=True).decide(1, line(part("ls", CommandCategory.SEARCH)), 1).background
 
 
 def test_any_other_line_gets_the_foreground_seconds_and_fewer_while_a_message_waits():
-    assert limit().decide(1, line(part("ls", CommandCategory.SEARCH))).seconds == 15
-    assert limit(waiting=True).decide(1, line(part("ls", CommandCategory.SEARCH))).seconds == 10
+    assert limit().decide(1, line(part("ls", CommandCategory.SEARCH)), 1).seconds == 15
+    assert limit(waiting=True).decide(1, line(part("ls", CommandCategory.SEARCH)), 1).seconds == 10
 
 
 def test_a_test_or_build_stores_more_output_than_any_other_line():
-    assert limit().decide(1, line(part("pytest", CommandCategory.TEST_RUN))).most_output_bytes == 100 << 20
-    assert limit().decide(1, line(part("ls", CommandCategory.SEARCH))).most_output_bytes == 10 << 20
+    assert limit().decide(1, line(part("pytest", CommandCategory.TEST_RUN)), 1).most_output_bytes == 100 << 20
+    assert limit().decide(1, line(part("ls", CommandCategory.SEARCH)), 1).most_output_bytes == 10 << 20
 
 
 def test_a_line_declared_as_a_test_stores_as_much():
     declared = limit()
     declared.background = CategoryBackground()
-    assert declared.decide(1, line(part("sins", CommandCategory.UNKNOWN))).most_output_bytes == 100 << 20
+    assert declared.decide(1, line(part("sins", CommandCategory.UNKNOWN)), 1).most_output_bytes == 100 << 20
 
 
 def test_two_saved_commands_with_different_readers_leave_the_run_no_reader_of_its_own():
     run_limit = limit()
     run_limit.background.alias_runs = lambda shell: [AliasRun(1), AliasRun(2)]
-    assert run_limit.decide(1, line(part("pytest", CommandCategory.TEST_RUN))).reader_id is None
+    assert run_limit.decide(1, line(part("pytest", CommandCategory.TEST_RUN)), 1).reader_id is None
 
 
 def test_two_saved_commands_with_one_reader_share_it():
     run_limit = limit()
     run_limit.background.alias_runs = lambda shell: [AliasRun(1), AliasRun(1)]
-    assert run_limit.decide(1, line(part("pytest", CommandCategory.TEST_RUN))).reader_id == 1
+    assert run_limit.decide(1, line(part("pytest", CommandCategory.TEST_RUN)), 1).reader_id == 1
 
 
 def test_a_chain_with_a_test_stores_as_much_as_a_test():
-    assert limit().decide(1, line(part("ls", CommandCategory.SEARCH), part("pytest", CommandCategory.TEST_RUN))).most_output_bytes == 100 << 20
+    assert limit().decide(1, line(part("ls", CommandCategory.SEARCH), part("pytest", CommandCategory.TEST_RUN)), 1).most_output_bytes == 100 << 20

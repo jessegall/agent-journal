@@ -24,6 +24,8 @@ class RunnerLine:
         background += " --queue" if run.queued else ""
         background += f" --count {shlex.quote(run.count_line)}" if run.count_line else ""
         background += " --only-reads" if run.read_command else ""
+        background += " --read-only-shell" if run.shell_sandbox else ""
+        background += f" --write-folder {shlex.quote(str(run.folder))}" if run.folder is not None else ""
         variables = f" {MOST_OUTPUT_VARIABLE}={run.most_output_bytes}" if run.most_output_bytes else ""
         variables += f" {READ_FLAGS_VARIABLE}={shlex.quote(','.join(run.read_flags))}" if run.read_flags else ""
         variables += f" {QUEUE_WAIT_VARIABLE}={run.queue_wait_seconds}" if run.queued else ""

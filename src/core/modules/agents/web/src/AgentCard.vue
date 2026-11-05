@@ -137,7 +137,7 @@ readCommand();
                             </template>
                         </template>
                         <template #transcript>
-                            <TranscriptRows :line="`agent transcript ${row.id}`" padding="0" />
+                            <TranscriptRows :line="`agent transcript ${row.id}`" :agent="row.id" padding="0" />
                         </template>
                         <template v-for="(component, key) in components" :key="key" #[key]>
                             <component :is="component" :agent="row.id" />

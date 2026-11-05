@@ -1,0 +1,107 @@
+package main
+
+import (
+	"os"
+	"os/exec"
+	"path/filepath"
+	"testing"
+)
+
+func TestWorkerShellSandbox(t *testing.T) {
+	folder := t.TempDir()
+	worktree := filepath.Join(folder, "worker")
+	main := filepath.Join(folder, "main")
+	sibling := filepath.Join(folder, "other-worker")
+	for _, path := range []string{worktree, main, sibling} {
+		if err := os.Mkdir(path, 0o700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	program := filepath.Join(folder, "journal-run")
+	if output, err := exec.Command("go", "build", "-o", program, ".").CombinedOutput(); err != nil {
+		t.Fatalf("runner build: %v: %s", err, output)
+	}
+	allowed, err := workerFolders(worktree, filepath.Join(main, ".journal"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	sandbox, err := checkedSandbox(program, allowed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	script := `import errno, pathlib, subprocess, sys
+for folder in sys.argv[1:]:
+    target = str(pathlib.Path(folder, 'damaged'))
+    try:
+        pathlib.Path(target).write_text('direct')
+        raise AssertionError('write outside worktree succeeded')
+    except OSError as error:
+        assert error.errno in (errno.EACCES, errno.EPERM, errno.EROFS), error
+    child = subprocess.run([sys.executable, '-c', 'import pathlib,sys; pathlib.Path(sys.argv[1]).write_text("child")', target], capture_output=True)
+    assert child.returncode != 0, child
+pathlib.Path('worker-output').write_text('allowed')
+`
+	command := sandbox.command("python3", "-c", script, main, sibling)
+	command.Dir = worktree
+	if output, err := command.CombinedOutput(); err != nil {
+		t.Fatalf("worker boundary: %v: %s", err, output)
+	}
+	files := map[string]string{
+		"go.mod":           "module sandbox.example\n\ngo 1.26\n",
+		"main.go":          "package main\nfunc main() {}\n",
+		"main_test.go":     "package main\nimport \"testing\"\nfunc TestBuild(t *testing.T) {}\n",
+		"test_example.py":  "def test_build():\n    assert 2 + 2 == 4\n",
+		"package.json":     `{"name":"sandbox-test","version":"1.0.0","scripts":{"test":"node --test example.test.cjs","build":"node build.cjs"}}`,
+		"example.test.cjs": "require('node:test')('build', () => require('node:assert').equal(2+2,4));\n",
+		"build.cjs":        "require('node:fs').writeFileSync('built.txt', 'built');\n",
+	}
+	for name, text := range files {
+		if err := os.WriteFile(filepath.Join(worktree, name), []byte(text), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	root, err := filepath.Abs("../..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	python := filepath.Join(root, ".venv", "bin", "python3")
+	temporary := filepath.Join(worktree, "temporary")
+	if err := os.Mkdir(temporary, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	for _, line := range []string{"go test ./... && go build -o application .", quoted(python) + " -m pytest test_example.py -q", "npm test && npm run build"} {
+		command := sandbox.command("/bin/sh", "-c", line)
+		command.Dir = worktree
+		command.Env = append(os.Environ(), "GOWORK=off", "TMPDIR="+temporary)
+		if output, err := command.CombinedOutput(); err != nil {
+			t.Fatalf("%s: %v: %s", line, err, output)
+		}
+	}
+}
+
+func TestWorkerCacheRejectsCheckout(t *testing.T) {
+	main := t.TempDir()
+	worktree := filepath.Join(main, "worker")
+	if err := os.Mkdir(worktree, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	cache := filepath.Join(t.TempDir(), "cache-link")
+	if err := os.Symlink(main, cache); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("GOCACHE", cache)
+	if _, err := workerFolders(worktree, filepath.Join(main, ".journal")); err == nil {
+		t.Fatal("a cache granted write access to the main checkout")
+	}
+}
+
+func TestWorkerSandboxFlag(t *testing.T) {
+	flags, err := ParseFlags([]string{"--process", "4", "--write-folder", "/worker", "--", "go test"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	options := flags.runOptions("/journal", "/bin/sh")
+	if !options.ReadOnlyShell || options.WriteFolder != "/worker" {
+		t.Fatalf("sandbox flags were lost: %+v", options)
+	}
+}

@@ -108,8 +108,8 @@ def test_a_write_invalidates_parsed_values_when_the_modified_time_is_unchanged(n
     files.write(path, '["alpha.module:Alpha"]')
     finder = story.container.get(ModuleFinder)
     with story.repeated_work.request():
-        expect_value(finder.plugin_paths(), ("alpha.module:Alpha",))
+        expect_value(list(finder.plugin_paths()), ["alpha.module:Alpha"])
         status = path.stat()
         files.write(path, '["bravo.module:Bravo"]')
         os.utime(path, ns=(status.st_atime_ns, status.st_mtime_ns))
-        expect_value(finder.plugin_paths(), ("bravo.module:Bravo",))
+        expect_value(list(finder.plugin_paths()), ["bravo.module:Bravo"])

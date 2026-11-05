@@ -1,30 +1,49 @@
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser, BooleanOptionalAction, Namespace
+from dataclasses import replace
 
+from core.base.access import Access
 from core.base.caller.caller import Caller
+from core.base.profile.agent_profile import AgentProfile
+from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.profiles.commands.save_profile.save_profile import SaveProfile
-from core.base.profile.agent_profile import SUBAGENT, AgentProfile
+from core.modules.profiles.support.profile_files import ProfileFiles
+from core.modules.profiles.support.profile_format import ProfileFormat
+from core.modules.profiles.support.profile_problem import ProfileProblem
 
 
 class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
-    """`journal profile save <name> --description "<when it is used>" [--tools "<tools>"]
-    [--type <profile type>] [--model <model>] [--codex-model <model>] [--body "<instructions>"]`."""
+    """Saves a personal profile or changes to a registered profile."""
 
     cli_name = "profile"
     name = "save"
 
+    def __init__(self, files: ProfileFiles) -> None:
+        self.files = files
+
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("profile_name")
+        for name in ("type", "model", "codex-model", "program", "mcp-tools"):
+            parser.add_argument(f"--{name}")
         parser.add_argument("--description", default="")
-        parser.add_argument("--tools", default="Read, Grep, Glob")
-        parser.add_argument("--type", default=SUBAGENT)
-        parser.add_argument("--model", default="")
-        parser.add_argument("--codex-model", default="")
         parser.add_argument("--body", default="")
+        parser.add_argument("--access", type=Access, choices=list(Access))
+        parser.add_argument("--independent", action=BooleanOptionalAction, default=None)
 
     def command(self, arguments: Namespace, caller: Caller) -> SaveProfile:
-        return SaveProfile(AgentProfile(arguments.profile_name, arguments.description, arguments.tools, arguments.body, arguments.type, arguments.model, arguments.codex_model))
+        if self.files.has(arguments.profile_name):
+            profile = self.files.row(arguments.profile_name)
+            if isinstance(profile, ProfileProblem) or profile.problem:
+                raise Refusal(profile.problem, "fix the file or use journal profile reset")
+        else:
+            profile = AgentProfile(arguments.profile_name, description=arguments.description, body=arguments.body)
+        fields = {name: value for name, value in vars(arguments).items() if name in ("description", "model", "codex_model", "body", "program", "access", "independent") and value is not None}
+        if arguments.type is not None:
+            fields["agent_type"] = arguments.type
+        if arguments.mcp_tools is not None:
+            fields["mcp_tools"] = ProfileFormat.tools(arguments.mcp_tools)
+        return SaveProfile(replace(profile, **fields))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, AgentProfile):

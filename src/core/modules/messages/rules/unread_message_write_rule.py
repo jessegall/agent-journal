@@ -1,4 +1,3 @@
-from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -6,6 +5,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
+from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.base.query.conditions.among import Among
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
@@ -24,13 +24,12 @@ class UnreadMessageWriteRule(DriverRule):
     name = "messages.unread-write"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [AgentRole.MAIN]
 
-    def __init__(self, queries: Queries, hook_calls: HookCallQuery) -> None:
-        self.queries, self.hook_calls = queries, hook_calls
+    def __init__(self, messages: MessageQuery, hook_calls: HookCallQuery) -> None:
+        self.messages, self.hook_calls = messages, hook_calls
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        delivered = self.queries.query(Message).filter(environment_id=hook.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).matching(Greater("delivered_at", "")).oldest()
+        delivered = self.messages.unread(hook.agent_id, hook.environment_id).matching(Greater("delivered_at", "")).oldest()
         first = delivered.limited(1)
         first_delivered_at = first[0].delivered_at if first else None
         if first_delivered_at is None:

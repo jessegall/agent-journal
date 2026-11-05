@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.actor import Actor
+from core.base.sandbox_level import SandboxLevel
 from core.base.driver.command_category import CommandCategory
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
@@ -44,6 +45,7 @@ class Process(Model):
     task_id: int | None = None
     timeout_seconds: int | None = None
     expired_at: Timestamp | None = None
+    sandbox_level: SandboxLevel = SandboxLevel.NONE
 
     def has_expired_timeout(self, timestamp: Timestamp) -> bool:
         if self.timeout_seconds is None or self.started_at is None:

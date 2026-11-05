@@ -3,7 +3,6 @@ from typing import ClassVar
 
 from core.base.viewer.layout_preset import LayoutPreset
 from core.base.viewer.layout_shape import LayoutShape
-from core.base.profile.agent_profile import AgentProfile
 from core.base.agent_policy import AgentPolicy
 
 
@@ -22,6 +21,4 @@ class Suite:
     layouts: ClassVar[Mapping[str, LayoutShape]] = {}
     presets: ClassVar[Mapping[str, Sequence[LayoutPreset]]] = {}
     task_assigner: ClassVar[type | None] = None
-    profiles: ClassVar[Sequence[AgentProfile]] = ()
-    profile_types: ClassVar[Sequence[str]] = tuple(["subagent"])
     agent_policy: ClassVar[AgentPolicy] = AgentPolicy()

@@ -26,6 +26,9 @@ type Options struct {
 	QueueWait            time.Duration
 	SlotWaitLimitSeconds int
 	OnlyReads            bool
+	ReadOnlyShell        bool
+	WriteFolder          string
+	Sandbox              shellSandbox
 	Aliases              []string
 	Line                 string
 	Home                 string
@@ -46,6 +49,18 @@ type Options struct {
 // Run runs the line through the folder and returns the chain's exit code; a run that moves to the background
 // returns 0 and goes on without it. With no server it runs the line as it is.
 func Run(options Options, client Client, stdout io.Writer) int {
+	if options.ReadOnlyShell {
+		sandbox, err := runSandbox(options, NewFolder(options.Home, options.Process))
+		if err != nil {
+			fmt.Fprintln(stdout, "read-only shell sandbox:", err)
+			return 125
+		}
+		options.Sandbox = sandbox
+		if err := client.Run("process", "sandbox", strconv.Itoa(options.Process), "--level", sandbox.Level); err != nil {
+			fmt.Fprintln(stdout, "could not record the read-only shell sandbox:", err)
+			return 125
+		}
+	}
 	if !client.Reachable() {
 		return Bypass(options, stdout)
 	}
@@ -90,8 +105,16 @@ func Run(options Options, client Client, stdout io.Writer) int {
 // start runs the script in a shell of its own group; the outer shell writes the end when the inner one is dead, even
 // when the line execs. What the shell itself prints, as a line it cannot read, goes into the last part's output.
 func start(options Options, folder Folder, lastPosition int) (*exec.Cmd, error) {
-	command := exec.Command("/bin/sh", "-c", `"$1" "$2" >> "$4" 2>&1; printf '%s' "$?" > "$3/end"`, "journal-run", options.Shell, folder.Script(), folder.Path, folder.outputPath(lastPosition))
+	arguments := []string{options.Shell, folder.Script()}
+	if options.ReadOnlyShell {
+		inner := options.Sandbox.command(options.Shell, folder.Script())
+		arguments = inner.Args
+	}
+	command := exec.Command("/bin/sh", append([]string{"-c", `folder=$1; output=$2; shift 2; "$@" >> "$output" 2>&1; printf '%s' "$?" > "$folder/end"`, "journal-run", folder.Path, folder.outputPath(lastPosition)}, arguments...)...)
 	command.Env = journalEnvironment(options.Home)
+	if options.ReadOnlyShell {
+		command.Env = append(command.Env, "TMPDIR="+filepath.Join(folder.Path, "tmp"), "TMP="+filepath.Join(folder.Path, "tmp"), "TEMP="+filepath.Join(folder.Path, "tmp"))
+	}
 	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	if err := command.Start(); err != nil {
 		return nil, err

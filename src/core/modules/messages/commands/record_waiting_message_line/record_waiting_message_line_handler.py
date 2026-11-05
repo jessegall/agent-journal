@@ -8,6 +8,7 @@ from core.modules.messages.commands.record_waiting_message_line.record_waiting_m
 from core.modules.messages.support.message_nudges import NEW_MESSAGE
 from core.modules.messages.support.waiting_message_lines import WAITING_MESSAGE_SOURCE, WaitingMessageLines
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
+from core.modules.agents.models.agent import Agent
 
 RETRY_SECONDS = 10
 MOST_WAITING_LINES = 3
@@ -25,7 +26,9 @@ class RecordWaitingMessageLineHandler(Handler[RecordWaitingMessageLine, AgentLin
         self.queries, self.nudger, self.hook_calls, self.lines = queries, nudger, hook_calls, lines
 
     def handle(self, command: RecordWaitingMessageLine, context: Context) -> AgentLine | None:
-        agent = MainAgentFinder.newest(self.queries, command.environment_id)
+        agent = self.queries.query(Agent).find(command.agent_id) if command.agent_id is not None else MainAgentFinder.newest(self.queries, command.environment_id)
+        if agent is not None and (agent.environment_id != command.environment_id or agent.ended_at is not None):
+            return None
         if agent is None or not self.hook_calls.is_idle(agent.id, context.timestamp):
             return None
         message = self.lines.waking_message(command.environment_id, agent.id)

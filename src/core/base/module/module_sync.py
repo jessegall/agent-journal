@@ -2,6 +2,8 @@ from core.base.file_access import FileAccess
 from collections.abc import Sequence
 
 from core.base.clock import Clock
+from core.base.registry.agent_type_entry import AgentTypeEntry
+from core.base.registry.profile_entry import ProfileEntry
 from core.base.command.delete_command import DeleteCommand
 from core.base.command.edit_command import EditCommand
 from core.base.command.handlers.delete_handler import DeleteHandler
@@ -154,6 +156,8 @@ class ModuleSync:
             buttons=self.buttons(modules),
             button_slots=self.button_slots(modules),
             state_additions=tuple(StateAdditionEntry.declared(module.name, addition, module not in self.finder.default_modules()) for module in modules for addition in module.added_states),
+            agent_types=tuple(AgentTypeEntry.declared(module.name, declaration) for module in modules for declaration in module.agent_types),
+            profiles=tuple(ProfileEntry.declared(module.name, profile) for module in modules for profile in module.profiles),
             providers=self.providers.providers(modules),
             settings=tuple(entry for module in modules for entry in SettingTree().entries(module.name, module.settings)),
             shared_rows={shared.row.model_name: DottedPath.class_path(shared) for module in modules for shared in module.shared_rows},
