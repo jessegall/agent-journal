@@ -22,7 +22,7 @@ const tasks = computed(() => props.facts?.tasks ?? []);
 const queuedTasks = computed(() => tasks.value.filter((task) => task.state === "open"));
 const job = computed(() => (props.facts?.job_enabled ? props.facts?.task_title || queuedTasks.value[0]?.title || "" : ""));
 const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, props.row.role === "main" ? "" : props.progress ? `${props.row.role} ${props.row.id}` : props.row.role, props.row.access === "read-only" ? "Access: Read-only" : ""].filter(Boolean).join(" · "));
-const endedReason = computed(() => (props.row.ended_at && props.facts?.job_result?.startsWith(ENDED_WITHOUT_REPORT) ? props.facts.job_result : ""));
+const endedReason = computed(() => (props.row.ended_at && props.facts?.job_returned?.startsWith(ENDED_WITHOUT_REPORT) ? props.facts.job_returned : ""));
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
 const stoppedWithWork = computed(() => Boolean(props.row.ended_at) && props.row.role !== "main" && tasks.value.some((task) => UNFINISHED_STATES.has(task.state)));

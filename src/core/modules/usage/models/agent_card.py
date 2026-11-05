@@ -35,4 +35,4 @@ class AgentCard(EnvironmentScoped, ViewModel):
     job_profile: str
     job_description: str
     job_instruction: str
-    job_result: str
+    job_returned: str

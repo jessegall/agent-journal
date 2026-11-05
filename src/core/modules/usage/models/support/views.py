@@ -14,7 +14,7 @@ AGENT_CARDS_SELECT = (
     " EXISTS (SELECT 1 FROM agent_blocks WHERE agent_blocks.session_agent_id = agents.id AND agent_blocks.closed_at IS NULL) AS is_blocked,"
     " coalesce(dispatch.program_model, '') AS job_model, coalesce(dispatch.profile, '') AS job_profile,"
     " coalesce(dispatch.description, '') AS job_description, coalesce(dispatch.instruction, '') AS job_instruction,"
-    " coalesce((SELECT latest.returned FROM helper_jobs AS latest WHERE latest.helper_id = agents.id ORDER BY latest.id DESC LIMIT 1), '') AS job_result"
+    " coalesce((SELECT latest.returned FROM helper_jobs AS latest WHERE latest.helper_id = agents.id ORDER BY latest.id DESC LIMIT 1), '') AS job_returned"
     " FROM agents"
     " LEFT JOIN helper_jobs AS dispatch ON dispatch.id = (SELECT min(helper_jobs.id) FROM helper_jobs WHERE helper_jobs.helper_id = agents.id)"
 )
