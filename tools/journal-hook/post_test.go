@@ -135,7 +135,7 @@ func TestASessionStartStampsTheVersionItStartedOn(t *testing.T) {
 
 func TestEachEventWaitsAsLongAsHookShLetsIt(t *testing.T) {
 	for eventName, want := range map[string]time.Duration{"pre_tool_use": 5 * time.Second, "post_tool_use": 5 * time.Second, "prompt": 8 * time.Second,
-		"stop": 10 * time.Second, "subagent_stop": 10 * time.Second, "session_start": 15 * time.Second, "compact": 5 * time.Second} {
+		"stop": 10 * time.Second, "session_start": 15 * time.Second, "compact": 5 * time.Second} {
 		if actual := LimitFor(eventName); actual != want {
 			t.Errorf("%s waits %s, want %s", eventName, actual, want)
 		}

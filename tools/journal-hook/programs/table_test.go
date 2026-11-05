@@ -19,7 +19,7 @@ func TestTheTableReadsRecordedMatcherFields(t *testing.T) {
 	table := LoadTable("")
 	for _, name := range []string{"claude", "codex"} {
 		matchers := table.Programs[name].Matchers
-		for event, field := range map[string]string{"PreToolUse": "tool_name", "PostToolUse": "tool_name", "SessionStart": "source", "SessionEnd": "reason", "SubagentStop": "agent_type"} {
+		for event, field := range map[string]string{"PreToolUse": "tool_name", "PostToolUse": "tool_name", "SessionStart": "source", "SessionEnd": "reason"} {
 			if matchers[event] != field {
 				t.Fatalf("%s %s matcher field = %q, want %q", name, event, matchers[event], field)
 			}

@@ -25,7 +25,7 @@ func keptStatus(t *testing.T, home, folder string) statusReport {
 	return report
 }
 
-func TestAnAssistantLineKeepsTheContextInUseAndSkipsItsSubagentsLines(t *testing.T) {
+func TestAnAssistantLineKeepsTheContextInUseAndSkipsItsChildrensLines(t *testing.T) {
 	home := t.TempDir()
 	status := NewProgramStatus(home)
 	fmt.Fprint(status, "not a json line\n"+assistantLine+subagentLine)

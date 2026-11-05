@@ -31,5 +31,4 @@ class ProviderCheck:
         problems += [f"the agent program {provider.name} maps no hook to {event.value}" for event in REQUIRED_EVENTS if event not in mapped]
         problems += [f"the agent program {provider.name} takes lines on {event.value}, which it never sends" for event in provider.line_events if event not in mapped]
         problems += [f"the agent program {provider.name} refuses on {event.value}, which it never sends" for event in provider.refusals if event not in mapped]
-                     if hook not in provider.hook_events]
         return problems

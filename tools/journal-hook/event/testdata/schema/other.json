@@ -7,7 +7,7 @@
   "fired_at_ms": 6,
   "actor": "agent",
   "environment": "development",
-  "subagent": "a1",
+  "child_agent": "a1",
   "accepts_lines": false,
   "launch": "",
   "tool": {

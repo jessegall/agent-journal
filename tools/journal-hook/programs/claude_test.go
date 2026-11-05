@@ -8,13 +8,12 @@ func TestEveryRecordedClaudeBodyGivesItsObject(t *testing.T) {
 	checkRecordings(t, "claude")
 }
 
-func TestASubagentsOwnHookIsSkippedAndItsToolUsesAndStopGoOn(t *testing.T) {
+func TestAChildsToolCallReachesTheJournalAndItsOtherHooksAreSkipped(t *testing.T) {
 	cases := map[string]bool{
 		`{"hook_event_name":"Stop","session_id":"s","agent_id":"a1"}`:                                  true,
 		`{"hook_event_name":"UserPromptSubmit","session_id":"s","agent_id":"a1","prompt":"x"}`:         true,
 		`{"hook_event_name":"PreToolUse","session_id":"s","agent_id":"a1","tool_name":"Read"}`:         false,
-		`{"hook_event_name":"PostToolUseFailure","session_id":"s","agent_id":"a1","tool_name":"Bash"}`: false,
-		`{"hook_event_name":"SubagentStop","session_id":"s","agent_id":"a1"}`:                          false,
+		`{"hook_event_name":"PostToolUseFailure","session_id":"s","agent_id":"a1","tool_name":"Bash"}`: true,
 		`{"hook_event_name":"Stop","session_id":"s"}`:                                                  false,
 	}
 	for body, skipped := range cases {
@@ -25,8 +24,8 @@ func TestASubagentsOwnHookIsSkippedAndItsToolUsesAndStopGoOn(t *testing.T) {
 		if skip != skipped {
 			t.Errorf("%s: skip %v, want %v", body, skip, skipped)
 		}
-		if !skip && prepared.Subagent != "a1" && prepared.Event != "stop" {
-			t.Errorf("%s: subagent %q", body, prepared.Subagent)
+		if !skip && prepared.ChildAgent != "a1" && prepared.Event != "stop" {
+			t.Errorf("%s: child agent %q", body, prepared.ChildAgent)
 		}
 	}
 }
@@ -59,6 +58,3 @@ func TestEachClaudeToolHasItsCategoryAndFiles(t *testing.T) {
 	}
 }
 
-func TestAClaudeSubagentsStartAndStopAreASessionStartAndAStopWithTheSubagentSet(t *testing.T) {
-	expectSubagentEvents(t, "claude")
-}

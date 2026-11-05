@@ -7,7 +7,7 @@
   "fired_at_ms": 1,
   "actor": "agent",
   "environment": "main",
-  "subagent": "",
+  "child_agent": "",
   "tool": null,
   "prompt": "go on",
   "raw": {},
