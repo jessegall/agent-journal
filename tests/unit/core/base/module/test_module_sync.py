@@ -5,6 +5,7 @@ import pytest
 
 from core.base.container import Container
 from core.base.database.database import Database
+from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
 from core.base.module.code_fingerprint import CodeFingerprint
@@ -80,3 +81,18 @@ def test_a_new_commit_listener_starts_at_the_newest_event(tmp_path):
     database = synced(home, ITEMS, ITEM_COUNT).get(Database)
     newest = database.rows(Statement("SELECT max(id) FROM events"))[0][0]
     assert database.rows(Statement("SELECT event_id FROM listener_cursors WHERE listener = 'items.paused-count'"))[0][0] == newest
+
+
+def test_sync_removes_a_stale_cursor_so_caught_up_listeners_have_no_unhandled_events(tmp_path):
+    container = synced(JournalHome(tmp_path), ITEMS, ITEM_COUNT)
+    database = container.get(Database)
+    cursors = container.get(ListenerCursorTable)
+    cursors.start("items.removed")
+    database.insert(EVENT)
+    assert cursors.has_unhandled_events()
+
+    container.get(ModuleSync).run()
+    newest = database.rows(Statement("SELECT max(id) FROM events"))[0][0]
+    cursors.advance_all(tuple(cursors.positions().keys() - {"items.removed"}), newest)
+
+    assert not cursors.has_unhandled_events()
