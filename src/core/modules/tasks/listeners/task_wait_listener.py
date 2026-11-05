@@ -1,5 +1,3 @@
-from dataclasses import replace
-
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.model.state_book import StateBook
@@ -32,8 +30,8 @@ class TaskWaitListener(SaveListener[Changed[Model]]):
         row = event.row
         lifecycle = self.book.lifecycle(type(row))
         if isinstance(row, Task) and row.state is not TaskState.BLOCKED:
-            for wait in tuple(self.waits.open_waits(row.id).all_rows()):
-                self.repository.save(replace(wait, ended_at=context.timestamp), context)
+            for wait in self.waits.open_waits(row.id).kept_rows():
+                self.repository.update(wait, context, ended_at=context.timestamp)
         if isinstance(row, TaskWait) or lifecycle is None:
             return
         if not isinstance(event, Deleted) and getattr(row, "state", None) in lifecycle.editable:

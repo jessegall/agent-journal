@@ -11,7 +11,7 @@ class EnvironmentTableNames(EnvironmentNames):
         self.queries = queries
 
     def environment_id(self, name: str) -> int:
-        rows = self.queries.query(Environment).filter(name=name).page(1, 1).rows
-        if not rows:
+        row = self.queries.query(Environment).filter(name=name).kept_first()
+        if row is None:
             raise Refusal(f"no environment named {name}", "journal environment list shows them")
-        return rows[0].id
+        return row.id

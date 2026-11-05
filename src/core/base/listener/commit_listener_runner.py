@@ -81,12 +81,12 @@ class CommitListenerRunner:
         events = self.log.events_past(min(positions[entry.name] for entry in entries)) if entries else []
         if not events:
             return False
+        self.container.get(EventBuilder).prepare(events)
         due_entries = [entry for entry in entries if any(event.id > positions[entry.name] and entry.event.matches(event.event) for event in events)]
         due_names = {entry.name for entry in due_entries}
         moved_count = self.cursors.advance_all([entry.name for entry in entries if entry.name not in due_names], events[-1].id)
         positions.update({entry.name: events[-1].id for entry in entries if entry.name not in due_names})
         progress = [self.run_entry(entry, urgent_entries, events) for entry in due_entries]
-        positions.update({entry.name: self.cursors.position(entry.name) for entry in due_entries})
         return bool(moved_count) or any(progress)
 
     def known_positions(self, entries: list[ListenerEntry]) -> dict[str, int]:
@@ -104,6 +104,7 @@ class CommitListenerRunner:
         if self.log.newest_id() == events[-1].id:
             return
         newer_events = self.log.events_past(events[0].id - 1)
+        self.container.get(EventBuilder).prepare(newer_events)
         for listener in urgent_entries:
             self.run_listener(listener, newer_events)
 
@@ -113,20 +114,25 @@ class CommitListenerRunner:
         return listener_class.run_order if issubclass(listener_class, CommitListener) else 0
 
     def run_listener(self, entry: ListenerEntry, round_events: list[LoggedEvent]) -> bool:
-        position = self.cursors.position(entry.name)
+        position = self.positions[entry.name]
         events = [event for event in round_events if event.id > position]
         progress = False
         for event in events:
             if not entry.event.matches(event.event):
                 continue
             if not self.cursors.claimed(entry.name, position, event.id):
+                self.positions = self.cursors.positions()
                 return progress
             if not self.handle_event(entry, event):
                 self.cursors.claimed(entry.name, event.id, position)
                 return progress
             position, progress = event.id, True
+            self.positions[entry.name] = position
         if events and events[-1].id != position:
-            return self.cursors.claimed(entry.name, position, events[-1].id) or progress
+            advanced = self.cursors.claimed(entry.name, position, events[-1].id)
+            if advanced:
+                self.positions[entry.name] = events[-1].id
+            return advanced or progress
         return progress
 
     def handle_event(self, entry: ListenerEntry, event: LoggedEvent) -> bool:

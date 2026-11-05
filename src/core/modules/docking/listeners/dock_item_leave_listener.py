@@ -35,7 +35,7 @@ class DockItemLeaveListener(CommitListener[Touched[Model]]):
             self.bus.run(RemoveDockItem(item.id), actor, cause_id=logged.id, environment_id=self.dock_environment(item))
 
     def dock_environment(self, item: DockItem) -> int:
-        return self.queries.query(Dock).find(item.dock_id).environment_id
+        return self.queries.query(Dock).kept_find(item.dock_id).environment_id
 
     def pending(self, model_name: str, row_id: int) -> list[DockItem]:
-        return [item for item in self.items.waiting().all_rows() if item.target_model.replace("-", "_") == model_name and item.target_id == row_id]
+        return [item for item in self.items.waiting().kept_rows() if item.target_model.replace("-", "_") == model_name and item.target_id == row_id]

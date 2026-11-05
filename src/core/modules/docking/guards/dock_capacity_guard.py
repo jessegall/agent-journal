@@ -22,5 +22,5 @@ class DockCapacityGuard(Guard[Changed[DockItem]]):
         if item is None:
             return
         capacity = self.limits.dock_capacity(item.dock_id)
-        if len([sibling for sibling in self.items.docked(item.dock_id).same_chat(item.agent_id).all_rows() if sibling.id != item.id]) >= capacity:
+        if len([sibling for sibling in self.items.docked(item.dock_id).same_chat(item.agent_id).kept_rows() if sibling.id != item.id]) >= capacity:
             raise Refusal(f"the dock allows at most {capacity} items", f"undock one, or raise the setting {MOST_ITEMS_SETTING}")

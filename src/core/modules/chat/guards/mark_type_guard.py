@@ -30,5 +30,5 @@ class MarkTypeGuard(Guard[Changed[ChatMark]]):
             raise Refusal(f"no installed module declares the mark {mark.type}", "a module declares its mark types in its marks list")
         if mark.variant not in declared.variants:
             raise Refusal(f"the mark {mark.type} has no variant {mark.variant}", f"its variants are {', '.join(declared.variants)}")
-        if self.queries.query(ActorRecord).find(context.actor.id).name != declared.module:
+        if self.queries.query(ActorRecord).kept_find(context.actor.id).name != declared.module:
             raise Refusal(f"only {declared.module} writes a mark of {mark.type}", f"{declared.module} runs ShowMark from its own listener")

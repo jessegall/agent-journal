@@ -17,12 +17,12 @@ class MoveHandler(Handler[MoveCommand[Model], Model]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: MoveCommand[Model], context: Context) -> Model:
-        row = self.queries.query(command.model()).find(command.row_id)
+        row = self.queries.query(command.model()).kept_find(command.row_id)
         fields = command.move_fields()
         method = getattr(row, command.move.name, None)
         if not callable(method):
-            return self.repository.save(row.moved(command.move, **fields), context)
+            return self.repository.save_change(row, row.moved(command.move, **fields), context)
         moved = method(context.timestamp, context.actor, **fields)
         if not isinstance(moved, Model):
             raise MoveMethodError(f"{type(row).__name__}.{command.move.name} gave back a {type(moved).__name__}, not a model")
-        return self.repository.save(moved, context)
+        return self.repository.save_change(row, moved, context)

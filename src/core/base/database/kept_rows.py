@@ -2,6 +2,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import replace
 from typing import TypeVar, cast
 from weakref import WeakKeyDictionary
+from contextlib import nullcontext
 
 from core.base.database.database import Database
 from core.base.database.kept_value import KeptValue
@@ -19,8 +20,8 @@ class KeptRows:
     def __init__(self, database: Database) -> None:
         self.database = database
 
-    def read(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = ()) -> T:
-        cache_key = f"{table}:{condition}:{tuple(parameters)}"
+    def read(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, selection: Statement | None = None) -> T:
+        cache_key = f"{table}:{condition}:{tuple(parameters)}:{selection}"
         kept = KEPT.setdefault(self.database, {})
         change_mark = self.database.change_mark()
         if cache_key in kept and kept[cache_key].change_mark == change_mark:
@@ -30,6 +31,7 @@ class KeptRows:
         if cache_key in kept and kept[cache_key].signature == signature:
             kept[cache_key] = replace(kept[cache_key], change_mark=change_mark)
             return cast(T, kept[cache_key].value)
-        loaded = loader()
+        with self.database.tally.reread(table) if cache_key in kept else nullcontext():
+            loaded = loader()
         kept[cache_key] = KeptValue(signature, change_mark, loaded)
         return loaded

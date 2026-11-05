@@ -2,6 +2,8 @@ from collections.abc import Iterator, Sequence
 from copy import copy
 from typing import Generic, Self, TypeVar
 from core.base.database.database import Database
+from core.base.database.kept_rows import KeptRows
+from core.base.database.statement import Statement
 from core.base.missing_rows_error import MissingRowsError
 from core.base.model.model import Model
 from core.base.model.view_model import ViewModel
@@ -85,6 +87,26 @@ class Query(Generic[M]):
 
     def count(self) -> int:
         return self.database.rows(self.scoped(self.select).count_statement())[0][0]
+
+    def kept_rows(self) -> tuple[M, ...]:
+        select = self.scoped(self.select)
+        condition = Statement.all_joined(tuple(item.statement() for item in select.conditions), " AND ") if select.conditions else Statement("1 = 1")
+        return KeptRows(self.database).read(self.table.name, self.load_kept_rows, condition.sql, condition.parameters, selection=select.statement())
+
+    def kept_first(self) -> M | None:
+        rows = self.with_select(self.select.sliced(1, 0)).kept_rows()
+        return rows[0] if rows else None
+
+    def kept_find(self, row_id: int) -> M:
+        row = self.filter(**{self.table.key: row_id}).kept_first()
+        if row is None:
+            raise MissingRowsError(self.model.cli_name, [row_id])
+        return row
+
+    def load_kept_rows(self) -> tuple[M, ...]:
+        if self.select.limit:
+            return tuple(self.rows(self.select))
+        return tuple(self.all_rows())
 
     def exists(self) -> bool:
         return bool(self.database.rows(self.scoped(self.select).exists_statement()))

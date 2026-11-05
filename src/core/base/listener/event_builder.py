@@ -1,4 +1,5 @@
 from dataclasses import replace
+from collections.abc import Sequence
 from typing import TypeVar
 
 from core.base.change.changed import Changed
@@ -12,6 +13,7 @@ from core.base.model.move import Move
 from core.base.model.table import loaded
 from core.base.model.tables import Tables
 from core.base.query.queries import Queries
+from core.base.query.conditions.among import Among
 
 M = TypeVar("M", bound=Model)
 CREATION = ".create"
@@ -23,11 +25,17 @@ class EventBuilder:
 
     def __init__(self, queries: Queries, tables: Tables) -> None:
         self.queries, self.tables = queries, tables
+        self.row_ids: dict[str, tuple[int, ...]] = {}
+
+    def prepare(self, events: Sequence[LoggedEvent]) -> None:
+        self.row_ids = {table: tuple(sorted({event.row_id for event in events if event.row_table == table})) for table in {event.row_table for event in events}}
 
     def built(self, event_type: EventType, logged: LoggedEvent) -> object | None:
         if event_type.model is None or not issubclass(event_type.event_class, Changed):
             return event_type.event_class()
-        row = self.queries.query(event_type.model).filter(id=logged.row_id).first()
+        query = self.queries.query(event_type.model)
+        row_ids = self.row_ids.get(logged.row_table, tuple([logged.row_id]))
+        row = next((row for row in query.matching(Among("id", row_ids)).kept_rows() if row.id == logged.row_id), None)
         if row is None:
             return None
         event_class = self.event_class(event_type.event_class, logged)
