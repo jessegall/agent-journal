@@ -1,9 +1,15 @@
 <script setup>
-import {unref} from "vue";
-import {stateLabel, useDockRow, useWindow} from "@journal/window-kit";
+import { unref } from "vue";
+import { stateLabel, useDockRow, useWindow } from "@journal/window-kit";
 const row = useDockRow("task");
 const foot = useWindow().option("foot");
 </script>
 <template>
-    <Teleport v-if="unref(foot) && row" :to="unref(foot)"><span>Task: <b>{{ stateLabel('task', row.state) }}</b></span></Teleport>
+  <template v-if="unref(foot) && row"
+    ><Teleport :to="unref(foot)"
+      ><span
+        >Task: <b>{{ stateLabel("task", row.state).toLowerCase() }}</b></span
+      ></Teleport
+    ></template
+  >
 </template>

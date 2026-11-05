@@ -23,10 +23,10 @@ class DockEntry:
     badge: str = ""
     draws_head: bool = False
     folds: str = ""
-    waits_on_you: bool = False
+    needs_user: bool = False
     word: str = ""
 
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "DockEntry":
         return cls(stored["type"], stored["module"], stored["icon"], stored["title"], stored["body"], tuple(stored["buttons"]), stored["most"],
-                   stored["leaves_after_seconds"], tuple(stored["reads"]), stored["shipped"], stored["unavailable_reason"], stored.get("badge", ""), stored.get("draws_head", False), stored.get("folds", ""), stored.get("waits_on_you", False), stored.get("word", ""))
+                   stored["leaves_after_seconds"], tuple(stored["reads"]), stored["shipped"], stored["unavailable_reason"], stored.get("badge", ""), stored.get("draws_head", False), stored.get("folds", ""), stored.get("needs_user", False), stored.get("word", ""))

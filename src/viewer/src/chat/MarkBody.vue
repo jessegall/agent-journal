@@ -8,16 +8,32 @@ import ModuleBody from "../windows/ModuleBody.vue";
 import {WINDOW_CONTEXT} from "../windows/windowContext.js";
 
 // what an opened mark shows: its module's own body where the declaration names one, else version 4's lines, summary and output
-const props = defineProps({declaration: {type: Object, required: true}, mark: {type: Object, required: true}, shown: Boolean, head: {type: Object, default: null}, foot: {type: Object, default: null}, actions: {type: Object, default: null}, time: {type: Object, default: null}, folded: Boolean});
+const props = defineProps({
+    declaration: {type: Object, required: true},
+    mark: {type: Object, required: true},
+    shown: Boolean,
+    head: {type: Object, default: null},
+    foot: {type: Object, default: null},
+    actions: {type: Object, default: null},
+    time: {type: Object, default: null},
+    folded: Boolean,
+});
 
 const context = inject(WINDOW_CONTEXT);
-const lines = computed(() => String(props.mark.lines || "").split("\n").filter(Boolean));
+const lines = computed(() =>
+    String(props.mark.lines || "")
+        .split("\n")
+        .filter(Boolean)
+);
 const RUN_MODEL = "process";
 const TASK_MODEL = "task";
 const stopReason = computed(() => (STOPPED_VARIANTS.has(props.mark.variant) ? props.mark.detail || "" : ""));
 const taskId = computed(() => (props.mark.target_model === TASK_MODEL ? props.mark.target_id : 0));
 const POLL_MILLISECONDS = 2000;
-const pages = useOutputPages((words) => context.run(words), () => props.mark.target_id);
+const pages = useOutputPages(
+    (words) => context.run(words),
+    () => props.mark.target_id
+);
 const outputLines = pages.lines;
 const outputLoaded = ref(false);
 const outputFailure = ref("");
@@ -29,13 +45,20 @@ async function readOutput(step = pages.follow) {
 }
 let poll = null;
 const stopPoll = () => clearInterval(poll);
-watch(() => props.shown && hasOutput.value, (reading) => {
-    stopPoll();
-    if (!reading) return;
-    readOutput();
-    if (!props.mark.ended_at) poll = setInterval(readOutput, POLL_MILLISECONDS);
-}, {immediate: true});
-watch(() => props.mark.ended_at, (ended) => ended && props.shown && hasOutput.value && (stopPoll(), readOutput(pages.newest)));
+watch(
+    () => props.shown && hasOutput.value,
+    (reading) => {
+        stopPoll();
+        if (!reading) return;
+        readOutput();
+        if (!props.mark.ended_at) poll = setInterval(readOutput, POLL_MILLISECONDS);
+    },
+    {immediate: true}
+);
+watch(
+    () => props.mark.ended_at,
+    (ended) => ended && props.shown && hasOutput.value && (stopPoll(), readOutput(pages.newest))
+);
 onUnmounted(stopPoll);
 </script>
 
@@ -43,7 +66,15 @@ onUnmounted(stopPoll);
     <div :class="['mark-more', {open: shown}]" @click.stop>
         <div class="mark-more-inner">
             <template v-if="declaration.body_url">
-                <ModuleBody :declaration="declaration" :row="mark" :head="head" :foot="foot" :actions="actions" :time="time" :folded="folded" />
+                <ModuleBody
+                    :declaration="declaration"
+                    :row="mark"
+                    :head="head"
+                    :foot="foot"
+                    :actions="actions"
+                    :time="time"
+                    :folded="folded"
+                />
             </template>
             <template v-else>
                 <template v-if="stopReason">
@@ -61,7 +92,9 @@ onUnmounted(stopPoll);
                     <p class="mark-lines">{{ lines.join("\n") }}</p>
                 </template>
                 <template v-if="taskId">
-                    <button type="button" class="mark-proofs" data-mark-task @click.stop="peekRef(`${TASK_MODEL}:${taskId}`)">Open task {{ taskId }} and its proofs</button>
+                    <button type="button" class="mark-proofs" data-mark-task @click.stop="peekRef(`${TASK_MODEL}:${taskId}`)">
+                        Open task {{ taskId }} and its proofs
+                    </button>
                 </template>
             </template>
         </div>

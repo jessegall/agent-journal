@@ -6,7 +6,7 @@ import {pressButton} from "./markButtons.js";
 import ChatDock, {DOCK_ARRIVAL_MS} from "../kit/ChatDock.vue";
 import Btn from "../kit/Btn.vue";
 import FoldSign from "../kit/FoldSign.vue";
-import MarkIcon from "../kit/MarkIcon.vue";
+import Icon from "../kit/Icon.vue";
 import DockWrapper from "./DockWrapper.vue";
 import RunChip from "./RunChip.vue";
 import {dockDeclaration} from "../domain/dockRegistry.js";
@@ -37,15 +37,27 @@ async function undock(item, button) {
     refusals.value = {...refusals.value, [item.id]: `Could not close this card: ${answer.error}`};
 }
 
-const docked = computed(() => dockedItems(props.items.filter((item) => !closed.value.has(item.id)), now.value, held.value));
-const runs = computed(() => keptRuns(docked.value.filter((item) => isRunItem(item, dockDeclaration)), now.value));
+const docked = computed(() =>
+    dockedItems(
+        props.items.filter((item) => !closed.value.has(item.id)),
+        now.value,
+        held.value
+    )
+);
+const runs = computed(() =>
+    keptRuns(
+        docked.value.filter((item) => isRunItem(item, dockDeclaration)),
+        now.value
+    )
+);
 const rows = computed(() => docked.value.filter((item) => !runs.value.includes(item) && !isRunItem(item, dockDeclaration)));
 const going = computed(() => runs.value.filter((run) => !isLeaving(run)));
 const shared = computed(() => (grouped.value = groupedRuns(runs.value.length, grouped.value, going.value.length)) && !opened.value);
 
 // a card the person folded or unfolded by hand keeps that, the rest follow the chat's scroll
 const byHand = rememberedRef(`dock-folded:${store.identity?.root || location.host}`, {});
-const foldedFor = (item) => Boolean(dockDeclaration(item.type)?.folds) && dockFolded(byHand.value[item.id], isRunItem(item, dockDeclaration) || props.folded);
+const foldedFor = (item) =>
+    Boolean(dockDeclaration(item.type)?.folds) && dockFolded(byHand.value[item.id], isRunItem(item, dockDeclaration) || props.folded);
 function fold(item) {
     byHand.value = {...byHand.value, [item.id]: !foldedFor(item)};
 }
@@ -73,20 +85,45 @@ function release(item) {
 <template>
     <TransitionGroup tag="div" name="dock" :duration="DOCK_ARRIVAL_MS" class="dock-stack">
         <template v-for="item in rows" :key="item.id">
-            <DockWrapper :item="item" :class="{timed: isLeaving(item)}" :leaving="isLeaving(item) && !held.has(item.id)" :folded="foldedFor(item)" :refusal="refusals[item.id]" @fold="fold(item)" @undock="undock(item, $event)" @mouseenter="hold(item)" @mouseleave="release(item)" />
+            <DockWrapper
+                :item="item"
+                :class="{timed: isLeaving(item)}"
+                :leaving="isLeaving(item) && !held.has(item.id)"
+                :folded="foldedFor(item)"
+                :refusal="refusals[item.id]"
+                @fold="fold(item)"
+                @undock="undock(item, $event)"
+                @mouseenter="hold(item)"
+                @mouseleave="release(item)"
+            />
         </template>
         <template v-if="grouped && opened">
             <div key="runs-head" class="dock-runs-head">
-                <span>{{ runs.length }} runs</span><Btn small bordered aria-expanded="true" data-dock-runs-fold @click="foldRuns">Runs <FoldSign open /></Btn>
+                <span>{{ runs.length }} runs</span>
+                <Btn small bordered aria-expanded="true" data-dock-runs-fold @click="foldRuns">
+                    Runs
+                    <FoldSign open />
+                </Btn>
             </div>
         </template>
         <template v-for="item in shared ? [] : runs" :key="item.id">
-            <DockWrapper :item="item" :class="{timed: isLeaving(item)}" :leaving="isLeaving(item) && !held.has(item.id)" :folded="foldedFor(item)" :refusal="refusals[item.id]" @fold="fold(item)" @undock="undock(item, $event)" @mouseenter="hold(item)" @mouseleave="release(item)" />
+            <DockWrapper
+                :item="item"
+                :class="{timed: isLeaving(item)}"
+                :leaving="isLeaving(item) && !held.has(item.id)"
+                :folded="foldedFor(item)"
+                :refusal="refusals[item.id]"
+                @fold="fold(item)"
+                @undock="undock(item, $event)"
+                @mouseenter="hold(item)"
+                @mouseleave="release(item)"
+            />
         </template>
         <template v-if="shared">
             <ChatDock key="runs-row" :label="`${runs.length} runs`" kind="dock-runs-row">
                 <template #head>
-                    <MarkIcon name="runs" /><span class="dock-runs-title">{{ runs.length }} runs</span>
+                    <Icon name="runs" :size="14" />
+                    <span class="dock-runs-title">{{ runs.length }} runs</span>
                 </template>
                 <template #foot>
                     <span class="dock-runs-chips">
@@ -94,7 +131,10 @@ function release(item) {
                             <RunChip :item="run" @click="chooseRun(run)" />
                         </template>
                     </span>
-                    <Btn small bordered aria-expanded="false" data-dock-runs-open @click="opened = true">Runs <FoldSign /></Btn>
+                    <Btn small bordered aria-expanded="false" data-dock-runs-open @click="opened = true">
+                        Runs
+                        <FoldSign />
+                    </Btn>
                 </template>
             </ChatDock>
         </template>
@@ -108,32 +148,11 @@ function release(item) {
     border-bottom: 1px solid var(--border);
 }
 
-.dock-runs-toggle {
-    display: flex;
-    flex: none;
-    align-items: center;
-    gap: 8px;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--text);
-    font: inherit;
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-.dock-runs-toggle :deep(.mark-icon) {
-    color: var(--text-3);
-}
-
 .dock-runs-chips {
     display: flex;
     flex: 1;
     gap: 4px;
     min-width: 0;
-
 }
 
 .dock-runs-head {
@@ -148,10 +167,9 @@ function release(item) {
     font-size: 12px;
 }
 
-.dock-runs-head .dock-runs-toggle {
-    padding: 0 4px;
-    color: var(--text-3);
-    font-size: 11.5px;
+.dock-runs-title {
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
 }
-.dock-runs-title { color: var(--text); font-size: 13px; font-weight: 500; }
 </style>

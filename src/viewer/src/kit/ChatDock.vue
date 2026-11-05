@@ -162,11 +162,31 @@ defineExpose({card});
     visibility: hidden;
 }
 
- .chat-dock-card.waiting { background: color-mix(in srgb, var(--tone-warn) 10%, var(--raised)); }
-.chat-dock-card.waiting :deep(.dock-facts) { color: var(--text-2); }
-.chat-dock-body.body:not(.folded) { margin: 3px 0 6px; border-block: 1px solid var(--border-inner); }
-.chat-dock-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 4px 6px; min-height: 24px; margin-bottom: 7px; padding: 0 14px 0 36px; }
-@container (max-width: 480px) { .chat-dock-foot :deep(.btn) { padding: 0 7px; } }
+.chat-dock-card.waiting {
+    background: color-mix(in srgb, var(--tone-warn) 10%, var(--raised));
+}
+.chat-dock-card.waiting :deep(.dock-facts) {
+    color: var(--text-2);
+}
+.chat-dock-body.body:not(.folded) {
+    margin: 3px 0 6px;
+    border-block: 1px solid var(--border-inner);
+}
+.chat-dock-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px 6px;
+    min-height: 24px;
+    margin-bottom: 7px;
+    padding: 0 14px 0 36px;
+}
+@container (max-width: 480px) {
+    .chat-dock-foot :deep(.btn) {
+        padding: 0 7px;
+    }
+}
 
 @media (prefers-reduced-motion: reduce) {
     .chat-dock.dock-enter-active,

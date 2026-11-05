@@ -7,13 +7,22 @@ import SplitButton from "./SplitButton.vue";
 import {buttonCatalogue, buttonsAt} from "@journal/window-kit";
 import {pressButton} from "../chat/markButtons.js";
 
-const props = defineProps({name: {type: String, required: true}, row: {type: Object, default: null}, environment: {type: String, required: true}, readOnly: Boolean, externalFailure: Boolean});
+const props = defineProps({
+    name: {type: String, required: true},
+    row: {type: Object, default: null},
+    environment: {type: String, required: true},
+    readOnly: Boolean,
+    externalFailure: Boolean,
+    objectName: {type: String, default: ""},
+});
 const emit = defineEmits(["done", "failure"]);
 const catalogue = computed(() => buttonCatalogue(props.environment));
-const waiting = computed(() => !props.readOnly && catalogue.value?.loading.value && (!catalogue.value.loaded.value || catalogue.value.failed.value));
+const waiting = computed(
+    () => !props.readOnly && catalogue.value?.loading.value && (!catalogue.value.loaded.value || catalogue.value.failed.value)
+);
 const failed = computed(() => !props.readOnly && catalogue.value?.failed.value);
 const reload = () => catalogue.value.load().catch(() => {});
-const buttons = computed(() => props.readOnly ? [] : buttonsAt(props.environment, props.name, props.row));
+const buttons = computed(() => (props.readOnly ? [] : buttonsAt(props.environment, props.name, props.row)));
 const asking = ref(null);
 const failure = ref("");
 const sending = ref(false);
@@ -31,7 +40,8 @@ async function press(button) {
     const answer = await pressButton(button, props.row, props.environment);
     sending.value = false;
     failure.value = answer.ok ? "" : answer.error;
-    emit("failure", answer.ok ? "" : `Could not ${button.label.toLowerCase()}: ${answer.error}`);
+    const action = button.label.toLowerCase() + (props.objectName && !button.label.includes(" ") ? ` the ${props.objectName}` : "");
+    emit("failure", answer.ok ? "" : `Could not ${action}: ${answer.error}`);
     if (answer.ok) emit("done");
 }
 </script>
@@ -45,31 +55,69 @@ async function press(button) {
         <template v-else-if="!waiting">
             <template v-for="button in buttons" :key="button.name">
                 <template v-if="button.menu.length">
-                    <SplitButton small :kind="button.primary ? 'primary' : 'ghost'" :disabled="sending" :menu-label="button.menu_label || 'More ways'" :title="tip(button)" :data-button="button.name" @main="press(button)">
+                    <SplitButton
+                        small
+                        :kind="button.primary ? 'primary' : 'ghost'"
+                        :disabled="sending"
+                        :menu-label="button.menu_label || 'More ways'"
+                        :title="tip(button)"
+                        :data-button="button.name"
+                        @main="press(button)"
+                    >
                         {{ button.label }}
                         <template #menu="{close}">
                             <template v-for="item in button.menu" :key="item.label">
-                                <MenuItem :description="item.description" @click="close(), press({...button, ...item, menu: []})">{{ item.label }}</MenuItem>
+                                <MenuItem :description="item.description" @click="(close(), press({...button, ...item, menu: []}))">
+                                    {{ item.label }}
+                                </MenuItem>
                             </template>
                         </template>
                     </SplitButton>
                 </template>
                 <template v-else>
-                    <Btn small :kind="button.primary ? 'primary' : 'ghost'" :bordered="!button.primary" :icon="button.icon" :disabled="sending" :title="tip(button)" :data-button="button.name" @click="press(button)">{{ button.label }}</Btn>
+                    <Btn
+                        small
+                        :kind="button.primary ? 'primary' : 'ghost'"
+                        :bordered="!button.primary"
+                        :icon="button.icon"
+                        :disabled="sending"
+                        :title="tip(button)"
+                        :data-button="button.name"
+                        @click="press(button)"
+                    >
+                        {{ button.label }}
+                    </Btn>
                 </template>
             </template>
             <template v-if="failure && !readOnly && !externalFailure">
                 <span class="button-slot-failure" role="alert">{{ failure }}</span>
             </template>
             <template v-if="asking && !readOnly">
-                <ButtonForm :key="asking.runs" :button="asking" :row="row" :environment="environment" @close="asking = null" @done="emit('done')" />
+                <ButtonForm
+                    :key="asking.runs"
+                    :button="asking"
+                    :row="row"
+                    :environment="environment"
+                    @close="asking = null"
+                    @done="emit('done')"
+                />
             </template>
         </template>
     </span>
 </template>
 
 <style scoped>
-.button-slot {display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px;}
-.button-slot.loading {min-height: 24px;}
-.button-slot-failure {color: var(--danger); font-size: 12px;}
+.button-slot {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+.button-slot.loading {
+    min-height: 24px;
+}
+.button-slot-failure {
+    color: var(--danger);
+    font-size: 12px;
+}
 </style>

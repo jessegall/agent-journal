@@ -1,116 +1,160 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-5d8af9c9ee85")) { const style = document.createElement("style"); style.id = "window-styles-5d8af9c9ee85"; style.textContent = ".output-dock-more[data-v-18d9c7ba]{display:grid;grid-template-rows:1fr;transition:grid-template-rows var(--move),opacity var(--fade)}.output-dock-more.open[data-v-18d9c7ba]{grid-template-rows:1fr;opacity:1}.output-dock-inner[data-v-18d9c7ba]{min-height:0;overflow:hidden}.output-dock-state[data-v-18d9c7ba]{display:flex;flex:none;justify-content:center;width:14px;color:var(--tone)}.output-dock-label[data-v-18d9c7ba]{display:flex;flex:1 1 auto;align-items:center;gap:9px;min-width:0;padding:0;border:none;background:none;color:var(--text);font:inherit;font-size:12px;font-weight:500;text-align:left;cursor:pointer}.output-dock-ring[data-v-18d9c7ba]{width:10px;height:10px;border:1.5px solid color-mix(in srgb,var(--tone) 30%,transparent);border-top-color:var(--tone);border-radius:50%;animation:output-spin-18d9c7ba .9s linear infinite}@keyframes output-spin-18d9c7ba{to{transform:rotate(360deg)}}.output-dock-title[data-v-18d9c7ba]{flex:1;font-size:13px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.output-dock-figure[data-v-18d9c7ba]{flex:none;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.output-dock-terminal[data-v-18d9c7ba]{overflow:auto;max-height:min(280px,calc(40cqh - 72px));margin:0;padding:8px 14px 8px 36px;background:var(--term);color:var(--text-2);font-family:var(--mono, monospace);font-size:11px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.output-dock-bar[data-v-18d9c7ba]{position:absolute;right:0;bottom:0;left:0;height:2px;border-radius:1px;background:var(--border);overflow:hidden}.output-dock-fill[data-v-18d9c7ba]{height:100%;transition:width .4s ease}.output[data-v-97d5a832]{display:flex;flex-direction:column;height:100%;min-height:0}.bar[data-v-97d5a832]{display:flex;align-items:baseline;gap:8px;padding:8px 12px;font-size:12px}.line[data-v-97d5a832]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-97d5a832]{border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}.text[data-v-97d5a832]{margin:0;padding:0 12px 12px;font-size:12px;line-height:1.5;white-space:pre-wrap}.run[data-v-4486ac26]{display:flex;flex:1;align-items:baseline;gap:8px;font-size:12px}.state[data-v-4486ac26]{flex:none;min-width:64px;color:var(--text-3)}.state.failed[data-v-4486ac26],.state.lost[data-v-4486ac26]{color:var(--red, #d4574b)}.line[data-v-4486ac26]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-4486ac26]{flex:none;border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
-import { ref as M, computed as u, unref as a, watch as G, openBlock as d, createElementBlock as S, createBlock as g, Teleport as y, createElementVNode as n, normalizeStyle as C, toDisplayString as f, createCommentVNode as k, createTextVNode as R, nextTick as X } from "vue";
-import { useWindow as q, useOutputPages as J, useNow as K, usePoll as Q, Icon as U } from "@journal/window-kit";
-import { _ as Y } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const Z = {
+if (!document.getElementById("window-styles-906b7968f5ef")) { const style = document.createElement("style"); style.id = "window-styles-906b7968f5ef"; style.textContent = ".output-dock-inner[data-v-49bc5712]{min-height:0;overflow:hidden}.output-dock-state[data-v-49bc5712]{display:flex;flex:none;justify-content:center;width:14px;color:var(--tone)}.output-dock-ring[data-v-49bc5712]{width:10px;height:10px;border:1.5px solid color-mix(in srgb,var(--tone) 30%,transparent);border-top-color:var(--tone);border-radius:50%;animation:output-spin-49bc5712 .9s linear infinite}@keyframes output-spin-49bc5712{to{transform:rotate(360deg)}}.output-dock-title[data-v-49bc5712]{flex:1;font-size:13px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.output-dock-figure[data-v-49bc5712]{flex:none;color:var(--text-3);font-size:11.5px;font-variant-numeric:tabular-nums}.output-dock-terminal[data-v-49bc5712]{overflow:auto;max-height:min(280px,calc(40cqh - 72px));margin:0;padding:8px 14px 8px 36px;background:var(--term);color:var(--text-2);font-family:var(--mono, monospace);font-size:11px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.output-dock-bar[data-v-49bc5712]{position:absolute;right:0;bottom:0;left:0;height:2px;border-radius:1px;background:var(--border);overflow:hidden}.output-dock-fill[data-v-49bc5712]{height:100%;transition:width .4s ease}.output-dock-loading[data-v-49bc5712]{padding:8px 14px 8px 36px;height:60px;background:var(--term)}.output-dock-terminal[data-v-49bc5712]{animation:output-fade-49bc5712 .22s var(--ease) .32s backwards}@keyframes output-fade-49bc5712{0%{opacity:0}}@media(prefers-reduced-motion:reduce){.output-dock-terminal[data-v-49bc5712]{animation-duration:.1s;animation-delay:0ms}}.output[data-v-fcf61e26]{display:flex;flex-direction:column;height:100%;min-height:0}.bar[data-v-fcf61e26]{display:flex;align-items:baseline;gap:8px;padding:8px 12px;font-size:12px}.line[data-v-fcf61e26]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-fcf61e26]{border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}.text[data-v-fcf61e26]{margin:0;padding:0 12px 12px;font-size:12px;line-height:1.5;white-space:pre-wrap}.run[data-v-c1c1f2f0]{display:flex;flex:1;align-items:baseline;gap:8px;font-size:12px}.state[data-v-c1c1f2f0]{flex:none;min-width:64px;color:var(--text-3)}.state.failed[data-v-c1c1f2f0],.state.lost[data-v-c1c1f2f0]{color:var(--red, #d4574b)}.line[data-v-c1c1f2f0]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-c1c1f2f0]{flex:none;border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+import { ref as N, computed as l, unref as a, watch as G, openBlock as n, createElementBlock as k, createBlock as p, Teleport as D, createElementVNode as r, normalizeStyle as P, toDisplayString as m, createCommentVNode as h, createTextVNode as X, nextTick as q } from "vue";
+import { useWindow as J, useOutputPages as K, useNow as Q, usePoll as U, Icon as Y, SkeletonLine as Z, afterSkeletonMinimum as tt } from "@journal/window-kit";
+import { _ as et } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+const ot = {
   class: "output-dock",
   "data-output-dock": ""
-}, tt = ["data-state"], et = {
+}, at = ["data-state"], st = {
   key: 0,
   class: "output-dock-ring"
-}, ot = ["title"], at = ["data-figure-bar", "data-figure-began"], st = ["data-figure-progress"], nt = { "data-output-steps": "" }, lt = { class: "output-dock-figure" }, ut = { class: "output-dock-more" }, rt = { class: "output-dock-inner" }, dt = 2e3, it = 5e3, ct = 24, pt = {
+}, nt = ["title"], ut = ["data-figure-bar", "data-figure-began"], lt = ["data-figure-progress"], rt = { "data-output-steps": "" }, dt = { class: "output-dock-figure" }, it = { class: "output-dock-more" }, ct = { class: "output-dock-inner" }, pt = 2e3, vt = 5e3, _t = 24, gt = {
   __name: "OutputDock",
-  setup(vt) {
-    const N = { running: "var(--tone-work)", good: "var(--tone-good)", bad: "var(--danger)", stopped: "var(--text-3)" }, P = { running: "terminal", good: "tick", bad: "cross", stopped: "stop" }, B = { running: "running", background: "running", finished: "good", failed: "bad", stopped: "stopped", orphaned: "stopped" }, l = q(), m = l.option("row"), p = l.option("head"), D = l.option("foot"), O = l.option("time"), H = l.option("folded"), e = M(null), h = J((t) => l.read(t.join(" ")), () => {
+  setup(ft) {
+    const O = {
+      running: "var(--tone-work)",
+      good: "var(--tone-good)",
+      bad: "var(--danger)",
+      stopped: "var(--text-3)"
+    }, B = {
+      running: "terminal",
+      good: "tick",
+      bad: "cross",
+      stopped: "stop"
+    }, H = {
+      running: "running",
+      background: "running",
+      finished: "good",
+      failed: "bad",
+      stopped: "stopped",
+      orphaned: "stopped"
+    }, u = J(), w = u.option("row"), v = u.option("head"), E = u.option("foot"), x = u.option("time"), V = u.option("folded"), e = N(null), b = K(
+      (t) => u.read(t.join(" ")),
+      () => {
+        var t;
+        return (t = w.value) == null ? void 0 : t.target_id;
+      }
+    ), j = b.lines, y = l(() => !a(V)), i = N(null), I = N(!1), z = Q(), d = l(() => {
       var t;
-      return (t = m.value) == null ? void 0 : t.target_id;
-    }), V = h.lines, w = u(() => !a(H)), i = M(null), j = K(), r = u(() => {
-      var t;
-      return B[(t = e.value) == null ? void 0 : t.state] ?? "running";
-    }), E = () => r.value === "running", v = u(() => r.value !== "running"), x = u(() => {
+      return H[(t = e.value) == null ? void 0 : t.state] ?? "running";
+    }), L = () => d.value === "running", _ = l(() => d.value !== "running"), $ = l(() => {
       var t;
       return Number(((t = e.value) == null ? void 0 : t.progress) ?? 0) / 100;
-    }), z = u(() => v.value ? "100%" : `${Math.round(x.value * 100)}%`), F = u(() => {
-      var t;
-      return (t = e.value) != null && t.created_at ? Date.parse(e.value.created_at) / 1e3 : 0;
-    }), I = u(() => {
+    }), A = l(
+      () => _.value ? "100%" : `${Math.round($.value * 100)}%`
+    ), F = l(
+      () => {
+        var t;
+        return (t = e.value) != null && t.created_at ? Date.parse(e.value.created_at) / 1e3 : 0;
+      }
+    ), M = l(() => {
       var t, o;
       return !((t = e.value) != null && t.steps_passed) && !((o = e.value) != null && o.steps_failed) ? "" : e.value.steps_failed ? `${e.value.steps_passed} passed, ${e.value.steps_failed} failed` : `${e.value.steps_passed} passed`;
-    }), W = u(() => {
+    }), R = l(() => {
       var s;
       if (!((s = e.value) != null && s.created_at)) return "";
-      const t = e.value.ended_at ? Date.parse(e.value.ended_at) : j.value, o = Math.max(0, Math.round((t - Date.parse(e.value.created_at)) / 1e3));
+      const t = e.value.ended_at ? Date.parse(e.value.ended_at) : z.value, o = Math.max(
+        0,
+        Math.round((t - Date.parse(e.value.created_at)) / 1e3)
+      );
       return o >= 60 ? `${Math.floor(o / 60)}m ${o % 60}s` : `${o}s`;
     });
-    async function b() {
+    async function S() {
       var c;
-      const t = (c = m.value) == null ? void 0 : c.target_id;
+      const t = (c = w.value) == null ? void 0 : c.target_id;
       if (!t) return;
-      const o = await l.read(`process card ${t}`);
-      if (e.value = o.ok ? o.value : null, !w.value) return;
-      const s = i.value, _ = !s || s.scrollHeight - s.scrollTop - s.clientHeight < ct;
-      await h.follow(), await X(), _ && i.value && (i.value.scrollTop = i.value.scrollHeight);
+      const o = await u.read(`process card ${t}`);
+      if (e.value = o.ok ? o.value : null, !y.value) return;
+      const s = i.value, g = !s || s.scrollHeight - s.scrollTop - s.clientHeight < _t, f = performance.now();
+      await b.follow(), tt(f, async () => {
+        I.value = !0, await q(), g && i.value && (i.value.scrollTop = i.value.scrollHeight);
+      });
     }
-    return G(w, (t) => t && b()), l.follow(["process.*"], (t) => {
-      var o;
-      return t.row_id === ((o = m.value) == null ? void 0 : o.target_id) && b();
-    }), Q(b, E, () => w.value ? dt : it), (t, o) => {
-      var s, _, c, L, $, T;
-      return d(), S("div", Z, [
-        ((s = a(p)) == null ? void 0 : s.value) ?? a(p) ? (d(), g(y, {
+    return G(y, (t) => t && S()), u.follow(
+      ["process.*"],
+      (t) => {
+        var o;
+        return t.row_id === ((o = w.value) == null ? void 0 : o.target_id) && S();
+      }
+    ), U(
+      S,
+      L,
+      () => y.value ? pt : vt
+    ), (t, o) => {
+      var s, g, f, c, T, C;
+      return n(), k("div", ot, [
+        ((s = a(v)) == null ? void 0 : s.value) ?? a(v) ? (n(), p(D, {
           key: 0,
-          to: ((_ = a(p)) == null ? void 0 : _.value) ?? a(p)
+          to: ((g = a(v)) == null ? void 0 : g.value) ?? a(v)
         }, [
-          n("span", {
+          r("span", {
             class: "output-dock-state",
-            "data-state": r.value,
-            style: C({ "--tone": N[r.value] })
+            "data-state": d.value,
+            style: P({ "--tone": O[d.value] })
           }, [
-            E() ? (d(), S("span", et)) : (d(), g(a(U), {
+            L() ? (n(), k("span", st)) : (n(), p(a(Y), {
               key: 1,
-              name: P[r.value],
+              name: B[d.value],
               size: 14
             }, null, 8, ["name"]))
-          ], 12, tt),
-          n("span", {
+          ], 12, at),
+          r("span", {
             class: "output-dock-title",
-            title: ((c = e.value) == null ? void 0 : c.title) || ((L = e.value) == null ? void 0 : L.line)
-          }, f((($ = e.value) == null ? void 0 : $.title) || ((T = e.value) == null ? void 0 : T.line)), 9, ot),
-          x.value > 0 || v.value ? (d(), S("div", {
+            title: ((f = e.value) == null ? void 0 : f.title) || ((c = e.value) == null ? void 0 : c.line)
+          }, m(((T = e.value) == null ? void 0 : T.title) || ((C = e.value) == null ? void 0 : C.line)), 9, nt),
+          $.value > 0 || _.value ? (n(), k("div", {
             key: 0,
             class: "output-dock-bar",
-            "data-figure-bar": v.value ? r.value : "",
+            "data-figure-bar": _.value ? d.value : "",
             "data-figure-began": F.value
           }, [
-            n("div", {
+            r("div", {
               class: "output-dock-fill",
-              style: C({ width: z.value, background: N[r.value] }),
-              "data-figure-progress": v.value ? null : ""
-            }, null, 12, st)
-          ], 8, at)) : k("", !0)
-        ], 8, ["to"])) : k("", !0),
-        a(a(D)) && I.value ? (d(), g(y, {
+              style: P({ width: A.value, background: O[d.value] }),
+              "data-figure-progress": _.value ? null : ""
+            }, null, 12, lt)
+          ], 8, ut)) : h("", !0)
+        ], 8, ["to"])) : h("", !0),
+        a(a(E)) && M.value ? (n(), p(D, {
           key: 1,
-          to: a(a(D))
+          to: a(a(E))
         }, [
-          n("span", nt, [
-            o[1] || (o[1] = R("Steps: ", -1)),
-            n("b", null, f(I.value), 1)
+          r("span", rt, [
+            o[1] || (o[1] = X("Steps: ", -1)),
+            r("b", null, m(M.value), 1)
           ])
-        ], 8, ["to"])) : k("", !0),
-        a(a(O)) ? (d(), g(y, {
+        ], 8, ["to"])) : h("", !0),
+        a(a(x)) ? (n(), p(D, {
           key: 2,
-          to: a(a(O))
+          to: a(a(x))
         }, [
-          n("span", lt, f(W.value), 1)
-        ], 8, ["to"])) : k("", !0),
-        n("div", ut, [
-          n("div", rt, [
-            n("pre", {
+          r("span", dt, m(R.value), 1)
+        ], 8, ["to"])) : h("", !0),
+        r("div", it, [
+          r("div", ct, [
+            I.value ? (n(), k("pre", {
+              key: 1,
               ref_key: "terminal",
               ref: i,
               class: "output-dock-terminal",
               "data-output-terminal": "",
-              onScroll: o[0] || (o[0] = (A) => a(h).loadEarlier(A.target))
-            }, f(a(V).join(`
-`)), 545)
+              onScroll: o[0] || (o[0] = (W) => a(b).loadEarlier(W.target))
+            }, m(a(j).join(`
+`)), 545)) : (n(), p(a(Z), {
+              key: 0,
+              class: "output-dock-loading",
+              bars: [
+                { width: "70%", height: 11 },
+                { width: "45%", height: 11 }
+              ]
+            }))
           ])
         ])
       ]);
     };
   }
-}, kt = /* @__PURE__ */ Y(pt, [["__scopeId", "data-v-18d9c7ba"]]);
+}, wt = /* @__PURE__ */ et(gt, [["__scopeId", "data-v-49bc5712"]]);
 export {
-  kt as default
+  wt as default
 };

@@ -1,5 +1,4 @@
 import json
-import os
 
 import pytest
 
@@ -7,6 +6,7 @@ from core.base.container import Container
 from core.base.database.database import Database
 from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.database.statement import Statement
+from core.base.journal import Journal
 from core.base.journal_home import JournalHome
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
@@ -63,12 +63,12 @@ def test_a_sync_keeps_module_template_entries(tmp_path, monkeypatch):
 
 
 def test_a_changed_module_changes_the_fingerprint_and_the_old_registry_is_refused(tmp_path, monkeypatch):
+    monkeypatch.setattr(Journal, "is_running_unit_tests", lambda: False)
     module_path, copy = items_module_copy(tmp_path, monkeypatch)
     home = JournalHome(tmp_path)
     database = synced(home, module_path).get(Database)
     modules = ModuleFinder(home).modules()
-    status = os.stat(copy)
-    os.utime(copy, ns=(status.st_atime_ns, status.st_mtime_ns + 1_000_000))
+    copy.write_text(copy.read_text() + "\nCHANGED_CONTENT = True\n")
     with pytest.raises(StaleRegistryError):
         Registry.read(database).require_current(CodeFingerprint().text(modules))
 

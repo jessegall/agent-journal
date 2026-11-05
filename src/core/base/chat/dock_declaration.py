@@ -20,6 +20,6 @@ class DockDeclaration:
     kit: str = ">=1,<2"
     badge: str = ""
     folds: str = ""
-    waits_on_you: bool = False
+    needs_user: bool = False
     word: str = ""
     draws_head: bool = False

@@ -41,15 +41,22 @@ async function loadRow() {
     row.value = answer.ok ? {...answer.value, id: props.item.target_id, kind} : {id: props.item.target_id, kind};
 }
 
-watch(() => [props.item.type, props.item.target_model, props.item.target_id, declaration.value], (_, previous, cleanup) => {
-    const kind = cliOf(props.item.target_model ?? "");
-    row.value = {id: props.item.target_id, kind};
-    loadRow();
-    const stop = context.subscriptions?.follow(`dock ${props.item.id}`, [`${kind.replaceAll("-", "_")}.*`], (event) => {
-        if (!event.row_id || event.row_id === props.item.target_id) loadRow();
-    });
-    cleanup(() => { reading += 1; stop?.(); });
-}, {immediate: true});
+watch(
+    () => [props.item.type, props.item.target_model, props.item.target_id, declaration.value],
+    (_, previous, cleanup) => {
+        const kind = cliOf(props.item.target_model ?? "");
+        row.value = {id: props.item.target_id, kind};
+        loadRow();
+        const stop = context.subscriptions?.follow(`dock ${props.item.id}`, [`${kind.replaceAll("-", "_")}.*`], (event) => {
+            if (!event.row_id || event.row_id === props.item.target_id) loadRow();
+        });
+        cleanup(() => {
+            reading += 1;
+            stop?.();
+        });
+    },
+    {immediate: true}
+);
 // a declared button goes the moment it is pressed, and comes back if the server refuses
 const pressed = ref(new Set());
 const failure = ref("");
@@ -68,63 +75,218 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
 </script>
 
 <template>
-    <ChatDock :label="look.title + (declaration?.waits_on_you ? ', waiting for you' : '')" :kind="declaration?.waits_on_you ? 'waiting' : ''" :folded="Boolean(declaration?.folds) && folded" :body="Boolean(declaration?.folds)" :data-figure-closing="leaving ? '' : null">
+    <ChatDock
+        :label="look.title + (declaration?.needs_user ? ', waiting for you' : '')"
+        :kind="declaration?.needs_user ? 'waiting' : ''"
+        :folded="Boolean(declaration?.folds) && folded"
+        :body="Boolean(declaration?.folds)"
+        :data-figure-closing="leaving ? '' : null"
+    >
         <template #edge>
-            <DockLeave v-if="leaving && !item.kept" :ends-at="item.leaves_at" />
+            <template v-if="leaving && !item.kept"><DockLeave :ends-at="item.leaves_at" /></template>
         </template>
         <template #head>
-            <span v-if="declaration?.draws_head" ref="head" class="dock-head" data-dock-head />
+            <template v-if="declaration?.draws_head"><span ref="head" class="dock-head" data-dock-head /></template>
             <template v-else>
                 <Icon :name="look.icon" class="dock-icon" :size="14" />
                 <span class="dock-title" :title="look.title">{{ look.title }}</span>
             </template>
-            <span v-if="look.controls.length" class="dock-controls">
-                <template v-for="button in look.controls" :key="button.action + button.runs">
-                    <Btn v-if="!pressed.has(button.label) && (!button.variants?.length || !row?.state || button.variants.includes(row.state))" kind="icon" :class="{kept: button.pressed}" :aria-pressed="button.pressed" :aria-label="button.label" :title="button.label" :data-dock-action="button.action" @click="press(button)"><Icon :name="button.icon" :size="13" /></Btn>
-                </template>
+            <template v-if="look.controls.length">
+                <span class="dock-controls">
+                    <template v-for="button in look.controls" :key="button.action + button.runs">
+                        <template
+                            v-if="
+                                !pressed.has(button.label) &&
+                                (!button.variants?.length || !row?.state || button.variants.includes(row.state))
+                            "
+                        >
+                            <Btn
+                                kind="icon"
+                                :class="{kept: button.pressed}"
+                                :aria-pressed="button.pressed"
+                                :aria-label="button.label"
+                                :title="button.label"
+                                :data-dock-action="button.action"
+                                @click="press(button)"
+                            >
+                                <Icon :name="button.icon" :size="13" />
+                            </Btn>
+                        </template>
+                    </template>
+                </span>
+            </template>
+            <span ref="time" class="dock-age" data-dock-age>
+                <template v-if="!declaration?.leaves_after_seconds">{{ age }}</template>
             </span>
-            <span ref="time" class="dock-age" data-dock-age><template v-if="!declaration?.draws_head">{{ age }}</template></span>
         </template>
         <template #still>
-            <p v-if="failure || refusal" class="dock-failure" role="alert" data-dock-failure>{{ failure || refusal }}</p>
+            <template v-if="failure || refusal">
+                <p class="dock-failure" role="alert" data-dock-failure>{{ failure || refusal }}</p>
+            </template>
         </template>
         <template #foot>
             <span class="dock-facts">
-                <span v-if="declaration?.badge" :class="['dock-badge', item.type.split('.')[1]]" data-dock-badge>{{ declaration.badge }}</span>
-                <span v-if="declaration?.word">{{ declaration.word }}</span>
+                <template v-if="declaration?.badge">
+                    <span :class="['dock-badge', item.type.split('.')[1]]" data-dock-badge>{{ declaration.badge }}</span>
+                </template>
+                <template v-if="declaration?.word">
+                    <span>{{ declaration.word }}</span>
+                </template>
                 <span ref="foot" class="dock-module-facts" />
-                <span v-if="item.kept" class="dock-kept">Kept</span>
+                <template v-if="item.kept"><span class="dock-kept">Kept</span></template>
             </span>
-            <Btn v-if="declaration?.folds" small bordered data-dock-fold :aria-expanded="!folded" @click="emit('fold')">{{ declaration.folds }}<FoldSign :open="!folded" /></Btn>
+            <template v-if="declaration?.folds">
+                <Btn small bordered data-dock-fold :aria-expanded="!folded" @click="emit('fold')">
+                    {{ declaration.folds }}
+                    <FoldSign :open="!folded" />
+                </Btn>
+            </template>
             <span class="dock-acts">
                 <span ref="actions" class="dock-module-actions" />
-                <ButtonSlot :name="`dock.${item.type}`" :row="row" :environment="context.environment" :read-only="context.readOnly" external-failure @failure="failure = $event" @done="loadRow" />
+                <ButtonSlot
+                    :name="`dock.${item.type}`"
+                    :row="row"
+                    :environment="context.environment"
+                    :read-only="context.readOnly"
+                    :object-name="cliOf(item.target_model)"
+                    external-failure
+                    @failure="failure = $event"
+                    @done="loadRow"
+                />
                 <template v-for="button in buttons" :key="button.action + button.runs">
-                    <Btn small :kind="button.primary ? 'primary' : 'ghost'" :bordered="!button.primary" :data-dock-action="button.action" @click="press(button)">{{ button.label }}</Btn>
+                    <Btn
+                        small
+                        :kind="button.primary ? 'primary' : 'ghost'"
+                        :bordered="!button.primary"
+                        :data-dock-action="button.action"
+                        @click="press(button)"
+                    >
+                        {{ button.label }}
+                    </Btn>
                 </template>
                 <Btn small bordered :title="undock.label" data-dock-action="undock" @click="emit('undock', undock)">Close</Btn>
             </span>
         </template>
-        <MarkBody v-if="declaration?.body_url" :declaration="declaration" :mark="item" shown :head="head" :foot="foot" :actions="actions" :time="time" :folded="folded" />
+        <template v-if="declaration?.body_url">
+            <MarkBody
+                :declaration="declaration"
+                :mark="item"
+                shown
+                :head="head"
+                :foot="foot"
+                :actions="actions"
+                :time="time"
+                :folded="folded"
+            />
+        </template>
     </ChatDock>
 </template>
 
 <style scoped>
-.dock-head { display: flex; flex: 1 1 auto; align-items: center; gap: 8px; min-width: 0; }
-.dock-icon { flex: none; color: var(--text-3); }
-.dock-title { flex: 1 1 auto; min-width: 0; overflow: hidden; color: var(--text); font-size: 13px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
-.dock-age { flex: none; margin-left: 6px; color: var(--text-3); font-size: 11.5px; font-variant-numeric: tabular-nums; }
-.dock-controls { display: flex; flex: none; gap: 2px; }
-.dock-controls + .dock-age { margin-left: 0; }
-.dock-controls .kept { color: var(--accent-text); }
-.dock-controls .kept :deep(svg) { color: var(--accent-text); fill: currentColor; }
-.dock-facts { display: flex; flex: 0 1 auto; align-items: center; gap: 10px; min-width: 0; min-height: 24px; margin-right: auto; padding-right: 6px; color: var(--text-3); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.dock-module-facts, .dock-module-actions { display: contents; }
-.dock-facts :deep(b), .dock-kept { color: var(--text-2); font-weight: 400; }
-.dock-badge { padding: 1px 8px; border-radius: 999px; background: var(--chip); color: var(--text-2); font-size: 11.5px; }
-.dock-badge.started { background: var(--accent-dim); color: var(--accent-text); }
-.dock-badge.cancelled, .dock-badge.paused { color: var(--text-3); }
-.dock-failure { margin: 3px 0 6px; padding: 6px 14px 7px 36px; border-block: 1px solid var(--border-inner); color: var(--danger); font-size: 12.5px; line-height: 1.45; overflow-wrap: anywhere; }
-.dock-acts { display: flex; flex: none; flex-wrap: wrap; justify-content: flex-end; gap: 6px; max-width: 100%; }
-@container (max-width: 480px) { .dock-facts { padding-right: 0; } }
+.dock-head {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+.dock-icon {
+    flex: none;
+    color: var(--text-3);
+}
+.dock-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.dock-age {
+    flex: none;
+    margin-left: 6px;
+    color: var(--text-3);
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+}
+.dock-controls {
+    display: flex;
+    flex: none;
+    gap: 2px;
+}
+.dock-controls + .dock-age {
+    margin-left: 0;
+}
+.dock-controls .kept {
+    color: var(--accent-text);
+}
+.dock-controls .kept :deep(svg) {
+    color: var(--accent-text);
+    fill: currentColor;
+}
+.dock-facts {
+    display: flex;
+    flex: 0 1 auto;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    min-height: 24px;
+    margin-right: auto;
+    padding-right: 6px;
+    color: var(--text-3);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+.dock-module-facts,
+.dock-module-actions {
+    display: contents;
+}
+.dock-facts :deep(b),
+.dock-kept {
+    color: var(--text-2);
+    font-weight: 400;
+}
+.dock-badge {
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--chip);
+    color: var(--text-2);
+    font-size: 11.5px;
+}
+.dock-badge.started {
+    background: var(--accent-dim);
+    color: var(--accent-text);
+}
+.dock-badge.cancelled,
+.dock-badge.paused {
+    color: var(--text-3);
+}
+.dock-failure {
+    margin: 3px 0 6px;
+    padding: 6px 14px 7px 36px;
+    border-block: 1px solid var(--border-inner);
+    color: var(--danger);
+    font-size: 12.5px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+.dock-acts {
+    display: flex;
+    flex: none;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+    max-width: 100%;
+}
+.dock-acts :deep(.button-slot) {
+    display: contents;
+}
+@container (max-width: 480px) {
+    .dock-facts {
+        padding-right: 0;
+    }
+}
 </style>

@@ -13,4 +13,4 @@ QUESTION_MARKS = [MarkDeclaration(QuestionMarkType.QUESTION, QuestionMarkVariant
                   MarkDeclaration(QuestionMarkType.ANSWER, QuestionMarkVariant, QUESTIONS_FAMILY, "Question answered", "question", click=MarkClick.OPEN_ROW)]
 
 QUESTION_DOCKS = [DockDeclaration(QuestionDockType.QUESTION, "questions", "{row_title}", "question-dock.js", most=6, reads=["question show"]),
-                  DockDeclaration(QuestionDockType.OPEN, "questions", "Agent asked questions", "open-questions-dock.js", draws_head=True, waits_on_you=True, reads=["question list"])]
+                  DockDeclaration(QuestionDockType.OPEN, "questions", "Agent asked questions", "open-questions-dock.js", draws_head=True, needs_user=True, reads=["question list"])]

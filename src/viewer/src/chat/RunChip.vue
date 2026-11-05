@@ -10,7 +10,7 @@ import {WINDOW_CONTEXT, lineResult} from "../windows/windowContext.js";
 // and, once it ended, the countdown to its leaving along its top edge as its card has
 const OUTPUT_WINDOW = "processes.output";
 const CHIP_READ_MILLISECONDS = 5000;
-const TONES = {running: "var(--tone-work)", finished: "var(--tone-good)", failed: "var(--tone-bad)"};
+const TONES = {running: "var(--tone-work)", finished: "var(--tone-good)", failed: "var(--danger)"};
 const ICONS = {finished: "tick", failed: "cross", stopped: "stop", orphaned: "stop"};
 const props = defineProps({item: {type: Object, required: true}});
 const environment = inject(WINDOW_CONTEXT, null)?.environment ?? "";
@@ -50,7 +50,6 @@ usePoll(load, () => running.value, CHIP_READ_MILLISECONDS);
     position: relative;
     flex: 1 1 0;
     min-width: 0;
-    max-width: 190px;
     height: 24px;
     padding: 0;
     border: 1px solid var(--border);
@@ -85,8 +84,8 @@ usePoll(load, () => running.value, CHIP_READ_MILLISECONDS);
 
 .run-chip-ring {
     flex: none;
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     border: 1.5px solid color-mix(in srgb, var(--tone) 30%, transparent);
     border-top-color: var(--tone);
     border-radius: 50%;
