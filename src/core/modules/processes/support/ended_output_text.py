@@ -67,7 +67,7 @@ class EndedOutputText:
         matches = [READER_WIDTH.nudge(reader=reader.name, kept=output.reader_lines, lines=output.line_count, output=process.id)] if "--lines picked nearly all" in missed else []
         if reader.summary_pattern and "--summary found nothing" in missed:
             matches.append(READER_SUMMARY_MISSING.nudge(reader=reader.name, output=process.id))
-        if not reader.progress_pattern and "--progress found nothing" in missed:
+        if "--progress found nothing" in missed or "--progress found only at the end" in missed:
             matches.append(READER_PROGRESS_MISSING.nudge(reader=reader.name, output=process.id))
         return tuple(matches)
 

@@ -37,7 +37,7 @@ class SilentRunRule(DriverRule):
         return RuleAnswer.with_nudges(*(nudge for process in running if (nudge := self.silent_run_nudge(process, hook.timestamp))))
 
     def silent_run_nudge(self, process: Process, timestamp: Timestamp) -> Nudge | None:
-        if self.folder.total_bytes(process.id) and self.folder.seconds_since_any_output(process.id, timestamp) < SILENT_SECONDS:
+        if self.folder.total_bytes(process.id) and self.folder.run_silent_seconds(process.id, timestamp) < SILENT_SECONDS:
             return None
         part = next((part for part in self.parts.process(process.id).all_rows() if part.ended_at is None), None)
         if part is None or not self.is_watched(part):

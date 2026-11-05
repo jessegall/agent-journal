@@ -48,7 +48,7 @@ STALLED_RUN = NudgeDeclaration("processes.stalled_run", NudgeType.NOTICE, "outpu
 READER_MISSED = NudgeDeclaration("processes.reader_missed", NudgeType.STEERING, 'reader {reader} picked none of {lines} lines of output {output}: journal reader add {reader} --lines "<pattern>"', required_command="journal reader add {reader}")
 READER_WIDTH = NudgeDeclaration("processes.reader_too_wide", NudgeType.STEERING, 'reader {reader} kept {kept} of {lines} lines of output {output}: journal reader add {reader} --lines "<pattern>"', required_command="journal reader add {reader}")
 READER_SUMMARY_MISSING = NudgeDeclaration("processes.reader_no_summary", NudgeType.STEERING, 'reader {reader} found no summary in output {output}: journal reader add {reader} --summary "<pattern>"', required_command="journal reader add {reader}")
-READER_PROGRESS_MISSING = NudgeDeclaration("processes.reader_no_progress", NudgeType.STEERING, 'output {output} prints a count with no bar: give reader {reader} a --progress pattern')
+READER_PROGRESS_MISSING = NudgeDeclaration("processes.reader_no_progress", NudgeType.STEERING, 'output {output} ran with no progress: give reader {reader} a --progress or --step pattern')
 
 ALIAS_SUGGESTION = NudgeDeclaration("processes.alias_suggestion", NudgeType.STEERING, 'you ran {shape} {count} times: add an alias with journal alias add <name> "<line>"', interval=Interval(Seconds(3600)))
 READER_HINT = NudgeDeclaration("processes.reader_hint", NudgeType.STEERING, "reader {reader} already reads output {output}", interval=Interval(Seconds(600)))

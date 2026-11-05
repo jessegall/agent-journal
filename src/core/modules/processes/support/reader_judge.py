@@ -25,6 +25,9 @@ SAMPLE_OUTPUTS = 5
 SAMPLE_PARTS = 50
 
 
+LAST_LINES = 5
+
+
 class ReaderJudge:
     """Judges a reader's required fields and what it finds on kept output."""
 
@@ -102,6 +105,9 @@ class ReaderJudge:
         step_progress = reader.step_pattern and count > 0
         if category is not CommandCategory.CHECK and COUNTED.search(text) and not step_progress:
             checks["--progress found nothing"] = self.run.progress(reader, text, -1) >= 0
+        if category is CommandCategory.TEST_RUN and max(total, count) >= WIDTH_LINE_COUNT and not step_progress:
+            early_text = "\n".join(text.splitlines()[:-LAST_LINES])
+            checks["--progress found only at the end"] = self.run.progress(reader, early_text, -1) >= 0
         return tuple(miss for miss, valid in checks.items() if not valid)
 
     def samples(self, reader: Reader) -> tuple[ProcessPart, ...]:

@@ -136,6 +136,16 @@ def test_a_reader_that_keeps_nearly_every_line_is_told_to_narrow_and_one_with_no
     expect_value_line(lines, "reader deploys found no summary")
 
 
+def test_a_test_run_whose_reader_finds_progress_only_on_its_last_line_is_told_to_improve_it(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.run("""reader add dots --commands "./dots*" --lines "Tests" --progress "Tests +([0-9]+) of ([0-9]+)" """, actor=story.agent)
+    process = moved_run(story, "./dots.sh", category=CommandCategory.TEST_RUN)
+    end_run(story, process, "".join("........\n" for _ in range(60)) + "Tests 60 of 60\n")
+    story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
+    story.advance(timedelta(seconds=1))
+    expect_lines_of(story, NOTHING, "ran with no progress")
+
+
 def test_a_run_printing_a_count_with_no_progress_pattern_is_told_to_add_one(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run('reader add deploys --commands "./deploy*" --lines "step"', actor=story.agent)
@@ -143,7 +153,7 @@ def test_a_run_printing_a_count_with_no_progress_pattern_is_told_to_add_one(new_
     end_run(story, process, "step 3/9\nstep 9/9\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     story.advance(timedelta(seconds=1))
-    expect_lines_of(story, NOTHING, "prints a count with no bar")
+    expect_lines_of(story, NOTHING, "ran with no progress")
 
 
 class SilentVitestRun(StoryFixture):

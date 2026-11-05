@@ -104,7 +104,7 @@ class OutputFolder:
         path = self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out"
         return path.stat().st_size if path.exists() else 0
 
-    def seconds_since_any_output(self, process_id: int, timestamp: Timestamp) -> int:
+    def run_silent_seconds(self, process_id: int, timestamp: Timestamp) -> int:
         return int(timestamp.value.timestamp() - max(path.stat().st_mtime for path in self.output_paths(process_id) if path.exists()))
 
     def silent_seconds(self, process_id: int, position: int, timestamp: Timestamp) -> int:
