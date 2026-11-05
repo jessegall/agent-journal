@@ -15,10 +15,15 @@ const STOP_WATCHING = {icon: "close", label: "Stop watching", runs: "output unwa
 // task 5499: a process mark docks its process above the composer, and the card stops watching it
 function pressed(button) {
     const lines = [];
-    vi.stubGlobal("fetch", async (url, init) => (lines.push(JSON.parse(init.body).line), {json: async () => ({code: 0, value: null, error: ""})}));
+    vi.stubGlobal(
+        "fetch",
+        async (url, init) => (lines.push(JSON.parse(init.body).line), {json: async () => ({code: 0, value: null, error: ""})})
+    );
     const element = document.createElement("div");
     document.body.append(element);
-    createApp(() => h(MarkButtons, {buttons: [button], mark: {target_id: 3}})).provide(WINDOW_CONTEXT, {environment: "development"}).mount(element);
+    createApp(() => h(MarkButtons, {buttons: [button], mark: {target_id: 3}}))
+        .provide(WINDOW_CONTEXT, {environment: "development"})
+        .mount(element);
     element.querySelector("button").click();
     return lines;
 }
@@ -37,15 +42,22 @@ test("the card of a docked process stops watching it with its button", async () 
 
 test("a docked process's card shows the title and steps its output keeps, in place of the raw command", async () => {
     const window = context({
-        "process card 3": {ok: true, value: {id: 3, state: "running", line: "pytest -q", title: "Running tests", steps_passed: 12, steps_failed: 1}},
+        "process card 3": {
+            ok: true,
+            value: {id: 3, state: "running", line: "pytest -q", title: "Running tests", steps_passed: 12, steps_failed: 1},
+        },
         "output peek 3": {ok: true, value: {lines: []}},
     });
     const head = document.createElement("span");
     document.body.append(head);
-    window.option = (key) => ref(key === "head" ? head : {id: 7, target_id: 3});
+    const foot = document.createElement("span");
+    const time = document.createElement("span");
+    document.body.append(foot, time);
+    const folded = ref(true);
+    window.option = (key) => ({head: ref(head), foot: ref(foot), time: ref(time), folded, row: ref({id: 7, target_id: 3})})[key];
     await mounted(OutputDock, window);
     expect(head.querySelector(".output-dock-title").textContent).toBe("Running tests");
-    expect(head.querySelector("[data-output-steps]").textContent).toBe("12 passed, 1 failed");
+    expect(foot.querySelector("[data-output-steps]").textContent).toBe("Steps: 12 passed, 1 failed");
 });
 
 test("a chained run's temporary title never shows its script in the header or tooltip", async () => {
@@ -53,27 +65,38 @@ test("a chained run's temporary title never shows its script in the header or to
     const window = context({"process card 3": {ok: true, value: {id: 3, state: "running", line, title: "Removing files"}}});
     const head = document.createElement("span");
     document.body.append(head);
-    window.option = (key) => ref(key === "head" ? head : {id: 7, target_id: 3});
+    const foot = document.createElement("span");
+    const time = document.createElement("span");
+    document.body.append(foot, time);
+    const folded = ref(true);
+    window.option = (key) => ({head: ref(head), foot: ref(foot), time: ref(time), folded, row: ref({id: 7, target_id: 3})})[key];
     await mounted(OutputDock, window);
     expect(head.querySelector(".output-dock-title").textContent).toBe("Removing files");
-    expect(head.querySelector("[data-output-toggle]").title).toBe("Removing files");
+    expect(head.querySelector(".output-dock-title").title).toBe("Removing files");
     expect(head.textContent).not.toContain("python3");
     expect(head.innerHTML).not.toContain("private script");
 });
 
 test("a docked process's card shows the run live, and unfolded its whole terminal output", async () => {
     const window = context({
-        "process card 3": {ok: true, value: {id: 3, state: "running", line: "make build", title: "Running make", steps_passed: 0, steps_failed: 0}},
+        "process card 3": {
+            ok: true,
+            value: {id: 3, state: "running", line: "make build", title: "Running make", steps_passed: 0, steps_failed: 0},
+        },
         "output page 3": {ok: true, value: {lines: ["compiling the cart", "[ 40%]"], first_byte: 0, last_byte: 26, total: 26}},
     });
     const head = document.createElement("span");
     document.body.append(head);
-    window.option = (key) => ref(key === "head" ? head : {id: 7, target_id: 3});
+    const foot = document.createElement("span");
+    const time = document.createElement("span");
+    document.body.append(foot, time);
+    const folded = ref(true);
+    window.option = (key) => ({head: ref(head), foot: ref(foot), time: ref(time), folded, row: ref({id: 7, target_id: 3})})[key];
     const element = await mounted(OutputDock, window);
     expect(head.querySelector(".output-dock-state").dataset.state).toBe("running");
     expect(head.querySelector(".output-dock-title").textContent).toBe("Running make");
     expect(window.reads.some((line) => line.startsWith("output page"))).toBe(false);
-    head.querySelector("[data-output-toggle]").click();
+    folded.value = false;
     await settle();
     expect(window.reads).toContain("output page 3");
     expect(element.querySelector("[data-output-terminal]").textContent).toBe("compiling the cart\n[ 40%]");
@@ -85,7 +108,16 @@ test("a button that names variants shows only on a mark of one of them", async (
     const {WINDOW_CONTEXT} = await import("../src/windows/windowContext.js");
     const drawn = (variant) => {
         const element = document.createElement("div");
-        const app = createApp({render: () => h(MarkButtons, {mark: {variant, target_id: 1}, buttons: [{icon: "dock", label: "Dock", runs: "dock add", variants: ["running"]}, {icon: "close", label: "Open", runs: "x"}]})});
+        const app = createApp({
+            render: () =>
+                h(MarkButtons, {
+                    mark: {variant, target_id: 1},
+                    buttons: [
+                        {icon: "dock", label: "Dock", runs: "dock add", variants: ["running"]},
+                        {icon: "close", label: "Open", runs: "x"},
+                    ],
+                }),
+        });
         app.provide(WINDOW_CONTEXT, {environment: "main"});
         app.mount(element);
         return [...element.querySelectorAll("button")].map((button) => button.title);
@@ -99,12 +131,30 @@ test("a docked process's running time moves on with the clock, with no read", as
     try {
         const reads = [];
         const window = context({});
-        window.read = async (line) => (reads.push(line), {ok: true, value: {id: 3, state: "running", line: "make build", title: "", steps_passed: 0, steps_failed: 0, created_at: "2026-11-02T10:00:00Z"}});
+        window.read = async (line) => (
+            reads.push(line),
+            {
+                ok: true,
+                value: {
+                    id: 3,
+                    state: "running",
+                    line: "make build",
+                    title: "",
+                    steps_passed: 0,
+                    steps_failed: 0,
+                    created_at: "2026-11-02T10:00:00Z",
+                },
+            }
+        );
         const head = document.createElement("span");
         document.body.append(head);
-        window.option = (key) => ref(key === "head" ? head : {id: 7, target_id: 3});
+        const foot = document.createElement("span");
+        const time = document.createElement("span");
+        document.body.append(foot, time);
+        const folded = ref(true);
+        window.option = (key) => ({head: ref(head), foot: ref(foot), time: ref(time), folded, row: ref({id: 7, target_id: 3})})[key];
         await mounted(OutputDock, window);
-        const shown = () => [...head.querySelectorAll(".output-dock-figure")].map((figure) => figure.textContent).join(" ");
+        const shown = () => [...time.querySelectorAll(".output-dock-figure")].map((figure) => figure.textContent).join(" ");
         expect(shown()).toContain("10s");
         const readsBefore = reads.length;
         vi.advanceTimersByTime(1000);

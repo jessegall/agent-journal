@@ -1,27 +1,15 @@
 <script setup>
-import {stateLabel} from "@journal/window-kit";
-
-defineProps({row: {type: Object, default: null}});
+import { unref } from "vue";
+import { stateLabel, useDockRow, useWindow } from "@journal/window-kit";
+const row = useDockRow("question");
+const foot = useWindow().option("foot");
 </script>
-
 <template>
-    <div class="question-dock">
-        <template v-if="row">
-            <span class="question-dock-state">{{ stateLabel('question', row.state) }}</span>
-            <span class="question-dock-text">{{ row.text }}</span>
-        </template>
-    </div>
+  <template v-if="unref(foot) && row"
+    ><Teleport :to="unref(foot)"
+      ><span
+        >Question: <b>{{ stateLabel("question", row.state).toLowerCase() }}</b></span
+      ></Teleport
+    ></template
+  >
 </template>
-
-<style scoped>
-.question-dock {
-    display: flex;
-    gap: 8px;
-    font-size: 12px;
-    line-height: 1.45;
-}
-
-.question-dock-state {
-    color: var(--text-4);
-}
-</style>

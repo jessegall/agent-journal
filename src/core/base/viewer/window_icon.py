@@ -68,3 +68,8 @@ class WindowIcon(StrEnum):
     FILE = "file"
     HASH = "hash"
     DOT = "dot"
+    DOCS = "docs"
+    REPORTS = "reports"
+    RULES = "rules"
+    QUESTIONS = "questions"
+    INBOX = "inbox"
