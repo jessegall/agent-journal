@@ -9,6 +9,8 @@ import FoldSign from "../kit/FoldSign.vue";
 import Icon from "../kit/Icon.vue";
 import MarkBody from "./MarkBody.vue";
 import {lineResult, WINDOW_CONTEXT} from "../windows/windowContext.js";
+import {useSharedNow} from "../composables/now.js";
+import {ago} from "../format/time.js";
 import {cliOf} from "../domain/resourceKinds.js";
 import {dockDeclaration} from "../domain/dockRegistry.js";
 import {dockLook} from "../domain/dockLook.js";
@@ -19,6 +21,8 @@ import {peekRef} from "../route.js";
 const emit = defineEmits(["fold", "undock"]);
 const props = defineProps({item: {type: Object, required: true}, folded: Boolean, leaving: Boolean, refusal: {type: String, default: ""}});
 const declaration = computed(() => dockDeclaration(props.item.type));
+const now = useSharedNow();
+const age = computed(() => (declaration.value?.shows_age ? ago(props.item.created_at, now.value * 1000) : ""));
 const head = ref(null);
 const look = computed(() => dockLook(props.item, declaration.value));
 const context = inject(WINDOW_CONTEXT);
@@ -79,6 +83,9 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
             <template v-if="declaration?.badge">
                 <span :class="['dock-badge', item.type.split('.')[1]]" data-dock-badge>{{ declaration.badge }}</span>
             </template>
+            <template v-if="age">
+                <span class="dock-age" data-dock-age>{{ age }}</span>
+            </template>
             <template v-if="!declaration?.draws_head">
                 <button type="button" class="dock-fold" data-dock-fold :aria-expanded="!folded" :title="folded ? 'Unfold' : 'Fold'" @click="emit('fold')"><FoldSign :open="!folded" /></button>
             </template>
@@ -98,7 +105,7 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
         <template v-if="failure || refusal">
             <p class="dock-text dock-failure" role="alert" data-dock-failure>{{ failure || refusal }}</p>
         </template>
-        <template v-if="item.text && !declaration?.body_url">
+        <template v-if="item.text && !declaration?.body_url && !declaration?.shows_age">
             <p class="dock-text">{{ item.text }}</p>
         </template>
         <template v-if="declaration?.body_url">
@@ -119,6 +126,12 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
 .dock-icon {
     flex: none;
     color: var(--text-3);
+}
+
+.dock-age {
+    flex: none;
+    color: var(--text-3);
+    font-size: 11.5px;
 }
 
 .dock-badge {

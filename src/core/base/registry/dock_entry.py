@@ -22,8 +22,9 @@ class DockEntry:
     unavailable_reason: str
     badge: str = ""
     draws_head: bool = False
+    shows_age: bool = False
 
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "DockEntry":
         return cls(stored["type"], stored["module"], stored["icon"], stored["title"], stored["body"], tuple(stored["buttons"]), stored["most"],
-                   stored["leaves_after_seconds"], tuple(stored["reads"]), stored["shipped"], stored["unavailable_reason"], stored.get("badge", ""), stored.get("draws_head", False))
+                   stored["leaves_after_seconds"], tuple(stored["reads"]), stored["shipped"], stored["unavailable_reason"], stored.get("badge", ""), stored.get("draws_head", False), stored.get("shows_age", False))
