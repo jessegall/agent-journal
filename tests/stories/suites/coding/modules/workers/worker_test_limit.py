@@ -23,6 +23,7 @@ from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.worker_test_listings import WorkerTestListings
 from core.testing.expect_reply import expect_reply_refusal
 
 
@@ -51,6 +52,21 @@ def test_a_run_over_the_limit_is_stopped_when_its_collected_line_is_read(limited
     story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED)
     lines = tuple(story.container.get(Queries).query(AgentLine).filter(agent_id=process.agent_id, source="processes.worker-test-limit").all_rows())
     story.expect_rows(len(lines) == 1, "8 tests" in lines[0].text, "5" in lines[0].text)
+
+
+def test_a_run_through_a_reader_with_no_count_is_counted_by_the_stock_reader_of_its_program(new_story):
+    story = new_story(fixture=TestLimitSetup)
+    install_runner(story)
+    story.expect_success('reader add worker-pytest --commands "pytest tests/*" --lines "collected" --summary "passed" --title "Python tests"', actor=story.agent)
+    process = worker_run(story, "pytest tests/cart.py", CommandCategory.TEST_RUN)
+    story.expect_rows("--collect-only" in story.container.get(WorkerTestListings).line(process))
+
+
+def test_a_go_test_of_a_worker_is_counted(new_story):
+    story = new_story(fixture=TestLimitSetup)
+    install_runner(story)
+    process = worker_run(story, "go test ./classify", CommandCategory.TEST_RUN)
+    story.expect_rows("-list ." in story.container.get(WorkerTestListings).line(process))
 
 
 def test_a_part_that_ran_over_the_limit_last_time_is_refused_at_the_hook(limited_run):
