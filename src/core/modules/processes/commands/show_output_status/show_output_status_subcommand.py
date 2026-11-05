@@ -19,6 +19,7 @@ class ShowOutputStatusSubcommand(ReadSubcommand[OutputLines]):
 
     cli_name = "output"
     name = "status"
+    environment_refusal = "outputs are read in an environment"
 
     def __init__(self, access: OutputAccess, processes: ProcessQuery) -> None:
         self.access, self.processes = access, processes
@@ -29,7 +30,7 @@ class ShowOutputStatusSubcommand(ReadSubcommand[OutputLines]):
     def read(self, arguments: Namespace, caller: Caller) -> OutputLines:
         if arguments.process_id is not None:
             return OutputLines([self.line(self.access.process(caller.actor, arguments.process_id))])
-        query = self.processes.environment(self.access.environment(caller.actor, caller.environment_id)).newest()
+        query = self.processes.newest()
         if self.access.has_private_outputs(caller.actor):
             query = query.agent(caller.actor.id)
         return OutputLines([self.line(process) for process in reversed(query.limited(OUTPUTS_SHOWN))])

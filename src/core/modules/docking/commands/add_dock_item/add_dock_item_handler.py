@@ -27,8 +27,7 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
         self.labels, self.scopes = labels, scopes
 
     def handle(self, command: AddDockItem, context: Context) -> DockItem:
-        environment_id = command.environment_id or context.environment_id
-        if environment_id is None:
+        if context.environment_id is None:
             raise Refusal("an item is docked in an environment", "name it with --environment")
         title, text = self.labels.read(command.type, command.row_model, command.row_id)
         dock = self.queries.query(Dock).first()

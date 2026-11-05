@@ -3,7 +3,6 @@ from argparse import Namespace
 from core.base.caller.caller import Caller
 from core.base.cli.row_links import RowLinks
 from core.base.query.conditions.is_null import IsNull
-from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_tuple

@@ -20,8 +20,6 @@ class RequestTranscriptionFetchHandler(Handler[RequestTranscriptionFetch, Task])
         self.servers, self.catalogue, self.repository, self.line = servers, catalogue, repository, line
 
     def handle(self, command: RequestTranscriptionFetch, context: Context) -> Task:
-        if context.environment_id is None:
-            raise Refusal("transcriptions are fetched for one environment", "name it with --environment")
         server = self.servers.find_name(command.server)
         if command.server not in {suggestion.name for suggestion in self.catalogue.with_transcripts()}:
             raise Refusal(f"{command.server} has no transcriptions to fetch")

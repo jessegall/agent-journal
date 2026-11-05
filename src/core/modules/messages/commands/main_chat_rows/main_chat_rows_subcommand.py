@@ -6,7 +6,6 @@ from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.less import Less
 from core.base.query.queries import Queries
 from core.base.query.query import PAGE_SIZE_ROWS
-from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.messages.models.main_chat_mark import MainChatMark

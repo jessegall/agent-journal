@@ -36,13 +36,10 @@ class SendMessageHandler(Handler[SendMessage, Message]):
         if actor.type is ActorType.AGENT and self.queries.query(Agent).find(actor.id).role != AgentRole.MAIN:
             raise Refusal("only a main agent writes in the chat", "say it in the report to the agent that sent you")
         parent = self.queries.query(Message).find(command.parent_id) if command.parent_id is not None else None
-        environment_id = parent.environment_id if parent is not None else context.environment_id
-        if environment_id is None:
-            raise Refusal("a message is sent in an environment", "name it with --environment")
         target_id = command.target_agent_id
         if target_id is None and parent is not None:
             target_id = parent.target_agent_id
-        target = self.targets.selected(environment_id, target_id) if actor.type is ActorType.USER else None
+        target = self.targets.selected(target_id) if actor.type is ActorType.USER else None
         names = self.files.check(command.files)
         message_type = ACTOR_MESSAGE_TYPES.get(actor.type, MessageType.JOURNAL)
         metadata = Metadata({MESSAGES_MODULE: {"commented_row": {"model": command.commented_row[0], "id": command.commented_row[1]}}}) if command.commented_row else Metadata()

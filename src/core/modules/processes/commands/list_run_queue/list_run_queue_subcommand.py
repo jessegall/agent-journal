@@ -5,7 +5,6 @@ from core.base.page import Page
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.query.query import Query
-from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.drivers.support.suite_choice import SuiteChoice
@@ -29,6 +28,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
 
     cli_name = "queue"
     name = "list"
+    environment_refusal = "the process queue needs an environment"
 
     def __init__(self, queries: Queries, settings: ProcessSettings, halt: RunQueueHalt, suites: SuiteChoice, catalogue: SettingCatalogue, values: SettingValues) -> None:
         self.queries, self.settings, self.halt = queries, settings, halt
@@ -39,15 +39,12 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         return [{"key": entry.key, "title": entry.title, "description": entry.description, "value": self.values.value(entry.key, environment_id)} for entry in entries]
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--environment-id", type=int)
         parser.add_argument("--limit", type=int, default=50)
         parser.add_argument("--page", type=int, default=1)
         parser.add_argument("--recent", type=int, default=RECENT_RUNS)
 
     def read(self, arguments: Namespace, caller: Caller) -> ProcessQueuePage:
-        environment_id = arguments.environment_id if arguments.environment_id is not None else caller.environment_id
-        if environment_id is None:
-            raise Refusal("the process queue needs an environment", "queue list --environment-id <number>")
+        environment_id = caller.environment_id
         main_spots = self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS, environment_id)
         query = self.queries.query(ProcessQueueRow)
         active = tuple(query.matching(IsNull("ended_at")).oldest().all_rows())

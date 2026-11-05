@@ -19,7 +19,7 @@ class PruneProcessesHandler(Handler[PruneProcesses, int]):
 
     def handle(self, command: PruneProcesses, context: Context) -> int:
         ended = self.processes.ended()
-        process_count = max(1, self.settings.integer(ProcessSetting.PROCESSES_KEPT, command.environment_id))
+        process_count = max(1, self.settings.integer(ProcessSetting.PROCESSES_KEPT, context.environment_id))
         excess_count = ended.count() - process_count
         if excess_count <= 0:
             return 0

@@ -2,7 +2,6 @@ from argparse import Namespace
 
 from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent

@@ -12,7 +12,7 @@ QUEUE_READ_POINTS = 60
 
 
 def queue_page(story, flags=""):
-    return json.loads(story.run(f"queue list --environment-id 1 --json {flags}", actor=story.user).output_text)
+    return json.loads(story.run(f"queue list --environment 1 --json {flags}", actor=story.user).output_text)
 
 
 def test_a_queue_read_costs_the_same_with_many_ended_runs(new_story):

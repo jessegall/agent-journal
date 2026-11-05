@@ -6,7 +6,6 @@ from core.base.model.state_book import StateBook
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.query.query import PAGE_SIZE_ROWS
-from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plans.models.enums.plan_state import PlanState

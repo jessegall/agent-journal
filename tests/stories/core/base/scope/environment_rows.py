@@ -1,10 +1,13 @@
 import json
+from dataclasses import fields
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.change.event_log import EventLog
 from core.base.model.environment_scoped import EnvironmentScoped
-from core.base.model.tables import Tables
+from core.base.model.model import Model
+from core.base.model.view_model import ViewModel
+from core.base.module.module_finder import ModuleFinder
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
@@ -29,14 +32,14 @@ def staging_worker(story):
 
 
 class TwoEnvironmentsAtWork(StoryFixture):
-    """Environment main with its main agent and task 1; environment staging with its main agent, session s-2, and task 2."""
+    """Environment main with its main agent and task 1; environment staging with session s-2 and task 2."""
 
     parent = BuilderWithUser
 
     def steps(self, story):
         story.run("environment make staging /work/staging")
         story.run("suite choose coding --environment staging")
-        hook_agent(story, story.hook("s-2", HookSamples.session_start().with_fields(cwd="/work/staging")))
+        hook_agent(story, story.hook("s-2", HookSamples.session_start().with_fields(environment="staging")))
         story.run(f'task make "{MAIN_TITLE}" --environment main', actor=story.agent)
         story.run(f'task make "{STAGING_TITLE}" --environment staging', actor=staging_agent(story))
 
@@ -228,8 +231,12 @@ def test_the_viewer_s_feed_stays_in_the_environment_of_the_line(new_story):
     story.expect_rows(all(row["environment_id"] == 2 for row in rows), any(row["text"] == "Hello staging" for row in rows))
 
 
+def row_classes(base):
+    return [found for child in base.__subclasses__() for found in (child, *row_classes(child))]
+
+
 def test_every_model_with_an_environment_declares_the_scope_or_is_a_stated_exception(new_story):
     story = new_story(fixture=TwoEnvironmentsAtWork)
-    tables = story.container.get(Tables)
-    bare = {table.model.__name__ for table in tables.all() if table.has_column("environment_id") and not issubclass(table.model, EnvironmentScoped)}
-    assert bare == STATED_EXCEPTIONS, f"undeclared or missing exceptions: {sorted(bare ^ STATED_EXCEPTIONS)}"
+    story.container.get(ModuleFinder).modules()
+    with_column = [row for row in (*row_classes(Model), *row_classes(ViewModel)) if "environment_id" in {field.name for field in fields(row)}]
+    story.expect_rows({row.__name__ for row in with_column if not issubclass(row, EnvironmentScoped)} == STATED_EXCEPTIONS)

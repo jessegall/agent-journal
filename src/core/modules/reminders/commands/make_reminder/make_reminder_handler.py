@@ -16,8 +16,6 @@ class MakeReminderHandler(Handler[MakeReminder, Reminder]):
         self.repository, self.conditions = repository, conditions
 
     def handle(self, command: MakeReminder, context: Context) -> Reminder:
-        if context.environment_id is None:
-            raise Refusal("a reminder is for one environment", "name it with --environment")
         if not (command.due_at or command.interval_seconds or command.interval_tool_uses or command.interval_tasks):
             raise Refusal("a reminder needs a time or an interval", "--at, --every-minutes, --every-tool-uses or --every-tasks")
         if command.block_condition and command.block_condition not in self.conditions.names():

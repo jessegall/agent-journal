@@ -11,12 +11,10 @@ class MessageTargets:
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def selected(self, environment_id: int, agent_id: int | None) -> Agent | None:
+    def selected(self, agent_id: int | None) -> Agent | None:
         if agent_id is None:
             return MainAgentFinder.newest(self.queries)
         agent = self.queries.query(Agent).find(agent_id)
-        if agent.environment_id != environment_id:
-            raise Refusal("a message target must belong to its environment", "select an agent in this environment")
         if agent.ended_at is not None:
             raise Refusal("a message target must be running", "select a running agent")
         return agent

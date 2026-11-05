@@ -28,7 +28,7 @@ class NextPlanTasks:
         first = min(free_tasks, key=lambda place: (-place.priority, place.task_id), default=None)
         return first.task_id if first is not None else None
 
-    def environment_task(self, environment_id: int) -> Task | None:
+    def environment_task(self) -> Task | None:
         plans = self.queries.query(Plan).filter(state=PlanState.STARTED).ordered("started_at", "id").all_rows()
         for plan in tuple(plans):
             following = self.following(plan.id)

@@ -53,7 +53,7 @@ class ProcessQuery(Query[Process]):
         cutoff = Timestamp(present.value - timedelta(seconds=seconds))
         return self.matching(LongRunCandidate(cutoff.text))
 
-    def has_moved_run(self, environment_id: int, text: str, seconds: int = 0) -> bool:
+    def has_moved_run(self, text: str, seconds: int = 0) -> bool:
         conditions: list[Condition] = [Equal("text", text)]
         if seconds > 0:
             conditions.append(PartRunSeconds(seconds))

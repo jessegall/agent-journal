@@ -25,4 +25,4 @@ class StopLineTypingListener(CommitListener[StopAllowed]):
         agent_id = event.row.agent_id
         line = self.queries.query(AgentLine).filter(agent_id=agent_id, state=AgentLineState.WAITING).matching(WakingLines(TERMINAL_SOURCES)).oldest().first()
         if line is not None:
-            self.typing.enter_line(line, Actor(logged.actor_id, ActorType.AGENT), logged.environment_id)
+            self.typing.enter_line(line, Actor(logged.actor_id, ActorType.AGENT))

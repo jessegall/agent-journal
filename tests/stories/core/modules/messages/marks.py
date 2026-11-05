@@ -27,7 +27,7 @@ def test_a_users_message_read_by_the_agent_shows_no_mark_in_the_chat_its_ticks_s
 
 def test_a_failed_send_shows_no_mark(new_story):
     story = new_story(fixture=UnansweredMessage)
-    story.expect_refusal('message send "no environment"', "a message is sent in an environment", actor=story.user)
+    story.expect_refusal('message send "no environment"', "a message needs an environment", actor=story.user)
     story.run_listeners()
     expect_mark_count(story, 0)
 

@@ -1,5 +1,4 @@
 from core.base.change.logged_event import LoggedEvent
-from core.modules.agents.models.agent import Agent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.skills.models.agent_skill import AgentSkill
 from core.modules.skills.models.enums.skill_mark_type import SkillMarkType
@@ -17,5 +16,4 @@ class SkillLoadedMarkListener(MarkListener[Moved[AgentSkill]]):
 
     def handle(self, event: Moved[AgentSkill], logged: LoggedEvent) -> None:
         row = event.row
-        environment_id = self.queries.query(Agent).find(row.agent_id).environment_id
         self.show(logged, SkillMarkType.SKILL, SkillMarkVariant.LOADED, f"Skill {row.skill} loaded", row.agent_id, "agent_skill", row.id)

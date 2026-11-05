@@ -34,12 +34,12 @@ class WorkerReuseRule(DriverRule):
         for part in shell.parts if shell is not None else ():
             if part.arguments[:2] != DISPATCH_ARGUMENTS or NEW_WORKER_FLAG in part.arguments:
                 continue
-            worker_id = self.worker_with_files(part, hook.environment_id)
+            worker_id = self.worker_with_files(part)
             if worker_id is not None:
                 return RuleAnswer.refused(WORKER_REUSE.nudge(worker=worker_id))
         return RuleAnswer.allowed()
 
-    def worker_with_files(self, part: Part, environment_id: int) -> int | None:
+    def worker_with_files(self, part: Part) -> int | None:
         task_ids = [int(argument) for argument in part.arguments[2:] if argument.isdigit()]
         paths = PathMentions.found(" ".join(task.brief for task in self.queries.query(Task).find_many(task_ids)))
         if not paths:

@@ -41,7 +41,7 @@ class TypedLineListener(CommitListener[Created[AgentLine]]):
         if self.has_entered_repeat(line):
             self.bus.run(EnterAgentLine(line.id), actor)
         else:
-            self.typing.enter_line(line, actor, logged.environment_id)
+            self.typing.enter_line(line, actor)
 
     def has_entered_repeat(self, line: AgentLine) -> bool:
         if line.repeats_without_hook:

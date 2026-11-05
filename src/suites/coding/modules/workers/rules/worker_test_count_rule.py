@@ -31,7 +31,7 @@ class WorkerTestCountRule(DriverRule):
         for part in tool.shell.parts:
             if part.classification.category is not CommandCategory.TEST_RUN or ASKING_FLAGS.intersection(part.arguments):
                 continue
-            count = self.listings.previous_count(hook.environment_id, part.text)
+            count = self.listings.previous_count(part.text)
             if count > limit:
                 return RuleAnswer.refused(TEST_LIMIT_REFUSAL.nudge(count=count, limit=limit))
         return RuleAnswer.allowed()

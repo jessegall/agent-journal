@@ -60,7 +60,7 @@ class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
         if not agents:
             raise Refusal("only an agent runs a sequence", "the agent runs journal sequence run <n>")
         sequence = self.queries.query(Sequence).find(command.sequence_id)
-        run = self.repository.save(SequenceRun(environment_id=agents[0].environment_id, agent_id=context.actor.id, sequence_id=sequence.id, subject_id=command.subject_id), context)
+        run = self.repository.save(SequenceRun(agent_id=context.actor.id, sequence_id=sequence.id, subject_id=command.subject_id), context)
         return SequenceLine(StepLine.text(sequence, run))
 
     def require_checks(self, sequence: Sequence, current: SequenceRun) -> None:

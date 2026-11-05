@@ -22,19 +22,19 @@ class LineTyping:
     def __init__(self, queries: Queries, typing: TerminalTyping, bus: Bus, hook_calls: HookCallQuery, clock: Clock) -> None:
         self.queries, self.typing, self.bus, self.hook_calls, self.clock = queries, typing, bus, hook_calls, clock
 
-    def enter_line(self, line: AgentLine, actor: Actor, environment_id: int | None) -> bool:
+    def enter_line(self, line: AgentLine, actor: Actor) -> bool:
         if self.hook_calls.is_compacting(line.agent_id, self.clock.timestamp()):
             return False
         try:
-            self.bus.run(ClaimAgentLine(line.id), actor, environment_id=environment_id)
+            self.bus.run(ClaimAgentLine(line.id), actor)
         except Refusal:
             return False
         try:
             self.typing.type_line(self.queries.query(Agent).find(line.agent_id).terminal_id, f"{TERMINAL_PREFIX}{line.text}")
         except Exception as error:
-            self.bus.run(ReleaseAgentLine(line.id), actor, environment_id=environment_id)
+            self.bus.run(ReleaseAgentLine(line.id), actor)
             if isinstance(error, Refusal):
                 return False
             raise
-        self.bus.run(EnterAgentLine(line.id), actor, environment_id=environment_id)
+        self.bus.run(EnterAgentLine(line.id), actor)
         return True

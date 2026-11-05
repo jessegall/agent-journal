@@ -29,5 +29,5 @@ class RecordFileEditHandler(Handler[RecordFileEdit, FileEdit]):
 
     def handle(self, command: RecordFileEdit, context: Context) -> FileEdit:
         return self.repository.save(FileEdit(agent_id=command.agent_id, creator_id=context.actor.id,
-                                             path=self.relative_path(command.diff.path, command.environment_id), added=command.diff.lines_added, removed=command.diff.lines_removed, rows=json.dumps(command.rows),
+                                             path=self.relative_path(command.diff.path, context.environment_id), added=command.diff.lines_added, removed=command.diff.lines_removed, rows=json.dumps(command.rows),
                                              edit_type=EDITED if command.diff.existed else NEW_FILE), context)

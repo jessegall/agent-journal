@@ -41,7 +41,7 @@ class AddReaderHandler(Handler[AddReader, Reader]):
             if not reader.commands or not (reader.lines_pattern or reader.script):
                 raise Refusal(f"reader {reader.name} needs --commands and --lines or --script", "journal reader add <name> --commands <pattern> --lines <pattern>")
             if request is not None:
-                scope = ReaderSampleScope(request.environment_id, request.creator_id, request.command)
+                scope = ReaderSampleScope(request.creator_id, request.command)
                 judgement = self.judge.judged_command(reader, request.category, scope)
                 if not judgement.is_proper:
                     raise Refusal(f"reader {reader.name} missed {'; '.join((*judgement.missing, *judgement.missed))}", "try the patterns on the named output")

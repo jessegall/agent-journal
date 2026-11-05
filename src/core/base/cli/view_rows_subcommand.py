@@ -11,12 +11,11 @@ from core.base.query.queries import Queries
 from core.base.query.query import PAGE_SIZE_ROWS, Query
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
 
 
 class ViewRowsSubcommand(ReadSubcommand[ViewRowPage]):
     """The read of a window that lists a view: rows newest first, by id, only the columns of the view, for the
-    filters it names, in the caller's environment unless it names one; --after-id and --before-id page by id.
+    filters it names; --after-id and --before-id page by id.
     """
 
     model: ClassVar[type[ViewModel]]
@@ -34,9 +33,6 @@ class ViewRowsSubcommand(ReadSubcommand[ViewRowPage]):
 
     def read(self, arguments: Namespace, caller: Caller) -> ViewRowPage:
         given = {column: getattr(arguments, column) for column in self.filters if getattr(arguments, column) is not None}
-        environment_missing = ENVIRONMENT_COLUMN in self.filters and ENVIRONMENT_COLUMN not in given
-        if environment_missing and caller.environment_id is not None:
-            given[ENVIRONMENT_COLUMN] = caller.environment_id
         query = self.filtered(self.queries.query(self.model).filter(**given), arguments)
         if arguments.after_id is not None:
             query = query.matching(Greater("id", arguments.after_id))

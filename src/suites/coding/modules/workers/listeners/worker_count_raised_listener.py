@@ -5,6 +5,8 @@ from core.base.model.model import Model
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
+from core.base.scope.environment_scope import EnvironmentScope
+from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.support.nudger import Nudger
@@ -25,10 +27,10 @@ class WorkerCountRaisedListener(SaveListener[Changed[Setting]]):
     limit, how many workers run and how many open tasks are not delegated, so it hands out more."""
 
     name = "workers.limit-raised"
-    disabled_scopes = [ActorScope]
+    disabled_scopes = [ActorScope, EnvironmentScope]
 
-    def __init__(self, queries: Queries, nudger: Nudger, worktrees: WorktreeQuery, settings: SettingValues) -> None:
-        self.queries, self.nudger, self.worktrees, self.settings = queries, nudger, worktrees, settings
+    def __init__(self, queries: Queries, nudger: Nudger, worktrees: WorktreeQuery, settings: SettingValues, scopes: Scopes) -> None:
+        self.queries, self.nudger, self.worktrees, self.settings, self.scopes = queries, nudger, worktrees, settings, scopes
 
     def handle(self, event: Changed[Setting], context: Context) -> None:
         if isinstance(event, Deleted):
@@ -40,7 +42,8 @@ class WorkerCountRaisedListener(SaveListener[Changed[Setting]]):
         if limit <= self.previous_limit(event.old_row, setting):
             return
         for agent in self.main_agents(setting):
-            self.nudger.send(agent.id, WORKER_LIMIT_RAISED, self.name, context, limit=limit, workers=len(self.worktrees.environment_worktrees()), count=self.undelegated(agent.environment_id))
+            with self.scopes.opened(None, agent.environment_id):
+                self.nudger.send(agent.id, WORKER_LIMIT_RAISED, self.name, context, limit=limit, workers=len(self.worktrees.open_worktrees()), count=self.undelegated())
 
     # The limit the row replaces: its own old value, else what an environment's row falls back to, the project's.
     def previous_limit(self, old: Model | None, setting: Setting) -> int:
@@ -51,9 +54,7 @@ class WorkerCountRaisedListener(SaveListener[Changed[Setting]]):
         return self.settings.number(WORKER_LIMIT, None)
 
     def main_agents(self, setting: Setting) -> tuple[Agent, ...]:
-        if setting.environment_id is None:
-            return MainAgentFinder.all_running(self.queries)
-        return MainAgentFinder.rows(self.queries)
+        return tuple(agent for agent in MainAgentFinder.all_running(self.queries) if setting.environment_id in (None, agent.environment_id))
 
-    def undelegated(self, environment_id: int) -> int:
+    def undelegated(self) -> int:
         return self.queries.query(Task).filter(state=TaskState.OPEN).matching(IsNull("delegated_to")).count()

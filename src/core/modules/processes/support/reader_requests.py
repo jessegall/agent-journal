@@ -39,16 +39,16 @@ class ReaderRequests:
                 and self.settings.flag(ProcessSetting.READERS_FORCED, agent.environment_id))
 
     def request(self, process: Process, spec: PartSpec, reader: Reader | None, context: Context) -> int | None:
-        if not self.demands.needs_reader(process.environment_id, spec):
+        if not self.demands.needs_reader(spec):
             return None
-        scope = ReaderSampleScope(process.environment_id, process.agent_id, spec.command or spec.text)
+        scope = ReaderSampleScope(process.agent_id, spec.command or spec.text)
         reason = self.demands.reason(spec, reader, scope)
         if not reason:
             return None
         existing = self.open_row(scope)
         if existing is not None:
             return existing.id
-        samples = self.parts.kept_samples(["*"], process.environment_id).matching(scope).limited(5)
+        samples = self.parts.kept_samples(["*"]).matching(scope).limited(5)
         sample_id = next((sample.process_id for sample in samples if sample.exit_code != 2 or not self.judge.is_rejected(
             sample.exit_code, self.judge.output_text(sample.process_id, sample.position))), process.id)
         return self.open_request(process, spec, reason, sample_id, context)
@@ -67,9 +67,9 @@ class ReaderRequests:
         if reader is None:
             return
         spec = PartSpec(part.text, part.program, category=part.category, command=part.command)
-        if not self.demands.needs_reader(process.environment_id, spec):
+        if not self.demands.needs_reader(spec):
             return
-        scope = ReaderSampleScope(process.environment_id, process.agent_id, spec.command or spec.text)
+        scope = ReaderSampleScope(process.agent_id, spec.command or spec.text)
         reason = self.demands.reason(spec, reader, scope)
         if reason:
             self.open_request(process, spec, reason, process.id, context)
@@ -85,7 +85,7 @@ class ReaderRequests:
     def open_request(self, process: Process, spec: PartSpec, reason: str, sample_process_id: int, context: Context) -> int:
         key = self.command_key(spec)
         command = spec.command or spec.text
-        existing = self.open_row(ReaderSampleScope(process.environment_id, process.agent_id, command))
+        existing = self.open_row(ReaderSampleScope(process.agent_id, command))
         if existing is not None:
             return existing.id
         current_time = self.clock.timestamp()

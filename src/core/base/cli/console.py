@@ -9,6 +9,7 @@ from core.base.caller.caller import Caller
 from core.base.change.event_log import EventLog
 from core.base.change.touched_rows import TouchedRows
 from core.base.subcommand.output import Output
+from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.subcommand.subcommand import Subcommand
 from core.base.cli.line_parser import LineParser
 from core.base.cli.shell_aliases import ShellAliases
@@ -108,7 +109,7 @@ class Console:
         caller = replace(caller, environment_id=environment_id)
         if not isinstance(subcommand, Subcommand):
             with self.scopes.read_scope(subcommand.disabled_scopes, caller.read_actor_id, environment_id):
-                value = subcommand.read(arguments, caller)
+                value = subcommand.read(arguments, self.scoped_caller(subcommand, caller))
             subcommand.write_output(value, output)
             return SUCCESS_CODE
         self.commit_listeners.run()
@@ -124,6 +125,12 @@ class Console:
         subcommand.write_output(value, output)
         self.run_commit_listeners(argv)
         return SUCCESS_CODE
+
+    def scoped_caller(self, subcommand: ReadSubcommand[object], caller: Caller) -> Caller:
+        environment_id = self.scopes.environment_id or caller.environment_id
+        if subcommand.environment_refusal and environment_id is None:
+            raise Refusal(subcommand.environment_refusal, "name it with --environment")
+        return replace(caller, environment_id=environment_id)
 
     def run_commit_listeners(self, argv: list[str]) -> None:
         try:

@@ -18,13 +18,6 @@ class OutputAccess:
             return None
         return self.queries.query(Agent).find(actor.id)
 
-    def environment(self, actor: Actor, fallback: int | None) -> int:
-        agent = self.agent(actor)
-        environment_id = agent.environment_id if agent is not None else fallback
-        if environment_id is None:
-            raise Refusal("outputs are read in an environment", "name one with --environment")
-        return environment_id
-
     def has_private_outputs(self, actor: Actor) -> bool:
         agent = self.agent(actor)
         return agent is not None and agent.role in self.suites.agent_policy(agent.environment_id).private_output_roles

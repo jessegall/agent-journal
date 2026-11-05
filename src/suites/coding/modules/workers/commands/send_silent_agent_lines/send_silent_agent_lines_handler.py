@@ -58,11 +58,11 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         tasks = tuple(self.queries.query(Task).matching(Among("state", [TaskState.OPEN, TaskState.STARTED])).all_rows())
         working = {agent_id for task in tasks for agent_id in [task.holder_id, task.delegated_to] if agent_id is not None}
         workers = {row.agent_id for row in self.queries.query(Worktree).all_rows()}
-        excluded = self.waiting(agent_ids, command.environment_id, context)
+        excluded = self.waiting(agent_ids, context)
         lines: dict[int, list[AgentLine]] = defaultdict(list)
         for line in self.queries.query(AgentLine).matching(Among("agent_id", agent_ids)).filter(source=SILENT_AGENT_SOURCE).oldest().all_rows():
             lines[line.agent_id].append(line)
-        span = self.settings.minutes(SILENT_AGENT_MINUTES, command.environment_id)
+        span = self.settings.minutes(SILENT_AGENT_MINUTES, context.environment_id)
         for agent in agents:
             has_work = agent.id in working or (agent.role == CodingAgentRole.MAIN and bool(tasks))
             activity = activities[agent.id]
@@ -81,7 +81,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
             declaration = SILENT_WORKER_CONTINUE if agent.id in workers else SILENT_AGENT_CONTINUE
             self.nudger.send(agent.id, declaration, SILENT_AGENT_SOURCE, context)
 
-    def waiting(self, agent_ids: tuple[int, ...], environment_id: int, context: Context) -> set[int]:
+    def waiting(self, agent_ids: tuple[int, ...], context: Context) -> set[int]:
         excluded = {row.agent_id for row in self.processes.running().all_rows()}
         excluded.update(row.agent_id for row in self.queries.query(Wait).matching(Among("agent_id", agent_ids)).filter(state=WaitState.OPEN).all_rows())
         excluded.update(row.creator_id for row in self.queries.query(Proof).matching(Among("creator_id", agent_ids)).matching(Among("state", TEST_WAITING_STATES)).all_rows())

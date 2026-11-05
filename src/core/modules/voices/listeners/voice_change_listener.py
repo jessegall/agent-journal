@@ -1,6 +1,7 @@
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries
+from core.base.scope.environment_scope import EnvironmentScope
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.settings.models.setting import Setting
 from core.modules.voices.support.voice_lines import VoiceLines
@@ -16,6 +17,7 @@ class VoiceChangeListener(SaveListener[Changed[Setting]]):
     in from its next chat line."""
 
     name = "voices.voice-changed"
+    disabled_scopes = [EnvironmentScope]
 
     def __init__(self, queries: Queries, lines: VoiceLines) -> None:
         self.queries, self.lines = queries, lines

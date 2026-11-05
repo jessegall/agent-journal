@@ -7,7 +7,6 @@ from core.base.query.conditions.among import Among
 from core.base.query.conditions.equal import Equal
 from core.base.query.conditions.contains_every import ContainsEvery
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.usage.conditions.agent_activity import AgentActivity

@@ -1,5 +1,4 @@
 from core.base.change.logged_event import LoggedEvent
-from core.modules.agents.models.agent import Agent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.models.enums.required_command_mark_type import RequiredCommandMarkType
@@ -19,4 +18,4 @@ class AgentBlockSkipMarkListener(MarkListener[Changed[AgentBlock]]):
         if SKIP_FIELD not in logged.data or not logged.data[SKIP_FIELD][1]:
             return
         block = event.row
-        self.show(logged, RequiredCommandMarkType.SKIPPED, RequiredCommandMarkVariant.SKIPPED, f"Skipped {block.condition_text}: {block.skip_reason}", self.queries.query(Agent).find(block.agent_id).environment_id, block.agent_id)
+        self.show(logged, RequiredCommandMarkType.SKIPPED, RequiredCommandMarkVariant.SKIPPED, f"Skipped {block.condition_text}: {block.skip_reason}", block.agent_id)

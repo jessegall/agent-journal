@@ -34,7 +34,7 @@ class ReaderRequestCompleteListener(SaveListener[Changed[Reader]]):
             return
         reader = event.row
         for request in tuple(self.requests.open().all_rows()):
-            scope = ReaderSampleScope(request.environment_id, request.creator_id, request.command)
+            scope = ReaderSampleScope(request.creator_id, request.command)
             if not ReaderSelection.reads_command(reader, request.command, request.category) or not self.judge.judged_command(reader, request.category, scope).is_proper:
                 continue
             self.repository.save(replace(request, reader_id=reader.id, completed_at=self.clock.timestamp()), context)

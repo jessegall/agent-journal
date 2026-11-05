@@ -23,5 +23,5 @@ class AgentChatGuard(Guard[Changed[ChatMark]]):
         mark = event.row
         if mark.agent_id is None:
             return
-        if self.queries.query(Agent).find(mark.agent_id).environment_id != mark.environment_id:
+        if not self.queries.query(Agent).filter(id=mark.agent_id).exists():
             raise Refusal(f"agent {mark.agent_id} works in another environment than the mark's", "a mark for an agent is shown in its own environment's chat")

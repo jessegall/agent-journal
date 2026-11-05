@@ -7,7 +7,6 @@ from core.base.query.conditions.equal import Equal
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
@@ -38,9 +37,8 @@ class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
         self.queries, self.tasks = queries, tasks
 
     def read(self, arguments: Namespace, caller: Caller) -> BarFacts:
-        environment_id = caller.environment_id
         agents = self.queries.query(Agent).matching(IsNull("ended_at"))
-        helpers = agents.matching(Equal("role", AgentRole.MAIN, negated=True)).page(1, PAGE_ROWS).total + self.ended_delegates(environment_id)
+        helpers = agents.matching(Equal("role", AgentRole.MAIN, negated=True)).page(1, PAGE_ROWS).total + self.ended_delegates()
         tasks =self.tasks.unclosed().page(1, PAGE_ROWS).total
         waiting = self.queries.query(Question).filter(state=QuestionState.OPEN).page(1, PAGE_ROWS).total
         mains = MainAgentFinder.rows(self.queries)
@@ -51,7 +49,7 @@ class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
         return BarFacts(helpers, tasks, waiting, started_tasks[0].id if started_tasks else None, started_tasks[0].title if started_tasks else "", jobs, processes,
                         plans[0].plan_id if plans else None)
 
-    def ended_delegates(self, environment_id: int) -> int:
+    def ended_delegates(self) -> int:
         holders = {task.delegated_to for task in self.tasks.unclosed().all_rows() if task.state in UNFINISHED_WORK_STATES and task.delegated_to is not None}
         return self.queries.query(Agent).matching(Among("id", sorted(holders))).matching(Greater("ended_at", "")).count()
 

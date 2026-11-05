@@ -50,10 +50,10 @@ class InactiveHelperRule(DriverRule):
         inactive = [helper for helper in self.helpers(hook.agent_id) if self.is_inactive(helper, activities[helper.id], hook, span)]
         if not inactive:
             return RuleAnswer.allowed()
-        notes = self.queue_notes(inactive, hook.environment_id)
+        notes = self.queue_notes(inactive)
         return RuleAnswer.with_nudges(*(HELPER_INACTIVE.nudge(name=helper.role, agent=helper.id, minutes=span.whole_minutes, queue=notes[helper.id], action=f"journal worker status {helper.id}" if helper.role == AgentRole.WORKER else "check on it") for helper in inactive))
 
-    def queue_notes(self, helpers: Sequence[Agent], environment_id: int) -> dict[int, str]:
+    def queue_notes(self, helpers: Sequence[Agent]) -> dict[int, str]:
         notes = {helper.id: "" for helper in helpers}
         queue = self.processes.running().filter(is_queue_run=True).oldest()
         page = queue.page(1, max(1, queue.count()))

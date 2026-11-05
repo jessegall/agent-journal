@@ -36,7 +36,7 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Changed[Process] | Create
 
     def handle(self, event: Moved[Proof] | Changed[Process] | Created[AffectedTest] | Updated[AffectedTest], logged: LoggedEvent) -> None:
         if logged.event == QUEUED_EVENT:
-            self.start_next(self.queries.query(Worktree).find(event.row.worktree_id).environment_id, logged)
+            self.start_next(logged)
             return
         if logged.event == RUN_EVENT:
             self.launched(event.row)
@@ -46,14 +46,14 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Changed[Process] | Create
             return
         selected = event.row
         if logged.event == "affected_test.create":
-            self.start_next(self.queries.query(Worktree).find(selected.worktree_id).environment_id, logged)
+            self.start_next(logged)
             return
         if selected.state not in (AffectedTestState.PICKING, AffectedTestState.TESTING) or selected.process_id is None:
             return
         process = self.queries.query(Process).find(selected.process_id)
         self.launch.start(process.id, process.line, process.folder, self.queries.query(Agent).find(process.agent_id).session)
 
-    def start_next(self, environment_id: int, logged: LoggedEvent) -> None:
+    def start_next(self, logged: LoggedEvent) -> None:
         self.bus.run(StartWorkerTests(), Actor.core(), cause_id=logged.id)
 
     def launched(self, proof: Proof) -> None:
@@ -69,7 +69,7 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Changed[Process] | Create
         if proofs:
             passed = process.state is ProcessState.FINISHED and process.exit_code == 0
             self.bus.run(RecordWorkerTest(proofs[0].id, passed, f"failed: journal output read of process {process.id}"), Actor.core(), cause_id=logged.id)
-            self.start_next(process.environment_id, logged)
+            self.start_next(logged)
         selected = self.queries.query(AffectedTest).filter(process_id=process.id).matching(Among("state", (AffectedTestState.PICKING, AffectedTestState.TESTING))).limited(1)
         if selected:
             passed = process.state is ProcessState.FINISHED and process.exit_code == 0

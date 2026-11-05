@@ -7,7 +7,6 @@ from core.base.driver.project_paths import ProjectPaths
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
-from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.drivers.models.hook_call import HookCall
@@ -46,11 +45,10 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
     def read(self, arguments: Namespace, caller: Caller) -> ToolFacts:
         if arguments.agent is not None:
             return self.agent_tool(arguments.agent, ())
-        environment_id = caller.environment_id
         mains = MainAgentFinder.rows(self.queries)
         if not mains:
             return ToolFacts()
-        return self.agent_tool(mains[0].id, self.open_question_lines(environment_id, mains[0].id))
+        return self.agent_tool(mains[0].id, self.open_question_lines(mains[0].id))
 
     def agent_tool(self, agent_id: int, question_lines: Sequence[str]) -> ToolFacts:
         calls = self.queries.query(HookCall).filter(agent_id=agent_id).matching(Among("hook", TURN_HOOKS)).newest().limited(1)
@@ -79,7 +77,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         kept = self.outputs.process(process.id).limited(1)
         return kept[0].title if kept and kept[0].title else process.line
 
-    def open_question_lines(self, environment_id: int, agent_id: int) -> list[str]:
+    def open_question_lines(self, agent_id: int) -> list[str]:
         open_questions = self.queries.query(Question).filter(agent_id=agent_id, state=QuestionState.OPEN).oldest().page(1, SHOWN_RUNS)
         if open_questions.total > 1:
             return [f"your answers to {open_questions.total} questions"]

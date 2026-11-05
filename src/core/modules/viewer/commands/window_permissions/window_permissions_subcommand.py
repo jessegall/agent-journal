@@ -26,10 +26,9 @@ class WindowPermissionsSubcommand(ReadSubcommand[WindowAccess]):
     def read(self, arguments: Namespace, caller: Caller) -> WindowAccess:
         if not self.registry.has_window(arguments.window):
             raise Refusal(f"no installed module declares the window {arguments.window}", "journal window permissions needs a window of an installed module")
-        environment_id = caller.environment_id
         window = self.registry.window(arguments.window)
         person_id = caller.actor.id
-        reads = self.allowances.allowed_lines(person_id, environment_id, window.name, WindowPermissionType.READS)
-        runs = self.allowances.allowed_lines(person_id, environment_id, window.name, WindowPermissionType.RUNS)
+        reads = self.allowances.allowed_lines(person_id, window.name, WindowPermissionType.READS)
+        runs = self.allowances.allowed_lines(person_id, window.name, WindowPermissionType.RUNS)
         return WindowAccess(window.name, ", ".join(reads), ", ".join(line for line in window.reads if line not in reads), ", ".join(runs),
-                            ", ".join(line for line in window.runs if line not in runs), self.allowances.component_trusted(person_id, environment_id, window.module))
+                            ", ".join(line for line in window.runs if line not in runs), self.allowances.component_trusted(person_id, window.module))

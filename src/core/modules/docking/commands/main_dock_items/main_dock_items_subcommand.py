@@ -4,7 +4,6 @@ from core.base.caller.caller import Caller
 from core.base.page import Page, is_page
 from core.base.query.queries import Queries
 from core.base.query.query import PAGE_SIZE_ROWS
-from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.docking.models.dock import Dock

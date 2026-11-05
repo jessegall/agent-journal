@@ -26,11 +26,11 @@ class WaitingMessageLines:
         self.queries, self.hook_calls, self.bus = queries, hook_calls, bus
         self.messages = messages
 
-    def oldest_unread(self, environment_id: int, agent_id: int) -> Message | None:
+    def oldest_unread(self, agent_id: int) -> Message | None:
         return self.messages.unread(agent_id).oldest().first()
 
-    def waking_message(self, environment_id: int, agent_id: int) -> Message | None:
-        message = self.oldest_unread(environment_id, agent_id)
+    def waking_message(self, agent_id: int) -> Message | None:
+        message = self.oldest_unread(agent_id)
         if message is None or message.delivered_at is None:
             return message
         call = self.hook_calls.newest_agent_hook(agent_id)

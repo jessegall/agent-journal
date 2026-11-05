@@ -37,5 +37,5 @@ class OutputQuery(Query[Output]):
         running = Select("processes").matching(Equal("agent_id", agent_id)).matching(Among("state", OPEN)).column("id")
         return self.matching(SubqueryMatch("process_id", running)).matching(Greater("title", ""))
 
-    def matching_part(self, environment_id: int, text: str) -> Self:
-        return self.matching(PartOutput(environment_id, text))
+    def matching_part(self, text: str) -> Self:
+        return self.matching(PartOutput(self.scope_environment_id, text))

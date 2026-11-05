@@ -14,5 +14,4 @@ class GitOverviewCommitsSubcommand(GitPageSubcommand):
     name = "commits"
 
     def read(self, arguments: Namespace, caller: Caller) -> GitRows:
-        environment_id = caller.environment_id
-        return self.git.commits(environment_id, arguments.skip, arguments.limit)
+        return self.git.commits(arguments.skip, arguments.limit)

@@ -4,6 +4,7 @@ from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
+from core.base.scope.environment_scope import EnvironmentScope
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.commands.remove_dock_item.remove_dock_item import RemoveDockItem
 from core.modules.docking.queries.dock_item_query import DockItemQuery
@@ -21,19 +22,19 @@ class DumpDockListener(CommitListener[Changed[Dump]]):
     """A dump is docked above the chat when it is made and undocked when it closes."""
 
     name = "dumps.dock"
-    disabled_scopes = [ActorScope]
+    disabled_scopes = [ActorScope, EnvironmentScope]
 
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, items: DockItemQuery) -> None:
         self.bus, self.actors, self.queries, self.items = bus, actors, queries, items
+
+    def docks_of_the_event(self, logged: LoggedEvent) -> list[Dock]:
+        return [dock for dock in self.queries.query(Dock).all_rows() if logged.environment_id in (None, dock.environment_id)]
 
     def handle(self, event: Changed[Dump], logged: LoggedEvent) -> None:
         dump = event.row
         actor = self.actors.actor(DUMPS_MODULE)
         if isinstance(event, Created):
-            docks = self.queries.query(Dock)
-            if logged.environment_id is not None:
-                docks = docks
-            for dock in docks.all_rows():
+            for dock in self.docks_of_the_event(logged):
                 self.bus.run(AddDockItem(DumpDockType.DUMP.value, "dump", dump.id), actor, cause_id=logged.id, environment_id=dock.environment_id)
         if dump.closed_at is not None:
             for item in self.items.type_items(DumpDockType.DUMP.value).row_items("dump", dump.id).all_rows():

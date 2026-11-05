@@ -4,6 +4,7 @@ from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
+from core.base.scope.environment_scope import EnvironmentScope
 from core.modules.agents.models.agent import Agent
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.commands.remove_dock_item.remove_dock_item import RemoveDockItem
@@ -22,7 +23,7 @@ class RuleDockListener(CommitListener[Changed[ProjectRule]]):
     """A rule an agent proposed docks above the chat of its environment until a person approves or denies it."""
 
     name = "project_rules.proposed-dock"
-    disabled_scopes = [ActorScope]
+    disabled_scopes = [ActorScope, EnvironmentScope]
 
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, items: DockItemQuery) -> None:
         self.bus, self.actors, self.queries, self.items = bus, actors, queries, items

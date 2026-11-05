@@ -16,8 +16,7 @@ class GitOverviewCurrentSubcommand(ReadSubcommand[str]):
         self.git = git
 
     def read(self, arguments: Namespace, caller: Caller) -> str:
-        environment_id = caller.environment_id
-        return self.git.git_output(environment_id, "branch", "--show-current").strip()
+        return self.git.git_output("branch", "--show-current").strip()
 
     def write_output(self, value: object, output: Output) -> None:
         output.write(str(value), {"branch": value})

@@ -18,5 +18,5 @@ class ProcessPartQuery(Query[ProcessPart]):
     def process(self, process_id: int) -> Self:
         return self.filter(process_id=process_id).ordered("position")
 
-    def kept_samples(self, patterns: Sequence[str], environment_id: int | None = None) -> Self:
-        return self.matching(KeptOutputPart(environment_id)).matching(CommandMatches(patterns)).newest()
+    def kept_samples(self, patterns: Sequence[str]) -> Self:
+        return self.matching(KeptOutputPart(self.scope_environment_id)).matching(CommandMatches(patterns)).newest()

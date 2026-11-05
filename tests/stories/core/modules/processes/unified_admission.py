@@ -49,7 +49,7 @@ def test_main_run_is_admitted_even_when_queue_is_halted(new_story):
 def test_plain_journal_command_is_admitted_and_absent_from_queue(new_story):
     story = new_story(fixture=AdmissionQueue)
     process = start_process(story, "journal task list", limit_seconds=0)
-    page = json.loads(story.run("queue list --environment-id 1 --json", actor=story.user).output_text)
+    page = json.loads(story.run("queue list --environment 1 --json", actor=story.user).output_text)
     story.expect_rows(story.container.get(OutputFolder).has_slot(process.id), page["running"] == [])
 
 

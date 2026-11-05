@@ -38,4 +38,4 @@ def test_permanent_memories_become_rules_once_and_leave_the_memories(new_story):
 
 def test_a_memory_for_no_environment_cannot_be_made(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_refusal('memory make "Use cents"', "a memory belongs to one environment")
+    story.expect_refusal('memory make "Use cents"', "a memory needs an environment")

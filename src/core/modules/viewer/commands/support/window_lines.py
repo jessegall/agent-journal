@@ -9,6 +9,7 @@ from core.base.viewer.person_lines import PERSON_LINES
 from core.modules.viewer.commands.support.window_allowances import WindowAllowances
 from core.modules.viewer.models.enums.window_permission_type import WindowPermissionType
 from core.modules.viewer.commands.support.window_refusal import WindowRefusal
+from core.base.scope.scopes import Scopes
 from core.modules.drivers.support.active_modules import ActiveModules
 
 WINDOW_SETTING_LINES = ("window save-setting", "window setting")
@@ -23,18 +24,22 @@ class WindowLines:
     raw words."""
 
     def __init__(self, registry: Registry, line_parser: LineParser, flags: WriteFlags, allowances: WindowAllowances, environment_names: EnvironmentNames,
-                 active: ActiveModules) -> None:
+                 active: ActiveModules, scopes: Scopes) -> None:
         self.registry, self.line_parser, self.flags = registry, line_parser, flags
         self.allowances, self.environment_names = allowances, environment_names
-        self.active = active
+        self.active, self.scopes = active, scopes
 
     def check(self, window_name: str, argv: list[str], person: Actor, environment: str) -> None:
+        with self.scopes.read_scope((), None, self.environment_names.environment_id(environment)):
+            self.checked(window_name, argv, person, environment)
+
+    def checked(self, window_name: str, argv: list[str], person: Actor, environment: str) -> None:
         dock = self.registry.dock(window_name)
         if dock is not None and not self.registry.has_window(window_name):
             if " ".join(argv[:2]) not in dock.reads:
                 raise WindowRefusal(f"the dock {window_name} does not declare {' '.join(argv[:2])}")
             parsed = self.parsed(window_name, argv)
-            if not dock.shipped and parsed.line not in self.allowances.allowed_lines(person.id, self.environment_names.environment_id(environment), window_name, WindowPermissionType.READS):
+            if not dock.shipped and parsed.line not in self.allowances.allowed_lines(person.id, window_name, WindowPermissionType.READS):
                 raise WindowRefusal(f"{window_name} may run {parsed.line} once you allow it")
             return
         if not self.registry.has_window(window_name):
@@ -45,8 +50,7 @@ class WindowLines:
             raise WindowRefusal(f"{window_name} may never run {subcommand_name}: only a person gives rights and changes settings")
         parsed = self.parsed(window_name, argv)
         skips_guard = not parsed.is_read and bool(self.flags.skipped_guards(parsed.arguments))
-        labelled_id = getattr(parsed.arguments, "environment_id", None)
-        if skips_guard or getattr(parsed.arguments, "environment", None) not in (None, environment) or (labelled_id is not None and labelled_id != self.environment_names.environment_id(environment)):
+        if skips_guard or getattr(parsed.arguments, "environment", None) not in (None, environment):
             raise WindowRefusal(f"{window_name} may not skip a guard or name another environment")
         if parsed.line in WINDOW_SETTING_LINES:
             if parsed.arguments.window != window_name:
@@ -61,7 +65,7 @@ class WindowLines:
             self.check_button(window_name, argv, parsed, person, environment)
             return
         permission_type = WindowPermissionType.READS if parsed.is_read else WindowPermissionType.RUNS
-        if not window.shipped and parsed.line not in self.allowances.allowed_lines(person.id, self.environment_names.environment_id(environment), window_name, permission_type):
+        if not window.shipped and parsed.line not in self.allowances.allowed_lines(person.id, window_name, permission_type):
             raise WindowRefusal(f"{window_name} may run {parsed.line} once you allow it")
 
     def check_button(self, window_name: str, argv: list[str], parsed: ParsedLine, person: Actor, environment: str) -> None:
@@ -71,7 +75,7 @@ class WindowLines:
             raise WindowRefusal(f"{window_name} does not declare {parsed.line}")
         if any(button.shipped for button in buttons):
             return
-        if not any(button.permission_line in self.allowances.allowed_lines(person.id, environment_id, button.subject, WindowPermissionType.RUNS) for button in buttons):
+        if not any(button.permission_line in self.allowances.allowed_lines(person.id, button.subject, WindowPermissionType.RUNS) for button in buttons):
             raise WindowRefusal(f"{buttons[0].module} may run {parsed.line} once you allow it")
 
     def parsed(self, window_name: str, argv: list[str]) -> ParsedLine:
