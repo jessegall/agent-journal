@@ -17,6 +17,17 @@ function reader(answers) {
     return {window, reads};
 }
 
+test("finished tasks carry both close time and id when asking for the next page", async () => {
+    const closed_at = "2026-11-05T10:00:00Z";
+    const row = (id) => ({...task(id, `Closed ${id}`), state: "cancelled", closed_at});
+    const {window, reads} = reader((line) => ({ok: true, value: {groups: [{state: "cancelled", total: 3, rows: line.includes("--before-id 2") ? [row(1)] : [row(3), row(2)]}]}}));
+    const element = await mounted(TaskGroups, window);
+    element.querySelector('[data-more="cancelled"]').click();
+    await settle();
+    expect(reads).toContain(`task board --state cancelled --before-closed-at ${closed_at} --before-id 2`);
+    expect([...element.querySelectorAll(".task-title")].map((title) => title.textContent)).toEqual(["Closed 3", "Closed 2", "Closed 1"]);
+});
+
 test("more tasks are asked for older than the oldest shown, without doubles, and a reload reads as many as were shown", async () => {
     let reloaded = false;
     const {window, reads} = reader((line) => {
