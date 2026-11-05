@@ -9,6 +9,7 @@ from core.modules.helpers.listeners.helper_ended_listener import HelperEndedList
 from core.modules.helpers.listeners.helper_job_mark_listener import HelperJobMarkListener
 from core.modules.helpers.commands.start_helper.start_helper_subcommand import StartHelperSubcommand
 from core.modules.helpers.listeners.helper_program_listener import HelperProgramListener
+from core.modules.helpers.rules.helper_report_rule import HelperReportRule
 from core.modules.helpers.rules.unstarted_helper_rule import UnstartedHelperRule
 from core.modules.helpers.support.helper_settings import HELPER_SETTINGS
 
@@ -25,4 +26,4 @@ class HelpersModule(Module):
     handlers = [StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler]
     subcommands = [StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand]
     listeners = [HelperProgramListener, HelperEndedListener, HelperJobMarkListener]
-    driver_rules = [UnstartedHelperRule]
+    driver_rules = [UnstartedHelperRule, HelperReportRule]

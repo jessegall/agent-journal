@@ -1,4 +1,8 @@
+from core.base.agent_role import AgentRole
 from core.base.clock import Clock
+from core.base.query.conditions.is_null import IsNull
+from core.base.query.queries import Queries
+from core.modules.agents.models.agent import Agent
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from suites.coding.support.coding_nudges import WORKER_TASK_STARTED
 from core.base.driver.agent_hook import AgentHook
@@ -14,15 +18,16 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOC
 
 
 class WorkerStopRule(DriverRule):
-    """A worker may stop with no task, while proof tests wait, while a run continues, or while a reader is
-    needed. Its run or tests restart it; otherwise it must deliver or report that it is stuck."""
+    """A worker may stop with no task, while proof tests wait, while a run or a helper of its own continues, or
+    while a reader is needed. Its run, tests or helper's report restart it; otherwise it must deliver or report
+    that it is stuck."""
 
     name = "workers.stop-once-delivered"
     hook = HookEventName.STOP
 
-    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock) -> None:
+    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock, queries: Queries) -> None:
         self.tasks, self.worktrees, self.proofs, self.processes = tasks, worktrees, proofs, processes
-        self.requests, self.clock = requests, clock
+        self.requests, self.clock, self.queries = requests, clock, queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         rows = self.tasks.holder(hook.agent_id).started().limited(1)
@@ -35,6 +40,9 @@ class WorkerStopRule(DriverRule):
             return RuleAnswer.with_nudges(*(WORKER_TASK_BLOCKED.nudge(worker=hook.agent_id, task=row.id) for row in blocked))
         if not rows and worktree is not None and self.proofs.tests_waiting(worktree.id):
             return RuleAnswer.allowed()
-        if self.processes.agent(hook.agent_id).running().exists():
+        if self.processes.agent(hook.agent_id).running().exists() or self.has_running_helper(hook.agent_id):
             return RuleAnswer.allowed()
         return RuleAnswer.refused(WORKER_TASK_STARTED.nudge(task=task.id))
+
+    def has_running_helper(self, agent_id: int) -> bool:
+        return self.queries.query(Agent).filter(parent_id=agent_id, role=AgentRole.HELPER).matching(IsNull("ended_at")).exists()

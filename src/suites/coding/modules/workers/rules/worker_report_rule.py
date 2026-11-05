@@ -3,9 +3,9 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
+from core.modules.agents.commands.record_parent_report.record_parent_report import RecordParentReport
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.tasks.queries.task_query import TaskQuery
-from suites.coding.modules.workers.commands.record_worker_report.record_worker_report import RecordWorkerReport
 
 REPORT_FIELD = "last_assistant_message"
 
@@ -27,4 +27,4 @@ class WorkerReportRule(DriverRule):
         main_agent_id = self.agents.find(hook.agent_id).parent_id
         if not text or main_agent_id is None or self.tasks.started_tasks(hook.agent_id) or self.tasks.next_delegated(hook.agent_id) is not None:
             return RuleAnswer.allowed()
-        return RuleAnswer.allowed().running(RecordWorkerReport(hook.agent_id, main_agent_id, text))
+        return RuleAnswer.allowed().running(RecordParentReport(hook.agent_id, main_agent_id, text))
