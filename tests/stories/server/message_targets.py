@@ -17,7 +17,7 @@ from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.messages.delivery import KeptTyping, READ_MESSAGE_HOOK
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
-from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.support.story_checks import expect_value
@@ -49,10 +49,18 @@ class TargetedSession(StoryFixture):
         story.helper = Actor(helper.id, ActorType.AGENT)
 
 
+class UserEnvironment(StoryFixture):
+    parent = MainEnvironment
+
+    def steps(self, story):
+        story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+
+
 @pytest.fixture
 def targeted_chat(new_story, monkeypatch):
     story = new_story(fixture=TargetedSession)
     TargetedSession().expect(story)
+    install_runner(story)
     typing = KeptTyping()
     monkeypatch.setattr(TerminalTyping, "type_line", typing.type_line)
     with server_story(story, listener_thread_started=False) as server:
@@ -112,8 +120,8 @@ def test_a_worker_reads_only_its_messages(targeted_chat):
     story = server.story
     send_target(server, cookie, story.worker, "Read the worker message")
     send_target(server, cookie, story.agent, "Read the main message")
-    story.expect_text("message unread", "Read the worker message", actor=story.worker)
-    story.expect_absent("message unread", "Read the main message", actor=story.worker)
+    story.expect_text("message unread --environment main", "Read the worker message", actor=story.worker)
+    story.expect_absent("message unread --environment main", "Read the main message", actor=story.worker)
     expect_absent_reply_line(story.hook("s-1", READ), "new message 1")
 
 
@@ -137,7 +145,7 @@ def test_main_chat_hides_worker_messages(targeted_chat):
 
 
 def test_a_message_without_a_running_target_waits_for_main(new_story):
-    story = new_story(fixture=UserJoined)
+    story = new_story(fixture=UserEnvironment)
     with server_story(story, listener_thread_started=False) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         message = server.viewer_line_value(cookie, {"window": "messages.chat", "environment": "main", "line": ["message", "send", "Read after main starts"]})
