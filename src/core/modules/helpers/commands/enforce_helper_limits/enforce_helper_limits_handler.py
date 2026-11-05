@@ -1,0 +1,59 @@
+from core.base.actor import Actor
+from core.base.agent_role import AgentRole
+from core.base.command.bus import Bus
+from core.base.command.context import Context
+from core.base.command.handler import Handler
+from core.base.query.conditions.is_null import IsNull
+from core.base.query.queries import Queries
+from core.base.scope.scopes import Scopes
+from core.modules.agents.commands.end_agent.end_agent import EndAgent
+from core.modules.agents.commands.record_parent_report.record_parent_report import RecordParentReport
+from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.launcher_link import LauncherLink
+from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.models.helper_job import HelperJob
+from core.modules.drivers.support.helper_job_rows import HelperJobRows
+from core.modules.helpers.commands.enforce_helper_limits.enforce_helper_limits import EnforceHelperLimits
+from core.modules.helpers.commands.warn_helper_limit.warn_helper_limit import WarnHelperLimit
+from core.modules.helpers.support.helper_settings import HELPER_MAX_COST, HELPER_MAX_MINUTES
+from core.modules.helpers.support.helper_spend import HelperSpend
+from core.modules.settings.bindings.support.setting_values import SettingValues
+from core.modules.usage.support.status_files import StatusFiles
+
+WARNING_SHARE = 0.8
+
+
+class EnforceHelperLimitsHandler(Handler[EnforceHelperLimits, None]):
+    """Tells a parent once at 80 percent of a limit, and past it reports the job and stops the helper. It reads the
+    status files and stops programs outside any transaction, and leaves every other kind of agent alone."""
+
+    command = EnforceHelperLimits
+    transactional = False
+
+    def __init__(self, queries: Queries, jobs: HelperJobRows, settings: SettingValues, files: StatusFiles, scopes: Scopes, bus: Bus, launcher: LauncherLink) -> None:
+        self.queries, self.jobs, self.settings, self.files, self.scopes = queries, jobs, settings, files, scopes
+        self.bus, self.launcher = bus, launcher
+
+    def handle(self, command: EnforceHelperLimits, context: Context) -> None:
+        for helper in tuple(self.queries.query(Agent).filter(role=AgentRole.HELPER).matching(IsNull("ended_at")).all_rows()):
+            job = next((row for row in self.jobs.helper_jobs(helper.id) if row.ended_at is None), None)
+            if job is not None and helper.parent_id is not None:
+                self.check(helper, job, context)
+
+    def check(self, helper: Agent, job: HelperJob, context: Context) -> None:
+        with self.scopes.opened(None, helper.environment_id):
+            spend = HelperSpend(job.creation_timestamp().elapsed_seconds(context.timestamp) / 60, self.files.status(helper.session).cost_dollars,
+                                self.settings.number(HELPER_MAX_MINUTES), self.settings.number(HELPER_MAX_COST))
+        if spend.share >= 1:
+            self.stop(helper, job, spend)
+        elif spend.share >= WARNING_SHARE and not self.was_warned(helper, job):
+            self.bus.run(WarnHelperLimit(helper.id, helper.parent_id, job.id, spend.limit_name), Actor.core(), environment_id=helper.environment_id)
+
+    def was_warned(self, helper: Agent, job: HelperJob) -> bool:
+        return self.queries.query(AgentLine).filter(session_agent_id=helper.parent_id, source=WarnHelperLimit.source(job.id)).exists()
+
+    def stop(self, helper: Agent, job: HelperJob, spend: HelperSpend) -> None:
+        text = f"It was stopped at its {spend.limit_name} limit."
+        self.bus.run(RecordParentReport(helper.id, helper.parent_id, text, job.id), Actor.core(), environment_id=helper.environment_id)
+        self.bus.run(EndAgent(helper.id), Actor.core(), environment_id=helper.environment_id)
+        self.launcher.stop(helper.id)

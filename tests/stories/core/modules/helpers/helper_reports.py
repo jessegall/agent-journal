@@ -11,7 +11,10 @@ from core.modules.drivers.ticks.end_silent_helpers_tick import EndSilentHelpersT
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, StartedHelper, jobs_of, the_helper
+from core.modules.helpers.support.helper_settings import HELPER_MAX_COST
+from core.modules.helpers.ticks.helper_limits_tick import HelperLimitsTick
 from tests.stories.core.modules.helpers.read_only_access import StartedCodexHelper
+from tests.stories.core.modules.usage.support.status_files import save_status_file
 
 PROGRAMS = [StartedHelper, StartedCodexHelper]
 LINES = "agent-line list --agent {agent}"
@@ -162,3 +165,41 @@ def test_a_helper_stopped_as_its_launch_ended_tells_the_parent_so(new_story):
     story.expect_success(f"agent exited {the_helper(story).id} 143 --launch-ended")
     story.run_listeners()
     story.expect_text(LINES.format(agent=story.agent.id), "the journal launch that ran it ended")
+
+
+def enforced(story, minutes):
+    story.advance(timedelta(minutes=minutes))
+    HelperLimitsTick()(story.container)
+    story.run_listeners()
+
+
+def test_a_helper_past_its_time_is_stopped_and_the_parent_hears_why(new_story):
+    story = new_story(fixture=StartedHelper)
+    enforced(story, 49)
+    story.expect_text(LINES.format(agent=story.agent.id), "near its time limit")
+    enforced(story, 12)
+    story.expect_text(LINES.format(agent=story.agent.id), "stopped at its time limit")
+    story.expect_rows(the_helper(story).ended_at is not None)
+
+
+def test_the_parent_is_warned_once(new_story):
+    story = new_story(fixture=StartedHelper)
+    enforced(story, 49)
+    enforced(story, 2)
+    lines = story.run(LINES.format(agent=story.agent.id)).output_text
+    story.expect_rows(lines.count("near its time limit") == 1)
+
+
+def test_a_helper_past_its_cost_is_stopped(new_story):
+    story = new_story(fixture=StartedHelper)
+    story.run(f"setting set {HELPER_MAX_COST} 5 --project", actor=story.user)
+    save_status_file(story, the_helper(story).session, {"cost": {"total_cost_usd": 6}})
+    enforced(story, 1)
+    story.expect_text(LINES.format(agent=story.agent.id), "stopped at its cost limit")
+
+
+def test_a_helper_with_no_cost_is_held_by_time_alone(new_story):
+    story = new_story(fixture=StartedCodexHelper)
+    story.run(f"setting set {HELPER_MAX_COST} 5 --project", actor=story.user)
+    enforced(story, 1)
+    story.expect_rows(the_helper(story).ended_at is None)

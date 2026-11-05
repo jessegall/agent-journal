@@ -36,16 +36,16 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
             return
         actor = Actor(agent.id, ActorType.AGENT)
         job = next((row for row in self.jobs.helper_jobs(agent.id) if row.ended_at is None), None)
-        if job is not None and self.owes_report(agent):
+        if job is not None and self.needs_exit_report(agent):
             self.report_exit(agent, job, command, actor)
         if agent.ended_at is None:
             self.bus.run(EndAgent(agent.id), actor, environment_id=agent.environment_id)
 
-    def owes_report(self, agent: Agent) -> bool:
+    def needs_exit_report(self, agent: Agent) -> bool:
         has_waiting_job = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING, source=HELPER_JOB_SOURCE).exists()
         return agent.parent_id is not None and not has_waiting_job
 
     def report_exit(self, agent: Agent, job: HelperJob, command: RecordProgramExit, actor: Actor) -> None:
         transcript_text = self.providers.provider(agent.program).last_reply(self.folders.folder(agent), agent.session)
-        text = transcript_text or self.reasons.reason(agent, command)
+        text = transcript_text or self.reasons.reason(agent, command.exit_code, command.launch_ended)
         self.bus.run(RecordParentReport(agent.id, agent.parent_id, text, job.id), actor, environment_id=agent.environment_id)

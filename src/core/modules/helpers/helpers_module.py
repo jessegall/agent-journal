@@ -13,6 +13,11 @@ from core.modules.helpers.commands.record_program_exit.record_program_exit_handl
 from core.modules.helpers.commands.record_program_exit.record_program_exit_subcommand import RecordProgramExitSubcommand
 from core.modules.helpers.listeners.helper_resume_listener import HelperResumeListener
 from core.modules.helpers.listeners.new_main_helpers_listener import NewMainHelpersListener
+from core.base.ticker.tick_handler import TickHandler
+from core.base.ticker.tick_interval import TickInterval
+from core.modules.helpers.commands.enforce_helper_limits.enforce_helper_limits_handler import EnforceHelperLimitsHandler
+from core.modules.helpers.commands.warn_helper_limit.warn_helper_limit_handler import HELPER_LIMIT_WARNING, WarnHelperLimitHandler
+from core.modules.helpers.ticks.helper_limits_tick import HelperLimitsTick
 from core.modules.helpers.rules.helper_report_rule import HelperReportRule
 from core.modules.helpers.rules.unstarted_helper_rule import UnstartedHelperRule
 from core.modules.helpers.support.helper_settings import HELPER_SETTINGS
@@ -27,7 +32,9 @@ class HelpersModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers"]
     settings = HELPER_SETTINGS
-    handlers = [StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler]
+    handlers = [StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EnforceHelperLimitsHandler, WarnHelperLimitHandler]
+    tick_handlers = [TickHandler(TickInterval(seconds=60), HelperLimitsTick(), "helper limits")]
+    nudges = [HELPER_LIMIT_WARNING]
     subcommands = [StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand]
     listeners = [NewMainHelpersListener, HelperResumeListener, HelperProgramListener, HelperEndedListener, HelperJobMarkListener]
     driver_rules = [UnstartedHelperRule, HelperReportRule]
