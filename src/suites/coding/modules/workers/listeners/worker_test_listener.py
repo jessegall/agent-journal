@@ -16,6 +16,7 @@ from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_tes
 from suites.coding.modules.workers.commands.queue_worker_tests.start_worker_tests import StartWorkerTests
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.proof import Proof
+from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
@@ -32,9 +33,9 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Moved[Process] | Created[
     name = "workers.tests"
     moves = [ProofLifecycle.queue, ProofLifecycle.run, ProcessLifecycle.finish, ProcessLifecycle.fail, ProcessLifecycle.stop, ProcessLifecycle.orphan]
 
-    def __init__(self, bus: Bus, queries: Queries, launch: WorkerTestLaunch, rows: EventRows) -> None:
+    def __init__(self, bus: Bus, queries: Queries, launch: WorkerTestLaunch, rows: EventRows, proofs: ProofQuery) -> None:
         self.bus, self.queries, self.launch = bus, queries, launch
-        self.rows = rows
+        self.rows, self.proofs = rows, proofs
 
     def handle(self, event: Moved[Proof] | Moved[Process] | Created[AffectedTest] | Updated[AffectedTest], logged: LoggedEvent) -> None:
         if logged.event == QUEUED_EVENT:
@@ -67,7 +68,7 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Moved[Process] | Created[
     def ended(self, process: Process, logged: LoggedEvent) -> None:
         if process.ended_at is None:
             return
-        proofs = self.queries.query(Proof).filter(process_id=process.id, state=ProofState.RUNNING).limited(1)
+        proofs = [proof for proof in self.proofs.test_rows() if proof.process_id == process.id and proof.state is ProofState.RUNNING]
         if proofs:
             passed = process.state is ProcessState.FINISHED and process.exit_code == 0
             self.bus.run(RecordWorkerTest(proofs[0].id, passed, f"failed: journal output read of process {process.id}"), Actor.core(), cause_id=logged.id, environment_id=process.environment_id)

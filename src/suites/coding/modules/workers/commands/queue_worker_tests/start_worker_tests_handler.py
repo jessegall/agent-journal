@@ -15,6 +15,8 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.queries.proof_query import ProofQuery
+from suites.coding.modules.workers.support.affected_test_rows import AffectedTestRows
 
 TEST_LIMIT_SECONDS = 3600
 
@@ -25,20 +27,20 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
 
     command = StartWorkerTests
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, worktrees: WorktreeQuery) -> None:
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, worktrees: WorktreeQuery, proofs: ProofQuery, affected: AffectedTestRows) -> None:
         self.queries, self.repository, self.bus = queries, repository, bus
-        self.worktrees = worktrees
+        self.worktrees, self.proofs, self.affected = worktrees, proofs, affected
 
     def handle(self, command: StartWorkerTests, context: Context) -> None:
         worktrees = {worktree.id: worktree for worktree in self.worktrees.all_environment_worktrees(command.environment_id)}
-        proofs = [proof for proof in self.queries.query(Proof).matching(Among("state", TEST_WAITING_STATES)).oldest().all_rows() if proof.worktree_id in worktrees]
+        proofs = [proof for proof in self.proofs.test_rows() if proof.worktree_id in worktrees]
         running = {proof.worktree_id for proof in proofs if proof.state is ProofState.RUNNING}
         for proof in proofs:
             if proof.state is not ProofState.QUEUED or proof.worktree_id in running:
                 continue
             self.start(proof, worktrees[proof.worktree_id], context)
             running.add(proof.worktree_id)
-        for selected in self.queries.query(AffectedTest).filter(state=AffectedTestState.QUEUED).oldest().all_rows():
+        for selected in self.affected.queued():
             if selected.worktree_id not in worktrees or selected.worktree_id in running:
                 continue
             if any(proof.worktree_id == selected.worktree_id for proof in proofs):

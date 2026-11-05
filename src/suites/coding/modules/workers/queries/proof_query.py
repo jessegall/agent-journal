@@ -1,6 +1,7 @@
 from typing import Self
 
 from core.base.database.database import Database
+from core.base.database.kept_rows import KeptRows
 from core.base.model.tables import Tables
 from core.base.query.conditions.among import Among
 from core.base.query.query import Query
@@ -11,8 +12,9 @@ from suites.coding.modules.workers.models.proof import Proof
 class ProofQuery(Query[Proof]):
     """Reads proofs, with the proofs of one worktree and those waiting for a check by name."""
 
-    def __init__(self, database: Database, tables: Tables) -> None:
+    def __init__(self, database: Database, tables: Tables, kept: KeptRows) -> None:
         super().__init__(database, tables, Proof)
+        self.kept = kept
 
     def worktree_proofs(self, worktree_id: int) -> Self:
         return self.filter(worktree_id=worktree_id)
@@ -25,3 +27,16 @@ class ProofQuery(Query[Proof]):
 
     def waiting_proofs(self, worktree_id: int) -> Self:
         return self.worktree_proofs(worktree_id).filter(state=ProofState.SHOWN)
+
+    def test_rows(self) -> tuple[Proof, ...]:
+        return self.kept.read(self.table.name, lambda: tuple(self.matching(Among("state", TEST_WAITING_STATES)).oldest().all_rows()),
+                              "state IN (?, ?)", list(TEST_WAITING_STATES), name="workers.test_proofs")
+
+    def remember_test(self, proof: Proof) -> None:
+        self.kept.update(self.table.name, lambda rows: tuple(sorted([row for row in rows if row.id != proof.id] +
+                         ([proof] if proof.state in TEST_WAITING_STATES else []), key=lambda row: row.id)),
+                         "state IN (?, ?)", list(TEST_WAITING_STATES), name="workers.test_proofs")
+
+    def remove_test(self, proof: Proof) -> None:
+        self.kept.update(self.table.name, lambda rows: tuple(row for row in rows if row.id != proof.id),
+                         "state IN (?, ?)", list(TEST_WAITING_STATES), name="workers.test_proofs")
