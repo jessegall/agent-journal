@@ -22,6 +22,8 @@ from suites.coding.upgrade.file_edits_move import FileEditsMove
 from suites.coding.upgrade.viewer_layouts_move import ViewerLayoutsMove
 from suites.coding.upgrade.coding_settings_move import CodingSettingsMove
 from suites.coding.seeders.coding_seeder import CodingSeeder
+from suites.coding.commands.record_file_changes.record_file_changes_handler import RecordFileChangesHandler
+from suites.coding.commands.record_file_changes.record_file_changes_subcommand import RecordFileChangesSubcommand
 from suites.coding.commands.record_file_edit.record_file_edit_handler import RecordFileEditHandler
 from suites.coding.migrations.m001_file_edits import FileEditsTableMigration
 from suites.coding.migrations.m002_file_edit_rows import FileEditRowsMigration
@@ -34,7 +36,6 @@ from suites.coding.commands.git_overview_current.git_overview_current_subcommand
 from suites.coding.commands.git_overview_pulls.git_overview_pulls_subcommand import GitOverviewPullsSubcommand
 from suites.coding.commands.project_file_list.project_file_list_subcommand import ProjectFileListSubcommand
 from suites.coding.commands.project_file_show.project_file_show_subcommand import ProjectFileShowSubcommand
-from suites.coding.rules.record_file_edit_rule import RecordFileEditRule
 from suites.coding.rules.introduction_rule import IntroductionRule
 from suites.coding.rules.waiting_items_rule import WaitingItemsRule
 from suites.coding.drivers.subagent.subagent_driver import SubagentDriver
@@ -69,10 +70,10 @@ class CodingModule(Module):
     skills = [SkillDeclaration("journal-work-modes", "Work as the builder or the orchestrator, the two modes of the coding suite; read it when your mode, auto mode or the worker limit comes up", keywords=("builder", "orchestrator", "auto mode", "work mode"))]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
     migrations = [FileEditsTableMigration, FileEditRowsMigration]
-    handlers = [RecordFileEditHandler]
-    driver_rules = [RecordFileEditRule, WaitingItemsRule, IntroductionRule]
+    handlers = [RecordFileEditHandler, RecordFileChangesHandler]
+    driver_rules = [WaitingItemsRule, IntroductionRule]
     listeners = [FullTestRunListener]
-    subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand]
+    subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand, RecordFileChangesSubcommand]
     windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, skeleton=CODING_GIT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"]),
                WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, skeleton=CODING_FILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"], search=WindowReadSearch("project-file find", "Find a file in the project")),
                WindowDeclaration("coding.work-mode", "Work mode", "work-mode.js", WindowLoading.COMPONENT, skeleton=CODING_WORK_MODE_SKELETON, icon=WindowIcon.WINDOW, place=WindowPlace.HEADER,

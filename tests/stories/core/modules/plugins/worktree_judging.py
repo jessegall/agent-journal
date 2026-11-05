@@ -2,11 +2,11 @@ import json
 
 import pytest
 
-from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE
 from tests.stories.core.modules.plugins.support.worktree_plugin import worktree_plugin_folder
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from core.testing.expect_row import expect_row
@@ -27,12 +27,10 @@ def worktree_story(new_story):
     return story
 
 
-@pytest.mark.parametrize("absolute", [False, True])
-def test_a_workers_file_is_judged_in_its_worktree_and_answered_only_to_that_worker(worktree_story, absolute):
+def test_a_workers_file_is_judged_in_its_worktree_and_answered_only_to_that_worker(worktree_story):
     story = worktree_story
     story.repository.changed(story.worker.id, "cart.py", SIN)
-    path = str(story.worktree / "cart.py") if absolute else "cart.py"
-    story.hook(story.worker_session, HookSamples.edit(path).with_fields(event="post_tool_use").with_raw({"cwd": str(story.worktree)}))
+    scanned_edit(story, story.worker_session, "cart.py", folder=story.worktree)
     story.run_listeners()
     story.expect_absent_hook_line("s-1", LISTING_SAMPLE, "mutable default")
     story.expect_hook_allowed(story.worker_session, LISTING_SAMPLE, f"{story.worktree / 'cart.py'}: mutable default")
@@ -41,7 +39,7 @@ def test_a_workers_file_is_judged_in_its_worktree_and_answered_only_to_that_work
 def test_a_main_checkout_sin_reaches_only_the_main_agent(worktree_story):
     story = worktree_story
     story.repository.uncommitted("cart.py", SIN)
-    story.hook("s-1", HookSamples.edit("cart.py").with_fields(event="post_tool_use").with_raw({"cwd": str(story.repository.folder)}))
+    scanned_edit(story, "s-1", "cart.py", folder=story.repository.folder)
     story.run_listeners()
     story.expect_absent_hook_line(story.worker_session, LISTING_SAMPLE, "mutable default")
     story.expect_hook_allowed("s-1", LISTING_SAMPLE, f"{story.repository.folder / 'cart.py'}: mutable default")

@@ -25,8 +25,6 @@ class PluginEventNames:
             return []
         if event is HookEventName.PRE_TOOL_USE:
             return [self.tool_event(hook, tool), *self.command_events(tool)]
-        if event is HookEventName.POST_TOOL_USE and tool.is_writing_files():
-            return [PluginEvent("file_edited", {"path": path, "kind": "edit", "lines": tool.changed_lines(path)}) for path in tool.files]
         return []
 
     def tool_event(self, hook: AgentHook, tool: Tool) -> PluginEvent:

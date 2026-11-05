@@ -1,5 +1,6 @@
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
-from tests.stories.core.modules.plugins.hooks import EDIT_SAMPLE, LISTING_SAMPLE
+from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE
+from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.core.modules.plugins.support.plugin_upgrade_report import PLUGIN_REFUSAL_SAMPLE, expect_missing_plugin_report, expect_plugin_upgrade, start_upgraded_plugin_agent
 from tests.stories.fixtures.legacy_plugin import disabled_plugin_folder, plugin_folder, upgradable_plugin_folder
 
@@ -10,7 +11,8 @@ def test_an_installed_version_4_plugin_keeps_its_release_its_switch_and_its_sett
     expect_plugin_upgrade(story, enabled=True)
     start_upgraded_plugin_agent(story)
     story.expect_hook_refusal("upgraded-plugin", PLUGIN_REFUSAL_SAMPLE, "[plugin code-commandments] no deletes here")
-    story.hook("upgraded-plugin", EDIT_SAMPLE)
+    story.hook("upgraded-plugin", LISTING_SAMPLE)
+    scanned_edit(story, "upgraded-plugin", "a.py")
     story.run_listeners()
     story.expect_hook_allowed("upgraded-plugin", LISTING_SAMPLE, "[plugin code-commandments] a.py was judged")
 

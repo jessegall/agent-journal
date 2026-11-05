@@ -31,9 +31,6 @@ class Tool:
         return cls(text(fields, "name"), ToolType(category), texts(fields, "files"), ShellLine.parsed(shell) if shell is not None else None,
                    DiffCount.parsed(diff) if diff is not None else None, mappings(fields.get("diff_rows"), "diff_rows"))
 
-    def changed_lines(self, path: str) -> list[dict[str, object]]:
-        return [dict(row) for row in self.diff_rows] if self.diff is not None and self.diff.path == path else []
-
     @property
     def lines_added(self) -> int:
         return self.diff.lines_added if self.diff is not None else 0

@@ -221,6 +221,9 @@ func (tracker *Tracker) finish(stdout io.Writer, code int) int {
 	if len(tracker.Background) > 0 && tracker.Options.Detach != nil {
 		StartCutting(tracker.Options, tracker.Parts)
 	}
+	if !tracker.Options.OnlyReads && tracker.Options.ScanFiles != nil {
+		tracker.Options.ScanFiles(tracker.Options)
+	}
 	return code
 }
 

@@ -1,6 +1,7 @@
 // Command journal-hook is the hook the agent programs run: it reads the hook body on stdin, prepares the HookEvent,
 // hands it to the journal's Python server and prints the answer. Run as journal-hook <program> <project root>, or as
-// journal-hook --status <project root> by Claude Code's status line.
+// journal-hook --status <project root> by Claude Code's status line, or as journal-hook --file-scan <journal home>
+// <owner flag> <owner> <folder> after a shell line or an edit tool.
 package main
 
 import (
@@ -29,6 +30,10 @@ func main() {
 		KeepStatus(os.Stdin, os.Args[2])
 		return
 	}
+	if len(os.Args) == 6 && os.Args[1] == "--file-scan" {
+		ScanFiles(os.Args[2], os.Args[3], os.Args[4], os.Args[5])
+		return
+	}
 	requestTiming := timing.Started()
 	started := time.Now()
 	if len(os.Args) < 3 {
@@ -51,6 +56,7 @@ func main() {
 		os.Exit(foreignAnswered(os.Stdout, os.Stderr, context.Programs.Programs[program], hookName(body), prepared.Foreign))
 	}
 	requestTiming.Stamp("go_prepared")
+	scanAfterEdit(root, prepared)
 	object, err := json.Marshal(prepared)
 	if err != nil {
 		os.Exit(0)

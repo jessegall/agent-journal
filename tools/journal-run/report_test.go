@@ -54,3 +54,21 @@ func TestARunTheServerDoesNotAnswerStillRunsAndKeepsItsFolder(t *testing.T) {
 		t.Fatalf("printed %q with code %d", output, code)
 	}
 }
+
+func TestALineThatMayWriteStartsAFileScanOnceItHasEndedAndAPlainReadStartsNone(t *testing.T) {
+	scans := 0
+	setup := options(t, "echo one")
+	setup.ScanFiles = func(Options) { scans++ }
+	var output strings.Builder
+	Run(setup, newClient(), &output)
+	if scans != 1 {
+		t.Fatalf("a line that may write starts one scan, it started %d", scans)
+	}
+	plainRead := options(t, "echo one")
+	plainRead.OnlyReads = true
+	plainRead.ScanFiles = func(Options) { scans++ }
+	Run(plainRead, newClient(), &output)
+	if scans != 1 {
+		t.Fatalf("a plain read starts no scan, it started %d", scans-1)
+	}
+}

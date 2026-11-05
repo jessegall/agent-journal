@@ -1,4 +1,5 @@
 from core.testing.hook_samples import HookSamples
+from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 
@@ -17,7 +18,7 @@ def test_with_none_running_it_says_so(new_story):
 
 def test_an_edit_shows_in_the_file_list_of_the_agent_the_home_page_reads(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.hook("s-1", HookSamples.edit("src/cart.py").with_fields(event="post_tool_use"))
+    scanned_edit(story, "s-1", "src/cart.py")
     story.run_listeners()
     running = story.run("agent main --environment main").output_text.split()[1]
     story.expect_text(f"file-edit list --agent {running}", "src/cart.py")

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/jessegall/agent-journal/tools/journal-hook/event"
+	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 // How many rows and how many characters of each the hook hands on for one edit, so a huge file cannot fill the
@@ -76,6 +77,36 @@ func PatchRows(patch string) []event.DiffRow {
 			rows = append(rows, event.DiffRow{LineType: "del", Text: line[1:]})
 		case strings.HasPrefix(line, " "):
 			rows = append(rows, event.DiffRow{LineType: "ctx", Text: line[1:]})
+		}
+	}
+	return limited(rows)
+}
+
+// ChangedRows numbers the lines added and removed between a file's old text, nil for a new file, and its text now.
+func ChangedRows(original *string, changed string) []event.DiffRow {
+	base := ""
+	if original != nil {
+		base = *original
+	}
+	matcher := diffmatchpatch.New()
+	matcher.DiffTimeout = diffTimeLimit
+	beforeLines, afterLines, lines := matcher.DiffLinesToRunes(base, changed)
+	rows := []event.DiffRow{}
+	old, current := 1, 1
+	for _, difference := range matcher.DiffCharsToLines(matcher.DiffMainRunes(beforeLines, afterLines, false), lines) {
+		for _, line := range strings.SplitAfter(strings.TrimSuffix(difference.Text, "\n"), "\n") {
+			text := strings.TrimSuffix(line, "\n")
+			switch difference.Type {
+			case diffmatchpatch.DiffInsert:
+				rows = append(rows, event.DiffRow{LineType: "add", Line: current, Text: text})
+				current++
+			case diffmatchpatch.DiffDelete:
+				rows = append(rows, event.DiffRow{LineType: "del", Line: old, Text: text})
+				old++
+			default:
+				old++
+				current++
+			}
 		}
 	}
 	return limited(rows)

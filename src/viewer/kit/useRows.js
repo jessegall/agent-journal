@@ -6,7 +6,7 @@ import {runChanged} from "./runChanged.js";
 // the rows a window lists from one read line (in a share, the one row it is shared for, read by its model's show line), read again whenever an event it follows arrives, with the reason a read
 // failed in place of the rows, and whether the first read has answered
 // whether the server says another page follows the one it answered
-const followed = (page) => page.page * page.size < page.total;
+const followed = (page, size) => "total" in page ? page.page * page.size < page.total : page.rows.length >= size;
 
 export function useDeclaredRows(key) {
     const source = useWindow().sources.find((source) => source.key === key);
@@ -14,6 +14,7 @@ export function useDeclaredRows(key) {
 }
 
 export function useRows(line, patterns, {incremental = false} = {}) {
+    const pageSize = Number(line.match(/--limit[=\s]+(\d+)/)?.[1] ?? 50);
     const context = useWindow();
     const rows = ref([]);
     const listing = ref(null);
@@ -57,7 +58,7 @@ export function useRows(line, patterns, {incremental = false} = {}) {
         const result = await context.read(`${line} --before-id ${oldest}`);
         if (turn !== latestLoad) return false;
         if (!result.ok || !result.value.rows.length) return (more.value = false);
-        more.value = followed(result.value);
+        more.value = followed(result.value, pageSize);
         const held = new Set(rows.value.map((row) => row.id));
         rows.value = [...rows.value, ...result.value.rows.filter((row) => !held.has(row.id))];
         return true;
@@ -72,7 +73,7 @@ export function useRows(line, patterns, {incremental = false} = {}) {
         rows.value = take(fresh);
         listing.value = result.ok ? result.value : null;
         const reach = fresh.length ? Math.min(...fresh.map((row) => row.id)) : 0;
-        if (result.ok && !rows.value.some((row) => row.id < reach)) more.value = !context.shared && followed(result.value);
+        if (result.ok && !rows.value.some((row) => row.id < reach)) more.value = !context.shared && followed(result.value, pageSize);
         failure.value = result.ok ? "" : result.error;
         afterSkeletonMinimum(startedAt, () => (loaded.value = true));
     }

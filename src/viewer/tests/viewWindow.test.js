@@ -19,7 +19,8 @@ test("a view window builds its own catalogue and event stream, draws its one win
     createApp(() => h(ViewWindow, {environment: "main", view: "notes.board", float: 3, catalogue, events: stream})).mount(element);
     for (let round = 0; round < 8; round++) await new Promise((resolve) => setTimeout(resolve));
     await nextTick();
-    expect(stream).toHaveBeenCalledWith("main", expect.any(Function));
+    expect(stream).toHaveBeenCalledWith("main", expect.any(Function), expect.objectContaining({__v_isRef: true}));
+    expect(stream.mock.calls[0][2].value).toContain("registry.sync");
     expect(element.querySelector(".view-window-title").textContent).toBe("Board");
     expect(element.querySelectorAll(".window")).toHaveLength(1);
     vi.unstubAllGlobals();
