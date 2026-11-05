@@ -15,7 +15,8 @@ class ChatExceptionSink(ExceptionSink):
     """Records each exception the journal meets as a row of the chat module, except an exception of the
     listener that shows exceptions, which would only make more of them, and an exception with the message
     of one recorded in the last minute, so a listener that fails on every event cannot flood the chat; its
-    trace is in the error file. An exception met inside a transaction waits until the commit listeners next run."""
+    trace is in the error file. An exception met inside a transaction waits until the commit listeners
+    next run."""
 
     def __init__(self, bus: Bus, actors: ModuleActors, database: Database, clock: Clock) -> None:
         self.bus, self.actors, self.database, self.clock = bus, actors, database, clock

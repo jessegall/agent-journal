@@ -1,8 +1,7 @@
-from pathlib import Path
-
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
+from core.base.file_access import FileAccess
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
@@ -19,12 +18,12 @@ class RecordFileChangesHandler(Handler[RecordFileChanges, None]):
 
     command = RecordFileChanges
 
-    def __init__(self, queries: Queries, bus: Bus) -> None:
-        self.queries, self.bus = queries, bus
+    def __init__(self, queries: Queries, bus: Bus, files: FileAccess) -> None:
+        self.queries, self.bus, self.files = queries, bus, files
 
     def handle(self, command: RecordFileChanges, context: Context) -> None:
         agent = self.scan_agent(command)
-        report = FileChangeReport.parsed(Path(command.report_path).read_text())
+        report = FileChangeReport.parsed(self.files.read(command.report_path))
         for change in report.changes:
             self.bus.dispatch(RecordFileEdit(agent.id, agent.environment_id, change.diff, change.rows), context)
             self.bus.dispatch(DeliverFileEdit(agent.id, agent.environment_id, change.diff.path, report.folder, change.rows), context)
