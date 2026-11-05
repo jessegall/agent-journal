@@ -42,6 +42,9 @@ from core.modules.documents.commands.report_list.report_list_subcommand import R
 from core.modules.documents.commands.report_make.report_make_subcommand import ReportMakeSubcommand
 from core.modules.documents.commands.report_show.report_show_subcommand import ReportShowSubcommand
 from core.modules.documents.listeners.doc_mention_listener import DocMentionListener
+from core.modules.documents.listeners.message_mention_listener import MessageMentionListener
+from core.modules.documents.listeners.plan_mention_listener import PlanMentionListener
+from core.modules.documents.listeners.task_mention_listener import TaskMentionListener
 from core.modules.documents.listeners.report_mention_listener import ReportMentionListener
 from core.modules.documents.migrations.m001_documents import DocumentsTablesMigration
 from core.modules.documents.migrations.m002_link_source_index import LinkSourceIndexMigration
@@ -84,7 +87,7 @@ class DocumentsModule(Module):
                                  reads=["document library", "doc show", "report show"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"])]
     views = [DocumentRow]
     handlers = [RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]
-    listeners = [PlanDocumentLinkListener, ReplyLinkListener, DocMentionListener, ReportMentionListener, NewDocDockListener, NewReportDockListener]
+    listeners = [PlanDocumentLinkListener, ReplyLinkListener, DocMentionListener, ReportMentionListener, TaskMentionListener, PlanMentionListener, MessageMentionListener, NewDocDockListener, NewReportDockListener]
     docks = TEXT_DOCKS
     bindings = {RowLinks: StoredRowLinks}
     subcommands = [CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,

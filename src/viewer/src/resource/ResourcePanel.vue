@@ -29,7 +29,7 @@ let reading = 0;
 const LONG_KINDS = new Set(["plan"]);
 const DOCUMENT_KINDS = new Set(["doc", "report"]);
 const OWN_INSPECTORS = new Set(["task", "plan", "test-queue", "agent", "agent-skill", ...DOCUMENT_KINDS]);
-const TEXT_KINDS = new Set(["question", "memory"]);
+const TEXT_KINDS = new Set(["question", "memory", "rule"]);
 const wide = computed(() => LONG_KINDS.has(kind.value));
 const isDocument = computed(() => DOCUMENT_KINDS.has(kind.value));
 const title = computed(() => titleOf(kind.value, row.value, opened.value?.id));

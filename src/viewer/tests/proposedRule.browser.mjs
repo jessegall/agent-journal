@@ -21,6 +21,9 @@ try {
     });
     assert.equal(colour, warn);
     const stack = page.locator(".chat-dock-card");
+    await stack.filter({hasText: "Skip the tests"}).getByRole("button", {name: "Open"}).click();
+    await page.locator("[data-resource-panel]").filter({hasText: "Skip the tests"}).waitFor();
+    await page.locator("[data-resource-close]").first().click();
     await stack.filter({hasText: "the end of the long rule"}).getByRole("button", {name: "Approve"}).click();
     await approved.waitFor({state: "detached"});
     await stack.filter({hasText: "Skip the tests"}).getByRole("button", {name: "Deny"}).click();
