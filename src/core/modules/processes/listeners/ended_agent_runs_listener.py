@@ -1,3 +1,4 @@
+from core.modules.agents.events.agent_ended import AgentEnded
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
@@ -7,12 +8,11 @@ from core.base.query.queries import Queries
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from core.modules.processes.listeners.process_end_mark_listener import MODULE_NAME
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.agents.models.agent import ENDED_FIELD, Agent
-from core.base.change.changed import Changed
+from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.agent import Agent
 
 
-class EndedAgentRunsListener(CommitListener[Changed[Agent]]):
+class EndedAgentRunsListener(CommitListener[AgentEnded]):
     """Ends an agent's runs unless its suite declares that they continue after the agent stops."""
 
     name = "processes.ended-agent-runs"
@@ -21,9 +21,7 @@ class EndedAgentRunsListener(CommitListener[Changed[Agent]]):
         self.bus, self.actors, self.processes, self.queries = bus, actors, processes, queries
         self.suites = suites
 
-    def handle(self, event: Changed[Agent], logged: LoggedEvent) -> None:
-        if ENDED_FIELD not in logged.data or logged.data[ENDED_FIELD][1] is None:
-            return
+    def handle(self, event: AgentEnded, logged: LoggedEvent) -> None:
         agent = event.row
         if agent.role in self.suites.agent_policy(agent.environment_id).continuing_run_roles:
             return

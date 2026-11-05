@@ -1,3 +1,4 @@
+from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.base.actor_type import ActorType
 from core.base.listener.save_listener import SaveListener
 from core.modules.tasks.models.enums.task_state import TaskState
@@ -30,4 +31,4 @@ class TaskBriefAssignedListener(SaveListener[Changed[Task]]):
 
     @staticmethod
     def is_agent_start(event: Changed[Task], context: Context) -> bool:
-        return event.move is not None and event.move.name == "start" and context.actor.type is ActorType.AGENT
+        return event.move is TaskLifecycle.start and context.actor.type is ActorType.AGENT

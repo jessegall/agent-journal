@@ -7,6 +7,5 @@ from core.base.change.updated import Updated
 class PlanMentionListener(TextMentionListener[Created[Plan] | Updated[Plan]]):
     """Links a saved plan to the rows it names."""
 
-    model = Plan
     text_fields = ("title", "brief")
     name = "documents.plan-mentions"

@@ -17,7 +17,7 @@ class QuestionAnsweredMarkListener(QuestionMarkListener[Moved[Question]]):
     moves = (QuestionLifecycle.answer,)
 
     def handle(self, event: Moved[Question], logged: LoggedEvent) -> None:
-        question = self.question(logged)
+        question = event.row
         side = self.variant(logged)
         self.show(logged, QuestionMarkType.QUESTION, side, f"Question {question.id} answered", question.environment_id,
                   question.agent_id, "question", question.id, key=f"question:{question.id}", ended=True)

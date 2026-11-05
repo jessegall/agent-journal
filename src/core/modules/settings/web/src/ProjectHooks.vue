@@ -54,7 +54,7 @@ async function restore() {
   restored.value = reply.ok;
 }
 
-context.follow(["managed-hook.*", "hook_call.create"], load);
+context.follow(["managed-hook.*", "hook_call.*"], load);
 onMounted(load);
 </script>
 

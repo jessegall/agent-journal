@@ -1,3 +1,5 @@
+from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
+from core.base.change.moved import Moved
 from core.base.actor import Actor
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
@@ -9,26 +11,23 @@ from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_progress import PlanProgress
 from core.modules.plans.models.plan_task import PlanTask
-from core.base.change.touched import Touched
 from core.modules.tasks.models.task import Task
 
-ENDED_TASK_EVENTS = ("task.close", "task.cancel")
 UNFINISHED_STATES = (PlanState.APPROVED, PlanState.STARTED, PlanState.BLOCKED)
 CANCEL_REASON = "every task of the plan was cancelled"
 
 
-class FinishedPlanListener(CommitListener[Touched[Task]]):
+class FinishedPlanListener(CommitListener[Moved[Task]]):
     """When the last open task of an approved, started or blocked plan ends, the plan closes as completed, or is
     cancelled if every task was."""
 
     name = "plans.finished-plan"
+    moves = (TaskLifecycle.close, TaskLifecycle.cancel)
 
     def __init__(self, bus: Bus, queries: Queries) -> None:
         self.bus, self.queries = bus, queries
 
-    def handle(self, event: Touched[Task], logged: LoggedEvent) -> None:
-        if logged.event not in ENDED_TASK_EVENTS:
-            return
+    def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
         places = self.queries.query(PlanTask).filter(task_id=logged.row_id).page(1, 1).rows
         plan = self.queries.query(Plan).find(places[0].plan_id) if places else None
         if plan is None or plan.state not in UNFINISHED_STATES:

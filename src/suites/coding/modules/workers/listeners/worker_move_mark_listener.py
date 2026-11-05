@@ -9,38 +9,37 @@ from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.enums.worker_mark_type import WorkerMarkType
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from suites.coding.modules.workers.models.worktree import Worktree
-from core.base.change.changed import Changed
+from core.base.change.moved import Moved
+from core.base.model.move import Move
+from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 
-DELIVERY_MOVE = "worker_worktree.deliver"
-CUT_MOVE = "worker_worktree.cut"
 MOVE_TEXTS = {
-    "worker_worktree.cut": (WorkerMarkVariant.STARTED, "started {tasks}"),
-    "worker_worktree.advance": (WorkerMarkVariant.NEXT_TASK, "started {tasks}"),
-    "worker_worktree.deliver": (WorkerMarkVariant.DELIVERED, "handed in {tasks}"),
-    "worker_worktree.merge": (WorkerMarkVariant.MERGED, "had {tasks} merged"),
-    "worker_worktree.abandon": (WorkerMarkVariant.RELEASED, "released {tasks}"),
+    "cut": (WorkerMarkVariant.STARTED, "started {tasks}"),
+    "advance": (WorkerMarkVariant.NEXT_TASK, "started {tasks}"),
+    "deliver": (WorkerMarkVariant.DELIVERED, "handed in {tasks}"),
+    "merge": (WorkerMarkVariant.MERGED, "had {tasks} merged"),
+    "abandon": (WorkerMarkVariant.RELEASED, "released {tasks}"),
 }
 
 
-class WorkerMoveMarkListener(MarkListener[Changed[Worktree]]):
+class WorkerMoveMarkListener(MarkListener[Moved[Worktree]]):
     """Each move of a worker shows as a mark in the chat naming the worker and the task, with the program, the
     model, the tasks still queued and the task's title and brief shown on opening it, and a click that opens
     the worker; a worker started on queued tasks that all belong to one plan also shows the plan handed to it."""
 
     name = "workers.move-mark"
+    moves = (WorktreeLifecycle.cut, WorktreeLifecycle.advance, WorktreeLifecycle.deliver, WorktreeLifecycle.merge, WorktreeLifecycle.abandon)
     disabled_scopes = [ActorScope]
     module_name = "journal.suites.coding.workers"
 
-    def handle(self, event: Changed[Worktree], logged: LoggedEvent) -> None:
-        if logged.event not in MOVE_TEXTS:
-            return
+    def handle(self, event: Moved[Worktree], logged: LoggedEvent) -> None:
         worktree = event.row
         agent = self.queries.query(Agent).find(worktree.agent_id)
         task = self.queries.query(Task).find(worktree.task_id)
-        variant, move = MOVE_TEXTS[logged.event]
+        variant, move = MOVE_TEXTS[event.move.name]
         name = agent.given_name or f"Worker {agent.id}"
-        self.show(logged, WorkerMarkType.WORKER, variant, f"{name} {move.format(tasks=self.tasks_text(logged.event, worktree, task))}", worktree.environment_id, None, AGENTS_TABLE, agent.id, detail=f"On {agent.program} {agent.program_model}{self.queue_text(agent)}\n\nTask {task.id}: {task.title}\n\n{task.brief}")
-        if logged.event == CUT_MOVE:
+        self.show(logged, WorkerMarkType.WORKER, variant, f"{name} {move.format(tasks=self.tasks_text(event.move, worktree, task))}", worktree.environment_id, None, AGENTS_TABLE, agent.id, detail=f"On {agent.program} {agent.program_model}{self.queue_text(agent)}\n\nTask {task.id}: {task.title}\n\n{task.brief}")
+        if event.move is WorktreeLifecycle.cut:
             self.show_plan(logged, worktree, agent, name)
 
     def show_plan(self, logged: LoggedEvent, worktree: Worktree, agent: Agent, name: str) -> None:
@@ -58,8 +57,8 @@ class WorkerMoveMarkListener(MarkListener[Changed[Worktree]]):
         names = ", ".join(f"task {row.id}" for row in queued)
         return f"\n\nQueued: {names}" if names else ""
 
-    def tasks_text(self, move: str, worktree: Worktree, task: Task) -> str:
-        if move != DELIVERY_MOVE:
+    def tasks_text(self, move: Move, worktree: Worktree, task: Task) -> str:
+        if move is not WorktreeLifecycle.deliver:
             return f"task {task.id}"
         delivered = self.queries.query(Task).filter(delegated_to=worktree.agent_id).matching(Among("state", (TaskState.TESTING, TaskState.COMPLETED))).all_rows()
         return ", ".join(f"task {row.id}" for row in sorted(delivered, key=lambda row: row.id))

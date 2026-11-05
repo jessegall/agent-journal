@@ -6,5 +6,4 @@ from core.base.change.touched import Touched
 class ReportMentionListener(TextMentionListener[Touched[Report]]):
     """Links a saved report to the rows it names."""
 
-    model = Report
     name = "documents.report-mentions"

@@ -3,15 +3,14 @@ from core.base.change.event_log import EventLog
 from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
-from core.modules.drivers.models.hook_call import HookCall
 from core.modules.memories.listeners.memory_mark_listener import MemoryMarkListener
 from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVariant
 from core.modules.memories.models.memory import LOWEST_WEIGHT
 from core.modules.memories.commands.fade_memories.fade_memories import FadeMemories
-from core.base.change.created import Created
+from core.modules.drivers.events.agent_compacted import AgentCompacted
 
 
-class MemoryFadedMarkListener(MemoryMarkListener[Created[HookCall]]):
+class MemoryFadedMarkListener(MemoryMarkListener[AgentCompacted]):
     """After a compaction has faded an agent's memories, the chat shows how many of them are still shown."""
 
     name = "memories.faded-mark"
@@ -20,10 +19,8 @@ class MemoryFadedMarkListener(MemoryMarkListener[Created[HookCall]]):
         super().__init__(bus, actors, queries)
         self.events = events
 
-    def handle(self, event: Created[HookCall], logged: LoggedEvent) -> None:
+    def handle(self, event: AgentCompacted, logged: LoggedEvent) -> None:
         call = event.row
-        if not call.is_compaction:
-            return
         changes = [change for change in self.events.child_events(logged.id) if change.event in ("memory.update", "memory.remove") and change.command == FadeMemories.label()]
         if changes:
             shown = sum(change.data["weight"][1] != LOWEST_WEIGHT for change in changes)

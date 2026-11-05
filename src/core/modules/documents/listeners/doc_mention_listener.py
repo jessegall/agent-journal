@@ -6,5 +6,4 @@ from core.base.change.touched import Touched
 class DocMentionListener(TextMentionListener[Touched[Doc]]):
     """Links a saved document to the rows it names."""
 
-    model = Doc
     name = "documents.doc-mentions"

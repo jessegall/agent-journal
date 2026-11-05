@@ -1,3 +1,6 @@
+from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
+from core.base.change.created import Created
+from core.base.change.moved import Moved
 from core.base.actor import Actor
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
@@ -11,24 +14,24 @@ from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.plans.listeners.plan_move_mark_listener import PLANS_MODULE
 from core.modules.plans.models.enums.plan_dock_type import PlanDockType
 from core.modules.plans.models.plan import Plan
-from core.base.change.changed import Changed
 
 ENDING_MOVES = ("close", "cancel")
 DOCKING_MOVES = {"create": PlanDockType.DRAFT, "ready": PlanDockType.WAITING, "start": PlanDockType.STARTED, "unblock": PlanDockType.STARTED, "block": PlanDockType.PAUSED}
 
 
-class StartedPlanDockListener(CommitListener[Changed[Plan]]):
+class StartedPlanDockListener(CommitListener[Created[Plan] | Moved[Plan]]):
     """A plan is docked above the chat as it stands: a draft once made, waiting for the user once
     ready, started, paused; it is undocked when approved or ended."""
 
     name = "plans.started-dock"
+    moves = (PlanLifecycle.approve, PlanLifecycle.close, PlanLifecycle.cancel, PlanLifecycle.ready, PlanLifecycle.start, PlanLifecycle.unblock, PlanLifecycle.block)
     disabled_scopes = [ActorScope]
 
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, items: DockItemQuery) -> None:
         self.bus, self.actors, self.queries, self.items = bus, actors, queries, items
 
-    def handle(self, event: Changed[Plan], logged: LoggedEvent) -> None:
-        move = logged.event.split(".")[1]
+    def handle(self, event: Created[Plan] | Moved[Plan], logged: LoggedEvent) -> None:
+        move = event.move.name if event.move else "create"
         plan = event.row
         actor = self.actors.actor(PLANS_MODULE)
         if move in ENDING_MOVES or move == "approve":

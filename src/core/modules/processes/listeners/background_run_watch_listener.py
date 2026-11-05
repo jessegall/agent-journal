@@ -1,3 +1,5 @@
+from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
+from core.base.change.moved import Moved
 from dataclasses import replace
 
 from core.modules.drivers.support.suite_choice import SuiteChoice
@@ -14,28 +16,27 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.watch import UNANNOUNCED_PERCENT, Watch
 from core.modules.processes.support.block_conditions.output_monitored import OutputMonitored
 from core.modules.processes.support.process_nudges import REQUIRED_MONITOR, REQUIRED_MONITOR_COMMAND
-from core.base.change.changed import Changed
 from core.base.command.context import Context
 
 
-class BackgroundRunWatchListener(SaveListener[Changed[Process]]):
+class BackgroundRunWatchListener(SaveListener[Moved[Process]]):
     """Watches background runs and requires a monitor according to the suite's declared policy."""
 
     name = "processes.background-run-watch"
+    moves = tuple([ProcessLifecycle.background])
 
     def __init__(self, repository: Repository, bus: Bus, queries: Queries, providers: Providers, suites: SuiteChoice) -> None:
         self.repository, self.bus, self.queries, self.providers = repository, bus, queries, providers
         self.suites = suites
 
-    def handle(self, event: Changed[Process], context: Context) -> None:
+    def handle(self, event: Moved[Process], context: Context) -> None:
         process = event.row
-        if isinstance(process, Process) and event.move is not None and event.move.name == "background":
-            self.repository.save(Watch(agent_id=process.agent_id, process_id=process.id, creator_id=process.agent_id, given_percent=UNANNOUNCED_PERCENT), context)
-            monitor_tool = self.monitor_tool(process)
-            if monitor_tool is not None:
-                declaration = REQUIRED_MONITOR if monitor_tool is ToolType.MONITOR else REQUIRED_MONITOR_COMMAND
-                nudge = declaration.nudge(output=process.id)
-                self.bus.dispatch(BlockUntil(process.agent_id, replace(nudge, key=f"{nudge.key}.{process.id}"), OutputMonitored(process.id), stop_only=True), context)
+        self.repository.save(Watch(agent_id=process.agent_id, process_id=process.id, creator_id=process.agent_id, given_percent=UNANNOUNCED_PERCENT), context)
+        monitor_tool = self.monitor_tool(process)
+        if monitor_tool is not None:
+            declaration = REQUIRED_MONITOR if monitor_tool is ToolType.MONITOR else REQUIRED_MONITOR_COMMAND
+            nudge = declaration.nudge(output=process.id)
+            self.bus.dispatch(BlockUntil(process.agent_id, replace(nudge, key=f"{nudge.key}.{process.id}"), OutputMonitored(process.id), stop_only=True), context)
 
     def monitor_tool(self, process: Process) -> ToolType | None:
         agent = self.queries.query(Agent).find(process.agent_id)

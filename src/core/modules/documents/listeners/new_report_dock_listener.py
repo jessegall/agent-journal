@@ -7,6 +7,5 @@ from core.base.change.created import Created
 class NewReportDockListener(NewTextDockListener[Created[Report]]):
     """Docks a new report."""
 
-    row_model = Report
     dock_type = TextDockType.REPORT
     name = "documents.new-report-dock"

@@ -1,3 +1,4 @@
+from core.modules.agents.events.agent_ended import AgentEnded
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
@@ -11,7 +12,7 @@ from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from core.base.change.updated import Updated
 
 
-class WorkerJobResumeListener(CommitListener[Updated[Agent]]):
+class WorkerJobResumeListener(CommitListener[AgentEnded | Updated[Agent]]):
     """A worker that ends with a job still waiting, sent after its last stop, resumes for that job; one a
     person or another agent stopped stays ended, with its job waiting."""
 
@@ -21,7 +22,7 @@ class WorkerJobResumeListener(CommitListener[Updated[Agent]]):
     def __init__(self, queries: Queries, resume: WorkerResume, stop: WorkerStop) -> None:
         self.queries, self.worker_resume, self.stop = queries, resume, stop
 
-    def handle(self, event: Updated[Agent], logged: LoggedEvent) -> None:
+    def handle(self, event: AgentEnded | Updated[Agent], logged: LoggedEvent) -> None:
         worker = event.row
         ended_worker = worker.role == AgentRole.WORKER and worker.ended_at is not None
         if ended_worker and not self.stop.is_final(worker, logged.actor_id):

@@ -34,6 +34,9 @@ class Agent(Model):
     given_name: str = ""
     ended_at: Timestamp | None = None
 
+    def change_name(self, old_row: "Agent | None") -> str | None:
+        return END_CHANGE if old_row is not None and old_row.ended_at is None and self.ended_at is not None else None
+
     def ended(self, timestamp: Timestamp, policy: AgentPolicy) -> "Agent":
         return self.changed(ended_at=timestamp, paused_at=self.paused_at if self.role in policy.pause_retention_roles else None)
 

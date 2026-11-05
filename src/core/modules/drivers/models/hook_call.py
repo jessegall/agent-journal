@@ -12,6 +12,7 @@ SESSION_START = "session_start"
 PROMPT = "prompt"
 STOP_ALLOWED = "stop_allowed"
 STOP_REFUSED = "stop_refused"
+HOOK_CHANGE_NAMES = {HookEventName.COMPACT: COMPACTION, HookEventName.SESSION_START: SESSION_START, HookEventName.PROMPT: PROMPT}
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -39,6 +40,13 @@ class HookCall(Model):
     refusal: str = ""
     lines: str = ""
     updated_input: str = "{}"
+
+    def change_name(self, old_row: "HookCall | None") -> str | None:
+        if old_row is not None:
+            return None
+        if self.hook == HookEventName.STOP:
+            return STOP_ALLOWED if self.answer is HookAnswer.ALLOWED else STOP_REFUSED
+        return HOOK_CHANGE_NAMES.get(self.hook)
 
     @property
     def foreign_runs(self) -> tuple[ForeignRun, ...]:

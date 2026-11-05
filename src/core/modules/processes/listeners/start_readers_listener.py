@@ -5,13 +5,12 @@ from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.models.hook_call import HookCall
 from core.modules.processes.commands.send_readers_notice.send_readers_notice import SendReadersNotice
 from core.modules.processes.listeners.process_end_mark_listener import MODULE_NAME
-from core.base.change.created import Created
+from core.modules.drivers.events.session_started import SessionStarted
 
 
-class StartReadersListener(CommitListener[Created[HookCall]]):
+class StartReadersListener(CommitListener[SessionStarted]):
     """After a main agent's session start has answered, checks the readers, so the hook stays cheap however many
     readers and samples the project holds."""
 
@@ -20,7 +19,7 @@ class StartReadersListener(CommitListener[Created[HookCall]]):
     def __init__(self, queries: Queries, bus: Bus, actors: ModuleActors) -> None:
         self.queries, self.bus, self.actors = queries, bus, actors
 
-    def handle(self, event: Created[HookCall], logged: LoggedEvent) -> None:
+    def handle(self, event: SessionStarted, logged: LoggedEvent) -> None:
         call = event.row
-        if call.is_session_start and self.queries.query(Agent).find(call.agent_id).role == AgentRole.MAIN:
+        if self.queries.query(Agent).find(call.agent_id).role == AgentRole.MAIN:
             self.bus.run(SendReadersNotice(call.environment_id), self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=call.environment_id)

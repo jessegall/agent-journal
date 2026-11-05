@@ -2,6 +2,7 @@ from dataclasses import replace
 from typing import TypeVar
 
 from core.base.change.changed import Changed
+from core.base.change.created import Created
 from core.base.change.event_log import HIDDEN
 from core.base.change.event_type import EventType
 from core.base.change.logged_event import LoggedEvent
@@ -13,6 +14,7 @@ from core.base.model.tables import Tables
 from core.base.query.queries import Queries
 
 M = TypeVar("M", bound=Model)
+CREATION = ".create"
 
 
 class EventBuilder:
@@ -28,9 +30,15 @@ class EventBuilder:
         row = self.queries.query(event_type.model).filter(id=logged.row_id).first()
         if row is None:
             return None
-        if not issubclass(event_type.event_class, Updated):
-            return event_type.event_class(row)
-        return event_type.event_class(row, self.old_row(row, logged), self.move(row, logged))
+        event_class = self.event_class(event_type.event_class, logged)
+        if not issubclass(event_class, Updated):
+            return event_class(row)
+        return event_class(row, self.old_row(row, logged), self.move(row, logged))
+
+    def event_class(self, declared: type, logged: LoggedEvent) -> type:
+        if declared is not Changed:
+            return declared
+        return Created if logged.event.endswith(CREATION) else Updated
 
     def old_row(self, row: M, logged: LoggedEvent) -> M:
         table = self.tables.table(type(row))

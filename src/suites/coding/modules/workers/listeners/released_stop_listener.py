@@ -11,11 +11,11 @@ from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.rules.repeated_stop_release_rule import STOP_REFUSAL_COUNT
 from core.modules.tasks.queries.task_query import TaskQuery
-from core.base.change.created import Created
+from core.modules.drivers.events.stop_allowed import StopAllowed
 from core.base.command.context import Context
 
 
-class ReleasedStopListener(SaveListener[Created[HookCall]]):
+class ReleasedStopListener(SaveListener[StopAllowed]):
     """A worker whose stop went through only by the repeated-stop release, its task still started, is ended.
     """
 
@@ -24,10 +24,8 @@ class ReleasedStopListener(SaveListener[Created[HookCall]]):
     def __init__(self, queries: Queries, calls: HookCallQuery, tasks: TaskQuery, bus: Bus) -> None:
         self.queries, self.calls, self.tasks, self.bus = queries, calls, tasks, bus
 
-    def handle(self, event: Created[HookCall], context: Context) -> None:
+    def handle(self, event: StopAllowed, context: Context) -> None:
         call = event.row
-        if not isinstance(call, HookCall) or call.hook != HookEventName.STOP or call.answer is not HookAnswer.ALLOWED:
-            return
         if not self.queries.query(Agent).filter(id=call.agent_id, role=AgentRole.WORKER).exists() or not self.tasks.holder(call.agent_id).started().exists():
             return
         previous_stops = [stop for stop in self.calls.agent(call.agent_id).filter(hook=HookEventName.STOP).newest().page(1, STOP_REFUSAL_COUNT + 1).rows if stop.id != call.id]

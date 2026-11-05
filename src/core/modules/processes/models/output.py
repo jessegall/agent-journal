@@ -37,3 +37,5 @@ class Output(Model):
     read_at: Timestamp | None = None
     pruned_at: Timestamp | None = None
 
+    def change_name(self, old_row: "Output | None") -> str | None:
+        return END_CHANGE if self.ended_at is not None and (old_row is None or old_row.ended_at is None) else None

@@ -12,6 +12,7 @@ from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.dumps.models.dump import Dump
 from core.modules.dumps.models.enums.dump_dock_type import DumpDockType
 from core.base.change.changed import Changed
+from core.base.change.created import Created
 
 DUMPS_MODULE = "journal.core.dumps"
 
@@ -28,7 +29,7 @@ class DumpDockListener(CommitListener[Changed[Dump]]):
     def handle(self, event: Changed[Dump], logged: LoggedEvent) -> None:
         dump = event.row
         actor = self.actors.actor(DUMPS_MODULE)
-        if logged.event == "dump.create":
+        if isinstance(event, Created):
             docks = self.queries.query(Dock)
             if logged.environment_id is not None:
                 docks = docks.filter(environment_id=logged.environment_id)

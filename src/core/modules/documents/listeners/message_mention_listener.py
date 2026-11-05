@@ -6,6 +6,5 @@ from core.base.change.created import Created
 class MessageMentionListener(TextMentionListener[Created[Message]]):
     """Links a saved message to the rows it names."""
 
-    model = Message
     text_fields = tuple(["text"])
     name = "documents.message-mentions"

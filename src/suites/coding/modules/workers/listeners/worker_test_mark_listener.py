@@ -5,29 +5,27 @@ from suites.coding.modules.workers.models.enums.worker_mark_type import WorkerMa
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
-from core.base.change.changed import Changed
-
-QUEUE_EVENT = "proof.queue"
-ENDED_EVENTS = ("proof.check", "proof.short")
+from core.base.change.moved import Moved
+from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 
 
-class WorkerTestMarkListener(MarkListener[Changed[Proof]]):
+
+class WorkerTestMarkListener(MarkListener[Moved[Proof]]):
     """The tests of each task of a worker show as one mark in the chat: queued when they are handed over, failed
     until they run again, and ended when the last has passed."""
 
     name = "workers.test-mark"
+    moves = (ProofLifecycle.queue, ProofLifecycle.check, ProofLifecycle.short)
     module_name = "journal.suites.coding.workers"
 
-    def handle(self, event: Changed[Proof], logged: LoggedEvent) -> None:
-        if logged.event != QUEUE_EVENT and logged.event not in ENDED_EVENTS:
-            return
+    def handle(self, event: Moved[Proof], logged: LoggedEvent) -> None:
         proof = event.row
         if not proof.test_command:
             return
         worktree = self.queries.query(Worktree).find(proof.worktree_id)
         proofs = tuple(self.queries.query(Proof).filter(worktree_id=worktree.id).all_rows())
         worker = worktree.agent_id
-        if logged.event == QUEUE_EVENT:
+        if event.move is ProofLifecycle.queue:
             self.mark(logged, worktree, proof, WorkerMarkVariant.QUEUED, f"Tests of worker {worker} queued", False)
         elif not any(row.state in TEST_WAITING_STATES for row in proofs):
             failed = sum(row.state is ProofState.SHORT for row in proofs)

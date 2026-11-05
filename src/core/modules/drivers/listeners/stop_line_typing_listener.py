@@ -1,20 +1,17 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.change.logged_event import LoggedEvent
-from core.base.driver.hook_event_name import HookEventName
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
 from core.modules.drivers.listeners.typed_line_listener import TERMINAL_SOURCES
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
-from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.support.line_typing import LineTyping
 from core.modules.drivers.support.waking_lines import WakingLines
-from core.base.change.created import Created
+from core.modules.drivers.events.stop_allowed import StopAllowed
 
 
-class StopLineTypingListener(CommitListener[Created[HookCall]]):
+class StopLineTypingListener(CommitListener[StopAllowed]):
     """An agent let to stop sends no hook that could carry a line left during its turn, so the oldest one is typed;
     the turn that starts gives the rest."""
 
@@ -24,9 +21,7 @@ class StopLineTypingListener(CommitListener[Created[HookCall]]):
     def __init__(self, queries: Queries, typing: LineTyping) -> None:
         self.queries, self.typing = queries, typing
 
-    def handle(self, event: Created[HookCall], logged: LoggedEvent) -> None:
-        if logged.data["hook"][1] != HookEventName.STOP or logged.data["answer"][1] != HookAnswer.ALLOWED:
-            return
+    def handle(self, event: StopAllowed, logged: LoggedEvent) -> None:
         agent_id = event.row.agent_id
         line = self.queries.query(AgentLine).filter(agent_id=agent_id, state=AgentLineState.WAITING).matching(WakingLines(TERMINAL_SOURCES)).oldest().first()
         if line is not None:

@@ -1,3 +1,4 @@
+from core.modules.processes.events.process_ended import ProcessEnded
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
@@ -12,11 +13,10 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RUN_ENDED
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
-from core.base.change.changed import Changed
 from core.base.command.context import Context
 
 
-class WorkerRunEndedListener(SaveListener[Changed[Process]]):
+class WorkerRunEndedListener(SaveListener[ProcessEnded]):
     """A worker that has stopped while a run of its own went on in the background is told when the run
     ends, by a job line, which starts it again on its session; one a person or another agent stopped, or
     that asked for help, stays stopped."""
@@ -27,10 +27,8 @@ class WorkerRunEndedListener(SaveListener[Changed[Process]]):
     def __init__(self, queries: Queries, worktrees: WorktreeQuery, nudger: Nudger, stop: WorkerStop) -> None:
         self.queries, self.worktrees, self.nudger, self.stop = queries, worktrees, nudger, stop
 
-    def handle(self, event: Changed[Process], context: Context) -> None:
+    def handle(self, event: ProcessEnded, context: Context) -> None:
         process = event.row
-        if not isinstance(process, Process) or event.move is None or process.state in RUNNING_STATES:
-            return
         agent = self.queries.query(Agent).find(process.agent_id)
         worktree = self.worktrees.worker_worktree(agent.id)
         if agent.role != AgentRole.WORKER or agent.ended_at is None or worktree is None or worktree.state is not WorktreeState.CUT:

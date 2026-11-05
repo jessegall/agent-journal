@@ -1,3 +1,4 @@
+from core.modules.agents.events.agent_ended import AgentEnded
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
@@ -11,14 +12,13 @@ from suites.coding.modules.workers.support.worker_job import UNFINISHED_TASKS_SO
 from suites.coding.modules.workers.support.worker_nudges import WORKER_ENDED_WITH_TASKS, WORKER_RESTARTED, WORKER_UNFINISHED_TASKS
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
-from core.base.change.updated import Updated
 from core.base.command.context import Context
 
 SOURCE = "workers.ended-worker"
 RESUME_LIMIT_COUNT = 3
 
 
-class EndedWorkerListener(SaveListener[Updated[Agent]]):
+class EndedWorkerListener(SaveListener[AgentEnded]):
     """A worker that ends with delegated tasks unfinished is told to carry on, which resumes it, so its main
     agent gets one quiet line; one that ended while its tests wait gets its next task from them, and one that
     ended while a run of its own goes is started again when the run ends. A worker a person or another agent
@@ -31,10 +31,8 @@ class EndedWorkerListener(SaveListener[Updated[Agent]]):
     def __init__(self, nudger: Nudger, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop) -> None:
         self.nudger, self.queries, self.unfinished, self.stop = nudger, queries, unfinished, stop
 
-    def handle(self, event: Updated[Agent], context: Context) -> None:
-        old, new = event.old_row, event.row
-        if not isinstance(old, Agent) or not isinstance(new, Agent) or old.ended_at is not None or new.ended_at is None:
-            return
+    def handle(self, event: AgentEnded, context: Context) -> None:
+        new = event.row
         if new.role != AgentRole.WORKER or new.parent_id is None:
             return
         unfinished = self.unfinished.rows(new.id)

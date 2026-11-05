@@ -14,10 +14,7 @@ class QuestionMarkListener(MarkListener[E]):
     module_name = "journal.core.questions"
 
     def handle(self, event: E, logged: LoggedEvent) -> None:
-        self.process(logged, self.question(logged), ended=False)
-
-    def question(self, logged: LoggedEvent) -> Question:
-        return self.queries.query(Question).find(logged.row_id)
+        self.process(logged, event.row, ended=False)
 
     def process(self, logged: LoggedEvent, question: Question, ended: bool) -> None:
         self.show(logged, QuestionMarkType.QUESTION, QuestionMarkVariant.OPEN, f"Question {question.id}: {question.text}", question.environment_id, question.agent_id,

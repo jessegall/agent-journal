@@ -12,13 +12,13 @@ from core.modules.processes.models.process import Process
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.support.test_run_nudges import TESTING_TASKS_FAILED_RUN, TESTING_TASKS_FULL_RUN
-from core.base.change.changed import Changed
-from core.base.change.deleted import Deleted
+from core.base.change.created import Created
+from core.modules.processes.events.process_ended import ProcessEnded
 
 SOURCE = "tasks.full-test-run"
 
 
-class FullTestRunListener(SaveListener[Changed[Process]]):
+class FullTestRunListener(SaveListener[Created[Process] | ProcessEnded]):
     """A run of the whole test suite names the tasks in testing when it starts; when it passes it closes those
     that were in testing before it started, and when it fails it names them. A worker's tasks wait for its
     merge."""
@@ -29,20 +29,14 @@ class FullTestRunListener(SaveListener[Changed[Process]]):
     def __init__(self, queries: Queries, repository: Repository, nudger: Nudger) -> None:
         self.queries, self.repository, self.nudger = queries, repository, nudger
 
-    def handle(self, event: Changed[Process], context: Context) -> None:
-        if isinstance(event, Deleted):
+    def handle(self, event: Created[Process] | ProcessEnded, context: Context) -> None:
+        run = event.row
+        if not run.is_full_test_run:
             return
-        run, old = event.row, event.old_row
-        if not isinstance(run, Process) or not run.is_full_test_run:
-            return
-        if old is None:
+        if isinstance(event, Created):
             self.send_line(run, self.testing_tasks(run), TESTING_TASKS_FULL_RUN, context)
             return
-        if isinstance(old, Process) and self.ended_with(old, run):
-            self.ended(run, context)
-
-    def ended_with(self, old: Process, run: Process) -> bool:
-        return old.ended_at is None and run.ended_at is not None
+        self.ended(run, context)
 
     def ended(self, run: Process, context: Context) -> None:
         tasks = self.testing_tasks(run)

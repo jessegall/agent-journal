@@ -1,3 +1,4 @@
+from core.modules.processes.events.output_ended import OutputEnded
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries
@@ -9,12 +10,10 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.reader_requests import ReaderRequests
-from core.base.change.changed import Changed
-from core.base.change.deleted import Deleted
 from core.base.command.context import Context
 
 
-class ReaderFailureListener(SaveListener[Changed[Output]]):
+class ReaderFailureListener(SaveListener[OutputEnded]):
     """Opens a request when a reader fails on a completed run."""
 
     name = "processes.reader-failure"
@@ -23,13 +22,9 @@ class ReaderFailureListener(SaveListener[Changed[Output]]):
     def __init__(self, queries: Queries, requests: ReaderRequests) -> None:
         self.queries, self.requests = queries, requests
 
-    def handle(self, event: Changed[Output], context: Context) -> None:
-        if isinstance(event, Deleted):
-            return
+    def handle(self, event: OutputEnded, context: Context) -> None:
         output = event.row
-        if not isinstance(output, Output) or output.ended_at is None or output.reader_id is None or not output.line_count:
-            return
-        if isinstance(event.old_row, Output) and event.old_row.ended_at is not None:
+        if output.reader_id is None or not output.line_count:
             return
         process = self.queries.query(Process).find(output.process_id)
         agent = self.queries.query(Agent).find(process.agent_id)

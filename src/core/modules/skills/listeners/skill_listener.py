@@ -6,7 +6,6 @@ from core.base.command.command import Command
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
-from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.change.event_subscriber import E
@@ -21,9 +20,6 @@ class SkillListener(CommitListener[E]):
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, catalogue: SkillCatalogue, suites: SuiteChoice) -> None:
         self.bus, self.actors, self.queries, self.catalogue = bus, actors, queries, catalogue
         self.suites = suites
-
-    def call(self, logged: LoggedEvent) -> HookCall:
-        return self.queries.query(HookCall).find(logged.row_id)
 
     def run(self, logged: LoggedEvent, command: Command[object]) -> None:
         self.bus.run(command, self.actors.actor(self.module_name), cause_id=logged.id, environment_id=logged.environment_id)

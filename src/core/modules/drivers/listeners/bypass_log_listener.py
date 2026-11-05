@@ -12,12 +12,12 @@ from core.modules.drivers.commands.record_bypass_line.record_bypass_line import 
 from core.modules.drivers.models.enums.bypass_mark_type import BypassMarkType
 from core.modules.drivers.models.enums.bypass_mark_variant import BypassMarkVariant
 from core.modules.drivers.models.hook_call import HookCall
-from core.base.change.created import Created
+from core.base.change.changed import Changed
 
 MODULE_NAME = "journal.core.drivers"
 
 
-class BypassLogListener(CommitListener[Created[HookCall]]):
+class BypassLogListener(CommitListener[Changed[HookCall]]):
     """The first hook of a main agent the journal records after it was silent names, once, what went around
     it: a mark in the chat and a line for the agent, from the log the Go hook writes."""
 
@@ -26,7 +26,7 @@ class BypassLogListener(CommitListener[Created[HookCall]]):
     def __init__(self, home: JournalHome, queries: Queries, bus: Bus, actors: ModuleActors) -> None:
         self.home, self.queries, self.bus, self.actors = home, queries, bus, actors
 
-    def handle(self, event: Created[HookCall], logged: LoggedEvent) -> None:
+    def handle(self, event: Changed[HookCall], logged: LoggedEvent) -> None:
         log = self.home.bypass_log
         if not log.is_file():
             return

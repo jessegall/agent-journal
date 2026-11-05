@@ -7,6 +7,5 @@ from core.base.change.updated import Updated
 class TaskMentionListener(TextMentionListener[Created[Task] | Updated[Task]]):
     """Links a saved task to the rows it names."""
 
-    model = Task
     text_fields = ("title", "brief")
     name = "documents.task-mentions"

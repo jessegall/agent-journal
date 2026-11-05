@@ -12,11 +12,11 @@ from core.modules.skills.listeners.skill_listener import SkillListener
 from core.modules.skills.support.main_agent_skills import MainAgentSkills
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.start_skills import StartSkills
-from core.base.change.created import Created
+from core.modules.drivers.events.session_started import SessionStarted
 
 
 
-class StartSkillsListener(SkillListener[Created[HookCall]]):
+class StartSkillsListener(SkillListener[SessionStarted]):
     """Requires startup skills for the prompt recipients declared by the suite."""
 
     name = "skills.start"
@@ -25,9 +25,9 @@ class StartSkillsListener(SkillListener[Created[HookCall]]):
         super().__init__(bus, actors, queries, catalogue, suites)
         self.start, self.main_skills = start, main_skills
 
-    def handle(self, event: Created[HookCall], logged: LoggedEvent) -> None:
-        call = self.call(logged)
-        if not call.is_session_start or self.queries.query(Agent).find(call.agent_id).role not in self.suites.agent_policy(call.environment_id).prompt_roles:
+    def handle(self, event: SessionStarted, logged: LoggedEvent) -> None:
+        call = event.row
+        if self.queries.query(Agent).find(call.agent_id).role not in self.suites.agent_policy(call.environment_id).prompt_roles:
             return
         if call.metadata.module_part(DRIVERS_MODULE).get("resumed"):
             return

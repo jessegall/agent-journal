@@ -9,7 +9,7 @@ from core.modules.waits.models.enums.wait_type import WaitType
 from core.modules.waits.models.wait import Wait
 
 STOPPING_ACTOR_TYPES = (ActorType.USER, ActorType.AGENT)
-AGENT_UPDATE_EVENT = "agent.update"
+AGENT_ENDING_EVENTS = ("agent.update", "agent.end")
 
 
 class WorkerStop:
@@ -24,7 +24,7 @@ class WorkerStop:
 
     def was_stopped(self, worker: Agent) -> bool:
         events = self.log.row_events(self.tables.table(Agent).name, worker.id)
-        endings = [event for event in events if event.event == AGENT_UPDATE_EVENT and event.data.get(ENDED_FIELD, (None, None))[1]]
+        endings = [event for event in events if event.event in AGENT_ENDING_EVENTS and event.data.get(ENDED_FIELD, (None, None))[1]]
         return bool(endings) and self.is_final(worker, endings[-1].actor_id)
 
     def has_open_help_request(self, worker_id: int) -> bool:

@@ -7,6 +7,5 @@ from core.base.change.created import Created
 class NewDocDockListener(NewTextDockListener[Created[Doc]]):
     """Docks a new document."""
 
-    row_model = Doc
     dock_type = TextDockType.DOC
     name = "documents.new-doc-dock"
