@@ -69,12 +69,12 @@ async function dockedHead(run) {
     document.body.append(foot, time);
     window.option = (key) => ({head: ref(head), foot: ref(foot), time: ref(time), folded: ref(true), row: ref({id: 7, target_id: 3})})[key];
     await mounted(OutputDock, window);
-    return head;
+    return foot;
 }
 
-test("a process with no steps and no percent shows three pending dots", async () => {
-    const head = await dockedHead({});
-    expect(head.querySelectorAll("[data-output-pending] i")).toHaveLength(3);
+test("a process with no steps and no percent shows three pending dots below its title", async () => {
+    const foot = await dockedHead({});
+    expect(foot.querySelectorAll("[data-output-pending] i")).toHaveLength(3);
 });
 
 test("the pending dots go once a run has steps or a percent", async () => {

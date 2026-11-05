@@ -128,10 +128,6 @@ usePoll(load, isRunning, () =>
         <span class="output-dock-title" :title="run?.title || run?.line">{{
           run?.title || run?.line
         }}</span>
-        <template v-if="isRunning() && !fraction && !steps"
-          ><span class="output-dock-pending" data-output-pending aria-label="Pending"
-            ><i /><i /><i /></span
-        ></template>
         <template v-if="fraction > 0 || ended">
           <div
             class="output-dock-bar"
@@ -146,6 +142,12 @@ usePoll(load, isRunning, () =>
           </div>
         </template>
       </Teleport>
+    </template>
+    <template v-if="unref(foot) && isRunning() && !fraction && !steps"
+      ><Teleport :to="unref(foot)"
+        ><span class="output-dock-pending" data-output-pending aria-label="Pending"
+          ><i /><i /><i /></span
+      ></Teleport>
     </template>
     <template v-if="unref(foot) && steps"
       ><Teleport :to="unref(foot)"
