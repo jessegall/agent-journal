@@ -328,11 +328,6 @@ def test_the_board_lists_tasks_delegated_to_a_worker_in_a_group_of_their_own_apa
     expect_id_cancelled(page, [1])
 
 
-def test_a_dispatch_with_no_model_is_refused(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
-    repository_environment(story)
-    story.expect_refusal("worker dispatch 1", "add --model", actor=story.agent)
-
 
 def test_a_workers_facts_carry_its_model_profile_and_name_with_no_status_file(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)

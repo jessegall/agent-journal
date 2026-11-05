@@ -10,7 +10,10 @@ from core.base.command.handler import Handler
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.base.listener.event_rows import EventRows
+from core.base.agent_type_book import AgentTypeBook
+from core.base.profile.agent_profile import AgentProfile
 from core.base.refusal import Refusal
+from core.modules.profiles.support.profile_files import ProfileFiles
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
@@ -40,10 +43,10 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     command = DispatchWorker
 
     def __init__(self, queries: Queries, repository: Repository, bus: Bus, settings: SettingValues, git: WorktreeGit,
-                 worker_command: WorkerCommand, worktrees: WorktreeQuery, providers: Providers, models: AllowedModels, environments: EnvironmentRows, rows: EventRows) -> None:
+                 worker_command: WorkerCommand, worktrees: WorktreeQuery, providers: Providers, models: AllowedModels, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles) -> None:
         self.queries, self.repository, self.bus, self.settings = queries, repository, bus, settings
         self.git, self.worker_command, self.worktrees, self.providers, self.models = git, worker_command, worktrees, providers, models
-        self.environments, self.rows = environments, rows
+        self.environments, self.rows, self.types, self.profiles = environments, rows, types, profiles
 
     def handle(self, command: DispatchWorker, context: Context) -> WorkerLaunch:
         tasks = self.queries.query(Task).find_many([command.task_id, *command.delegated_ids])
@@ -61,8 +64,10 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         if not program:
             raise Refusal("a person's dispatch needs the program the worker runs", "add --program, such as the program of the environment's main agent")
         parent_id = caller.id if caller is not None else None
-        self.check_model(program, command.program_model, environment.id)
-        start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=command.program_model, profile=command.profile, given_name=command.given_name)
+        profile = self.worker_profile(command.profile)
+        model = command.program_model or profile.program_model(program)
+        self.check_model(program, model, environment.id)
+        start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
         worker = self.bus.dispatch(start, worker_context)
         name = f"worker-{worker.id}"
         worktree = self.repository.save(Worktree(agent_id=worker.id, environment_id=environment.id, task_id=task.id, creator_id=context.actor.id,
@@ -80,6 +85,13 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             self.git.remove(environment.folder, worktree)
             raise
         return WorkerLaunch(worker, worktree, self.worker_command.command(worker, worktree, environment, task))
+
+    def worker_profile(self, name: str) -> AgentProfile:
+        worker_type = self.types.find(AgentRole.WORKER)
+        profile = self.profiles.effective(name or worker_type.default_profile)
+        if profile.agent_type != worker_type.key:
+            raise Refusal(f"{profile.name} is a {self.types.find(profile.agent_type).label}: journal helper start runs it")
+        return profile
 
     def check_model(self, program: str, model: str, environment_id: int) -> None:
         names = self.models.allowed(self.providers.provider(program), environment_id)
