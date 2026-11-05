@@ -5,7 +5,7 @@ from core.base.command.handler import Handler
 from core.base.query.conditions.is_null import IsNull
 from core.modules.environments.models.environment import Environment
 from core.base.query.queries import Queries
-from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker_handler import WORKTREES_FOLDER
+from suites.coding.modules.workers.commands.open_worker_worktree.open_worker_worktree_handler import WORKTREES_FOLDER
 from suites.coding.modules.workers.commands.remove_orphan_worktrees.remove_orphan_worktrees import RemoveOrphanWorktrees
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
