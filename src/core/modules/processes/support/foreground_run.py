@@ -15,6 +15,7 @@ class ForegroundRun:
     category: CommandCategory | None = None
     queued: bool = False
     read_command: bool = False
+    shell_sandbox: bool = False
     part_commands: tuple[PartCommand, ...] = ()
 
     count_line: str = ""

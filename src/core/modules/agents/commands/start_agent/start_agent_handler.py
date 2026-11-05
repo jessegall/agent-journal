@@ -12,6 +12,9 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.agent_type_book import AgentTypeBook
+from core.base.access import Access
+from core.base.actor import Actor
+from core.base.shell_sandbox import ShellSandbox
 
 
 class StartAgentHandler(Handler[StartAgent, Agent]):
@@ -21,9 +24,14 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
 
     command = StartAgent
 
-    def __init__(self, queries: Queries, repository: Repository, chain: ProcessChain, types: AgentTypeBook) -> None:
+    def __init__(self, queries: Queries, repository: Repository, chain: ProcessChain, types: AgentTypeBook, sandbox: ShellSandbox) -> None:
         self.queries, self.repository, self.chain = queries, repository, chain
         self.types = types
+        self.sandbox = sandbox
+
+    def prepare(self, command: StartAgent, actor: Actor) -> None:
+        if self.types.find(command.role).access is Access.READ:
+            self.sandbox.check()
 
     def handle(self, command: StartAgent, context: Context) -> Agent:
         if context.environment_id is None:

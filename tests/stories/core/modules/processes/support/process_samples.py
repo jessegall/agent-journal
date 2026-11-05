@@ -32,9 +32,11 @@ def start_process(story: Story, line: str = "make test && echo done", piped: boo
     return story.container.get(Bus).run(command, story.agent, environment_id=1)
 
 
-def runner_line(story: Story, process_id: int, line: str, limit: int = 15, background: bool = False, session: str = "s-1", read_command: bool = False, has_long_part: bool = False, queue_run: bool = True) -> str:
+def runner_line(story: Story, process_id: int, line: str, limit: int = 15, background: bool = False, session: str = "s-1", read_command: bool = False, has_long_part: bool = False, queue_run: bool = True, sandbox: bool = False) -> str:
     """The line the rule gives the agent's tool to run in place of its own."""
     flag = (" --background" if background else "") + (" --only-reads" if read_command else "")
+    if sandbox or session == "sub-1":
+        flag += " --read-only-shell"
     variables = f" JOURNAL_RUN_MOST_OUTPUT={(100 if has_long_part else 10) << 20}"
     if limit > 0 and has_long_part and not read_command and queue_run:
         flag += " --queue"

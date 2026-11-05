@@ -13,6 +13,9 @@ import (
 func Bypass(options Options, stdout io.Writer) int {
 	note(options)
 	command := exec.Command(options.Shell, "-c", options.Line)
+	if options.ReadOnlyShell {
+		command = options.Sandbox.command(options.Shell, "-c", options.Line)
+	}
 	command.Env = journalEnvironment(options.Home)
 	command.Stdout, command.Stderr = stdout, stdout
 	if err := command.Run(); err != nil {
