@@ -23,6 +23,7 @@ def test_selecting_another_module_in_the_same_folder_changes_the_fingerprint():
     fingerprint = CodeFingerprint()
     first = fingerprint.text([FirstModule])
     assert fingerprint.text([FirstModule]) == first
+    assert fingerprint.text([FirstModule, FirstModule]) == first
     assert fingerprint.text([SecondModule]) != first
     assert fingerprint.refreshed([FirstModule]) == first
     assert fingerprint.text([FirstModule, SecondModule]) == fingerprint.text([SecondModule, FirstModule])

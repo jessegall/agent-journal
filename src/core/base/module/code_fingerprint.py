@@ -40,7 +40,7 @@ class CodeFingerprint:
     @staticmethod
     def selected_text(code_text: str, modules: Sequence[type[Module]]) -> str:
         digest = hashlib.sha256(code_text.encode())
-        paths = sorted(f"{module.__module__}.{module.__qualname__}" for module in modules)
+        paths = sorted({f"{module.__module__}.{module.__qualname__}" for module in modules})
         digest.update(("\n" + "\n".join(paths)).encode())
         return digest.hexdigest()
 

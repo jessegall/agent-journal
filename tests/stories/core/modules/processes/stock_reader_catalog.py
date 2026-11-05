@@ -6,6 +6,7 @@ from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.migrations.m030_stock_reader_catalog import StockReaderCatalogMigration
 from core.modules.processes.migrations.m037_more_tool_stock_readers import FIRST_BATCH_READERS, NEW_READERS
 from core.modules.processes.queries.reader_query import ReaderQuery
+from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
 from core.modules.processes.support.reader_demands import ReaderDemands
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.reader_run import ReaderRun
@@ -47,7 +48,7 @@ def test_a_stock_reader_is_proper_on_a_recorded_output(new_story, name, command,
     part = PartSpec(command, command.split()[0], category=category)
     story.expect_rows(ReaderSelection.reads_command(reader, command, category))
     story.expect_rows(bool(story.container.get(ReaderRun).summary(reader, output)))
-    story.expect_rows(story.container.get(ReaderDemands).reason(part, reader) == "")
+    story.expect_rows(story.container.get(ReaderDemands).reason(part, reader, ReaderSampleScope(1, story.agent.id, part.text)) == "")
     story.expect_rows(story.container.get(ReaderJudge).judged(reader, category).is_proper)
 
 
@@ -64,7 +65,7 @@ def test_a_quiet_go_build_has_a_reader(new_story):
     reader = story.container.get(ReaderQuery).filter(name="go-build").page(1, 1).rows[0]
     part = PartSpec("go build ./...", "go", category=CommandCategory.BUILD)
     story.expect_rows(ReaderSelection.reads_command(reader, part.text, part.category))
-    story.expect_rows(story.container.get(ReaderDemands).reason(part, reader) == "")
+    story.expect_rows(story.container.get(ReaderDemands).reason(part, reader, ReaderSampleScope(1, story.agent.id, part.text)) == "")
 
 
 @pytest.mark.parametrize(("name", "output", "count"), [

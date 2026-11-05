@@ -20,7 +20,9 @@ class StoryLineRun(LineRun):
     def synced(self, deadline: Deadline | None, timing: Timing | None) -> Container:
         container = super().synced(deadline, timing)
         request = OPEN_REQUEST.get()
-        assert request is not None, "a viewer story line must run within a request"
+        if request is None:
+            request = RepeatedWork(container.get(Database))
         request.database = container.get(Database)
+        request.add(request.database.tally.points())
         request.database.tally = request
         return container
