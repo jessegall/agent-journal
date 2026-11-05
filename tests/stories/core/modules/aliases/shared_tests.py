@@ -1,5 +1,7 @@
 import shlex
 import sys
+import sysconfig
+import venv
 from pathlib import Path
 
 import pytest
@@ -66,9 +68,9 @@ def test_a_worker_runs_the_shared_pytest_in_its_own_checkout(new_story):
     story.expect_success('alias add pytest-run ".venv/bin/python3 -m pytest {args}" --category "test run" --agents', actor=story.agent)
     worker = dispatched_worker(story)
     folder = repository.worktree_folder(worker.id)
-    (folder / ".venv").symlink_to(Path(sys.prefix), target_is_directory=True)
+    venv.create(folder / ".venv", with_pip=False, symlinks=True)
+    packages = folder / ".venv" / "lib" / f"python{sys.version_info.major}.{sys.version_info.minor}" / "site-packages"
+    (packages / "project-packages.pth").write_text(sysconfig.get_path("purelib") + "\n")
     test_file = folder / "test_python_environment.py"
     test_file.write_text("import pathlib, sys\ndef test_python():\n    assert pathlib.Path(sys.executable).parent == pathlib.Path.cwd() / '.venv' / 'bin'\n")
-    result = story.run_requested("pytest-run -q test_python_environment.py", CallerRequest(variables={"JOURNAL_ACTOR": "agent", "JOURNAL_AGENT_SESSION": worker_session(story, worker)}, folder=str(folder)))
-    assert result.code == 0, result.output_text
-    assert "1 passed" in result.output_text
+    story.expect_requested_exit("pytest-run -q test_python_environment.py", CallerRequest(variables={"JOURNAL_ACTOR": "agent", "JOURNAL_AGENT_SESSION": worker_session(story, worker)}, folder=str(folder)), 0, "1 passed")

@@ -4,7 +4,10 @@ import "testing"
 
 func TestSavedCommandsShareTheirProgramAndWorkingFolder(t *testing.T) {
 	classifier := NewClassifier(LoadTable(""))
-	for _, sample := range []struct{ saved, candidate string; duplicate bool }{
+	for _, sample := range []struct {
+		saved, candidate string
+		duplicate        bool
+	}{
 		{".venv/bin/python3 -m pytest {args}", "python3 -m pytest tests/unit", true},
 		{".venv/bin/python3 -m pytest {args}", ".venv/bin/pytest -q", true},
 		{"pytest", "npx vitest run", false},

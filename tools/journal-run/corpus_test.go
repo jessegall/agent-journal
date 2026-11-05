@@ -19,6 +19,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jessegall/agent-journal/tools/journal-hook/classify"
 	"github.com/jessegall/agent-journal/tools/journal-hook/shell"
 )
 
@@ -172,7 +173,7 @@ func sandboxPolicy(folder string, programs []string) string {
 
 // runInSandbox starts this test again inside the sandbox: no network, no write outside its own folder, no signal to
 // another process and no program but the ones listed, so no line of the corpus can do anything real.
-func runInSandbox(t *testing.T, path string) {
+func runInSandbox(t *testing.T, path, testName string) {
 	t.Helper()
 	sandbox, err := exec.LookPath("sandbox-exec")
 	if err != nil {
@@ -208,7 +209,7 @@ func runInSandbox(t *testing.T, path string) {
 			t.Fatal(err)
 		}
 	}
-	command := exec.Command(sandbox, "-p", sandboxPolicy(folder, programs), program, "-test.run=^TestSampledCorpusLinesRunAsInAShell$", "-test.timeout=2h", "-test.v")
+	command := exec.Command(sandbox, "-p", sandboxPolicy(folder, programs), program, "-test.run=^"+testName+"$", "-test.timeout=2h", "-test.v")
 	command.Env = append(os.Environ(), sandboxedName+"="+folder, "HOME="+folder, "TMPDIR="+folder)
 	output, err := command.CombinedOutput()
 	differing, readErr := os.ReadFile(filepath.Join(folder, "differing.txt"))
@@ -402,7 +403,7 @@ func expectSandboxHolds(t *testing.T) {
 func TestSampledCorpusLinesRunAsInAShell(t *testing.T) {
 	sandbox := os.Getenv(sandboxedName)
 	if sandbox == "" {
-		runInSandbox(t, corpusFile(t))
+		runInSandbox(t, corpusFile(t), t.Name())
 		return
 	}
 	expectSandboxHolds(t)
@@ -423,5 +424,36 @@ func TestSampledCorpusLinesRunAsInAShell(t *testing.T) {
 	}
 	if len(failing) > 0 {
 		t.Fatalf("%d of %d runs differ, the first:\n%s", len(failing), len(sample)*2, failing[0])
+	}
+}
+
+func TestEveryCorpusTestAndBuildNamesAKnownProgram(t *testing.T) {
+	if os.Getenv(sandboxedName) == "" {
+		runInSandbox(t, corpusFile(t), t.Name())
+		return
+	}
+	expectSandboxHolds(t)
+	table := classify.LoadTable("")
+	classifier := classify.NewClassifier(table)
+	programs, unknown := map[string]bool{}, map[string]bool{}
+	for _, line := range corpusLines(t, os.Getenv(corpusVariable)) {
+		for _, part := range classifier.Line(line).Parts {
+			if part.Classification.Category != "test run" && part.Classification.Category != "build" {
+				continue
+			}
+			programs[part.Program] = true
+			if table.Programs[part.Program] == nil || table.Wrappers[part.Program] != nil {
+				unknown[part.Program] = true
+			}
+		}
+	}
+	names := make([]string, 0, len(programs))
+	for program := range programs {
+		names = append(names, program)
+	}
+	slices.Sort(names)
+	t.Logf("test and build programs: %s", strings.Join(names, ", "))
+	for program := range unknown {
+		t.Errorf("test or build does not resolve to a known program: %q", program)
 	}
 }
