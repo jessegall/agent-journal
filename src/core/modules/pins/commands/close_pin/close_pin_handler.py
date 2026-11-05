@@ -19,4 +19,4 @@ class ClosePinHandler(Handler[ClosePin, Pin]):
         pin = self.pins.find(command.pin_id)
         if pin.closed_at is not None:
             raise Refusal(f"pin {pin.id} is closed already", "journal pin list shows the open ones")
-        return self.repository.save(pin.changed(closed_at=context.timestamp), context)
+        return self.repository.save_change(pin, pin.changed(closed_at=context.timestamp), context)

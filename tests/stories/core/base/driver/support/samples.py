@@ -305,7 +305,7 @@ class EditLockOverlay(Overlay):
         self.queries = queries
 
     def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
-        return [OpenRow("edit_lock", lock.id, lock.updated_at) for lock in self.queries.query(EditLock).filter(session_agent_id=agent_id, state=EditLockState.OPEN).all_rows()]
+        return [OpenRow("edit_lock", lock.id, lock.updated_at) for lock in self.queries.query(EditLock).filter(agent_id=agent_id, state=EditLockState.OPEN).all_rows()]
 
 
 class LeadLockGuard(Guard[Created[EditLock]]):

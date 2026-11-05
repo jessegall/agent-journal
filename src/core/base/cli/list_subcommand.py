@@ -16,6 +16,9 @@ from core.base.cli.subcommand_columns import FOREIGN_KEY_SUFFIX, parser_argument
 from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
 
 
+SESSION_PREFIX = "session_"
+
+
 class ListSubcommand(ReadSubcommand[Page[Model]]):
     """The `list` subcommand the core builds for a model: rows newest first, a page at a time, with
     a filter flag for each enum column and each foreign key, environment_text without its _id;
@@ -69,4 +72,4 @@ class ListSubcommand(ReadSubcommand[Page[Model]]):
 
 
 def filter_flag(column: str) -> str:
-    return column.removesuffix(FOREIGN_KEY_SUFFIX).replace("_", "-")
+    return column.removeprefix(SESSION_PREFIX).removesuffix(FOREIGN_KEY_SUFFIX).replace("_", "-")

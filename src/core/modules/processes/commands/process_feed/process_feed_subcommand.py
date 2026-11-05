@@ -18,4 +18,4 @@ class ProcessFeedSubcommand(ViewRowsSubcommand):
     name = "feed"
 
     def filtered(self, query: Query[ViewModel], arguments: Namespace) -> Query[ViewModel]:
-        return query if arguments.id is not None or arguments.agent_id is not None else query.matching(MainAgentRows())
+        return query if arguments.id is not None or arguments.session_agent_id is not None else query.matching(MainAgentRows())
