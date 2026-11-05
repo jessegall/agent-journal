@@ -191,7 +191,16 @@
         "architecture_listeners_row_loaded_from_an_event",
         "architecture_listeners_listener_event_named_by_a_string",
         "FileReadsDetector",
-        "FileWritesDetector"
+        "FileWritesDetector",
+        "architecture_listeners_every_model",
+        "architecture_listeners_file_read",
+        "architecture_model_loaded_outside_table",
+        "architecture_queries_one_row_page",
+        "architecture_queries_read_in_a_loop",
+        "architecture_queries_sql_condition_outside_conditions",
+        "architecture_scopes_agent_filtered_by_hand",
+        "architecture_scopes_scope_id_set_on_a_new_row",
+        "naming_plain_viewer_state_text"
     ],
     "parallel": 2,
     "configure": {

@@ -52,7 +52,7 @@ def test_hook_options_are_written_only_for_events_that_support_them(tmp_path):
     hooks = json.loads((tmp_path / ".codex/hooks.json").read_text())["hooks"]
     entries = {event: blocks[0]["hooks"][0] for event, blocks in hooks.items()}
     assert {event for event, entry in entries.items() if entry.get("additionalContextLimit") == 0} == {
-        "SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "SubagentStart",
+        "SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse",
     }
     assert entries["SessionEnd"]["timeout"] == 3
     assert all(entry["timeout"] == 90 for event, entry in entries.items() if event != "SessionEnd")

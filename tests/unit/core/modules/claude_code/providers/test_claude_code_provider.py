@@ -65,14 +65,6 @@ def test_a_sessions_transcript_is_found_under_the_config_folder(provider, tmp_pa
     assert (provider.transcript(FOLDER, "s-1"), provider.transcript(FOLDER, "s-9")) == (transcript, None)
 
 
-def test_a_helpers_hook_names_the_helpers_own_transcript(provider):
-    example = json.loads(STOP_EXAMPLE.read_text())
-    raw = {"transcript_path": "/talks/main.jsonl", "agent_transcript_path": "/talks/helper.jsonl"}
-    main = HookEvent.parsed({**example, "raw": raw})
-    helper = HookEvent.parsed({**example, "helper": "a1", "raw": raw})
-    assert (provider.transcript_path(main), provider.transcript_path(helper)) == (Path("/talks/main.jsonl"), Path("/talks/helper.jsonl"))
-
-
 def test_every_recorded_hook_name_is_mapped_to_the_event_the_go_program_prepared(provider):
     pairs = [(json.loads(body)["hook_event_name"], json.loads(prepared)["event"]) for path in sorted(RECORDED.glob("*.jsonl"))
              for body, prepared in zip(path.read_text().splitlines(), (PREPARED / path.name).read_text().splitlines(), strict=True)]

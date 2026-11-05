@@ -4,7 +4,6 @@ from core.base.listener.event_rows import EventRows
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.commands.record_parent_report.record_parent_report import RecordParentReport
-from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.receivers import Receivers
 from core.modules.agents.support.report_nudges import EMPTY_REPORT_TEXT, PARENT_REPORT, PARENT_REPORT_SOURCE, PARENT_SHORT_REPORT, SHORT_REPORT_CHARACTERS
 from core.modules.drivers.models.helper_job import HelperJob
@@ -35,8 +34,7 @@ class RecordParentReportHandler(Handler[RecordParentReport, Message]):
 
     def tell(self, command: RecordParentReport, message: Message, context: Context) -> None:
         receiver = self.receivers.receiver(command.parent_id)
-        role = self.rows.required(Agent, command.agent_id).role
         if command.job_id is not None and len(message.text) <= SHORT_REPORT_CHARACTERS:
-            self.nudger.send(receiver.id, PARENT_SHORT_REPORT, PARENT_REPORT_SOURCE, context, role=role, agent=command.agent_id, message=message.id, report=message.text)
+            self.nudger.send(receiver.id, PARENT_SHORT_REPORT, PARENT_REPORT_SOURCE, context, agent=command.agent_id, message=message.id, report=message.text)
             return
-        self.nudger.send(receiver.id, PARENT_REPORT, PARENT_REPORT_SOURCE, context, role=role, agent=command.agent_id, message=message.id)
+        self.nudger.send(receiver.id, PARENT_REPORT, PARENT_REPORT_SOURCE, context, agent=command.agent_id, message=message.id)

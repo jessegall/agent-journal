@@ -1,13 +1,11 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.driver.nudge_declaration import NudgeDeclaration
-from core.base.driver.nudge_type import NudgeType
 from core.base.scope.actor_scope import ActorScope
 from core.modules.developer.commands.send_exception_line.send_exception_line import SendExceptionLine
+from core.modules.developer.support.developer_nudges import EXCEPTION_LINE
 from core.modules.drivers.support.nudger import Nudger
 
 EXCEPTION_LINE_SOURCE = "developer.exception"
-EXCEPTION_LINE = NudgeDeclaration("developer.exception", NudgeType.STEERING, "the journal failed in {place}: {message}", turn_limited=False, wakes_agent=True)
 
 
 class SendExceptionLineHandler(Handler[SendExceptionLine, None]):

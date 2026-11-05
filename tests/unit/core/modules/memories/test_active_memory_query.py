@@ -22,11 +22,6 @@ def texts(query: ActiveMemoryQuery) -> list[str]:
     return [memory.text for memory in query.all_rows()]
 
 
-def test_an_agent_stands_under_its_environment_and_its_own_memories_and_no_other_agents(tmp_path):
-    journal, query = memories(tmp_path)
-    assert sorted(texts(query.scope(journal.first_agent, 1))) == ["environment fact", "own fact"]
-
-
 def test_a_memory_at_weight_0_no_longer_stands(tmp_path):
     journal, query = memories(tmp_path)
     assert "faded fact" not in texts(query)

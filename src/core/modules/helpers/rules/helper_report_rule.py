@@ -8,10 +8,10 @@ from core.modules.agents.commands.record_parent_report.record_parent_report impo
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.agents.support.report_nudges import REPORT_FIELD
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 
-REPORT_FIELD = "last_assistant_message"
 
 
 class HelperReportRule(DriverRule):

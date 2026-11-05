@@ -23,7 +23,7 @@ def test_a_new_main_session_hears_a_workers_report(new_story):
     story, worker = delivered_story(new_story)
     main = replacement_main(story)
     story.expect_hook_allowed(worker_session(story, worker), stop_with_text(REPORT))
-    story.expect_text(f"agent-line list --agent {main.id}", f"worker:{worker.id} reports in message:1")
+    story.expect_text(f"agent-line list --agent {main.id}", f"agent:{worker.id} reports in message:1")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "reports in message:1")
 
 
