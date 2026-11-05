@@ -21,7 +21,8 @@ task 12, plan 3, message 7: write both, so the chat links it.
 - A sequence is steps followed one at a time; an output is a command's output, kept and read by its number.
 
 When the journal holds you, its line says why and names the way out: reading and journal commands still go through.
-After a compaction or a new start, run `journal overview` before anything else. Search before you say you do not know
+After a compaction or a new start, run `journal overview` before anything else: until you do, nothing else passes but
+reading the skills it lists. `journal skill required` lists them on its own. Search before you say you do not know
 or ask the user again: `journal search find "<words>"`.
 
 | Read | For | The journal asks for it |

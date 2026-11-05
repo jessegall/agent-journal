@@ -4,5 +4,5 @@ from core.base.setting.setting_value import SettingValue
 MODULE_KEY = "journal.core.overview"
 COMMANDS_KEY = f"{MODULE_KEY}.commands"
 TASK_COLUMNS = "--columns id,title"
-DEFAULT_COMMANDS = ("rule list --state active --columns id,text", f"task list --state started {TASK_COLUMNS}", f"task list --state blocked {TASK_COLUMNS}", f"task list --state open {TASK_COLUMNS}", "message unread", "question list")
+DEFAULT_COMMANDS = ("skill required", "rule list --state active --columns id,text", f"task list --state started {TASK_COLUMNS}", f"task list --state blocked {TASK_COLUMNS}", f"task list --state open {TASK_COLUMNS}", "message unread", "question list")
 OVERVIEW_SETTINGS = [SettingValue("commands", "Overview commands", "Commands shown in the overview, in order, each under a separate heading.", SettingType.LIST, default=DEFAULT_COMMANDS)]

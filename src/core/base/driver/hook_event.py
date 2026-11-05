@@ -11,7 +11,8 @@ from core.base.driver.tool import Tool
 
 HOOK_EVENT_VERSION = 3
 RESUME_SOURCE = "resume"
-CONTINUING_SOURCES = ("compact", "clear")
+COMPACTION_SOURCE = "compact"
+CONTINUING_SOURCES = (COMPACTION_SOURCE, "clear")
 REQUIRED_KEYS = ("version", "program", "event", "session", "firing", "fired_at_ms", "actor", "environment", "tool", "prompt", "raw", "accepts_lines", "launch", "foreign")
 
 
@@ -65,6 +66,10 @@ class HookEvent:
     @property
     def is_resume(self) -> bool:
         return self.raw.get("source") == RESUME_SOURCE
+
+    @property
+    def is_compaction_start(self) -> bool:
+        return self.raw.get("source") == COMPACTION_SOURCE
 
     @property
     def is_interrupt(self) -> bool:

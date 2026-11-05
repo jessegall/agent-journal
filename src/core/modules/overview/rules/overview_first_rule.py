@@ -6,14 +6,12 @@ from core.base.driver.block_until import BlockUntil
 from core.base.driver.conditions.ran_command import RanCommand
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.overview.support.overview_first import OverviewFirst
-from core.modules.overview.support.overview_nudges import OVERVIEW_REFUSAL
-
-OVERVIEW_COMMAND = "journal overview"
+from core.modules.overview.support.overview_nudges import OVERVIEW_COMMAND, OVERVIEW_REFUSAL
 
 
 class OverviewFirstRule(DriverRule):
-    """A session's start or a compaction blocks the agent until it has run journal overview; a resume does not,
-    since its conversation already holds it."""
+    """A session's start or a compaction blocks the agent until it has run journal overview: nothing else passes
+    but reading a skill. A resume does not, since its conversation already holds it."""
 
     name = "overview.overview-first"
     start_line_rule = True
@@ -27,4 +25,4 @@ class OverviewFirstRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if not self.first.is_required:
             return RuleAnswer.allowed()
-        return RuleAnswer.allowed().running(BlockUntil(hook.agent_id, OVERVIEW_REFUSAL.nudge(), RanCommand(OVERVIEW_COMMAND)))
+        return RuleAnswer.allowed().running(BlockUntil(hook.agent_id, OVERVIEW_REFUSAL.nudge(), RanCommand(OVERVIEW_COMMAND), strict=True))

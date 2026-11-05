@@ -94,6 +94,7 @@ from core.modules.drivers.migrations.m013_hook_call_time_indexes import HookCall
 from core.modules.drivers.commands.prune_temp_folders.prune_temp_folders_handler import PruneTempFoldersHandler
 from core.modules.drivers.commands.close_agent_block.close_agent_block_handler import CloseAgentBlockHandler
 from core.modules.drivers.migrations.m009_agent_blocks import AgentBlocksMigration
+from core.modules.drivers.migrations.m018_strict_blocks import StrictBlocksMigration
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.rules.agent_block_rule import AgentBlockRule
 from core.modules.drivers.rules.silent_helper_rule import SilentHelperRule
@@ -131,7 +132,7 @@ class DriversModule(Module):
     dependencies = ["journal.core.chat", "journal.core.developer", "journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
     models = [ModelDeclaration(SubagentDispatch, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentBlock, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(NudgeRecord, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine, ClaimAgentLine, ReleaseAgentLine, EnterAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
     views = [HookCallRow, NudgeTotal]
-    migrations = [StopBlocksMigration, DriversTablesMigration,HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration, NudgeRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration, SubagentDispatchesMigration, DispatchSubagentMigration, HookCallLineChangesMigration, HookCallTimeIndexesMigration, BlockGracesMigration, AgentLineStateIndexMigration, AgentLineWakesMigration]
+    migrations = [StrictBlocksMigration, StopBlocksMigration, DriversTablesMigration,HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration, NudgeRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration, SubagentDispatchesMigration, DispatchSubagentMigration, HookCallLineChangesMigration, HookCallTimeIndexesMigration, BlockGracesMigration, AgentLineStateIndexMigration, AgentLineWakesMigration]
     handlers = [BindSubagentDispatchHandler, PruneTempFoldersHandler, RecordSubagentDispatchHandler, BlockUntilHandler, CloseAgentBlockHandler, EndSilentHelpersHandler, RecordBypassLineHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
     subcommands = [SkipAgentBlockSubcommand,PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]

@@ -4,9 +4,12 @@ import pytest
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.driver.command_category import CommandCategory
+from core.testing.hook_samples import HookSamples
+from core.testing.shell_part import ShellPart
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment, worker_session
 
 
 @pytest.fixture
@@ -17,6 +20,16 @@ def worker_batch(new_story):
     story.expect_success('task make "Receipt" --brief "Print receipt" --environment main')
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2 3", actor=story.agent), ActorType.AGENT)
     return story, repository, worker
+
+
+def test_after_a_compaction_a_worker_is_held_until_it_has_read_its_status(worker_batch):
+    story, _, worker = worker_batch
+    session = worker_session(story, worker)
+    story.hook(session, HookSamples.session_start().with_raw({"source": "compact"}))
+    story.expect_hook_refusal(session, HookSamples.edit("src/cart.py"), "run journal worker status first")
+    story.expect_text("worker status", "Skills to load: ", actor=worker)
+    story.expect_hook_allowed(session, HookSamples.shell("journal worker status", ShellPart("journal", CommandCategory.JOURNAL, ["worker", "status"], subcommand="worker")))
+    story.expect_hook_allowed(session, HookSamples.edit("src/cart.py"))
 
 
 def test_a_worker_reads_its_current_task_and_remaining_assignments(worker_batch):

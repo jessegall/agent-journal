@@ -1,13 +1,13 @@
 from core.base.role_group import RoleGroup
 from core.base.container import Container
 from core.base.driver.agent_hook import AgentHook
-from core.base.driver.block_check import BlockCheck
 from core.base.module.block_conditions import BlockConditions
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.nudge import Nudge
 from core.base.driver.nudge_type import NudgeType
 from core.base.driver.rule_answer import RuleAnswer
+from core.base.driver.tool import Tool
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
@@ -38,18 +38,19 @@ class AgentBlockRule(DriverRule):
         blocks = tuple(self.queries.query(AgentBlock).filter(agent_id=hook.agent_id).matching(IsNull("closed_at")).oldest().all_rows())
         if not blocks:
             return RuleAnswer.allowed()
-        finished_blocks = [block for block in blocks if self.is_finished(block, hook)]
+        finished_blocks = [block for block in blocks if block.is_finished(self.conditions, hook, self.container)]
         waiting_blocks = [block for block in blocks if block not in finished_blocks]
         active_blocks = [block for block in waiting_blocks if self.is_active(block, hook)]
         tool = hook.event.tool
         closing = [CloseAgentBlock(block.id) for block in finished_blocks]
-        if active_blocks and tool is not None and not tool.block_exempt:
-            return RuleAnswer.refused(Nudge(active_blocks[0].nudge_key, NudgeType.REFUSAL, active_blocks[0].nudge_text.replace("{block}", str(active_blocks[0].id)))).running(*closing)
+        refused_blocks = [block for block in active_blocks if tool is not None and self.refuses(block, tool)]
+        if refused_blocks:
+            return RuleAnswer.refused(Nudge(refused_blocks[0].nudge_key, NudgeType.REFUSAL, refused_blocks[0].nudge_text.replace("{block}", str(refused_blocks[0].id)))).running(*closing)
         countdowns = [self.countdown(block, hook) for block in waiting_blocks if block not in active_blocks]
         return RuleAnswer.with_nudges(*[nudge for nudge in countdowns if nudge is not None]).running(*closing)
 
-    def is_finished(self, block: AgentBlock, hook: AgentHook) -> bool:
-        return self.conditions.built(block.condition_name, block.condition_text).is_true(BlockCheck(hook, block.creation_timestamp(), self.container))
+    def refuses(self, block: AgentBlock, tool: Tool) -> bool:
+        return not tool.is_skill_read if block.strict else not tool.block_exempt
 
     def is_active(self, block: AgentBlock, hook: AgentHook) -> bool:
         return not block.stop_only and (block.grace is None or block.grace.has_passed(self.queries, hook.agent_id, block.creation_timestamp(), hook.timestamp))

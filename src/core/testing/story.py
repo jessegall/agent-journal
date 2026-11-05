@@ -32,6 +32,8 @@ from core.base.recorded_refusal import RecordedRefusal
 from core.base.caller.caller import Caller
 from core.modules.overview.support.overview_first import OverviewFirst
 from core.modules.skills.support.skill_requirement import SkillRequirement
+from core.modules.skills.support.main_agent_skills import MainAgentSkills
+from core.testing.story_main_agent_skills import StoryMainAgentSkills
 from core.testing.story_overview_first import StoryOverviewFirst
 from core.testing.story_skill_requirement import StorySkillRequirement
 from core.testing.story_task_brief_requirement import StoryTaskBriefRequirement
@@ -255,5 +257,6 @@ def story_container(home: JournalHome, clock: ManualClock, process_table: "Fixed
     container.bind(ProcessTable, process_table)
     container.bind(OverviewFirst, StoryOverviewFirst())
     container.bind(SkillRequirement, StorySkillRequirement())
+    container.bind(MainAgentSkills, StoryMainAgentSkills())
     container.bind(TaskBriefRequirement, StoryTaskBriefRequirement())
     return container

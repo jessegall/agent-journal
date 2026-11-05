@@ -2,6 +2,8 @@ import json
 
 from core.base.driver.command_category import CommandCategory
 from core.modules.overview.support.overview_first import OverviewFirst
+from core.modules.skills.support.main_agent_skills import MainAgentSkills
+from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
@@ -43,6 +45,7 @@ OVERVIEW_HOOK = HookSamples.shell("journal overview", ShellPart("journal", Comma
 JOURNAL_LINE = HookSamples.shell("journal task list", ShellPart("journal", CommandCategory.JOURNAL, ["task", "list"], subcommand="task"))
 LISTING = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))
 EDIT = HookSamples.edit("src/cart.py")
+SKILL_READ = HookSamples.sample("pre_tool_use", {"name": "Read", "category": "read", "files": [".claude/skills/journal-tasks/SKILL.md"], "diff": None})
 RESUME = HookSamples.session_start().with_raw({"source": "resume"})
 COMPACTION = HookSamples.session_start().with_raw({"source": "compact"})
 
@@ -53,14 +56,14 @@ def overview_story(new_story):
     return story
 
 
-def test_after_a_session_start_only_reading_and_journal_commands_go_before_the_overview(new_story):
+def test_after_a_session_start_nothing_passes_before_the_overview_but_reading_a_skill(new_story):
     story = overview_story(new_story)
     story.hook("s-1", HookSamples.session_start())
     story.run_listeners()
     story.expect_hook_refusal("s-1", EDIT, "run journal overview first")
-    story.expect_hook_allowed("s-1", LISTING)
-    story.expect_hook_allowed("s-1", JOURNAL_LINE)
-    story.expect_hook_refusal("s-1", EDIT, "run journal overview first")
+    story.expect_hook_refusal("s-1", LISTING, "run journal overview first")
+    story.expect_hook_refusal("s-1", JOURNAL_LINE, "run journal overview first")
+    story.expect_hook_allowed("s-1", SKILL_READ)
     story.expect_hook_allowed("s-1", OVERVIEW_HOOK)
     story.expect_hook_allowed("s-1", EDIT)
 
@@ -83,3 +86,17 @@ def expect_command_section_sections(answer, expected) -> None:
 def expect_replace_without(text, text_2, text_3, expected) -> None:
     actual = text.replace(text_2, text_3)
     assert expected not in actual, actual
+
+
+def test_the_overview_lists_the_skills_the_agent_must_load_with_their_paths(new_story):
+    story = new_story(SAMPLES, fixture=SampleSuiteChoice)
+    story.container.bind(MainAgentSkills, MainAgentSkills())
+    agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
+    story.run_listeners()
+    story.expect_text("skill required", "journal-tasks: ", actor=agent)
+    story.expect_text("overview", "## skill required", "journal-tasks: ", actor=agent)
+
+
+def test_a_person_has_no_skills_to_load(new_story):
+    story = overview_story(new_story)
+    story.expect_text("skill required", "no skills to load", actor=story.user)

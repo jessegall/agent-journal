@@ -1,7 +1,6 @@
 from core.base.container import Container
 from core.base.role_group import RoleGroup
 from core.base.driver.agent_hook import AgentHook
-from core.base.driver.block_check import BlockCheck
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.nudge import Nudge
@@ -28,12 +27,9 @@ class BlockStopRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         blocks = tuple(self.queries.query(AgentBlock).filter(agent_id=hook.agent_id, stop_only=True).matching(IsNull("closed_at")).oldest().all_rows())
-        finished = [block for block in blocks if self.is_finished(block, hook)]
+        finished = [block for block in blocks if block.is_finished(self.conditions, hook, self.container)]
         waiting = [block for block in blocks if block not in finished]
         closing = [CloseAgentBlock(block.id) for block in finished]
         if not waiting:
             return RuleAnswer.allowed().running(*closing)
         return RuleAnswer.refused(Nudge(waiting[0].nudge_key, NudgeType.REFUSAL, waiting[0].nudge_text)).running(*closing)
-
-    def is_finished(self, block: AgentBlock, hook: AgentHook) -> bool:
-        return self.conditions.built(block.condition_name, block.condition_text).is_true(BlockCheck(hook, block.creation_timestamp(), self.container))

@@ -16,6 +16,7 @@ from core.modules.skills.commands.require_skill.require_skill_handler import Req
 from core.modules.skills.commands.require_skill.require_skill_subcommand import RequireSkillSubcommand
 from core.modules.skills.commands.reset_skills.reset_skills_handler import ResetSkillsHandler
 from core.modules.skills.commands.skill_list.skill_list_subcommand import SkillListSubcommand
+from core.modules.skills.commands.skill_required.skill_required_subcommand import SkillRequiredSubcommand
 from core.modules.skills.commands.skill_show.skill_show_subcommand import SkillShowSubcommand
 from core.modules.skills.commands.skill_write.skill_write_subcommand import SkillWriteSubcommand
 from core.modules.skills.listeners.compaction_reset_listener import CompactionResetListener
@@ -56,7 +57,7 @@ class SkillsModule(Module):
               SkillDeclaration("journal-etiquette", "Behave in the chat with the user and keep the journal's own mechanics out of it; read at the start of every session, with the journal skill")]
     models = [ModelDeclaration(AgentSkill, commands=[LoadAgentSkill]), ModelDeclaration(SkillRequest, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
     migrations = [SkillsTablesMigration, SkillRequestsTableMigration]
-    subcommands = [SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand, AgentSkillUnreadSubcommand]
+    subcommands = [SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand, AgentSkillUnreadSubcommand, SkillRequiredSubcommand]
     handlers = [RequireSkillHandler, LoadSkillHandler, ResetSkillsHandler, RequestSkillHandler]
     listeners = [SkillPublishListener, SkillReadListener, SkillPartReadListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener]
     marks = SKILL_MARKS

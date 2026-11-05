@@ -11,3 +11,4 @@ class WorkerStatus:
     current_task: Task
     tests: Page[Proof]
     assignments: Page[Task]
+    skills: tuple[str, ...]

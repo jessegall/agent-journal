@@ -6,6 +6,7 @@ from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_fields import mapping, mappings, text, texts
 from core.base.driver.shell_line import ShellLine
 from core.base.driver.tool_type import ToolType
+from core.base.skill.skill_declaration import SKILL_FILE
 
 
 @dataclass(frozen=True)
@@ -50,6 +51,10 @@ class Tool:
         if self.category.reads_files:
             return True
         return self.shell is not None and self.shell.is_readonly
+
+    @property
+    def is_skill_read(self) -> bool:
+        return self.category.reads_files and bool(self.files) and all(path.endswith(SKILL_FILE) for path in self.files)
 
     @property
     def block_exempt(self) -> bool:

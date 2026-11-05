@@ -1,3 +1,7 @@
+from core.base.container import Container
+from core.base.driver.agent_hook import AgentHook
+from core.base.driver.block_check import BlockCheck
+from core.base.module.block_conditions import BlockConditions
 from dataclasses import dataclass
 
 from core.base.driver.interval import Interval
@@ -30,6 +34,10 @@ class AgentBlock(Model):
     countdown_text: str = ""
     skip_reason: str = ""
     stop_only: bool = False
+    strict: bool = False
+
+    def is_finished(self, conditions: BlockConditions, hook: AgentHook, container: Container) -> bool:
+        return conditions.built(self.condition_name, self.condition_text).is_true(BlockCheck(hook, self.creation_timestamp(), container))
 
     @property
     def grace(self) -> Interval | None:
