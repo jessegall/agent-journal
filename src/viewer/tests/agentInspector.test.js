@@ -125,7 +125,7 @@ test("the main agent is titled without a number, shows the tasks done of its pla
     expect([...element.querySelectorAll("[data-agent-foot] [data-move]")].map((move) => move.dataset.move)).toEqual(["pause", "stop"]);
     element.querySelectorAll("[data-agent-fold]")[0].click();
     await settle();
-    expect(text(element, "[data-agent-subagent]")).toBe("Curiesubagent 22");
+    expect(text(element, "[data-agent-subagent]")).toBe("CurieSubagent 22");
 });
 
 const ENDED = {

@@ -1,11 +1,13 @@
 <script setup>
+import {stateLabel} from "@journal/window-kit";
+
 defineProps({row: {type: Object, default: null}});
 </script>
 
 <template>
     <div class="question-dock">
         <template v-if="row">
-            <span class="question-dock-state">{{ row.state }}</span>
+            <span class="question-dock-state">{{ stateLabel('question', row.state) }}</span>
             <span class="question-dock-text">{{ row.text }}</span>
         </template>
     </div>

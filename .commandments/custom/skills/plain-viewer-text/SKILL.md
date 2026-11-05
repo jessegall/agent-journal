@@ -25,6 +25,10 @@ says what it is about, or what happens when they press it, in the words a newcom
 
 ## How to fix it
 
+- Show a stored state through `stateLabel(model, state)`, including states added by installed modules.
+  Show agent roles through their shared display label. Stored words remain suitable for comparisons and
+  styling, but a template never prints `.state` or `.role` directly.
+
 - A window search uses `SearchBar` or `ListTools` from the window kit and declares its search on
   `WindowDeclaration`. Use `WindowSearch` for model searches or `WindowReadSearch` for an existing read command.
   The shared bar owns sticky positioning, spacing and the bottom border; do not wrap it in a second toolbar.

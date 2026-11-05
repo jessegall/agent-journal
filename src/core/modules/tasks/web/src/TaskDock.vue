@@ -1,5 +1,5 @@
 <script setup>
-import {useDockRow} from "@journal/window-kit";
+import {stateLabel, useDockRow} from "@journal/window-kit";
 
 const row = useDockRow("task");
 </script>
@@ -7,7 +7,7 @@ const row = useDockRow("task");
 <template>
     <div class="task-dock">
         <template v-if="row">
-            <span class="task-dock-state">{{ row.state }}</span>
+            <span class="task-dock-state">{{ stateLabel('task', row.state) }}</span>
             <span class="task-dock-title">{{ row.title }}</span>
         </template>
     </div>

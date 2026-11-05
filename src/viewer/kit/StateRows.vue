@@ -1,8 +1,10 @@
 <script setup>
 import RowList from "./RowList.vue";
 import {useRows} from "./useRows.js";
+import {stateLabel} from "../src/domain/states.js";
 
 const props = defineProps({
+    kind: {type: String, required: true},
     line: {type: String, required: true},
     events: {type: Array, required: true},
     empty: {type: String, required: true},
@@ -14,7 +16,7 @@ const {rows, failure, loaded} = useRows(props.line, props.events);
     <RowList :rows="rows" :failure="failure" :loaded="loaded" :empty="empty">
         <template #default="{row}">
             <span class="title">{{ row.title }}</span>
-            <span class="state">{{ row.state }}</span>
+            <span class="state">{{ stateLabel(kind, row.state) }}</span>
         </template>
     </RowList>
 </template>
