@@ -12,7 +12,7 @@ class CodeVersion:
     request stays cheap; a server's ticker calls check, and its requests only read the answer."""
 
     def __init__(self, fingerprint: CodeFingerprint, folders: CodeFolders, recheck_seconds: float = 0) -> None:
-        self.fingerprint, self.listing = fingerprint, FolderListing(folders.folders())
+        self.fingerprint, self.listing = fingerprint, FolderListing.kept(folders.folders())
         self.text = self.current_text()
         self.recheck_seconds, self.checked_seconds, self.code_changed = recheck_seconds, time.monotonic(), False
 

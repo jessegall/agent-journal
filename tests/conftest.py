@@ -14,7 +14,7 @@ TYPE_CHECK_MARK = "type_check"
 INSTALL_MARK = "install_job"
 INSTALL_FOLDER = "install"
 BROWSER_MARK = "browser_job"
-BROWSER_CALL = "expect_browser("
+BROWSER_CALL = "expect_browser"
 READER_MARK = "reader_job"
 SEPARATE_JOBS = (TYPE_CHECK_MARK, INSTALL_MARK, BROWSER_MARK, READER_MARK)
 os.environ.pop("JOURNAL_AGENT_SESSION", None)

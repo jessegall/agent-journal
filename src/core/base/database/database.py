@@ -79,6 +79,9 @@ class Database:
         finally:
             self.nested.pop()
 
+    def change_mark(self) -> tuple[int, int]:
+        return self.connection.execute("PRAGMA data_version").fetchone()[0], self.connection.total_changes
+
     def rows(self, statement: Statement) -> list[sqlite3.Row]:
         rows = statement.result(self.connection).fetchall()
         self.tally.loaded(rows, statement.sql)

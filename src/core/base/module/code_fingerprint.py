@@ -24,9 +24,6 @@ class CodeFingerprint:
     ticked: ClassVar[bool] = False
     kept_texts: ClassVar[dict[tuple[Path, ...], str]] = {}
 
-    def __init__(self) -> None:
-        self.listings: dict[tuple[Path, ...], FolderListing] = {}
-
     def text(self, modules: Sequence[type[Module]]) -> str:
         folders = self.folders(modules)
         if (self.ticked or Journal.is_running_unit_tests()) and folders in self.kept_texts:
@@ -43,18 +40,11 @@ class CodeFingerprint:
         return (CORE_FOLDER, *(module.folder() for module in modules if not module.folder().is_relative_to(CORE_FOLDER)))
 
     def module_text(self, module: type[Module]) -> str:
-        folders = [module.folder()]
-        key = tuple(folders)
-        if key not in self.listings:
-            self.listings[key] = FolderListing(folders)
         built_files = sorted(path for path in (module.folder() / BUILT_WINDOWS_FOLDER).rglob("*") if path.is_file())
-        return self.files_text([*self.listings[key].files(), *built_files])
+        return self.files_text([*FolderListing.kept([module.folder()]).files(), *built_files])
 
     def folder_text(self, folders: Sequence[Path]) -> str:
-        key = tuple(folders)
-        if key not in self.listings:
-            self.listings[key] = FolderListing(folders)
-        return self.files_text(self.listings[key].files())
+        return self.files_text(FolderListing.kept(folders).files())
 
     def files_text(self, files: Sequence[Path]) -> str:
         digest = hashlib.sha256(".".join(map(str, CORE_VERSION)).encode())

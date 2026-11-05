@@ -85,7 +85,7 @@ class CommitListenerRunner:
         due_names = {entry.name for entry in due_entries}
         moved_count = self.cursors.advance_all([entry.name for entry in entries if entry.name not in due_names], events[-1].id)
         positions.update({entry.name: events[-1].id for entry in entries if entry.name not in due_names})
-        progress = [self.run_entry(entry, urgent_entries, events[-1].id) for entry in due_entries]
+        progress = [self.run_entry(entry, urgent_entries, events) for entry in due_entries]
         positions.update({entry.name: self.cursors.position(entry.name) for entry in due_entries})
         return bool(moved_count) or any(progress)
 
@@ -94,21 +94,27 @@ class CommitListenerRunner:
             self.positions = self.cursors.positions()
         return self.positions
 
-    def run_entry(self, entry: ListenerEntry, urgent_entries: list[ListenerEntry], newest_seen: int) -> bool:
-        handled = self.run_listener(entry)
-        if handled and urgent_entries and self.log.newest_id() != newest_seen:
-            for listener in urgent_entries:
-                self.run_listener(listener)
+    def run_entry(self, entry: ListenerEntry, urgent_entries: list[ListenerEntry], events: list[LoggedEvent]) -> bool:
+        handled = self.run_listener(entry, events)
+        if handled and urgent_entries:
+            self.run_urgent_on_newer_events(urgent_entries, events)
         return handled
+
+    def run_urgent_on_newer_events(self, urgent_entries: list[ListenerEntry], events: list[LoggedEvent]) -> None:
+        if self.log.newest_id() == events[-1].id:
+            return
+        newer_events = self.log.events_past(events[0].id - 1)
+        for listener in urgent_entries:
+            self.run_listener(listener, newer_events)
 
     @staticmethod
     def run_order(entry: ListenerEntry) -> int:
         listener_class = entry.path.loaded()
         return listener_class.run_order if issubclass(listener_class, CommitListener) else 0
 
-    def run_listener(self, entry: ListenerEntry) -> bool:
+    def run_listener(self, entry: ListenerEntry, round_events: list[LoggedEvent]) -> bool:
         position = self.cursors.position(entry.name)
-        events = self.log.events_past(position)
+        events = [event for event in round_events if event.id > position]
         progress = False
         for event in events:
             if not entry.event.matches(event.event):

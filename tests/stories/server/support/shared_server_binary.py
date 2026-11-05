@@ -7,12 +7,14 @@ import time
 import urllib.error
 import urllib.request
 from collections.abc import Mapping
+from functools import cached_property
 from pathlib import Path
 
 from tests.stories.server.support.go_build import GoBuild
 from tests.stories.server.support.tls_files import TlsFiles
 
 READY_TIMEOUT_SECONDS = 30
+READY_POLL_SECONDS = 0.01
 RUN_TIMEOUT_SECONDS = 30
 REQUEST_TIMEOUT_SECONDS = 10
 HOST = "127.0.0.1"
@@ -60,7 +62,7 @@ class SharedServerBinary:
         request = urllib.request.Request(self.address + path, data=None if body is None else json.dumps(body).encode(), method=method,
                                          headers={"Authorization": f"Bearer {token}", "Journal-Protocol": PROTOCOL, "Content-Type": "application/json", **(headers or {})})
         try:
-            with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT_SECONDS, context=self.context()) as answer:
+            with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT_SECONDS, context=self.tls_context) as answer:
                 return answer.status, json.load(answer)
         except urllib.error.HTTPError as failure:
             return failure.code, json.load(failure)
@@ -68,11 +70,12 @@ class SharedServerBinary:
     def tls_arguments(self) -> list[str]:
         return ["--tls-cert", str(self.tls.certificate), "--tls-key", str(self.tls.key)] if self.tls else []
 
-    def context(self) -> ssl.SSLContext:
-        return ssl.create_default_context(cafile=str(self.tls.certificate)) if self.tls else ssl.create_default_context()
+    @cached_property
+    def tls_context(self) -> ssl.SSLContext | None:
+        return ssl.create_default_context(cafile=str(self.tls.certificate)) if self.tls else None
 
     def server_key(self) -> str:
-        with urllib.request.urlopen(self.address + "/info", timeout=REQUEST_TIMEOUT_SECONDS, context=self.context()) as answer:
+        with urllib.request.urlopen(self.address + "/info", timeout=REQUEST_TIMEOUT_SECONDS, context=self.tls_context) as answer:
             return str(json.load(answer)["server_key"])
 
     def wait_until_ready(self) -> None:
@@ -82,7 +85,7 @@ class SharedServerBinary:
                 self.server_key()
                 return
             except OSError:
-                time.sleep(0.1)
+                time.sleep(READY_POLL_SECONDS)
         raise TimeoutError(f"the shared server did not answer on {self.address}")
 
     @staticmethod

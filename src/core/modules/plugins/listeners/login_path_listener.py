@@ -1,6 +1,5 @@
 from core.base.change.event_log import FILE_PUBLISHING_EVENTS
 from core.base.change.logged_event import LoggedEvent
-from core.base.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener
 from core.modules.plugins.support.login_path import LoginPath
 from core.base.change.file_publishing import FilePublishing
@@ -12,8 +11,8 @@ class LoginPathListener(CommitListener[FilePublishing]):
 
     name = "plugins.login-path"
 
-    def __init__(self, home: JournalHome) -> None:
-        self.login_path = LoginPath(home)
+    def __init__(self, login_path: LoginPath) -> None:
+        self.login_path = login_path
 
     def handle(self, event: FilePublishing, logged: LoggedEvent) -> None:
         self.login_path.read_shell()

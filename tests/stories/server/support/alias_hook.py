@@ -5,6 +5,7 @@ import subprocess
 from core.base.query.queries import Queries
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.models.process import Process
+from core.modules.processes.models.process_part import ProcessPart
 from tests.stories.server.support.go_build import GoBuild
 from tests.stories.server.support.server_client import ServerStory
 
@@ -58,6 +59,11 @@ class AliasHook:
         process = next(self.server.story.container.get(Queries).query(Process).all_rows())
         assert process.category is CommandCategory.CHECK, process
         self.server.story.expect_text("output show 1", f"reader_id: {reader_id}")
+
+    def expect_visible_test_run(self, line: str, expanded: str) -> None:
+        self.expect_expanded(line, expanded)
+        part = next(self.server.story.container.get(Queries).query(ProcessPart).all_rows())
+        assert part.category is CommandCategory.TEST_RUN and part.is_visible, part
 
     def expect_execution(self, line: str, expanded: str, output: str) -> None:
         self.expect_expanded(line, expanded)

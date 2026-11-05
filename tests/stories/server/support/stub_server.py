@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 HOST = "127.0.0.1"
+STOP_POLL_SECONDS = 0.01
 
 
 @dataclass(frozen=True)
@@ -57,7 +58,7 @@ class StubServer:
         return f"http://{HOST}:{self.server.server_address[1]}"
 
     def __enter__(self) -> "StubServer":
-        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        threading.Thread(target=self.server.serve_forever, args=[STOP_POLL_SECONDS], daemon=True).start()
         return self
 
     def __exit__(self, *details: object) -> None:

@@ -31,7 +31,7 @@ class Background:
     def declared_category(self, shell: ShellLine) -> None:
         return None
 
-    def part_command(self, part: Part) -> PartCommand:
+    def part_command(self, part: Part, shell: ShellLine) -> PartCommand:
         return PartCommand(part.text, part.classification.category)
 
     def is_long_alias(self, part: Part, shell: ShellLine) -> bool:

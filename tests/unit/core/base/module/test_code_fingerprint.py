@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 from core.base.module.code_fingerprint import CodeFingerprint
+from core.base.module.folder_listing import FolderListing
 from core.base.module.module import Module
 
 
@@ -59,9 +60,8 @@ def test_a_second_fingerprint_of_the_same_folders_walks_them_no_more_and_a_new_f
     (tmp_path / "a.py").write_text("x = 1\n")
     fingerprint = CodeFingerprint()
     first = fingerprint.folder_text([tmp_path])
-    key = tuple([tmp_path])
-    listing = fingerprint.listings[key]
+    listing = FolderListing.kept([tmp_path])
     assert fingerprint.folder_text([tmp_path]) == first
-    assert fingerprint.listings[key] is listing
+    assert FolderListing.kept([tmp_path]) is listing
     (tmp_path / "b.py").write_text("y = 2\n")
     assert fingerprint.folder_text([tmp_path]) != first

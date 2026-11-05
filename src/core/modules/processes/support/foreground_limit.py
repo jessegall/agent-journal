@@ -26,7 +26,7 @@ class ForegroundLimit:
 
     def decide(self, environment_id: int, shell: ShellLine) -> ForegroundRun:
         alias_runs = self.background.alias_runs(shell)
-        part_commands = tuple(self.background.part_command(part) for part in shell.parts)
+        part_commands = tuple(self.background.part_command(part, shell) for part in shell.parts)
         if shell.is_journal_line and all(command.category is CommandCategory.JOURNAL for command in part_commands):
             return ForegroundRun(0, False, part_commands=part_commands, most_output_bytes=self.output_limit(ProcessSetting.MOST_OUTPUT_MEGABYTES, environment_id))
         declared = self.background.declared_category(shell)

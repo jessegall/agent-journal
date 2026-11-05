@@ -6,7 +6,7 @@ from pathlib import Path
 from core.base.module.code_fingerprint import CORE_FOLDER, CodeFingerprint
 
 CACHE_FOLDER = Path.home() / ".cache" / "agent-journal" / "story-templates"
-UNUSED_CHECKOUT_SECONDS = 7 * 24 * 3600
+UNUSED_CHECKOUT_SECONDS = 24 * 3600
 RUNNING_FOLDER_SECONDS = 3600
 HASH_CHARACTERS = 16
 

@@ -18,11 +18,14 @@ class BackgroundCommands:
     def includes(self, shell: ShellLine) -> bool:
         return any(options.background for options in self.alias_runs(shell))
 
-    def part_command(self, part: Part) -> PartCommand:
+    def part_command(self, part: Part, shell: ShellLine) -> PartCommand:
         argv = list(part.arguments) if part.program == JOURNAL else []
-        options = self.aliases.options(argv[0]) if argv else None
+        options = self.aliases.options(argv[0]) if argv else self.expanded_alias(part, shell)
         category = options.category if options is not None and options.category is not None else part.classification.category
         return PartCommand(self.aliases.named_line(argv) or part.text, category, options.reader_id if options else None)
+
+    def expanded_alias(self, part: Part, shell: ShellLine) -> AliasOptions | None:
+        return next((options for options in self.alias_runs(shell) if options.command in part.text), None)
 
     def is_long_alias(self, part: Part, shell: ShellLine) -> bool:
         return any(options.is_long_running and part.text.startswith(options.command) for options in self.alias_runs(shell))

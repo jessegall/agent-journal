@@ -50,6 +50,14 @@ def test_the_alias_reader_and_background_option_survive_expansion(new_story):
         AliasHook(server).expect_options("journal judged --changes", "echo checker --changes", reader)
 
 
+def test_a_saved_test_command_the_classifier_does_not_know_shows_as_a_test_run(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.expect_success('alias add sampled "python3 sample.py" --category "test run"')
+    story.run_listeners()
+    with server_story(story) as server:
+        AliasHook(server).expect_visible_test_run("journal sampled --tail 5", "python3 sample.py")
+
+
 def test_an_alias_without_an_argument_marker_appends_its_arguments(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.expect_success('alias add judged "echo checker"')
