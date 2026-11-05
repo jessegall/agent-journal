@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"syscall"
 	"time"
 )
 
@@ -52,7 +53,7 @@ func checkedSandbox(program string, writable []string) (shellSandbox, error) {
 
 func sandboxProbe(name string) int {
 	file, err := os.OpenFile(name, os.O_WRONLY|os.O_TRUNC, 0)
-	if errors.Is(err, os.ErrPermission) {
+	if errors.Is(err, os.ErrPermission) || errors.Is(err, syscall.EROFS) {
 		return 0
 	}
 	if file != nil {
@@ -83,7 +84,7 @@ func sandboxCheck() int {
 	return 0
 }
 
-func runSandbox(options Options, folder Folder) (shellSandbox, error) {
+func runSandbox(folder Folder) (shellSandbox, error) {
 	temporary := filepath.Join(folder.Path, "tmp")
 	if err := os.MkdirAll(temporary, 0o700); err != nil {
 		return shellSandbox{}, err

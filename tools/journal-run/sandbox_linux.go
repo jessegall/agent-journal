@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
+	"time"
 	"unsafe"
 )
 
@@ -35,17 +37,26 @@ func systemSandbox(program string, writable []string) (shellSandbox, error) {
 	}
 	abi := landlockABI()
 	if abi >= 3 {
-		return linuxSandbox(program, "landlock", encoded), nil
+		sandbox := linuxSandbox(program, "landlock", encoded)
+		if sandboxAvailable(sandbox) {
+			return sandbox, nil
+		}
 	}
 	sandbox := linuxSandbox(program, "namespace", encoded)
-	probe := sandbox.command("/bin/true")
-	if err := probe.Run(); err == nil {
+	if sandboxAvailable(sandbox) {
 		return sandbox, nil
 	}
 	if abi > 0 {
 		return linuxSandbox(program, "landlock-partial", encoded), nil
 	}
 	return shellSandbox{}, fmt.Errorf("read-only shell sandbox unavailable: enable Landlock in the kernel or enable unprivileged user namespaces as root")
+}
+
+func sandboxAvailable(sandbox shellSandbox) bool {
+	probe := sandbox.command("/bin/true")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	return exec.CommandContext(ctx, probe.Path, probe.Args[1:]...).Run() == nil
 }
 
 func linuxSandbox(program, level string, writable []byte) shellSandbox {

@@ -49,7 +49,7 @@ type Options struct {
 // returns 0 and goes on without it. With no server it runs the line as it is.
 func Run(options Options, client Client, stdout io.Writer) int {
 	if options.ReadOnlyShell {
-		sandbox, err := runSandbox(options, NewFolder(options.Home, options.Process))
+		sandbox, err := runSandbox(NewFolder(options.Home, options.Process))
 		if err != nil {
 			fmt.Fprintln(stdout, "read-only shell sandbox:", err)
 			return 125
