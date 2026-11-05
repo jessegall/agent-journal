@@ -42,5 +42,5 @@ def expect_session_start(start, number, expected) -> None:
 
 
 def expect_after_compaction_start(start, number, expected) -> None:
-    actual = start.after_compaction(number)
+    actual = start.after_compaction()
     assert actual == expected, actual

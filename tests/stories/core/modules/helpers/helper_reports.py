@@ -40,7 +40,7 @@ def report_of(story):
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
 def test_a_short_report_arrives_inside_the_parents_line(new_story, helper_fixture):
     story = reported(new_story, helper_fixture, "The cart adds tax twice.")
-    story.expect_text(LINES.format(agent=story.agent.id), f"helper:{the_helper(story).id} reports", "The cart adds tax twice.")
+    story.expect_text(LINES.format(agent=story.agent.id), f"agent:{the_helper(story).id} reports", "The cart adds tax twice.")
 
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
