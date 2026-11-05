@@ -7,7 +7,6 @@ from core.modules.tasks.conditions.closed_task_cursor import ClosedTaskCursor
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.environment_names import EnvironmentNames
 from core.base.model.state_book import StateBook
 from core.base.query.query import PAGE_SIZE_ROWS, Query
 from core.base.refusal import Refusal
@@ -36,22 +35,21 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
     cli_name = "task"
     name = "board"
 
-    def __init__(self, queries: Queries, environment_names: EnvironmentNames, book: StateBook) -> None:
-        self.queries, self.environment_names, self.book = queries, environment_names, book
+    def __init__(self, queries: Queries, book: StateBook) -> None:
+        self.queries, self.book = queries, book
 
     def added_states(self) -> tuple[str, ...]:
         lifecycle = self.book.lifecycle(Task)
         return lifecycle.added_states if lifecycle is not None else ()
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--environment")
         parser.add_argument("--state", type=board_group)
         parser.add_argument("--before-id", type=int, default=None, help="the rows older than this one")
         parser.add_argument("--before-closed-at", default=None, help="the finished rows closed before this time")
         parser.add_argument("--limit", type=int, default=None)
 
     def read(self, arguments: Namespace, caller: Caller) -> TaskBoard:
-        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         if environment_id is None:
             raise Refusal("the board is shown for one environment", "name it with --environment")
         if arguments.state is not None:

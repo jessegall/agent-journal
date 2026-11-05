@@ -73,7 +73,7 @@ test("a waiting card is described without a badge and its refusal stays outside 
 });
 test("a kept run has flush controls before its duration and Kept on the bottom line", async () => {
     const host = await draw(
-        {folds: "Output", leaves_after_seconds: 5, buttons: [{icon: "stop", label: "Stop this run", runs: "output stop {row_id}"}]},
+        {folds: "Output", leaves_after_seconds: 5, buttons: [{icon: "stop", label: "Stop", runs: "output stop {row_id}"}]},
         {kept: true}
     );
     const pin = host.querySelector('[data-dock-action="unkeep"]');

@@ -4,7 +4,6 @@ from core.modules.tasks.rules.support.current_task import CurrentTask
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_log import TaskLog
 from core.modules.tasks.models.task_read import TaskRead
-from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.queries.task_query import TaskQuery
 
 
@@ -16,8 +15,7 @@ class CurrentTasks:
         self.tasks, self.queries, self.kept = tasks, queries, kept
 
     def started_tasks(self, agent_id: int) -> list[Task]:
-        return list(self.kept.read("tasks", lambda: tuple(self.tasks.holder(agent_id).started().descending("started_at").all_rows()),
-                                   "holder_id = ? AND state = ?", [agent_id, TaskState.STARTED.value], name="tasks.current_tasks"))
+        return list(self.tasks.started_tasks(agent_id))
 
     def current(self, agent_id: int) -> CurrentTask | None:
         current = self.started_tasks(agent_id)

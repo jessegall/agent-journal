@@ -1,7 +1,6 @@
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 
 from core.base.caller.caller import Caller
-from core.base.environment_names import EnvironmentNames
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
@@ -16,14 +15,11 @@ class AgentMainSubcommand(ReadSubcommand[Agent | None]):
     cli_name = "agent"
     name = "main"
 
-    def __init__(self, queries: Queries, environment_names: EnvironmentNames) -> None:
-        self.queries, self.environment_names = queries, environment_names
-
-    def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--environment")
+    def __init__(self, queries: Queries) -> None:
+        self.queries = queries
 
     def read(self, arguments: Namespace, caller: Caller) -> Agent | None:
-        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         if environment_id is None:
             raise Refusal("the main agent is shown for one environment", "name it with --environment")
         running = MainAgentFinder.rows(self.queries, environment_id)

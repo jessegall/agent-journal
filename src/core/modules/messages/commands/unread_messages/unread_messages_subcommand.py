@@ -1,8 +1,7 @@
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 
 from core.base.caller.caller import Caller
 from core.base.cli.row_links import RowLinks
-from core.base.environment_names import EnvironmentNames
 from core.base.query.conditions.is_null import IsNull
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
@@ -22,15 +21,12 @@ class UnreadMessagesSubcommand(ReadSubcommand[tuple[MessageText, ...]]):
     cli_name = "message"
     name = "unread"
 
-    def __init__(self, links: RowLinks, environment_names: EnvironmentNames, messages: MessageQuery) -> None:
-        self.links, self.environment_names = links, environment_names
+    def __init__(self, links: RowLinks, messages: MessageQuery) -> None:
+        self.links = links
         self.messages = messages
 
-    def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--environment")
-
     def read(self, arguments: Namespace, caller: Caller) -> tuple[MessageText, ...]:
-        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         if environment_id is None:
             raise Refusal("unread messages are read for one environment", "name it with --environment")
         agent_id = caller.read_actor_id

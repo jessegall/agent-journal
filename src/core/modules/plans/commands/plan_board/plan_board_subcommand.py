@@ -2,7 +2,6 @@ from core.base.query.conditions.less import Less
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.environment_names import EnvironmentNames
 from core.base.model.state_book import StateBook
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
@@ -28,8 +27,8 @@ class PlanBoardSubcommand(ReadSubcommand[PlanBoard]):
     cli_name = "plan"
     name = "board"
 
-    def __init__(self, queries: Queries, environment_names: EnvironmentNames, book: StateBook) -> None:
-        self.queries, self.environment_names, self.book = queries, environment_names, book
+    def __init__(self, queries: Queries, book: StateBook) -> None:
+        self.queries, self.book = queries, book
 
     def open_states(self) -> tuple[str, ...]:
         lifecycle = self.book.lifecycle(Plan)
@@ -37,13 +36,12 @@ class PlanBoardSubcommand(ReadSubcommand[PlanBoard]):
         return (*OPEN_STATES, *added)
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--environment")
         parser.add_argument("--closed", action="store_true")
         parser.add_argument("--before-id", type=int, default=None, help="the plans older than this one")
         parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
 
     def read(self, arguments: Namespace, caller: Caller) -> PlanBoard:
-        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         if environment_id is None:
             raise Refusal("the board is shown for one environment", "name it with --environment")
         plans = self.queries.query(PlanCard).filter(environment_id=environment_id)

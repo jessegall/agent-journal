@@ -1,8 +1,7 @@
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 from collections.abc import Sequence
 
 from core.base.caller.caller import Caller
-from core.base.environment_names import EnvironmentNames
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
@@ -17,14 +16,11 @@ class PinListSubcommand(ReadSubcommand[Sequence[Pin]]):
     cli_name = "pin"
     name = "list"
 
-    def __init__(self, pins: PinQuery, environment_names: EnvironmentNames) -> None:
-        self.pins, self.environment_names = pins, environment_names
-
-    def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--environment")
+    def __init__(self, pins: PinQuery) -> None:
+        self.pins = pins
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[Pin]:
-        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         if environment_id is None:
             raise Refusal("pins belong to an environment", "name it with --environment")
         return tuple(self.pins.open_ones(environment_id).oldest().all_rows())

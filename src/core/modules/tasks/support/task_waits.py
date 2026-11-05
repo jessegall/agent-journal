@@ -37,12 +37,14 @@ class TaskWaits:
         return self.queries.query(TaskWait).filter(task_id=task_id).matching(IsNull("ended_at"))
 
     def pending_task(self, task_id: int) -> tuple[TaskWait, ...]:
-        return self.kept.read("task_waits", lambda: tuple(self.open_waits(task_id).all_rows()),
-                              "task_id = ? AND ended_at IS NULL", [task_id], name="tasks.pending_waits")
+        return tuple(wait for wait in self.pending_rows() if wait.task_id == task_id)
 
     def pending_target(self, target: str) -> tuple[TaskWait, ...]:
-        return self.kept.read("task_waits", lambda: tuple(self.queries.query(TaskWait).filter(target=target).matching(IsNull("ended_at")).all_rows()),
-                              "target = ? AND ended_at IS NULL", [target], name="tasks.pending_waits")
+        return tuple(wait for wait in self.pending_rows() if wait.target == target)
+
+    def pending_rows(self) -> tuple[TaskWait, ...]:
+        return self.kept.read("task_waits", lambda: tuple(self.queries.query(TaskWait).matching(IsNull("ended_at")).oldest().all_rows()),
+                              "ended_at IS NULL", name="tasks.pending_waits")
 
     def remember(self, wait: TaskWait) -> None:
         self.replace_cached(wait, tuple([wait]) if wait.ended_at is None else ())
@@ -51,6 +53,5 @@ class TaskWaits:
         self.replace_cached(wait, ())
 
     def replace_cached(self, wait: TaskWait, pending: tuple[TaskWait, ...]) -> None:
-        for column, value in (("task_id", wait.task_id), ("target", wait.target)):
-            self.kept.update("task_waits", lambda waits: (*[row for row in waits if row.id != wait.id], *pending),
-                             f"{column} = ? AND ended_at IS NULL", [value], name="tasks.pending_waits")
+        self.kept.update("task_waits", lambda waits: tuple(sorted([row for row in waits if row.id != wait.id] + list(pending), key=lambda row: row.id)),
+                         "ended_at IS NULL", name="tasks.pending_waits")

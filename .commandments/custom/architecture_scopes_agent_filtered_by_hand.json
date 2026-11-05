@@ -1,0 +1,65 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "any": [
+                    {
+                        "all": [
+                            {
+                                "name": "filter"
+                            },
+                            {
+                                "descendant": {
+                                    "all": [
+                                        {
+                                            "kind": "keyword"
+                                        },
+                                        {
+                                            "name": "agent_id"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "name": "Equal"
+                            },
+                            {
+                                "argument": {
+                                    "at": 0,
+                                    "text": "agent_id"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "file": "**/migrations/**"
+            },
+            {
+                "file": "**/upgrade/**"
+            },
+            {
+                "fileMatches": "(^|/)src/core/base/(query|scope|database)/"
+            }
+        ]
+    },
+    "sin": {
+        "name": "agent-filtered-by-hand",
+        "description": "A query filters on agent_id by hand, so the agent scope has a second answer that can drift from the door's.",
+        "rule": "Declare the scope on the model; the scope set once at the door of each request or hook filters the rows. A class that must cross a scope declares disabled_scopes.",
+        "skill": "plain-code-words"
+    }
+}

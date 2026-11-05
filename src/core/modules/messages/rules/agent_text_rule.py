@@ -6,8 +6,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.messages.commands.send_message.send_message import SendMessage
-from core.modules.messages.models.enums.message_type import MessageType
-from core.modules.messages.models.message import Message
+from core.modules.messages.queries.message_query import MessageQuery
 
 JOURNAL_LINE = "[journal] "
 USER_ACTION_PREFIXES = ("[journal] new message", "[journal] question:", "[journal] the user")
@@ -25,8 +24,8 @@ class AgentTextRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, queries: Queries, messages: MessageQuery) -> None:
+        self.queries, self.messages = queries, messages
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         raw = hook.event.raw
@@ -39,8 +38,8 @@ class AgentTextRule(DriverRule):
         return RuleAnswer.allowed().running(SendMessage(text.strip()))
 
     def has_reply(self, agent_id: int, prompt: HookCall) -> bool:
-        newest = self.queries.query(Message).filter(creator_id=agent_id, type=MessageType.AGENT).newest().limited(1)
-        return bool(newest) and newest[0].parent_id is not None and newest[0].creation_timestamp().value >= prompt.creation_timestamp().value
+        newest = self.messages.latest_agent_message(agent_id)
+        return newest is not None and newest.parent_id is not None and newest.creation_timestamp().value >= prompt.creation_timestamp().value
 
     def is_acknowledgement(self, text: str, prompt: HookCall) -> bool:
         if len(text) > SHORT_CHARACTERS or "?" in text or not prompt.summary.startswith(JOURNAL_LINE) or self.is_user_act(prompt.summary):

@@ -1,7 +1,6 @@
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 
 from core.base.caller.caller import Caller
-from core.base.environment_names import EnvironmentNames
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
@@ -22,14 +21,11 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
     cli_name = "usage"
     name = "show"
 
-    def __init__(self, queries: Queries, files: StatusFiles, environment_names: EnvironmentNames) -> None:
-        self.queries, self.files, self.environment_names = queries, files, environment_names
-
-    def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--environment")
+    def __init__(self, queries: Queries, files: StatusFiles) -> None:
+        self.queries, self.files = queries, files
 
     def read(self, arguments: Namespace, caller: Caller) -> EnvironmentUsage:
-        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         if environment_id is None:
             raise Refusal("usage is shown for one environment", "name it with --environment")
         agents = self.queries.query(Agent).filter(environment_id=environment_id).matching(IsNull("ended_at")).oldest().all_rows()

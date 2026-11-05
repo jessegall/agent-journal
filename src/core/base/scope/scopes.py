@@ -12,6 +12,7 @@ from core.base.database.database import Database
 from core.base.model.agent_scoped import AgentScoped
 from core.base.model.model import Model
 from core.base.scope.actor_scope import ActorScope
+from core.base.scope.row_owner import RowOwner
 from core.base.scope.scope import Scope
 from core.base.scope.scope_opening import ScopeOpening
 
@@ -37,11 +38,13 @@ class Scopes:
             return model.changed(agent_id=owner.stored_agent_id)
         return model if self.actor_id is None else model.scoped(self.actor_id)
 
-    def command_scope(self, disabled: WholeScopes, actor: Actor) -> ContextManager[None]:
+    def command_scope(self, disabled: WholeScopes, actor: Actor, environment_id: int | None = None) -> ContextManager[None]:
         if ActorScope in disabled:
             return self.opened(None)
         if self.decided:
             return nullcontext()
+        if actor.type is ActorType.USER:
+            return self.opened(None, environment_id)
         return self.opened(actor.id if actor.type is ActorType.AGENT else None)
 
     def event_scope(self, disabled: DisabledScopes, event: LoggedEvent) -> ContextManager[None]:
@@ -51,23 +54,29 @@ class Scopes:
         return self.opened(None) if self.passes(disabled, change) else nullcontext()
 
     @contextmanager
-    def read_scope(self, disabled: WholeScopes, actor_id: int | None) -> Generator[None]:
+    def read_scope(self, disabled: WholeScopes, actor_id: int | None, environment_id: int | None = None) -> Generator[None]:
         previous = self.database.read_actor_id, self.database.row_owner
         self.database.read_actor_id = None if ActorScope in disabled else actor_id
-        self.database.row_owner = self.actors.row_owner(self.database.read_actor_id)
+        self.database.row_owner = self.owner(self.database.read_actor_id, environment_id)
         try:
             yield
         finally:
             self.database.read_actor_id, self.database.row_owner = previous
 
     @contextmanager
-    def opened(self, actor_id: int | None) -> Generator[None]:
+    def opened(self, actor_id: int | None, environment_id: int | None = None) -> Generator[None]:
         previous = self.actor_id, self.decided, self.database.row_owner
-        self.actor_id, self.decided, self.database.row_owner = actor_id, True, self.actors.row_owner(actor_id)
+        self.actor_id, self.decided, self.database.row_owner = actor_id, True, self.owner(actor_id, environment_id)
         try:
             yield
         finally:
             self.actor_id, self.decided, self.database.row_owner = previous
+
+    def owner(self, actor_id: int | None, environment_id: int | None) -> RowOwner | None:
+        agent = self.actors.row_owner(actor_id)
+        if agent is not None or environment_id is None:
+            return agent
+        return RowOwner(None, environment_id)
 
     def passes(self, disabled: DisabledScopes, subject: LoggedEvent | Change[Model]) -> bool:
         return any(entry is ActorScope or (isinstance(entry, ScopeOpening) and entry.scope is ActorScope and entry.passes(subject)) for entry in disabled)

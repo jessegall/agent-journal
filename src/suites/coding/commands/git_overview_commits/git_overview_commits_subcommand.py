@@ -14,5 +14,5 @@ class GitOverviewCommitsSubcommand(GitPageSubcommand):
     name = "commits"
 
     def read(self, arguments: Namespace, caller: Caller) -> GitRows:
-        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         return self.git.commits(environment_id, arguments.skip, arguments.limit)

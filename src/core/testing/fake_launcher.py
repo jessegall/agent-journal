@@ -7,7 +7,7 @@ ACCEPT_TIMEOUT_SECONDS = 10
 
 
 class FakeLauncher:
-    """A launcher socket in a story's journal folder that takes worker requests and keeps them, under a time
+    """A launcher socket in a story's journal folder that takes start requests and keeps them, under a time
     limit, answering each as told or, as an older launcher does, not at all. With answers, request number n
     gets answers[n] and any later request gets the last one."""
 
@@ -32,14 +32,14 @@ class FakeLauncher:
                 self.requests.append(request)
                 connection.sendall(self.answers[min(len(self.requests), len(self.answers)) - 1] if self.answers else self.answer)
 
-    def expect_worker(self, worker_id: int, session: str, folder: Path) -> None:
+    def expect_started(self, agent_id: int, session: str, folder: Path) -> None:
         self.thread.join(ACCEPT_TIMEOUT_SECONDS)
         self.server.close()
-        assert self.requests, f"the launcher was handed nothing for worker {worker_id}"
+        assert self.requests, f"the launcher was handed nothing for agent {agent_id}"
         request = self.requests[0]
-        expected = {"agent_id": worker_id, "session": session, "folder": str(folder)}
+        expected = {"agent_id": agent_id, "session": session, "folder": str(folder)}
         assert {key: request.get(key) for key in expected} == expected, f"the launcher was handed {request}, not {expected}"
         command, variables = request.get("command"), request.get("variables")
-        assert isinstance(command, list) and command, f"the worker's program has no command: {command}"
+        assert isinstance(command, list) and command, f"the agent's program has no command: {command}"
         assert isinstance(variables, dict) and variables.get("JOURNAL_ENV") == "main" and variables.get("AGENT_JOURNAL_ACTIVE") == "1", \
-            f"the worker's hooks would not reach environment main: {variables}"
+            f"the agent's hooks would not reach environment main: {variables}"

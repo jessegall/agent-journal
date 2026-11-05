@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 
 from core.base.model.model import Model
+from core.base.model.environment_scoped import EnvironmentScoped
 
 
 @dataclass(frozen=True, kw_only=True)
-class PersonPreset(Model):
+class PersonPreset(EnvironmentScoped, Model):
     """A layout one person saved as a preset for one viewer page in one environment, offered in their picker
     beside the suite's presets; its shape is the layout tree's JSON."""
 

@@ -32,7 +32,7 @@ class Bus:
             raise TransactionError(f"{command.label()} was run at the top inside a transaction: dispatch it with the context instead")
         handler = self.handler(command)
         handler.prepare(command, actor)
-        with self.scopes.command_scope(handler.disabled_scopes, actor):
+        with self.scopes.command_scope(handler.disabled_scopes, actor, environment_id):
             if not handler.transactional:
                 return self.result(handler.handle(command, Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, environment_id)), command)
             with self.database.transaction():

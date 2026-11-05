@@ -4,7 +4,6 @@ from collections.abc import Sequence
 from core.base.caller.caller import Caller
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.project_paths import ProjectPaths
-from core.base.environment_names import EnvironmentNames
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
@@ -37,17 +36,16 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
     disabled_scopes = [ActorScope]
     name = "tool"
 
-    def __init__(self, queries: Queries, environment_names: EnvironmentNames, processes: ProcessQuery, outputs: OutputQuery) -> None:
-        self.queries, self.environment_names, self.processes, self.outputs = queries, environment_names, processes, outputs
+    def __init__(self, queries: Queries, processes: ProcessQuery, outputs: OutputQuery) -> None:
+        self.queries, self.processes, self.outputs = queries, processes, outputs
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--environment")
         parser.add_argument("--agent", type=int)
 
     def read(self, arguments: Namespace, caller: Caller) -> ToolFacts:
         if arguments.agent is not None:
             return self.agent_tool(arguments.agent, ())
-        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         if environment_id is None:
             raise Refusal("the tool is shown for one environment", "name it with --environment")
         mains = MainAgentFinder.rows(self.queries, environment_id)

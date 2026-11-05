@@ -9,7 +9,6 @@ from core.base.model.table import Table
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.model.tables import Tables
 from core.base.query.queries import Queries
-from core.base.environment_names import EnvironmentNames
 from core.base.cli.make_subcommand import MakeSubcommand
 from core.base.cli.row_links import RowLinks
 from core.base.cli.show_subcommand import ShowSubcommand
@@ -24,8 +23,8 @@ class DefaultSubcommands:
     """Builds the subcommands every model gets from its model, so a module writes only the ones that differ.
     """
 
-    def __init__(self, tables: Tables, queries: Queries, environment_names: EnvironmentNames, links: RowLinks, book: StateBook) -> None:
-        self.tables, self.queries, self.environment_names, self.links, self.book = tables, queries, environment_names, links, book
+    def __init__(self, tables: Tables, queries: Queries, links: RowLinks, book: StateBook) -> None:
+        self.tables, self.queries, self.links, self.book = tables, queries, links, book
 
     def make(self, model: type[Model]) -> MakeSubcommand[Model]:
         return MakeSubcommand(self.tables.table(model))
@@ -34,7 +33,7 @@ class DefaultSubcommands:
         return ShowSubcommand(self.tables.table(model), self.queries, self.links)
 
     def list(self, model: type[Model]) -> ListSubcommand:
-        return ListSubcommand(self.tables.table(model), self.queries, self.environment_names, self.book)
+        return ListSubcommand(self.tables.table(model), self.queries, self.book)
 
     def edit(self, model: type[Model]) -> EditSubcommand:
         return EditSubcommand(self.tables.table(model))

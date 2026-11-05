@@ -116,7 +116,7 @@ class Query(Generic[M]):
     def scoped(self, select: Select) -> Select:
         owner = self.database.row_owner
         if owner is not None and issubclass(self.model, EnvironmentScoped):
-            select = select.matching(Equal(ENVIRONMENT_COLUMN, owner.environment_id))
+            select = self.environment_rows(select, owner)
         if issubclass(self.model, AgentScoped):
             return self.owner_rows(select, owner)
         actor_id = self.database.read_actor_id
@@ -126,8 +126,11 @@ class Query(Generic[M]):
             return select.matching(OwnRows(actor_id))
         return select.matching(Equal(AGENT_COLUMN, actor_id))
 
+    def environment_rows(self, select: Select, owner: RowOwner) -> Select:
+        return select if owner.environment_id is None else select.matching(Equal(ENVIRONMENT_COLUMN, owner.environment_id))
+
     def owner_rows(self, select: Select, owner: RowOwner | None) -> Select:
-        if owner is None:
+        if owner is None or owner.agent is None:
             return select
         return select.matching(IsNull(AGENT_COLUMN)) if owner.is_main else select.matching(Equal(AGENT_COLUMN, owner.agent))
 

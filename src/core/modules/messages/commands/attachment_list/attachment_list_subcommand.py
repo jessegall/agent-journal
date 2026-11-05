@@ -3,7 +3,6 @@ import re
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.environment_names import EnvironmentNames
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.subcommand.read_subcommand import ReadSubcommand
@@ -27,18 +26,17 @@ class AttachmentListSubcommand(ReadSubcommand[AttachmentPage]):
     cli_name = "attachment"
     name = "list"
 
-    def __init__(self, queries: Queries, environment_names: EnvironmentNames) -> None:
-        self.queries, self.environment_names = queries, environment_names
+    def __init__(self, queries: Queries) -> None:
+        self.queries = queries
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--environment")
         parser.add_argument("--kind", choices=(ALL_CATEGORIES, IMAGE_CATEGORY, FILE_CATEGORY), default=ALL_CATEGORIES)
         parser.add_argument("--search", default="")
         parser.add_argument("--skip", type=int, default=0)
         parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
 
     def read(self, arguments: Namespace, caller: Caller) -> AttachmentPage:
-        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         if environment_id is None:
             raise Refusal("attached files are listed for one environment", "name it with --environment")
         files = sorted(self.queries.query(AttachedFile).filter(environment_id=environment_id).all_rows(), key=lambda row: row.message_id, reverse=True)

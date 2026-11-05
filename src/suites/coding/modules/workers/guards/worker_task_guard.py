@@ -1,6 +1,5 @@
 from core.base.guard.guard import Guard
-from core.base.model.model import Model
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
@@ -17,12 +16,13 @@ class WorkerTaskGuard(Guard[Moved[Task]]):
     name = "workers.one-task-per-worker"
     moves = tuple([TaskLifecycle.start])
 
-    def __init__(self, queries: Queries, tasks: TaskQuery) -> None:
-        self.queries, self.tasks = queries, tasks
+    def __init__(self, rows: EventRows, tasks: TaskQuery) -> None:
+        self.rows, self.tasks = rows, tasks
 
     def check(self, event: Moved[Task], context: Context) -> None:
-        if not self.queries.query(Agent).filter(id=context.actor.id, role=AgentRole.WORKER).exists():
+        agent = self.rows.find(Agent, context.actor.id)
+        if agent is None or agent.role != AgentRole.WORKER:
             return
-        started_tasks = self.tasks.holder(context.actor.id).started().limited(1)
+        started_tasks = self.tasks.started_tasks(context.actor.id)
         if started_tasks and started_tasks[0].id != event.row.id:
             raise Refusal(f"worker {context.actor.id} has task {started_tasks[0].id} started already", "a worker works on one task at a time: deliver it first")

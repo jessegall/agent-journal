@@ -2,7 +2,6 @@ from argparse import ArgumentParser, Namespace
 from collections.abc import Sequence
 
 from core.base.caller.caller import Caller
-from core.base.environment_names import EnvironmentNames
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_tuple
@@ -18,16 +17,15 @@ class TemplateListSubcommand(ReadSubcommand[Sequence[Template]]):
     cli_name = "template"
     name = "list"
 
-    def __init__(self, templates: TemplateQuery, environments: EnvironmentNames) -> None:
-        self.templates, self.environments = templates, environments
+    def __init__(self, templates: TemplateQuery) -> None:
+        self.templates = templates
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--target", help="Show templates that apply to this target")
         parser.add_argument("--purpose", help="Show templates with this purpose")
-        parser.add_argument("--environment")
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[Template]:
-        environment_id = self.environments.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         query = self.templates.active(environment_id).oldest()
         if arguments.target is not None:
             query = query.matching(TemplateTarget(arguments.target))

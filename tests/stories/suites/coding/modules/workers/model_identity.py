@@ -7,7 +7,7 @@ from core.base.journal_home import LAUNCHER_SOCKET
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment, worker_session
-from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
+from core.testing.fake_launcher import FakeLauncher
 
 
 def expect_identity(story, worker, model):
@@ -39,7 +39,7 @@ def test_dispatch_send_resume_and_restart_keep_the_model_on_the_command_and_card
     for _ in range(2):
         WorkerResumeRetry()(story.container)
         expect_identity(story, worker, model)
-    launcher.expect_worker(worker.id, session, repository.worktree_folder(worker.id))
+    launcher.expect_started(worker.id, session, repository.worktree_folder(worker.id))
     story.expect_rows(len(launcher.requests) == 4)
     for request in launcher.requests:
         command = request["command"]

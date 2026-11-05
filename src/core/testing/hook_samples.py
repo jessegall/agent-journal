@@ -58,5 +58,9 @@ class HookSamples:
         return HookSamples.tool_use("Agent", ToolType.AGENT, [], None).with_raw({"tool_input": {"model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted"}})
 
     @staticmethod
+    def helper(launch_name: str) -> HookSample:
+        return HookSamples.session_start().with_fields(launch=launch_name)
+
+    @staticmethod
     def tick() -> HookSample:
         return HookSamples.sample("tick")

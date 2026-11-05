@@ -1,8 +1,7 @@
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 
 from core.base.agent_role import AgentRole
 from core.base.caller.caller import Caller
-from core.base.environment_names import EnvironmentNames
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.equal import Equal
 from core.base.query.conditions.greater import Greater
@@ -34,14 +33,11 @@ class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
     cli_name = "usage"
     name = "bars"
 
-    def __init__(self, queries: Queries, tasks: TaskQuery, environment_names: EnvironmentNames) -> None:
-        self.queries, self.tasks, self.environment_names = queries, tasks, environment_names
-
-    def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--environment")
+    def __init__(self, queries: Queries, tasks: TaskQuery) -> None:
+        self.queries, self.tasks = queries, tasks
 
     def read(self, arguments: Namespace, caller: Caller) -> BarFacts:
-        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         if environment_id is None:
             raise Refusal("the bars are shown for one environment", "name it with --environment")
         agents = self.queries.query(Agent).filter(environment_id=environment_id).matching(IsNull("ended_at"))

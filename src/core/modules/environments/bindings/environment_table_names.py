@@ -10,6 +10,8 @@ class EnvironmentTableNames(EnvironmentNames):
         self.rows = rows
 
     def environment_id(self, name: str) -> int:
+        if name.isdigit():
+            return int(name)
         row = next((environment for environment in self.rows.all() if environment.name == name), None)
         if row is None:
             raise Refusal(f"no environment named {name}", "journal environment list shows them")

@@ -1,7 +1,7 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.testing.hook_samples import HookSamples
-from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
+from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithOpenTask, CodingEnvironment
 

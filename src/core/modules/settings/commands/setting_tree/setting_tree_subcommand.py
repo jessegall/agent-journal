@@ -1,8 +1,7 @@
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 from collections.abc import Sequence
 
 from core.base.caller.caller import Caller
-from core.base.environment_names import EnvironmentNames
 from core.base.registry.setting_entry import SettingEntry
 from core.base.setting.setting_declaration import ANY_KEY, REFERENCE_TYPE
 from core.base.subcommand.output import Output
@@ -29,15 +28,12 @@ class SettingTreeSubcommand(ReadSubcommand[Sequence[TreeLine]]):
     cli_name = "setting"
     name = "tree"
 
-    def __init__(self, declared: SettingCatalogue, values: SettingReader, environment_names: EnvironmentNames, undeclared: UndeclaredSettings,
+    def __init__(self, declared: SettingCatalogue, values: SettingReader, undeclared: UndeclaredSettings,
                  rows: SettingRows) -> None:
-        self.declared, self.values, self.environment_names, self.undeclared, self.rows = declared, values, environment_names, undeclared, rows
-
-    def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--environment")
+        self.declared, self.values, self.undeclared, self.rows = declared, values, undeclared, rows
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[TreeLine]:
-        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        environment_id = caller.environment_id
         lines: list[TreeLine] = []
         for entry in self.declared.all():
             depth = len(list(self.declared.enclosing_groups(entry)))

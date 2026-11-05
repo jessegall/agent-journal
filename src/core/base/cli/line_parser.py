@@ -19,4 +19,6 @@ class LineParser:
         subcommand.arguments(parser)
         if isinstance(subcommand, Subcommand):
             self.flags.add(parser)
+        else:
+            parser.add_argument("--environment")
         return subcommand, parser

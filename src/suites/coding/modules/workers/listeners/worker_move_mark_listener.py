@@ -1,4 +1,8 @@
 from core.base.change.logged_event import LoggedEvent
+from core.base.command.bus import Bus
+from core.base.module.module_actors import ModuleActors
+from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.query.conditions.among import Among
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
@@ -6,6 +10,7 @@ from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.models.enums.worker_mark_type import WorkerMarkType
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -32,11 +37,15 @@ class WorkerMoveMarkListener(MarkListener[Moved[Worktree]]):
     disabled_scopes = [ActorScope]
     module_name = "journal.suites.coding.workers"
 
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, event_rows: EventRows, tasks: TaskQuery) -> None:
+        super().__init__(bus, actors, queries, event_rows)
+        self.tasks = tasks
+
     def handle(self, event: Moved[Worktree], logged: LoggedEvent) -> None:
         worktree = event.row
         agent = self.event_rows.required(Agent, worktree.agent_id)
         task = self.event_rows.required(Task, worktree.task_id)
-        queued = tuple(self.queries.query(Task).filter(delegated_to=agent.id, state=TaskState.OPEN).oldest().all_rows())
+        queued = self.tasks.queued_tasks(agent.id)
         variant, move = MOVE_TEXTS[event.move.name]
         name = agent.given_name or f"Worker {agent.id}"
         self.show(logged, WorkerMarkType.WORKER, variant, f"{name} {move.format(tasks=self.tasks_text(event.move, worktree, task))}", worktree.environment_id, None, AGENTS_TABLE, agent.id, detail=f"On {agent.program} {agent.program_model}{self.queue_text(queued)}\n\nTask {task.id}: {task.title}\n\n{task.brief}")

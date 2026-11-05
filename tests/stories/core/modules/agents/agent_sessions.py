@@ -21,7 +21,7 @@ def test_a_helper_names_the_agent_that_started_it_and_the_environment_lists_both
     main_id = story.new_row_id(lines.AGENT_START)
     helper_id = story.new_row_id(f"agent start s-2 claude worker --parent {main_id} --environment main")
     story.expect_success(f"agent show {helper_id}", f"parent_id: {main_id}", "role: worker")
-    story.expect_success("agent list --environment 1", f"{helper_id}  {main_id}  s-2  claude  worker", f"{main_id}  s-1  claude  main")
+    story.expect_success("agent list --environment 1", f"{helper_id}  {main_id}  s-2  claude  worker  writing", f"{main_id}  s-1  claude  main  writing")
 
 
 def test_an_agent_starts_only_in_an_environment_and_is_never_made_by_hand(new_story):

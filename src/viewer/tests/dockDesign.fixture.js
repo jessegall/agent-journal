@@ -31,7 +31,7 @@ const declarations = [
         folds: "Output",
         leaves_after_seconds: 5,
         body_url: body("processes", "Output"),
-        buttons: [{icon: "stop", label: "Stop this run", runs: "output stop {row_id}", variants: ["running"]}],
+        buttons: [{icon: "stop", label: "Stop", runs: "output stop {row_id}", variants: ["running"]}],
     },
 ].map((d) => ({title: "{row_title}", shipped: true, reads: ["doc show", "report show", "plan show", "process show"], ...d}));
 loadDockDeclarations(declarations);

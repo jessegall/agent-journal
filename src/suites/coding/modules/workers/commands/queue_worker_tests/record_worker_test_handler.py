@@ -1,5 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
+from core.base.listener.event_rows import EventRows
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
@@ -31,13 +32,14 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
     command = RecordWorkerTest
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MainAgentLine, tasks: TaskQuery, advance: WorkerTaskAdvance, nudger: Nudger) -> None:
+    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MainAgentLine, tasks: TaskQuery, advance: WorkerTaskAdvance, nudger: Nudger, rows: EventRows) -> None:
         self.queries, self.repository, self.main_agent_line, self.tasks, self.advance, self.nudger = queries, repository, main_agent_line, tasks, advance, nudger
+        self.rows = rows
 
     def handle(self, command: RecordWorkerTest, context: Context) -> None:
-        proof = self.queries.query(Proof).find(command.proof_id)
-        self.repository.save(proof.moved(ProofLifecycle.check) if command.passed else proof.moved(ProofLifecycle.short, shortfall=command.output_note), context)
-        worktree = self.queries.query(Worktree).find(proof.worktree_id)
+        proof = self.rows.required(Proof, command.proof_id)
+        self.repository.save_change(proof, proof.moved(ProofLifecycle.check) if command.passed else proof.moved(ProofLifecycle.short, shortfall=command.output_note), context)
+        worktree = self.rows.required(Worktree, proof.worktree_id)
         proofs = tuple(self.queries.query(Proof).filter(worktree_id=worktree.id).all_rows())
         if any(row.state in TEST_WAITING_STATES for row in proofs):
             return
@@ -48,10 +50,13 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         pending = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).all_rows()
         if any(row.state in (AffectedTestState.QUEUED, AffectedTestState.PICKING, AffectedTestState.TESTING) for row in pending):
             return
-        self.finish(worktree, context)
+        self.finish_proofs(worktree, proofs, context)
 
     def finish(self, worktree: Worktree, context: Context) -> None:
         proofs = tuple(self.queries.query(Proof).filter(worktree_id=worktree.id).all_rows())
+        self.finish_proofs(worktree, proofs, context)
+
+    def finish_proofs(self, worktree: Worktree, proofs: tuple[Proof, ...], context: Context) -> None:
         self.complete_tested(proofs, context)
         if worktree.state is WorktreeState.CUT:
             self.start_next(worktree, context)
@@ -66,14 +71,14 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
 
     def complete_tested(self, proofs: tuple[Proof, ...], context: Context) -> None:
         for task_id in sorted({row.task_id for row in proofs if row.test_command}):
-            task = self.queries.query(Task).find(task_id)
+            task = self.rows.required(Task, task_id)
             if task.state is TaskState.TESTING and all(row.state is ProofState.CHECKED for row in proofs if row.task_id == task_id):
-                self.repository.save(task.close(context.timestamp, context.actor, "its tests passed"), context)
+                self.repository.save_change(task, task.close(context.timestamp, context.actor, "its tests passed"), context)
 
     def start_next(self, worktree: Worktree, context: Context) -> None:
-        started_task = next(iter(self.tasks.holder(worktree.agent_id).started().limited(1)), None)
+        started_task = next(iter(self.tasks.started_tasks(worktree.agent_id)), None)
         if started_task is not None:
-            self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=started_task.id), context)
+            self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, task_id=started_task.id), context)
             return
         following = self.tasks.next_delegated(worktree.agent_id)
         if following is None:
@@ -82,10 +87,10 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
 
     def reopen_work(self, worktree: Worktree, failed: list[Proof], context: Context) -> None:
         for task_id in sorted({row.task_id for row in failed}):
-            task = self.queries.query(Task).find(task_id)
+            task = self.rows.required(Task, task_id)
             if task.state is TaskState.TESTING:
-                self.repository.save(task.moved(TaskLifecycle.retest), context)
+                self.repository.save_change(task, task.moved(TaskLifecycle.retest), context)
         if worktree.state is WorktreeState.DELIVERED:
-            self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)
+            self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)
         outputs = ", ".join(str(row.process_id) for row in failed)
         self.nudger.send(worktree.agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=outputs)
