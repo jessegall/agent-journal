@@ -14,6 +14,8 @@ FAILURE_COUNT = Statement("INSERT INTO listener_skips (listener, event_id, failu
                           " ON CONFLICT (listener, event_id) DO UPDATE SET failures = failures + 1 RETURNING failures")
 CURSOR_REMOVAL = Statement("DELETE FROM listener_cursors WHERE listener = ?")
 SKIP_REMOVAL = Statement("DELETE FROM listener_skips WHERE listener = ?")
+ABSENT_CURSOR_REMOVAL = "DELETE FROM listener_cursors WHERE listener NOT IN ({listeners})"
+ABSENT_SKIP_REMOVAL = "DELETE FROM listener_skips WHERE listener NOT IN ({listeners})"
 
 
 class ListenerCursorTable:
@@ -54,3 +56,8 @@ class ListenerCursorTable:
     def remove(self, listener: str) -> None:
         self.database.update(Statement(CURSOR_REMOVAL.sql, [listener]))
         self.database.update(Statement(SKIP_REMOVAL.sql, [listener]))
+
+    def remove_absent(self, listeners: Sequence[str]) -> None:
+        placeholders = ", ".join("?" for _ in listeners)
+        self.database.update(Statement(ABSENT_CURSOR_REMOVAL.format(listeners=placeholders), listeners))
+        self.database.update(Statement(ABSENT_SKIP_REMOVAL.format(listeners=placeholders), listeners))

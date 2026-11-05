@@ -47,7 +47,9 @@ class TemplateDatabases:
             if not (folder / STATE_FILE).is_file():
                 shutil.rmtree(folder, ignore_errors=True)
                 built = self.fixture_template(folder, modules, fixture) if fixture else self.synced_template(folder, modules)
-                (folder / STATE_FILE).write_bytes(pickle.dumps(built.state))
+                state = folder / (STATE_FILE + ".new")
+                state.write_bytes(pickle.dumps(built.state))
+                state.replace(folder / STATE_FILE)
             return Template(JournalHome(folder), pickle.loads((folder / STATE_FILE).read_bytes()))
 
     @staticmethod

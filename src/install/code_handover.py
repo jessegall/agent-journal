@@ -44,8 +44,20 @@ class CodeHandover:
             self.steps.record(SERVING)
 
     def begin(self, source: Path) -> None:
-        tag = self.versions.add(source)
-        threading.Thread(target=self.request_takeover, args=(tag, self.server_pid()), name="code handover", daemon=True).start()
+        self.begin_version(self.versions.add(source))
+
+    def begin_version(self, tag: str) -> None:
+        threading.Thread(target=self.background_takeover, args=(tag, self.server_pid()), name="code handover", daemon=True).start()
+
+    def background_takeover(self, tag: str, running_pid: str) -> None:
+        try:
+            self.steps.record(PROOF)
+            self.request_takeover(tag, running_pid)
+        except Exception as error:
+            self.files.log_line(f"code version {tag} handover failed: {type(error).__name__}: {error}")
+            self.steps.record(FAILED, error.text if isinstance(error, Refusal) else str(error))
+            return
+        self.steps.record(HANDOVER if running_pid else FINISHED, tag)
 
     def request_takeover(self, tag: str, running_pid: str) -> None:
         if not running_pid:

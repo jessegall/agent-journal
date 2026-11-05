@@ -1,12 +1,17 @@
 import json
+import fcntl
+import os
 import re
 import time
-from collections.abc import Collection
+from collections.abc import Collection, Generator
+from contextlib import contextmanager
 from pathlib import Path
+from typing import TextIO
 
 from core.base.type_guards import is_mapping
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.plugin_card_answer import PluginCardAnswer
+from core.modules.plugins.support.plugin_card_claim import PluginCardClaim
 from core.modules.plugins.support.plugin_queue_read import PluginQueueRead
 
 RESERVED_SUFFIX = ".reserved"
@@ -19,7 +24,7 @@ ENVELOPE_FIELDS = frozenset(["v", "env", "agent"])
 
 
 class PluginQueue:
-    """A plugin's queue folder: a hook renames a file to reserve it and deletes it once committed."""
+    """A plugin's queued answers, locked while a hook reserves one or a tick saves its cards."""
 
     def __init__(self, data_folder: Path) -> None:
         self.folder = data_folder / "queue"
@@ -31,66 +36,126 @@ class PluginQueue:
         read = PluginQueueRead([], [])
         if not self.folder.is_dir():
             return read
-        for expired in [path for path in self.folder.glob(f"*{RESERVED_SUFFIX}")
-                        if path.name not in committed_names and time.time() - path.stat().st_mtime > RESERVATION_LIMIT_SECONDS]:
-            expired.rename(self.folder / expired.name.rsplit(".", 2)[0])
+        self.restore_reservations(committed_names)
         for path in self.queued_paths():
             try:
-                text = path.read_text()
+                self.reserve_file(path, environment, agent_id, firing, read)
             except FileNotFoundError:
                 continue
+        return read
+
+    def reserve_file(self, path: Path, environment: str, agent_id: int, firing: str, read: PluginQueueRead) -> None:
+        with self.lock_file(path) as source:
+            if source is None:
+                return
+            text = source.read()
             try:
                 fields: object = json.loads(text or "null")
             except json.JSONDecodeError:
                 path.rename(path.with_suffix(UNREADABLE_SUFFIX))
                 read.unreadable.append(path.name)
-                continue
+                return
             if is_mapping(fields) and (("env" in fields and fields["env"] != environment) or ("agent" in fields and fields["agent"] != agent_id)):
-                continue
+                return
             reserved_file = self.folder / f"{path.name}.{re.sub(FIRING_UNSAFE, '-', firing)}{RESERVED_SUFFIX}"
             try:
                 path.rename(reserved_file)
             except FileNotFoundError:
-                continue
+                return
             read.answers.append((reserved_file.name, PluginAnswer.parsed(text)))
-        return read
 
-    def claim_cards(self) -> list[PluginCardAnswer]:
-        return [answer for path in self.queued_paths() for answer in self.card_answer(path)]
+    def restore_reservations(self, committed_names: Collection[str]) -> None:
+        for path in self.folder.glob(f"*{RESERVED_SUFFIX}"):
+            with self.lock_file(path) as source:
+                if source is None or path.name in committed_names:
+                    continue
+                if time.time() - os.fstat(source.fileno()).st_mtime <= RESERVATION_LIMIT_SECONDS:
+                    continue
+                try:
+                    path.rename(self.folder / path.name.rsplit(".", 2)[0])
+                except FileNotFoundError:
+                    continue
+
+    def claim_cards(self) -> Generator[PluginCardClaim]:
+        for path in self.queued_paths():
+            with self.lock_file(path) as source:
+                if source is None:
+                    continue
+                claim = self.card_answer(path, source.read())
+                if claim is None:
+                    continue
+                try:
+                    yield claim
+                finally:
+                    self.restore_claim(claim.path)
 
     def queued_paths(self) -> list[Path]:
-        stamped = [(self.modified_ns(path), path) for path in self.folder.glob("*.json")] if self.folder.is_dir() else []
-        return [path for modified_ns, path in sorted(stamped) if modified_ns >= 0]
+        if not self.folder.is_dir():
+            return []
+        self.restore_claims()
+        modified: dict[Path, int] = {}
+        for path in self.folder.glob("*.json"):
+            try:
+                modified[path] = path.stat().st_mtime_ns
+            except FileNotFoundError:
+                continue
+        return sorted(modified, key=modified.__getitem__)
 
-    @staticmethod
-    def modified_ns(path: Path) -> int:
+    def card_answer(self, path: Path, text: str) -> PluginCardClaim | None:
         try:
-            return path.stat().st_mtime_ns
-        except FileNotFoundError:
-            return -1
-
-    def card_answer(self, path: Path) -> list[PluginCardAnswer]:
+            fields: object = json.loads(text or "null")
+        except json.JSONDecodeError:
+            path.rename(path.with_suffix(UNREADABLE_SUFFIX))
+            return None
+        if not is_mapping(fields) or not all(key in fields for key in ("agent", "cards")):
+            return None
+        if not PluginAnswer.parsed(text).cards:
+            return None
+        try:
+            agent_id = int(str(fields["agent"]))
+        except ValueError:
+            path.rename(path.with_suffix(UNREADABLE_SUFFIX))
+            return None
+        line_fields = {key: value for key, value in fields.items() if key not in CARD_FIELDS}
+        remaining = None if set(line_fields) <= ENVELOPE_FIELDS else json.dumps(line_fields)
+        answer = PluginCardAnswer(agent_id, json.dumps({key: value for key, value in fields.items() if key in CARD_FIELDS}))
         claimed_file = path.with_suffix(CLAIMED_SUFFIX)
         try:
             path.rename(claimed_file)
         except FileNotFoundError:
-            return []
-        text = claimed_file.read_text()
+            return None
+        return PluginCardClaim(claimed_file, answer, remaining)
+
+    def restore_claims(self) -> None:
+        for path in self.folder.glob(f"*{CLAIMED_SUFFIX}"):
+            with self.lock_file(path) as source:
+                if source is None:
+                    continue
+                self.restore_claim(path)
+
+    def restore_claim(self, path: Path) -> None:
+        original = path.with_suffix(".json")
+        if original.exists():
+            return
         try:
-            fields: object = json.loads(text or "null")
-        except json.JSONDecodeError:
-            claimed_file.rename(path)
-            return []
-        if not is_mapping(fields) or not all(key in fields for key in ("agent", "cards")):
-            claimed_file.rename(path)
-            return []
-        line_fields = {key: value for key, value in fields.items() if key not in CARD_FIELDS}
-        if set(line_fields) <= ENVELOPE_FIELDS:
-            claimed_file.unlink()
-        else:
-            claimed_file.write_text(json.dumps(line_fields))
-            claimed_file.rename(path)
-        return [PluginCardAnswer(int(str(fields["agent"])), json.dumps({key: value for key, value in fields.items() if key in CARD_FIELDS}))]
+            path.rename(original)
+        except FileNotFoundError:
+            return
+
+    @contextmanager
+    def lock_file(self, path: Path) -> Generator[TextIO | None]:
+        try:
+            source = path.open("r+")
+        except FileNotFoundError:
+            yield None
+            return
+        with source:
+            try:
+                fcntl.flock(source, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                yield None
+                return
+            yield source
 
     def remove(self, name: str) -> None:
         (self.folder / name).unlink(missing_ok=True)

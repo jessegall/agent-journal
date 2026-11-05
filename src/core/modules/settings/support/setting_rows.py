@@ -16,7 +16,7 @@ class SettingRows:
         self.queries, self.kept = queries, kept
 
     def row(self, model: SettingModel, key: str, environment_id: int | None) -> Setting | SecretSetting | None:
-        return self.kept.read(TABLES[model], lambda: self.table(model)).get((key, environment_id))
+        return self.kept.read(TABLES[model], lambda: self.table(model), name="settings.rows").get((key, environment_id))
 
     def table(self, model: SettingModel) -> dict[tuple[str, int | None], Setting | SecretSetting]:
         return {(row.key, row.environment_id): row for row in self.queries.query(model).all_rows()}

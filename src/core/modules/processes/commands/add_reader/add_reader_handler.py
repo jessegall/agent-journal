@@ -9,7 +9,9 @@ from core.modules.processes.commands.add_reader.add_reader import AddReader
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_query import ReaderQuery
+from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
 from core.modules.processes.support.reader_judge import ReaderJudge
+from core.modules.processes.support.reader_judgement import ReaderJudgement
 from core.modules.processes.support.reader_writers import ReaderWriters
 from core.modules.processes.support.reader_save_refusal import ReaderSaveRefusal
 
@@ -39,17 +41,18 @@ class AddReaderHandler(Handler[AddReader, Reader]):
             if not reader.commands or not (reader.lines_pattern or reader.script):
                 raise Refusal(f"reader {reader.name} needs --commands and --lines or --script", "journal reader add <name> --commands <pattern> --lines <pattern>")
             if request is not None:
-                judgement = self.judge.judged(reader, request.category)
+                scope = ReaderSampleScope(request.environment_id, request.creator_id, request.command)
+                judgement = self.judge.judged_command(reader, request.category, scope)
                 if not judgement.is_proper:
                     raise Refusal(f"reader {reader.name} missed {'; '.join((*judgement.missing, *judgement.missed))}", "try the patterns on the named output")
-            return self.save(reader, context)
+                return self.save(reader, judgement, context)
+            return self.save(reader, self.judge.tested(reader), context)
         except Refusal as refusal:
             if request is None:
                 raise
             raise ReaderSaveRefusal.failed_save(request.id, refusal) from refusal
 
-    def save(self, reader: Reader, context: Context) -> Reader:
-        judgement = self.judge.tested(reader)
+    def save(self, reader: Reader, judgement: ReaderJudgement, context: Context) -> Reader:
         if judgement.missed:
             raise Refusal(f"reader {reader.name} missed {'; '.join(judgement.missed)}", "try the patterns on the named output")
         return self.repository.save(replace(reader, proved_on=judgement.output_id), context)

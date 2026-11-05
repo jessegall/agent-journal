@@ -15,6 +15,7 @@ from core.base.listener.commit_listener_error import CommitListenerError
 from core.base.listener.event_builder import EventBuilder
 from core.base.database.performance_costs import PerformanceCosts
 from core.base.performance.performance_state import PerformanceState
+from core.base.refusal import Refusal
 
 
 FAILURE_LIMIT_ATTEMPTS = 3
@@ -23,13 +24,7 @@ COSTLY_LISTENER_POINTS = 500
 
 
 class CommitListenerRunner:
-    """Runs the commit listeners on every logged event they have not handled yet, in order, so work a
-    stopped run left undone is done by the next. Each round reads the events once and visits only the
-    listeners that hear one of them; the others move over them in one write. It claims each event it
-    listens to before handling it, so a second runner never handles the same one; an event that fails is
-    given back to be tried again, and one that fails three times is skipped. Listeners a person waits on
-    run first and again after each other listener that handled events, and the server runs them on a
-    thread of their own; a costly one is noted with its points."""
+    """Runs commit listeners with at most once delivery across a server stop; reported failures are retried."""
 
     def __init__(self, registry: Registry, log: EventLog, container: Container, errors: ErrorLog, cursors: ListenerCursorTable,
                  exceptions: ExceptionSink, scopes: Scopes) -> None:
@@ -37,10 +32,7 @@ class CommitListenerRunner:
         self.positions: dict[str, int] = {}
 
     def run(self) -> None:
-        try:
-            self.exceptions.flush()
-        except Exception as failure:
-            self.errors.noted(f"waiting exceptions could not be recorded: {type(failure).__name__}: {failure}")
+        self.flush_exceptions()
         entries = self.commit_entries()
         self.run_rounds(entries, [entry for entry in entries if self.is_urgent(entry)])
 
@@ -49,11 +41,14 @@ class CommitListenerRunner:
         self.run_rounds(urgent_entries, [])
 
     def run_ordinary(self) -> None:
+        self.flush_exceptions()
+        self.run_rounds([entry for entry in self.commit_entries() if not self.is_urgent(entry)], [])
+
+    def flush_exceptions(self) -> None:
         try:
             self.exceptions.flush()
         except Exception as failure:
             self.errors.noted(f"waiting exceptions could not be recorded: {type(failure).__name__}: {failure}")
-        self.run_rounds([entry for entry in self.commit_entries() if not self.is_urgent(entry)], [])
 
     def commit_entries(self) -> list[ListenerEntry]:
         return self.sorted_entries
@@ -102,7 +97,7 @@ class CommitListenerRunner:
     def run_urgent_events(self, urgent_entries: list[ListenerEntry], events: list[LoggedEvent]) -> None:
         if self.log.newest_id() == events[-1].id:
             return
-        newer_events = self.log.events_past(events[0].id - 1)
+        newer_events = self.log.events_past(events[-1].id)
         for listener in urgent_entries:
             self.run_listener(listener, newer_events)
 
@@ -147,6 +142,9 @@ class CommitListenerRunner:
             cost = tools.cost(start_points)
             if cost is not None and cost.total >= COSTLY_LISTENER_POINTS:
                 self.errors.noted(f"listener {entry.name} cost {cost.line()} on event {event.id} {event.event}")
+        except Refusal as refusal:
+            self.errors.noted(f"listener {entry.name} refused event {event.id}: {refusal}")
+            return True
         except Exception as error:
             failures = self.cursors.failure_count(entry.name, event.id)
             self.errors.reported(["listener", entry.name, "event", str(event.id)], error, event.environment_id)

@@ -10,11 +10,11 @@ class TaskLifecycle(Lifecycle):
     deletable = (TaskState.OPEN, TaskState.CANCELLED)
 
     start = Move("start", [TaskState.OPEN], TaskState.STARTED)
-    block = Move("block", (TaskState.OPEN, TaskState.STARTED), TaskState.BLOCKED)
+    block = Move("block", (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED), TaskState.BLOCKED)
     unblock = Move("unblock", [TaskState.BLOCKED], TaskState.OPEN)
     test = Move("test", [TaskState.STARTED], TaskState.TESTING)
     retest = Move("retest", [TaskState.TESTING], TaskState.STARTED)
     release = Move("release", (TaskState.STARTED, TaskState.TESTING), TaskState.OPEN)
-    close = Move("close", (TaskState.STARTED, TaskState.TESTING), TaskState.COMPLETED)
+    close = Move("close", (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED), TaskState.COMPLETED)
     cancel = Move("cancel", (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED, TaskState.TESTING), TaskState.CANCELLED)
     reopen = Move("reopen", (TaskState.COMPLETED, TaskState.CANCELLED), TaskState.OPEN)

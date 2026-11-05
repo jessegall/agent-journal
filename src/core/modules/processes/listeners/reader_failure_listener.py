@@ -4,7 +4,6 @@ from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
-from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
@@ -24,15 +23,15 @@ class ReaderFailureListener(SaveListener[OutputEnded]):
 
     def handle(self, event: OutputEnded, context: Context) -> None:
         output = event.row
-        if output.reader_id is None or not output.line_count:
+        if not output.line_count:
             return
         process = self.queries.query(Process).find(output.process_id)
         agent = self.queries.query(Agent).find(process.agent_id)
         if not self.requests.needed(process, agent):
             return
-        reader = self.queries.query(Reader).find(output.reader_id)
+        reader = self.queries.query(Reader).find(output.reader_id) if output.reader_id is not None else None
         parts = self.queries.query(ProcessPart).filter(process_id=process.id)
         if output.reader_position:
             parts = parts.filter(position=output.reader_position)
         for part in parts.all_rows():
-            self.requests.after_run(process, PartSpec(part.text, part.program, category=part.category, command=part.command), reader, context)
+            self.requests.after_run(process, part, reader, context)

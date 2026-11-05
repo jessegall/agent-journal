@@ -10,7 +10,8 @@ import (
 
 func TestCountWaitListsBeforeTheSlotWait(t *testing.T) {
 	folder := t.TempDir()
-	script := CountWait(folder, "printf 'collected 8 items\\n'") + "test -e " + quoted(filepath.Join(folder, "counted"))
+	program := listingBinary(t)
+	script := CountWait(folder, "printf 'collected 8 items\\n'", ListingOptions{Program: program}) + "test -e " + quoted(filepath.Join(folder, "counted"))
 	if output, err := exec.Command("/bin/sh", "-c", script).CombinedOutput(); err != nil {
 		t.Fatalf("listing: %v %s", err, output)
 	}
@@ -20,19 +21,20 @@ func TestCountWaitListsBeforeTheSlotWait(t *testing.T) {
 	}
 	options := options(t, "echo run")
 	options.Count = "printf listed"
+	options.Listing.Program = program
 	options.Queue = true
 	os.MkdirAll(filepath.Join(options.Home, "processes", "4"), 0o755)
 	os.WriteFile(filepath.Join(options.Home, "processes", "4", "slot"), nil, 0o644)
 	run(t, options, newClient())
 	scriptBytes, _ := os.ReadFile(filepath.Join(options.Home, "processes", "4", "run.sh"))
-	if strings.Index(string(scriptBytes), "count.out") > strings.Index(string(scriptBytes), "__journal_slot") {
+	if strings.Index(string(scriptBytes), "--count-listing") < 0 || strings.Index(string(scriptBytes), "--count-listing") > strings.Index(string(scriptBytes), "__journal_slot") {
 		t.Fatalf("listing follows slot wait: %s", scriptBytes)
 	}
 }
 
 func TestCountWaitStopsAListingAtItsLimit(t *testing.T) {
 	folder := t.TempDir()
-	script := "sleep() { :; }\n" + CountWait(folder, "while :; do :; done")
+	script := CountWait(folder, "while :; do :; done", ListingOptions{Program: listingBinary(t), LimitSeconds: 1})
 	if output, err := exec.Command("/bin/sh", "-c", script).CombinedOutput(); err != nil {
 		t.Fatalf("timeout: %v %s", err, output)
 	}
