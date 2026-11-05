@@ -33,7 +33,7 @@ const ze = {
       }, null, 8, ["text", "idle"]))
     ]));
   }
-}, pe = /* @__PURE__ */ se(Pe, [["__scopeId", "data-v-b7a65fd5"]]), Fe = ["data-agent-delegated", "onClick"], Ue = { class: "agent-task-number" }, He = { class: "agent-task-title" }, Ke = ["title"], Ge = {
+}, pe = /* @__PURE__ */ se(Pe, [["__scopeId", "data-v-1b371fb5"]]), Fe = ["data-agent-delegated", "onClick"], Ue = { class: "agent-task-number" }, He = { class: "agent-task-title" }, Ke = ["title"], Ge = {
   __name: "AgentTaskGroup",
   props: { section: { type: Object, required: !0 }, open: Boolean },
   emits: ["toggle"],
