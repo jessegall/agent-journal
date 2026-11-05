@@ -10,8 +10,9 @@ vi.stubGlobal("ResizeObserver", class {
     unobserve() {}
 });
 
-const RESEARCHER = {name: "journal-researcher", description: "Researches a question and reports what it found", agent_type: "helper", model: "sonnet", codex_model: "gpt-6.1-sol", body: "You research.", shipped: true, uses: 3, last_used: Date.now() / 1000 - 600};
-const BUILDER = {name: "builder", description: "Writes a bounded change", agent_type: "worker", model: "", codex_model: "gpt-6-luna", body: "You build.", shipped: false, uses: 0, last_used: 0};
+const RESEARCHER = {name: "journal-researcher", description: "Researches a question and reports what it found", agent_type: "helper", access: "read-only", program: "", independent: false, mcp_tools: [], changed: [], module: "journal.suites.coding", notes: [], problem: "", module_text_changed: false, model: "sonnet", codex_model: "gpt-6.1-sol", body: "You research.", shipped: true, uses: 3, last_used: Date.now() / 1000 - 600};
+const BUILDER = {name: "builder", description: "Writes a bounded change", agent_type: "worker", access: "writing", program: "", independent: false, mcp_tools: [], changed: [], module: "", notes: [], problem: "", module_text_changed: false, model: "", codex_model: "gpt-6-luna", body: "You build.", shipped: false, uses: 0, last_used: 0};
+const TYPES = [{key: "helper", label: "Helper", access: "read-only", extends: ""}, {key: "worker", label: "Worker", access: "writing", extends: "helper"}];
 let app;
 let host;
 
@@ -24,7 +25,7 @@ afterEach(() => {
 // the page drawn in the document, over a journal that lists these profiles and answers each line it runs as the given function says
 async function drawn(profiles = [RESEARCHER, BUILDER], run = async () => ({ok: true, value: null})) {
     const lines = [];
-    const window_ = {...context({"profile list": {...page(profiles), value: {...page(profiles).value, types: ["helper", "worker", "reader"]}}}), run: async (line) => (lines.push(line), run(line))};
+    const window_ = {...context({"profile list": {...page(profiles), value: {...page(profiles).value, types: TYPES}}}), run: async (line) => (lines.push(line), run(line))};
     host = document.createElement("div");
     document.body.append(host);
     app = createApp({render: () => h(ProfileRows)});
@@ -47,14 +48,14 @@ const type = async (element, text) => {
 
 test("the page lists each profile with its description, kind, models and use, under a bar with the find box, New profile and the count", async () => {
     await drawn();
-    expect(host.querySelector("[data-profile-count]").textContent).toBe("2 profiles in .claude/agents");
+    expect(host.querySelector("[data-profile-count]").textContent).toBe("2 profiles");
     const first = host.querySelector('[data-profile="journal-researcher"]').textContent.replace(/\s+/g, " ");
     expect(first).toContain("journal-researcher");
     expect(first).toContain("Researches a question and reports what it found");
-    expect(first).toContain("helper · sonnet on Claude · gpt-6.1-sol on Codex");
+    expect(first).toContain("Type: Helper · Access: Read-only · sonnet on Claude · gpt-6.1-sol on Codex · Comes with the journal");
     expect(first).toContain("Uses: 3 times, last");
     const second = host.querySelector('[data-profile="builder"]').textContent.replace(/\s+/g, " ");
-    expect(second).toContain("worker · chosen at start on Claude · gpt-6-luna on Codex");
+    expect(second).toContain("Type: Worker · Access: Writing · chosen at start on Claude · gpt-6-luna on Codex");
     expect(second).toContain("Uses: none");
     expect(host.querySelector("[data-profile-find]")).not.toBeNull();
     expect(host.querySelector("[data-profile-new]").textContent).toBe("New profile");
@@ -82,8 +83,7 @@ test("a profile opens in a panel at the side with its fields and a model picker 
     const pickers = [...panel().querySelectorAll("[data-drop-head]")].map((head) => head.textContent.trim());
     expect(pickers).toEqual(["sonnet", "gpt-6.1-sol"]);
     expect(panel().querySelector('input[aria-label="Model on Claude Code"]')).toBeNull();
-    expect(panel().textContent).toContain("This is a built-in profile");
-    expect([...panel().querySelectorAll(".segmented button")].map((button) => button.textContent.trim())).toEqual(["Helper", "Worker", "Reader"]);
+    expect(panel().textContent).toContain("This comes with the journal.");
 });
 
 test("Save waits until something changed, and an edit with a new model is saved by the profile's name", async () => {
@@ -100,7 +100,7 @@ test("Save waits until something changed, and an edit with a new model is saved 
     expect(panel().querySelector("[data-drop-head]").textContent.trim()).toBe("opus");
     save.click();
     await settle();
-    expect(lines).toContainEqual(["profile", "save", "journal-researcher", "--description", "Researches a question in the code", "--type", "helper", "--model", "opus", "--codex-model", "gpt-6.1-sol", "--body", "You research."]);
+    expect(lines).toContainEqual(["profile", "save", "journal-researcher", "--description", "Researches a question in the code", "--type", "helper", "--access", "read-only", "--program", "", "--model", "opus", "--codex-model", "gpt-6.1-sol", "--mcp-tools", "", "--no-independent", "--body", "You research."]);
     expect(host.querySelector("[data-profile-notice]").textContent).toBe("journal-researcher saved. The agent will use it the next time it starts a helper with this profile.");
 });
 
@@ -138,6 +138,33 @@ test("an agent's save is refused, which the page says in words and the panel sta
     await settle();
     expect(host.querySelector("[data-profile-failure]").textContent).toContain("only a person saves a profile");
     expect(panel()).not.toBeNull();
+});
+
+test("a changed shipped profile says so, locks its type and offers the journal's version", async () => {
+    const lines = await drawn([{...RESEARCHER, changed: ["model"], model: "opus"}, BUILDER]);
+    expect(host.querySelector('[data-profile="journal-researcher"]').textContent).toContain("Changed");
+    await open("journal-researcher");
+    expect(panel().querySelector("[data-profile-type-locked]").textContent).toBe("Helper");
+    expect(panel().textContent).toContain("This comes with the journal. Your changes are kept through updates.");
+    document.querySelector("[data-profile-reset]").click();
+    await settle();
+    expect(lines).toContainEqual(["profile", "reset", "journal-researcher"]);
+});
+
+test("a type that cannot write offers no Writing and moves the access to Read-only", async () => {
+    await drawn();
+    await open("builder");
+    expect(panel().querySelector("[data-profile-access]").textContent).toContain("Writing");
+    [...panel().querySelectorAll("[data-profile-type] button")].find((button) => button.textContent.includes("Helper")).click();
+    await settle();
+    expect(panel().querySelector("[data-profile-access]").textContent).not.toContain("Writing");
+});
+
+test("a row names what stands in the way", async () => {
+    await drawn([{...BUILDER, notes: ["Could write before"]}, {...RESEARCHER, name: "broken", problem: "Unreadable: bad front matter"}, {...RESEARCHER, name: "moved", module_text_changed: true}]);
+    expect(host.textContent).toContain("Could write before");
+    expect(host.textContent).toContain("Unreadable: bad front matter");
+    expect(host.textContent).toContain("Text changed: the journal's instructions have a new version");
 });
 
 test("Cancel closes the panel and saves nothing", async () => {
