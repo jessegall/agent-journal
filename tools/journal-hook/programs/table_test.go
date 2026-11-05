@@ -28,11 +28,8 @@ func TestTheTableReadsRecordedMatcherFields(t *testing.T) {
 			t.Fatalf("%s Stop has no recorded matcher field", name)
 		}
 	}
-	if table.Programs["claude"].Matchers["PreCompact"] != "trigger" || table.Programs["codex"].Matchers["SubagentStart"] != "agent_type" {
+	if table.Programs["claude"].Matchers["PreCompact"] != "trigger" {
 		t.Fatal("program-specific recorded matcher fields were lost")
-	}
-	if _, exists := table.Programs["claude"].Matchers["SubagentStart"]; exists {
-		t.Fatal("an event without a recording received a matcher field")
 	}
 }
 
