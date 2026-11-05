@@ -1,23 +1,24 @@
-from core.base.change.change import Change
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.modules.docking.guards.support.docking_arrival import DockingArrival
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.docking.support.dock_limits import DockLimits
+from core.base.change.changed import Changed
+from core.base.command.context import Context
+from core.modules.docking.models.dock_item import DockItem
 
 
-class TypeCapacityGuard(Guard):
+class TypeCapacityGuard(Guard[Changed[DockItem]]):
     """A dock holds no more items of a type than the type's capacity."""
 
     name = "docking.type-limit"
-    event = "dock_item.*"
 
     def __init__(self, limits: DockLimits, items: DockItemQuery) -> None:
         self.limits, self.items = limits, items
 
-    def check(self, change: Change[Model]) -> None:
-        item = DockingArrival.item(change)
+    def check(self, event: Changed[DockItem], context: Context) -> None:
+        item = DockingArrival.item(event)
         capacity = self.limits.type_capacity(item.type) if item is not None else None
         if item is None or capacity is None:
             return

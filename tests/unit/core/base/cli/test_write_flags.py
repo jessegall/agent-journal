@@ -4,7 +4,6 @@ import pytest
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.change.change import Change
 from core.base.change.event_pattern import EventPattern
 from core.base.cli.write_flags import WriteFlags
 from core.base.command.bus import Bus
@@ -24,24 +23,26 @@ from core.base.refusal import Refusal
 from tests.unit.core.base.sample_container import sample_container
 from tests.unit.core.base.samples.listener_sample import ShelfCounter
 from tests.unit.core.base.command.test_commands import MakeItem
+from core.base.change.created import Created
+from core.base.command.context import Context
+from tests.unit.core.base.model.test_model import Item
+from core.base.change.changed import Changed
 
 AGENT = Actor(7, ActorType.AGENT)
 
 
-class ForbiddenTitleGuard(Guard):
+class ForbiddenTitleGuard(Guard[Created[Item]]):
     name = "items.no-dune"
-    event = "item.create"
 
-    def check(self, change: Change[Model]) -> None:
+    def check(self, event: Created[Item], context: Context) -> None:
         raise Refusal("no item may be titled Dune")
 
 
-class NoItemsToday(Guard):
+class NoItemsToday(Guard[Changed[Item]]):
     name = "items.closed-today"
-    event = "item.*"
     short_flag = "today"
 
-    def check(self, change: Change[Model]) -> None:
+    def check(self, event: Changed[Item], context: Context) -> None:
         raise Refusal("no items are taken today")
 
 

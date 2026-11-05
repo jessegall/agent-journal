@@ -23,24 +23,24 @@ from core.modules.plugins.support.plugin_program import PluginProgram
 from core.modules.plugins.support.plugin_queue import PluginQueue
 from core.modules.plugins.support.plugin_settings import PluginSettings
 from core.modules.plugins.support.plugins_module_name import MODULE_NAME
+from core.base.change.created import Created
 
 DELIVERY_LIMIT_MS = 60_000
 
 
-class PluginDeliveryListener(CommitListener):
+class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
     """Runs a plugin's program for an event it plugin_event without holding it, once the hook has committed,
     and puts the line it tells in its queue, which reaches the agent at its next hook."""
 
     name = "plugins.delivery"
-    event = "plugin_delivery.create"
 
     def __init__(self, queries: Queries, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, clock: Clock, bus: Bus, actors: ModuleActors) -> None:
         self.queries, self.folders, self.program, self.settings, self.clock, self.bus, self.actors = queries, folders, program, settings, clock, bus, actors
 
-    def handle(self, event: LoggedEvent) -> None:
-        delivery = self.queries.query(PluginDelivery).find(event.row_id)
-        plugin = self.queries.query(Plugin).find(delivery.plugin_id)
-        if not plugin.enabled:
+    def handle(self, event: Created[PluginDelivery], logged: LoggedEvent) -> None:
+        delivery = event.row
+        plugin = self.queries.query(Plugin).filter(id=delivery.plugin_id).first()
+        if plugin is None or not plugin.enabled:
             return
         manifest = PluginManifest.read(self.folders.code(plugin.name))
         environment = self.queries.query(Environment).find(delivery.environment_id).name
@@ -50,14 +50,14 @@ class PluginDeliveryListener(CommitListener):
         try:
             answer = self.program.run(call, DELIVERY_LIMIT_MS)
         except PluginFaultError as fault:
-            self.record(event, delivery, RecordPluginFault(delivery.plugin_id, f"{fault} at {delivery.event}"))
+            self.record(logged, delivery, RecordPluginFault(delivery.plugin_id, f"{fault} at {delivery.event}"))
             return
         if plugin.fault_count:
-            self.record(event, delivery, ClearPluginFaults(delivery.plugin_id))
+            self.record(logged, delivery, ClearPluginFaults(delivery.plugin_id))
         if answer.line:
             PluginQueue(self.folders.data(plugin.name)).add(environment, delivery.agent_id, answer.line, f"delivery-{delivery.id}")
         if answer.has_output():
-            self.record(event, delivery, AddPluginOutput(plugin.id, delivery.environment_id, delivery.agent_id, answer.output))
+            self.record(logged, delivery, AddPluginOutput(plugin.id, delivery.environment_id, delivery.agent_id, answer.output))
 
-    def record(self, event: LoggedEvent, delivery: PluginDelivery, command: Command[object]) -> None:
-        self.bus.run(command, self.actors.actor(MODULE_NAME), cause_id=event.id, environment_id=delivery.environment_id)
+    def record(self, logged: LoggedEvent, delivery: PluginDelivery, command: Command[object]) -> None:
+        self.bus.run(command, self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=delivery.environment_id)

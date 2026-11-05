@@ -10,6 +10,7 @@ from core.base.model.model_error import ModelError
 
 
 STATE = "state"
+END_CHANGE = "end"
 @dataclass(frozen=True, kw_only=True)
 class Model:
     """A row of the database as an object that cannot be changed in place; every change makes a copy."""

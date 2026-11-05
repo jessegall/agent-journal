@@ -8,19 +8,19 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.processes.commands.send_readers_notice.send_readers_notice import SendReadersNotice
 from core.modules.processes.listeners.process_end_mark_listener import MODULE_NAME
+from core.base.change.created import Created
 
 
-class StartReadersListener(CommitListener):
+class StartReadersListener(CommitListener[Created[HookCall]]):
     """After a main agent's session start has answered, checks the readers, so the hook stays cheap however many
     readers and samples the project holds."""
 
     name = "processes.start-readers"
-    event = "hook_call.create"
 
     def __init__(self, queries: Queries, bus: Bus, actors: ModuleActors) -> None:
         self.queries, self.bus, self.actors = queries, bus, actors
 
-    def handle(self, event: LoggedEvent) -> None:
-        call = self.queries.query(HookCall).find(event.row_id)
+    def handle(self, event: Created[HookCall], logged: LoggedEvent) -> None:
+        call = event.row
         if call.is_session_start and self.queries.query(Agent).find(call.agent_id).role == AgentRole.MAIN:
-            self.bus.run(SendReadersNotice(call.environment_id), self.actors.actor(MODULE_NAME), cause_id=event.id, environment_id=call.environment_id)
+            self.bus.run(SendReadersNotice(call.environment_id), self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=call.environment_id)

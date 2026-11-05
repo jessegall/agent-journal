@@ -6,19 +6,20 @@ from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
 from suites.coding.modules.checks.commands.record_check_progress.record_check_progress import RecordCheckProgress
 from suites.coding.modules.checks.models.check import Check
+from core.base.change.touched import Touched
+from core.base.model.model import Model
 
 
-class EndedCheckRunsListener(CommitListener):
+class EndedCheckRunsListener(CommitListener[Touched[Model]]):
     """As the journal starts, no check is running any more, so a percent left from before it stopped is cleared."""
 
     name = "checks.ended-check-runs"
-    event = "*.*"
 
     def __init__(self, queries: Queries, bus: Bus) -> None:
         self.queries, self.bus = queries, bus
 
-    def handle(self, event: LoggedEvent) -> None:
-        if event.event != JOURNAL_BOOTING_EVENT:
+    def handle(self, event: Touched[Model], logged: LoggedEvent) -> None:
+        if logged.event != JOURNAL_BOOTING_EVENT:
             return
         for check in tuple(self.queries.query(Check).all_rows()):
             if check.run_percent is not None:

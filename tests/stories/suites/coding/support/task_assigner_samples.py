@@ -6,23 +6,26 @@ from core.base.listener.commit_listener import CommitListener
 from core.base.module.module import Module
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.queries.task_query import TaskQuery
+from core.base.change.moved import Moved
+from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
+from core.modules.tasks.models.task import Task
 
 PATH = "tests.stories.suites.coding.support.task_assigner_samples"
 
 
-class OldestTaskFirstListener(CommitListener):
+class OldestTaskFirstListener(CommitListener[Moved[Task]]):
     """A sample suite's own way of handing out tasks: the oldest open one, whatever its priority."""
 
     name = "assignersample.oldest-first"
-    event = "task.close"
+    moves = (TaskLifecycle.close,)
 
     def __init__(self, bus: Bus, tasks: TaskQuery) -> None:
         self.bus, self.tasks = bus, tasks
 
-    def handle(self, event: LoggedEvent) -> None:
-        waiting = self.tasks.open_tasks(self.tasks.find(event.row_id).environment_id).oldest().page(1, 1).rows
+    def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
+        waiting = self.tasks.open_tasks(self.tasks.find(logged.row_id).environment_id).oldest().page(1, 1).rows
         if waiting:
-            self.bus.run(StartTask(waiting[0].id), Actor(event.actor_id, ActorType.AGENT), cause_id=event.id, environment_id=event.environment_id)
+            self.bus.run(StartTask(waiting[0].id), Actor(logged.actor_id, ActorType.AGENT), cause_id=logged.id, environment_id=logged.environment_id)
 
 
 class OwnAssignerModule(Module):

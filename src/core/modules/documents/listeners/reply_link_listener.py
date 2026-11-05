@@ -10,6 +10,8 @@ from core.modules.documents.listeners.text_mention_listener import MODULE_NAME
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES, MessageType
 from core.modules.messages.models.message import Message
 from core.modules.tasks.models.task import Task
+from core.base.change.touched import Touched
+from core.base.model.model import Model
 
 LINKED_MODELS = ("task", "plan", "doc", "report")
 TEXT_FIELDS = ("title", "brief", "body", "abstract")
@@ -18,32 +20,31 @@ REPLY_WINDOW_SECONDS = 120
 TASK_NUMBER = re.compile(r"\btask (\d+)\b", re.IGNORECASE)
 
 
-class ReplyLinkListener(CommitListener):
+class ReplyLinkListener(CommitListener[Touched[Model]]):
     """Links to a person's message the tasks, plans, documents and reports an agent writes within two minutes
     of answering it, and the tasks its answer names, so the chat shows them under that message."""
 
     name = "documents.reply-links"
-    event = "*.*"
 
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries) -> None:
         self.bus, self.actors, self.queries = bus, actors, queries
 
-    def handle(self, event: LoggedEvent) -> None:
-        model, action = event.event.rsplit(".", 1)
+    def handle(self, event: Touched[Model], logged: LoggedEvent) -> None:
+        model, action = logged.event.rsplit(".", 1)
         if model == Message.model_name and action == CREATION:
-            self.link_tasks(event)
-        has_text_change = action == CREATION or any(field in event.data for field in TEXT_FIELDS)
+            self.link_tasks(logged)
+        has_text_change = action == CREATION or any(field in logged.data for field in TEXT_FIELDS)
         if model in LINKED_MODELS and has_text_change:
-            self.link_row(event, model)
+            self.link_row(logged, model)
 
-    def link_row(self, event: LoggedEvent, model: str) -> None:
-        replies = self.queries.query(Message).filter(creator_id=event.actor_id, type=MessageType.AGENT).newest().page(1, 1).rows
-        if not replies or replies[0].creation_timestamp().elapsed_seconds(event.timestamp) > REPLY_WINDOW_SECONDS:
+    def link_row(self, logged: LoggedEvent, model: str) -> None:
+        replies = self.queries.query(Message).filter(creator_id=logged.actor_id, type=MessageType.AGENT).newest().page(1, 1).rows
+        if not replies or replies[0].creation_timestamp().elapsed_seconds(logged.timestamp) > REPLY_WINDOW_SECONDS:
             return
-        self.link(replies[0], model, event.row_id)
+        self.link(replies[0], model, logged.row_id)
 
-    def link_tasks(self, event: LoggedEvent) -> None:
-        reply = self.queries.query(Message).find(event.row_id)
+    def link_tasks(self, logged: LoggedEvent) -> None:
+        reply = self.queries.query(Message).find(logged.row_id)
         if reply.type is not MessageType.AGENT:
             return
         for number in {int(number) for number in TASK_NUMBER.findall(reply.text)}:

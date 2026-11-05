@@ -1,4 +1,3 @@
-from core.base.change.change import Change
 from core.base.driver.suite import Suite
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
@@ -14,20 +13,24 @@ from core.base.viewer.toggle_option import ToggleOption
 from core.base.viewer.window_size import WindowSize
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.skeleton_part import SkeletonPart
+from core.base.change.moved import Moved
+from core.base.command.context import Context
+from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
+from core.modules.tasks.models.task import Task
 
 NOTES = "tests.stories.core.modules.viewer.support.window_samples:NotesModule"
 GRANTING_NOTES = "tests.stories.core.modules.viewer.support.window_samples:GrantingNotesModule"
 WIDER_NOTES = "tests.stories.core.modules.viewer.support.window_samples:WiderNotesModule"
 
 
-class NotesStartCheck(Guard):
+class NotesStartCheck(Guard[Moved[Task]]):
     """A sample guard on a task start that a short flag lets a person pass."""
 
     name = "notes.start-check"
-    event = "task.start"
+    moves = (TaskLifecycle.start,)
     short_flag = "anyway"
 
-    def check(self, change: Change[Model]) -> None:
+    def check(self, event: Moved[Task], context: Context) -> None:
         return
 
 

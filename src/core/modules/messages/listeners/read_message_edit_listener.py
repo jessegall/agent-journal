@@ -7,22 +7,22 @@ from core.base.query.queries import Queries
 from core.modules.messages.commands.record_message_updated_line.record_message_updated_line import RecordMessageUpdatedLine
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
+from core.base.change.changed import Changed
 
 TEXT_FIELD = "text"
 
 
-class ReadMessageEditListener(CommitListener):
+class ReadMessageEditListener(CommitListener[Changed[Message]]):
     """A person's message whose text changes after the agent read it is named to the agent."""
 
     name = "messages.read-message-edit"
-    event = "message.*"
 
     def __init__(self, bus: Bus, queries: Queries) -> None:
         self.bus, self.queries = bus, queries
 
-    def handle(self, event: LoggedEvent) -> None:
-        if event.event == "message.create" or TEXT_FIELD not in event.data:
+    def handle(self, event: Changed[Message], logged: LoggedEvent) -> None:
+        if logged.event == "message.create" or TEXT_FIELD not in logged.data:
             return
-        message = self.queries.query(Message).find(event.row_id)
+        message = event.row
         if message.type in PERSON_MESSAGE_TYPES and message.read_at is not None:
-            self.bus.run(RecordMessageUpdatedLine(message.id, message.environment_id), Actor(event.actor_id, ActorType.USER), environment_id=message.environment_id)
+            self.bus.run(RecordMessageUpdatedLine(message.id, message.environment_id), Actor(logged.actor_id, ActorType.USER), environment_id=message.environment_id)

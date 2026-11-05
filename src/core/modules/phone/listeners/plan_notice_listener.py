@@ -1,8 +1,11 @@
 from core.modules.phone.listeners.phone_notice_listener import PhoneNoticeListener
+from core.base.change.moved import Moved
+from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
+from core.modules.plans.models.plan import Plan
 
 
-class PlanNoticeListener(PhoneNoticeListener):
+class PlanNoticeListener(PhoneNoticeListener[Moved[Plan]]):
     """When a plan becomes ready for the user's approval, the subscribed phones are pushed."""
 
     name = "phone.plan-notice"
-    event = "plan.ready"
+    moves = (PlanLifecycle.ready,)

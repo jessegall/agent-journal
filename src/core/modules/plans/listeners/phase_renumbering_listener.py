@@ -1,20 +1,20 @@
-from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.support.positions import Positions
+from core.base.change.deleted import Deleted
+from core.base.command.context import Context
 
 
-class PhaseRenumberingListener(SaveListener):
+class PhaseRenumberingListener(SaveListener[Deleted[Phase]]):
     """A deleted phase leaves no gap: the phases after it move up by one, in the same transaction."""
 
     name = "plans.renumber-phases"
-    event = "phase.delete"
 
     def __init__(self, positions: Positions) -> None:
         self.positions = positions
 
-    def handle(self, change: Change[Model]) -> None:
-        phase = change.row
+    def handle(self, event: Deleted[Phase], context: Context) -> None:
+        phase = event.row
         if isinstance(phase, Phase):
-            self.positions.renumber(Phase, "plan_id", phase.plan_id, phase.position, change.context)
+            self.positions.renumber(Phase, "plan_id", phase.plan_id, phase.position, context)

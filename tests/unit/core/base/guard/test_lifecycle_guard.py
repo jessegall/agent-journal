@@ -30,7 +30,12 @@ from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState
 from tests.unit.core.base.model.test_model import Item
 
 
-def change(old_row: Item | None, new_row: Item | None, skipped: frozenset[str] = frozenset()) -> Change[Model]:
+def checked(old_row: Item | None, new_row: Item | None) -> None:
+    change = change_of(old_row, new_row)
+    LifecycleGuard(StateBook()).check(change.typed_event(LifecycleGuard), change.context)
+
+
+def change_of(old_row: Item | None, new_row: Item | None, skipped: frozenset[str] = frozenset()) -> Change[Model]:
     return Change(old_row, new_row, Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), MakeItem(title="Dune"), skipped))
 
 
@@ -40,17 +45,17 @@ CLOSED = Item(id=4, version=1, title="Dune", state=ItemState.CLOSED)
 
 def refusal(old_row: Item | None, new_row: Item | None) -> str:
     with pytest.raises(Refusal) as raised:
-        LifecycleGuard(StateBook()).check(change(old_row, new_row))
+        checked(old_row, new_row)
     return raised.value.text
 
 
 def test_a_new_row_starts_in_a_first_state():
-    LifecycleGuard(StateBook()).check(change(None, Item(title="Dune")))
+    checked(None, Item(title="Dune"))
     assert refusal(None, Item(title="Dune", state=ItemState.PAUSED)) == "a new item starts as open, not paused"
 
 
 def test_a_move_starts_only_from_one_of_its_states():
-    LifecycleGuard(StateBook()).check(change(OPEN, OPEN.moved(ItemLifecycle.pause)))
+    checked(OPEN, OPEN.moved(ItemLifecycle.pause))
     paused = Item(id=4, version=1, title="Dune", state=ItemState.PAUSED)
     assert refusal(paused, paused.moved(ItemLifecycle.pause)) == "item 4 is paused, so it cannot pause: from paused it can only go on with journal item close 4"
 
@@ -61,21 +66,21 @@ def test_a_move_its_model_does_not_have_is_refused():
 
 def test_saving_a_state_nothing_registers_raises_unknown_state():
     with pytest.raises(UnknownStateError, match="reviewing is no state of an item"):
-        LifecycleGuard(StateBook()).check(change(OPEN, replace(OPEN, state=AddedState("reviewing"))))
+        checked(OPEN, replace(OPEN, state=AddedState("reviewing")))
 
 
 def test_an_edit_happens_only_in_an_editable_state():
-    LifecycleGuard(StateBook()).check(change(OPEN, OPEN.changed(title="Dune Messiah")))
+    checked(OPEN, OPEN.changed(title="Dune Messiah"))
     assert refusal(CLOSED, CLOSED.changed(title="Dune Messiah")) == "item 4 is closed, so it cannot be edited: closed is final"
 
 
 def test_a_delete_happens_only_in_a_deletable_state():
-    LifecycleGuard(StateBook()).check(change(OPEN, None))
+    checked(OPEN, None)
     assert refusal(CLOSED, None) == "item 4 is closed, so it cannot be deleted: closed is final"
 
 
 def test_a_change_of_metadata_alone_is_no_edit_and_raises_no_event():
-    metadata_change = change(CLOSED, CLOSED.changed(metadata=Metadata.parsed('{"reviews": {"asked": true}}')))
+    metadata_change = change_of(CLOSED, CLOSED.changed(metadata=Metadata.parsed('{"reviews": {"asked": true}}')))
     assert metadata_change.is_empty
 
 
@@ -87,5 +92,5 @@ def test_the_lifecycle_guard_can_be_neither_skipped_nor_switched_off():
     registry = Registry("abc", {}, {}, {}, [GuardEntry("core.lifecycle", EventPattern("*"), DottedPath.class_path(LifecycleGuard), 1, "")], ())
     guards = Guards(registry, Container(), AllOff(), ChangeFilter())
     with pytest.raises(GuardRefusal) as raised:
-        guards.ask(change(CLOSED, None, frozenset({"core.lifecycle"})))
+        guards.ask(change_of(CLOSED, None, frozenset({"core.lifecycle"})))
     assert raised.value.text == "refused by core.lifecycle: item 4 is closed, so it cannot be deleted: closed is final"

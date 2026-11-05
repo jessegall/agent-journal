@@ -12,25 +12,25 @@ from core.modules.search.models.enums.search_mark_type import SearchMarkType
 from core.modules.search.models.enums.search_mark_variant import SearchMarkVariant
 from core.modules.search.support.row_search import RowSearch
 from core.modules.search.support.search_line import SearchLine
+from core.base.change.created import Created
 
 SHOWN_HITS = 10
 
 
-class SearchMarkListener(MarkListener):
+class SearchMarkListener(MarkListener[Created[ProcessPart]]):
     """When a part of an agent's shell line runs journal search find, the chat shows one mark for it: its terms
     and how many rows held them, which opens to the first ten of them, the rows themselves, and a last line
     that opens the search page. The run of the search itself holds its words and is not counted."""
 
     name = "search.search-mark"
-    event = "process_part.create"
     module_name = "journal.core.search"
 
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, search: RowSearch) -> None:
         super().__init__(bus, actors, queries)
         self.search = search
 
-    def handle(self, event: LoggedEvent) -> None:
-        part = self.queries.query(ProcessPart).find(event.row_id)
+    def handle(self, event: Created[ProcessPart], logged: LoggedEvent) -> None:
+        part = event.row
         line = SearchLine.parsed(part.text)
         if line is None:
             return
@@ -44,4 +44,4 @@ class SearchMarkListener(MarkListener):
         hits = [{"cli_name": hit.cli_name, "id": hit.row_id, "excerpt": hit.excerpt} for hit in matching_hits[:SHOWN_HITS]]
         detail = json.dumps({"terms": list(line.terms), "total": total, "hits": hits})
         row_count = f"{total} {'row' if total == 1 else 'rows'}"
-        self.show(event, SearchMarkType.SEARCH, SearchMarkVariant.MATCHED, f"Searched for {' '.join(line.terms)}: {row_count}", run.environment_id, run.agent_id, detail=detail)
+        self.show(logged, SearchMarkType.SEARCH, SearchMarkVariant.MATCHED, f"Searched for {' '.join(line.terms)}: {row_count}", run.environment_id, run.agent_id, detail=detail)

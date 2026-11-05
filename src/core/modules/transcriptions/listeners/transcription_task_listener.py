@@ -1,5 +1,4 @@
 from core.base.actor_type import ActorType
-from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.conditions.among import Among
@@ -14,30 +13,34 @@ from core.modules.transcriptions.models.transcription import Transcription
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from core.modules.transcriptions.support.transcription_nudges import LINE_SOURCE
 from core.modules.transcriptions.support.transcription_nudges import TRANSCRIPTION_CHANGED
+from core.base.change.changed import Changed
+from core.base.change.deleted import Deleted
+from core.base.command.context import Context
 
 TITLE_CHARACTERS = 80
 UNFINISHED_STATES = (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED)
 
 
-class TranscriptionTaskListener(SaveListener):
+class TranscriptionTaskListener(SaveListener[Changed[Transcription]]):
     """A new transcription, or a person's change to one's text, gives the main agent a line and a task to summarize
     it, linked to the transcription; a task still unfinished serves again."""
 
     name = "transcriptions.task"
-    event = "transcription.*"
 
     def __init__(self, queries: Queries, repository: Repository, line: MainAgentLine) -> None:
         self.queries, self.repository, self.line = queries, repository, line
 
-    def handle(self, change: Change[Model]) -> None:
-        row, old_row = change.new_row, change.old_row
+    def handle(self, event: Changed[Transcription], context: Context) -> None:
+        if isinstance(event, Deleted):
+            return
+        row, old_row = event.row, event.old_row
         if not isinstance(row, Transcription):
             return
-        has_new_text = old_row is None or (isinstance(old_row, Transcription) and old_row.text != row.text and change.context.actor.type is ActorType.USER)
+        has_new_text = old_row is None or (isinstance(old_row, Transcription) and old_row.text != row.text and context.actor.type is ActorType.USER)
         if not has_new_text or not row.text.strip():
             return
-        task_id = self.unfinished_task_id(row) or self.new_task_id(row, change)
-        self.line.send(row.environment_id, TRANSCRIPTION_CHANGED.nudge(transcription=row.id, task=task_id).text, LINE_SOURCE, change.context)
+        task_id = self.unfinished_task_id(row) or self.new_task_id(row, context)
+        self.line.send(row.environment_id, TRANSCRIPTION_CHANGED.nudge(transcription=row.id, task=task_id).text, LINE_SOURCE, context)
 
     def unfinished_task_id(self, row: Transcription) -> int | None:
         linked = self.queries.query(Link).filter(source_model=row.model_name, source_id=row.id, target_model=Task.model_name).all_rows()
@@ -47,10 +50,10 @@ class TranscriptionTaskListener(SaveListener):
         unfinished = self.queries.query(Task).matching(Among("id", task_ids)).matching(Among("state", UNFINISHED_STATES)).page(1, 1).rows
         return unfinished[0].id if unfinished else None
 
-    def new_task_id(self, row: Transcription, change: Change[Model]) -> int:
+    def new_task_id(self, row: Transcription, context: Context) -> int:
         title = f"Summarize transcript {row.id}: {row.title}"[:TITLE_CHARACTERS]
         brief = (f"Read transcription {row.id} with journal transcription show {row.id}, and write what it calls for: a summary, meeting notes, a document, tasks or a plan. "
                  f"Link each row you make to it with journal transcription link {row.id} <model> <number>.")
-        task = self.repository.save(Task(environment_id=row.environment_id, creator_id=change.context.actor.id, title=title, brief=brief, priority=URGENT_PRIORITY), change.context)
-        self.repository.save(Link(creator_id=change.context.actor.id, source_model=row.model_name, source_id=row.id, target_model=Task.model_name, target_id=task.id, link_type=LinkType.SUBJECT), change.context)
+        task = self.repository.save(Task(environment_id=row.environment_id, creator_id=context.actor.id, title=title, brief=brief, priority=URGENT_PRIORITY), context)
+        self.repository.save(Link(creator_id=context.actor.id, source_model=row.model_name, source_id=row.id, target_model=Task.model_name, target_id=task.id, link_type=LinkType.SUBJECT), context)
         return task.id

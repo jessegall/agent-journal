@@ -1,19 +1,16 @@
 from dataclasses import dataclass
 
-from core.base.model.model import Model
+from core.base.model.model import END_CHANGE, Model
 from core.base.timestamp import Timestamp
 from core.modules.processes.models.enums.output_state import OutputState
 from core.modules.processes.models.lifecycles.output_lifecycle import OutputLifecycle
-
-
-END = "end"
 
 
 @dataclass(frozen=True, kw_only=True)
 class Output(Model):
     """A process's stored output, reader results and reading progress."""
 
-    change_names = tuple([END])
+    change_names = tuple([END_CHANGE])
 
     model_name = "output"
     cli_name = "output"

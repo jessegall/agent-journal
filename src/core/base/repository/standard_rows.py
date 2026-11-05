@@ -2,7 +2,6 @@ from collections.abc import Callable, Sequence
 from dataclasses import replace
 
 from core.base.actor import CORE_ACTOR_ID, Actor
-from core.base.change.change import Change
 from core.base.command.context import Context
 from core.base.model.model import Model
 from core.base.query.queries import Queries
@@ -31,7 +30,7 @@ class StandardRows:
                 self.repository.save(replace(existing, **{field: getattr(row, field) for field in fields}), context)
 
     @staticmethod
-    def refuse_change(change: Change[Model]) -> None:
-        if change.old_row is None or getattr(change.old_row, "creator_id", None) != CORE_ACTOR_ID or change.actor == Actor.core():
+    def refuse_change(old_row: Model | None, actor: Actor) -> None:
+        if old_row is None or getattr(old_row, "creator_id", None) != CORE_ACTOR_ID or actor == Actor.core():
             return
         raise Refusal("this comes with the journal and cannot be changed", "make your own under another title")

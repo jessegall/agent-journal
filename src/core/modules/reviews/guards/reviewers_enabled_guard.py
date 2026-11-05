@@ -1,21 +1,21 @@
-from core.base.change.change import Change
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.modules.reviews.models.reviewer import Reviewer
 from core.modules.reviews.support.review_settings import REVIEWER_SETTING, ReviewSettings
+from core.base.change.created import Created
+from core.base.command.context import Context
 
 
-class ReviewersEnabledGuard(Guard):
+class ReviewersEnabledGuard(Guard[Created[Reviewer]]):
     """Refuses a new reviewer while reviewers are switched off."""
 
     name = "reviews.reviewers-enabled"
-    event = "reviewer.create"
 
     def __init__(self, settings: ReviewSettings) -> None:
         self.settings = settings
 
-    def check(self, change: Change[Model]) -> None:
-        reviewer = change.row
+    def check(self, event: Created[Reviewer], context: Context) -> None:
+        reviewer = event.row
         if isinstance(reviewer, Reviewer) and not self.settings.enabled(reviewer.environment_id):
             raise Refusal("reviewers are switched off", f"turn them on with journal setting make {REVIEWER_SETTING} true")

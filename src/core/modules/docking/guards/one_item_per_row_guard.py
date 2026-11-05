@@ -1,22 +1,23 @@
-from core.base.change.change import Change
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.modules.docking.guards.support.docking_arrival import DockingArrival
 from core.modules.docking.queries.dock_item_query import DockItemQuery
+from core.base.change.changed import Changed
+from core.base.command.context import Context
+from core.modules.docking.models.dock_item import DockItem
 
 
-class OneItemPerRowGuard(Guard):
+class OneItemPerRowGuard(Guard[Changed[DockItem]]):
     """A row is docked once per type."""
 
     name = "docking.one-per-row"
-    event = "dock_item.*"
 
     def __init__(self, items: DockItemQuery) -> None:
         self.items = items
 
-    def check(self, change: Change[Model]) -> None:
-        item = DockingArrival.item(change)
+    def check(self, event: Changed[DockItem], context: Context) -> None:
+        item = DockingArrival.item(event)
         if item is None:
             return
         matching = self.items.docked(item.dock_id).type_items(item.type).row_items(item.target_model, item.target_id)

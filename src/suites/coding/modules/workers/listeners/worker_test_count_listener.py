@@ -1,5 +1,4 @@
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
-from core.base.change.change import Change
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.base.listener.save_listener import SaveListener
@@ -16,23 +15,27 @@ from core.modules.processes.models.process_part import ProcessPart
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import WORKER_TEST_LIMIT
 from suites.coding.modules.workers.support.test_limit_nudges import TEST_LIMIT_STOP, WORKER_TEST_LIMIT_SOURCE
+from core.base.change.changed import Changed
+from core.base.change.deleted import Deleted
+from core.base.command.context import Context
 
 
-class WorkerTestCountListener(SaveListener):
+class WorkerTestCountListener(SaveListener[Changed[Output]]):
     """Stops a worker's own test run when its reader counts more tests than allowed."""
 
     name = WORKER_TEST_LIMIT_SOURCE
-    event = "output.*"
     disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, settings: SettingValues, bus: Bus, nudger: Nudger) -> None:
         self.queries, self.settings, self.bus, self.nudger = queries, settings, bus, nudger
 
-    def handle(self, change: Change[Model]) -> None:
-        output = change.new_row
+    def handle(self, event: Changed[Output], context: Context) -> None:
+        if isinstance(event, Deleted):
+            return
+        output = event.row
         if not isinstance(output, Output) or not output.test_count:
             return
-        if isinstance(change.old_row, Output) and change.old_row.test_count == output.test_count:
+        if isinstance(event.old_row, Output) and event.old_row.test_count == output.test_count:
             return
         process = self.queries.query(Process).find(output.process_id)
         if process.state not in RUNNING_STATES or process.creator_id != process.agent_id:
@@ -46,5 +49,5 @@ class WorkerTestCountListener(SaveListener):
             parts = parts.filter(position=output.reader_position)
         if not parts.exists():
             return
-        self.nudger.send(process.agent_id, TEST_LIMIT_STOP, self.name, change.context, output=process.id, count=output.test_count, limit=limit)
-        self.bus.dispatch(StopProcess(process.id), change.context)
+        self.nudger.send(process.agent_id, TEST_LIMIT_STOP, self.name, context, output=process.id, count=output.test_count, limit=limit)
+        self.bus.dispatch(StopProcess(process.id), context)

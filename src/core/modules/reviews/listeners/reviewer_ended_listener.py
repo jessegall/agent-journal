@@ -6,25 +6,26 @@ from core.modules.reviews.commands.abandon_review.abandon_review import AbandonR
 from core.modules.reviews.commands.end_reviewer.end_reviewer import EndReviewer
 from core.modules.reviews.queries.review_query import ReviewQuery
 from core.modules.reviews.queries.reviewer_query import ReviewerQuery
+from core.base.change.updated import Updated
+from core.modules.agents.models.agent import Agent
 
 MODULE_NAME = "journal.core.reviews"
 
 
-class ReviewerEndedListener(CommitListener):
+class ReviewerEndedListener(CommitListener[Updated[Agent]]):
     """When the session of a reviewer ends, the reviewer ends and a review it was still reviewing is
     abandoned, which gives the work back to the agent that asked."""
 
     name = "reviews.reviewer-ended"
-    event = "agent.update"
 
     def __init__(self, bus: Bus, actors: ModuleActors, reviewers: ReviewerQuery, reviews: ReviewQuery) -> None:
         self.bus, self.actors, self.reviewers, self.reviews = bus, actors, reviewers, reviews
 
-    def handle(self, event: LoggedEvent) -> None:
-        ended = event.data.get("ended_at")
-        if ended is None or ended[1] is None or not self.reviewers.filter(id=event.row_id).active().exists():
+    def handle(self, event: Updated[Agent], logged: LoggedEvent) -> None:
+        ended = logged.data.get("ended_at")
+        if ended is None or ended[1] is None or not self.reviewers.filter(id=logged.row_id).active().exists():
             return
         actor = self.actors.actor(MODULE_NAME)
-        for review in tuple(self.reviews.reviewer(event.row_id).reviewing().all_rows()):
-            self.bus.run(AbandonReview(review.id), actor, cause_id=event.id, environment_id=event.environment_id)
-        self.bus.run(EndReviewer(event.row_id), actor, cause_id=event.id, environment_id=event.environment_id)
+        for review in tuple(self.reviews.reviewer(logged.row_id).reviewing().all_rows()):
+            self.bus.run(AbandonReview(review.id), actor, cause_id=logged.id, environment_id=logged.environment_id)
+        self.bus.run(EndReviewer(logged.row_id), actor, cause_id=logged.id, environment_id=logged.environment_id)

@@ -29,6 +29,8 @@ from tests.unit.core.base.sample_container import sample_container
 from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
 from tests.unit.core.base.model.test_model import Item
+from core.base.change.created import Created
+from core.base.change.moved import Moved
 
 AGENT = Actor(7, ActorType.AGENT)
 HANDLED: list[str] = []
@@ -39,37 +41,35 @@ class ItemPause(MoveCommand[Item]):
     move = ItemLifecycle.pause
 
 
-class NewItemPause(CommitListener):
+class NewItemPause(CommitListener[Created[Item]]):
     """Pauses every new item, which raises an event of its own."""
 
     name = "items.mark-pause"
-    event = "item.create"
 
     def __init__(self, bus: Bus) -> None:
         self.bus = bus
 
-    def handle(self, event: LoggedEvent) -> None:
-        HANDLED.append(f"pause {event.row_id}")
-        self.bus.run(ItemPause(row_id=event.row_id), Actor(event.actor_id, ActorType.MODULE), cause_id=event.id)
+    def handle(self, event: Created[Item], logged: LoggedEvent) -> None:
+        HANDLED.append(f"pause {logged.row_id}")
+        self.bus.run(ItemPause(row_id=logged.row_id), Actor(logged.actor_id, ActorType.MODULE), cause_id=logged.id)
 
 
-class PausedItemCounter(CommitListener):
+class PausedItemCounter(CommitListener[Moved[Item]]):
     """Counts the items paused."""
 
     name = "items.paused-count"
-    event = "item.pause"
+    moves = (ItemLifecycle.pause,)
 
-    def handle(self, event: LoggedEvent) -> None:
-        HANDLED.append(f"counted {event.row_id}")
+    def handle(self, event: Moved[Item], logged: LoggedEvent) -> None:
+        HANDLED.append(f"counted {logged.row_id}")
 
 
-class FailingListener(CommitListener):
+class FailingListener(CommitListener[Created[Item]]):
     """Fails on every event."""
 
     name = "items.always-fails"
-    event = "item.create"
 
-    def handle(self, event: LoggedEvent) -> None:
+    def handle(self, event: Created[Item], logged: LoggedEvent) -> None:
         HANDLED.append("failed")
         raise RuntimeError("the listener failed")
 
@@ -128,29 +128,27 @@ def test_listeners_catch_up_and_follow_a_chain_to_its_end(tmp_path):
     assert HANDLED == ["pause 1", "counted 1"]
 
 
-class UrgentCounter(CommitListener):
+class UrgentCounter(CommitListener[Created[Item]]):
     """Counts new items before any other listener, and again after each, as a line a person waits on."""
 
     name = "items.urgent-count"
-    event = "item.create"
     run_order = -1
 
-    def handle(self, event: LoggedEvent) -> None:
-        HANDLED.append(f"urgent {event.row_id}")
+    def handle(self, event: Created[Item], logged: LoggedEvent) -> None:
+        HANDLED.append(f"urgent {logged.row_id}")
 
 
-class SlowCounter(CommitListener):
+class SlowCounter(CommitListener[Created[Item]]):
     """Adds an item, which raises an event, while it is the listener at work."""
 
     name = "items.slow-count"
-    event = "item.create"
 
     def __init__(self, bus: Bus) -> None:
         self.bus = bus
 
-    def handle(self, event: LoggedEvent) -> None:
-        HANDLED.append(f"slow {event.row_id}")
-        if event.row_id == 1:
+    def handle(self, event: Created[Item], logged: LoggedEvent) -> None:
+        HANDLED.append(f"slow {logged.row_id}")
+        if logged.row_id == 1:
             self.bus.run(MakeItem(title="Second"), AGENT)
 
 

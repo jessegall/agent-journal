@@ -22,6 +22,7 @@ from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.run_visibility import RunVisibility
 from core.modules.processes.support.run_title import RunTitle
+from core.base.change.touched import Touched
 
 MODULE_NAME = "journal.core.processes"
 LINE_CHARACTERS = 70
@@ -33,20 +34,19 @@ ENDED = (ProcessState.FINISHED, ProcessState.FAILED, ProcessState.STOPPED, Proce
 ACTOR_LABELS = {ActorType.AGENT: "The agent", ActorType.USER: "You"}
 
 
-class ProcessEndMarkListener(CommitListener):
+class ProcessEndMarkListener(CommitListener[Touched[Process]]):
     """A visible run shows one mark naming its command alone, whatever else its line runs; the mark is kept up
     to date in place by the key process:<id>: queued, running with the reader's progress as its figure, moved
     to the background, then ended with its outcome. A mark once shown always ends, also when the run's output
     is gone by then."""
 
     name = "processes.process-mark"
-    event = "process.*"
 
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, folder: OutputFolder, visibility: RunVisibility) -> None:
         self.bus, self.actors, self.queries, self.folder, self.visibility = bus, actors, queries, folder, visibility
 
-    def handle(self, event: LoggedEvent) -> None:
-        process = self.queries.query(Process).filter(id=event.row_id).first()
+    def handle(self, event: Touched[Process], logged: LoggedEvent) -> None:
+        process = self.queries.query(Process).filter(id=logged.row_id).first()
         if process is None:
             return
         key = f"process:{process.id}"
@@ -67,10 +67,10 @@ class ProcessEndMarkListener(CommitListener):
         if process.state in ENDED and output and reader:
             if reader.failed_pattern and re.search(reader.failed_pattern, self.folder.reader_text(process.id, output.reader_position), re.MULTILINE):
                 outcome = MarkOutcome.FAILED
-        self.bus.run(ShowMark(process.environment_id, ProcessMarkType.COMMAND, variant, key, text, agent_id=process.agent_id, detail=self.detail(process, event),
+        self.bus.run(ShowMark(process.environment_id, ProcessMarkType.COMMAND, variant, key, text, agent_id=process.agent_id, detail=self.detail(process, logged),
                               row_model="process", row_id=process.id, outcome=outcome, figure=figure,
                               fraction=process.progress / 100 if process.state not in ENDED else 0.0, ended=process.state in ENDED),
-                     self.actors.actor(MODULE_NAME), cause_id=event.id, environment_id=process.environment_id)
+                     self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=process.environment_id)
 
     @staticmethod
     def text(process: Process, title: str, line: str) -> str:
@@ -88,9 +88,9 @@ class ProcessEndMarkListener(CommitListener):
             return f"{output.steps_passed} passed"
         return f"{process.progress}%" if process.progress and process.state not in ENDED else ""
 
-    def detail(self, process: Process, event: LoggedEvent) -> str:
+    def detail(self, process: Process, logged: LoggedEvent) -> str:
         if process.state is not ProcessState.STOPPED:
             return "\n".join(self.folder.last_lines(process.id, LAST_LINES))
         if process.expired_at is not None:
             return f"It ran past its timeout of {process.timeout_seconds} seconds"
-        return f"{ACTOR_LABELS.get(self.queries.query(ActorRecord).find(event.actor_id).type, 'The journal')} stopped it"
+        return f"{ACTOR_LABELS.get(self.queries.query(ActorRecord).find(logged.actor_id).type, 'The journal')} stopped it"

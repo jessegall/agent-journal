@@ -1,12 +1,12 @@
 from core.modules.documents.listeners.new_text_dock_listener import NewTextDockListener
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.enums.text_dock_type import TextDockType
+from core.base.change.created import Created
 
 
-class NewDocDockListener(NewTextDockListener):
+class NewDocDockListener(NewTextDockListener[Created[Doc]]):
     """Docks a new document."""
 
     row_model = Doc
     dock_type = TextDockType.DOC
     name = "documents.new-doc-dock"
-    event = "doc.create"

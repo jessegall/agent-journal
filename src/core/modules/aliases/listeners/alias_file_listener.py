@@ -9,21 +9,23 @@ from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.models.alias import ARGS_MARK, Alias
 from core.modules.aliases.support.alias_names import AliasNames
 from core.modules.aliases.support.alias_shell_aliases import AliasShellAliases
+from core.base.change.file_publishing import FilePublishing
+from core.base.change.touched import Touched
+from core.modules.aliases.models.alias import Alias
 
 
-class AliasFileListener(CommitListener):
+class AliasFileListener(CommitListener[FilePublishing | Touched[Alias]]):
     """Writes each alias's shell line to a file, since the Go hook classifies a line before it can ask the journal
     anything, and judges an alias by the command under it, and the names of the aliases saved as tests and builds.
     It runs ahead of slow listeners, since an agent runs a new alias right after adding it."""
 
     name = "aliases.alias-file"
-    event = f"{FILE_PUBLISHING_EVENTS}|alias.*"
     run_order = -1
 
     def __init__(self, aliases: AliasQuery, home: JournalHome, names: AliasNames, shell_aliases: AliasShellAliases) -> None:
         self.aliases, self.home, self.names, self.shell_aliases = aliases, home, names, shell_aliases
 
-    def handle(self, event: LoggedEvent) -> None:
+    def handle(self, event: FilePublishing | Touched[Alias], logged: LoggedEvent) -> None:
         commands = self.names.command_names()
         lines = {alias.name: self.line(alias) for alias in self.aliases.all_rows() if alias.name not in commands}
         self.home.alias_file.write_text(json.dumps(lines))

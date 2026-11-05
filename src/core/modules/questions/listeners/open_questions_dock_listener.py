@@ -12,29 +12,30 @@ from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.questions.models.enums.question_dock_type import QuestionDockType
 from core.modules.questions.queries.question_query import QuestionQuery
+from core.base.change.touched import Touched
+from core.modules.questions.models.question import Question
 
 QUESTIONS_MODULE = "journal.core.questions"
 
 
-class OpenQuestionsDockListener(CommitListener):
+class OpenQuestionsDockListener(CommitListener[Touched[Question]]):
     """Docks unanswered questions in the main chat until they are settled."""
 
     name = "questions.open-dock"
-    event = "question.*"
     disabled_scopes = [ActorScope]
 
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, questions: QuestionQuery, items: DockItemQuery) -> None:
         self.bus, self.actors, self.queries, self.questions, self.items = bus, actors, queries, questions, items
 
-    def handle(self, event: LoggedEvent) -> None:
-        if event.environment_id is None:
+    def handle(self, event: Touched[Question], logged: LoggedEvent) -> None:
+        if logged.environment_id is None:
             return
         actor = self.actors.actor(QUESTIONS_MODULE)
-        open_ids = {question.id for question in self.questions.open_ones().environment(event.environment_id).matching(MainAgentRows()).oldest().all_rows()}
-        docks = [dock.id for dock in self.queries.query(Dock).filter(environment_id=event.environment_id).all_rows()]
+        open_ids = {question.id for question in self.questions.open_ones().environment(logged.environment_id).matching(MainAgentRows()).oldest().all_rows()}
+        docks = [dock.id for dock in self.queries.query(Dock).filter(environment_id=logged.environment_id).all_rows()]
         docked = [item for item in self.items.type_items(QuestionDockType.OPEN.value).filter(state=DockItemState.DOCKED).all_rows() if item.dock_id in docks]
         if open_ids and not docked:
-            self.bus.run(AddDockItem(event.environment_id, QuestionDockType.OPEN.value, "question", min(open_ids)), actor, cause_id=event.id, environment_id=event.environment_id)
+            self.bus.run(AddDockItem(logged.environment_id, QuestionDockType.OPEN.value, "question", min(open_ids)), actor, cause_id=logged.id, environment_id=logged.environment_id)
         if not open_ids:
             for item in docked:
-                self.bus.run(RemoveDockItem(item.id), actor, cause_id=event.id, environment_id=event.environment_id)
+                self.bus.run(RemoveDockItem(item.id), actor, cause_id=logged.id, environment_id=logged.environment_id)

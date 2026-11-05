@@ -11,23 +11,23 @@ from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.support.line_typing import LineTyping
 from core.modules.drivers.support.waking_lines import WakingLines
+from core.base.change.created import Created
 
 
-class StopLineTypingListener(CommitListener):
+class StopLineTypingListener(CommitListener[Created[HookCall]]):
     """An agent let to stop sends no hook that could carry a line left during its turn, so the oldest one is typed;
     the turn that starts gives the rest."""
 
     name = "drivers.stop-line-typing"
-    event = "hook_call.create"
     run_order = -1
 
     def __init__(self, queries: Queries, typing: LineTyping) -> None:
         self.queries, self.typing = queries, typing
 
-    def handle(self, event: LoggedEvent) -> None:
-        if event.data["hook"][1] != HookEventName.STOP or event.data["answer"][1] != HookAnswer.ALLOWED:
+    def handle(self, event: Created[HookCall], logged: LoggedEvent) -> None:
+        if logged.data["hook"][1] != HookEventName.STOP or logged.data["answer"][1] != HookAnswer.ALLOWED:
             return
-        agent_id = self.queries.query(HookCall).find(event.row_id).agent_id
+        agent_id = event.row.agent_id
         line = self.queries.query(AgentLine).filter(agent_id=agent_id, state=AgentLineState.WAITING).matching(WakingLines(TERMINAL_SOURCES)).oldest().first()
         if line is not None:
-            self.typing.enter_line(line, Actor(event.actor_id, ActorType.AGENT), event.environment_id)
+            self.typing.enter_line(line, Actor(logged.actor_id, ActorType.AGENT), logged.environment_id)

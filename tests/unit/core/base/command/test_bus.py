@@ -4,7 +4,6 @@ import pytest
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.change.change import Change
 from core.base.change.event_pattern import EventPattern
 from core.base.command.bus import Bus
 from core.base.command.missing_handler_error import MissingHandlerError
@@ -30,6 +29,7 @@ from tests.unit.core.base.sample_container import sample_container
 from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
 from tests.unit.core.base.model.test_model import Item
+from core.base.change.created import Created
 
 AGENT = Actor(7, ActorType.AGENT)
 
@@ -68,20 +68,19 @@ class ItemPause(MoveCommand[Item]):
     move = ItemLifecycle.pause
 
 
-class TryARefusedItem(SaveListener):
+class TryARefusedItem(SaveListener[Created[Item]]):
     """After an item is made, tries to make a refused one and carries on when it is refused."""
 
     name = "items.try-refused"
-    event = "item.create"
 
     def __init__(self, bus: Bus) -> None:
         self.bus = bus
 
-    def handle(self, change: Change[Model]) -> None:
-        if change.row.id != 1:
+    def handle(self, event: Created[Item], context: Context) -> None:
+        if event.row.id != 1:
             return
         try:
-            self.bus.dispatch(BlockedItem(title="Emma"), change.context)
+            self.bus.dispatch(BlockedItem(title="Emma"), context)
         except Refusal:
             return
 

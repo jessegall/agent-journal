@@ -6,18 +6,18 @@ from core.modules.sequences.models.enums.sequence_mark_type import SequenceMarkT
 from core.modules.sequences.models.enums.sequence_mark_variant import SequenceMarkVariant
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.sequence_run import SequenceRun
+from core.base.change.created import Created
 
 
-class SequenceStartedMarkListener(MarkListener):
+class SequenceStartedMarkListener(MarkListener[Created[SequenceRun]]):
     """A sequence the main agent starts shows a chat mark; other agents' runs show none."""
 
     name = "sequences.started-mark"
-    event = "sequence_run.create"
     module_name = "journal.core.sequences"
 
-    def handle(self, event: LoggedEvent) -> None:
-        run = self.queries.query(SequenceRun).find(event.row_id)
+    def handle(self, event: Created[SequenceRun], logged: LoggedEvent) -> None:
+        run = event.row
         if self.queries.query(Agent).find(run.agent_id).role != AgentRole.MAIN:
             return
         sequence = self.queries.query(Sequence).find(run.sequence_id)
-        self.show(event, SequenceMarkType.SEQUENCE, SequenceMarkVariant.STARTED, f"Sequence {sequence.id} started: {sequence.title}", run.environment_id, None, "sequence", sequence.id)
+        self.show(logged, SequenceMarkType.SEQUENCE, SequenceMarkVariant.STARTED, f"Sequence {sequence.id} started: {sequence.title}", run.environment_id, None, "sequence", sequence.id)

@@ -22,38 +22,37 @@ from core.base.timestamp import Timestamp
 from core.base.refusal import Refusal
 from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_model import Item
+from core.base.change.changed import Changed
+from core.base.change.created import Created
 
 GUARD_CALLS: list[str] = []
 
 
-class PlaceholderLifecycleGuard(Guard):
+class PlaceholderLifecycleGuard(Guard[Changed[Model]]):
     """A placeholder for the lifecycle guard, which is always asked."""
 
     name = "core.lifecycle"
-    event = "*"
 
-    def check(self, change: Change[Model]) -> None:
+    def check(self, event: Changed[Model], context: Context) -> None:
         GUARD_CALLS.append(self.name)
 
 
-class NoSecondItem(Guard):
+class NoSecondItem(Guard[Created[Item]]):
     """Only one open item may carry a title."""
 
     name = "items.no-second-item"
-    event = "item.create"
 
-    def check(self, change: Change[Model]) -> None:
+    def check(self, event: Created[Item], context: Context) -> None:
         GUARD_CALLS.append(self.name)
         raise Refusal("an item titled Dune is open already", "close it first")
 
 
-class SecondGuard(Guard):
+class SecondGuard(Guard[Created[Item]]):
     """Asked only if the guards before it pass."""
 
     name = "items.after"
-    event = "item.create"
 
-    def check(self, change: Change[Model]) -> None:
+    def check(self, event: Created[Item], context: Context) -> None:
         GUARD_CALLS.append(self.name)
 
 

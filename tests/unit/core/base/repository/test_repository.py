@@ -19,38 +19,38 @@ from core.base.repository.repository import Repository
 from core.base.repository.stale_row_error import StaleRowError
 from core.base.metadata import Metadata
 from core.base.query.queries import Queries
-from core.base.change.change import Change
 from core.base.guard.guard import Guard
 from core.base.listener.save_listener import SaveListener
 from tests.unit.core.base.sample_container import context, empty_registry, sample_container
 from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
 from tests.unit.core.base.model.test_model import Item
+from core.base.change.updated import Updated
+from core.base.command.context import Context
+from core.base.change.changed import Changed
 
 EVENT_COUNTS: list[str] = []
 
 
-class ForbiddenTitleGuard(Guard):
+class ForbiddenTitleGuard(Guard[Updated[Item]]):
     """No item is titled Dune Messiah."""
 
     name = "items.no-dune-messiah"
-    event = "item.update"
 
-    def check(self, change: Change[Model]) -> None:
+    def check(self, event: Updated[Item], context: Context) -> None:
         EVENT_COUNTS.append("guard")
         raise Refusal("Dune Messiah is out of print")
 
 
-class EventCounter(SaveListener):
+class EventCounter(SaveListener[Changed[Item]]):
     """Records how many events the log holds when it runs."""
 
     name = "items.count-events"
-    event = "item.*"
 
     def __init__(self, database: Database) -> None:
         self.database = database
 
-    def handle(self, change: Change[Model]) -> None:
+    def handle(self, event: Changed[Item], context: Context) -> None:
         EVENT_COUNTS.append(f"events {self.database.rows(Statement('SELECT count(*) FROM events'))[0][0]}")
 
 

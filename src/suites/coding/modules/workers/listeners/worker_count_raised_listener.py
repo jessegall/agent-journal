@@ -1,6 +1,5 @@
 import json
 
-from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.conditions.is_null import IsNull
@@ -16,28 +15,32 @@ from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_nudges import WORKER_LIMIT_RAISED
 from suites.coding.modules.workers.support.worker_settings import DEFAULT_WORKER_COUNT, WORKER_LIMIT
+from core.base.change.changed import Changed
+from core.base.change.deleted import Deleted
+from core.base.command.context import Context
 
 
-class WorkerCountRaisedListener(SaveListener):
+class WorkerCountRaisedListener(SaveListener[Changed[Setting]]):
     """When the worker limit goes up, the main agent of each environment it holds for gets a line naming the new
     limit, how many workers run and how many open tasks are not delegated, so it hands out more."""
 
     name = "workers.limit-raised"
-    event = "setting.*"
     disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, nudger: Nudger, worktrees: WorktreeQuery, settings: SettingValues) -> None:
         self.queries, self.nudger, self.worktrees, self.settings = queries, nudger, worktrees, settings
 
-    def handle(self, change: Change[Model]) -> None:
-        setting = change.new_row
+    def handle(self, event: Changed[Setting], context: Context) -> None:
+        if isinstance(event, Deleted):
+            return
+        setting = event.row
         if not isinstance(setting, Setting) or setting.key != WORKER_LIMIT:
             return
         limit = int(json.loads(setting.value))
-        if limit <= self.previous_limit(change.old_row, setting):
+        if limit <= self.previous_limit(event.old_row, setting):
             return
         for agent in self.main_agents(setting):
-            self.nudger.send(agent.id, WORKER_LIMIT_RAISED, self.name, change.context, limit=limit, workers=len(self.worktrees.environment_worktrees(agent.environment_id)), count=self.undelegated(agent.environment_id))
+            self.nudger.send(agent.id, WORKER_LIMIT_RAISED, self.name, context, limit=limit, workers=len(self.worktrees.environment_worktrees(agent.environment_id)), count=self.undelegated(agent.environment_id))
 
     # The limit the row replaces: its own old value, else what an environment's row falls back to, the project's.
     def previous_limit(self, old: Model | None, setting: Setting) -> int:

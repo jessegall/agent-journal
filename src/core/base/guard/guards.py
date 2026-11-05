@@ -41,7 +41,8 @@ class Guards:
 
     def check(self, entry: GuardEntry, change: Change[Model]) -> None:
         try:
-            self.container.get(entry.path.checked_class(Guard)).check(change)
+            guard_class = entry.path.checked_class(Guard)
+            self.container.get(guard_class).check(change.typed_event(guard_class), change.context)
         except Refusal as refusal:
             guard_refusal = GuardRefusal(entry.name, refusal, "" if entry.name == LIFECYCLE_GUARD else entry.skip_flag)
             if change.context.explanation is None:

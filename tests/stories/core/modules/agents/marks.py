@@ -6,7 +6,10 @@ from core.base.command.bus import Bus
 from core.base.refusal import Refusal
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.drivers.commands.bind_subagent_dispatch.bind_subagent_dispatch import BindSubagentDispatch
+from core.base.change.created import Created
+from core.base.query.queries import Queries
 from core.modules.drivers.listeners.dispatch_mark_listener import DispatchMarkListener
+from core.modules.drivers.models.subagent_dispatch import SubagentDispatch
 from core.modules.tasks.models.enums.task_mark_type import TaskMarkType
 from core.modules.tasks.models.enums.task_mark_variant import TaskMarkVariant
 from core.testing.hook_samples import HookSamples
@@ -30,7 +33,7 @@ def test_a_change_to_a_finished_dispatch_leaves_its_ended_mark_alone(researcher_
     story.hook("s-1", sample.with_fields(event="post_tool_use"))
     story.run_listeners()
     events = [event for event in story.container.get(EventLog).events_past(0) if event.event.startswith("subagent_dispatch")]
-    story.container.get(DispatchMarkListener).handle(events[-1])
+    story.container.get(DispatchMarkListener).handle(Created(story.container.get(Queries).query(SubagentDispatch).find(events[-1].row_id)), events[-1])
     story.expect_text("chat-mark show 1", "state: ended")
 
 

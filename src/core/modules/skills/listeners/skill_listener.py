@@ -9,9 +9,10 @@ from core.base.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.drivers.support.suite_choice import SuiteChoice
+from core.base.change.event_subscriber import E
 
 
-class SkillListener(CommitListener):
+class SkillListener(CommitListener[E]):
     """What the skill listeners share: the hook call that raised the event, and running a command as the
     skills module for that event."""
 
@@ -21,8 +22,8 @@ class SkillListener(CommitListener):
         self.bus, self.actors, self.queries, self.catalogue = bus, actors, queries, catalogue
         self.suites = suites
 
-    def call(self, event: LoggedEvent) -> HookCall:
-        return self.queries.query(HookCall).find(event.row_id)
+    def call(self, logged: LoggedEvent) -> HookCall:
+        return self.queries.query(HookCall).find(logged.row_id)
 
-    def run(self, event: LoggedEvent, command: Command[object]) -> None:
-        self.bus.run(command, self.actors.actor(self.module_name), cause_id=event.id, environment_id=event.environment_id)
+    def run(self, logged: LoggedEvent, command: Command[object]) -> None:
+        self.bus.run(command, self.actors.actor(self.module_name), cause_id=logged.id, environment_id=logged.environment_id)

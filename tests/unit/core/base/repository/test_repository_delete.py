@@ -1,6 +1,5 @@
 import pytest
 
-from core.base.change.change import Change
 from core.base.change.event_log import EventLog
 from core.base.change.event_pattern import EventPattern
 from core.base.container import Container
@@ -17,21 +16,22 @@ from core.base.repository.repository import Repository
 from tests.unit.core.base.sample_container import context, empty_registry, sample_container
 from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_model import Item
+from core.base.change.deleted import Deleted
+from core.base.command.context import Context
 
 NOTES = "CREATE TABLE item_notes (id INTEGER PRIMARY KEY, item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE RESTRICT) STRICT"
 
 
-class ClearItemNotes(DeletionListener):
+class ClearItemNotes(DeletionListener[Deleted[Item]]):
     """Removes an item's notes before the item is deleted."""
 
     name = "notes.clear"
-    event = "item.delete"
 
     def __init__(self, database: Database) -> None:
         self.database = database
 
-    def handle(self, change: Change[Model]) -> None:
-        self.database.update(Statement("DELETE FROM item_notes WHERE item_id = ?", [change.row.id]))
+    def handle(self, event: Deleted[Item], context: Context) -> None:
+        self.database.update(Statement("DELETE FROM item_notes WHERE item_id = ?", [event.row.id]))
 
 
 def with_note(container: Container) -> Item:

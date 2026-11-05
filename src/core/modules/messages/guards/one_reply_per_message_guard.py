@@ -1,24 +1,24 @@
-from core.base.change.change import Change
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.modules.messages.models.message import Message
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.queries.message_query import MessageQuery
+from core.base.change.created import Created
+from core.base.command.context import Context
 
 
-class OneReplyPerMessageGuard(Guard):
+class OneReplyPerMessageGuard(Guard[Created[Message]]):
     """A message an agent has answered gets a second agent reply only when the sender confirms it."""
 
     name = "messages.one-reply-per-message"
-    event = "message.create"
     short_flag = "confirm"
 
     def __init__(self, messages: MessageQuery) -> None:
         self.messages = messages
 
-    def check(self, change: Change[Model]) -> None:
-        message = change.row
+    def check(self, event: Created[Message], context: Context) -> None:
+        message = event.row
         if not isinstance(message, Message) or message.type is not MessageType.AGENT or message.parent_id is None:
             return
         answered = self.messages.replies(message.parent_id).agent_messages().page(1, 1).rows

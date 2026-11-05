@@ -4,19 +4,20 @@ from core.base.driver.hook_keywords import text_keywords
 from core.modules.agents.models.agent import Agent
 from core.modules.skills.commands.require_skill.require_skill import RequireSkill
 from core.modules.skills.listeners.skill_listener import SkillListener
+from core.base.change.created import Created
+from core.modules.drivers.models.hook_call import HookCall
 
 NOTICE_OPENING = "["
 
 
-class KeywordSkillsListener(SkillListener):
+class KeywordSkillsListener(SkillListener[Created[HookCall]]):
     """A prompt of the user's that holds a keyword of a skill makes that skill due for the agent; a line the
     journal or a plugin put in the prompt, which opens with a bracket, and a prompt of a subagent do not."""
 
     name = "skills.keyword"
-    event = "hook_call.create"
 
-    def handle(self, event: LoggedEvent) -> None:
-        call = self.call(event)
+    def handle(self, event: Created[HookCall], logged: LoggedEvent) -> None:
+        call = self.call(logged)
         if call.hook != HookEventName.PROMPT or call.summary.lstrip().startswith(NOTICE_OPENING):
             return
         if self.queries.query(Agent).find(call.agent_id).role not in self.suites.agent_policy(call.environment_id).prompt_roles:
@@ -24,4 +25,4 @@ class KeywordSkillsListener(SkillListener):
         terms = text_keywords(call.summary)
         for skill in self.catalogue.skills():
             if any(keyword.lower() in terms for keyword in skill.keywords):
-                self.run(event, RequireSkill(call.agent_id, skill.folder))
+                self.run(logged, RequireSkill(call.agent_id, skill.folder))

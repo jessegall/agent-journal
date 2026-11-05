@@ -8,23 +8,24 @@ from core.modules.processes.commands.orphan_process.orphan_process import Orphan
 from core.modules.processes.listeners.process_end_mark_listener import MODULE_NAME
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.agents.models.agent import ENDED_FIELD, Agent
+from core.base.change.changed import Changed
+from core.modules.agents.models.agent import Agent
 
 
-class EndedAgentRunsListener(CommitListener):
+class EndedAgentRunsListener(CommitListener[Changed[Agent]]):
     """Ends an agent's runs unless its suite declares that they continue after the agent stops."""
 
     name = "processes.ended-agent-runs"
-    event = "agent.*"
 
     def __init__(self, bus: Bus, actors: ModuleActors, processes: ProcessQuery, queries: Queries, suites: SuiteChoice) -> None:
         self.bus, self.actors, self.processes, self.queries = bus, actors, processes, queries
         self.suites = suites
 
-    def handle(self, event: LoggedEvent) -> None:
-        if ENDED_FIELD not in event.data or event.data[ENDED_FIELD][1] is None:
+    def handle(self, event: Changed[Agent], logged: LoggedEvent) -> None:
+        if ENDED_FIELD not in logged.data or logged.data[ENDED_FIELD][1] is None:
             return
-        agent = self.queries.query(Agent).find(event.row_id)
+        agent = event.row
         if agent.role in self.suites.agent_policy(agent.environment_id).continuing_run_roles:
             return
-        for process in tuple(self.processes.agent(event.row_id).running().all_rows()):
-            self.bus.run(OrphanProcess(process.id), self.actors.actor(MODULE_NAME), cause_id=event.id, environment_id=event.environment_id)
+        for process in tuple(self.processes.agent(logged.row_id).running().all_rows()):
+            self.bus.run(OrphanProcess(process.id), self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=logged.environment_id)

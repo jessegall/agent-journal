@@ -23,15 +23,20 @@ def moved(old_row: Model, new_row: Model) -> Change[Model]:
     return Change(old_row, new_row, Context(Actor(2, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), MakeItem(title="Dune"), frozenset()))
 
 
+def guard_checked(old_row: Model, new_row: Model) -> None:
+    change = moved(old_row, new_row)
+    LifecycleGuard(StateBook()).check(change.typed_event(LifecycleGuard), change.context)
+
+
 def test_task_retest_move():
     testing = STARTED.moved(TaskLifecycle.test)
     retested = testing.moved(TaskLifecycle.retest)
-    LifecycleGuard(StateBook()).check(moved(testing, retested))
+    guard_checked(testing, retested)
     assert (retested.state, retested.holder_id) == (TaskState.STARTED, 2)
 
 
 def test_task_retest_refusal():
     with pytest.raises(Refusal) as raised:
-        LifecycleGuard(StateBook()).check(moved(STARTED, STARTED.moved(TaskLifecycle.retest)))
+        guard_checked(STARTED, STARTED.moved(TaskLifecycle.retest))
     assert raised.value.text == ("task 1 is started, so it cannot retest: from started it can only go on with journal task block 1, journal task test 1,"
                                  " journal task release 1, journal task close 1, journal task cancel 1")

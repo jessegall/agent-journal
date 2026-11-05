@@ -5,17 +5,17 @@ from core.modules.waits.models.enums.wait_mark_type import WaitMarkType
 from core.modules.waits.models.enums.wait_mark_variant import WaitMarkVariant
 from core.modules.waits.models.enums.wait_type import WaitType
 from core.modules.waits.models.wait import Wait
+from core.base.change.created import Created
 
 
-class ReportedWaitMarkListener(MarkListener):
+class ReportedWaitMarkListener(MarkListener[Created[Wait]]):
     """When an agent reports it is stuck, the chat shows a reported wait mark with the reason it gave."""
 
     name = "waits.reported-wait-mark"
-    event = "wait.create"
     module_name = "journal.core.waits"
 
-    def handle(self, event: LoggedEvent) -> None:
-        wait = self.queries.query(Wait).find(event.row_id)
+    def handle(self, event: Created[Wait], logged: LoggedEvent) -> None:
+        wait = event.row
         if wait.type is WaitType.HELP_REQUEST:
             environment_id = self.queries.query(Agent).find(wait.agent_id).environment_id
-            self.show(event, WaitMarkType.REPORTED_WAIT, WaitMarkVariant.REPORTED, f"Stuck: {wait.focus}", environment_id, wait.agent_id, "wait", wait.id)
+            self.show(logged, WaitMarkType.REPORTED_WAIT, WaitMarkVariant.REPORTED, f"Stuck: {wait.focus}", environment_id, wait.agent_id, "wait", wait.id)

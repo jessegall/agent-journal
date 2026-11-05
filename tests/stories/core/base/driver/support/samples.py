@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from core.base.agent_role import AgentRole
-from core.base.change.change import Change
 from core.base.command.command import Command
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -35,6 +34,7 @@ from core.base.setting.setting_value import SettingValue
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
+from core.base.change.created import Created
 
 SAMPLES = "tests.stories.core.base.driver.support.samples:SamplesModule"
 LEAD = "samples.lead"
@@ -307,13 +307,12 @@ class EditLockOverlay(Overlay):
         return [OpenRow("edit_lock", lock.id, lock.updated_at) for lock in self.queries.query(EditLock).filter(agent_id=agent_id, state=EditLockState.OPEN).all_rows()]
 
 
-class LeadLockGuard(Guard):
+class LeadLockGuard(Guard[Created[EditLock]]):
     """An agent the lead drives makes no edit lock; a person and other agents may."""
 
     name = "samples.lead-lock-guard"
-    event = "edit_lock.create"
 
-    def check(self, change: Change[Model]) -> None:
+    def check(self, event: Created[EditLock], context: Context) -> None:
         raise Refusal("the lead makes no edit lock itself", "a person makes one with journal edit-lock make <agent>")
 
 

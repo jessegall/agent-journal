@@ -12,7 +12,6 @@ from core.base.module.module_finder import ModuleFinder
 
 import pytest
 
-from core.base.change.change import Change
 from core.base.command.handlers.make_handler import MakeHandler
 from core.base.guard.guard import Guard
 from core.base.model.lifecycle import Lifecycle
@@ -31,21 +30,24 @@ from core.base.module.state_check import StateCheck
 from core.base.module.template_check import TemplateCheck
 from tests.unit.core.base.model.test_lifecycle import ItemState
 from tests.unit.core.base.model.test_model import Item
+from core.base.change.moved import Moved
+from core.base.command.context import Context
+from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
 
 
-class PausedItemGuard(Guard):
+class PausedItemGuard(Guard[Moved[Item]]):
     name = "items.paused-only"
-    event = "item.pause"
+    moves = (ItemLifecycle.pause,)
 
-    def check(self, change: Change[Model]) -> None:
+    def check(self, event: Moved[Item], context: Context) -> None:
         return None
 
 
-class ArchivedItemGuard(Guard):
+class ArchivedItemGuard(Guard[Moved[Item]]):
     name = "items.archived-only"
-    event = "item.archive"
+    moves = (Move("archive", [ItemState.OPEN], ItemState.OPEN),)
 
-    def check(self, change: Change[Model]) -> None:
+    def check(self, event: Moved[Item], context: Context) -> None:
         return None
 
 

@@ -2,6 +2,12 @@ from dataclasses import dataclass, fields
 from typing import Generic, TypeVar
 
 from core.base.actor import Actor
+from core.base.change.changed import Changed
+from core.base.change.created import Created
+from core.base.change.deleted import Deleted
+from core.base.change.event_subscriber import EventSubscriber
+from core.base.change.moved import Moved
+from core.base.change.updated import Updated
 from core.base.command.context import Context
 from core.base.model.model import Model
 from core.base.model.move import Move
@@ -58,6 +64,17 @@ class Change(Generic[M]):
     @property
     def is_empty(self) -> bool:
         return self.old_row is not None and self.new_row is not None and self.move is None and not self.fields
+
+    def typed_event(self, subscriber: type[EventSubscriber[object]]) -> object:
+        declared = subscriber.event_type(self.event).event_class
+        return (self.event_class() if declared is Changed else declared)(self.row, self.old_row, self.move)
+
+    def event_class(self) -> type[Changed[Model]]:
+        if self.new_row is None:
+            return Deleted
+        if self.old_row is None:
+            return Created
+        return Moved if self.move is not None else Updated
 
     @property
     def event(self) -> str:

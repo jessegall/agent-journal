@@ -12,6 +12,7 @@ from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from core.base.scope.scopes import Scopes
 from core.base.listener.commit_listener_error import CommitListenerError
+from core.base.listener.event_builder import EventBuilder
 from core.base.database.performance_costs import PerformanceCosts
 from core.base.performance.performance_state import PerformanceState
 
@@ -122,7 +123,9 @@ class CommitListenerRunner:
         start_points = tools.begin()
         try:
             with self.scopes.event_scope(listener_class.disabled_scopes, event):
-                self.container.get(listener_class).handle(event)
+                typed = self.container.get(EventBuilder).built(listener_class.event_type(event.event), event)
+                if typed is not None:
+                    self.container.get(listener_class).handle(typed, event)
             cost = tools.cost(start_points)
             if cost is not None and cost.total >= COSTLY_LISTENER_POINTS:
                 self.errors.noted(f"listener {entry.name} cost {cost.line()} on event {event.id} {event.event}")

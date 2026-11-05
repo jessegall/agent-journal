@@ -10,6 +10,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.line_typing import LineTyping
+from core.base.change.created import Created
 
 PAUSE_SOURCE = "drivers.pause"
 RESUME_SOURCE = "drivers.resume"
@@ -17,7 +18,7 @@ IDLE_MESSAGE_SOURCE = "messages.idle"
 TERMINAL_SOURCES = (PAUSE_SOURCE, RESUME_SOURCE, IDLE_MESSAGE_SOURCE, "tasks.wait-ended")
 
 
-class TypedLineListener(CommitListener):
+class TypedLineListener(CommitListener[Created[AgentLine]]):
     """Types that an agent was paused or resumed, and, for an agent sitting idle, which sends no hook that
     could carry it, a line that wakes it, that a message was edited or that a task it waited on opened. An
     agent at work gets those by its next hook, as does one with no terminal to type in; a line a hook has
@@ -25,23 +26,22 @@ class TypedLineListener(CommitListener):
     entered without being typed again."""
 
     name = "drivers.typed-line"
-    event = "agent_line.create"
     run_order = -1
 
     def __init__(self, queries: Queries, typing: LineTyping, bus: Bus, hook_calls: HookCallQuery) -> None:
         self.queries, self.typing, self.bus, self.hook_calls = queries, typing, bus, hook_calls
 
-    def handle(self, event: LoggedEvent) -> None:
-        line = self.queries.query(AgentLine).find(event.row_id)
+    def handle(self, event: Created[AgentLine], logged: LoggedEvent) -> None:
+        line = event.row
         if not (line.wakes_agent or line.source in TERMINAL_SOURCES) or line.state is not AgentLineState.WAITING:
             return
-        if line.source not in (PAUSE_SOURCE, RESUME_SOURCE) and not self.hook_calls.is_idle(line.agent_id, event.timestamp):
+        if line.source not in (PAUSE_SOURCE, RESUME_SOURCE) and not self.hook_calls.is_idle(line.agent_id, logged.timestamp):
             return
-        actor = Actor(event.actor_id, ActorType.USER)
+        actor = Actor(logged.actor_id, ActorType.USER)
         if self.has_entered_repeat(line):
-            self.bus.run(EnterAgentLine(line.id), actor, environment_id=event.environment_id)
+            self.bus.run(EnterAgentLine(line.id), actor, environment_id=logged.environment_id)
         else:
-            self.typing.enter_line(line, actor, event.environment_id)
+            self.typing.enter_line(line, actor, logged.environment_id)
 
     def has_entered_repeat(self, line: AgentLine) -> bool:
         entered_lines = self.queries.query(AgentLine).filter(agent_id=line.agent_id, source=line.source, text=line.text, state=AgentLineState.ENTERED)

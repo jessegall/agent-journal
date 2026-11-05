@@ -1,23 +1,24 @@
-from core.base.change.change import Change
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.modules.docking.guards.support.docking_arrival import DockingArrival
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.docking.support.dock_limits import MOST_ITEMS_SETTING, DockLimits
+from core.base.change.changed import Changed
+from core.base.command.context import Context
+from core.modules.docking.models.dock_item import DockItem
 
 
-class DockCapacityGuard(Guard):
+class DockCapacityGuard(Guard[Changed[DockItem]]):
     """A dock holds no more items than the setting docking.most-items, 6 unless it says otherwise."""
 
     name = "docking.dock-limit"
-    event = "dock_item.*"
 
     def __init__(self, items: DockItemQuery, limits: DockLimits) -> None:
         self.items, self.limits = items, limits
 
-    def check(self, change: Change[Model]) -> None:
-        item = DockingArrival.item(change)
+    def check(self, event: Changed[DockItem], context: Context) -> None:
+        item = DockingArrival.item(event)
         if item is None:
             return
         capacity = self.limits.dock_capacity(item.dock_id)

@@ -30,7 +30,7 @@ from tests.stories.support.story_checks import expect_value_line, expect_value_w
 NOTHING = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))
 AFTER = NOTHING.with_fields(event="post_tool_use")
 TESTS_REPORT = "collected 3 items\nFAILED tests/test_cart.py::test_total - assert 1 == 2\n2 failed, 1 passed in 0.4s\n"
-ENDED = "output 1 ended: 2 failed 1 passed"
+ENDED = "output 1 ended: 2 failed, 1 passed"
 
 
 def lines_of(story, sample) -> list[str]:

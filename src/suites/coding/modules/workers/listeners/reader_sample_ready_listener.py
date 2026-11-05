@@ -1,5 +1,4 @@
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
-from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries
@@ -11,27 +10,28 @@ from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.reader_request import ReaderRequest
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import READER_SAMPLE_READY
+from core.base.change.updated import Updated
+from core.base.command.context import Context
 
 
-class ReaderSampleReadyListener(SaveListener):
+class ReaderSampleReadyListener(SaveListener[Updated[ReaderRequest]]):
     """Tells workers how to read an ended sample with its new reader."""
 
     name = "workers.reader-sample-ready"
-    event = "reader_request.update"
     disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, nudger: Nudger) -> None:
         self.queries, self.nudger = queries, nudger
 
-    def handle(self, change: Change[Model]) -> None:
-        request = change.new_row
+    def handle(self, event: Updated[ReaderRequest], context: Context) -> None:
+        request = event.row
         if not isinstance(request, ReaderRequest) or request.reader_id is None or request.sample_process_id is None:
             return
-        if isinstance(change.old_row, ReaderRequest) and change.old_row.completed_at is not None:
+        if isinstance(event.old_row, ReaderRequest) and event.old_row.completed_at is not None:
             return
         sample = self.queries.query(Process).find(request.sample_process_id)
         if sample.ended_at is None:
             return
         reader = self.queries.query(Reader).find(request.reader_id)
         if self.queries.query(Agent).find(sample.agent_id).role == AgentRole.WORKER:
-            self.nudger.send(sample.agent_id, READER_SAMPLE_READY, WORKER_JOB_SOURCE, change.context, output=sample.id, reader=reader.name)
+            self.nudger.send(sample.agent_id, READER_SAMPLE_READY, WORKER_JOB_SOURCE, context, output=sample.id, reader=reader.name)

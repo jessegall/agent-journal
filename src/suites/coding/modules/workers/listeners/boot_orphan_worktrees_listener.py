@@ -7,21 +7,21 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.environments.models.environment import Environment
 from suites.coding.modules.workers.commands.remove_orphan_worktrees.remove_orphan_worktrees import RemoveOrphanWorktrees
+from core.base.change.journal_booting import JournalBooting
 
 
-class BootOrphanWorktreesListener(CommitListener):
+class BootOrphanWorktreesListener(CommitListener[JournalBooting]):
     """As the journal starts, the worktrees no worker holds are swept away in every environment that is a
     repository, ahead of the listeners that publish skills into worktrees, whose files would make them look
     changed."""
 
     name = "workers.boot-worktree-sweep"
-    event = JOURNAL_BOOTING_EVENT
     run_order = -1
 
     def __init__(self, queries: Queries, bus: Bus) -> None:
         self.queries, self.bus = queries, bus
 
-    def handle(self, event: LoggedEvent) -> None:
+    def handle(self, event: JournalBooting, logged: LoggedEvent) -> None:
         for environment in tuple(self.queries.query(Environment).all_rows()):
             try:
                 self.bus.run(RemoveOrphanWorktrees(environment.id), Actor.core(), environment_id=environment.id)

@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from enum import StrEnum
 
-from core.base.change.change import Change
 from core.base.command.move_command import MoveCommand
 from core.base.database.migration import Migration
 from core.base.guard.guard import Guard
@@ -14,6 +13,11 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
+from core.base.change.moved import Moved
+from core.base.command.context import Context
+from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
+from core.modules.tasks.models.task import Task
+from core.base.change.deleted import Deleted
 
 
 class SignoffState(StrEnum):
@@ -62,32 +66,31 @@ class SignoffsTable(Migration):
     )
 
 
-class SignedTaskGuard(Guard):
+class SignedTaskGuard(Guard[Moved[Task]]):
     """A task with a signoff requested closes only once the signoff has passed."""
 
     name = "signoffs.task-closes-after-its-signoff"
-    event = "task.close"
+    moves = (TaskLifecycle.close,)
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def check(self, change: Change[Model]) -> None:
-        if self.queries.query(Signoff).filter(task_id=change.row.id, state=SignoffState.REQUESTED).exists():
-            raise Refusal(f"task {change.row.id} waits for its signoff", f"journal signoff list --task {change.row.id}")
+    def check(self, event: Moved[Task], context: Context) -> None:
+        if self.queries.query(Signoff).filter(task_id=event.row.id, state=SignoffState.REQUESTED).exists():
+            raise Refusal(f"task {event.row.id} waits for its signoff", f"journal signoff list --task {event.row.id}")
 
 
-class ForgetTaskSignoffs(DeletionListener):
+class ForgetTaskSignoffs(DeletionListener[Deleted[Task]]):
     """Removes a task's signoffs before the task is deleted."""
 
     name = "signoffs.forget-task-signoffs"
-    event = "task.delete"
 
     def __init__(self, queries: Queries, repository: Repository) -> None:
         self.queries, self.repository = queries, repository
 
-    def handle(self, change: Change[Model]) -> None:
-        for signoff in tuple(self.queries.query(Signoff).filter(task_id=change.row.id).all_rows()):
-            self.repository.delete(signoff, change.context)
+    def handle(self, event: Deleted[Task], context: Context) -> None:
+        for signoff in tuple(self.queries.query(Signoff).filter(task_id=event.row.id).all_rows()):
+            self.repository.delete(signoff, context)
 
 
 class SignoffsModule(Module):

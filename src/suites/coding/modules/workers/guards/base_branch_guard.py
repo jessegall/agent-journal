@@ -1,19 +1,21 @@
-from core.base.change.change import Change
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.merge_checks import MergeChecks
+from core.base.change.moved import Moved
+from core.base.command.context import Context
+from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 
 
-class BaseBranchGuard(Guard):
+class BaseBranchGuard(Guard[Moved[Worktree]]):
     """Refuses to merge a worktree cut from a branch its environment no longer builds on."""
 
     name = "workers.base-branch-holds"
-    event = "worker_worktree.merge"
+    moves = (WorktreeLifecycle.merge,)
 
     def __init__(self, checks: MergeChecks) -> None:
         self.checks = checks
 
-    def check(self, change: Change[Model]) -> None:
-        if isinstance(change.row, Worktree):
-            self.checks.check_base_branch(change.row)
+    def check(self, event: Moved[Worktree], context: Context) -> None:
+        if isinstance(event.row, Worktree):
+            self.checks.check_base_branch(event.row)

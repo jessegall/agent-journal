@@ -12,25 +12,25 @@ from core.modules.drivers.commands.record_bypass_line.record_bypass_line import 
 from core.modules.drivers.models.enums.bypass_mark_type import BypassMarkType
 from core.modules.drivers.models.enums.bypass_mark_variant import BypassMarkVariant
 from core.modules.drivers.models.hook_call import HookCall
+from core.base.change.created import Created
 
 MODULE_NAME = "journal.core.drivers"
 
 
-class BypassLogListener(CommitListener):
+class BypassLogListener(CommitListener[Created[HookCall]]):
     """The first hook of a main agent the journal records after it was silent names, once, what went around
     it: a mark in the chat and a line for the agent, from the log the Go hook writes."""
 
     name = "drivers.bypass-log"
-    event = "hook_call.create"
 
     def __init__(self, home: JournalHome, queries: Queries, bus: Bus, actors: ModuleActors) -> None:
         self.home, self.queries, self.bus, self.actors = home, queries, bus, actors
 
-    def handle(self, event: LoggedEvent) -> None:
+    def handle(self, event: Created[HookCall], logged: LoggedEvent) -> None:
         log = self.home.bypass_log
         if not log.is_file():
             return
-        agent = self.queries.query(Agent).find(self.queries.query(HookCall).find(event.row_id).agent_id)
+        agent = self.queries.query(Agent).find(event.row.agent_id)
         if agent.role != AgentRole.MAIN:
             return
         claimed = log.with_suffix(".taken")
@@ -41,6 +41,6 @@ class BypassLogListener(CommitListener):
             return
         actor = self.actors.actor(MODULE_NAME)
         text = f"{count} hook{'s' if count != 1 else ''} went through unchecked while the journal did not answer"
-        self.bus.run(ShowMark(agent.environment_id, BypassMarkType.BYPASS, BypassMarkVariant.UNCHECKED, f"bypass:{event.id}", text, agent_id=agent.id, outcome=MarkOutcome.FAILED, ended=True),
-                     actor, cause_id=event.id, environment_id=agent.environment_id)
-        self.bus.run(RecordBypassLine(agent.id, count), actor, cause_id=event.id, environment_id=agent.environment_id)
+        self.bus.run(ShowMark(agent.environment_id, BypassMarkType.BYPASS, BypassMarkVariant.UNCHECKED, f"bypass:{logged.id}", text, agent_id=agent.id, outcome=MarkOutcome.FAILED, ended=True),
+                     actor, cause_id=logged.id, environment_id=agent.environment_id)
+        self.bus.run(RecordBypassLine(agent.id, count), actor, cause_id=logged.id, environment_id=agent.environment_id)

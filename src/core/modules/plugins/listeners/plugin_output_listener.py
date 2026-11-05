@@ -21,25 +21,25 @@ from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
 from core.modules.skills.commands.request_skill.request_skill import RequestSkill
 from core.modules.plugins.support.plugins_module_name import MODULE_NAME
+from core.base.change.created import Created
 
 MOST_COMMAND_LINES = 20
 TONES = {tone.value: tone for tone in PluginCardTone}
 
 
-class PluginOutputListener(CommitListener):
+class PluginOutputListener(CommitListener[Created[PluginOutput]]):
     """Applies a plugin's answer after the reply, as the plugins module, which can never act as the person: a
     chat mark for each card of a kind its manifest declares when the answer is for a main agent, keyed so a
     card with the same key is updated in place, its journal command lines, at most twenty, and the skills it
     requires of the agent among those the plugin publishes."""
 
     name = "plugins.output"
-    event = "plugin_output.create"
 
     def __init__(self, queries: Queries, folders: PluginFolders, bus: Bus, console: Console, actors: ModuleActors, skill_files: PluginSkillFiles) -> None:
         self.queries, self.folders, self.bus, self.console, self.actors, self.skill_files = queries, folders, bus, console, actors, skill_files
 
-    def handle(self, event: LoggedEvent) -> None:
-        row = self.queries.query(PluginOutput).find(event.row_id)
+    def handle(self, event: Created[PluginOutput], logged: LoggedEvent) -> None:
+        row = event.row
         plugin = self.queries.query(Plugin).find(row.plugin_id)
         manifest, answer, actor = PluginManifest.read(self.folders.code(plugin.name)), PluginAnswer.parsed(row.output), self.actors.actor(MODULE_NAME)
         is_main = self.queries.query(Agent).find(row.agent_id).role == AgentRole.MAIN
@@ -47,9 +47,9 @@ class PluginOutputListener(CommitListener):
             tone = card.tone or (manifest.card_tones[card.card_type] if card.card_type in manifest.card_tones else "")
             if tone in TONES:
                 self.bus.run(ShowMark(row.environment_id, PluginMarkType.CARD, TONES[tone], f"plugin:{plugin.name}:{row.agent_id}:{card.key}", f"{plugin.name}: {card.label}",
-                                      detail=card.detail), actor, cause_id=event.id, environment_id=row.environment_id)
+                                      detail=card.detail), actor, cause_id=logged.id, environment_id=row.environment_id)
         for line in answer.commands[:MOST_COMMAND_LINES]:
             self.console.run(shlex.split(line), Caller(actor), io.StringIO())
         published = self.skill_files.names(self.folders.code(plugin.name), manifest)
         for name in [name for name in answer.required_skills if name in published]:
-            self.bus.run(RequestSkill(row.agent_id, name), actor, cause_id=event.id, environment_id=row.environment_id)
+            self.bus.run(RequestSkill(row.agent_id, name), actor, cause_id=logged.id, environment_id=row.environment_id)

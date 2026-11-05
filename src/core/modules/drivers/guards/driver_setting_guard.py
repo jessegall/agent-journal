@@ -1,8 +1,9 @@
 import json
 
-from core.base.change.change import Change
+from core.base.change.created import Created
+from core.base.change.updated import Updated
+from core.base.command.context import Context
 from core.base.guard.guard import Guard
-from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.modules.drivers.support.driver_settings import ALLOWANCE_SETTINGS, DRIVER_SETTINGS, MODULE_KEY, SUITE_SETTING
@@ -11,19 +12,18 @@ from core.modules.settings.models.setting import Setting
 
 
 
-class DriverSettingGuard(Guard):
+class DriverSettingGuard(Guard[Created[Setting] | Updated[Setting]]):
     """Refuses a suite setting naming a suite no installed module ships, and a driver setting naming a driver
     that is not installed or belongs to a suite the environment does not run."""
 
     name = "drivers.known-setting"
-    event = "setting.*"
 
     def __init__(self, registry: Registry, choice: SuiteChoice) -> None:
         self.registry, self.choice = registry, choice
 
-    def check(self, change: Change[Model]) -> None:
-        setting = change.row
-        if not isinstance(setting, Setting) or not setting.key.startswith(f"{MODULE_KEY}.") or change.event.endswith(".delete"):
+    def check(self, event: Created[Setting] | Updated[Setting], context: Context) -> None:
+        setting = event.row
+        if not setting.key.startswith(f"{MODULE_KEY}."):
             return
         if setting.key.startswith(ALLOWANCE_SETTINGS):
             return

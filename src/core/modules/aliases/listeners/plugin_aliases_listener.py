@@ -1,9 +1,10 @@
 from dataclasses import replace
 from pathlib import Path
 
-from core.base.change.change import Change
+from core.base.change.created import Created
+from core.base.change.updated import Updated
+from core.base.command.context import Context
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
 from core.base.repository.repository import Repository
 from core.base.registry.registry import Registry
 from core.modules.aliases.models.alias import Alias
@@ -16,7 +17,7 @@ from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 
 
-class PluginAliasesListener(SaveListener):
+class PluginAliasesListener(SaveListener[Created[Plugin] | Updated[Plugin]]):
     """An installed plugin's aliases become the project's, in the install's transaction, each line run from
     the plugin's folder, named in full so it runs from any folder; a name the journal or the project holds
     already is skipped, and the aliases go with the plugin's row. An upgrade that changes the plugin's files
@@ -24,31 +25,28 @@ class PluginAliasesListener(SaveListener):
     longer declares removed."""
 
     name = "aliases.plugin-aliases"
-    event = "plugin.create|plugin.update"
 
     def __init__(self, repository: Repository, aliases: AliasQuery, names: AliasNames, readers: AliasReaders, folders: PluginFolders, registry: Registry) -> None:
         self.repository, self.aliases, self.names, self.readers, self.folders = repository, aliases, names, readers, folders
         self.registry = registry
 
-    def handle(self, change: Change[Model]) -> None:
-        plugin = change.row
-        if not isinstance(plugin, Plugin):
-            return
-        if change.old_row is not None and "files_digest" not in change.fields:
+    def handle(self, event: Created[Plugin] | Updated[Plugin], context: Context) -> None:
+        plugin = event.row
+        if event.old_row is not None and event.old_row.files_digest == plugin.files_digest:
             return
         folder = self.folders.code(plugin.name)
         manifest_aliases = {alias.name: alias for alias in PluginManifest.read(folder).aliases}
         stored_aliases = {alias.name: alias for alias in self.aliases.filter(plugin_id=plugin.id).all_rows()}
         for stored in stored_aliases.values():
             if stored.name not in manifest_aliases:
-                self.repository.delete(stored, change.context)
+                self.repository.delete(stored, context)
         for name, manifest_alias in manifest_aliases.items():
-            alias = self.alias(manifest_alias, plugin, folder, change.actor.id)
+            alias = self.alias(manifest_alias, plugin, folder, context.actor.id)
             if name in stored_aliases:
                 stored = stored_aliases[name]
-                self.repository.save(replace(alias, id=stored.id, version=stored.version, creator_id=stored.creator_id), change.context)
+                self.repository.save(replace(alias, id=stored.id, version=stored.version, creator_id=stored.creator_id), context)
             elif self.names.is_free(name):
-                self.repository.save(alias, change.context)
+                self.repository.save(alias, context)
 
     def alias(self, manifest_alias: ManifestAlias, plugin: Plugin, folder: Path, creator_id: int) -> Alias:
         return Alias(creator_id=creator_id, name=manifest_alias.name, line=f"{folder}/{manifest_alias.line}", description=manifest_alias.description,

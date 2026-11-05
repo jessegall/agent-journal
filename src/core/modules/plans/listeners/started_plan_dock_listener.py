@@ -11,31 +11,31 @@ from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.plans.listeners.plan_move_mark_listener import PLANS_MODULE
 from core.modules.plans.models.enums.plan_dock_type import PlanDockType
 from core.modules.plans.models.plan import Plan
+from core.base.change.changed import Changed
 
 ENDING_MOVES = ("close", "cancel")
 DOCKING_MOVES = {"create": PlanDockType.DRAFT, "ready": PlanDockType.WAITING, "start": PlanDockType.STARTED, "unblock": PlanDockType.STARTED, "block": PlanDockType.PAUSED}
 
 
-class StartedPlanDockListener(CommitListener):
+class StartedPlanDockListener(CommitListener[Changed[Plan]]):
     """A plan is docked above the chat as it stands: a draft once made, waiting for the user once
     ready, started, paused; it is undocked when approved or ended."""
 
     name = "plans.started-dock"
-    event = "plan.*"
     disabled_scopes = [ActorScope]
 
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, items: DockItemQuery) -> None:
         self.bus, self.actors, self.queries, self.items = bus, actors, queries, items
 
-    def handle(self, event: LoggedEvent) -> None:
-        move = event.event.split(".")[1]
-        plan = self.queries.query(Plan).find(event.row_id)
+    def handle(self, event: Changed[Plan], logged: LoggedEvent) -> None:
+        move = logged.event.split(".")[1]
+        plan = event.row
         actor = self.actors.actor(PLANS_MODULE)
         if move in ENDING_MOVES or move == "approve":
-            self.undock(plan, actor, event.id)
+            self.undock(plan, actor, logged.id)
         if move in DOCKING_MOVES:
-            self.undock(plan, actor, event.id)
-            self.bus.run(AddDockItem(plan.environment_id, DOCKING_MOVES[move].value, "plan", plan.id), actor, cause_id=event.id, environment_id=plan.environment_id)
+            self.undock(plan, actor, logged.id)
+            self.bus.run(AddDockItem(plan.environment_id, DOCKING_MOVES[move].value, "plan", plan.id), actor, cause_id=logged.id, environment_id=plan.environment_id)
 
     def undock(self, plan: Plan, actor: Actor, cause_id: int) -> None:
         for dock_type in PlanDockType:

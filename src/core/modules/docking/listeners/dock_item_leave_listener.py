@@ -10,28 +10,29 @@ from core.modules.docking.models.dock import Dock
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.docking.support.leave_time import LeaveTime
+from core.base.change.touched import Touched
+from core.base.model.model import Model
 
 
-class DockItemLeaveListener(CommitListener):
+class DockItemLeaveListener(CommitListener[Touched[Model]]):
     """Whenever a change is committed, the items whose row it ended get the time they leave at, and the
     items whose time has come leave the dock, each in its own dock's environment. Time passing raises no
     event, so the next change of any kind, in any environment, is when the dock is checked."""
 
     name = "docking.item-leave"
-    event = "*.*"
 
     def __init__(self, bus: Bus, actors: ModuleActors, items: DockItemQuery, leave_time: LeaveTime, queries: Queries) -> None:
         self.bus, self.actors, self.items, self.leave_time, self.queries = bus, actors, items, leave_time, queries
 
-    def handle(self, event: LoggedEvent) -> None:
+    def handle(self, event: Touched[Model], logged: LoggedEvent) -> None:
         actor = self.actors.actor(MODULE_NAME)
-        model_name = event.event.split(".")[0]
-        for item in self.pending(model_name, event.row_id):
-            leaves_at = self.leave_time.departure(item, event.timestamp)
+        model_name = logged.event.split(".")[0]
+        for item in self.pending(model_name, logged.row_id):
+            leaves_at = self.leave_time.departure(item, logged.timestamp)
             if leaves_at is not None:
-                self.bus.run(ScheduleDockItemLeave(item.id, leaves_at), actor, cause_id=event.id, environment_id=self.dock_environment(item))
-        for item in self.items.leaving(event.timestamp):
-            self.bus.run(RemoveDockItem(item.id), actor, cause_id=event.id, environment_id=self.dock_environment(item))
+                self.bus.run(ScheduleDockItemLeave(item.id, leaves_at), actor, cause_id=logged.id, environment_id=self.dock_environment(item))
+        for item in self.items.leaving(logged.timestamp):
+            self.bus.run(RemoveDockItem(item.id), actor, cause_id=logged.id, environment_id=self.dock_environment(item))
 
     def dock_environment(self, item: DockItem) -> int:
         return self.queries.query(Dock).find(item.dock_id).environment_id

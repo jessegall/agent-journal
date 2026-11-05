@@ -12,27 +12,27 @@ from core.modules.skills.listeners.skill_listener import SkillListener
 from core.modules.skills.support.main_agent_skills import MainAgentSkills
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.start_skills import StartSkills
+from core.base.change.created import Created
 
 
 
-class StartSkillsListener(SkillListener):
+class StartSkillsListener(SkillListener[Created[HookCall]]):
     """Requires startup skills for the prompt recipients declared by the suite."""
 
     name = "skills.start"
-    event = "hook_call.create"
 
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, catalogue: SkillCatalogue, start: StartSkills, suites: SuiteChoice, main_skills: MainAgentSkills) -> None:
         super().__init__(bus, actors, queries, catalogue, suites)
         self.start, self.main_skills = start, main_skills
 
-    def handle(self, event: LoggedEvent) -> None:
-        call = self.call(event)
+    def handle(self, event: Created[HookCall], logged: LoggedEvent) -> None:
+        call = self.call(logged)
         if not call.is_session_start or self.queries.query(Agent).find(call.agent_id).role not in self.suites.agent_policy(call.environment_id).prompt_roles:
             return
         if call.metadata.module_part(DRIVERS_MODULE).get("resumed"):
             return
         for skill in self.skills(call):
-            self.run(event, RequireSkill(call.agent_id, skill))
+            self.run(logged, RequireSkill(call.agent_id, skill))
 
     def skills(self, call: HookCall) -> list[str]:
         start = self.start.after_compaction(call.environment_id) if self.compacted(call) else self.start.session_start(call.environment_id)

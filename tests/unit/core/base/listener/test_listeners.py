@@ -22,32 +22,32 @@ from core.base.registry.registry import Registry
 from core.base.timestamp import Timestamp
 from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_model import Item
+from core.base.change.changed import Changed
+from core.base.change.created import Created
+from core.base.change.deleted import Deleted
 
 HANDLED: list[str] = []
 
 
-class FirstOnSave(SaveListener):
+class FirstOnSave(SaveListener[Changed[Item]]):
     name = "items.first"
-    event = "item.*"
 
-    def handle(self, change: Change[Model]) -> None:
+    def handle(self, event: Changed[Item], context: Context) -> None:
         HANDLED.append(self.name)
 
 
-class SecondOnSave(SaveListener):
+class SecondOnSave(SaveListener[Created[Item]]):
     name = "items.second"
-    event = "item.create"
 
-    def handle(self, change: Change[Model]) -> None:
+    def handle(self, event: Created[Item], context: Context) -> None:
         HANDLED.append(self.name)
         raise RuntimeError("the second listener failed")
 
 
-class ClearItemNotes(DeletionListener):
+class ClearItemNotes(DeletionListener[Deleted[Item]]):
     name = "notes.clear"
-    event = "item.delete"
 
-    def handle(self, change: Change[Model]) -> None:
+    def handle(self, event: Deleted[Item], context: Context) -> None:
         HANDLED.append(self.name)
 
 

@@ -1,5 +1,6 @@
 import pytest
 
+from core.base.change.touched import Touched
 from core.base.database.database import Database
 from core.base.journal_home import JournalHome
 from core.modules.drivers.listeners.hook_wait_file_listener import HookWaitFileListener
@@ -52,7 +53,7 @@ def test_the_hook_wait_a_person_sets_reaches_the_file_the_go_hook_reads(new_stor
     story.run_listeners()
     story.expect_rows(home.hook_wait_file.read_text().strip() == "12")
     story.container.get(Database).connection.execute("DELETE FROM settings")
-    story.container.get(HookWaitFileListener).handle(None)
+    story.container.get(HookWaitFileListener).handle(Touched(), None)
     story.expect_rows(not home.hook_wait_file.exists())
 
 

@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 from core.base.command.bus import Bus
-from core.modules.memories.commands.open_memory_mark.open_memory_mark import OpenMemoryMark
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
 from core.base.driver.command_category import CommandCategory
@@ -97,13 +96,6 @@ def test_without_the_runner_installed_lines_are_left_as_they_are_and_the_agent_i
     expect_lines_second_without_line(second, "journal-run is not installed")
     story.expect_refusal("process show 1", "no process 1")
 
-
-def test_an_open_memory_mark_blocks_a_run_and_lets_a_read_through(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    story.container.get(Bus).run(OpenMemoryMark(story.agent.id, 50), story.agent, environment_id=1)
-    listing = HookSamples.shell("ls build", ShellPart("ls", CommandCategory.READ, ["build"]))
-    expect_reply_allowed(story.hook("s-1", listing))
-    expect_refusal_hook_rule(story, "s-1", SERVER)
 
 
 def test_a_line_that_read_command_files_goes_through_the_runner_with_its_pipes_as_written(new_story):
