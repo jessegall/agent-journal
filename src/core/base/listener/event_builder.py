@@ -10,7 +10,7 @@ from core.base.model.model import Model
 from core.base.model.move import Move
 from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 
 M = TypeVar("M", bound=Model)
 
@@ -19,13 +19,13 @@ class EventBuilder:
     """Builds the typed event a commit listener declared from an entry of the event log: the row as it stands now,
     or nothing when the row is gone."""
 
-    def __init__(self, queries: Queries, tables: Tables, book: StateBook) -> None:
-        self.queries, self.tables, self.book = queries, tables, book
+    def __init__(self, rows: EventRows, tables: Tables, book: StateBook) -> None:
+        self.rows, self.tables, self.book = rows, tables, book
 
     def built(self, event_type: EventType, logged: LoggedEvent) -> object | None:
         if event_type.model is None or not issubclass(event_type.event_class, Changed):
             return event_type.event_class()
-        row = self.queries.query(event_type.model).filter(id=logged.row_id).first()
+        row = self.rows.find(event_type.model, logged.row_id)
         if row is None:
             return None
         event_class = self.event_class(event_type.event_class, logged)

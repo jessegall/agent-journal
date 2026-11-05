@@ -1,4 +1,5 @@
 from core.base.file_access import FileAccess
+from core.base.database.kept_rows import KeptRows
 import json
 import shlex
 
@@ -24,15 +25,17 @@ class AliasFileListener(CommitListener[FilePublishing | Touched[Alias]]):
     name = "aliases.alias-file"
     run_order = -1
 
-    def __init__(self, aliases: AliasQuery, home: JournalHome, names: AliasNames, shell_aliases: AliasShellAliases) -> None:
+    def __init__(self, aliases: AliasQuery, home: JournalHome, names: AliasNames, shell_aliases: AliasShellAliases, kept: KeptRows) -> None:
         self.aliases, self.home, self.names, self.shell_aliases = aliases, home, names, shell_aliases
+        self.kept = kept
 
     def handle(self, event: FilePublishing | Touched[Alias], logged: LoggedEvent) -> None:
         commands = self.names.command_names()
-        lines = {alias.name: self.line(alias) for alias in self.aliases.all_rows() if alias.name not in commands}
+        aliases = self.kept.read("aliases", self.aliases.all_rows, name="aliases.file_rows")
+        lines = {alias.name: self.line(alias) for alias in aliases if alias.name not in commands}
         self.home.alias_file.parent.mkdir(parents=True, exist_ok=True)
         FileAccess.shared().write(self.home.alias_file, json.dumps(lines))
-        FileAccess.shared().write(self.home.saved_command_file, json.dumps([alias.name for alias in self.aliases.all_rows() if alias.name in lines and alias.category and alias.category.is_long_running]))
+        FileAccess.shared().write(self.home.saved_command_file, json.dumps([alias.name for alias in aliases if alias.name in lines and alias.category and alias.category.is_long_running]))
 
     def line(self, alias: Alias) -> str:
         line = self.shell_aliases.resolved_line(alias.line)
