@@ -89,6 +89,9 @@ class Database:
         self.tally.loaded(rows, statement)
         return rows
 
+    def query_plan(self, statement: Statement) -> tuple[str, ...]:
+        return tuple(row[3] for row in self.connection.execute(f"EXPLAIN QUERY PLAN {statement.sql}", statement.parameters))
+
     def insert(self, statement: Statement) -> int:
         self.tally.count_write(statement.sql)
         row_id = statement.result(self.connection).lastrowid

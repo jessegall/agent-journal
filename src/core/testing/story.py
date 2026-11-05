@@ -269,6 +269,7 @@ def story_container(home: JournalHome, clock: ManualClock, process_table: "Fixed
     container.bind(SkillRequirement, StorySkillRequirement())
     container.bind(MainAgentSkills, StoryMainAgentSkills())
     container.bind(LoginPath, StoryLoginPath(home))
-    container.get(Database).tally = RepeatedWork()
+    database = container.get(Database)
+    database.tally = RepeatedWork(database)
     container.bind(TaskBriefRequirement, StoryTaskBriefRequirement())
     return container
