@@ -8,11 +8,11 @@ from core.modules.drivers.models.helper_job import HelperJob
 from core.base.change.changed import Changed
 
 
-class DispatchMarkListener(MarkListener[Changed[HelperJob]]):
-    """A subagent's dispatch shows as one mark in the chat with its instruction, which ends in place with what the
-    subagent returned, and a click opens the subagent once it has started."""
+class HelperJobMarkListener(MarkListener[Changed[HelperJob]]):
+    """A helper's job shows as one mark in the chat with its instruction, which ends in place with what the helper
+    returned, and a click opens the helper once it has started."""
 
-    name = "drivers.dispatch-mark"
+    name = "helpers.job-mark"
     disabled_scopes = [ActorScope]
     module_name = "journal.core.drivers"
 
@@ -21,6 +21,6 @@ class DispatchMarkListener(MarkListener[Changed[HelperJob]]):
         key = f"dispatch:{row.id}"
         table = AGENTS_TABLE if row.helper_id is not None else ""
         if row.ended_at is None:
-            self.show(logged, DispatchMarkType.DISPATCH, DispatchMarkVariant.DISPATCHED, f"Dispatched {row.profile} . {row.program_model}: {row.description}", row.environment_id, row.agent_id, table, row.helper_id, detail=row.instruction, key=key, ended=False)
+            self.show(logged, DispatchMarkType.DISPATCH, DispatchMarkVariant.DISPATCHED, f"Started {row.profile} . {row.program_model}: {row.description}", row.environment_id, row.agent_id, table, row.helper_id, detail=row.instruction, key=key, ended=False)
         else:
-            self.show(logged, DispatchMarkType.DISPATCH, DispatchMarkVariant.FINISHED, f"Finished {row.profile}: {row.description}", row.environment_id, row.agent_id, table, row.helper_id, detail=row.returned, key=key, ended=True)
+            self.show(logged, DispatchMarkType.DISPATCH, DispatchMarkVariant.FINISHED, f"Finished {row.profile}", row.environment_id, row.agent_id, table, row.helper_id, detail=row.returned, key=key, ended=True)
