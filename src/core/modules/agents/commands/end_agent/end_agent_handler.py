@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
@@ -13,11 +13,11 @@ class EndAgentHandler(Handler[EndAgent, Agent]):
 
     command = EndAgent
 
-    def __init__(self, queries: Queries, repository: Repository, suites: SuiteChoice) -> None:
-        self.queries, self.repository, self.suites = queries, repository, suites
+    def __init__(self, rows: EventRows, repository: Repository, suites: SuiteChoice) -> None:
+        self.rows, self.repository, self.suites = rows, repository, suites
 
     def handle(self, command: EndAgent, context: Context) -> Agent:
-        agent = self.queries.query(Agent).find(command.row_id)
+        agent = self.rows.required(Agent, command.row_id)
         if agent.ended_at is not None:
             raise Refusal(f"agent {agent.id} has ended already", f"journal agent show {agent.id}")
         return self.repository.save_change(agent, agent.ended(context.timestamp, self.suites.agent_policy(agent.environment_id)), context)

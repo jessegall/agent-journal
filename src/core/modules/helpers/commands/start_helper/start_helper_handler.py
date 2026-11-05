@@ -16,7 +16,6 @@ from core.modules.profiles.commands.count_profile_use.count_profile_use import C
 from core.modules.profiles.support.profile_files import ProfileFiles
 
 BRIEF_LIMIT_CHARACTERS = 100000
-TOOL_KEY = "journal helper start"
 SHORT_BRIEF_CHARACTERS = 200
 
 
@@ -43,7 +42,7 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
         model = self.limits.checked_model(program, command.program_model or profile.program_model(program), parent.environment_id)
         start = StartAgent(str(uuid4()), program, agent_type.key, parent.id, program_model=model, profile=profile.name, given_name=command.given_name, access=profile.access or agent_type.access)
         helper = self.bus.dispatch(start, context)
-        self.repository.save(HelperJob(environment_id=helper.environment_id, agent_id=parent.id, creator_id=context.actor.id, tool_key=TOOL_KEY, helper_id=helper.id, profile=profile.name, program_model=model,
+        self.repository.save(HelperJob(environment_id=helper.environment_id, agent_id=parent.id, creator_id=context.actor.id, tool_key=helper.session, helper_id=helper.id, profile=profile.name, program_model=model,
                                        description=command.given_name or profile.name, brief=command.brief, instruction=command.brief[:SHORT_BRIEF_CHARACTERS]), context)
         self.bus.dispatch(CountProfileUse(profile.name), context)
         return helper

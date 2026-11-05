@@ -6,6 +6,7 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.helpers.support.allowed_models import AllowedModels
@@ -16,12 +17,12 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 class HelperLimits:
     """Who may start a helper, on which model, and how many run in an environment at one time."""
 
-    def __init__(self, queries: Queries, settings: SettingValues, suites: SuiteChoice, models: AllowedModels, providers: Providers) -> None:
-        self.queries, self.settings, self.suites, self.models, self.providers = queries, settings, suites, models, providers
+    def __init__(self, queries: Queries, settings: SettingValues, suites: SuiteChoice, models: AllowedModels, providers: Providers, agents: AgentRows) -> None:
+        self.queries, self.settings, self.suites, self.models, self.providers, self.agents = queries, settings, suites, models, providers, agents
 
     def checked_parent(self, context: Context) -> Agent:
         if context.actor.type is ActorType.AGENT:
-            return self.checked_agent(self.queries.query(Agent).find(context.actor.id))
+            return self.checked_agent(self.agents.find(context.actor.id))
         if context.environment_id is None:
             raise Refusal("a helper starts in one environment", "name it with --environment")
         main = MainAgentFinder.newest(self.queries, context.environment_id)

@@ -10,7 +10,7 @@ defineProps({waitReason: {type: String, required: true}, stopped: Boolean, comma
     </span>
 </template>
 <style scoped>
-.agent-command { display:flex; min-width:0; color:var(--text-3); font-size:11px; }
+.agent-command { display:flex; min-width:0; max-width:60%; overflow:hidden; color:var(--text-3); font-size:11px; }
 .agent-waiting { padding:0; border:0; background:none; color:var(--accent-text); font:inherit; font-size:11.5px; cursor:pointer; }
 .agent-waiting:hover { text-decoration:underline; }
 </style>
