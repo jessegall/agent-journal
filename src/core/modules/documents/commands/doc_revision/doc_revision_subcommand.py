@@ -37,7 +37,5 @@ class DocRevisionSubcommand(ReadSubcommand[RevisionReading]):
         if not isinstance(value, RevisionReading):
             return
         revision = value.revision
-        output.line(f"doc {revision.doc_id}, revision {revision.number} of {value.count}: {revision.title}")
-        output.line(revision.abstract)
-        output.line("")
-        output.line(revision.body)
+        lines = (f"doc {revision.doc_id}, revision {revision.number} of {value.count}: {revision.title}", revision.abstract, "", revision.body)
+        output.write("\n".join(lines), {**output.values(revision), "count": value.count})
