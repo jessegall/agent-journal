@@ -1,15 +1,25 @@
+import {shallowRef} from "vue";
+
 // every follow of every window, kept by the host: a hidden window's events are held back and it hears one refresh
 // when it shows again, and the host stops a window's follows when it takes the window down or mounts it again
 export class WindowSubscriptions {
     constructor() {
-        this.follows = [];
+        this.following = shallowRef([]);
         this.held = new Set();
     }
 
     follow(window, patterns, heard, visible = () => true) {
         const follow = {window, patterns, heard, visible};
-        this.follows.push(follow);
-        return () => (this.follows = this.follows.filter((other) => other !== follow));
+        this.following.value = [...this.follows, follow];
+        return () => (this.following.value = this.follows.filter((other) => other !== follow));
+    }
+
+    get follows() {
+        return this.following.value;
+    }
+
+    get patterns() {
+        return [...new Set(this.follows.flatMap((follow) => follow.patterns))].sort();
     }
 
     count(window) {
@@ -17,7 +27,7 @@ export class WindowSubscriptions {
     }
 
     stopAll(window) {
-        this.follows = this.follows.filter((follow) => follow.window !== window);
+        this.following.value = this.follows.filter((follow) => follow.window !== window);
         this.held = new Set([...this.held].filter((follow) => follow.window !== window));
     }
 

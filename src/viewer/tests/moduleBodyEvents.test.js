@@ -27,6 +27,7 @@ test("a shipped body hears the events of the window that draws it, and stops whe
     const {host, app} = mountedBody({type: "questions.question", body_url: "/question-card.js", shipped: true});
     const heard = [];
     drawn.props.subscriptions.follow("questions.question", ["question.*"], (event) => heard.push(event.event));
+    expect(host.patterns).toEqual(["question.*"]);
     host.dispatch({event: "question.answer"});
     host.dispatch({event: "task.update"});
     expect(heard).toEqual(["question.answer"]);

@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
+from urllib.parse import urlencode
 
 from core.base.cli.console import ERROR_CODE
 from core.base.journal_home import JournalHome
@@ -174,6 +175,20 @@ class ServerStory:
 
     def expect_viewer_event_ids(self, cookie: str, cursor_id: int, count: int, ids: list[int]) -> None:
         assert self.viewer_event_ids(cookie, cursor_id, count) == ids
+
+    @contextmanager
+    def viewer_stream(self, cookie: str, cursor_id: int, patterns: list[str]):
+        port = self.viewer_port()
+        follows = [("follow", pattern) for pattern in patterns] or [("follow", "")]
+        query = urlencode([("cursor", str(cursor_id)), ("environment", "main"), *follows])
+        connection = http.client.HTTPConnection("127.0.0.1", port, timeout=TIMEOUT_SECONDS)
+        try:
+            connection.request("GET", f"/api/events?{query}", headers={"Host": f"127.0.0.1:{port}", "Cookie": cookie})
+            response = connection.getresponse()
+            assert response.status == 200, response.status
+            yield response
+        finally:
+            connection.close()
 
     def expect_health(self) -> None:
         answer = request_answer(self.socket_path, "GET", "/health")

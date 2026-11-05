@@ -1,6 +1,6 @@
 import {checkServer} from "../state/updating.js";
 import {transport} from "../api/transport.js";
-import {computed, shallowRef} from "vue";
+import {computed, shallowRef, toValue, watch} from "vue";
 import {withFamilyOptions} from "./chatOptions.js";
 import {browserCopy} from "./paneLayout.js";
 
@@ -90,9 +90,42 @@ export async function fetchWindowCatalogue(environment) {
 }
 
 // the stream resumes by itself from the last event it had; a break makes the page ask whether the server went away
-export function followEvents(environment, heard) {
-    const source = transport.stream(`/api/events?environment=${encodeURIComponent(environment)}`);
-    source.onmessage = (message) => heard(JSON.parse(message.data));
-    source.onerror = checkServer;
-    return () => source.close();
+export function followEvents(environment, heard, patterns = ["*.*"]) {
+    let source = null;
+    let cursor = null;
+    let active = "";
+    let requested = "";
+
+    function open() {
+        if (source && (active === requested || cursor === null)) return;
+        source?.close();
+        const query = new URLSearchParams({environment});
+        for (const pattern of requested.split("\n")) query.append("follow", pattern);
+        if (cursor !== null) query.set("cursor", String(cursor));
+        active = requested;
+        const opened = transport.stream(`/api/events?${query}`);
+        source = opened;
+        opened.addEventListener("cursor", (message) => {
+            if (source !== opened) return;
+            cursor = JSON.parse(message.data).id;
+            open();
+        });
+        opened.onmessage = (message) => {
+            if (source !== opened) return;
+            const event = JSON.parse(message.data);
+            cursor = event.id;
+            heard(event);
+        };
+        opened.onerror = checkServer;
+    }
+
+    const stop = watch(() => [...new Set(toValue(patterns))].sort().join("\n"), (next) => {
+        requested = next;
+        open();
+    }, {immediate: true});
+    return () => {
+        stop();
+        source?.close();
+        source = null;
+    };
 }
