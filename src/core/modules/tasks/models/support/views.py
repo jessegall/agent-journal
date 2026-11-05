@@ -37,3 +37,8 @@ ENVIRONMENT_CARDS_SELECT = (
     " (SELECT count(*) FROM tasks WHERE tasks.environment_id = environments.id AND tasks.state IN ('open', 'started', 'blocked', 'testing')) AS unfinished_task_count"
     " FROM environments"
 )
+
+
+def closed_task_counts_select(start_count: int) -> str:
+    sums = ", ".join("coalesce(sum(closed_at > ?), 0)" for _ in range(start_count))
+    return f"SELECT {sums} FROM tasks WHERE environment_id = ? AND closed_at > ?"

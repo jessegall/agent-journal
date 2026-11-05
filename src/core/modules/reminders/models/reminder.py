@@ -38,3 +38,14 @@ class Reminder(Model):
     @property
     def has_one_firing(self) -> bool:
         return self.single_use or self.due_at is not None
+
+    def interval_timestamp(self) -> Timestamp:
+        return self.last_fired_at or self.creation_timestamp()
+
+    def should_fire(self, timestamp: Timestamp, tool_uses: int, closed_tasks: int) -> bool:
+        if self.due_at is not None:
+            return self.due_at.value <= timestamp.value
+        elapsed_seconds = self.interval_timestamp().elapsed_seconds(timestamp)
+        return any((bool(self.interval_seconds) and elapsed_seconds >= self.interval_seconds,
+                    bool(self.interval_tool_uses) and tool_uses >= self.interval_tool_uses,
+                    bool(self.interval_tasks) and closed_tasks >= self.interval_tasks))

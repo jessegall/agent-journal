@@ -10,7 +10,7 @@ import (
 func standardNames(ctx context.Context, ok bool, err error) (context.Context, bool, error) { return ctx, ok, err }
 
 // @righteous naming_go_poetic_variable_name
-func databaseResult(result sql.Result) sql.Result { return result }
+func databaseResult(result sql.Result) (int64, error) { return result.LastInsertId() }
 
 func standardCalls() []int {
     // @righteous naming_go_poetic_variable_name

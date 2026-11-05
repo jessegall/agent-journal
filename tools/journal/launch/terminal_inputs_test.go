@@ -50,7 +50,7 @@ func TestALineTypedThroughTheSocketReachesTheAgentsTerminalWithItsEnter(t *testi
 		_, _ = io.ReadFull(reader, text)
 		received <- string(text)
 	}()
-	if answer := typedRequest(t, socket, WorkerRequest{AgentID: 7, Typed: "ls -la"}); answer != TypedAnswer {
+	if answer := typedRequest(t, socket, WorkerRequest{AgentID: 7, InputLine: "ls -la"}); answer != TypedAnswer {
 		t.Fatalf("the answer was %q", answer)
 	}
 	if text := <-received; text != "ls -la\r" {
@@ -66,7 +66,7 @@ func TestALineForAnAgentWithNoTerminalIsNotAnswered(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer listener.Close()
-	if answer := typedRequest(t, socket, WorkerRequest{AgentID: 9, Typed: "ls"}); answer != "" {
+	if answer := typedRequest(t, socket, WorkerRequest{AgentID: 9, InputLine: "ls"}); answer != "" {
 		t.Fatalf("the answer was %q", answer)
 	}
 }

@@ -1,3 +1,7 @@
+from collections.abc import Sequence
+from core.base.database.statement import Statement
+from core.base.timestamp import Timestamp
+from core.modules.tasks.models.support.views import closed_task_counts_select
 from typing import Self
 
 from core.base.database.database import Database
@@ -47,3 +51,10 @@ class TaskQuery(Query[Task]):
         free_tasks = self.open_tasks(environment_id).matching(IsNull("delegated_to")).matching(self.no_open_dependency()).matching(exclusion).all_rows()
         return min((task for task in free_tasks if task.id != excluded_id), key=lambda task: (-task.priority, task.id), default=None)
 
+
+    def closed_counts(self, environment_id: int, starts: Sequence[Timestamp]) -> list[int]:
+        if not starts:
+            return []
+        parameters = (*(start.text for start in starts), environment_id, min(start.text for start in starts))
+        row = self.database.rows(Statement(closed_task_counts_select(len(starts)), parameters))[0]
+        return [int(count) for count in row]

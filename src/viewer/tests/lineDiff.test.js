@@ -10,4 +10,10 @@ describe("lineDiff", () => {
             {key: "new:2", kind: "added", text: "four"},
         ]);
     });
+
+    it("keeps duplicate text lines distinct by their source position", () => {
+        const lines = lineDiff("same\nsame\nold", "same\nnew\nsame");
+        expect(new Set(lines.map((line) => line.key)).size).toBe(lines.length);
+        expect(lines.filter((line) => line.text === "same").map((line) => line.key)).toEqual(["old:0", "old:1"]);
+    });
 });

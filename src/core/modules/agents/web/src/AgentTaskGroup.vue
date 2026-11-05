@@ -6,18 +6,18 @@ const emit = defineEmits(["toggle"]);
 </script>
 
 <template>
-<FoldGroup :label="section.label" :count="section.tasks.length" :open="open" :data-agent-section="section.state" @toggle="emit('toggle')">
-    <template v-for="task in section.tasks" :key="task.id">
-        <button type="button" class="agent-task" :data-agent-delegated="task.id" @click="peekRef(`tasks:${task.id}`)">
-            <TaskStatusIcon :status="task.state" />
-            <span class="agent-task-number">{{ task.id }}</span>
-            <span class="agent-task-title">{{ task.title }}</span>
-            <template v-if="task.plan_id">
-                <span class="agent-task-plan" data-agent-task-plan :title="`Plan ${task.plan_id}: ${task.plan_title}`">Plan {{ task.plan_id }}: {{ task.plan_title }}</span>
-            </template>
-        </button>
-    </template>
-</FoldGroup>
+    <FoldGroup :label="section.label" :count="section.tasks.length" :open="open" :data-agent-section="section.state" @toggle="emit('toggle')">
+        <template v-for="task in section.tasks" :key="task.id">
+            <button type="button" class="agent-task" :data-agent-delegated="task.id" @click="peekRef(`tasks:${task.id}`)">
+                <TaskStatusIcon :status="task.state" />
+                <span class="agent-task-number">{{ task.id }}</span>
+                <span class="agent-task-title">{{ task.title }}</span>
+                <template v-if="task.plan_id">
+                    <span class="agent-task-plan" data-agent-task-plan :title="`Plan ${task.plan_id}: ${task.plan_title}`">Plan {{ task.plan_id }}: {{ task.plan_title }}</span>
+                </template>
+            </button>
+        </template>
+    </FoldGroup>
 </template>
 
 <style scoped>

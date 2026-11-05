@@ -35,7 +35,7 @@ type WorkerRequest struct {
 	Folder      string            `json:"folder"`
 	Command     []string          `json:"command"`
 	Variables   map[string]string `json:"variables"`
-	Typed       string            `json:"typed"`
+	InputLine   string            `json:"typed"`
 	Stop        bool              `json:"stop"`
 }
 
@@ -125,8 +125,8 @@ func answered(connection net.Conn, starter Starter, inputs *TerminalInputs) {
 		}
 		return
 	}
-	if request.Typed != "" {
-		if inputs.TypeLine(request.AgentID, request.Typed) {
+	if request.InputLine != "" {
+		if inputs.TypeLine(request.AgentID, request.InputLine) {
 			_, _ = io.WriteString(connection, TypedAnswer+"\n")
 		}
 		return

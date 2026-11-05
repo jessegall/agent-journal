@@ -19,7 +19,7 @@ const title = computed(() => {
 });
 const tasks = computed(() => props.facts?.tasks ?? []);
 const queuedTasks = computed(() => tasks.value.filter((task) => task.state === "open"));
-const job = computed(() => (props.facts?.show_job ? props.facts?.task_title || queuedTasks.value[0]?.title || "" : ""));
+const job = computed(() => (props.facts?.job_enabled ? props.facts?.task_title || queuedTasks.value[0]?.title || "" : ""));
 const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, props.row.role === "main" ? "" : props.progress ? `${props.row.role} ${props.row.id}` : props.row.role].filter(Boolean).join(" · "));
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);

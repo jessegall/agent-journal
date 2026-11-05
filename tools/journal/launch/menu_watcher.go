@@ -81,7 +81,7 @@ func (watcher *MenuWatcher) Watch(stop <-chan struct{}) {
 	}
 }
 
-// Look is one look at the screen: it answers a menu that waits and tells of it, and says what it pressed, or nil. The
+// CheckMenu checks the screen: it answers a menu that waits and tells of it, and says what it pressed, or nil. The
 // telling comes after the screen is free again, so a slow journal never holds up the program's output.
 func (watcher *MenuWatcher) CheckMenu() *MenuAnswer {
 	answer := watcher.answered()

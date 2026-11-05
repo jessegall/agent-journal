@@ -226,7 +226,7 @@ func (store *Store) PurgeItem(kind Kind, id int64, caller Caller) (int64, error)
 
 // ListItems lists one page of the items of a kind that are not removed, newest change first. Every word of search
 // has to be in one of the kind's search fields, and each row then carries an excerpt around the first word.
-func (store *Store) ListItems(kind Kind, search string, page, size int) (Page, error) {
+func (store *Store) ListItems(kind Kind, search string, pageNumber, size int) (Page, error) {
 	terms := strings.Fields(search)
 	conditions, arguments := "t.removed_at IS NULL", []any{}
 	for _, term := range terms {
@@ -237,8 +237,8 @@ func (store *Store) ListItems(kind Kind, search string, page, size int) (Page, e
 		}
 		conditions += " AND (" + strings.Join(alternatives, " OR ") + ")"
 	}
-	result := Page{Page: page, Size: size, Rows: []ItemRow{}}
-	if err := store.DB.QueryRow("SELECT count(*) FROM "+kind.Table+" t WHERE "+conditions, arguments...).Scan(&result.Total); err != nil {
+	page := Page{Page: pageNumber, Size: size, Rows: []ItemRow{}}
+	if err := store.DB.QueryRow("SELECT count(*) FROM "+kind.Table+" t WHERE "+conditions, arguments...).Scan(&page.Total); err != nil {
 		return Page{}, err
 	}
 	abstract := "''"
@@ -253,7 +253,7 @@ func (store *Store) ListItems(kind Kind, search string, page, size int) (Page, e
 	}
 	query := "SELECT " + columns + " FROM " + kind.Table + " t JOIN users c ON c.id = t.creator_id WHERE " + conditions +
 		" ORDER BY t.updated_at DESC, t.id DESC LIMIT ? OFFSET ?"
-	rows, err := store.DB.Query(query, append([]any{kind.Name}, append(arguments, size, (page-1)*size)...)...)
+	rows, err := store.DB.Query(query, append([]any{kind.Name}, append(arguments, size, (pageNumber-1)*size)...)...)
 	if err != nil {
 		return Page{}, err
 	}
@@ -273,9 +273,9 @@ func (store *Store) ListItems(kind Kind, search string, page, size int) (Page, e
 		if len(terms) > 0 {
 			row.Excerpt = excerptAround(terms[0], texts)
 		}
-		result.Rows = append(result.Rows, row)
+		page.Rows = append(page.Rows, row)
 	}
-	return result, rows.Err()
+	return page, rows.Err()
 }
 
 const updatedBySQL = `COALESCE((SELECT u.name FROM item_versions v JOIN users u ON u.id = v.user_id

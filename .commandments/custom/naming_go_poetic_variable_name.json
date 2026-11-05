@@ -83,6 +83,27 @@
                         "fileMatches": "(^|/)tools/journal-shared/"
                     }
                 ]
+            },
+            {
+                "all": [
+                    {
+                        "name": "result"
+                    },
+                    {
+                        "of": "closest:function",
+                        "descendant": {
+                            "all": [
+                                {
+                                    "kind": "CallExpr"
+                                },
+                                {
+                                    "of": "child:fun",
+                                    "textMatches": "^result\\.(LastInsertId|RowsAffected)$"
+                                }
+                            ]
+                        }
+                    }
+                ]
             }
         ]
     },
