@@ -2,6 +2,7 @@ package launch
 
 import (
 	"bufio"
+	"bytes"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -12,6 +13,15 @@ import (
 
 // TerminalLinesKept is how many of its last terminal lines the log of one agent keeps.
 const TerminalLinesKept = 2000
+
+// TerminalLineBytes is the longest line a log keeps, and TerminalLogBytes about how much of the log it keeps.
+const (
+	TerminalLineBytes = 64 * 1024
+	TerminalLogBytes  = 4 * 1024 * 1024
+)
+
+// cutMark ends a line that was too long to keep whole.
+const cutMark = " [line cut]"
 
 // escapeCodes are the terminal's colour and cursor sequences, left out of the lines the log keeps.
 var escapeCodes = regexp.MustCompile(`\x1b\[[0-9;?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(\x07|\x1b\\)|\x1b[@-Z\\-_]`)
@@ -24,6 +34,8 @@ type TerminalLog struct {
 	pending   []byte
 	number    int
 	lineCount int
+	size      int
+	cutting   bool
 	lock      sync.Mutex
 }
 
@@ -43,6 +55,9 @@ func OpenTerminalLog(path string) (*TerminalLog, error) {
 		return nil, err
 	}
 	log := &TerminalLog{path: path, file: file, lineCount: len(lines)}
+	if info, statErr := file.Stat(); statErr == nil {
+		log.size = int(info.Size())
+	}
 	if len(lines) > 0 {
 		log.number, _ = strconv.Atoi(strings.SplitN(lines[len(lines)-1], "\t", 2)[0])
 	}
@@ -55,15 +70,40 @@ func (log *TerminalLog) Write(output []byte) (int, error) {
 	defer log.lock.Unlock()
 	log.pending = append(log.pending, output...)
 	for {
-		end := strings.IndexByte(string(log.pending), '\n')
+		end := bytes.IndexByte(log.pending, '\n')
 		if end < 0 {
-			return len(output), nil
+			return len(output), log.keepLongPending()
 		}
-		if err := log.keep(string(log.pending[:end])); err != nil {
+		if err := log.keepFinished(end); err != nil {
 			return 0, err
 		}
 		log.pending = log.pending[end+1:]
 	}
+}
+
+// keepLongPending cuts a line that outgrew the limit before its end arrived, and drops the rest of it as it comes.
+func (log *TerminalLog) keepLongPending() error {
+	if log.cutting {
+		log.pending = log.pending[:0]
+		return nil
+	}
+	if len(log.pending) <= TerminalLineBytes {
+		return nil
+	}
+	err := log.keep(string(log.pending[:TerminalLineBytes]) + cutMark)
+	log.pending, log.cutting = log.pending[:0], true
+	return err
+}
+
+func (log *TerminalLog) keepFinished(end int) error {
+	if log.cutting {
+		log.cutting = false
+		return nil
+	}
+	if end > TerminalLineBytes {
+		return log.keep(string(log.pending[:TerminalLineBytes]) + cutMark)
+	}
+	return log.keep(string(log.pending[:end]))
 }
 
 // Close keeps the last unfinished line and closes the file.
@@ -74,7 +114,7 @@ func (log *TerminalLog) Close() error {
 		_ = log.keep(string(log.pending))
 		log.pending = nil
 	}
-	if log.lineCount > TerminalLinesKept {
+	if log.lineCount > TerminalLinesKept || log.size > TerminalLogBytes {
 		_ = log.trimmed()
 	}
 	return log.file.Close()
@@ -87,11 +127,13 @@ func (log *TerminalLog) keep(raw string) error {
 		text = text[index+1:]
 	}
 	log.number++
-	if _, err := log.file.WriteString(strconv.Itoa(log.number) + "\t" + text + "\n"); err != nil {
+	line := strconv.Itoa(log.number) + "\t" + text + "\n"
+	if _, err := log.file.WriteString(line); err != nil {
 		return err
 	}
 	log.lineCount++
-	if log.lineCount >= 2*TerminalLinesKept {
+	log.size += len(line)
+	if log.lineCount >= 2*TerminalLinesKept || log.size >= 2*TerminalLogBytes {
 		return log.trimmed()
 	}
 	return nil
@@ -102,10 +144,14 @@ func (log *TerminalLog) trimmed() error {
 	if len(lines) > TerminalLinesKept {
 		lines = lines[len(lines)-TerminalLinesKept:]
 	}
-	if err := os.WriteFile(log.path, []byte(strings.Join(lines, "\n")+"\n"), 0o600); err != nil {
+	text := strings.Join(lines, "\n") + "\n"
+	for len(text) > TerminalLogBytes {
+		text = text[strings.IndexByte(text, '\n')+1:]
+	}
+	if err := os.WriteFile(log.path, []byte(text), 0o600); err != nil {
 		return err
 	}
-	log.lineCount = len(lines)
+	log.lineCount, log.size = strings.Count(text, "\n"), len(text)
 	return nil
 }
 

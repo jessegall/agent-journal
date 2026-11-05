@@ -2,6 +2,7 @@ from core.base.agent_role import AgentRole
 from core.base.change.logged_event import LoggedEvent
 from core.base.actor import Actor
 from core.base.command.bus import Bus
+from core.base.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
@@ -29,15 +30,18 @@ class HelperEndedListener(CommitListener[AgentEnded]):
     name = "helpers.helper-ended"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, jobs: HelperJobRows, resume: HelperResume, bus: Bus, launcher: LauncherLink) -> None:
-        self.queries, self.jobs, self.resume, self.bus, self.launcher = queries, jobs, resume, bus, launcher
+    def __init__(self, queries: Queries, jobs: HelperJobRows, resume: HelperResume, bus: Bus, launcher: LauncherLink, home: JournalHome) -> None:
+        self.queries, self.jobs, self.resume, self.bus, self.launcher, self.home = queries, jobs, resume, bus, launcher, home
 
     def handle(self, event: AgentEnded, logged: LoggedEvent) -> None:
         helper = event.row
         if helper.role != AgentRole.HELPER:
             return
         open_jobs = [job for job in self.jobs.helper_jobs(helper.id) if job.ended_at is None]
-        if not open_jobs or self.is_paused(helper):
+        if not open_jobs:
+            self.home.terminal_file(helper.id).unlink(missing_ok=True)
+            return
+        if self.is_paused(helper):
             return
         waiting = self.queries.query(AgentLine).filter(session_agent_id=helper.id, state=AgentLineState.WAITING, source=HELPER_JOB_SOURCE).oldest().first()
         if waiting is not None:
@@ -45,6 +49,7 @@ class HelperEndedListener(CommitListener[AgentEnded]):
             return
         stopped = logged.actor_id != helper.id
         self.end_job(helper, open_jobs[-1], STOPPED if stopped else "", logged)
+        self.home.terminal_file(helper.id).unlink(missing_ok=True)
         if stopped:
             self.launcher.stop(helper.id)
 

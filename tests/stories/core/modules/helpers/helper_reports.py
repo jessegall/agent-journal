@@ -203,3 +203,9 @@ def test_a_helper_with_no_cost_is_held_by_time_alone(new_story):
     story.run(f"setting set {HELPER_MAX_COST} 5 --project", actor=story.user)
     enforced(story, 1)
     story.expect_rows(the_helper(story).ended_at is None)
+
+
+def test_a_retired_helpers_terminal_log_goes_with_it(new_story):
+    story = new_story(fixture=StartedHelper)
+    exited(story, 0, "some output")
+    story.expect_rows(not story.home.terminal_file(the_helper(story).id).exists())
