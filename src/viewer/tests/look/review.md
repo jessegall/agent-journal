@@ -52,7 +52,7 @@ Lines marked open differ from version 4 in content or toolbar that these windows
 | # | Item | Difference | State |
 |---|------|------------|-------|
 | S1 | Agent state | Dot, Working or Ended, program, role and session | fixed (already drawn, kept) |
-| S2 | Helpers running | Version 4 shows a count in the status bar; version 5 draws "N helpers" there, opening Subagents | fixed |
+| S2 | Helpers running | Version 4 shows a count in the status bar; version 5 draws "N helpers" there, opening Helpers | fixed |
 | S3 | Open tasks | Counted from the tasks not completed or cancelled, opening Tasks | fixed |
 | S4 | Questions waiting | Counted from the open questions, opening Questions | fixed |
 | S5 | Uptime | Minutes the agent process has run | fixed (already drawn, kept) |

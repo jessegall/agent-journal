@@ -3,6 +3,7 @@ from collections import Counter
 
 from core.base.actor import CORE_ACTOR_ID
 from core.base.actor_type import ActorType
+from core.base.access import Access
 from core.base.agent_role import AgentRole
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
@@ -17,6 +18,8 @@ TABLE = "agents"
 ENDED = "ended"
 SEPARATOR = ":"
 HELPERS = "sent_agents"
+
+VERSION_FOUR_CHILD_ROLE = "subagent"
 
 
 class AgentsMove(VersionFourMove):
@@ -36,14 +39,14 @@ class AgentsMove(VersionFourMove):
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
         roles = list(context.role_names)
         for row in source.rows(TABLE):
-            role = row["role"] or AgentRole.MAIN.value
+            role = self.moved_role(row["role"] or AgentRole.MAIN.value)
             if not row["session"]:
                 report.drop("agents without a session", 1)
             elif role not in roles:
                 report.skip(TABLE, row["id"], f"role {row['role']} is none of {', '.join(roles)}")
             else:
                 created = row["created_at"] or context.timestamp
-                ended = (row["updated_at"] or created) if row["state"] == ENDED else None
+                ended = (row["updated_at"] or created) if row["state"] == ENDED or role == AgentRole.HELPER else None
                 report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row["session"], row["environment_id"], row["provider"], role,
                                                                                          creators.actor_id(row["creator"]), created, row["updated_at"] or created, ended)))
         self.move_missing_sessions(source, rows, map, report, roles)
@@ -62,7 +65,7 @@ class AgentsMove(VersionFourMove):
             if not session or self.is_subagent_session(session) or session in sessions or map.new_id("environments", span["environment_id"]) is None:
                 continue
             helper = helpers.get(session)
-            role = helper["helper_type"] if helper else AgentRole.MAIN.value
+            role = self.moved_role(helper["helper_type"]) if helper else AgentRole.MAIN.value
             program = helper["provider"] if helper else subagent_programs.get(session, common_program)
             if role not in roles or not program:
                 report.note(f"session {session} made rows but had no agent row, no known role and program: its rows name the core")
@@ -72,6 +75,10 @@ class AgentsMove(VersionFourMove):
             moved += 1
         if moved:
             report.note(f"{moved} sessions that made rows but had no version 4 agent row moved as ended agents")
+
+    @staticmethod
+    def moved_role(role: str) -> str:
+        return AgentRole.HELPER.value if role == VERSION_FOUR_CHILD_ROLE else role
 
     @staticmethod
     def is_subagent_session(session: str) -> bool:
@@ -84,4 +91,4 @@ class AgentsMove(VersionFourMove):
     def insert(self, rows: RowInsert, session: str, environment_id: int, program: str, role: str, creator_id: int, created: str, updated: str, ended: str | None) -> int:
         actor_id = rows.insert("actors", {"creator_id": creator_id, "type": ActorType.AGENT.value, "name": session, "created_at": created, "updated_at": created})
         return rows.insert(TABLE, {"id": actor_id, "environment_id": environment_id, "creator_id": creator_id, "session": session, "program": program,
-                                   "role": role, "ended_at": ended, "created_at": created, "updated_at": updated})
+                                   "role": role, "access": Access.READ.value if role == AgentRole.HELPER else Access.WRITING.value, "ended_at": ended, "created_at": created, "updated_at": updated})

@@ -46,7 +46,7 @@ test("a plugin card is drawn in the tone its variant names, and any other varian
     expect(markLook({id: 3, text: "words", variant: "note", created_at: "2026-11-01T10:00:00Z"}, kind).tone).toBe("");
 });
 
-test("a worker's mark and a dispatch whose subagent started each open that agent, and a dispatch with none yet opens nothing", () => {
+test("a worker's mark and a dispatch whose helper started each open that agent, and a dispatch with none yet opens nothing", () => {
     for (const row of [{id: 1, text: "Mr. Ampere started task 3", target_model: "agents", target_id: 57}, {id: 2, text: "Started journal-researcher", target_model: "agents", target_id: 57}]) {
         const look = markLook(row, {click: "open row"});
         expect(look.action).toBe("Open the agent");

@@ -60,7 +60,7 @@ test("the workers dropdown shows a skeleton for the minimum when another tab is 
 
 test("an open agent card shows a skeleton for the minimum when another tab is chosen", async () => {
     const tabs = [{key: "tasks", label: "Tasks", read: "usage agents", count_field: "tasks"}, {key: "transcript", label: "Transcript", read: "agent transcript", count_field: ""}];
-    const options = {working: true, waiting: true, idle: true, stopped: true, environment: true, worker: true, subagent: true, order: "number", every: false};
+    const options = {working: true, waiting: true, idle: true, stopped: true, environment: true, worker: true, helper: true, order: "number", every: false};
     const agents = [{id: 4, session: "s-two", program: "claude", role: "worker", ended_at: null}];
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, {
         ...context({"agent list": page(agents), "agent running": page(agents), "usage agents --closed": page([]), "agent transcript 4": page([{id: 1, author: "user", text: "Read the cart"}])}),

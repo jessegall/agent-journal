@@ -302,7 +302,7 @@ test("bars: an agent bar names the agent's state and task, and an information ba
 });
 
 test("bars: each window button carries its own icon before its own label", async () => {
-    const offered = ["questions.waiting", "agents.helpers"].map((name) => ({name, module: "journal", title: name === "questions.waiting" ? "Waiting" : "Subagents", icon: "window", options: [], allowed: true, unavailable_reason: ""}));
+    const offered = ["questions.waiting", "agents.helpers"].map((name) => ({name, module: "journal", title: name === "questions.waiting" ? "Waiting" : "Helpers", icon: "window", options: [], allowed: true, unavailable_reason: ""}));
     const catalogue = new WindowCatalogue(async () => ({windows: offered}));
     catalogue.windows.value = offered;
     const store = paneLayout({saved: async () => null, defaults: async () => ({tabs: ["messages.chat"], active: "messages.chat"}), save: async () => ({ok: true, version: 1}), tab: {read: () => null, write: () => {}}, entry: () => null});

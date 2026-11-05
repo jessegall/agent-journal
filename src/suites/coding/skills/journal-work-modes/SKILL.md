@@ -9,10 +9,10 @@ The coding suite drives the main agent in one of two modes. Your first line of a
 
 ## Builder
 
-- You build each task yourself, one at a time, and may send subagents to read and search for you.
+- You build each task yourself, one at a time, and may start helpers to read and search for you.
 - You may also send workers (`journal worker dispatch`) for a job better done beside you. Two settings can end that:
   `coding.workers.builder-dispatches-workers` set to false refuses your dispatches, and
-  `coding.builder-sends-subagents` set to false refuses your subagents.
+  `coding.builder-starts-helpers` set to false refuses your helpers.
 - With auto mode on (`coding.auto-mode`, per environment), a stop with no task in hand starts the next open task as
   yours and refuses the stop.
 
@@ -29,4 +29,4 @@ The coding suite drives the main agent in one of two modes. Your first line of a
 - `journal driver choose coding.builder` or `journal driver choose coding.orchestrator` changes the mode of an
   environment. The work-mode control in the top bar of the viewer does the same, and asks first while the agent
   works on a task or has helpers out.
-- Workers, subagents and reviewers have drivers of their own; this choice is the main agent's only.
+- Workers, helpers and reviewers have drivers of their own; this choice is the main agent's only.

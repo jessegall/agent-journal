@@ -73,7 +73,7 @@ test("the recent moves list the newest with their times, and one that has a row 
     expect(moves[1].querySelector(".dot").classList.contains("bad")).toBe(true);
 });
 
-test("the subagents, the skills and the details are folds that start closed, and the details use plain labels", async () => {
+test("the helpers, the skills and the details are folds that start closed, and the details use plain labels", async () => {
     const {element} = opened(WORKER);
     await settle();
     expect(element.querySelectorAll("[data-agent-fold]")).toHaveLength(3);
@@ -105,7 +105,7 @@ const MAIN = {
     "usage agents": {rows: [facts({id: 1, given_name: "Ada", profile: "", cost_dollars: 537.93, context_percent: 57, instruction: "", tasks: []})]},
     "usage agent 1": inspection({id: 1, started_by: "You", task: {id: 5649, title: "Sidebar: pages only for what is a page"}, plan: {id: 91, title: "Sidebar", phase: 2, done: 6, total: 9}}),
     "usage tool --agent 1": {tool: "", thinking: true, wait_target: ""},
-    "agent list --parent 1": {rows: [{id: 22, role: "subagent", given_name: "Curie", profile: "explorer"}], total: 1},
+    "agent list --parent 1": {rows: [{id: 22, role: "helper", given_name: "Curie", profile: "explorer"}], total: 1},
     "agent-skill list --agent 1": {rows: [], total: 0},
 };
 
@@ -125,7 +125,7 @@ test("the main agent is titled without a number, shows the tasks done of its pla
     expect([...element.querySelectorAll("[data-agent-foot] [data-move]")].map((move) => move.dataset.move)).toEqual(["pause", "stop"]);
     element.querySelectorAll("[data-agent-fold]")[0].click();
     await settle();
-    expect(text(element, "[data-agent-subagent]")).toBe("CurieSubagent 22");
+    expect(text(element, "[data-agent-helper]")).toBe("CurieSubagent 22");
 });
 
 const ENDED = {
@@ -151,7 +151,7 @@ test("an ended worker says how long it ran and what it finished, reads no tool a
 });
 
 const SUBAGENT = {
-    "agent show 22": row({id: 22, role: "subagent", parent_id: 1}),
+    "agent show 22": row({id: 22, role: "helper", parent_id: 1}),
     "usage agents": {rows: [facts({id: 22, given_name: "Curie", profile: "explorer", model: "Haiku 4.5", effort: "", context_percent: 9, cost_dollars: 0.07, instruction: "Find where the queue gives a command its place, and say which file holds the rule. Reply with the file and the line."})]},
     "usage agent 22": inspection({id: 22}),
     "usage tool --agent 22": {tool: "Read src/core/modules/processes/support/run_slots.py", thinking: false, wait_target: ""},
@@ -159,10 +159,10 @@ const SUBAGENT = {
     "agent-skill list --agent 22": {rows: [], total: 0},
 };
 
-test("a subagent shows its instruction, no tasks an hour and its parent, and asks nothing of a worker", async () => {
+test("a helper shows its instruction, no tasks an hour and its parent, and asks nothing of a worker", async () => {
     const {element, lines} = opened(SUBAGENT, {id: 22});
     await settle();
-    expect(text(element, "[data-resource-title]")).toBe("Subagent 22");
+    expect(text(element, "[data-resource-title]")).toBe("Helper 22");
     expect(texts(element, "[data-agent-cell] small")).toEqual(["Running for", "Context used", "Cost", "Failed runs"]);
     expect(text(element, "[data-agent-now]")).toContain("It has no task. It was given an instruction.");
     expect(text(element, ".band, [data-agent-brief]")).not.toBe("");

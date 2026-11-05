@@ -56,6 +56,7 @@ from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_shows import WindowShows
 from core.base.viewer.window_tab import WindowTab
 from core.modules.agents.bindings.agent_caller_resolver import AgentCallerResolver
+from core.modules.agents.migrations.m011_helper_rows import HelperRowsMigration
 from core.modules.agents.commands.record_parent_report.record_parent_report_handler import RecordParentReportHandler
 from core.modules.agents.support.report_nudges import REPORT_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
@@ -77,7 +78,7 @@ class AgentsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [ModelDeclaration(Agent, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"])]
     moves = [AgentsMove]
-    migrations = [MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration]
+    migrations = [HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration]
     nudges = [*LAUNCH_FAILURE_NUDGES, *REPORT_NUDGES]
     handlers = [RecordParentReportHandler, RecordAgentLaunchFailureHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
     subcommands = [ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand]

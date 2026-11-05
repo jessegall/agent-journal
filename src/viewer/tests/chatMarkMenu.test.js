@@ -62,8 +62,8 @@ test("Main updates only switches a group's kinds without a main mark off on the 
 
 // the kinds as the modules declare them, with the group label every kind carries unformatted and two families that once shared a title
 const DECLARED = [
-    {type: "dispatch", family: "drivers.dispatches", family_title: "Subagent dispatches", group: "agent", group_label: "{family}: {count} updates", shown: true, main: true},
-    {type: "subagent", family: "agents.helpers", family_title: "Subagents", group: "agent", group_label: "{family}: {count} subagent updates", shown: true, main: true},
+    {type: "dispatch", family: "drivers.dispatches", family_title: "Helper dispatches", group: "agent", group_label: "{family}: {count} updates", shown: true, main: true},
+    {type: "helper", family: "agents.helpers", family_title: "Helpers", group: "agent", group_label: "{family}: {count} helper updates", shown: true, main: true},
     {type: "fault", family: "chat.faults", family_title: "Faults", group: "journal", group_label: "{family}: {count} updates", shown: false, main: false},
     {type: "task", family: "tasks.tasks", family_title: "Tasks", group: "work", group_label: "{family}: {count} updates", shown: true, main: true},
     {type: "memory", family: "memories.memories", family_title: "Memories", group: "reminders", group_label: "{family}: {count} updates", shown: true, main: true},
@@ -83,7 +83,7 @@ test("each group is named in plain words and no entry of the menu repeats", asyn
     const {element} = await opened(realMenu);
     expect([...element.querySelectorAll("[data-group]")].map((heading) => heading.textContent)).toEqual(["The agent", "The journal", "Work", "Reminders"]);
     const switches = [...element.querySelectorAll('[data-option^="show-"]:not([data-option="show-preset"])')].map((entry) => entry.textContent.replace("✓", "").trim());
-    expect(switches).toEqual(["Subagent dispatches", "Subagents", "Faults", "Tasks", "Memories"]);
+    expect(switches).toEqual(["Helper dispatches", "Helpers", "Faults", "Tasks", "Memories"]);
     expect(new Set(switches).size).toBe(switches.length);
     const keys = [...element.querySelectorAll("[data-option]")].map((entry) => entry.dataset.option);
     expect(new Set(keys).size).toBe(keys.length);

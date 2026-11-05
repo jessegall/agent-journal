@@ -134,9 +134,9 @@ test("a dropdown opens under the button that asked for it", () => {
 
 test("the helpers dropdown holds every kind under its own header with a count", () => {
     const catalogue = {dropdown: () => null, window: () => null, skeleton: () => [], loaded: {value: false}};
-    const groups = [{name: "agents.helpers", title: "Subagents", count: 1}, {name: "workers.workers", title: "Workers", count: 2}, {name: "reviews.reviewers", title: "Reviewers", count: 0}];
+    const groups = [{name: "agents.helpers", title: "Helpers", count: 1}, {name: "workers.workers", title: "Workers", count: 2}, {name: "reviews.reviewers", title: "Reviewers", count: 0}];
     const element = mounted(WindowDropdown, {groups, catalogue, subscriptions: {}, environment: "main"});
-    expect([...element.querySelectorAll("[data-dropdown-group]")].map((head) => head.textContent.trim())).toEqual(["Subagents1", "Workers2", "Reviewers0"]);
+    expect([...element.querySelectorAll("[data-dropdown-group]")].map((head) => head.textContent.trim())).toEqual(["Helpers1", "Workers2", "Reviewers0"]);
 });
 
 test("the pause button shows paused at once, resume shows working, and a refusal puts it back", async () => {

@@ -16,7 +16,7 @@ task 12, plan 3, message 7: write both, so the chat links it.
 
 - An environment is one line of work in this project, with its own agents, tasks and chat.
 - A task is the work in hand and a plan orders tasks; a message or a question is what you and the user say to each other.
-- A memory keeps what matters past the context window, a rule holds for every agent until it is removed; a subagent reads a
+- A memory keeps what matters past the context window, a rule holds for every agent until it is removed; a helper reads a
   bounded subject for its parent agent.
 - A sequence is steps followed one at a time; an output is a command's output, kept and read by its number.
 

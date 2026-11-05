@@ -5,7 +5,7 @@ description: Send a worker to write a bounded job, check its proofs and merge it
 
 # Workers
 
-A subagent only reads. A worker writes, in a worktree of its own, on one task whose brief is its whole prompt.
+A helper only reads. A worker writes, in a worktree of its own, on one task whose brief is its whole prompt.
 
 ## As the one who sends
 

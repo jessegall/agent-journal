@@ -36,7 +36,7 @@ async function check(id, width, height, name, expectedTitle, ended) {
     assert.ok(facts.scrollBottom <= facts.footTop + 1, "the middle scrolls above the foot");
     assert.ok(facts.overflow <= 0, `the middle overflows sideways by ${facts.overflow}`);
     assert.deepEqual(facts.bands.slice(0, 2), ["Doing now", "Recent"]);
-    assert.deepEqual(facts.bands.slice(-3), ["Subagents", "Skills loaded", "Details"]);
+    assert.deepEqual(facts.bands.slice(-3), ["Helpers", "Skills loaded", "Details"]);
     if (ended) assert.ok(facts.ended.startsWith("Ended") && facts.moves.length === 0);
     else assert.ok(facts.moves.includes("pause") && facts.moves.includes("stop"));
     if (facts.cellCount * 100 > width) assert.ok(facts.lines > 1, "the strip wraps when its cells do not fit in one line");

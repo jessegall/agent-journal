@@ -7,7 +7,7 @@ import {TimeAgo} from "@journal/window-kit";
 import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
 import Agents from "../../core/modules/agents/web/src/agents.js";
-import Subagents from "../../core/modules/agents/web/src/helpers.js";
+import Helpers from "../../core/modules/agents/web/src/helpers.js";
 import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue";
 import {age, ago} from "../src/format/time.js";
 
@@ -25,7 +25,7 @@ afterEach(() => (document.body.innerHTML = ""));
 
 const AGENTS = [
     {id: 2, session: "s-live", program: "claude", role: "main", state: "running", ended_at: null},
-    {id: 3, session: "s-sub", program: "claude", role: "subagent", state: "running", ended_at: null},
+    {id: 3, session: "s-sub", program: "claude", role: "helper", state: "running", ended_at: null},
     {id: 1, session: "s-old", program: "codex", role: "worker", state: "retired", ended_at: "2026-11-01T10:00:00Z"},
 ];
 
@@ -51,8 +51,8 @@ const WORKERS = AGENTS.map((row) => (row.id === 3 ? {...row, role: "worker"} : r
 const window = (facts = FACTS, options = {}, agents = AGENTS) => ({
     ...context({
         "agent list --show running": page(agents.filter((row) => !row.ended_at)),
-        "agent list --show idle": page(agents.filter((row) => row.ended_at && row.role === "subagent")),
-        "agent list --show retired": page(agents.filter((row) => row.ended_at && row.role !== "subagent")),
+        "agent list --show idle": page(agents.filter((row) => row.ended_at && row.role === "helper")),
+        "agent list --show retired": page(agents.filter((row) => row.ended_at && row.role !== "helper")),
         "agent list --show all": page(agents),
         ...answers, "usage agents --closed": page(facts),
     }),
@@ -76,15 +76,15 @@ test("the agents window filters on running, idle, retired or all", async () => {
     expect(cardOf(element, 1)).not.toBeNull();
 });
 
-test("an idle subagent's card opens its report", async () => {
-    const subagent = {...AGENTS[1], state: "idle", ended_at: "2026-11-02T10:00:00Z"};
-    const held = window(FACTS, {}, [subagent]);
+test("an idle helper's card opens its report", async () => {
+    const helper = {...AGENTS[1], state: "idle", ended_at: "2026-11-02T10:00:00Z"};
+    const held = window(FACTS, {}, [helper]);
     const read = held.read;
     held.read = (line) => line.startsWith("agent transcript 3") ? Promise.resolve(page([{id: 1, author: "assistant", text: "The review is complete"}])) : read(line);
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, held);
     document.body.append(element);
     await pickButton(element, "Idle");
-    cardOf(element, subagent.id).click();
+    cardOf(element, helper.id).click();
     await settle();
     expect(element.textContent).toContain("The review is complete");
 });
@@ -94,7 +94,7 @@ test("a card is two lines: the profile, name and time, then the provider, model 
     const card = cardOf(element, 3);
     expect(card.querySelector("[data-agent-title]").textContent).toBe("Journal-researcher");
     expect(card.querySelector("[data-agent-name]").textContent).toBe("Madame Curie");
-    expect(card.querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · subagent");
+    expect(card.querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · helper");
     expect(card.querySelector(".agent-dot").dataset.state).toBe("blocked");
     expect(card.textContent).not.toContain("Running");
     expect(card.querySelector("[data-agent-instruction]")).toBeNull();
@@ -214,23 +214,23 @@ test("a running worker's card names the command it runs", async () => {
     await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("Bash make test"));
 });
 
-test("a running subagent's card names the command it runs", async () => {
-    const subagent = {id: 6, session: "s-1", program: "claude", role: "subagent", ended_at: null};
-    const lines = {"agent list": page([subagent]), "agent running": page([subagent]), "usage agents --closed": page([]), "usage tool --agent 6": {ok: true, value: {tool: "Read src/cart.py", note: ""}}};
+test("a running helper's card names the command it runs", async () => {
+    const helper = {id: 6, session: "s-1", program: "claude", role: "helper", ended_at: null};
+    const lines = {"agent list": page([helper]), "agent running": page([helper]), "usage agents --closed": page([]), "usage tool --agent 6": {ok: true, value: {tool: "Read src/cart.py", note: ""}}};
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
     await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("Read src/cart.py"));
 });
 
 test("an agent that has just ended reads just now, never now ago", async () => {
-    const ended = {id: 6, session: "s-1", program: "claude", role: "subagent", ended_at: new Date().toISOString()};
+    const ended = {id: 6, session: "s-1", program: "claude", role: "helper", ended_at: new Date().toISOString()};
     const element = await mounted({render: () => h(AgentCard, {row: ended})}, context({}));
     expect(element.querySelector(".agent-time").textContent).toBe("just now");
 });
 
-test("an open subagent's card has no tabs: its instruction folded above its transcript", async () => {
-    const subagent = {id: 6, session: "s-1", program: "claude", role: "subagent", ended_at: null};
+test("an open helper's card has no tabs: its instruction folded above its transcript", async () => {
+    const helper = {id: 6, session: "s-1", program: "claude", role: "helper", ended_at: null};
     const lines = {"usage tool --agent 6": {ok: true, value: {tool: "", note: ""}}, "agent transcript 6": page([])};
-    const element = await mounted({render: () => h(AgentCard, {row: subagent, facts: {instruction: "Read the cart"}, open: true})}, context(lines));
+    const element = await mounted({render: () => h(AgentCard, {row: helper, facts: {instruction: "Read the cart"}, open: true})}, context(lines));
     expect(element.querySelector("[data-inner-tabs]")).toBeNull();
     expect(element.querySelector("[data-agent-only-transcript]")).not.toBeNull();
     expect(element.querySelector("[data-agent-section='instruction']").textContent).toContain("Instruction");
@@ -276,15 +276,15 @@ test("how long ago something happened reads the same from a row's time and from 
     expect([...element.querySelectorAll("[data-time-ago]")].map((time) => time.textContent)).toEqual(["4m ago", "4m ago"]);
 });
 
-test("a running subagent that ran no command says so plainly", async () => {
-    const subagent = {id: 6, session: "s-1", program: "claude", role: "subagent", ended_at: null};
-    const lines = {"agent list": page([subagent]), "agent running": page([subagent]), "usage agents --closed": page([]), "usage tool --agent 6": {ok: true, value: {tool: "", note: "has run no command yet"}}};
+test("a running helper that ran no command says so plainly", async () => {
+    const helper = {id: 6, session: "s-1", program: "claude", role: "helper", ended_at: null};
+    const lines = {"agent list": page([helper]), "agent running": page([helper]), "usage agents --closed": page([]), "usage tool --agent 6": {ok: true, value: {tool: "", note: "has run no command yet"}}};
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
     await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("has run no command yet"));
 });
 
-test("an ended subagent and the main agent show no command line", async () => {
-    const ended = {id: 6, session: "s-1", program: "claude", role: "subagent", ended_at: "2026-11-01T10:00:00Z"};
+test("an ended helper and the main agent show no command line", async () => {
+    const ended = {id: 6, session: "s-1", program: "claude", role: "helper", ended_at: "2026-11-01T10:00:00Z"};
     const main = {id: 1, session: "s-main", program: "claude", role: "main", ended_at: null};
     const lines = {"agent list": page([ended, main]), "agent running": page([main]), "usage agents --closed": page([])};
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
@@ -411,12 +411,12 @@ test("an open card's instruction has no fixed height and takes the room of its b
 
 // message 101362: nothing is ever hidden, even for a pane that saved a switch off in an older version
 test("a switch saved off hides no agent, and no line speaks of hidden agents", async () => {
-    const element = await drawn(FACTS, {subagent: false, waiting: false, working: false});
+    const element = await drawn(FACTS, {helper: false, waiting: false, working: false});
     expect(listed(element)).toEqual([2, 3]);
     expect(element.textContent).not.toContain("Hidden");
 });
 
-test.each([["agents", Agents], ["helpers", Subagents]])("the %s window keeps the server's age order regardless of state or saved order", async (name, component) => {
+test.each([["agents", Agents], ["helpers", Helpers]])("the %s window keeps the server's age order regardless of state or saved order", async (name, component) => {
     const rows = [
         {id: 5, session: "oldest", program: "claude", role: "worker", ended_at: null, created_at: "2026-11-01T09:00:00Z", updated_at: "2026-11-01T12:00:00Z"},
         {id: 6, session: "middle", program: "claude", role: "worker", ended_at: null, created_at: "2026-11-01T10:00:00Z", updated_at: "2026-11-01T10:00:00Z"},

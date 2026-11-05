@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import {chromium} from "playwright-core";
 
-const [address, worker, subagent, capture] = process.argv.slice(2);
+const [address, worker, helper, capture] = process.argv.slice(2);
 const browser = await chromium.launch({executablePath: process.env.CHROMIUM_PATH, headless: true});
 try {
     const page = await browser.newPage({viewport: {width: 1000, height: 960}, reducedMotion: "reduce"});
@@ -12,7 +12,7 @@ try {
     const first = window.locator(`[data-agent-open="${worker}"]`);
     assert.equal(await first.getAttribute("role"), "button");
     assert.equal(await first.locator(".agent-name + .agent-chevron").count(), 1);
-    for (const id of [worker, subagent]) {
+    for (const id of [worker, helper]) {
         const card = window.locator(`[data-agent-open="${id}"]`);
         await card.click();
         if (id === worker) await card.locator('[data-tab="transcript"]').click();

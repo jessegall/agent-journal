@@ -18,7 +18,7 @@ afterEach(() => (document.body.innerHTML = ""));
 // task 5944: one card open at a time, filling the window, the rest held back behind a band that counts them
 const AGENTS = [
     {id: 2, session: "s-live", program: "claude", role: "main", ended_at: null},
-    {id: 3, session: "s-sub", program: "claude", role: "subagent", ended_at: null},
+    {id: 3, session: "s-sub", program: "claude", role: "helper", ended_at: null},
     {id: 4, session: "s-two", program: "claude", role: "worker", ended_at: null},
     {id: 5, session: "s-three", program: "claude", role: "worker", ended_at: null},
 ];
@@ -26,7 +26,7 @@ const TABS = [
     {key: "tasks", label: "Tasks", read: "usage agents", count_field: "tasks"},
     {key: "transcript", label: "Transcript", read: "agent transcript", count_field: ""},
 ];
-const OPTIONS = {working: true, waiting: true, idle: true, stopped: true, environment: true, worker: true, subagent: true, order: "number", every: false};
+const OPTIONS = {working: true, waiting: true, idle: true, stopped: true, environment: true, worker: true, helper: true, order: "number", every: false};
 const drawn = async () => {
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, {
         ...context({"agent list --show running --search \"worker\"": page(AGENTS.filter((row) => row.role === "worker")), "agent list": page(AGENTS), "agent running": page(AGENTS), "usage agents --closed": page([]), "agent transcript 4": page([{id: 1, author: "user", text: "Read the cart"}])}),
