@@ -1,0 +1,19 @@
+from core.base.query.queries import Queries
+from core.modules.plans.models.phase import Phase
+from core.modules.plans.models.plan_outline_task import PlanOutlineTask
+from core.modules.plans.support.plan_outline import PlanOutline
+from core.modules.plans.support.outline_phase import OutlinePhase
+from core.modules.plans.support.outline_task import OutlineTask
+
+
+class PlanOutlines:
+    """Reads a plan's phases and tasks in order."""
+
+    def __init__(self, queries: Queries) -> None:
+        self.queries = queries
+
+    def outline(self, plan_id: int) -> PlanOutline:
+        places = tuple(sorted(self.queries.query(PlanOutlineTask).filter(plan_id=plan_id).all_rows(), key=lambda place: (place.phase_position, -place.priority, place.task_id)))
+        phases = tuple(self.queries.query(Phase).filter(plan_id=plan_id).ordered("position").all_rows())
+        return PlanOutline(plan_id, tuple(OutlinePhase(phase.id, phase.title, phase.goal, tuple(OutlineTask(place.task_id, place.title, place.state.value, place.helper_id, place.helper_name) for place in places if place.phase_id == phase.id),
+                                                       phase.checkpoint) for phase in phases))

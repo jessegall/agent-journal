@@ -1,0 +1,32 @@
+/* a markdown table anywhere text is drawn: bordered, and scrolling sideways when it is wider than its place */
+.md table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 0 12px;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: 12.5px;
+}
+
+.md th,
+.md td {
+    min-width: 8rem;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+    overflow-wrap: normal;
+}
+
+/* a column of sentences keeps a width that reads; the table scrolls sideways in its own box when the columns do not fit */
+.md th.text-column,
+.md td.text-column {
+    min-width: 14em;
+}
+
+.md th {
+    color: var(--text);
+    background: var(--raised);
+    font-weight: 600;
+}

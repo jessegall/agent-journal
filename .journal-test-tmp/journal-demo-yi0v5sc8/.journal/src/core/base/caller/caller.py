@@ -1,0 +1,16 @@
+from dataclasses import dataclass
+
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
+
+
+@dataclass(frozen=True)
+class Caller:
+    """Who runs a command line and where: the actor, and the environment it runs in, if any."""
+
+    actor: Actor
+    environment_id: int | None = None
+
+    @property
+    def read_actor_id(self) -> int | None:
+        return self.actor.id if self.actor.type is ActorType.AGENT else None

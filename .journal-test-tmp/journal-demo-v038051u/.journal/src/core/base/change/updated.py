@@ -1,0 +1,15 @@
+from collections.abc import Sequence
+from dataclasses import dataclass
+
+from core.base.change.changed import Changed, M
+from core.base.model.model import Model
+from core.base.model.move import Move
+
+
+@dataclass(frozen=True)
+class Updated(Changed[M]):
+    """A row saved with new values and no move."""
+
+    @classmethod
+    def pattern(cls, model: type[Model], moves: Sequence[Move]) -> str:
+        return f"{model.model_name}.update"

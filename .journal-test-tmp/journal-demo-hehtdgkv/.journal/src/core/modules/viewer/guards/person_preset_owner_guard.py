@@ -1,0 +1,12 @@
+from core.base.refusal import Refusal
+from core.modules.viewer.guards.person_row_guard import PersonRowGuard
+from core.modules.viewer.models.person_preset import PersonPreset
+from core.base.change.changed import Changed
+from core.base.command.context import Context
+
+
+class PersonPresetOwnerGuard(PersonRowGuard[Changed[PersonPreset]]):
+    """Refuses a preset of a person written by anyone but the person it is for."""
+
+    name = "viewer.person-preset-owner"
+    refusal = Refusal("only a person keeps a layout", "the viewer saves a preset when the person saves one")

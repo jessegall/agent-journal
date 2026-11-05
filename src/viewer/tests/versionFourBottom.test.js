@@ -23,13 +23,14 @@ test("a button has no visible border unless it is asked to be bordered", () => {
 });
 
 test("the dock's text action buttons and Dump files are the bordered ones", () => {
-    expect(read("../src/chat/DockWrapper.vue")).toMatch(/<Btn small :kind="button\.primary \? 'primary' : 'ghost'" :bordered="!button\.primary" :data-dock-action="button\.action"/);
+    expect(read("../src/chat/DockWrapper.vue")).toMatch(/<Btn\s+small\s+:kind="button\.primary \? 'primary' : 'ghost'"\s+:bordered="!button\.primary"\s+:data-dock-action="button\.action"/);
     expect(read("../../core/modules/messages/web/src/Chat.vue")).toMatch(/<Btn small bordered class="composer-send" data-dump-files/);
 });
 
 // task 5476: the sidebar and the breadcrumb as version 4 drew them
-test("docked cards stand a small gap apart", () => {
-    expect(read("../src/chat/DockStack.vue")).toMatch(/\.dock-stack \{[^}]*flex-direction: column;[^}]*gap: 6px;/);
+test("docked cards stand together with a line below the stack", () => {
+    expect(read("../src/chat/DockStack.vue")).toMatch(/\.dock-stack \{[^}]*flex-direction: column;[^}]*border-bottom: 1px solid var\(--border\);/);
+    expect(read("../src/chat/DockStack.vue")).not.toMatch(/\.dock-stack \{[^}]*gap:/);
 });
 
 test("the sidebar has a header, a fold per module, counts and a foot, and the page a breadcrumb", () => {

@@ -17,7 +17,7 @@ try {
     }
     await page.goto(link.href);
     if (face === "phone") await page.locator('[data-face="phone"]').waitFor();
-    const card = page.locator('.chat-dock-card[aria-label="Tax rules"]');
+    const card = page.getByRole("region", {name: "Tax rules, waiting for you", exact: true});
     const button = card.getByRole("button", {name: "Review the plan", exact: true});
     await button.waitFor();
     assert.equal(await button.count(), 1);

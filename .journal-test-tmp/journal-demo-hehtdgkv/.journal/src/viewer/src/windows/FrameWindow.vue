@@ -1,0 +1,42 @@
+<script setup>
+import {h} from "vue";
+import FrameContent from "./FrameContent.vue";
+import WindowHost from "./WindowHost.vue";
+
+const props = defineProps({
+    entry: {type: Object, required: true},
+    subscriptions: {type: Object, required: true},
+    environment: {type: String, required: true},
+    agent: {type: Number, default: null},
+    visible: {type: Boolean, default: true},
+    permissions: {type: Object, default: () => ({reads: [], runs: [], missing: [], ask: async () => true})},
+    prompts: {type: Object, default: null},
+    options: {type: Object, default: () => ({})},
+});
+const emit = defineEmits(["option"]);
+const component = {render: () => h(FrameContent, {src: props.entry.entry_url})};
+</script>
+
+<template>
+    <WindowHost
+        :key="entry.entry_url"
+        :name="entry.name"
+        :component="component"
+        :subscriptions="subscriptions"
+        :environment="environment"
+        :agent="agent"
+        :visible="visible"
+        :permissions="permissions"
+        :prompts="prompts"
+        :options="options"
+        :declared="entry.options"
+        :auto-scroll="entry.auto_scroll"
+        :tabs="entry.tabs"
+            :sources="entry.sources"
+            :links="entry.links"
+        :search="entry.search"
+        :events="entry.events || []"
+        :unavailable-reason="entry.unavailable_reason || ''"
+        @option="(key, value) => emit('option', key, value)"
+    />
+</template>

@@ -1,0 +1,90 @@
+from collections import defaultdict
+
+from core.base.command.bus import Bus
+from core.base.command.context import Context
+from core.base.command.handler import Handler
+from core.base.connection_status import ConnectionStatus
+from core.base.internet_connection import InternetConnection
+from core.base.journal_home import JournalHome
+from core.base.query.conditions.among import Among
+from core.base.query.conditions.greater import Greater
+from core.base.query.queries import Queries
+from core.base.scope.actor_scope import ActorScope
+from core.modules.agents.models.agent import Agent
+from core.modules.drivers.models.agent_activity import AgentActivity
+from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.support.nudger import Nudger
+from core.modules.processes.models.reader_request import ReaderRequest
+from core.modules.processes.queries.process_query import ProcessQuery
+from core.modules.reviews.models.review import Review
+from core.modules.reviews.models.enums.review_state import ReviewState
+from core.modules.settings.bindings.support.setting_values import SettingValues
+from core.modules.tasks.models.task import Task
+from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.waits.models.wait import Wait
+from core.modules.waits.models.enums.wait_state import WaitState
+from suites.coding.modules.workers.commands.send_silent_agent_lines.send_silent_agent_lines import SendSilentAgentLines
+from suites.coding.modules.workers.commands.report_silent_agent.report_silent_agent import ReportSilentAgent
+from suites.coding.modules.workers.models.proof import Proof
+from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_STATES
+from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.support.worker_job import SILENT_AGENT_SOURCE
+from suites.coding.modules.workers.support.worker_nudges import SILENT_AGENT_CONTINUE, SILENT_WORKER_CONTINUE
+from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES
+from suites.coding.modules.workers.support.worker_stop import WorkerStop
+from suites.coding.support.coding_agent_role import CodingAgentRole
+
+RECOVERY_ATTEMPTS = 3
+
+
+class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
+    """Sends a bounded sequence of waking lines to silent agents with work, excluding explicit waits and runs."""
+
+    command = SendSilentAgentLines
+    disabled_scopes = [ActorScope]
+
+    def __init__(self, home: JournalHome, queries: Queries, settings: SettingValues,
+                 processes: ProcessQuery, nudger: Nudger, bus: Bus, stop: WorkerStop) -> None:
+        self.home, self.queries, self.settings = home, queries, settings
+        self.processes, self.nudger, self.bus, self.stop = processes, nudger, bus, stop
+
+    def handle(self, command: SendSilentAgentLines, context: Context) -> None:
+        connection = InternetConnection.shared(self.home)
+        if connection.status is not ConnectionStatus.ONLINE:
+            return
+        agents = tuple(self.queries.query(Agent).filter(environment_id=command.environment_id).all_rows())
+        agent_ids = tuple(agent.id for agent in agents)
+        activities = {row.id: row for row in self.queries.query(AgentActivity).matching(Among("id", agent_ids)).all_rows()}
+        tasks = tuple(self.queries.query(Task).filter(environment_id=command.environment_id).matching(Among("state", [TaskState.OPEN, TaskState.STARTED])).all_rows())
+        working = {agent_id for task in tasks for agent_id in [task.holder_id, task.delegated_to] if agent_id is not None}
+        workers = {row.agent_id for row in self.queries.query(Worktree).filter(environment_id=command.environment_id).all_rows()}
+        excluded = self.waiting(agent_ids, command.environment_id, context)
+        lines: dict[int, list[AgentLine]] = defaultdict(list)
+        for line in self.queries.query(AgentLine).matching(Among("agent_id", agent_ids)).filter(source=SILENT_AGENT_SOURCE).oldest().all_rows():
+            lines[line.agent_id].append(line)
+        span = self.settings.minutes(SILENT_AGENT_MINUTES, command.environment_id)
+        for agent in agents:
+            has_work = agent.id in working or (agent.role == CodingAgentRole.MAIN and bool(tasks))
+            activity = activities[agent.id]
+            if not has_work or agent.id in excluded or agent.paused_at is not None or not activity.is_inactive(context.timestamp, span.count):
+                continue
+            if agent.ended_at is not None and (agent.id not in workers or self.stop.was_stopped(agent)):
+                continue
+            activity_at = activity.last_hook_at if activity.last_hook_at is not None else activity.created_at
+            attempts = [line for line in lines[agent.id] if line.creation_timestamp() > activity_at
+                        and (connection.reconnected_at is None or line.creation_timestamp() >= connection.reconnected_at)]
+            if attempts and attempts[-1].creation_timestamp().elapsed_seconds(context.timestamp) < span.count * 2 ** len(attempts):
+                continue
+            if len(attempts) >= RECOVERY_ATTEMPTS:
+                self.bus.dispatch(ReportSilentAgent(agent.id, "three waking lines got no hook", activity_at), context)
+                continue
+            declaration = SILENT_WORKER_CONTINUE if agent.id in workers else SILENT_AGENT_CONTINUE
+            self.nudger.send(agent.id, declaration, SILENT_AGENT_SOURCE, context)
+
+    def waiting(self, agent_ids: tuple[int, ...], environment_id: int, context: Context) -> set[int]:
+        excluded = {row.agent_id for row in self.processes.environment(environment_id).running().all_rows()}
+        excluded.update(row.agent_id for row in self.queries.query(Wait).matching(Among("agent_id", agent_ids)).filter(state=WaitState.OPEN).all_rows())
+        excluded.update(row.creator_id for row in self.queries.query(Proof).matching(Among("creator_id", agent_ids)).matching(Among("state", TEST_WAITING_STATES)).all_rows())
+        excluded.update(row.requester_id for row in self.queries.query(Review).filter(environment_id=environment_id).matching(Among("state", [ReviewState.QUEUED, ReviewState.REVIEWING])).all_rows())
+        excluded.update(row.creator_id for row in self.queries.query(ReaderRequest).matching(Among("creator_id", agent_ids)).filter(completed_at=None).matching(Greater("expires_at", context.timestamp.text)).all_rows())
+        return excluded

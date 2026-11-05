@@ -1,0 +1,34 @@
+from argparse import ArgumentParser, Namespace
+
+from core.base.caller.caller import Caller
+from core.base.environment_names import EnvironmentNames
+from core.base.query.queries import Queries
+from core.base.refusal import Refusal
+from core.base.subcommand.output import Output
+from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
+
+
+class AgentMainSubcommand(ReadSubcommand[Agent | None]):
+    """`journal agent main [--environment <name>]`: the main agent running in the environment, if one is."""
+
+    cli_name = "agent"
+    name = "main"
+
+    def __init__(self, queries: Queries, environment_names: EnvironmentNames) -> None:
+        self.queries, self.environment_names = queries, environment_names
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("--environment")
+
+    def read(self, arguments: Namespace, caller: Caller) -> Agent | None:
+        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        if environment_id is None:
+            raise Refusal("the main agent is shown for one environment", "name it with --environment")
+        running = MainAgentFinder.rows(self.queries, environment_id)
+        return running[0] if running else None
+
+    def write_output(self, value: object, output: Output) -> None:
+        running_id = value.id if isinstance(value, Agent) else None
+        output.write(f"agent {running_id}" if running_id is not None else "no main agent is running", {"id": running_id})

@@ -1,0 +1,36 @@
+from argparse import ArgumentParser, Namespace
+
+from core.base.caller.caller import Caller
+from core.base.container import Container
+from core.base.environment_names import EnvironmentNames
+from core.base.model.model import Model
+from core.base.page import Page
+from core.base.refusal import Refusal
+from core.base.dotted_path.dotted_path import DottedPath
+from core.base.registry.registry import Registry
+from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.base.viewer.window_searcher import WindowSearcher
+
+
+class WindowSearchSubcommand(ReadSubcommand[Page[Model]]):
+    """`journal window search <window> [<words>...]`: the rows the search the window declares finds for the words."""
+
+    cli_name = "window"
+    name = "search"
+
+    def __init__(self, registry: Registry, container: Container, environments: EnvironmentNames) -> None:
+        self.registry, self.container, self.environments = registry, container, environments
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("window")
+        parser.add_argument("words", nargs="*")
+        parser.add_argument("--environment")
+
+    def read(self, arguments: Namespace, caller: Caller) -> Page[Model]:
+        if not self.registry.has_window(arguments.window):
+            raise Refusal(f"no installed module declares the window {arguments.window}", "journal window permissions lists the windows")
+        searcher = self.registry.window(arguments.window).search.get("searcher")
+        if not isinstance(searcher, str):
+            raise Refusal(f"{arguments.window} declares no search", "a window declares one with search=WindowSearch(...) on its WindowDeclaration")
+        environment_id = self.environments.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        return self.container.get(DottedPath(searcher).checked_class(WindowSearcher)).found(arguments.words, environment_id)

@@ -62,7 +62,7 @@ test.each(["mark", "dock"])("a third party's %s asks with its label and line, an
     const {windows, writes} = await started();
     loadMarkDeclarations([{type: "acme.note", module: BUTTON.module, shipped: false, buttons: [BUTTON]}]);
     loadDockDeclarations([{type: "acme.note", module: BUTTON.module, shipped: false, buttons: [BUTTON]}]);
-    const item = {id: 7, type: "acme.note", target_id: 12};
+    const item = {id: 7, type: "acme.note", target_model: "note", target_id: 12};
     const element = await drawn(windows, place === "mark" ? MarkHost : DockWrapper, place === "mark" ? {mark: item} : {item});
     element.querySelector(place === "mark" ? ".mark-button" : '[data-dock-action="declared"]').click();
     await settle();

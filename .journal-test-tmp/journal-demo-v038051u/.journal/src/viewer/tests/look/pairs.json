@@ -1,0 +1,93 @@
+[
+    {
+        "name": "messages",
+        "report": "The chat: messages",
+        "version4": "messages-v4.png",
+        "version5": "messages-v5.png",
+        "version5Does": "Same: a rounded card per message with the time under it, markdown in the text, the user's cards set apart from the agent's. Better: a card also shows who the message is for when it is a reply."
+    },
+    {
+        "name": "marks",
+        "report": "The chat: marks",
+        "version4": "marks-v4.png",
+        "version5": "marks-v5.png",
+        "version5Does": "Same: one muted line of about 28 pixels with the row's own title, no check mark. Better: the line's icon takes its tone from the mark's outcome, and a mark with detail opens in place."
+    },
+    {
+        "name": "docked",
+        "report": "The chat: docked items",
+        "version4": "docked-v4.png",
+        "version5": "docked-v5.png",
+        "version5Does": "Same: a bordered card with the row's icon, title, a line of its text, and open, dock and close buttons. Better: the card counts down its own leaving time and holds while the pointer is on it."
+    },
+    {
+        "name": "pins",
+        "report": "The chat: pins",
+        "version4": "pins-v4.png",
+        "version5": "pins-v5.png",
+        "version5Does": "Same: a strip above the chat with a dot, the text, a button with the link and a close cross. Better: a pin belongs to the pins module, so a module without pins shows no strip."
+    },
+    {
+        "name": "composer",
+        "report": "The chat: the composer",
+        "version4": "composer-v4.png",
+        "version5": "composer-v5.png",
+        "version5Does": "Same: a tall rounded box, placeholder Message the agent, an attach button, Dump files, the running tool under the last message and a button to scroll to the top. Better: the box grows with its text."
+    },
+    {
+        "name": "dump-files",
+        "report": "The chat: the composer",
+        "version4": "dump-files-v4.png",
+        "version5": "dump-files-v5.png",
+        "version5Does": "Same: Dump files starts a dump from what the person pastes or drops, a part to a paragraph or file. Better: the form opens in place above the composer, and the dump is made through the dumps module's own command."
+    },
+    {
+        "name": "top-bars",
+        "report": "The bars at the top",
+        "version4": "top-bars-v4.png",
+        "version5": "top-bars-v5.png",
+        "version5Does": "Same: an agent bar and an information bar, and window buttons that each carry their own icon before their label. Better: the bars are drawn by the shell from what the modules declare, so a new module's figure needs no shell change."
+    },
+    {
+        "name": "top-bars-1024",
+        "report": "The bars at the top",
+        "version4": "top-bars-1024-v4.png",
+        "version5": "top-bars-1024-v5.png",
+        "version5Does": "Same: the bars fit at 1024 wide with nothing cut off. Better: the window buttons that do not fit fold into a More menu, so Presets and Full screen always stay on screen."
+    },
+    {
+        "name": "side-panels-left",
+        "report": "The side panels",
+        "version4": "side-panels-left-v4.png",
+        "version5": "side-panels-left-v5.png",
+        "version5Does": "Same: a left sidebar listing the suite's pages and the environments with New environment. Better: the pages come from the suite's declaration, never from a list in the shell."
+    },
+    {
+        "name": "side-panels-right",
+        "report": "The side panels",
+        "version4": "side-panels-right-v4.png",
+        "version5": "side-panels-right-v5.png",
+        "version5Does": "Same: an Activity panel on the right. Better: it is a window like any other, so it can also be split, moved or detached."
+    },
+    {
+        "name": "bottom",
+        "report": "Docks at the bottom and borderless buttons",
+        "version4": "bottom-v4.png",
+        "version5": "bottom-v5.png",
+        "version5Does": "Same: docked items sit under the chat history above the composer, and buttons draw no border except Open and Dump files. Better: nothing yet; version 5's sidebar still lacks version 4's grouped sections and count badges."
+    },
+    {
+        "name": "sidebar",
+        "report": "The sidebar and the breadcrumb",
+        "version4": "sidebar-v4.png",
+        "version5": "sidebar-v5.png",
+        "version5Does": "Same: a header with the project mark, foldable sections with a caret, counts beside windows, the version at the foot, and a breadcrumb of project, environment and page. Better: the windows sit in one section per module."
+    },
+    {
+        "name": "settings",
+        "report": "The settings page",
+        "version4": "settings-v4.png",
+        "version5": "settings-v5.png",
+        "version5Does": "Same: a search field, a list of sections beside the settings, labels above their values, calm spacing and no native selects. Better: one section per module, and a flag draws as a pill that fills when on."
+    }
+]

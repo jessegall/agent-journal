@@ -1,5 +1,5 @@
-import {afterEach, expect, test} from "vitest";
-import {context, mounted, settle} from "./support/windowContext.js";
+import {afterEach, expect, test, vi} from "vitest";
+import {context, mounted, mountedDock, settle} from "./support/windowContext.js";
 import PlanCards from "../../core/modules/plans/web/src/PlanCards.vue";
 import PlanDock from "../../core/modules/plans/web/src/PlanDock.vue";
 
@@ -37,9 +37,8 @@ test("a plan card shows the plan, its bar and who has it, in one row for none, o
 test("a plan's dock card lists each agent working on the plan once, above its phases", async () => {
     const outline = {delegated: true, agents: AGENTS, phases: [{id: 1, title: "Build", tasks: [{id: 1}, {id: 2}]}]};
     const window = context({"plan outline": {ok: true, value: outline}});
-    window.option = () => ({value: {target_id: 5}});
-    const element = await mounted(PlanDock, window);
-    await settle();
+    const element = await mountedDock(PlanDock, window, {target_id: 5});
+    await vi.waitFor(() => expect(element.textContent).toContain("Build"));
     expect([...element.querySelectorAll("[data-plan-dock-agent]")].map((agent) => agent.textContent)).toEqual(["Lady Lovelace"]);
     expect(element.textContent).toContain("Build");
 });

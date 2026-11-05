@@ -1,0 +1,31 @@
+from core.modules.tasks.support.task_nudges import BLOCKED_TASKS
+from core.base.driver.agent_hook import AgentHook
+from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_event_name import HookEventName
+from core.base.driver.rule_answer import RuleAnswer
+from core.modules.drivers.queries.hook_call_query import HookCallQuery
+from core.modules.tasks.queries.task_query import TaskQuery
+from core.base.agent_role import AgentRole
+
+BLOCKED_TASK_PAGE_SIZE = 10
+
+
+class BlockedWorkRule(DriverRule):
+    """A stop with nothing in hand and nothing open, while tasks of the environment are blocked, is
+    refused once to name them; the next stop goes through."""
+
+    name = "tasks.blocked-work-at-stop"
+    hook = HookEventName.STOP
+    drivers = ["*"]
+    roles = [AgentRole.MAIN]
+
+    def __init__(self, tasks: TaskQuery, calls: HookCallQuery) -> None:
+        self.tasks, self.calls = tasks, calls
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        if self.tasks.holder(hook.agent_id).started().exists() or self.tasks.open_tasks(hook.environment_id).exists():
+            return RuleAnswer.allowed()
+        blocked = self.tasks.unopenable_blocks(hook.environment_id).oldest().page(1, BLOCKED_TASK_PAGE_SIZE).rows
+        if not blocked or self.calls.last_stop_refused(hook.agent_id):
+            return RuleAnswer.allowed()
+        return RuleAnswer.refused(BLOCKED_TASKS.nudge(tasks=', '.join(str(task.id) for task in blocked)))

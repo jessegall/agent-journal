@@ -1,0 +1,134 @@
+import {lineBatch} from "./lineBatch.js";
+import {afterSkeletonMinimum} from "../../kit/skeletonMinimum.js";
+import {transport} from "../api/transport.js";
+import {computed, ref} from "vue";
+import {matches} from "./windowSubscriptions.js";
+import {covered, serverBack} from "../state/updating.js";
+export {OPEN_VIEW, WINDOW_CONTEXT, useWindow} from "@journal/window-kit";
+
+// the page a pane stage draws, given to the windows in its panes
+export const PANE_PAGE = Symbol("pane-page");
+
+const FAILURES = {1: "refused", 2: "usage", 3: "fault"};
+const READ_COALESCE_MS = 100;
+const QUIET_AFTER_READS_MS = 50;
+const WORD = /(?:[^\s"'\\]|\\[\s\S]|"(?:\\[\s\S]|[^"\\])*"|'[^']*')+/g;
+const QUOTED = /'([^']*)'|"((?:\\[\s\S]|[^"\\])*)"|\\([\s\S])/g;
+
+// what every window is given: its name, environment, agent and page, whether it is shown, what it may run, its follows
+// through the host, the search it declares, whether it is only looked at, and the one row it is shown for (a share session), read and run, which never throw and answer {ok, value} or {ok, failure, error}, and its own settings, one of its pane's options written through setOption
+export function windowContext({window, environment, agent, visible, permissions, events = [], subscriptions, open, options = ref({}), declared = [], page = null, setOption = () => {}, autoScroll = "", tabs = [], sources = [], links = {}, search = {}, readOnly = false, shared = null}) {
+    const recent = new Map();
+    // every request this window makes carries this signal, so the window ending (a tab switched, the page left) cancels them all
+    const requests = new AbortController();
+    // true once the window's first reads have answered and no read followed them, which is when its skeleton gives way; it stays true, so a later read never brings the skeleton back
+    const answered = ref(false);
+    const startedAt = performance.now();
+    let reading = 0;
+    let quiet = 0;
+    const settle = () => {
+        clearTimeout(quiet);
+        quiet = setTimeout(() => {
+            if (reading === 0) afterSkeletonMinimum(startedAt, () => (answered.value = true));
+        }, QUIET_AFTER_READS_MS);
+    };
+    const read = (line) => {
+        const last = recent.get(line);
+        if (last && performance.now() - last.at < READ_COALESCE_MS) return last.answer;
+        reading += 1;
+        const answer = lineRead(window, line, environment, requests.signal).finally(() => {
+            reading -= 1;
+            settle();
+        });
+        recent.set(line, {answer, at: performance.now()});
+        return answer;
+    };
+    return {
+        answered,
+        settle,
+        window,
+        environment,
+        agent,
+        page,
+        visible: computed(() => visible()),
+        permissions,
+        autoScroll,
+        tabs,
+        sources,
+        links,
+        search,
+        readOnly,
+        shared,
+        read,
+        run: (line) => lineResult(window, line, environment, requests.signal),
+        upload: (file) => uploaded(file, requests.signal),
+        cancel: () => requests.abort(),
+        subscriptions,
+        follow: (patterns, heard) => subscriptions.follow(window, patterns.filter((pattern) => events.some((declared) => matches(declared, pattern))), (event) => {
+            recent.clear();
+            heard(event);
+        }, visible),
+        open,
+        face: document.documentElement.classList.contains("phone") ? "phone" : "person",
+        option: (key) => computed(() => options.value[key] ?? declared.find((option) => option.key === key)?.default),
+        setting: async (key, fallback) => {
+            const answer = await read(`window setting ${window} ${key}`);
+            return answer.ok ? answer.value.value : fallback;
+        },
+        setOption,
+        keep: (key, value) => lineResult(window, ["window", "save-setting", window, key, JSON.stringify(value)], environment, requests.signal),
+    };
+}
+
+// the words of a refusal the journal printed as JSON, else the text as it came
+function refusalWords(text) {
+    try {
+        const refusal = JSON.parse(text);
+        if (typeof refusal.refused === "string") return [refusal.refused, refusal.suggestion].filter(Boolean).join(": ");
+        return [refusal.error, refusal.message].find((words) => typeof words === "string") ?? text;
+    } catch (error) {
+        return text;
+    }
+}
+
+export const CANCELLED = {ok: false, failure: "cancelled", error: ""};
+const UNREACHABLE = "The journal did not answer, so this may or may not have gone through. Check before you try again.";
+
+// a request cancelled by its signal answers CANCELLED, whether it was cut off or its answer came after, so a window that has
+// gone never draws the answer
+export async function lineResult(window, line, environment, signal = undefined) {
+    try {
+        const answer = await lineBatch.add({window, line: Array.isArray(line) ? line : lineWords(line), environment}, signal);
+        if (signal?.aborted) return CANCELLED;
+        return answer.code === 0 ? {ok: true, value: answer.value} : {ok: false, failure: FAILURES[answer.code] || "fault", error: refusalWords(answer.error)};
+    } catch (error) {
+        if (signal?.aborted) return CANCELLED;
+        return {ok: false, failure: "unreachable", error: UNREACHABLE};
+    }
+}
+
+// a read the server could not answer waits for the server to come back and asks again, so a window never draws the restart as a failure
+async function lineRead(window, line, environment, signal) {
+    const answer = await lineResult(window, line, environment, signal);
+    if (answer.failure !== "unreachable" || !covered()) return answer;
+    await serverBack();
+    return signal.aborted ? CANCELLED : lineRead(window, line, environment, signal);
+}
+
+// a file the person attached, sent to the journal to wait for the message that names it: answers {ok, value: its pending name}
+async function uploaded(file, signal = undefined) {
+    try {
+        const response = await transport.raw(`/api/files?name=${encodeURIComponent(file.name)}`, {signal, method: "POST", headers: {"Content-Type": "application/octet-stream"}, body: file});
+        const answer = await response.json();
+        if (signal?.aborted) return CANCELLED;
+        return response.ok ? {ok: true, value: answer.file} : {ok: false, failure: "refused", error: answer.error ?? "the file was not taken"};
+    } catch (error) {
+        if (signal?.aborted) return CANCELLED;
+        return {ok: false, failure: "unreachable", error: UNREACHABLE};
+    }
+}
+
+export function lineWords(line) {
+    return [...line.matchAll(WORD)].map(([word]) => word.replace(QUOTED, (_, single, double, escaped) =>
+        single ?? (double === undefined ? escaped : double.replace(/\\(["\\])/g, "$1"))));
+}
