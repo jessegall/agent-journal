@@ -25,5 +25,3 @@ export const agentNames = (plan) => [...new Set(plan.agents.map((agent) => agent
 // the plan bar's button: the agent's name when one agent has the plan, Delegated when several do
 export const delegationWord = (plan) => (agentNames(plan).length === 1 ? `Worker: ${agentNames(plan)[0]}` : "Delegated");
 
-// A plan list row carries the plan alone; its phases and their task ids are read from a plan held whole.
-export const isWholePlan = (p) => "task_ids" in p;

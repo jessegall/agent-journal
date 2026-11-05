@@ -36,27 +36,6 @@ const TITLES = {
 
 export const titleOf = (row) => (TITLES[row.table] ? TITLES[row.table](row) : row.title || "") || "";
 
-const ENDED = ["done", "cancelled"];
-
-const CLOSED = {
-    tasks: (r) => seconds(r.completed_at) || (r.state === "cancelled" ? seconds(r.updated_at) : 0),
-    questions: (r) => (r.answer ? seconds(r.updated_at) : 0),
-    plans: (r) => (ENDED.includes(r.state) ? seconds(r.updated_at) : 0),
-    pins: (r) => seconds(r.closed_at),
-    secrets: (r) => seconds(r.deleted_at),
-    workers: (r) => (r.state === "stopped" ? seconds(r.updated_at) : 0),
-    shares: (r) => seconds(r.stopped_at),
-    dumps: (r) => seconds(r.completed_at),
-    agents: (r) => (r.state === "ended" ? seconds(r.updated_at) : 0),
-    // a check a wait made for itself is listed apart from the project's own, under Waits
-    checks: (r) => (r.wait_target ? seconds(r.created_at) : 0),
-};
-
-// When the row closed, in seconds; 0 while it is open, and always for a table whose rows never close.
-const closedAt = (row) => (CLOSED[row.table] ? CLOSED[row.table](row) : 0);
-export const isClosed = (row) => closedAt(row) > 0;
-// whether a table's rows close, as a task is done or a question answered; a message never does
-export const closable = (table) => Boolean(CLOSED[table]);
 export const createdAt = (row) => seconds(row.created_at);
 export const updatedAt = (row) => seconds(row.updated_at) || createdAt(row);
 

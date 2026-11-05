@@ -6,6 +6,8 @@ import DockWrapper from "../src/chat/DockWrapper.vue";
 import MarkHost from "../src/chat/MarkHost.vue";
 import {loadDockDeclarations} from "../src/domain/dockRegistry.js";
 import {loadMarkDeclarations} from "../src/domain/markRegistry.js";
+import {WINDOW_CONTEXT} from "@journal/window-kit";
+import {context} from "./support/windowContext.js";
 
 vi.mock("../src/route.js", async (importOriginal) => ({...(await importOriginal()), go: vi.fn(), peekRef: vi.fn()}));
 
@@ -31,6 +33,7 @@ function drawn(component, props, width) {
     const element = document.createElement("div");
     document.body.appendChild(element);
     app = createApp(() => h(component, props));
+    app.provide(WINDOW_CONTEXT, context({}));
     app.mount(element);
     return element;
 }

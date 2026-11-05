@@ -3,7 +3,7 @@ import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {existsSync, readFileSync} from "node:fs";
 import {join} from "node:path";
 import {settled} from "./settled.js";
-import {perLine} from "./support/windowContext.js";
+import {context, perLine} from "./support/windowContext.js";
 import Chat from "../../core/modules/messages/web/src/Chat.vue";
 import DockWrapper from "../src/chat/DockWrapper.vue";
 import DockStack from "../src/chat/DockStack.vue";
@@ -38,6 +38,7 @@ function windowContext(answers) {
     runs = [];
     uploads = [];
     return {
+        ...context({}),
         read: async (line) => {
             lines.push(line);
             const key = Object.keys(answers).find((start) => line === start || line.startsWith(`${start} `));
@@ -129,7 +130,7 @@ test("marks: a mark drawn on its own names the row's title as well", async () =>
 
 test("docked items: a card shows its title, a line of its text, and buttons to open and to close it", async () => {
     const element = document.createElement("div");
-    createApp(() => h(DockWrapper, {item: REPORT_DOCK})).mount(element);
+    createApp({render: () => h(DockWrapper, {item: REPORT_DOCK}), provide: {[WINDOW_CONTEXT]: context({})}}).mount(element);
     mounted.push(element);
     await settled();
     expect(element.textContent).toContain("Report 1146: What the review found");
