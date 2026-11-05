@@ -12,10 +12,15 @@ func TestAStopRequestEndsTheAgentsProgram(t *testing.T) {
 		t.Fatal(err)
 	}
 	inputs.Track(7, program)
+	ended := make(chan error, 1)
+	go func() {
+		ended <- program.Wait()
+		inputs.Close(7)
+	}()
 	if !inputs.StopProgram(7) {
 		t.Fatal("the program was not stopped")
 	}
-	if err := program.Wait(); err == nil {
+	if err := <-ended; err == nil {
 		t.Fatal("the program ended by itself")
 	}
 }

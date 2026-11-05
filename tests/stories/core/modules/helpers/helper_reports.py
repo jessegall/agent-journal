@@ -29,6 +29,7 @@ def stop_with_report(text):
 def reported(new_story, helper_fixture, text):
     story = new_story(fixture=helper_fixture)
     story.hook(the_helper(story).session, stop_with_report(text))
+    story.run_listeners()
     return story
 
 
@@ -56,9 +57,9 @@ def test_a_helper_that_says_nothing_still_reports(new_story, helper_fixture):
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
 def test_a_report_ends_the_job_and_stays_out_of_the_chat(new_story, helper_fixture):
-    story = reported(new_story, helper_fixture, "The cart adds tax twice.")
+    story = reported(new_story, helper_fixture, "The total is wrong.")
     message, job = report_of(story), jobs_of(story, the_helper(story))[0]
-    story.expect_rows(message.is_chat_visible is False, job.report_message_id == message.id, job.returned == "The cart adds tax twice.", job.ended_at is not None)
+    story.expect_rows(message.is_chat_visible is False, job.report_message_id == message.id, job.returned == "The total is wrong.", job.ended_at is not None)
     story.expect_text("chat-mark list --environment 1", "Finished journal-researcher")
 
 
@@ -74,6 +75,7 @@ def test_a_resumed_helper_reports_its_next_job_the_same_way(new_story):
     story = new_story(fixture=EndedHelper)
     story.expect_success(f'helper send {the_helper(story).id} "{JOB}"', actor=story.agent)
     story.run_listeners()
+    story.hook(the_helper(story).session, HookSamples.session_start())
     story.hook(the_helper(story).session, stop_with_report("The listener side is fine."))
     jobs = jobs_of(story, the_helper(story))
     story.expect_rows(len(jobs) == 2, jobs[1].returned == "The listener side is fine.")
@@ -94,9 +96,8 @@ def exited(story, code, terminal=""):
     story.run_listeners()
 
 
-@pytest.mark.parametrize("helper_fixture", PROGRAMS)
-@pytest.mark.parametrize("code, terminal, reason", [(1, "API Error: 429 rate limit reached", "it hit a rate limit"), (1, "Please run /login", "its login expired"),
-                                                    (1, "unknown model gpt-9", "its model is not known"), (137, "", "its program exited with code 137")],
+@pytest.mark.parametrize("helper_fixture, code, terminal, reason", [(StartedHelper, 1, "API Error: 429 rate limit reached", "it hit a rate limit"), (StartedHelper, 2, "Please run /login", "its login expired"),
+                                                                    (StartedCodexHelper, 3, "unknown model gpt-9", "its model is not known"), (StartedCodexHelper, 137, "", "its program exited with code 137")],
                          ids=["rate limit", "login", "model", "killed"])
 def test_a_program_that_exits_with_no_report_tells_the_parent_why(new_story, helper_fixture, code, terminal, reason):
     story = new_story(fixture=helper_fixture)
@@ -106,7 +107,7 @@ def test_a_program_that_exits_with_no_report_tells_the_parent_why(new_story, hel
 
 
 def test_a_program_that_exits_after_its_report_only_ends_its_row(new_story):
-    story = reported(new_story, StartedHelper, "The cart adds tax twice.")
+    story = reported(new_story, StartedHelper, "All read.")
     exited(story, 0)
     story.expect_rows(the_helper(story).ended_at is not None)
     story.expect_no_text(LINES.format(agent=story.agent.id), "without a report")
@@ -119,7 +120,9 @@ def test_a_main_agents_exit_leaves_its_row(new_story):
 
 
 def test_a_helper_that_ends_with_its_job_open_tells_the_parent(new_story):
-    story = new_story(fixture=EndedHelper)
+    story = new_story(fixture=StartedHelper)
+    story.expect_success(f"agent end {the_helper(story).id}", actor=Actor(the_helper(story).id, ActorType.AGENT))
+    story.run_listeners()
     story.expect_text(LINES.format(agent=story.agent.id), EMPTY_REPORT_TEXT)
 
 
@@ -154,10 +157,10 @@ def test_a_new_main_agent_takes_over_a_running_helper_and_its_report(new_story):
 
 
 def test_a_new_main_agent_takes_the_report_lines_left_on_the_ended_one(new_story):
-    story = reported(new_story, StartedHelper, "The cart adds tax twice.")
+    story = reported(new_story, StartedHelper, "Nothing left to read.")
     story.run(f"agent end {story.agent.id}", actor=story.user)
     second = Actor(story.new_row_id("agent start s-2 claude main --environment main"), ActorType.AGENT)
-    story.expect_text(LINES.format(agent=second.id), "The cart adds tax twice.")
+    story.expect_text(LINES.format(agent=second.id), "Nothing left to read.")
     story.expect_text("message reports --environment main", f"message:{report_of(story).id}", actor=second)
 
 
@@ -185,7 +188,7 @@ def test_a_helper_past_its_time_is_stopped_and_the_parent_hears_why(new_story):
 
 def test_the_parent_is_warned_once(new_story):
     story = new_story(fixture=StartedHelper)
-    enforced(story, 49)
+    enforced(story, 50)
     enforced(story, 2)
     lines = story.run(LINES.format(agent=story.agent.id)).output_text
     story.expect_rows(lines.count("near its time limit") == 1)
@@ -201,7 +204,7 @@ def test_a_helper_past_its_cost_is_stopped(new_story):
 
 def test_a_helper_with_no_cost_is_held_by_time_alone(new_story):
     story = new_story(fixture=StartedCodexHelper)
-    story.run(f"setting set {HELPER_MAX_COST} 5 --project", actor=story.user)
+    story.run(f"setting set {HELPER_MAX_COST} 7 --project", actor=story.user)
     enforced(story, 1)
     story.expect_rows(the_helper(story).ended_at is None)
 

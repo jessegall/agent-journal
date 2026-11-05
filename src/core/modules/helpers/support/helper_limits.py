@@ -15,7 +15,7 @@ from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
 TERMINAL_LIMIT_TEXT = "stop now: each report wakes you, then start again"
-NO_TERMINAL_LIMIT_TEXT = "keep working and read journal overview: each report arrives at your next hook"
+NEXT_HOOK_LIMIT_TEXT = "keep working and read journal overview: each report arrives at your next hook"
 
 
 class HelperLimits:
@@ -56,4 +56,4 @@ class HelperLimits:
         return model
 
     def way_on(self) -> str:
-        return TERMINAL_LIMIT_TEXT if self.launcher.is_running else NO_TERMINAL_LIMIT_TEXT
+        return TERMINAL_LIMIT_TEXT if self.launcher.is_running else NEXT_HOOK_LIMIT_TEXT

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -45,7 +46,12 @@ func TestAStopEndsAProgramThatIgnoresTheFirstSignal(t *testing.T) {
 }
 
 func TestASecondLaunchKeepsTheFirstsProgramsReachable(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "launcher")
+	folder, err := os.MkdirTemp("/tmp", "launch")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(folder)
+	path := filepath.Join(folder, "launcher")
 	first, second := NewTerminalInputs(), NewTerminalInputs()
 	program := exec.Command("sh", "-c", "sleep 60")
 	program.SysProcAttr = &syscall.SysProcAttr{Setsid: true}

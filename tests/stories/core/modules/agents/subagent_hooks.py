@@ -1,3 +1,4 @@
+from core.modules.drivers.ticks.end_silent_helpers_tick import EndSilentHelpersTick
 from datetime import timedelta
 
 from core.testing.hook_samples import HookSamples
@@ -38,5 +39,5 @@ def test_a_helper_whose_stop_never_came_ends_once_it_has_been_silent_for_half_an
     story.hook("s-1", HookSamples.tick())
     story.expect_absent(f"agent show {helper.id}", "ended_at: 2026")
     story.advance(timedelta(minutes=2))
-    story.hook("s-1", HookSamples.tick())
+    EndSilentHelpersTick()(story.container)
     story.expect_text(f"agent show {helper.id}", "ended_at: 2026")

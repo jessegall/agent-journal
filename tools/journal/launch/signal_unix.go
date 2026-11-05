@@ -10,5 +10,7 @@ func signalGroup(pid int, forced bool) {
 	if forced {
 		signal = syscall.SIGKILL
 	}
-	_ = syscall.Kill(-pid, signal)
+	if syscall.Kill(-pid, signal) != nil {
+		_ = syscall.Kill(pid, signal)
+	}
 }
