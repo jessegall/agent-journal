@@ -587,7 +587,7 @@
         "\"<job>\"`; if not, repeat the command with `--why \"<why>\"`",
         "% of context: `journal memory weigh <numbers> <weights>` or `journal memory skip \"<why>\"`",
         "%: keep, raise or correct",
-        "&& \u2026 )` or pass the folder, such as `git -C`",
+        "&& … )` or pass the folder, such as `git -C`",
         "'[{\"ask\": \"<question>\", \"label\": \"<button>\"}]' --summary \"<what you filed and where>\"`, `'[]'` for no buttons",
         "'s and stays open",
         "'s queue: `journal worker queue",
@@ -1203,7 +1203,8 @@
         "every field needs its words",
         "It printed nothing yet",
         "Send away",
-        "ships this profile"
+        "ships this profile",
+        "kind"
     ],
     "file_reads_process_output_uses_bounded_ranges": [
         "src/core/modules/processes/support/output_folder.py"
