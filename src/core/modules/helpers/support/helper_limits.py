@@ -14,8 +14,8 @@ from core.modules.helpers.support.helper_settings import HELPER_LIMIT
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
-WAIT_WAY_ON = "stop now: each report wakes you, then start again"
-WORK_WAY_ON = "keep working and read journal overview: each report arrives at your next hook"
+TERMINAL_LIMIT_TEXT = "stop now: each report wakes you, then start again"
+NO_TERMINAL_LIMIT_TEXT = "keep working and read journal overview: each report arrives at your next hook"
 
 
 class HelperLimits:
@@ -56,4 +56,4 @@ class HelperLimits:
         return model
 
     def way_on(self) -> str:
-        return WAIT_WAY_ON if self.launcher.is_running else WORK_WAY_ON
+        return TERMINAL_LIMIT_TEXT if self.launcher.is_running else NO_TERMINAL_LIMIT_TEXT

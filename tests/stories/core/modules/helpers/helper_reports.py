@@ -15,6 +15,7 @@ from core.modules.helpers.support.helper_settings import HELPER_MAX_COST
 from core.modules.helpers.ticks.helper_limits_tick import HelperLimitsTick
 from tests.stories.core.modules.helpers.read_only_access import StartedCodexHelper
 from tests.stories.core.modules.usage.support.status_files import save_status_file
+from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
 PROGRAMS = [StartedHelper, StartedCodexHelper]
 LINES = "agent-line list --agent {agent}"
@@ -209,3 +210,16 @@ def test_a_retired_helpers_terminal_log_goes_with_it(new_story):
     story = new_story(fixture=StartedHelper)
     exited(story, 0, "some output")
     story.expect_rows(not story.home.terminal_file(the_helper(story).id).exists())
+
+
+def test_a_helper_a_trigger_starts_reports_to_the_main_agent(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.run('helper start journal-researcher --brief "Review HEAD~5..HEAD" --environment main', actor=Actor.core())
+    story.run_listeners()
+    launcher.thread.join(timeout=5)
+    launcher.server.close()
+    story.home.socket("launcher").unlink()
+    story.expect_rows(the_helper(story).parent_id == story.agent.id)
+    story.hook(the_helper(story).session, stop_with_report("The diff is clean."))
+    story.expect_text(LINES.format(agent=story.agent.id), "The diff is clean.")

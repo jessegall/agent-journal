@@ -11,9 +11,9 @@ from core.modules.helpers.support.helper_settings import HELPER_LIMIT
 from core.modules.helpers.support.helper_start_state import HelperStartState
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
-NO_LAUNCHER = "Start the agent with journal launch to run helpers."
-NO_MAIN_AGENT = "Start a main agent first: a helper reports to it."
-AT_LIMIT = "All {limit} helpers are running: wait for one to finish, or stop one."
+MISSING_LAUNCHER_TEXT = "Start the agent with journal launch to run helpers."
+MISSING_MAIN_AGENT_TEXT = "Start a main agent first: a helper reports to it."
+LIMIT_REACHED_TEXT = "All {limit} helpers are running: wait for one to finish, or stop one."
 
 
 class HelperAvailability:
@@ -27,9 +27,9 @@ class HelperAvailability:
 
     def refusal_reason(self) -> str:
         if not self.launcher.is_running:
-            return NO_LAUNCHER
+            return MISSING_LAUNCHER_TEXT
         if MainAgentFinder.newest(self.queries) is None:
-            return NO_MAIN_AGENT
+            return MISSING_MAIN_AGENT_TEXT
         limit = self.settings.number(HELPER_LIMIT)
         running = self.queries.query(Agent).filter(role=AgentRole.HELPER).matching(IsNull("ended_at")).count()
-        return AT_LIMIT.format(limit=limit) if running >= limit else ""
+        return LIMIT_REACHED_TEXT.format(limit=limit) if running >= limit else ""
