@@ -38,7 +38,7 @@ try {
     const plans = await run(["plan", "list", "--environment", "demo"]);
     const plan = plans.rows.find((row) => row.title === "Tax rules");
     assert.ok(plan);
-    const card = page.locator('.chat-dock-card[aria-label="Tax rules"]');
+    const card = page.locator('.chat-dock-card[aria-label^="Tax rules"]');
     await card.getByRole("button", {name: "Approve", exact: true}).waitFor();
     assert.equal(await card.getByRole("button", {name: "Approve", exact: true}).count(), 1);
     assert.equal(await card.getByRole("button", {name: "Ask for a critique", exact: true}).count(), 1);
@@ -92,7 +92,7 @@ try {
     console.log("Refusing a stale approval with the command's lifecycle error");
     const stale = await run(["plan", "make", "Stale approval", "--environment", "demo"]);
     await run(["plan", "ready", String(stale.id), "--environment", "demo"]);
-    const staleCard = page.locator('.chat-dock-card[aria-label="Stale approval"]');
+    const staleCard = page.locator('.chat-dock-card[aria-label^="Stale approval"]');
     await staleCard.getByRole("button", {name: "Approve", exact: true}).waitFor();
     await page.waitForLoadState("networkidle");
     await page.evaluate(() => { window.holdEvents = true; });

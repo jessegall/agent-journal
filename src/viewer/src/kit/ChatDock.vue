@@ -6,7 +6,7 @@ export const DOCK_ARRIVAL_MS = 700;
 import {onBeforeUnmount, onMounted, ref} from "vue";
 import {useMeasuredHeight} from "../composables/measuredHeight.js";
 
-defineProps({label: {type: String, default: ""}, folded: Boolean, lifted: Boolean, kind: {type: String, default: ""}});
+defineProps({label: {type: String, default: ""}, folded: Boolean, body: Boolean, lifted: Boolean, kind: {type: String, default: ""}});
 const card = ref(null);
 const content = ref(null);
 const height = useMeasuredHeight(content);
@@ -26,7 +26,7 @@ defineExpose({card});
                 <header class="chat-dock-head">
                     <slot name="head" />
                 </header>
-                <div :class="['chat-dock-body', {folded, settled}]">
+                <div :class="['chat-dock-body', {folded, settled, body}]">
                     <div class="chat-dock-inner">
                         <div :class="['chat-dock-grow', {settled}]" :style="height === null ? null : {height: `${height}px`}">
                             <div ref="content">
@@ -35,6 +35,8 @@ defineExpose({card});
                         </div>
                     </div>
                 </div>
+                <slot name="still" />
+                <footer class="chat-dock-foot"><slot name="foot" /></footer>
             </section>
         </div>
     </div>
@@ -63,19 +65,18 @@ defineExpose({card});
 .chat-dock-card {
     position: relative;
     container-type: inline-size;
-    border: 1px solid var(--border-2);
-    border-radius: 10px;
+    border-top: 1px solid var(--border);
     background: var(--raised);
-    overflow: hidden;
 }
 
 .chat-dock-head {
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap: 8px;
     min-width: 0;
-    height: 36px;
-    padding: 0 6px 0 12px;
+    height: 28px;
+    margin-top: 5px;
+    padding: 0 14px;
     white-space: nowrap;
 }
 
@@ -86,8 +87,8 @@ defineExpose({card});
 
 .chat-dock-body.settled {
     transition:
-        grid-template-rows var(--move),
-        opacity var(--fade);
+        grid-template-rows 320ms var(--ease),
+        opacity 220ms var(--ease);
 }
 
 .chat-dock-body.folded {
@@ -105,7 +106,7 @@ defineExpose({card});
 }
 
 .chat-dock-grow.settled {
-    transition: height var(--move);
+    transition: height 320ms var(--ease);
 }
 
 /* a dock comes in two steps, the chat easing up to make room and then the card sliding in, and goes in the same two the other way, the
@@ -161,23 +162,29 @@ defineExpose({card});
     visibility: hidden;
 }
 
-@container (max-width: 420px) {
-    .chat-dock-head {
-        flex-wrap: wrap;
-        height: auto;
-        min-height: 36px;
-        padding-block: 6px;
-    }
-
-    .chat-dock-head :slotted(.dock-title) {
-        flex: 1;
-    }
-
-    .chat-dock-head :slotted(.chat-dock-acts) {
-        order: 1;
-        flex-basis: 100%;
-        margin-left: 0;
-        justify-content: flex-end;
+.chat-dock-card.waiting {
+    background: color-mix(in srgb, var(--tone-warn) 10%, var(--raised));
+}
+.chat-dock-card.waiting :deep(.dock-facts) {
+    color: var(--text-2);
+}
+.chat-dock-body.body:not(.folded) {
+    margin: 3px 0 6px;
+    border-block: 1px solid var(--border-inner);
+}
+.chat-dock-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px 6px;
+    min-height: 24px;
+    margin-bottom: 7px;
+    padding: 0 14px 0 36px;
+}
+@container (max-width: 480px) {
+    .chat-dock-foot :deep(.btn) {
+        padding: 0 7px;
     }
 }
 

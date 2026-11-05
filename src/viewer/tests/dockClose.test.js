@@ -47,5 +47,5 @@ test("a refused close brings the card back with the reason", async () => {
     await settle();
     element.querySelector('[data-dock-action="undock"]').click();
     await settle();
-    expect(element.querySelector("[data-dock-failure]").textContent).toBe("not yours");
+    expect(element.querySelector("[data-dock-failure]").textContent).toBe("Could not close this card: not yours");
 });

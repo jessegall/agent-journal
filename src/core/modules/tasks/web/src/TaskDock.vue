@@ -1,27 +1,15 @@
 <script setup>
-import {stateLabel, useDockRow} from "@journal/window-kit";
-
+import { unref } from "vue";
+import { stateLabel, useDockRow, useWindow } from "@journal/window-kit";
 const row = useDockRow("task");
+const foot = useWindow().option("foot");
 </script>
-
 <template>
-    <div class="task-dock">
-        <template v-if="row">
-            <span class="task-dock-state">{{ stateLabel('task', row.state) }}</span>
-            <span class="task-dock-title">{{ row.title }}</span>
-        </template>
-    </div>
+  <template v-if="unref(foot) && row"
+    ><Teleport :to="unref(foot)"
+      ><span
+        >Task: <b>{{ stateLabel("task", row.state).toLowerCase() }}</b></span
+      ></Teleport
+    ></template
+  >
 </template>
-
-<style scoped>
-.task-dock {
-    display: flex;
-    gap: 8px;
-    font-size: 12px;
-    line-height: 1.45;
-}
-
-.task-dock-state {
-    color: var(--text-4);
-}
-</style>

@@ -10,13 +10,13 @@ vi.stubGlobal("ResizeObserver", class {
     unobserve() {}
 });
 
-const documentItem = (id, title = "Project") => ({id, dock_id: 1, type: "documents.doc", state: "docked", kept: false, leaves_at: null, target_model: "doc", target_id: id, title, text: "Project notes"});
+const documentItem = (id, title = "Project") => ({id, dock_id: 1, type: "plans.draft", state: "docked", kept: false, leaves_at: null, target_model: "plan", target_id: id, title, text: "Project notes"});
 const foldButton = (host) => host.querySelector("[data-dock-fold]");
 
 beforeEach(() => {
     localStorage.clear();
     store.identity = {root: "/project/first"};
-    loadDockDeclarations([{type: "documents.doc", icon: "document", title: "{row_title}", body_url: "", leaves_after_seconds: 0, draws_head: false, buttons: [], reads: []}]);
+    loadDockDeclarations([{type: "plans.draft", icon: "document", title: "{row_title}", body_url: "", leaves_after_seconds: 0, draws_head: false, folds: "Phases", buttons: [], reads: []}]);
 });
 
 afterEach(() => {

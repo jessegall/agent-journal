@@ -43,7 +43,7 @@ class ProjectRulesModule(Module):
     nudges = RULE_NUDGES
     skills = [SkillDeclaration("journal-rules", "Project rules are standing instructions every agent gets at its start; read it before the first rule command of a session", keywords=("rule", "rules"), commands=["rule"])]
     driver_rules = [StartRulesRule]
-    docks = [DockDeclaration(RuleDockType.PROPOSED, "rule", "Proposed rule", "rule-dock.js", most=6, reads=["rule show"], badge="Needs you")]
+    docks = [DockDeclaration(RuleDockType.PROPOSED, "rules", "Proposed rule", "rule-dock.js", most=6, reads=["rule show"], needs_user=True)]
     button_slots = list(PROPOSED_SLOT)
     buttons = [ButtonDeclaration("project-rules.approve", PROPOSED_SLOT, "Approve", "rule approve {row_id}", primary=True, condition=PROPOSED_CONDITION),
                ButtonDeclaration("project-rules.deny", PROPOSED_SLOT, "Deny", "rule deny {row_id}", condition=PROPOSED_CONDITION)]

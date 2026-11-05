@@ -6,7 +6,7 @@ const browser = await chromium.launch({executablePath: process.env.CHROMIUM_PATH
 try {
     const page = await browser.newPage({viewport: {width: 1100, height: 620}});
     await page.goto(address);
-    await page.locator("[data-output-toggle]").click();
+    await page.locator("[data-dock-fold]").click();
     await page.locator("[data-output-terminal]").filter({hasText: "line 399 of the run"}).waitFor();
     await page.waitForFunction(() => document.querySelector(".output-dock-more").getAnimations().length === 0);
     const edges = await page.evaluate(() => {

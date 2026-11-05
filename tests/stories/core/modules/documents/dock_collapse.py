@@ -7,7 +7,7 @@ from tests.stories.server.support.server_client import server_story
 pytestmark = pytest.mark.browser_job
 
 
-def test_a_document_collapsed_by_the_user_stays_collapsed_until_reopened_in_the_browser(new_story):
+def test_a_document_stays_on_two_lines_and_its_open_button_shows_the_whole_text(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.expect_success('doc make "Project" --abstract "Project context" --body "Keep the project notes here." --environment main', actor=story.user)
     story.expect_success("setting set journal.core.viewer.tour-completed true --project")

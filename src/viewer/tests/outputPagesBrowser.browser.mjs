@@ -8,7 +8,7 @@ try {
     const reads = [];
     page.on("request", (request) => reads.push(request.postData() || ""));
     await page.goto(address);
-    await page.locator("[data-output-toggle]").click();
+    await page.locator("[data-dock-fold]").click();
     const terminal = page.locator("[data-output-terminal]");
     await terminal.filter({hasText: "line 1999 of the run"}).waitFor();
     const shown = () => terminal.evaluate((box) => box.textContent.split("\n").length);

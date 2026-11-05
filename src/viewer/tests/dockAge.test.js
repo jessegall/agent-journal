@@ -10,9 +10,9 @@ afterEach(() => {
     vi.unstubAllGlobals();
 });
 
-const DECLARED = {type: "documents.doc", icon: "document", title: "{row_title}", buttons: [], reads: [], shows_age: true};
-const PLAIN = {...DECLARED, type: "plans.plan", shows_age: false};
-const item = (type) => ({id: 5, type, target_model: "doc", target_id: 3, state: "docked", kept: false, leaves_at: null, text: "The abstract line", created_at: new Date(Date.now() - 600000).toISOString()});
+const DECLARED = {type: "documents.doc", icon: "document", title: "{row_title}", buttons: [], reads: []};
+const PLAIN = {...DECLARED, type: "plans.plan"};
+const item = (type) => ({id: 5, type, target_model: "doc", target_id: 3, state: "docked", kept: false, leaves_at: null, text: "The abstract line", created_at: new Date(Date.now() - 601000).toISOString()});
 
 async function drawn(type) {
     loadDockDeclarations([DECLARED, PLAIN]);
@@ -36,8 +36,8 @@ test("a docked document shows how long ago it was docked and not its abstract", 
     expect(element.textContent).not.toContain("The abstract line");
 });
 
-test("a docked card that does not ask for its age keeps its text", async () => {
+test("every card shows its age and leaves the full text to Open", async () => {
     const element = await drawn("plans.plan");
-    expect(element.querySelector("[data-dock-age]")).toBeNull();
-    expect(element.textContent).toContain("The abstract line");
+    expect(element.querySelector("[data-dock-age]").textContent).toBe("10m ago");
+    expect(element.textContent).not.toContain("The abstract line");
 });

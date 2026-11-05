@@ -7,10 +7,7 @@ from core.base.chat.mark_button import MarkButton
 
 @dataclass(frozen=True)
 class DockDeclaration:
-    """A type of item a module may dock above the chat: its type as a member of the module's own
-    enum, its icon and title, the buttons on its wrapper, the file of its body, its limits, the
-    viewer kit versions it was built for, the word on a badge after its title, whether it shows
-    how long ago it was docked in place of its text, and whether its body draws the title itself."""
+    """A module's docked card, with its title, body, fold noun, facts and actions."""
 
     type: StrEnum
     icon: str
@@ -22,5 +19,7 @@ class DockDeclaration:
     reads: Sequence[str] = ()
     kit: str = ">=1,<2"
     badge: str = ""
-    shows_age: bool = False
+    folds: str = ""
+    needs_user: bool = False
+    word: str = ""
     draws_head: bool = False
