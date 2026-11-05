@@ -22,7 +22,7 @@ class StartedTaskPlanListener(CommitListener[Moved[Task]]):
         self.bus, self.queries = bus, queries
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
-        places = self.queries.query(PlanTask).filter(task_id=logged.row_id).page(1, 1).rows
+        places = self.queries.query(PlanTask).filter(task_id=logged.row_id).limited(1)
         plan = self.queries.query(Plan).find(places[0].plan_id) if places else None
         if plan is not None and plan.state is PlanState.APPROVED:
             self.bus.run(StartPlan(plan.id), Actor.core(), cause_id=logged.id, environment_id=plan.environment_id)

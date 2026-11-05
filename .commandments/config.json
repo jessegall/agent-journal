@@ -217,7 +217,9 @@
         "architecture_corpus_go_corpus_read_outside_its_tests",
         "architecture_listeners_row_type_guessed_in_a_listener",
         "architecture_listeners_row_loaded_from_an_event",
-        "architecture_listeners_listener_event_named_by_a_string"
+        "architecture_listeners_listener_event_named_by_a_string",
+        "FileReadsDetector",
+        "FileWritesDetector"
     ],
     "parallel": 2,
     "configure": {

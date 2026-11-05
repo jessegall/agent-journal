@@ -41,11 +41,13 @@ class WorkerReuseRule(DriverRule):
 
     def worker_with_files(self, part: Part, environment_id: int) -> int | None:
         task_ids = [int(argument) for argument in part.arguments[2:] if argument.isdigit()]
-        paths = PathMentions.found(" ".join(self.queries.query(Task).find(task_id).brief for task_id in task_ids))
+        paths = PathMentions.found(" ".join(task.brief for task in self.queries.query(Task).find_many(task_ids)))
         if not paths:
             return None
-        for worktree in self.queries.query(Worktree).filter(environment_id=environment_id).matching(IsNull("removed_at")).all_rows():
-            is_ended = self.queries.query(Agent).find(worktree.agent_id).ended_at is not None
+        worktrees = list(self.queries.query(Worktree).filter(environment_id=environment_id).matching(IsNull("removed_at")).all_rows())
+        workers = {worker.id: worker for worker in self.queries.query(Agent).find_many([worktree.agent_id for worktree in worktrees])}
+        for worktree in worktrees:
+            is_ended = workers[worktree.agent_id].ended_at is not None
             if is_ended and PathMentions.overlap(paths, frozenset(self.git.changed_files(worktree))):
                 return worktree.agent_id
         return None

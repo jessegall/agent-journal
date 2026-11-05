@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import json
 import socket
 from pathlib import Path
@@ -34,7 +35,7 @@ class ClaudeInbox:
 
     def entry(self, session: str) -> ClaudeSessionEntry | None:
         for path in sorted(self.registry.glob("*.json")) if self.registry.is_dir() else ():
-            fields: object = json.loads(path.read_text() or "{}")
+            fields: object = json.loads(FileAccess.shared().read(path) or "{}")
             if is_mapping(fields) and fields.get("sessionId") == session:
                 socket_path = fields.get("messagingSocketPath")
                 return ClaudeSessionEntry(path.stem, socket_path if isinstance(socket_path, str) else "")
@@ -44,7 +45,7 @@ class ClaudeInbox:
         key = next(self.registry.glob(f"{pid}.*.key"), None)
         if key is None:
             return []
-        fields: object = json.loads(key.read_text())
+        fields: object = json.loads(FileAccess.shared().read(key))
         token = fields.get("peerToken") if is_mapping(fields) else None
         return [{"type": "auth", "token": token}] if isinstance(token, str) else []
 

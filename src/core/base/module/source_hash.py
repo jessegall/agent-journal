@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import fnmatch
 import hashlib
 import os
@@ -40,6 +41,6 @@ class SourceHash:
     @cache
     def file_hash(path: Path) -> bytes | None:
         try:
-            return hashlib.sha256(path.read_bytes()).digest()
+            return hashlib.sha256(FileAccess.shared().binary(path)).digest()
         except FileNotFoundError:
             return None

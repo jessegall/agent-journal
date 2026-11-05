@@ -1,5 +1,7 @@
+from core.base.file_access import FileAccess
 import json
-import os
+from functools import lru_cache
+from core.base.file_version import FileVersion
 from pathlib import Path
 
 from core.base.private.private_folder import PrivateFolder
@@ -8,7 +10,6 @@ VALUES_SUFFIX = ".env"
 SHOWN_SUFFIX = ".shown"
 RETIRED_PREFIX = "RETIRED_"
 RETIRED_TIME_MARK = "_AT_"
-FILE_MODE = 0o600
 HEADER = "# The values of this project's secrets, written by agent-journal.\n# One line per field: NAME=\"value\". The journal never copies this file anywhere.\n"
 
 
@@ -24,7 +25,12 @@ class SecretValues:
         path = self.folder.file(VALUES_SUFFIX)
         if path is None or not path.is_file():
             return {}
-        return dict(pair for pair in map(self.parsed, path.read_text().splitlines()) if pair is not None)
+        return dict(self.loaded_values(path, FileAccess.shared().version(path)))
+
+    @staticmethod
+    @lru_cache(maxsize=128)
+    def loaded_values(path: Path, version: FileVersion) -> tuple[tuple[str, str], ...]:
+        return tuple(pair for pair in map(SecretValues.parsed, FileAccess.shared().read(path).splitlines()) if pair is not None)
 
     def hidden_values(self) -> dict[str, str]:
         shown = self.shown()
@@ -48,7 +54,14 @@ class SecretValues:
 
     def shown(self) -> set[str]:
         path = self.folder.file(SHOWN_SUFFIX)
-        return set(path.read_text().split()) if path is not None and path.is_file() else set()
+        if path is None or not path.is_file():
+            return set()
+        return set(self.loaded_shown(path, FileAccess.shared().version(path)))
+
+    @staticmethod
+    @lru_cache(maxsize=128)
+    def loaded_shown(path: Path, version: FileVersion) -> frozenset[str]:
+        return frozenset(FileAccess.shared().read(path).split())
 
     def write(self, values: dict[str, str]) -> None:
         self.write_file(self.folder.made_file(VALUES_SUFFIX), HEADER + "".join(f"{name}={json.dumps(value)}\n" for name, value in values.items()))
@@ -59,9 +72,9 @@ class SecretValues:
     @staticmethod
     def write_file(path: Path, text: str) -> None:
         writing = path.with_name(f"{path.name}.writing")
-        with os.fdopen(os.open(writing, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, FILE_MODE), "w") as output:
+        with FileAccess.shared().private_writer(writing) as output:
             output.write(text)
-        os.replace(writing, path)
+        FileAccess.shared().replace(writing, path)
 
     @staticmethod
     def parsed(line: str) -> tuple[str, str] | None:

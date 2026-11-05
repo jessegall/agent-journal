@@ -17,7 +17,7 @@ class UpgradeMarkListener(MarkListener[UpgradeFinished]):
     module_name = "journal.core.chat"
 
     def handle(self, event: UpgradeFinished, logged: LoggedEvent) -> None:
-        environments = self.queries.query(Environment).oldest().page(1, 1).rows
+        environments = self.queries.query(Environment).oldest().limited(1)
         counts = logged.data["counts"][1]
         text = "Upgraded from version 4: " + ", ".join(f"{counts.get(table, 0) if is_mapping(counts) else 0} {table}" for table in SHOWN) + " moved"
         if environments:

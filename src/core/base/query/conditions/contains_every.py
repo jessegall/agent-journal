@@ -13,4 +13,5 @@ class ContainsEvery:
 
     def statement(self) -> Statement:
         term_tests = ["(" + " OR ".join(f"instr(lower({column}), ?) > 0" for column in self.columns) + ")" for _ in self.terms]
-        return Statement(" AND ".join(term_tests), [term.lower() for term in self.terms for _ in self.columns])
+        return Statement(" AND ".join(term_tests), [term.lower() for term in self.terms for _ in self.columns],
+                         scan_reason="User-requested substring searches compare text in the requested fields.")

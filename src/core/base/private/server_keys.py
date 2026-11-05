@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import json
 
 from core.base.private.private_folder import PrivateFolder
@@ -15,7 +16,7 @@ class ServerKeys:
 
     def all(self) -> dict[str, str]:
         path = self.folder.file(KEYS_SUFFIX)
-        return {str(name): str(value) for name, value in json.loads(path.read_text()).items()} if path is not None and path.is_file() else {}
+        return {str(name): str(value) for name, value in json.loads(FileAccess.shared().read(path)).items()} if path is not None and path.is_file() else {}
 
     def has(self, variable: str) -> bool:
         return bool(self.all().get(variable))

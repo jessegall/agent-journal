@@ -1,4 +1,5 @@
 import json
+import sqlite3
 from collections.abc import Sequence
 from core.base.profile.agent_profile import AgentProfile
 from core.base.agent_policy import AgentPolicy
@@ -11,6 +12,7 @@ from core.base.change.event_pattern import EventPattern
 from core.base.database.database import Database
 from core.base.container import Container
 from core.base.database.registry_table import RegistryTable
+from core.base.database.registry_version import RegistryVersion
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.driver_entry import DriverEntry
 from core.base.registry.driver_rule_entry import DriverRuleEntry
@@ -51,9 +53,7 @@ KEPT_REGISTRIES = 8
 
 @dataclass(frozen=True)
 class Registry:
-    """What sync found in every module: which module owns each entry, which handler runs each command, which
-    class answers each subcommand, and every guard and listener with the events it covers. A parse is kept by
-    the text it came from, so a read costs a parse only after a sync changed that text."""
+    """The module entries found by sync, kept by database, fingerprint and sync timestamp."""
 
     fingerprint: str
     models: dict[str, ModelEntry]
@@ -87,13 +87,25 @@ class Registry:
 
     @classmethod
     def read(cls, database: Database) -> "Registry":
-        row = RegistryTable(database).row()
+        try:
+            version = RegistryTable(database).version()
+        except sqlite3.OperationalError as error:
+            if str(error) != "no such table: registry":
+                raise
+            raise StaleRegistryError("the journal has never been synced: journal module sync") from error
+        if version is None:
+            raise StaleRegistryError("the journal has never been synced: journal module sync")
+        return cls.loaded(version)
+
+    @classmethod
+    @lru_cache(maxsize=KEPT_REGISTRIES)
+    def loaded(cls, version: RegistryVersion) -> "Registry":
+        row = RegistryTable(version.database).row()
         if row is None:
             raise StaleRegistryError("the journal has never been synced: journal module sync")
         return cls.parsed(row["fingerprint"], row["entries"])
 
     @classmethod
-    @lru_cache(maxsize=KEPT_REGISTRIES)
     def parsed(cls, fingerprint: str, entries_text: str) -> "Registry":
         entries = json.loads(entries_text)
         return cls(

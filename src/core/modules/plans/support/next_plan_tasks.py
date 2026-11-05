@@ -20,7 +20,7 @@ class NextPlanTasks:
 
     def following(self, plan_id: int) -> int | None:
         waiting = SubqueryMatch("task_id", Select(OpenDependency.view).column("task_id"), negated=True)
-        unfinished = self.queries.query(PlanTask).filter(plan_id=plan_id).matching(Among("state", UNFINISHED_STATES)).matching(waiting).ordered("phase_position").page(1, 1).rows
+        unfinished = self.queries.query(PlanTask).filter(plan_id=plan_id).matching(Among("state", UNFINISHED_STATES)).matching(waiting).ordered("phase_position").limited(1)
         if not unfinished:
             return None
         free = SubqueryMatch("task_id", Select("tasks").matching(HasValue("delegated_to")).column("id"), negated=True)

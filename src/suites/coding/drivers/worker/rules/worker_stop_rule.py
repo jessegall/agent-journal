@@ -25,7 +25,7 @@ class WorkerStopRule(DriverRule):
         self.requests, self.clock = requests, clock
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        rows = self.tasks.holder(hook.agent_id).started().page(1, 1).rows
+        rows = self.tasks.holder(hook.agent_id).started().limited(1)
         task = rows[0] if rows else self.tasks.next_delegated(hook.agent_id)
         worktree = self.worktrees.worker_worktree(hook.agent_id)
         if self.requests.has_active_requests(hook.agent_id, self.clock.timestamp()):

@@ -154,11 +154,11 @@ def test_a_failed_card_save_keeps_the_card_and_every_unread_file(new_story, monk
 def test_an_empty_card_list_saves_no_plugin_output(new_story):
     story = installed_story(new_story)
     queued_card(story, "empty.json", {"cards": []})
-    before = story.container.get(Queries).query(PluginOutput).count()
+    prior_count = story.container.get(Queries).query(PluginOutput).count()
 
     PluginCardReading()(story.container)
 
-    story.expect_rows(story.container.get(Queries).query(PluginOutput).count() == before)
+    story.expect_rows(story.container.get(Queries).query(PluginOutput).count() == prior_count)
 
 
 def test_a_hook_can_read_while_the_card_tick_takes_a_file_from_its_listing(new_story, monkeypatch):
@@ -180,10 +180,10 @@ def test_a_hook_can_read_while_the_card_tick_takes_a_file_from_its_listing(new_s
             container.get(Database).close()
 
     def record_claim(source, target):
-        result = rename(source, target)
+        renamed = rename(source, target)
         if source == path and Path(target).suffix == ".claimed":
             claimed.set()
-        return result
+        return renamed
 
     def run_tick(source, *arguments, **options):
         if source == path and not raced:

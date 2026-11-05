@@ -1,3 +1,4 @@
+from core.modules.plugins.migrations.m003_plugin_output_index import PluginOutputIndexMigration
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.plugins.commands.deliver_file_edit.deliver_file_edit_handler import DeliverFileEditHandler
 from core.modules.plugins.support.plugin_nudges import PLUGIN_NUDGES
@@ -46,6 +47,7 @@ from core.modules.plugins.listeners.plugin_queue_file_listener import PluginQueu
 from core.modules.plugins.listeners.login_path_listener import LoginPathListener
 from core.modules.plugins.listeners.plugin_skill_publish_listener import PluginSkillPublishListener
 from core.modules.plugins.migrations.m001_plugins import PluginsTablesMigration
+from core.modules.plugins.migrations.m002_plugin_queue_index import PluginQueueIndexMigration
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_delivery import PluginDelivery
 from core.modules.plugins.models.plugin_output import PluginOutput
@@ -78,7 +80,7 @@ class PluginsModule(Module):
     moves = [PluginsMove]
     windows = [WindowDeclaration("plugins.plugins", "Plugins", "plugins.js", WindowLoading.COMPONENT, skeleton=PLUGINS_PLUGINS_SKELETON, search=WindowSearch(PluginSearcher, "Search the plugins"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.PLUGIN, reads=["plugin record", "plugin list", "plugin settings", "plugin services", "plugin preview", "plugin latest", "plugin dashboard", "plugin dashboards", "plugin descriptions"],
                                  runs=["plugin upgrade", "plugin enable", "plugin disable", "plugin install", "plugin remove", "plugin configure", "message send"], events=["plugin.*"])]
-    migrations = [PluginsTablesMigration]
+    migrations = [PluginOutputIndexMigration, PluginsTablesMigration, PluginQueueIndexMigration]
     handlers = [DeliverFileEditHandler, UpgradePluginHandler, InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler,
                 RecordPluginFaultHandler, ClearPluginFaultsHandler, AddPluginOutputHandler,
                 ClearPluginQueueFileHandler]

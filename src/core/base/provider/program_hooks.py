@@ -1,4 +1,8 @@
+from core.base.file_access import FileAccess
 import json
+from copy import deepcopy
+from functools import lru_cache
+from core.base.file_version import FileVersion
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -64,13 +68,20 @@ class ProgramHooks:
 
     @staticmethod
     def read(path: Path) -> dict[object, object]:
-        loaded: object = json.loads(path.read_text() or "{}") if path.is_file() else {}
+        if not path.is_file():
+            return {}
+        return deepcopy(ProgramHooks.loaded_settings(path, FileAccess.shared().version(path)))
+
+    @staticmethod
+    @lru_cache(maxsize=128)
+    def loaded_settings(path: Path, version: FileVersion) -> dict[object, object]:
+        loaded: object = json.loads(FileAccess.shared().read(path) or "{}")
         return dict(loaded) if is_mapping(loaded) else {}
 
     @staticmethod
     def store(path: Path, settings: Mapping[object, object]) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(dict(settings), indent=2) + "\n")
+        FileAccess.shared().write(path, json.dumps(dict(settings), indent=2) + "\n")
 
     @staticmethod
     def partitioned(stored_hooks: object) -> HookPartition:

@@ -1,3 +1,5 @@
+from core.base.file_access import FileAccess
+from core.base.file_version import FileVersion
 from collections.abc import Generator
 from contextlib import contextmanager
 
@@ -16,6 +18,7 @@ class PerformanceState:
         self.tests = home.costly_hooks_log.parent / TESTS_RUNNING_FILE
         self.starting = home.folder / "performance-starting"
         self.reloading = home.folder / "performance-reloading"
+        self.boot_events: dict[FileVersion, int] = {}
 
     @property
     def can_measure(self) -> bool:
@@ -24,31 +27,37 @@ class PerformanceState:
                     or self.restart.is_restarting or self.restart.is_updating)
 
     def begin_start(self) -> None:
-        self.starting.write_text("0")
+        FileAccess.shared().write(self.starting, "0")
+        self.boot_events.clear()
 
     def keep_boot_event(self, event_id: int) -> None:
-        self.starting.write_text(str(event_id))
+        FileAccess.shared().write(self.starting, str(event_id))
+        self.boot_events.clear()
 
     def boot_event(self) -> int:
         try:
-            text = self.starting.read_text()
+            version = FileAccess.shared().version(self.starting)
         except FileNotFoundError:
             return 0
-        return int(text) if text else 0
+        if version not in self.boot_events:
+            text = FileAccess.shared().read(self.starting)
+            self.boot_events = {version: int(text) if text else 0}
+        return self.boot_events[version]
 
     def finish_start(self) -> None:
         self.starting.unlink(missing_ok=True)
+        self.boot_events.clear()
 
     def keep_tests_running(self, is_running: bool) -> None:
         if not is_running:
             self.tests.unlink(missing_ok=True)
             return
         self.tests.parent.mkdir(parents=True, exist_ok=True)
-        self.tests.touch()
+        FileAccess.shared().update_timestamp(self.tests)
 
     @contextmanager
     def reload(self) -> Generator[None]:
-        self.reloading.touch()
+        FileAccess.shared().update_timestamp(self.reloading)
         try:
             yield
         finally:

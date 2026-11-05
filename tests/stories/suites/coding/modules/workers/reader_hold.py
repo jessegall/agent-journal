@@ -274,6 +274,7 @@ def test_reader_sample_changes_make_no_chat_mark(requested_reader_story):
 def test_a_run_with_no_test_results_does_not_fail_the_reader_or_hold_the_next_worker_run(new_story, text):
     story = new_story(fixture=ForcedReaders)
     install_runner(story)
+    story.run("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main", actor=story.agent)
     process = worker_run(story, "python3 -m pytest tests/empty.py", CommandCategory.TEST_RUN)
     end_run(story, process, text, exit_code=5)
     following = worker_run(story, "python3 -m pytest tests/next.py", CommandCategory.TEST_RUN)

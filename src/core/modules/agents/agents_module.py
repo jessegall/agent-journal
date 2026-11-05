@@ -1,3 +1,4 @@
+from core.modules.agents.migrations.m008_agent_parent_index import AgentParentIndexMigration
 from core.modules.agents.commands.program_command.program_command_subcommand import ProgramCommandSubcommand
 from core.modules.agents.commands.program_trust.program_trust_subcommand import ProgramTrustSubcommand
 from core.modules.agents.commands.manage_program.manage_program_subcommand import ManageProgramSubcommand
@@ -30,6 +31,7 @@ from core.modules.agents.migrations.m003_agent_pause import AgentPauseMigration
 from core.modules.agents.migrations.m004_menu_answers import MenuAnswersMigration
 from core.modules.agents.migrations.m006_agent_end_name import AgentEndNameMigration
 from core.modules.agents.migrations.m005_agent_identity import AgentIdentityMigration
+from core.modules.agents.migrations.m007_agent_role_index import AgentRoleIndexMigration
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.menu_answer import MenuAnswer
 from core.modules.agents.upgrade.agents_move import AgentsMove
@@ -66,7 +68,7 @@ class AgentsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [ModelDeclaration(Agent, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"])]
     moves = [AgentsMove]
-    migrations = [AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration]
+    migrations = [AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration]
     handlers = [StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
     subcommands = [ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand]
     bindings = {CallerResolver: AgentCallerResolver}

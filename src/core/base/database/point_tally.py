@@ -38,6 +38,14 @@ class PointTally:
         self.writes += 1
         self.update_statements[sql[:STATEMENT_CHARACTERS]] += 1
 
+    def add(self, points: Points) -> None:
+        self.rows += points.rows
+        self.writes += points.writes
+        self.bytes += points.bytes
+        self.tables.update(points.tables)
+        self.statements.update(points.statements)
+        self.update_statements.update(points.update_statements)
+
     def points(self) -> Points:
         return Points(self.rows, self.writes, self.bytes, Counter(self.tables), Counter(self.statements), Counter(self.update_statements))
 

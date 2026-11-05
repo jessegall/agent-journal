@@ -25,7 +25,7 @@ class PlacePhaseHandler(Handler[PlacePhase, PhaseTask]):
         plan = self.queries.query(Plan).find(phase.plan_id)
         if plan.state in (PlanState.COMPLETED, PlanState.CANCELLED):
             raise Refusal(f"plan {plan.id} is {plan.state}, so no task can be placed in its phases")
-        current = self.queries.query(PhaseTask).filter(task_id=command.task_id).page(1, 1).rows
+        current = self.queries.query(PhaseTask).filter(task_id=command.task_id).limited(1)
         if current and current[0].phase_id == command.phase_id:
             return current[0]
         if current:

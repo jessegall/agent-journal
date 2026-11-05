@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import json
 import os
 import re
@@ -157,7 +158,7 @@ class ClaudeCodeProvider(Provider):
 
     def context_percent(self, home: JournalHome, session: str) -> int | None:
         path = home.status_folder / f"{session}.json"
-        fields: object = json.loads(path.read_text() or "{}") if path.is_file() else {}
+        fields: object = json.loads(FileAccess.shared().read(path) or "{}") if path.is_file() else {}
         window = fields.get("context_window") if is_mapping(fields) else None
         used = window.get("used_percentage") if is_mapping(window) else None
         return int(used) if isinstance(used, int | float) and not isinstance(used, bool) else None

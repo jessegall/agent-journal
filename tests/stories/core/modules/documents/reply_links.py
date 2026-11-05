@@ -1,11 +1,14 @@
 import pytest
+from unittest.mock import patch
 
+from core.base.query.query import Query
+from core.modules.messages.models.message import Message
 from core.testing.story_fixture import StoryFixture
 
 from datetime import timedelta
 
 from tests.stories.core.modules.drivers.hook_durations import BuilderWithUser
-from tests.stories.support.story_checks import expect_count_output
+from tests.stories.support.story_checks import expect_count_output, expect_value
 
 
 class RepliedCartMessage(StoryFixture):
@@ -23,6 +26,15 @@ def replied_story(new_story):
 def test_a_task_the_agent_makes_right_after_replying_links_to_the_message_it_answered(replied_task):
     story = replied_task
     story.run_listeners()
+    story.expect_text("message read 1", "links: task:1", actor=story.user)
+
+
+def test_linking_a_task_reads_the_latest_reply_without_counting_messages(new_story):
+    story = replied_story(new_story)
+    with patch.object(Query, "count", autospec=True, side_effect=Query.count) as counts:
+        story.run('task make "Fix the totals" --environment main', actor=story.agent)
+        story.run_listeners()
+    expect_value([call.args[0].model for call in counts.call_args_list if call.args[0].model is Message], [])
     story.expect_text("message read 1", "links: task:1", actor=story.user)
 
 

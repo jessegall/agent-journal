@@ -1,3 +1,6 @@
+from core.modules.drivers.migrations.m023_agent_line_repeats import AgentLineRepeatsMigration
+from core.modules.drivers.migrations.m022_nudge_total_index import NudgeTotalIndexMigration
+from core.modules.drivers.migrations.m021_agent_line_text_index import AgentLineTextIndexMigration
 from core.modules.drivers.migrations.m020_block_stop_name import BlockStopNameMigration
 from core.modules.drivers.commands.record_subagent_dispatch.record_subagent_dispatch_handler import RecordSubagentDispatchHandler
 from core.modules.drivers.listeners.dispatch_mark_listener import DispatchMarkListener
@@ -70,6 +73,7 @@ from core.modules.drivers.commands.record_hook_call.record_hook_call_handler imp
 from core.modules.drivers.commands.hook_call_feed.hook_call_feed_subcommand import HookCallFeedSubcommand
 from core.modules.drivers.commands.hook_call_show.hook_call_show_subcommand import HookCallShowSubcommand
 from core.modules.drivers.models.hook_call_row import HookCallRow
+from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.drivers.models.nudge_total import NudgeTotal
 from core.modules.drivers.guards.driver_setting_guard import DriverSettingGuard
 from core.modules.drivers.migrations.m001_drivers import DriversTablesMigration
@@ -133,8 +137,8 @@ class DriversModule(Module):
     settings = DRIVERS_SETTINGS
     dependencies = ["journal.core.chat", "journal.core.developer", "journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
     models = [ModelDeclaration(SubagentDispatch, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentBlock, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(NudgeRecord, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine, ClaimAgentLine, ReleaseAgentLine, EnterAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
-    views = [HookCallRow, NudgeTotal]
-    migrations = [BlockStopNameMigration, StrictBlocksMigration, HookChangeNamesMigration, StopBlocksMigration, DriversTablesMigration,HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration, NudgeRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration, SubagentDispatchesMigration, DispatchSubagentMigration, HookCallLineChangesMigration, HookCallTimeIndexesMigration, BlockGracesMigration, AgentLineStateIndexMigration, AgentLineWakesMigration]
+    views = [HookCallRow, NudgeTotal, AgentActivity]
+    migrations = [AgentLineRepeatsMigration, NudgeTotalIndexMigration, AgentLineTextIndexMigration, BlockStopNameMigration, StrictBlocksMigration, HookChangeNamesMigration, StopBlocksMigration, DriversTablesMigration,HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration, NudgeRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration, SubagentDispatchesMigration, DispatchSubagentMigration, HookCallLineChangesMigration, HookCallTimeIndexesMigration, BlockGracesMigration, AgentLineStateIndexMigration, AgentLineWakesMigration]
     handlers = [BindSubagentDispatchHandler, PruneTempFoldersHandler, RecordSubagentDispatchHandler, BlockUntilHandler, CloseAgentBlockHandler, EndSilentHelpersHandler, RecordBypassLineHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
     subcommands = [SkipAgentBlockSubcommand,PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]

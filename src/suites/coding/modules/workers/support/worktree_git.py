@@ -1,4 +1,7 @@
+from core.base.file_access import FileAccess
 import subprocess
+from functools import lru_cache
+from core.base.file_version import FileVersion
 import shutil
 from pathlib import Path
 
@@ -163,17 +166,27 @@ class WorktreeGit:
         git_folder = self.git_folder(folder)
         exclude_file = git_folder / WORKTREE_EXCLUDE_FILE
         worktree_config = git_folder / WORKTREE_CONFIG_FILE
-        if worktree_config.exists() and str(exclude_file) in worktree_config.read_text():
+        if worktree_config.exists() and self.has_exclusion(worktree_config, FileAccess.shared().version(worktree_config), exclude_file):
             return exclude_file
         self.checked(folder, GIT_LIMIT_SECONDS, "config", "extensions.worktreeConfig", "true")
         self.checked(folder, GIT_LIMIT_SECONDS, "config", "--worktree", "core.excludesFile", str(exclude_file))
         return exclude_file
 
+    @staticmethod
+    @lru_cache(maxsize=128)
+    def has_exclusion(path: Path, version: FileVersion, excluded: Path) -> bool:
+        return str(excluded) in FileAccess.shared().read(path)
+
     def git_folder(self, folder: str) -> Path:
         link = Path(folder) / ".git"
         if link.is_file():
-            return (Path(folder) / link.read_text().removeprefix(GIT_FOLDER_PREFIX).strip()).resolve()
+            return (Path(folder) / self.linked_folder(link, FileAccess.shared().version(link))).resolve()
         return Path(self.checked(folder, GIT_LIMIT_SECONDS, "rev-parse", "--absolute-git-dir").stdout.strip())
+
+    @staticmethod
+    @lru_cache(maxsize=128)
+    def linked_folder(path: Path, version: FileVersion) -> str:
+        return FileAccess.shared().read(path).removeprefix(GIT_FOLDER_PREFIX).strip()
 
     def remove(self, folder: str, worktree: Worktree) -> bool:
         if Path(worktree.folder).exists():

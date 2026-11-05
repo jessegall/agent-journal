@@ -24,7 +24,7 @@ class RecordWorkerReportSubcommand(Subcommand[RecordWorkerReport, Message]):
         parser.add_argument("text")
 
     def command(self, arguments: Namespace, caller: Caller) -> RecordWorkerReport:
-        workers = self.queries.query(Agent).filter(id=caller.actor.id, role=AgentRole.WORKER).page(1, 1).rows
+        workers = self.queries.query(Agent).filter(id=caller.actor.id, role=AgentRole.WORKER).limited(1)
         if not workers:
             raise Refusal("only a worker reports to its main agent", "journal message send writes a main agent's message")
         worker = workers[0]

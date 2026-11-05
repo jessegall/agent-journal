@@ -1,3 +1,7 @@
+from core.base.file_access import FileAccess
+from core.base.file_version import FileVersion
+from functools import lru_cache
+from pathlib import Path
 from core.base.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.base.registry.registry import Registry
@@ -23,14 +27,20 @@ class SkillCatalogue:
         paths = {path.parent.name: path for program_folder in reversed(self.providers.skill_folders()) for path in (self.home.project_folder / program_folder).glob(f"*/{SKILL_FILE}")}
         for path in [paths[name] for name in sorted(paths)]:
             try:
-                text = path.read_text()
+                entries.extend(self.loaded_skill(path, FileAccess.shared().version(path)))
             except FileNotFoundError:
                 continue
-            fields = self.front_matter(text)
-            if PLUGIN_KEY in fields:
-                entries.append(SkillEntry(path.parent.name, f"plugin:{fields[PLUGIN_KEY]}", fields["description"] if "description" in fields else "", (), (), (),
-                                          SkillDigest.digest(text), str(path), False))
         return entries
+
+    @staticmethod
+    @lru_cache(maxsize=256)
+    def loaded_skill(path: Path, version: FileVersion) -> tuple[SkillEntry, ...]:
+        text = FileAccess.shared().read(path)
+        fields = SkillCatalogue.front_matter(text)
+        if PLUGIN_KEY not in fields:
+            return ()
+        return (SkillEntry(path.parent.name, f"plugin:{fields[PLUGIN_KEY]}", fields["description"] if "description" in fields else "", (), (), (),
+                           SkillDigest.digest(text), str(path), False),)
 
     @staticmethod
     def front_matter(text: str) -> dict[str, str]:

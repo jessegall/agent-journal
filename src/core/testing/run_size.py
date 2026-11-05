@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import re
 from collections.abc import Iterable, Iterator
 from pathlib import Path
@@ -29,7 +30,7 @@ class RunSize:
             if TEST_NAME_SEPARATOR in target:
                 yield 1
             else:
-                yield from (len(TEST_FUNCTION.findall(path.read_text(errors="replace"))) for path in self.python_files(Path(target)))
+                yield from (len(TEST_FUNCTION.findall(FileAccess.shared().read(path, errors="replace"))) for path in self.python_files(Path(target)))
 
     @staticmethod
     def python_files(target: Path) -> Iterable[Path]:

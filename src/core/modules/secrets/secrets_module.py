@@ -1,3 +1,4 @@
+from core.modules.secrets.migrations.m002_active_secret_index import ActiveSecretIndexMigration
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.secrets.support.secret_nudges import SECRET_NUDGES
 from core.base.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
@@ -46,7 +47,7 @@ class SecretsModule(Module):
     skills = [SkillDeclaration("journal-secrets", "Use keys and logins without seeing them; read it when a task needs a key or a login", keywords=("secret", "secrets", "api key", "token", "password", "login"), commands=["secret"])]
     seeders = [SecretsSeeder]
     models = [ModelDeclaration(Secret, query=SecretQuery, excluded_subcommands=ALL_SUBCOMMANDS)]
-    migrations = [SecretsTableMigration]
+    migrations = [ActiveSecretIndexMigration, SecretsTableMigration]
     moves = [SecretsMove]
     handlers = [MakeSecretHandler, EditSecretHandler, FillSecretHandler, ProposeProgramHandler, AllowProgramHandler, ChangeSecretDeletionHandler]
     subcommands = [MakeSecretSubcommand, RequestSecretSubcommand, EditSecretSubcommand, FillSecretSubcommand, StoreSecretSubcommand, SecretListSubcommand,

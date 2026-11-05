@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 import json
 import importlib
 import shutil
@@ -49,7 +50,7 @@ class ModuleRemoval:
             self.schema.remove_migration_records(module.name)
             for model in self.check.models(remaining_modules):
                 self.database.update(TableStatements(self.tables.table(model)).metadata_removal(module.name))
-        self.home.module_list.write_text(json.dumps([path for path in listed if path != module_paths[0]]))
+        FileAccess.shared().write(self.home.module_list, json.dumps([path for path in listed if path != module_paths[0]]))
         self.sync.run()
         self.remove_folder(module_paths[0])
 

@@ -22,4 +22,6 @@ class BrokenTaskWaitRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         broken = self.checks.broken_task_waits()
-        return RuleAnswer.with_nudges(*(BROKEN_TASK_WAIT.nudge(task=self.queries.query(TaskWait).find(check.task_wait_id).task_id, output=check.last_output.strip()) for check in broken if check.task_wait_id is not None))
+        waits = self.queries.query(TaskWait).find_many([check.task_wait_id for check in broken if check.task_wait_id is not None])
+        tasks = {wait.id: wait.task_id for wait in waits}
+        return RuleAnswer.with_nudges(*(BROKEN_TASK_WAIT.nudge(task=tasks[check.task_wait_id], output=check.last_output.strip()) for check in broken if check.task_wait_id is not None))

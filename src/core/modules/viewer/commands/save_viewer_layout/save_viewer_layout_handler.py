@@ -21,7 +21,7 @@ class SaveViewerLayoutHandler(Handler[SaveViewerLayout, ViewerLayout]):
         if context.environment_id is None:
             raise Refusal("a layout belongs to an environment", "name one with --environment")
         rows = self.queries.query(ViewerLayout).filter(environment_id=context.environment_id, person_id=context.actor.id, suite=command.suite,
-                                                       page=command.page, driver=command.driver).page(1, 1).rows
+                                                       page=command.page, driver=command.driver).limited(1)
         if rows and command.base_version is not None and rows[0].version != command.base_version:
             raise Refusal(f"the layout was saved again since version {command.base_version}; it is at version {rows[0].version}",
                           f"journal viewer-layout current --suite {command.suite} --page {command.page} reads it")

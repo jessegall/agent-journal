@@ -1,8 +1,13 @@
+from core.base.file_access import FileAccess
 import json
+from copy import deepcopy
+from functools import lru_cache
+from core.base.file_version import FileVersion
 from collections.abc import Sequence
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
+from core.base.type_guards import is_mapping
 from core.modules.mcp.models.mcp_server import McpServer
 
 FILE = Path(".mcp.json")
@@ -17,7 +22,7 @@ class ClaudeServerFile:
         self.path = home.project_folder / FILE
 
     def names(self) -> set[str]:
-        return set(self.read().get(SERVERS, {}))
+        return set(self.stored_servers(self.read()))
 
     def write(self, servers: Sequence[McpServer], dropped: Sequence[str]) -> None:
         self.write_file(self.path, servers, dropped)
@@ -25,17 +30,30 @@ class ClaudeServerFile:
     @staticmethod
     def write_file(path: Path, servers: Sequence[McpServer], dropped: Sequence[str]) -> None:
         settings = ClaudeServerFile.read_file(path)
-        kept = {name: entry for name, entry in settings.get(SERVERS, {}).items() if name not in dropped}
+        kept = {name: entry for name, entry in ClaudeServerFile.stored_servers(settings).items() if name not in dropped}
         settings[SERVERS] = {**kept, **{server.name: ClaudeServerFile.entry(server) for server in servers}}
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(settings, indent=2) + "\n")
+        FileAccess.shared().write(path, json.dumps(settings, indent=2) + "\n")
 
-    def read(self) -> dict[str, dict[str, object]]:
+    def read(self) -> dict[str, object]:
         return self.read_file(self.path)
 
     @staticmethod
-    def read_file(path: Path) -> dict[str, dict[str, object]]:
-        return json.loads(path.read_text() or "{}") if path.is_file() else {}
+    def read_file(path: Path) -> dict[str, object]:
+        if not path.is_file():
+            return {}
+        return deepcopy(ClaudeServerFile.loaded_settings(path, FileAccess.shared().version(path)))
+
+    @staticmethod
+    @lru_cache(maxsize=128)
+    def loaded_settings(path: Path, version: FileVersion) -> dict[str, object]:
+        loaded: object = json.loads(FileAccess.shared().read(path) or "{}")
+        return {str(key): value for key, value in loaded.items()} if is_mapping(loaded) else {}
+
+    @staticmethod
+    def stored_servers(settings: dict[str, object]) -> dict[str, object]:
+        servers = settings.get(SERVERS, {})
+        return {str(key): value for key, value in servers.items()} if is_mapping(servers) else {}
 
     @staticmethod
     def entry(server: McpServer) -> dict[str, object]:

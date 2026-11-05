@@ -27,7 +27,7 @@ class ViewerLayoutCurrentSubcommand(ReadSubcommand[ViewerLayout]):
     def read(self, arguments: Namespace, caller: Caller) -> ViewerLayout:
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         rows = self.queries.query(ViewerLayout).filter(environment_id=environment_id, person_id=caller.actor.id, suite=arguments.suite,
-                                                       page=arguments.page, driver=arguments.driver).page(1, 1).rows
+                                                       page=arguments.page, driver=arguments.driver).limited(1)
         if not rows:
             raise Refusal(f"you saved no layout of {arguments.page} for {arguments.suite}", "the viewer then shows the suite's layout")
         return rows[0]

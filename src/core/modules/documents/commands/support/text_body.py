@@ -2,6 +2,7 @@ from argparse import Namespace
 from pathlib import Path
 
 from core.base.refusal import Refusal
+from core.base.file_access import FileAccess
 
 
 class TextBody:
@@ -15,5 +16,5 @@ class TextBody:
             path = Path(arguments.file)
             if not path.is_file():
                 raise Refusal(f"no such file: {arguments.file}", "name a markdown file")
-            return path.read_text()
+            return FileAccess.shared().read(path)
         return None if arguments.body is None else arguments.body.replace("\\n", "\n")

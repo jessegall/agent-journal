@@ -19,7 +19,7 @@ class TitleOutputHandler(Handler[TitleOutput, Output]):
         self.outputs, self.repository = outputs, repository
 
     def handle(self, command: TitleOutput, context: Context) -> Output:
-        kept = self.outputs.process(command.process_id).page(1, 1).rows
+        kept = self.outputs.process(command.process_id).limited(1)
         if not kept:
             raise Refusal(f"process {command.process_id} keeps no output", "a short run keeps none")
         return self.repository.save(replace(kept[0], title=TitlePhrase.checked(command.title)), context)

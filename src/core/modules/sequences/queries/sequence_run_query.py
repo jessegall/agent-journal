@@ -15,4 +15,4 @@ class SequenceRunQuery(Query[SequenceRun]):
         return self.filter(sequence_id=sequence_id).matching(IsNull("ended_at")).exists()
 
     def current(self, agent_id: int) -> SequenceRun | None:
-        return next(iter(self.filter(agent_id=agent_id).matching(IsNull("ended_at")).newest().page(1, 1).rows), None)
+        return next(iter(self.filter(agent_id=agent_id).matching(IsNull("ended_at")).newest().limited(1)), None)

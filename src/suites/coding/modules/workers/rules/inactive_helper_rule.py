@@ -1,5 +1,7 @@
 from collections.abc import Sequence
 
+from suites.coding.modules.workers.commands.send_silent_agent_lines.send_silent_agent_lines import SendSilentAgentLines
+
 from suites.coding.modules.workers.support.worker_nudges import HELPER_INACTIVE
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_MINUTES
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
@@ -10,10 +12,12 @@ from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.seconds import Seconds
 from core.base.query.conditions.is_null import IsNull
+from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.queries.hook_call_query import HookCallQuery
+from core.modules.drivers.models.agent_activity import AgentActivity
+from core.modules.drivers.support.agent_activities import AgentActivities
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.processes.queries.process_query import ProcessQuery
 from suites.coding.modules.workers.support.queue_run_workers import QueueRunWorkers
@@ -32,16 +36,20 @@ class InactiveHelperRule(DriverRule):
     roles = [AgentRole.MAIN]
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, calls: HookCallQuery, history: HookHistory, settings: SettingValues, processes: ProcessQuery, workers: QueueRunWorkers, requests: ReaderRequestQuery) -> None:
-        self.queries, self.calls, self.hook_history, self.settings = queries, calls, history, settings
+    def __init__(self, queries: Queries, activities: AgentActivities, history: HookHistory, settings: SettingValues, processes: ProcessQuery, workers: QueueRunWorkers, requests: ReaderRequestQuery) -> None:
+        self.queries, self.activities, self.hook_history, self.settings = queries, activities, history, settings
         self.processes, self.workers = processes, workers
         self.requests = requests
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
+        return self.warning(hook).running(SendSilentAgentLines(hook.environment_id))
+
+    def warning(self, hook: AgentHook) -> RuleAnswer:
         span = self.settings.minutes(INACTIVE_HELPER_MINUTES, hook.environment_id)
         if self.hook_history.has_recent_answer(self.name, hook, span):
             return RuleAnswer.allowed()
-        inactive = [helper for helper in self.helpers(hook.agent_id) if self.is_inactive(helper, hook, span)]
+        activities = self.activities.read(hook)
+        inactive = [helper for helper in self.helpers(hook.agent_id) if self.is_inactive(helper, activities[helper.id], hook, span)]
         if not inactive:
             return RuleAnswer.allowed()
         notes = self.queue_notes(inactive, hook.environment_id)
@@ -60,12 +68,11 @@ class InactiveHelperRule(DriverRule):
         return notes
 
     def helpers(self, main_id: int) -> list[Agent]:
-        return [helper for role in HELPER_ROLES for helper in self.queries.query(Agent).filter(parent_id=main_id, role=role).matching(IsNull("ended_at")).oldest().all_rows()]
+        helpers = self.queries.query(Agent).filter(parent_id=main_id).matching(Among("role", HELPER_ROLES)).matching(IsNull("ended_at")).oldest().all_rows()
+        return sorted(helpers, key=lambda helper: HELPER_ROLES.index(helper.role))
 
-    def is_inactive(self, helper: Agent, hook: AgentHook, span: Seconds) -> bool:
+    def is_inactive(self, helper: Agent, activity: AgentActivity, hook: AgentHook, span: Seconds) -> bool:
         if self.requests.has_active_requests(helper.id, hook.timestamp):
             return False
-        newest = self.calls.newest_agent_hook(helper.id)
-        activity_at = newest.created_at if newest is not None else helper.created_at
-        return activity_at is not None and activity_at.elapsed_seconds(hook.timestamp) >= span.count
+        return activity.is_inactive(hook.timestamp, span.count)
 

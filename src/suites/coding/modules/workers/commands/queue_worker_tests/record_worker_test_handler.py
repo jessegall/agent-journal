@@ -71,7 +71,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
                 self.repository.save(task.close(context.timestamp, context.actor, "its tests passed"), context)
 
     def start_next(self, worktree: Worktree, context: Context) -> None:
-        started_task = next(iter(self.tasks.holder(worktree.agent_id).started().page(1, 1).rows), None)
+        started_task = next(iter(self.tasks.holder(worktree.agent_id).started().limited(1)), None)
         if started_task is not None:
             self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=started_task.id), context)
             return

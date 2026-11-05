@@ -21,6 +21,7 @@ class AgentLine(Model):
     text: str
     source: str = ""
     wakes_agent: bool = False
+    repeats_without_hook: bool = False
     state: AgentLineState = AgentLineState.WAITING
     delivered_at: Timestamp | None = None
 

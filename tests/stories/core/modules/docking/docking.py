@@ -11,7 +11,7 @@ from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from core.base.refusal import Refusal
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.commands.keep_dock_item.keep_dock_item import KeepDockItem
-from tests.stories.core.modules.docking.support.dock_samples import SAMPLE, TIMEOUT_SECONDS, SampleDockType, docked, docked_state, ended_task, running_task, expect_docked_state
+from tests.stories.core.modules.docking.support.dock_samples import SAMPLE, TIMEOUT_SECONDS, SampleDockType, docked, docked_state, ended_task, running_task, expect_docked_state, leave_tick
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_events_window_with, expect_value_2
 
@@ -50,17 +50,17 @@ def test_an_item_leaves_after_its_time_unless_it_was_kept(leaving_dock):
     stays = docked(story, ended_task(story, "Staying"))
     story.container.get(Bus).run(KeepDockItem(stays.id), story.user)
     story.advance(timedelta(seconds=TIMEOUT_SECONDS + 1))
-    story.run('task make "Tick" --environment main', actor=story.user)
-    story.run_listeners()
+    leave_tick(story)
     expect_docked_state_2(story, leaves, stays, ("undocked", "docked"))
 
 
-def test_an_item_leaves_on_a_change_in_another_environment(leaving_dock):
+def test_an_item_leaves_on_a_tick_after_a_change_in_another_environment(leaving_dock):
     story, leaves = leaving_dock
     story.expect_success("environment make other /work/other", actor=story.user)
     story.advance(timedelta(seconds=TIMEOUT_SECONDS + 1))
     story.run('task make "Tick" --environment other', actor=story.user)
     story.run_listeners()
+    leave_tick(story)
     expect_docked_state(story, leaves, "undocked")
 
 

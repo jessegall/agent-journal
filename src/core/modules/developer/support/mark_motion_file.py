@@ -1,3 +1,4 @@
+from core.base.file_access import FileAccess
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
@@ -14,7 +15,7 @@ class MarkMotionFile:
     def add(self, frames: str) -> None:
         lines = [*self.text().splitlines(), frames][-RECORDINGS_KEPT:]
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text("\n".join(lines) + "\n")
+        FileAccess.shared().write(self.path, "\n".join(lines) + "\n")
 
     def text(self) -> str:
-        return self.path.read_text() if self.path.exists() else ""
+        return FileAccess.shared().read(self.path) if self.path.exists() else ""

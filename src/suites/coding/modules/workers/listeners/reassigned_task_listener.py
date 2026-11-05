@@ -40,7 +40,7 @@ class ReassignedTaskListener(SaveListener[Moved[Task]]):
             return
         following = self.tasks.next_delegated(old.holder_id)
         if following is None:
-            finished = self.tasks.holder(old.holder_id).filter(state=TaskState.TESTING).page(1, 1).rows
+            finished = self.tasks.holder(old.holder_id).filter(state=TaskState.TESTING).limited(1)
             if finished:
                 self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=finished[0].id), context)
             return

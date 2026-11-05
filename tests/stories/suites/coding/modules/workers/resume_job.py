@@ -34,7 +34,7 @@ def test_a_resumed_workers_job_is_entered_once(new_story, monkeypatch, entered_d
             entered.append(command.row_id)
         return original_run(bus, command, *arguments, **options)
 
-    def take_line(launcher, agent, environment, command):
+    def record_launch(launcher, agent, environment, command):
         job = story.container.get(Queries).query(AgentLine).filter(agent_id=agent.id, source=WORKER_JOB_SOURCE).newest().first()
         job_ids.append(job.id)
         if entered_during_hand:
@@ -42,7 +42,7 @@ def test_a_resumed_workers_job_is_entered_once(new_story, monkeypatch, entered_d
         return LaunchAnswer.STARTED
 
     monkeypatch.setattr(Bus, "run", record_enter)
-    monkeypatch.setattr(WorkerLauncher, "hand", take_line)
+    monkeypatch.setattr(WorkerLauncher, "hand", record_launch)
     story.expect_success(f'worker send {worker.id} "Continue the task"', actor=story.agent)
     story.run_listeners()
 

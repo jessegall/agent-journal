@@ -7,7 +7,8 @@ from core.base.query.queries import Queries
 from core.base.query.query import PAGE_SIZE_ROWS
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.modules.dumps.models.dump_row import DumpRow
+from core.modules.dumps.models.dump import Dump
+from core.modules.dumps.models.dump_item import DumpItem
 from core.modules.dumps.support.dump_board import DumpBoard
 
 
@@ -25,10 +26,10 @@ class DumpBoardSubcommand(ReadSubcommand[DumpBoard]):
         parser.add_argument("--before", type=int, default=0)
 
     def read(self, arguments: Namespace, caller: Caller) -> DumpBoard:
-        dumps = self.queries.query(DumpRow).filter(row_type="dump")
-        page = (dumps.matching(Less("dump_id", arguments.before)) if arguments.before else dumps).descending("dump_id").page(1, PAGE_SIZE_ROWS)
-        items = self.queries.query(DumpRow).filter(row_type="item").matching(Among("dump_id", tuple(dump.dump_id for dump in page.rows))).ordered("dump_id", "position")
-        return DumpBoard(dumps.count(), page.rows, tuple(items.all_rows()))
+        dumps = self.queries.query(Dump)
+        rows = (dumps.matching(Less("id", arguments.before)) if arguments.before else dumps).newest().limited(PAGE_SIZE_ROWS)
+        items = self.queries.query(DumpItem).matching(Among("dump_id", tuple(dump.id for dump in rows))).ordered("dump_id", "position")
+        return DumpBoard(dumps.count(), rows, tuple(items.all_rows()))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, DumpBoard):

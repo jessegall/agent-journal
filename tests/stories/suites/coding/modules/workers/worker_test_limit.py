@@ -45,6 +45,13 @@ def limited_run(new_story):
     return story, process
 
 
+def test_the_limit_defaults_to_25_and_an_environments_value_wins(new_story):
+    story = new_story(fixture=ForcedReaders)
+    story.expect_success("setting show journal.suites.coding.workers.worker-run-most-tests", "value: 25")
+    story.run("setting set journal.suites.coding.workers.worker-run-most-tests 10 --environment main", actor=story.agent)
+    story.expect_success("setting show journal.suites.coding.workers.worker-run-most-tests --environment main", "value: 10")
+
+
 def test_a_run_over_the_limit_is_stopped_when_its_collected_line_is_read(limited_run):
     story, process = limited_run
     story.container.get(OutputFolder).write_output(process.id, 1, "collected 8 items\n")
