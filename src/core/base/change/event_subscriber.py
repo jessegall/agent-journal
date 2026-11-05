@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from functools import cache
 from typing import ClassVar, Generic, TypeVar
 
 from core.base.change.event_pattern import EventPattern
@@ -24,5 +25,6 @@ class EventSubscriber(Generic[E]):
             cls.event = "|".join(event_type.pattern(cls.moves) for event_type in declared)
 
     @classmethod
+    @cache
     def event_type(cls, event_name: str) -> EventType:
         return next(event_type for event_type in cls.event_types if EventPattern(event_type.pattern(cls.moves)).matches(event_name))

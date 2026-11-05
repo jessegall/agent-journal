@@ -10,7 +10,7 @@ const y = (o, n) => {
   __name: "TranscriptRows",
   props: { line: { type: String, required: !0 }, padding: { type: String, default: "8px 22px 8px 27px" } },
   setup(o) {
-    const n = o, { rows: a, failure: r, loaded: c } = g(n.line, ["hook_call.create"]), u = m(() => {
+    const n = o, { rows: a, failure: r, loaded: c } = g(n.line, ["hook_call.*"]), u = m(() => {
       var t;
       return ((t = a.value.at(-1)) == null ? void 0 : t.id) ?? 0;
     }), _ = (t) => t.time ? new Date(t.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "";
@@ -48,7 +48,7 @@ const y = (o, n) => {
       _: 1
     }, 8, ["padding"]));
   }
-}, O = /* @__PURE__ */ y(N, [["__scopeId", "data-v-3d67c86c"]]);
+}, O = /* @__PURE__ */ y(N, [["__scopeId", "data-v-e944eb76"]]);
 export {
   O as T,
   y as _

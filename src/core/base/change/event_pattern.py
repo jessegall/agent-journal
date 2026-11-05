@@ -1,3 +1,4 @@
+from functools import cache
 from dataclasses import dataclass
 from core.base.change.event_pattern_error import EventPatternError
 
@@ -18,6 +19,7 @@ class EventPattern:
             if pattern != ANY and (len(parts) != EVENT_PARTS or not all(parts)):
                 raise EventPatternError(f"{self.text} is no event pattern: write model.change, either part may be *, or * alone, several joined by |")
 
+    @cache
     def matches(self, event: str) -> bool:
         return any(self.matches_one(pattern, event) for pattern in self.text.split(ALTERNATIVE))
 

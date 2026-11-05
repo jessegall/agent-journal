@@ -5,7 +5,7 @@ from core.base.agent_policy import AgentPolicy
 from core.base.role_group import RoleGroup
 from core.base.agent_role import AgentRole
 from dataclasses import asdict, dataclass, field, replace
-from functools import lru_cache
+from functools import cached_property, lru_cache
 
 from core.base.change.event_pattern import EventPattern
 from core.base.database.database import Database
@@ -14,6 +14,7 @@ from core.base.database.registry_table import RegistryTable
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.driver_entry import DriverEntry
 from core.base.registry.driver_rule_entry import DriverRuleEntry
+from core.base.registry.event_lookup import EventLookup
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
@@ -222,12 +223,15 @@ class Registry:
         if code_fingerprint != self.fingerprint:
             raise StaleRegistryError("the journal's modules changed: journal module sync")
 
+    @cached_property
+    def event_lookup(self) -> EventLookup:
+        return EventLookup(self.guards, self.listeners)
+
     def event_guards(self, event: str) -> tuple[GuardEntry, ...]:
-        return tuple(sorted((guard for guard in self.guards if guard.event.matches(event)), key=lambda guard: guard.position))
+        return self.event_lookup.guards_of(event)
 
     def event_listeners(self, event: str, timing: ListenerTiming) -> tuple[ListenerEntry, ...]:
-        matching = (listener for listener in self.listeners if listener.timing is timing and listener.event.matches(event))
-        return tuple(sorted(matching, key=lambda listener: listener.position))
+        return self.event_lookup.listeners_of(event, timing)
 
     def has_handler(self, command: type) -> bool:
         return DottedPath.class_path(command).text in self.handlers

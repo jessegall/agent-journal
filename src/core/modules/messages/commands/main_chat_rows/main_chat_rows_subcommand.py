@@ -30,8 +30,7 @@ class MainChatRowsSubcommand(ReadSubcommand[ViewRowPage]):
         parser.add_argument("--before-id", type=int, default=None)
 
     def read(self, arguments: Namespace, caller: Caller) -> ViewRowPage:
-        environment_id = self.environment_names.environment_id(arguments.environment) if
-        arguments.environment else caller.environment_id
+        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         if environment_id is None:
             raise Refusal("the main chat is shown for one environment", "name it with --environment")
         marks = self.queries.query(MainChatMark).filter(environment_id=environment_id)
