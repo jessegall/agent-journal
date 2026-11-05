@@ -183,6 +183,7 @@
         "architecture_scopes_agent_filtered_by_hand",
         "architecture_scopes_model_without_environment_scope",
         "architecture_scopes_model_without_agent_scope",
+        "architecture_scopes_scope_id_set_on_a_new_row",
         "architecture_testing_sleep_in_a_test",
         "architecture_testing_clock_loop_in_a_test",
         "architecture_testing_interpreter_in_a_test",
