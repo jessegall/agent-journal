@@ -1,3 +1,5 @@
+from core.modules.developer.commands.send_exception_line.send_exception_line_handler import EXCEPTION_LINE, SendExceptionLineHandler
+from core.modules.developer.listeners.exception_line_listener import ExceptionLineListener
 from core.modules.developer.support.reader_time_tool import ReaderTimeTool
 from core.base.performance.route_cost_tool import RouteCostTool
 from core.modules.developer.support.developer_route_cost_tool import DeveloperRouteCostTool
@@ -31,7 +33,9 @@ class DeveloperModule(Module):
     settings = DEVELOPER_SETTINGS
     migrations = [HookRequestsMigration]
     views = [HookRequest]
-    handlers = [ResetHookNumbersHandler, RecordMarkMotionHandler]
+    handlers = [ResetHookNumbersHandler, RecordMarkMotionHandler, SendExceptionLineHandler]
+    listeners = [ExceptionLineListener]
+    nudges = [EXCEPTION_LINE]
     bindings = {RouteCostTool: DeveloperRouteCostTool}
     performance_tools = [SlowTickTool, ReaderTimeTool, RouteCostTool]
     subcommands = [HookNumbersSubcommand, HookRequestsSubcommand, ResetHookNumbersSubcommand, RecordMarkMotionSubcommand, MarkMotionsSubcommand]
