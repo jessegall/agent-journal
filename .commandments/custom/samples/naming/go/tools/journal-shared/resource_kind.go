@@ -1,5 +1,6 @@
 package resources
 
+// @sin naming_go_poetic_type_name
 type Kind struct { Name string }
 
 // @righteous naming_go_poetic_variable_name
