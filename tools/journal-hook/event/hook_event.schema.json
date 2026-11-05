@@ -280,7 +280,9 @@
       "properties": {
         "aliases": {
           "type": "array",
-          "items": {"type": "string"}
+          "items": {
+            "type": "string"
+          }
         },
         "line": {
           "type": "string"
@@ -364,7 +366,8 @@
       "additionalProperties": false,
       "required": [
         "category",
-        "effects"
+        "effects",
+        "uncertain"
       ],
       "properties": {
         "category": {
@@ -387,6 +390,9 @@
               "changes_folder"
             ]
           }
+        },
+        "uncertain": {
+          "type": "boolean"
         }
       }
     },
@@ -482,12 +488,28 @@
         "answer": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["refusal", "lines", "updated_input", "terminal"],
+          "required": [
+            "refusal",
+            "lines",
+            "updated_input",
+            "terminal"
+          ],
           "properties": {
-            "refusal": {"type": "string"},
-            "lines": {"type": "array", "items": {"type": "string"}},
-            "updated_input": {"type": "object"},
-            "terminal": {"type": "string"}
+            "refusal": {
+              "type": "string"
+            },
+            "lines": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "updated_input": {
+              "type": "object"
+            },
+            "terminal": {
+              "type": "string"
+            }
           }
         }
       }

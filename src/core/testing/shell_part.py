@@ -17,10 +17,11 @@ class ShellPart:
     pipe_target: int | None = None
     output_paths: Sequence[str] = ()
     is_full_test_run: bool = False
+    uncertain: bool = False
 
     def prepared(self, text: str) -> dict[str, object]:
         fields: dict[str, object] = {"text": text, "program": self.program, "arguments": list(self.arguments),
-                                     "classification": {"category": self.category, "effects": list(self.effects)}}
+                                     "classification": {"category": self.category, "effects": list(self.effects), "uncertain": self.uncertain}}
         fields = {**fields, "write_paths": list(self.output_paths)} if self.output_paths else fields
         fields = {**fields, "is_full_test_run": True} if self.is_full_test_run else fields
         fields = fields if self.pipe_target is None else {**fields, "piped_into": self.pipe_target}

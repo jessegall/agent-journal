@@ -55,6 +55,14 @@ class ShellLine:
         return tuple(part for index, part in enumerate(self.parts) if index == 0 or self.parts[index - 1].pipe_target is None)
 
     @property
+    def has_uncertain_part(self) -> bool:
+        return self.has_old_hook_part or any(part.classification.uncertain for part in self.parts)
+
+    @property
+    def has_old_hook_part(self) -> bool:
+        return any(part.classification.uncertainty_absent for part in self.parts)
+
+    @property
     def has_test_run_part(self) -> bool:
         return self.has_category_part(CommandCategory.TEST_RUN)
 

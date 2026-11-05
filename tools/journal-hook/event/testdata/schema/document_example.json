@@ -27,7 +27,7 @@
             "category": "version control",
             "effects": [
               "reads_files"
-            ]
+            ],"uncertain": false
           },
           "joined_by": "&&"
         },
@@ -43,7 +43,7 @@
             "category": "search",
             "effects": [
               "reads_files"
-            ]
+            ],"uncertain": false
           },
           "read_paths": [
             "src/app.py"
@@ -58,7 +58,7 @@
           ],
           "classification": {
             "category": "read",
-            "effects": []
+            "effects": [],"uncertain": false
           }
         }
       ],

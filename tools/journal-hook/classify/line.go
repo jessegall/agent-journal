@@ -55,7 +55,7 @@ func (classifier *Classifier) part(command shell.Command, classification Classif
 		Program:        program,
 		Subcommand:     subcommand,
 		Arguments:      arguments,
-		Classification: event.Classification{Category: classification.Category, Effects: classification.Effects},
+		Classification: event.Classification{Category: classification.Category, Effects: classification.Effects, Uncertain: classification.Uncertain},
 		ReadPaths:      nonEmpty(classifier.ReadPaths(command.Text)),
 		WritePaths:     nonEmpty(classifier.WritePaths(command.Text)),
 		JoinedBy:       command.JoinedBy,
