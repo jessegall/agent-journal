@@ -141,9 +141,9 @@ def test_a_hook_starts_no_script_for_an_edit_the_plugin_hears_and_does_not_hold(
     starts = start_counter(monkeypatch, "see.sh")
     scanned_edit(story, "s-1", "a.py")
     story.run_listeners()
-    started_before_hook = list(starts)
+    start_count_before_hook = list(starts)
     story.expect_hook_allowed("s-1", LISTING_SAMPLE)
-    story.expect_rows(started_before_hook == ["events"], starts == started_before_hook)
+    story.expect_rows(start_count_before_hook == ["events"], starts == start_count_before_hook)
 
 def read_counter(monkeypatch, file: Path) -> list[Path]:
     reads: list[Path] = []

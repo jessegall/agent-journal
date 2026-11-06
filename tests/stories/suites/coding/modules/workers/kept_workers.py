@@ -139,7 +139,8 @@ def test_a_merged_worker_gets_a_new_cut_on_its_session(new_story):
     story.expect_success(f"worker send {worker.id} --task {task_id}", actor=story.agent)
     story.expect_text(f"task show {task_id}", "state: started", f"holder_id: {worker.id}", actor=story.agent)
     worktree = story.container.get(WorktreeQuery).worker_worktree(worker.id)
-    story.expect_rows(worktree.task_id == task_id, Path(worktree.folder).is_dir())
+    newest = story.container.get(WorktreeQuery).newest_worktree(worker.id)
+    story.expect_rows(worktree.task_id == task_id, newest.id == worktree.id, Path(worktree.folder).is_dir())
 
 
 def test_an_unmerged_branch_is_never_overwritten(new_story):
