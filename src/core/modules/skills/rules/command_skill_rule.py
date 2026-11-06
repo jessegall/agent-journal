@@ -27,7 +27,8 @@ class CommandSkillRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
         parts = tool.shell.parts if tool is not None and tool.shell is not None else ()
-        covered = {part.subcommand or part.arguments[0] for part in parts if part.classification.category is CommandCategory.JOURNAL and part.arguments}
+        journal_parts = [part for part in parts if part.classification.category is CommandCategory.JOURNAL and part.arguments]
+        covered = {part.subcommand or part.arguments[0] for part in journal_parts} | {" ".join(part.arguments[:2]) for part in journal_parts}
         missing = [skill for skill in self.catalogue.skills() if covered.intersection(skill.commands) and not self.rows.is_loaded(hook.agent_id, skill.folder, skill.digest)]
         if not missing or not self.requirement.is_required:
             return RuleAnswer.allowed()

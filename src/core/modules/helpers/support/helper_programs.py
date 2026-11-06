@@ -18,10 +18,14 @@ class HelperPrograms:
     def __init__(self, home: JournalHome, providers: Providers, managed: ManagedHooks) -> None:
         self.home, self.providers, self.managed = home, providers, managed
 
-    def checked(self, program: str, folder: Path) -> None:
+    def installed(self, program: str) -> None:
         provider = self.providers.provider(program)
         if shutil.which(provider.executable) is None:
             raise Refusal(f"{program} is not installed here", f"install {provider.executable} or name another program")
+
+    def checked(self, program: str, folder: Path) -> None:
+        self.installed(program)
+        provider = self.providers.provider(program)
         hooks = ProgramHooks.hooks(type(provider), folder)
         if not hooks.is_complete():
             hooks.write(f'"{self.home.folder / HOOK_RUNNER}"', folder, self.managed.all())

@@ -8,13 +8,14 @@ START, END = "start", "end"
 
 @dataclass(frozen=True)
 class MoveSequenceRun(Command[SequenceLine]):
-    """Moves the calling agent's sequence run: start runs the sequence named, follow takes the step up, next
-    moves on or ends it, and abandon gives it up, only with --sure once it was told what it leaves undone.
-    End closes the run when what it
-    was about has reached its end; subject_id is the row that started the run."""
+    """Moves the calling agent's top sequence run: start puts the sequence named on top, follow takes the step
+    up, next moves on or ends it, and abandon gives it up, only with --sure once it was told what it leaves
+    undone. End closes the run named by run_id, or the top one, when what it was about has reached its end;
+    subject_id is the row that started the run."""
 
     action: str
     sequence_id: int | None = None
     reason: str = ""
     sure: bool = False
     subject_id: int | None = None
+    run_id: int | None = None

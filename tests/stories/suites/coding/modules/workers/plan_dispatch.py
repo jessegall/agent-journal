@@ -7,6 +7,7 @@ from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.modules.workers.test_queue import recording_launch
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.core.support.plan_steps import ready_plan
 
 
 def planned_story(new_story, approve: bool = True):
@@ -22,8 +23,8 @@ def planned_story(new_story, approve: bool = True):
         task_id = story.new_row_id(f'task make "{title}" --environment main')
         story.run(f"phase place {task_id} --phase {phase}")
     if approve:
-        for move in ("ready", "approve"):
-            story.run(f"plan {move} 1 --environment main", actor=story.user)
+        ready_plan(story, actor=story.user)
+        story.run("plan approve 1 --environment main", actor=story.user)
     return story
 
 

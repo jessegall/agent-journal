@@ -9,5 +9,8 @@ class StoryHelperPrograms(HelperPrograms):
     def __init__(self) -> None:
         return None
 
+    def installed(self, program: str) -> None:
+        return None
+
     def checked(self, program: str, folder: Path) -> None:
         return None

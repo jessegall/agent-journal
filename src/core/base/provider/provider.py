@@ -6,6 +6,7 @@ from typing import ClassVar
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.tool_type import ToolType
+from core.base.profile.agent_profile import AgentProfile
 from core.base.journal_home import JournalHome
 from core.base.provider.control_group import ControlGroup
 from core.base.provider.helper_launch import HelperLaunch
@@ -60,6 +61,9 @@ class Provider(ABC):
 
     def model_names(self) -> list[str]:
         return [model.name for model in self.models]
+
+    def profile_model(self, profile: AgentProfile) -> str:
+        return profile.model
 
     def session_model(self) -> str:
         return next(model.name for model in self.models if model.tier is self.session_tier)

@@ -1,5 +1,6 @@
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.fixtures import PlanTasksPlaced
+from tests.stories.core.support.plan_steps import ready_plan
 
 PROTECTED_TASKS = "tests.stories.core.support.plans_samples:ProtectedTasksModule"
 
@@ -26,7 +27,8 @@ def test_a_refused_task_cancel_undoes_the_whole_plan_cancel(new_story):
 
 def test_closing_a_task_of_a_started_plan_starts_the_next_for_the_same_agent(new_story):
     story = plan_with_placed_tasks(new_story)
-    for move in ("ready", "approve", "start"):
+    ready_plan(story, actor=story.user)
+    for move in ("approve", "start"):
         story.run(f"plan {move} 1 --environment main", actor=story.user)
     story.run(lines.TASK_START, actor=story.agent)
     story.run(lines.TASK_CLOSE, actor=story.agent)

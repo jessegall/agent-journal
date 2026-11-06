@@ -3,8 +3,6 @@ from collections.abc import Mapping
 from typing import Any
 from core.base.access import Access
 
-CODEX_PROGRAM = "codex"
-
 
 @dataclass(frozen=True)
 class AgentProfile:
@@ -30,9 +28,6 @@ class AgentProfile:
     notes: tuple[str, ...] = ()
     uses: int = 0
     last_used: int = 0
-
-    def program_model(self, program: str) -> str:
-        return self.codex_model if program == CODEX_PROGRAM else self.model
 
     @property
     def is_builtin(self) -> bool:
