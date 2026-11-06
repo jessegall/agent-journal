@@ -1,75 +1,70 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-78e8a5b5cc84")) { const style = document.createElement("style"); style.id = "window-styles-78e8a5b5cc84"; style.textContent = ".rounds[data-v-52d29ced]{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}.round[data-v-52d29ced]{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}.when[data-v-52d29ced],.reviewers[data-v-52d29ced]{color:var(--text-3);font-size:12px}.running[data-v-52d29ced]{color:var(--progress);font-size:12px}.report[data-v-52d29ced]{padding:0;border:0;background:none;color:var(--accent-text);font:inherit;cursor:pointer}.failure[data-v-52d29ced]{margin:0;color:var(--tone-warn)}\n"; document.head.appendChild(style); }
-import { ref as f, computed as N, watch as B, openBlock as n, createBlock as h, unref as _, withCtx as k, createElementVNode as p, toDisplayString as u, createElementBlock as o, Fragment as g, renderList as y, createVNode as P, createCommentVNode as v } from "vue";
-import { useWindow as V, InspectorPart as R, TimeAgo as E, peekRef as F } from "@journal/window-kit";
-const I = (d, a) => {
+if (!document.getElementById("window-styles-b5f8f783b92f")) { const style = document.createElement("style"); style.id = "window-styles-b5f8f783b92f"; style.textContent = ".rounds[data-v-d374ba7b]{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}.round[data-v-d374ba7b]{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}.when[data-v-d374ba7b],.reviewers[data-v-d374ba7b]{color:var(--text-3);font-size:12px}.running[data-v-d374ba7b]{color:var(--progress);font-size:12px}.report[data-v-d374ba7b]{padding:0;border:0;background:none;color:var(--accent-text);font:inherit;cursor:pointer}.failure[data-v-d374ba7b]{margin:0;color:var(--tone-warn)}\n"; document.head.appendChild(style); }
+import { computed as c, watch as x, openBlock as r, createBlock as f, unref as p, withCtx as h, createElementVNode as _, toDisplayString as u, createElementBlock as o, Fragment as k, renderList as y, createVNode as N, createCommentVNode as v } from "vue";
+import { useWindow as B, InspectorPart as g, TimeAgo as P, peekRef as V } from "@journal/window-kit";
+const E = (d, t) => {
   const l = d.__vccOpts || d;
-  for (const [s, i] of a)
-    l[s] = i;
+  for (const [s, a] of t)
+    l[s] = a;
   return l;
-}, j = {
+}, F = {
   class: "failure",
   role: "alert"
-}, A = {
+}, I = {
   class: "rounds",
   "data-plan-rounds": ""
-}, D = { class: "number" }, L = {
+}, j = { class: "number" }, A = {
   key: 0,
   class: "running"
-}, O = ["title"], S = ["title", "onClick"], T = {
+}, D = ["title"], L = ["title", "onClick"], O = {
   __name: "PlanRounds",
   setup(d) {
-    const a = V(), l = a.option("row"), s = f([]), i = f(""), b = N(() => [...s.value].reverse()), $ = (e) => e.reviewers.length === 1 ? "1 reviewer" : `${e.reviewers.length} reviewers`, x = (e) => e.reviewers.map((r) => r.name).join(", "), C = (e) => F(`reports:${e.id}`);
-    let w = 0;
-    async function m() {
-      const e = ++w, r = await a.read(`plan rounds ${l.value.id}`);
-      e === w && (i.value = r.ok ? "" : r.error, s.value = r.ok ? r.value.rows : []);
-    }
-    return a.follow(["plan.*"], m), B(() => l.value.id, m, { immediate: !0 }), (e, r) => i.value ? (n(), h(_(R), {
+    const t = B(), l = t.option("row"), s = c(() => `rounds.${l.value.id}`), a = c(() => t.props[s.value].rows.value), w = c(() => t.props[s.value].failure.value), b = c(() => [...a.value].reverse()), R = (e) => e.reviewers.length === 1 ? "1 reviewer" : `${e.reviewers.length} reviewers`, $ = (e) => e.reviewers.map((m) => m.name).join(", "), C = (e) => V(`reports:${e.id}`);
+    return x(s, (e) => t.reload(e), { immediate: !0 }), t.follow(["plan.*"], () => t.reload(s.value)), (e, m) => w.value ? (r(), f(p(g), {
       key: 0,
       title: "Review rounds"
     }, {
-      default: k(() => [
-        p("p", j, u(i.value), 1)
+      default: h(() => [
+        _("p", F, u(w.value), 1)
       ]),
       _: 1
-    })) : s.value.length ? (n(), h(_(R), {
+    })) : a.value.length ? (r(), f(p(g), {
       key: 1,
-      title: `Review rounds: ${s.value.length}`
+      title: `Review rounds: ${a.value.length}`
     }, {
-      default: k(() => [
-        p("ol", A, [
-          (n(!0), o(g, null, y(b.value, (t) => (n(), o("li", {
-            key: t.number,
+      default: h(() => [
+        _("ol", I, [
+          (r(!0), o(k, null, y(b.value, (n) => (r(), o("li", {
+            key: n.number,
             class: "round",
             "data-plan-round": ""
           }, [
-            p("span", D, "Round " + u(t.number), 1),
-            P(_(E), {
+            _("span", j, "Round " + u(n.number), 1),
+            N(p(P), {
               class: "when",
-              at: t.started_at
+              at: n.started_at
             }, null, 8, ["at"]),
-            t.ended_at ? v("", !0) : (n(), o("span", L, "Running")),
-            t.reviewers.length ? (n(), o("span", {
+            n.ended_at ? v("", !0) : (r(), o("span", A, "Running")),
+            n.reviewers.length ? (r(), o("span", {
               key: 1,
               class: "reviewers",
-              title: x(t),
+              title: $(n),
               "data-plan-round-reviewers": ""
-            }, u($(t)), 9, O)) : v("", !0),
-            (n(!0), o(g, null, y(t.reports, (c) => (n(), o("button", {
-              key: c.id,
+            }, u(R(n)), 9, D)) : v("", !0),
+            (r(!0), o(k, null, y(n.reports, (i) => (r(), o("button", {
+              key: i.id,
               type: "button",
               class: "report",
-              title: `Filed by ${c.filed_by}`,
-              onClick: (W) => C(c)
-            }, "Report " + u(c.id), 9, S))), 128))
+              title: `Filed by ${i.filed_by}`,
+              onClick: (S) => C(i)
+            }, "Report " + u(i.id), 9, L))), 128))
           ]))), 128))
         ])
       ]),
       _: 1
     }, 8, ["title"])) : v("", !0);
   }
-}, G = /* @__PURE__ */ I(T, [["__scopeId", "data-v-52d29ced"]]);
+}, q = /* @__PURE__ */ E(O, [["__scopeId", "data-v-d374ba7b"]]);
 export {
-  G as default
+  q as default
 };

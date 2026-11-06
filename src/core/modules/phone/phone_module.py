@@ -62,7 +62,7 @@ class PhoneModule(Module):
                 SettingValue("push-public-key", "Push public key", "The public half of the key pair, which a phone subscribes to notices with.", SettingType.TEXT,
                              secret=True, scope=SettingScope.PROJECT)]
     windows = [WindowDeclaration("phone.phones", "Phones", "phones.js", WindowLoading.COMPONENT, skeleton=PHONE_PHONES_SKELETON, search=WindowSearch(PhoneSearcher, "Search the phones"), group="project", icon=WindowIcon.PHONE,
-                                 keys=[WindowKey("phones", "phone list", events=["phone.*"]),
+                                 reads=["phone list", "tunnel status"], keys=[WindowKey("phones", "phone list", events=["phone.*"]),
                                        WindowKey("tunnel", "tunnel status")], runs=["phone pair", "phone unpair"], events=["phone.*"])]
     seeders = [PhoneSeeder]
     moves = [PhoneMove]

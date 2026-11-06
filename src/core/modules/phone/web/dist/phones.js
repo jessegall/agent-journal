@@ -1,79 +1,75 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-dea58806293a")) { const style = document.createElement("style"); style.id = "window-styles-dea58806293a"; style.textContent = ".phones[data-v-56a256c6]{display:flex;flex-direction:column;gap:16px}.phones-pair[data-v-56a256c6]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}.phones-code[data-v-56a256c6]{margin:0;font-size:18px;letter-spacing:.08em}.phones-hint[data-v-56a256c6],.phones-failure[data-v-56a256c6]{margin:0;color:var(--text-2)}.phones-abilities[data-v-56a256c6]{margin:0;padding-left:18px;color:var(--text-3);font-size:12.5px}.phones-name[data-v-56a256c6]{flex:1}\n"; document.head.appendChild(style); }
-import { computed as N, ref as A, openBlock as a, createBlock as I, unref as e, withCtx as p, createElementVNode as n, createElementBlock as l, toDisplayString as r, createCommentVNode as u, createVNode as d, createTextVNode as x, Fragment as C, renderList as P } from "vue";
-import { useRows as S, useListTools as V, WindowRoom as E, Btn as R, QrCode as q, ListTools as F, RowList as O, removed as $ } from "@journal/window-kit";
-const b = (h, _) => {
-  const c = h.__vccOpts || h;
+if (!document.getElementById("window-styles-83ce529e6f37")) { const style = document.createElement("style"); style.id = "window-styles-83ce529e6f37"; style.textContent = ".phones[data-v-2856f50f]{display:flex;flex-direction:column;gap:16px}.phones-pair[data-v-2856f50f]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}.phones-code[data-v-2856f50f]{margin:0;font-size:18px;letter-spacing:.08em}.phones-hint[data-v-2856f50f],.phones-failure[data-v-2856f50f]{margin:0;color:var(--text-2)}.phones-abilities[data-v-2856f50f]{margin:0;padding-left:18px;color:var(--text-3);font-size:12.5px}.phones-name[data-v-2856f50f]{flex:1}\n"; document.head.appendChild(style); }
+import { computed as N, openBlock as s, createBlock as T, unref as e, withCtx as c, createElementVNode as o, createElementBlock as l, toDisplayString as a, createCommentVNode as h, createVNode as d, createTextVNode as x, Fragment as C, renderList as A } from "vue";
+import { useWindow as I, useListTools as P, WindowRoom as S, Btn as R, QrCode as V, ListTools as E, RowList as q, removed as F } from "@journal/window-kit";
+const O = (u, _) => {
+  const r = u.__vccOpts || u;
   for (const [f, m] of _)
-    c[f] = m;
-  return c;
-}, j = { class: "phones" }, D = {
+    r[f] = m;
+  return r;
+}, W = { class: "phones" }, $ = {
   key: 0,
   class: "phones-failure",
   "data-phone-tunnel": ""
-}, Q = { class: "phones-pair" }, U = { class: "phones-code" }, W = {
+}, b = { class: "phones-pair" }, j = { class: "phones-code" }, D = {
   key: 0,
   "data-phone-qr": ""
-}, z = { class: "phones-hint" }, G = {
+}, Q = { class: "phones-hint" }, U = {
   key: 1,
   class: "phones-failure"
-}, H = {
+}, z = {
   class: "phones-abilities",
   "data-phone-abilities": ""
-}, J = { class: "phones-name" }, K = {
+}, G = { class: "phones-name" }, H = {
   __name: "PhoneRows",
-  setup(h) {
-    const _ = ["Read the chat and see what needs you", "Answer questions", "Read reports, documents, plans and tasks", "Approve a plan or ask for changes", "Send the agent instructions"], { rows: c, failure: f, loaded: m, act: w, actionFailure: y, answer: i, context: T } = S("phone list", ["phone.*"]), B = N(() => c.value.filter((t) => t.state === "paired")), k = V(B, { title: (t) => t.name }), v = A(null);
-    async function L() {
-      const t = await T.read("tunnel status");
-      v.value = t.ok ? t.value : null;
-    }
-    return L(), (t, s) => (a(), I(e(E), null, {
-      default: p(() => {
-        var g;
+  setup(u) {
+    const _ = ["Read the chat and see what needs you", "Answer questions", "Read reports, documents, plans and tasks", "Approve a plan or ask for changes", "Send the agent instructions"], r = I(), { rows: f, failure: m, loaded: B, act: v, actionFailure: w, answer: i } = r.props.phones, { data: g } = r.props.tunnel, L = N(() => f.value.filter((p) => p.state === "paired")), k = P(L, { title: (p) => p.name });
+    return (p, n) => (s(), T(e(S), null, {
+      default: c(() => {
+        var y;
         return [
-          n("div", j, [
-            ((g = v.value) == null ? void 0 : g.state) === "disconnected" ? (a(), l("p", D, "A phone can't reach this journal yet: " + r(v.value.reason), 1)) : u("", !0),
-            n("div", Q, [
+          o("div", W, [
+            ((y = e(g)) == null ? void 0 : y.state) === "disconnected" ? (s(), l("p", $, "A phone can't reach this journal yet: " + a(e(g).reason), 1)) : h("", !0),
+            o("div", b, [
               d(e(R), {
                 variant: "primary",
-                onClick: s[0] || (s[0] = (o) => e(w)(["phone", "pair"]))
+                onClick: n[0] || (n[0] = (t) => e(v)(["phone", "pair"]))
               }, {
-                default: p(() => [...s[1] || (s[1] = [
+                default: c(() => [...n[1] || (n[1] = [
                   x("Pair a phone", -1)
                 ])]),
                 _: 1
               }),
-              e(i) ? (a(), l(C, { key: 0 }, [
-                n("p", U, "Code: " + r(e(i).code), 1),
-                e(i).link ? (a(), l("div", W, [
-                  d(e(q), {
+              e(i) ? (s(), l(C, { key: 0 }, [
+                o("p", j, "Code: " + a(e(i).code), 1),
+                e(i).link ? (s(), l("div", D, [
+                  d(e(V), {
                     text: e(i).link
                   }, null, 8, ["text"])
-                ])) : u("", !0),
-                n("p", z, "Open " + r(e(i).link) + " on the phone, or type the code on its pairing page. The code works once, for ten minutes.", 1)
-              ], 64)) : u("", !0),
-              e(y) ? (a(), l("p", G, r(e(y)), 1)) : u("", !0),
-              n("ul", H, [
-                (a(), l(C, null, P(_, (o) => n("li", { key: o }, r(o), 1)), 64))
+                ])) : h("", !0),
+                o("p", Q, "Open " + a(e(i).link) + " on the phone, or type the code on its pairing page. The code works once, for ten minutes.", 1)
+              ], 64)) : h("", !0),
+              e(w) ? (s(), l("p", U, a(e(w)), 1)) : h("", !0),
+              o("ul", z, [
+                (s(), l(C, null, A(_, (t) => o("li", { key: t }, a(t), 1)), 64))
               ])
             ]),
-            d(e(F), { tools: e(k) }, null, 8, ["tools"]),
-            d(e(O), {
+            d(e(E), { tools: e(k) }, null, 8, ["tools"]),
+            d(e(q), {
               rows: e(k).shown.value,
-              failure: e(f),
-              loaded: e(m),
+              failure: e(m),
+              loaded: e(B),
               empty: "No phone is paired",
               hint: "Paired phones appear here.",
               searching: e(k).filtering.value
             }, {
-              default: p(({ row: o }) => [
-                n("span", J, r(o.name), 1),
+              default: c(({ row: t }) => [
+                o("span", G, a(t.name), 1),
                 d(e(R), {
                   small: "",
-                  onClick: (M) => e(w)(["phone", "unpair", String(o.id)], e($)(o.id))
+                  onClick: (J) => e(v)(["phone", "unpair", String(t.id)], e(F)(t.id))
                 }, {
-                  default: p(() => [...s[2] || (s[2] = [
+                  default: c(() => [...n[2] || (n[2] = [
                     x("Unpair", -1)
                   ])]),
                   _: 1
@@ -87,7 +83,7 @@ const b = (h, _) => {
       _: 1
     }));
   }
-}, Z = /* @__PURE__ */ b(K, [["__scopeId", "data-v-56a256c6"]]);
+}, X = /* @__PURE__ */ O(H, [["__scopeId", "data-v-2856f50f"]]);
 export {
-  Z as default
+  X as default
 };

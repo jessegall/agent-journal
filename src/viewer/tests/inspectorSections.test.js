@@ -30,7 +30,8 @@ function mounted(component, provided, props = {}) {
 }
 
 function drawnWindow(component, answers, row = {id: 3}) {
-    const shown = {...context(answers), option: () => ({value: row})};
+    const keys = component === PlanRounds ? {"rounds.*": {line: "plan rounds {id}"}} : undefined;
+    const shown = {...context(answers, null, keys), option: () => ({value: row})};
     return mounted(component, [[WINDOW_CONTEXT, shown]]);
 }
 
