@@ -14,7 +14,8 @@ class NudgeRecords:
         self.queries, self.kept = queries, kept
 
     def newest_row(self, agent_id: int, key: str) -> NudgeRecord | None:
-        return self.queries.query(NudgeRecord).filter(session_agent_id=agent_id, key=key).descending("last_delivered_at").first()
+        newest = self.queries.query(NudgeRecord).filter(session_agent_id=agent_id, key=key).descending("last_delivered_at")
+        return self.kept.read("nudge_records", newest.first, "session_agent_id = ? AND key = ?", [agent_id, key], name="drivers.nudges.newest")
 
     def nudge_rows(self, agent_id: int, nudges: Sequence[Nudge]) -> list[NudgeRecord]:
         keys = sorted({nudge.key for nudge in nudges})
