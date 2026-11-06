@@ -13,6 +13,7 @@ class WorktreeLifecycle(Lifecycle):
     advance = Move("advance", [WorktreeState.CUT], WorktreeState.CUT)
     deliver = Move("deliver", [WorktreeState.CUT], WorktreeState.DELIVERED)
     rework = Move("rework", [WorktreeState.DELIVERED], WorktreeState.CUT)
+    review_logs = Move("review_logs", [WorktreeState.DELIVERED], WorktreeState.DELIVERED)
     merge = Move("merge", [WorktreeState.DELIVERED], WorktreeState.MERGED)
     fail = Move("fail", [WorktreeState.CUT], WorktreeState.FAILED)
     abandon = Move("abandon", (WorktreeState.CUT, WorktreeState.DELIVERED), WorktreeState.ABANDONED)

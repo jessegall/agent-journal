@@ -20,6 +20,7 @@ A helper only reads. A worker writes, in a worktree of its own, on one task whos
   related work to the worker that knows it; never start a new one on work another already knows.
 - Read each proof with `journal proof list --task <n>`, check it with `journal proof check <n>` or send it back with
   `journal proof short <n> "<what is missing>"`.
+- Read each completed task and its log with `journal worker logs <worker>` after the latest hand-in.
 - Take the work in with `journal worker merge <worker>` once every point is checked; nothing else adds a worker's work.
   It first merges the branch into the worktree. When only built files under `web/dist` clash it keeps the branch's:
   rebuild after it. A clash in source goes back to the worker with conflict markers to settle.

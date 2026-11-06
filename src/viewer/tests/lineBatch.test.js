@@ -57,3 +57,15 @@ test("a line whose request was cancelled before it went answers cancelled and th
     expect((await cancelled).failure).toBe("cancelled");
     expect((await kept).value).toBe("agent list");
 });
+
+test("an unbatched read goes separately when other lines are asked at the same time", async () => {
+    const sent = [];
+    vi.stubGlobal("fetch", answering(sent));
+    const results = await Promise.all([
+        lineResult("developer.hook-requests", ["developer", "request-queue"], "main", undefined, true),
+        lineResult("tasks.tasks", ["task", "list"], "main"),
+    ]);
+    expect(results.map((result) => result.value)).toEqual(["developer request-queue", "task list"]);
+    expect(sent).toHaveLength(2);
+    expect(sent.every((entry) => entry.url.endsWith("/api/line"))).toBe(true);
+});

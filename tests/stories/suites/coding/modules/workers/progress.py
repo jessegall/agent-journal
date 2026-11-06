@@ -14,6 +14,7 @@ def test_a_second_dispatch_counts_only_its_tasks_from_its_worktree_start(new_sto
     first = checked_worker(story, repository)
     story.advance(timedelta(hours=2))
     repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {first.id}", actor=story.agent)
     story.expect_success(f"worker merge {first.id}", actor=story.agent)
     story.run('task make "Add tax" --environment main', actor=story.agent)
     second = dispatched_worker(story, "worker dispatch --model sonnet 2")

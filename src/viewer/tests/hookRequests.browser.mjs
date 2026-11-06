@@ -19,7 +19,12 @@ try {
         await page.screenshot({path: "/tmp/journal-hook-requests-461-failure.png"});
         throw error;
     }
-    assert.deepEqual(await page.locator("[data-hook-column]").allTextContents(), ["Event", "Tool", "Parts", "Time", "Duration"]);
+    await page.locator("[data-request-queue-open]").click();
+    await page.locator("[data-request-queue]").waitFor();
+    await page.getByText("Nothing is waiting.").waitFor();
+    await page.screenshot({path: "/tmp/journal-request-queue-647.png"});
+    await page.getByRole("button", {name: "Close the request queue"}).click();
+    assert.deepEqual(await page.locator("[data-hook-column]").allTextContents(), ["Event", "Tool", "Parts", "Time", "Sender", "Queued", "Duration"]);
     assert.equal(await page.locator('[data-hook-request="70"] [data-hook-parts]').textContent(), "3");
     assert.equal(await page.locator('[data-hook-request="69"] [data-hook-parts]').textContent(), "");
     assert.match(await page.locator('[data-fold="developer"]').textContent(), /Developer/);

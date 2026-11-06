@@ -1,4 +1,5 @@
 from core.base.shell_sandbox import ShellSandbox
+from core.modules.processes.support.stock_reader import STOCK_READERS
 from datetime import timedelta
 
 from core.base.command.bus import Bus
@@ -15,6 +16,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted, HelperUnd
 from core.testing.expect_reply import expect_reply_allowed
 from tests.stories.support.story_checks import expect_lines_reply_line, expect_refusal_hook_rule, expect_updated_input_hook, expect_updated_input_reply
 
+PYTEST_COUNT_PATTERN = next(reader.count for reader in STOCK_READERS if reader.name == "pytest")
 SERVER = HookSamples.shell("node serve.js", ShellPart("node", CommandCategory.PROCESS, ["serve.js"]))
 JOURNAL = HookSamples.shell("journal task show 1", ShellPart("journal", CommandCategory.JOURNAL, ["task", "show", "1"], subcommand="task"))
 TESTS = HookSamples.shell("pytest -q", ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"], effects=[CommandEffect.READS_FILES]))
@@ -36,7 +38,7 @@ def test_a_journal_only_line_has_limit_0(new_story):
 
 def test_a_test_run_and_a_build_run_in_line_and_keep_more_of_their_output(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    expect_rewritten(story.hook("s-1", TESTS), runner_line(story, 1, "pytest -q", has_long_part=True))
+    expect_rewritten(story.hook("s-1", TESTS), runner_line(story, 1, "pytest -q", has_long_part=True, progress_count="pytest -q --collect-only -q", progress_position=1, progress_pattern=PYTEST_COUNT_PATTERN))
     expect_rewritten(story.hook("s-1", BUILD), runner_line(story, 2, "make build", has_long_part=True))
 
 
@@ -128,7 +130,7 @@ def test_a_line_that_also_runs_something_else_still_goes_through_the_runner(new_
     story = install_runner(new_story(fixture=BuilderStarted))
     line = "cat src/cart.py && pytest -q"
     reply = story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["src/cart.py"]), ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"])))
-    expect_rewritten(reply, runner_line(story, 1, line, has_long_part=True, queue_run=False))
+    expect_rewritten(reply, runner_line(story, 1, line, has_long_part=True, queue_run=False, progress_count="pytest -q --collect-only -q", progress_position=2, progress_pattern=PYTEST_COUNT_PATTERN))
 
 
 def test_a_read_that_never_ends_still_goes_through_the_runner(new_story):

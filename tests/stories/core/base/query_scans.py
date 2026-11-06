@@ -123,3 +123,8 @@ def test_a_required_agent_column_has_no_null_branch(new_story, model):
         expect_value("OR agent_id IS NULL" in statement.sql, False)
         with story.repeated_work.request():
             list(query.all_rows())
+
+
+def test_output_list_by_creator_does_not_scan_outputs(new_story):
+    story = new_story()
+    story.expect_success("output list --creator 1 --limit 15")

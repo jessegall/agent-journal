@@ -2,6 +2,7 @@ import io
 import json
 
 from core.base.database.request_watch import RequestWatch
+from core.base.request_queue import RequestQueue
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.cli.console import USAGE_CODE, Console
@@ -33,8 +34,8 @@ FLAG_SEPARATOR = "--"
 class LineRoute:
     """Checks and runs viewer lines, sharing one read container for a batch and returning each line's answer."""
 
-    def __init__(self, home: JournalHome, listener_thread: ListenerThread, reported: ReportedFindings) -> None:
-        self.line_run = LineRun(home, CLI_LIMIT_SECONDS, ListenerWake(listener_thread), reported)
+    def __init__(self, home: JournalHome, listener_thread: ListenerThread, reported: ReportedFindings, request_queue: RequestQueue | None = None) -> None:
+        self.line_run = LineRun(home, CLI_LIMIT_SECONDS, ListenerWake(listener_thread), reported, request_queue)
 
     def answer(self, window: str, argv: list[str], person_id: int, environment: str, shared: SharedRow | None = None) -> LineAnswer:
         try:

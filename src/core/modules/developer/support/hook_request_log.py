@@ -19,10 +19,10 @@ class HookRequestLog:
     def read(self) -> list[HookRequest]:
         return list(self.queries.query(HookRequest).ordered("-id").all_rows())
 
-    def record(self, program: str, headers: Mapping[str, str], body: object, duration_ms: float, outcome: HookAnswer) -> None:
+    def record(self, program: str, headers: Mapping[str, str], body: object, duration_ms: float, outcome: HookAnswer, queued_ms: float = 0, role: str = "main", agent: str = "") -> None:
         if not self.settings.project.flag(HOOK_REQUEST_LOG_SETTING):
             return
         received_at = (self.clock.timestamp().value - timedelta(milliseconds=duration_ms)).isoformat(timespec="microseconds")
         payload = json.dumps({"received_at": received_at, "program": program,
-                              "headers": dict(headers), "body": body, "duration_ms": duration_ms, "outcome": outcome.value})
+                              "headers": dict(headers), "body": body, "duration_ms": duration_ms, "queued_ms": queued_ms, "role": role, "agent": agent, "outcome": outcome.value})
         self.table.record(payload, max(self.settings.project.number(HOOK_REQUEST_LOG_SIZE_SETTING), 1))
