@@ -1,0 +1,19 @@
+from dataclasses import dataclass
+from time import monotonic
+
+from core.base.request_queue import RequestQueueEntry
+
+
+@dataclass(frozen=True)
+class QueueRequest:
+    sender: str
+    event: str
+    session: str
+    queued_at: float
+
+    @classmethod
+    def started(cls, sender: str, event: str, session: str = "") -> "QueueRequest":
+        return cls(sender, event, session, monotonic())
+
+    def entry(self) -> RequestQueueEntry:
+        return RequestQueueEntry(self.sender, self.event, self.session, (monotonic() - self.queued_at) * 1000)

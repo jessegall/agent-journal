@@ -52,6 +52,7 @@ def test_merging_a_worker_opens_the_task_waiting_on_it(new_story):
     story.expect_success("proof check 1", actor=story.agent)
     story.expect_success(f"task show {task_id}", "state: blocked", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     story.expect_success(f"task show {task_id}", "state: open", actor=story.agent)
 
@@ -125,6 +126,7 @@ def test_a_task_cannot_wait_on_a_worker_that_was_merged(new_story):
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     task_id = story.new_row_id('task make "Continue" --environment main', actor=story.agent)
     story.expect_refusal(f"task block {task_id} --on worker:{worker.id}", "already finished", actor=story.agent)

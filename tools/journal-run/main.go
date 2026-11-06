@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 )
 
 // version is set at build time, as the other programs' is.
@@ -22,6 +23,12 @@ func main() {
 	}
 	if len(os.Args) > 2 && os.Args[1] == "--sandbox-exec" {
 		os.Exit(sandboxExec(os.Args[2:]))
+	}
+	if len(os.Args) == 4 && os.Args[1] == "--has-progress-count" {
+		if hasProgressCount(os.Args[2], os.Args[3]) {
+			os.Exit(0)
+		}
+		os.Exit(1)
 	}
 	if len(os.Args) > 1 && os.Args[1] == "--count-listing" {
 		os.Exit(countListingMain(os.Args[2:]))
@@ -52,7 +59,8 @@ func main() {
 
 // runOptions are the options of a run from its flags.
 func (flags Flags) runOptions(home, shell string) Options {
-	return Options{WriteFolder: flags.WriteFolder, ReadOnlyShell: flags.ReadOnlyShell, Count: flags.Count, Process: flags.Process, LimitSeconds: flags.Limit, Background: flags.Background, Queue: flags.Queue, OnlyReads: flags.OnlyReads, Line: flags.Line, Aliases: flags.Aliases, Home: home, Shell: shell,
+	position, _ := strconv.Atoi(os.Getenv("JOURNAL_RUN_PROGRESS_POSITION"))
+	return Options{WriteFolder: flags.WriteFolder, ReadOnlyShell: flags.ReadOnlyShell, Count: flags.Count, ProgressCount: os.Getenv("JOURNAL_RUN_PROGRESS_LISTING"), ProgressPosition: position, ProgressPattern: os.Getenv("JOURNAL_RUN_PROGRESS_PATTERN"), Process: flags.Process, LimitSeconds: flags.Limit, Background: flags.Background, Queue: flags.Queue, OnlyReads: flags.OnlyReads, Line: flags.Line, Aliases: flags.Aliases, Home: home, Shell: shell,
 		MostOutputBytes: mostOutputBytes(), ReadFolders: readFolders(), ReadFlags: outputReading(), QueueWait: queueWait(), HeartbeatEvery: HeartbeatInterval, Detach: Detach, ScanFiles: ScanFiles}
 }
 

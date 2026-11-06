@@ -11,8 +11,12 @@ export class LineBatch {
         this.timer = null;
     }
 
-    add(body, signal) {
+    add(body, signal, unbatched = false) {
         return new Promise((resolve, reject) => {
+            if (unbatched) {
+                this.alone({body, signal, resolve, reject});
+                return;
+            }
             this.waiting.push({body, signal, resolve, reject});
             this.timer ??= setTimeout(() => this.send(), WAIT_MS);
         });

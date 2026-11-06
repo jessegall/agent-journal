@@ -14,6 +14,10 @@ class MergeChecks:
     def __init__(self, queries: Queries, proofs: ProofQuery, kept: KeptRows, environments: EnvironmentRows) -> None:
         self.queries, self.proofs, self.kept, self.environments = queries, proofs, kept, environments
 
+    def check_logs(self, worktree: Worktree) -> None:
+        if worktree.logs_read_at is None:
+            raise Refusal(f"the logs of worker {worktree.session_agent_id} have not been read", f"journal worker logs {worktree.session_agent_id}")
+
     def check_proofs(self, worktree: Worktree) -> None:
         selected = self.kept.read("affected_tests", lambda: self.queries.query(AffectedTest).filter(worktree_id=worktree.id).newest().first(),
                                   "worktree_id = ?", [worktree.id], name="workers.merge_selected")

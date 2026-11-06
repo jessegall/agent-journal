@@ -5,6 +5,14 @@ SELECT id,
        payload -> '$.headers' AS headers_json,
        payload -> '$.body' AS body_json,
        json_extract(payload, '$.duration_ms') AS duration_ms,
+       coalesce(json_extract(payload, '$.queued_ms'), 0) AS queued_ms,
+       CASE json_extract(payload, '$.role')
+           WHEN 'viewer' THEN 'Viewer'
+           WHEN 'cli' THEN 'Command line'
+           WHEN 'worker' THEN 'Worker' || CASE WHEN coalesce(json_extract(payload, '$.agent'), '') <> '' THEN ': ' || json_extract(payload, '$.agent') ELSE '' END
+           WHEN 'helper' THEN 'Helper' || CASE WHEN coalesce(json_extract(payload, '$.agent'), '') <> '' THEN ': ' || json_extract(payload, '$.agent') ELSE '' END
+           ELSE 'Main agent'
+       END AS sender,
        json_extract(payload, '$.outcome') AS outcome,
        coalesce(json_extract(payload, '$.body.event'), json_extract(payload, '$.body.hook_event_name'), 'hook') AS event,
        coalesce(json_extract(payload, '$.body.tool.name'), json_extract(payload, '$.body.tool_name'), '') AS tool,

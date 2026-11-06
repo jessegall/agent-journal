@@ -41,5 +41,5 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
         committed = self.worktrees.worker_worktree(context.actor.id)
         for started in tuple(self.tasks.holder(context.actor.id).started().all_rows()):
             self.repository.save_change(started, started.moved(TaskLifecycle.test), context)
-        self.proof_queue.queue(self.repository.save_change(committed, committed.moved(WorktreeLifecycle.deliver), context), context)
+        self.proof_queue.queue(self.repository.save_change(committed, committed.moved(WorktreeLifecycle.deliver, logs_read_at=None), context), context)
         return self.rows.required(Task, committed.task_id)

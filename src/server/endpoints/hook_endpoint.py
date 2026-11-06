@@ -26,6 +26,7 @@ from core.base.timing import Timing
 from core.base.module.performance_tools import PerformanceTools
 from core.base.performance.route_cost_tool import RouteCostTool
 from core.modules.developer.support.hook_request_log import HookRequestLog
+from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.messages.commands.return_message_deliveries.return_message_deliveries import ReturnMessageDeliveries
@@ -33,13 +34,14 @@ from server.hook.raw_hook_body import RawHookBody, is_raw_body
 from server.hook.hook_headers import HookHeaders
 from server.hook.hook_database_busy_error import HookDatabaseBusyError
 from server.hook.queue_priority import QueuePriority
+from server.hook.queue_request import QueueRequest
 from server.server_context import ServerContext
 
 
 STOP_NAME = "stop"
 TOOL_NAME = "pre_tool_use"
 LEAST_BUSY_SECONDS = 0.1
-REQUEST_LOG_BUSY_SECONDS = 0.05
+REQUEST_LOG_BUSY_SECONDS = 0.0
 ROLE_FIELD = "role"
 SESSION_FIELD = "session"
 MAIN_ROLE = "main"
@@ -82,9 +84,14 @@ class HookEndpoint:
         try:
             priority = queue_priority(data)
             limit_seconds = self.context.agent_hook_limit_seconds if priority is QueuePriority.AGENT_HOOK else self.context.hook_limit_seconds
-            with self.context.hook_database.used(priority, limit_seconds, hook_owner(data)) as database:
+            fields = data if is_mapping(data) else {}
+            role = str(fields.get("role", "main"))
+            sender = "Helper" if role == "helper" else "Worker" if role == "worker" else "Main agent"
+            request = QueueRequest.started(sender, str(fields.get("event", fields.get("hook_event_name", "hook"))), str(fields.get("session", fields.get("session_id", ""))))
+            with self.context.hook_database.used(priority, limit_seconds, hook_owner(data), request) as database:
                 self.timing.stamp("hook_locked")
-                return self.routed_answer(data, program, headers, database, started_at, limit_seconds)
+                queued_ms = (perf_counter() - started_at) * 1000
+                return self.routed_answer(data, program, headers, database, started_at, limit_seconds, queued_ms)
         except (HookDatabaseBusyError, OldHookRunnerError) as error:
             return self.unchecked(data, error)
         finally:
@@ -102,7 +109,7 @@ class HookEndpoint:
         except HookDatabaseBusyError as error:
             self.context.files.log_line(f"the deliveries of hook call {reply.hook_call_id} stay as they are: {error}")
 
-    def routed_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, started_at: float, limit_seconds: float) -> HookReply:
+    def routed_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, started_at: float, limit_seconds: float, queued_ms: float) -> HookReply:
         try:
             container = synced_database_container(self.context.home, database)
             container.get(Registry).require_current(container.get(CodeFingerprint).text(container.get(ModuleFinder).modules()))
@@ -121,7 +128,11 @@ class HookEndpoint:
         finally:
             try:
                 database.set_busy_timeout(REQUEST_LOG_BUSY_SECONDS)
-                container.get(HookRequestLog).record(program, headers, data, (perf_counter() - started_at) * 1000, outcome)
+                session = str(data.get("session", data.get("session_id", ""))) if is_mapping(data) else ""
+                agent = container.get(AgentRows).session(session)
+                role = agent.role if agent is not None else "main"
+                name = agent.given_name if agent is not None else ""
+                container.get(HookRequestLog).record(program, headers, data, (perf_counter() - started_at) * 1000, outcome, queued_ms, role, name)
             except sqlite3.Error as error:
                 self.context.files.log_line(f"request recording failed: {error}")
 

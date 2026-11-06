@@ -34,6 +34,7 @@ def delivered_worker(story: Story, repository: GitRepository, line: str = DISPAT
 def checked_worker(story: Story, repository: GitRepository, line: str = DISPATCH) -> Actor:
     worker = delivered_worker(story, repository, line)
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     return worker
 
 

@@ -42,7 +42,7 @@ def sample_category(text: str, category: CommandCategory | None) -> CommandCateg
     return CommandCategory.JOURNAL if text.startswith("journal ") else CommandCategory.UNKNOWN
 
 
-def runner_line(story: Story, process_id: int, line: str, limit: int = 15, background: bool = False, session: str = "s-1", read_command: bool = False, has_long_part: bool = False, queue_run: bool = True, sandbox: bool = False) -> str:
+def runner_line(story: Story, process_id: int, line: str, limit: int = 15, background: bool = False, session: str = "s-1", read_command: bool = False, has_long_part: bool = False, queue_run: bool = True, sandbox: bool = False, progress_count: str = "", progress_position: int = 0, progress_pattern: str = "") -> str:
     flag = (" --background" if background else "") + (" --only-reads" if read_command else "")
     if sandbox or session == "sub-1":
         flag += " --read-only-shell"
@@ -50,6 +50,8 @@ def runner_line(story: Story, process_id: int, line: str, limit: int = 15, backg
     if limit > 0 and has_long_part and not read_command and queue_run:
         flag += " --queue"
         variables += " JOURNAL_RUN_QUEUE_WAIT=5"
+    if progress_count:
+        variables += f" JOURNAL_RUN_PROGRESS_LISTING={shlex.quote(progress_count)} JOURNAL_RUN_PROGRESS_POSITION={progress_position} JOURNAL_RUN_PROGRESS_PATTERN={shlex.quote(progress_pattern)}"
     return f"JOURNAL_AGENT_SESSION={shlex.quote(session)} JOURNAL_RUNNER_PROCESS={process_id}{variables} {shlex.quote(str(story.home.folder.resolve() / 'bin' / 'journal-run'))} --process {process_id} --limit {limit}{flag} -- {shlex.quote(line)}"
 
 
