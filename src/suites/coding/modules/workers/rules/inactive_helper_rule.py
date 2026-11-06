@@ -4,7 +4,7 @@ from core.base.agent_type_book import AgentTypeBook
 from suites.coding.modules.workers.commands.send_silent_agent_lines.send_silent_agent_lines import SendSilentAgentLines
 
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
-from suites.coding.modules.workers.support.worker_nudges import HELPER_INACTIVE, JOB_NOT_STARTED
+from suites.coding.modules.workers.support.worker_nudges import HELPER_INACTIVE, UNSTARTED_JOB
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_GRACE_MINUTES, INACTIVE_HELPER_MINUTES
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
@@ -37,8 +37,8 @@ WAITING_WORK_SOURCES = (*RESUMING_SOURCES, HELPER_JOB_SOURCE)
 
 
 class InactiveHelperRule(DriverRule):
-    """A tick names each inactive helper to its parent once its grace has passed and again after the configured number
-    of minutes, and in the same way each ended helper whose waiting work has not started."""
+    """A tick names each inactive helper to its parent once its grace has passed and again after the configured
+    number of minutes, and in the same way each ended helper whose waiting work has not started."""
 
     name = "workers.inactive-helper"
     hook = HookEventName.TICK
@@ -65,8 +65,8 @@ class InactiveHelperRule(DriverRule):
         if not inactive and not unstarted:
             return RuleAnswer.allowed()
         notes = self.queue_notes(inactive)
-        return RuleAnswer.with_nudges(*(HELPER_INACTIVE.nudge(name=helper.role, agent=helper.id, minutes=grace.whole_minutes, queue=notes[helper.id], action=self.action(helper)) for helper in inactive),
-                                      *(JOB_NOT_STARTED.nudge(name=helper.role, agent=helper.id, minutes=grace.whole_minutes, action=self.action(helper)) for helper in unstarted))
+        return RuleAnswer.with_nudges(*(HELPER_INACTIVE.nudge(name=helper.role, agent=helper.id, minutes=grace.minute_count, queue=notes[helper.id], action=self.action(helper)) for helper in inactive),
+                                      *(UNSTARTED_JOB.nudge(name=helper.role, agent=helper.id, minutes=grace.minute_count, action=self.action(helper)) for helper in unstarted))
 
     @staticmethod
     def action(helper: Agent) -> str:

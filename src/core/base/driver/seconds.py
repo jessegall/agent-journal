@@ -18,7 +18,7 @@ class Seconds(Span):
         return cls(count * MINUTE_SECONDS)
 
     @property
-    def whole_minutes(self) -> int:
+    def minute_count(self) -> int:
         return self.count // MINUTE_SECONDS
 
     def has_passed(self, reads: SpanQueries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool:
