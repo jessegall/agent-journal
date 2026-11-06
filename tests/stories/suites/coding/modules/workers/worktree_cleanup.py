@@ -22,31 +22,22 @@ def next_hour_start(story) -> timedelta:
     return timedelta(minutes=60 - now.minute, seconds=-now.second)
 
 
-def test_a_worker_idle_for_the_hours_of_the_setting_is_retired_with_its_task_open_and_its_worktree_removed(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
-    repository = repository_environment(story)
-    worker = dispatched_worker(story)
-    story.advance(hours(DEFAULT_HOURS))
-    story.tick(MAIN_SESSION)
-    story.expect_success("worker-worktree show 1", "state: removed")
-    story.expect_success(lines.TASK_DETAILS, "state: open")
-    story.expect_rows("ended_at: None" not in story.run(f"agent show {worker.id}").output_text)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} was idle too long: released, task:1 is open again")
-    repository.expect_no_folder(worker.id)
-
-
-def test_the_commits_of_a_retired_worker_stay_on_its_branch(new_story):
+def test_idle_rule_does_not_retire(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     tip = commit_in_worktree(repository, worker.id, "cart.py")
     story.advance(hours(DEFAULT_HOURS))
     story.tick(MAIN_SESSION)
+    story.expect_success("worker-worktree show 1", "state: cut")
+    story.expect_success(lines.TASK_DETAILS, "state: started")
+    shown = story.run(f"agent show {worker.id}").output_text
+    story.expect_rows("ended_at: " in shown, "retired_at: " not in shown)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} was idle too long: its process stopped, task:1 stays with it")
     repository.expect_branch_tip(repository.worker_branch(worker.id), tip)
-    repository.expect_no_folder(worker.id)
 
 
-def test_a_worker_that_used_a_tool_within_the_hours_is_not_retired(new_story):
+def test_a_worker_that_used_a_tool_within_the_hours_keeps_running(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository_environment(story)
     worker = dispatched_worker(story)
@@ -58,7 +49,7 @@ def test_a_worker_that_used_a_tool_within_the_hours_is_not_retired(new_story):
     story.expect_success(lines.TASK_DETAILS, "state: started")
 
 
-def test_a_worker_with_delivered_work_is_never_retired_for_being_idle(new_story):
+def test_a_worker_with_delivered_work_is_never_stopped_for_being_idle(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     delivered_worker(story, repository)
@@ -70,14 +61,14 @@ def test_a_worker_with_delivered_work_is_never_retired_for_being_idle(new_story)
 def test_the_setting_sets_the_hours_a_worker_may_be_idle(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository_environment(story)
-    dispatched_worker(story)
+    worker = dispatched_worker(story)
     story.expect_success(f"setting make {WORKER_IDLE_HOURS} {DEFAULT_HOURS * 2} --environment main", f"key: {WORKER_IDLE_HOURS}")
     story.advance(hours(DEFAULT_HOURS))
     story.tick(MAIN_SESSION)
     story.expect_success("worker-worktree show 1", "state: cut")
     story.advance(hours(DEFAULT_HOURS))
     story.tick(MAIN_SESSION)
-    story.expect_success("worker-worktree show 1", "state: removed")
+    story.expect_text(f"agent show {worker.id}", "ended_at: ")
 
 
 def test_the_hourly_sweep_keeps_unmerged_work_and_its_tip_as_a_ref(new_story):
