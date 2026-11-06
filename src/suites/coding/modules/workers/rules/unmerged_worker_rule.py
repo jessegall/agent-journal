@@ -12,7 +12,7 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
 from suites.coding.modules.workers.support.worker_nudges import WORKER_UNMERGED, WORKER_UNMERGED_DUE
 
-REMINDERS_BEFORE_BLOCK = 3
+BLOCKING_REMINDER_COUNT = 3
 
 
 class UnmergedWorkerRule(DriverRule):
@@ -36,11 +36,11 @@ class UnmergedWorkerRule(DriverRule):
             if proofs:
                 action = f"journal proof check {', '.join(str(proof.id) for proof in proofs)}"
             key = f"{WORKER_UNMERGED.key}.{worktree.session_agent_id}"
-            declaration = WORKER_UNMERGED_DUE if self.reminders_said(hook.agent_id, key) % REMINDERS_BEFORE_BLOCK == REMINDERS_BEFORE_BLOCK - 1 else WORKER_UNMERGED
+            declaration = WORKER_UNMERGED_DUE if self.delivered_reminder_count(hook.agent_id, key) % BLOCKING_REMINDER_COUNT == BLOCKING_REMINDER_COUNT - 1 else WORKER_UNMERGED
             nudges.append(replace(declaration.nudge(worker=worktree.session_agent_id, tasks=self.task_names(worktree.session_agent_id), action=action), key=key))
         return RuleAnswer.with_nudges(*nudges)
 
-    def reminders_said(self, agent_id: int, key: str) -> int:
+    def delivered_reminder_count(self, agent_id: int, key: str) -> int:
         record = self.records.newest_row(agent_id, key)
         return record.delivery_count if record is not None else 0
 

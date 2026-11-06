@@ -118,7 +118,7 @@ def test_requests_show_the_sender_and_queue_time(recording_server):
     server.expect_cli_exit("task list", "/", 0, "")
     value = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})
     rows = value["rows"]
-    server.story.expect_rows([row["sender"] for row in rows[:4]] == ["Command line", "Viewer", "Worker: Ada", "Main agent"])
+    server.story.expect_rows([row["sender"] for row in rows[:4]] == ["Command line", "Viewer", f"Worker {worker}", "Main agent"])
     server.story.expect_rows([row["event"] for row in rows[:2]] == ["task list", "task list"])
     server.story.expect_rows(all(row["queued_ms"] >= 0 for row in rows[:4]))
     server.story.expect_rows(rows[0]["queued_ms"] == 0)
@@ -178,7 +178,7 @@ def test_queue_inspector_shows_hook_priority_without_waiting(recording_server):
             with server.context.hook_database.queue.changed:
                 server.story.expect_rows(server.context.hook_database.queue.changed.wait_for(lambda: len(server.context.hook_database.queue.waiting_hooks) == 2, timeout=0.4))
             value = server.viewer_line_value(cookie, {"line": ["developer", "request-queue"], "environment": "main", "window": "developer.hook-requests"})
-            server.story.expect_rows([row["sender"] for row in value["waiting"][:2]] == ["Main agent", "Worker: Ada"])
+            server.story.expect_rows([row["sender"] for row in value["waiting"][:2]] == ["Main agent", f"Worker {worker_id}"])
             server.story.expect_rows(all(row["waited_ms"] > 0 for row in value["waiting"][:2]))
         first.result()
         second.result()

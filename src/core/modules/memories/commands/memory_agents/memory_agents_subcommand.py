@@ -54,4 +54,4 @@ class MemoryAgentsSubcommand(ReadSubcommand[Page[MemoryHolderRow]]):
         if arguments.name.split():
             query = query.matching(ContainsEvery(NAME_COLUMNS, arguments.name.split()))
         page = query.descending("agent_id").page(arguments.page, arguments.limit)
-        return Page(tuple(MemoryHolderRow.from_holder(holder, self.types) for holder in page.rows), page.number, page.size, page.total)
+        return Page(tuple(MemoryHolderRow.built(holder, self.types) for holder in page.rows), page.number, page.size, page.total)

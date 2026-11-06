@@ -44,6 +44,6 @@ class RequestQueueSubcommand(ReadSubcommand[RequestQueueStatus]):
         sender = entry.sender
         if agent is None:
             return {**asdict(entry), "sender": sender}
-        if agent.role.lower() == sender.lower() and agent.given_name:
-            sender = f"{sender}: {agent.given_name}"
+        if agent.role.lower() == sender.lower():
+            sender = f"{sender} {agent.id}"
         return {**asdict(entry), "sender": sender}
