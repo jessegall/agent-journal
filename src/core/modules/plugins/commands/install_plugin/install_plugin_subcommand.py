@@ -26,5 +26,6 @@ class InstallPluginSubcommand(Subcommand[InstallPlugin, PluginInstall]):
         if not isinstance(value, PluginInstall):
             return
         manifest = value.manifest
-        output.line(f"{manifest.name} {manifest.version}: {manifest.title}")
-        output.line(f"installed {manifest.name}, on" if value.installed else f"nothing installed yet: journal plugin install {value.source} --yes")
+        verdict = f"installed {manifest.name}, on" if value.installed else f"nothing installed yet: journal plugin install {value.source} --yes"
+        output.write(f"{manifest.name} {manifest.version}: {manifest.title}\n{verdict}",
+                     {"name": manifest.name, "version": manifest.version, "title": manifest.title, "source": value.source, "installed": value.installed})
