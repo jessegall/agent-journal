@@ -46,6 +46,13 @@ stays kept on the same agent number and session until retired.
   rebuild after it. A clash in source goes back to the worker with conflict markers to settle.
 - `journal worker release <worker> "<why>"` puts its task back to open.
 
+## Keeping the right mix
+
+Keep a mix that matches the work, and read `journal agent mix` before retiring: it prints the jobs of each kind of agent by
+model lately, the agents kept and how long they have been idle. Prefer retiring the agent idle the longest on the model with
+the most spare agents; one that knows the work coming next is worth keeping. A start refused for no free place names a
+suggestion. The journal never retires an agent itself.
+
 ## Running and kept limits
 
 `journal agent limits --environment <name>` shows the running and kept counts and limits in force. A running limit
