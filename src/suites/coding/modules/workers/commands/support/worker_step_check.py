@@ -28,7 +28,7 @@ class WorkerStepCheck:
         checkout = self.checkouts.checkout(worktree.session_agent_id)
         data = {"worker": worktree.session_agent_id, "task": worktree.task_id, "branch": worktree.branch, "base": changes.base,
                 "worktree": worktree.folder, "files": list(changes.files), "changes": [change.checkout_file(checkout).values() for change in changes.changes]}
-        environment = self.environments.find(worktree.environment_id).name
+        environment = self.environments.find(worktree.environment_id)
         for event in events:
             refusal = self.step_check.refusal(event, data, environment, self.clock.timestamp(), worktree.session_agent_id)
             if refusal:

@@ -61,10 +61,10 @@ class PluginEventRunner:
         except PluginStoppedError as stopped:
             if stopped.stop is ScriptStop.SERVER:
                 raise ServerStoppingError.plugin_wait(plugin.name, key) from stopped
-            self.record(RecordPluginFault.fault_record(plugin.id, stopped, location))
+            self.record(stopped.fault_record(plugin.id, location))
             return None
         except PluginFaultError as fault:
-            self.record(RecordPluginFault.fault_record(plugin.id, fault, location))
+            self.record(fault.fault_record(plugin.id, location))
             return None
         if plugin.fault_count:
             self.record(ClearPluginFaults(plugin.id))
@@ -76,7 +76,7 @@ class PluginEventRunner:
             return self.record_skip(plugin, key, form, f"this plugin already runs {MOST_RUNNING_SCRIPTS} scripts", checked_at)
         if not plugin.failing:
             return True
-        last_tried_at = self.scripts.failing_try(plugin.name) or plugin.update_timestamp()
+        last_tried_at = self.scripts.failing_try(plugin.name, plugin.update_timestamp())
         if last_tried_at.elapsed_seconds(checked_at) < FAILING_RETRY_SECONDS:
             return self.record_skip(plugin, key, form, "this plugin is failing, so it is tried once every 5 minutes", checked_at)
         self.scripts.keep_failing_try(plugin.name, checked_at)

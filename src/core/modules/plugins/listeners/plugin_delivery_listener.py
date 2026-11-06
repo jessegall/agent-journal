@@ -96,7 +96,7 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         return self.runner.may_try(plugin, delivery.event, EventForm.COMMIT) and self.runner.may_run(plugin, manifest, logged.id)
 
     def record_fault(self, logged: LoggedEvent, delivery: PluginDelivery, fault: PluginFaultError) -> None:
-        self.record(logged, delivery, RecordPluginFault.fault_record(delivery.plugin_id, fault, f"at {delivery.event}{COMMIT_SUFFIX if delivery.script else ''}"))
+        self.record(logged, delivery, fault.fault_record(delivery.plugin_id, f"at {delivery.event}{COMMIT_SUFFIX if delivery.script else ''}"))
 
     def delivery_checkout(self, delivery: PluginDelivery, event_data: Mapping[str, object]) -> Checkout | None:
         file = event_data.get(FILE_FIELD)

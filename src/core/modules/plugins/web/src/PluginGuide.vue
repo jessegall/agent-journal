@@ -40,7 +40,7 @@ const KEYS = [
     ["reaches", "For an event, which helpers besides the main agent it reaches."],
     ["aliases", "The commands it provides under short names."],
     ["dashboard", "A page it writes, with a name and a title."],
-    ["project_reads", "Folders of the project, by relative path, that the shell line of a worker may read for it. A path that leaves the project is never opened."],
+    ["project_reads", "Folders of the project, by relative path, that the shell line of a limited agent may read for it. A path that leaves the project is never opened."],
 ];
 const ANSWER = '{"answer": "refuse", "reason": "why", "tell": "a line for the agent", "commands": ["task log 7 done"], "cards": [], "require_skills": []}';
 const EVENT_LINE = JSON.stringify({
@@ -50,19 +50,19 @@ const EVENT_LINE = JSON.stringify({
     skills: ["journal"],
     checkout: {
         kind: "worktree",
-        root: "/Users/me/project/.journal/worktrees/main/worker-612",
+        root: "/Users/me/project/.journal/worktrees/main/agent-612",
         project_root: "/Users/me/project",
-        branch: "journal/main/worker-612",
+        branch: "journal/main/agent-612",
         base_branch: "version-5",
         base_commit: "38fa149f35",
         exists: true,
     },
     data: {
         path: "src/order.py",
-        cwd: "/Users/me/project/.journal/worktrees/main/worker-612",
+        cwd: "/Users/me/project/.journal/worktrees/main/agent-612",
         file: {
             relative: "src/order.py",
-            path: "/Users/me/project/.journal/worktrees/main/worker-612/src/order.py",
+            path: "/Users/me/project/.journal/worktrees/main/agent-612/src/order.py",
             project_path: "/Users/me/project/src/order.py",
             status: "changed",
             renamed_from: "",

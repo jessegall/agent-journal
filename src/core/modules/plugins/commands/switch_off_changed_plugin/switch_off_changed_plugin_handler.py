@@ -9,7 +9,7 @@ from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.plugins.commands.switch_off_changed_plugin.switch_off_changed_plugin import SwitchOffChangedPlugin
 from core.modules.plugins.models.plugin import Plugin
-from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
+from core.modules.skills.support.plugin_skill_removal import PluginSkillRemoval
 
 
 class SwitchOffChangedPluginHandler(Handler[SwitchOffChangedPlugin, Plugin]):
@@ -19,12 +19,12 @@ class SwitchOffChangedPluginHandler(Handler[SwitchOffChangedPlugin, Plugin]):
     command = SwitchOffChangedPlugin
     runs_once = True
 
-    def __init__(self, queries: Queries, skill_files: PluginSkillFiles, repository: Repository, bus: Bus) -> None:
-        self.queries, self.skill_files, self.repository, self.bus = queries, skill_files, repository, bus
+    def __init__(self, queries: Queries, skill_removal: PluginSkillRemoval, repository: Repository, bus: Bus) -> None:
+        self.queries, self.skill_removal, self.repository, self.bus = queries, skill_files, repository, bus
 
     def handle(self, command: SwitchOffChangedPlugin, context: Context) -> Plugin:
         plugin = self.queries.query(Plugin).find(command.plugin_id)
-        self.skill_files.remove(plugin.name)
+        self.skill_removal.remove(plugin.name)
         saved = self.repository.save(plugin.changed(enabled=False), context)
         self.bus.dispatch(SendMessage(f"The plugin {plugin.name} is switched off: its files changed since it was installed. Switch it on once you have read the change."),
                           replace(context, actor=Actor.core()))

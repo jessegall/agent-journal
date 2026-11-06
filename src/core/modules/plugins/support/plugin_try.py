@@ -40,12 +40,12 @@ class PluginTry:
             raise Refusal(f"{name} has no script on {key}", f"journal plugin events {name} lists what it listens to")
         environment = self.queries.query(Environment).find(environment_id).name if environment_id is not None else ""
         call = PluginCall(manifest, PluginEvent(key, self.data(event, form)), environment, self.clock.timestamp(), self.settings.values(plugin, manifest), agent_id, form=form, script=manifest.script(key, form))
-        line, skipped = self.program.line(call, TRY_LIMIT_MS), self.scripts.newest_skip(plugin.name, key, form)
-        skip = skipped.reason if skipped else ""
+        line = self.program.line(call, TRY_LIMIT_MS)
+        skip = self.scripts.newest_skip(plugin.name, key, form).reason if self.scripts.has_skip(plugin.name, key, form) else None
         try:
-            return PluginTryRun(line, self.program.run(call, TRY_LIMIT_MS).output, "", skip)
+            return PluginTryRun(line, skip, answer=self.program.run(call, TRY_LIMIT_MS).output)
         except PluginFaultError as fault:
-            return PluginTryRun(line, "", str(fault), skip)
+            return PluginTryRun(line, skip, fault=str(fault))
 
     def data(self, event: str, form: EventForm) -> dict[str, object]:
         logged = self.log.latest_event(event)
