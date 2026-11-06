@@ -46,7 +46,7 @@ class HookCall(EnvironmentScoped, Model):
     updated_input: str = "{}"
 
     @staticmethod
-    def summary_of(text: str) -> str:
+    def summarize(text: str) -> str:
         return text.split("\n", 1)[0][:SUMMARY_CHARACTERS]
 
     def change_name(self, old_row: "HookCall | None") -> str | None:
@@ -91,6 +91,10 @@ class HookCall(EnvironmentScoped, Model):
     @property
     def is_compaction_start(self) -> bool:
         return self.metadata.module_part(DRIVERS_MODULE).get("compaction_start") is True
+
+    @property
+    def is_interrupted(self) -> bool:
+        return bool(self.metadata.module_part(DRIVERS_MODULE).get("interrupted"))
 
     @property
     def is_session_start(self) -> bool:

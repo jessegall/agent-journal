@@ -13,8 +13,7 @@ PROGRAM_COMMAND = "/"
 
 
 class TypedPromptRule(DriverRule):
-    """A prompt a person typed in the main agent's terminal shows in the chat as their message; a line of the journal,
-    a monitor's event, a command of the program and the words of a scheduled job are no message."""
+    """Record a person's terminal prompt as a chat message."""
 
     name = "messages.typed-prompt"
     hook = HookEventName.PROMPT

@@ -4,9 +4,7 @@ from core.base.provider.transcript_tail import TAIL_BYTES
 
 
 class TranscriptGrowth:
-    """The whole lines a session file gained: the first read takes the last 256 KiB and each later one only what
-    the file gained since, up to its last whole line, and none when its size has not changed. A file that shrank
-    or gained more than 256 KiB is read from its last 256 KiB again."""
+    """Read complete new lines from a transcript in bounded ranges."""
 
     def __init__(self, path: Path) -> None:
         self.path = path

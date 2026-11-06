@@ -52,9 +52,9 @@ never starts is retired after the idle time.
 - `journal worker status` shows your current task, tests waiting and remaining assignments. The main agent can name
   a worker with `journal worker status <n>`. Use `--page` and `--limit` for longer lists, or `--json` for structured output.
 - `journal proof points --agent <n>` lists the points of your task's brief.
-- Prove each one with `journal proof make <point> "<file:line, and the test>" --test "<command>"`: the journal runs that
+- Prove each one with `journal proof make <point> --task <task> "<file:line, and the test>" --test "<command>"`: the journal runs that
   test command in your worktree. A proof with no test waits for the main agent's check.
-- Correct your own unchecked proof with `journal proof edit <proof> "<text>" --test "<command>"`, or with `journal proof make` again for the same point. A checked proof cannot be changed.
+- Correct your own unchecked proof with `journal proof edit <proof> --task <task> "<text>" --test "<command>"`, or with `journal proof make` again for the same point. The main agent can return a checked proof with `journal proof short <proof> "<reason>"`.
 - `journal worker next` hands your task over for testing: the plugins judge your changes, a refusal says what to put
   right; the journal commits and runs its proofs' tests in turn. Stop then: a failure or your next task comes back to you.
 - `journal worker deliver` hands in all your tasks together, refused while one is queued. The journal then runs your

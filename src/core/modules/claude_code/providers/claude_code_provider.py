@@ -140,7 +140,7 @@ class ClaudeCodeProvider(Provider):
         text = "\n".join(self.message_texts(message.get("content")))
         return TranscriptAuthor.row(position, author, text, fields.get("timestamp")) if text.strip() else None
 
-    def is_own_writing(self, line: str, row: TranscriptRow) -> bool:
+    def is_session_entry(self, line: str, row: TranscriptRow) -> bool:
         fields: object = json.loads(line)
         if not is_mapping(fields) or fields.get("isMeta") or fields.get("isSidechain"):
             return False

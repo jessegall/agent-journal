@@ -1,7 +1,7 @@
-import {setupTabVisibility, showTab} from "./support/tabVisibility.js";
 import {afterEach, beforeEach, describe, expect, test, vi} from "vitest";
 import {createApp, h} from "vue";
 import {usePoll} from "../kit/usePoll.js";
+import {tabVisibility} from "./tabVisibility.js";
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => {
@@ -117,9 +117,12 @@ test("each poll uses the current interval returned by its window", async () => {
     expect(vi.getTimerCount()).toBe(0);
 });
 
+const tab = tabVisibility();
+const showTab = tab.show;
+
 describe("a hidden tab", () => {
     beforeEach(() => {
-        setupTabVisibility();
+        tab.reset();
     });
     afterEach(() => delete document.hidden);
 
