@@ -75,9 +75,12 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         for task_id in sorted({row.task_id for row in proofs}):
             task = self.rows.required(Task, task_id)
             task_proofs = [row for row in proofs if row.task_id == task_id]
-            is_closable = self.phases.phase(task) is not None or any(row.test_command for row in task_proofs)
-            if is_closable and task.state is TaskState.TESTING and all(row.state is ProofState.CHECKED for row in task_proofs):
+            if self.has_passed(task, task_proofs):
                 self.repository.save_change(task, task.close(context.timestamp, context.actor, "its tests passed"), context)
+
+    def has_passed(self, task: Task, proofs: list[Proof]) -> bool:
+        is_closable = self.phases.phase(task) is not None or any(row.test_command for row in proofs)
+        return is_closable and task.state is TaskState.TESTING and all(row.state is ProofState.CHECKED for row in proofs)
 
     def start_next(self, worktree: Worktree, context: Context) -> None:
         started_task = next(iter(self.tasks.started_tasks(worktree.session_agent_id)), None)

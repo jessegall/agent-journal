@@ -46,13 +46,13 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Moved[Process] | Created[
         if logged.row_table == "processes":
             self.ended(event.row, logged)
             return
-        selected = event.row
+        first_answer = event.row
         if logged.event == "affected_test.create":
             self.start_next(logged)
             return
-        if selected.state not in (AffectedTestState.PICKING, AffectedTestState.TESTING) or selected.process_id is None:
+        if first_answer.state not in (AffectedTestState.PICKING, AffectedTestState.TESTING) or first_answer.process_id is None:
             return
-        process = self.rows.required(Process, selected.process_id)
+        process = self.rows.required(Process, first_answer.process_id)
         self.launch.start(process.id, process.line, process.folder, self.rows.required(Agent, process.session_agent_id).session)
 
     def start_next(self, logged: LoggedEvent) -> None:
@@ -72,7 +72,7 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Moved[Process] | Created[
             passed = process.state is ProcessState.FINISHED and process.exit_code == 0
             self.bus.run(RecordWorkerTest(proofs[0].id, passed, f"failed: journal output read of process {process.id}"), Actor.core(), cause_id=logged.id)
             self.start_next(logged)
-        selected = self.queries.query(AffectedTest).filter(process_id=process.id).matching(Among("state", (AffectedTestState.PICKING, AffectedTestState.TESTING))).first()
-        if selected is not None:
+        first_answer = self.queries.query(AffectedTest).filter(process_id=process.id).matching(Among("state", (AffectedTestState.PICKING, AffectedTestState.TESTING))).first()
+        if first_answer is not None:
             passed = process.state is ProcessState.FINISHED and process.exit_code == 0
-            self.bus.run(RecordAffectedTest(selected.id, process.id, passed), Actor.core(), cause_id=logged.id)
+            self.bus.run(RecordAffectedTest(first_answer.id, process.id, passed), Actor.core(), cause_id=logged.id)

@@ -17,4 +17,4 @@ class WorkerTestRequest(Model):
     task_id: int
     command: str
     reason: str
-    state: WorkerTestRequestState = WorkerTestRequestState.ASKED
+    state: WorkerTestRequestState = WorkerTestRequestState.REQUESTED

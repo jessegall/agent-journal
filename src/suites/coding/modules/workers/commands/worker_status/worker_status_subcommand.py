@@ -49,11 +49,11 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | Refusal]):
         worker = self.queries.query(Agent).find(worker_id)
         skills = tuple(self.files.agent_instruction(name, worker) for name in self.unread_skills.names(worker_id))
         current_task = self.queries.query(Task).find(worktree.task_id)
-        return WorkerStatus(worker_id, current_task, tests, assignments, skills, self.phase_of(current_task, worker_id))
+        return WorkerStatus(worker_id, current_task, tests, assignments, skills, self.task_phase(current_task, worker_id))
 
-    def phase_of(self, task: Task, worker_id: int) -> WorkerStatusPhase | None:
+    def task_phase(self, task: Task, worker_id: int) -> WorkerStatusPhase | None:
         phase = self.phases.phase(task)
-        return None if phase is None else WorkerStatusPhase(phase, len(self.phases.moved_past(worker_id)))
+        return None if phase is None else WorkerStatusPhase(phase, len(self.phases.advanced(worker_id)))
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, WorkerStatus):
@@ -67,9 +67,8 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | Refusal]):
         if not value.tests.is_last or not value.assignments.is_last:
             lines.append(f"--page {value.assignments.number + 1} for the next page")
         data: dict[str, object] = {"worker_id": value.worker_id, "current_task": output.values(value.current_task),
-                                   "tests": self.page_json(value.tests, output), "assignments": self.page_json(value.assignments, output)}
-        if value.phase is not None:
-            data["phase"] = {"id": value.phase.phase.id, "title": value.phase.phase.title, "tasks_waiting": value.phase.tasks_waiting}
+                                   "tests": self.page_json(value.tests, output), "assignments": self.page_json(value.assignments, output),
+                                   "phase": value.phase.listed() if value.phase is not None else None}
         output.write("\n".join(lines), data)
 
     def page_json(self, page: Page[Proof] | Page[Task], output: Output) -> WorkerStatusPageJson:

@@ -25,7 +25,7 @@ PLAN_DISPATCH = "worker dispatch --model sonnet --plan 1"
 PHASE_DISPATCH = "worker dispatch --model sonnet --plan 1 --phase 1"
 OUTSIDE_DISPATCH = "worker dispatch --model sonnet 1 2"
 TEST_LINE = "pytest tests/cart.py"
-OTHER_TEST_LINE = "pytest tests/totals.py"
+SECOND_TEST_LINE = "pytest tests/totals.py"
 TEST_ALIAS = "cart-test"
 
 
@@ -76,7 +76,7 @@ class StoryWorker:
     worker: Actor
     session: str
     started: list[int]
-    lines_before_work: int
+    initial_line_count: int
 
     def run_line(self, line: str, *parts: ShellPart) -> HookReply:
         return self.story.hook(self.session, HookSamples.shell(line, *parts))
@@ -134,12 +134,12 @@ class StoryWorker:
     def started_processes(self) -> tuple[Process, ...]:
         return tuple(self.story.row(Process, process_id) for process_id in self.started)
 
-    def another_worker(self, dispatch: str) -> "StoryWorker":
+    def added_worker(self, dispatch: str) -> "StoryWorker":
         worker = dispatched_worker(self.story, dispatch)
         return replace(self, worker=worker, session=worker_session(self.story, worker))
 
     def main_agent_lines(self) -> tuple[str, ...]:
-        return lines_of_agent(self.story, self.story.agent)[self.lines_before_work:]
+        return lines_of_agent(self.story, self.story.agent)[self.initial_line_count:]
 
     def worker_lines(self) -> tuple[str, ...]:
         return lines_of_agent(self.story, self.worker)

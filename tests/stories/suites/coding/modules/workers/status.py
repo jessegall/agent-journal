@@ -8,6 +8,7 @@ from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
+from tests.stories.support.story_checks import expect_value
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.phase_steps import worker_on_plan
@@ -46,13 +47,13 @@ def test_a_worker_in_a_phase_reads_the_phase_and_the_tasks_waiting_for_its_end(n
     on_plan.prove_and_move_on()
     on_plan.story.expect_text("worker status", "Current phase: phase 1 (Build)", "Tasks waiting for its end: 1", actor=on_plan.worker)
     status = json.loads(on_plan.story.run("worker status --json", actor=on_plan.worker).output_text)
-    assert status["phase"] == {"id": 1, "title": "Build", "tasks_waiting": 1}, status["phase"]
+    expect_value(status["phase"] == {"id": 1, "title": "Build", "tasks_waiting": 1}, True)
 
 
 def test_the_status_of_a_worker_outside_a_plan_names_no_phase(worker_batch):
     story, _, worker = worker_batch
     story.expect_no_text("worker status", "phase", actor=worker)
-    assert "phase" not in json.loads(story.run("worker status --json", actor=worker).output_text)
+    story.expect_rows(json.loads(story.run("worker status --json", actor=worker).output_text)["phase"] is None)
 
 
 def test_the_main_agent_reads_a_workers_status_in_pages(worker_batch):

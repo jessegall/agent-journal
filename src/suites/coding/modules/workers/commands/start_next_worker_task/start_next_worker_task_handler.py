@@ -73,13 +73,13 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
             return self.start_following(worktree, following, context)
         phase = self.phases.phase(tested)
         if phase is not None:
-            return self.hand_in_phase(worktree, tested, phase, context)
+            return self.submit_phase(worktree, tested, phase, context)
         if self.proof_queue.queue(worktree, context):
             return tested
         self.close_checked(tested, context)
         return self.start_following(worktree, following, context)
 
-    def hand_in_phase(self, worktree: Worktree, task: Task, phase: Phase, context: Context) -> Task:
+    def submit_phase(self, worktree: Worktree, task: Task, phase: Phase, context: Context) -> Task:
         for started in tuple(self.tasks.holder(context.actor.id).started().all_rows()):
             self.repository.save_change(started, started.moved(TaskLifecycle.test), context)
         if self.proof_queue.queue_phase(worktree, task, phase, context):

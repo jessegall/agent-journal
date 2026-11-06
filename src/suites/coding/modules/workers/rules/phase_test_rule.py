@@ -15,7 +15,7 @@ from suites.coding.modules.workers.commands.use_worker_test.use_worker_test impo
 from suites.coding.modules.workers.models.enums.worker_test_request_state import OPEN_REQUEST_STATES, WorkerTestRequestState
 from suites.coding.modules.workers.models.worker_test_request import WorkerTestRequest
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.worker_nudges import PHASE_TEST_REFUSED, TEST_NEEDS_NO_REQUEST, TEST_REQUEST_ALLOWED, TEST_REQUEST_NO_REASON, TEST_REQUEST_SENT, TEST_REQUEST_WAITING
+from suites.coding.modules.workers.support.worker_nudges import PHASE_TEST_REFUSED, TEST_REQUEST_UNNEEDED, TEST_REQUEST_ALLOWED, TEST_REQUEST_REASON_MISSING, TEST_REQUEST_FORWARDED, TEST_REQUEST_WAITING
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_test_flag import WorkerTestFlag
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
@@ -39,14 +39,14 @@ class PhaseTestRule(DriverRule):
         tool = hook.event.tool
         if tool is None or tool.shell is None:
             return RuleAnswer.allowed()
-        flags = [WorkerTestFlag.of(part) for part in tool.shell.parts if self.is_test_part(part, tool.shell)]
+        flags = [WorkerTestFlag.parsed(part) for part in tool.shell.parts if self.is_test_part(part, tool.shell)]
         if not flags:
             return RuleAnswer.allowed()
-        phase = self.phases.held_phase(hook.agent_id)
+        phase = self.phases.waiting_phase(hook.agent_id)
         if phase is None:
-            return RuleAnswer.refused(TEST_NEEDS_NO_REQUEST.nudge()) if any(flag.is_flagged for flag in flags) else RuleAnswer.allowed()
+            return RuleAnswer.refused(TEST_REQUEST_UNNEEDED.nudge()) if any(flag.is_flagged for flag in flags) else RuleAnswer.allowed()
         if any(flag.is_flagged and not flag.reason for flag in flags):
-            return RuleAnswer.refused(TEST_REQUEST_NO_REASON.nudge())
+            return RuleAnswer.refused(TEST_REQUEST_REASON_MISSING.nudge())
         return self.line_answer([self.part_answer(flag, hook.agent_id, phase) for flag in flags])
 
     def is_test_part(self, part: Part, shell: ShellLine) -> bool:
@@ -54,17 +54,17 @@ class PhaseTestRule(DriverRule):
 
     def part_answer(self, flag: WorkerTestFlag, worker_id: int, phase: Phase) -> RuleAnswer:
         task_id = self.worktrees.worker_worktree(worker_id).task_id
-        same_requests = self.queries.query(WorkerTestRequest).filter(worker_id=worker_id, task_id=task_id, command=flag.command)
-        request = same_requests.matching(Among("state", OPEN_REQUEST_STATES)).first()
+        matching_requests = self.queries.query(WorkerTestRequest).filter(worker_id=worker_id, task_id=task_id, command=flag.command)
+        request = matching_requests.matching(Among("state", OPEN_REQUEST_STATES)).first()
         is_allowed = request is not None and request.state is WorkerTestRequestState.ALLOWED
         if not flag.is_flagged:
             return RuleAnswer.allowed().running(UseWorkerTest(request.id)) if is_allowed else RuleAnswer.refused(PHASE_TEST_REFUSED.nudge(phase=phase.id, plan=phase.plan_id))
         if request is None:
-            return RuleAnswer.refused(TEST_REQUEST_SENT.nudge()).running(AskWorkerTest(worker_id, task_id, flag.command, flag.reason))
+            return RuleAnswer.refused(TEST_REQUEST_FORWARDED.nudge()).running(AskWorkerTest(worker_id, task_id, flag.command, flag.reason))
         return RuleAnswer.refused((TEST_REQUEST_ALLOWED if is_allowed else TEST_REQUEST_WAITING).nudge(request=request.id))
 
     @staticmethod
     def line_answer(answers: list[RuleAnswer]) -> RuleAnswer:
         refusals = [answer for answer in answers if answer.refusal]
-        chosen, *others = refusals or [RuleAnswer.allowed(), *answers]
-        return chosen.running(*(command for answer in others for command in answer.commands))
+        first_answer, *remaining_answers = refusals or [RuleAnswer.allowed(), *answers]
+        return first_answer.running(*(command for answer in remaining_answers for command in answer.commands))

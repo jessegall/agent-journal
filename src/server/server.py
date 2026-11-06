@@ -50,6 +50,7 @@ from server.server_backup import ServerBackup
 from server.server_files import ServerFiles
 from server.waiting_server import WaitingServer
 
+ANSWER_LIMIT_SECONDS = 2
 SECOND_SERVER_CODE = 0
 
 TUNNEL_CHECK_SECONDS = 30.0
@@ -153,6 +154,7 @@ def main(argv: list[str]) -> int:
         for thread in threads:
             thread.signal_stop()
         RunningScripts.shared(home).stop_all()
+        server.drain(ANSWER_LIMIT_SECONDS)
         plugin_services.close()
         tunnel.close()
         viewer.stop()

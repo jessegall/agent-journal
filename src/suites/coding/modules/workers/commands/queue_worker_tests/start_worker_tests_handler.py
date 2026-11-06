@@ -40,23 +40,23 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
                 continue
             self.start(proof, worktrees[proof.worktree_id], context)
             running.add(proof.worktree_id)
-        for selected in self.affected.queued():
-            if selected.worktree_id not in worktrees or selected.worktree_id in running:
+        for first_answer in self.affected.queued():
+            if first_answer.worktree_id not in worktrees or first_answer.worktree_id in running:
                 continue
-            if any(proof.worktree_id == selected.worktree_id for proof in proofs):
+            if any(proof.worktree_id == first_answer.worktree_id for proof in proofs):
                 continue
-            worktree = worktrees[selected.worktree_id]
+            worktree = worktrees[first_answer.worktree_id]
             if self.queries.query(Proof).filter(worktree_id=worktree.id, state=ProofState.SHORT).exists():
-                self.repository.update(selected, context, state=AffectedTestState.CANCELLED)
+                self.repository.update(first_answer, context, state=AffectedTestState.CANCELLED)
                 continue
-            self.start_picker(selected, worktree, context)
+            self.start_picker(first_answer, worktree, context)
 
     def start(self, proof: Proof, worktree: Worktree, context: Context) -> None:
         start = StartProcess.single_part(worktree.session_agent_id, proof.test_command, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
         process = self.bus.dispatch(replace(start, owner_agent_id=worktree.session_agent_id, task_id=proof.task_id), context)
         self.repository.save_change(proof, proof.moved(ProofLifecycle.run, process_id=process.id), context)
 
-    def start_picker(self, selected: AffectedTest, worktree: Worktree, context: Context) -> None:
-        start = StartProcess.single_part(worktree.session_agent_id, selected.picker_command, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
-        process = self.bus.dispatch(replace(start, owner_agent_id=worktree.session_agent_id, task_id=selected.task_id), context)
-        self.repository.update(selected, context, state=AffectedTestState.PICKING, process_id=process.id)
+    def start_picker(self, first_answer: AffectedTest, worktree: Worktree, context: Context) -> None:
+        start = StartProcess.single_part(worktree.session_agent_id, first_answer.picker_command, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
+        process = self.bus.dispatch(replace(start, owner_agent_id=worktree.session_agent_id, task_id=first_answer.task_id), context)
+        self.repository.update(first_answer, context, state=AffectedTestState.PICKING, process_id=process.id)

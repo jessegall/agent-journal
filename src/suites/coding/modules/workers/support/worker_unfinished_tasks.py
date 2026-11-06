@@ -8,9 +8,9 @@ from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 
 
 class WorkerUnfinishedTasks:
-    """The tasks a worker still has to do when it stops: none when it holds no task it can go on with, or when
-    its tests are waiting, since those hand it its next task. While it holds a started task, the tasks it moved
-    past inside a phase count too, since they wait for the end of that phase."""
+    """The tasks a worker still has to do when it stops: none when it holds no task it can go on with, or
+    when its tests are waiting, since those hand it its next task. While it holds a started task, the tasks it
+    moved on from inside a phase count too, since they wait for the end of that phase."""
 
     def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, processes: ProcessQuery, phases: WorkerPhases) -> None:
         self.tasks, self.worktrees, self.proofs, self.processes, self.phases = tasks, worktrees, proofs, processes, phases
@@ -21,8 +21,8 @@ class WorkerUnfinishedTasks:
         worktree = self.worktrees.worker_worktree(worker_id)
         if not started and (queued is None or (worktree is not None and self.proofs.tests_waiting(worktree.id))):
             return ()
-        moved_past = self.phases.moved_past(worker_id) if started else ()
-        return (*moved_past, *started, *self.tasks.queued_tasks(worker_id))
+        advanced = self.phases.advanced(worker_id) if started else ()
+        return (*advanced, *started, *self.tasks.queued_tasks(worker_id))
 
     def last_progress_text(self, worker_id: int) -> str:
         tasks = self.tasks.filter(delegated_to=worker_id).all_rows()

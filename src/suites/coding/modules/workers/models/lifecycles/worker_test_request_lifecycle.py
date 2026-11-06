@@ -5,9 +5,9 @@ from suites.coding.modules.workers.models.enums.worker_test_request_state import
 
 class WorkerTestRequestLifecycle(Lifecycle):
     states = WorkerTestRequestState
-    initial = [WorkerTestRequestState.ASKED]
+    initial = [WorkerTestRequestState.REQUESTED]
     editable = ()
     deletable = ()
 
-    allow = Move("allow", [WorkerTestRequestState.ASKED], WorkerTestRequestState.ALLOWED)
+    allow = Move("allow", [WorkerTestRequestState.REQUESTED], WorkerTestRequestState.ALLOWED)
     use = Move("use", [WorkerTestRequestState.ALLOWED], WorkerTestRequestState.USED)
