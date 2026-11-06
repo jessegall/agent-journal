@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -31,7 +32,7 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 	restore := terminal.Raw()
 	choice, err := launch.Boot(journal, terminal, request)
 	restore()
-	if errors.Is(err, launch.ErrLeftRunning) {
+	if errors.Is(err, launch.ErrLeftRunning) || errors.Is(err, launch.ErrLeft) {
 		fmt.Fprintln(stdout, err)
 		return 0
 	}
@@ -58,10 +59,10 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 		return ErrorCode
 	}
 	defer log.Close()
+	labels := launch.BandLabels{Start: "agent-journal", Middle: filepath.Base(request.Root) + " · " + choice.Environment, End: "viewer link unavailable"}
 	if link, err := journal.Run("viewer"); err == nil {
-		link = strings.TrimSpace(link)
-		fmt.Fprintln(stdout, launch.HeaderBar(choice.Environment, agentID, link))
-		if line := launch.OpenViewer(link, launch.StartDetached); line != "" {
+		labels.End = strings.TrimSpace(link)
+		if line := launch.OpenViewer(labels.End, launch.StartDetached); line != "" {
 			fmt.Fprintln(stderr, line)
 		}
 	} else {
@@ -84,7 +85,13 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 	go watcher.Watch(stopWatching)
 	restoreProgram := terminal.Raw()
 	defer inputs.Close(agentID)
-	err = launch.RunInTerminal(command, inputs.Open(agentID, os.Stdin), stdout, io.MultiWriter(log, watcher))
+	programInput, programLog := inputs.Open(agentID, os.Stdin), io.MultiWriter(log, watcher)
+	if launch.ShowsBand() {
+		err = launch.RunBelowBand(launch.NewBand(stdout, labels), command, programInput, programLog)
+	} else {
+		fmt.Fprintln(stdout, launch.HeaderBar(choice.Environment, agentID, labels.End))
+		err = launch.RunInTerminal(command, programInput, stdout, programLog)
+	}
 	restoreProgram()
 	if err != nil {
 		var exit *exec.ExitError

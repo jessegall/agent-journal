@@ -33,13 +33,28 @@ func RunInTerminal(command *exec.Cmd, input io.Reader, screen io.Writer, log io.
 	return wait()
 }
 
+// RunBelowBand is RunInTerminal with the band on the top row of the person's terminal: the program has one row less and
+// prints on the screen through the band.
+func RunBelowBand(band *Band, command *exec.Cmd, input io.Reader, log io.Writer) error {
+	defer band.End()
+	wait, err := startIn(band, command, input, band, log)
+	if err != nil {
+		return err
+	}
+	return wait()
+}
+
 // StartInTerminal starts the terminal program and returns the function that copies its output and waits for it.
 func StartInTerminal(command *exec.Cmd, input io.Reader, screen io.Writer, log io.Writer) (func() error, error) {
+	return startIn(nil, command, input, screen, log)
+}
+
+func startIn(band *Band, command *exec.Cmd, input io.Reader, screen io.Writer, log io.Writer) (func() error, error) {
 	controller, terminal, err := openTerminal()
 	if err != nil {
 		return nil, err
 	}
-	copySize(os.Stdin, controller)
+	copySize(os.Stdin, controller, band)
 	command.Stdin, command.Stdout, command.Stderr = terminal, terminal, terminal
 	command.SysProcAttr = &syscall.SysProcAttr{Setsid: true, Setctty: true}
 	if err := command.Start(); err != nil {
@@ -58,7 +73,7 @@ func StartInTerminal(command *exec.Cmd, input io.Reader, screen io.Writer, log i
 		}()
 		go func() {
 			for range resizes {
-				copySize(os.Stdin, controller)
+				copySize(os.Stdin, controller, band)
 			}
 		}()
 		go func() { _, _ = io.Copy(controller, input) }()
@@ -67,9 +82,25 @@ func StartInTerminal(command *exec.Cmd, input io.Reader, screen io.Writer, log i
 	}, nil
 }
 
-func copySize(source *os.File, target *os.File) {
+// copySize gives the program's terminal the size of the person's, less the band's row when there is a band, which is then
+// drawn again for the new size.
+func copySize(source *os.File, target *os.File, band *Band) {
 	var size windowSize
-	if ioctl(source, syscall.TIOCGWINSZ, uintptr(unsafe.Pointer(&size))) == nil {
-		_ = ioctl(target, syscall.TIOCSWINSZ, uintptr(unsafe.Pointer(&size)))
+	if ioctl(source, syscall.TIOCGWINSZ, uintptr(unsafe.Pointer(&size))) != nil {
+		return
 	}
+	if band != nil {
+		band.Begin(int(size.rows), int(size.columns))
+		size.rows = uint16(band.AgentRows())
+	}
+	_ = ioctl(target, syscall.TIOCSWINSZ, uintptr(unsafe.Pointer(&size)))
+}
+
+// terminalColumns is how wide the person's terminal is, or 0 when it cannot say.
+func terminalColumns() int {
+	var size windowSize
+	if ioctl(os.Stdout, syscall.TIOCGWINSZ, uintptr(unsafe.Pointer(&size))) != nil {
+		return 0
+	}
+	return int(size.columns)
 }
