@@ -10,6 +10,7 @@ class PluginOutput(EnvironmentScoped, Model):
     reply as the plugins module: the plugin, the environment, the agent and the answer's JSON line."""
 
     model_name = "plugin_output"
+    event_forms = ()
     cli_name = "plugin-output"
 
     plugin_id: int

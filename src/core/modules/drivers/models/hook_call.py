@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.foreign_run import ForeignRun
 from core.base.model.environment_scoped import EnvironmentScoped
+from core.base.change.event_form import EventForm
 from core.base.model.model import Model
 from core.base.module.driver_entries import DRIVERS_MODULE
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
@@ -23,6 +24,7 @@ class HookCall(EnvironmentScoped, Model):
 
     change_names = (COMPACTION, SESSION_START, PROMPT, STOP_ALLOWED, STOP_REFUSED)
     model_name = "hook_call"
+    event_forms = (EventForm.COMMIT,)
     cli_name = "hook-call"
 
     session_agent_id: int

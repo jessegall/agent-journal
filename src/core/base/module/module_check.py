@@ -1,7 +1,10 @@
 from collections.abc import Sequence
-from core.base.change.event_log import JOURNAL_BOOTING_EVENT, REGISTRY_SYNC_EVENT, UPGRADE_FINISHED_EVENT
+from core.base.change.change import METADATA
+from core.base.change.event_form import EventForm
+from core.base.change.event_log import JOURNAL_BOOTING_EVENT, REGISTRY_SYNC_EVENT, UPGRADE_FINISHED_EVENT, UPGRADE_MOVED_EVENT
 from core.base.change.event_pattern import EventPattern
 from core.base.model.model import Model
+from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.module.module import Module
@@ -20,13 +23,17 @@ from core.base.module.dock_check import DockCheck
 from core.base.module.move_check import MoveCheck
 from core.base.module.skill_check import SkillCheck
 from core.base.registry.driver_rule_entry import DriverRuleEntry
+from core.base.registry.event_key_entry import EventKeyEntry
 from core.base.module.setting_check import SettingCheck
 from core.base.module.template_check import TemplateCheck
 from core.base.module.button_check import ButtonCheck
 from core.base.module.module_finder import ModuleFinder
 
-STANDARD_CHANGES = ("create", "update", "delete", "metadata")
+STANDARD_CHANGES = ("create", "update", "delete", METADATA)
 LIFECYCLE_ATTRIBUTES = ("states", "initial", "editable", "deletable")
+SYSTEM_EVENTS = (JOURNAL_BOOTING_EVENT, REGISTRY_SYNC_EVENT, UPGRADE_MOVED_EVENT, UPGRADE_FINISHED_EVENT)
+SYSTEM_EVENTS_MODULE = "journal.core"
+COMMIT_ONLY = tuple([EventForm.COMMIT])
 
 
 class ModuleCheck:
@@ -46,16 +53,26 @@ class ModuleCheck:
         self.buttons, self.finder = buttons, finder
 
     def known_events(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
-        events: list[str] = [event for module in modules for event in module.file_events]
         book = modules_book(modules)
-        for model in self.models(modules):
+        return tuple(event for module in modules for event in self.module_events(module, book))
+
+    def module_events(self, module: type[Module], book: StateBook) -> dict[str, tuple[EventForm, ...]]:
+        """Each event of one module by its log name, with the forms a script may take for it."""
+        events = dict.fromkeys(module.file_events, COMMIT_ONLY)
+        for declaration in module.models:
+            model = declaration.model
             lifecycle = book.lifecycle(model)
             moves = tuple(move.name for move in lifecycle.moves()) if lifecycle else ()
-            events.extend(f"{model.model_name}.{change}" for change in (*STANDARD_CHANGES, *moves, *model.change_names))
-        return tuple(events)
+            events.update({f"{model.model_name}.{change}": () if change == METADATA else model.event_forms for change in (*STANDARD_CHANGES, *moves, *model.change_names)})
+        return events
+
+    def event_keys(self, modules: Sequence[type[Module]]) -> tuple[EventKeyEntry, ...]:
+        book = modules_book(modules)
+        entries = [EventKeyEntry.named(module.name, event, forms) for module in modules for event, forms in self.module_events(module, book).items() if forms]
+        return (*(EventKeyEntry.named(SYSTEM_EVENTS_MODULE, event, COMMIT_ONLY) for event in SYSTEM_EVENTS), *entries)
 
     def check(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> None:
-        problems = (self.duplicate_names(modules, rules) + self.lifecycle_problems(modules) + self.event_problems(modules) + self.duplicate_handlers(modules)
+        problems = (self.duplicate_names(modules, rules) + self.lifecycle_problems(modules) + self.event_problems(modules) + self.duplicate_event_keys(modules) + self.duplicate_handlers(modules)
                     + self.duplicate_subcommands(modules) + self.suites.problems(modules, rules) + self.windows.problems(modules, self.known_events(modules))
                     + self.providers.problems(modules) + self.marks.problems(modules) + self.docks.problems(modules) + self.settings.problems(modules)
                     + self.skills.problems(modules, self.known_events(modules)) + self.moves.problems(modules) + self.templates.problems(modules) + self.states.problems(modules)
@@ -96,9 +113,13 @@ class ModuleCheck:
     def event_problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         events = self.known_events(modules)
         guards = [(guard.name, guard.event, events) for module in modules for guard in module.guards]
-        listeners = [(listener.name, listener.event, (*events, JOURNAL_BOOTING_EVENT, REGISTRY_SYNC_EVENT, UPGRADE_FINISHED_EVENT)) for module in modules for listener in module.listeners]
+        listeners = [(listener.name, listener.event, (*events, *SYSTEM_EVENTS)) for module in modules for listener in module.listeners]
         return tuple(f"{name} covers {event}, which no model raises" for name, event, raised in guards + listeners
                      if not any(EventPattern(event).matches(event_name) for event_name in raised))
+
+    def duplicate_event_keys(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
+        keys = [entry.key for entry in self.event_keys(modules)]
+        return tuple(f"two events have the key {key}" for key in sorted({key for key in keys if keys.count(key) > 1}))
 
     def duplicate_handlers(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         commands = [DottedPath.class_path(handler.command).text for module in modules for handler in module.handlers]

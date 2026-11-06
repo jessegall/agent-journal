@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
 from typing import ClassVar, Self
+from core.base.change.event_form import EventForm
 from core.base.metadata import Metadata
 from core.base.model.added_state import StateValue
 from core.base.model.lifecycle import Lifecycle
@@ -23,6 +24,7 @@ class Model:
     search_fields: ClassVar[Sequence[str]] = ()
     shared_rows: ClassVar[bool] = False
     change_names: ClassVar[Sequence[str]] = ()
+    event_forms: ClassVar[tuple[EventForm, ...]] = tuple(EventForm)
 
     id: int = 0
     version: int = 0

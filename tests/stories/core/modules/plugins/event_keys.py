@@ -67,6 +67,13 @@ def test_s2_every_known_event_has_a_key_or_a_stated_reason_and_no_two_share_one(
     author.expect_rows(bool(rows), not missing, not shared)
 
 
+def test_s2_the_registry_of_the_real_modules_holds_their_keys(author):
+    registry = Registry.read(author.container.get(Database))
+    author.expect_rows(registry.key_of_event("worker_worktree.cut") == "suites.coding.workers.worker_worktree.cut", registry.key_of_event("task.create") == "core.tasks.task.created")
+    author.expect_rows(registry.event_of_key("core.settings.managed-hook.changed") == "managed-hook.changed", registry.event_of_key("core.journal.booting") == "journal.booting")
+    author.expect_rows(registry.key_of_event("plugin_delivery.create") == "", registry.key_of_event("task.metadata") == "")
+
+
 def test_s2_a_module_that_adds_a_clashing_key_fails_at_sync(author):
     author.expect_sync_refusal(CLASHING, CLASHING_KEY)
 

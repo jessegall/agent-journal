@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from core.base.change.event_form import EventForm
 from core.base.model.model import Model
 
 
@@ -10,6 +11,7 @@ class Plugin(Model):
     row."""
 
     model_name = "plugin"
+    event_forms = (EventForm.COMMIT,)
     cli_name = "plugin"
     search_fields = ["name", "title"]
 

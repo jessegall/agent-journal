@@ -10,6 +10,7 @@ class PluginDelivery(EnvironmentScoped, Model):
     environment, the agent whose hook it came from, the event's version 4 name and its data as JSON text."""
 
     model_name = "plugin_delivery"
+    event_forms = ()
     cli_name = "plugin-delivery"
 
     plugin_id: int

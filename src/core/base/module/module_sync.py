@@ -130,6 +130,8 @@ class ModuleSync:
         return Registry(
             fingerprint=self.fingerprint.text(modules),
             events=self.check.known_events(modules),
+            event_keys={entry.event: entry for entry in self.check.event_keys(modules)},
+            former_event_keys={former: current for module in modules for former, current in module.former_event_keys.items()},
             module_fingerprints={module.name: self.fingerprint.module_text(module) for module in modules},
             module_suites={module.name: tuple(dict.fromkeys([suite for suite in
                            (module.parent_suite, *(suite.name for suite in module.suites)) if suite is not None]))

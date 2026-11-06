@@ -30,6 +30,8 @@ from core.base.module.state_check import StateCheck
 from core.base.module.agent_type_check import AgentTypeCheck
 from core.base.module.profile_check import ProfileCheck
 from core.base.module.template_check import TemplateCheck
+from core.base.change.event_form import EventForm
+from core.base.registry.event_key_entry import EventKeyEntry
 from tests.unit.core.base.model.test_lifecycle import ItemState
 from tests.unit.core.base.model.test_model import Item
 from core.base.change.moved import Moved
@@ -60,6 +62,15 @@ class UpdateMoveLifecycle(Lifecycle):
     deletable = ()
 
     update = Move("update", [ItemState.OPEN], ItemState.PAUSED)
+
+
+class CreatedMoveLifecycle(Lifecycle):
+    states = ItemState
+    initial = [ItemState.OPEN]
+    editable = ()
+    deletable = ()
+
+    created = Move("created", [ItemState.OPEN], ItemState.PAUSED)
 
 
 class UnreachableStateLifecycle(Lifecycle):
@@ -98,6 +109,30 @@ def problems(*modules: type[Module]) -> str:
 def test_every_event_of_every_model_is_known():
     events = module_check().known_events([module("items", [ModelDeclaration(Item)])])
     assert events == ("item.create", "item.update", "item.delete", "item.metadata", "item.pause", "item.close")
+
+
+def test_each_event_of_a_model_has_a_key_and_metadata_has_none():
+    keys = {entry.event: entry.key for entry in module_check().event_keys([module("journal.core.items", [ModelDeclaration(Item)])])}
+    assert keys == {"journal.booting": "core.journal.booting", "registry.sync": "core.registry.sync", "upgrade.moved": "core.upgrade.moved", "upgrade.finished": "core.upgrade.finished",
+                    "item.create": "core.items.item.created", "item.update": "core.items.item.updated", "item.delete": "core.items.item.deleted",
+                    "item.pause": "core.items.item.pause", "item.close": "core.items.item.close"}
+
+
+def test_a_file_event_keeps_its_name_whole_and_is_commit_only():
+    declaring = type("FilesModule", tuple([Module]), {"name": "journal.core.settings", "requires_core": ">=5", "file_events": ["managed-hook.changed"]})
+    entry = next(entry for entry in module_check().event_keys([declaring]) if entry.event == "managed-hook.changed")
+    assert entry == EventKeyEntry("core.settings.managed-hook.changed", "managed-hook.changed", "journal.core.settings", tuple([EventForm.COMMIT]))
+
+
+def test_a_model_with_no_forms_has_no_key_and_its_events_stay_known():
+    silent = dataclass(frozen=True, kw_only=True)(type("Silent", tuple([Model]), {"model_name": "silent", "cli_name": "silent", "event_forms": ()}))
+    modules = [module("items", [ModelDeclaration(silent)])]
+    assert "silent.create" in module_check().known_events(modules)
+    assert not [entry for entry in module_check().event_keys(modules) if entry.event.startswith("silent.")]
+
+
+def test_two_events_with_one_key_are_refused():
+    assert "two events have the key items.book.created" in problems(module("items", [ModelDeclaration(model(CreatedMoveLifecycle))]))
 
 
 def test_modules_without_problems_pass():

@@ -18,6 +18,7 @@ from core.base.database.registry_version import RegistryVersion
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.driver_entry import DriverEntry
 from core.base.registry.driver_rule_entry import DriverRuleEntry
+from core.base.registry.event_key_entry import EventKeyEntry
 from core.base.registry.event_lookup import EventLookup
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.listener_entry import ListenerEntry
@@ -90,6 +91,8 @@ class Registry:
     module_suites: dict[str, tuple[str, ...]] = field(default_factory=dict)
     events: tuple[str, ...] = ()
     outward_lines: tuple[str, ...] = ()
+    event_keys: dict[str, EventKeyEntry] = field(default_factory=dict[str, EventKeyEntry])
+    former_event_keys: dict[str, str] = field(default_factory=dict[str, str])
 
     @classmethod
     def read(cls, database: Database) -> "Registry":
@@ -154,6 +157,8 @@ class Registry:
             profiles=tuple(ProfileEntry.restored(entry) for entry in entries.get("profiles", [])),
             button_slots=tuple(entries.get("button_slots", [])),
             events=tuple(entries.get("events", [])),
+            event_keys={event: EventKeyEntry.restored(entry) for event, entry in entries.get("event_keys", {}).items()},
+            former_event_keys=dict(entries.get("former_event_keys", {})),
             providers=tuple(ProviderEntry(provider["name"], DottedPath(provider["path"]), provider["module"], provider["title"]) for provider in entries.get("providers", [])),
             settings=tuple(SettingEntry.restored(setting) for setting in entries.get("settings", [])),
             shared_rows={model: DottedPath(path) for model, path in entries.get("shared_rows", {}).items()},
@@ -168,7 +173,9 @@ class Registry:
     def entries_text(self) -> str:
         return json.dumps({
             "events": list(self.events),
-            "models": {cli_name: {"module": entry.module, "model": entry.model.text, "commands": list(entry.commands), "excluded_subcommands": list(entry.excluded_subcommands)} for cli_name, entry in self.models.items()},
+            "event_keys": {event: asdict(entry) for event, entry in self.event_keys.items()},
+            "former_event_keys": self.former_event_keys,
+            "models":{cli_name: {"module": entry.module, "model": entry.model.text, "commands": list(entry.commands), "excluded_subcommands": list(entry.excluded_subcommands)} for cli_name, entry in self.models.items()},
             "handlers": {command: path.text for command, path in self.handlers.items()},
             "subcommands": {line: path.text for line, path in self.subcommands.items()},
             "outward_lines": list(self.outward_lines),
@@ -260,6 +267,23 @@ class Registry:
     @cached_property
     def event_lookup(self) -> EventLookup:
         return EventLookup(self.guards, self.listeners, self.events)
+
+    @cached_property
+    def events_by_key(self) -> dict[str, str]:
+        return {entry.key: event for event, entry in self.event_keys.items()}
+
+    def key_of_event(self, event: str) -> str:
+        """The key of a log name, or an empty text for an event that has none."""
+        entry = self.event_keys.get(event)
+        return entry.key if entry is not None else ""
+
+    def event_of_key(self, key: str) -> str:
+        """The log name of a key, following the keys it was formerly known by, or an empty text for a key that does not exist."""
+        seen: set[str] = set()
+        while key not in self.events_by_key and key in self.former_event_keys and key not in seen:
+            seen.add(key)
+            key = self.former_event_keys[key]
+        return self.events_by_key.get(key, "")
 
     def event_guards(self, event: str) -> tuple[GuardEntry, ...]:
         return self.event_lookup.matching_guards(event)
