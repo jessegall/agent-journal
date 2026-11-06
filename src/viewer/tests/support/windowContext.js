@@ -42,7 +42,7 @@ export function context(answers, agent = null, keys = WINDOW_KEYS) {
         permissions: {reads: [], runs: [], missing: [], ask: async () => true},
         read,
         async readKeys({only = [], state = {}}) {
-            const names = only.length ? only : Object.keys(keys).filter((name) => !keys[name].loading && !name.endsWith(".*"));
+            const names = only.length ? only : Object.keys(keys).filter((name) => !keys[name].loading && !name.endsWith(".*") && (!keys[name].tab || keys[name].tab === state.tab));
             const results = await Promise.all(names.map((name) => this.read(`${keyLine(name, keys)}${keyFlags(name, state)}${keys[name]?.page_size && !(`${name}.limit` in state) ? ` --limit ${keys[name].page_size}` : ""}`)));
             const declared = Object.fromEntries(Object.entries(keys).map(([name, key]) => [name, {tab: key.tab ?? null, events: key.events ?? [], reload_seconds: 0, loading: key.loading ?? "first", page_size: key.page_size ?? 0}]));
             return {ok: true, value: {declared, keys: Object.fromEntries(names.map((name, index) => [name, results[index]]))}};

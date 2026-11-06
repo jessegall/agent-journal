@@ -1,7 +1,8 @@
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {afterEach, expect, test} from "vitest";
-import {context, mounted, settle} from "./support/windowContext.js";
+import {mounted, settle} from "./support/windowContext.js";
+import {taskWindowContext as context} from "./support/taskWindowContext.js";
 import TaskGroups from "../../core/modules/tasks/web/src/TaskGroups.vue";
 
 afterEach(() => (document.body.innerHTML = ""));

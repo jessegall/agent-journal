@@ -1,5 +1,6 @@
 import {afterEach, expect, test} from "vitest";
-import {context, mounted, settle} from "./support/windowContext.js";
+import {mounted, settle} from "./support/windowContext.js";
+import {taskWindowContext} from "./support/taskWindowContext.js";
 import TasksWindow from "../../core/modules/tasks/web/src/TasksWindow.vue";
 
 const BOARD = {ok: true, value: {groups: [
@@ -19,7 +20,7 @@ afterEach(() => (document.body.innerHTML = ""));
 
 async function dialog() {
     const ran = [];
-    const window = context({"task board": BOARD});
+    const window = taskWindowContext({"task board": BOARD});
     const subscriptions = [];
     window.follow = (events, callback) => {
         subscriptions.push({events, callback});
@@ -27,6 +28,7 @@ async function dialog() {
     };
     window.run = async (line) => {
         ran.push(line);
+        if (line[1] === "graph") return {ok: true, value: {tasks: [], edges: []}};
         if (line[0] === "task-log") return {ok: true, value: {rows: [{id: 1, line: "Found the rounding", created_at: "2026-11-03T12:00:00Z"}], is_last_page: true}};
         if (line[1] === "inspect") return inspection(Number(line[2]));
         if (line[1] === "place") return PLACE;
@@ -203,12 +205,12 @@ test("grouping by nothing keeps show more and the finished groups", async () => 
     expect(shown.querySelector('[data-more="completed"]')).not.toBeNull();
 });
 
-test("the plan places are read from the board and each outline", async () => {
+test("the plan places are read through one window key", async () => {
     const {readPlanPlaces} = await import("../../core/modules/tasks/web/src/planPlaces.js");
-    const read = async (line) => (line === "plan board"
-        ? {ok: true, value: {plans: [{id: 3, title: "Checkout"}]}}
-        : {ok: true, value: {phases: [{id: 7, title: "Payment", tasks: [{id: 40}]}]}});
-    expect(await readPlanPlaces({read})).toEqual([{phaseId: 7, label: "Plan 3: Checkout › Payment", taskIds: [40]}]);
+    const calls = [];
+    const window = {reload: async (key) => calls.push(key), props: {places: {failure: {value: ""}, rows: {value: [{id: 7, label: "Plan 3: Checkout › Payment", task_ids: [40]}]}}}};
+    expect(await readPlanPlaces(window)).toEqual([{phaseId: 7, label: "Plan 3: Checkout › Payment", taskIds: [40]}]);
+    expect(calls).toEqual(["places"]);
 });
 
 test("a block from the inspector can name what opens the task", async () => {

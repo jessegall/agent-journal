@@ -9,7 +9,7 @@ import TasksMenus from "./TasksMenus.vue";
 // the place to manage tasks, as version 4's dialog: the groups of tasks on the left, the one selected in the inspector on the right, and keys for all of it
 const TYPING = "input,textarea,select,[contenteditable],.menu-panel";
 const emit = defineEmits(["close"]);
-const context = useWindow();
+const window = useWindow();
 const open = ref(true);
 const list = ref(null);
 const inspector = ref(null);
@@ -21,7 +21,8 @@ const VIEWS = [
     {key: "list", label: "List"},
     {key: "graph", label: "Graph"},
 ];
-const view = ref("list");
+window.state.tab = "list";
+const view = computed({get: () => window.state.tab, set: (value) => (window.state.tab = value)});
 const states = ref([]);
 const display = ref({grouping: "state", number: true, reason: false, showDone: false});
 const searched = computed(() => list.value?.query ?? "");
@@ -37,7 +38,7 @@ function deleted() {
     inspecting.value = false;
     selected.value = 0;
 }
-const stopFollowing = context.follow(["task.*", "task_log.*"], () => (changes.value += 1));
+const stopFollowing = window.follow(["task.*", "task_log.*"], () => (changes.value += 1));
 onUnmounted(() => stopFollowing?.());
 
 const order = computed(() => (list.value?.groups ?? []).flatMap(({tasks}) => tasks.map((task) => task.id)));
@@ -90,12 +91,13 @@ function escaped(event) {
 }
 
 onMounted(() => {
-    window.addEventListener("keydown", pressed, true);
-    window.addEventListener("keydown", escaped);
+    globalThis.addEventListener("keydown", pressed, true);
+    globalThis.addEventListener("keydown", escaped);
 });
 onUnmounted(() => {
-    window.removeEventListener("keydown", pressed, true);
-    window.removeEventListener("keydown", escaped);
+    globalThis.removeEventListener("keydown", pressed, true);
+    globalThis.removeEventListener("keydown", escaped);
+    window.state.tab = "list";
 });
 </script>
 
@@ -144,7 +146,7 @@ onUnmounted(() => {
                     </div>
                 </div>
                 <template v-if="inspecting && selected">
-                    <TaskInspector ref="inspector" stepped :id="selected" :read="context.run" :changes="changes" @close="inspecting = false" @step="step" @select="select" />
+                    <TaskInspector ref="inspector" stepped :id="selected" :read="window.run" :changes="changes" @close="inspecting = false" @step="step" @select="select" />
                 </template>
             </div>
         </div>

@@ -2,6 +2,7 @@ import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {afterEach, expect, test} from "vitest";
 import {context, mounted, settle} from "./support/windowContext.js";
+import {taskWindowContext} from "./support/taskWindowContext.js";
 import PlanCards from "../../core/modules/plans/web/src/PlanCards.vue";
 import TaskGroups from "../../core/modules/tasks/web/src/TaskGroups.vue";
 
@@ -12,7 +13,7 @@ const plan = (id, title) => ({id, title, state: "started", task_count: 1, comple
 
 function reader(answers) {
     const reads = [];
-    const window = context({});
+    const window = taskWindowContext({});
     window.read = async (line) => (reads.push(line), answers(line));
     return {window, reads};
 }
@@ -24,7 +25,7 @@ test("finished tasks carry both close time and id when asking for the next page"
     const element = await mounted(TaskGroups, window);
     element.querySelector('[data-more="cancelled"]').click();
     await settle();
-    expect(reads).toContain(`task board --state cancelled --before-closed-at ${closed_at} --before-id 2`);
+    expect(reads).toContain(`task board --state cancelled --before-id 2 --before-closed-at ${closed_at}`);
     expect([...element.querySelectorAll(".task-title")].map((title) => title.textContent)).toEqual(["Closed 3", "Closed 2", "Closed 1"]);
 });
 
@@ -43,7 +44,8 @@ test("more tasks are asked for older than the oldest shown, without doubles, and
     expect(reads).toContain("task board --state open --before-id 2");
     expect(element.textContent.match(/Two/g).length).toBe(1);
     expect(element.textContent).toContain("One");
-    await heard();
+    await heard({event: "task.update"});
+    await new Promise((resolve) => setTimeout(resolve, 70));
     await settle();
     expect(reloaded).toBe(true);
     expect(element.textContent).not.toContain("Two");
