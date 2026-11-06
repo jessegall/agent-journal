@@ -5,9 +5,9 @@ from core.base.model.event_form import EventForm
 from core.base.model.table import indefinite_article
 
 MODULE_NAME_PREFIX = "journal."
-CHANGE_PAST_TENSE = {"create": "created", "update": "updated", "delete": "deleted"}
-IRREGULAR_PAST_WORDS = {"cut": "cut", "make": "made", "send": "sent", "stop": "stopped", "pin": "pinned", "set": "set", "run": "run", "begin": "begun", "plan": "planned"}
-PAST_SEPARATOR = " was "
+CHANGE_EVENT_SUFFIXES = {"create": "created", "update": "updated", "delete": "deleted"}
+IRREGULAR_EVENT_SUFFIXES = {"cut": "cut", "make": "made", "send": "sent", "stop": "stopped", "pin": "pinned", "set": "set", "run": "run", "begin": "begun", "plan": "planned"}
+SUFFIX_SEPARATOR = " was "
 PROGRESS_SEPARATOR = " being "
 
 
@@ -25,9 +25,9 @@ class EventKeyEntry:
     def built(cls, module: str, event: str, forms: tuple[EventForm, ...]) -> "EventKeyEntry":
         subject, _, change = event.partition(".")
         subject_text = subject.replace("_", " ").replace("-", " ")
-        event_text = f": {change.replace('_', ' ')}" if "_" in change else f"{PAST_SEPARATOR}{cls.past_tense(change)}"
+        event_text = f": {change.replace('_', ' ')}" if "_" in change else f"{SUFFIX_SEPARATOR}{cls.past_tense(change)}"
         description = f"{indefinite_article(subject_text)} {subject_text}{event_text}"
-        return cls(f"{module.removeprefix(MODULE_NAME_PREFIX)}.{subject}.{CHANGE_PAST_TENSE.get(change, change)}", event, module, forms, description)
+        return cls(f"{module.removeprefix(MODULE_NAME_PREFIX)}.{subject}.{CHANGE_EVENT_SUFFIXES.get(change, change)}", event, module, forms, description)
 
     @classmethod
     def system(cls, module: str, event: str, forms: tuple[EventForm, ...]) -> "EventKeyEntry":
@@ -45,13 +45,13 @@ class EventKeyEntry:
 
     @staticmethod
     def past_tense(change: str) -> str:
-        if change in CHANGE_PAST_TENSE:
-            return CHANGE_PAST_TENSE[change]
-        if change in IRREGULAR_PAST_WORDS:
-            return IRREGULAR_PAST_WORDS[change]
+        if change in CHANGE_EVENT_SUFFIXES:
+            return CHANGE_EVENT_SUFFIXES[change]
+        if change in IRREGULAR_EVENT_SUFFIXES:
+            return IRREGULAR_EVENT_SUFFIXES[change]
         if change.endswith("ed"):
             return change
         return f"{change}d" if change.endswith("e") else f"{change}ed"
 
     def guard_words(self) -> str:
-        return f"can stop {self.description.replace(PAST_SEPARATOR, PROGRESS_SEPARATOR)}"
+        return f"can stop {self.description.replace(SUFFIX_SEPARATOR, PROGRESS_SEPARATOR)}"

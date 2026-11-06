@@ -67,7 +67,7 @@ class PluginRule(DriverRule):
             if hook.event.accepts_lines:
                 self.queued(hook, plugin, lines, commands)
             for event in [event for event in events if event.name in manifest.event_names and self.reaches(hook, manifest, event.name)]:
-                commit = manifest.named_event(event.name, EventForm.COMMIT)
+                commit = manifest.declared_event(event.name, EventForm.COMMIT)
                 if event.name not in manifest.window_names() or commit is not None:
                     commands.append(DeliverPluginEvent(plugin.id, hook.agent_id, commit.key if commit else event.name, json.dumps(dict(event.data)), commit.script if commit else ""))
                 if event.name not in manifest.window_names():
@@ -95,7 +95,7 @@ class PluginRule(DriverRule):
                      values: dict[int, dict[str, object]]) -> str:
         if plugin.id not in values:
             values[plugin.id] = self.settings.values(plugin, manifest)
-        guard = manifest.named_event(event.name, EventForm.GUARD)
+        guard = manifest.declared_event(event.name, EventForm.GUARD)
         call = PluginCall(manifest, PluginEvent(guard.key, event.data) if guard else event, hook.event.environment, hook.timestamp, values[plugin.id], hook.agent_id, form=EventForm.GUARD, script=guard.script if guard else "")
         try:
             answer = self.program.run(call, manifest.window_ms(event.name, self.setting_values.number(CEILING_SETTING)))

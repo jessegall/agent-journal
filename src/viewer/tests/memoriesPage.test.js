@@ -49,14 +49,14 @@ test("the column puts the main agent first with its count, then every other agen
     const element = await mounted(MemoriesPage, answered());
     await settle();
     const names = [...element.querySelectorAll("[data-agent-column] .pinned [data-who-name]")].map((name) => name.textContent.trim());
-    expect(names).toEqual(["Main agent", "Workers and helpers", "Every agent"]);
+    expect(names).toEqual(["Main agent", "Other agents", "Every agent"]);
     expect(element.querySelector("[data-main]").textContent).toContain("Reads these at every start");
 });
 
 test("with no worker or helper holding a memory the column says so and offers only the main agent", async () => {
     const element = await mounted(MemoriesPage, answered({"memory list --other-agents": page([]), "memory agents": page([])}));
     await settle();
-    expect(element.querySelector("[data-no-agents]").textContent).toContain("No worker or helper has saved a memory yet");
+    expect(element.querySelector("[data-no-agents]").textContent).toContain("No other agent has saved a memory yet");
     expect(element.querySelector("[data-others]")).toBeNull();
 });
 
@@ -99,9 +99,9 @@ test("a name found in the column and the kind of agent are sent to the server", 
     typeInto(element.querySelector("[data-agent-find] input"), "worker 646");
     await settle();
     expect(readsWith(window_, 'memory agents --environment main --name "worker 646" --working').length).toBeGreaterThan(0);
-    await pickButton(element, "Workers", "[data-agent-roles] button");
+    await pickButton(element, "Writing agents", "[data-agent-roles] button");
     expect(readsWith(window_, 'memory agents --environment main --access writing --name "worker 646"').length).toBeGreaterThan(0);
-    await pickButton(element, "Helpers", "[data-agent-roles] button");
+    await pickButton(element, "Read-only agents", "[data-agent-roles] button");
     expect(readsWith(window_, "memory agents --environment main --access read-only").length).toBeGreaterThan(0);
 });
 
@@ -139,7 +139,7 @@ test("the workers and helpers are listed under the agent each memory belongs to,
     const window_ = answered();
     const element = await mounted(MemoriesPage, window_);
     await settle();
-    await clickByText(element, "[data-who]", "Workers and helpers");
+    await clickByText(element, "[data-who]", "Other agents");
     expect(element.querySelector("[data-group-link]").textContent).toBe("Worker 646");
     expect(readsWith(window_, "memory agents --agents")).toEqual(["memory agents --agents 646 --limit 1"]);
     await clickByText(element, "[data-group-link]", "Worker 646");
@@ -200,7 +200,7 @@ test("a main agent with no memories points at the memories of the workers and he
     expect(element.querySelector("[data-memory-empty]").dataset.kind).toBe("main-others");
     element.querySelector("[data-memory-others]").click();
     await settle();
-    expect(element.querySelector("[data-pane-title]").textContent.trim()).toBe("Workers and helpers");
+    expect(element.querySelector("[data-pane-title]").textContent.trim()).toBe("Other agents");
 });
 
 test("no memories anywhere says so and offers a new memory", async () => {
@@ -261,6 +261,6 @@ test("the command lines say whose memories, in which environment and how they ar
     expect(memoryLine({who: "main", environment: "docs"})).toBe("memory list --main-agent --environment docs --state active --order newest --limit 20");
     expect(memoryLine({who: "agent:5", environment: "main", state: "all", search: 'say "hi"', order: "weight"})).toBe('memory list --agent 5 --environment main --removed --search "say \\"hi\\"" --order weight --limit 20');
     expect(memoryLine({who: "everyone", environment: "main", state: "removed"})).toBe("memory list --environment main --removed --state removed --order newest --limit 20");
-    expect(agentsLine({environment: "main", ended: true, role: "helpers"})).toBe("memory agents --environment main --access read-only --ended --limit 30");
+    expect(agentsLine({environment: "main", ended: true, role: "read-only"})).toBe("memory agents --environment main --access read-only --ended --limit 30");
     expect(namesLine([4, 4, 9])).toBe("memory agents --agents 4 9 --limit 2");
 });

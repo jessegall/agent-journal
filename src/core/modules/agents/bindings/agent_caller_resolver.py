@@ -14,7 +14,7 @@ from core.base.query.conditions.among import Among
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.command.script_policy import ScriptPolicy
-from core.base.running_scripts import PluginScriptProcesses
+from core.base.plugin_script_processes import PluginScriptProcesses
 from core.base.caller.caller import Caller
 from core.modules.actors.queries.actor_query import ActorQuery
 from core.modules.agents.models.agent import Agent

@@ -5,7 +5,7 @@ from pathlib import Path
 from core.base.journal_home import JournalHome
 from core.base.model.event_form import EventForm
 from core.base.registry.registry import Registry
-from core.base.running_scripts import PluginScriptProcesses
+from core.base.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX, ManifestListener
 from core.modules.plugins.support.plugin_event_row import PluginEventRow
 from core.modules.plugins.support.plugin_event_state import PluginEventState
@@ -36,7 +36,7 @@ class PluginEventRows:
                 is_second = (listener.event, form.value) in first_entries
                 first_entries.add((listener.event, form.value))
                 rows.append(self.form_row(manifest, folder, listener, form, is_second))
-        rows += [self.row(manifest, name, "", manifest.program, PluginEventState.WRONG_KEY) for name in manifest.event_names if name not in self.registry.named_plugin_events]
+        rows += [self.row(manifest, name, "", manifest.program, PluginEventState.WRONG_KEY) for name in manifest.event_names if name not in self.registry.declared_plugin_events]
         rows += [self.row(manifest, entry, FILES_FORM, entry, PluginEventState.WRONG_SCRIPT) for entry in manifest.wrong_files(folder)]
         readable = set(manifest.project_folders(self.home.project_folder, self.home.folder))
         rows += [self.row(manifest, entry, READS_FORM, entry, PluginEventState.WRONG_PROJECT_READ) for entry in manifest.project_reads if not self.opens(entry, readable)]
@@ -63,7 +63,7 @@ class PluginEventRows:
             state = PluginEventState.RENAMED
         else:
             state = PluginEventState.LISTENS
-        is_hook_guard = form is EventForm.GUARD and entry is not None and entry.module == MODULE_NAME and entry.event in self.registry.named_plugin_events
+        is_hook_guard = form is EventForm.GUARD and entry is not None and entry.module == MODULE_NAME and entry.event in self.registry.declared_plugin_events
         limit_ms = int(self.setting_values.number(CEILING_SETTING)) if is_hook_guard else 0
         skip = self.scripts.newest_skip(manifest.name, listener.event, form)
         row = self.row(manifest, listener.event, form.value, script, state, entry.key if state is PluginEventState.RENAMED and entry else "", started_at, limit_ms)

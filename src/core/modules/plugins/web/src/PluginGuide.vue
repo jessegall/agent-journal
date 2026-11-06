@@ -123,7 +123,7 @@ const CALLS = [
                 </template>
             </dl>
             <h3>Asking the journal about a checkout</h3>
-            <p>Plugins and people can name any agent. An agent can name only its own checkout and read project folders listed in <code>project_reads</code>.</p>
+            <p>Plugins and people can name any agent. An agent names only the checkout it works in and reads project folders listed in <code>project_reads</code>.</p>
             <dl>
                 <template v-for="[call, text] in CALLS" :key="call">
                     <dt><code>{{ call }}</code></dt>

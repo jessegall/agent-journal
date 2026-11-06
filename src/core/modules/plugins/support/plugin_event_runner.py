@@ -2,7 +2,7 @@ from collections.abc import Callable, Mapping
 
 from core.base.clock import Clock
 from core.base.error_log import ErrorLog
-from core.base.running_scripts import PluginScriptProcesses
+from core.base.plugin_script_processes import PluginScriptProcesses
 from core.base.timestamp import Timestamp
 from core.base.command.bus import Bus
 from core.base.command.server_stopping_error import ServerStoppingError

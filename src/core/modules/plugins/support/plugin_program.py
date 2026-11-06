@@ -9,7 +9,7 @@ from core.base.agent_checkouts import AgentCheckouts
 from core.base.change.event_log import HIDDEN
 from core.base.journal_home import JournalHome
 from core.base.model.event_form import EventForm
-from core.base.running_scripts import PluginScriptProcesses
+from core.base.plugin_script_processes import PluginScriptProcesses
 from core.base.script_stop import ScriptStop
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.plugins.support.plugin_answer import PluginAnswer
@@ -48,8 +48,8 @@ class PluginProgram:
         if call.form is not EventForm.COMMIT:
             self.scripts.keep_line(manifest.name, line)
         explicit_service = call.script.removeprefix(SERVICE_PREFIX) if call.script.startswith(SERVICE_PREFIX) else ""
-        answering_services = [service.name for service in manifest.services if service.answers]
-        service_name = explicit_service or (answering_services[0] if answering_services and not call.script and limit_ms is not None else "")
+        socket_services = [service.name for service in manifest.services if service.answers]
+        service_name = explicit_service or (socket_services[0] if socket_services and not call.script and limit_ms is not None else "")
         if service_name and (answer := self.service_answer(manifest.name, service_name, line, limit_ms)) is not None:
             return answer
         program = manifest.program if explicit_service else call.script or manifest.program

@@ -22,7 +22,7 @@ def project_folder_setup(folder: str):
     return create_folder
 
 
-def worker_line_reading(story, folder: str) -> str:
+def worker_read(story, folder: str) -> str:
     story.container.get(ShellSandbox).is_required = True
     path = f"{real(story.repository.folder)}/{folder}/config.json"
     reply = story.hook(story.worker_session, HookSamples.shell(f"cat {path}", ShellPart("cat", CommandCategory.READ, [path])))
@@ -36,28 +36,28 @@ def declared_folders(line: str) -> list[str]:
 
 def test_s52_a_project_folder_a_plugin_declares_opens_for_the_shell_line_of_a_worker(new_story):
     story = checkout_story(new_story, setup_repository=project_folder_setup(".rules"), project_reads=[".rules"])
-    story.expect_rows(declared_folders(worker_line_reading(story, ".rules")) == [f"{real(story.repository.folder)}/.rules"])
+    story.expect_rows(declared_folders(worker_read(story, ".rules")) == [f"{real(story.repository.folder)}/.rules"])
 
 
 def test_s52_the_rules_folder_opens_for_a_worker_through_a_declaration(new_story):
     story = checkout_story(new_story, setup_repository=project_folder_setup(".commandments"), project_reads=[".commandments"])
-    story.expect_rows(declared_folders(worker_line_reading(story, ".commandments")) == [f"{real(story.repository.folder)}/.commandments"])
+    story.expect_rows(declared_folders(worker_read(story, ".commandments")) == [f"{real(story.repository.folder)}/.commandments"])
 
 
 def test_s52_a_folder_no_plugin_declares_is_not_opened(new_story):
     story = checkout_story(new_story, setup_repository=project_folder_setup(".rules"))
-    story.expect_rows(READ_FOLDERS_VARIABLE not in worker_line_reading(story, ".rules"))
+    story.expect_rows(READ_FOLDERS_VARIABLE not in worker_read(story, ".rules"))
 
 
 def test_s52_a_second_plugin_declares_another_folder_and_each_is_open_for_the_shell_line(new_story):
     story = checkout_story(new_story, setup_repository=project_folder_setup(".rules"), project_reads=[".rules"])
     install_event_plugin(story, name="second", project_reads=[".more"])
-    story.expect_rows(declared_folders(worker_line_reading(story, ".rules")) == [f"{real(story.repository.folder)}/.rules", f"{real(story.repository.folder)}/.more"])
+    story.expect_rows(declared_folders(worker_read(story, ".rules")) == [f"{real(story.repository.folder)}/.rules", f"{real(story.repository.folder)}/.more"])
 
 
 def test_s52_an_entry_that_leaves_the_project_is_wrong_on_the_card_and_is_not_opened(new_story):
     story = checkout_story(new_story, project_reads=[EXTERNAL_PATH])
-    story.expect_rows(READ_FOLDERS_VARIABLE not in worker_line_reading(story, ".rules"))
+    story.expect_rows(READ_FOLDERS_VARIABLE not in worker_read(story, ".rules"))
     card = plugin_page(story).card()
     story.expect_rows(any(EXTERNAL_PATH in json.dumps(row) and "wrong" in str(row["state"]) for row in card))
 
