@@ -17,9 +17,9 @@ def expect_states(story, **states) -> None:
         story.expect_text(f"task show {task.removeprefix('task')}", f"state: {state}", actor=story.agent)
 
 
-def proved(story, repository, worker, point_file: str, text: str) -> None:
+def proved(story, repository, worker, point_file: str, text: str, task: int = 1) -> None:
     repository.changed(worker.id, point_file, text)
-    story.expect_success(f'proof make 1 "{point_file}:1, its story" --test "pytest tests/{point_file}"', actor=worker)
+    story.expect_success(f'proof make 1 --task {task} "{point_file}:1, its story" --test "pytest tests/{point_file}"', actor=worker)
 
 
 def test_a_worker_that_took_a_queued_task_while_its_tests_ran_stays_on_it_and_the_tested_task_closes(new_story, monkeypatch):
@@ -35,7 +35,7 @@ def test_a_worker_that_took_a_queued_task_while_its_tests_ran_stays_on_it_and_th
     story.expect_success("task start 3", actor=worker)
     ended(story, started[0], 0)
     expect_states(story, task1="completed", task2="open", task3="started")
-    story.expect_success('proof make 1 "receipt.py:1, read by hand"', actor=worker)
+    story.expect_success('proof make 1 --task 3 "receipt.py:1, read by hand"', actor=worker)
     story.expect_text("proof list --task 3", "receipt.py:1", actor=worker)
 
 
@@ -59,7 +59,7 @@ def test_a_proof_with_no_test_leaves_a_task_to_close_when_its_tests_pass(new_sto
     repository = repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
     proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
-    story.expect_success('proof make 1 "read by hand, no test to run"', actor=worker)
+    story.expect_success('proof make 1 --task 1 "read by hand, no test to run"', actor=worker)
     story.expect_success("worker deliver", actor=worker)
     story.run_listeners()
     ended(story, started[0], 0)
@@ -120,7 +120,7 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
     story.expect_text(f"agent-line list --agent {worker.id}", "Your next task is task:2: journal task show 2")
 
     # the second task
-    proved(story, repository, worker, "tax.py", "TAX = 1\n")
+    proved(story, repository, worker, "tax.py", "TAX = 1\n", 2)
     story.expect_success("worker next", actor=worker)
     story.run_listeners()
     ended(story, started[2], 0)
@@ -128,7 +128,7 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
     story.expect_text("chat-mark list --environment 1", "worker-tests:1:1", "worker-tests:1:2")
 
     # the last task: there is no next, and the one delivery hands all three in and runs its test
-    proved(story, repository, worker, "receipt.py", "RECEIPT = 1\n")
+    proved(story, repository, worker, "receipt.py", "RECEIPT = 1\n", 3)
     story.expect_refusal("worker next", "task 3 is your last", actor=worker)
     story.expect_success("worker deliver", actor=worker)
     story.run_listeners()

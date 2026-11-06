@@ -97,4 +97,4 @@ def expect_worker_commands(story) -> None:
         worker = dispatched_worker(story, f"worker dispatch {task} --model sonnet --profile {profile}")
         story.expect_success(f"task overview {task}", actor=worker)
         story.expect_success(f'task log {task} "Checked the total"', actor=worker)
-        story.expect_success('proof make 1 "cart.py:1 checked"', actor=worker)
+        story.expect_success(f'proof make 1 --task {task} "cart.py:1 checked"', actor=worker)

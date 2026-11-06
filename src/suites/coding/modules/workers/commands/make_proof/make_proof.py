@@ -11,4 +11,5 @@ class MakeProof(Command[Proof]):
 
     point: int
     text: str
+    task_id: int
     test_command: str = ""

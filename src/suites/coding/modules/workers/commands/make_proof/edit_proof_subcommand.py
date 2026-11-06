@@ -21,4 +21,4 @@ class EditProofSubcommand(MakeProofSubcommand):
         if worktree is None:
             raise Refusal("only a worker with a worktree out makes proofs", "journal worker-worktree list shows the worktrees")
         proof = self.proofs.worktree_proofs(worktree.id).filter(task_id=worktree.task_id).find(arguments.point)
-        return MakeProof(proof.point, arguments.text, arguments.test)
+        return MakeProof(proof.point, arguments.text, arguments.task, arguments.test)

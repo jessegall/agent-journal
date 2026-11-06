@@ -26,6 +26,8 @@ class MakeProofHandler(Handler[MakeProof, Proof]):
         worktree = self.worktrees.worker_worktree(context.actor.id)
         if worktree is None:
             raise Refusal("only a worker with a worktree out makes proofs", "journal worker-worktree list shows the worktrees")
+        if command.task_id != worktree.task_id:
+            raise Refusal(f"the worker's current task is {worktree.task_id}, not {command.task_id}", "name the task this proof is for")
         if self.is_piped(command.test_command):
             raise Refusal("a proof's test runs without a pipe, a redirect or a reading flag such as --tail, since the journal reads its whole output", "give the bare test command")
         existing = self.proofs.worktree_proofs(worktree.id).filter(point=command.point, task_id=worktree.task_id).first()

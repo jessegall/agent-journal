@@ -169,7 +169,7 @@ def test_a_clash_only_on_built_files_merges_with_a_fresh_build(new_story):
     worker = dispatched_worker(story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     repository.changed(worker.id, BUILT_FILE, "built by the worker\n")
-    story.expect_success('proof make 1 "cart.py:1, the cart total story"', actor=worker)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
     story.expect_success("worker deliver", actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
     repository.committed(BUILT_FILE, "built on the branch\n", "Another build")
