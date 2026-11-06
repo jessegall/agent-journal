@@ -26,11 +26,7 @@ class WaitingTaskListener(SaveListener[Changed[Task]]):
         row, old_row = event.row, event.old_row
         if isinstance(event, Deleted) or isinstance(context.command, TasksChangedTogether) or (old_row is not None and self.changes_no_dependency(row, old_row)):
             return
-        pairs = self.waits.pairs()
-        for dependent in (pair for pair in pairs if pair.dependency_id == row.id):
-            self.waits.update_wait(dependent.task_id, row.id, context)
-        for dependency in (pair for pair in pairs if pair.task_id == row.id):
-            self.waits.update_wait(row.id, dependency.dependency_id, context)
+        self.waits.update_tasks([row.id], context)
 
     @staticmethod
     def changes_no_dependency(row: Task, old_row: Task) -> bool:

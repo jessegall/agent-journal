@@ -52,5 +52,4 @@ class WorkerTaskWaitTargets(TaskWaitTargets):
         waits = self.waits.pending_target(f"workers:{worker_id}")
         if not waits or not self.is_finished(self.queries.query(Agent).find(worker_id)):
             return
-        for wait in waits:
-            self.waits.resolved(wait, context)
+        self.waits.resolved(waits, context)

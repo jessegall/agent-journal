@@ -34,8 +34,7 @@ class TaskWaitListener(SaveListener[Changed[Model]]):
             self.waits.remember(row)
             return
         if isinstance(row, HelperJob) and row.ended_at is not None:
-            for wait in self.waits.pending_target(f"helpers:{row.helper_id}:{row.id}"):
-                self.waits.resolved(wait, context)
+            self.waits.resolved(self.waits.pending_target(f"helpers:{row.helper_id}:{row.id}"), context)
             return
         lifecycle = self.book.lifecycle(type(row))
         if isinstance(row, Task) and row.state is not TaskState.BLOCKED:
@@ -46,5 +45,4 @@ class TaskWaitListener(SaveListener[Changed[Model]]):
         if not isinstance(event, Deleted) and getattr(row, "state", None) in lifecycle.editable:
             return
         target = f"{self.tables.table(type(row)).name}:{row.id}"
-        for wait in self.waits.pending_target(target):
-            self.waits.resolved(wait, context)
+        self.waits.resolved(self.waits.pending_target(target), context)
