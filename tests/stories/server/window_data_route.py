@@ -10,13 +10,13 @@ from tests.stories.server.support.server_client import server_story
 WINDOW = "messages.chat"
 
 
-def window_data(server, cookie: str, only: str = "", window: str = WINDOW, query: str = "environment=main") -> tuple[int, dict[str, object]]:
+def window_data(server, cookie: str, keys: str = "", window: str = WINDOW, query: str = "environment=main") -> tuple[int, dict[str, object]]:
     connection = http.client.HTTPConnection("127.0.0.1", server.viewer_port(), timeout=10)
     headers = {"Cookie": cookie, "Host": f"127.0.0.1:{server.viewer_port()}"}
     if window:
         headers["x-journal-window"] = window
-    if only:
-        headers["x-journal-data-only"] = only
+    if keys:
+        headers["x-journal-data-only"] = keys
     connection.request("GET", f"/api/window?{query}", headers=headers)
     response = connection.getresponse()
     return response.status, json.loads(response.read())
@@ -50,14 +50,14 @@ def test_a_window_with_no_data_only_header_gets_the_keys_on_screen_and_what_it_d
 def test_the_data_only_header_runs_only_those_keys(chat):
     server, cookie = chat
     story = server.story
-    status, answer = window_data(server, cookie, only="pins,docks")
+    status, answer = window_data(server, cookie, keys="pins,docks")
     story.expect_rows(status == 200, set(answer["keys"]) == {"pins", "docks"})
 
 
 def test_a_state_argument_reaches_only_its_own_key(chat):
     server, cookie = chat
     story = server.story
-    status, answer = window_data(server, cookie, only="messages", query="environment=main&messages.limit=1")
+    status, answer = window_data(server, cookie, keys="messages", query="environment=main&messages.limit=1")
     story.expect_rows(status == 200, len(answer["keys"]["messages"]["value"]["rows"]) == 1)
 
 
@@ -65,16 +65,16 @@ def test_a_request_without_a_known_window_or_key_is_refused(chat):
     server, cookie = chat
     story = server.story
     story.expect_rows(window_data(server, cookie, window="")[0] == 400, window_data(server, cookie, window="no.window")[0] == 400,
-                      window_data(server, cookie, only="nothing")[0] == 400, window_data(server, cookie, query="tab=x")[0] == 400)
+                      window_data(server, cookie, keys="nothing")[0] == 400, window_data(server, cookie, query="tab=x")[0] == 400)
 
 
 def test_a_key_that_fails_leaves_the_others(chat):
     server, cookie = chat
     story = server.story
-    status, answer = window_data(server, cookie, only="messages,pins", query="environment=main&messages.limit=notanumber")
+    status, answer = window_data(server, cookie, keys="messages,pins", query="environment=main&messages.limit=notanumber")
     story.expect_rows(status == 200, answer["keys"]["messages"]["code"] != 0, answer["keys"]["pins"]["code"] == 0)
 
 
 def test_no_session_is_refused(chat):
     server, _ = chat
-    server.story.expect_rows(window_data(server, "", only="pins")[0] == 401)
+    server.story.expect_rows(window_data(server, "", keys="pins")[0] == 401)

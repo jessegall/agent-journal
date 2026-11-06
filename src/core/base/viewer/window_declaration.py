@@ -85,7 +85,7 @@ class WindowDeclaration:
         problems += [f"{self.name} fills its key {key.name} with an undeclared read" for key in self.keys if key.read not in self.reads]
         problems += [f"{self.name} reloads its key {key.name} on {pattern} without following it" for key in self.keys
                      for pattern in key.events if pattern not in self.events]
-        problems += [f"{self.name} reloads its key {key.name} every {key.every_seconds} seconds, and a timer is above 0" for key in self.keys if key.every_seconds < 0]
+        problems += [f"{self.name} reloads its key {key.name} every {key.reload_seconds} seconds, and a timer is above 0" for key in self.keys if key.reload_seconds < 0]
         if self.shows is WindowShows.SELECTED_AGENT and self.place not in (WindowPlace.PANE, WindowPlace.DROPDOWN):
             problems.append(f"{self.name} shows one agent's work but is drawn in a {self.place.value}: use a pane or dropdown")
         problems += DeclarationNames.icon_problems(f"the window {self.name}", self.icon)

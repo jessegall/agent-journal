@@ -4,10 +4,10 @@ import {useWindowData} from "../kit/useWindowData.js";
 import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
 
 const DECLARED = {
-    rows: {tab: "", events: ["message.*"], every_seconds: 0},
-    open: {tab: "open", events: [], every_seconds: 0},
-    closed: {tab: "closed", events: ["task.*"], every_seconds: 0},
-    usage: {tab: "", events: [], every_seconds: 10},
+    rows: {tab: "", events: ["message.*"], reload_seconds: 0},
+    open: {tab: "open", events: [], reload_seconds: 0},
+    closed: {tab: "closed", events: ["task.*"], reload_seconds: 0},
+    usage: {tab: "", events: [], reload_seconds: 10},
 };
 
 function mounted({answer, visible = ref(true), tab = ref("open")}) {
