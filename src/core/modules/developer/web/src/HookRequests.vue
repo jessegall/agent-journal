@@ -3,7 +3,7 @@ import {computed, ref} from "vue";
 import {WindowRoom, highlight, usePoll, useReadLine} from "@journal/window-kit";
 import RequestQueueInspector from "./RequestQueueInspector.vue";
 
-const {value: requests, failure, load} = useReadLine(() => "developer hook-requests");
+const {value: requests, failure, load} = useReadLine(() => "developer hook-requests", {unbatched: true});
 const rows = computed(() => requests.value?.rows ?? []);
 const openedNumber = ref(0);
 const queueOpen = ref(false);
@@ -37,6 +37,7 @@ usePoll(load, () => true);
                     <template v-else-if="!rows.length">
                         <p class="note message">Nothing recorded yet. Record agent calls in the developer settings turns the log on.</p>
                     </template>
+                    <TransitionGroup name="request-row" tag="div" class="request-rows">
                     <template v-for="row in rows" :key="row.id">
                         <template v-if="row.day_start">
                             <div class="day" data-hook-day>{{ row.day }}<span>UTC</span></div>
@@ -51,6 +52,7 @@ usePoll(load, () => true);
                             <span class="duration">{{ durationOf(row) }}</span>
                         </button>
                     </template>
+                    </TransitionGroup>
                 </div>
             </section>
             <div class="divider" data-hook-request-divider role="separator" aria-orientation="vertical" />
@@ -254,4 +256,10 @@ pre {
         grid-template-rows: minmax(140px, 45%) 1px minmax(0, 1fr);
     }
 }
+.request-rows { display: contents; }
+.request-row-move { transition: transform 320ms cubic-bezier(.2, .9, .25, 1); }
+.request-row-enter-active { transition: opacity 200ms ease-out; }
+.request-row-enter-from { opacity: 0; }
+.request-row-leave-active { display: none; }
+@media (prefers-reduced-motion: reduce) { .request-row-move, .request-row-enter-active { transition: none; } }
 </style>

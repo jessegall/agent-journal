@@ -67,6 +67,7 @@ SKILLS_ROUTE = "/api/skills"
 MODULES_ROUTE = "/modules/"
 FRAME_POLICY = ("sandbox allow-scripts; default-src 'none'; script-src {listener}; style-src {listener} 'unsafe-inline'; img-src {listener} data:;"
                 " connect-src 'none'; form-action 'none'")
+UNQUEUED_LINES = (("developer", "request-queue"), ("developer", "hook-requests"))
 
 
 class ViewerRequestHandler(BaseHTTPRequestHandler):
@@ -209,7 +210,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         session = viewer.login.session(token)
         started_at = perf_counter()
         try:
-            turn = nullcontext() if request.line[:2] == ["developer", "request-queue"] else viewer.routes.queue.viewer_turn(" ".join(request.line))
+            turn = nullcontext() if tuple(request.line[:2]) in UNQUEUED_LINES else viewer.routes.queue.viewer_turn(" ".join(request.line))
             with turn:
                 queued_ms = (perf_counter() - started_at) * 1000
                 answered = viewer.routes.line_route.answer(request.window, request.line, viewer.login.person_id(token), request.environment, session.shared)

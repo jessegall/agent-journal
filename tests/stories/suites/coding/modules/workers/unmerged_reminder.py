@@ -78,8 +78,8 @@ def test_the_unmerged_line_names_the_check_while_a_proof_waits(new_story):
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"journal worker merge {worker.id}")
 
 
-def remind(story, times: int) -> None:
-    for _ in range(times):
+def remind(story, count: int) -> None:
+    for _ in range(count):
         story.advance(REMINDER_INTERVAL)
         story.tick(MAIN_SESSION)
 

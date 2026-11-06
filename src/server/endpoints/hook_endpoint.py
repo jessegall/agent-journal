@@ -131,7 +131,7 @@ class HookEndpoint:
                 session = str(data.get("session", data.get("session_id", ""))) if is_mapping(data) else ""
                 agent = container.get(AgentRows).session(session)
                 role = agent.role if agent is not None else "main"
-                name = agent.given_name if agent is not None else ""
+                name = str(agent.id) if agent is not None and agent.role != MAIN_ROLE else ""
                 container.get(HookRequestLog).record(program, headers, data, (perf_counter() - started_at) * 1000, outcome, queued_ms, role, name)
             except sqlite3.Error as error:
                 self.context.files.log_line(f"request recording failed: {error}")

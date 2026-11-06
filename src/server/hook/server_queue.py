@@ -92,9 +92,9 @@ class ServerQueue(RequestQueue):
                 self.waiting_viewers.pop(number, None)
 
     def let_hooks_finish(self) -> None:
-        self.wait_for_hooks(self.viewer_wait_limit_seconds)
+        self.wait_until_idle(self.viewer_wait_limit_seconds)
 
-    def wait_for_hooks(self, limit_seconds: float) -> None:
+    def wait_until_idle(self, limit_seconds: float) -> None:
         deadline = monotonic() + limit_seconds
         with self.changed:
             while self.running_owners or self.waiting_hooks:

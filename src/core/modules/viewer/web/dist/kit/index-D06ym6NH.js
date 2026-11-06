@@ -7511,13 +7511,13 @@ function Gy(e, t, n = []) {
   return (n.length ? n.map((s) => e[s]).join(" ") : JSON.stringify(e)).toLowerCase().includes(t.trim().toLowerCase());
 }
 const J4 = (e) => (t) => t.filter((n) => n.id !== e), X4 = (e, t) => (n) => n.map((a) => a.id === e ? { ...a, ...t } : a), Q4 = (e) => (t) => [...t, e], ex = (e, t) => (n) => n.map((a) => e(a) ? { ...a, ...t } : a);
-function tx(e) {
-  const t = yt(), n = T(null), a = T("");
-  async function s(...o) {
-    const l = await t.read(e(...o));
-    a.value = l.ok ? "" : l.error, l.ok && (n.value = l.value);
+function tx(e, t = {}) {
+  const n = yt(), a = T(null), s = T("");
+  async function o(...l) {
+    const r = await n.read(e(...l), t);
+    s.value = r.ok ? "" : r.error, r.ok && (a.value = r.value);
   }
-  return { value: n, failure: a, load: s };
+  return { value: a, failure: s, load: o };
 }
 function nx(e) {
   const t = yt(), n = T("");
@@ -10337,7 +10337,7 @@ const qw = /* @__PURE__ */ Dw(jw), Fw = ["width", "height", "viewBox"], Ww = ["w
       ce(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, wx = /* @__PURE__ */ K(zw, [["__scopeId", "data-v-47e67f04"]]), kx = Lr(() => import("./VoiceFigure-BiVsqqjd.js").then((e) => e.V)), xx = "1.1.0", $x = "3.5";
+}, wx = /* @__PURE__ */ K(zw, [["__scopeId", "data-v-47e67f04"]]), kx = Lr(() => import("./VoiceFigure-x_J07Knm.js").then((e) => e.V)), xx = "1.1.0", $x = "3.5";
 export {
   py as $,
   xe as A,

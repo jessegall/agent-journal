@@ -11,7 +11,7 @@ SELECT id,
            WHEN 'cli' THEN 'Command line'
            ELSE coalesce((SELECT json_extract(value, '$.label')
                           || CASE WHEN coalesce(json_extract(payload, '$.agent'), '') <> ''
-                                  THEN ': ' || json_extract(payload, '$.agent') ELSE '' END
+                                  THEN ' ' || json_extract(payload, '$.agent') ELSE '' END
                           FROM registry, json_each(registry.entries, '$.agent_types')
                           WHERE json_extract(value, '$.key') = json_extract(payload, '$.role')
                             AND (json_extract(value, '$.key') = 'helper' OR json_extract(value, '$.extends') = 'helper')), 'Main agent')
