@@ -91,7 +91,7 @@ async function readTool() {
 }
 context.follow(["hook_call.*", "dock_item.*", "process_part.*"], readTool);
 readTool();
-const FOLD_AFTER_MS = 3000;
+const FOLD_AFTER_MS = 500;
 const ECHO_SLACK_MS = 2000;
 const FOOT_PIXELS = 40;
 const chat = ref(null);
