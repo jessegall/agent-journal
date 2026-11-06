@@ -1,6 +1,9 @@
 import json
 import sys
 
+from core.base.agent_checkouts import AgentCheckouts
+from core.base.checkout import Checkout
+from core.base.checkout_kind import CheckoutKind
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.testing.fake_launcher import FakeLauncher
@@ -23,6 +26,51 @@ import json, sys
 entries = {{"src/order.py": "order entry found"}}
 print(json.dumps({{"v": 1, "tell": entries[json.loads(sys.argv[1])["data"]["file"]["relative"]]}}))
 ' "$line" """
+
+
+def checkout_object(story, agent_id: int) -> Checkout:
+    return story.container.get(AgentCheckouts).checkout(agent_id)
+
+
+def helper_of_the_worker(story) -> Agent:
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.expect_success(HELPER_START, actor=story.worker)
+    story.run_listeners()
+    launcher.thread.join(timeout=5)
+    launcher.server.close()
+    story.home.socket("launcher").unlink()
+    return story.container.get(Queries).query(Agent).filter(parent_id=story.worker.id, role="helper").first()
+
+
+def test_s46_the_checkout_of_the_main_agent_is_the_project(new_story):
+    story = checkout_story(new_story)
+    project = story.repository.folder.resolve()
+    assert checkout_object(story, story.agent.id) == Checkout(CheckoutKind.MAIN, project, project, ENVIRONMENT_BRANCH)
+
+
+def test_s45_the_checkout_of_a_worker_is_its_worktree(new_story):
+    story = checkout_story(new_story)
+    repository = story.repository
+    assert checkout_object(story, story.worker.id) == Checkout(CheckoutKind.WORKTREE, story.worktree.resolve(), repository.folder.resolve(), repository.worker_branch(story.worker.id),
+                                                               ENVIRONMENT_BRANCH, repository.tip(ENVIRONMENT_BRANCH), True)
+
+
+def test_s50_the_checkout_of_a_released_worker_says_it_does_not_exist_and_names_the_branch(new_story):
+    story = checkout_story(new_story)
+    story.expect_success(f'worker release {story.worker.id} "{RELEASE_REASON}"', actor=story.agent)
+    checkout = checkout_object(story, story.worker.id)
+    story.expect_rows(checkout.kind is CheckoutKind.WORKTREE, checkout.exists is False, checkout.branch == story.repository.worker_branch(story.worker.id), checkout.root == story.worktree.resolve())
+
+
+def test_s56_the_checkout_of_a_helper_of_a_worker_is_the_checkout_of_the_worker(new_story):
+    story = checkout_story(new_story)
+    assert checkout_object(story, helper_of_the_worker(story).id) == checkout_object(story, story.worker.id)
+
+
+def test_s48_the_checkout_of_a_worker_behind_a_link_holds_real_paths(new_story):
+    story = checkout_story(new_story, linked=True)
+    checkout = checkout_object(story, story.worker.id)
+    story.expect_rows(checkout.root == story.worktree.resolve(), checkout.project_root == story.repository.folder.resolve())
 
 
 def test_s45_an_edit_in_a_worktree_gives_its_relative_name_real_path_kind_and_branch(new_story):
@@ -186,13 +234,7 @@ def test_s55_a_deleted_file_is_named_though_nothing_is_there(new_story):
 
 def test_s56_a_helper_of_a_worker_gets_the_checkout_of_the_worker(new_story):
     story = checkout_story(new_story)
-    launcher = FakeLauncher(story.home.socket("launcher"))
-    story.expect_success(HELPER_START, actor=story.worker)
-    story.run_listeners()
-    launcher.thread.join(timeout=5)
-    launcher.server.close()
-    story.home.socket("launcher").unlink()
-    helper = story.container.get(Queries).query(Agent).filter(parent_id=story.worker.id, role="helper").first()
+    helper = helper_of_the_worker(story)
     call = edit_event(story, helper.session)
     story.expect_rows(call["agent"] == helper.id, checkout_of(call)["root"] == real(story.worktree), checkout_of(call)["kind"] == "worktree")
 
