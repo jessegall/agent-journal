@@ -1,9 +1,9 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-b40ae94b5a4a")) { const style = document.createElement("style"); style.id = "window-styles-b40ae94b5a4a"; style.textContent = ".band[data-v-1758914f]{display:flex;align-items:center;gap:7px;height:28px;margin:0;padding:0 14px;background:var(--side);border-bottom:1px solid var(--border);color:var(--text-2);font-size:11.5px;font-weight:500;letter-spacing:.03em}.band svg[data-v-1758914f]{color:var(--text-3)}.band span[data-v-1758914f]{margin-left:auto;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.inspector[data-v-1be4ba5a]{display:flex;flex-direction:column;min-height:0;height:100%;background:var(--bg)}header[data-v-1be4ba5a]{display:flex;align-items:center;gap:8px;padding:14px;border-bottom:1px solid var(--border)}header h1[data-v-1be4ba5a]{flex:1;margin:0;font-size:14px}.limits[data-v-1be4ba5a],.empty[data-v-1be4ba5a]{margin:0;padding:14px;color:var(--text-3);font-size:12px}.entry[data-v-1be4ba5a]{display:grid;grid-template-columns:110px minmax(0,1fr) 70px;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px}.entry strong[data-v-1be4ba5a]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.entry span[data-v-1be4ba5a]:last-child{text-align:right;font-variant-numeric:tabular-nums}.queue-button[data-v-03f4382c]{align-self:flex-end;margin:8px 12px}.queue-veil[data-v-03f4382c]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-03f4382c]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-03f4382c]{position:relative;display:grid;grid-template-columns:minmax(360px,46%) 1px minmax(0,1fr);height:100%;min-height:0;overflow:hidden}.list[data-v-03f4382c]{display:flex;flex-direction:column;min-height:0;min-width:0}.list-scroll[data-v-03f4382c]{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}.columns[data-v-03f4382c],.row[data-v-03f4382c]{display:grid;grid-template-columns:minmax(80px,1.4fr) minmax(40px,.7fr) 32px 88px minmax(72px,1fr) 55px 60px;align-items:center;gap:5px;padding:10px;font-size:12px}.columns[data-v-03f4382c]{flex:none;border-bottom:1px solid var(--border);color:var(--text-3)}.columns[data-v-03f4382c]>:last-child,.duration[data-v-03f4382c],.queued[data-v-03f4382c],.parts[data-v-03f4382c]{text-align:right}.parts[data-v-03f4382c]{padding-right:4px;color:var(--text-3);font-variant-numeric:tabular-nums}.day[data-v-03f4382c]{display:flex;justify-content:space-between;padding:9px 16px;border-bottom:1px solid var(--border);background:var(--side);color:var(--text-3);font-size:11px}.row[data-v-03f4382c]{width:100%;border:0;border-bottom:1px solid var(--border);background:none;color:inherit;font-family:inherit;text-align:left;cursor:pointer}.row[data-v-03f4382c]:hover,.row.open[data-v-03f4382c]{background:var(--surface-2, var(--border))}.event[data-v-03f4382c]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.tool[data-v-03f4382c]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-3)}time[data-v-03f4382c],.duration[data-v-03f4382c],.queued[data-v-03f4382c]{font-variant-numeric:tabular-nums;white-space:nowrap}.slow .duration[data-v-03f4382c],.detail-head .slow[data-v-03f4382c]{color:#c58b35}.refused .event[data-v-03f4382c],.refused .duration[data-v-03f4382c],.detail-head .refused[data-v-03f4382c]{color:#d76b6b}.note[data-v-03f4382c]{margin:0;color:var(--text-3);font-size:12px}.detail[data-v-03f4382c]{padding:20px;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain}.divider[data-v-03f4382c]{background:var(--border)}.message[data-v-03f4382c]{padding:16px;line-height:1.6}.detail-head[data-v-03f4382c]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-03f4382c]{margin:0;color:var(--text);font-size:14px}.heading[data-v-03f4382c]{margin:0 0 8px;font-size:12px}pre[data-v-03f4382c]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}@media(max-width:760px){.queue-button[data-v-03f4382c]{align-self:flex-end;margin:8px 12px}.queue-veil[data-v-03f4382c]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-03f4382c]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-03f4382c]{position:relative;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(140px,45%) 1px minmax(0,1fr)}}.numbers-tools[data-v-21644aad]{display:flex;gap:8px;margin-bottom:10px}.numbers-note[data-v-21644aad]{margin:0;color:var(--text-3);font-size:12.5px}.numbers-table[data-v-21644aad]{width:100%;border-collapse:collapse;font-size:12.5px}.numbers-table th[data-v-21644aad],.numbers-table td[data-v-21644aad]{padding:4px 8px;border-bottom:1px solid var(--border);text-align:left}.numbers-table th[data-v-21644aad]{color:var(--text-3);font-weight:500}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-ef9163aeafbe")) { const style = document.createElement("style"); style.id = "window-styles-ef9163aeafbe"; style.textContent = ".band[data-v-9cc4041c]{display:flex;align-items:center;gap:7px;height:28px;margin:0;padding:0 14px;background:var(--side);border-bottom:1px solid var(--border);color:var(--text-2);font-size:11.5px;font-weight:500;letter-spacing:.03em}.band svg[data-v-9cc4041c]{color:var(--text-3)}.band span[data-v-9cc4041c]{margin-left:auto;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.inspector[data-v-5cf2a6cb]{display:flex;flex-direction:column;min-height:0;height:100%;background:var(--bg)}header[data-v-5cf2a6cb]{display:flex;align-items:center;gap:8px;padding:14px;border-bottom:1px solid var(--border)}header h1[data-v-5cf2a6cb]{flex:1;margin:0;font-size:14px}.limits[data-v-5cf2a6cb],.empty[data-v-5cf2a6cb]{margin:0;padding:14px;color:var(--text-3);font-size:12px}.entry[data-v-5cf2a6cb]{display:grid;grid-template-columns:110px minmax(0,1fr) 70px;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px}.entry strong[data-v-5cf2a6cb]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.entry span[data-v-5cf2a6cb]:last-child{text-align:right;font-variant-numeric:tabular-nums}.queue-button[data-v-6d44c769]{align-self:flex-end;margin:8px 12px}.queue-veil[data-v-6d44c769]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-6d44c769]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-6d44c769]{position:relative;display:grid;grid-template-columns:minmax(360px,46%) 1px minmax(0,1fr);height:100%;min-height:0;overflow:hidden}.list[data-v-6d44c769]{display:flex;flex-direction:column;min-height:0;min-width:0}.list-scroll[data-v-6d44c769]{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}.columns[data-v-6d44c769],.row[data-v-6d44c769]{display:grid;grid-template-columns:minmax(80px,1.4fr) minmax(40px,.7fr) 32px 88px minmax(72px,1fr) 55px 60px;align-items:center;gap:5px;padding:10px;font-size:12px}.columns[data-v-6d44c769]{flex:none;border-bottom:1px solid var(--border);color:var(--text-3)}.columns[data-v-6d44c769]>:last-child,.duration[data-v-6d44c769],.queued[data-v-6d44c769],.parts[data-v-6d44c769]{text-align:right}.parts[data-v-6d44c769]{padding-right:4px;color:var(--text-3);font-variant-numeric:tabular-nums}.day[data-v-6d44c769]{display:flex;justify-content:space-between;padding:9px 16px;border-bottom:1px solid var(--border);background:var(--side);color:var(--text-3);font-size:11px}.row[data-v-6d44c769]{width:100%;border:0;border-bottom:1px solid var(--border);background:none;color:inherit;font-family:inherit;text-align:left;cursor:pointer}.row[data-v-6d44c769]:hover,.row.open[data-v-6d44c769]{background:var(--surface-2, var(--border))}.event[data-v-6d44c769]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.tool[data-v-6d44c769]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-3)}time[data-v-6d44c769],.duration[data-v-6d44c769],.queued[data-v-6d44c769]{font-variant-numeric:tabular-nums;white-space:nowrap}.slow .duration[data-v-6d44c769],.detail-head .slow[data-v-6d44c769]{color:#c58b35}.refused .event[data-v-6d44c769],.refused .duration[data-v-6d44c769],.detail-head .refused[data-v-6d44c769]{color:#d76b6b}.note[data-v-6d44c769]{margin:0;color:var(--text-3);font-size:12px}.detail[data-v-6d44c769]{padding:20px;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain}.divider[data-v-6d44c769]{background:var(--border)}.message[data-v-6d44c769]{padding:16px;line-height:1.6}.detail-head[data-v-6d44c769]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-6d44c769]{margin:0;color:var(--text);font-size:14px}.heading[data-v-6d44c769]{margin:0 0 8px;font-size:12px}pre[data-v-6d44c769]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}@media(max-width:760px){.queue-button[data-v-6d44c769]{align-self:flex-end;margin:8px 12px}.queue-veil[data-v-6d44c769]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-6d44c769]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-6d44c769]{position:relative;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(140px,45%) 1px minmax(0,1fr)}}.numbers-tools[data-v-a530fc48]{display:flex;gap:8px;margin-bottom:10px}.numbers-note[data-v-a530fc48]{margin:0;color:var(--text-3);font-size:12.5px}.numbers-table[data-v-a530fc48]{width:100%;border-collapse:collapse;font-size:12.5px}.numbers-table th[data-v-a530fc48],.numbers-table td[data-v-a530fc48]{padding:4px 8px;border-bottom:1px solid var(--border);text-align:left}.numbers-table th[data-v-a530fc48]{color:var(--text-3);font-weight:500}\n"; document.head.appendChild(style); }
 import { openBlock as h, createElementBlock as r, normalizeStyle as R, createVNode as m, renderSlot as N, toDisplayString as t, createCommentVNode as x, ref as w, createElementVNode as e, unref as _, Fragment as f, withCtx as q, createTextVNode as V, renderList as b, computed as z, createBlock as S, normalizeClass as L, withModifiers as A } from "vue";
 import { useWindow as T, usePoll as $, Icon as B, CloseButton as Z, useReadLine as I, WindowRoom as Q, highlight as j } from "@journal/window-kit";
-import { _ as H } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const P = ["stroke-width", "innerHTML"], W = {
+import { _ as H } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+const O = ["stroke-width", "innerHTML"], P = {
   __name: "Icon",
   props: {
     name: { type: String, default: "dot" },
@@ -158,22 +158,22 @@ const P = ["stroke-width", "innerHTML"], W = {
       "stroke-linejoin": "round",
       "aria-hidden": "true",
       innerHTML: s[k[d.name] || d.name] || s.dot
-    }, null, 12, P));
+    }, null, 12, O));
   }
-}, E = { class: "band" }, O = { key: 0 }, D = {
+}, E = { class: "band" }, W = { key: 0 }, D = {
   __name: "ProcessQueueBand",
   props: { icon: { type: String, required: !0 }, count: { type: Number, default: null } },
   setup(d) {
     return (M, v) => (h(), r("h2", E, [
-      m(W, {
+      m(P, {
         name: d.icon,
         size: 12
       }, null, 8, ["name"]),
       N(M.$slots, "default", {}, void 0, !0),
-      d.count !== null ? (h(), r("span", O, t(d.count), 1)) : x("", !0)
+      d.count !== null ? (h(), r("span", W, t(d.count), 1)) : x("", !0)
     ]));
   }
-}, C = /* @__PURE__ */ H(D, [["__scopeId", "data-v-1758914f"]]), U = {
+}, C = /* @__PURE__ */ H(D, [["__scopeId", "data-v-9cc4041c"]]), U = {
   class: "inspector",
   "data-request-queue": ""
 }, F = {
@@ -211,7 +211,7 @@ const P = ["stroke-width", "innerHTML"], W = {
         })
       ]),
       p.value ? (h(), r("p", F, t(p.value), 1)) : s.value ? (h(), r(f, { key: 1 }, [
-        e("div", J, "Hooks at once: " + t(s.value.hook_limit) + " · Main agent wait: " + t(s.value.main_hook_seconds) + " s · Worker wait: " + t(s.value.agent_hook_seconds) + " s · Viewer wait: " + t(s.value.viewer_wait_seconds) + " s", 1),
+        e("div", J, "Hooks at once: " + t(s.value.hook_limit) + " · Main agent wait: " + t(s.value.main_hook_seconds) + " s · Other agent wait: " + t(s.value.agent_hook_seconds) + " s · Viewer wait: " + t(s.value.viewer_wait_seconds) + " s", 1),
         m(C, {
           icon: "start",
           count: s.value.running.length
@@ -253,7 +253,7 @@ const P = ["stroke-width", "innerHTML"], W = {
       ], 64)) : x("", !0)
     ]));
   }
-}, Y = /* @__PURE__ */ H(X, [["__scopeId", "data-v-1be4ba5a"]]), ee = {
+}, Y = /* @__PURE__ */ H(X, [["__scopeId", "data-v-5cf2a6cb"]]), ee = {
   class: "requests",
   "data-hook-requests": ""
 }, te = {
@@ -386,7 +386,7 @@ const P = ["stroke-width", "innerHTML"], W = {
       _: 1
     }));
   }
-}, qe = /* @__PURE__ */ H(me, [["__scopeId", "data-v-03f4382c"]]);
+}, qe = /* @__PURE__ */ H(me, [["__scopeId", "data-v-6d44c769"]]);
 export {
   qe as default
 };

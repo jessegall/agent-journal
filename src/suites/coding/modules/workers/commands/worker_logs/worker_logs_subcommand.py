@@ -1,7 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.commands.worker_logs.worker_logs import ReadWorkerLogs
 
@@ -16,6 +15,3 @@ class ReadWorkerLogsSubcommand(Subcommand[ReadWorkerLogs, str]):
     def command(self, arguments: Namespace, caller: Caller) -> ReadWorkerLogs:
         return ReadWorkerLogs(arguments.worker_id)
 
-    def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, str):
-            output.line(value)

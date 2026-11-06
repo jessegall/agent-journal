@@ -42,6 +42,8 @@ class RequestQueueSubcommand(ReadSubcommand[RequestQueueStatus]):
     def entry(self, entry: RequestQueueEntry) -> dict[str, object]:
         agent = self.agents.session(entry.session) if entry.session else None
         sender = entry.sender
-        if agent is not None and agent.role.lower() == sender.lower() and agent.given_name:
+        if agent is None:
+            return {**asdict(entry), "sender": sender}
+        if agent.role.lower() == sender.lower() and agent.given_name:
             sender = f"{sender}: {agent.given_name}"
         return {**asdict(entry), "sender": sender}
