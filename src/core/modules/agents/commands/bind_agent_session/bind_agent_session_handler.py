@@ -25,5 +25,5 @@ class BindAgentSessionHandler(Handler[BindAgentSession, Agent]):
         session_agent = self.agents.session(command.session)
         if session_agent is not None and session_agent.id != agent.id:
             self.repository.save_change(agent, agent.ended(context.timestamp, self.suites.agent_policy()), context)
-            return self.repository.update(session_agent, context, ended_at=None, pid=agent.pid, process_started_at=agent.process_started_at, launch_agent_id=agent.id)
-        return self.repository.update(agent, context, session=command.session)
+            return self.repository.update(session_agent, context, ended_at=None, pid=agent.pid, process_started_at=agent.process_started_at, launch_agent_id=agent.id, launch_name=agent.original_launch_name)
+        return self.repository.update(agent, context, session=command.session, launch_name=agent.original_launch_name)

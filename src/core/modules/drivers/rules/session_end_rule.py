@@ -6,7 +6,8 @@ from core.modules.agents.commands.end_agent.end_agent import EndAgent
 
 
 class SessionEndRule(DriverRule):
-    """A session that ends ends its agent, so it names no caller any more."""
+    """A session that ends ends its agent, so it names no caller any more. A clear under a launch ends no agent:
+    the program goes on under a new session id, which its next hook binds to the same agent."""
 
     name = "drivers.session-end"
     hook = HookEventName.SESSION_END
@@ -14,4 +15,6 @@ class SessionEndRule(DriverRule):
     essential = True
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
+        if hook.event.is_launch_clear_end:
+            return RuleAnswer.allowed()
         return RuleAnswer.allowed().running(EndAgent(hook.agent_id))
