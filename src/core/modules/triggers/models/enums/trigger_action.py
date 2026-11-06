@@ -7,3 +7,5 @@ class TriggerAction(StrEnum):
     NUDGE = "nudge"
     INSTRUCT = "instruct"
     DENY = "deny"
+
+    SKILL = "skill"

@@ -1,4 +1,4 @@
-from core.base.registry.registry import Registry
+from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
@@ -22,8 +22,8 @@ class StartSkills:
     settings name them for an environment, else for the project, else the journal's own, each only when a
     module declares it."""
 
-    def __init__(self, values: SettingValues, registry: Registry) -> None:
-        self.values, self.registry = values, registry
+    def __init__(self, values: SettingValues, catalogue: SkillCatalogue) -> None:
+        self.values, self.catalogue = values, catalogue
 
     def session_start(self) -> list[str]:
         return self.folders(SESSION_START_KEY)
@@ -35,5 +35,5 @@ class StartSkills:
         return self.folders(MAIN_AGENT_KEY)
 
     def folders(self, key: str) -> list[str]:
-        declared = {skill.folder for skill in self.registry.skills}
+        declared = {skill.folder for skill in self.catalogue.skills()}
         return [folder for folder in self.values.texts(key) if folder in declared]

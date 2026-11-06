@@ -1,3 +1,6 @@
+from core.modules.skills.commands.set_required_skill.set_required_skill_handler import SetRequiredSkillHandler
+from core.modules.skills.commands.set_required_skill.set_required_skill_subcommand import SetRequiredSkillSubcommand
+from core.modules.skills.commands.skill_requirements.skill_requirements_subcommand import SkillRequirementsSubcommand
 from core.modules.skills.migrations.m003_skill_session import SkillSessionMigration
 from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.skill.skill_declaration import SkillDeclaration
@@ -58,11 +61,11 @@ class SkillsModule(Module):
               SkillDeclaration("journal-etiquette", "Behave in the chat with the user and keep the journal's own mechanics out of it; read at the start of every session, with the journal skill")]
     models = [ModelDeclaration(AgentSkill, commands=[LoadAgentSkill]), ModelDeclaration(SkillRequest, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
     migrations = [SkillSessionMigration, SkillsTablesMigration, SkillRequestsTableMigration]
-    subcommands = [SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand, AgentSkillUnreadSubcommand, SkillRequiredSubcommand]
-    handlers = [RequireSkillHandler, LoadSkillHandler, ResetSkillsHandler, RequestSkillHandler]
+    subcommands = [SetRequiredSkillSubcommand, SkillRequirementsSubcommand, SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand, AgentSkillUnreadSubcommand, SkillRequiredSubcommand]
+    handlers = [SetRequiredSkillHandler, RequireSkillHandler, LoadSkillHandler, ResetSkillsHandler, RequestSkillHandler]
     listeners = [SkillPublishListener, SkillReadListener, SkillPartReadListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener]
     marks = SKILL_MARKS
     driver_rules = [SkillReadFirstRule, UnreadSkillStopRule, CommandSkillRule]
-    windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, skeleton=SKILLS_SKILLS_SKELETON, group="project", place=WindowPlace.PAGE, icon=WindowIcon.SKILL, search=WindowReadSearch("skill list", "Search the skills", ("folder", "description")),
-                                 reads=["agent main", "agent-skill list", "agent-skill show", "skill list", "skill show"], events=["agent_skill.*", "agent.*"])]
+    windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, skeleton=SKILLS_SKILLS_SKELETON, group="project", place=WindowPlace.PAGE, icon=WindowIcon.SKILL, search=WindowReadSearch("skill list", "Find a skill", ("folder", "description")),
+                                 reads=["agent main", "agent-skill list", "agent-skill show", "skill list", "skill show", "skill requirements", "setting show", "trigger list", "trigger try"], runs=["skill set-required", "skill require", "agent-skill reset", "trigger make", "trigger edit", "trigger pause", "trigger enable", "trigger strike"], events=["agent_skill.*", "agent.*", "setting.*", "trigger.*"])]
     seeders = [SkillsSeeder]

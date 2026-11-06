@@ -21,7 +21,8 @@ class SkillCatalogue:
         self.registry, self.home, self.providers = registry, home, providers
 
     def skills(self) -> tuple[SkillEntry, ...]:
-        return (*self.registry.skills, *self.plugin_skills())
+        declared = {skill.folder for skill in self.registry.skills}
+        return (*self.registry.skills, *(skill for skill in self.plugin_skills() if skill.folder not in declared))
 
     def plugin_skills(self) -> list[SkillEntry]:
         entries: list[SkillEntry] = []
@@ -38,9 +39,8 @@ class SkillCatalogue:
     def loaded_skill(path: Path, version: FileVersion) -> tuple[SkillEntry, ...]:
         text = SkillContents.read(path).text
         fields = SkillCatalogue.front_matter(text)
-        if PLUGIN_KEY not in fields:
-            return ()
-        return (SkillEntry(path.parent.name, f"plugin:{fields[PLUGIN_KEY]}", fields["description"] if "description" in fields else "", (), (), (),
+        module = f"plugin:{fields[PLUGIN_KEY]}" if PLUGIN_KEY in fields else "project"
+        return (SkillEntry(path.parent.name, module, fields["description"] if "description" in fields else "", (), (), (),
                            SkillDigest.digest(text), str(path), False),)
 
     @staticmethod

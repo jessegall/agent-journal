@@ -20,10 +20,10 @@ class TriggerListSubcommand(ReadSubcommand[Sequence[Trigger]]):
         self.triggers = triggers
 
     def arguments(self, parser: ArgumentParser) -> None:
-        return
+        parser.add_argument("--skill", nargs="?", const="*")
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[Trigger]:
-        return tuple(self.triggers.open())
+        return tuple(trigger for trigger in self.triggers.open() if arguments.skill is None or (trigger.skill is not None if arguments.skill == "*" else trigger.skill == arguments.skill))
 
     def write_output(self, value: object, output: Output) -> None:
         RowLines.write(output, value, Trigger, TriggerLines.listed)

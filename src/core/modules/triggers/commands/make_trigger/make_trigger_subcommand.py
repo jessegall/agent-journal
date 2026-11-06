@@ -16,7 +16,7 @@ class MakeTriggerSubcommand(ShowTriggerLineSubcommand[MakeTrigger]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("phrases")
-        parser.add_argument("text")
+        parser.add_argument("text", nargs="?", default="")
         parser.add_argument("--do", type=TriggerAction, choices=list(TriggerAction), default=TriggerAction.NUDGE)
         TriggerDetails.add_arguments(parser)
 
