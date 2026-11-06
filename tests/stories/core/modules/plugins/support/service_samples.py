@@ -36,6 +36,8 @@ server = listening(os.environ["JOURNAL_PLUGIN_SOCKET"])
 while True:
     connection, _ = server.accept()
     line = connection.makefile().readline()
+    with open(os.path.join(os.environ["JOURNAL_PLUGIN_DATA"], "asked"), "a") as asked:
+        asked.write(line)
     answer = {"v": 1, "answer": "refuse", "reason": "the service says no"} if "rm -rf" in line else {"v": 1}
     connection.sendall((json.dumps(answer) + "\\n").encode())
     connection.close()

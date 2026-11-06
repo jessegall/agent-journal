@@ -51,7 +51,7 @@ An entry in `listen` names a key and a script for any of three forms:
 - `listen` runs during a change. It sees the row before it is saved, with `final` false, and an id it reads may still change. The commands it answers are saved with the change. A journal command it runs itself is saved at once and stays.
 - `commit` runs after the change is saved and cannot stop it. Only this form promises the change happened.
 
-A form's value may be `service:<name>`, naming one of its `services` with `answers` set. The event then goes to that running service, on its socket, and no new program starts, which matters when a program takes long to start. If the socket is closed, `program` runs if there is one, and otherwise it is a fault. A name that is no answering service is wrong on the card.
+A form's value may be `service:<name>`, naming one of its `services` with `answers` set. The event then goes to that running service, on its socket, and no new program starts, which matters when a program takes long to start. If the socket is closed, `program` runs if there is one, and otherwise it is a fault. A name that is no answering service is wrong on the card. An older event it holds, with no form named, goes to its first answering service the same way; when that socket is closed the event is late at once and the program is not started, since a program started now would answer past the window.
 
 All deliveries run in turn on one thread, for every plugin, older events included. A commit script or service that is slow holds every other plugin's deliveries until it ends.
 

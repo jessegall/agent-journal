@@ -15,12 +15,17 @@ from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_services import PluginServices
 from core.modules.plugins.support.service_processes import ServiceProcesses
-from tests.stories.core.modules.plugins.hooks import REMOVAL_SAMPLE
+from core.base.driver.command_category import CommandCategory
+from core.base.driver.command_effect import CommandEffect
+from core.testing.hook_samples import HookSamples
+from core.testing.shell_part import ShellPart
+from tests.stories.core.modules.plugins.hooks import REMOVAL_SAMPLE, start_counter
 from tests.stories.core.modules.plugins.support.service_samples import service_plugin_folder
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 END_LIMIT_SECONDS = 5
+REMOVAL_PART = ShellPart("rm", CommandCategory.EDIT, ["-rf", "build"], effects=[CommandEffect.DELETES_FILES])
 
 
 def served_story(new_story):
@@ -39,6 +44,29 @@ def test_a_service_that_answers_is_asked_in_place_of_the_program(new_story):
         story.expect_hook_refusal("s-1", REMOVAL_SAMPLE, "[plugin served] the service says no")
     finally:
         story.processes.close()
+
+
+def test_a_line_of_four_parts_reaches_the_service_as_four_events_and_starts_no_program(new_story, monkeypatch):
+    story = served_story(new_story)
+    try:
+        starts = start_counter(monkeypatch, "run.sh")
+        story.expect_hook_refusal("s-1", four_parts(REMOVAL_PART), "[plugin served] the service says no")
+        asked = (story.home.folder / "plugin-data" / "served" / "asked").read_text().splitlines()
+        story.expect_rows(len(asked) == 4, starts == [])
+    finally:
+        story.processes.close()
+
+
+def test_a_line_of_four_parts_starts_no_program_while_the_service_is_closed(new_story, monkeypatch):
+    story = served_story(new_story)
+    story.processes.close()
+    starts = start_counter(monkeypatch, "run.sh")
+    story.expect_hook_allowed("s-1", four_parts(ShellPart("whoami", CommandCategory.READ, [])))
+    story.expect_rows(starts == [])
+
+
+def four_parts(last: ShellPart):
+    return HookSamples.shell(f"ls && pwd && date && {last.program} {' '.join(last.arguments)}", *(ShellPart(name, CommandCategory.READ, []) for name in ("ls", "pwd", "date")), last)
 
 
 def test_the_services_read_names_each_service_and_whether_it_runs(new_story):
