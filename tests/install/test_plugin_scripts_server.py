@@ -1,6 +1,7 @@
 import os
 import select
 import shlex
+import sqlite3
 import subprocess
 import time
 from pathlib import Path
@@ -16,6 +17,7 @@ TASK_UPDATED = "core.tasks.task.updated"
 STARTED_LIMIT_SECONDS = 30
 READ_SLICE_SECONDS = 0.2
 LATER_JOB_TITLE = "Later job"
+MINUTE_SECONDS = 60
 
 
 def run_line(journal, client: Path, *line: str) -> subprocess.CompletedProcess[str]:
@@ -180,3 +182,49 @@ def test_s58_switching_the_plugin_off_stops_its_run(journal, client):
     assert "started" in wait_for_line(started)
     viewer_page(journal).switch_off()
     assert "finished" in wait_for_line(finished)
+
+
+def row_counts(journal) -> tuple[int, int]:
+    connection = sqlite3.connect(journal.home.database)
+    try:
+        return connection.execute("SELECT count(*) FROM tasks").fetchone()[0], connection.execute("SELECT count(*) FROM events").fetchone()[0]
+    finally:
+        connection.close()
+
+
+def test_s67_the_server_stops_while_a_guard_runs_and_nothing_is_written(journal, client):
+    started, never_written = journal.home.folder.parent / "started", journal.home.folder.parent / "never-written"
+    os.mkfifo(started)
+    os.mkfifo(never_written)
+    start_with_plugin(journal, client, {"event": TASK_CREATED, "guard": "script.sh"}, f"echo started > '{started}'\nread answer < '{never_written}'")
+    before = row_counts(journal)
+    running = subprocess.Popen([str(client), *SECOND_JOB_LINE], env=journal.environment(), cwd=journal.home.folder.parent, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    try:
+        assert "started" in wait_for_line(started, running)
+        journal.stop_with(client)
+        stdout, stderr = running.communicate(timeout=TIMEOUT_SECONDS)
+    finally:
+        if running.poll() is None:
+            running.kill()
+            running.communicate()
+    assert running.returncode != 0 and "the server stopped before plugin events answered" in stdout + stderr, stdout + stderr
+    assert row_counts(journal) == before
+
+
+def test_s76_the_caller_goes_away_while_a_guard_runs_and_nothing_is_written(journal, client):
+    started, never_written = journal.home.folder.parent / "started", journal.home.folder.parent / "never-written"
+    os.mkfifo(started)
+    os.mkfifo(never_written)
+    start_with_plugin(journal, client, {"event": TASK_CREATED, "guard": "script.sh"}, f"echo started > '{started}'\nread answer < '{never_written}'")
+    expect_line(journal, client, "actor", "make", "user", "Ada")
+    page = viewer_page(journal)
+    before = row_counts(journal)
+    running = subprocess.Popen([str(client), *SECOND_JOB_LINE], env=journal.environment(), cwd=journal.home.folder.parent, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    assert "started" in wait_for_line(started, running)
+    running.kill()
+    running.communicate()
+    deadline = time.monotonic() + 2 * MINUTE_SECONDS
+    while page.card() and any(row["started_at"] for row in page.card()):
+        assert time.monotonic() < deadline, "the script outlived its caller"
+        time.sleep(READ_SLICE_SECONDS)
+    assert row_counts(journal)[0] == before[0]

@@ -1,30 +1,20 @@
-import json
-import subprocess
-from pathlib import Path
-
 import pytest
 
-from core.base.query.queries import Queries
-from core.base.running_scripts import RunningScripts
-from core.modules.chat.models.chat_mark import ChatMark
-from tests.stories.core.modules.plugins.support.event_stories import (
-    REFUSAL, SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, deliveries, event_data, event_plugin_story, install_event_plugin, logged_events, plugin_data, plugin_page, plugin_row, script_calls, tasks_titled)
-from tests.stories.core.modules.plugins.event_manifest import replace_module
-from tests.stories.core.modules.plugins.support.event_modules import NOTE_CREATED, NOTES, NOTES_GONE, NOTES_MOVED, FORMER_NOTE_CREATED
-from tests.stories.core.modules.plugins.support.plugin_samples import event_plugin_folder
-from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, the_helper
-from core.base.actor import Actor
-from core.base.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
+from core.base.query.queries import Queries
+from core.modules.chat.models.chat_mark import ChatMark
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
+from tests.stories.core.modules.plugins.support.event_stories import REFUSAL, SECOND_JOB, TASK_CREATED, event_page, event_plugin_story, install_event_plugin, logged_events
+from tests.stories.core.modules.plugins.event_manifest import replace_module
+from tests.stories.core.modules.plugins.support.event_modules import FORMER_NOTE_CREATED, NOTE_CREATED, NOTES, NOTES_GONE
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, the_helper
 
 AGENT_REFUSAL = "an agent may not use journal plugin run"
 RUN_LINE = "plugin run -- journal plan approve 1"
 OUTWARD = "reaches past the journal"
 SKIP_REASON = '--skip-reason "the plugin is wrong here"'
 SECOND_REFUSAL = "[plugin second] not today"
-STOPPED_FAULT = "it was stopped when the plugin was switched off"
 
 
 def test_s63_an_agent_is_refused_plugin_run(new_story):

@@ -9,7 +9,9 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.support.process_group import ProcessGroup
 from tests.stories.core.modules.plugins.support.refusing_modules import REFUSING, DeleteProcessRow, OnceThenNote, OrphanProcessRow
 from tests.stories.core.modules.plugins.support.event_modules import NOTE_CREATED, NOTES, EventNote
-from tests.stories.core.modules.plugins.support.event_stories import event_plugin_story, script_calls
+from tests.stories.core.modules.plugins.support.checkout_stories import ORDER, project_with_order
+from tests.stories.core.modules.plugins.support.event_stories import EventWorkerStarted, event_data, event_plugin_story, script_calls
+from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.core.modules.processes.support.process_samples import ended_run, install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
@@ -60,3 +62,20 @@ def test_s84_a_key_after_a_command_that_runs_once_runs_no_guard_script_and_the_s
     story = event_plugin_story(new_story, {"event": NOTE_CREATED, "guard": "see.sh"}, modules=[NOTES, REFUSING])
     story.container.get(Bus).run(OnceThenNote("A note"), story.agent)
     story.expect_rows(not script_calls(story, "see.sh"), "were skipped" in story.error_log_text(), story.container.get(Queries).query(EventNote).count() == 1)
+
+
+def test_s85_a_file_edit_in_the_main_checkout_gives_its_status_and_whether_base_holds_it(new_story):
+    story = main_checkout_story(new_story)
+    (story.repository.folder / "new.py").write_text("TOTAL = 1\n")
+    (story.repository.folder / ORDER).unlink()
+    scanned_edit(story, "s-1", "new.py", existed=False, folder=story.repository.folder)
+    scanned_edit(story, "s-1", ORDER, folder=story.repository.folder)
+    story.run_listeners()
+    files = {event_data(call)["file"]["relative"]: event_data(call)["file"] for call in script_calls(story, "see.sh")}
+    story.expect_rows(files["new.py"]["status"] == "added", files["new.py"]["in_base"] is False, files[ORDER]["status"] == "deleted", files[ORDER]["in_base"] is True)
+
+
+def main_checkout_story(new_story):
+    story = install_runner(event_plugin_story(new_story, program="see.sh", hears=["file_edited"], fixture=EventWorkerStarted))
+    story.repository = project_with_order(story, story.home.folder.parent / "project")
+    return story

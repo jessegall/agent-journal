@@ -1,18 +1,23 @@
 import json
 import os
+import subprocess
 from datetime import timedelta
 
-import pytest
-
+from core.base.caller.caller_request import CallerRequest
+from core.base.caller.caller_resolver import CallerResolver
 from core.base.command.bus import Bus
-from core.base.container import Container
-from core.base.leftover_process import LeftoverProcess
+from core.base.journal_container import synced_container
+from core.base.model.event_form import EventForm
+from core.base.query.queries import Queries
+from core.base.running_scripts import RunningScripts
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
+from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
+from tests.stories.core.modules.plugins.support.event_modules import NOTE_CREATED, NOTES, EventNote, ManyNotes
 from tests.stories.core.modules.plugins.support.event_stories import (
-    REFUSAL, SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, deliveries, event_data, event_plugin_story, install_event_plugin, logged_events, plugin_data, plugin_page, plugin_row, script_calls, tasks_titled)
-from tests.stories.core.modules.plugins.support.event_modules import NOTE_CREATED, NOTES
-from tests.stories.server.support.story_line_route import StoryLineRoute
+    SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, event_page, event_plugin_story, install_event_plugin, plugin_data, plugin_page, plugin_row, script_calls, tasks_titled)
 
+MOST_RUNNING = 8
+FAILING_COUNT = 5
 BACKGROUND_KEEPS_OUTPUT = """sleep 60 &
 echo '{"v": 1, "tell": "answered"}'"""
 BACKGROUND_CLOSES_OUTPUT = """sleep 60 > /dev/null 2>&1 &
@@ -66,31 +71,55 @@ def test_s72_a_success_that_clears_faults_gives_no_delivery(new_story):
 
 
 def test_s73_a_write_from_a_server_round_runs_no_script_and_notes_the_skip(new_story):
-    story = event_plugin_story(new_story, {"event": NOTE_CREATED, "guard": "see.sh", "listen": "pin.sh"}, modules=[NOTES])
-    story.container.get(Bus).run(ROUND_NOTE, story.user)
-    story.expect_rows(not script_calls(story, "see.sh"), not script_calls(story, "pin.sh"), "were skipped" in story.error_log_text())
+    story = event_plugin_story(new_story, {"event": NOTE_CREATED, "guard": "refuse.sh", "listen": "pin.sh"}, modules=[NOTES])
+    synced_container(story.home).get(Bus).run(ManyNotes(1), story.user)
+    story.expect_rows(not script_calls(story, "refuse.sh"), not script_calls(story, "pin.sh"), "were skipped" in story.error_log_text(), story.container.get(Queries).query(EventNote).count() == 1)
 
 
-def test_s74_a_direct_run_runs_no_guard_or_listen_script_and_notes_the_skip(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "see.sh", "listen": "pin.sh", "commit": "right.sh"})
-    story.expect_success(SECOND_JOB, actor=story.agent)
-    story.run_listeners()
-    story.expect_rows(not script_calls(story, "see.sh"), not script_calls(story, "pin.sh"), len(script_calls(story, "right.sh")) == 1, "were skipped" in story.error_log_text())
+def test_s74_a_line_from_a_script_in_a_direct_run_is_known_by_its_variable(new_story):
+    story = event_plugin_story(new_story)
+    caller = synced_container(story.home).get(CallerResolver).caller(CallerRequest(variables={"JOURNAL_PLUGIN": "events", "USER": "Ada"}, folder="/", pid=os.getpid()))
+    story.expect_rows(caller.plugin_script == "events")
+
+
+def test_s75_a_caller_waiting_on_a_guard_script_is_told_at_once_and_each_minute(new_story):
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "see.sh"})
+    outcome = story.run(SECOND_JOB, actor=story.agent)
+    story.expect_rows(f"waiting on plugin events at {TASK_CREATED}" in outcome.output_text)
+
+
+def test_s75_with_json_the_waits_are_blank_lines_and_the_output_parses(new_story):
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "see.sh"})
+    outcome = story.run(f"{SECOND_JOB} --json", actor=story.agent)
+    story.expect_rows("waiting on" not in outcome.output_text, bool(json.loads(outcome.output_text)))
+
+
+def sleeping_scripts(story, count: int) -> list[subprocess.Popen]:
+    scripts, processes = story.container.get(RunningScripts), []
+    for _ in range(count):
+        process = subprocess.Popen(["sleep", "60"], start_new_session=True)
+        scripts.start(process, "events", TASK_CREATED, EventForm.COMMIT, story.clock.timestamp())
+        processes.append(process)
+    return processes
 
 
 def test_s77_a_plugin_past_its_running_limit_has_its_guard_skipped(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "see.sh"})
-    story.expect_rows(True)
-    scripts = STARTED_SCRIPTS(story)
-    story.expect_success(SECOND_JOB, actor=story.agent)
-    story.expect_rows(not script_calls(story, "see.sh"), "were skipped" in story.error_log_text(), len(tasks_titled(story, SECOND_JOB_TITLE)) == 1)
-    scripts.finish_all()
+    processes = sleeping_scripts(story, MOST_RUNNING)
+    try:
+        story.expect_success(SECOND_JOB, actor=story.agent)
+        story.expect_rows(not script_calls(story, "see.sh"), "were skipped" in story.error_log_text(), len(tasks_titled(story, SECOND_JOB_TITLE)) == 1)
+    finally:
+        for process in processes:
+            story.container.get(RunningScripts).finish(process)
+            process.kill()
+            process.wait()
 
 
 def test_s77_a_failing_plugin_has_its_guard_skipped_and_is_tried_again_after_five_minutes(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "see.sh"})
     plugin_id = plugin_row(story).id
-    for _ in range(5):
+    for _ in range(FAILING_COUNT):
         story.container.get(Bus).run(RecordPluginFault(plugin_id, "it ended with code 3"), story.user)
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.expect_rows(not script_calls(story, "see.sh"), "were skipped" in story.error_log_text())
@@ -99,10 +128,16 @@ def test_s77_a_failing_plugin_has_its_guard_skipped_and_is_tried_again_after_fiv
     story.expect_rows(len(script_calls(story, "see.sh")) == 1, plugin_row(story).failing is False)
 
 
-def test_s78_a_running_script_has_a_pid_file_and_the_next_boot_stops_a_leftover(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "see.sh"})
-    folder = story.home.folder / "runtime" / "plugins"
-    folder.mkdir(parents=True, exist_ok=True)
-    leftover = LEFTOVER_SCRIPT(folder)
-    BOOT(story)
-    story.expect_rows(leftover.wait(timeout=5) != 0, not list(folder.glob("events-*.pid")))
+def test_s78_a_running_script_has_a_pid_file_and_a_finished_one_has_none(new_story):
+    story = event_plugin_story(new_story)
+    scripts = story.container.get(RunningScripts)
+    folder = story.container.get(PluginSocketPaths).folder
+    process = subprocess.Popen([str(story.home.folder / "plugins" / "events" / "see.sh")], stdin=subprocess.PIPE, start_new_session=True)
+    try:
+        scripts.start(process, "events", TASK_CREATED, EventForm.COMMIT, story.clock.timestamp())
+        story.expect_rows(len(list(folder.glob(f"*{process.pid}*"))) == 1)
+    finally:
+        scripts.finish(process)
+        process.kill()
+        process.communicate()
+    story.expect_rows(not list(folder.glob(f"*{process.pid}*")))

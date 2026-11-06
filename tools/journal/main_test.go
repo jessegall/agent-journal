@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/jessegall/agent-journal/tools/journal-hook/timing"
 	"github.com/jessegall/agent-journal/tools/journal/socket"
@@ -99,5 +100,27 @@ func TestAHomeIsFoundFromTheFolderOfTheBinary(t *testing.T) {
 	}
 	if home := HomeOfBinary("/usr/local/bin/journal"); home != "" {
 		t.Errorf("a binary elsewhere gave %q", home)
+	}
+}
+
+func TestSendCliStopsOnlyAfterItsLimitOfSilenceAndAStreamWithLinesGoesOn(t *testing.T) {
+	previous := CliLimit
+	CliLimit = 300 * time.Millisecond
+	defer func() { CliLimit = previous }()
+	home := shortHome(t)
+	startListener(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		writer.Header().Set("Trailer", ExitCodeTrailer)
+		for count := 0; count < 6; count++ {
+			writer.Write([]byte("waiting on plugin x\n"))
+			writer.(http.Flusher).Flush()
+			time.Sleep(100 * time.Millisecond)
+		}
+		writer.Write([]byte("done\n"))
+		writer.Header().Set(ExitCodeTrailer, "0")
+	}))
+	var stdout, stderr bytes.Buffer
+	SendCli(socket.Client(socket.Path(home)), NewCliRequest([]string{"task", "list"}, noVariables, "/"), timing.Started(), "go_sent", &stdout, &stderr)
+	if !strings.Contains(stdout.String(), "done") {
+		t.Fatalf("a stream with lines was cut: %q %q", stdout.String(), stderr.String())
 	}
 }
