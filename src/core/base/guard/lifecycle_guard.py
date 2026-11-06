@@ -3,6 +3,7 @@ from core.base.actor_type import ActorType
 from core.base.change.changed import Changed
 from core.base.change.deleted import Deleted
 from core.base.command.context import Context
+from core.base.command.completed_command import CompletedCommand
 from core.base.guard.guard import Guard
 from core.base.guard.guards import LIFECYCLE_GUARD
 from core.base.model.full_lifecycle import FullLifecycle
@@ -39,6 +40,8 @@ class LifecycleGuard(Guard[Changed[Model]]):
         elif event.move is not None:
             if context.actor.type is ActorType.AGENT and lifecycle.is_third_party_move(event.move.name):
                 raise Refusal(f"the move {event.move.name} comes from a module the journal does not ship, so a person takes it", "press its button in the viewer")
+            if old_state == event.move.target and old_state not in lifecycle.initial and old_state not in event.move.sources:
+                raise CompletedCommand(f"{event.old_row.cli_name} {event.old_row.id} is {old_state.value}, so it cannot {event.move.name}", lifecycle.suggestion(event.old_row.cli_name, event.old_row.id, old_state))
             self.require(lifecycle.has_move(event.move.name) and old_state in lifecycle.move(event.move.name).sources, event.old_row, lifecycle, f"so it cannot {event.move.name}")
         else:
             self.require(old_state in lifecycle.editable, event.old_row, lifecycle, "so it cannot be edited")
@@ -52,4 +55,5 @@ class LifecycleGuard(Guard[Changed[Model]]):
         if allowed:
             return
         state = row.current_state()
-        raise Refusal(f"{row.cli_name} {row.id} is {state.value}, {reason}", lifecycle.suggestion(row.cli_name, row.id, state))
+        refusal = Refusal if lifecycle.outgoing_moves(state) else CompletedCommand
+        raise refusal(f"{row.cli_name} {row.id} is {state.value}, {reason}", lifecycle.suggestion(row.cli_name, row.id, state))

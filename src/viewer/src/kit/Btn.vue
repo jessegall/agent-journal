@@ -1,6 +1,7 @@
 <script setup>
 import {computed, inject, ref, useAttrs} from "vue";
 import {WINDOW_CONTEXT} from "../../kit/windowContextKey.js";
+import {SPINNER_AFTER_MS} from "../platform/pressed.js";
 import Icon from "./Icon.vue";
 import Spinner from "./Spinner.vue";
 
@@ -17,7 +18,6 @@ const props = defineProps({
     icon: {type: String, default: ""},
 });
 // a click whose handler waits on something, such as a request, shows the spinner until it is done; one that answers at once never shows it
-const SPINNER_AFTER_MS = 120;
 const attrs = useAttrs();
 const passedOn = computed(() => Object.fromEntries(Object.entries(attrs).filter(([name]) => name !== "onClick")));
 const waiting = ref(false);
@@ -43,7 +43,7 @@ async function clicked(event) {
     <component
         :is="href ? 'a' : 'button'"
         v-bind="passedOn"
-        :type="href ? undefined : 'button'"
+        :type="href ? undefined : attrs.type || 'button'"
         :href="href || undefined"
         :class="['btn', variant, {small, large, busy: shownBusy, fill, bordered}]"
         :aria-busy="shownBusy"
@@ -182,7 +182,7 @@ async function clicked(event) {
     font-size: 13.5px;
 }
 
-.btn:disabled:not(.busy) {
+.btn:disabled:not(.busy):not([data-busy]) {
     opacity: 0.45;
     cursor: default;
     pointer-events: none;

@@ -12,6 +12,7 @@ from core.modules.agents.support.agent_type_limits import NO_LIMIT, AgentTypeLim
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.helpers.support.allowed_models import AllowedModels
+from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
@@ -21,10 +22,11 @@ NEXT_HOOK_LIMIT_TEXT = "keep working and read journal overview: each report arri
 
 
 class HelperLimits:
-    """Who may start a helper, on which model, and how many run in an environment at one time."""
+    """Who may start a helper, on which model, and how many of a profile run or are kept. A helper with an open job
+    holds a run place while its resume is on its way, before its session binds."""
 
-    def __init__(self, queries: Queries, settings: SettingValues, suites: SuiteChoice, models: AllowedModels, providers: Providers, agents: AgentRows, launcher: LauncherLink, limits: AgentTypeLimits) -> None:
-        self.limits = limits
+    def __init__(self, queries: Queries, settings: SettingValues, suites: SuiteChoice, models: AllowedModels, providers: Providers, agents: AgentRows, launcher: LauncherLink, limits: AgentTypeLimits, kept: KeptHelpers) -> None:
+        self.limits, self.kept = limits, kept
         self.launcher = launcher
         self.queries, self.settings, self.suites, self.models, self.providers, self.agents = queries, settings, suites, models, providers, agents
 
@@ -44,7 +46,8 @@ class HelperLimits:
         return agent
 
     def checked_running(self, profile: str) -> None:
-        running = tuple(self.helpers(profile).matching(IsNull("ended_at")).all_rows())
+        open_jobs = self.kept.with_open_jobs(profile)
+        running = tuple(helper for helper in self.helpers(profile).all_rows() if helper.ended_at is None or helper.id in open_jobs)
         limit = self.limits.of(AgentRole.HELPER, profile).run
         if len(running) >= limit:
             names = ", ".join(f"agent:{helper.id}" for helper in running)[:RUNNING_NAMES_CHARACTERS]

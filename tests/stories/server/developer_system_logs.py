@@ -10,6 +10,7 @@ from core.base.system_log_writer import SystemLogWriter
 from core.modules.profiles.support.profile_folder_move import ProfileFolderMove
 from core.testing.hook_samples import HookSamples
 from server.request_log import RequestLog
+from server.request_log_settings import RequestLogSettings
 from server.server_files import ServerFiles
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingOn
 from tests.stories.server.support.server_client import server_story
@@ -81,6 +82,7 @@ def test_each_writer_shows_on_the_page_with_its_source_and_level(logs_server, mo
         story.hook("s-1", FINISHED)
     ServerFiles(story.home).log_line("sample server line")
     request_log = RequestLog(story.home)
+    request_log.configuration = RequestLogSettings(True, 10)
     monkeypatch.setattr(request_log, "connected", refused_connection)
     request_log.record(["task", "list"], "cli", 1.0, 0.0, 0)
     request_log.complete_reads(1, ())

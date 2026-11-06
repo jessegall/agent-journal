@@ -9,6 +9,7 @@ from server.listener_thread import ListenerThread
 from server.server_files import ServerFiles
 from server.server_tunnel import ServerTunnel
 from server.viewer.viewer_listener import ViewerListener
+from server.request_log import RequestLog
 
 HOOK_LIMIT_SECONDS = 3.5
 AGENT_HOOK_LIMIT_SECONDS = 45.0
@@ -33,3 +34,7 @@ class ServerContext:
     hook_limit_seconds: float = HOOK_LIMIT_SECONDS
     agent_hook_limit_seconds: float = AGENT_HOOK_LIMIT_SECONDS
     transcript_entries: TranscriptEntries = field(default_factory=TranscriptEntries)
+
+    @property
+    def request_log(self) -> RequestLog:
+        return self.viewer.routes.request_log

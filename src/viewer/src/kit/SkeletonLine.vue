@@ -1,4 +1,9 @@
 <script setup>
+import {shimmerStyle} from "./shimmerClock.js";
+
+const SHIMMER_MS = 2000;
+const shimmer = shimmerStyle(SHIMMER_MS);
+
 defineProps({filled: Boolean, still: Boolean, bars: {type: Array, default: () => []}});
 </script>
 
@@ -9,7 +14,7 @@ defineProps({filled: Boolean, still: Boolean, bars: {type: Array, default: () =>
             <template v-for="bar in bars" :key="bar.width">
                 <span
                     :class="['bar', {still}]"
-                    :style="{width: bar.width, height: `${bar.height}px`, borderRadius: `${bar.height / 2}px`}"
+                    :style="{...shimmer, width: bar.width, height: `${bar.height}px`, borderRadius: `${bar.height / 2}px`}"
                 />
             </template>
         </span>
@@ -46,7 +51,7 @@ defineProps({filled: Boolean, still: Boolean, bars: {type: Array, default: () =>
     background: linear-gradient(100deg, var(--border) 0%, var(--border) 40%, var(--border-2) 50%, var(--border) 60%, var(--border) 100%);
     background-attachment: fixed;
     background-size: 200vw 100%;
-    animation: sweep 2s linear infinite;
+    animation: sweep var(--shimmer-ms) linear infinite;
 }
 
 .bar.still {

@@ -25,6 +25,10 @@ from core.base.timing import Timing
 from core.base.request_queue import RequestQueue
 
 
+def ignore_completed(container: Container, argv: list[str]) -> None:
+    return None
+
+
 class LineRun:
     """Runs one journal command line for a caller on a journal's folder, as a direct run and the server both
     do: a module sync on an opened database, any other line on a synced one that waits for another writer up
@@ -34,11 +38,13 @@ class LineRun:
     of the container, which shares the findings already reported with every other line of this run."""
 
     def __init__(self, home: JournalHome, busy_timeout_seconds: float = BUSY_TIMEOUT_SECONDS, listener_runner: CommitListenerRunner | None = None,
-                 reported: ReportedFindings | None = None, request_queue: RequestQueue | None = None) -> None:
+                 reported: ReportedFindings | None = None, request_queue: RequestQueue | None = None,
+                 on_completed: Callable[[Container, list[str]], None] = ignore_completed) -> None:
         self.home, self.busy_timeout_seconds, self.listener_runner = home, busy_timeout_seconds, listener_runner
         self.reported = reported or ReportedFindings()
         self.fingerprint = CodeFingerprint()
         self.request_queue = request_queue
+        self.on_completed = on_completed
 
     def run(self, argv: list[str], request: CallerRequest, stream: TextIO, deadline: Deadline | None = None,
             timing: Timing | None = None) -> int:
@@ -48,7 +54,7 @@ class LineRun:
                 line = ModuleAddLine if argv[:2] == MODULE_ADDITION_ARGUMENTS else ModuleSyncLine
                 return container.get(line).run(argv, stream)
             finally:
-                container.get(Database).close()
+                self.close(container, argv)
         try:
             container = self.synced(deadline, timing)
         except StaleRegistryError as error:
@@ -66,7 +72,7 @@ class LineRun:
             cost = tools.cost(start_points)
             if cost is not None:
                 tools.run(RouteCostTool, "/cli", cost)
-            container.get(Database).close()
+            self.close(container, argv)
 
     def run_as(self, argv: list[str], checked_caller: Callable[[Container], Caller], stream: TextIO) -> int:
         try:
@@ -77,6 +83,12 @@ class LineRun:
         try:
             with container.get(RequestWatch).watching(argv):
                 return container.get(Console).run(argv, checked_caller(container), stream)
+        finally:
+            self.close(container, argv)
+
+    def close(self, container: Container, argv: list[str]) -> None:
+        try:
+            self.on_completed(container, argv)
         finally:
             container.get(Database).close()
 

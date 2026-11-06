@@ -57,6 +57,27 @@ def test_completed_hook_requests_record_the_real_duration_and_decision(recording
     expect_row(request, body=dict(sample.body))
 
 
+def test_a_disabled_hook_log_loads_no_agent_rows(recording_server, monkeypatch):
+    server = recording_server
+    server.story.expect_success("setting set journal.core.developer.tools.hooks.request-log false --project", actor=server.story.user)
+    costs = []
+    record_hook = HookRequestLog.record_hook
+
+    def record_counted(log, *args):
+        tally = log.queries.database.tally
+        started = tally.points()
+        result = record_hook(log, *args)
+        costs.append(tally.points().minus(started))
+        return result
+
+    monkeypatch.setattr(HookRequestLog, "record_hook", record_counted)
+    sample = HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", firing="unrecorded")
+    server.expect_hook_answer("/hook", dict(sample.body), 200, '"refusal":')
+    assert len(costs) == 1
+    assert costs[0].tables["agents"] == 0
+    assert not server.story.container.get(HookRequestLog).read()
+
+
 def test_a_hook_request_counts_the_parts_of_its_command_chain(recording_server):
     server = recording_server
     parts = [ShellPart("git", CommandCategory.VERSION_CONTROL, ["status"]), ShellPart("ls", CommandCategory.READ, [])]
@@ -122,7 +143,7 @@ def test_requests_show_the_sender_and_queue_time(recording_server):
     server.story.expect_rows(rows[2]["agent_id"] == worker)
     server.story.expect_rows([row["event"] for row in rows[:2]] == ["task list", "task list"])
     server.story.expect_rows(all(row["queued_ms"] >= 0 for row in rows[:4]))
-    server.story.expect_rows(rows[0]["queued_ms"] == 0)
+    server.story.expect_rows(rows[0]["queued_ms"] > 0)
 
 
 def test_request_filters_apply_on_the_viewer_route(recording_server):
@@ -236,5 +257,22 @@ def test_a_mixed_batch_does_not_hold_the_queue_inspection(recording_server):
     with server.context.hook_database.used(QueuePriority.AGENT_HOOK, 1):
         started_at = perf_counter()
         status, _, body = viewer_answer(server.viewer_port(), "/api/lines", cookie, "", {"lines": [queue, task]})
-        server.story.expect_rows(status == 400 and "read the request queue separately" in body)
+        server.story.expect_rows(status == 400 and "read inspection pages separately" in body)
         server.story.expect_rows(perf_counter() - started_at < 0.5)
+
+
+@pytest.mark.parametrize("command,window", [("request-queue", "developer.hook-requests"), ("hook-requests", "developer.hook-requests"), ("system-logs", "developer.system-logs")])
+def test_inspection_reads_alone_and_in_a_batch_skip_hooks_and_the_request_log(recording_server, command, window):
+    server = recording_server
+    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+    request = {"line": ["developer", command], "environment": "main", "window": window}
+    server.context.hook_database.queue.viewer_wait_limit_seconds = 5
+    with ThreadPoolExecutor(1) as pool:
+        with server.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, 1):
+            single = pool.submit(server.viewer_line_value, cookie, request)
+            single.result(timeout=3)
+            batch = pool.submit(viewer_answer, server.viewer_port(), "/api/lines", cookie, "", {"lines": [request, request]})
+            status, _, body = batch.result(timeout=3)
+            assert status == 200
+            assert all(answer["code"] == 0 for answer in json.loads(body)["answers"])
+    assert not server.story.container.get(HookRequestLog).read()
