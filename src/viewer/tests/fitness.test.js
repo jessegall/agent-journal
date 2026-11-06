@@ -4,7 +4,8 @@ import {settled} from "./settled.js";
 import FitnessPanel from "../../core/modules/usage/web/src/FitnessPanel.vue";
 import LoadPanel from "../../core/modules/usage/web/src/LoadPanel.vue";
 import InformationBar from "../src/shell/InformationBar.vue";
-import {context, mounted} from "./support/windowContext.js";
+import {mounted} from "./support/windowContext.js";
+import {fitnessWindowContext as context} from "./support/fitnessWindowContext.js";
 
 const FITNESS = {is_measured: true, score: 60, workload: 0.8, workload_level: "warn", measures: [{key: "message_wait", label: "Oldest message waiting, minutes", value: 15, pass_level: 5, pass_share: 0.6, weight: 3}, {key: "completion_rate", label: "Tasks completed an hour", value: 1, pass_level: null, pass_share: 1, weight: 0}]};
 
