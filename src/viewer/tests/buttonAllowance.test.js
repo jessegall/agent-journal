@@ -30,7 +30,7 @@ async function started({missing = true, share = false} = {}) {
             reads.push(url);
             return {ok: !share, status: share ? 403 : 200, json: async () => ({buttons: [], missing: missingLines.length ? {"acme.review": missingLines} : {}})};
         }
-        const body = JSON.parse(init.body);
+        const {attribution, ...body} = JSON.parse(init.body);
         writes.push(body);
         if (body.line.slice(0, 2).join(" ") === "window allow") missingLines = [];
         return {ok: true, json: async () => ({code: 0, value: null, error: ""})};

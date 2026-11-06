@@ -6,7 +6,8 @@ afterEach(() => vi.unstubAllGlobals());
 async function pressed(button, mark, values = {}) {
     const asked = [];
     vi.stubGlobal("fetch", async (url, init) => {
-        asked.push(JSON.parse(init.body));
+        const {attribution, ...line} = JSON.parse(init.body);
+        asked.push(line);
         return {json: async () => ({code: 0, value: null, error: ""})};
     });
     await pressButton(button, mark, "main", values);

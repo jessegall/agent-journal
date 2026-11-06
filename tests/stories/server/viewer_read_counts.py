@@ -116,7 +116,7 @@ class ViewerReadDataset(StoryFixture):
         for number in range(1, backing.memories + 1):
             story.expect_success(f'memory make "Memory {number}" --weight 5 --environment main', actor=story.user)
         for number in range(1, backing.questions + 1):
-            story.expect_success(f'question ask "Question {number}?" --environment main', actor=story.agent)
+            story.expect_success(f'question ask "Question {number}?" --context "A sample question for the workload." --environment main', actor=story.agent)
         for number in range(1, backing.documents + 1):
             story.expect_success(f'doc make "Document {number}" --abstract "Workload document" --body "Fixed body" --environment main', actor=story.user)
 

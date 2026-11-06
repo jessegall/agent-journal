@@ -56,6 +56,9 @@
       "profile",
       "program",
       "program_model",
+      "retired_at",
+      "retirement_reason",
+      "retiring_actor_id",
       "role",
       "session"
     ]
@@ -81,6 +84,9 @@
       "profile",
       "program",
       "program_model",
+      "retired_at",
+      "retirement_reason",
+      "retiring_actor_id",
       "role",
       "session"
     ]
@@ -106,6 +112,9 @@
       "profile",
       "program",
       "program_model",
+      "retired_at",
+      "retirement_reason",
+      "retiring_actor_id",
       "role",
       "session"
     ]
@@ -131,6 +140,9 @@
       "profile",
       "program",
       "program_model",
+      "retired_at",
+      "retirement_reason",
+      "retiring_actor_id",
       "role",
       "session"
     ]
@@ -3366,6 +3378,7 @@
     ],
     "fields": [
       "answer",
+      "context",
       "creator_id",
       "environment_id",
       "message_id",
@@ -3389,6 +3402,7 @@
     ],
     "fields": [
       "answer",
+      "context",
       "creator_id",
       "environment_id",
       "message_id",
@@ -3412,6 +3426,7 @@
     ],
     "fields": [
       "answer",
+      "context",
       "creator_id",
       "environment_id",
       "message_id",
@@ -3435,6 +3450,7 @@
     ],
     "fields": [
       "answer",
+      "context",
       "creator_id",
       "environment_id",
       "message_id",
@@ -3458,6 +3474,7 @@
     ],
     "fields": [
       "answer",
+      "context",
       "creator_id",
       "environment_id",
       "message_id",
@@ -6018,6 +6035,20 @@
     ]
   },
   "suites.coding.workers.worker_test_request.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "reason",
+      "state",
+      "task_id",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_request.restore": {
     "forms": [
       "commit",
       "guard",

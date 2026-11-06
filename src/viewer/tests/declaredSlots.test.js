@@ -25,7 +25,7 @@ async function prepare(buttons = [BUTTON]) {
     vi.stubGlobal("ResizeObserver", class {observe() {} disconnect() {}});
     vi.stubGlobal("fetch", perLine(async (url, init) => {
         if (String(url).startsWith("/api/buttons")) return {ok: true, json: async () => ({buttons, missing: {}})};
-        const body = JSON.parse(init.body);
+        const {attribution, ...body} = JSON.parse(init.body);
         reads.push(body);
         if (body.line[1] === "approve") state = "approved";
         return {ok: true, json: async () => ({code: 0, value: {id: 12, state}, error: ""})};
