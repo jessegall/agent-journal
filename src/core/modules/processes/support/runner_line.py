@@ -23,6 +23,15 @@ class RunnerLine:
     ignores."""
 
     @staticmethod
+    def process_id(line: str) -> int | None:
+        prefix = f"{RUNNER_VARIABLE}="
+        for word in line.split():
+            number = word.removeprefix(prefix)
+            if number != word and number.isdigit():
+                return int(number)
+        return None
+
+    @staticmethod
     def build(runner: Path, process_id: int, run: ForegroundRun, line: str, session: str) -> str:
         background = " --background" if run.background else ""
         background += f" --aliases {shlex.quote(','.join(run.aliases))}" if run.aliases else ""
