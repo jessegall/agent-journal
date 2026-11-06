@@ -71,7 +71,7 @@ usePoll(load, () => true);
                     <p class="note message">Select a request to see its headers and body.</p>
                 </template>
             </section>
-            <div v-if="queueOpen" class="queue-veil" @click.self="queueOpen = false"><RequestQueueInspector @close="queueOpen = false" /></div>
+            <template v-if="queueOpen"><div class="queue-veil" @click.self="queueOpen = false"><RequestQueueInspector @close="queueOpen = false" /></div></template>
         </div>
     </WindowRoom>
 </template>

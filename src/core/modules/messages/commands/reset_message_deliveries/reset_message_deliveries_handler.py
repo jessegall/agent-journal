@@ -19,5 +19,5 @@ class ResetMessageDeliveriesHandler(Handler[ResetMessageDeliveries, tuple[Messag
 
     def handle(self, command: ResetMessageDeliveries, context: Context) -> tuple[Message, ...]:
         call = self.queries.query(HookCall).find(command.hook_call_id)
-        messages = tuple(self.messages.delivered_at(call.session_agent_id, call.creation_timestamp()).all_rows())
+        messages = tuple(self.messages.delivered(call.session_agent_id, call.creation_timestamp()).all_rows())
         return tuple(self.repository.update(message, context, delivered_at=None) for message in messages)

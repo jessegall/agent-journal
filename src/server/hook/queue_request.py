@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from time import monotonic
 
-from core.base.request_queue import RequestQueueEntry
+from core.base.request_queue_entry import RequestQueueEntry
 
 
 @dataclass(frozen=True)

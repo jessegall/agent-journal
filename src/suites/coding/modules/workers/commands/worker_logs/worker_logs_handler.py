@@ -10,20 +10,20 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_log import TaskLog
-from suites.coding.modules.workers.commands.worker_logs.worker_logs import WorkerLogs
+from suites.coding.modules.workers.commands.worker_logs.worker_logs import ReadWorkerLogs
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 
-class WorkerLogsHandler(Handler[WorkerLogs, str]):
-    command = WorkerLogs
+class ReadWorkerLogsHandler(Handler[ReadWorkerLogs, str]):
+    command = ReadWorkerLogs
     disabled_scopes = [ActorScope]
 
     def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, queries: Queries, repository: Repository) -> None:
         self.agents, self.worktrees, self.queries, self.repository = agents, worktrees, queries, repository
 
-    def handle(self, command: WorkerLogs, context: Context) -> str:
+    def handle(self, command: ReadWorkerLogs, context: Context) -> str:
         if context.actor.type is not ActorType.AGENT or not self.agents.is_main(context.actor.id):
             raise Refusal("only the main agent reviews a worker's logs", "ask the main agent to read them")
         worktree = self.worktrees.worker_worktree(command.worker_id)

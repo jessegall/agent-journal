@@ -9,11 +9,11 @@ class ReaderAdvance:
     lines: list[str]
     read_offset: int
     read_lines: int
-    seen_offset: int
+    received_offset: int
     summary: str
     progress: int
     replaces: bool = False
     steps_passed: int = 0
     steps_failed: int = 0
     test_count: int = 0
-    progress_count_seen: bool = False
+    progress_count_read: bool = False

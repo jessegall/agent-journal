@@ -6,7 +6,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.seconds import Seconds
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.modules.environments.models.environment import Environment
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
@@ -24,17 +24,17 @@ class MergeCheckoutRule(DriverRule):
     drivers = ["coding.builder", "coding.orchestrator"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, queries: Queries, delivered: WorkerWorktrees, proofs: ProofQuery, git: WorktreeGit, history: HookHistory) -> None:
-        self.queries, self.delivered, self.proofs, self.git, self.hook_history = queries, delivered, proofs, git, history
+    def __init__(self, rows: EventRows, delivered: WorkerWorktrees, proofs: ProofQuery, git: WorktreeGit, history: HookHistory) -> None:
+        self.rows, self.delivered, self.proofs, self.git, self.hook_history = rows, delivered, proofs, git, history
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if self.hook_history.has_recent_answer(self.name, hook, REMINDER_SPAN):
             return RuleAnswer.allowed()
         nudges: list[Nudge] = []
         delivered = list(self.delivered.delivered(hook.agent_id))
-        environments = {environment.id: environment for environment in self.queries.query(Environment).find_many([worktree.environment_id for worktree in delivered])}
+        self.rows.prepare(Environment, [worktree.environment_id for worktree in delivered])
         for worktree in delivered:
-            environment = environments[worktree.environment_id]
+            environment = self.rows.required(Environment, worktree.environment_id)
             if not self.proofs.waiting_proofs(worktree.id).exists() and self.git.head(environment.folder) != worktree.base_branch:
                 nudges.append(MERGE_WAITS.nudge(worker=worktree.session_agent_id, environment=environment.name, branch=worktree.base_branch))
         return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

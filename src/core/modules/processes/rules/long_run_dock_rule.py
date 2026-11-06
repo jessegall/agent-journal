@@ -56,7 +56,7 @@ class LongRunDockRule(DriverRule):
         return [RUN_NAME.nudge(process=process.id) for process in due if process.id not in outputs or not RunTitle.is_descriptive(outputs[process.id].title, process.line)]
 
     def needs_dock(self, process: Process, hook: AgentHook, parts: tuple[ProcessPart, ...]) -> bool:
-        if process.started_at is None or process.started_at.elapsed_seconds(hook.timestamp) <= DOCK_AFTER_SECONDS or self.visibility.visible_part_in(process, parts) is None or self.folder.end(process.id) is not None:
+        if process.started_at is None or process.started_at.elapsed_seconds(hook.timestamp) <= DOCK_AFTER_SECONDS or self.visibility.select_visible_part(process, parts) is None or self.folder.end(process.id) is not None:
             return False
         return True
 

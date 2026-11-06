@@ -72,7 +72,7 @@ class RunnerRewriteRule(DriverRule):
         process = next((made for made in results if isinstance(made, Process)), None)
         if process is None:
             return {}
-        listing = self.progress_listing.for_process(process)
+        listing = self.progress_listing.listing(process)
         run = replace(run, count_line=self.listings.line(process), progress_count_line=listing.line if listing else "",
                       progress_count_position=listing.position if listing else 0, progress_count_pattern=listing.pattern if listing else "")
         kept = {str(field): value for field, value in hook.event.tool_input().items() if field != BACKGROUND_FLAG}

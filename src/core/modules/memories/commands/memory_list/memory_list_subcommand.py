@@ -16,9 +16,7 @@ SEARCHED_COLUMNS = ("text", "reason")
 
 
 class MemoryListSubcommand(ListSubcommand):
-    """`journal memory list`: the memories newest first, with the model's filters, and --main-agent for those of the main agent alone,
-    --other-agents for those of every other agent,
-    --search for those holding every word, and --order weight for the highest weight first."""
+    """Lists memories with filters, search and ordering."""
 
     cli_name = "memory"
 
