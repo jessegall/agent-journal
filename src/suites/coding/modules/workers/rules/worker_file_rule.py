@@ -24,7 +24,7 @@ class WorkerFileRule(DriverRule):
         tool = hook.event.tool
         if tool is None or not tool.is_writing_files():
             return RuleAnswer.allowed()
-        for worktree in self.worktrees.main_worktrees(hook.agent_id):
+        for worktree in self.worktrees.main_worktrees():
             if any(Path(path).is_relative_to(worktree.folder) for path in tool.files):
                 return RuleAnswer.refused(WORKER_FILE.nudge(worker=worktree.session_agent_id))
         return RuleAnswer.allowed()

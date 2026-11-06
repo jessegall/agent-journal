@@ -32,7 +32,7 @@ class IdleWorkerStopRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         hours = self.settings.number(WORKER_IDLE_HOURS)
         activities = self.activities.read(hook)
-        idle = [worktree for worktree in self.worktrees.main_worktrees(hook.agent_id) if worktree.state is WorktreeState.CUT and self.is_idle(activities[worktree.session_agent_id], hook, hours)]
+        idle = [worktree for worktree in self.worktrees.main_worktrees() if worktree.state is WorktreeState.CUT and self.is_idle(activities[worktree.session_agent_id], hook, hours)]
         commands = [EndIdleWorker(worktree.session_agent_id) for worktree in idle]
         return RuleAnswer.with_nudges(*(WORKER_IDLE_STOPPED.nudge(worker=worktree.session_agent_id, task=worktree.task_id) for worktree in idle)).running(*commands)
 

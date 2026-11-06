@@ -10,5 +10,5 @@ def test_one_request_asks_for_the_due_skills_of_an_agent_many_times_and_reads_th
     start(story)
     unread = story.container.get(UnreadSkills)
     with story.repeated_work.request():
-        asked = [unread.names(story.agent.id) for _ in range(12)]
-    story.expect_rows(asked[0] == ["journal-notes"], all(names == asked[0] for names in asked))
+        answers = [unread.names(story.agent.id) for _ in range(12)]
+    story.expect_rows(answers[0] == ["journal-notes"], all(answer == answers[0] for answer in answers))

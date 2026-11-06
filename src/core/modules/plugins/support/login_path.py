@@ -16,8 +16,8 @@ SHELL_LIMIT_SECONDS = 10
 class LoginPath:
     """The PATH the user's login shell has, so a tool installed by nvm, Homebrew or asdf is found by the
     plugins the journal starts. The boot and each round of the services read the shell and keep its answer in
-    a file, written only when the answer changed; asking reads the file and never waits on the shell, and answers the usual folders while the file
-    is missing."""
+    a file, written only when the answer changed; asking reads the file and never waits on the shell, and
+    answers the usual folders while the file is missing."""
 
     def __init__(self, home: JournalHome) -> None:
         self.file = home.folder / "runtime" / "login-path"
