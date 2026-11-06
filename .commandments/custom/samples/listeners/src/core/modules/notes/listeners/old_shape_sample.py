@@ -30,6 +30,11 @@ class GuessingSample(SaveListener):
         if isinstance(change.row, Note):
             return
 
+    def command_check(self, change: Change, context: object) -> None:
+        # @righteous architecture_listeners_row_type_guessed_in_a_listener
+        if isinstance(context.command, Note):
+            return
+
 
 # @sin architecture_core_second_class_in_a_file
 # @sin naming_class_unnamed_for_its_base

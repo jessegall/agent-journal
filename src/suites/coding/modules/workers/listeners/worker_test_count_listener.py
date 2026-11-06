@@ -8,6 +8,7 @@ from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.processes.commands.stop_process.stop_process import StopProcess
+from suites.coding.modules.workers.commands.restore_worker_tests.restore_worker_tests import RestoreWorkerTests
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
@@ -51,4 +52,5 @@ class WorkerTestCountListener(SaveListener[Changed[Output]]):
         if not parts.exists():
             return
         self.nudger.send(process.session_agent_id, TEST_LIMIT_STOP, self.name, context, output=process.id, count=output.test_count, limit=limit)
+        self.bus.dispatch(RestoreWorkerTests(process.id), context)
         self.bus.dispatch(StopProcess(process.id), context)

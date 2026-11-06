@@ -72,7 +72,7 @@ def test_a_refusal_by_something_else_between_two_skips_starts_the_count_again(ne
     refused_then(story, reply("Seventh obeyed"))
     story.expect_success(reply("Seventh obeyed") + " --confirm" + REASON, actor=story.agent)
     story.advance(timedelta(seconds=1))
-    story.expect_refusal('question ask "Which way?" --options "I will fix it" --environment main', "name who acts", actor=story.agent)
+    story.expect_refusal('question ask "Which way?" --context "A story asks this so its card and answer can be checked." --options "I will fix it" --environment main', "name who acts", actor=story.agent)
     story.advance(timedelta(seconds=1))
     refused_then(story, reply("Seventh again"))
     story.expect_success(reply("Seventh again") + " --confirm" + REASON, actor=story.agent)

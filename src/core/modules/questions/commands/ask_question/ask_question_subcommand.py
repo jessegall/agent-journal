@@ -11,8 +11,8 @@ from core.modules.documents.support.row_refs import RowRefs
 
 
 class AskQuestionSubcommand(Subcommand[AskQuestion, Question]):
-    """`journal question ask <text> --options a b --recommend a`: the agent asks the user and waits for the
-    answer."""
+    """`journal question ask <title> --context <sentences> --options a b --recommend a`: the agent asks the
+    user and waits for the answer."""
 
     cli_name = "question"
     name = "ask"
@@ -22,7 +22,8 @@ class AskQuestionSubcommand(Subcommand[AskQuestion, Question]):
         self.refs = refs
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("text")
+        parser.add_argument("text", metavar="title")
+        parser.add_argument("--context", default="")
         parser.add_argument("--options", nargs="+", default=[])
         parser.add_argument("--recommend", default="")
         parser.add_argument("--row")
@@ -32,7 +33,7 @@ class AskQuestionSubcommand(Subcommand[AskQuestion, Question]):
 
     def command(self, arguments: Namespace, caller: Caller) -> AskQuestion:
         place = QuestionPlace(self.refs.resolved(arguments.row) if arguments.row else None, arguments.quote, arguments.position, arguments.selection_type)
-        return AskQuestion(arguments.text, tuple(arguments.options), arguments.recommend, place)
+        return AskQuestion(arguments.text, arguments.context, tuple(arguments.options), arguments.recommend, place)
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, Question):

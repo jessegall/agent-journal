@@ -36,6 +36,9 @@ class Agent(EnvironmentScoped, Model):
     given_name: str = ""
     ended_at: Timestamp | None = None
     access: str = "writing"
+    retired_at: Timestamp | None = None
+    retirement_reason: str = ""
+    retiring_actor_id: int | None = None
 
     def change_name(self, old_row: "Agent | None") -> str | None:
         newly_ended = old_row is not None and old_row.ended_at is None and self.ended_at is not None
@@ -43,6 +46,9 @@ class Agent(EnvironmentScoped, Model):
 
     def ended(self, timestamp: Timestamp, policy: AgentPolicy) -> "Agent":
         return self.changed(ended_at=timestamp, paused_at=self.paused_at if self.role in policy.pause_retention_roles else None)
+
+    def retired(self, timestamp: Timestamp, reason: str, actor_id: int) -> "Agent":
+        return self.changed(retired_at=timestamp, retirement_reason=reason, retiring_actor_id=actor_id)
 
     @property
     def original_launch_name(self) -> str:

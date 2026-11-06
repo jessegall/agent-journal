@@ -220,7 +220,7 @@ def test_the_connection_state_is_available_to_the_viewer(offline_recovery):
 
 
 @pytest.mark.parametrize("line", [
-    'question ask "Which database?" --options sqlite postgres --environment main',
+    'question ask "Which database?" --context "A story asks this so its card and answer can be checked." --options sqlite postgres --environment main',
     'review request task 1 --points 1 --environment main',
 ])
 def test_a_worker_waiting_for_an_answer_or_review_is_not_restarted(recovery, line):

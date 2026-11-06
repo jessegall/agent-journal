@@ -8,12 +8,16 @@ let subscriptions;
 
 // a server that holds each line until it is released, and hears which lines reached it
 function heldServer() {
-    const server = {lines: [], routes: [], open: []};
+    const server = {lines: [], routes: [], open: [], receipts: []};
     vi.stubGlobal("fetch", (url, init) => {
         if (url === "/api/read-lines") return Promise.resolve({ok: true, status: 200, json: async () => ({reads: READS})});
         server.routes.push(url);
         if (url === "/api/repeated-lines") return Promise.resolve({ok: true, json: async () => ({})});
         const body = JSON.parse(init.body);
+        if (url === "/api/read-receipts") {
+            server.receipts.push(...body.receipts);
+            return Promise.resolve({ok: true, json: async () => ({})});
+        }
         const lines = body.lines ?? [body];
         server.lines.push(...lines.map((entry) => entry.line.join(" ")));
         return new Promise((resolve, reject) => {
@@ -41,6 +45,34 @@ beforeEach(async () => {
 });
 
 afterEach(() => vi.unstubAllGlobals());
+
+test("the funnel counts one batch HTTP request, its commands by window, late joins and one trailing read", async () => {
+    const server = heldServer();
+    const first = lineResult("a.b", "usage tool", "main");
+    await settled();
+    transport.recording = true;
+    const joined = lineResult("a.b", "usage tool", "main");
+    await settled();
+    subscriptions.dispatch({event: "hook_call.create"});
+    const trailing = lineResult("a.b", "usage tool", "main");
+    const joinedTrailing = lineResult("a.b", "usage tool", "main");
+    await server.answer();
+    await server.answer();
+    await Promise.all([first, joined, trailing, joinedTrailing]);
+    await transport.flushReadReceipts();
+    expect(transport.requestCounts("a.b")).toMatchObject({http_requests: 2, logical_commands: 2, joined_callers: 2, trailing_reads: 1});
+    expect(server.receipts).toHaveLength(2);
+    expect(server.receipts.map((receipt) => receipt.joined_callers)).toEqual([1, 1]);
+    expect(server.receipts[1].followed_command_id).toBe(server.receipts[0].command_id);
+    const batch = [lineResult("a.b", "usage tool", "main"), lineResult("c.d", "plan outline 1", "main")];
+    await settled();
+    await server.answer();
+    await Promise.all(batch);
+    await transport.flushReadReceipts();
+    expect(transport.requestTotals()).toEqual({http_requests: 3, logical_commands: 4, joined_callers: 2, trailing_reads: 1});
+    expect(transport.requestCounts("a.b").http_requests).toBe(3);
+    expect(transport.requestCounts("c.d").http_requests).toBe(1);
+});
 
 test("the same read of the same window joins the one in flight, and both get its answer", async () => {
     const server = heldServer();

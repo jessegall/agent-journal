@@ -1,12 +1,11 @@
 from core.base.skill.skill_contents import SkillContents
 from core.base.file_access import FileAccess
-import shutil
 from pathlib import Path
 
 from core.base.provider.providers import Providers
 from core.base.skill.skill_declaration import SKILL_FILE
 from core.modules.plugins.support.plugin_manifest import PluginManifest
-from core.modules.skills.support.skill_catalogue import FRONT_MATTER_MARK, PLUGIN_KEY, SkillCatalogue
+from core.modules.skills.support.skill_catalogue import FRONT_MATTER_MARK, PLUGIN_KEY
 from core.modules.skills.support.skill_projects import SkillProjects
 
 
@@ -30,20 +29,6 @@ class PluginSkillFiles:
                 target = root / name / SKILL_FILE
                 target.parent.mkdir(parents=True, exist_ok=True)
                 FileAccess.shared().write(target, text)
-
-    def remove(self, plugin_name: str) -> None:
-        for root in self.projects.roots(self.providers.skill_folders()):
-            for path in root.glob(f"*/{SKILL_FILE}"):
-                fields = SkillCatalogue.front_matter(SkillContents.read(path).text)
-                if PLUGIN_KEY in fields and fields[PLUGIN_KEY] == plugin_name:
-                    self.remove_folder(path.parent)
-
-    @staticmethod
-    def remove_folder(folder: Path) -> None:
-        if folder.is_symlink():
-            folder.unlink()
-            return
-        shutil.rmtree(folder)
 
     @staticmethod
     def with_plugin_key(text: str, plugin_name: str) -> str:

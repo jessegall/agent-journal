@@ -22,7 +22,7 @@ WORKER_SETTINGS = [
     SettingValue("worker-run-most-tests", "Test limit per worker command", "A worker command running more tests than this is refused or stopped. 0 means no limit. Journal runs do not count.", SettingType.NUMBER, default=25, person_set=True),
     SettingValue("builder-dispatches-workers", "Builder sends workers", "Whether the builder may send workers.", SettingType.FLAG, default=True, person_set=True),
     SettingValue("worker-limit", "Worker limit", "Maximum active workers per environment.", SettingType.NUMBER, default=DEFAULT_WORKER_COUNT, person_set=True),
-    SettingValue("worker-idle-hours", "Worker idle hours", "Hours without tool use before an unfinished worker is retired and its working folder removed.", SettingType.NUMBER, default=6),
+    SettingValue("worker-idle-hours", "Worker idle hours", "Hours without tool use before an unfinished worker's process stops. Its task and working folder stay.", SettingType.NUMBER, default=6),
     SettingValue("worker-batch-size", "Worker batch size", "Recommended tasks per worker assignment. The main agent is prompted to add more when fewer are assigned.", SettingType.NUMBER, default=3),
     SettingValue("quiet-helper-minutes", "Quiet helper minutes", "Minutes without tool use before the main agent is prompted to check a worker or helper.", SettingType.NUMBER, default=5),
     SettingValue("library-links", "Library links", "Folders each worker's worktree links from the main checkout.", SettingType.LIST, default=()),

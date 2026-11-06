@@ -1,7 +1,7 @@
 import {coalesced} from "../composables/coalesced.js";
 
-function waitingRun() {
-    const run = {askers: 0, stop: new AbortController()};
+function waitingRun(trailingOf) {
+    const run = {id: crypto.randomUUID(), trailingOf, askers: 0, callers: 0, stop: new AbortController()};
     run.answer = new Promise((resolve) => (run.resolve = resolve));
     return run;
 }
@@ -10,9 +10,10 @@ function waitingRun() {
 // one run that follows it instead, so an answer is never older than the event it was asked after
 // a run is stopped only when every asker of it has gone, so a window that closes never cancels the read of another
 export class JoinedRead {
-    constructor(read, ended) {
+    constructor(read, ended, tracked = () => {}) {
         this.read = read;
         this.ended = ended;
+        this.tracked = tracked;
         this.flying = null;
         this.following = null;
         this.outdated = false;
@@ -24,9 +25,11 @@ export class JoinedRead {
         this.following = null;
         this.flying = run;
         this.outdated = false;
-        const answer = this.read(run.stop.signal);
+        this.tracked("sent", run);
+        const answer = this.read(run.stop.signal, run);
         run.resolve(answer);
         const landed = () => {
+            this.tracked("answered", run);
             if (this.flying === run) this.flying = null;
             if (!this.following) this.ended();
         };
@@ -36,8 +39,10 @@ export class JoinedRead {
 
     asked(signal) {
         const joining = this.flying && !this.outdated;
-        const run = joining ? this.flying : (this.following ??= waitingRun());
+        const run = joining ? this.flying : (this.following ??= waitingRun(this.outdated ? this.flying?.id ?? "" : ""));
         run.askers += 1;
+        run.callers += 1;
+        this.tracked("asked", run);
         const answer = this.answerFor(run, signal);
         if (this.following === run) this.ask();
         return answer;

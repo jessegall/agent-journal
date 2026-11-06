@@ -65,9 +65,11 @@ class PluginEventRows:
             state = PluginEventState.LISTENS
         is_hook_guard = form is EventForm.GUARD and entry is not None and entry.module == MODULE_NAME and entry.event in self.registry.declared_plugin_events
         limit_ms = int(self.setting_values.number(CEILING_SETTING)) if is_hook_guard else 0
-        skip = self.scripts.newest_skip(manifest.name, listener.event, form)
         row = self.row(manifest, listener.event, form.value, script, state, entry.key if state is PluginEventState.RENAMED and entry else "", started_at, limit_ms)
-        return replace(row, last_skipped_at=skip.skipped_at.text, skip_reason=skip.reason) if skip else row
+        if not self.scripts.has_skip(manifest.name, listener.event, form):
+            return row
+        skip = self.scripts.newest_skip(manifest.name, listener.event, form)
+        return replace(row, last_skipped_at=skip.skipped_at.text, skip_reason=skip.reason)
 
     @staticmethod
     def row(manifest: PluginManifest, key: str, form: str, script: str, state: PluginEventState, current_key: str = "", started_at: str = "", limit_ms: int = 0) -> PluginEventRow:

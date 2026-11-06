@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from server.viewer.line_answer import LineAnswer
+from core.base.database.points import Points
 
 
 @dataclass(frozen=True)
@@ -9,3 +10,4 @@ class TimedLineAnswer:
 
     answer: LineAnswer
     duration_ms: float
+    points: Points | None = None

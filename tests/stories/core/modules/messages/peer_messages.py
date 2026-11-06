@@ -41,7 +41,7 @@ def test_a_queued_prompt_of_the_user_is_no_peer_message(new_story, tmp_path):
 
 def test_a_message_reaches_the_chat_while_the_agent_waits_on_a_question(new_story, tmp_path):
     story = new_story(fixture=BuilderWithUser)
-    story.run('question ask "Which database?" --options sqlite postgres --environment main', actor=story.agent)
+    story.run('question ask "Which database?" --context "A story asks this so its card and answer can be checked." --options sqlite postgres --environment main', actor=story.agent)
     hook_with(story, transcript_with(tmp_path, queued(ENVELOPE)))
     story.expect_text("message list --json", "Check 138 failed", actor=story.user)
 

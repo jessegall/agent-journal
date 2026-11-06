@@ -45,6 +45,8 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
 
     def prepare(self, command: SendWorker, actor: Actor) -> None:
         worker = self.rows.required(Agent, command.worker_id)
+        if worker.retired_at is not None:
+            raise Refusal(f"worker {worker.id} is retired, for good", "journal worker dispatch <task> starts a new one")
         self.is_gone = worker.ended_at is None and bool(self.missing_agents.find([worker]))
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:

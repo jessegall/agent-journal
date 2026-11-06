@@ -6,7 +6,7 @@ from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.coding_fixtures import BuilderStarted, CodingEnvironment
 from core.base.driver.tool_type import ToolType
 
-QUESTION_LINE = 'question ask "Which database?" --options sqlite postgres --environment main'
+QUESTION_LINE = 'question ask "Which database?" --context "A story asks this so its card and answer can be checked." --options sqlite postgres --environment main'
 QUESTION_TOOL = HookSamples.sample("pre_tool_use", {"name": "AskUserQuestion", "category": ToolType.QUESTION, "files": [], "diff": None})
 CODEX_QUESTION_TOOL = HookSamples.sample("pre_tool_use", {"name": "request_user_input", "category": ToolType.QUESTION, "files": [], "diff": None}).with_fields(program="codex")
 
@@ -80,7 +80,7 @@ def test_the_agent_programs_own_question_tool_is_refused_with_the_journal_way(ne
 
 def test_a_refused_ask_leaves_no_wait(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.expect_refusal('question ask "Which way?" --options "I will fix it" --environment main', "name who acts", actor=story.agent)
+    story.expect_refusal('question ask "Which way?" --context "A story asks this so its card and answer can be checked." --options "I will fix it" --environment main', "name who acts", actor=story.agent)
     story.expect_refusal("wait show 1", "no wait 1")
 
 

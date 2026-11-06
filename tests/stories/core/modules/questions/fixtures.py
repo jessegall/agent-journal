@@ -10,7 +10,7 @@ class OpenQuestion(StoryFixture):
     parent = AgentStarted
 
     def steps(self, story: Story) -> None:
-        story.run('question ask "Which database?" --options sqlite postgres --environment main', actor=story.agent)
+        story.run('question ask "Which database?" --context "A story asks this so its card and answer can be checked." --options sqlite postgres --environment main', actor=story.agent)
 
     def expect(self, story: Story) -> None:
         story.expect_success("question show 1", "state: open")

@@ -185,9 +185,9 @@ def test_with_no_tool_running_the_line_says_what_the_agent_waits_for(new_story):
     story = new_story(fixture=UserJoined)
     story.hook("s-1", HookSamples.stop())
     story.expect_absent("usage tool --environment main", "waiting for", actor=story.user)
-    story.run('question ask "Which database?" --environment main', actor=story.agent)
+    story.run('question ask "Which database?" --context "A story asks this so its card and answer can be checked." --environment main', actor=story.agent)
     story.expect_text("usage tool --environment main", "waiting for your answer to question 1", actor=story.user)
-    story.run('question ask "Which cache?" --environment main', actor=story.agent)
+    story.run('question ask "Which cache?" --context "A story asks this so its card and answer can be checked." --environment main', actor=story.agent)
     story.expect_text("usage tool --environment main", "waiting for your answers to 2 questions", actor=story.user)
 
 
@@ -207,7 +207,7 @@ def test_an_open_question_says_it_asks(new_story):
     asking = lambda: json.loads(story.run("usage tool --environment main --json", actor=story.user).output_text)["asking"]
     story.hook("s-1", HookSamples.stop())
     expect_asking(asking, False)
-    story.run('question ask "Which database?" --environment main', actor=story.agent)
+    story.run('question ask "Which database?" --context "A story asks this so its card and answer can be checked." --environment main', actor=story.agent)
     expect_asking(asking, True)
 
 

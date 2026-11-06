@@ -18,3 +18,15 @@ class HookRequestsTable:
                 "DELETE FROM hook_requests WHERE id NOT IN (SELECT id FROM hook_requests ORDER BY id DESC LIMIT ?)",
                 [size],
             ))
+
+    def kept_row_count(self) -> int:
+        return int(self.database.rows(Statement("SELECT count(*) FROM hook_requests"))[0][0])
+
+    def complete_viewer_read(self, person_id: int, client_id: str, command_id: str, joined_callers: int) -> int:
+        return self.database.update(Statement(
+            "UPDATE hook_requests SET payload = json_set(payload, '$.body.attribution.joined_callers', ?, "
+            "'$.body.attribution.complete', json('true')) "
+            "WHERE json_extract(payload, '$.body.attribution.client_id') = ? "
+            "AND json_extract(payload, '$.body.attribution.command_id') = ? "
+            "AND json_extract(payload, '$.body.attribution.person_id') = ?",
+            [joined_callers, client_id, command_id, person_id]))

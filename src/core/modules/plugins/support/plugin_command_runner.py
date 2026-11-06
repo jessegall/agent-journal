@@ -14,6 +14,7 @@ from core.base.project_reads import ProjectReads
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.plugin_script_processes import PluginScriptProcesses
+from core.base.script_stop import ScriptStop
 from core.modules.agents.models.agent import Agent
 from core.modules.plugins.support.plugin_command_run import PluginCommandRun
 from core.modules.processes.models.process import Process
@@ -47,7 +48,7 @@ class PluginCommandRunner:
         self.scripts.start(running, plugin, RUN_KEY, EventForm.COMMIT, context.timestamp)
         try:
             output, _ = running.communicate()
-            stopped = self.scripts.stop_reason(running) is not None
+            stopped = self.scripts.stop_reason(running) is not ScriptStop.RUNNING_ON
         finally:
             self.scripts.finish(running)
         if stopped and self.queries.query(Process).find(process.id).ended_at is None:

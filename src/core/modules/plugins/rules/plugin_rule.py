@@ -102,7 +102,7 @@ class PluginRule(DriverRule):
         except PluginLateError:
             return ""
         except PluginFaultError as fault:
-            commands.append(RecordPluginFault.fault_record(plugin.id, fault, f"at {event.name}"))
+            commands.append(fault.fault_record(plugin.id, f"at {event.name}"))
             return ""
         if plugin.fault_count:
             commands.append(ClearPluginFaults(plugin.id))

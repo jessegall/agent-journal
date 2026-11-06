@@ -16,6 +16,8 @@ class HelperReach:
         helper = self.agents.find(helper_id)
         if helper.role != AgentRole.HELPER:
             raise Refusal(f"agent {helper_id} is no helper", "journal agent cards lists the helpers")
+        if helper.retired_at is not None:
+            raise Refusal(f"helper {helper.id} is retired, for good", "journal helper start starts a new one")
         if actor.type is ActorType.AGENT and not self.may_reach(helper, actor.id):
             raise Refusal(f"helper {helper.id} answers to agent:{helper.parent_id}", "only its parent, the main agent or a person sends to it or stops it")
         return helper

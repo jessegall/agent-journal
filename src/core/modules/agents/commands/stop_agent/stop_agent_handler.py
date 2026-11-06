@@ -29,9 +29,10 @@ class StopAgentHandler(Handler[StopAgent, Agent]):
         agent = self.queries.query(Agent).find(command.agent_id)
         if agent.ended_at is not None:
             raise Refusal(f"agent {agent.id} has ended already")
-        if agent.pid is None and not self.program.stop(agent) and agent.role != AgentRole.MAIN:
+        if agent.pid is None and not self.program.stop(agent) and agent.role != AgentRole.MAIN and not command.retain_tasks:
             raise Refusal(f"the journal does not know the process of agent {agent.id}", "stop it in its own terminal")
-        self.bus.run(ClearDelegatedTasks(agent.id), actor, environment_id=agent.environment_id)
+        if not command.retain_tasks:
+            self.bus.run(ClearDelegatedTasks(agent.id), actor, environment_id=agent.environment_id)
         if agent.pid is not None:
             self.program.stop(agent)
 

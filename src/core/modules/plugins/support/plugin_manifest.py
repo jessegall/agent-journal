@@ -37,7 +37,7 @@ class PluginManifest:
     folder of its skills, the services it keeps running, and what its install requires, sets up and
     reads back, how its services answer a health check, which helpers besides the main agent each
     event reaches, the aliases it ships, the dashboard it writes, what it says it is for, the folders of
-    the project a worker's shell line may read for it, and the scripts it runs for event keys."""
+    the project a limited agent's shell line may read for it, and the scripts it runs for event keys."""
 
     name: str
     title: str
@@ -75,17 +75,18 @@ class PluginManifest:
         names: object = fields["hears"] if "hears" in fields else None
         windows: object = fields["holds"] if "holds" in fields else None
         project_reads: object = fields["project_reads"] if "project_reads" in fields else None
+        listed: object = fields["files"] if "files" in fields else None
         listeners = cls.read_listeners(fields["listen"], folder) if "listen" in fields else ()
         return cls(str(fields["name"]), str(fields["title"]), str(fields["version"]), program,
                    tuple(str(name) for name in names) if is_list(names) else (), tuple(cls.event_window(entry) for entry in windows) if is_list(windows) else (),
-                   cls.read_settings(folder, settings_file), tuple(dict.fromkeys(file for file in (MANIFEST_FILE, program, settings_file, *(listener.allowed_script(form) for listener in listeners for form in EventForm), *cls.extra_files(fields, folder)) if file and not file.startswith(SERVICE_PREFIX))),
+                   cls.read_settings(folder, settings_file), tuple(dict.fromkeys(file for file in (MANIFEST_FILE, program, settings_file, *(listener.allowed_script(form) for listener in listeners for form in EventForm), *cls.extra_files(listed, folder)) if file and not file.startswith(SERVICE_PREFIX))),
                    cls.read_card_tones(fields["cards"] if "cards" in fields else None), str(fields["skills"]) if "skills" in fields else "",
                    cls.read_services(fields["services"] if "services" in fields else None), cls.read_requirements(fields["requires"] if "requires" in fields else None),
                    cls.read_setup_steps(fields["setup"] if "setup" in fields else None), str(fields["installed"]) if "installed" in fields else "",
                    cls.read_health(fields["health"] if "health" in fields else None), cls.read_reaches(fields["reaches"] if "reaches" in fields else None),
                    cls.read_aliases(fields["aliases"] if "aliases" in fields else None), cls.read_dashboard(fields["dashboard"] if "dashboard" in fields else None),
                    str(fields["description"]) if "description" in fields else "",
-                   tuple(str(entry) for entry in project_reads) if is_list(project_reads) else (), listeners, (), cls.read_protocol(fields), cls.read_listed_files(fields))
+                   tuple(str(entry) for entry in project_reads) if is_list(project_reads) else (), listeners, (), cls.read_protocol(fields["protocol"] if "protocol" in fields else None), cls.read_listed_files(listed))
 
     @classmethod
     def loaded_fields(cls, path: Path, version: FileVersion) -> Mapping[str, object]:
@@ -155,13 +156,12 @@ class PluginManifest:
         return {PluginAnswer.entry_type(entry): str(entry["tone"]) if "tone" in entry else "" for entry in entries}
 
     @staticmethod
-    def read_listed_files(fields: Mapping[str, object]) -> tuple[str, ...]:
-        listed: object = fields["files"] if "files" in fields else None
+    def read_listed_files(listed: object) -> tuple[str, ...]:
         return tuple(str(entry) for entry in listed) if is_list(listed) else ()
 
     @classmethod
-    def extra_files(cls, fields: Mapping[str, object], folder: Path) -> tuple[str, ...]:
-        return tuple(name for entry in cls.read_listed_files(fields) if ManifestListener.is_contained_path(entry, folder) for name in cls.walked_files(folder, entry))
+    def extra_files(cls, listed: object, folder: Path) -> tuple[str, ...]:
+        return tuple(name for entry in cls.read_listed_files(listed) if ManifestListener.is_contained_path(entry, folder) for name in cls.walked_files(folder, entry))
 
     @staticmethod
     def walked_files(folder: Path, entry: str) -> tuple[str, ...]:
@@ -174,8 +174,7 @@ class PluginManifest:
         return tuple(entry for entry in self.listed_files if not ManifestListener.is_contained_path(entry, folder))
 
     @staticmethod
-    def read_protocol(fields: Mapping[str, object]) -> int:
-        protocol = fields["protocol"] if "protocol" in fields else LINE_VERSION
+    def read_protocol(protocol: object) -> int:
         return protocol if isinstance(protocol, int) and not isinstance(protocol, bool) else LINE_VERSION
 
     @property

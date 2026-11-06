@@ -22,7 +22,7 @@ TASK_LINE = 'task make "Fix the cart" --environment main'
 MAIN_CHAT = "chat-mark main --environment main"
 MAIN_DOCK = "dock-item main --environment main"
 MADE = "Task 1 created"
-QUESTION_LINE = 'question ask "Which cart?" --options "the old" "the new" --environment main'
+QUESTION_LINE = 'question ask "Which cart?" --context "A story asks this so its card and answer can be checked." --options "the old" "the new" --environment main'
 DOC_LINE = 'doc make "Cart rules" --abstract "How the cart counts" --body "Cents" --environment main'
 
 

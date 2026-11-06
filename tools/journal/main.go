@@ -136,13 +136,13 @@ func StopServer(home string, stdout, stderr io.Writer) int {
 // sent in its header. A timeout is never resent: the command may still be running.
 // idleTimeoutWriter resets the timer when it writes data.
 type idleTimeoutWriter struct {
-	out   io.Writer
-	timer *time.Timer
+	destination io.Writer
+	timer       *time.Timer
 }
 
 func (writer idleTimeoutWriter) Write(data []byte) (int, error) {
 	writer.timer.Reset(CliLimit)
-	return writer.out.Write(data)
+	return writer.destination.Write(data)
 }
 
 func SendCli(client *http.Client, request CliRequest, requestTiming *timing.Timing, stampName string, stdout, stderr io.Writer) (int, int) {

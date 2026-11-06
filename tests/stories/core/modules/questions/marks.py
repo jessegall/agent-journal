@@ -5,7 +5,7 @@ from core.base.registry.registry import Registry
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, marks_text, expect_mark_count, expect_marks_text
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithUser
 
-QUESTION_LINE = 'question ask "Which database?" --options sqlite postgres --environment main'
+QUESTION_LINE = 'question ask "Which database?" --context "A story asks this so its card and answer can be checked." --options sqlite postgres --environment main'
 
 
 def with_question(story) -> None:
@@ -55,7 +55,7 @@ def test_a_close_ends_the_one_mark_in_place_and_says_it_is_closed(new_story):
 
 def test_a_failed_ask_shows_no_mark(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.expect_refusal('question ask "Which way?" --options "I will fix it" --environment main', "name who acts", actor=story.agent)
+    story.expect_refusal('question ask "Which way?" --context "A story asks this so its card and answer can be checked." --options "I will fix it" --environment main', "name who acts", actor=story.agent)
     story.run_listeners()
     expect_mark_count(story, 0)
 

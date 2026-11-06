@@ -54,6 +54,15 @@ class Transport {
         this.joinedReads = new Map();
         this.flights = new Set();
         this.lineCounts = new Map();
+        this.httpCounts = new Map();
+        this.httpRequests = 0;
+        this.joinCounts = new Map();
+        this.clientId = crypto.randomUUID();
+        this.recording = false;
+        this.readReceipts = [];
+        this.receiptTimer = null;
+        this.receiptSending = Promise.resolve();
+        this.receiptFailures = 0;
         this.recentLines = new Map();
         this.reportedLines = new Set();
         this.readsFlying = 0;
@@ -75,7 +84,28 @@ class Transport {
         return Object.fromEntries(this.lineCounts.get(window) ?? []);
     }
 
+    requestCounts(window) {
+        const sent = this.sentCounts(window);
+        const joins = [...(this.joinCounts.get(window)?.values() ?? [])];
+        return {http_requests: this.httpCounts.get(window) ?? 0,
+            logical_commands: Object.entries(sent).filter(([line]) => !line.startsWith("/")).reduce((sum, [, count]) => sum + count, 0),
+            joined_callers: joins.reduce((sum, count) => sum + count.joined_callers, 0),
+            trailing_reads: joins.reduce((sum, count) => sum + count.trailing_reads, 0), by_command: sent};
+    }
+
+    requestTotals() {
+        const windows = [...this.lineCounts.keys()].map((window) => this.requestCounts(window));
+        return {http_requests: this.httpRequests,
+            logical_commands: windows.reduce((sum, count) => sum + count.logical_commands, 0),
+            joined_callers: windows.reduce((sum, count) => sum + count.joined_callers, 0),
+            trailing_reads: windows.reduce((sum, count) => sum + count.trailing_reads, 0)};
+    }
+
     took(requests, url) {
+        if (/\/api\/lines?$/.test(url)) {
+            this.httpRequests += 1;
+            new Set(requests.map((request) => request.window)).forEach((window) => this.httpCounts.set(window, (this.httpCounts.get(window) ?? 0) + 1));
+        }
         const started_at = Date.now();
         const flights = requests.map((request) => ({...request, url, started_at}));
         flights.forEach((flight) => {
@@ -152,7 +182,9 @@ class Transport {
                 // a share link is refused the list and sends every line as a write; any other failure asks again at the next line
                 if (response.status === REFUSED_STATUS) return new Set();
                 if (!response.ok) throw failure(response.status, "The read lines did not answer");
-                return new Set((await response.json()).reads);
+                const answer = await response.json();
+                this.recording = answer.recording === true;
+                return new Set(answer.reads);
             })
             .catch(() => {
                 this.readLines = null;
@@ -161,10 +193,49 @@ class Transport {
     }
 
     // the same read joins the one in flight, whichever part of the viewer asks: see JoinedRead
-    joined(key, read, signal = undefined) {
-        const joined = this.joinedReads.get(key) ?? new JoinedRead(read, () => this.joinedReads.delete(key));
+    joined(key, read, signal = undefined, identity = null) {
+        const joined = this.joinedReads.get(key) ?? new JoinedRead(
+            (stop, run) => read(stop, identity ? this.readAttribution(run) : undefined),
+            () => this.joinedReads.delete(key),
+            (event, run) => { if (identity) this.trackRead(identity, event, run); });
         this.joinedReads.set(key, joined);
         return joined.asked(signal);
+    }
+
+    readAttribution(run) {
+        return {client_id: this.clientId, command_id: run.id, joined_callers: run.callers - 1,
+            followed_command_id: run.trailingOf, complete: false};
+    }
+
+    trackRead({window, line}, event, run) {
+        const counts = this.joinCounts.get(window) ?? new Map();
+        const command = nounAndVerb(line.join(" "));
+        const count = counts.get(command) ?? {joined_callers: 0, trailing_reads: 0};
+        if (event === "asked" && run.callers > 1) count.joined_callers += 1;
+        if (event === "sent" && run.trailingOf) count.trailing_reads += 1;
+        counts.set(command, count);
+        this.joinCounts.set(window, counts);
+        if (event !== "answered" || !this.recording) return;
+        this.readReceipts.push(this.readAttribution(run));
+        this.receiptTimer ??= setTimeout(() => this.flushReadReceipts(), 50);
+    }
+
+    flushReadReceipts() {
+        clearTimeout(this.receiptTimer);
+        this.receiptTimer = null;
+        const receipts = this.readReceipts;
+        this.readReceipts = [];
+        if (!receipts.length) return this.receiptSending;
+        this.receiptSending = this.receiptSending.then(async () => {
+            try {
+                const response = await this.raw("/api/read-receipts", {method: "POST", headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({receipts})});
+                if (!response.ok) this.receiptFailures += receipts.length;
+            } catch {
+                this.receiptFailures += receipts.length;
+            }
+        });
+        return this.receiptSending;
     }
 
     // an event has come: a read in flight may be older than it, so whoever asks that read from now on gets one that runs after it

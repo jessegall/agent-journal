@@ -68,9 +68,9 @@ class PluginScriptProcesses:
             LeftoverProcess.stop(int(pid), program)
             pid_file.unlink(missing_ok=True)
 
-    def stop_reason(self, process: "subprocess.Popen[str]") -> ScriptStop | None:
+    def stop_reason(self, process: "subprocess.Popen[str]") -> ScriptStop:
         with self.lock:
-            return self.stop_reasons.get(process.pid)
+            return self.stop_reasons.get(process.pid, ScriptStop.RUNNING_ON)
 
     def keep_line(self, plugin: str, line: str) -> None:
         with self.lock:
@@ -84,13 +84,17 @@ class PluginScriptProcesses:
         with self.lock:
             self.skips[(plugin, key, form)] = ScriptSkip(reason, skipped_at)
 
-    def newest_skip(self, plugin: str, key: str, form: EventForm) -> ScriptSkip | None:
+    def has_skip(self, plugin: str, key: str, form: EventForm) -> bool:
         with self.lock:
-            return self.skips.get((plugin, key, form))
+            return (plugin, key, form) in self.skips
 
-    def failing_try(self, plugin: str) -> Timestamp | None:
+    def newest_skip(self, plugin: str, key: str, form: EventForm) -> ScriptSkip:
         with self.lock:
-            return self.failing_tries.get(plugin)
+            return self.skips[(plugin, key, form)]
+
+    def failing_try(self, plugin: str, first_at: Timestamp) -> Timestamp:
+        with self.lock:
+            return self.failing_tries.get(plugin, first_at)
 
     def keep_failing_try(self, plugin: str, failed_at: Timestamp) -> None:
         with self.lock:
