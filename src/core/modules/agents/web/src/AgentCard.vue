@@ -6,7 +6,7 @@ import AgentTaskGroup from "./AgentTaskGroup.vue";
 import TranscriptRows from "./TranscriptRows.vue";
 
 // one agent as a calm two lines: the profile and given name with its time, then the provider, model, type and task count; a click opens the card on
-// its number, usage, Inspect and three tabs: its tasks under the state names of the tasks window with its instruction, its transcript and the files it changed;
+// its number, usage, tasks, transcript, files and terminal;
 // whether the card is open is the window's to say (`open`), and a click asks it to flip that (`toggle`)
 const FALLBACK_TITLES = {helper: "Helper", reviewer: "Reviewer"};
 const TASK_STATES = ["started", "blocked", "open", "completed"];
@@ -47,13 +47,13 @@ const sectionOpen = (state) => !(folded.value[state] ?? FOLDED_STATES.has(state)
 const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(state)});
 // a running helper's card names the command it runs, as the foot of the chat does for the main agent, or says plainly that it ran none
 const context = useWindow();
-const tab = ref(context.tabs[0]);
-watch(() => props.open, (open) => { if (open) tab.value = context.tabs[0]; });
+const isReader = computed(() => props.row.access === "read-only");
+const cardTabs = computed(() => isReader.value ? context.tabs.filter((item) => ["transcript", "terminal"].includes(item.key)) : context.tabs);
+const tab = ref(cardTabs.value[0]);
+watch(() => props.open, (open) => { if (open) tab.value = cardTabs.value[0]; });
 const components = Object.fromEntries(context.tabs.filter((tab) => tab.component).map((tab) => [tab.key, defineAsyncComponent(() => loadWindowComponent(tab.component))]));
-// a read-only helper has no tasks and writes no files, so its card holds its transcript under its folded instruction, with no tabs
 const isRunningHelper = computed(() => props.row.role === "helper" && !props.row.ended_at);
 const stopHelper = () => context.run(["helper", "stop", String(props.row.id)]);
-const isReader = computed(() => props.row.access === "read-only");
 const instructionOpen = ref(false);
 const runningCommand = ref("");
 const noCommandNote = ref("");
@@ -118,23 +118,7 @@ readCommand();
                 </template>
                 <template v-if="showsCommand"><AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" /></template>
                 <template v-if="endedReason"><p class="agent-ended-reason" data-agent-ended-reason>{{ endedReason }}</p></template>
-                <template v-if="isReader">
-                    <div class="agent-tab-body" data-agent-tab-body="transcript" data-agent-only-transcript>
-                        <template v-if="facts?.instruction">
-                            <div class="agent-helper-brief">
-                                <FoldGroup label="Instruction" :open="instructionOpen" data-agent-section="instruction" @toggle="instructionOpen = !instructionOpen">
-                                    <div class="agent-instruction" data-agent-instruction>{{ facts.instruction }}</div>
-                                </FoldGroup>
-                            </div>
-                        </template>
-                        <template v-else-if="facts && row.ended_at">
-                            <p class="agent-label" data-agent-no-job>No job recorded</p>
-                        </template>
-                        <TranscriptRows :line="`agent transcript ${row.id}`" :agent="isRunningHelper ? row.id : null" :helper="isRunningHelper" padding="0" />
-                    </div>
-                </template>
-                <template v-else>
-                <InnerTabs class="agent-tabs" :active="tab" :answer="{tasks: tasks.length}" @choose="tab = $event" />
+                <InnerTabs class="agent-tabs" :tabs="cardTabs" :active="tab" :answer="{tasks: tasks.length}" @choose="tab = $event" />
                 <TabBody class="agent-tab-body" :tab="tab" :data-agent-tab-body="tab?.key">
                     <SwitchCase :value="tab?.key">
                         <template #tasks>
@@ -148,14 +132,25 @@ readCommand();
                             </template>
                         </template>
                         <template #transcript>
-                            <TranscriptRows :line="`agent transcript ${row.id}`" :agent="row.id" padding="0" />
+                            <template v-if="isReader">
+                            <template v-if="facts?.instruction">
+                                <div class="agent-helper-brief">
+                                    <FoldGroup label="Instruction" :open="instructionOpen" data-agent-section="instruction" @toggle="instructionOpen = !instructionOpen">
+                                        <div class="agent-instruction" data-agent-instruction>{{ facts.instruction }}</div>
+                                    </FoldGroup>
+                                </div>
+                            </template>
+                            <template v-else-if="facts && row.ended_at">
+                                <p class="agent-label" data-agent-no-job>No job recorded</p>
+                            </template>
+                            </template>
+                            <TranscriptRows :line="`agent transcript ${row.id}`" :agent="isReader ? (isRunningHelper ? row.id : null) : row.id" :helper="isReader && isRunningHelper" padding="0" />
                         </template>
                         <template v-for="(component, key) in components" :key="key" #[key]>
                             <component :is="component" :agent="row.id" />
                         </template>
                     </SwitchCase>
                 </TabBody>
-                </template>
             </div>
         </template>
     </div>

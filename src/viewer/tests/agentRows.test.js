@@ -13,7 +13,7 @@ import {age, ago} from "../src/format/time.js";
 
 vi.stubGlobal("matchMedia", () => ({matches: true}));
 
-vi.mock("../kit/loadWindowComponent.js", () => ({loadWindowComponent: () => import("../../suites/coding/web/src/agent-file-edits.js")}));
+vi.mock("../kit/loadWindowComponent.js", () => ({loadWindowComponent: (path) => path.endsWith("terminal.js") ? import("../../suites/coding/web/src/terminal.js") : import("../../suites/coding/web/src/agent-file-edits.js")}));
 
 vi.stubGlobal("ResizeObserver", class {
     observe() {}
@@ -39,6 +39,7 @@ const TABS = [
     {key: "tasks", label: "Tasks", read: "usage agents", count_field: "tasks"},
     {key: "transcript", label: "Transcript", read: "agent transcript", count_field: ""},
     {key: "file-feed", label: "File feed", read: "file-edit list", count_field: "", component: "/modules/journal.suites.coding/agent-file-edits.js"},
+    {key: "terminal", label: "Terminal", read: "hook-call feed", count_field: "", component: "/modules/journal.suites.coding/terminal.js"},
 ];
 const EDIT = {id: 5, path: "src/cart.py", edit_type: "edit", added: 1, removed: 0, created_at: "2026-11-01T10:00:00Z", rows: JSON.stringify([{line_type: "add", line: 4, text: "total = 0"}])};
 const answers = {
@@ -116,7 +117,7 @@ test("a click opens the card on its instruction with no usage line or Inspect bu
     expect(cardOf(element, 3).querySelector("[data-agent-instruction]")).toBeNull();
 });
 
-test("an opened card has the tabs Tasks, Transcript and File feed, each read only when chosen", async () => {
+test("an opened card has task, transcript, file and terminal tabs", async () => {
     const reads = [];
     const held = window(FACTS, {}, WORKERS);
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, {...held, reads, read: (line) => (reads.push(line), held.read(line))});
@@ -125,7 +126,7 @@ test("an opened card has the tabs Tasks, Transcript and File feed, each read onl
     card.click();
     await settle();
     card = cardOf(element, 3);
-    expect([...card.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["tasks", "transcript", "file-feed"]);
+    expect([...card.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["tasks", "transcript", "file-feed", "terminal"]);
     expect(card.querySelector("[data-tab=tasks]").classList.contains("on")).toBe(true);
     expect(reads).not.toContain("agent transcript 3");
     card.querySelector("[data-tab=transcript]").click();
@@ -227,12 +228,12 @@ test("an agent that has just ended reads just now, never now ago", async () => {
     expect(element.querySelector(".agent-time").textContent).toBe("just now");
 });
 
-test("an open helper's card has no tabs: its instruction folded above its transcript", async () => {
+test("an open helper has transcript and terminal tabs with its instruction folded", async () => {
     const helper = {id: 6, session: "s-1", program: "claude", role: "helper", access: "read-only", ended_at: null};
     const lines = {"usage tool --agent 6": {ok: true, value: {tool: "", note: ""}}, "agent transcript 6": page([])};
-    const element = await mounted({render: () => h(AgentCard, {row: helper, facts: {instruction: "Read the cart"}, open: true})}, context(lines));
-    expect(element.querySelector("[data-inner-tabs]")).toBeNull();
-    expect(element.querySelector("[data-agent-only-transcript]")).not.toBeNull();
+    const element = await mounted({render: () => h(AgentCard, {row: helper, facts: {instruction: "Read the cart"}, open: true})}, {...context(lines), tabs: TABS});
+    expect([...element.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["transcript", "terminal"]);
+    expect(element.querySelector('[data-agent-tab-body="transcript"]')).not.toBeNull();
     expect(element.querySelector("[data-agent-section='instruction']").textContent).toContain("Instruction");
     expect(element.querySelector("[data-agent-instruction]")).toBeNull();
 });
@@ -240,9 +241,9 @@ test("an open helper's card has no tabs: its instruction folded above its transc
 test("an ended helper without a job says none is recorded", async () => {
     const helper = {id: 6, session: "s-1", program: "claude", role: "helper", access: "read-only", ended_at: "2026-11-02T10:00:00Z"};
     const lines = {"agent transcript 6": page([])};
-    const element = await mounted({render: () => h(AgentCard, {row: helper, facts: {instruction: ""}, open: true})}, context(lines));
+    const element = await mounted({render: () => h(AgentCard, {row: helper, facts: {instruction: ""}, open: true})}, {...context(lines), tabs: TABS});
     expect(element.querySelector("[data-agent-no-job]").textContent).toBe("No job recorded");
-    expect(element.querySelector("[data-agent-only-transcript]")).not.toBeNull();
+    expect(element.querySelector('[data-agent-tab-body="transcript"]')).not.toBeNull();
 });
 
 test("an open worker's card keeps its tabs", async () => {
