@@ -21,9 +21,10 @@ const {rows: reports} = context.props.reports;
 context.state["reports.agent"] = String(props.row.id);
 const isReader = computed(() => props.row.access === "read-only");
 const retired = computed(() => Boolean(props.row.retired_at) || props.row.state === "retired");
+const tabOrder = ["tasks", "transcript", "terminal", "file-feed", "reports"];
 const cardTabs = computed(() => {
-    if (retired.value) return context.tabs.filter((item) => ["reports", "transcript"].includes(item.key));
-    return isReader.value ? context.tabs.filter((item) => ["reports", "transcript", "terminal"].includes(item.key)) : context.tabs;
+    const tabs = retired.value ? context.tabs.filter((item) => ["reports", "transcript"].includes(item.key)) : isReader.value ? context.tabs.filter((item) => ["reports", "transcript", "terminal"].includes(item.key)) : [...context.tabs];
+    return tabs.sort((one, two) => (tabOrder.indexOf(one.key) < 0 ? tabOrder.length : tabOrder.indexOf(one.key)) - (tabOrder.indexOf(two.key) < 0 ? tabOrder.length : tabOrder.indexOf(two.key)));
 });
 const firstTab = () => isReader.value || retired.value ? cardTabs.value.find((item) => item.key === "transcript") : cardTabs.value[0];
 const tab = ref(firstTab());

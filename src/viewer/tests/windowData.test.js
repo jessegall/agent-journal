@@ -156,3 +156,14 @@ test("two reads of one key with other flags go in two requests, and each gets it
     expect((await answers).map((answer) => answer.value)).toEqual([1, 2, 1]);
     expect(asked).toHaveLength(2);
 });
+
+test("an event of a key with ids reloads the ids that were read", async () => {
+    const declared = {"rounds.*": {tab: null, events: ["round.*"], reload_seconds: 0, loading: "first", page_size: 0}};
+    const {asked, followed, data} = mounted({answer: (request) => ({ok: true, value: {declared, keys: Object.fromEntries(request.only.map((name) => [name, {ok: true, value: name}]))}})});
+    await settled();
+    await Promise.all([data.reload("rounds.3"), vi.advanceTimersByTimeAsync(5)]);
+    asked.length = 0;
+    followed[0].heard({event: "round.update"});
+    await vi.advanceTimersByTimeAsync(60);
+    expect(asked.map((request) => request.only)).toEqual([["rounds.3"]]);
+});

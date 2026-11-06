@@ -48,13 +48,12 @@ const shown = rows;
 const searching = computed(() => Boolean(words.value.trim()) || filterCount.value > 0);
 const emptyText = computed(() => props.texts[show.value] ?? {title: props.empty, hint: ""});
 
-// one card is open at a time and takes the whole window: the others are held back, counted on a band at the foot, until it closes or a search starts
+// one card is open at a time and takes the whole window until it closes or a search starts
 const openId = ref(null);
 const agents = ref(null);
 const list = ref(null);
 const openRow = computed(() => shown.value.find((row) => row.id === openId.value) ?? null);
 const visible = computed(() => (openRow.value ? [openRow.value] : shown.value));
-const heldBack = computed(() => shown.value.length - visible.value.length);
 const easing = "cubic-bezier(0.2, 0.9, 0.25, 1)";
 const reduced = () => globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
 let changing = false;
@@ -81,7 +80,7 @@ async function open(row) {
             const y = before[index].top - after[index].top - (parent < 0 ? 0 : before[parent].top - after[parent].top);
             element.animate([{transform: `translate(${x}px, ${y}px)`}, {transform: "none"}], {duration: 280, easing});
         });
-        agents.value.querySelectorAll(".agent-usage, .agent-more > .agent-command, .agent-tabs, .agent-tab-body, .agents-held").forEach((element) => {
+        agents.value.querySelectorAll(".agent-usage, .agent-more > .agent-command, .agent-tabs, .agent-tab-body").forEach((element) => {
             element.animate([{opacity: 0, transform: "translateY(6px)"}, {opacity: 1, transform: "none"}], {duration: 240, delay: 60, easing, fill: "backwards"});
         });
     }
@@ -91,7 +90,7 @@ async function close() {
     if (changing || !openRow.value) return;
     changing = true;
     const card = agents.value.querySelector(`[data-agent-open="${openId.value}"]`);
-    const parts = [...card.children, ...agents.value.querySelectorAll(".agents-held")];
+    const parts = [...card.children];
     const fades = reduced() ? [] : parts.map((element) => element.animate([{opacity: 1}, {opacity: 0}], {duration: 120, fill: "forwards"}));
     await Promise.all(fades.map((animation) => animation.finished));
     openId.value = null;
@@ -143,9 +142,6 @@ onUnmounted(() => globalThis.removeEventListener("keydown", closeOnEscape));
             </template>
         </RowList></template>
         </div>
-        <template v-if="openRow && heldBack">
-            <button type="button" class="agents-held" data-agents-held @click="close">{{ heldBack }} more</button>
-        </template>
     </div>
 </template>
 
@@ -201,24 +197,6 @@ onUnmounted(() => globalThis.removeEventListener("keydown", closeOnEscape));
     position: relative;
     flex: 1;
     min-width: 0;
-}
-
-.agents-held {
-    flex: none;
-    padding: 7px 12px;
-    border: 0;
-    border-top: 1px solid var(--border);
-    background: var(--side);
-    color: var(--text-3);
-    font: inherit;
-    font-size: 12px;
-    text-align: center;
-    cursor: pointer;
-}
-
-.agents-held:hover {
-    background: var(--hover);
-    color: var(--text);
 }
 
 </style>

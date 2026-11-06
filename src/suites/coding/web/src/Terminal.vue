@@ -1,6 +1,7 @@
 <script setup>
 import {computed, nextTick, ref, watch} from "vue";
 import {AutoScrollPane, EmptyState, Skeleton, useRows, useWindow} from "@journal/window-kit";
+import TerminalOutput from "./TerminalOutput.vue";
 
 // Commands are listed oldest first and open to their full text; a line typed here goes to the agent's terminal.
 const COMMAND_TOOLS = new Set(["Bash", "Monitor", "shell", "exec_command"]);
@@ -19,6 +20,7 @@ const typed = ref("");
 const refusal = ref("");
 const input = ref(null);
 const opened = ref(new Set());
+const fullCommands = ref({});
 const log = ref(null);
 const paging = ref(false);
 const recordEnds = ref(false);
@@ -98,11 +100,12 @@ function focusInput(event) {
                 <template v-for="row in commands" :key="row.id">
                     <div :class="['terminal-row', {refused: row.refusal}]" data-terminal-command :title="row.refusal ? `The journal refused this before it ran: ${row.refusal}` : null">
                         <span class="terminal-mark">{{ markOf(row) }}</span>
-                        <span :class="['terminal-text', {open: opened.has(row.id)}]" @click="toggle(row)">{{ row.summary }}</span>
+                        <button type="button" :class="['terminal-text', {open: opened.has(row.id)}]" :aria-expanded="opened.has(row.id)" @click="toggle(row)">{{ opened.has(row.id) ? fullCommands[row.id] || row.summary : row.summary }}</button>
                         <template v-if="row.refusal">
                             <span class="terminal-state" data-terminal-refused>refused</span>
                         </template>
                     </div>
+                    <template v-if="opened.has(row.id)"><TerminalOutput :call="row.id" @command="fullCommands[row.id] = $event" /></template>
                 </template>
             </AutoScrollPane>
         </template>
@@ -156,6 +159,12 @@ function focusInput(event) {
 
 .terminal-text {
     min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

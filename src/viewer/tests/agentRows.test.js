@@ -181,7 +181,7 @@ test("an opened card has task, report, transcript, file and terminal tabs", asyn
     card.click();
     await settle();
     card = cardOf(element, 3);
-    expect([...card.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["tasks", "reports", "transcript", "file-feed", "terminal"]);
+    expect([...card.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["tasks", "transcript", "terminal", "file-feed", "reports"]);
     expect(card.querySelector("[data-tab=tasks]").classList.contains("on")).toBe(true);
     expect(reads).not.toContain("agent transcript 3");
     card.querySelector("[data-tab=transcript]").click();
@@ -299,7 +299,7 @@ test("an open helper has transcript and terminal tabs with its instruction folde
     const helper = {id: 6, session: "s-1", program: "claude", role: "helper", access: "read-only", ended_at: null};
     const lines = {"usage tool --agent 6": {ok: true, value: {tool: "", note: ""}}, "agent transcript 6": page([])};
     const element = await mounted({render: () => h(AgentCard, {row: helper, facts: {instruction: "Read the cart"}, open: true})}, {...context(lines), tabs: TABS});
-    expect([...element.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["reports", "transcript", "terminal"]);
+    expect([...element.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["transcript", "terminal", "reports"]);
     expect(element.querySelector('[data-agent-tab-body="transcript"]')).not.toBeNull();
     expect(element.querySelector("[data-agent-section='instruction']").textContent).toContain("Instruction");
     expect(element.querySelector("[data-agent-instruction]")).toBeNull();

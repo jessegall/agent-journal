@@ -15,7 +15,6 @@ vi.stubGlobal("ResizeObserver", class {
 
 afterEach(() => (document.body.innerHTML = ""));
 
-// task 5944: one card open at a time, filling the window, the rest held back behind a band that counts them
 const AGENTS = [
     {id: 2, session: "s-live", program: "claude", role: "main", ended_at: null},
     {id: 3, session: "s-sub", program: "claude", role: "helper", ended_at: null},
@@ -24,7 +23,10 @@ const AGENTS = [
 ];
 const TABS = [
     {key: "tasks", label: "Tasks", read: "usage agents", count_field: "tasks"},
+    {key: "reports", label: "Reports", read: "message agent-reports", count_field: "reports"},
     {key: "transcript", label: "Transcript", read: "agent transcript", count_field: ""},
+    {key: "file-feed", label: "File feed"},
+    {key: "terminal", label: "Terminal"},
 ];
 const OPTIONS = {working: true, waiting: true, idle: true, stopped: true, environment: true, worker: true, helper: true, order: "number", every: false};
 const drawn = async () => {
@@ -47,25 +49,15 @@ test("every card is listed and there is no band while none is open", async () =>
     expect(element.querySelector(".agents").classList.contains("focused")).toBe(false);
 });
 
-test("the open card is alone in the window, and the band counts the cards held back", async () => {
+test("the open card is alone, with its tabs in order and no more button", async () => {
     const element = await drawn();
     cardOf(element, 3).click();
     await settle();
     await vi.waitFor(() => expect(cards(element)).toEqual([3]));
     expect(cardOf(element, 3).getAttribute("aria-expanded")).toBe("true");
     expect(element.querySelector(".agents").classList.contains("focused")).toBe(true);
-    expect(band(element).textContent.trim()).toBe("3 more");
-});
-
-test("the band is a button that closes the card and brings the others back", async () => {
-    const element = await drawn();
-    cardOf(element, 4).click();
-    await settle();
-    band(element).click();
-    await settle();
-    await vi.waitFor(() => expect(cards(element)).toEqual([2, 3, 4, 5]));
-    expect(cardOf(element, 4).getAttribute("aria-expanded")).toBe("false");
     expect(band(element)).toBeNull();
+    expect([...element.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["tasks", "transcript", "terminal", "file-feed", "reports"]);
 });
 
 test("closing the card itself brings the others back", async () => {
@@ -83,7 +75,7 @@ test("opening another card closes the one that was open", async () => {
     const element = await drawn();
     cardOf(element, 3).click();
     await settle();
-    band(element).click();
+    cardOf(element, 3).querySelector(".agent-back").click();
     await settle();
     cardOf(element, 4).click();
     await settle();
@@ -95,8 +87,6 @@ test("opening another card closes the one that was open", async () => {
 test("starting a search closes the open card and lists every match", async () => {
     const element = await drawn();
     cardOf(element, 3).click();
-    await settle();
-    band(element).click();
     await settle();
     const box = element.querySelector("[data-search-input]");
     box.value = "worker";
