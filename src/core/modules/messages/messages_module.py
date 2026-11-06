@@ -1,3 +1,4 @@
+from core.base.viewer.window_key import WindowKey
 from core.modules.messages.migrations.m015_main_message_targets import MainMessageTargetsMigration
 from core.modules.messages.migrations.m016_message_session import MessageSessionMigration
 from core.modules.messages.migrations.m013_visible_message_index import VisibleMessageIndexMigration
@@ -122,6 +123,11 @@ class MessagesModule(Module):
     windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, skeleton=MESSAGES_ATTACHMENTS_SKELETON, group="project", icon=WindowIcon.FILE, reads=["attachment list"], search=WindowReadSearch("attachment list", "Search file names and their messages", ("name", "message_text"))),
                WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, request_priority=WindowPriority.FIRST, skeleton=MESSAGES_CHAT_SKELETON, icon=WindowIcon.SPEECH, reads=["question show", "link list", "task show", "message feed", "message show", "chat-mark main", "chat-mark show", "dock-item main", "pin list", "agent main", "usage tool", "hook-call feed", "output peek", "output page", "output list", "process-part list", "setting show"], runs=["message send", "message reply", "message comment", "message react", "message edit", "message delete", "link remove", "pin close", "agent type", "dump make", "dock remove", "dock keep", "dock unkeep", "developer record-mark-motion"],
                                  events=["message.*", "chat_mark.*", "dock_item.*", "pin.*", "hook_call.*", "process_part.*", "setting.*"],
+                                 keys=[WindowKey("messages", "message feed", events=["message.*"], arguments=["limit", "before-id", "after-id"]),
+                                       WindowKey("marks", "chat-mark main", events=["chat_mark.*"], arguments=["limit", "before-id", "after-id"]),
+                                       WindowKey("docks", "dock-item main", events=["dock_item.*"]),
+                                       WindowKey("pins", "pin list", events=["pin.*"]),
+                                       WindowKey("main_agent", "agent main")],
                                  options=[ChoiceOption("figure", "Figure", [("voice", "The voice I chose"), ("none", "None"), ("butler", "Butler"), ("homie", "Homie"), ("coach", "Coach"), ("colleague", "Colleague"), ("squire", "Squire")], "voice"),
                                           ToggleOption("floors", "Show floors")])]
     marks = MESSAGE_MARKS
