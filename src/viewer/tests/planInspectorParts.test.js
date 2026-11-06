@@ -46,6 +46,9 @@ test("the inspector tags a task a worker holds and switches to the timeline", as
     const element = document.createElement("div");
     createApp({render: () => h(PlanInspector, {id: 3, read})}).directive("tip", {}).mount(element);
     await settle();
+    const actions = element.querySelector("[data-plan-inspector] > [data-inspector-actions]");
+    expect(actions.previousElementSibling.classList.contains("top")).toBe(true);
+    expect(actions.querySelector("[data-move]")).not.toBeNull();
     expect(element.querySelectorAll("[data-plan-agent]").length).toBe(1);
     expect(element.querySelector("[data-plan-agent]").textContent).toBe("Grace Hopper");
     [...element.querySelectorAll("button")].find((button) => button.textContent.trim() === "Timeline").click();

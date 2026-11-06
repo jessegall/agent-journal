@@ -53,16 +53,18 @@ async function check(width, height) {
     for (let id = 1; id <= 6; id++) statuses.push(await icon(page.locator(`.task[data-row="${id}"] .ring`).first()));
 
     const task = await open(page, "tasks", 1);
+    await checkActions(task);
     const taskLayout = await layout(task);
-    await page.screenshot({path: `${shots}-task-${width}.png`});
+    await screenshots(page, "task", width);
     await task.locator("[data-resource-close]").click();
     const plan = await open(page, "plans", 1);
+    await checkActions(plan);
     assert.deepEqual(await layout(plan), taskLayout);
     assert.equal(await plan.locator("[data-resource-task]").count(), 6);
     for (let id = 1; id <= 6; id++) assert.deepEqual(await icon(plan.locator("[data-resource-task] .ring").nth(id - 1)), statuses[id - 1]);
     assert.equal(await plan.locator("[data-resource-phase]").evaluate((element) => getComputedStyle(element).borderRadius), "0px");
     assert.ok(await plan.evaluate((element) => element.scrollWidth <= element.clientWidth));
-    await page.screenshot({path: `${shots}-plan-${width}.png`});
+    await screenshots(page, "plan", width);
 
     await plan.getByRole("radio", {name: "Comments", exact: true}).click();
     await plan.locator("[data-comment-side]").waitFor();
@@ -84,6 +86,21 @@ async function check(width, height) {
     await plan.locator("[data-resource-task]").first().click();
     await page.locator("[data-task-inspector] [data-resource-title]").waitFor();
     await page.close();
+}
+
+async function checkActions(panel) {
+    const actions = panel.locator("[data-inspector-actions]").first();
+    await actions.locator("[data-move]").first().waitFor();
+    const position = await actions.evaluate((element) => ({top: element.getBoundingClientRect().top, headerBottom: element.previousElementSibling.getBoundingClientRect().bottom, alignment: getComputedStyle(element).justifyContent}));
+    assert.ok(Math.abs(position.top - position.headerBottom) <= 1);
+    assert.equal(position.alignment, "flex-end");
+}
+
+async function screenshots(page, name, width) {
+    for (const colorScheme of ["light", "dark"]) {
+        await page.emulateMedia({colorScheme});
+        await page.screenshot({path: `${shots}-${name}-${width}-${colorScheme}.png`});
+    }
 }
 
 try {

@@ -57,6 +57,9 @@ test("clicking a task opens the inspector with its place, brief, waits, log and 
     shown.querySelector("[data-row='7']").click();
     await settle();
     const inspector = shown.querySelector("[data-task-inspector]");
+    const actions = inspector.querySelector("[data-inspector-actions]");
+    expect(actions.previousElementSibling.classList.contains("top")).toBe(true);
+    expect(actions.querySelector("[data-move]")).not.toBeNull();
     expect(inspector.querySelector("[data-task-crumb]").textContent).toBe("Plan 3 › Phase 2: Payment");
     expect(inspector.querySelector("[data-resource-title]").textContent).toBe("Fix the cart");
     expect(inspector.querySelector("[data-task-brief]").textContent).toContain("What done looks like");
