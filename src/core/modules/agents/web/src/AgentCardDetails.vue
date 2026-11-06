@@ -1,6 +1,6 @@
 <script setup>
 import {computed, defineAsyncComponent, onUnmounted, ref, watch} from "vue";
-import {READ_RATES, coalesced, EmptyState, FoldGroup, InnerTabs, loadWindowComponent, peekRef, SwitchCase, TabBody, useRows, useWindow} from "@journal/window-kit";
+import {READ_RATES, coalesced, EmptyState, FoldGroup, InnerTabs, loadWindowComponent, peekRef, SwitchCase, TabBody, useWindow} from "@journal/window-kit";
 import AgentCommand from "./AgentCommand.vue";
 import AgentTaskGroup from "./AgentTaskGroup.vue";
 import TranscriptRows from "./TranscriptRows.vue";
@@ -17,7 +17,9 @@ const sectionOpen = (state) => !(folded.value[state] ?? FOLDED_STATES.has(state)
 const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(state)});
 // a running helper's card names the command it runs, as the foot of the chat does for the main agent, or says plainly that it ran none
 const context = useWindow();
-const {rows: reports} = useRows(`message agent-reports ${props.row.id}`, ["message.*"]);
+const {rows: reports} = context.props.reports;
+context.state["reports.agent"] = String(props.row.id);
+context.reload("reports");
 const isReader = computed(() => props.row.access === "read-only");
 const retired = computed(() => Boolean(props.row.retired_at) || props.row.state === "retired");
 const cardTabs = computed(() => {

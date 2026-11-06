@@ -42,7 +42,7 @@ def test_the_agent_card_reads_reports_through_the_viewer(new_story):
     story = reported(new_story, StartedHelper, "The total is wrong.")
     report = helper_report(story)
     story.expect_success(f"message read {report.id}", actor=story.agent)
-    answer = viewer(story, "agents.agents", ["message", "agent-reports", str(helper_agent(story).id)])
+    answer = viewer(story, "agents.agents", ["message", "agent-reports", "--agent", str(helper_agent(story).id)])
     story.expect_rows([row["id"] for row in answer["rows"]] == [report.id], answer["rows"][0]["text"] == "The total is wrong.")
 
 

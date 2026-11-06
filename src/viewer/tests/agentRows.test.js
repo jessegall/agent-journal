@@ -137,7 +137,7 @@ test("worker identity changes from list details to its number when opened", asyn
 
 test("reports tab lists messages in order and offers their message links", async () => {
     const row = {...AGENTS[1], role: "worker"};
-    const held = {...context({"message agent-reports 3": page([{id: 9, text: "Latest report"}, {id: 4, text: "Earlier report"}])}), tabs: TABS};
+    const held = {...context({"message agent-reports --agent 3": page([{id: 9, text: "Latest report"}, {id: 4, text: "Earlier report"}])}), tabs: TABS};
     const element = await mounted({render: () => h(AgentCard, {row, facts: {tasks: [], job_returned: "Latest report"}, open: true})}, held);
     expect(element.querySelector("[data-agent-report]")).toBeNull();
     expect(element.querySelector("[data-agent-send-message]")).toBeNull();
