@@ -124,7 +124,7 @@ class ReaderJudge:
         numbers = re.findall(r"\d+", summary)
         if count > 0 and numbers:
             checks["--summary exceeds --count"] = int(numbers[0]) <= count
-        step_progress = reader.step_pattern and count > 0
+        step_progress = bool(reader.step_pattern)
         if category is not CommandCategory.CHECK and COUNTED.search(text) and not step_progress:
             checks["--progress found nothing"] = self.run.progress(reader, text, -1) >= 0
         if category is CommandCategory.TEST_RUN and max(total, count) >= WIDTH_LINE_COUNT and not step_progress:

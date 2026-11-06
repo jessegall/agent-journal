@@ -5,6 +5,7 @@ from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.command.command import Command
 from core.base.driver.refusal_skips import RefusalSkips
+from core.base.guard.guards import LIFECYCLE_GUARD
 from core.base.module.driver_entries import DRIVERS_MODULE
 from core.base.query.queries import Queries
 from core.modules.drivers.commands.skip_refusal.skip_refusal import SkipRefusal
@@ -32,5 +33,5 @@ class TableRefusalSkips(RefusalSkips):
 
     def check_guards(self, actor: Actor, guards: Sequence[str], reason: str) -> None:
         if actor.type is ActorType.AGENT:
-            for guard in guards:
+            for guard in (name for name in guards if name != LIFECYCLE_GUARD):
                 self.bus.run(SkipRefusal(guard, reason, is_used=True), actor)

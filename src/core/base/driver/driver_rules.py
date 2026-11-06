@@ -8,6 +8,7 @@ from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_history_key import RuleHistoryKey
 from core.base.driver.layers import Layers
 from core.base.driver.overlay import Overlay
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.refusal_skips import RefusalSkips
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.rule_answers import RuleAnswers
@@ -65,7 +66,7 @@ class DriverRules:
         skip = self.skips.waiting(hook.agent_id, entry.name)
         if skip is not None:
             return RuleAnswer.allowed().running(skip)
-        if not self.skips.has_refused(hook.agent_id, entry.name):
+        if hook.hook_name != HookEventName.PRE_TOOL_USE or not self.skips.has_refused(hook.agent_id, entry.name):
             return answer
         return replace(answer, refusal=f"{answer.refusal} (to pass it: journal refusal skip {entry.name} --reason '<why>')")
 

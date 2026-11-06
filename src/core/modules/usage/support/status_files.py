@@ -17,7 +17,8 @@ ENDED_KEPT_SECONDS = 30 * 24 * 3600
 class StatusFiles:
     """The status files the hook program keeps of each session's status line, read for usage: one session's
     report, and the plan's windows. The windows belong to the account: they come from the newest file of an
-    open session that names them, else from plan.json, where a session that ended left what it named. The file
+    open session that names them; with no session open, from plan.json, where one that ended left what it named,
+    so a session under a new account never shows the old account's figure. The file
     of a session that ended moves to a folder of its own for 30 days, so its card keeps its cost and the scan
     of open sessions does not read it."""
 
@@ -32,7 +33,7 @@ class StatusFiles:
 
     def plan_windows(self, statuses: Mapping[str, SessionStatus]) -> tuple[PlanWindow, ...]:
         files = sorted((path for path in self.folder.glob("*.json") if path != self.plan_file), key=lambda path: path.stat().st_mtime, reverse=True) if self.folder.is_dir() else []
-        return next((windows for path in [*files, self.plan_file] if (windows := self.file_status(path, statuses).windows)), ())
+        return next((windows for path in files or [self.plan_file] if (windows := self.file_status(path, statuses).windows)), ())
 
     def file_status(self, path: Path, statuses: Mapping[str, SessionStatus]) -> SessionStatus:
         return statuses[path.stem] if path.stem in statuses else self.reported(path)

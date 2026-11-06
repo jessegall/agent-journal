@@ -351,3 +351,13 @@ def expect_absent_exists_status_folder(story, text) -> None:
 def expect_asking(asking, expected) -> None:
     actual = asking()
     assert actual is expected, actual
+
+
+def test_an_open_session_that_names_no_window_shows_no_figure_from_an_earlier_account(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    save_status_file(story, "ended-under-the-old-account", {"rate_limits": {"seven_day": {"used_percentage": 85, "resets_at": 1793000000}}})
+    story.container.get(StatusFiles).retire("ended-under-the-old-account")
+    story.expect_text("usage show --environment main", "plan: 7 days 85% used", actor=story.user)
+    save_status_file(story, "s-1", {"context_window": {"used_percentage": 3}})
+    story.expect_absent("usage show --environment main", "plan:", actor=story.user)
+
