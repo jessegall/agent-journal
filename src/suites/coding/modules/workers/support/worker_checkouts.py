@@ -58,10 +58,10 @@ class WorkerCheckouts(AgentProjectCheckouts):
             raise MissingFileRefusal(f"{relative} is not there, in {revision}", "it may be new in the checkout: read it with --from checkout")
         return self.git.file_text(folder, revision, relative)
 
-    def changed_files(self, checkout: Checkout, since: str) -> tuple[CheckoutFile, ...]:
+    def changed_files(self, checkout: Checkout, base_commit: str) -> tuple[CheckoutFile, ...]:
         if not checkout.exists:
             raise Refusal("the checkout of this agent is gone, so nothing differs there", "read a file with --from base")
-        folder, commit = str(checkout.root), since or checkout.base_commit or HEAD
+        folder, commit = str(checkout.root), base_commit or checkout.base_commit or HEAD
         if not self.git.has_commit(folder, commit):
             raise Refusal(f"git does not know the commit {commit}", "name a commit of this project")
         return tuple(change.checkout_file(checkout) for change in self.git.file_changes(folder, commit))

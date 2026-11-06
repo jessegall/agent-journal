@@ -22,11 +22,7 @@ KEPT_LINE_COUNT = 50
 
 
 class RunningScripts:
-    """The plugin processes running now, scripts and services alike, one list for each journal home, since every
-    request and round has a container of its own. A process is known by its pid alone: an unreaped Popen keeps its
-    pid from being reused while it is listed. Nothing here reads the process table, because a program starts under
-    the write lock on the hook path. A variable proves nothing, so the chain of processes is the only way to be a
-    script."""
+    """Tracks running plugin scripts and services for a journal home."""
 
     def __init__(self, pid_folder: Path | None = None) -> None:
         self.pid_folder = pid_folder
@@ -59,7 +55,7 @@ class RunningScripts:
         if self.pid_folder is not None and script is not None:
             (self.pid_folder / f"script-{script.plugin}-{process.pid}.pid").unlink(missing_ok=True)
 
-    def reap_leftovers(self) -> None:
+    def stop_stale_processes(self) -> None:
         if self.pid_folder is None or not self.pid_folder.is_dir():
             return
         for pid_file in self.pid_folder.glob("script-*.pid"):
@@ -79,9 +75,9 @@ class RunningScripts:
         with self.lock:
             return tuple(self.sent_lines.get(plugin, ()))
 
-    def skipped(self, plugin: str, key: str, form: EventForm, reason: str, at: Timestamp) -> None:
+    def skipped(self, plugin: str, key: str, form: EventForm, reason: str, skipped_at: Timestamp) -> None:
         with self.lock:
-            self.skips[(plugin, key, form)] = ScriptSkip(reason, at)
+            self.skips[(plugin, key, form)] = ScriptSkip(reason, skipped_at)
 
     def newest_skip(self, plugin: str, key: str, form: EventForm) -> ScriptSkip | None:
         with self.lock:
@@ -91,9 +87,9 @@ class RunningScripts:
         with self.lock:
             return self.failing_tries.get(plugin)
 
-    def keep_failing_try(self, plugin: str, at: Timestamp) -> None:
+    def keep_failing_try(self, plugin: str, failed_at: Timestamp) -> None:
         with self.lock:
-            self.failing_tries[plugin] = at
+            self.failing_tries[plugin] = failed_at
 
     def plugin_names(self) -> frozenset[str]:
         with self.lock:
@@ -113,7 +109,7 @@ class RunningScripts:
             return tuple(script for script in self.scripts.values() if script.plugin == plugin)
 
     def stop(self, plugin: str) -> None:
-        self.killed(self.running(plugin), ScriptStop.SWITCHED_OFF)
+        self.killed(self.running(plugin), ScriptStop.PLUGIN_DISABLED)
 
     def stop_all(self) -> None:
         with self.lock:

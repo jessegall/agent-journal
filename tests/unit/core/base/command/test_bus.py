@@ -9,7 +9,7 @@ from core.base.command.bus import Bus
 from core.base.command.missing_handler_error import MissingHandlerError
 from core.base.command.transaction_error import TransactionError
 from core.base.command.command import Command
-from core.base.command.outside_runs import OUTSIDE_LIMIT_ROUNDS, OutsideRuns
+from core.base.command.outside_runs import MAX_ROUNDS, OutsideRuns
 from core.base.command.outside_turn import OutsideTurn
 from core.base.command.script_policy import ScriptPolicy
 from core.base.database.kept_rows import KeptRows
@@ -366,7 +366,7 @@ def test_a_command_that_rolls_back_once_runs_twice_and_saves_once(outside_contai
 
 def test_the_round_past_the_limit_goes_closed_and_the_command_commits(outside_container):
     outside_container.get(Bus).run(EndlessItem("Dune"), AGENT)
-    assert len(ROUNDS) == OUTSIDE_LIMIT_ROUNDS + 1 and len(WORK_RUNS) == OUTSIDE_LIMIT_ROUNDS
+    assert len(ROUNDS) == MAX_ROUNDS + 1 and len(WORK_RUNS) == MAX_ROUNDS
     assert titles(outside_container) == ["Dune"]
 
 
@@ -401,7 +401,7 @@ def test_a_nested_command_of_a_handler_with_no_transaction_rolls_back_alone(outs
 def test_a_nested_command_keeps_the_skipped_guards_and_the_plugin_script(outside_container):
     outside_container.get(Bus).run(PassedOn(), AGENT, frozenset({"plugins.event-guard"}), plugin_script="see.sh")
     seen = SEEN_CONTEXTS[0]
-    assert seen.skipped_guards == {"plugins.event-guard"} and seen.outside_runs.from_plugin_script
+    assert seen.skipped_guards == {"plugins.event-guard"} and seen.outside_runs.is_plugin_script
 
 
 def test_dispatching_a_command_that_runs_once_closes_the_rest_of_the_command(outside_container):

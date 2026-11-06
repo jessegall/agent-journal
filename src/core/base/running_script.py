@@ -7,8 +7,7 @@ from core.base.timestamp import Timestamp
 
 @dataclass(frozen=True)
 class RunningScript:
-    """A plugin's program or script while it runs: its process, the plugin, the event key and form it runs for,
-    and when it started."""
+    """A running plugin script and the event it handles."""
 
     process: "subprocess.Popen[str]"
     plugin: str

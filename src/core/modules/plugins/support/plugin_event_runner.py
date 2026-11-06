@@ -63,7 +63,7 @@ class PluginEventRunner:
             answer = self.program.run(call, None, on_wait)
         except PluginStoppedError as stopped:
             if stopped.stop is ScriptStop.SERVER:
-                raise ServerStoppingError.before(plugin.name, key) from stopped
+                raise ServerStoppingError.plugin_wait(plugin.name, key) from stopped
             self.record(RecordPluginFault.of(plugin.id, stopped, where))
             return None
         except PluginFaultError as fault:

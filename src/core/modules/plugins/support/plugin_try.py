@@ -49,7 +49,7 @@ class PluginTry:
             return PluginTryRun(line, "", str(fault), skip)
 
     def data(self, event: str, form: EventForm) -> dict[str, object]:
-        logged = self.log.newest_named(event)
+        logged = self.log.latest_event(event)
         if logged is None:
             return {"form": form.value, "final": form is EventForm.COMMIT, "log_name": event, "event_id": None, "row": {}, "old_row": {}, "changed": {}}
         actor_type = self.queries.query(ActorRecord).find(logged.actor_id).type.value

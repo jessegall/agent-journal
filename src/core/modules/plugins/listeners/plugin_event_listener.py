@@ -38,7 +38,7 @@ class PluginEventListener(SaveListener[Changed[Model]]):
     def handle(self, event: Changed[Model], context: Context) -> None:
         if isinstance(context.command, FAULT_WRITES):
             return
-        change = Change.of(event, context)
+        change = Change.from_event(event, context)
         try:
             for answered in self.scripts.answers(EventForm.LISTEN, event, context):
                 self.apply_listen_answer(answered, change, context)

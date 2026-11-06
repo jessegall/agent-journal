@@ -5,7 +5,7 @@ from core.base.command.command import Command
 from core.base.command.context import Context
 from core.base.command.handler import Handler, is_handler_class
 from core.base.command.outside_run_rollback import OutsideRunRollback
-from core.base.command.outside_runs import NO_REQUEST_REASON, RUNS_ONCE_REASON, OutsideRuns
+from core.base.command.outside_runs import SERVER_THREAD_REASON, SINGLE_RUN_REASON, OutsideRuns
 from core.base.command.script_policy import ScriptPolicy
 from core.base.container import Container
 from core.base.database.database import Database
@@ -21,11 +21,7 @@ from core.base.command.explanation_rollback_error import ExplanationRollbackErro
 
 R = TypeVar("R")
 class Bus:
-    """Runs commands: a command at the top runs in a transaction of its own, rolled back when the caller's
-    deadline passes before its commit, and stamps the request's timing when its write lock is held and when it
-    has committed; a command run inside another, by a handler or a listener, runs in a savepoint of that
-    transaction with the same actor and timestamp. A command at the top may roll back, run outside work with no
-    lock held, and run again, unless its handler says it runs once; prepare stays once."""
+    """Runs commands in transactions, using savepoints for nested commands and releasing locks for outside work."""
 
     def __init__(self, container: Container, database: Database, registry: Registry, clock: Clock, deadline: Deadline, timing: Timing, scopes: Scopes, policy: ScriptPolicy) -> None:
         self.container, self.database, self.registry, self.clock, self.deadline, self.timing, self.scopes, self.policy = container, database, registry, clock, deadline, timing, scopes, policy
@@ -37,7 +33,7 @@ class Bus:
         handler = self.handler(command)
         handler.prepare(command, actor)
         with self.scopes.command_scope(handler.disabled_scopes, actor, environment_id):
-            runs = self.outside_runs(handler, plugin_script)
+            runs = self.create_outside_runs(handler, plugin_script)
             if not handler.transactional:
                 return self.result(handler.handle(command, Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, self.scopes.environment_id or environment_id, outside_runs=runs)), command)
             while True:
@@ -54,10 +50,10 @@ class Bus:
                 except OutsideRunRollback as rollback:
                     rollback.work.run(runs)
 
-    def outside_runs(self, handler: Handler[Command[object], object], plugin_script: str) -> OutsideRuns:
+    def create_outside_runs(self, handler: Handler[Command[object], object], plugin_script: str) -> OutsideRuns:
         if handler.runs_once or not handler.transactional:
-            return OutsideRuns(True, plugin_script, RUNS_ONCE_REASON)
-        return OutsideRuns(not self.policy.guards_run, plugin_script, NO_REQUEST_REASON)
+            return OutsideRuns(True, plugin_script, SINGLE_RUN_REASON)
+        return OutsideRuns(not self.policy.guards_run, plugin_script, SERVER_THREAD_REASON)
 
     def run_with_context(self, command: Command[R], context: Context) -> R:
         return self.run(command, context.actor, context.skipped_guards, environment_id=context.environment_id, plugin_script=context.outside_runs.plugin_script)

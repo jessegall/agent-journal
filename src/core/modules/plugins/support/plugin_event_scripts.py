@@ -38,11 +38,11 @@ class PluginEventScripts:
     def answers(self, form: EventForm, event: Changed[Model], context: Context) -> Sequence[PluginEventAnswer]:
         if isinstance(context.command, FAULT_WRITES):
             return ()
-        runs, change = context.outside_runs, Change.of(event, context)
+        runs, change = context.outside_runs, Change.from_event(event, context)
         subscriptions = self.subscriptions.scripts(change.event, form)
         if form is EventForm.GUARD:
             subscriptions = tuple(subscription for subscription in subscriptions if not (subscription.allows_skip and f"{GUARD_NAME}:{subscription.plugin}" in context.skipped_guards))
-        if not subscriptions or context.explanation is not None or runs.from_plugin_script:
+        if not subscriptions or context.explanation is not None or runs.is_plugin_script:
             return ()
         turn = runs.turn(form.value, change.event)
         if turn.answers is not None:

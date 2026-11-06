@@ -120,7 +120,7 @@ def test_s25_switching_a_plugin_off_goes_through_and_the_round_stops_its_running
         story.expect_rows(plugin_row(story).enabled is False)
         scripts.start(process, "events", TASK_CREATED, EventForm.GUARD, story.clock.timestamp())
         story.container.get(PluginServiceRound).run(ServiceProcesses())
-        story.expect_rows(process.wait(timeout=STOP_LIMIT_SECONDS) != 0, scripts.stop_reason(process) is ScriptStop.SWITCHED_OFF)
+        story.expect_rows(process.wait(timeout=STOP_LIMIT_SECONDS) != 0, scripts.stop_reason(process) is ScriptStop.PLUGIN_DISABLED)
     finally:
         scripts.finish(process)
         process.kill()
