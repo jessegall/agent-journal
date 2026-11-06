@@ -13,6 +13,7 @@ from core.modules.plugins.support.plugin_releases import PluginReleases
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 GUIDE = Path("src/core/modules/plugins/web/src/PluginGuide.vue")
+SKILL = Path("src/core/modules/plugins/skills/journal-plugins/SKILL.md")
 MANIFEST = {"name": "standup", "title": "Standup", "version": "1.2.0", "description": "Writes the daily standup", "requires": {"sh": {"check": "command -v sh"}}, "setup": [{"name": "packages", "run": "true"}],
             "services": [{"name": "web", "command": ["server.sh", "--quiet"]}], "dashboard": {"name": "daily", "title": "Daily"}}
 PAGES = {"title": "Today", "start": "start", "pages": {"start": {"title": "Today", "view": {"type": "stack", "children": []}}}}
@@ -126,7 +127,8 @@ def test_the_guide_example_is_a_manifest_the_journal_reads(new_story):
     manifest = PluginManifest.read(folder)
     story.expect_rows(manifest.name == "standup", manifest.event_names == tuple(["file_edited"]), manifest.services[0].name == "web", manifest.dashboard.name == "standup")
     guide = GUIDE.read_text()
-    story.expect_rows('"relative":' in guide, '"checkout":' in guide, "project_reads" in guide, '"tell":' in guide, "task.close" not in guide)
+    story.expect_rows('"relative":' in guide, '"checkout":' in guide, "project_reads" in guide, '"tell":' in guide, "task.close" not in guide,
+                      "listen: guard" in guide, "listen: listen" in guide, "listen: commit" in guide, "journal event keys" in SKILL.read_text())
 
 
 def tagged_repository(story, name: str = "repository", version: str = "1.0.0", tag: str = "v1.0.0") -> Path:

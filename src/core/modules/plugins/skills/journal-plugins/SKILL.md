@@ -22,6 +22,17 @@ A plugin adds rules, services, skills and a dashboard to the journal from a fold
   there exits with code 4.
 - `journal plugin run [--agent <n>] [--read-only] -- <command>` runs a command at the root of a checkout with the sandbox of
   its agent. Only a plugin or a person may call it.
-- `journal plugin record <name>` shows what it did, its newest outputs and its last fault;
-  `journal plugin services` shows whether each service runs.
+- `journal plugin record <name>` shows what it did, its newest outputs and its last fault, and `--inputs` the last lines it
+  was sent; `journal plugin services` shows whether each service runs.
+- `journal event keys` lists every event by its key. A manifest's `listen` list names a key with a script for any of three
+  forms, and `journal plugin events <name>` shows how each entry stands. `journal plugin try <name> <key>` runs the script
+  for real with the newest event of that key, prints the line and the answer, and applies nothing.
+- `guard` runs before a change and can refuse it, and nothing is saved. `"skip": false` on the entry means no
+  `--skip-guard plugins.event-guard:<plugin>` passes it; a person can always switch the plugin off.
+- `listen` runs during a change. It sees the row uncommitted with `final` false. The commands it answers commit with the
+  change; a journal command it runs itself commits at once and stays. Ids are a forecast. Only `commit` promises the change
+  happened.
+- `commit` runs after the change is committed and cannot stop it.
+- A guard or listen script holds no lock, but the caller waits. The journal puts no limit on a script, and a hung one is
+  stopped by switching the plugin off. A guard on a hook moment keeps the journal's limit, and the plugin's card says so.
 - `journal plugin settings <name>` lists its settings; `journal plugin dashboard <name>` reads its dashboard.

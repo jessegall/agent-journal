@@ -1,14 +1,14 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-64b5b3903bc8")) { const style = document.createElement("style"); style.id = "window-styles-64b5b3903bc8"; style.textContent = ".plugin[data-v-06d0d094]{position:relative;display:flex;flex-direction:column;gap:12px;padding:18px 18px 14px;border:1px solid var(--border-2);border-radius:14px;background:var(--raised);transition:border-color .2s,opacity .2s}.plugin[data-v-06d0d094]:hover{border-color:var(--border-3)}.plugin.off[data-v-06d0d094]>:not(.head),.plugin.off .names[data-v-06d0d094],.plugin.off .mark[data-v-06d0d094]{opacity:.55}.head[data-v-06d0d094]{display:flex;align-items:center;gap:12px}.mark[data-v-06d0d094]{flex:none;display:grid;place-items:center;width:40px;height:40px;border:1px solid var(--border-2);border-radius:11px;background:var(--bg-2);color:var(--text-2);font-size:14px;font-weight:600;letter-spacing:.02em}.names[data-v-06d0d094]{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.title[data-v-06d0d094]{overflow:hidden;color:var(--text);font-size:14.5px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}.version[data-v-06d0d094]{color:var(--text-3);font-size:11.5px;font-variant-numeric:tabular-nums}.description[data-v-06d0d094]{margin:0;color:var(--text-2);font-size:13px;line-height:1.55}.source[data-v-06d0d094]{display:flex;align-items:center;gap:6px;min-width:0;margin:0;color:var(--text-3);font-family:var(--mono);font-size:11.5px}.source-text[data-v-06d0d094]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.runs[data-v-06d0d094]{display:flex;flex-direction:column;gap:2px;padding-top:10px;border-top:1px solid var(--border)}.label[data-v-06d0d094]{margin-bottom:4px;color:var(--text-4);font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}.fault[data-v-06d0d094]{margin:0;color:var(--danger);font-size:12.5px;line-height:1.5;overflow-wrap:anywhere}.fault.quiet[data-v-06d0d094]{color:var(--text-3)}.run[data-v-06d0d094]{display:flex;align-items:center;gap:9px;padding:3px 0}.run-name[data-v-06d0d094]{color:var(--text);font-size:12.5px;font-weight:500}.run-state[data-v-06d0d094]{flex:1;color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums}.acts[data-v-06d0d094]{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:auto;padding-top:12px;border-top:1px solid var(--border)}.more[data-v-06d0d094]{margin-left:auto;color:var(--text-2)}.danger[data-v-06d0d094]{color:var(--danger)}.plugin-guide h3[data-v-c0ea6af8]{margin:0 0 8px;color:var(--text-3);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}.plugin-guide p[data-v-c0ea6af8],.plugin-guide li[data-v-c0ea6af8],.plugin-guide dd[data-v-c0ea6af8]{margin:0 0 12px;color:var(--text-2);font-size:12.5px}.plugin-guide dt[data-v-c0ea6af8]{font-size:12.5px;font-weight:500}.plugin-guide pre[data-v-c0ea6af8]{margin:0 0 16px;padding:10px;border-radius:6px;background:var(--hover);font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.preview-from[data-v-e62ba9f0],.preview-lead[data-v-e62ba9f0]{margin:0 0 10px;color:var(--text-2);font-size:12.5px}.preview-row[data-v-e62ba9f0]{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:5px 0;border-top:1px solid var(--border)}.preview-category[data-v-e62ba9f0]{flex:0 0 90px;color:var(--text-3);font-size:12px}.preview-command[data-v-e62ba9f0]{flex-basis:100%;font-size:12px;overflow-wrap:anywhere}.ask[data-v-911de8d3]{display:flex;flex-direction:column;gap:8px}.ask-lead[data-v-911de8d3]{margin:0 0 4px;color:var(--text-3);font-size:12.5px}.wish[data-v-911de8d3]{padding:7px 9px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px;resize:vertical}.wish[data-v-911de8d3]:focus{outline:none;border-color:var(--accent)}.plugin-output-time[data-v-591f0ba1]{margin:10px 0 2px;color:var(--text-3);font-size:11px}.plugin-output[data-v-591f0ba1]{margin:0;font-size:13px;white-space:pre-wrap}.plugin-note[data-v-591f0ba1]{margin:0;color:var(--text-3);font-size:12px}.remove-lead[data-v-3c0e0fe1]{margin:0 0 8px;color:var(--text-3);font-size:12.5px}.plugin-setting[data-v-ef347878]{padding:10px 12px;border-bottom:1px solid var(--border);transition:opacity .15s}.plugin-setting.dim[data-v-ef347878]{opacity:.5}.plugin-setting-flag[data-v-ef347878]{display:flex;gap:12px;align-items:center;justify-content:space-between}.plugin-setting-names[data-v-ef347878]{display:flex;flex-direction:column;gap:2px;min-width:0}.plugin-setting-title[data-v-ef347878]{color:var(--text);font-size:13px;font-weight:500}.plugin-setting-help[data-v-ef347878]{margin:0;color:var(--text-3);font-size:12px;line-height:1.45}.plugin-setting-children[data-v-ef347878]{padding-left:22px}.plugin-settings[data-v-62d3ec60]{display:flex;flex-direction:column;gap:14px}.plugin-settings-head[data-v-62d3ec60]{display:flex;gap:10px;align-items:center}.plugin-settings-version[data-v-62d3ec60]{padding:1px 7px;border-radius:6px;background:var(--chip);color:var(--text-2);font-size:11.5px}.plugin-settings-on[data-v-62d3ec60]{display:inline-flex;gap:8px;align-items:center;margin-left:auto;color:var(--text-3);font-size:12.5px}.plugin-settings-line[data-v-62d3ec60]{margin:0;color:var(--text-2);font-size:13px;line-height:1.5}.plugin-settings-group[data-v-62d3ec60]{border:1px solid var(--border);border-radius:10px;overflow:hidden}.plugin-settings-all[data-v-62d3ec60]{display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border)}.plugin-output[data-v-271bc8e2]{margin:0 0 6px;font-size:13px;white-space:pre-wrap}.plugin-note[data-v-271bc8e2]{margin:0;color:var(--text-3);font-size:12px}.plugins[data-v-c62f86a4]{display:flex;flex-direction:column;height:100%;overflow:auto}.bar[data-v-c62f86a4]{display:flex;flex:none;align-items:center;gap:10px;padding:8px 14px 8px 22px;border-bottom:1px solid var(--border)}.install[data-v-c62f86a4]{flex:1 1 360px;max-width:640px}.body[data-v-c62f86a4]{display:flex;flex-direction:column;gap:16px;width:100%;max-width:1180px;padding:22px 24px 40px;box-sizing:border-box}.lead[data-v-c62f86a4]{max-width:640px;margin:0;color:var(--text-3);font-size:12.5px;line-height:1.55}.asked[data-v-c62f86a4]{margin:0;color:var(--accent-text);font-size:12.5px}.none[data-v-c62f86a4]{margin:0;color:var(--text-3);font-size:12.5px}.none strong[data-v-c62f86a4]{display:block;margin-bottom:4px;color:var(--text-2);font-size:14px;font-weight:500}.cards[data-v-c62f86a4]{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}.plugin-note[data-v-c62f86a4]{margin:0;color:var(--text-3);font-size:12px}.plugin-fault[data-v-c62f86a4]{margin:0;color:var(--danger);font-size:12px}.make[data-v-c62f86a4]{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:160px;padding:10px 12px;border:1px dashed var(--border-2);border-radius:14px;background:none;color:var(--text-3);font:inherit;font-size:13px;cursor:pointer;transition:border-color .15s,color .15s,background .15s}.make[data-v-c62f86a4]:hover{border-color:var(--accent);background:var(--hover);color:var(--text)}.make-mark[data-v-c62f86a4]{display:grid;place-items:center;width:36px;height:36px;margin-bottom:8px;border:1px solid var(--border-2);border-radius:50%;transition:border-color .2s,color .2s}.make:hover .make-mark[data-v-c62f86a4]{border-color:var(--accent);color:var(--accent-text)}.make-title[data-v-c62f86a4]{color:var(--text-2);font-weight:500}.make-text[data-v-c62f86a4]{max-width:240px;color:var(--text-4);font-size:12px;line-height:1.45;text-align:center}@media(max-width:640px){.install[data-v-c62f86a4]{flex-basis:100%;max-width:none}.body[data-v-c62f86a4]{padding:16px 16px 32px}.cards[data-v-c62f86a4]{grid-template-columns:1fr}}\n"; document.head.appendChild(style); }
-import { ref as P, computed as E, openBlock as s, createElementBlock as p, normalizeClass as ce, createElementVNode as e, toDisplayString as v, createVNode as b, unref as l, createCommentVNode as C, Fragment as R, renderList as O, renderSlot as Pe, withCtx as f, createTextVNode as k, createBlock as j, withModifiers as X, useModel as ue, withDirectives as Oe, vModelText as Ie, mergeModels as xe, useId as Ne, resolveComponent as Le, reactive as De } from "vue";
-import { Switch as se, Icon as ne, Btn as T, MenuPanel as Ee, MenuItem as de, Dialog as L, TextInput as le, FormField as Ue, SwitchCase as We, TextArea as Me, Segmented as qe, FoldGroup as Ge, useWindow as Ve, useRows as K, usePoll as ge, useReadLine as Fe, Skeleton as Be, Dashboard as Je, runChanged as _e } from "@journal/window-kit";
-function Ke(t, c, i) {
+if (!document.getElementById("window-styles-02b6b3a3cff1")) { const style = document.createElement("style"); style.id = "window-styles-02b6b3a3cff1"; style.textContent = ".plugin[data-v-aafc8b40]{position:relative;display:flex;flex-direction:column;gap:12px;padding:18px 18px 14px;border:1px solid var(--border-2);border-radius:14px;background:var(--raised);transition:border-color .2s,opacity .2s}.plugin[data-v-aafc8b40]:hover{border-color:var(--border-3)}.plugin.off[data-v-aafc8b40]>:not(.head),.plugin.off .names[data-v-aafc8b40],.plugin.off .mark[data-v-aafc8b40]{opacity:.55}.head[data-v-aafc8b40]{display:flex;align-items:center;gap:12px}.mark[data-v-aafc8b40]{flex:none;display:grid;place-items:center;width:40px;height:40px;border:1px solid var(--border-2);border-radius:11px;background:var(--bg-2);color:var(--text-2);font-size:14px;font-weight:600;letter-spacing:.02em}.names[data-v-aafc8b40]{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.title[data-v-aafc8b40]{overflow:hidden;color:var(--text);font-size:14.5px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}.version[data-v-aafc8b40]{color:var(--text-3);font-size:11.5px;font-variant-numeric:tabular-nums}.description[data-v-aafc8b40]{margin:0;color:var(--text-2);font-size:13px;line-height:1.55}.source[data-v-aafc8b40]{display:flex;align-items:center;gap:6px;min-width:0;margin:0;color:var(--text-3);font-family:var(--mono);font-size:11.5px}.source-text[data-v-aafc8b40]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.runs[data-v-aafc8b40]{display:flex;flex-direction:column;gap:2px;padding-top:10px;border-top:1px solid var(--border)}.label[data-v-aafc8b40]{margin-bottom:4px;color:var(--text-4);font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}.fault[data-v-aafc8b40]{margin:0;color:var(--danger);font-size:12.5px;line-height:1.5;overflow-wrap:anywhere}.fault.quiet[data-v-aafc8b40]{color:var(--text-3)}.run[data-v-aafc8b40]{display:flex;align-items:center;gap:9px;padding:3px 0}.run-name[data-v-aafc8b40]{color:var(--text);font-size:12.5px;font-weight:500}.run-state[data-v-aafc8b40]{flex:1;color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums}.acts[data-v-aafc8b40]{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:auto;padding-top:12px;border-top:1px solid var(--border)}.more[data-v-aafc8b40]{margin-left:auto;color:var(--text-2)}.danger[data-v-aafc8b40]{color:var(--danger)}.plugin-guide h3[data-v-8f1251af]{margin:0 0 8px;color:var(--text-3);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}.plugin-guide p[data-v-8f1251af],.plugin-guide li[data-v-8f1251af],.plugin-guide dd[data-v-8f1251af]{margin:0 0 12px;color:var(--text-2);font-size:12.5px}.plugin-guide dt[data-v-8f1251af]{font-size:12.5px;font-weight:500}.plugin-guide pre[data-v-8f1251af]{margin:0 0 16px;padding:10px;border-radius:6px;background:var(--hover);font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.preview-from[data-v-4858968c],.preview-lead[data-v-4858968c]{margin:0 0 10px;color:var(--text-2);font-size:12.5px}.preview-row[data-v-4858968c]{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:5px 0;border-top:1px solid var(--border)}.preview-category[data-v-4858968c]{flex:0 0 90px;color:var(--text-3);font-size:12px}.preview-command[data-v-4858968c]{flex-basis:100%;font-size:12px;overflow-wrap:anywhere}.ask[data-v-68367524]{display:flex;flex-direction:column;gap:8px}.ask-lead[data-v-68367524]{margin:0 0 4px;color:var(--text-3);font-size:12.5px}.wish[data-v-68367524]{padding:7px 9px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px;resize:vertical}.wish[data-v-68367524]:focus{outline:none;border-color:var(--accent)}.plugin-output-time[data-v-a992a588]{margin:10px 0 2px;color:var(--text-3);font-size:11px}.plugin-output[data-v-a992a588]{margin:0;font-size:13px;white-space:pre-wrap}.plugin-note[data-v-a992a588]{margin:0;color:var(--text-3);font-size:12px}.remove-lead[data-v-6ddf3c50]{margin:0 0 8px;color:var(--text-3);font-size:12.5px}.plugin-setting[data-v-68e8eacc]{padding:10px 12px;border-bottom:1px solid var(--border);transition:opacity .15s}.plugin-setting.dim[data-v-68e8eacc]{opacity:.5}.plugin-setting-flag[data-v-68e8eacc]{display:flex;gap:12px;align-items:center;justify-content:space-between}.plugin-setting-names[data-v-68e8eacc]{display:flex;flex-direction:column;gap:2px;min-width:0}.plugin-setting-title[data-v-68e8eacc]{color:var(--text);font-size:13px;font-weight:500}.plugin-setting-help[data-v-68e8eacc]{margin:0;color:var(--text-3);font-size:12px;line-height:1.45}.plugin-setting-children[data-v-68e8eacc]{padding-left:22px}.plugin-settings[data-v-83826936]{display:flex;flex-direction:column;gap:14px}.plugin-settings-head[data-v-83826936]{display:flex;gap:10px;align-items:center}.plugin-settings-version[data-v-83826936]{padding:1px 7px;border-radius:6px;background:var(--chip);color:var(--text-2);font-size:11.5px}.plugin-settings-on[data-v-83826936]{display:inline-flex;gap:8px;align-items:center;margin-left:auto;color:var(--text-3);font-size:12.5px}.plugin-settings-line[data-v-83826936]{margin:0;color:var(--text-2);font-size:13px;line-height:1.5}.plugin-settings-group[data-v-83826936]{border:1px solid var(--border);border-radius:10px;overflow:hidden}.plugin-settings-all[data-v-83826936]{display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border)}.plugin-output[data-v-476bfd4a]{margin:0 0 6px;font-size:13px;white-space:pre-wrap}.plugin-note[data-v-476bfd4a]{margin:0;color:var(--text-3);font-size:12px}.plugins[data-v-904a083a]{display:flex;flex-direction:column;height:100%;overflow:auto}.bar[data-v-904a083a]{display:flex;flex:none;align-items:center;gap:10px;padding:8px 14px 8px 22px;border-bottom:1px solid var(--border)}.install[data-v-904a083a]{flex:1 1 360px;max-width:640px}.body[data-v-904a083a]{display:flex;flex-direction:column;gap:16px;width:100%;max-width:1180px;padding:22px 24px 40px;box-sizing:border-box}.lead[data-v-904a083a]{max-width:640px;margin:0;color:var(--text-3);font-size:12.5px;line-height:1.55}.asked[data-v-904a083a]{margin:0;color:var(--accent-text);font-size:12.5px}.none[data-v-904a083a]{margin:0;color:var(--text-3);font-size:12.5px}.none strong[data-v-904a083a]{display:block;margin-bottom:4px;color:var(--text-2);font-size:14px;font-weight:500}.cards[data-v-904a083a]{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}.plugin-note[data-v-904a083a]{margin:0;color:var(--text-3);font-size:12px}.plugin-fault[data-v-904a083a]{margin:0;color:var(--danger);font-size:12px}.make[data-v-904a083a]{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:160px;padding:10px 12px;border:1px dashed var(--border-2);border-radius:14px;background:none;color:var(--text-3);font:inherit;font-size:13px;cursor:pointer;transition:border-color .15s,color .15s,background .15s}.make[data-v-904a083a]:hover{border-color:var(--accent);background:var(--hover);color:var(--text)}.make-mark[data-v-904a083a]{display:grid;place-items:center;width:36px;height:36px;margin-bottom:8px;border:1px solid var(--border-2);border-radius:50%;transition:border-color .2s,color .2s}.make:hover .make-mark[data-v-904a083a]{border-color:var(--accent);color:var(--accent-text)}.make-title[data-v-904a083a]{color:var(--text-2);font-weight:500}.make-text[data-v-904a083a]{max-width:240px;color:var(--text-4);font-size:12px;line-height:1.45;text-align:center}@media(max-width:640px){.install[data-v-904a083a]{flex-basis:100%;max-width:none}.body[data-v-904a083a]{padding:16px 16px 32px}.cards[data-v-904a083a]{grid-template-columns:1fr}}\n"; document.head.appendChild(style); }
+import { ref as P, computed as E, openBlock as s, createElementBlock as p, normalizeClass as ve, createElementVNode as e, toDisplayString as c, createVNode as b, unref as l, createCommentVNode as C, Fragment as T, renderList as O, renderSlot as Pe, withCtx as f, createTextVNode as k, createBlock as j, withModifiers as X, useModel as ue, withDirectives as Oe, vModelText as Ie, mergeModels as xe, useId as Ne, resolveComponent as De, reactive as Le } from "vue";
+import { Switch as se, Icon as ne, Btn as R, MenuPanel as Ee, MenuItem as de, Dialog as D, TextInput as le, FormField as Ue, SwitchCase as We, TextArea as Me, Segmented as qe, FoldGroup as Ge, useWindow as Ve, useRows as K, usePoll as ge, useReadLine as Be, Skeleton as Fe, Dashboard as Je, runChanged as _e } from "@journal/window-kit";
+function Ke(t, v, i) {
   const m = new URL(t);
-  return m.searchParams.set("page", i), m.searchParams.set("file", c.path), c.line ? m.searchParams.set("line", String(c.line)) : m.searchParams.delete("line"), m.href;
+  return m.searchParams.set("page", i), m.searchParams.set("file", v.path), v.line ? m.searchParams.set("line", String(v.line)) : m.searchParams.delete("line"), m.href;
 }
-const N = (t, c) => {
+const N = (t, v) => {
   const i = t.__vccOpts || t;
-  for (const [m, a] of c)
+  for (const [m, a] of v)
     i[m] = a;
   return i;
 }, He = ["data-row"], ze = { class: "head" }, Ye = {
@@ -34,12 +34,12 @@ const N = (t, c) => {
   key: 4,
   class: "runs",
   "data-plugin-events": ""
-}, dt = ["data-plugin-event"], gt = { class: "run-state" }, pt = { class: "run-name" }, vt = { class: "run-state" }, ct = { class: "acts" }, mt = {
+}, dt = ["data-plugin-event"], gt = { class: "run-state" }, pt = { class: "run-name" }, ct = { class: "run-state" }, vt = { class: "acts" }, mt = {
   __name: "PluginCard",
   props: { plugin: { type: Object, required: !0 }, description: { type: String, default: "" }, services: { type: Array, default: () => [] }, events: { type: Array, default: () => [] }, board: { type: Object, default: null } },
   emits: ["toggle", "settings", "board", "record", "latest", "remove"],
-  setup(t, { emit: c }) {
-    const i = t, m = c, a = P(null), u = P(!1), d = E(() => i.plugin.title.split(/[\s_-]+/).filter(Boolean).slice(0, 2).map(($) => $[0].toUpperCase()).join("")), A = E(() => i.plugin.source.replace(/^https?:\/\/(www\.)?/, "")), o = { guard: "Before a change", listen: "During a change", commit: "After a change" }, y = {
+  setup(t, { emit: v }) {
+    const i = t, m = v, a = P(null), u = P(!1), d = E(() => i.plugin.title.split(/[\s_-]+/).filter(Boolean).slice(0, 2).map(($) => $[0].toUpperCase()).join("")), A = E(() => i.plugin.source.replace(/^https?:\/\/(www\.)?/, "")), o = { guard: "Before a change", listen: "During a change", commit: "After a change" }, y = {
       "wrong key": ["Wrong event", () => "Nothing reaches this script. journal event keys lists the events."],
       "wrong script": ["Wrong script", ($) => `${$.script} is not in the plugin's folder or cannot run, so it never runs.`],
       "wrong project read": ["Wrong folder", ($) => `${$.script} is not a folder inside the project, so it is not opened.`],
@@ -56,14 +56,14 @@ const N = (t, c) => {
       u.value = !1, m($);
     }
     return ($, g) => (s(), p("article", {
-      class: ce(["plugin", { off: !t.plugin.enabled }]),
+      class: ve(["plugin", { off: !t.plugin.enabled }]),
       "data-row": t.plugin.id
     }, [
       e("header", ze, [
-        e("span", Ye, v(d.value), 1),
+        e("span", Ye, c(d.value), 1),
         e("span", Xe, [
-          e("span", Qe, v(t.plugin.title), 1),
-          e("span", Ze, v(t.plugin.release), 1)
+          e("span", Qe, c(t.plugin.title), 1),
+          e("span", Ze, c(t.plugin.release), 1)
         ]),
         b(l(se), {
           on: t.plugin.enabled,
@@ -71,8 +71,8 @@ const N = (t, c) => {
           onChange: g[0] || (g[0] = (S) => m("toggle"))
         }, null, 8, ["on", "title"])
       ]),
-      t.description ? (s(), p("p", et, v(t.description), 1)) : C("", !0),
-      t.plugin.failing ? (s(), p("p", tt, "Failing, so events go through without it: " + v(t.plugin.last_fault), 1)) : t.plugin.last_fault ? (s(), p("p", nt, "Last fault: " + v(t.plugin.last_fault), 1)) : C("", !0),
+      t.description ? (s(), p("p", et, c(t.description), 1)) : C("", !0),
+      t.plugin.failing ? (s(), p("p", tt, "Failing, so events go through without it: " + c(t.plugin.last_fault), 1)) : t.plugin.last_fault ? (s(), p("p", nt, "Last fault: " + c(t.plugin.last_fault), 1)) : C("", !0),
       e("p", {
         class: "source",
         title: t.plugin.source
@@ -81,34 +81,34 @@ const N = (t, c) => {
           name: "branch",
           size: 12
         }),
-        e("span", lt, v(A.value), 1)
+        e("span", lt, c(A.value), 1)
       ], 8, st),
       t.services.length ? (s(), p("div", at, [
         g[9] || (g[9] = e("span", { class: "label" }, "Runs", -1)),
-        (s(!0), p(R, null, O(t.services, (S) => (s(), p("span", {
+        (s(!0), p(T, null, O(t.services, (S) => (s(), p("span", {
           key: S.id,
           class: "run",
           "data-plugin-service": S.id
         }, [
-          e("span", ot, v(S.service), 1),
-          e("span", rt, v(S.running ? `running, process ${S.pid}` : "stopped"), 1)
+          e("span", ot, c(S.service), 1),
+          e("span", rt, c(S.running ? `running, process ${S.pid}` : "stopped"), 1)
         ], 8, it))), 128))
       ])) : C("", !0),
       t.events.length ? (s(), p("div", ut, [
         g[10] || (g[10] = e("span", { class: "label" }, "Listens to", -1)),
-        (s(!0), p(R, null, O(t.events, (S) => (s(), p("span", {
+        (s(!0), p(T, null, O(t.events, (S) => (s(), p("span", {
           key: S.id,
           class: "run",
           "data-plugin-event": S.state
         }, [
-          e("span", gt, v(x(S)), 1),
-          e("span", pt, v(S.key), 1),
-          e("span", vt, v(V(S)), 1)
+          e("span", gt, c(x(S)), 1),
+          e("span", pt, c(S.key), 1),
+          e("span", ct, c(V(S)), 1)
         ], 8, dt))), 128))
       ])) : C("", !0),
       Pe($.$slots, "default", {}, void 0, !0),
-      e("footer", ct, [
-        b(l(T), {
+      e("footer", vt, [
+        b(l(R), {
           small: "",
           "data-plugin-settings": "",
           onClick: g[1] || (g[1] = (S) => m("settings"))
@@ -118,18 +118,18 @@ const N = (t, c) => {
           ])]),
           _: 1
         }),
-        t.board ? (s(), j(l(T), {
+        t.board ? (s(), j(l(R), {
           key: 0,
           small: "",
           "data-plugin-board": "",
           onClick: g[2] || (g[2] = (S) => m("board"))
         }, {
           default: f(() => [
-            k(v(t.board.title), 1)
+            k(c(t.board.title), 1)
           ]),
           _: 1
         })) : C("", !0),
-        b(l(T), {
+        b(l(R), {
           small: "",
           "data-plugin-record": "",
           onClick: g[3] || (g[3] = (S) => m("record"))
@@ -144,7 +144,7 @@ const N = (t, c) => {
           ref: a,
           class: "more"
         }, [
-          b(l(T), {
+          b(l(R), {
             variant: "icon",
             small: "",
             "data-plugin-more": "",
@@ -195,7 +195,7 @@ const N = (t, c) => {
       }, 8, ["anchor"])) : C("", !0)
     ], 10, He));
   }
-}, ft = /* @__PURE__ */ N(mt, [["__scopeId", "data-v-06d0d094"]]), ht = {
+}, ft = /* @__PURE__ */ N(mt, [["__scopeId", "data-v-aafc8b40"]]), ht = {
   class: "plugin-guide",
   "data-plugin-guide": ""
 }, yt = `{
@@ -239,12 +239,17 @@ const N = (t, c) => {
 }`, $t = {
   __name: "PluginGuide",
   emits: ["close"],
-  setup(t, { emit: c }) {
-    const i = c, m = [
+  setup(t, { emit: v }) {
+    const i = v, m = [
       ["name, title, version", "Required. The name is how every command refers to the plugin."],
       ["program", "The file run for each event, in the plugin's folder. It gets the event as one line of JSON on its input."],
       ["hears", "The events it runs for."],
       ["holds", "The events it answers before they go on, each with an optional window_ms."],
+      ["listen", "Scripts to run for a change, each entry with an event key from journal event keys and a script for any of guard, listen and commit. The journal puts no time limit on a script, except that a guard on an agent's tool step or prompt keeps the journal's own limit."],
+      ["listen: guard", 'Before a change. The script can refuse it, and then nothing is saved. Set "skip": false on the entry and nobody can pass it with --skip-guard plugins.event-guard:<plugin>; a person can always turn the plugin off.'],
+      ["listen: listen", "During a change. The script sees the item before it is saved, its answered commands are saved with the change, and a journal command it runs itself is saved at once and stays. An id it reads may still change, and only commit promises the change happened."],
+      ["listen: commit", "After a change. The script runs after the change is saved and cannot stop it."],
+      ["waiting", "A guard or listen script holds no lock, but whoever made the change waits for it. Turn the plugin off to stop a script that never ends."],
       ["settings", "A JSON file listing its settings, each with a key, title and type."],
       ["requires", "Programs that must be installed, each with a check command and a hint."],
       ["setup", "Commands run once, in order, when it installs."],
@@ -276,7 +281,7 @@ const N = (t, c) => {
       ["journal plugin file <relative> [--agent <n>] [--from checkout, project or base]", "The text of that name in that place. A name that is not there exits with code 4."],
       ["journal plugin run [--agent <n>] [--read-only] -- <command>", "Runs a command at the root of the checkout, with the sandbox of that agent. Only a plugin or a person may call it."]
     ];
-    return (A, o) => (s(), j(l(L), {
+    return (A, o) => (s(), j(l(D), {
       title: "Create a plugin",
       onClose: o[0] || (o[0] = (y) => i("close"))
     }, {
@@ -288,31 +293,31 @@ const N = (t, c) => {
             e("code", null, "journal-plugin.json"),
             k(". The journal reads it, shows you everything it would run, and copies it when you install it, using the latest version tag for a repository.")
           ], -1)),
-          e("pre", null, v(yt)),
+          e("pre", null, c(yt)),
           o[3] || (o[3] = e("h3", null, "Keys", -1)),
           e("dl", null, [
-            (s(), p(R, null, O(m, ([y, w]) => (s(), p(R, { key: y }, [
-              e("dt", null, v(y), 1),
-              e("dd", null, v(w), 1)
+            (s(), p(T, null, O(m, ([y, w]) => (s(), p(T, { key: y }, [
+              e("dt", null, c(y), 1),
+              e("dd", null, c(w), 1)
             ], 64))), 64))
           ]),
           o[4] || (o[4] = e("h3", null, "Answering an event", -1)),
           o[5] || (o[5] = e("p", null, "The program prints JSON, and printing nothing allows the event. Every key is optional:", -1)),
-          e("pre", null, v(kt)),
+          e("pre", null, c(kt)),
           o[6] || (o[6] = e("h3", null, "What an event gives the program", -1)),
           o[7] || (o[7] = e("p", null, [
             k("One line of JSON on its input. An event about a file has a "),
             e("code", null, "file"),
             k(" in its data, and the list of changes at a hand-in holds one for each name.")
           ], -1)),
-          e("pre", null, v(wt)),
+          e("pre", null, c(wt)),
           e("ul", null, [
-            (s(), p(R, null, O(a, (y) => e("li", { key: y }, v(y), 1)), 64))
+            (s(), p(T, null, O(a, (y) => e("li", { key: y }, c(y), 1)), 64))
           ]),
           e("dl", null, [
-            (s(), p(R, null, O(u, ([y, w]) => (s(), p(R, { key: y }, [
-              e("dt", null, v(y), 1),
-              e("dd", null, v(w), 1)
+            (s(), p(T, null, O(u, ([y, w]) => (s(), p(T, { key: y }, [
+              e("dt", null, c(y), 1),
+              e("dd", null, c(w), 1)
             ], 64))), 64))
           ]),
           o[8] || (o[8] = e("h3", null, "Asking the journal about a checkout", -1)),
@@ -322,11 +327,11 @@ const N = (t, c) => {
             k(".")
           ], -1)),
           e("dl", null, [
-            (s(), p(R, null, O(d, ([y, w]) => (s(), p(R, { key: y }, [
+            (s(), p(T, null, O(d, ([y, w]) => (s(), p(T, { key: y }, [
               e("dt", null, [
-                e("code", null, v(y), 1)
+                e("code", null, c(y), 1)
               ]),
-              e("dd", null, v(w), 1)
+              e("dd", null, c(w), 1)
             ], 64))), 64))
           ]),
           o[10] || (o[10] = e("h3", null, "Environment variables", -1)),
@@ -356,21 +361,21 @@ const N = (t, c) => {
       _: 1
     }));
   }
-}, bt = /* @__PURE__ */ N($t, [["__scopeId", "data-v-c0ea6af8"]]), Ct = { "data-plugin-preview": "" }, St = { class: "preview-from" }, jt = {
+}, bt = /* @__PURE__ */ N($t, [["__scopeId", "data-v-8f1251af"]]), Ct = { "data-plugin-preview": "" }, St = { class: "preview-from" }, jt = {
   key: 0,
   class: "preview-lead"
-}, At = ["data-preview-category"], Rt = { class: "preview-category" }, Tt = { class: "preview-label" }, Pt = { class: "preview-command" }, pe = "wrong key", Ot = {
+}, At = ["data-preview-category"], Tt = { class: "preview-category" }, Rt = { class: "preview-label" }, Pt = { class: "preview-command" }, pe = "wrong key", Ot = {
   __name: "PluginInstallPreview",
   props: { preview: { type: Object, required: !0 } },
   emits: ["close", "install"],
-  setup(t, { emit: c }) {
-    const i = c, m = { requires: "Checks", setup: "Sets up", installed: "Asks", program: "On events", service: "Keeps running", alias: "Command", reads: "Reads from the project", guard: "Before a change", listen: "During a change", commit: "After a change" };
-    return (a, u) => (s(), j(l(L), {
+  setup(t, { emit: v }) {
+    const i = v, m = { requires: "Checks", setup: "Sets up", installed: "Asks", program: "On events", service: "Keeps running", alias: "Command", reads: "Reads from the project", guard: "Before a change", listen: "During a change", commit: "After a change" };
+    return (a, u) => (s(), j(l(D), {
       title: t.preview.title,
       onClose: u[2] || (u[2] = (d) => i("close"))
     }, {
       foot: f(() => [
-        b(l(T), {
+        b(l(R), {
           onClick: u[0] || (u[0] = (d) => i("close"))
         }, {
           default: f(() => [...u[4] || (u[4] = [
@@ -378,7 +383,7 @@ const N = (t, c) => {
           ])]),
           _: 1
         }),
-        b(l(T), {
+        b(l(R), {
           variant: "primary",
           "data-plugin-preview-install": "",
           onClick: u[1] || (u[1] = (d) => i("install"))
@@ -391,24 +396,24 @@ const N = (t, c) => {
       ]),
       default: f(() => [
         e("div", Ct, [
-          e("p", St, "Version " + v(t.preview.version) + " from " + v(t.preview.source), 1),
+          e("p", St, "Version " + c(t.preview.version) + " from " + c(t.preview.source), 1),
           u[3] || (u[3] = e("p", { class: "preview-lead" }, "It runs as you, with your files and your network. This is everything it runs:", -1)),
           t.preview.rows.length ? C("", !0) : (s(), p("p", jt, "It runs nothing.")),
-          (s(!0), p(R, null, O(t.preview.rows, (d) => (s(), p("div", {
+          (s(!0), p(T, null, O(t.preview.rows, (d) => (s(), p("div", {
             key: `${d.category} ${d.label}`,
             class: "preview-row",
             "data-preview-category": d.category
           }, [
-            e("span", Rt, v(d.state === pe ? "Wrong event" : m[d.category]), 1),
-            e("span", Tt, v(d.label), 1),
-            e("code", Pt, v(d.state === pe ? "No such event. It can be installed, but this script will never run." : d.command), 1)
+            e("span", Tt, c(d.state === pe ? "Wrong event" : m[d.category]), 1),
+            e("span", Rt, c(d.label), 1),
+            e("code", Pt, c(d.state === pe ? "No such event. It can be installed, but this script will never run." : d.command), 1)
           ], 8, At))), 128))
         ])
       ]),
       _: 1
     }, 8, ["title"]));
   }
-}, It = /* @__PURE__ */ N(Ot, [["__scopeId", "data-v-e62ba9f0"]]), xt = {
+}, It = /* @__PURE__ */ N(Ot, [["__scopeId", "data-v-4858968c"]]), xt = {
   __name: "PluginMakeDialog",
   props: {
     repository: { type: String, default: "" },
@@ -417,16 +422,16 @@ const N = (t, c) => {
     wishModifiers: {}
   },
   emits: /* @__PURE__ */ xe(["close", "guide", "ask"], ["update:repository", "update:wish"]),
-  setup(t, { emit: c }) {
-    const i = ue(t, "repository"), m = ue(t, "wish"), a = c;
-    return (u, d) => (s(), j(l(L), {
+  setup(t, { emit: v }) {
+    const i = ue(t, "repository"), m = ue(t, "wish"), a = v;
+    return (u, d) => (s(), j(l(D), {
       title: "Create a plugin",
       small: "",
       fits: "",
       onClose: d[5] || (d[5] = (A) => a("close"))
     }, {
       foot: f(() => [
-        b(l(T), {
+        b(l(R), {
           "data-plugin-guide-open": "",
           onClick: d[3] || (d[3] = (A) => a("guide"))
         }, {
@@ -435,7 +440,7 @@ const N = (t, c) => {
           ])]),
           _: 1
         }),
-        b(l(T), {
+        b(l(R), {
           variant: "primary",
           "data-plugin-make-send": "",
           disabled: !i.value.trim() && !m.value.trim(),
@@ -474,7 +479,7 @@ const N = (t, c) => {
       _: 1
     }));
   }
-}, Nt = /* @__PURE__ */ N(xt, [["__scopeId", "data-v-911de8d3"]]), Lt = { "data-plugin-record-body": "" }, Dt = {
+}, Nt = /* @__PURE__ */ N(xt, [["__scopeId", "data-v-68367524"]]), Dt = { "data-plugin-record-body": "" }, Lt = {
   key: 0,
   class: "plugin-note",
   "data-plugin-services": ""
@@ -491,8 +496,8 @@ const N = (t, c) => {
   __name: "PluginRecordDialog",
   props: { record: { type: Object, required: !0 } },
   emits: ["close"],
-  setup(t, { emit: c }) {
-    const i = c;
+  setup(t, { emit: v }) {
+    const i = v;
     function m(u) {
       try {
         return JSON.parse(u).cards.map((d) => d.detail || d.title).join(`
@@ -502,21 +507,21 @@ const N = (t, c) => {
       }
     }
     const a = (u) => new Date(u).toLocaleString([], { dateStyle: "medium", timeStyle: "medium" });
-    return (u, d) => (s(), j(l(L), {
+    return (u, d) => (s(), j(l(D), {
       title: `What ${t.record.name} did`,
       onClose: d[0] || (d[0] = (A) => i("close"))
     }, {
       default: f(() => {
         var A;
         return [
-          e("div", Lt, [
-            (A = t.record.services) != null && A.length ? (s(), p("p", Dt, "Keeps running: " + v(t.record.services.map((o) => o.name).join(", ")), 1)) : C("", !0),
+          e("div", Dt, [
+            (A = t.record.services) != null && A.length ? (s(), p("p", Lt, "Keeps running: " + c(t.record.services.map((o) => o.name).join(", ")), 1)) : C("", !0),
             t.record.outputs.length ? C("", !0) : (s(), p("p", Et, "No activity yet.")),
-            (s(!0), p(R, null, O(t.record.outputs, (o) => (s(), p(R, {
+            (s(!0), p(T, null, O(t.record.outputs, (o) => (s(), p(T, {
               key: o.id
             }, [
-              e("p", Ut, v(a(o.created_at)), 1),
-              e("p", Wt, v(m(o.output)), 1)
+              e("p", Ut, c(a(o.created_at)), 1),
+              e("p", Wt, c(m(o.output)), 1)
             ], 64))), 128))
           ])
         ];
@@ -524,19 +529,19 @@ const N = (t, c) => {
       _: 1
     }, 8, ["title"]));
   }
-}, qt = /* @__PURE__ */ N(Mt, [["__scopeId", "data-v-591f0ba1"]]), Gt = {
+}, qt = /* @__PURE__ */ N(Mt, [["__scopeId", "data-v-a992a588"]]), Gt = {
   __name: "PluginRemoveDialog",
   props: { title: { type: String, required: !0 } },
   emits: ["close", "remove"],
-  setup(t, { emit: c }) {
-    const i = c;
-    return (m, a) => (s(), j(l(L), {
+  setup(t, { emit: v }) {
+    const i = v;
+    return (m, a) => (s(), j(l(D), {
       title: `Remove ${t.title}`,
       fits: "",
       onClose: a[3] || (a[3] = (u) => i("close"))
     }, {
       foot: f(() => [
-        b(l(T), {
+        b(l(R), {
           onClick: a[0] || (a[0] = (u) => i("close"))
         }, {
           default: f(() => [...a[4] || (a[4] = [
@@ -544,7 +549,7 @@ const N = (t, c) => {
           ])]),
           _: 1
         }),
-        b(l(T), {
+        b(l(R), {
           "data-plugin-remove-keep": "",
           onClick: a[1] || (a[1] = (u) => i("remove", !1))
         }, {
@@ -553,7 +558,7 @@ const N = (t, c) => {
           ])]),
           _: 1
         }),
-        b(l(T), {
+        b(l(R), {
           variant: "danger",
           "data-plugin-remove-purge": "",
           onClick: a[2] || (a[2] = (u) => i("remove", !0))
@@ -570,20 +575,20 @@ const N = (t, c) => {
       _: 1
     }, 8, ["title"]));
   }
-}, Vt = /* @__PURE__ */ N(Gt, [["__scopeId", "data-v-3c0e0fe1"]]);
+}, Vt = /* @__PURE__ */ N(Gt, [["__scopeId", "data-v-6ddf3c50"]]);
 function me(t) {
-  const { value: c } = t, i = typeof c == "string" && /^[[{"]|^(true|false)$/.test(c) ? JSON.parse(c) : c;
+  const { value: v } = t, i = typeof v == "string" && /^[[{"]|^(true|false)$/.test(v) ? JSON.parse(v) : v;
   return Array.isArray(i) ? i.join(`
 `) : i == null ? "" : String(i);
 }
-const Q = (t) => me(t) === "true", fe = (t, c) => t.filter((i) => i.parent === c.key);
-function Ft(t) {
-  const c = /* @__PURE__ */ new Map();
+const Q = (t) => me(t) === "true", fe = (t, v) => t.filter((i) => i.parent === v.key);
+function Bt(t) {
+  const v = /* @__PURE__ */ new Map();
   for (const i of t.filter((m) => !m.parent))
-    c.set(i.group, [...c.get(i.group) ?? [], i]);
-  return [...c].map(([i, m]) => ({ name: i, settings: m, flags: m.flatMap((a) => [a, ...fe(t, a)]).filter((a) => a.type === "flag") }));
+    v.set(i.group, [...v.get(i.group) ?? [], i]);
+  return [...v].map(([i, m]) => ({ name: i, settings: m, flags: m.flatMap((a) => [a, ...fe(t, a)]).filter((a) => a.type === "flag") }));
 }
-const Bt = ["data-plugin-setting"], Jt = {
+const Ft = ["data-plugin-setting"], Jt = {
   key: 0,
   class: "plugin-setting-flag"
 }, _t = { class: "plugin-setting-names" }, Kt = { class: "plugin-setting-title" }, Ht = {
@@ -596,19 +601,19 @@ const Bt = ["data-plugin-setting"], Jt = {
   __name: "PluginSettingRow",
   props: { setting: { type: Object, required: !0 }, settings: { type: Array, required: !0 }, dim: Boolean },
   emits: ["configure"],
-  setup(t, { emit: c }) {
-    const i = t, m = c, a = Ne(), u = E(() => me(i.setting)), d = E(() => fe(i.settings, i.setting)), A = E(() => i.setting.choices.map((y) => ({ key: y, label: y || "None" }))), o = (y) => m("configure", i.setting, String(y));
+  setup(t, { emit: v }) {
+    const i = t, m = v, a = Ne(), u = E(() => me(i.setting)), d = E(() => fe(i.settings, i.setting)), A = E(() => i.setting.choices.map((y) => ({ key: y, label: y || "None" }))), o = (y) => m("configure", i.setting, String(y));
     return (y, w) => {
-      const x = Le("PluginSettingRow", !0);
-      return s(), p(R, null, [
+      const x = De("PluginSettingRow", !0);
+      return s(), p(T, null, [
         e("div", {
-          class: ce(["plugin-setting", { dim: t.dim }]),
+          class: ve(["plugin-setting", { dim: t.dim }]),
           "data-plugin-setting": t.setting.key
         }, [
           t.setting.type === "flag" ? (s(), p("div", Jt, [
             e("div", _t, [
-              e("span", Kt, v(t.setting.title), 1),
-              t.setting.help ? (s(), p("span", Ht, v(t.setting.help), 1)) : C("", !0)
+              e("span", Kt, c(t.setting.title), 1),
+              t.setting.help ? (s(), p("span", Ht, c(t.setting.help), 1)) : C("", !0)
             ]),
             b(l(se), {
               on: l(Q)(t.setting),
@@ -642,7 +647,7 @@ const Bt = ["data-plugin-setting"], Jt = {
                   }, null, 8, ["id", "value"])
                 ]),
                 secret: f(() => [
-                  e("p", zt, v(u.value ? `Kept as ${u.value}.` : "A secret.") + " Add the credential on the Secrets page and allow this plugin to use it.", 1)
+                  e("p", zt, c(u.value ? `Kept as ${u.value}.` : "A secret.") + " Add the credential on the Secrets page and allow this plugin to use it.", 1)
                 ]),
                 default: f(() => [
                   b(l(le), {
@@ -657,9 +662,9 @@ const Bt = ["data-plugin-setting"], Jt = {
             ]),
             _: 1
           }, 8, ["label", "for", "help"]))
-        ], 10, Bt),
+        ], 10, Ft),
         d.value.length ? (s(), p("div", Yt, [
-          (s(!0), p(R, null, O(d.value, (I) => (s(), j(x, {
+          (s(!0), p(T, null, O(d.value, (I) => (s(), j(x, {
             key: I.key,
             setting: I,
             settings: t.settings,
@@ -670,7 +675,7 @@ const Bt = ["data-plugin-setting"], Jt = {
       ], 64);
     };
   }
-}, Qt = /* @__PURE__ */ N(Xt, [["__scopeId", "data-v-ef347878"]]), Zt = {
+}, Qt = /* @__PURE__ */ N(Xt, [["__scopeId", "data-v-68e8eacc"]]), Zt = {
   class: "plugin-settings",
   "data-plugin-setting-list": ""
 }, en = { class: "plugin-settings-head" }, tn = { class: "plugin-settings-version" }, nn = { class: "plugin-settings-on" }, sn = {
@@ -686,9 +691,9 @@ const Bt = ["data-plugin-setting"], Jt = {
   __name: "PluginSettingsDialog",
   props: { plugin: { type: Object, required: !0 }, description: { type: String, default: "" }, settings: { type: Array, required: !0 } },
   emits: ["close", "configure", "toggle"],
-  setup(t, { emit: c }) {
-    const i = t, m = c, a = E(() => Ft(i.settings)), u = De({}), d = (o) => o.flags.length ? `${o.flags.filter(Q).length} of ${o.flags.length} on` : String(o.settings.length), A = (o, y) => o.flags.filter((w) => Q(w) !== y).forEach((w) => m("configure", w, String(y)));
-    return (o, y) => (s(), j(l(L), {
+  setup(t, { emit: v }) {
+    const i = t, m = v, a = E(() => Bt(i.settings)), u = Le({}), d = (o) => o.flags.length ? `${o.flags.filter(Q).length} of ${o.flags.length} on` : String(o.settings.length), A = (o, y) => o.flags.filter((w) => Q(w) !== y).forEach((w) => m("configure", w, String(y)));
+    return (o, y) => (s(), j(l(D), {
       wide: "",
       title: t.plugin.title,
       onClose: y[2] || (y[2] = (w) => m("close"))
@@ -696,9 +701,9 @@ const Bt = ["data-plugin-setting"], Jt = {
       default: f(() => [
         e("div", Zt, [
           e("div", en, [
-            e("span", tn, v(t.plugin.version), 1),
+            e("span", tn, c(t.plugin.version), 1),
             e("span", nn, [
-              k(v(t.plugin.enabled ? "On" : "Off"), 1),
+              k(c(t.plugin.enabled ? "On" : "Off"), 1),
               b(l(se), {
                 on: t.plugin.enabled,
                 title: `Turn ${t.plugin.title} on or off`,
@@ -706,9 +711,9 @@ const Bt = ["data-plugin-setting"], Jt = {
               }, null, 8, ["on", "title"])
             ])
           ]),
-          t.description ? (s(), p("p", sn, v(t.description), 1)) : C("", !0),
+          t.description ? (s(), p("p", sn, c(t.description), 1)) : C("", !0),
           t.settings.length ? C("", !0) : (s(), p("p", ln, "This plugin has no settings")),
-          (s(!0), p(R, null, O(a.value, (w) => (s(), j(l(Ge), {
+          (s(!0), p(T, null, O(a.value, (w) => (s(), j(l(Ge), {
             key: w.name,
             class: "plugin-settings-group",
             bar: "",
@@ -720,7 +725,7 @@ const Bt = ["data-plugin-setting"], Jt = {
           }, {
             default: f(() => [
               w.flags.length > 1 ? (s(), p("div", an, [
-                b(l(T), {
+                b(l(R), {
                   small: "",
                   bordered: "",
                   "data-plugin-all-on": "",
@@ -731,7 +736,7 @@ const Bt = ["data-plugin-setting"], Jt = {
                   ])]),
                   _: 1
                 }, 8, ["onClick"]),
-                b(l(T), {
+                b(l(R), {
                   small: "",
                   bordered: "",
                   "data-plugin-all-off": "",
@@ -743,7 +748,7 @@ const Bt = ["data-plugin-setting"], Jt = {
                   _: 1
                 }, 8, ["onClick"])
               ])) : C("", !0),
-              (s(!0), p(R, null, O(w.settings, (x) => (s(), j(Qt, {
+              (s(!0), p(T, null, O(w.settings, (x) => (s(), j(Qt, {
                 key: x.key,
                 setting: x,
                 settings: t.settings,
@@ -757,21 +762,21 @@ const Bt = ["data-plugin-setting"], Jt = {
       _: 1
     }, 8, ["title"]));
   }
-}, rn = /* @__PURE__ */ N(on, [["__scopeId", "data-v-62d3ec60"]]), un = { "data-plugin-upgrade-body": "" }, dn = { class: "plugin-note" }, gn = {
+}, rn = /* @__PURE__ */ N(on, [["__scopeId", "data-v-83826936"]]), un = { "data-plugin-upgrade-body": "" }, dn = { class: "plugin-note" }, gn = {
   key: 0,
   class: "plugin-note"
 }, pn = {
   __name: "PluginUpgradeDialog",
   props: { upgrade: { type: Object, required: !0 } },
   emits: ["close", "apply"],
-  setup(t, { emit: c }) {
-    const i = c;
-    return (m, a) => (s(), j(l(L), {
+  setup(t, { emit: v }) {
+    const i = v;
+    return (m, a) => (s(), j(l(D), {
       title: `Upgrade ${t.upgrade.name}`,
       onClose: a[2] || (a[2] = (u) => i("close"))
     }, {
       foot: f(() => [
-        b(l(T), {
+        b(l(R), {
           onClick: a[0] || (a[0] = (u) => i("close"))
         }, {
           default: f(() => [...a[3] || (a[3] = [
@@ -779,7 +784,7 @@ const Bt = ["data-plugin-setting"], Jt = {
           ])]),
           _: 1
         }),
-        b(l(T), {
+        b(l(R), {
           variant: "primary",
           "data-plugin-upgrade-apply": "",
           onClick: a[1] || (a[1] = (u) => i("apply"))
@@ -792,19 +797,19 @@ const Bt = ["data-plugin-setting"], Jt = {
       ]),
       default: f(() => [
         e("div", un, [
-          e("p", dn, v(t.upgrade.installed) + " to " + v(t.upgrade.version) + ". Services that run keep the old code until the journal restarts.", 1),
+          e("p", dn, c(t.upgrade.installed) + " to " + c(t.upgrade.version) + ". Services that run keep the old code until the journal restarts.", 1),
           t.upgrade.changes.length ? C("", !0) : (s(), p("p", gn, "It runs the same commands as the version you have.")),
-          (s(!0), p(R, null, O(t.upgrade.changes, (u) => (s(), p("p", {
+          (s(!0), p(T, null, O(t.upgrade.changes, (u) => (s(), p("p", {
             key: u,
             class: "plugin-output",
             "data-plugin-upgrade-change": ""
-          }, v(u), 1))), 128))
+          }, c(u), 1))), 128))
         ])
       ]),
       _: 1
     }, 8, ["title"]));
   }
-}, vn = /* @__PURE__ */ N(pn, [["__scopeId", "data-v-271bc8e2"]]), cn = {
+}, cn = /* @__PURE__ */ N(pn, [["__scopeId", "data-v-476bfd4a"]]), vn = {
   class: "plugins",
   "data-plugins": ""
 }, mn = { class: "bar" }, fn = { class: "body" }, hn = {
@@ -831,73 +836,73 @@ const Bt = ["data-plugin-setting"], Jt = {
 }, bn = { class: "cards" }, Cn = {
   class: "plugin-note",
   "data-plugin-latest-line": ""
-}, Sn = { class: "make-mark" }, ve = 5e3, jn = {
+}, Sn = { class: "make-mark" }, ce = 5e3, jn = {
   __name: "PluginRows",
   setup(t) {
-    const c = Ve(), { rows: i, failure: m, loaded: a, load: u } = K("plugin list", ["plugin.*"]), { rows: d } = K("plugin dashboards", ["plugin.*"]), A = (r) => d.value.find((n) => n.plugin === r.name), { rows: o } = K("plugin descriptions", ["plugin.*"]), y = (r) => {
+    const v = Ve(), { rows: i, failure: m, loaded: a, load: u } = K("plugin list", ["plugin.*"]), { rows: d } = K("plugin dashboards", ["plugin.*"]), A = (r) => d.value.find((n) => n.plugin === r.name), { rows: o } = K("plugin descriptions", ["plugin.*"]), y = (r) => {
       var n;
       return ((n = o.value.find((h) => h.plugin === r.name)) == null ? void 0 : n.description) ?? "";
     }, { rows: w, load: x } = K("plugin services", ["plugin.*"]), I = (r) => w.value.filter((n) => n.plugin === r.name);
-    ge(x, () => !0, ve);
+    ge(x, () => !0, ce);
     const { rows: V, load: H } = K("plugin events", ["plugin.*"]), $ = (r) => V.value.filter((n) => n.plugin === r.name);
-    ge(H, () => !0, ve);
-    const g = P(""), S = P(""), F = P(!1), B = P(""), z = P(""), Z = P(!1), U = P(null), ae = P([]), Y = P(""), J = E(() => i.value.find((r) => r.name === Y.value) ?? null), ie = (r) => W(["plugin", r.enabled ? "disable" : "enable", r.name], { target: r, fields: { enabled: !r.enabled } });
+    ge(H, () => !0, ce);
+    const g = P(""), S = P(""), B = P(!1), F = P(""), z = P(""), Z = P(!1), U = P(null), ae = P([]), Y = P(""), J = E(() => i.value.find((r) => r.name === Y.value) ?? null), ie = (r) => W(["plugin", r.enabled ? "disable" : "enable", r.name], { target: r, fields: { enabled: !r.enabled } });
     async function W(r, n = null) {
       g.value = "";
-      const h = await _e(n, r, c.run);
+      const h = await _e(n, r, v.run);
       return g.value = h.ok ? "" : h.error, h.ok && u(), h.ok;
     }
     const M = P(null), ee = P(!1);
     async function he() {
       if (!S.value.trim()) return;
-      const r = await c.read(["plugin", "preview", S.value.trim()]);
+      const r = await v.read(["plugin", "preview", S.value.trim()]);
       g.value = r.ok ? "" : r.error, M.value = r.ok ? r.value : null;
     }
     async function ye() {
       const r = await W(["plugin", "install", M.value.source, "--yes"]);
       M.value = null, r && (S.value = "");
     }
-    const D = P({});
+    const L = P({});
     async function ke(r) {
-      const n = await c.read(["plugin", "latest", r.name]);
-      D.value = { ...D.value, [r.name]: n.ok ? n.value : { line: n.error, is_newer: !1 } };
+      const n = await v.read(["plugin", "latest", r.name]);
+      L.value = { ...L.value, [r.name]: n.ok ? n.value : { line: n.error, is_newer: !1 } };
     }
     const q = P(null);
     async function we(r) {
-      const n = await c.run(["plugin", "upgrade", r.name]);
+      const n = await v.run(["plugin", "upgrade", r.name]);
       g.value = n.ok ? "" : n.error, q.value = n.ok ? n.value : null;
     }
     async function $e() {
       const r = q.value.name;
-      q.value = null, await W(["plugin", "upgrade", r, "--yes"]) && (D.value = { ...D.value, [r]: { line: `${r} is upgraded; its running services start again within a minute`, is_newer: !1 } });
+      q.value = null, await W(["plugin", "upgrade", r, "--yes"]) && (L.value = { ...L.value, [r]: { line: `${r} is upgraded; its running services start again within a minute`, is_newer: !1 } });
     }
     function be(r) {
-      c.links.files && window.location.assign(Ke(window.location.href, r, c.links.files));
+      v.links.files && window.location.assign(Ke(window.location.href, r, v.links.files));
     }
     const _ = P(null);
     async function Ce(r) {
-      const n = await c.read(["plugin", "dashboard", r.name]);
+      const n = await v.read(["plugin", "dashboard", r.name]);
       g.value = n.ok ? "" : n.error, _.value = n.ok ? { title: A(r).title, document: n.value } : null;
     }
     async function Se() {
-      const r = [z.value.trim(), B.value.trim() && `Build it in ${B.value.trim()}.`].filter(Boolean).join(" ");
-      !r || !await W(["message", "send", `Please make a plugin: ${r}`]) || (B.value = "", z.value = "", F.value = !1, Z.value = !0);
+      const r = [z.value.trim(), F.value.trim() && `Build it in ${F.value.trim()}.`].filter(Boolean).join(" ");
+      !r || !await W(["message", "send", `Please make a plugin: ${r}`]) || (F.value = "", z.value = "", B.value = !1, Z.value = !0);
     }
     function je() {
-      F.value = !1, ee.value = !0;
+      B.value = !1, ee.value = !0;
     }
     async function Ae(r) {
       await W(["plugin", "remove", U.value.name, ...r ? ["--purge"] : []]) && (U.value = null);
     }
     async function oe(r) {
-      const n = await c.read(["plugin", "settings", r.name]);
+      const n = await v.read(["plugin", "settings", r.name]);
       g.value = n.ok ? "" : n.error, Y.value = n.ok ? r.name : "", ae.value = n.ok ? n.value.settings : [];
     }
-    async function Re(r, n) {
+    async function Te(r, n) {
       await W(["plugin", "configure", Y.value, r.key, n]) && await oe(J.value);
     }
-    const { value: te, failure: re, load: Te } = Fe((r) => `plugin record ${r.name}`);
-    return (r, n) => (s(), p("section", cn, [
+    const { value: te, failure: re, load: Re } = Be((r) => `plugin record ${r.name}`);
+    return (r, n) => (s(), p("section", vn, [
       e("div", mn, [
         e("form", {
           class: "install",
@@ -912,7 +917,7 @@ const Bt = ["data-plugin-setting"], Jt = {
             "aria-label": "Install a plugin from"
           }, {
             end: f(() => [
-              b(l(T), {
+              b(l(R), {
                 variant: "primary",
                 small: "",
                 type: "submit",
@@ -930,18 +935,18 @@ const Bt = ["data-plugin-setting"], Jt = {
       ]),
       e("div", fn, [
         n[18] || (n[18] = e("p", { class: "lead" }, " A plugin runs as you, with your files and your network. Check before installing shows every command it would run before anything runs, and it installs at that exact commit. ", -1)),
-        g.value ? (s(), p("p", hn, v(g.value), 1)) : C("", !0),
-        l(re) ? (s(), p("p", yn, v(l(re)), 1)) : C("", !0),
+        g.value ? (s(), p("p", hn, c(g.value), 1)) : C("", !0),
+        l(re) ? (s(), p("p", yn, c(l(re)), 1)) : C("", !0),
         Z.value ? (s(), p("p", kn, "Sent to the agent; its answer comes in the chat.")) : C("", !0),
-        l(a) ? l(m) ? (s(), p("p", wn, v(l(m)), 1)) : l(i).length ? C("", !0) : (s(), p("p", $n, [...n[14] || (n[14] = [
+        l(a) ? l(m) ? (s(), p("p", wn, c(l(m)), 1)) : l(i).length ? C("", !0) : (s(), p("p", $n, [...n[14] || (n[14] = [
           e("strong", null, "No plugin is installed", -1),
           k(" Paste a repository above to see what it would run.", -1)
-        ])])) : (s(), j(l(Be), {
+        ])])) : (s(), j(l(Fe), {
           key: 3,
           shape: "cards"
         })),
         e("div", bn, [
-          (s(!0), p(R, null, O(l(i), (h) => (s(), j(ft, {
+          (s(!0), p(T, null, O(l(i), (h) => (s(), j(ft, {
             key: h.id,
             plugin: h,
             description: y(h),
@@ -951,14 +956,14 @@ const Bt = ["data-plugin-setting"], Jt = {
             onToggle: (G) => ie(h),
             onSettings: (G) => oe(h),
             onBoard: (G) => Ce(h),
-            onRecord: (G) => l(Te)(h),
+            onRecord: (G) => l(Re)(h),
             onLatest: (G) => ke(h),
             onRemove: (G) => U.value = h
           }, {
             default: f(() => [
-              D.value[h.name] ? (s(), p(R, { key: 0 }, [
-                e("span", Cn, v(D.value[h.name].line), 1),
-                D.value[h.name].is_newer ? (s(), j(l(T), {
+              L.value[h.name] ? (s(), p(T, { key: 0 }, [
+                e("span", Cn, c(L.value[h.name].line), 1),
+                L.value[h.name].is_newer ? (s(), j(l(R), {
                   key: 0,
                   small: "",
                   variant: "primary",
@@ -978,7 +983,7 @@ const Bt = ["data-plugin-setting"], Jt = {
             type: "button",
             class: "make",
             "data-plugin-make": "",
-            onClick: n[1] || (n[1] = (h) => (F.value = !0, Z.value = !1))
+            onClick: n[1] || (n[1] = (h) => (B.value = !0, Z.value = !1))
           }, [
             e("span", Sn, [
               b(l(ne), {
@@ -997,16 +1002,16 @@ const Bt = ["data-plugin-setting"], Jt = {
         description: y(J.value),
         settings: ae.value,
         onClose: n[2] || (n[2] = (h) => Y.value = ""),
-        onConfigure: Re,
+        onConfigure: Te,
         onToggle: n[3] || (n[3] = (h) => ie(J.value))
       }, null, 8, ["plugin", "description", "settings"])) : C("", !0),
-      F.value ? (s(), j(Nt, {
+      B.value ? (s(), j(Nt, {
         key: 1,
-        repository: B.value,
-        "onUpdate:repository": n[4] || (n[4] = (h) => B.value = h),
+        repository: F.value,
+        "onUpdate:repository": n[4] || (n[4] = (h) => F.value = h),
         wish: z.value,
         "onUpdate:wish": n[5] || (n[5] = (h) => z.value = h),
-        onClose: n[6] || (n[6] = (h) => F.value = !1),
+        onClose: n[6] || (n[6] = (h) => B.value = !1),
         onGuide: je,
         onAsk: Se
       }, null, 8, ["repository", "wish"])) : C("", !0),
@@ -1027,7 +1032,7 @@ const Bt = ["data-plugin-setting"], Jt = {
         onClose: n[9] || (n[9] = (h) => M.value = null),
         onInstall: ye
       }, null, 8, ["preview"])) : C("", !0),
-      q.value ? (s(), j(vn, {
+      q.value ? (s(), j(cn, {
         key: 5,
         upgrade: q.value,
         onClose: n[10] || (n[10] = (h) => q.value = null),
@@ -1037,7 +1042,7 @@ const Bt = ["data-plugin-setting"], Jt = {
         key: 6,
         onClose: n[11] || (n[11] = (h) => ee.value = !1)
       })) : C("", !0),
-      _.value ? (s(), j(l(L), {
+      _.value ? (s(), j(l(D), {
         key: 7,
         title: _.value.title,
         onClose: n[12] || (n[12] = (h) => _.value = null)
@@ -1052,7 +1057,7 @@ const Bt = ["data-plugin-setting"], Jt = {
       }, 8, ["title"])) : C("", !0)
     ]));
   }
-}, Tn = /* @__PURE__ */ N(jn, [["__scopeId", "data-v-c62f86a4"]]);
+}, Rn = /* @__PURE__ */ N(jn, [["__scopeId", "data-v-904a083a"]]);
 export {
-  Tn as default
+  Rn as default
 };
