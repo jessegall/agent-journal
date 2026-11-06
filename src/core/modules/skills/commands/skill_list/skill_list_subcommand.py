@@ -25,7 +25,7 @@ class SkillListSubcommand(ReadSubcommand[tuple[SkillEntry, ...]]):
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[SkillEntry, ...]:
-        return tuple(replace(skill, modified_at=FileAccess.shared().version(Path(skill.path)).modified_at) for skill in self.catalogue.skills())
+        return tuple(skill if skill.modified_at is not None else replace(skill, modified_at=FileAccess.shared().version(Path(skill.path)).modified_at) for skill in self.catalogue.skills())
 
     def write_output(self, value: object, output: Output) -> None:
         skills = [skill for skill in value if isinstance(skill, SkillEntry)] if is_tuple(value) else []

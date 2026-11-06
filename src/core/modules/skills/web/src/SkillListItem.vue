@@ -19,7 +19,7 @@ const emit = defineEmits(["open", "require"]);
 .skill-list-item { display:flex; align-items:center; gap:10px; padding:8px 14px; border-bottom:1px solid var(--border); }
 .skill-list-item.selected { background:var(--hover); box-shadow:inset 2px 0 var(--accent); }
 .skill-name { flex:1; min-width:0; padding:0; border:0; background:none; color:var(--text); text-align:left; cursor:pointer; font:inherit; }
-.name-line { display:flex; align-items:center; gap:7px; font-size:12px; overflow-wrap:anywhere; }
-.description { display:block; margin:4px 0 0 20px; font-size:11px; line-height:1.5; color:var(--text-3); }
+.name-line { display:flex; align-items:center; gap:7px; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.description { display:block; margin:4px 0 0 20px; font-size:12px; line-height:1.5; color:var(--text-3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .read-dot { width:5px; height:5px; flex:none; border-radius:50%; background:var(--accent); }
 </style>

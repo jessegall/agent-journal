@@ -13,4 +13,5 @@ const emit = defineEmits(["change"]);
 .required-switch.on { background:var(--accent); }
 .required-switch.on span { transform:translateX(12px); }
 .required-switch:disabled { opacity:.5; cursor:wait; }
+@media(max-width:700px) { .required-switch { width:40px; height:24px; } .required-switch span { width:20px; height:20px; } .required-switch.on span { transform:translateX(16px); } }
 </style>

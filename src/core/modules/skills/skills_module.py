@@ -47,8 +47,7 @@ from core.modules.skills.support.skeletons import SKILLS_SKILLS_SKELETON
 
 
 class SkillsModule(Module):
-    """Adds the skills the modules declare: a list of them, and a write of their texts into the skill folders
-    of the agent programs."""
+    """Publishes skills and tracks what each agent must read."""
 
     name = "journal.core.skills"
     nudges = SKILL_NUDGES

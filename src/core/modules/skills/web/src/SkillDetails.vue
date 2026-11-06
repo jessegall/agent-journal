@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onUnmounted} from "vue";
+import {computed, ref, watch} from "vue";
 import SkillRequirements from "./SkillRequirements.vue";
 import SkillTriggerCard from "./SkillTriggerCard.vue";
 import SkillTriggerEditor from "./SkillTriggerEditor.vue";
@@ -13,8 +13,13 @@ const status = computed(() => {
     if (props.skill.read) return `The main agent read this skill at ${new Date(props.skill.held.loaded_at).toLocaleString()}.`;
     return "The main agent has not read this skill in this conversation.";
 });
-const file = computed(() => props.text ? URL.createObjectURL(new Blob([props.text.text], {type: "text/plain;charset=utf-8"})) : "");
-onUnmounted(() => {if (file.value) URL.revokeObjectURL(file.value);});
+const file = ref("");
+watch(() => props.text, (text, previous, cleanup) => {
+    if (!text) return;
+    const address = URL.createObjectURL(new Blob([text.text], {type: "text/plain;charset=utf-8"}));
+    file.value = address;
+    cleanup(() => URL.revokeObjectURL(address));
+}, {immediate: true});
 </script>
 
 <template>
@@ -22,7 +27,7 @@ onUnmounted(() => {if (file.value) URL.revokeObjectURL(file.value);});
         <header><h2>{{ skill.folder }} <small>{{ source }}</small></h2><p>{{ skill.description }}</p></header>
         <div class="status"><span>{{ status }}</span><template v-if="agent && skill.held?.state !== 'due'"><button type="button" @click="emit('read')">{{ skill.read ? 'Make the agent read it again' : 'Make the agent read it now' }}</button></template></div>
         <SkillRequirements :skill="skill" :busy="busy" @change="(agents, again) => emit('require', agents, again)" />
-        <section class="block"><div class="block-head"><h3>Make the agent read it when your words appear</h3><template v-if="!draft"><button type="button" @click="emit('add')">+ Add a trigger</button></template></div>
+        <section class="block"><div class="block-head"><h3>Make the agent read it when your words appear</h3><template v-if="!draft"><button type="button" @click="emit('add')">Add a trigger</button></template></div>
             <template v-if="!triggers.length && !draft"><p class="help">No triggers yet. Add one, and the agent must read this skill as soon as your words appear.</p></template>
             <template v-for="trigger in triggers" :key="trigger.id"><template v-if="draft?.trigger?.id !== trigger.id"><SkillTriggerCard :trigger="trigger" @edit="emit('edit', $event)" @run="emit('run', $event)" /></template></template>
             <template v-if="draft"><SkillTriggerEditor :key="draft.trigger?.id || skill.folder" :skill="skill.folder" :trigger="draft.trigger" :skills="skills" @saved="emit('saved')" @cancel="emit('cancel')" /></template>
@@ -37,8 +42,8 @@ onUnmounted(() => {if (file.value) URL.revokeObjectURL(file.value);});
 </template>
 
 <style scoped>
-.skill-details { display:flex; flex-direction:column; gap:24px; max-width:840px; padding:26px 32px 50px; margin:0 auto; font-size:12px; }
-h2 { display:flex; align-items:center; flex-wrap:wrap; gap:10px; font-size:19px; margin:0; font-weight:600; overflow-wrap:anywhere; }
+.skill-details { display:flex; flex-direction:column; gap:24px; max-width:720px; padding:18px 24px 40px; margin:0 auto; font-size:12px; }
+h2 { display:flex; align-items:center; flex-wrap:wrap; gap:10px; font-size:15px; margin:0; font-weight:600; overflow-wrap:anywhere; }
 h2 small { border:1px solid var(--border-2); border-radius:5px; padding:3px 6px; font-size:10px; color:var(--text-3); font-weight:400; }
 header p,.help { color:var(--text-3); line-height:1.7; margin:7px 0 0; }
 h3 { font-size:13px; margin:0; font-weight:600; }

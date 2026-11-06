@@ -10,14 +10,14 @@ try {
     await link.waitFor();
     await link.click();
     const skills = page.locator('[data-window="skills.skills"]');
-    await skills.locator('[data-skills-loaded]').getByText("journal", {exact: true}).waitFor();
-    await skills.locator('[data-skills-catalogue]').getByText("journal-etiquette", {exact: true}).waitFor();
+    await skills.getByRole("heading", {name: "Skills", exact: true}).waitFor();
+    await skills.locator('[data-skills-catalogue]').getByRole("button", {name: "journal-etiquette", exact: true}).waitFor();
     await skills.locator(".window-cover").waitFor({state: "detached"});
     const offer = await page.evaluate(async () => (await (await fetch("/api/windows?environment=main")).json()).windows.find((entry) => entry.name === "skills.skills"));
     assert.equal(offer.place, "page");
     assert.equal(offer.group, "project");
     await page.screenshot({path: capture, animations: "disabled"});
-    await skills.locator('[data-skills-catalogue]').getByText("journal", {exact: true}).click();
+    await skills.locator('[data-skills-catalogue]').getByRole("button", {name: "journal", exact: true}).click();
     await skills.locator("[data-skill-text]").waitFor();
 } finally {
     await browser.close();

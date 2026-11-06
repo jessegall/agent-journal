@@ -19,7 +19,7 @@ const switchTab = (value) => {tab.value = value; draft.value = null;};
     <WindowRoom padding="0">
         <template v-if="marked"><SkillText :skill="text" :failure="openFailure" :back="false" /></template>
         <template v-else>
-            <main :class="['skills-page', {'skill-open': Boolean(opened), 'trigger-open': Boolean(draft)}]">
+            <main :class="['skills-page', {'skill-open': tab === 'skills' && Boolean(opened), 'trigger-open': tab === 'triggers' && Boolean(draft)}]">
                 <header class="page-head"><div><h1>Skills</h1><p>Instructions an agent reads before it does a kind of work. Choose which ones it must read, and when. This applies to the whole project.</p></div><nav aria-label="Skills views"><button type="button" :aria-pressed="tab === 'skills'" @click="switchTab('skills')">Skills</button><button type="button" :aria-pressed="tab === 'triggers'" @click="switchTab('triggers')">Triggers</button></nav></header>
                 <template v-if="requirements.environment_overrides"><p class="warning" role="status">This environment has its own skill lists. Changes here apply to the whole project. Its environment lists still take priority.</p></template>
                 <template v-if="failure"><div class="warning" role="alert">{{ failure }} <button type="button" @click="load">Try again</button></div></template>
@@ -54,8 +54,8 @@ const switchTab = (value) => {tab.value = value; draft.value = null;};
 
 <style scoped>
 .skills-page { display:flex; flex-direction:column; height:100%; min-height:0; background:var(--bg); color:var(--text); }
-.page-head { display:flex; align-items:flex-end; justify-content:space-between; flex:none; gap:24px; padding:24px 28px 20px; border-bottom:1px solid var(--border); }
-h1 { margin:0; font-size:24px; font-weight:600; letter-spacing:-.5px; }
+.page-head { display:flex; align-items:flex-end; justify-content:space-between; flex:none; gap:24px; padding:16px 20px 14px; border-bottom:1px solid var(--border); }
+h1 { margin:0; font-size:16px; font-weight:600; }
 .page-head p { margin:7px 0 0; max-width:650px; font-size:12px; line-height:1.7; color:var(--text-3); }
 nav { display:flex; flex:none; gap:4px; padding:3px; border:1px solid var(--border); border-radius:7px; }
 nav button { border:0; background:none; color:var(--text-3); padding:5px 13px; font:inherit; font-size:12px; cursor:pointer; border-radius:4px; }
@@ -66,7 +66,7 @@ nav button[aria-pressed=true] { background:var(--hover); color:var(--text); }
 .empty strong { color:var(--text-2); font-weight:500; font-size:14px; }
 .centre { max-width:420px; margin:60px auto; text-align:center; }
 .phone-back { display:none; }
-.triggers-list { flex:none; width:390px; border-right:1px solid var(--border); overflow:auto; }
+.triggers-list { flex:none; width:440px; border-right:1px solid var(--border); overflow:auto; }
 .trigger-head { padding:16px; border-bottom:1px solid var(--border); font-size:12px; line-height:1.6; color:var(--text-3); }
 .trigger-head p { margin:0 0 10px; }
 .trigger-cards { display:flex; flex-direction:column; gap:10px; padding:16px; }
@@ -75,7 +75,8 @@ nav button[aria-pressed=true] { background:var(--hover); color:var(--text); }
 button { padding:6px 10px; border:1px solid var(--border-2); border-radius:6px; background:var(--bg); color:var(--text-2); font:inherit; cursor:pointer; }
 @media(max-width:700px) {
     .page-head { padding:16px; flex-wrap:wrap; gap:12px; }
-    .page-head h1 { font-size:21px; }
+    .page-head h1 { font-size:18px; }
+    .skill-open .page-head,.trigger-open .page-head { display:none; }
     .page-head p { display:none; }
     .panes { overflow:auto; }
     .skill-pane { display:none; }

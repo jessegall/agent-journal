@@ -15,7 +15,7 @@ PLUGIN_KEY = "plugin"
 
 
 class SkillCatalogue:
-    """Lists declared skills and published plugin skills; a file a publish removes while it is listed is no skill."""
+    """Lists module skills and skills installed in the project's program folders."""
 
     def __init__(self, registry: Registry, home: JournalHome, providers: Providers) -> None:
         self.registry, self.home, self.providers = registry, home, providers
@@ -41,7 +41,7 @@ class SkillCatalogue:
         fields = SkillCatalogue.front_matter(text)
         module = f"plugin:{fields[PLUGIN_KEY]}" if PLUGIN_KEY in fields else "project"
         return (SkillEntry(path.parent.name, module, fields["description"] if "description" in fields else "", (), (), (),
-                           SkillDigest.digest(text), str(path), False),)
+                           SkillDigest.digest(text), str(path), False, version.modified_at),)
 
     @staticmethod
     def front_matter(text: str) -> dict[str, str]:

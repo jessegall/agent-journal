@@ -38,7 +38,7 @@ class PhraseTriggerRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         texts = [(place, text) for place, text in self.texts(hook) if text]
         matching = [trigger for trigger in self.triggers.phrased() if self.watches_phrase(trigger, texts) and self.conditions.all_pass(trigger, hook)] if texts else []
-        skills = {skill.folder: skill for skill in self.catalogue.skills()}
+        skills = {skill.folder: skill for skill in self.catalogue.skills()} if any(trigger.action is TriggerAction.SKILL for trigger in matching) else {}
         matching = [trigger for trigger in matching if trigger.action is not TriggerAction.SKILL or trigger.skill in skills]
         deny = next((trigger for trigger in matching if trigger.action is TriggerAction.DENY), None)
         if deny is not None:
@@ -47,7 +47,7 @@ class PhraseTriggerRule(DriverRule):
             return RuleAnswer.allowed()
         missing = [trigger for trigger in matching if trigger.action is TriggerAction.SKILL and trigger.skill is not None
                    and not self.rows.is_loaded(hook.agent_id, trigger.skill, skills[trigger.skill].digest)]
-        commands = [RequireSkill(hook.agent_id, trigger.skill) for trigger in missing if trigger.skill is not None]
+        commands = [RequireSkill(hook.agent_id, folder) for folder in dict.fromkeys(trigger.skill for trigger in missing) if folder is not None]
         nudges = [TRIGGER_LINE.nudge(text=trigger.agent_line) for trigger in matching if trigger.action is not TriggerAction.SKILL]
         if missing:
             folder = missing[0].skill

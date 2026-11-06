@@ -46,6 +46,8 @@ class Trigger(Model):
     needs_enabling: bool = False
 
     def __post_init__(self) -> None:
+        if self.action is TriggerAction.SKILL and self.next_at is not None:
+            raise Refusal("a skill trigger watches words", "make a phrase trigger instead")
         if self.action is TriggerAction.SKILL and not self.skill:
             raise Refusal("a skill trigger needs a skill", "choose a skill from journal skill list")
         if not 1 <= len(self.text) <= TEXT_LIMIT_CHARACTERS:

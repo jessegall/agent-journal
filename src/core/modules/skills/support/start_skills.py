@@ -18,9 +18,7 @@ SKILL_SETTINGS = [
 
 
 class StartSkills:
-    """The skills made due when a session starts and when it starts again after a compaction, as the two
-    settings name them for an environment, else for the project, else the journal's own, each only when a
-    module declares it."""
+    """Reads start and compaction requirements, keeping skills still in the catalogue."""
 
     def __init__(self, values: SettingValues, catalogue: SkillCatalogue) -> None:
         self.values, self.catalogue = values, catalogue

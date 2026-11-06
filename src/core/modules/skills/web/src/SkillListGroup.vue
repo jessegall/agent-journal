@@ -4,11 +4,11 @@ import SkillListItem from "./SkillListItem.vue";
 const props = defineProps({title: {type: String, required: true}, skills: {type: Array, required: true}, opened: {type: String, default: ""}, busy: {type: Array, default: () => []}, searching: Boolean});
 const emit = defineEmits(["open", "require"]);
 const folded = ref(false);
-const closed = ref(new Set());
+const expanded = ref(new Set());
 const familyOf = (skill) => skill.folder.match(/^commandments-([^-]+)-/)?.[0].slice(0, -1) || "";
 const singles = computed(() => props.skills.filter((skill) => !familyOf(skill)));
 const families = computed(() => [...new Set(props.skills.map(familyOf).filter(Boolean))].map((name) => ({name, skills: props.skills.filter((skill) => familyOf(skill) === name)})));
-const toggle = (name) => {const next = new Set(closed.value); next.has(name) ? next.delete(name) : next.add(name); closed.value = next;};
+const toggle = (name) => {const next = new Set(expanded.value); next.has(name) ? next.delete(name) : next.add(name); expanded.value = next;};
 </script>
 
 <template>
@@ -17,8 +17,8 @@ const toggle = (name) => {const next = new Set(closed.value); next.has(name) ? n
         <template v-if="!folded || searching">
             <template v-for="skill in singles" :key="skill.folder"><SkillListItem :skill="skill" :selected="opened === skill.folder" :busy="busy.includes(skill.folder)" @open="emit('open', $event)" @require="(folder, value) => emit('require', folder, value)" /></template>
             <template v-for="family in families" :key="family.name">
-                <button type="button" class="group-head family" :aria-expanded="closed.has(family.name) || searching" @click="toggle(family.name)">{{ closed.has(family.name) || searching ? '⌄' : '›' }} {{ family.name }} <small>{{ family.skills.length }}</small></button>
-                <template v-if="closed.has(family.name) || searching"><template v-for="skill in family.skills" :key="skill.folder"><SkillListItem :skill="skill" :selected="opened === skill.folder" :busy="busy.includes(skill.folder)" @open="emit('open', $event)" @require="(folder, value) => emit('require', folder, value)" /></template></template>
+                <button type="button" class="group-head family" :aria-expanded="expanded.has(family.name) || searching" @click="toggle(family.name)">{{ expanded.has(family.name) || searching ? '⌄' : '›' }} {{ family.name }} <small>{{ family.skills.length }}</small></button>
+                <template v-if="expanded.has(family.name) || searching"><template v-for="skill in family.skills" :key="skill.folder"><SkillListItem :skill="skill" :selected="opened === skill.folder" :busy="busy.includes(skill.folder)" @open="emit('open', $event)" @require="(folder, value) => emit('require', folder, value)" /></template></template>
             </template>
         </template>
     </section>

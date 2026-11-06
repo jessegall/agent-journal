@@ -1,6 +1,7 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
+from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.settings.commands.support.setting_store import SettingStore
 from core.modules.settings.support.setting_reader import SettingReader
 from core.modules.skills.commands.set_required_skill.set_required_skill import SetRequiredSkill
@@ -24,8 +25,7 @@ class SetRequiredSkillHandler(Handler[SetRequiredSkill, SkillRequirements]):
         for key, required in ((SESSION_START_KEY, command.agents is RequiredAgents.ALL),
                               (AFTER_COMPACTION_KEY, command.agents is RequiredAgents.ALL and command.after_compaction),
                               (MAIN_AGENT_KEY, command.agents is RequiredAgents.MAIN)):
-            value = self.reader.project(key).value
-            folders = [folder for folder in value if folder != command.skill] if isinstance(value, (list, tuple)) else []
+            folders = [folder for folder in SettingValues(self.reader).project.texts(key) if folder != command.skill]
             if required:
                 folders.append(command.skill)
             self.store.write(key, folders, None, context)
