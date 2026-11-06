@@ -1,11 +1,11 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-4742eb39cfd5")) { const style = document.createElement("style"); style.id = "window-styles-4742eb39cfd5"; style.textContent = ".required-switch[data-v-ee9d0e40]{flex:none;width:28px;height:16px;padding:2px;border:0;border-radius:20px;background:var(--text-4);cursor:pointer}.required-switch span[data-v-ee9d0e40]{display:block;width:12px;height:12px;border-radius:50%;background:#fff;transition:transform .15s}.required-switch.on[data-v-ee9d0e40]{background:var(--accent)}.required-switch.on span[data-v-ee9d0e40]{transform:translate(12px)}.required-switch[data-v-ee9d0e40]:disabled{opacity:.5;cursor:wait}@media(max-width:700px){.required-switch[data-v-ee9d0e40]{width:40px;height:24px}.required-switch span[data-v-ee9d0e40]{width:20px;height:20px}.required-switch.on span[data-v-ee9d0e40]{transform:translate(16px)}}.skill-list-item[data-v-6699d870]{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border)}.skill-list-item.selected[data-v-6699d870]{background:var(--hover);box-shadow:inset 2px 0 var(--accent)}.skill-name[data-v-6699d870]{flex:1;min-width:0;padding:0;border:0;background:none;color:var(--text);text-align:left;cursor:pointer;font:inherit}.name-line[data-v-6699d870]{display:flex;align-items:center;gap:7px;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.description[data-v-6699d870]{display:block;margin:4px 0 0 20px;font-size:12px;line-height:1.5;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.read-dot[data-v-6699d870]{width:5px;height:5px;flex:none;border-radius:50%;background:var(--accent)}.group-head[data-v-383c3904]{display:flex;gap:6px;align-items:center;padding:13px 14px 8px;width:100%;border:0;background:var(--bg);color:var(--text-2);text-align:left;font:inherit;font-size:11px;font-weight:600;cursor:pointer}.group-head small[data-v-383c3904]{margin-left:auto;color:var(--text-3);font-size:10px;font-weight:400}.family[data-v-383c3904]{padding-left:25px}.skills-list[data-v-60b72429]{display:flex;flex-direction:column;width:440px;min-width:310px;flex:none;border-right:1px solid var(--border);min-height:0}.filters[data-v-60b72429]{display:flex;flex-wrap:wrap;gap:3px;padding:10px 12px;border-bottom:1px solid var(--border)}.filters button[data-v-60b72429]{padding:5px 7px;border:0;border-radius:6px;font:inherit;font-size:11px;background:none;color:var(--text-3);cursor:pointer}.filters button[aria-pressed=true][data-v-60b72429]{background:var(--hover);color:var(--text)}.filters small[data-v-60b72429]{margin-left:4px;font-size:10px}.skill-list-scroll[data-v-60b72429]{overflow:auto;flex:1;min-height:0}.column-head[data-v-60b72429]{display:flex;justify-content:space-between;padding:8px 14px;color:var(--text-3);font-size:10px}.skills-empty[data-v-60b72429]{padding:24px;font-size:12px;color:var(--text-3);line-height:1.6}.skills-empty strong[data-v-60b72429]{color:var(--text)}@media(max-width:1000px){.skills-list[data-v-60b72429]{width:340px;min-width:280px}}@media(max-width:700px){.skills-list[data-v-60b72429]{width:100%;min-width:0;border:0}}h3[data-v-6dff01bb]{margin:0;font-size:13px;font-weight:600}p[data-v-6dff01bb]{margin:6px 0 0;color:var(--text-3);font-size:12px;line-height:1.6}.block-head[data-v-6dff01bb]{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.switch-label[data-v-6dff01bb]{display:flex;align-items:center;gap:7px;flex:none;color:var(--text-3);font-size:11px}.choices[data-v-6dff01bb]{margin-top:16px;padding-left:16px;border-left:2px solid var(--border)}label[data-v-6dff01bb]{display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--text-2)}select[data-v-6dff01bb]{align-self:flex-start;max-width:100%;padding:6px 10px;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text);font:inherit}.again[data-v-6dff01bb]{flex-direction:row;align-items:center;justify-content:space-between;margin-top:16px;line-height:1.6}small[data-v-6dff01bb]{display:block;color:var(--text-3);font-size:11px}@media(max-width:700px){.block-head[data-v-6dff01bb]{flex-wrap:wrap}}.skill-trigger-card[data-v-8f3251db]{padding:14px;border:1px solid var(--border-2);border-radius:8px;font-size:12px;line-height:1.6;background:var(--bg)}p[data-v-8f3251db]{margin:0;overflow-wrap:anywhere}footer[data-v-8f3251db]{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;color:var(--text-3);font-size:11px}.push[data-v-8f3251db]{flex:1}button[data-v-8f3251db]{padding:4px 8px;border:1px solid var(--border-2);border-radius:5px;background:var(--bg);color:var(--text-2);font:inherit;cursor:pointer}.waiting[data-v-8f3251db]{margin-top:8px;color:var(--orange, #b57828)}.paused[data-v-8f3251db]{opacity:.7}.tiles[data-v-eb4da38d]{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}.tile[data-v-eb4da38d]{display:flex;flex-direction:column;gap:2px;padding:9px 11px;border:1px solid var(--border-2);border-radius:9px;background:var(--bg);color:inherit;font:inherit;text-align:left;cursor:pointer}.tile b[data-v-eb4da38d]{font-size:12.5px;font-weight:500}.tile span[data-v-eb4da38d]{color:var(--text-3);font-size:11.5px;line-height:1.4}.tile.picked[data-v-eb4da38d]{border-color:var(--accent);background:var(--accent-dim)}.tile.picked b[data-v-eb4da38d]{color:var(--accent-text)}.words[data-v-7a597156]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 8px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg)}.word[data-v-7a597156]{display:inline-flex;gap:4px;align-items:center;padding:1px 4px 1px 8px;border-radius:99px;background:var(--hover);font-size:13px}.word-remove[data-v-7a597156]{display:inline-grid;place-items:center;padding:2px;border:0;background:none;color:var(--text-3);cursor:pointer}.word-input[data-v-7a597156]{flex:1;min-width:140px;border:0;outline:none;background:none;color:var(--text);font:inherit;font-size:13px}.field[data-v-2e25b9b9],.block[data-v-2e25b9b9]{display:flex;flex-direction:column}.field[data-v-2e25b9b9]{gap:5px}.block[data-v-2e25b9b9]{gap:10px;padding:12px;border:1px solid var(--border-2);border-radius:10px;background:var(--bg-2)}.label[data-v-2e25b9b9]{color:var(--text-2);font-size:12.5px;font-weight:500}.check[data-v-2e25b9b9]{display:flex;gap:8px;align-items:center;color:var(--text-2);font-size:12.5px}.two[data-v-2e25b9b9]{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}input[data-v-2e25b9b9]:not([type=checkbox]),textarea[data-v-2e25b9b9]{box-sizing:border-box;width:100%;padding:6px 9px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px}textarea[data-v-2e25b9b9]{resize:vertical}.pattern-limit[data-v-2e25b9b9]{margin:0;color:var(--text-3);font-size:12px;line-height:1.5}.field[data-v-1a787719],.block[data-v-1a787719]{display:flex;flex-direction:column}.field[data-v-1a787719]{gap:5px}.block[data-v-1a787719]{gap:10px;padding:12px;border:1px solid var(--border-2);border-radius:10px;background:var(--bg-2)}.label[data-v-1a787719]{color:var(--text-2);font-size:12.5px;font-weight:500}.check[data-v-1a787719]{display:flex;gap:8px;align-items:center;color:var(--text-2);font-size:12.5px}.two[data-v-1a787719]{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}input[data-v-1a787719]:not([type=checkbox]),textarea[data-v-1a787719]{box-sizing:border-box;width:100%;padding:6px 9px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px}textarea[data-v-1a787719]{resize:vertical}.remove[data-v-1a787719]{align-self:flex-start}.skill-trigger-editor[data-v-e026cc21]{display:flex;flex-direction:column;gap:16px;padding:20px;border:1px solid var(--border-2);border-radius:10px;background:var(--bg);font-size:12px}h3[data-v-e026cc21]{margin:0;font-size:14px;font-weight:600;overflow-wrap:anywhere}.field[data-v-e026cc21]{display:flex;flex-direction:column;gap:7px;color:var(--text-2);font-size:12px}input[data-v-e026cc21],select[data-v-e026cc21]{min-width:0;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text);padding:8px;font:inherit}.summary[data-v-e026cc21]{padding:12px;border-radius:8px;background:var(--bg-2);line-height:1.6}.summary small[data-v-e026cc21],.help[data-v-e026cc21]{color:var(--text-3)}p[data-v-e026cc21]{margin:0}.summary p[data-v-e026cc21]{margin-top:4px}.more[data-v-e026cc21]{display:flex;flex-direction:column;gap:12px;padding-top:14px}summary[data-v-e026cc21]{color:var(--text-3);cursor:pointer}.trial[data-v-e026cc21]{color:var(--accent)}.actions[data-v-e026cc21]{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}button[data-v-e026cc21]{padding:6px 10px;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text-2);font:inherit;cursor:pointer}.primary[data-v-e026cc21]{background:var(--accent);border-color:var(--accent);color:#fff}button[data-v-e026cc21]:disabled{opacity:.5;cursor:default}.danger[data-v-e026cc21]{color:var(--red, #cc4b4b);margin-right:auto}.skill-details[data-v-4ab35e28]{display:flex;flex-direction:column;gap:24px;max-width:720px;padding:18px 24px 40px;margin:0 auto;font-size:12px}h2[data-v-4ab35e28]{display:flex;align-items:center;flex-wrap:wrap;gap:10px;font-size:15px;margin:0;font-weight:600;overflow-wrap:anywhere}h2 small[data-v-4ab35e28]{border:1px solid var(--border-2);border-radius:5px;padding:3px 6px;font-size:10px;color:var(--text-3);font-weight:400}header p[data-v-4ab35e28],.help[data-v-4ab35e28]{color:var(--text-3);line-height:1.7;margin:7px 0 0}h3[data-v-4ab35e28]{font-size:13px;margin:0;font-weight:600}.status[data-v-4ab35e28]{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:13px 15px;border:1px solid var(--border);border-radius:8px;background:var(--bg-2);line-height:1.6;color:var(--text-2)}.status span[data-v-4ab35e28]{flex:1;min-width:160px}.block[data-v-4ab35e28]{display:flex;flex-direction:column;gap:12px;padding-top:22px;border-top:1px solid var(--border)}.block-head[data-v-4ab35e28]{display:flex;align-items:center;justify-content:space-between;gap:10px}button[data-v-4ab35e28],a[data-v-4ab35e28]{flex:none;padding:6px 9px;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text-2);font:inherit;cursor:pointer;text-decoration:none;font-size:11px}pre[data-v-4ab35e28]{margin:0;font:12px/1.8 var(--mono, monospace);white-space:pre-wrap;overflow-wrap:anywhere}ul[data-v-4ab35e28]{padding-left:20px;line-height:1.9;margin:0;color:var(--text-2)}@media(max-width:700px){.skill-details[data-v-4ab35e28]{padding:20px 16px 35px}.block-head[data-v-4ab35e28]{flex-wrap:wrap}}.skills-title[data-v-47961cf4]{margin:0;font-size:13px}.skills-back[data-v-47961cf4]{padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text-2);font:inherit;cursor:pointer}.skills-text[data-v-47961cf4]{margin:0;white-space:pre-wrap;font-size:12px}.skills-page[data-v-96b3d2a6]{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--bg);color:var(--text)}.page-head[data-v-96b3d2a6]{display:flex;align-items:flex-end;justify-content:space-between;flex:none;gap:24px;padding:16px 20px 14px;border-bottom:1px solid var(--border)}h1[data-v-96b3d2a6]{margin:0;font-size:16px;font-weight:600}.page-head p[data-v-96b3d2a6]{margin:7px 0 0;max-width:650px;font-size:12px;line-height:1.7;color:var(--text-3)}nav[data-v-96b3d2a6]{display:flex;flex:none;gap:4px;padding:3px;border:1px solid var(--border);border-radius:7px}nav button[data-v-96b3d2a6]{border:0;background:none;color:var(--text-3);padding:5px 13px;font:inherit;font-size:12px;cursor:pointer;border-radius:4px}nav button[aria-pressed=true][data-v-96b3d2a6]{background:var(--hover);color:var(--text)}.panes[data-v-96b3d2a6]{display:flex;flex:1;min-height:0;overflow:hidden}.skill-pane[data-v-96b3d2a6]{flex:1;min-width:0;min-height:0;overflow:auto}.empty[data-v-96b3d2a6]{padding:30px;color:var(--text-3);font-size:12px;line-height:1.7}.empty strong[data-v-96b3d2a6]{color:var(--text-2);font-weight:500;font-size:14px}.centre[data-v-96b3d2a6]{max-width:420px;margin:60px auto;text-align:center}.phone-back[data-v-96b3d2a6]{display:none}.triggers-list[data-v-96b3d2a6]{flex:none;width:440px;border-right:1px solid var(--border);overflow:auto}.trigger-head[data-v-96b3d2a6]{padding:16px;border-bottom:1px solid var(--border);font-size:12px;line-height:1.6;color:var(--text-3)}.trigger-head p[data-v-96b3d2a6]{margin:0 0 10px}.trigger-cards[data-v-96b3d2a6]{display:flex;flex-direction:column;gap:10px;padding:16px}.trigger-form[data-v-96b3d2a6]{max-width:800px;padding:24px 28px;margin:auto}.warning[data-v-96b3d2a6]{padding:12px 24px;margin:0;background:var(--bg-2);border-bottom:1px solid var(--border);color:var(--text-2);font-size:12px;line-height:1.6}button[data-v-96b3d2a6]{padding:6px 10px;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text-2);font:inherit;cursor:pointer}@media(max-width:700px){.page-head[data-v-96b3d2a6]{padding:16px;flex-wrap:wrap;gap:12px}.page-head h1[data-v-96b3d2a6]{font-size:18px}.skill-open .page-head[data-v-96b3d2a6],.trigger-open .page-head[data-v-96b3d2a6],.page-head p[data-v-96b3d2a6]{display:none}.panes[data-v-96b3d2a6]{overflow:auto}.skill-pane[data-v-96b3d2a6],.skill-open .skills-list[data-v-96b3d2a6]{display:none}.skill-open .skill-pane[data-v-96b3d2a6]{display:block}.skill-open .phone-back[data-v-96b3d2a6]{display:block;margin:12px 16px 0}.triggers-list[data-v-96b3d2a6]{width:100%;border:0}.trigger-open .triggers-list[data-v-96b3d2a6]{display:none}.trigger-open .trigger-pane[data-v-96b3d2a6]{display:block}.trigger-form[data-v-96b3d2a6]{padding:16px}}\n"; document.head.appendChild(style); }
-import { ref as C, computed as I, onUnmounted as le, openBlock as l, createElementBlock as n, normalizeClass as J, createElementVNode as t, createVNode as N, unref as d, createTextVNode as T, toDisplayString as v, createCommentVNode as S, Fragment as A, renderList as F, createBlock as M, useModel as H, mergeProps as ke, mergeModels as Q, withDirectives as z, withKeys as me, withModifiers as se, vModelText as Y, withCtx as ne, reactive as he, watch as ae, vModelSelect as ve } from "vue";
+if (!document.getElementById("window-styles-8d814af37d05")) { const style = document.createElement("style"); style.id = "window-styles-8d814af37d05"; style.textContent = ".required-switch[data-v-68ccc8a8]{flex:none;width:28px;height:16px;padding:2px;border:0;border-radius:20px;background:var(--text-4);cursor:pointer}.required-switch span[data-v-68ccc8a8]{display:block;width:12px;height:12px;border-radius:50%;background:#fff;transition:transform .15s}.required-switch.on[data-v-68ccc8a8]{background:var(--accent)}.required-switch.on span[data-v-68ccc8a8]{transform:translate(12px)}.required-switch[data-v-68ccc8a8]:disabled{opacity:.5;cursor:wait}@media(max-width:700px){.required-switch[data-v-68ccc8a8]{width:40px;height:24px}.required-switch span[data-v-68ccc8a8]{width:20px;height:20px}.required-switch.on span[data-v-68ccc8a8]{transform:translate(16px)}}.skill-list-item[data-v-1366b5ed]{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border)}.skill-list-item.selected[data-v-1366b5ed]{background:var(--hover);box-shadow:inset 2px 0 var(--accent)}.skill-name[data-v-1366b5ed]{flex:1;min-width:0;padding:0;border:0;background:none;color:var(--text);text-align:left;cursor:pointer;font:inherit}.name-line[data-v-1366b5ed]{display:flex;align-items:center;gap:7px;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.description[data-v-1366b5ed]{display:block;margin:4px 0 0 20px;font-size:12px;line-height:1.5;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.read-dot[data-v-1366b5ed]{width:5px;height:5px;flex:none;border-radius:50%;background:var(--accent)}.group-head[data-v-02dff0ba]{display:flex;gap:6px;align-items:center;padding:13px 14px 8px;width:100%;border:0;background:var(--bg);color:var(--text-2);text-align:left;font:inherit;font-size:11px;font-weight:600;cursor:pointer}.group-head small[data-v-02dff0ba]{margin-left:auto;color:var(--text-3);font-size:10px;font-weight:400}.family[data-v-02dff0ba]{padding-left:25px}.skills-list[data-v-7e2d8fe2]{display:flex;flex-direction:column;width:440px;min-width:310px;flex:none;border-right:1px solid var(--border);min-height:0}.filters[data-v-7e2d8fe2]{display:flex;flex-wrap:wrap;gap:3px;padding:10px 12px;border-bottom:1px solid var(--border)}.filters button[data-v-7e2d8fe2]{padding:5px 7px;border:0;border-radius:6px;font:inherit;font-size:11px;background:none;color:var(--text-3);cursor:pointer}.filters button[aria-pressed=true][data-v-7e2d8fe2]{background:var(--hover);color:var(--text)}.filters small[data-v-7e2d8fe2]{margin-left:4px;font-size:10px}.skill-list-scroll[data-v-7e2d8fe2]{overflow:auto;flex:1;min-height:0}.column-head[data-v-7e2d8fe2]{display:flex;justify-content:space-between;padding:8px 14px;color:var(--text-3);font-size:10px}.skills-empty[data-v-7e2d8fe2]{padding:24px;font-size:12px;color:var(--text-3);line-height:1.6}.skills-empty strong[data-v-7e2d8fe2]{color:var(--text)}@media(max-width:1000px){.skills-list[data-v-7e2d8fe2]{width:340px;min-width:280px}}@media(max-width:700px){.skills-list[data-v-7e2d8fe2]{width:100%;min-width:0;border:0}}h3[data-v-16a809dd]{margin:0;font-size:13px;font-weight:600}p[data-v-16a809dd]{margin:6px 0 0;color:var(--text-3);font-size:12px;line-height:1.6}.block-head[data-v-16a809dd]{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.switch-label[data-v-16a809dd]{display:flex;align-items:center;gap:7px;flex:none;color:var(--text-3);font-size:11px}.choices[data-v-16a809dd]{margin-top:16px;padding-left:16px;border-left:2px solid var(--border)}label[data-v-16a809dd]{display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--text-2)}select[data-v-16a809dd]{align-self:flex-start;max-width:100%;padding:6px 10px;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text);font:inherit}.again[data-v-16a809dd]{flex-direction:row;align-items:center;justify-content:space-between;margin-top:16px;line-height:1.6}small[data-v-16a809dd]{display:block;color:var(--text-3);font-size:11px}@media(max-width:700px){.block-head[data-v-16a809dd]{flex-wrap:wrap}}.skill-trigger-card[data-v-0955089b]{padding:14px;border:1px solid var(--border-2);border-radius:8px;font-size:12px;line-height:1.6;background:var(--bg)}p[data-v-0955089b]{margin:0;overflow-wrap:anywhere}footer[data-v-0955089b]{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;color:var(--text-3);font-size:11px}.push[data-v-0955089b]{flex:1}button[data-v-0955089b]{padding:4px 8px;border:1px solid var(--border-2);border-radius:5px;background:var(--bg);color:var(--text-2);font:inherit;cursor:pointer}.waiting[data-v-0955089b]{margin-top:8px;color:var(--orange, #b57828)}.paused[data-v-0955089b]{opacity:.7}.tiles[data-v-16f9aa8d]{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}.tile[data-v-16f9aa8d]{display:flex;flex-direction:column;gap:2px;padding:9px 11px;border:1px solid var(--border-2);border-radius:9px;background:var(--bg);color:inherit;font:inherit;text-align:left;cursor:pointer}.tile b[data-v-16f9aa8d]{font-size:12.5px;font-weight:500}.tile span[data-v-16f9aa8d]{color:var(--text-3);font-size:11.5px;line-height:1.4}.tile.picked[data-v-16f9aa8d]{border-color:var(--accent);background:var(--accent-dim)}.tile.picked b[data-v-16f9aa8d]{color:var(--accent-text)}.words[data-v-e39c34e0]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 8px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg)}.word[data-v-e39c34e0]{display:inline-flex;gap:4px;align-items:center;padding:1px 4px 1px 8px;border-radius:99px;background:var(--hover);font-size:13px}.word-remove[data-v-e39c34e0]{display:inline-grid;place-items:center;padding:2px;border:0;background:none;color:var(--text-3);cursor:pointer}.word-input[data-v-e39c34e0]{flex:1;min-width:140px;border:0;outline:none;background:none;color:var(--text);font:inherit;font-size:13px}.field[data-v-521d1067],.block[data-v-521d1067]{display:flex;flex-direction:column}.field[data-v-521d1067]{gap:5px}.block[data-v-521d1067]{gap:10px;padding:12px;border:1px solid var(--border-2);border-radius:10px;background:var(--bg-2)}.label[data-v-521d1067]{color:var(--text-2);font-size:12.5px;font-weight:500}.check[data-v-521d1067]{display:flex;gap:8px;align-items:center;color:var(--text-2);font-size:12.5px}.two[data-v-521d1067]{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}input[data-v-521d1067]:not([type=checkbox]),textarea[data-v-521d1067]{box-sizing:border-box;width:100%;padding:6px 9px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px}textarea[data-v-521d1067]{resize:vertical}.pattern-limit[data-v-521d1067]{margin:0;color:var(--text-3);font-size:12px;line-height:1.5}.field[data-v-1719e67f],.block[data-v-1719e67f]{display:flex;flex-direction:column}.field[data-v-1719e67f]{gap:5px}.block[data-v-1719e67f]{gap:10px;padding:12px;border:1px solid var(--border-2);border-radius:10px;background:var(--bg-2)}.label[data-v-1719e67f]{color:var(--text-2);font-size:12.5px;font-weight:500}.check[data-v-1719e67f]{display:flex;gap:8px;align-items:center;color:var(--text-2);font-size:12.5px}.two[data-v-1719e67f]{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}input[data-v-1719e67f]:not([type=checkbox]),textarea[data-v-1719e67f]{box-sizing:border-box;width:100%;padding:6px 9px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px}textarea[data-v-1719e67f]{resize:vertical}.remove[data-v-1719e67f]{align-self:flex-start}.skill-trigger-editor[data-v-88cdd845]{display:flex;flex-direction:column;gap:16px;padding:20px;border:1px solid var(--border-2);border-radius:10px;background:var(--bg);font-size:12px}h3[data-v-88cdd845]{margin:0;font-size:14px;font-weight:600;overflow-wrap:anywhere}.field[data-v-88cdd845]{display:flex;flex-direction:column;gap:7px;color:var(--text-2);font-size:12px}input[data-v-88cdd845],select[data-v-88cdd845]{min-width:0;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text);padding:8px;font:inherit}.summary[data-v-88cdd845]{padding:12px;border-radius:8px;background:var(--bg-2);line-height:1.6}.summary small[data-v-88cdd845],.help[data-v-88cdd845]{color:var(--text-3)}p[data-v-88cdd845]{margin:0}.summary p[data-v-88cdd845]{margin-top:4px}.more[data-v-88cdd845]{display:flex;flex-direction:column;gap:12px;padding-top:14px}summary[data-v-88cdd845]{color:var(--text-3);cursor:pointer}.trial[data-v-88cdd845]{color:var(--accent)}.actions[data-v-88cdd845]{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}button[data-v-88cdd845]{padding:6px 10px;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text-2);font:inherit;cursor:pointer}.primary[data-v-88cdd845]{background:var(--accent);border-color:var(--accent);color:#fff}button[data-v-88cdd845]:disabled{opacity:.5;cursor:default}.danger[data-v-88cdd845]{color:var(--red, #cc4b4b);margin-right:auto}.skill-details[data-v-7823c0e4]{display:flex;flex-direction:column;gap:24px;max-width:720px;padding:18px 24px 40px;margin:0 auto;font-size:12px}h2[data-v-7823c0e4]{display:flex;align-items:center;flex-wrap:wrap;gap:10px;font-size:15px;margin:0;font-weight:600;overflow-wrap:anywhere}h2 small[data-v-7823c0e4]{border:1px solid var(--border-2);border-radius:5px;padding:3px 6px;font-size:10px;color:var(--text-3);font-weight:400}header p[data-v-7823c0e4],.help[data-v-7823c0e4]{color:var(--text-3);line-height:1.7;margin:7px 0 0}h3[data-v-7823c0e4]{font-size:13px;margin:0;font-weight:600}.status[data-v-7823c0e4]{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:13px 15px;border:1px solid var(--border);border-radius:8px;background:var(--bg-2);line-height:1.6;color:var(--text-2)}.status span[data-v-7823c0e4]{flex:1;min-width:160px}.block[data-v-7823c0e4]{display:flex;flex-direction:column;gap:12px;padding-top:22px;border-top:1px solid var(--border)}.block-head[data-v-7823c0e4]{display:flex;align-items:center;justify-content:space-between;gap:10px}button[data-v-7823c0e4],a[data-v-7823c0e4]{flex:none;padding:6px 9px;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text-2);font:inherit;cursor:pointer;text-decoration:none;font-size:11px}pre[data-v-7823c0e4]{margin:0;font:12px/1.8 var(--mono, monospace);white-space:pre-wrap;overflow-wrap:anywhere}ul[data-v-7823c0e4]{padding-left:20px;line-height:1.9;margin:0;color:var(--text-2)}@media(max-width:700px){.skill-details[data-v-7823c0e4]{padding:20px 16px 35px}.block-head[data-v-7823c0e4]{flex-wrap:wrap}}.skills-title[data-v-21cde365]{margin:0;font-size:13px}.skills-back[data-v-21cde365]{padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text-2);font:inherit;cursor:pointer}.skills-text[data-v-21cde365]{margin:0;white-space:pre-wrap;font-size:12px}.skills-page[data-v-cab161f2]{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--bg);color:var(--text)}.page-head[data-v-cab161f2]{display:flex;align-items:flex-end;justify-content:space-between;flex:none;gap:24px;padding:16px 20px 14px;border-bottom:1px solid var(--border)}h1[data-v-cab161f2]{margin:0;font-size:16px;font-weight:600}.page-head p[data-v-cab161f2]{margin:7px 0 0;max-width:650px;font-size:12px;line-height:1.7;color:var(--text-3)}nav[data-v-cab161f2]{display:flex;flex:none;gap:4px;padding:3px;border:1px solid var(--border);border-radius:7px}nav button[data-v-cab161f2]{border:0;background:none;color:var(--text-3);padding:5px 13px;font:inherit;font-size:12px;cursor:pointer;border-radius:4px}nav button[aria-pressed=true][data-v-cab161f2]{background:var(--hover);color:var(--text)}.panes[data-v-cab161f2]{display:flex;flex:1;min-height:0;overflow:hidden}.skill-pane[data-v-cab161f2]{flex:1;min-width:0;min-height:0;overflow:auto}.empty[data-v-cab161f2]{padding:30px;color:var(--text-3);font-size:12px;line-height:1.7}.empty strong[data-v-cab161f2]{color:var(--text-2);font-weight:500;font-size:14px}.centre[data-v-cab161f2]{max-width:420px;margin:60px auto;text-align:center}.phone-back[data-v-cab161f2]{display:none}.triggers-list[data-v-cab161f2]{flex:none;width:440px;border-right:1px solid var(--border);overflow:auto}.trigger-head[data-v-cab161f2]{padding:16px;border-bottom:1px solid var(--border);font-size:12px;line-height:1.6;color:var(--text-3)}.trigger-head p[data-v-cab161f2]{margin:0 0 10px}.trigger-cards[data-v-cab161f2]{display:flex;flex-direction:column;gap:10px;padding:16px}.trigger-form[data-v-cab161f2]{max-width:800px;padding:24px 28px;margin:auto}.warning[data-v-cab161f2]{padding:12px 24px;margin:0;background:var(--bg-2);border-bottom:1px solid var(--border);color:var(--text-2);font-size:12px;line-height:1.6}button[data-v-cab161f2]{padding:6px 10px;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text-2);font:inherit;cursor:pointer}@media(max-width:700px){.page-head[data-v-cab161f2]{padding:16px;flex-wrap:wrap;gap:12px}.page-head h1[data-v-cab161f2]{font-size:18px}.skill-open .page-head[data-v-cab161f2],.trigger-open .page-head[data-v-cab161f2],.page-head p[data-v-cab161f2]{display:none}.panes[data-v-cab161f2]{overflow:auto}.skill-pane[data-v-cab161f2],.skill-open .skills-list[data-v-cab161f2]{display:none}.skill-open .skill-pane[data-v-cab161f2]{display:block}.skill-open .phone-back[data-v-cab161f2]{display:block;margin:12px 16px 0}.triggers-list[data-v-cab161f2]{width:100%;border:0}.trigger-open .triggers-list[data-v-cab161f2]{display:none}.trigger-open .trigger-pane[data-v-cab161f2]{display:block}.trigger-form[data-v-cab161f2]{padding:16px}}\n"; document.head.appendChild(style); }
+import { ref as C, computed as j, onUnmounted as le, openBlock as l, createElementBlock as n, normalizeClass as J, createElementVNode as t, createVNode as N, unref as d, createTextVNode as T, toDisplayString as v, createCommentVNode as S, Fragment as A, renderList as F, createBlock as M, useModel as H, mergeProps as ke, mergeModels as Q, withDirectives as z, withKeys as me, withModifiers as se, vModelText as Y, withCtx as ne, reactive as he, watch as ae, vModelSelect as ve } from "vue";
 import { useWindow as ie, Icon as re, useListTools as ye, ListTools as fe, DropList as oe, Btn as pe, WindowRoom as be } from "@journal/window-kit";
 function $e() {
   const e = ie(), c = C([]), a = C([]), k = C([]), r = C({ session_start: [], after_compaction: [], main_agent: [], environment_overrides: !1 }), s = C(null), o = C(!1), u = C(""), i = C([]), w = C(""), $ = C(null), b = C(""), m = C("skills"), y = C(null), p = e.option("row");
-  let O = 0, j = 0;
-  const R = I(() => c.value.map((h) => {
+  let O = 0, I = 0;
+  const R = j(() => c.value.map((h) => {
     const g = a.value.find((B) => B.skill === h.folder);
     return {
       ...h,
@@ -16,14 +16,14 @@ function $e() {
       read: (g == null ? void 0 : g.state) === "loaded",
       changed: (g == null ? void 0 : g.state) === "loaded" && g.digest !== h.digest
     };
-  })), W = I(() => R.value.find((h) => h.folder === w.value)), P = I(() => k.value.filter((h) => h.skill === w.value));
+  })), W = j(() => R.value.find((h) => h.folder === w.value)), P = j(() => k.value.filter((h) => h.skill === w.value));
   async function V() {
     var Z;
-    const h = ++j, [g, B, x, D] = await Promise.all([e.read("agent main"), e.read("skill list"), e.read("skill requirements"), e.read("trigger list --skill")]);
-    if (h !== j) return;
+    const h = ++I, [g, B, x, D] = await Promise.all([e.read("agent main"), e.read("skill list"), e.read("skill requirements"), e.read("trigger list --skill")]);
+    if (h !== I) return;
     s.value = g.ok ? g.value.id : null;
     const K = s.value ? await e.read(`agent-skill list --agent ${s.value} --limit 1000`) : null;
-    h === j && (c.value = B.ok ? B.value.rows : [], a.value = K != null && K.ok ? K.value.rows : [], k.value = D.ok ? D.value.rows : [], x.ok && (r.value = x.value), u.value = ((Z = [B, x, D, K].find((_) => _ && !_.ok)) == null ? void 0 : Z.error) || "", o.value = !0);
+    h === I && (c.value = B.ok ? B.value.rows : [], a.value = K != null && K.ok ? K.value.rows : [], k.value = D.ok ? D.value.rows : [], x.ok && (r.value = x.value), u.value = ((Z = [B, x, D, K].find((_) => _ && !_.ok)) == null ? void 0 : Z.error) || "", o.value = !0);
   }
   async function G(h, g = !0) {
     if (w.value = h, $.value = null, b.value = "", y.value = null, g && !p.value) {
@@ -73,7 +73,7 @@ const E = (e, c) => {
       t("span", null, null, -1)
     ])], 10, we));
   }
-}, ue = /* @__PURE__ */ E(qe, [["__scopeId", "data-v-ee9d0e40"]]), Se = ["data-skill"], xe = ["aria-label"], Ce = { class: "name-line" }, Te = {
+}, ue = /* @__PURE__ */ E(qe, [["__scopeId", "data-v-68ccc8a8"]]), Se = ["data-skill"], xe = ["aria-label"], Ce = { class: "name-line" }, Te = {
   key: 0,
   class: "read-dot",
   title: "Read by the main agent"
@@ -111,7 +111,7 @@ const E = (e, c) => {
       }, null, 8, ["folder", "required", "busy"])
     ], 10, Se));
   }
-}, ee = /* @__PURE__ */ E(Ae, [["__scopeId", "data-v-6699d870"]]), Oe = { class: "skill-group" }, Ie = ["aria-expanded"], je = ["aria-expanded", "onClick"], We = {
+}, ee = /* @__PURE__ */ E(Ae, [["__scopeId", "data-v-1366b5ed"]]), Oe = { class: "skill-group" }, je = ["aria-expanded"], Ie = ["aria-expanded", "onClick"], We = {
   __name: "SkillListGroup",
   props: { title: { type: String, required: !0 }, skills: { type: Array, required: !0 }, opened: { type: String, default: "" }, busy: { type: Array, default: () => [] }, searching: Boolean },
   emits: ["open", "require"],
@@ -119,7 +119,7 @@ const E = (e, c) => {
     const a = e, k = c, r = C(!1), s = C(/* @__PURE__ */ new Set()), o = ($) => {
       var b;
       return ((b = $.folder.match(/^commandments-([^-]+)-/)) == null ? void 0 : b[0].slice(0, -1)) || "";
-    }, u = I(() => a.skills.filter(($) => !o($))), i = I(() => [...new Set(a.skills.map(o).filter(Boolean))].map(($) => ({ name: $, skills: a.skills.filter((b) => o(b) === $) }))), w = ($) => {
+    }, u = j(() => a.skills.filter(($) => !o($))), i = j(() => [...new Set(a.skills.map(o).filter(Boolean))].map(($) => ({ name: $, skills: a.skills.filter((b) => o(b) === $) }))), w = ($) => {
       const b = new Set(s.value);
       b.has($) ? b.delete($) : b.add($), s.value = b;
     };
@@ -132,7 +132,7 @@ const E = (e, c) => {
       }, [
         T(v(r.value && !e.searching ? "›" : "⌄") + " " + v(e.title) + " ", 1),
         t("small", null, v(e.skills.length) + ", " + v(e.skills.filter((m) => m.required).length) + " required", 1)
-      ], 8, Ie),
+      ], 8, je),
       !r.value || e.searching ? (l(), n(A, { key: 0 }, [
         (l(!0), n(A, null, F(u.value, (m) => (l(), M(ee, {
           key: m.folder,
@@ -153,7 +153,7 @@ const E = (e, c) => {
           }, [
             T(v(s.value.has(m.name) || e.searching ? "⌄" : "›") + " " + v(m.name) + " ", 1),
             t("small", null, v(m.skills.length), 1)
-          ], 8, je),
+          ], 8, Ie),
           s.value.has(m.name) || e.searching ? (l(!0), n(A, { key: 0 }, F(m.skills, (y) => (l(), M(ee, {
             key: y.folder,
             skill: y,
@@ -166,7 +166,7 @@ const E = (e, c) => {
       ], 64)) : S("", !0)
     ]));
   }
-}, Le = /* @__PURE__ */ E(We, [["__scopeId", "data-v-383c3904"]]), Ne = {
+}, Le = /* @__PURE__ */ E(We, [["__scopeId", "data-v-02dff0ba"]]), Ne = {
   class: "skills-list",
   "data-skills-catalogue": ""
 }, Ee = { class: "filters" }, Ve = ["aria-pressed", "onClick"], Be = { class: "skill-list-scroll" }, Fe = {
@@ -177,12 +177,12 @@ const E = (e, c) => {
   props: { skills: { type: Array, required: !0 }, opened: { type: String, default: "" }, busy: { type: Array, default: () => [] } },
   emits: ["open", "require"],
   setup(e, { emit: c }) {
-    const a = e, k = c, r = C("all"), s = I(() => [...a.skills].sort((m, y) => (y.modified_at || 0) - (m.modified_at || 0))), o = ye(s, { title: (m) => m.folder });
+    const a = e, k = c, r = C("all"), s = j(() => [...a.skills].sort((m, y) => (y.modified_at || 0) - (m.modified_at || 0))), o = ye(s, { title: (m) => m.folder });
     o.order.value = "title";
-    const u = I(() => [{ key: "all", label: "All", count: a.skills.length }, { key: "required", label: "Required", count: a.skills.filter((m) => m.required).length }, { key: "read", label: "Read by the main agent", count: a.skills.filter((m) => m.read).length }]), i = I(() => o.shown.value.filter((m) => ({ all: !0, required: m.required, read: m.read })[r.value])), w = (m) => {
+    const u = j(() => [{ key: "all", label: "All", count: a.skills.length }, { key: "required", label: "Required", count: a.skills.filter((m) => m.required).length }, { key: "read", label: "Read by the main agent", count: a.skills.filter((m) => m.read).length }]), i = j(() => o.shown.value.filter((m) => ({ all: !0, required: m.required, read: m.read })[r.value])), w = (m) => {
       var y;
       return (y = m.module) != null && y.startsWith("plugin:") ? "plugin" : m.shipped ? "journal" : "project";
-    }, $ = I(() => [{ key: "journal", title: "From the journal" }, { key: "plugin", title: "From a plugin" }, { key: "project", title: "From this project" }].map((m) => ({ ...m, skills: i.value.filter((y) => w(y) === m.key) })).filter((m) => m.skills.length)), b = I(() => a.skills.length ? o.words.value.trim() ? ["No skill matches", "Try other words."] : r.value === "required" ? ["No skill is required", "Switch on Required beside a skill to make the agent read it at the start."] : ["No skill is read in this conversation", "Skills appear here after the main agent reads them."] : ["No skills are installed", "Add a folder with a SKILL.md file under .agents/skills in this project."]);
+    }, $ = j(() => [{ key: "journal", title: "From the journal" }, { key: "plugin", title: "From a plugin" }, { key: "project", title: "From this project" }].map((m) => ({ ...m, skills: i.value.filter((y) => w(y) === m.key) })).filter((m) => m.skills.length)), b = j(() => a.skills.length ? o.words.value.trim() ? ["No skill matches", "Try other words."] : r.value === "required" ? ["No skill is required", "Switch on Required beside a skill to make the agent read it at the start."] : ["No skill is read in this conversation", "Skills appear here after the main agent reads them."] : ["No skills are installed", "Add a folder with a SKILL.md file under .agents/skills in this project."]);
     return (m, y) => (l(), n("aside", Ne, [
       N(d(fe), {
         tools: d(o),
@@ -213,7 +213,7 @@ const E = (e, c) => {
             busy: e.busy,
             searching: d(o).filtering.value || r.value !== "all",
             onOpen: y[0] || (y[0] = (O) => k("open", O)),
-            onRequire: y[1] || (y[1] = (O, j) => k("require", O, j))
+            onRequire: y[1] || (y[1] = (O, I) => k("require", O, I))
           }, null, 8, ["title", "skills", "opened", "busy", "searching"]))), 128))
         ], 64)) : (l(), n("div", Fe, [
           t("strong", null, v(b.value[0]), 1),
@@ -227,7 +227,7 @@ const E = (e, c) => {
       ])
     ]));
   }
-}, Pe = /* @__PURE__ */ E(Me, [["__scopeId", "data-v-60b72429"]]), Ue = { class: "requirements" }, De = { class: "block-head" }, Ge = { class: "switch-label" }, He = {
+}, Pe = /* @__PURE__ */ E(Me, [["__scopeId", "data-v-7e2d8fe2"]]), Ue = { class: "requirements" }, De = { class: "block-head" }, Ge = { class: "switch-label" }, He = {
   key: 0,
   class: "choices"
 }, Ke = ["value", "disabled"], ze = { key: 0 }, Ye = {
@@ -284,7 +284,7 @@ const E = (e, c) => {
       ])) : S("", !0)
     ]));
   }
-}, Xe = /* @__PURE__ */ E(Qe, [["__scopeId", "data-v-6dff01bb"]]), Ze = [
+}, Xe = /* @__PURE__ */ E(Qe, [["__scopeId", "data-v-16a809dd"]]), Ze = [
   { key: "nudge", value: "nudge", label: "Remind the agent", hint: "A short note only the agent sees. It carries on with its work.", ask: "What to remind the agent of", example: "Add the change to src/CHANGELOG.md in plain words." },
   { key: "instruct", value: "instruct", label: "Tell the agent to do something now", hint: "The agent sees “Do this now:” followed by your text.", ask: "What the agent should do", example: "Stop and ask me before you touch the database." },
   { key: "deny", value: "deny", label: "Block a command or file change", hint: "The command or file change is refused, and the agent is given your reason.", ask: "Reason the agent is given", example: "Never force-push. Ask me first." },
@@ -334,7 +334,7 @@ const at = {
   props: { trigger: { type: Object, required: !0 }, busy: Boolean },
   emits: ["edit", "run"],
   setup(e, { emit: c }) {
-    const a = e, k = c, r = I(() => de(a.trigger));
+    const a = e, k = c, r = j(() => de(a.trigger));
     return (s, o) => (l(), n("article", {
       class: J(["skill-trigger-card", { paused: e.trigger.paused_at }])
     }, [
@@ -364,7 +364,7 @@ const at = {
       ])
     ], 2));
   }
-}, ce = /* @__PURE__ */ E(dt, [["__scopeId", "data-v-8f3251db"]]), ct = { class: "tiles" }, gt = ["onClick"], kt = {
+}, ce = /* @__PURE__ */ E(dt, [["__scopeId", "data-v-0955089b"]]), ct = { class: "tiles" }, gt = ["onClick"], kt = {
   __name: "TriggerTiles",
   props: /* @__PURE__ */ Q({ options: { type: Array, required: !0 }, mark: { type: String, required: !0 } }, {
     modelValue: { type: String, required: !0 },
@@ -386,7 +386,7 @@ const at = {
       ], 16, gt))), 128))
     ]));
   }
-}, mt = /* @__PURE__ */ E(kt, [["__scopeId", "data-v-eb4da38d"]]), ht = { class: "words" }, vt = ["aria-label", "onClick"], yt = ["onKeydown"], ft = {
+}, mt = /* @__PURE__ */ E(kt, [["__scopeId", "data-v-16f9aa8d"]]), ht = { class: "words" }, vt = ["aria-label", "onClick"], yt = ["onKeydown"], ft = {
   __name: "WatchedWords",
   props: { words: { type: Array, required: !0 } },
   emits: ["words"],
@@ -428,7 +428,7 @@ const at = {
       ])
     ]));
   }
-}, pt = /* @__PURE__ */ E(ft, [["__scopeId", "data-v-7a597156"]]), bt = { class: "field" }, $t = { class: "field" }, wt = ["checked", "data-trigger-place", "onChange"], qt = { class: "field" }, St = {
+}, pt = /* @__PURE__ */ E(ft, [["__scopeId", "data-v-e39c34e0"]]), bt = { class: "field" }, $t = { class: "field" }, wt = ["checked", "data-trigger-place", "onChange"], qt = { class: "field" }, St = {
   key: 0,
   class: "pattern-limit",
   "data-trigger-pattern-limit": ""
@@ -480,13 +480,13 @@ const at = {
       ])
     ], 64));
   }
-}, Ct = /* @__PURE__ */ E(xt, [["__scopeId", "data-v-2e25b9b9"]]), Tt = { class: "block" }, Rt = {
+}, Ct = /* @__PURE__ */ E(xt, [["__scopeId", "data-v-521d1067"]]), Tt = { class: "block" }, Rt = {
   key: 0,
   class: "field"
 }, At = { class: "label" }, Ot = {
   key: 1,
   class: "field"
-}, It = { class: "label" }, jt = ["placeholder"], Wt = {
+}, jt = { class: "label" }, It = ["placeholder"], Wt = {
   __name: "TriggerListedField",
   props: /* @__PURE__ */ Q({
     label: { type: String, required: !0 },
@@ -498,7 +498,7 @@ const at = {
   }),
   emits: /* @__PURE__ */ Q(["remove"], ["update:modelValue"]),
   setup(e, { emit: c }) {
-    const a = e, k = c, r = H(e, "modelValue"), s = I(() => {
+    const a = e, k = c, r = H(e, "modelValue"), s = j(() => {
       var o, u;
       return ((u = (o = a.choices) == null ? void 0 : o.find((i) => i.value === r.value)) == null ? void 0 : u.label) ?? "Choose one";
     });
@@ -513,12 +513,12 @@ const at = {
           onPick: u[0] || (u[0] = (i) => r.value = i.value)
         }, null, 8, ["label", "items", "picked"])
       ])) : (l(), n("label", Ot, [
-        t("span", It, v(e.label), 1),
+        t("span", jt, v(e.label), 1),
         z(t("input", {
           "onUpdate:modelValue": u[1] || (u[1] = (i) => r.value = i),
           placeholder: e.example,
           "data-trigger-listed": ""
-        }, null, 8, jt), [
+        }, null, 8, It), [
           [Y, r.value]
         ])
       ])),
@@ -534,7 +534,7 @@ const at = {
       })
     ]));
   }
-}, Lt = /* @__PURE__ */ E(Wt, [["__scopeId", "data-v-1a787719"]]), Nt = {
+}, Lt = /* @__PURE__ */ E(Wt, [["__scopeId", "data-v-1719e67f"]]), Nt = {
   __name: "TriggerConditionFields",
   props: {
     modelValue: { type: Array, required: !0 },
@@ -578,7 +578,7 @@ const at = {
   emits: ["saved", "cancel"],
   setup(e, { emit: c }) {
     var R, W, P, V, G, U;
-    const a = e, k = c, r = ie(), s = he({ skill: ((R = a.trigger) == null ? void 0 : R.skill) || a.skill, name: ((W = a.trigger) == null ? void 0 : W.name) || "", phrases: [...((P = a.trigger) == null ? void 0 : P.phrases) || []], places: [...((V = a.trigger) == null ? void 0 : V.watch_places) || ["messages", "commands", "files"]], match: ((G = a.trigger) == null ? void 0 : G.match_mode) || "word", conditions: JSON.parse(((U = a.trigger) == null ? void 0 : U.conditions) || "[]") }), o = C(""), u = C(null), i = C(""), w = C(!1), $ = C(!1), b = I(() => s.skill ? s.phrases.length ? s.places.length ? "" : "Choose where to look." : "Add at least one word." : "Choose a skill."), m = I(() => de({ ...s, action: "skill" }));
+    const a = e, k = c, r = ie(), s = he({ skill: ((R = a.trigger) == null ? void 0 : R.skill) || a.skill, name: ((W = a.trigger) == null ? void 0 : W.name) || "", phrases: [...((P = a.trigger) == null ? void 0 : P.phrases) || []], places: [...((V = a.trigger) == null ? void 0 : V.watch_places) || ["messages", "commands", "files"]], match: ((G = a.trigger) == null ? void 0 : G.match_mode) || "word", conditions: JSON.parse(((U = a.trigger) == null ? void 0 : U.conditions) || "[]") }), o = C(""), u = C(null), i = C(""), w = C(!1), $ = C(!1), b = j(() => s.skill ? s.phrases.length ? s.places.length ? "" : "Choose where to look." : "Add at least one word." : "Choose a skill."), m = j(() => de({ ...s, action: "skill" }));
     let y, p = 0;
     ae(() => [o.value, s.phrases.join(","), s.match], () => {
       clearTimeout(y);
@@ -596,7 +596,7 @@ const at = {
       const L = ["--name", s.name.trim() || `Read ${s.skill}`, "--skill", s.skill, "--watch-places", ...s.places, "--match-mode", s.match, "--conditions", JSON.stringify(s.conditions)], f = a.trigger ? ["trigger", "edit", String(a.trigger.id), ...L, ...s.phrases.map((h) => `--phrases=${h}`)] : ["trigger", "make", "--do", "skill", ...L, "--", s.phrases.join(", ")], q = await r.run(f);
       i.value = q.ok ? "" : q.error, w.value = !1, q.ok && k("saved");
     }
-    async function j() {
+    async function I() {
       const L = await r.run(["trigger", "strike", String(a.trigger.id)]);
       i.value = L.ok ? "" : L.error, L.ok && k("saved");
     }
@@ -675,7 +675,7 @@ const at = {
           key: 0,
           type: "button",
           class: "danger",
-          onClick: f[7] || (f[7] = (q) => $.value ? j() : $.value = !0)
+          onClick: f[7] || (f[7] = (q) => $.value ? I() : $.value = !0)
         }, v($.value ? "Yes, end it" : "End this trigger"), 1)) : S("", !0),
         t("button", {
           type: "button",
@@ -689,7 +689,7 @@ const at = {
       ])
     ], 32));
   }
-}, ge = /* @__PURE__ */ E(Yt, [["__scopeId", "data-v-e026cc21"]]), Jt = { class: "skill-details" }, Qt = { class: "status" }, Xt = { class: "block" }, Zt = { class: "block-head" }, _t = {
+}, ge = /* @__PURE__ */ E(Yt, [["__scopeId", "data-v-88cdd845"]]), Jt = { class: "skill-details" }, Qt = { class: "status" }, Xt = { class: "block" }, Zt = { class: "block-head" }, _t = {
   key: 0,
   class: "help"
 }, el = {
@@ -706,10 +706,10 @@ const at = {
   props: { skill: { type: Object, required: !0 }, text: { type: Object, default: null }, triggers: { type: Array, required: !0 }, skills: { type: Array, required: !0 }, agent: { type: Number, default: null }, draft: { type: Object, default: null }, busy: Boolean },
   emits: ["require", "read", "add", "edit", "run", "saved", "cancel"],
   setup(e, { emit: c }) {
-    const a = e, k = c, r = I(() => {
+    const a = e, k = c, r = j(() => {
       var u;
       return (u = a.skill.module) != null && u.startsWith("plugin:") ? "From a plugin" : a.skill.shipped ? "From the journal" : "From this project";
-    }), s = I(() => {
+    }), s = j(() => {
       var u;
       return a.agent ? a.skill.changed ? "This skill changed after the main agent read it." : ((u = a.skill.held) == null ? void 0 : u.state) === "due" ? "The main agent still has to read this skill. It cannot do anything else first." : a.skill.read ? `The main agent read this skill at ${new Date(a.skill.held.loaded_at).toLocaleString()}.` : "The main agent has not read this skill in this conversation." : "No main agent is running in this environment.";
     }), o = C("");
@@ -718,7 +718,7 @@ const at = {
       const $ = URL.createObjectURL(new Blob([u.text], { type: "text/plain;charset=utf-8" }));
       o.value = $, w(() => URL.revokeObjectURL($));
     }, { immediate: !0 }), (u, i) => {
-      var w, $, b, m, y, p, O, j;
+      var w, $, b, m, y, p, O, I;
       return l(), n("div", Jt, [
         t("header", null, [
           t("h2", null, [
@@ -784,7 +784,7 @@ const at = {
               i[9] || (i[9] = T("Before it runs a command about ", -1)),
               t("code", null, v(e.skill.commands.join(", ")), 1)
             ])) : S("", !0),
-            (j = e.skill.events) != null && j.length ? (l(), n("li", sl, [
+            (I = e.skill.events) != null && I.length ? (l(), n("li", sl, [
               i[10] || (i[10] = T("When these changes happen: ", -1)),
               t("code", null, v(e.skill.events.join(", ")), 1)
             ])) : S("", !0)
@@ -805,7 +805,7 @@ const at = {
       ]);
     };
   }
-}, dl = /* @__PURE__ */ E(ul, [["__scopeId", "data-v-4ab35e28"]]), cl = { class: "skills" }, gl = { class: "skills-title" }, kl = {
+}, dl = /* @__PURE__ */ E(ul, [["__scopeId", "data-v-7823c0e4"]]), cl = { class: "skills" }, gl = { class: "skills-title" }, kl = {
   class: "skills-text",
   "data-skill-text": ""
 }, ml = {
@@ -825,7 +825,7 @@ const at = {
       t("pre", kl, v(e.skill ? e.skill.text : e.failure), 1)
     ]));
   }
-}, hl = /* @__PURE__ */ E(ml, [["__scopeId", "data-v-47961cf4"]]), vl = { class: "page-head" }, yl = { "aria-label": "Skills views" }, fl = ["aria-pressed"], pl = ["aria-pressed"], bl = {
+}, hl = /* @__PURE__ */ E(ml, [["__scopeId", "data-v-21cde365"]]), vl = { class: "page-head" }, yl = { "aria-label": "Skills views" }, fl = ["aria-pressed"], pl = ["aria-pressed"], bl = {
   key: 0,
   class: "warning",
   role: "status"
@@ -854,7 +854,7 @@ const at = {
 }, Ol = {
   key: 1,
   class: "empty"
-}, Il = { class: "skill-pane trigger-pane" }, jl = {
+}, jl = { class: "skill-pane trigger-pane" }, Il = {
   key: 0,
   class: "trigger-form"
 }, Wl = {
@@ -863,8 +863,8 @@ const at = {
 }, Ll = {
   __name: "SkillRows",
   setup(e) {
-    const { skills: c, selected: a, selectedTriggers: k, triggers: r, requirements: s, mainAgent: o, answered: u, failure: i, busy: w, opened: $, text: b, openFailure: m, tab: y, draft: p, marked: O, load: j, open: R, run: W, requireSkill: P, readNow: V } = $e(), G = (h, g) => P(h, g ? "all" : "none"), U = () => p.value = { trigger: null }, L = (h) => p.value = { trigger: h }, f = async () => {
-      p.value = null, await j();
+    const { skills: c, selected: a, selectedTriggers: k, triggers: r, requirements: s, mainAgent: o, answered: u, failure: i, busy: w, opened: $, text: b, openFailure: m, tab: y, draft: p, marked: O, load: I, open: R, run: W, requireSkill: P, readNow: V } = $e(), G = (h, g) => P(h, g ? "all" : "none"), U = () => p.value = { trigger: null }, L = (h) => p.value = { trigger: h }, f = async () => {
+      p.value = null, await I();
     }, q = (h) => {
       y.value = h, p.value = null;
     };
@@ -884,7 +884,7 @@ const at = {
             t("header", vl, [
               g[8] || (g[8] = t("div", null, [
                 t("h1", null, "Skills"),
-                t("p", null, "Instructions an agent reads before it does a kind of work. Choose which ones it must read, and when. This applies to the whole project.")
+                t("p", null, "Instructions the agent reads before starting work. Choose which skills the agent must read, and when. These settings apply to the whole project.")
               ], -1)),
               t("nav", yl, [
                 t("button", {
@@ -899,12 +899,12 @@ const at = {
                 }, "Triggers", 8, pl)
               ])
             ]),
-            d(s).environment_overrides ? (l(), n("p", bl, "This environment has its own skill lists. Changes here apply to the whole project. Its environment lists still take priority.")) : S("", !0),
+            d(s).environment_overrides ? (l(), n("p", bl, "This environment uses separate skill lists. Changes here apply to the whole project. The environment lists still take priority.")) : S("", !0),
             d(i) ? (l(), n("div", $l, [
               T(v(d(i)) + " ", 1),
               t("button", {
                 type: "button",
-                onClick: g[2] || (g[2] = (...x) => d(j) && d(j)(...x))
+                onClick: g[2] || (g[2] = (...x) => d(I) && d(I)(...x))
               }, "Try again")
             ])) : S("", !0),
             d(u) ? d(y) === "skills" ? (l(), n("div", ql, [
@@ -974,8 +974,8 @@ const at = {
                   }, "Add a trigger")
                 ]))
               ]),
-              t("article", Il, [
-                d(p) ? (l(), n("div", jl, [
+              t("article", jl, [
+                d(p) ? (l(), n("div", Il, [
                   (l(), M(ge, {
                     key: ((B = d(p).trigger) == null ? void 0 : B.id) || "new",
                     trigger: d(p).trigger,
@@ -995,7 +995,7 @@ const at = {
       _: 1
     }));
   }
-}, Vl = /* @__PURE__ */ E(Ll, [["__scopeId", "data-v-96b3d2a6"]]);
+}, Vl = /* @__PURE__ */ E(Ll, [["__scopeId", "data-v-cab161f2"]]);
 export {
   Vl as default
 };

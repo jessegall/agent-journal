@@ -20,8 +20,8 @@ const switchTab = (value) => {tab.value = value; draft.value = null;};
         <template v-if="marked"><SkillText :skill="text" :failure="openFailure" :back="false" /></template>
         <template v-else>
             <main :class="['skills-page', {'skill-open': tab === 'skills' && Boolean(opened), 'trigger-open': tab === 'triggers' && Boolean(draft)}]">
-                <header class="page-head"><div><h1>Skills</h1><p>Instructions an agent reads before it does a kind of work. Choose which ones it must read, and when. This applies to the whole project.</p></div><nav aria-label="Skills views"><button type="button" :aria-pressed="tab === 'skills'" @click="switchTab('skills')">Skills</button><button type="button" :aria-pressed="tab === 'triggers'" @click="switchTab('triggers')">Triggers</button></nav></header>
-                <template v-if="requirements.environment_overrides"><p class="warning" role="status">This environment has its own skill lists. Changes here apply to the whole project. Its environment lists still take priority.</p></template>
+                <header class="page-head"><div><h1>Skills</h1><p>Instructions the agent reads before starting work. Choose which skills the agent must read, and when. These settings apply to the whole project.</p></div><nav aria-label="Skills views"><button type="button" :aria-pressed="tab === 'skills'" @click="switchTab('skills')">Skills</button><button type="button" :aria-pressed="tab === 'triggers'" @click="switchTab('triggers')">Triggers</button></nav></header>
+                <template v-if="requirements.environment_overrides"><p class="warning" role="status">This environment uses separate skill lists. Changes here apply to the whole project. The environment lists still take priority.</p></template>
                 <template v-if="failure"><div class="warning" role="alert">{{ failure }} <button type="button" @click="load">Try again</button></div></template>
                 <template v-if="!answered"><p class="empty">Reading the skills…</p></template>
                 <template v-else-if="tab === 'skills'">

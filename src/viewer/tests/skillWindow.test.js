@@ -92,7 +92,7 @@ test("a removed skill and a failed skill read are shown without losing the list"
 
 test("environment overrides warn that changes still apply to the project", async () => {
     const {element} = await mounted({"skill requirements": {ok: true, value: {...SETTINGS.value, environment_overrides: true}}});
-    expect(element.textContent).toContain("Its environment lists still take priority");
+    expect(element.textContent).toContain("The environment lists still take priority");
 });
 
 test("compaction removes the read filter's skills", async () => {
