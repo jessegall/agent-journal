@@ -2,6 +2,7 @@ from argparse import ArgumentParser, Namespace
 from collections.abc import Sequence
 
 from core.base.caller.caller import Caller
+from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
@@ -35,12 +36,17 @@ class LinkListSubcommand(ReadSubcommand[Sequence[Link]]):
 
     def write_output(self, value: object, output: Output) -> None:
         links = [row for row in value if isinstance(row, Link)] if is_tuple(value) else []
-        titles = {end: self.title(*end) for end in {end for row in links for end in ((row.source_model, row.source_id), (row.target_model, row.target_id))}}
+        titles = self.titles(links)
         output.write("\n".join(f"{row.source_model}:{row.source_id}  {row.link_type}  {row.target_model}:{row.target_id}" for row in links), {"rows": [{**output.values(row), "source_title": titles[(row.source_model, row.source_id)], "target_title": titles[(row.target_model, row.target_id)]} for row in links]})
 
-    def title(self, model_name: str, row_id: int) -> str:
-        model = self.row_refs.model(model_name)
-        if model is None:
-            return ""
-        row = self.queries.query(model).filter(id=row_id).first()
-        return str(getattr(row, "title", "")) if row is not None else ""
+    def titles(self, links: Sequence[Link]) -> dict[tuple[str, int], str]:
+        ends = {end for row in links for end in ((row.source_model, row.source_id), (row.target_model, row.target_id))}
+        titles = {end: "" for end in ends}
+        for model_name in {name for name, _ in ends}:
+            model = self.row_refs.model(model_name)
+            if model is None:
+                continue
+            ids = [row_id for name, row_id in ends if name == model_name]
+            rows = self.queries.query(model).matching(Among("id", ids)).all_rows()
+            titles.update({(model_name, row.id): str(getattr(row, "title", "")) for row in rows})
+        return titles
