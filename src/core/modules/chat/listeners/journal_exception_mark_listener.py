@@ -1,5 +1,6 @@
 from core.base.change.logged_event import LoggedEvent
 from core.base.clock import Clock
+from core.base.exception_sink import CLOCK_TICK_SOURCE
 from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
@@ -27,9 +28,15 @@ class JournalExceptionMarkListener(MarkListener[Created[JournalException]]):
         super().__init__(bus, actors, queries, event_rows)
         self.clock = clock
 
+    @staticmethod
+    def variant(source: str) -> ChatMarkVariant:
+        if source.startswith(LISTENER_SOURCE):
+            return ChatMarkVariant.LISTENER_FAILED
+        return ChatMarkVariant.TICK_COSTLY if source == CLOCK_TICK_SOURCE else ChatMarkVariant.COMMAND_FAILED
+
     def handle(self, event: Created[JournalException], logged: LoggedEvent) -> None:
         exception = event.row
         if exception.creation_timestamp().elapsed_seconds(self.clock.timestamp()) > BACKLOG_LIMIT_SECONDS:
             return
-        variant = ChatMarkVariant.LISTENER_FAILED if exception.source.startswith(LISTENER_SOURCE) else ChatMarkVariant.COMMAND_FAILED
+        variant = self.variant(exception.source)
         self.show(logged, ChatMarkType.EXCEPTION, variant, f"{exception.message} ({exception.source})", None, "journal-exception", exception.id)
