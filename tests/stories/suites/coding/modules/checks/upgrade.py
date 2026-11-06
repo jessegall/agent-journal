@@ -42,7 +42,7 @@ def test_a_check_that_blocks_a_task_moves_as_that_tasks_wait(new_story):
 
 def test_a_retired_check_gives_a_blocked_task_no_wait_of_its_own(new_story):
     story = upgraded_story(new_story)
-    retired = list(story.container.get(Queries).query(Check).filter(title="Task 3 waits until this passes").all_rows())
+    retired = list(story.container.get(Queries).query(Check).with_removed().filter(title="Task 3 waits until this passes").all_rows())
     story.expect_rows(len(retired) == 1, retired[0].removed_at is not None, retired[0].task_wait_id is None)
 
 
