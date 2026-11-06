@@ -1,8 +1,8 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-7345979a2b04")) { const style = document.createElement("style"); style.id = "window-styles-7345979a2b04"; style.textContent = ".plan-dock-agents[data-v-3fdf31fc]{display:flex;flex-wrap:wrap;gap:6px;padding:7px 14px 0 36px;align-items:center;color:var(--text-3);font-size:12px}.plan-dock-agent[data-v-3fdf31fc]{padding:0 8px;height:20px;border:1px solid var(--border-2);border-radius:99px;background:none;color:var(--text-2);font:inherit;font-size:11.5px;line-height:20px;cursor:pointer}.plan-dock-phases[data-v-3fdf31fc]{margin:0;padding:4px 14px 5px;list-style:none}.plan-dock-phase[data-v-3fdf31fc]{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;height:24px;font-size:12.5px}.plan-dock-number[data-v-3fdf31fc]{color:var(--text-4);font-family:var(--mono);font-size:11px}.plan-dock-name[data-v-3fdf31fc]{overflow:hidden;color:var(--text-2);text-overflow:ellipsis;white-space:nowrap}.plan-dock-phase.quiet .plan-dock-name[data-v-3fdf31fc]{color:var(--text-4)}.plan-dock-tasks[data-v-3fdf31fc]{color:var(--text-4);font-size:11.5px}.plan-dock-agent[data-v-3fdf31fc]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.plan-dock-phase.current .plan-dock-name[data-v-3fdf31fc]{color:var(--text)}.plan-dock-phase.current .plan-dock-tasks[data-v-3fdf31fc]{color:var(--text-3)}.plan-dock-loading[data-v-3fdf31fc]{margin:8px 36px}.plan-agents[data-v-c34d84f7]{display:flex;align-items:center;min-width:0;height:34px;margin:2px -14px 0;padding:0 14px;border-top:1px solid var(--border-inner);color:var(--text-3);font-size:12px}.plan-agents-none[data-v-c34d84f7]{color:var(--text-4)}.plan-agents-button[data-v-c34d84f7]{display:inline-flex;gap:5px;align-items:center;min-width:0;margin-left:-6px;padding:3px 6px;overflow:hidden;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.plan-agents-button[data-v-c34d84f7]:hover{background:var(--hover);color:var(--text)}.plans[data-v-4978f474]{display:flex;flex-direction:column}.plans-grid[data-v-4978f474]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));margin-right:-1px}.plan[data-v-4978f474]{cursor:pointer;display:flex;flex-direction:column;gap:8px;min-width:0;padding:12px 14px 0;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg)}.plan[data-v-4978f474]:hover{background:var(--raised)}.plan-head[data-v-4978f474]{display:flex;gap:6px;align-items:center;color:var(--text-3);font-size:12px}.plan-state[data-v-4978f474]{margin-left:auto;padding:1px 7px;border:1px solid var(--border-2);border-radius:999px;color:var(--text-2);font-size:11px}.plan-state.started[data-v-4978f474],.plan-state.completed[data-v-4978f474]{border-color:var(--tone-good, var(--green));color:var(--tone-good, var(--green))}.plan-state.blocked[data-v-4978f474]{border-color:var(--tone-warn);color:var(--tone-warn)}.plan-title[data-v-4978f474]{overflow:hidden;font-weight:500;text-overflow:ellipsis;white-space:nowrap}.plan-bar[data-v-4978f474]{display:flex;height:4px;overflow:hidden;border-radius:2px;background:var(--chip)}.plan-bar-fill[data-v-4978f474]{display:block;height:100%;background:var(--accent)}.plan-bar-testing[data-v-4978f474]{display:block;height:100%;background:color-mix(in srgb,var(--accent) 40%,transparent)}.plan-foot[data-v-4978f474],.plans-note[data-v-4978f474]{margin:0;color:var(--text-3);font-size:12px}.plans-note[data-v-4978f474],[data-plans-more][data-v-4978f474]{padding:8px 14px}\n"; document.head.appendChild(style); }
-import { computed as p, openBlock as e, createElementBlock as l, Fragment as h, unref as t, createBlock as m, Teleport as x, createTextVNode as A, createElementVNode as n, toDisplayString as d, createCommentVNode as i, renderList as E, normalizeClass as D } from "vue";
-import { useWindow as S, useDockCard as P, coalesced as R, READ_RATES as T, SkeletonLine as $, peekRef as V } from "@journal/window-kit";
-import { _ as B } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+if (!document.getElementById("window-styles-5f921e61aee1")) { const style = document.createElement("style"); style.id = "window-styles-5f921e61aee1"; style.textContent = ".plan-dock-agents[data-v-8ab86100]{display:flex;flex-wrap:wrap;gap:6px;padding:7px 14px 0 36px;align-items:center;color:var(--text-3);font-size:12px}.plan-dock-agent[data-v-8ab86100]{padding:0 8px;height:20px;border:1px solid var(--border-2);border-radius:99px;background:none;color:var(--text-2);font:inherit;font-size:11.5px;line-height:20px;cursor:pointer}.plan-dock-phases[data-v-8ab86100]{margin:0;padding:4px 14px 5px;list-style:none}.plan-dock-phase[data-v-8ab86100]{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;height:24px;font-size:12.5px}.plan-dock-number[data-v-8ab86100]{color:var(--text-4);font-family:var(--mono);font-size:11px}.plan-dock-name[data-v-8ab86100]{overflow:hidden;color:var(--text-2);text-overflow:ellipsis;white-space:nowrap}.plan-dock-phase.quiet .plan-dock-name[data-v-8ab86100]{color:var(--text-4)}.plan-dock-tasks[data-v-8ab86100]{color:var(--text-4);font-size:11.5px}.plan-dock-agent[data-v-8ab86100]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.plan-dock-phase.current .plan-dock-name[data-v-8ab86100]{color:var(--text)}.plan-dock-phase.current .plan-dock-tasks[data-v-8ab86100]{color:var(--text-3)}.plan-dock-loading[data-v-8ab86100]{margin:8px 36px}.plan-agents[data-v-b925bf06]{display:flex;align-items:center;min-width:0;height:34px;margin:2px -14px 0;padding:0 14px;border-top:1px solid var(--border-inner);color:var(--text-3);font-size:12px}.plan-agents-none[data-v-b925bf06]{color:var(--text-4)}.plan-agents-button[data-v-b925bf06]{display:inline-flex;gap:5px;align-items:center;min-width:0;margin-left:-6px;padding:3px 6px;overflow:hidden;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.plan-agents-button[data-v-b925bf06]:hover{background:var(--hover);color:var(--text)}.plans[data-v-8de31281]{display:flex;flex-direction:column}.plans-grid[data-v-8de31281]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));margin-right:-1px}.plan[data-v-8de31281]{cursor:pointer;display:flex;flex-direction:column;gap:8px;min-width:0;padding:12px 14px 0;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg)}.plan[data-v-8de31281]:hover{background:var(--raised)}.plan-head[data-v-8de31281]{display:flex;gap:6px;align-items:center;color:var(--text-3);font-size:12px}.plan-state[data-v-8de31281]{margin-left:auto;padding:1px 7px;border:1px solid var(--border-2);border-radius:999px;color:var(--text-2);font-size:11px}.plan-state.started[data-v-8de31281],.plan-state.completed[data-v-8de31281]{border-color:var(--tone-good, var(--green));color:var(--tone-good, var(--green))}.plan-state.blocked[data-v-8de31281]{border-color:var(--tone-warn);color:var(--tone-warn)}.plan-title[data-v-8de31281]{overflow:hidden;font-weight:500;text-overflow:ellipsis;white-space:nowrap}.plan-bar[data-v-8de31281]{display:flex;height:4px;overflow:hidden;border-radius:2px;background:var(--chip)}.plan-bar-fill[data-v-8de31281]{display:block;height:100%;background:var(--accent)}.plan-bar-testing[data-v-8de31281]{display:block;height:100%;background:color-mix(in srgb,var(--accent) 40%,transparent)}.plan-foot[data-v-8de31281],.plans-note[data-v-8de31281]{margin:0;color:var(--text-3);font-size:12px}.plans-note[data-v-8de31281],[data-plans-more][data-v-8de31281]{padding:8px 14px}\n"; document.head.appendChild(style); }
+import { computed as p, openBlock as e, createElementBlock as l, Fragment as h, unref as t, createBlock as m, Teleport as x, createTextVNode as A, createElementVNode as n, toDisplayString as d, createCommentVNode as i, renderList as b, normalizeClass as D } from "vue";
+import { useWindow as S, useDockCard as P, coalesced as R, READ_RATES as T, SkeletonLine as E, peekRef as V } from "@journal/window-kit";
+import { _ as B } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
 const N = { key: 1 }, I = {
   key: 2,
   class: "plan-dock-agents",
@@ -10,12 +10,12 @@ const N = { key: 1 }, I = {
 }, L = ["title", "onClick"], M = { class: "plan-dock-phases" }, W = { class: "plan-dock-number" }, q = { class: "plan-dock-name" }, z = { class: "plan-dock-tasks" }, F = {
   key: 0,
   class: "plan-dock-phase quiet"
-}, H = { class: "plan-dock-name" }, b = 5, O = {
+}, H = { class: "plan-dock-name" }, $ = 5, O = {
   __name: "PlanDock",
   setup(j) {
     const u = S(), r = P();
     u.option("row");
-    const g = u.option("foot"), c = r.data, f = p(() => !r.data.value), v = p(() => {
+    const g = u.option("foot"), c = r.data, v = p(() => !r.data.value), f = p(() => {
       var a;
       return ((a = r.data.value) == null ? void 0 : a.phases) ?? [];
     }), C = p(() => {
@@ -24,14 +24,14 @@ const N = { key: 1 }, I = {
     }), y = p(() => [
       ...new Map(C.value.map((a) => [a.id, a])).values()
     ]), k = p(
-      () => Math.max(0, v.value.length - b)
+      () => Math.max(0, f.value.length - $)
     );
     return u.follow(["phase.*", "phase_task.*", "task.*", "agent.*"], R(r.reload, T.planCard)), (a, o) => (e(), l(h, null, [
       t(t(g)) ? (e(), m(x, {
         key: 0,
         to: t(t(g))
       }, [
-        f.value ? (e(), m(t($), {
+        v.value ? (e(), m(t(E), {
           key: 0,
           bars: [{ width: "80px", height: 10 }]
         })) : t(c) ? (e(), l("span", N, [
@@ -39,7 +39,7 @@ const N = { key: 1 }, I = {
           n("b", null, d(t(c).finished ? `${t(c).finished} of ${t(c).total}` : t(c).total), 1)
         ])) : i("", !0)
       ], 8, ["to"])) : i("", !0),
-      f.value ? (e(), m(t($), {
+      v.value ? (e(), m(t(E), {
         key: 1,
         class: "plan-dock-loading",
         bars: [
@@ -49,7 +49,7 @@ const N = { key: 1 }, I = {
       })) : i("", !0),
       y.value.length ? (e(), l("div", I, [
         o[1] || (o[1] = n("span", null, "Agents:", -1)),
-        (e(!0), l(h, null, E(y.value, (s) => (e(), l("button", {
+        (e(!0), l(h, null, b(y.value, (s) => (e(), l("button", {
           key: s.id,
           type: "button",
           class: "plan-dock-agent",
@@ -59,7 +59,7 @@ const N = { key: 1 }, I = {
         }, d(s.name), 9, L))), 128))
       ])) : i("", !0),
       n("ol", M, [
-        (e(!0), l(h, null, E(v.value.slice(0, b), (s, _) => {
+        (e(!0), l(h, null, b(f.value.slice(0, $), (s, _) => {
           var w;
           return e(), l("li", {
             key: s.id,
@@ -81,7 +81,7 @@ const N = { key: 1 }, I = {
       ])
     ], 64));
   }
-}, Q = /* @__PURE__ */ B(O, [["__scopeId", "data-v-3fdf31fc"]]);
+}, Q = /* @__PURE__ */ B(O, [["__scopeId", "data-v-8ab86100"]]);
 export {
   Q as default
 };

@@ -30,7 +30,10 @@ function mounted(component, provided, props = {}) {
 }
 
 function drawnWindow(component, answers, row = {id: 3}) {
-    const keys = component === PlanRounds ? {"rounds.*": {line: "plan rounds {id}", loading: "requested"}} : undefined;
+    const keys = new Map([
+        [PlanRounds, {"rounds.*": {line: "plan rounds {id}", loading: "requested"}}],
+        [SubjectReviews, {"reviews.*": {line: "review list --subject {id} --oldest", events: ["review.*"], loading: "requested"}}],
+    ]).get(component);
     const shown = {...context(answers, null, keys), option: () => ({value: row})};
     return mounted(component, [[WINDOW_CONTEXT, shown]]);
 }

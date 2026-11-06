@@ -39,6 +39,7 @@ async function more() {
 }
 
 const choose = (chosen) => {
+    if (chosen.key === window.state.tab) return;
     window.state.tab = chosen.key;
     board.value = {...board.value, plans: []};
     pageFailure.value = "";

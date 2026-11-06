@@ -16,3 +16,12 @@ test("only the active tab reads, the other tab reads when it is opened, and both
     await settle();
     expect(window.reads).toEqual(["plan board", "plan board --closed"]);
 });
+
+test("choosing the active plan tab keeps its cards and sends no read", async () => {
+    const window = {...planWindowContext({"plan board": {ok: true, value: {...BOARD.value, plans: [{id: 1, title: "Cart", state: "started", task_count: 0, completed_count: 0}]}}}), tabs: TABS};
+    const element = await mounted(PlanCards, window);
+    element.querySelector('[data-tab="open"]').click();
+    await settle();
+    expect(element.querySelector('[data-row="1"]').textContent).toContain("Cart");
+    expect(window.reads).toEqual(["plan board"]);
+});
