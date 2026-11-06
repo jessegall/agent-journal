@@ -16,8 +16,9 @@ MODULE_NAME = "journal.core.documents"
 
 
 class TextMentionListener(CommitListener[E]):
-    """After a row with text is saved, on the deferred queue, links it to every row its text fields name. A row that
-    follows an item of a team library is skipped, since its numbers mean something else in another journal."""
+    """After a row's text is saved, on the deferred queue, links it to every row its text fields name. A save that
+    changes no text field has nothing to link, and a row that follows an item of a team library is skipped, since
+    its numbers mean something else in another journal."""
 
     text_fields: ClassVar[tuple[str, ...]] = ("title", "abstract", "body")
     disabled_scopes = [ActorScope]
@@ -26,7 +27,7 @@ class TextMentionListener(CommitListener[E]):
         self.bus, self.actors, self.queries, self.library = bus, actors, queries, library
 
     def handle(self, event: E, logged: LoggedEvent) -> None:
-        if isinstance(event, Deleted):
+        if isinstance(event, Deleted) or not (logged.is_creation or any(field in logged.data for field in self.text_fields)):
             return
         row = event.row
         if self.library.is_copy(row.model_name, row.id):
