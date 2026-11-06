@@ -13,6 +13,7 @@ class BootingWork(RoundWork):
     takes requests, so a restart keeps no agent waiting on the work that answers it."""
 
     def run(self, container: Container) -> None:
+        container.get(RunningScripts).server_started()
         container.get(RunningScripts).reap_leftovers()
         container.get(PerformanceState).begin_start()
         with container.get(Database).transaction():
