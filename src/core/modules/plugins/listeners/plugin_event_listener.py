@@ -8,18 +8,15 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.error_log import ErrorLog
 from core.base.listener.save_listener import SaveListener
-from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.event_form import EventForm
 from core.base.model.model import Model
 from core.base.model.tables import Tables
 from core.base.registry.registry import Registry
-from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults import ClearPluginFaults
 from core.modules.plugins.commands.deliver_plugin_event.deliver_plugin_event import DeliverPluginEvent
-from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
+from core.modules.plugins.support.plugin_code_faults import PLUGIN_CODE_FAULTS
+from core.modules.plugins.support.plugin_event_scripts import FAULT_WRITES
 from core.modules.plugins.support.plugin_payload import PluginPayload
 from core.modules.plugins.support.plugin_subscriptions import PluginSubscriptions
-
-PLUGIN_CODE_FAULTS = (OSError, ValueError, KeyError, TypeError, AttributeError)
 
 
 class PluginEventListener(SaveListener[Changed[Model]]):
@@ -34,7 +31,7 @@ class PluginEventListener(SaveListener[Changed[Model]]):
         self.subscriptions, self.bus, self.log, self.tables, self.errors, self.registry = subscriptions, bus, log, tables, errors, registry
 
     def handle(self, event: Changed[Model], context: Context) -> None:
-        if isinstance(context.command, (RecordPluginFault, ClearPluginFaults)):
+        if isinstance(context.command, FAULT_WRITES):
             return
         change = Change.of(event, context)
         try:
@@ -50,7 +47,7 @@ class PluginEventListener(SaveListener[Changed[Model]]):
         row = change.row
         event_id = max(logged.id for logged in self.log.row_events(self.tables.table(type(row)).name, row.id) if logged.event == log_name)
         data = json.dumps(PluginPayload.of(change, EventForm.COMMIT, self.log, event_id))
-        environment_id = row.environment_id if isinstance(row, EnvironmentScoped) else context.environment_id
+        environment_id = PluginPayload.environment_id(change)
         agent_id = context.actor.id if context.actor.type is ActorType.AGENT else None
         key = self.registry.event_key(log_name)
         for subscription in subscriptions:

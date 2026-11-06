@@ -21,9 +21,8 @@ from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults impor
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_delivery import PluginDelivery
-from core.modules.plugins.commands.switch_off_changed_plugin.switch_off_changed_plugin import SwitchOffChangedPlugin
 from core.modules.plugins.support.plugin_call import PluginCall
-from core.modules.plugins.support.plugin_digest import PluginDigest
+from core.modules.plugins.support.plugin_event_runner import PluginEventRunner
 from core.modules.plugins.support.plugin_event import PluginEvent
 from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
@@ -47,8 +46,8 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
     name = "plugins.delivery"
     run_order = PLUGIN_RUN_ORDER
 
-    def __init__(self, queries: Queries, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, clock: Clock, bus: Bus, actors: ModuleActors, checkouts: AgentCheckouts) -> None:
-        self.queries, self.folders, self.program, self.settings, self.clock, self.bus, self.actors, self.checkouts = queries, folders, program, settings, clock, bus, actors, checkouts
+    def __init__(self, queries: Queries, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, clock: Clock, bus: Bus, actors: ModuleActors, checkouts: AgentCheckouts, runner: PluginEventRunner) -> None:
+        self.queries, self.folders, self.program, self.settings, self.clock, self.bus, self.actors, self.checkouts, self.runner = queries, folders, program, settings, clock, bus, actors, checkouts, runner
 
     def handle(self, event: Created[PluginDelivery], logged: LoggedEvent) -> None:
         delivery = event.row
@@ -60,10 +59,7 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         except Refusal as refusal:
             self.record(logged, delivery, RecordPluginFault(delivery.plugin_id, f"{refusal.reason} at {delivery.event}"))
             return
-        if delivery.script and self.folders.is_upgrading(plugin.name):
-            return
-        if delivery.script and PluginDigest.digest(self.folders.code(plugin.name), manifest) != plugin.files_digest:
-            self.record(logged, delivery, SwitchOffChangedPlugin(plugin.id))
+        if delivery.script and not self.runner.may_run(plugin, manifest, logged.id):
             return
         environment = self.queries.query(Environment).find(delivery.environment_id).name if delivery.environment_id is not None else ""
         data: object = json.loads(delivery.data)

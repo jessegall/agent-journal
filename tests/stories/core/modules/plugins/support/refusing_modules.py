@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from core.base.command.bus import Bus
 from core.base.command.command import Command
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -7,7 +8,9 @@ from core.base.module.module import Module
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
+from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 from core.modules.processes.models.process import Process
+from tests.stories.core.modules.plugins.support.event_modules import EventNote
 
 REFUSING = "tests.stories.core.modules.plugins.support.refusing_modules:RefusingModule"
 LATER_KEY_REFUSAL = "a later key refuses this"
@@ -50,7 +53,25 @@ class OrphanProcessRowHandler(Handler[OrphanProcessRow, None]):
             raise Refusal(LATER_KEY_REFUSAL)
 
 
+@dataclass(frozen=True)
+class OnceThenNote(Command[EventNote]):
+    title: str
+
+
+class OnceThenNoteHandler(Handler[OnceThenNote, EventNote]):
+    """Dispatches a command that runs once, then saves a row on a key a guard script hears."""
+
+    command = OnceThenNote
+
+    def __init__(self, bus: Bus, repository: Repository) -> None:
+        self.bus, self.repository = bus, repository
+
+    def handle(self, command: OnceThenNote, context: Context) -> EventNote:
+        self.bus.dispatch(GrantRunSlots(), context)
+        return self.repository.save(EventNote(title=command.title), context)
+
+
 class RefusingModule(Module):
     name = "acme.refusing"
     requires_core = ">=5,<6"
-    handlers = [DeleteProcessRowHandler, OrphanProcessRowHandler]
+    handlers = [DeleteProcessRowHandler, OrphanProcessRowHandler, OnceThenNoteHandler]

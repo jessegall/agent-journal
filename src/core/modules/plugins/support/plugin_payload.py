@@ -1,6 +1,7 @@
 from core.base.change.change import Change
 from core.base.change.event_log import EventLog
 from core.base.command.context import Context
+from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.event_form import EventForm
 from core.base.model.model import Model
 
@@ -9,6 +10,11 @@ class PluginPayload:
     """The data of the line a script gets for a change: its form, whether it is final, the row as the log holds it,
     with hidden fields written as hidden, and what changed, as the log holds it. Only a commit is final and has a
     log row."""
+
+    @staticmethod
+    def environment_id(change: Change[Model]) -> int | None:
+        row = change.row
+        return (row.environment_id if isinstance(row, EnvironmentScoped) else None) or change.context.environment_id
 
     @staticmethod
     def of(change: Change[Model], form: EventForm, log: EventLog, event_id: int | None) -> dict[str, object]:

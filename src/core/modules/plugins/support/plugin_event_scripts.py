@@ -1,0 +1,61 @@
+from collections.abc import Sequence
+from typing import cast
+
+from core.base.actor_type import ActorType
+from core.base.change.change import Change
+from core.base.change.changed import Changed
+from core.base.change.event_log import EventLog
+from core.base.command.bus import Bus
+from core.base.command.context import Context
+from core.base.error_log import ErrorLog
+from core.base.model.event_form import EventForm
+from core.base.model.model import Model
+from core.base.registry.registry import Registry
+from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
+from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults import ClearPluginFaults
+from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
+from core.modules.plugins.commands.send_plugin_step_line.send_plugin_step_line import SendPluginStepLine
+from core.modules.plugins.support.plugin_event_answer import PluginEventAnswer
+from core.modules.plugins.support.plugin_event_runner import PluginEventRunner
+from core.modules.plugins.support.plugin_event_work import PluginEventWork
+from core.modules.plugins.support.plugin_payload import PluginPayload
+from core.modules.plugins.support.plugin_subscriptions import PluginSubscriptions
+
+FAULT_WRITES = (RecordPluginFault, ClearPluginFaults)
+
+
+class PluginEventScripts:
+    """Gives a change the answers of the guard or listen scripts on its key. With none yet, it rolls the command back
+    so they run with no lock held, and the next round reads them. A change with no script is one lookup. Saving a
+    fault runs no script, or a script on the plugin row that fails would record faults without end."""
+
+    def __init__(self, subscriptions: PluginSubscriptions, log: EventLog, errors: ErrorLog, registry: Registry, runner: PluginEventRunner, bus: Bus) -> None:
+        self.subscriptions, self.log, self.errors, self.registry, self.runner, self.bus = subscriptions, log, errors, registry, runner, bus
+
+    def answers(self, form: EventForm, event: Changed[Model], context: Context) -> Sequence[PluginEventAnswer]:
+        if isinstance(context.command, FAULT_WRITES):
+            return ()
+        runs, change = context.outside_runs, Change.of(event, context)
+        subscriptions = self.subscriptions.scripts(change.event, form)
+        if not subscriptions or context.explanation is not None or runs.from_plugin_script:
+            return ()
+        turn = runs.turn(form.value, change.event)
+        if turn.answers is not None:
+            return cast(Sequence[PluginEventAnswer], turn.answers)
+        if runs.closed:
+            self.errors.noted(f"{form.value} scripts of {change.event} were skipped: {runs.closed_reason}")
+            return ()
+        raise runs.rollback(PluginEventWork(self.runner, self.errors, form, self.registry.event_key(change.event), subscriptions, PluginPayload.of(change, form, self.log, None),
+                                            PluginPayload.environment_id(change), self.agent_id(context), turn))
+
+    def apply(self, answered: PluginEventAnswer, context: Context) -> None:
+        agent_id = self.agent_id(context)
+        answer = answered.answer
+        if answer.line and agent_id is not None:
+            self.bus.dispatch(SendPluginStepLine(agent_id, f"[plugin {answered.plugin}] {answer.line}"), context)
+        if answer.has_output():
+            self.bus.dispatch(AddPluginOutput(answered.plugin_id, agent_id, answer.output), context)
+
+    @staticmethod
+    def agent_id(context: Context) -> int | None:
+        return context.actor.id if context.actor.type is ActorType.AGENT else None

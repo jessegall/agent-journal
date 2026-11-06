@@ -7,7 +7,9 @@ from core.base.refusal import Refusal
 from core.base.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.process_group import ProcessGroup
-from tests.stories.core.modules.plugins.support.refusing_modules import REFUSING, DeleteProcessRow, OrphanProcessRow
+from tests.stories.core.modules.plugins.support.refusing_modules import REFUSING, DeleteProcessRow, OnceThenNote, OrphanProcessRow
+from tests.stories.core.modules.plugins.support.event_modules import NOTE_CREATED, NOTES, EventNote
+from tests.stories.core.modules.plugins.support.event_stories import event_plugin_story, script_calls
 from tests.stories.core.modules.processes.support.process_samples import ended_run, install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
@@ -52,3 +54,9 @@ def test_s83_a_refusal_after_a_command_orphans_a_process_leaves_it_running(refus
     group.stop.assert_not_called()
     story.run_listeners()
     group.stop.assert_called_once()
+
+
+def test_s84_a_key_after_a_command_that_runs_once_runs_no_guard_script_and_the_skip_is_noted(new_story):
+    story = event_plugin_story(new_story, {"event": NOTE_CREATED, "guard": "see.sh"}, modules=[NOTES, REFUSING])
+    story.container.get(Bus).run(OnceThenNote("A note"), story.agent)
+    story.expect_rows(not script_calls(story, "see.sh"), "were skipped" in story.error_log_text(), story.container.get(Queries).query(EventNote).count() == 1)
