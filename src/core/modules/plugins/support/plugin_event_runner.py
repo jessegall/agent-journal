@@ -1,6 +1,9 @@
 from collections.abc import Callable, Mapping
 
 from core.base.clock import Clock
+from core.base.error_log import ErrorLog
+from core.base.running_scripts import RunningScripts
+from core.base.timestamp import Timestamp
 from core.base.command.bus import Bus
 from core.base.command.server_stopping_error import ServerStoppingError
 from core.base.model.event_form import EventForm
@@ -27,17 +30,24 @@ from core.modules.plugins.support.plugin_subscription import PluginSubscription
 from core.modules.plugins.support.plugins_module_name import MODULE_NAME
 
 
+MOST_RUNNING_SCRIPTS = 8
+FAILING_RETRY_SECONDS = 300
+
+
 class PluginEventRunner:
     """Runs one plugin's guard or listen script with no time limit and no lock held. A plugin that was switched off
     meanwhile or is being upgraded is left out, one whose files changed is switched off, and a fault is recorded on
-    the plugin, so the change goes on."""
+    the plugin, so the change goes on. A plugin with too many scripts running is left out, and so is a failing one,
+    except for one try every few minutes, or nothing could ever clear its mark."""
 
-    def __init__(self, queries: Queries, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, clock: Clock, bus: Bus, actors: ModuleActors) -> None:
-        self.queries, self.folders, self.program, self.settings, self.clock, self.bus, self.actors = queries, folders, program, settings, clock, bus, actors
+    def __init__(self, queries: Queries, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, clock: Clock, bus: Bus, actors: ModuleActors, scripts: RunningScripts, errors: ErrorLog) -> None:
+        self.queries, self.folders, self.program, self.settings, self.clock, self.bus, self.actors, self.scripts, self.errors = queries, folders, program, settings, clock, bus, actors, scripts, errors
 
     def answer(self, subscription: PluginSubscription, form: EventForm, key: str, data: Mapping[str, object], environment_id: int | None, agent_id: int | None, on_wait: Callable[[], None]) -> PluginEventAnswer | None:
         plugin = self.queries.query(Plugin).filter(id=subscription.plugin_id).first()
         if plugin is None or not plugin.enabled:
+            return None
+        if not self.may_try(plugin, key, form):
             return None
         where = f"at {key} ({form.value})"
         try:
@@ -62,6 +72,23 @@ class PluginEventRunner:
         if plugin.fault_count:
             self.record(ClearPluginFaults(plugin.id))
         return PluginEventAnswer(plugin.name, plugin.id, answer, subscription.allows_skip)
+
+    def may_try(self, plugin: Plugin, key: str, form: EventForm) -> bool:
+        now = self.clock.timestamp()
+        if len(self.scripts.running(plugin.name)) >= MOST_RUNNING_SCRIPTS:
+            return self.left_out(plugin, key, form, f"this plugin already runs {MOST_RUNNING_SCRIPTS} scripts", now)
+        if not plugin.failing:
+            return True
+        last_try = self.scripts.failing_try(plugin.name) or plugin.update_timestamp()
+        if last_try.elapsed_seconds(now) < FAILING_RETRY_SECONDS:
+            return self.left_out(plugin, key, form, "this plugin is failing, so it is tried once every 5 minutes", now)
+        self.scripts.keep_failing_try(plugin.name, now)
+        return True
+
+    def left_out(self, plugin: Plugin, key: str, form: EventForm, reason: str, now: Timestamp) -> bool:
+        self.errors.noted(f"{form.value} script of {plugin.name} at {key} was skipped: {reason}")
+        self.scripts.skipped(plugin.name, key, form, reason, now)
+        return False
 
     def may_run(self, plugin: Plugin, manifest: PluginManifest, cause_id: int | None = None) -> bool:
         if self.folders.is_upgrading(plugin.name):

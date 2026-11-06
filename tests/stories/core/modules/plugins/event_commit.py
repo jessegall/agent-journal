@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from server.booting_work import BootingWork
 from core.base.change.event_log import HIDDEN
 from core.base.database.database import Database
@@ -80,6 +82,7 @@ def test_s18_the_fifth_fault_shows_the_failing_mark_and_a_success_clears_it(new_
     story.run_listeners()
     story.expect_text("chat-mark list --environment 1", f"Plugin events is failing: it ended with code 3 at {TASK_CREATED} (commit)", actor=story.user)
     plugin_data(story, "recovered").touch()
+    story.advance(timedelta(minutes=6))
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.run_listeners()
     story.expect_text("chat-mark list --environment 1", "Plugin events answers again", actor=story.user)

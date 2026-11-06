@@ -9,6 +9,7 @@ from core.base.checkout_file import CheckoutFile
 from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.command.script_policy import DELIVERY_LIMIT_MS, ScriptPolicy
+from core.base.model.event_form import EventForm
 from core.base.listener.commit_listener_runner import PLUGIN_RUN_ORDER
 from core.base.command.command import Command
 from core.base.listener.commit_listener import CommitListener
@@ -59,7 +60,7 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         except Refusal as refusal:
             self.record(logged, delivery, RecordPluginFault(delivery.plugin_id, f"{refusal.reason} at {delivery.event}"))
             return
-        if manifest.needs_newer_journal or (delivery.script and not self.runner.may_run(plugin, manifest, logged.id)):
+        if manifest.needs_newer_journal or (delivery.script and not (self.runner.may_try(plugin, delivery.event, EventForm.COMMIT) and self.runner.may_run(plugin, manifest, logged.id))):
             return
         environment = self.queries.query(Environment).find(delivery.environment_id).name if delivery.environment_id is not None else ""
         data: object = json.loads(delivery.data)

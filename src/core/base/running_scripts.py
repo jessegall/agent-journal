@@ -36,6 +36,7 @@ class RunningScripts:
         self.stop_reasons: dict[int, ScriptStop] = {}
         self.sent_lines: dict[str, deque[str]] = {}
         self.skips: dict[tuple[str, str, EventForm], ScriptSkip] = {}
+        self.failing_tries: dict[str, Timestamp] = {}
 
     @classmethod
     @cache
@@ -85,6 +86,14 @@ class RunningScripts:
     def newest_skip(self, plugin: str, key: str, form: EventForm) -> ScriptSkip | None:
         with self.lock:
             return self.skips.get((plugin, key, form))
+
+    def failing_try(self, plugin: str) -> Timestamp | None:
+        with self.lock:
+            return self.failing_tries.get(plugin)
+
+    def keep_failing_try(self, plugin: str, at: Timestamp) -> None:
+        with self.lock:
+            self.failing_tries[plugin] = at
 
     def plugin_names(self) -> frozenset[str]:
         with self.lock:
