@@ -9,6 +9,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.change.event_log import EventLog
 from core.base.change.logged_event import LoggedEvent
+from core.base.database.reported_findings import ReportedFindings
 from core.base.query.queries import Queries
 from core.modules.pins.models.pin import Pin
 from core.modules.plugins.models.plugin import Plugin
@@ -181,7 +182,7 @@ class PluginPage:
 def plugin_page(story: Story) -> PluginPage:
     """The page for Ada, on the route the viewer answers its lines with, with no listener thread behind it: the story
     runs the listeners."""
-    route = StoryLineRoute(story.home, ListenerThread(lambda: None, lambda error: None))
+    route = StoryLineRoute(story.home, ListenerThread(lambda: None, lambda error: None), ReportedFindings())
 
     def send(line: list[str]) -> object:
         story.steps.append(f"viewer line {line}")

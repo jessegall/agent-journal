@@ -1,5 +1,6 @@
 import os
 import select
+import shlex
 import subprocess
 import time
 from pathlib import Path
@@ -26,11 +27,15 @@ def expect_line(journal, client: Path, *line: str) -> str:
     return finished.stdout
 
 
+def journal_line(journal, client: Path, *line: str) -> str:
+    """The shell text that runs the journal with the variables of this test's journal."""
+    variables = " ".join(f"{name}={shlex.quote(value)}" for name, value in journal.environment().items() if name != "PATH")
+    return f"{variables} {shlex.join([str(client), *line])}"
+
+
 def own_journal_line(journal, client: Path, *line: str) -> str:
     """The shell text of a script that runs the journal itself, and adds its exit code to the file own-write."""
-    words = " ".join(f"'{word}'" for word in line)
-    variables = " ".join(f"{name}='{value}'" for name, value in journal.environment().items() if name != "PATH")
-    return f"""{variables} '{client}' {words} > /dev/null\necho $? >> "$JOURNAL_PLUGIN_DATA/own-write\""""
+    return f"""{journal_line(journal, client, *line)} > /dev/null\necho $? >> "$JOURNAL_PLUGIN_DATA/own-write\""""
 
 
 def own_write(journal) -> list[str]:
@@ -38,27 +43,38 @@ def own_write(journal) -> list[str]:
     return written.read_text().split() if written.is_file() else []
 
 
-def start_with_plugin(journal, client: Path, entry: dict[str, str], script: str) -> None:
+def start_with_plugin(journal, client: Path, entry: dict[str, str], script: str, *more_entries: dict[str, str], scripts: dict[str, str] | None = None) -> None:
     journal.start_server()
     journal.wait_healthy()
     expect_line(journal, client, "environment", "make", "main", str(journal.home.folder.parent))
     expect_line(journal, client, "task", "make", "Fix the cart", "--environment", "main")
-    folder = event_plugin_folder(journal.home.folder.parent / "sources", [entry], {"script.sh": script})
+    folder = event_plugin_folder(journal.home.folder.parent / "sources", [entry, *more_entries], {"script.sh": script, **(scripts or {})})
     expect_line(journal, client, "plugin", "install", str(folder), "--yes")
 
 
-def wait_for_line(pipe: Path, running: subprocess.Popen[str]) -> str:
+def wait_for_line(pipe: Path, running: subprocess.Popen[str] | None = None, limit_seconds: float = STARTED_LIMIT_SECONDS) -> str:
     """The first line a script writes to the named pipe, read as it arrives; a command that ends first ends the wait."""
     reader = os.open(pipe, os.O_RDWR | os.O_NONBLOCK)
-    deadline = time.monotonic() + STARTED_LIMIT_SECONDS
+    deadline = time.monotonic() + limit_seconds
     try:
         while time.monotonic() < deadline:
             if select.select([reader], [], [], READ_SLICE_SECONDS)[0]:
                 return os.read(reader, 4096).decode()
-            assert running.poll() is None, f"the command ended before its script started: {running.communicate()}"
+            assert running is None or running.poll() is None, f"the command ended before its script started: {running.communicate()}"
     finally:
         os.close(reader)
     raise AssertionError("the script never started")
+
+
+def viewer_page(journal) -> PluginPage:
+    server = ServerStory(SimpleNamespace(steps=[]), journal.home.socket("server"), None)
+    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+    return PluginPage(journal, lambda line: server.viewer_line_value(cookie, {"window": WINDOW, "line": line, "environment": "main"}))
+
+
+def started_agent(journal, client: Path) -> str:
+    details = expect_line(journal, client, "agent", "start", "s-1", "claude", "main", "--environment", "main")
+    return next(line for line in details.splitlines() if line.startswith("id: ")).removeprefix("id: ")
 
 
 def test_s29_a_script_that_writes_through_the_journal_does_not_wait_or_start_itself(journal, client):
@@ -92,10 +108,8 @@ def test_s25_a_script_that_never_ends_shows_on_the_card_and_switching_off_stops_
     os.mkfifo(never_written)
     start_with_plugin(journal, client, {"event": TASK_CREATED, "guard": "script.sh"}, f"echo started > '{started}'\nread answer < '{never_written}'")
     expect_line(journal, client, "actor", "make", "user", "Ada")
-    server = ServerStory(SimpleNamespace(steps=[]), journal.home.socket("server"), None)
-    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-    page = PluginPage(journal, lambda line: server.viewer_line_value(cookie, {"window": WINDOW, "line": line, "environment": "main"}))
-    running =subprocess.Popen([str(client), *SECOND_JOB_LINE], env=journal.environment(), cwd=journal.home.folder.parent, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    page = viewer_page(journal)
+    running = subprocess.Popen([str(client), *SECOND_JOB_LINE], env=journal.environment(), cwd=journal.home.folder.parent, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     try:
         assert "started" in wait_for_line(started, running)
         assert any(row["form"] == "guard" and row["running_since"] for row in page.card()), page.card()
@@ -108,3 +122,31 @@ def test_s25_a_script_that_never_ends_shows_on_the_card_and_switching_off_stops_
     assert running.returncode == 0, stdout + stderr
     assert expect_line(journal, client, "task", "list").count(SECOND_JOB_TITLE) == 1
     assert page.plugin()["enabled"] is False
+
+
+def test_s58_a_journal_line_inside_plugin_run_stays_marked_as_the_plugin(journal, client):
+    finished = journal.home.folder.parent / "finished"
+    os.mkfifo(finished)
+    inner = journal_line(journal, client, "task", "edit", "1", "--title", "Written inside the run")
+    script =f'{own_journal_line(journal, client, "plugin", "run", "--agent", "1", "--", "sh", "-c", inner)}\necho finished > \'{finished}\''
+    start_with_plugin(journal, client, {"event": "core.pins.pin.created", "commit": "script.sh"}, script, {"event": TASK_UPDATED, "guard": "refuse.sh"}, scripts={"refuse.sh": EVENT_SCRIPTS["refuse.sh"]})
+    started_agent(journal, client)
+    expect_line(journal, client, "pin", "make", "Notes", "--link", "https://example.org/notes", "--environment", "main")
+    assert "finished" in wait_for_line(finished)
+    assert "Written inside the run" in expect_line(journal, client, "task", "show", "1")
+    assert not script_calls(journal, "refuse.sh")
+
+
+def test_s58_switching_the_plugin_off_stops_its_run(journal, client):
+    started, finished, never_written = (journal.home.folder.parent / name for name in ("started", "finished", "never-written"))
+    for pipe in (started, finished, never_written):
+        os.mkfifo(pipe)
+    hung = f"echo started > {started}; read answer < {never_written}"
+    script = f'{own_journal_line(journal, client, "plugin", "run", "--agent", "1", "--", "sh", "-c", hung)}\necho finished > \'{finished}\''
+    start_with_plugin(journal, client, {"event": "core.pins.pin.created", "commit": "script.sh"}, script)
+    started_agent(journal, client)
+    expect_line(journal, client, "actor", "make", "user", "Ada")
+    expect_line(journal, client, "pin", "make", "Notes", "--link", "https://example.org/notes", "--environment", "main")
+    assert "started" in wait_for_line(started)
+    viewer_page(journal).switch_off()
+    assert "finished" in wait_for_line(finished)
