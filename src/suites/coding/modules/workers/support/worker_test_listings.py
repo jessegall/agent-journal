@@ -19,6 +19,7 @@ from core.modules.processes.support.reader_run import ReaderRun
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.run_visibility import RunVisibility
 from core.modules.processes.commands.stop_process.stop_process import StopProcess
+from suites.coding.modules.workers.commands.restore_worker_tests.restore_worker_tests import RestoreWorkerTests
 from core.modules.drivers.support.nudger import Nudger
 from suites.coding.modules.workers.support.test_limit_nudges import TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE
 from suites.coding.modules.workers.support.test_listing import TestListing
@@ -74,6 +75,7 @@ class WorkerTestListings(RunCounts):
             return
         lines = self.folder.count_text(process.id).strip().splitlines()
         self.nudger.send(process.session_agent_id, TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE, context, output=process.id, listing=lines[-1] if lines else "no output")
+        self.bus.dispatch(RestoreWorkerTests(process.id), context)
         self.bus.dispatch(StopProcess(process.id), context)
 
     def counting_reader(self, part: ProcessPart, output: Output | None, readers: tuple[Reader, ...]) -> Reader | None:
