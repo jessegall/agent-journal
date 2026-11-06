@@ -25,7 +25,7 @@ class ReadWorkerLogsHandler(Handler[ReadWorkerLogs, str]):
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None or worktree.state is not WorktreeState.DELIVERED:
             raise Refusal(f"worker {command.worker_id} has delivered nothing to review", "journal worker-worktree list shows the worktrees")
-        review = self.log_lines.review(command.worker_id)
+        review = self.log_lines.review(worktree)
         sections = [review.summary(task) if command.task_id is None else review.whole(task) for task in review.tasks if command.task_id in (None, task.id)]
         self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.review_logs, logs_read_at=context.timestamp), context)
         return "\n\n".join(sections)
