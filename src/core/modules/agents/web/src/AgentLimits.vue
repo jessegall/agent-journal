@@ -17,12 +17,18 @@ async function load() {
     if (turn !== latestRead) return;
     rows.value = answer.ok ? answer.value.rows : [];
     failure.value = answer.ok ? "" : answer.error;
-    if (!answer.ok) return;
+    if (answer.ok && editing.value) await loadSources(turn);
+}
+async function loadSources(turn) {
     const values = await Promise.all(rows.value.flatMap((row) => [row.run_setting, row.kept_setting]).map(async (key) => {
         const current = await context.read(`setting show ${key}`);
         return [key, current.ok ? current.value.source : ""];
     }));
     if (turn === latestRead) sources.value = Object.fromEntries(values);
+}
+async function toggleEditing() {
+    editing.value = !editing.value;
+    if (editing.value) await loadSources(latestRead);
 }
 async function change(row, key, previous, event) {
     if (pending.value || context.readOnly) return;
@@ -54,7 +60,7 @@ load();
 <template>
     <section class="agent-limits" data-agent-limits>
         <template v-if="rows.length">
-            <div class="limits-head"><strong>Agent limits</strong><Btn small :disabled="pending || context.readOnly" data-agent-limits-edit @click="editing = !editing">{{ editing ? 'Done' : 'Edit limits' }}</Btn></div>
+            <div class="limits-head"><strong>Agent limits</strong><Btn small :disabled="pending || context.readOnly" data-agent-limits-edit @click="toggleEditing">{{ editing ? 'Done' : 'Edit limits' }}</Btn></div>
             <template v-for="row in rows" :key="row.key">
                 <div class="type-limits" :data-agent-limit-type="row.key">
                     <div class="limits-counts"><strong>{{ row.label }}</strong>
