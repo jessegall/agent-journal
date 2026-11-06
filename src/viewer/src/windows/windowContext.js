@@ -1,4 +1,5 @@
 import {lineBatch} from "./lineBatch.js";
+import {windowData} from "./windowData.js";
 import {afterSkeletonMinimum} from "../../kit/skeletonMinimum.js";
 import {transport} from "../api/transport.js";
 import {computed, ref} from "vue";
@@ -55,6 +56,13 @@ export function windowContext({window, environment, agent, visible, permissions,
         settle();
         return loaded.then(() => (requests.signal.aborted ? CANCELLED : lineResult(window, line, environment, requests.signal, unbatched)));
     };
+    const readKeys = ({only = [], state = {}} = {}) => {
+        reading += 1;
+        return keysAnswer(() => windowData(window, environment, only, state, requests.signal), requests.signal).finally(() => {
+            reading -= 1;
+            settle();
+        });
+    };
     const read = (line, {unbatched = false, deferred = false} = {}) => {
         const last = recent.get(line);
         if (last && performance.now() - last.at < READ_COALESCE_MS) return last.answer;
@@ -79,6 +87,7 @@ export function windowContext({window, environment, agent, visible, permissions,
         readOnly,
         shared,
         read,
+        readKeys,
         run: (line) => lineResult(window, line, environment, requests.signal),
         upload: (file) => uploaded(file, window, requests.signal),
         cancel: () => requests.abort(),
@@ -124,6 +133,19 @@ async function lineAnswer(asked, signal) {
     } catch (error) {
         if (signal?.aborted) return CANCELLED;
         return {ok: false, failure: "unreachable", error: UNREACHABLE};
+    }
+}
+
+const keyResult = (answer) => (answer.code === 0 ? {ok: true, value: answer.value} : {ok: false, failure: FAILURES[answer.code] || "fault", error: refusalWords(answer.error)});
+
+// a window's data, with each key's answer in the form a read answers, so one key that failed leaves the others
+async function keysAnswer(asked, signal) {
+    try {
+        const answer = await asked();
+        if (signal.aborted) return CANCELLED;
+        return {ok: true, value: {declared: answer.declared, keys: Object.fromEntries(Object.entries(answer.keys).map(([name, key]) => [name, keyResult(key)]))}};
+    } catch (error) {
+        return signal.aborted ? CANCELLED : {ok: false, failure: "unreachable", error: UNREACHABLE};
     }
 }
 
