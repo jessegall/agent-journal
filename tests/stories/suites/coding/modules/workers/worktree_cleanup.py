@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from suites.coding.modules.workers.support.worker_settings import WORKER_IDLE_HOURS
+from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from server.booting_work import BootingWork
 from tests.stories.core.support import story_lines as lines
@@ -133,3 +134,15 @@ def test_a_start_of_the_journal_keeps_unmerged_work_no_worker_holds(new_story):
     story.run_listeners()
     story.expect_rows(repository.worktree_folder(9).is_dir())
     story.expect_rows(repository.git("rev-parse", "refs/worker-tips/worker-9").stdout.strip() == tip)
+
+
+def test_the_idle_stop_asks_the_launcher_to_stop_the_program(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.advance(hours(DEFAULT_HOURS))
+    story.tick(MAIN_SESSION)
+    story.run_listeners()
+    launcher.thread.join(timeout=5)
+    story.expect_rows({"agent_id": worker.id, "stop": True} in launcher.requests)
