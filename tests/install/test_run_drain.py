@@ -79,3 +79,15 @@ def test_a_lock_a_dead_change_left_is_cleared_at_boot_and_one_of_a_live_change_s
     (tmp_path / "run-lock").write_text(str(os.getpid()))
     files.clear_dead_run_lock()
     assert (tmp_path / "run-lock").exists()
+
+
+def test_a_real_server_clears_the_wait_a_dead_update_left_and_keeps_one_a_live_update_holds(journal):
+    ended_process = subprocess.Popen(["true"])
+    ended_process.wait()
+    journal.home.run_lock.write_text(str(ended_process.pid))
+    journal.start_server()
+    journal.wait_healthy()
+    assert not journal.home.run_lock.exists()
+    journal.home.run_lock.write_text(str(os.getpid()))
+    ServerFiles(journal.home).clear_dead_run_lock()
+    assert journal.home.run_lock.exists()
