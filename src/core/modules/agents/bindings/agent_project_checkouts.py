@@ -15,7 +15,7 @@ class AgentProjectCheckouts(AgentCheckouts):
 
     def checkout(self, agent_id: int) -> Checkout:
         environment = self.environment(self.queries.query(Agent).find(agent_id))
-        return Checkout.of_project(Path(environment.folder), environment.branch)
+        return Checkout.project_checkout(Path(environment.folder), environment.branch)
 
     def environment(self, agent: Agent) -> Environment:
         return self.queries.query(Environment).find(agent.environment_id)

@@ -30,7 +30,7 @@ from core.base.module.state_check import StateCheck
 from core.base.module.agent_type_check import AgentTypeCheck
 from core.base.module.profile_check import ProfileCheck
 from core.base.module.template_check import TemplateCheck
-from core.base.change.event_form import EventForm
+from core.base.model.event_form import EventForm
 from core.base.registry.event_key_entry import EventKeyEntry
 from tests.unit.core.base.model.test_lifecycle import ItemState
 from tests.unit.core.base.model.test_model import Item

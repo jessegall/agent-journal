@@ -8,7 +8,9 @@ from pathlib import Path
 from core.base.conflict_files import ConflictFiles
 from core.base.refusal import Refusal
 from suites.coding.modules.workers.models.worktree import Worktree
+from core.base.file_status import FileStatus
 from suites.coding.modules.workers.support.worktree_changes import WorktreeChanges
+from suites.coding.modules.workers.support.worktree_file_change import WorktreeFileChange
 
 GIT_LIMIT_SECONDS = 60
 CHECKOUT_LIMIT_SECONDS = 300
@@ -17,6 +19,11 @@ WORKTREE_EXCLUDE_FILE = "journal-exclude"
 WORKTREE_CONFIG_FILE = "config.worktree"
 GIT_FOLDER_PREFIX = "gitdir:"
 BUILT_FOLDER = "/web/dist/"
+# git quotes a name with a space, a quote or another letter it finds odd, unless it separates names with NUL
+NAME_SEPARATOR = "\0"
+# With -M -z a rename is three fields: status, old name, new name.
+RENAME_STATUS = "R"
+DIFF_STATUSES = {"A": FileStatus.ADDED, "D": FileStatus.DELETED}
 
 
 class WorktreeGit:
@@ -230,21 +237,35 @@ class WorktreeGit:
             self.checked(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
 
     def changed_files(self, worktree: Worktree) -> tuple[str, ...]:
-        return self.changed_paths(worktree, worktree.base_commit)
+        return tuple(change.relative for change in self.file_changes(worktree.folder, worktree.base_commit))
 
     def comparison(self, worktree: Worktree) -> WorktreeChanges:
         base = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "merge-base", worktree.base_branch, worktree.branch).stdout.strip()
-        return WorktreeChanges(base, self.changed_paths(worktree, base))
+        changes = self.file_changes(worktree.folder, base)
+        return WorktreeChanges(base, tuple(change.relative for change in changes), changes)
 
-    def changed_paths(self, worktree: Worktree, base: str) -> tuple[str, ...]:
-        tracked = self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", base).stdout.splitlines()
-        untracked = self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--others", "--exclude-standard").stdout.splitlines()
-        return tuple(dict.fromkeys(path for path in (*tracked, *untracked) if path))
+    def file_changes(self, folder: str, base: str) -> tuple[WorktreeFileChange, ...]:
+        tracked = self.tracked_changes(self.git(folder, GIT_LIMIT_SECONDS, "diff", "--name-status", "-M", "-z", base).stdout)
+        names = {change.relative for change in tracked}
+        untracked = self.git(folder, GIT_LIMIT_SECONDS, "ls-files", "--others", "--exclude-standard", "-z").stdout.split(NAME_SEPARATOR)[:-1]
+        return (*tracked, *(WorktreeFileChange(name, FileStatus.ADDED) for name in dict.fromkeys(untracked) if name not in names))
+
+    @staticmethod
+    def tracked_changes(listing: str) -> tuple[WorktreeFileChange, ...]:
+        fields = iter(listing.split(NAME_SEPARATOR)[:-1])
+        changes: list[WorktreeFileChange] = []
+        for status in fields:
+            if status.startswith(RENAME_STATUS):
+                old_name = next(fields)
+                changes.append(WorktreeFileChange(next(fields), FileStatus.RENAMED, old_name))
+            else:
+                changes.append(WorktreeFileChange(next(fields), DIFF_STATUSES.get(status, FileStatus.CHANGED)))
+        return tuple(changes)
 
     def has_commit(self, folder: str, commit: str) -> bool:
         return self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", f"{commit}^{{commit}}").returncode == 0
 
-    def commit_holds(self, folder: str, commit: str, relative: str) -> bool:
+    def commit_contains(self, folder: str, commit: str, relative: str) -> bool:
         return self.git(folder, GIT_LIMIT_SECONDS, "cat-file", "-e", f"{commit}:{relative}").returncode == 0
 
     def checked(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:

@@ -1,16 +1,17 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from core.base.change.event_form import EventForm
+from core.base.model.event_form import EventForm
 
 MODULE_NAME_PREFIX = "journal."
-PAST_CHANGES = {"create": "created", "update": "updated", "delete": "deleted"}
+CHANGE_WORDS = {"create": "created", "update": "updated", "delete": "deleted"}
 
 
 @dataclass(frozen=True)
 class EventKeyEntry:
-    """One event as a plugin names it: its key, its name in the log, the module that owns it, and the forms a script
-    may take for it."""
+    """One event as a plugin names it: its key, its name in the log, the module that owns it, and the forms a
+    script may take for it. The key is the module's name without journal., then the first part of the log name,
+    then its second part with create, update and delete in the past."""
 
     key: str
     event: str
@@ -18,11 +19,9 @@ class EventKeyEntry:
     forms: tuple[EventForm, ...]
 
     @classmethod
-    def named(cls, module: str, event: str, forms: tuple[EventForm, ...]) -> "EventKeyEntry":
-        """The key is the module's name without journal., then the first part of the log name, then its second part
-        with create, update and delete in the past."""
+    def built(cls, module: str, event: str, forms: tuple[EventForm, ...]) -> "EventKeyEntry":
         subject, _, change = event.partition(".")
-        return cls(f"{module.removeprefix(MODULE_NAME_PREFIX)}.{subject}.{PAST_CHANGES.get(change, change)}", event, module, forms)
+        return cls(f"{module.removeprefix(MODULE_NAME_PREFIX)}.{subject}.{CHANGE_WORDS.get(change, change)}", event, module, forms)
 
     @classmethod
     def restored(cls, entry: Mapping[str, object]) -> "EventKeyEntry":

@@ -269,21 +269,19 @@ class Registry:
         return EventLookup(self.guards, self.listeners, self.events)
 
     @cached_property
-    def events_by_key(self) -> dict[str, str]:
+    def key_event_names(self) -> dict[str, str]:
         return {entry.key: event for event, entry in self.event_keys.items()}
 
-    def key_of_event(self, event: str) -> str:
-        """The key of a log name, or an empty text for an event that has none."""
+    def event_key(self, event: str) -> str:
         entry = self.event_keys.get(event)
         return entry.key if entry is not None else ""
 
-    def event_of_key(self, key: str) -> str:
-        """The log name of a key, following the keys it was formerly known by, or an empty text for a key that does not exist."""
-        seen: set[str] = set()
-        while key not in self.events_by_key and key in self.former_event_keys and key not in seen:
-            seen.add(key)
+    def event_name(self, key: str) -> str:
+        visited: set[str] = set()
+        while key not in self.key_event_names and key in self.former_event_keys and key not in visited:
+            visited.add(key)
             key = self.former_event_keys[key]
-        return self.events_by_key.get(key, "")
+        return self.key_event_names.get(key, "")
 
     def event_guards(self, event: str) -> tuple[GuardEntry, ...]:
         return self.event_lookup.matching_guards(event)

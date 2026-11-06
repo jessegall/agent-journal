@@ -13,7 +13,7 @@ from core.base.model.tables import Tables
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.dotted_path.dotted_path_error import DottedPathError
 from core.base.database.registry_table import RegistryTable
-from core.base.change.event_form import EventForm
+from core.base.model.event_form import EventForm
 from core.base.registry.event_key_entry import EventKeyEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
@@ -82,26 +82,26 @@ def test_a_command_finds_its_handler(database):
 
 
 def keyed_registry() -> Registry:
-    entry = EventKeyEntry.named("journal.suites.coding.workers", "worker_worktree.cut", tuple(EventForm))
+    entry = EventKeyEntry.built("journal.suites.coding.workers", "worker_worktree.cut", tuple(EventForm))
     return replace(Registry.parsed("abc", json.dumps(ENTRIES)), event_keys={entry.event: entry},
                    former_event_keys={"suites.coding.workers.worktree.cut": "suites.coding.workers.tree.cut", "suites.coding.workers.tree.cut": entry.key,
                                       "one.loop": "other.loop", "other.loop": "one.loop"})
 
 
 def test_the_key_of_a_log_name_is_found_and_an_event_with_no_key_gives_an_empty_text():
-    assert keyed_registry().key_of_event("worker_worktree.cut") == "suites.coding.workers.worker_worktree.cut"
-    assert keyed_registry().key_of_event("plugin_delivery.create") == ""
+    assert keyed_registry().event_key("worker_worktree.cut") == "suites.coding.workers.worker_worktree.cut"
+    assert keyed_registry().event_key("plugin_delivery.create") == ""
 
 
 def test_the_log_name_of_a_key_is_found_through_its_former_keys():
     registry = keyed_registry()
-    assert registry.event_of_key("suites.coding.workers.worker_worktree.cut") == "worker_worktree.cut"
-    assert registry.event_of_key("suites.coding.workers.worktree.cut") == "worker_worktree.cut"
-    assert registry.event_of_key("core.tasks.task.closed") == ""
+    assert registry.event_name("suites.coding.workers.worker_worktree.cut") == "worker_worktree.cut"
+    assert registry.event_name("suites.coding.workers.worktree.cut") == "worker_worktree.cut"
+    assert registry.event_name("core.tasks.task.closed") == ""
 
 
 def test_former_keys_that_lead_to_each_other_end_with_no_event():
-    assert keyed_registry().event_of_key("one.loop") == ""
+    assert keyed_registry().event_name("one.loop") == ""
 
 
 def test_event_keys_survive_being_written_and_read():

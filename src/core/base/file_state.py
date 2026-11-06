@@ -8,4 +8,4 @@ class FileState:
     """How a file of a checkout stands against its base: its status, and whether the base commit holds its name."""
 
     status: FileStatus
-    in_base: bool
+    base_contains: bool

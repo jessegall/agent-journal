@@ -36,7 +36,8 @@ FILE_FIELD = "file"
 
 class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
     """Runs a plugin's program for an event it plugin_event without holding it, once the hook has committed,
-    and puts the line it tells in its queue, which reaches the agent at its next hook."""
+    and puts the line it tells in its queue, which reaches the agent at its next hook. It asks how a file stands
+    here and not when the delivery is saved, since this runs with no lock and the answer may run git."""
 
     name = "plugins.delivery"
 
@@ -52,7 +53,7 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         environment = self.queries.query(Environment).find(delivery.environment_id).name
         data: object = json.loads(delivery.data)
         event_data = {str(key): value for key, value in data.items()} if is_mapping(data) else {}
-        file_checkout = self.file_checkout(delivery, event_data)
+        file_checkout = self.delivery_checkout(delivery, event_data)
         if file_checkout is not None:
             event_data[FILE_FIELD] = self.with_file_state(file_checkout, event_data[FILE_FIELD])
         call = PluginCall(manifest, PluginEvent(delivery.event, event_data), environment, self.clock.timestamp(), self.settings.values(plugin, manifest), delivery.session_agent_id, file_checkout)
@@ -68,12 +69,11 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         if answer.has_output():
             self.record(logged, delivery, AddPluginOutput(plugin.id, delivery.session_agent_id, answer.output))
 
-    def file_checkout(self, delivery: PluginDelivery, event_data: Mapping[str, object]) -> Checkout | None:
+    def delivery_checkout(self, delivery: PluginDelivery, event_data: Mapping[str, object]) -> Checkout | None:
         file = event_data.get(FILE_FIELD)
-        return self.checkouts.checkout_of_file(delivery.session_agent_id, Path(str(file["path"]))) if is_mapping(file) else None
+        return self.checkouts.file_checkout(delivery.session_agent_id, Path(str(file["path"]))) if is_mapping(file) else None
 
     def with_file_state(self, checkout: Checkout, values: object) -> dict[str, object]:
-        """Asks how the file stands here and not when the delivery is saved, since this runs with no lock and may run git."""
         file = CheckoutFile.restored(values)
         return file.with_state(self.checkouts.file_state(checkout, file.relative)).values()
 

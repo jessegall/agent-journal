@@ -27,11 +27,11 @@ class DeliverFileEditHandler(Handler[DeliverFileEdit, None]):
 
     def handle(self, command: DeliverFileEdit, context: Context) -> None:
         role = self.queries.query(Agent).find(command.agent_id).role
-        hearing = [runnable for runnable in self.runnable.running() if FILE_EDITED in runnable.manifest.event_names and (role == AgentRole.MAIN or runnable.manifest.reaches_role(FILE_EDITED, role))]
-        if not hearing:
+        receivers = [runnable for runnable in self.runnable.running() if FILE_EDITED in runnable.manifest.event_names and (role == AgentRole.MAIN or runnable.manifest.reaches_role(FILE_EDITED, role))]
+        if not receivers:
             return
-        written = Path(command.folder) / command.path
-        file = CheckoutFile.named(self.checkouts.checkout_of_file(command.agent_id, written), written)
+        file_path = Path(command.folder) / command.path
+        file = CheckoutFile.located(self.checkouts.file_checkout(command.agent_id, file_path), file_path)
         data = json.dumps({"path": command.path, "type": "edit", OLD_TYPE_KEY: "edit", "lines": [dict(row) for row in command.lines], "cwd": command.folder, "file": file.values()})
-        for runnable in hearing:
+        for runnable in receivers:
             self.bus.dispatch(DeliverPluginEvent(runnable.plugin.id, command.agent_id, FILE_EDITED, data), context)

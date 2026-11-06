@@ -37,7 +37,8 @@ class PluginProgram:
         folder = self.folders.code(manifest.name)
         self.write_settings(manifest.name, call.settings)
         skills = self.skills.names(call.agent_id) if call.agent_id is not None else ()
-        line = json.dumps({"v": 1, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "skills": list(skills), "checkout": self.checkout_values(call), "data": dict(call.event.data)})
+        checkout = call.file_checkout or (self.checkouts.checkout(call.agent_id) if call.agent_id is not None else None)
+        line = json.dumps({"v": 1, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "skills": list(skills), "checkout": checkout.values() if checkout is not None else {}, "data": dict(call.event.data)})
         socket_services = [service.name for service in manifest.services if service.answers]
         if socket_services and (service_socket := PluginSocket(self.sockets.answers(manifest.name, socket_services[0]))).is_open():
             try:
@@ -59,11 +60,6 @@ class PluginProgram:
             return PluginAnswer.parsed(output)
         except json.JSONDecodeError:
             raise PluginFaultError("its answer is not JSON") from None
-
-    def checkout_values(self, call: PluginCall) -> dict[str, object]:
-        if call.file_checkout is not None:
-            return call.file_checkout.values()
-        return self.checkouts.checkout(call.agent_id).values() if call.agent_id is not None else {}
 
     @staticmethod
     def stop(process: "subprocess.Popen[str]") -> None:

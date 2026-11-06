@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 from core.base.change.change import METADATA
-from core.base.change.event_form import EventForm
+from core.base.model.event_form import EventForm
 from core.base.change.event_log import JOURNAL_BOOTING_EVENT, REGISTRY_SYNC_EVENT, UPGRADE_FINISHED_EVENT, UPGRADE_MOVED_EVENT
 from core.base.change.event_pattern import EventPattern
 from core.base.model.model import Model
@@ -33,7 +33,7 @@ STANDARD_CHANGES = ("create", "update", "delete", METADATA)
 LIFECYCLE_ATTRIBUTES = ("states", "initial", "editable", "deletable")
 SYSTEM_EVENTS = (JOURNAL_BOOTING_EVENT, REGISTRY_SYNC_EVENT, UPGRADE_MOVED_EVENT, UPGRADE_FINISHED_EVENT)
 SYSTEM_EVENTS_MODULE = "journal.core"
-COMMIT_ONLY = tuple([EventForm.COMMIT])
+COMMIT_FORM = tuple([EventForm.COMMIT])
 
 
 class ModuleCheck:
@@ -57,8 +57,7 @@ class ModuleCheck:
         return tuple(event for module in modules for event in self.module_events(module, book))
 
     def module_events(self, module: type[Module], book: StateBook) -> dict[str, tuple[EventForm, ...]]:
-        """Each event of one module by its log name, with the forms a script may take for it."""
-        events = dict.fromkeys(module.file_events, COMMIT_ONLY)
+        events = dict.fromkeys(module.file_events, COMMIT_FORM)
         for declaration in module.models:
             model = declaration.model
             lifecycle = book.lifecycle(model)
@@ -68,8 +67,8 @@ class ModuleCheck:
 
     def event_keys(self, modules: Sequence[type[Module]]) -> tuple[EventKeyEntry, ...]:
         book = modules_book(modules)
-        entries = [EventKeyEntry.named(module.name, event, forms) for module in modules for event, forms in self.module_events(module, book).items() if forms]
-        return (*(EventKeyEntry.named(SYSTEM_EVENTS_MODULE, event, COMMIT_ONLY) for event in SYSTEM_EVENTS), *entries)
+        entries = [EventKeyEntry.built(module.name, event, forms) for module in modules for event, forms in self.module_events(module, book).items() if forms]
+        return (*(EventKeyEntry.built(SYSTEM_EVENTS_MODULE, event, COMMIT_FORM) for event in SYSTEM_EVENTS), *entries)
 
     def check(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> None:
         problems = (self.duplicate_names(modules, rules) + self.lifecycle_problems(modules) + self.event_problems(modules) + self.duplicate_event_keys(modules) + self.duplicate_handlers(modules)

@@ -6,12 +6,12 @@ from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_tuple
 
-COLUMN_GAP = "   "
+COLUMN_SPACES = "   "
 
 
 class EventKeysSubcommand(ReadSubcommand[tuple[EventKeyEntry, ...]]):
-    """`journal event keys [--grep <text>]`: every event a plugin can name, with the forms it offers and its name in the
-    log, sorted by key."""
+    """`journal event keys [--grep <text>]`: every event a plugin can name, with the forms it offers and its
+    name in the log, sorted by key."""
 
     cli_name, name = "event", "keys"
 
@@ -26,5 +26,5 @@ class EventKeysSubcommand(ReadSubcommand[tuple[EventKeyEntry, ...]]):
 
     def write_output(self, value: object, output: Output) -> None:
         entries = [entry for entry in value if isinstance(entry, EventKeyEntry)] if is_tuple(value) else []
-        text = "\n".join(COLUMN_GAP.join((entry.key, " ".join(entry.forms), entry.event)) for entry in entries) or "no event has that key"
+        text = "\n".join(COLUMN_SPACES.join((entry.key, " ".join(entry.forms), entry.event)) for entry in entries) or "no event has that key"
         output.write(text, {"rows": [output.values(entry) for entry in entries]})

@@ -3,7 +3,7 @@ import sys
 
 from core.base.agent_checkouts import AgentCheckouts
 from core.base.checkout import Checkout
-from core.base.checkout_kind import CheckoutKind
+from core.base.checkout_type import CheckoutType
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.testing.fake_launcher import FakeLauncher
@@ -17,6 +17,8 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 
 NEW_FILE = "src/new.py"
 SALE = "src/sale.py"
+ODD_NAMES = ("with a space.py", 'with"quote.py', "with\ttab.py", "naïve.py")
+RENAMED_ODD_NAME = "src/sale order.py"
 LIBRARY_FILE = "node_modules/x.js"
 RELEASE_REASON = "the story released it"
 HELPER_START = 'helper start journal-researcher --brief "Read src/order.py" --environment main'
@@ -45,13 +47,13 @@ def helper_of_the_worker(story) -> Agent:
 def test_s46_the_checkout_of_the_main_agent_is_the_project(new_story):
     story = checkout_story(new_story)
     project = story.repository.folder.resolve()
-    assert checkout_object(story, story.agent.id) == Checkout(CheckoutKind.MAIN, project, project, ENVIRONMENT_BRANCH)
+    assert checkout_object(story, story.agent.id) == Checkout(CheckoutType.MAIN, project, project, ENVIRONMENT_BRANCH)
 
 
 def test_s45_the_checkout_of_a_worker_is_its_worktree(new_story):
     story = checkout_story(new_story)
     repository = story.repository
-    assert checkout_object(story, story.worker.id) == Checkout(CheckoutKind.WORKTREE, story.worktree.resolve(), repository.folder.resolve(), repository.worker_branch(story.worker.id),
+    assert checkout_object(story, story.worker.id) == Checkout(CheckoutType.WORKTREE, story.worktree.resolve(), repository.folder.resolve(), repository.worker_branch(story.worker.id),
                                                                ENVIRONMENT_BRANCH, repository.tip(ENVIRONMENT_BRANCH), True)
 
 
@@ -59,7 +61,7 @@ def test_s50_the_checkout_of_a_released_worker_says_it_does_not_exist_and_names_
     story = checkout_story(new_story)
     story.expect_success(f'worker release {story.worker.id} "{RELEASE_REASON}"', actor=story.agent)
     checkout = checkout_object(story, story.worker.id)
-    story.expect_rows(checkout.kind is CheckoutKind.WORKTREE, checkout.exists is False, checkout.branch == story.repository.worker_branch(story.worker.id), checkout.root == story.worktree.resolve())
+    story.expect_rows(checkout.checkout_type is CheckoutType.WORKTREE, checkout.exists is False, checkout.branch == story.repository.worker_branch(story.worker.id), checkout.root == story.worktree.resolve())
 
 
 def test_s56_the_checkout_of_a_helper_of_a_worker_is_the_checkout_of_the_worker(new_story):
@@ -223,6 +225,18 @@ def test_s54_a_single_edit_event_for_a_move_says_added_and_the_hand_in_is_still_
     story.expect_rows(file["status"] == "added", file["renamed_from"] == "")
     story.run(DELIVERY, actor=story.worker)
     expect_renamed(story)
+
+
+def test_s54_odd_names_at_hand_in_come_back_exact_also_in_a_rename(new_story):
+    story = checkout_story(new_story)
+    for name in ODD_NAMES:
+        (story.worktree / name).write_text("ODD = 1\n")
+    story.repository.git("mv", ORDER, RENAMED_ODD_NAME, folder=story.worktree)
+    story.expect_success(FIRST_PROOF, "point: 1", actor=story.worker)
+    story.run(DELIVERY, actor=story.worker)
+    rows = {row["relative"]: row for row in delivery_changes(story)}
+    story.expect_rows(set(ODD_NAMES) <= set(rows), rows[RENAMED_ODD_NAME]["status"] == "renamed", rows[RENAMED_ODD_NAME]["renamed_from"] == ORDER)
+    story.expect_rows(rows[ODD_NAMES[0]]["status"] == "added", rows[ODD_NAMES[0]]["in_base"] is False)
 
 
 def test_s55_a_deleted_file_is_named_though_nothing_is_there(new_story):

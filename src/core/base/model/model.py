@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
 from typing import ClassVar, Self
-from core.base.change.event_form import EventForm
+from core.base.model.event_form import EventForm
 from core.base.metadata import Metadata
 from core.base.model.added_state import StateValue
 from core.base.model.lifecycle import Lifecycle
