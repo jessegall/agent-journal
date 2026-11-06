@@ -53,6 +53,7 @@ from scripts.timing_report import logged_timings, report
 TIMEOUT_SECONDS = 10
 POLL_SECONDS = 0.05
 STORY_HOOK_LIMIT_SECONDS = 0.5
+STORY_RUNNING_HOOKS_COUNT = 1
 LOCKED_HOOK_WAIT_SECONDS = 1.0
 
 
@@ -320,7 +321,7 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
         phones = PhoneSessions(home, listener_thread)
         login = ViewerLogin(phones, ShareSessions(phones.journal_output))
         reported = ReportedFindings()
-        hook_database = HookDatabase(home)
+        hook_database = HookDatabase(home, STORY_RUNNING_HOOKS_COUNT)
         context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
                                 hook_database, ViewerListener(login, ViewerRoutes(home, listener_thread, login, reported, hook_database.queue)), ServerTunnel(home), reported, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS)
         context.viewer.routes.line_route = StoryLineRoute(home, listener_thread, reported)
