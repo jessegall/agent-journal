@@ -1,10 +1,11 @@
 import http.client
 import json
-from time import sleep
+from time import perf_counter, sleep
 from unittest.mock import patch
 
 import pytest
 
+from server.hook.queue_priority import QueuePriority
 from server.viewer.line_route import LineRoute
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingOn
 from tests.stories.server.support.server_client import server_story, viewer_answer
@@ -106,3 +107,23 @@ def test_a_window_sending_many_lines_of_one_noun_and_verb_is_a_development_error
         status, _, body = viewer_answer(server.viewer_port(), "/api/repeated-lines", cookie, "", report)
         expect_answered(status, body)
     expect_reported_times(server, 1 if reported else 0)
+
+
+def read_time(server, cookie: str, window: str) -> float:
+    started_at = perf_counter()
+    server.viewer_line_value(cookie, {"line": ["usage", "tool"], "environment": "main", "window": window})
+    return perf_counter() - started_at
+
+
+def expect_chat_ahead_of_a_hook(chat_seconds: float, other_seconds: float, wait_limit_seconds: float) -> None:
+    assert chat_seconds < wait_limit_seconds, chat_seconds
+    assert other_seconds >= wait_limit_seconds, other_seconds
+
+
+def test_the_chat_goes_ahead_of_a_running_hook_and_another_window_waits_behind_it(recording_server):
+    server = recording_server
+    cookie = logged_in(server)
+    with server.context.hook_database.used(QueuePriority.AGENT_HOOK, 1):
+        chat_seconds = read_time(server, cookie, "messages.chat")
+        other_seconds = read_time(server, cookie, "agents.agents")
+    expect_chat_ahead_of_a_hook(chat_seconds, other_seconds, server.context.hook_database.queue.viewer_wait_limit_seconds)

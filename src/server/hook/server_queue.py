@@ -80,7 +80,7 @@ class ServerQueue(RequestQueue):
 
     @contextmanager
     def viewer_turn(self, line: str, window: str = "", priority: WindowPriority = WindowPriority.NORMAL) -> Generator[None]:
-        request = QueueRequest.started("Viewer", line)
+        request = QueueRequest.started("Viewer", line, priority=priority.name.lower())
         number = next(self.arrivals)
         with self.changed:
             self.waiting_viewers[number] = request

@@ -216,3 +216,12 @@ def test_no_more_viewer_requests_run_than_the_limit_unless_their_wait_is_over():
         assert order == []
     thread.join(WAIT_SECONDS)
     assert order == ["plans.plans"]
+
+
+def test_a_waiting_viewer_request_names_its_priority():
+    queue = ServerQueue(viewer_wait_limit_seconds=WAIT_SECONDS)
+    with queue.hook_turn(QueuePriority.AGENT_HOOK, WAIT_SECONDS):
+        thread = viewer_thread(queue, "tasks.tasks", WindowPriority.NORMAL, [])
+        wait_for_waiting_viewers(queue, 1)
+        assert [entry.priority for entry in queue.read().waiting] == ["normal"]
+    thread.join(WAIT_SECONDS)
