@@ -31,7 +31,7 @@ const runTime = computed(() => age(props.row.process_started_at || props.row.cre
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
 const stoppedWithWork = computed(() => Boolean(props.row.ended_at) && props.row.role !== "main" && tasks.value.some((task) => UNFINISHED_STATES.has(task.state)));
 const dotState = computed(() => (props.row.retired_at || props.row.state === "retired" ? "retired" : props.waitReason || stoppedWithWork.value ? "waiting" : props.row.state === "running" ? props.facts?.state || props.row.state : props.row.state));
-const workStatus = computed(() => props.waitReason ? `Waiting: ${props.waitReason}` : dotState.value === "blocked" ? "Blocked" : stoppedWithWork.value ? "Stopped with work left" : "");
+const workStatus = computed(() => props.waitReason ? `Waiting: ${props.waitReason}` : dotState.value === "blocked" ? (props.facts?.blocked_reason ? `Blocked: ${props.facts.blocked_reason}` : "Blocked") : stoppedWithWork.value ? "Stopped with work left" : "");
 const completedCount = computed(() => props.progress?.completed_count ?? tasks.value.filter((task) => task.state === "completed").length);
 const totalCount = computed(() => props.progress?.task_count ?? tasks.value.length);
 const taskCount = computed(() => `${completedCount.value} of ${totalCount.value} ${totalCount.value === 1 ? "task" : "tasks"}`);

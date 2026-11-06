@@ -1,7 +1,9 @@
-import json
 import os
 
 from core.base.driver.command_category import CommandCategory
+from core.base.exception_sink import CLOCK_TICK_SOURCE
+from core.base.query.queries import Queries
+from core.modules.chat.models.journal_exception import JournalException
 from core.base.module.performance_tools import PerformanceTools
 from core.base.timing import Timing
 from core.modules.drivers.support.hook_cost_tool import HOOK_LIMIT_POINTS
@@ -19,16 +21,18 @@ def developer_story(new_story):
 
 
 def warning_count(story):
-    rows = json.loads(story.run("message list --json", actor=story.user).output_text)["rows"]
-    return len([row for row in rows if "tick" in row["text"] and ("points" in row["text"] or " ms" in row["text"])])
+    story.run_listeners()
+    rows = story.container.get(Queries).query(JournalException).all_rows()
+    return len([row for row in rows if row.source == CLOCK_TICK_SOURCE and "points" in row.message])
 
 
 def warn_after_ready(story):
     tools = story.container.get(PerformanceTools)
     count = warning_count(story)
-    story.expect_rows(tools.run(SlowTickTool, HOOK_LIMIT_POINTS + 1) is True)
+    points = HOOK_LIMIT_POINTS + 1 + count
+    story.expect_rows(tools.run(SlowTickTool, points) is True)
     story.expect_rows(warning_count(story) == count + 1)
-    story.expect_text("message list", f"{HOOK_LIMIT_POINTS + 1} points", actor=story.user)
+    story.expect_text("chat-mark main --environment main --json", f"{points} points", actor=story.user)
 
 
 def check_startup_measurements(story):
