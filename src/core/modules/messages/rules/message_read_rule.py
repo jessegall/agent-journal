@@ -22,6 +22,7 @@ class MessageReadRule(DriverRule):
     """Marks messages read by their target agent and explains how to answer them."""
 
     name = "messages.read-marks-read"
+    overlay_proof = True
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
 
