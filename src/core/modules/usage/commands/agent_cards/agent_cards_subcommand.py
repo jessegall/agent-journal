@@ -50,7 +50,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
             if options is None:
                 return AgentFilterOptions((), ())
             titles = {profile.name: profile.display_title for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
-            return AgentFilterOptions(tuple(sorted(json.loads(options.roles))), tuple((name, titles.get(name, name)) for name in sorted(profile for profile in json.loads(options.profiles) if profile)))
+            return AgentFilterOptions(tuple(sorted(role for role in json.loads(options.roles) if role != AgentRole.MAIN)), tuple((name, titles.get(name, name)) for name in sorted(profile for profile in json.loads(options.profiles) if profile)))
         rows = self.queries.query(AgentListing)
         if not arguments.include_main and (not arguments.role or AgentRole.MAIN not in arguments.role):
             rows = rows.matching(Equal("role", AgentRole.MAIN, negated=True))

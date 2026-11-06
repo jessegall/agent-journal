@@ -11,7 +11,7 @@ vi.mock("@journal/window-kit", async (original) => {
 
 afterEach(() => { vi.useRealTimers(); });
 
-test("scrolling away collapses after three quiet seconds and the foot opens immediately", async () => {
+test("scrolling away collapses after half a quiet second and the foot opens immediately", async () => {
     const element = await mounted(Chat, context({"message feed": page([])}));
     const history = element.querySelector(".history");
     Object.defineProperty(history, "scrollHeight", {value: 2000});
@@ -21,7 +21,7 @@ test("scrolling away collapses after three quiet seconds and the foot opens imme
     history.dispatchEvent(new Event("scroll"));
     history.scrollTop = 500;
     history.dispatchEvent(new Event("scroll"));
-    await vi.advanceTimersByTimeAsync(2999);
+    await vi.advanceTimersByTimeAsync(499);
     expect(element.querySelector("[data-test-docks]").dataset.collapsed).toBe("false");
     await vi.advanceTimersByTimeAsync(1);
     await nextTick();
