@@ -29,6 +29,7 @@ const draft = reactive({
     limit: held?.fire_limit ? String(held.fire_limit) : "",
     conditions: JSON.parse(held?.conditions ?? "[]"),
     action: held?.action ?? "nudge",
+    skill: held?.skill ?? "",
     text: held?.text ?? "",
     extra: JSON.parse(held?.extra_actions ?? "[]"),
 });
@@ -40,18 +41,19 @@ const missing = computed(() => {
     if (draft.type === "words" && !draft.phrases.length) return "Add at least one word.";
     if (draft.type === "words" && !draft.places.length) return "Choose where to look.";
     if (draft.type === "time" && !{every: draft.every, once: draft.at, cron: draft.cron}[draft.time]) return "Choose when.";
+    if (draft.action === "skill") return draft.skill.trim() ? "" : "Choose a skill.";
     return draft.text.trim() ? "" : `Write ${doesOf(draft.action).ask.toLowerCase()}.`;
 });
 const startFrom = ({name, phrases, action, text}) => Object.assign(draft, {name, phrases, action, text, type: "words"});
 const changeExtra = (position, values) => (draft.extra = draft.extra.map((entry, place) => place === position ? {...entry, ...values} : entry));
 watch(() => draft.type, (type) => {
-    if (type === "time" && draft.action === "deny") draft.action = "nudge";
+    if (type === "time" && ["deny", "skill"].includes(draft.action)) draft.action = "nudge";
 });
 
 const timeValue = () => (draft.time === "once" ? new Date(draft.at).toISOString() : draft[draft.time]);
 const startFlags = () => [{every: "--every", once: "--at", cron: "--cron"}[draft.time], timeValue()];
 const editFlags = () => [{every: "--interval-minutes", once: "--next-at", cron: "--cron-line"}[draft.time], timeValue()];
-const detailFlags = () => ["--name", draft.name.trim(), "--description", draft.description.trim(), "--conditions", JSON.stringify(draft.conditions), "--extra-actions", JSON.stringify(draft.extra),
+const detailFlags = () => [...(draft.action === "skill" ? ["--skill", draft.skill] : []),"--name", draft.name.trim(), "--description", draft.description.trim(), "--conditions", JSON.stringify(draft.conditions), "--extra-actions", JSON.stringify(draft.extra),
     ...(draft.type === "words" ? ["--watch-places", ...draft.places, "--match-mode", draft.match] : [])];
 const limitFlags = (flag) => (draft.limit ? [flag, draft.limit] : []);
 
@@ -61,7 +63,7 @@ function newLine() {
 }
 
 function editLine() {
-    const line = ["trigger", "edit", String(held.id), "--text", draft.text.trim(), "--action", draft.action, ...detailFlags()];
+    const line = ["trigger", "edit", String(held.id), "--text", draft.action === "skill" ? `Read ${draft.skill}` : draft.text.trim(), "--action", draft.action, ...detailFlags()];
     return draft.type === "words" ? [...line, ...draft.phrases.map((phrase) => `--phrases=${phrase}`)] : [...line, ...editFlags(), ...limitFlags("--fire-limit")];
 }
 
@@ -109,7 +111,7 @@ const end = () => ran(["trigger", "strike", String(held.id)]);
                 <TriggerConditionFields v-model="draft.conditions" />
             </TriggerPart>
             <TriggerPart title="Action" hint="What it does, in order">
-                <TriggerActionFields v-model:action="draft.action" v-model:text="draft.text" v-model:extra="draft.extra" :choices="draft.type === 'time' ? TIME_DOES : DOES" @change-extra="changeExtra" />
+                <TriggerActionFields v-model:skill="draft.skill" v-model:action="draft.action" v-model:text="draft.text" v-model:extra="draft.extra" :choices="draft.type === 'time' ? TIME_DOES : DOES" @change-extra="changeExtra" />
             </TriggerPart>
         </div>
         <template #foot>

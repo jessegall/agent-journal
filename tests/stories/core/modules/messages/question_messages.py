@@ -38,7 +38,7 @@ def test_confirm_sends_the_question_and_only_refused_attempts_are_counted(new_st
     story = new_story(fixture=UserJoined)
     line = 'message send "Do you want the stable version or preview?" --environment main'
     story.expect_refusal(line, "journal question ask", actor=story.agent)
-    story.expect_success(line + " --confirm", actor=story.agent)
+    story.expect_success(line + ' --confirm --skip-reason "it asks the person nothing to decide"', actor=story.agent)
     story.expect_rows(sum(row.guard == GUARD for row in story.refusals()) == 1)
 
 

@@ -114,6 +114,7 @@ from core.modules.drivers.rules.agent_block_rule import AgentBlockRule
 from core.modules.drivers.ticks.end_silent_helpers_tick import EndSilentHelpersTick
 from core.modules.drivers.rules.access_rule import AccessRule
 from core.modules.drivers.rules.native_subagent_rule import NativeSubagentRule
+from core.modules.drivers.rules.private_corpus_rule import PrivateCorpusRule
 from core.modules.drivers.models.nudge_record import NudgeRecord
 from core.modules.drivers.migrations.m004_nudge_records import NudgeRecordsMigration
 from core.modules.drivers.migrations.m028_read_indexes import ReadIndexesMigration
@@ -163,7 +164,7 @@ class DriversModule(Module):
     tick_handlers = [TickHandler(TickInterval(seconds=60), AgentTicks(), "agent ticks", starts_immediately=True), TickHandler(TickInterval(seconds=60), EndSilentHelpersTick(), "silent helpers"),
                      TickHandler(TickInterval(seconds=24 * 60 * 60), HookPruning(), "hook pruning", starts_immediately=True)]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]
-    driver_rules = [BlockStopRule, LongOutputRule, ForeignHooksRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, AgentBlockRule, TakeoverRule, AccessRule, NativeSubagentRule]
+    driver_rules = [BlockStopRule, LongOutputRule, ForeignHooksRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, AgentBlockRule, TakeoverRule, AccessRule, NativeSubagentRule, PrivateCorpusRule]
     bindings = {RefusalSkips: TableRefusalSkips, ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, HookHistory: TableHookHistory,HookRoute: AgentHookRoute, ChangeFilter: DriverChangeFilter,
                 EssentialAllowances: SettingEssentialAllowances}
     windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, skeleton=DRIVERS_NUDGES_SKELETON, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),

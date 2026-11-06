@@ -17,6 +17,7 @@ def test_options_that_name_the_agent_or_the_user_pass(new_story):
     story.expect_success('question ask "Which way?" --options "The agent fixes it" "The user decides" --environment main', "question 1 asked; waiting for the answer", actor=story.agent)
 
 
-def test_waive_skips_the_guard(new_story):
+def test_waive_with_a_reason_skips_the_guard_after_a_refusal(new_story):
     story = new_story(fixture=AgentStarted)
-    story.expect_success('question ask "Which way?" --options "I will fix it" --waive --environment main', "question 1 asked; waiting for the answer", actor=story.agent)
+    story.expect_refusal('question ask "Which way?" --options "I will fix it" --environment main', "name who acts", actor=story.agent)
+    story.expect_success('question ask "Which way?" --options "I will fix it" --waive --skip-reason "the option quotes a name" --environment main', "question 1 asked; waiting for the answer", actor=story.agent)

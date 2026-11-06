@@ -9,6 +9,7 @@ from core.base.cli.line_run import LineRun
 from core.base.cli.usage_error import UsageError
 from core.base.container import Container
 from core.base.database.database import Database
+from core.base.database.reported_findings import ReportedFindings
 from core.base.environment_names import EnvironmentNames
 from core.base.journal_home import JournalHome
 from core.base.refusal import Refusal
@@ -32,8 +33,8 @@ FLAG_SEPARATOR = "--"
 class LineRoute:
     """Checks and runs viewer lines, sharing one read container for a batch and returning each line's answer."""
 
-    def __init__(self, home: JournalHome, listener_thread: ListenerThread) -> None:
-        self.line_run = LineRun(home, CLI_LIMIT_SECONDS, ListenerWake(listener_thread))
+    def __init__(self, home: JournalHome, listener_thread: ListenerThread, reported: ReportedFindings) -> None:
+        self.line_run = LineRun(home, CLI_LIMIT_SECONDS, ListenerWake(listener_thread), reported)
 
     def answer(self, window: str, argv: list[str], person_id: int, environment: str, shared: SharedRow | None = None) -> LineAnswer:
         try:

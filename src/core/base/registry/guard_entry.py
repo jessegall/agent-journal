@@ -17,4 +17,5 @@ class GuardEntry:
 
     @property
     def skip_flag(self) -> str:
-        return f"--{self.short_flag}" if self.short_flag else f"--skip-guard {self.name} --skip-reason '<why>'"
+        flag = f"--{self.short_flag}" if self.short_flag else f"--skip-guard {self.name}"
+        return f"{flag} --skip-reason '<why>'"

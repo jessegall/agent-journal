@@ -29,7 +29,8 @@ SKIP_SOURCE = "drivers.refusal-skip"
 
 class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
     """Keeps an agent's skip of a refusal that just met it, with its reason. A safety refusal has no skip.
-    A skip counts as one more in a row unless the agent obeyed a refusal skipped_at its last; at five the
+    A skip counts as one more in a row unless the agent obeyed a refusal since its last, which means something
+    other than the refusal it skips now refused it (a retry of the same refused line is no obeying); at five the
     skip is gone, its main agent or the person is told, and only a restore gives it back."""
 
     command = SkipRefusal
@@ -46,13 +47,13 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
         if guard is not None and guard.path.checked_class(Guard).is_safety:
             raise Refusal(f"{command.name} is a safety refusal and has no skip", "say in your report what you need")
         if not command.reason.strip():
-            raise Refusal("say why this refusal does not apply", "--reason '<why>'")
+            raise Refusal("say why this refusal does not apply", "--skip-reason '<why>'" if command.is_used else "--reason '<why>'")
         last = self.queries.query(RefusalSkip).filter(session_agent_id=actor.id).newest().first()
         if last is not None and last.streak >= MOST_SKIP_COUNT and last.restored_at is None:
             raise Refusal(f"you skipped {MOST_SKIP_COUNT} refusals in a row and lost the skip", "obey the refusal; a skip comes back with journal refusal restore")
         skipped_at = last.created_at.text if last is not None and last.created_at is not None else ""
         self.check_refused(actor, command.name, skipped_at)
-        skip = self.repository.save(RefusalSkip(session_agent_id=actor.id, creator_id=actor.id, name=command.name, reason=command.reason.strip(), streak=self.skip_count(actor, last, skipped_at),
+        skip = self.repository.save(RefusalSkip(session_agent_id=actor.id, creator_id=actor.id, name=command.name, reason=command.reason.strip(), streak=self.skip_count(actor, last, command.name, skipped_at),
                                                 used_at=context.timestamp if command.is_used else None), context)
         if skip.streak == MOST_SKIP_COUNT:
             self.raised(actor.id, context)
@@ -69,11 +70,21 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
         if refused.get("safety"):
             raise Refusal(f"{name} is a safety refusal and has no skip", "say in your report what you need")
 
-    def skip_count(self, actor: Actor, last: RefusalSkip | None, skipped_at: str) -> int:
+    def skip_count(self, actor: Actor, last: RefusalSkip | None, name: str, skipped_at: str) -> int:
         if last is None or last.restored_at is not None:
             return 1
-        hook_refusals = self.queries.query(HookCall).filter(session_agent_id=actor.id, answer=HookAnswer.REFUSED).matching(Greater("created_at", skipped_at)).count()
-        return 1 if hook_refusals + self.refusals.count_past(actor.id, skipped_at) >= 2 else last.streak + 1
+        return 1 if self.refused_names_past(actor, skipped_at) - {name} else last.streak + 1
+
+    def refused_names_past(self, actor: Actor, skipped_at: str) -> set[str]:
+        """What refused the agent since its last skip, each refusal that no rule or guard made as an empty name."""
+        calls = self.queries.query(HookCall).filter(session_agent_id=actor.id, answer=HookAnswer.REFUSED).matching(Greater("created_at", skipped_at)).all_rows()
+        hook_names = {name for call in calls for name in self.refusing_rules(call)}
+        return hook_names | self.refusals.guards_refused_past(actor.id, skipped_at)
+
+    @staticmethod
+    def refusing_rules(call: HookCall) -> list[str]:
+        rules = call.metadata.module_part(DRIVERS_MODULE).get("rules", [])
+        return [row.get("rule", "") for row in rules if row.get("outcome") == "refused"] or [""]
 
     def raised(self, agent_id: int, context: Context) -> None:
         agent = self.queries.query(Agent).find(agent_id)

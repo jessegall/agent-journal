@@ -9,6 +9,9 @@ from core.base.caller.caller_request import CallerRequest
 from core.base.cli.console import Console
 from core.base.cli.line_run import LineRun
 from core.base.database.repeated_work import READ_LIMIT_REPEATS, READ_TEXT_LIMIT_REPEATS
+from core.base.database.reported_findings import ReportedFindings
+from server.listener_thread import ListenerThread
+from server.viewer.line_route import LineRoute
 from core.base.database.statement import Statement
 from core.base.query.queries import Queries
 from core.modules.chat.models.journal_exception import JournalException
@@ -21,6 +24,7 @@ from tests.stories.server.support.server_client import server_story
 
 LINES = "agent-line list --agent {agent}"
 REPEATED_READ = Statement("SELECT 1")
+SHORT_FINDING_LINES = 8
 
 
 class RepeatedWorkOn(StoryFixture):
@@ -116,6 +120,37 @@ def test_the_same_finding_in_two_requests_is_reported_once(new_story, monkeypatc
     for _ in range(2):
         run_as_core(story, line_run)
     story.expect_rows(len(reported(story)) == 1)
+
+
+def read_twice_for_each(*row_ids):
+    remaining = iter(row_ids)
+
+    def read_twice_for_next_row(database):
+        row_id = next(remaining)
+        for _ in range(READ_LIMIT_REPEATS + 1):
+            database.rows(Statement("SELECT ? AS row_id", [row_id]))
+
+    return read_twice_for_next_row
+
+
+def test_the_same_sql_read_for_two_rows_in_two_requests_is_reported_once_with_a_short_text(new_story, monkeypatch):
+    story = new_story(fixture=RepeatedWorkOn)
+    replace_console_run(monkeypatch, read_twice_for_each(106281, 106286))
+    line_run = LineRun(story.home)
+    for _ in range(2):
+        run_as_core(story, line_run)
+    messages = reported(story)
+    story.expect_rows(len(messages) == 1, len(messages[0].splitlines()) <= SHORT_FINDING_LINES, "(106281,)" in messages[0], "(106286,)" not in messages[0])
+
+
+def test_a_viewer_line_and_a_cli_line_share_the_reported_findings(new_story, monkeypatch):
+    story = new_story(fixture=RepeatedWorkOn)
+    replace_console_run(monkeypatch, read_twice_for_each(106281, 106286))
+    shared = ReportedFindings()
+    viewer_run = LineRoute(story.home, ListenerThread(lambda: None, lambda error: None), shared).line_run
+    run_as_core(story, LineRun(story.home, reported=shared))
+    run_as_core(story, viewer_run)
+    story.expect_rows(viewer_run.reported is shared, len(reported(story)) == 1)
 
 
 def test_with_the_setting_on_a_duplicate_query_in_a_hook_is_reported_and_the_hook_is_answered(new_story, monkeypatch):
