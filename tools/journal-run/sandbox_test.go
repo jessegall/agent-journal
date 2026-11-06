@@ -144,3 +144,69 @@ print(answer.stdout, end='')
 		t.Fatalf("unprotected self-test passed: %s", output)
 	}
 }
+
+func TestDeclaredFoldersNeverHoldTheMainFolderOrAPathOutsideIt(t *testing.T) {
+	main, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	inside := filepath.Join(main, ".rules")
+	if err := os.Mkdir(inside, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	outside := t.TempDir()
+	home := filepath.Join(main, ".journal")
+	worktrees := filepath.Join(home, "worktrees")
+	if err := os.MkdirAll(worktrees, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	link := filepath.Join(main, "link-in")
+	if err := os.Symlink(home, link); err != nil {
+		t.Fatal(err)
+	}
+	folders := declaredFolders([]string{main, outside, inside, filepath.Join(main, "missing"), home, worktrees, link}, main, home)
+	if len(folders) != 1 || folders[0] != inside {
+		t.Fatalf("declared folders %v", folders)
+	}
+}
+
+func TestAWorkerKeepsItsOwnWorktreeAndThePluginDataWithNothingDeclared(t *testing.T) {
+	folder, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	main := filepath.Join(folder, "main")
+	home := filepath.Join(main, ".journal")
+	worktree := filepath.Join(home, "worktrees", "worker")
+	if err := os.MkdirAll(worktree, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	limit, err := workerReadLimit(worktree, home, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	wanted := map[string]bool{worktree: false, filepath.Join(home, "plugin-data"): false}
+	for _, path := range limit.Readable {
+		if _, held := wanted[path]; held {
+			wanted[path] = true
+		}
+	}
+	for path, found := range wanted {
+		if !found {
+			t.Fatalf("a worker cannot read %s", path)
+		}
+	}
+}
+
+func TestReadFoldersVariableIsReadClearedAndAMissingOneIsNothing(t *testing.T) {
+	t.Setenv("JOURNAL_RUN_READ_FOLDERS", "/a"+string(os.PathListSeparator)+"/b")
+	if folders := readFolders(); len(folders) != 2 || folders[0] != "/a" {
+		t.Fatalf("read folders %v", folders)
+	}
+	if _, held := os.LookupEnv("JOURNAL_RUN_READ_FOLDERS"); held {
+		t.Fatal("the variable stays for the line to read")
+	}
+	if folders := readFolders(); len(folders) != 0 {
+		t.Fatalf("a missing variable gave %v", folders)
+	}
+}

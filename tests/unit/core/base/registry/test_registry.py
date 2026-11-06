@@ -13,6 +13,8 @@ from core.base.model.tables import Tables
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.dotted_path.dotted_path_error import DottedPathError
 from core.base.database.registry_table import RegistryTable
+from core.base.model.event_form import EventForm
+from core.base.registry.event_key_entry import EventKeyEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from core.base.registry.stale_registry_error import StaleRegistryError
@@ -77,6 +79,35 @@ def test_listeners_are_listed_by_event_and_timing(database):
 def test_a_command_finds_its_handler(database):
     registry = Registry.read(database)
     assert registry.has_handler(MakeItem) and registry.command_handler(MakeItem).loaded() is MakeItem
+
+
+def keyed_registry() -> Registry:
+    entry = EventKeyEntry.built("journal.suites.coding.workers", "worker_worktree.cut", tuple(EventForm))
+    return replace(Registry.parsed("abc", json.dumps(ENTRIES)), event_keys={entry.event: entry},
+                   former_event_keys={"suites.coding.workers.worktree.cut": "suites.coding.workers.tree.cut", "suites.coding.workers.tree.cut": entry.key,
+                                      "one.loop": "other.loop", "other.loop": "one.loop"})
+
+
+def test_the_key_of_a_log_name_is_found_and_an_event_with_no_key_gives_an_empty_text():
+    assert keyed_registry().event_key("worker_worktree.cut") == "suites.coding.workers.worker_worktree.cut"
+    assert keyed_registry().event_key("plugin_delivery.create") == ""
+
+
+def test_the_log_name_of_a_key_is_found_through_its_former_keys():
+    registry = keyed_registry()
+    assert registry.event_name("suites.coding.workers.worker_worktree.cut") == "worker_worktree.cut"
+    assert registry.event_name("suites.coding.workers.worktree.cut") == "worker_worktree.cut"
+    assert registry.event_name("core.tasks.task.closed") == ""
+
+
+def test_former_keys_that_lead_to_each_other_end_with_no_event():
+    assert keyed_registry().event_name("one.loop") == ""
+
+
+def test_event_keys_survive_being_written_and_read():
+    registry = keyed_registry()
+    restored = Registry.parsed(registry.fingerprint, registry.entries_text())
+    assert restored.event_keys == registry.event_keys and restored.former_event_keys == registry.former_event_keys
 
 
 def test_a_registry_built_from_other_code_is_refused(database):

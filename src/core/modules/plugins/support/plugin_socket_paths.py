@@ -1,9 +1,6 @@
-import hashlib
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
-
-SOCKET_ROOT = Path("/tmp")
 
 
 class PluginSocketPaths:
@@ -13,7 +10,7 @@ class PluginSocketPaths:
     running."""
 
     def __init__(self, home: JournalHome) -> None:
-        self.folder = SOCKET_ROOT / f"journal-{hashlib.sha256(str(home.folder.resolve()).encode()).hexdigest()[:12]}"
+        self.folder = home.plugin_socket_folder
 
     def answers(self, plugin_name: str, service: str) -> Path:
         return self.folder / f"{plugin_name}-{service}.sock"

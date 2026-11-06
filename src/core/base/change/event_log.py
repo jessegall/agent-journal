@@ -80,6 +80,12 @@ class EventLog:
             "created_at": timestamp,
         })
 
+    @staticmethod
+    def row_values(row: Model) -> dict[str, object]:
+        hidden = type(row).hidden_fields
+        values = {field.name: HIDDEN if field.name in hidden else stored(getattr(row, field.name)) for field in fields(row) if field.name not in BOOKKEEPING_FIELDS}
+        return {"id": row.id, **values}
+
     def data(self, change: Change[Model]) -> dict[str, list[object]]:
         names = change.fields if change.old_row and change.new_row else tuple(field.name for field in fields(change.row) if field.name not in BOOKKEEPING_FIELDS)
         hidden = type(change.row).hidden_fields
@@ -94,6 +100,10 @@ class EventLog:
 
     def events_past(self, event_id: int, limit: int = PAGE_SIZE_EVENTS) -> list[LoggedEvent]:
         return [LoggedEvent.parsed(row) for row in self.table.rows_past(event_id, limit)]
+
+    def newest_named(self, event: str) -> LoggedEvent | None:
+        row = self.table.newest_named(event)
+        return LoggedEvent.parsed(row) if row is not None else None
 
     def row_events(self, row_table: str, row_id: int) -> list[LoggedEvent]:
         return [LoggedEvent.parsed(row) for row in self.table.row_rows(row_table, row_id)]

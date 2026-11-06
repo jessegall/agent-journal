@@ -17,6 +17,7 @@ class CancelWorkerOpeningHandler(Handler[CancelWorkerOpening, None]):
     other rows already refer to stays in the record, ended, so a failed dispatch never holds a worker's place."""
 
     command = CancelWorkerOpening
+    runs_once = True
 
     def __init__(self, rows: EventRows, repository: Repository, database: Database, bus: Bus) -> None:
         self.rows, self.repository, self.database, self.bus = rows, repository, database, bus

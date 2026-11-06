@@ -12,6 +12,7 @@ class PluginRecord:
     fault_count: int
     last_fault: str
     services: Sequence[Mapping[str, object]] = ()
+    inputs: Sequence[str] | None = None
 
     def json(self) -> Mapping[str, object]:
-        return {"name": self.name, "outputs": list(self.outputs), "fault_count": self.fault_count, "last_fault": self.last_fault, "services": list(self.services)}
+        return {"name": self.name, "outputs": list(self.outputs), "fault_count": self.fault_count, "inputs": list(self.inputs or ()), "last_fault": self.last_fault, "services": list(self.services)}

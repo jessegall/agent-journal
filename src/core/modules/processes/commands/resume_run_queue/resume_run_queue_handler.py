@@ -10,6 +10,7 @@ class ResumeRunQueueHandler(Handler[ResumeRunQueue, str]):
     """Removes the halt a command put on the run queue and grants the slots that are free."""
 
     command = ResumeRunQueue
+    runs_once = True
 
     def __init__(self, halt: RunQueueHalt, slots: RunSlots) -> None:
         self.halt, self.slots = halt, slots

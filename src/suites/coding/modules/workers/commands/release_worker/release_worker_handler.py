@@ -28,6 +28,7 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
     worktree that was never cut is undone as a failed dispatch is."""
 
     command = ReleaseWorker
+    runs_once = True
 
     def __init__(self, queries: Queries, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, rows: EventRows, environments: EnvironmentRows, bus: Bus) -> None:
         self.queries, self.worktrees, self.repository, self.git, self.bus = queries, worktrees, repository, git, bus

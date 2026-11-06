@@ -13,6 +13,8 @@ from core.base.database.request_watch import RequestWatch
 from core.base.deadline import Deadline
 from core.base.journal_container import opened_container, synced_container
 from core.base.journal_home import JournalHome
+from core.base.cli.caller_stream import CallerStream
+from core.base.command.script_policy import ScriptPolicy
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.performance_tools import PerformanceTools
@@ -52,6 +54,7 @@ class LineRun:
         except StaleRegistryError as error:
             stream.write(f"{error}\n")
             return USAGE_CODE
+        container.bind(CallerStream, CallerStream(stream, "--json" in argv))
         tools = container.get(PerformanceTools)
         start_points = tools.begin()
         try:
@@ -89,6 +92,7 @@ class LineRun:
             container.bind(Deadline, deadline)
         if self.listener_runner is not None:
             container.bind(CommitListenerRunner, self.listener_runner)
+            container.bind(ScriptPolicy, ScriptPolicy(guards_run=True))
         if timing is not None:
             container.bind(Timing, timing)
         container.get(Timing).stamp("command_started")

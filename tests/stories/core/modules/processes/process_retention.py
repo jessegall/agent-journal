@@ -33,6 +33,7 @@ def test_old_processes_parts_outputs_and_folders_are_removed_together(new_story)
     first = ended_run(story, "make first", "first\n")
     second = ended_run(story, "make second", "second\n")
     third = ended_run(story, "make third", "third\n")
+    story.run_listeners()
     queries = story.container.get(Queries)
     story.expect_rows(not queries.query(Process).filter(id=first.id).exists(),
                       not queries.query(ProcessPart).filter(process_id=first.id).exists(),

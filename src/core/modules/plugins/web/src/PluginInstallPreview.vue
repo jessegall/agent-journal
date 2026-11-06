@@ -3,7 +3,8 @@ import {Btn, Dialog} from "@journal/window-kit";
 
 defineProps({preview: {type: Object, required: true}});
 const emit = defineEmits(["close", "install"]);
-const CATEGORIES = {requires: "Checks", setup: "Sets up", installed: "Asks", program: "On events", service: "Keeps running", alias: "Command"};
+const WRONG_KEY = "wrong key";
+const CATEGORIES = {files: "Part of what it runs", requires: "Checks", setup: "Sets up", installed: "Asks", program: "On events", service: "Keeps running", alias: "Command", reads: "Reads from the project", guard: "Before a change", listen: "During a change", commit: "After a change"};
 </script>
 
 <template>
@@ -16,9 +17,9 @@ const CATEGORIES = {requires: "Checks", setup: "Sets up", installed: "Asks", pro
             </template>
             <template v-for="row in preview.rows" :key="`${row.category} ${row.label}`">
                 <div class="preview-row" :data-preview-category="row.category">
-                    <span class="preview-category">{{ CATEGORIES[row.category] }}</span>
+                    <span class="preview-category">{{ row.state === WRONG_KEY ? "Wrong event" : CATEGORIES[row.category] }}</span>
                     <span class="preview-label">{{ row.label }}</span>
-                    <code class="preview-command">{{ row.command }}</code>
+                    <code class="preview-command">{{ row.state === WRONG_KEY ? "No such event. It can be installed, but this script will never run." : row.command }}</code>
                 </div>
             </template>
         </div>

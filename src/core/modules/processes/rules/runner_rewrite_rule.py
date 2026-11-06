@@ -8,7 +8,9 @@ from collections.abc import Mapping, Sequence
 from core.base.driver.agent_hook import AgentHook
 from core.base.agent_type_book import AgentTypeBook
 from core.base.access import Access
+from core.base.agent_checkouts import AgentCheckouts
 from core.base.agent_write_folder import AgentWriteFolder
+from core.base.project_reads import ProjectReads
 from core.base.shell_sandbox import ShellSandbox
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -36,11 +38,12 @@ class RunnerRewriteRule(DriverRule):
     history = True
     overlay_proof = True
 
-    def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory, listings: RunCounts, types: AgentTypeBook, folders: AgentWriteFolder, shell_sandbox: ShellSandbox, progress_listing: ProgressListing) -> None:
+    def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory, listings: RunCounts, types: AgentTypeBook, folders: AgentWriteFolder, shell_sandbox: ShellSandbox, project_reads: ProjectReads, checkouts: AgentCheckouts, progress_listing: ProgressListing) -> None:
         self.limits, self.runner, self.hook_history, self.listings = limits, runner, hook_history, listings
         self.types = types
         self.folders = folders
         self.shell_sandbox = shell_sandbox
+        self.project_reads, self.checkouts = project_reads, checkouts
         self.progress_listing = progress_listing
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -61,7 +64,8 @@ class RunnerRewriteRule(DriverRule):
         folder = self.folders.folder(hook.agent_id) if sandbox and agent_type.separate_folder and agent_type.access is Access.WRITING else None
         if sandbox and agent_type.separate_folder and agent_type.access is Access.WRITING and folder is None:
             return RuleAnswer.refused(SANDBOX_FOLDER_MISSING.nudge())
-        run = replace(decided, read_command=shell.is_readonly, shell_sandbox=sandbox, folder=folder)
+        read_folders = self.project_reads.folders(self.checkouts.checkout(hook.agent_id).project_root) if folder is not None else ()
+        run = replace(decided, read_command=shell.is_readonly, shell_sandbox=sandbox, folder=folder, read_folders=read_folders)
         return RuleAnswer.allowed().running(StartProcess.build(hook, shell, run)).rewriting_after_commands(lambda results: self.tool_input(hook, shell, run, results))
 
     def tool_input(self, hook: AgentHook, shell: ShellLine, run: ForegroundRun, results: Sequence[object]) -> Mapping[str, object]:

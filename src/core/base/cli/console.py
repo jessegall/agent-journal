@@ -17,6 +17,9 @@ from core.base.cli.shell_handoff import ShellHandoff
 from core.base.cli.usage_error import UsageError
 from core.base.cli.write_flags import WriteFlags
 from core.base.command.bus import Bus
+from core.base.command.context import Context
+from core.base.command.server_stopping_error import ServerStoppingError
+from core.base.command.handler import Handler
 from core.base.deadline_passed_error import DeadlinePassedError
 from core.base.environment_names import EnvironmentNames
 from core.base.error_log import ErrorLog
@@ -27,11 +30,12 @@ from core.base.module.module_finder import ModuleFinder
 from core.base.registry.registry import Registry
 from core.base.driver.refusal_skips import RefusalSkips
 from core.base.registry.stale_registry_error import StaleRegistryError
+from core.base.missing_file_refusal import MissingFileRefusal
 from core.base.refusal import Refusal
 from core.base.refusal_log import RefusalLog
 from core.base.scope.scopes import Scopes
 
-SUCCESS_CODE, REFUSED_CODE, USAGE_CODE, ERROR_CODE = 0, 1, 2, 3
+SUCCESS_CODE, REFUSED_CODE, USAGE_CODE, ERROR_CODE, MISSING_FILE_CODE = 0, 1, 2, 3, 4
 HELP_FLAGS = ("--help", "-h")
 
 
@@ -67,13 +71,13 @@ class Console:
         except (UsageError, StaleRegistryError) as error:
             output.error(str(error))
             return USAGE_CODE
-        except DeadlinePassedError as error:
+        except (DeadlinePassedError, ServerStoppingError) as error:
             output.error(str(error))
             return ERROR_CODE
         except Refusal as refusal:
             self.refusals.record(caller.actor, " ".join(argv[:2]), refusal)
             output.refusal(refusal)
-            return REFUSED_CODE
+            return MISSING_FILE_CODE if isinstance(refusal, MissingFileRefusal) else REFUSED_CODE
         except BrokenPipeError:
             return ERROR_CODE
         except Exception as error:
@@ -122,13 +126,32 @@ class Console:
             return SUCCESS_CODE
         self.refusal_skips.check_guards(caller.actor, sorted(skipped), arguments.skip_reason)
         newest_event_id = self.events.newest_id()
-        value = self.bus.run(command, caller.actor, skipped, environment_id=environment_id)
+        value = self.bus.run(command, caller.actor, skipped, environment_id=environment_id, plugin_script=caller.plugin_script)
         actor_events = [event for event in self.events.events_past(newest_event_id) if event.actor_id == caller.actor.id]
         command_timestamps = {event.timestamp for event in actor_events if event.command == command.label()}
         output.confirmation = "\n".join(TouchedRows.built(event for event in actor_events if event.timestamp in command_timestamps).lines())
         subcommand.write_output(value, output)
         self.run_commit_listeners(argv)
         return SUCCESS_CODE
+
+    def dispatched(self, argv: list[str], caller: Caller, context: Context) -> object:
+        subcommand, parser = self.line_parser.parser(argv)
+        captured_output = io.StringIO()
+        try:
+            with redirect_stdout(captured_output), redirect_stderr(captured_output):
+                arguments = parser.parse_args(argv[2:])
+        except SystemExit:
+            raise UsageError(f"journal {' '.join(argv)} does not parse: {captured_output.getvalue().strip()}") from None
+        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        self.scopes.check_environment(caller.actor, environment_id)
+        if not isinstance(subcommand, Subcommand):
+            raise Refusal(f"journal {' '.join(argv[:2])} only reads, so it has no place in a transaction")
+        command = subcommand.command(arguments, replace(caller, environment_id=environment_id))
+        handler = self.bus.handler(command)
+        if not handler.transactional or type(handler).prepare is not Handler.prepare:
+            raise Refusal(f"journal {' '.join(argv[:2])} works outside the database, so it cannot run inside a transaction")
+        with self.scopes.command_scope(handler.disabled_scopes, caller.actor, environment_id):
+            return self.bus.dispatch(command, replace(context, actor=caller.actor, environment_id=environment_id))
 
     def scoped_caller(self, subcommand: ReadSubcommand[object], caller: Caller) -> Caller:
         environment_id = self.scopes.environment_id or caller.environment_id

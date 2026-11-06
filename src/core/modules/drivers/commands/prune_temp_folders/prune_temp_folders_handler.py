@@ -19,6 +19,7 @@ class PruneTempFoldersHandler(Handler[PruneTempFolders, int]):
     known."""
 
     command = PruneTempFolders
+    runs_once = True
 
     def __init__(self, queries: Queries, providers: Providers, home: JournalHome) -> None:
         self.queries, self.providers, self.home = queries, providers, home
