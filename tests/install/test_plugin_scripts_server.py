@@ -15,6 +15,7 @@ SECOND_JOB_LINE = ["task", "make", SECOND_JOB_TITLE, "--brief", "Do it", "--envi
 TASK_UPDATED = "core.tasks.task.updated"
 STARTED_LIMIT_SECONDS = 30
 READ_SLICE_SECONDS = 0.2
+LATER_JOB_TITLE = "Later job"
 
 
 def run_line(journal, client: Path, *line: str) -> subprocess.CompletedProcess[str]:
@@ -64,6 +65,14 @@ def wait_for_line(pipe: Path, running: subprocess.Popen[str] | None = None, limi
     finally:
         os.close(reader)
     raise AssertionError("the script never started")
+
+
+def process_exists(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    return True
 
 
 def viewer_page(journal) -> PluginPage:
@@ -122,6 +131,27 @@ def test_s25_a_script_that_never_ends_shows_on_the_card_and_switching_off_stops_
     assert running.returncode == 0, stdout + stderr
     assert expect_line(journal, client, "task", "list").count(SECOND_JOB_TITLE) == 1
     assert page.plugin()["enabled"] is False
+
+
+def test_s17_a_commit_script_that_never_ends_holds_up_no_listener_and_a_server_stop_ends_it(journal, client):
+    started, never_written = journal.home.folder.parent / "started", journal.home.folder.parent / "never-written"
+    script_pid = journal.home.folder.parent / "script-pid"
+    os.mkfifo(started)
+    os.mkfifo(never_written)
+    start_with_plugin(journal, client, {"event": TASK_CREATED, "commit": "script.sh"}, f"echo $$ > '{script_pid}'\necho started > '{started}'\nread answer < '{never_written}'")
+    expect_line(journal, client, *SECOND_JOB_LINE)
+    assert "started" in wait_for_line(started)
+    expect_line(journal, client, "task", "make", LATER_JOB_TITLE, "--brief", "Do it", "--environment", "main")
+    deadline = time.monotonic() + STARTED_LIMIT_SECONDS
+    while LATER_JOB_TITLE not in expect_line(journal, client, "chat-mark", "list", "--environment", "main"):
+        assert time.monotonic() < deadline, "the journal's own listeners waited on the script"
+        time.sleep(READ_SLICE_SECONDS)
+    journal.stop_with(client)
+    pid = int(script_pid.read_text())
+    deadline = time.monotonic() + STARTED_LIMIT_SECONDS
+    while process_exists(pid):
+        assert time.monotonic() < deadline, "the script outlived the server"
+        time.sleep(READ_SLICE_SECONDS)
 
 
 def test_s58_a_journal_line_inside_plugin_run_stays_marked_as_the_plugin(journal, client):
