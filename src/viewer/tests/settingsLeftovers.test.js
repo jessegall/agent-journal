@@ -23,7 +23,14 @@ test("unticking a model saves the models left, and a program's last one cannot b
     const opus = element.querySelector('[data-worker-model="claude opus"] input');
     opus.dispatchEvent(new Event("change"));
     await settle();
-    expect(window.lines).toEqual([["setting", "set", "journal.suites.coding.workers.allowed-models", "claude sonnet,codex luna", "--project"]]);
+    expect(window.lines).toEqual([["setting", "set", "journal.core.helpers.allowed-models", "claude sonnet,codex luna", "--project"]]);
+});
+
+test("the note says a worker runs on the model its profile names, not on a general model", async () => {
+    const element = await mounted(WorkerModels, running({"worker models": page(MODELS)}));
+    const note = element.querySelector(".worker-models-note").textContent;
+    expect(note).toContain("the model its profile names");
+    expect(note).not.toContain("general model");
 });
 
 const TREES = [

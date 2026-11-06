@@ -17,6 +17,7 @@ from core.base.provider.launch_command import LaunchCommand
 from core.base.provider.model_tier import ModelTier
 from core.base.provider.program_hooks import ProgramHooks
 from core.base.provider.program_folders import ProgramFolders
+from core.base.profile.agent_profile import AgentProfile
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.provider import Provider
 from core.base.driver.refusal_style import RefusalStyle
@@ -77,6 +78,9 @@ class CodexProvider(Provider):
         super().__init__(folders)
         self.keys = keys
         self.rollouts: dict[str, Path] = {}
+
+    def profile_model(self, profile: AgentProfile) -> str:
+        return profile.codex_model
 
     def session_command(self, launch: Launch) -> LaunchCommand:
         skip = ["--dangerously-bypass-approvals-and-sandbox"] if launch.skip_prompts else []

@@ -16,6 +16,7 @@ from core.modules.drivers.support.helper_reuse import HelperReuse
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.support.helper_programs import HelperPrograms
+from core.base.provider.providers import Providers
 from core.modules.profiles.commands.count_profile_use.count_profile_use import CountProfileUse
 from core.modules.profiles.support.profile_files import ProfileFiles
 
@@ -28,9 +29,9 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
 
     command = StartHelper
 
-    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, launcher: LauncherLink, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders) -> None:
+    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, launcher: LauncherLink, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers) -> None:
         self.profiles, self.types, self.limits, self.launcher, self.bus, self.repository, self.reuse = profiles, types, limits, launcher, bus, repository, reuse
-        self.programs, self.folders = programs, folders
+        self.programs, self.folders, self.providers = programs, folders, providers
 
     def handle(self, command: StartHelper, context: Context) -> Agent:
         if len(command.brief) > BRIEF_LIMIT_CHARACTERS:
@@ -46,7 +47,7 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
         if not command.new_helper and not profile.independent:
             self.check_reuse(parent, profile, command.brief)
         program = command.program or profile.program or parent.program
-        model = self.limits.checked_model(program, command.program_model or profile.program_model(program))
+        model = self.limits.checked_model(program, command.program_model or self.providers.provider(program).profile_model(profile))
         self.programs.checked(program, self.folders.folder(parent))
         start = StartAgent(str(uuid4()), program, agent_type.key, parent.id, program_model=model, profile=profile.name, given_name=command.given_name, access=profile.access or agent_type.access)
         helper = self.bus.dispatch(start, context)
