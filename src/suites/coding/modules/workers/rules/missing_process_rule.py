@@ -4,7 +4,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.commands.end_gone_worker.end_gone_worker import EndGoneWorker
-from suites.coding.modules.workers.support.missing import GoneAgents
+from suites.coding.modules.workers.support.gone_agents import GoneAgents
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.modules.agents.support.agent_rows import AgentRows
 
