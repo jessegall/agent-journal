@@ -6,7 +6,7 @@ from core.base.journal_home import JournalHome
 from core.base.model.event_form import EventForm
 from core.base.registry.registry import Registry
 from core.base.running_scripts import RunningScripts
-from core.modules.plugins.support.manifest_listener import ManifestListener
+from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX, ManifestListener
 from core.modules.plugins.support.plugin_event_row import PluginEventRow
 from core.modules.plugins.support.plugin_event_state import PluginEventState
 from core.modules.plugins.support.plugin_manifest import PluginManifest
@@ -38,7 +38,7 @@ class PluginEventRows:
                 rows.append(self.form_row(manifest, folder, listener, form, is_second))
         rows += [self.row(manifest, name, "", manifest.program, PluginEventState.WRONG_KEY) for name in manifest.event_names if name not in self.registry.plugin_moments]
         rows += [self.row(manifest, entry, FILES_FORM, entry, PluginEventState.WRONG_SCRIPT) for entry in manifest.wrong_files(folder)]
-        readable = set(manifest.project_folders(self.home.project_folder))
+        readable = set(manifest.project_folders(self.home.project_folder, self.home.folder))
         rows += [self.row(manifest, entry, READS_FORM, entry, PluginEventState.WRONG_PROJECT_READ) for entry in manifest.project_reads if not self.opens(entry, readable)]
         return tuple(rows)
 
@@ -55,6 +55,8 @@ class PluginEventRows:
             state = PluginEventState.WRONG_KEY
         elif form not in entry.forms:
             state = PluginEventState.FORM_NOT_OFFERED
+        elif script.startswith(SERVICE_PREFIX):
+            state = PluginEventState.LISTENS if manifest.answers_as(script) else PluginEventState.WRONG_SCRIPT
         elif not os.access(folder / script, os.X_OK):
             state = PluginEventState.WRONG_SCRIPT
         elif entry.key != listener.event:

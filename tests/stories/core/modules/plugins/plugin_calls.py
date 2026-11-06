@@ -153,6 +153,8 @@ def tried_story(new_story, script: str):
     story.run_listeners()
     story.calls_before = len(script_calls(story, "try.sh", "tidy-worktrees"))
     story.refusals_before = len(story.refusals())
+    story.outputs_before = len(list(story.container.get(Queries).query(PluginOutput).all_rows()))
+    story.faults_before = plugin_row(story, "tidy-worktrees").fault_count
     return story
 
 
@@ -161,7 +163,7 @@ def test_s61_trying_a_script_prints_the_line_and_the_answer_and_leaves_nothing(n
     story.expect_text(f"plugin try tidy-worktrees {TRY_KEY} --agent {story.worker.id}", TRY_KEY, "the worktree is tidy", actor=story.user)
     story.expect_rows(len(script_calls(story, "try.sh", "tidy-worktrees")) == story.calls_before + 1)
     story.run_listeners()
-    story.expect_rows(not list(story.container.get(Queries).query(PluginOutput).all_rows()), len(story.refusals()) == story.refusals_before)
+    story.expect_rows(len(list(story.container.get(Queries).query(PluginOutput).all_rows())) == story.outputs_before, len(story.refusals()) == story.refusals_before)
     story.expect_no_text("chat-mark list --environment 1", "Tidy", actor=story.user)
 
 
@@ -169,7 +171,7 @@ def test_s61_trying_a_script_that_fails_leaves_no_fault(new_story):
     story = tried_story(new_story, EVENT_SCRIPTS["fail.sh"])
     story.expect_text(f"plugin try tidy-worktrees {TRY_KEY} --agent {story.worker.id}", TRY_KEY, "3", actor=story.user)
     story.run_listeners()
-    story.expect_rows(plugin_row(story, "tidy-worktrees").fault_count == 0)
+    story.expect_rows(plugin_row(story, "tidy-worktrees").fault_count == story.faults_before)
 
 
 def test_s61_trying_a_key_with_no_event_yet_uses_an_empty_row(new_story):
@@ -178,6 +180,6 @@ def test_s61_trying_a_key_with_no_event_yet_uses_an_empty_row(new_story):
 
 
 def test_s61_the_inputs_of_a_plugin_show_a_held_event_that_has_no_row(new_story):
-    story = install_runner(event_plugin_story(new_story, program="see.sh", holds=["command_starting"]))
+    story = install_runner(event_plugin_story(new_story, program="see.sh", hears=["command_starting"], holds=["command_starting"]))
     story.hook("s-1", LISTING_SAMPLE)
     story.expect_text("plugin record events --inputs", "command_starting", actor=story.user)

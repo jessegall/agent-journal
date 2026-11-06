@@ -1,6 +1,7 @@
 import json
 import sys
 
+from core.base.command.script_policy import DELIVERY_LIMIT_MS
 from core.base.agent_checkouts import AgentCheckouts
 from core.base.checkout import Checkout
 from core.base.checkout_type import CheckoutType
@@ -165,6 +166,7 @@ def test_s50_from_base_reads_from_the_merged_branch(new_story):
     story.expect_success(DELIVERY, actor=story.worker)
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
     story.repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {story.worker.id}", actor=story.agent)
     story.expect_success(f"worker merge {story.worker.id}", actor=story.agent)
     story.expect_text(f"plugin file {ORDER} --agent {story.worker.id} --from base", CHANGED_ORDER_TEXT.strip(), actor=story.user)
 
@@ -259,7 +261,7 @@ def test_s56_a_helper_of_a_worker_gets_the_checkout_of_the_worker(new_story):
 def test_s57_the_main_agent_editing_inside_a_worktree_gets_that_worktree_and_is_named(new_story):
     story = checkout_story(new_story)
     call = edit_event(story, "s-1", folder=story.worktree)
-    story.expect_rows(call["agent"] == story.agent.id, checkout_of(call)["kind"] == "worktree", checkout_of(call)["root"] == real(story.worktree), file_of(call)["relative"] == ORDER)
+    story.expect_rows(call["agent"] == story.agent.id, call["role"] == "main", checkout_of(call)["kind"] == "worktree", checkout_of(call)["root"] == real(story.worktree), file_of(call)["relative"] == ORDER)
 
 
 def test_s59_the_checkout_call_and_the_checkout_of_an_event_are_equal_behind_a_link(new_story):
@@ -274,8 +276,8 @@ def test_s60_the_full_line_of_a_file_edited_for_a_worker_does_not_move(new_story
     call = edit_event(story, story.worker_session)
     worktree, project = real(story.worktree), real(story.repository.folder)
     data = event_data(call)
-    story.expect_rows(set(call) == {"v", "event", "at", "environment", "agent", "skills", "checkout", "data"})
-    story.expect_rows(call["v"] == 1, call["event"] == "file_edited", call["environment"] == "main", call["agent"] == story.worker.id)
+    story.expect_rows(set(call) == {"v", "event", "at", "environment", "agent", "role", "window_ms", "skills", "checkout", "data"})
+    story.expect_rows(call["v"] == 1, call["event"] == "file_edited", call["environment"] == "main", call["agent"] == story.worker.id, call["role"] == "worker", call["window_ms"] == DELIVERY_LIMIT_MS)
     assert call["checkout"] == {"kind": "worktree", "root": worktree, "project_root": project, "branch": story.repository.worker_branch(story.worker.id), "base_branch": ENVIRONMENT_BRANCH,
                                 "base_commit": story.repository.tip(ENVIRONMENT_BRANCH), "exists": True}, call["checkout"]
     story.expect_rows(data["path"] == ORDER, data["cwd"] == str(story.worktree))

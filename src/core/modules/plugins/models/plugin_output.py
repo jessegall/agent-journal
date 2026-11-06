@@ -7,7 +7,8 @@ from core.base.model.model import Model
 class PluginOutput(Model):
     """A plugin's answer that shows cards or runs journal commands, waiting to be applied after the hook's
     reply as the plugins module: the plugin, the environment and the agent, if any, and the answer's JSON line. A
-    system event has no environment, so this is no EnvironmentScoped model."""
+    system event has no environment, so this is no EnvironmentScoped model. The answer of a script named by key shows its
+    cards in the environment, whoever made the change."""
 
     model_name = "plugin_output"
     event_forms = ()
@@ -18,3 +19,4 @@ class PluginOutput(Model):
     session_agent_id: int | None = None
     creator_id: int
     output: str
+    shows_in_environment: bool = False

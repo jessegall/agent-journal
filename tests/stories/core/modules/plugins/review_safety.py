@@ -40,12 +40,20 @@ def test_s65_a_wrong_project_read_is_on_the_card_and_never_opened(event_page, en
     assert [row["key"] for row in wrong] == [entry], event_page.card()
 
 
+def test_s52_the_journal_folder_is_a_wrong_project_read_on_the_card(event_page):
+    story = event_page.story
+    (story.home.folder / "worktrees").mkdir(parents=True, exist_ok=True)
+    install_event_plugin(story, project_reads=[story.home.folder.name, f"{story.home.folder.name}/worktrees"])
+    assert sorted(row["state"] for row in event_page.card()) == ["wrong project read", "wrong project read"], event_page.card()
+
+
 def test_s66_a_skip_names_one_plugin_and_the_other_still_refuses(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "refuse.sh"})
     install_event_plugin(story, {"event": TASK_CREATED, "guard": "refuse.sh"}, name="second")
+    story.expect_refusal(SECOND_JOB, REFUSAL, actor=story.agent)
     story.expect_refusal(f"{SECOND_JOB} --skip-guard plugins.event-guard:events {SKIP_REASON}", SECOND_REFUSAL, actor=story.agent)
-    story.expect_refusal(f"{SECOND_JOB} --skip-guard plugins.event-guard {SKIP_REASON}", REFUSAL, actor=story.agent)
-    story.expect_success(f"{SECOND_JOB} --skip-guard plugins.event-guard:events --skip-guard plugins.event-guard:second {SKIP_REASON}", actor=story.agent)
+    story.expect_refusal(f"{SECOND_JOB} --skip-guard plugins.event-guard {SKIP_REASON}", "has no skip", actor=story.agent)
+    story.expect_success(f"{SECOND_JOB} --skip-guard plugins.event-guard:events --skip-guard plugins.event-guard:second {SKIP_REASON}", actor=story.user)
     story.expect_rows("plugins.event-guard:events" in logged_events(story, "task.create")[-1].skipped_guards)
 
 

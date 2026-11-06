@@ -59,7 +59,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
         return skip
 
     def check_refused(self, actor: Actor, name: str, skipped_at: str) -> None:
-        if self.refusals.guard_refused_past(actor.id, name, skipped_at):
+        if self.refusals.guard_refused_past(actor.id, name.partition(":")[0], skipped_at):
             return
         call = self.queries.query(HookCall).filter(session_agent_id=actor.id, answer=HookAnswer.REFUSED).newest().first()
         rules = call.refused_rules if call is not None and call.creation_timestamp().text > skipped_at else ()

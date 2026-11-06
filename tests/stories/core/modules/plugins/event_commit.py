@@ -1,7 +1,11 @@
 from datetime import timedelta
 
 from server.booting_work import BootingWork
+import json
+
 from core.base.change.event_log import HIDDEN
+from core.base.command.bus import Bus
+from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
 from core.base.database.database import Database
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.model.event_form import EventForm
@@ -14,6 +18,9 @@ LONG_TEXT = "a long brief " * 10000
 FAILING_COUNT = 5
 RECOVERING = 'if [ ! -e "$JOURNAL_PLUGIN_DATA/recovered" ]; then exit 3; fi'
 NOTE_SECRET = "the secret text"
+CARD_LABEL = "Lane closed"
+CARD_ANSWER = json.dumps({"v": 1, "cards": [{"kind": "state", "key": "lane", "label": CARD_LABEL, "tone": "good"}]})
+CARD_SCRIPT = f"echo '{CARD_ANSWER}'"
 TOLD_LINE = "the job is noted"
 TOLD_SCRIPT = f"""echo '{{"v": 1, "tell": "{TOLD_LINE}"}}'"""
 
@@ -26,7 +33,7 @@ def test_s14_a_commit_script_receives_the_key_the_row_and_final_true_even_for_a_
     story.expect_rows(len(calls) == 1)
     call = calls[0]
     data = event_data(call)
-    story.expect_rows(call["event"] == TASK_CREATED, call["environment"] == "main", call["agent"] == story.agent.id)
+    story.expect_rows(call["event"] == TASK_CREATED, call["environment"] == "main", call["agent"] == story.agent.id, call["window_ms"] is None, bool(call["role"]))
     story.expect_rows(data["form"] == "commit", data["final"] is True, data["log_name"] == "task.create", int(data["event_id"]) > 0)
     story.expect_rows(data_row(call)["title"] == SECOND_JOB_TITLE, data_row(call)["brief"] == LONG_TEXT, data_row(call, "old_row") == {})
 
@@ -148,3 +155,28 @@ def test_s20_a_hidden_field_reaches_a_script_written_as_hidden(new_story):
     data = event_data(calls[0])
     story.expect_rows(data_row(calls[0])["secret"] == HIDDEN, data_row(calls[0], "old_row")["secret"] == HIDDEN, data["changed"]["secret"] == [HIDDEN, HIDDEN])
     story.expect_rows(NOTE_SECRET not in str(calls[0]), "another secret" not in str(calls[0]))
+
+
+def test_a_commit_script_card_on_a_person_change_shows_in_the_environment_and_updates_in_place(new_story):
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "card.sh"}, scripts={"card.sh": CARD_SCRIPT})
+    story.expect_success(SECOND_JOB, actor=story.user)
+    story.expect_success('task make "Third job" --brief "Do it" --environment main', actor=story.user)
+    story.run_listeners()
+    marks = story.run("chat-mark list --environment 1", actor=story.user).output_text
+    story.expect_rows(marks.count(CARD_LABEL) == 1)
+
+
+def test_a_hears_card_for_a_person_still_does_not_show(new_story):
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "see.sh"}, program="card.sh", hears=["file_edited"], scripts={"card.sh": CARD_SCRIPT})
+    story.container.get(Bus).run(AddPluginOutput(plugin_row(story).id, None, CARD_ANSWER), story.user)
+    story.run_listeners()
+    story.expect_no_text("chat-mark list --environment 1", CARD_LABEL, actor=story.user)
+
+
+def test_a_tell_that_could_not_judge_reaches_the_queue_and_counts_no_fault(new_story):
+    told = """echo '{"v": 1, "tell": "could not judge this: the parser failed"}'"""
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "told.sh"}, scripts={"told.sh": told})
+    story.expect_success(SECOND_JOB, actor=story.agent)
+    story.run_listeners()
+    queued = list(plugin_data(story, "queue").glob("delivery-*.json"))
+    story.expect_rows(len(queued) == 1, "could not judge this" in queued[0].read_text(), plugin_row(story).fault_count == 0, not plugin_row(story).last_fault)

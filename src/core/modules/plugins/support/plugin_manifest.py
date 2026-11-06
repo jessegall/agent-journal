@@ -9,7 +9,7 @@ from functools import lru_cache
 
 from core.base.refusal import Refusal
 from core.base.type_guards import is_list, is_mapping
-from core.modules.plugins.support.manifest_listener import ManifestListener
+from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX, ManifestListener
 from core.modules.plugins.support.plugin_moment import PluginMoment
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.manifest_alias import ManifestAlias
@@ -78,7 +78,7 @@ class PluginManifest:
         listeners = cls.read_listeners(fields["listen"], folder) if "listen" in fields else ()
         return cls(str(fields["name"]), str(fields["title"]), str(fields["version"]), program,
                    tuple(str(name) for name in names) if is_list(names) else (), tuple(cls.event_window(entry) for entry in windows) if is_list(windows) else (),
-                   cls.read_settings(folder, settings_file), tuple(dict.fromkeys(file for file in (MANIFEST_FILE, program, settings_file, *(listener.inside_script(form) for listener in listeners for form in EventForm), *cls.extra_files(fields, folder)) if file)),
+                   cls.read_settings(folder, settings_file), tuple(dict.fromkeys(file for file in (MANIFEST_FILE, program, settings_file, *(listener.inside_script(form) for listener in listeners for form in EventForm), *cls.extra_files(fields, folder)) if file and not file.startswith(SERVICE_PREFIX))),
                    cls.read_card_tones(fields["cards"] if "cards" in fields else None), str(fields["skills"]) if "skills" in fields else "",
                    cls.read_services(fields["services"] if "services" in fields else None), cls.read_requirements(fields["requires"] if "requires" in fields else None),
                    cls.read_setup_steps(fields["setup"] if "setup" in fields else None), str(fields["installed"]) if "installed" in fields else "",
@@ -245,13 +245,17 @@ class PluginManifest:
     def script_for_key(self, key: str, form: EventForm) -> str:
         return next((listener.inside_script(form) for listener in self.listeners if listener.event == key and listener.script(form)), "")
 
+    def answers_as(self, script: str) -> bool:
+        name = script.removeprefix(SERVICE_PREFIX)
+        return any(service.name == name and service.answers for service in self.services)
+
     def allows_skip(self, key: str) -> bool:
         return all(listener.allows_skip for listener in self.listeners if listener.event == key)
 
-    def project_folders(self, project_root: Path) -> tuple[Path, ...]:
-        real_root = project_root.resolve()
+    def project_folders(self, project_root: Path, journal_folder: Path) -> tuple[Path, ...]:
+        real_root, real_journal = project_root.resolve(), journal_folder.resolve()
         folders = ((real_root / entry).resolve() for entry in self.project_reads if not Path(entry).is_absolute())
-        return tuple(folder for folder in folders if folder != real_root and folder.is_relative_to(real_root))
+        return tuple(folder for folder in folders if folder != real_root and folder.is_relative_to(real_root) and not folder.is_relative_to(real_journal))
 
     def run_rows(self) -> list[Mapping[str, str]]:
         entries = [("requires", requirement.name, requirement.check) for requirement in self.requirements]

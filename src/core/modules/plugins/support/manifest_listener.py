@@ -5,12 +5,15 @@ from core.base.model.event_form import EventForm
 from core.base.type_guards import is_mapping
 
 
+SERVICE_PREFIX = "service:"
+
+
 @dataclass(frozen=True)
 class ManifestListener:
     """One entry of a manifest's listen list: the key it names and the script of each form, empty where none. An
     entry of the wrong shape is kept and marked wrong, so the card can show it, and a script path that leaves the
     plugin's folder is kept and listed as outside, so it installs and never runs. An entry with skip false cannot be
-    passed with --skip-guard."""
+    passed with --skip-guard. A value service:<name> sends the event to that answering service in place of a script."""
 
     event: str
     guard: str = ""
@@ -26,7 +29,7 @@ class ManifestListener:
             return cls(str(entry), is_wrong=True)
         scripts = [str(entry.get(form.value, "")) for form in EventForm]
         guard, listen, commit = scripts
-        return cls(str(entry["event"]), guard, listen, commit, outside_scripts=tuple(script for script in scripts if script and not cls.stays_inside(script, folder)), allows_skip=entry.get("skip") is not False)
+        return cls(str(entry["event"]), guard, listen, commit, outside_scripts=tuple(script for script in scripts if script and not script.startswith(SERVICE_PREFIX) and not cls.stays_inside(script, folder)), allows_skip=entry.get("skip") is not False)
 
     @staticmethod
     def stays_inside(script: str, folder: Path) -> bool:

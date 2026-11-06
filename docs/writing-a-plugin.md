@@ -32,6 +32,8 @@ command refers to the plugin.
 
 A wrong entry never stops an install. It shows on the plugin's card, and the rest of the plugin works.
 
+A service may hold long-lived children. They end with its process group when it stops or crashes, and a child that calls setsid leaves the group and is not stopped.
+
 ## Finding a key
 
 `journal event keys` lists every event by its key, with the forms it offers and plain words for it. `--grep` narrows the list.
@@ -49,6 +51,10 @@ An entry in `listen` names a key and a script for any of three forms:
 - `listen` runs during a change. It sees the row before it is saved, with `final` false, and an id it reads may still change. The commands it answers are saved with the change. A journal command it runs itself is saved at once and stays.
 - `commit` runs after the change is saved and cannot stop it. Only this form promises the change happened.
 
+A form's value may be `service:<name>`, naming one of its `services` with `answers` set. The event then goes to that running service, on its socket, and no new program starts, which matters when a program takes long to start. If the socket is closed, `program` runs if there is one, and otherwise it is a fault. A name that is no answering service is wrong on the card.
+
+All deliveries run in turn on one thread, for every plugin, older events included. A commit script or service that is slow holds every other plugin's deliveries until it ends.
+
 A guard or listen script holds no lock, but whoever made the change waits for it, and is told so once a minute. The journal puts no time limit on a script, except a guard on an agent's tool step or prompt, which keeps the journal's limit; the card says so. Turning the plugin off stops a script that never ends.
 
 Only a request in a running server runs guard and listen scripts. A server thread, a tick and a run with no server skip them and note the skip. Some commands run only once, such as a merge, and their guard and listen scripts are skipped too. The card shows the last skip of each entry with its reason. Commit scripts always get their delivery.
@@ -61,7 +67,8 @@ A script gets one line of JSON on its input:
 
 - `v`: the version of this line.
 - `event`: the key.
-- `agent`, `skills`, `environment` and `at`.
+- `agent`, its `role`, `skills`, `environment` and `at`. `checkout.kind` is not the role: a main agent can edit inside a worktree.
+- `window_ms`: the limit this call runs under, or null for no limit.
 - `checkout`: the checkout of the agent, with `kind`, `root`, `project_root`, `branch`, `base_branch`, `base_commit` and `exists`.
 - `data`: for a script named by key, `form`, `final`, `log_name`, `event_id`, `actor`, `command`, `cause_id`, `row`, `old_row` and `changed`. A hidden field reads as hidden. An event about a file also has `file`.
 
@@ -75,6 +82,14 @@ The rules of this line:
 
 A cut worktree starts from `base_commit` of the branch. Nothing promises that it equals another copy of the project read from a main checkout, whose working files may differ from any commit.
 
+## A worktree's life
+
+`suites.coding.workers.worker_worktree.cut` fires once the worktree exists and is prepared. `suites.coding.workers.worker_worktree.remove` fires when a merge or a release removes the worktree of a worker that started. A release of a worktree still opening and a failed start delete the row, so they fire `suites.coding.workers.worker_worktree.deleted` instead. The sweep of leftover folders has no row, so it fires nothing, and a folder removed by hand fires nothing until the worker is released.
+
+## A worker's merge
+
+`suites.coding.workers.worker_worktree.merge` in the commit form fires once for each merge, after the merge has committed, and never for a refused merge or one that clashed. The guard and listen forms are skipped, because a merge runs only once. Its `row` holds `session_agent_id`, the worker; `task_id` and `merged_task_ids`, its tasks; `commit_before_merge` and `commit_after_merge`, the merged range on `base_branch`; `environment_id`; and `folder`, the worktree's path as a name, since the folder may be gone by then. `journal plugin changes --since <commit_before_merge>` lists the files.
+
 ## Answering
 
 A script may print one line of JSON:
@@ -84,6 +99,8 @@ A script may print one line of JSON:
 ```
 
 Printing nothing allows. `refuse` stops a change only in `guard`; in `listen` and `commit` it is a fault.
+
+To say you could not judge something, answer with a `tell`, and put the reason in its text, since `reason` is read only with `refuse`. It is no fault. It counts as a success, so it clears a run of earlier faults. A delivery with no agent has nobody to tell, so the line is dropped.
 
 ## The calls
 
@@ -102,7 +119,7 @@ A worker's shell reads its own worktree and not the main checkout. `project_read
 {"project_reads": [".rules"]}
 ```
 
-An entry that leaves the project, is a single dot, is empty, or is a link pointing out is never opened, and shows as wrong on the card.
+An entry that leaves the project, is a single dot, is empty, is a link pointing out, or names the journal's own folder or anything in it is never opened, and shows as wrong on the card. This is only about what a plugin may declare: a worker's own worktree stays readable by its shell, and the plugin's own data folder stays reachable by its rules.
 
 ## When something fails
 

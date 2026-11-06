@@ -27,7 +27,8 @@ class EventKeyEntry:
     def built(cls, module: str, event: str, forms: tuple[EventForm, ...]) -> "EventKeyEntry":
         subject, _, change = event.partition(".")
         words = subject.replace("_", " ").replace("-", " ")
-        description = f"{indefinite_article(words)} {words}{WAS_WORD}{cls.past_word(change)}"
+        happened = f": {change.replace('_', ' ')}" if "_" in change else f"{WAS_WORD}{cls.past_word(change)}"
+        description = f"{indefinite_article(words)} {words}{happened}"
         return cls(f"{module.removeprefix(MODULE_NAME_PREFIX)}.{subject}.{CHANGE_WORDS.get(change, change)}", event, module, forms, description)
 
     @classmethod

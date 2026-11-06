@@ -62,7 +62,7 @@ class PluginEventScripts:
         if answer.line and agent_id is not None:
             self.bus.dispatch(SendPluginStepLine(agent_id, f"[plugin {answered.plugin}] {answer.line}"), context)
         if answer.has_output():
-            self.bus.dispatch(AddPluginOutput(answered.plugin_id, agent_id, answer.output), context)
+            self.bus.dispatch(AddPluginOutput(answered.plugin_id, agent_id, answer.output, True), context)
 
     @staticmethod
     def agent_id(context: Context) -> int | None:

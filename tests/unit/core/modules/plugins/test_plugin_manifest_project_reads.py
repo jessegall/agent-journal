@@ -21,13 +21,20 @@ def project(tmp_path):
 
 def test_a_folder_inside_the_project_opens_at_its_real_path(tmp_path):
     root = project(tmp_path)
-    assert manifest_with(tmp_path, [".rules", "link-in"]).project_folders(root) == (root / ".rules", root / ".rules")
+    assert manifest_with(tmp_path, [".rules", "link-in"]).project_folders(root, root / ".journal") == (root / ".rules", root / ".rules")
 
 
 def test_a_wrong_entry_never_opens(tmp_path):
     root = project(tmp_path)
     wrong = ["", ".", "./", "..", "../outside", ".rules/../..", "/etc", str(root / ".rules"), "link-out"]
-    assert manifest_with(tmp_path, wrong).project_folders(root) == ()
+    assert manifest_with(tmp_path, wrong).project_folders(root, root / ".journal") == ()
+
+
+def test_the_journal_folder_and_a_link_into_it_never_open(tmp_path):
+    root = project(tmp_path)
+    (root / ".journal" / "worktrees").mkdir(parents=True)
+    (root / "link-journal").symlink_to(root / ".journal", target_is_directory=True)
+    assert manifest_with(tmp_path, [".journal", ".journal/worktrees", "link-journal"]).project_folders(root, root / ".journal") == ()
 
 
 def test_a_project_reads_that_is_no_list_declares_nothing(tmp_path):

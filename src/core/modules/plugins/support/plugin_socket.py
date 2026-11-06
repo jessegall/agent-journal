@@ -17,8 +17,8 @@ class PluginSocket:
     def is_open(self) -> bool:
         return self.path.is_socket()
 
-    def ask(self, line: str, limit_ms: int) -> str:
-        deadline = time.monotonic() + limit_ms / 1000
+    def ask(self, line: str, limit_ms: int | None) -> str:
+        deadline = None if limit_ms is None else time.monotonic() + limit_ms / 1000
         connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         try:
             connection.settimeout(self.remaining(deadline, limit_ms))
@@ -38,7 +38,9 @@ class PluginSocket:
             connection.close()
 
     @staticmethod
-    def remaining(deadline: float, limit_ms: int) -> float:
+    def remaining(deadline: float | None, limit_ms: int | None) -> float | None:
+        if deadline is None:
+            return None
         seconds = deadline - time.monotonic()
         if seconds <= 0:
             raise PluginLateError(f"its service ran past {limit_ms} ms")

@@ -12,6 +12,7 @@ from tests.stories.core.modules.plugins.support.event_modules import NOTE_CREATE
 from tests.stories.core.modules.plugins.support.checkout_stories import ORDER, project_with_order
 from tests.stories.core.modules.plugins.support.event_stories import EventWorkerStarted, event_data, event_plugin_story, script_calls
 from tests.stories.core.support.scanned_edits import scanned_edit
+from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.core.modules.processes.support.process_samples import ended_run, install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
@@ -78,4 +79,5 @@ def test_s85_a_file_edit_in_the_main_checkout_gives_its_status_and_whether_base_
 def main_checkout_story(new_story):
     story = install_runner(event_plugin_story(new_story, program="see.sh", hears=["file_edited"], fixture=EventWorkerStarted))
     story.repository = project_with_order(story, story.home.folder.parent / "project")
+    story.repository.checkout(ENVIRONMENT_BRANCH)
     return story

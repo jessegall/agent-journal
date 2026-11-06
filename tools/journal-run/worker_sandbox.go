@@ -43,16 +43,18 @@ func workerReadLimit(worktree, journalHome string, declared []string) (readLimit
 			readable = append(readable, target)
 		}
 	}
-	return readLimit{Denied: main, Readable: append(append(readable, excludedSymlinkTargets(resolved)...), declaredFolders(declared, main)...)}, nil
+	return readLimit{Denied: main, Readable: append(append(readable, excludedSymlinkTargets(resolved)...), declaredFolders(declared, main, filepath.Join(main, filepath.Base(journalHome)))...)}, nil
 }
 
-// declaredFolders keeps the folders that resolve to somewhere inside the main checkout: never the checkout itself or
-// a place outside it, so a fault in the journal cannot open the whole project.
-func declaredFolders(declared []string, main string) []string {
+// declaredFolders keeps the folders that resolve to somewhere inside the main checkout: never the checkout itself, a
+// place outside it or the journal's folder, so a fault in the journal cannot open the whole project or its database.
+func declaredFolders(declared []string, main, home string) []string {
 	var folders []string
 	for _, folder := range declared {
 		resolved, err := filepath.EvalSymlinks(folder)
-		if err == nil && resolved != main && strings.HasPrefix(resolved, main+string(filepath.Separator)) {
+		inside := resolved != main && strings.HasPrefix(resolved, main+string(filepath.Separator))
+		inHome := resolved == home || strings.HasPrefix(resolved, home+string(filepath.Separator))
+		if err == nil && inside && !inHome {
 			folders = append(folders, resolved)
 		}
 	}

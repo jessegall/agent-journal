@@ -9,6 +9,8 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import C
 
 WORKTREE_CUT = "suites.coding.workers.worker_worktree.cut"
 WORKTREE_DELIVER = "suites.coding.workers.worker_worktree.deliver"
+WORKTREE_MERGE = "suites.coding.workers.worker_worktree.merge"
+WORKTREE_REMOVE = "suites.coding.workers.worker_worktree.remove"
 WORKTREE_CREATED = "suites.coding.workers.worker_worktree.created"
 RULES = ".commandments/rules.md"
 RULES_TEXT = "the rules\n"
@@ -56,6 +58,7 @@ def hand_in(story) -> None:
     story.expect_success(FIRST_PROOF, "point: 1", actor=story.worker)
     story.expect_success(DELIVERY, actor=story.worker)
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
+    story.expect_success(f"worker logs {story.worker.id}", actor=story.agent)
 
 
 def worktree_state(story) -> tuple[str, str, bool]:
@@ -107,6 +110,48 @@ def test_s36_a_commit_script_on_the_delivery_lifts_the_mark_and_restores_the_fol
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, RULES, RULES_TEXT)
+
+
+def test_a_plugin_hears_one_event_for_a_merge_with_its_commits_and_none_for_a_refused_one(new_story):
+    story = event_plugin_story(new_story, {"event": WORKTREE_MERGE, "commit": "see.sh"}, fixture=EventWorkerStarted)
+    story.repository = repository_environment(story)
+    story.worker = dispatched_worker(story, DISPATCH)
+    story.repository.checkout(ENVIRONMENT_BRANCH)
+    outcome = story.run(f"worker merge {story.worker.id}", actor=story.agent)
+    story.run_listeners()
+    story.expect_rows(outcome.code != 0, not script_calls(story, "see.sh"))
+    hand_in(story)
+    before = story.repository.tip(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker merge {story.worker.id}", actor=story.agent)
+    story.run_listeners()
+    calls = script_calls(story, "see.sh")
+    story.expect_rows(len(calls) == 1)
+    row = data_row(calls[0])
+    story.expect_rows(row["commit_before_merge"] == before, row["commit_after_merge"] == story.repository.tip(ENVIRONMENT_BRANCH), row["session_agent_id"] == story.worker.id, bool(row["merged_task_ids"]))
+
+
+def removal_story(new_story):
+    story = event_plugin_story(new_story, {"event": WORKTREE_REMOVE, "commit": "see.sh"}, fixture=EventWorkerStarted)
+    story.repository = repository_environment(story)
+    story.worker = dispatched_worker(story, DISPATCH)
+    return story
+
+
+def test_a_removal_event_fires_when_a_merge_removes_the_worktree(new_story):
+    story = removal_story(new_story)
+    hand_in(story)
+    story.repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker merge {story.worker.id}", actor=story.agent)
+    story.run_listeners()
+    story.expect_rows(len(script_calls(story, "see.sh")) == 1)
+
+
+def test_a_removal_event_fires_when_a_worker_is_released(new_story):
+    story = removal_story(new_story)
+    story.expect_success(f'worker release {story.worker.id} "not needed"', actor=story.agent)
+    story.run_listeners()
+    calls = script_calls(story, "see.sh")
+    story.expect_rows(len(calls) == 1, data_row(calls[0])["folder"] == str(story.repository.worktree_folder(story.worker.id)))
 
 
 def test_s37_a_guard_on_a_new_worktree_refuses_and_nothing_stays(new_story):

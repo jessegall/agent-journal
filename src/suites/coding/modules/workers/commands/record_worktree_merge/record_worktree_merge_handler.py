@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
@@ -32,9 +34,12 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
         task = self.rows.required(Task, worktree.task_id)
         if command.conflicts:
             return MergeOutcome(self.returned(worktree, task, command.conflicts, context), command.conflicts)
-        for delivered in self.delivered_tasks(worktree, task):
+        delivered_tasks = self.delivered_tasks(worktree, task)
+        for delivered in delivered_tasks:
             self.repository.save_change(delivered, delivered.close(context.timestamp, context.actor, f"merged into {worktree.base_branch}"), context)
-        return MergeOutcome(self.repository.save_change(worktree, worktree.merge(context.timestamp, context.actor), context), ())
+        merged = replace(worktree.merge(context.timestamp, context.actor), commit_before_merge=command.commit_before_merge, commit_after_merge=command.commit_after_merge,
+                         merged_task_ids=",".join(str(delivered.id) for delivered in delivered_tasks))
+        return MergeOutcome(self.repository.save_change(worktree, merged, context), ())
 
     def delivered_tasks(self, worktree: Worktree, task: Task) -> list[Task]:
         delivered = tuple(self.queries.query(Task).filter(delegated_to=worktree.session_agent_id, state=TaskState.TESTING).all_rows())

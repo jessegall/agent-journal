@@ -10,3 +10,5 @@ class RecordWorktreeMerge(Command[MergeOutcome]):
 
     worktree_id: int
     conflicts: tuple[str, ...]
+    commit_before_merge: str = ""
+    commit_after_merge: str = ""

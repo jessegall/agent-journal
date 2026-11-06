@@ -30,7 +30,8 @@ TONES = {tone.value: tone for tone in PluginCardTone}
 
 class PluginOutputListener(CommitListener[Created[PluginOutput]]):
     """Applies a plugin's answer after the reply, as the plugins module, which can never act as the person: a
-    chat mark for each card of a type its manifest declares when the answer is for a main agent, keyed so a
+    chat mark for each card of a type its manifest declares when the answer is for a main agent or came from a script
+    named by key, which shows in the environment whoever made the change, keyed so a
     card with the same key is updated in place and shows how long the plugin took unless its tone is good,
     its journal command lines, at most twenty, and the skills it requires of the agent among those the
     plugin publishes."""
@@ -50,12 +51,13 @@ class PluginOutputListener(CommitListener[Created[PluginOutput]]):
             self.bus.run(RecordPluginFault(plugin.id, refusal.reason), actor, cause_id=logged.id)
             return
         is_main = row.session_agent_id is not None and self.queries.query(Agent).find(row.session_agent_id).role == AgentRole.MAIN
-        for card in answer.cards if is_main else ():
+        shows_in_environment = row.shows_in_environment and row.environment_id is not None
+        for card in answer.cards if is_main or shows_in_environment else ():
             tone = card.tone or (manifest.card_tones[card.card_type] if card.card_type in manifest.card_tones else "")
             if tone in TONES:
-                key = f"plugin:{plugin.name}:{row.session_agent_id}:{card.key}"
+                key = f"plugin:{plugin.name}:{row.session_agent_id}:{card.key}" if is_main else f"plugin:{plugin.name}:{card.key}"
                 self.bus.run(ShowMark(PluginMarkType.CARD, TONES[tone], key, f"{plugin.name}: {card.label}",
-                                      detail=card.detail, figure="" if tone == PluginCardTone.GOOD else answer.duration_text()), actor, cause_id=logged.id)
+                                      detail=card.detail, figure="" if tone == PluginCardTone.GOOD else answer.duration_text()), actor, cause_id=logged.id, environment_id=row.environment_id)
         for line in answer.commands[:MOST_COMMAND_LINES]:
             self.console.run(shlex.split(line), Caller(actor, plugin_script=plugin.name), io.StringIO())
         published = self.skill_files.names(self.folders.code(plugin.name), manifest)

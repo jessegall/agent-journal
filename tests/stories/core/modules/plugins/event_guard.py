@@ -56,7 +56,7 @@ def test_s21_a_skip_named_for_the_plugin_passes_the_guard_and_the_log_records_it
 
 def test_s21_a_skip_with_the_bare_guard_name_passes_nothing(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "refuse.sh"})
-    story.expect_refusal(f"{SECOND_JOB} --skip-guard {GUARD_SKIP} {SKIP_REASON}", REFUSAL, actor=story.agent)
+    story.expect_refusal(f"{SECOND_JOB} --skip-guard {GUARD_SKIP} {SKIP_REASON}", "has no skip", actor=story.agent)
     story.expect_rows(not tasks_titled(story, SECOND_JOB_TITLE))
 
 
@@ -116,9 +116,9 @@ def test_s25_switching_a_plugin_off_goes_through_and_the_round_stops_its_running
     scripts = story.container.get(RunningScripts)
     process = subprocess.Popen(["sleep", "60"], stdin=subprocess.PIPE, text=True, start_new_session=True)
     try:
-        scripts.start(process, "events", TASK_CREATED, EventForm.GUARD, story.clock.timestamp())
         story.expect_success("plugin disable events", actor=story.user)
-        story.expect_rows(process.poll() is None, plugin_row(story).enabled is False)
+        story.expect_rows(plugin_row(story).enabled is False)
+        scripts.start(process, "events", TASK_CREATED, EventForm.GUARD, story.clock.timestamp())
         story.container.get(PluginServiceRound).run(ServiceProcesses())
         story.expect_rows(process.wait(timeout=STOP_LIMIT_SECONDS) != 0, scripts.stop_reason(process) is ScriptStop.SWITCHED_OFF)
     finally:

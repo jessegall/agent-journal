@@ -13,6 +13,7 @@ A plugin adds rules, services, skills and a dashboard to the journal from a fold
   source has a newer release; `journal plugin upgrade <name>` shows what changes in what it runs, and `--yes` applies it.
 - `journal plugin preview <source>` shows everything a plugin would run, before it is installed.
 - A plugin's input line lists the agent's loaded skills in `skills`; `require_skills` in its answer makes the agent load one of its own.
+- A plugin's input line names the agent's `role` and the `window_ms` it runs under, null for no limit.
 - A plugin's input line names the `checkout` of the agent, and an event about a file names the `file`. A plugin never works
   out a checkout. `relative` is the name of a file, the same in the project and in every worktree, so match files on it
   and nothing else. Every absolute path is a real path. Fields are added; a change of meaning raises `v`.

@@ -48,7 +48,7 @@ def test_a_skill_a_plugins_answer_requires_holds_the_agents_next_tool_after_the_
     story.container.bind(SkillRequirement, SkillRequirement())
     story.hook("s-1", UPLOAD_SAMPLE)
     story.run_listeners()
-    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "read this first")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "load this first")
 
 
 def skill_digest(story, name):

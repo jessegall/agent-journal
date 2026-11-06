@@ -35,9 +35,9 @@ def test_s1_an_author_finds_the_keys_of_a_subject_with_their_forms_and_log_names
 
 
 def test_s1_each_line_holds_the_key_the_forms_and_the_log_name_sorted_by_key(author):
-    author.expect_success("event keys --grep worktree", f"suites.coding.workers.worker_worktree.cut   {ALL_FORMS}   worker_worktree.cut", actor=author.agent)
+    author.expect_success("event keys --grep worktree", f"suites.coding.workers.worker_worktree.cut   {ALL_FORMS}   worker_worktree.cut   a worker worktree was cut", actor=author.agent)
     lines = author.run("event keys", actor=author.agent).output_text.splitlines()
-    author.expect_rows(lines == sorted(lines), "core.drivers.hook_call.compact   commit   hook_call.compact" in lines)
+    author.expect_rows(lines == sorted(lines), "core.drivers.hook_call.compact   commit   hook_call.compact   a hook call was compacted" in lines)
     author.expect_text("event keys --grep no-such-key", "no event has that key", actor=author.agent)
 
 

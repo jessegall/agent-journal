@@ -82,7 +82,7 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         if answer.line and delivery.session_agent_id is not None:
             PluginQueue(self.folders.data(plugin.name)).add(environment, delivery.session_agent_id, answer.line, f"delivery-{delivery.id}")
         if answer.has_output():
-            self.record(logged, delivery, AddPluginOutput(plugin.id, delivery.session_agent_id, answer.output))
+            self.bus.run(AddPluginOutput(plugin.id, delivery.session_agent_id, answer.output, bool(delivery.script)), self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=delivery.environment_id)
 
     def delivery_checkout(self, delivery: PluginDelivery, event_data: Mapping[str, object]) -> Checkout | None:
         file = event_data.get(FILE_FIELD)
