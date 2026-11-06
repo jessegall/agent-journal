@@ -9,8 +9,25 @@
             }
         ],
         "reject": [
-            {"name": "named_reader_id"},
-            {"all": [{"name": "streak"}, {"fileMatches": "(^|/)src/core/modules/drivers/models/refusal_skip\\.py$"}]},
+            {
+                "nameIn": [
+                    "runs_once",
+                    "plugin_moments"
+                ]
+            },
+            {
+                "name": "named_reader_id"
+            },
+            {
+                "all": [
+                    {
+                        "name": "streak"
+                    },
+                    {
+                        "fileMatches": "(^|/)src/core/modules/drivers/models/refusal_skip\\.py$"
+                    }
+                ]
+            },
             {
                 "of": "parent",
                 "all": [

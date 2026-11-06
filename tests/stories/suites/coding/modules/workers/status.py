@@ -52,7 +52,7 @@ def test_a_worker_in_a_phase_reads_the_phase_and_the_tasks_waiting_for_its_end(n
 def test_the_status_of_a_worker_outside_a_plan_names_no_phase(worker_batch):
     story, _, worker = worker_batch
     story.expect_no_text("worker status", "phase", actor=worker)
-    assert "phase" not in json.loads(story.run("worker status --json", actor=worker).output_text)
+    story.expect_rows("phase" not in json.loads(story.run("worker status --json", actor=worker).output_text))
 
 
 def test_the_main_agent_reads_a_workers_status_in_pages(worker_batch):

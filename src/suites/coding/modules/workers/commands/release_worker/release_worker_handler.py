@@ -24,7 +24,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 
 WAITING_STATES = (TaskState.OPEN, TaskState.BLOCKED)
-HANDED_OUT_STATES = (TaskState.STARTED, TaskState.TESTING)
+ASSIGNED_STATES = (TaskState.STARTED, TaskState.TESTING)
 
 
 class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
@@ -51,9 +51,9 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
         task = self.rows.required(Task, worktree.task_id)
         if task.delegated_to == worktree.session_agent_id:
             self.release_task(task, command.reason, context)
-        for handed_out in tuple(self.queries.query(Task).filter(delegated_to=worktree.session_agent_id).matching(Among("state", HANDED_OUT_STATES)).all_rows()):
-            if not self.has_all_proofs_checked(handed_out, worktree):
-                self.release_task(handed_out, command.reason, context)
+        for assigned_task in tuple(self.queries.query(Task).filter(delegated_to=worktree.session_agent_id).matching(Among("state", ASSIGNED_STATES)).all_rows()):
+            if not self.has_all_proofs_checked(assigned_task, worktree):
+                self.release_task(assigned_task, command.reason, context)
         for delegated in tuple(self.queries.query(Task).filter(delegated_to=worktree.session_agent_id).matching(Among("state", WAITING_STATES)).all_rows()):
             self.repository.update(delegated, context, delegated_to=None)
         unmerged = self.git.remove(self.environments.find(abandoned.environment_id).folder, abandoned)

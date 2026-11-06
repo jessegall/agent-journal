@@ -27,7 +27,7 @@ def test_a_plan_in_review_moves_as_ready_with_its_phases_checkpoint_and_tasks_in
 def test_a_phase_of_an_upgraded_plan_reads_with_an_empty_test_command(new_story):
     story = upgraded_story(new_story)
     story.expect_success("plan show 3", "title: Cart rework")
-    assert json.loads(story.run("phase show 1 --json").output_text)["test_command"] == ""
+    story.expect_rows(json.loads(story.run("phase show 1 --json").output_text)["test_command"] == "")
 
 
 def test_the_plan_reviews_of_version_4_are_dropped_and_counted(new_story):

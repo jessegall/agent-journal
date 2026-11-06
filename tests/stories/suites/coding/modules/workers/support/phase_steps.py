@@ -25,7 +25,7 @@ PLAN_DISPATCH = "worker dispatch --model sonnet --plan 1"
 PHASE_DISPATCH = "worker dispatch --model sonnet --plan 1 --phase 1"
 OUTSIDE_DISPATCH = "worker dispatch --model sonnet 1 2"
 TEST_LINE = "pytest tests/cart.py"
-OTHER_TEST_LINE = "pytest tests/totals.py"
+SECOND_TEST_LINE = "pytest tests/totals.py"
 TEST_ALIAS = "cart-test"
 
 

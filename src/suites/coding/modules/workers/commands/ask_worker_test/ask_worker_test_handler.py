@@ -26,8 +26,8 @@ class AskWorkerTestHandler(Handler[AskWorkerTest, WorkerTestRequest]):
         self.queries, self.repository, self.main_agent_line, self.bus = queries, repository, main_agent_line, bus
 
     def handle(self, command: AskWorkerTest, context: Context) -> WorkerTestRequest:
-        same_requests = self.queries.query(WorkerTestRequest).filter(worker_id=command.worker_id, task_id=command.task_id, command=command.test_command)
-        open_request = same_requests.matching(Among("state", OPEN_REQUEST_STATES)).first()
+        matching_requests = self.queries.query(WorkerTestRequest).filter(worker_id=command.worker_id, task_id=command.task_id, command=command.test_command)
+        open_request = matching_requests.matching(Among("state", OPEN_REQUEST_STATES)).first()
         if open_request is not None:
             return open_request
         request = self.repository.save(WorkerTestRequest(worker_id=command.worker_id, task_id=command.task_id, command=command.test_command, reason=command.reason), context)

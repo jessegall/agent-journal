@@ -32,12 +32,12 @@ def test_the_phase_of_a_task_and_whether_the_next_task_is_in_it(new_story, monke
 def test_a_blocked_plan_has_no_phase_and_holds_nothing_back(new_story, monkeypatch):
     on_plan = worker_on_plan(new_story, monkeypatch)
     phases = phases_of(on_plan)
-    assert phases.holds_back(on_plan.worker.id)
+    on_plan.story.expect_rows(phases.has_phase_wait(on_plan.worker.id))
     on_plan.story.expect_success('plan block 1 --reason "the supplier is late"', actor=on_plan.story.agent)
     first, second = on_plan.story.row(Task, 1), on_plan.story.row(Task, 2)
     assert phases.phase(first) is None
     assert not phases.continues(first, second)
-    assert not phases.holds_back(on_plan.worker.id)
+    on_plan.story.expect_rows(not phases.has_phase_wait(on_plan.worker.id))
 
 
 def test_a_short_proof_is_a_failure_and_holds_nothing_back(new_story, monkeypatch):
@@ -47,14 +47,14 @@ def test_a_short_proof_is_a_failure_and_holds_nothing_back(new_story, monkeypatc
     assert not phases.failure_out(worktree_of(on_plan))
     on_plan.story.expect_success('proof short 1 "the total is missing"', actor=on_plan.story.agent)
     assert phases.failure_out(worktree_of(on_plan))
-    assert not phases.holds_back(on_plan.worker.id)
+    on_plan.story.expect_rows(not phases.has_phase_wait(on_plan.worker.id))
 
 
 def test_a_failed_selected_test_is_a_failure_and_a_task_outside_a_plan_holds_nothing_back(new_story, monkeypatch):
     outside = worker_outside_plan(new_story, monkeypatch)
     phases = phases_of(outside)
-    assert not phases.holds_back(outside.worker.id)
-    assert not phases.holds_back(outside.story.agent.id)
+    outside.story.expect_rows(not phases.has_phase_wait(outside.worker.id))
+    outside.story.expect_rows(not phases.has_phase_wait(outside.story.agent.id))
     outside.story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main', actor=outside.story.agent)
     outside.story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 -m pytest -q" --environment main', actor=outside.story.agent)
     outside.change_and_prove(TEST_LINE)

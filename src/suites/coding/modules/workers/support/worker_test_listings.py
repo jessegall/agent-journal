@@ -77,17 +77,17 @@ class WorkerTestListings(RunCounts):
         self.bus.dispatch(StopProcess(process.id), context)
 
     def counting_reader(self, part: ProcessPart, output: Output | None, readers: tuple[Reader, ...]) -> Reader | None:
-        selected = self.reader(part, output, readers)
-        if selected is not None and selected.count_command:
-            return selected
+        first_answer = self.reader(part, output, readers)
+        if first_answer is not None and first_answer.count_command:
+            return first_answer
         return next((reader for reader in readers if reader.count_command and ReaderSelection.reads(reader, part)), None)
 
     def reader(self, part: ProcessPart, output: Output | None, readers: tuple[Reader, ...]) -> Reader | None:
-        selected = ReaderSelection.choose(readers, [part])
+        first_answer = ReaderSelection.choose(readers, [part])
         if output is None or output.reader_id is None:
-            return selected.reader if selected else None
+            return first_answer.reader if first_answer else None
         if output.reader_position not in (0, part.position):
-            return selected.reader if selected else None
+            return first_answer.reader if first_answer else None
         return self.rows.required(Reader, output.reader_id)
 
     def previous_count(self, command: str) -> int:

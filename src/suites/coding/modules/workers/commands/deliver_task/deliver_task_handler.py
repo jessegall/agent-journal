@@ -20,9 +20,9 @@ from suites.coding.modules.workers.support.worker_task_commit import WorkerTaskC
 
 
 class DeliverTaskHandler(Handler[DeliverTask, Task]):
-    """Hands in all a worker's tasks together, which a queued task refuses: commits its worktree, moves every task it
-    holds started to testing, delivers the worktree and queues the tests of its proofs. On a phase of a started plan
-    it queues the whole phase, and with nothing to run it finishes at once."""
+    """Hands in all a worker's tasks together, which a queued task refuses: commits its worktree, moves every
+    task it holds started to testing, delivers the worktree and queues the tests of its proofs. On a phase
+    of a started plan it queues the whole phase, and with nothing to run it finishes at once."""
 
     command = DeliverTask
     disabled_scopes = [ActorScope]

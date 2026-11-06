@@ -43,7 +43,7 @@ def test_a_phase_can_name_its_own_test(new_story):
 
 def test_a_phase_names_no_test_unless_it_is_told_one(new_story):
     story = plan_with_three_phases(new_story)
-    assert json.loads(story.run("phase show 1 --json").output_text)["test_command"] == ""
+    story.expect_rows(json.loads(story.run("phase show 1 --json").output_text)["test_command"] == "")
 
 
 def test_a_phase_edit_changes_the_test_and_phase_show_reads_it(new_story):

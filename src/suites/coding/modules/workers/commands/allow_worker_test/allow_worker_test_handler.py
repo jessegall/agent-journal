@@ -30,15 +30,15 @@ class AllowWorkerTestHandler(Handler[AllowWorkerTest, WorkerTestRequest]):
 
     def handle(self, command: AllowWorkerTest, context: Context) -> WorkerTestRequest:
         request = self.queries.query(WorkerTestRequest).find(command.request_id)
-        self.check_may_allow(request, context.actor)
-        if request.state is not WorkerTestRequestState.ASKED:
+        self.verify_allowed(request, context.actor)
+        if request.state is not WorkerTestRequestState.REQUESTED:
             raise Refusal(f"request {request.id} is already {request.state}", "journal worker-test-request list shows the requests")
         allowed = self.repository.save_change(request, request.moved(WorkerTestRequestLifecycle.allow), context)
         self.bus.dispatch(MakeTaskLog(request.task_id, f"{context.actor.type} {context.actor.id} allowed the run of request {request.id}"), context)
         self.nudger.send(request.worker_id, WORKER_TEST_ALLOWED, WORKER_JOB_SOURCE, context, request=request.id, command=request.command)
         return allowed
 
-    def check_may_allow(self, request: WorkerTestRequest, actor: Actor) -> None:
+    def verify_allowed(self, request: WorkerTestRequest, actor: Actor) -> None:
         worker = self.queries.query(Agent).find(request.worker_id)
         if actor.type is not ActorType.USER and actor.id != worker.parent_id:
             raise Refusal(f"only the main agent of worker {request.worker_id} or a person allows request {request.id}")

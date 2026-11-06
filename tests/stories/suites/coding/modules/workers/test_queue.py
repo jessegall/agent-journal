@@ -190,9 +190,9 @@ def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(new_story, m
     story.expect_rows("pick.py" in picker.line, "cart.py" in picker.line,
                       (repository.worktree_folder(worker.id) / "base.txt").read_text() == "rebased\n")
     run_test_process(story, picker.id)
-    selected = story.container.get(Queries).query(Process).find(started[2])
-    story.expect_rows(selected.line == "python3 run_tests.py 'tests/other test.py'")
-    run_test_process(story, selected.id)
+    first_answer = story.container.get(Queries).query(Process).find(started[2])
+    story.expect_rows(first_answer.line == "python3 run_tests.py 'tests/other test.py'")
+    run_test_process(story, first_answer.id)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 

@@ -10,7 +10,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
-HELD_BACK_TASK_STATES = (TaskState.STARTED, TaskState.TESTING)
+WAITING_TASK_STATES = (TaskState.STARTED, TaskState.TESTING)
 
 
 class WorkerPhases:
@@ -33,26 +33,26 @@ class WorkerPhases:
     def failure_out(self, worktree: Worktree) -> bool:
         if self.proofs.worktree_proofs(worktree.id).filter(state=ProofState.SHORT).exists():
             return True
-        selected = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).newest().first()
-        return selected is not None and selected.state is AffectedTestState.FAILED
+        first_answer = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).newest().first()
+        return first_answer is not None and first_answer.state is AffectedTestState.FAILED
 
     def is_working_through_phase(self, worktree: Worktree) -> bool:
         task = self.queries.query(Task).find(worktree.task_id)
         return task.state is TaskState.STARTED and self.phase(task) is not None
 
-    def moved_past(self, worker_id: int) -> tuple[Task, ...]:
+    def advanced(self, worker_id: int) -> tuple[Task, ...]:
         testing = self.queries.query(Task).filter(delegated_to=worker_id, state=TaskState.TESTING).oldest().all_rows()
         return tuple(task for task in testing if self.phase(task) is not None)
 
-    def holds_back(self, worker_id: int) -> bool:
-        return self.held_phase(worker_id) is not None
+    def has_phase_wait(self, worker_id: int) -> bool:
+        return self.waiting_phase(worker_id) is not None
 
-    def held_phase(self, worker_id: int) -> Phase | None:
+    def waiting_phase(self, worker_id: int) -> Phase | None:
         worktree = self.worktrees.worker_worktree(worker_id)
         if worktree is None:
             return None
         task = self.queries.query(Task).find(worktree.task_id)
-        if task.state not in HELD_BACK_TASK_STATES:
+        if task.state not in WAITING_TASK_STATES:
             return None
         phase = self.phase(task)
         return None if phase is None or self.failure_out(worktree) else phase
