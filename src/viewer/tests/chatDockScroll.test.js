@@ -1,4 +1,5 @@
 import {readFileSync} from "node:fs";
+import {resolve} from "node:path";
 import {createApp, h, nextTick, ref} from "vue";
 import DockStack from "../src/chat/DockStack.vue";
 import {loadDockDeclarations} from "../src/domain/dockRegistry.js";
@@ -95,11 +96,11 @@ test("a chosen collapse stays at the foot and without a choice follows scroll", 
 });
 
 test("the all-docks button has no border or background", () => {
-    const source = readFileSync(new URL("../src/chat/DockStack.vue", import.meta.url), "utf8");
+    const source = readFileSync(resolve(__dirname, "../src/chat/DockStack.vue"), "utf8");
     expect(source).toMatch(/\.dock-all :deep\(\[data-dock-all\]\)\s*\{\s*border:\s*0;\s*background:\s*none;\s*\}/);
 });
 
 test("collapsed waiting cards hide the warning strip", () => {
-    const source = readFileSync(new URL("../src/kit/ChatDock.vue", import.meta.url), "utf8");
+    const source = readFileSync(resolve(__dirname, "../src/kit/ChatDock.vue"), "utf8");
     expect(source).toMatch(/\.chat-dock\.collapsed \.chat-dock-card\.waiting::before\s*\{\s*display:\s*none;\s*\}/);
 });
