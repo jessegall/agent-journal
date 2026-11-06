@@ -4,12 +4,15 @@ from types import MappingProxyType
 import json
 from time import perf_counter
 from dataclasses import asdict, replace
+from datetime import datetime, timezone
+from uuid import uuid4
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qsl, parse_qs, urlencode, urlsplit
 
 from server.server_instance import server_instance
-from server.request_log import RequestLog
+from server.viewer.read_attribution import ReadAttribution
+from server.viewer.viewer_request_record import ViewerHttpRequest, ViewerRequestRecord
 from server.viewer.event_stream import EventStream
 from server.viewer.file_route import LIMIT_BYTES
 from server.viewer.events_request import EventsRequest
@@ -48,6 +51,8 @@ LINE_ROUTE = "/api/line"
 LINES_ROUTE = "/api/lines"
 READ_LINES_ROUTE = "/api/read-lines"
 REPEATED_LINES_ROUTE = "/api/repeated-lines"
+READ_RECEIPTS_ROUTE = "/api/read-receipts"
+REQUEST_LOG_STATUS_ROUTE = "/api/request-log-status"
 EVENTS_ROUTE = "/api/events"
 SHARE_COMMENTS_ROUTE = "/api/share/comments"
 WINDOWS_ROUTE = "/api/windows"
@@ -155,7 +160,10 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(200, asdict(viewer.routes.session_route.answer(token)))
             return
         if route.path == READ_LINES_ROUTE:
-            self.answer(200, {"reads": viewer.routes.line_route.read_lines()})
+            self.answer(200, {"reads": viewer.routes.line_route.read_lines(), "recording": viewer.routes.request_log.status()["enabled"]})
+            return
+        if route.path == REQUEST_LOG_STATUS_ROUTE:
+            self.answer(200, viewer.routes.request_log.status())
             return
         if route.path == SHARE_COMMENTS_ROUTE:
             self.answer_share_comments(viewer, viewer.login.session(token), None)
@@ -210,6 +218,18 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             viewer.routes.line_route.report_repeated_lines(RepeatedLines(str(report.get("window", "")), str(report.get("line", "")), int(report.get("count", 0))))
             self.answer(200, {})
             return
+        if urlsplit(self.path).path == READ_RECEIPTS_ROUTE:
+            try:
+                entries = json.loads(body or b"{}")["receipts"]
+                if not isinstance(entries, list):
+                    raise ViewerRequestError("read receipts are a list")
+                receipts = tuple(ReadAttribution.parsed(entry) for entry in entries)
+            except (KeyError, TypeError, ValueError, ViewerRequestError) as error:
+                self.answer(400, {"error": str(error)})
+                return
+            viewer.routes.request_log.complete_reads(viewer.login.person_id(token), receipts)
+            self.answer(200, {"received": len(receipts)})
+            return
         if urlsplit(self.path).path != LINE_ROUTE:
             self.answer(404, {"error": f"no route {self.path}"})
             return
@@ -219,17 +239,21 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(400, {"error": str(error)})
             return
         session = viewer.login.session(token)
+        received_at, request_id = datetime.now(timezone.utc).isoformat(), str(uuid4())
         started_at = perf_counter()
         try:
             turn = nullcontext() if tuple(request.line[:2]) in UNQUEUED_LINES else viewer.routes.queue.viewer_turn(" ".join(request.line), request.window, viewer.routes.priorities.priority(request.window))
             with turn:
                 queued_ms = (perf_counter() - started_at) * 1000
-                answered = viewer.routes.line_route.answer(request.window, request.line, viewer.login.person_id(token), request.environment, session.shared)
+                timed = viewer.routes.line_route.timed_single_answer(request.window, request.line, viewer.login.person_id(token), request.environment, session.shared)
+                answered = timed.answer
         except ShareRefusal as refusal:
             self.answer(403, {"error": refusal.reason})
             return
-        RequestLog(viewer.routes.line_route.line_run.home).record(request.line, "viewer", (perf_counter() - started_at) * 1000, queued_ms, answered.code)
-        self.answer(200, asdict(answered))
+        duration_ms = (perf_counter() - started_at) * 1000
+        http = ViewerHttpRequest(request_id, received_at, "", duration_ms, len(body or b""), viewer.login.person_id(token))
+        viewer.routes.request_log.record_viewer(ViewerRequestRecord(http, request, 0, timed.duration_ms, queued_ms, answered.code, timed.points))
+        self.answer(200, asdict(answered), {"X-Journal-Request-Id": request_id})
 
     def answer_notices(self, viewer: ViewerServer, token: str, body: bytes | None) -> None:
         notices = viewer.routes.notices_route
@@ -268,6 +292,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(400, {"error": str(error)})
             return
         session, person_id = viewer.login.session(token), viewer.login.person_id(token)
+        received_at, request_id = datetime.now(timezone.utc).isoformat(), str(uuid4())
         started_at = perf_counter()
         inspections = [(index, line) for index, line in enumerate(request.lines) if line.line[:2] == ["developer", "request-queue"]]
         command_lines = [(index, line) for index, line in enumerate(request.lines) if line.line[:2] != ["developer", "request-queue"]]
@@ -282,10 +307,12 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             with viewer.routes.queue.viewer_turn("; ".join(" ".join(line.line) for _, line in command_lines), first_window, viewer.routes.priorities.priority(first_window)):
                 queued_ms = (perf_counter() - started_at) * 1000
                 command_answers = viewer.routes.line_route.timed_answers(ViewerLinesRequest([line for _, line in command_lines]), person_id, session.shared)
+            duration_ms = (perf_counter() - started_at) * 1000
+            http = ViewerHttpRequest(request_id, received_at, request_id, duration_ms, len(body or b""), person_id)
             for (index, line), timed in zip(command_lines, command_answers, strict=True):
                 answers[index] = timed.answer
-                RequestLog(viewer.routes.line_route.line_run.home).record(line.line, "viewer", timed.duration_ms, queued_ms, timed.answer.code)
-        self.answer(200, {"answers": [asdict(answers[index]) for index in range(len(request.lines))]})
+                viewer.routes.request_log.record_viewer(ViewerRequestRecord(http, line, index, timed.duration_ms, queued_ms, timed.answer.code, timed.points))
+        self.answer(200, {"answers": [asdict(answers[index]) for index in range(len(request.lines))]}, {"X-Journal-Request-Id": request_id})
 
     def answer_share_comments(self, viewer: ViewerServer, session: ViewerSession, body: bytes | None) -> None:
         if session.share_id is None or not session.comments:
@@ -419,11 +446,13 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
     def viewer(self) -> ViewerServer:
         return server_instance(self.server, ViewerServer)
 
-    def answer(self, status: int, value: dict[str, object]) -> None:
+    def answer(self, status: int, value: dict[str, object], headers: Mapping[str, str] = MappingProxyType({})) -> None:
         body = json.dumps(value).encode()
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
+        for name, value in headers.items():
+            self.send_header(name, value)
         self.end_headers()
         self.wfile.write(body)
 
