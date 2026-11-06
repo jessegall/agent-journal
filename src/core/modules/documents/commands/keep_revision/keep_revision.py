@@ -6,6 +6,6 @@ from core.modules.documents.models.doc_revision import DocRevision
 
 @dataclass(frozen=True)
 class KeepRevision(Command[DocRevision]):
-    """Closes a document's open revision, so its next edit opens a new one."""
+    """Saves and closes a document's open revision."""
 
     doc_id: int

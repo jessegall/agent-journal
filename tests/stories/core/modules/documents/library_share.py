@@ -56,8 +56,8 @@ def test_a_person_edit_followed_by_the_server_inside_one_window_stays_in_the_rev
     story = doc_story(new_story)
     story.run('doc edit 1 --body "my own words"', actor=story.user)
     doc_share(story).follow(story.row(Doc, 1), team_version("Cart rules", "the team text"), team_context(story))
-    story.expect_text("doc revision 1 1", "my own words", actor=story.user)
-    story.expect_text("doc revision 1 2", "the team text", actor=story.user)
+    story.expect_text("doc revision 1 2", "my own words", actor=story.user)
+    story.expect_text("doc revision 1 3", "the team text", actor=story.user)
 
 
 def test_the_next_edit_after_the_server_opens_its_own_revision(new_story):

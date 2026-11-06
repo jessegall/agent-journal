@@ -47,7 +47,7 @@ def test_the_library_pages_by_the_last_number_it_gave(new_story):
 
 def test_the_library_shows_open_or_closed_texts_when_asked(new_story):
     story = new_story(fixture=LibraryStocked)
-    story.expect_success('doc close 1 --why "It shipped"', actor=story.user)
+    story.expect_success('doc settle 1 --why "It shipped"', actor=story.user)
     closed = library(story, "document library --state closed")
     expect_total_closed(closed, 1)
     expect_title_closed(closed, ["Cart rules"])
