@@ -53,7 +53,7 @@ class PluginEventScripts:
             for subscription in subscriptions:
                 self.running.skipped(subscription.plugin, key, form, runs.closed_reason, context.timestamp)
             return ()
-        raise runs.rollback(PluginEventWork(self.runner, self.errors, self.caller, form, self.registry.event_key(change.event), subscriptions, PluginPayload.of(change, form, self.log, None),
+        raise runs.rollback(PluginEventWork(self.runner, self.errors, self.caller, form, self.registry.event_key(change.event), subscriptions, PluginPayload.from_change(change, form, self.log, None),
                                             PluginPayload.environment_id(change), self.agent_id(context), turn))
 
     def apply(self, answered: PluginEventAnswer, context: Context) -> None:

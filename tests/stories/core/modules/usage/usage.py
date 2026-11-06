@@ -329,7 +329,7 @@ def test_an_ended_sessions_status_file_can_disappear_during_the_read(ended_worke
 
     monkeypatch.setattr(FileAccess, "read", remove_before_read)
     story.expect_text("usage agents --closed --environment main --json", '"cost_dollars": null', actor=story.user)
-    assert not path.exists()
+    story.expect_rows(not path.exists())
 
 
 def test_an_open_session_keeps_its_status_file_and_its_windows_win_over_plan_json(ended_worker_report):

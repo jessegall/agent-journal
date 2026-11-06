@@ -40,9 +40,7 @@ COMMIT_SUFFIX = " (commit)"
 
 
 class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
-    """Runs a plugin's program for an event it plugin_event without holding it, once the hook has committed,
-    and puts the line it tells in its queue, which reaches the agent at its next hook. It asks how a file stands
-    here and not when the delivery is saved, since this runs with no lock and the answer may run git."""
+    """Runs committed plugin deliveries and queues their answers."""
 
     name = "plugins.delivery"
     run_order = PLUGIN_RUN_ORDER
@@ -72,7 +70,7 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         try:
             answer = self.program.run(call, self.policy.commit_limit_ms if delivery.script else DELIVERY_LIMIT_MS)
         except PluginFaultError as fault:
-            self.record(logged, delivery, RecordPluginFault.of(delivery.plugin_id, fault, f"at {delivery.event}{COMMIT_SUFFIX if delivery.script else ''}"))
+            self.record(logged, delivery, RecordPluginFault.from_error(delivery.plugin_id, fault, f"at {delivery.event}{COMMIT_SUFFIX if delivery.script else ''}"))
             return
         if delivery.script and answer.is_refusal():
             self.record(logged, delivery, RecordPluginFault(delivery.plugin_id, f"it answered refuse at {delivery.event}{COMMIT_SUFFIX}: {answer.reason}"))

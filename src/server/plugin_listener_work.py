@@ -5,8 +5,7 @@ from server.round_work import RoundWork
 
 
 class PluginListenerWork(RoundWork):
-    """The round of plugin deliveries in a running server, on a thread of their own, since a commit script has no time
-    limit and must not hold up the journal's own listeners."""
+    """Runs plugin deliveries separately from the journal's listeners."""
 
     def run(self, container: Container) -> None:
         container.bind(ScriptPolicy, ScriptPolicy(guards_run=False, commit_limit_ms=None))

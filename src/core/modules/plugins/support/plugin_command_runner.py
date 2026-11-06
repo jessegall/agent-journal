@@ -26,10 +26,7 @@ RUN_KEY = "plugin run"
 
 
 class PluginCommandRunner:
-    """Runs a line for a plugin or a person the way a shell line of an agent runs: a process of the journal, through
-    the one runner, at the root of the checkout, with the sandbox that agent has. It carries no session, so a journal
-    line inside stays marked as the plugin and cannot write as the agent. The run is listed as a running script, so
-    stopping the plugin stops it."""
+    """Runs a command in an agent's checkout without taking the agent's session."""
 
     def __init__(self, checkouts: AgentCheckouts, reads: ProjectReads, runner: RunnerBinary, scripts: RunningScripts, bus: Bus, queries: Queries) -> None:
         self.checkouts, self.reads, self.runner, self.scripts, self.bus, self.queries = checkouts, reads, runner, scripts, bus, queries

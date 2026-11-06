@@ -25,12 +25,12 @@ class PluginEventsSubcommand(ReadSubcommand[tuple[PluginEventRow, ...]]):
         parser.add_argument("plugin", nargs="?", default="")
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[PluginEventRow, ...]:
-        found: list[PluginEventRow] = []
+        entries: list[PluginEventRow] = []
         for plugin in self.plugins.oldest().all_rows():
             manifest = self.runnable.readable_manifest(plugin)
             if manifest is not None and arguments.plugin in ("", plugin.name):
-                found.extend(self.rows.rows(manifest, self.folders.code(plugin.name)))
-        return tuple(found)
+                entries.extend(self.rows.rows(manifest, self.folders.code(plugin.name)))
+        return tuple(entries)
 
     def write_output(self, value: object, output: Output) -> None:
         rows = [row for row in value if isinstance(row, PluginEventRow)] if is_tuple(value) else []

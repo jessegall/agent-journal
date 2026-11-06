@@ -24,11 +24,7 @@ from core.modules.plugins.support.plugin_subscriptions import PluginSubscription
 
 
 class PluginEventListener(SaveListener[Changed[Model]]):
-    """Runs the listen scripts of this change and adds their lines to it, then saves a delivery for each commit script,
-    in its transaction, so a delivery exists exactly when the change does. A change with no script is one lookup each
-    and writes nothing. Saving a fault delivers nothing, or a
-    script on the plugin row that fails would record faults without end. A failure of this code goes to the error
-    log and the change goes on."""
+    """Runs listen scripts and saves commit deliveries with the change."""
 
     name = "plugins.event-listener"
 
@@ -51,7 +47,7 @@ class PluginEventListener(SaveListener[Changed[Model]]):
         if answered.answer.is_refusal():
             self.bus.dispatch(RecordPluginFault(answered.plugin_id, f"it answered refuse at {key} (listen): {answered.answer.reason}"), context)
             return
-        self.lines.carry_out(answered, key, context)
+        self.lines.run(answered, key, context)
         self.scripts.apply(replace(answered, answer=answered.answer.without_commands()), context)
 
     def save_deliveries(self, change: Change[Model], context: Context) -> None:
@@ -61,7 +57,7 @@ class PluginEventListener(SaveListener[Changed[Model]]):
             return
         row = change.row
         event_id = max(logged.id for logged in self.log.row_events(self.tables.table(type(row)).name, row.id) if logged.event == log_name)
-        data = json.dumps(PluginPayload.of(change, EventForm.COMMIT, self.log, event_id))
+        data = json.dumps(PluginPayload.from_change(change, EventForm.COMMIT, self.log, event_id))
         environment_id = PluginPayload.environment_id(change)
         agent_id = context.actor.id if context.actor.type is ActorType.AGENT else None
         key = self.registry.event_key(log_name)

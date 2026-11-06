@@ -20,9 +20,7 @@ UNDECLARED_READS_TEXT = "Plugin {plugin} runs commands in worker shells, and tho
 
 
 class PluginWrongKeyMarkListener(MarkListener[RegistrySynced]):
-    """After a sync the chat of the first environment says which enabled plugin listens to a key this journal no longer
-    has, one mark for each, so a guard that stopped working does not pass unseen. A renamed key is no wrong key. A plugin
-    with aliases and no project_reads is told once that worker shells read only what it declares."""
+    """Reports enabled plugins with unknown event keys or undeclared project reads."""
 
     name = "plugins.wrong-key-mark"
     module_name = "journal.core.plugins"

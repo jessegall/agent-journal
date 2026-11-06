@@ -2,8 +2,7 @@ from enum import StrEnum
 
 
 class PluginMarkVariant(StrEnum):
-    """What a plugin health mark says: the plugin keeps failing, it answers again, or it listens to a key this journal
-    no longer has."""
+    """The status shown in a plugin health mark."""
 
     FAILING = "failing"
     HEALTHY = "healthy"

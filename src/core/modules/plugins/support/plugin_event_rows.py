@@ -10,7 +10,7 @@ from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX, Manif
 from core.modules.plugins.support.plugin_event_row import PluginEventRow
 from core.modules.plugins.support.plugin_event_state import PluginEventState
 from core.modules.plugins.support.plugin_manifest import PluginManifest
-from core.modules.plugins.support.plugin_moment import CEILING_SETTING
+from core.modules.plugins.support.plugin_named_event import CEILING_SETTING
 from core.modules.plugins.support.plugins_module_name import MODULE_NAME
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
@@ -49,7 +49,7 @@ class PluginEventRows:
         script, event = listener.script(form), self.registry.event_name(listener.event)
         entry = self.registry.event_keys[event] if event else None
         started_at = next((running.started_at.text for running in self.scripts.running(manifest.name) if running.key == listener.event and running.form is form), "")
-        if is_second or not listener.inside_script(form):
+        if is_second or not listener.allowed_script(form):
             state = PluginEventState.WRONG_SCRIPT
         elif entry is None:
             state = PluginEventState.WRONG_KEY
@@ -63,8 +63,8 @@ class PluginEventRows:
             state = PluginEventState.RENAMED
         else:
             state = PluginEventState.LISTENS
-        is_held_by_hook = form is EventForm.GUARD and entry is not None and entry.module == MODULE_NAME and entry.event in self.registry.plugin_moments
-        limit_ms = int(self.setting_values.number(CEILING_SETTING)) if is_held_by_hook else 0
+        is_hook_guard = form is EventForm.GUARD and entry is not None and entry.module == MODULE_NAME and entry.event in self.registry.plugin_moments
+        limit_ms = int(self.setting_values.number(CEILING_SETTING)) if is_hook_guard else 0
         skip = self.scripts.newest_skip(manifest.name, listener.event, form)
         row = self.row(manifest, listener.event, form.value, script, state, entry.key if state is PluginEventState.RENAMED and entry else "", started_at, limit_ms)
         return replace(row, last_skipped_at=skip.skipped_at.text, skip_reason=skip.reason) if skip else row

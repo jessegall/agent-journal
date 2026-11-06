@@ -10,9 +10,7 @@ from core.base.model.model import Model
 
 
 class PluginPayload:
-    """The data of the line a script gets for a change: its form, whether it is final, the row as the log holds it,
-    with hidden fields written as hidden, and what changed, as the log holds it. Only a commit is final and has a
-    log row."""
+    """Builds event data sent to plugin scripts."""
 
     @staticmethod
     def environment_id(change: Change[Model]) -> int | None:
@@ -25,7 +23,7 @@ class PluginPayload:
                 "command": logged.command, "cause_id": logged.cause_id, "row": dict(row), "old_row": dict(old_row), "changed": dict(logged.data)}
 
     @staticmethod
-    def of(change: Change[Model], form: EventForm, log: EventLog, event_id: int | None) -> dict[str, object]:
+    def from_change(change: Change[Model], form: EventForm, log: EventLog, event_id: int | None) -> dict[str, object]:
         context: Context = change.context
         return {"form": form.value, "final": form is EventForm.COMMIT, "log_name": change.event, "event_id": event_id,
                 "actor": {"type": context.actor.type.value, "id": context.actor.id}, "command": context.command.label(), "cause_id": context.cause_id,

@@ -10,7 +10,7 @@ from core.modules.processes.support.process_group import ProcessGroup
 
 
 class OrphanedProcessKillListener(CommitListener[Moved[Process]]):
-    """Kills the process group of a run once it is final that it was marked orphaned, so nothing keeps running unread."""
+    """Stops the process group of an orphaned run."""
 
     name = "processes.orphaned-process-kill"
     moves = tuple([ProcessLifecycle.orphan])

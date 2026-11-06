@@ -13,9 +13,7 @@ KEPT_DELIVERIES = 50
 
 
 class PrunePluginDeliveriesHandler(Handler[PrunePluginDeliveries, int]):
-    """Deletes the deliveries of each plugin older than the kept days, beyond its newest, which journal plugin record
-    --inputs reads. A delivery still waiting is that old only if the plugin thread was stuck that long, and the
-    runner passes over a row that is gone."""
+    """Deletes old plugin deliveries beyond the number kept."""
 
     command = PrunePluginDeliveries
 

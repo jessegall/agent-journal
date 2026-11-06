@@ -23,12 +23,12 @@ const pickAgent = (agent) => emit("pick", agentOf(agent.agent_id), agent);
         <div class="pinned">
             <WhoRow name="Main agent" meta="Reads these at every start" mark="main" :count="counts.main" :selected="who === MAIN" data-main @pick="emit('pick', MAIN)" />
             <template v-if="others">
-                <WhoRow name="Workers and helpers" meta="All of them in one list" :count="others" :selected="who === OTHERS" data-others @pick="emit('pick', OTHERS)" />
+                <WhoRow name="Other agents" meta="All of them in one list" :count="others" :selected="who === OTHERS" data-others @pick="emit('pick', OTHERS)" />
                 <WhoRow name="Every agent" meta="All agents" :count="counts.everyone" :selected="who === EVERYONE" data-everyone @pick="emit('pick', EVERYONE)" />
             </template>
         </div>
         <template v-if="!others">
-            <p class="note" data-no-agents>No worker or helper has saved a memory yet. When one does, it shows here.</p>
+            <p class="note" data-no-agents>No other agent has saved a memory yet.</p>
         </template>
         <template v-else>
             <div class="tools">

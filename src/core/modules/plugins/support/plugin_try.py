@@ -22,8 +22,7 @@ TRY_LIMIT_MS = 60_000
 
 
 class PluginTry:
-    """Runs a plugin's script for a key by hand, with the line of the newest real event of that key, or an empty row if
-    there is none, and gives back what happened. It applies nothing and records no fault."""
+    """Runs a plugin script with a recent event without applying its answer or recording faults."""
 
     def __init__(self, queries: Queries, registry: Registry, folders: PluginFolders, log: EventLog, program: PluginProgram, settings: PluginSettings, clock: Clock, scripts: RunningScripts) -> None:
         self.queries, self.registry, self.folders, self.log, self.program, self.settings, self.clock, self.scripts = queries, registry, folders, log, program, settings, clock, scripts
@@ -36,11 +35,11 @@ class PluginTry:
         if not event:
             raise Refusal(f"no event has the key {key}", "journal event keys lists them")
         manifest = PluginManifest.read(self.folders.code(plugin.name))
-        form = next((form for form in EventForm if manifest.script_for_key(key, form)), None)
+        form = next((form for form in EventForm if manifest.script(key, form)), None)
         if form is None:
             raise Refusal(f"{name} has no script on {key}", f"journal plugin events {name} lists what it listens to")
         environment = self.queries.query(Environment).find(environment_id).name if environment_id is not None else ""
-        call = PluginCall(manifest, PluginEvent(key, self.data(event, form)), environment, self.clock.timestamp(), self.settings.values(plugin, manifest), agent_id, form=form, script=manifest.script_for_key(key, form))
+        call = PluginCall(manifest, PluginEvent(key, self.data(event, form)), environment, self.clock.timestamp(), self.settings.values(plugin, manifest), agent_id, form=form, script=manifest.script(key, form))
         line, skipped = self.program.line(call, TRY_LIMIT_MS), self.scripts.newest_skip(plugin.name, key, form)
         skip = skipped.reason if skipped else ""
         try:

@@ -11,8 +11,7 @@ from core.modules.plugins.support.plugin_file_text import PluginFileText
 
 
 class PluginFileSubcommand(ReadSubcommand[str]):
-    """`journal plugin file <relative> [--agent <n>] [--from checkout or project or base]`: the text of a name in that
-    place. A name that is not there exits with a code of its own."""
+    """Reads a file from an agent checkout, project or base commit."""
 
     cli_name = "plugin"
     name = "file"

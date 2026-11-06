@@ -21,7 +21,7 @@ from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_queue_file import PluginQueueFile
 from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_event import PluginEvent
-from core.modules.plugins.support.plugin_moment import CEILING_SETTING
+from core.modules.plugins.support.plugin_named_event import CEILING_SETTING
 from core.modules.plugins.support.plugin_event_names import PluginEventNames
 from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
@@ -67,7 +67,7 @@ class PluginRule(DriverRule):
             if hook.event.accepts_lines:
                 self.queued(hook, plugin, lines, commands)
             for event in [event for event in events if event.name in manifest.event_names and self.reaches(hook, manifest, event.name)]:
-                commit = manifest.moment(event.name, EventForm.COMMIT)
+                commit = manifest.named_event(event.name, EventForm.COMMIT)
                 if event.name not in manifest.window_names() or commit is not None:
                     commands.append(DeliverPluginEvent(plugin.id, hook.agent_id, commit.key if commit else event.name, json.dumps(dict(event.data)), commit.script if commit else ""))
                 if event.name not in manifest.window_names():
@@ -95,14 +95,14 @@ class PluginRule(DriverRule):
                      values: dict[int, dict[str, object]]) -> str:
         if plugin.id not in values:
             values[plugin.id] = self.settings.values(plugin, manifest)
-        guard = manifest.moment(event.name, EventForm.GUARD)
+        guard = manifest.named_event(event.name, EventForm.GUARD)
         call = PluginCall(manifest, PluginEvent(guard.key, event.data) if guard else event, hook.event.environment, hook.timestamp, values[plugin.id], hook.agent_id, form=EventForm.GUARD, script=guard.script if guard else "")
         try:
             answer = self.program.run(call, manifest.window_ms(event.name, self.setting_values.number(CEILING_SETTING)))
         except PluginLateError:
             return ""
         except PluginFaultError as fault:
-            commands.append(RecordPluginFault.of(plugin.id, fault, f"at {event.name}"))
+            commands.append(RecordPluginFault.from_error(plugin.id, fault, f"at {event.name}"))
             return ""
         if plugin.fault_count:
             commands.append(ClearPluginFaults(plugin.id))

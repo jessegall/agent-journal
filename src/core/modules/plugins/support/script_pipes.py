@@ -13,24 +13,22 @@ ERROR_TAIL_BYTES = 2048
 READ_BYTES = 65536
 POLL_SECONDS = 0.05
 WAIT_LINE_SECONDS = 60
-END_OF_OUTPUT_SECONDS = 1
+OUTPUT_JOIN_SECONDS = 1
 
 
 class ScriptPipes:
-    """Gives a running script its line and reads what it prints on threads of their own, so a child that keeps a pipe
-    open or endless output cannot hold the journal. The script ending ends the wait. A child that still holds a pipe
-    then is stopped with its group, and one that closed its pipes is left alone."""
+    """Writes script input and reads output without waiting indefinitely for open pipes."""
 
     def __init__(self, process: "subprocess.Popen[str]", stop_group: Callable[["subprocess.Popen[str]"], None]) -> None:
         self.process, self.stop_group = process, stop_group
         self.answer_bytes, self.error_bytes = bytearray(), bytearray()
         self.lock = threading.Lock()
 
-    def answer(self, line: str, limit_ms: int | None, on_wait: Callable[[], None] | None) -> str:
+    def answer(self, line: str, limit_ms: int | None, wait_callback: Callable[[], None] | None) -> str:
         readers = [threading.Thread(target=self.read_answer, daemon=True), threading.Thread(target=self.read_errors, daemon=True)]
         for thread in (threading.Thread(target=self.write_line, args=(line,), daemon=True), *readers):
             thread.start()
-        self.wait_end(limit_ms, on_wait)
+        self.wait_end(limit_ms, wait_callback)
         self.join(readers)
         if any(reader.is_alive() for reader in readers):
             self.stop_group(self.process)
@@ -42,41 +40,41 @@ class ScriptPipes:
         with self.lock:
             return " ".join(bytes(self.error_bytes).decode(errors="replace").split())
 
-    def wait_end(self, limit_ms: int | None, on_wait: Callable[[], None] | None) -> None:
+    def wait_end(self, limit_ms: int | None, wait_callback: Callable[[], None] | None) -> None:
         deadline = None if limit_ms is None else time.monotonic() + limit_ms / 1000
         next_line_at = time.monotonic() + WAIT_LINE_SECONDS
         while self.process.poll() is None:
-            if self.is_too_long():
+            if self.exceeds_answer_limit():
                 self.stop_group(self.process)
-                raise self.too_long()
+                raise self.answer_limit_error()
             if deadline is not None and time.monotonic() > deadline:
                 self.stop_group(self.process)
                 raise PluginLateError(f"it ran past {limit_ms} ms")
-            if on_wait is not None and time.monotonic() >= next_line_at:
+            if wait_callback is not None and time.monotonic() >= next_line_at:
                 next_line_at += WAIT_LINE_SECONDS
-                self.told(on_wait)
+                self.notify_wait(wait_callback)
             time.sleep(POLL_SECONDS)
-        if self.is_too_long():
-            raise self.too_long()
+        if self.exceeds_answer_limit():
+            raise self.answer_limit_error()
 
-    def told(self, on_wait: Callable[[], None]) -> None:
+    def notify_wait(self, wait_callback: Callable[[], None]) -> None:
         try:
-            on_wait()
+            wait_callback()
         except OSError:
             self.stop_group(self.process)
             raise
 
-    def is_too_long(self) -> bool:
+    def exceeds_answer_limit(self) -> bool:
         with self.lock:
             return len(self.answer_bytes) > MOST_ANSWER_BYTES
 
     @staticmethod
-    def too_long() -> PluginFaultError:
+    def answer_limit_error() -> PluginFaultError:
         return PluginFaultError(f"it printed more than {MOST_ANSWER_BYTES} bytes")
 
     @staticmethod
     def join(threads: list[threading.Thread]) -> None:
-        deadline = time.monotonic() + END_OF_OUTPUT_SECONDS
+        deadline = time.monotonic() + OUTPUT_JOIN_SECONDS
         for thread in threads:
             thread.join(max(0.0, deadline - time.monotonic()))
 

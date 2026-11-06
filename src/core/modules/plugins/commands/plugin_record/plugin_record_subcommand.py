@@ -17,8 +17,7 @@ SHOWN_OUTPUT_COUNT = 50
 
 
 class PluginRecordSubcommand(ReadSubcommand[PluginRecord]):
-    """`journal plugin record <name> [--inputs]`: what a plugin did, its newest outputs oldest first and its last fault,
-    or with --inputs the last lines it was sent."""
+    """Reads a plugin's recent outputs, last fault or input lines."""
 
     cli_name = "plugin"
     name = "record"

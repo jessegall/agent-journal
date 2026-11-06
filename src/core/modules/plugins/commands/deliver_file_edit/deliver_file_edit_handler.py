@@ -36,5 +36,5 @@ class DeliverFileEditHandler(Handler[DeliverFileEdit, None]):
         data = json.dumps({"path": command.path, "type": "edit", OLD_TYPE_KEY: "edit", "lines": [dict(row) for row in command.lines], "cwd": command.folder, "file": file.values()})
         for runnable in receivers:
             manifest = runnable.manifest
-            moment = manifest.moment(FILE_EDITED, EventForm.COMMIT) or manifest.moment(FILE_EDITED, EventForm.GUARD)
-            self.bus.dispatch(DeliverPluginEvent(runnable.plugin.id, command.agent_id, moment.key if moment else FILE_EDITED, data, moment.script if moment else ""), context)
+            named_event = manifest.named_event(FILE_EDITED, EventForm.COMMIT) or manifest.named_event(FILE_EDITED, EventForm.GUARD)
+            self.bus.dispatch(DeliverPluginEvent(runnable.plugin.id, command.agent_id, named_event.key if named_event else FILE_EDITED, data, named_event.script if named_event else ""), context)

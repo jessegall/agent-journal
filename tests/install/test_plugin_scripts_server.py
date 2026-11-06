@@ -25,9 +25,9 @@ def run_line(journal, client: Path, *line: str) -> subprocess.CompletedProcess[s
 
 
 def expect_line(journal, client: Path, *line: str) -> str:
-    finished = run_line(journal, client, *line)
-    assert finished.returncode == 0, finished.stdout + finished.stderr
-    return finished.stdout
+    result = run_line(journal, client, *line)
+    assert result.returncode == 0, result.stdout + result.stderr
+    return result.stdout
 
 
 def journal_line(journal, client: Path, *line: str) -> str:
@@ -36,22 +36,21 @@ def journal_line(journal, client: Path, *line: str) -> str:
     return f"{variables} {shlex.join([str(client), *line])}"
 
 
-def own_journal_line(journal, client: Path, *line: str) -> str:
-    """The shell text of a script that runs the journal itself, and adds its exit code to the file own-write."""
+def plugin_journal_line(journal, client: Path, *line: str) -> str:
     return f"""{journal_line(journal, client, *line)} > /dev/null\necho $? >> "$JOURNAL_PLUGIN_DATA/own-write\""""
 
 
-def own_write(journal) -> list[str]:
-    written = plugin_data(journal, "own-write")
-    return written.read_text().split() if written.is_file() else []
+def plugin_write_result(journal) -> list[str]:
+    output_file = plugin_data(journal, "own-write")
+    return output_file.read_text().split() if output_file.is_file() else []
 
 
-def start_with_plugin(journal, client: Path, entry: dict[str, str], script: str, *more_entries: dict[str, str], scripts: dict[str, str] | None = None) -> None:
+def start_with_plugin(journal, client: Path, entry: dict[str, str], script: str, *extra_entries: dict[str, str], scripts: dict[str, str] | None = None) -> None:
     journal.start_server()
     journal.wait_healthy()
     expect_line(journal, client, "environment", "make", "main", str(journal.home.folder.parent))
     expect_line(journal, client, "task", "make", "Fix the cart", "--environment", "main")
-    folder = event_plugin_folder(journal.home.folder.parent / "sources", [entry, *more_entries], {"script.sh": script, **(scripts or {})})
+    folder = event_plugin_folder(journal.home.folder.parent / "sources", [entry, *extra_entries], {"script.sh": script, **(scripts or {})})
     expect_line(journal, client, "plugin", "install", str(folder), "--yes")
 
 
@@ -89,35 +88,35 @@ def started_agent(journal, client: Path) -> str:
 
 
 def test_s29_a_script_that_writes_through_the_journal_does_not_wait_or_start_itself(journal, client):
-    start_with_plugin(journal, client, {"event": TASK_CREATED, "listen": "script.sh"}, own_journal_line(journal, client, "task", "log", "1", "seen"))
+    start_with_plugin(journal, client, {"event": TASK_CREATED, "listen": "script.sh"}, plugin_journal_line(journal, client, "task", "log", "1", "seen"))
     expect_line(journal, client, *SECOND_JOB_LINE)
-    assert len(script_calls(journal, "script.sh")) == 1 and own_write(journal) == ["0"], (script_calls(journal, "script.sh"), own_write(journal))
+    assert len(script_calls(journal, "script.sh")) == 1 and plugin_write_result(journal) == ["0"], (script_calls(journal, "script.sh"), plugin_write_result(journal))
     assert "seen" in expect_line(journal, client, "task", "inspect", "1")
     assert expect_line(journal, client, "task", "list").count(SECOND_JOB_TITLE) == 1
 
 
 def test_s29_a_script_that_writes_the_same_row_causes_no_stale_row_error(journal, client):
-    start_with_plugin(journal, client, {"event": TASK_UPDATED, "listen": "script.sh"}, own_journal_line(journal, client, "task", "edit", "1", "--brief", "Changed by the script"))
+    start_with_plugin(journal, client, {"event": TASK_UPDATED, "listen": "script.sh"}, plugin_journal_line(journal, client, "task", "edit", "1", "--brief", "Changed by the script"))
     expect_line(journal, client, "task", "edit", "1", "--title", "A new title")
     details = expect_line(journal, client, "task", "show", "1")
     assert "A new title" in details and "Changed by the script" in details, details
     assert len(script_calls(journal, "script.sh")) == 1
 
 
-def test_s29_when_the_change_is_then_refused_the_own_write_of_the_script_stays(journal, client):
-    script = f'{own_journal_line(journal, client, "task", "log", "1", "seen")}\n{EVENT_SCRIPTS["refuse.sh"]}'
+def test_s29_when_the_change_is_then_refused_the_plugin_write_result_of_the_script_stays(journal, client):
+    script = f'{plugin_journal_line(journal, client, "task", "log", "1", "seen")}\n{EVENT_SCRIPTS["refuse.sh"]}'
     start_with_plugin(journal, client, {"event": TASK_CREATED, "guard": "script.sh"}, script)
-    finished = run_line(journal, client, *SECOND_JOB_LINE)
-    assert finished.returncode == 1 and REFUSAL in finished.stdout + finished.stderr, finished.stdout + finished.stderr
+    result = run_line(journal, client, *SECOND_JOB_LINE)
+    assert result.returncode == 1 and REFUSAL in result.stdout + result.stderr, result.stdout + result.stderr
     assert "seen" in expect_line(journal, client, "task", "inspect", "1")
     assert SECOND_JOB_TITLE not in expect_line(journal, client, "task", "list")
 
 
 def test_s25_a_script_that_never_ends_shows_on_the_card_and_switching_off_stops_it_and_the_command_finishes(journal, client):
-    started, never_written = journal.home.folder.parent / "started", journal.home.folder.parent / "never-written"
+    started, blocked_pipe = journal.home.folder.parent / "started", journal.home.folder.parent / "never-written"
     os.mkfifo(started)
-    os.mkfifo(never_written)
-    start_with_plugin(journal, client, {"event": TASK_CREATED, "guard": "script.sh"}, f"echo started > '{started}'\nread answer < '{never_written}'")
+    os.mkfifo(blocked_pipe)
+    start_with_plugin(journal, client, {"event": TASK_CREATED, "guard": "script.sh"}, f"echo started > '{started}'\nread answer < '{blocked_pipe}'")
     expect_line(journal, client, "actor", "make", "user", "Ada")
     page = viewer_page(journal)
     running = subprocess.Popen([str(client), *SECOND_JOB_LINE], env=journal.environment(), cwd=journal.home.folder.parent, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -136,11 +135,11 @@ def test_s25_a_script_that_never_ends_shows_on_the_card_and_switching_off_stops_
 
 
 def test_s17_a_commit_script_that_never_ends_holds_up_no_listener_and_a_server_stop_ends_it(journal, client):
-    started, never_written = journal.home.folder.parent / "started", journal.home.folder.parent / "never-written"
+    started, blocked_pipe = journal.home.folder.parent / "started", journal.home.folder.parent / "never-written"
     script_pid = journal.home.folder.parent / "script-pid"
     os.mkfifo(started)
-    os.mkfifo(never_written)
-    start_with_plugin(journal, client, {"event": TASK_CREATED, "commit": "script.sh"}, f"echo $$ > '{script_pid}'\necho started > '{started}'\nread answer < '{never_written}'")
+    os.mkfifo(blocked_pipe)
+    start_with_plugin(journal, client, {"event": TASK_CREATED, "commit": "script.sh"}, f"echo $$ > '{script_pid}'\necho started > '{started}'\nread answer < '{blocked_pipe}'")
     expect_line(journal, client, *SECOND_JOB_LINE)
     assert "started" in wait_for_line(started)
     expect_line(journal, client, "task", "make", LATER_JOB_TITLE, "--brief", "Do it", "--environment", "main")
@@ -157,31 +156,31 @@ def test_s17_a_commit_script_that_never_ends_holds_up_no_listener_and_a_server_s
 
 
 def test_s58_a_journal_line_inside_plugin_run_stays_marked_as_the_plugin(journal, client):
-    finished = journal.home.folder.parent / "finished"
-    os.mkfifo(finished)
+    finish_pipe = journal.home.folder.parent / "finished"
+    os.mkfifo(finish_pipe)
     inner = journal_line(journal, client, "task", "edit", "1", "--title", "Written inside the run")
-    script =f'{own_journal_line(journal, client, "plugin", "run", "--agent", "1", "--", "sh", "-c", inner)}\necho finished > \'{finished}\''
+    script =f'{plugin_journal_line(journal, client, "plugin", "run", "--agent", "1", "--", "sh", "-c", inner)}\necho finished > \'{finish_pipe}\''
     start_with_plugin(journal, client, {"event": "core.pins.pin.created", "commit": "script.sh"}, script, {"event": TASK_UPDATED, "guard": "refuse.sh"}, scripts={"refuse.sh": EVENT_SCRIPTS["refuse.sh"]})
     started_agent(journal, client)
     expect_line(journal, client, "pin", "make", "Notes", "--link", "https://example.org/notes", "--environment", "main")
-    assert "finished" in wait_for_line(finished)
+    assert "finished" in wait_for_line(finish_pipe)
     assert "Written inside the run" in expect_line(journal, client, "task", "show", "1")
     assert not script_calls(journal, "refuse.sh")
 
 
 def test_s58_switching_the_plugin_off_stops_its_run(journal, client):
-    started, finished, never_written = (journal.home.folder.parent / name for name in ("started", "finished", "never-written"))
-    for pipe in (started, finished, never_written):
+    started, finish_pipe, blocked_pipe = (journal.home.folder.parent / name for name in ("started", "finished", "never-written"))
+    for pipe in (started, finish_pipe, blocked_pipe):
         os.mkfifo(pipe)
-    hung = f"echo started > {started}; read answer < {never_written}"
-    script = f'{own_journal_line(journal, client, "plugin", "run", "--agent", "1", "--", "sh", "-c", hung)}\necho finished > \'{finished}\''
+    blocking_script = f"echo started > {started}; read answer < {blocked_pipe}"
+    script = f'{plugin_journal_line(journal, client, "plugin", "run", "--agent", "1", "--", "sh", "-c", blocking_script)}\necho finished > \'{finish_pipe}\''
     start_with_plugin(journal, client, {"event": "core.pins.pin.created", "commit": "script.sh"}, script)
     started_agent(journal, client)
     expect_line(journal, client, "actor", "make", "user", "Ada")
     expect_line(journal, client, "pin", "make", "Notes", "--link", "https://example.org/notes", "--environment", "main")
     assert "started" in wait_for_line(started)
     viewer_page(journal).switch_off()
-    assert "finished" in wait_for_line(finished)
+    assert "finished" in wait_for_line(finish_pipe)
 
 
 def row_counts(journal) -> tuple[int, int]:
@@ -193,10 +192,10 @@ def row_counts(journal) -> tuple[int, int]:
 
 
 def test_s67_the_server_stops_while_a_guard_runs_and_nothing_is_written(journal, client):
-    started, never_written = journal.home.folder.parent / "started", journal.home.folder.parent / "never-written"
+    started, blocked_pipe = journal.home.folder.parent / "started", journal.home.folder.parent / "never-written"
     os.mkfifo(started)
-    os.mkfifo(never_written)
-    start_with_plugin(journal, client, {"event": TASK_CREATED, "guard": "script.sh"}, f"echo started > '{started}'\nread answer < '{never_written}'")
+    os.mkfifo(blocked_pipe)
+    start_with_plugin(journal, client, {"event": TASK_CREATED, "guard": "script.sh"}, f"echo started > '{started}'\nread answer < '{blocked_pipe}'")
     before = row_counts(journal)
     running = subprocess.Popen([str(client), *SECOND_JOB_LINE], env=journal.environment(), cwd=journal.home.folder.parent, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     try:
@@ -212,10 +211,10 @@ def test_s67_the_server_stops_while_a_guard_runs_and_nothing_is_written(journal,
 
 
 def test_s76_the_caller_goes_away_while_a_guard_runs_and_nothing_is_written(journal, client):
-    started, never_written = journal.home.folder.parent / "started", journal.home.folder.parent / "never-written"
+    started, blocked_pipe = journal.home.folder.parent / "started", journal.home.folder.parent / "never-written"
     os.mkfifo(started)
-    os.mkfifo(never_written)
-    start_with_plugin(journal, client, {"event": TASK_CREATED, "guard": "script.sh"}, f"echo started > '{started}'\nread answer < '{never_written}'")
+    os.mkfifo(blocked_pipe)
+    start_with_plugin(journal, client, {"event": TASK_CREATED, "guard": "script.sh"}, f"echo started > '{started}'\nread answer < '{blocked_pipe}'")
     expect_line(journal, client, "actor", "make", "user", "Ada")
     page = viewer_page(journal)
     before = row_counts(journal)

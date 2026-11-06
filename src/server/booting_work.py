@@ -9,8 +9,7 @@ from server.round_work import RoundWork
 
 
 class BootingWork(RoundWork):
-    """The one round as the server starts: stops the scripts a killed server left, and logs journal.booting, which the listener thread answers once the server
-    takes requests, so a restart keeps no agent waiting on the work that answers it."""
+    """Stops stale scripts and records the server boot event."""
 
     def run(self, container: Container) -> None:
         container.get(RunningScripts).stop_stale_processes()

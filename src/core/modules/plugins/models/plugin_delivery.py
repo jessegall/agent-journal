@@ -6,9 +6,7 @@ from core.base.model.model import Model
 
 @dataclass(frozen=True, kw_only=True)
 class PluginDelivery(Model):
-    """An event a plugin hears without holding it, waiting to be run after the change: the plugin, the environment and
-    the agent it came from, if any, the event's name, its data as JSON text, the script it runs, if any, and the log
-    row it came from. A system event has no environment, so this is no EnvironmentScoped model."""
+    """A queued plugin event; system events have no environment."""
 
     model_name = "plugin_delivery"
     event_forms = ()

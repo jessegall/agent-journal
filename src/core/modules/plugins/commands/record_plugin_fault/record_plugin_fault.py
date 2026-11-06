@@ -14,5 +14,5 @@ class RecordPluginFault(Command[Plugin]):
     counts_toward_failing: bool = True
 
     @classmethod
-    def of(cls, plugin_id: int, fault: PluginFaultError, where: str) -> "RecordPluginFault":
-        return cls(plugin_id, f"{fault} {where}", fault.counts_toward_failing)
+    def from_error(cls, plugin_id: int, fault: PluginFaultError, location: str) -> "RecordPluginFault":
+        return cls(plugin_id, f"{fault} {location}", fault.counts_toward_failing)
