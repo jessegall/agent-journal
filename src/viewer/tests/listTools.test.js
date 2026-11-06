@@ -1,12 +1,15 @@
+import {questionsWindowContext} from "./support/questionsWindowContext.js";
 import {ref} from "vue";
 import {expect, test, vi} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 import {suggestionWindowContext} from "./support/suggestionWindowContext.js";
 import {templateWindowContext} from "./support/templateWindowContext.js";
 import {checkWindowContext} from "./support/checkWindowContext.js";
+import {phoneWindowContext} from "./support/phoneWindowContext.js";
 import {useListTools} from "../kit/useListTools.js";
 import SuggestionRows from "../../core/modules/suggestions/web/src/SuggestionRows.vue";
 import QuestionRows from "../../core/modules/questions/web/src/QuestionRows.vue";
+import {commandsWindowContext} from "./support/commandsWindowContext.js";
 import Outputs from "../../core/modules/processes/web/src/Outputs.vue";
 import PhoneRows from "../../core/modules/phone/web/src/PhoneRows.vue";
 import ShareRows from "../../core/modules/sharing/web/src/ShareRows.vue";
@@ -15,6 +18,7 @@ import TemplateCards from "../../core/modules/templates/web/src/TemplateCards.vu
 import CheckCards from "../../suites/coding/modules/checks/web/src/CheckCards.vue";
 import DumpRows from "../../core/modules/dumps/web/src/DumpRows.vue";
 import ReviewerSteps from "../../core/modules/reviews/web/src/ReviewerSteps.vue";
+import {reviewerWindowContext} from "./support/reviewerWindowContext.js";
 import SkillCatalogue from "../../core/modules/skills/web/src/SkillCatalogue.vue";
 
 const ROWS = [{id: 3, title: "Zebra", open: true}, {id: 2, title: "Apple pie", open: false}, {id: 1, title: "Mango", open: true}];
@@ -55,7 +59,7 @@ test("a list with states offers Open, Closed and All, another does not", async (
     });
     const menuOf = async (component, answers) => {
         document.body.innerHTML = "";
-        const element = await mounted(component, component === SuggestionRows ? suggestionWindowContext(answers) : context(answers));
+        const element = await mounted(component, (new Map([[SuggestionRows, suggestionWindowContext], [QuestionRows, questionsWindowContext]]).get(component) ?? context)(answers));
         document.body.append(element);
         element.querySelector("[data-search-menu]").click();
         await settle();
@@ -78,6 +82,9 @@ test.each([
     const contexts = new Map([
         [TemplateCards, templateWindowContext],
         [CheckCards, checkWindowContext],
+        [PhoneRows, phoneWindowContext],
+        [Outputs, commandsWindowContext],
+        [ReviewerSteps, reviewerWindowContext],
         [ShareRows, (answers) => context(answers, null, {shares: {line: "share list", events: ["share_link.*", "share_comment.*"]}})],
     ]);
     const element = await mounted(component, (contexts.get(component) ?? context)(answers));

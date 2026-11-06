@@ -1,6 +1,7 @@
-import {expect, test} from "vitest";
+import {expect, test, vi} from "vitest";
 import {useOutputPages} from "../src/composables/outputPages.js";
 import MarkBody from "../src/chat/MarkBody.vue";
+import {outputWindowContext} from "./support/outputWindowContext.js";
 import Output from "../../core/modules/processes/web/src/Output.vue";
 import {context, mounted, settle} from "./support/windowContext.js";
 
@@ -80,17 +81,17 @@ test("a chat mark opens on the newest page, never the whole output", async () =>
 });
 
 test("the output window reads pages for the whole output, and its reader lines by summary", async () => {
-    const window = context({
+    const window = outputWindowContext({
         "process feed --id 3": {ok: true, value: {rows: [{id: 3, state: "finished", line: "make"}]}},
         "output peek 3 --summary": {ok: true, value: {lines: ["read"]}},
         "output page 3": page(["newest"], 900, 1000),
-    });
+    }, 3);
     window.setting = async () => 3;
     const element = await mounted(Output, window);
-    await settle();
+    await vi.waitFor(() => expect(element.textContent).toContain("read"));
     element.querySelector(".whole").click();
     await settle();
-    expect(window.reads).toContain("output page 3");
+    await vi.waitFor(() => expect(window.reads).toContain("output page 3"));
     expect(window.reads.some((line) => line.includes("--all"))).toBe(false);
 });
 

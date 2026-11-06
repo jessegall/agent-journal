@@ -36,11 +36,12 @@ A helper or worker that reported takes its next job with `journal helper send <n
 **L8 - Answer the user in as few words as the answer needs; never a wall of text.**
 
 **L9 - A read-only helper only reads; work that writes goes to a worker or stays with you.**
-A read-only helper works in your own checkout, and the journal refuses it any write. Reading, searching, reviewing and designing go to a helper with `journal helper start <profile> --brief "<job>"`; a job that changes a file goes to a worker (`journal worker dispatch <task> --model <model>`, the task's brief is its whole prompt). Program subagents are refused.
+A read-only helper works in your own checkout, and the journal refuses it any write; the merger helper may also merge a worker and send it findings. Reading, searching, reviewing and designing go to a helper with `journal helper start <profile> --brief "<job>"`; a job that changes a file goes to a worker (`journal worker dispatch <task> --model <model>`, the task's brief is its whole prompt). Program subagents are refused.
 
 **L10 - A worker's work is merged only once each point of its task's brief has a proof you checked, or, on a phase of a plan, one the journal checked at the phase's end, which you can still send back.**
 Read each proof with `journal proof list --task <n>`, check it with `journal proof check <n>` or send it back with
 `journal proof short <n> "<what is missing>"`, and take the work in with `journal worker merge <worker>`, never by hand.
+With the merger on, the merger helper reads the proofs and merges in your place, and passes you every important line and doubtful proof.
 
 **L11 - After a failure, re-run only what proves the fix: the failed tests by name and the files you touched since.**
 A full re-run is for a change that reaches wide. A full run the user or a gate requires still runs.

@@ -6,6 +6,8 @@ from core.base.viewer.window_search import WindowSearch
 from core.modules.reviews.support.review_step_searcher import ReviewStepSearcher
 from core.base.viewer.skeleton_part import SkeletonPart
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
+from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
@@ -68,8 +70,11 @@ class ReviewsModule(Module):
     listeners = [ReviewQueuedListener, ReviewerAvailableListener, ReviewerEndedListener, ReviewStartedStepListener, ReviewReportedStepListener, ReviewStartedMarkListener, ReviewReportedMarkListener]
     marks = REVIEW_MARKS
     windows = [WindowDeclaration("reviews.reviewer", "Reviewer", "reviewer.js", WindowLoading.COMPONENT, skeleton=REVIEWS_REVIEWER_SKELETON, search=WindowSearch(ReviewStepSearcher, "Search the reviews"), icon=WindowIcon.REVIEW,
-                                 reads=["review board", "review-step board", "reviewer list"], events=["review.*", "review_step.*", "reviewer.*"]),
-               WindowDeclaration("reviews.reviewers", "Reviewers", "reviewers.js", WindowLoading.COMPONENT, skeleton=REVIEWS_REVIEWERS_SKELETON, icon=WindowIcon.REVIEW, place=WindowPlace.DROPDOWN, reads=["agent list"], events=["agent.*"]),
+                                 reads=["review board", "review-step board", "reviewer list"],
+                                 keys=[WindowKey("board", "review board", events=["review.*", "review_step.*", "reviewer.*"])], events=["review.*", "review_step.*", "reviewer.*"]),
+               WindowDeclaration("reviews.reviewers", "Reviewers", "reviewers.js", WindowLoading.COMPONENT, skeleton=REVIEWS_REVIEWERS_SKELETON, icon=WindowIcon.REVIEW, place=WindowPlace.DROPDOWN,
+                                 reads=["agent list"], keys=[WindowKey("reviewers", "agent list --role reviewer", events=["agent.*"])], events=["agent.*"]),
                WindowDeclaration("reviews.subject-reviews", "Reviews", "subject-reviews.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, slots=tuple(["inspector.plan"]), icon=WindowIcon.REVIEW,
-                                 reads=["review list"], events=["review.*"], skeleton=tuple([SkeletonPart.line()]))]
+                                 reads=["review list"], keys=[WindowKey("reviews.*", "review list --subject {id} --oldest", events=["review.*"], loading=KeyLoading.REQUESTED)],
+                                 events=["review.*"], skeleton=tuple([SkeletonPart.line()]))]
     seeders = [ReviewsSeeder]

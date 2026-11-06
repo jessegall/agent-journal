@@ -1,188 +1,191 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-9ff56d9279c6")) { const style = document.createElement("style"); style.id = "window-styles-9ff56d9279c6"; style.textContent = ".plan-dock-agents[data-v-3fdf31fc]{display:flex;flex-wrap:wrap;gap:6px;padding:7px 14px 0 36px;align-items:center;color:var(--text-3);font-size:12px}.plan-dock-agent[data-v-3fdf31fc]{padding:0 8px;height:20px;border:1px solid var(--border-2);border-radius:99px;background:none;color:var(--text-2);font:inherit;font-size:11.5px;line-height:20px;cursor:pointer}.plan-dock-phases[data-v-3fdf31fc]{margin:0;padding:4px 14px 5px;list-style:none}.plan-dock-phase[data-v-3fdf31fc]{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;height:24px;font-size:12.5px}.plan-dock-number[data-v-3fdf31fc]{color:var(--text-4);font-family:var(--mono);font-size:11px}.plan-dock-name[data-v-3fdf31fc]{overflow:hidden;color:var(--text-2);text-overflow:ellipsis;white-space:nowrap}.plan-dock-phase.quiet .plan-dock-name[data-v-3fdf31fc]{color:var(--text-4)}.plan-dock-tasks[data-v-3fdf31fc]{color:var(--text-4);font-size:11.5px}.plan-dock-agent[data-v-3fdf31fc]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.plan-dock-phase.current .plan-dock-name[data-v-3fdf31fc]{color:var(--text)}.plan-dock-phase.current .plan-dock-tasks[data-v-3fdf31fc]{color:var(--text-3)}.plan-dock-loading[data-v-3fdf31fc]{margin:8px 36px}.plan-agents[data-v-c34d84f7]{display:flex;align-items:center;min-width:0;height:34px;margin:2px -14px 0;padding:0 14px;border-top:1px solid var(--border-inner);color:var(--text-3);font-size:12px}.plan-agents-none[data-v-c34d84f7]{color:var(--text-4)}.plan-agents-button[data-v-c34d84f7]{display:inline-flex;gap:5px;align-items:center;min-width:0;margin-left:-6px;padding:3px 6px;overflow:hidden;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.plan-agents-button[data-v-c34d84f7]:hover{background:var(--hover);color:var(--text)}.plans[data-v-e7a41a05]{display:flex;flex-direction:column}.plans-grid[data-v-e7a41a05]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));margin-right:-1px}.plan[data-v-e7a41a05]{cursor:pointer;display:flex;flex-direction:column;gap:8px;min-width:0;padding:12px 14px 0;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg)}.plan[data-v-e7a41a05]:hover{background:var(--raised)}.plan-head[data-v-e7a41a05]{display:flex;gap:6px;align-items:center;color:var(--text-3);font-size:12px}.plan-state[data-v-e7a41a05]{margin-left:auto;padding:1px 7px;border:1px solid var(--border-2);border-radius:999px;color:var(--text-2);font-size:11px}.plan-state.started[data-v-e7a41a05],.plan-state.completed[data-v-e7a41a05]{border-color:var(--tone-good, var(--green));color:var(--tone-good, var(--green))}.plan-state.blocked[data-v-e7a41a05]{border-color:var(--tone-warn);color:var(--tone-warn)}.plan-title[data-v-e7a41a05]{overflow:hidden;font-weight:500;text-overflow:ellipsis;white-space:nowrap}.plan-bar[data-v-e7a41a05]{display:flex;height:4px;overflow:hidden;border-radius:2px;background:var(--chip)}.plan-bar-fill[data-v-e7a41a05]{display:block;height:100%;background:var(--accent)}.plan-bar-testing[data-v-e7a41a05]{display:block;height:100%;background:color-mix(in srgb,var(--accent) 40%,transparent)}.plan-foot[data-v-e7a41a05],.plans-note[data-v-e7a41a05]{margin:0;color:var(--text-3);font-size:12px}.plans-note[data-v-e7a41a05],[data-plans-more][data-v-e7a41a05]{padding:8px 14px}\n"; document.head.appendChild(style); }
-import { computed as w, ref as f, openBlock as t, createElementBlock as p, withKeys as B, withModifiers as P, toDisplayString as d, Fragment as b, createElementVNode as _, createTextVNode as h, createVNode as k, unref as l, createBlock as $, withCtx as g, renderList as E, createCommentVNode as x, normalizeClass as W, normalizeStyle as L } from "vue";
-import { Icon as R, MenuPanel as D, MenuLabel as O, MenuItem as q, peekRef as M, useWindow as F, coalesced as G, READ_RATES as j, WindowRoom as H, Skeleton as J, InnerTabs as Q, TabBody as U, stateLook as X, stateLabel as Y, Btn as Z, afterSkeletonMinimum as ee } from "@journal/window-kit";
-import { _ as z } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const ae = {
+if (!document.getElementById("window-styles-f032f14e79ee")) { const style = document.createElement("style"); style.id = "window-styles-f032f14e79ee"; style.textContent = ".plan-dock-agents[data-v-3fdf31fc]{display:flex;flex-wrap:wrap;gap:6px;padding:7px 14px 0 36px;align-items:center;color:var(--text-3);font-size:12px}.plan-dock-agent[data-v-3fdf31fc]{padding:0 8px;height:20px;border:1px solid var(--border-2);border-radius:99px;background:none;color:var(--text-2);font:inherit;font-size:11.5px;line-height:20px;cursor:pointer}.plan-dock-phases[data-v-3fdf31fc]{margin:0;padding:4px 14px 5px;list-style:none}.plan-dock-phase[data-v-3fdf31fc]{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;height:24px;font-size:12.5px}.plan-dock-number[data-v-3fdf31fc]{color:var(--text-4);font-family:var(--mono);font-size:11px}.plan-dock-name[data-v-3fdf31fc]{overflow:hidden;color:var(--text-2);text-overflow:ellipsis;white-space:nowrap}.plan-dock-phase.quiet .plan-dock-name[data-v-3fdf31fc]{color:var(--text-4)}.plan-dock-tasks[data-v-3fdf31fc]{color:var(--text-4);font-size:11.5px}.plan-dock-agent[data-v-3fdf31fc]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.plan-dock-phase.current .plan-dock-name[data-v-3fdf31fc]{color:var(--text)}.plan-dock-phase.current .plan-dock-tasks[data-v-3fdf31fc]{color:var(--text-3)}.plan-dock-loading[data-v-3fdf31fc]{margin:8px 36px}.plan-agents[data-v-c34d84f7]{display:flex;align-items:center;min-width:0;height:34px;margin:2px -14px 0;padding:0 14px;border-top:1px solid var(--border-inner);color:var(--text-3);font-size:12px}.plan-agents-none[data-v-c34d84f7]{color:var(--text-4)}.plan-agents-button[data-v-c34d84f7]{display:inline-flex;gap:5px;align-items:center;min-width:0;margin-left:-6px;padding:3px 6px;overflow:hidden;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.plan-agents-button[data-v-c34d84f7]:hover{background:var(--hover);color:var(--text)}.plans[data-v-0ceb8dc1]{display:flex;flex-direction:column}.plans-grid[data-v-0ceb8dc1]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));margin-right:-1px}.plan[data-v-0ceb8dc1]{cursor:pointer;display:flex;flex-direction:column;gap:8px;min-width:0;padding:12px 14px 0;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg)}.plan[data-v-0ceb8dc1]:hover{background:var(--raised)}.plan-head[data-v-0ceb8dc1]{display:flex;gap:6px;align-items:center;color:var(--text-3);font-size:12px}.plan-state[data-v-0ceb8dc1]{margin-left:auto;padding:1px 7px;border:1px solid var(--border-2);border-radius:999px;color:var(--text-2);font-size:11px}.plan-state.started[data-v-0ceb8dc1],.plan-state.completed[data-v-0ceb8dc1]{border-color:var(--tone-good, var(--green));color:var(--tone-good, var(--green))}.plan-state.blocked[data-v-0ceb8dc1]{border-color:var(--tone-warn);color:var(--tone-warn)}.plan-title[data-v-0ceb8dc1]{overflow:hidden;font-weight:500;text-overflow:ellipsis;white-space:nowrap}.plan-bar[data-v-0ceb8dc1]{display:flex;height:4px;overflow:hidden;border-radius:2px;background:var(--chip)}.plan-bar-fill[data-v-0ceb8dc1]{display:block;height:100%;background:var(--accent)}.plan-bar-testing[data-v-0ceb8dc1]{display:block;height:100%;background:color-mix(in srgb,var(--accent) 40%,transparent)}.plan-foot[data-v-0ceb8dc1],.plans-note[data-v-0ceb8dc1]{margin:0;color:var(--text-3);font-size:12px}.plans-note[data-v-0ceb8dc1],[data-plans-more][data-v-0ceb8dc1]{padding:8px 14px}\n"; document.head.appendChild(style); }
+import { computed as h, ref as $, openBlock as l, createElementBlock as i, withKeys as L, withModifiers as S, toDisplayString as d, Fragment as C, createElementVNode as r, createTextVNode as k, createVNode as y, unref as o, createBlock as x, withCtx as b, renderList as z, createCommentVNode as A, watch as B, normalizeClass as F, normalizeStyle as K } from "vue";
+import { Icon as V, MenuPanel as O, MenuLabel as q, MenuItem as D, peekRef as I, useWindow as G, afterSkeletonMinimum as j, WindowRoom as H, Skeleton as J, InnerTabs as Q, TabBody as U, stateLook as X, stateLabel as Y, Btn as Z } from "@journal/window-kit";
+import { _ as E } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+const ee = {
   key: 0,
   class: "plan-agents-none",
   "data-plan-agents-none": ""
-}, te = ["title"], ne = ["aria-expanded"], le = {
+}, ae = ["title"], te = ["aria-expanded"], ne = {
   __name: "PlanAgents",
   props: { planId: { type: Number, required: !0 }, agents: { type: Array, default: () => [] } },
-  setup(A) {
-    const i = A, a = w(() => [...new Map(i.agents.map((m) => [m.id, m])).values()]), n = f(null), r = f(!1), y = (m) => M(`agents:${m.id}`);
-    return (m, s) => (t(), p("span", {
+  setup(M) {
+    const e = M, s = h(() => [...new Map(e.agents.map((p) => [p.id, p])).values()]), g = $(null), c = $(!1), n = (p) => I(`agents:${p.id}`);
+    return (p, u) => (l(), i("span", {
       class: "plan-agents",
       "data-plan-agents": "",
-      onClick: s[3] || (s[3] = P(() => {
+      onClick: u[3] || (u[3] = S(() => {
       }, ["stop"])),
-      onKeydown: s[4] || (s[4] = B(P(() => {
+      onKeydown: u[4] || (u[4] = L(S(() => {
       }, ["stop"]), ["enter"]))
     }, [
-      a.value.length ? a.value.length === 1 ? (t(), p("button", {
+      s.value.length ? s.value.length === 1 ? (l(), i("button", {
         key: 1,
         type: "button",
         class: "plan-agents-button",
-        title: `Open ${a.value[0].name}`,
+        title: `Open ${s.value[0].name}`,
         "data-plan-agent": "",
-        onClick: s[0] || (s[0] = (c) => y(a.value[0]))
-      }, "Agent: " + d(a.value[0].name), 9, te)) : (t(), p(b, { key: 2 }, [
-        _("button", {
+        onClick: u[0] || (u[0] = (v) => n(s.value[0]))
+      }, "Agent: " + d(s.value[0].name), 9, ae)) : (l(), i(C, { key: 2 }, [
+        r("button", {
           ref_key: "anchor",
-          ref: n,
+          ref: g,
           type: "button",
           class: "plan-agents-button",
-          "aria-expanded": r.value,
+          "aria-expanded": c.value,
           "data-plan-agents-list": "",
-          onClick: s[1] || (s[1] = (c) => r.value = !r.value)
+          onClick: u[1] || (u[1] = (v) => c.value = !c.value)
         }, [
-          h(" Agents: " + d(a.value.length) + " ", 1),
-          k(l(R), {
+          k(" Agents: " + d(s.value.length) + " ", 1),
+          y(o(V), {
             name: "down",
             size: 11
           })
-        ], 8, ne),
-        r.value ? (t(), $(l(D), {
+        ], 8, te),
+        c.value ? (l(), x(o(O), {
           key: 0,
-          anchor: n.value,
+          anchor: g.value,
           "min-width": 200,
           "data-plan-agents-menu": "",
-          onClose: s[2] || (s[2] = (c) => r.value = !1)
+          onClose: u[2] || (u[2] = (v) => c.value = !1)
         }, {
-          default: g(() => [
-            k(l(O), null, {
-              default: g(() => [
-                h("Agents on plan " + d(A.planId), 1)
+          default: b(() => [
+            y(o(q), null, {
+              default: b(() => [
+                k("Agents on plan " + d(M.planId), 1)
               ]),
               _: 1
             }),
-            (t(!0), p(b, null, E(a.value, (c) => (t(), $(l(q), {
-              key: c.id,
+            (l(!0), i(C, null, z(s.value, (v) => (l(), x(o(D), {
+              key: v.id,
               "data-plan-agent": "",
-              onClick: (S) => y(c)
+              onClick: (N) => n(v)
             }, {
-              default: g(() => [
-                h(d(c.name), 1)
+              default: b(() => [
+                k(d(v.name), 1)
               ]),
               _: 2
             }, 1032, ["onClick"]))), 128))
           ]),
           _: 1
-        }, 8, ["anchor"])) : x("", !0)
-      ], 64)) : (t(), p("span", ae, "No agent assigned"))
+        }, 8, ["anchor"])) : A("", !0)
+      ], 64)) : (l(), i("span", ee, "No agent assigned"))
     ], 32));
   }
-}, se = /* @__PURE__ */ z(le, [["__scopeId", "data-v-c34d84f7"]]), oe = { class: "plans" }, ue = {
+}, le = /* @__PURE__ */ E(ne, [["__scopeId", "data-v-c34d84f7"]]), se = { class: "plans" }, oe = {
   key: 1,
   class: "plans-note"
-}, de = {
+}, ue = {
   key: 0,
   class: "plans-note"
-}, pe = { class: "plans-grid" }, ie = ["data-row", "onClick", "onKeydown"], re = { class: "plan-head" }, ce = ["title"], ve = { class: "plan-bar" }, _e = { class: "plan-foot" }, me = 25, he = {
+}, de = { class: "plans-grid" }, ie = ["data-row", "onClick", "onKeydown"], pe = { class: "plan-head" }, re = ["title"], ce = { class: "plan-bar" }, ve = { class: "plan-foot" }, _e = 25, fe = {
   __name: "PlanCards",
-  setup(A) {
-    var N;
-    const i = F(), a = f((N = i.tabs) == null ? void 0 : N[0]), n = f({ open_total: 0, closed_total: 0, plans: [] }), r = f(""), y = f(!1), m = performance.now(), s = () => a.value.read;
-    async function c() {
-      const o = a.value, u = n.value.plans.length, v = await i.read(i.shared ? `${i.shared.model} show ${i.shared.id}` : `${s()}${u > me ? ` --limit ${u}` : ""}`);
-      o === a.value && (r.value = v.ok ? "" : v.error, ee(m, () => y.value = !0), v.ok && (n.value = i.shared ? { open_total: 1, closed_total: 0, plans: [{ task_count: 0, completed_count: 0, current_phase: 0, agents: [], ...v.value }] } : v.value));
-    }
-    async function S() {
+  setup(M) {
+    const e = G();
+    e.state.tab = e.shared ? "shared" : e.tabs[0].key;
+    const s = h(() => e.tabs.find((a) => a.key === e.state.tab) ?? e.tabs[0]), g = h(() => e.shared ? `plan.${e.shared.id}` : e.state.tab), c = h(() => e.props[g.value]), n = $({ open_total: 0, closed_total: 0, plans: [] }), p = $(""), u = h(() => p.value || c.value.failure.value), v = $(!1), N = performance.now();
+    B(() => c.value.loaded.value, (a) => {
+      a && j(N, () => v.value = !0);
+    }, { immediate: !0 }), B(() => c.value.data.value, (a) => {
+      a && (p.value = "", n.value = e.shared ? { open_total: 1, closed_total: 0, plans: [{ task_count: 0, completed_count: 0, current_phase: 0, agents: [], ...a }] } : a);
+    }, { immediate: !0 });
+    async function R() {
       if (!n.value.plans.length) return;
-      const o = a.value, u = await i.read(`${s()} --before-id ${Math.min(...n.value.plans.map((e) => e.id))}`);
-      if (o !== a.value) return;
-      if (!u.ok) return void (r.value = u.error);
-      const v = new Set(n.value.plans.map((e) => e.id));
-      n.value = { ...u.value, plans: [...n.value.plans, ...u.value.plans.filter((e) => !v.has(e.id))] };
+      const a = s.value, _ = `older-${a.key}`;
+      if (e.state[`${_}.before-id`] = Math.min(...n.value.plans.map((m) => m.id)), await e.reload(_), a !== s.value) return;
+      const f = e.props[_];
+      if (f.failure.value) return void (p.value = f.failure.value);
+      const t = new Set(n.value.plans.map((m) => m.id));
+      n.value = { ...f.data.value, plans: [...n.value.plans, ...f.data.value.plans.filter((m) => !t.has(m.id))] }, n.value.plans.length > _e && (e.state[`${a.key}.limit`] = n.value.plans.length);
     }
-    const K = (o) => {
-      a.value = o, n.value = { ...n.value, plans: [] }, c();
-    }, C = w(() => n.value.plans), T = w(() => {
-      var o;
-      return n.value[(o = a.value) == null ? void 0 : o.count_field];
-    }), I = (o, u) => o.task_count ? Math.round(u / o.task_count * 100) : 0;
-    return i.follow(["plan.*", "phase.*", "task.*"], G(c, j.planCard)), c(), (o, u) => (t(), $(l(H), { padding: "0" }, {
-      default: g(() => [
-        _("div", oe, [
-          y.value ? r.value ? (t(), p("p", ue, d(r.value), 1)) : (t(), p(b, { key: 2 }, [
-            k(l(Q), {
-              active: a.value,
+    const T = (a) => {
+      a.key !== e.state.tab && (e.state.tab = a.key, n.value = { ...n.value, plans: [] }, p.value = "");
+    }, w = h(() => n.value.plans), W = h(() => {
+      var a;
+      return n.value[(a = s.value) == null ? void 0 : a.count_field];
+    }), P = (a, _) => a.task_count ? Math.round(_ / a.task_count * 100) : 0;
+    return e.shared && (e.reload(g.value), e.follow(["plan.*", "phase.*", "task.*"], () => e.reload(g.value))), (a, _) => (l(), x(o(H), { padding: "0" }, {
+      default: b(() => [
+        r("div", se, [
+          v.value ? u.value ? (l(), i("p", oe, d(u.value), 1)) : (l(), i(C, { key: 2 }, [
+            y(o(Q), {
+              active: s.value,
               answer: n.value,
-              onChoose: K
+              onChoose: T
             }, null, 8, ["active", "answer"]),
-            k(l(U), {
-              tab: a.value,
+            y(o(U), {
+              tab: s.value,
               shape: "cards"
             }, {
-              default: g(() => {
-                var v;
+              default: b(() => {
+                var f;
                 return [
-                  C.value.length ? x("", !0) : (t(), p("p", de, "No " + d((v = a.value) == null ? void 0 : v.label.toLowerCase()) + " plans", 1)),
-                  _("div", pe, [
-                    (t(!0), p(b, null, E(C.value, (e) => (t(), p("div", {
-                      key: e.id,
+                  w.value.length ? A("", !0) : (l(), i("p", ue, "No " + d((f = s.value) == null ? void 0 : f.label.toLowerCase()) + " plans", 1)),
+                  r("div", de, [
+                    (l(!0), i(C, null, z(w.value, (t) => (l(), i("div", {
+                      key: t.id,
                       class: "plan",
-                      "data-row": e.id,
+                      "data-row": t.id,
                       role: "button",
                       tabindex: "0",
-                      onClick: (V) => l(M)(`plans:${e.id}`),
-                      onKeydown: B((V) => l(M)(`plans:${e.id}`), ["enter"])
+                      onClick: (m) => o(I)(`plans:${t.id}`),
+                      onKeydown: L((m) => o(I)(`plans:${t.id}`), ["enter"])
                     }, [
-                      _("span", re, [
-                        k(l(R), {
+                      r("span", pe, [
+                        y(o(V), {
                           name: "plan",
                           size: 12
                         }),
-                        h(" Plan " + d(e.id), 1),
-                        _("span", {
-                          class: W(["plan-state", l(X)("plan", e.state)]),
+                        k(" Plan " + d(t.id), 1),
+                        r("span", {
+                          class: F(["plan-state", o(X)("plan", t.state)]),
                           "data-plan-state": ""
-                        }, d(l(Y)("plan", e.state)), 3)
+                        }, d(o(Y)("plan", t.state)), 3)
                       ]),
-                      _("span", {
+                      r("span", {
                         class: "plan-title",
-                        title: e.title
-                      }, d(e.title), 9, ce),
-                      _("span", ve, [
-                        _("span", {
+                        title: t.title
+                      }, d(t.title), 9, re),
+                      r("span", ce, [
+                        r("span", {
                           class: "plan-bar-fill",
-                          style: L({ width: `${I(e, e.completed_count)}%` })
+                          style: K({ width: `${P(t, t.completed_count)}%` })
                         }, null, 4),
-                        _("span", {
+                        r("span", {
                           class: "plan-bar-testing",
                           "data-plan-testing": "",
-                          style: L({ width: `${I(e, e.testing_count)}%` })
+                          style: K({ width: `${P(t, t.testing_count)}%` })
                         }, null, 4)
                       ]),
-                      _("span", _e, [
-                        h(d(e.completed_count) + " of " + d(e.task_count) + " tasks done", 1),
-                        e.current_phase ? (t(), p(b, { key: 0 }, [
-                          h(" · phase " + d(e.current_phase), 1)
-                        ], 64)) : x("", !0)
+                      r("span", ve, [
+                        k(d(t.completed_count) + " of " + d(t.task_count) + " tasks done", 1),
+                        t.current_phase ? (l(), i(C, { key: 0 }, [
+                          k(" · phase " + d(t.current_phase), 1)
+                        ], 64)) : A("", !0)
                       ]),
-                      k(se, {
-                        "plan-id": e.id,
-                        agents: e.agents
+                      y(le, {
+                        "plan-id": t.id,
+                        agents: t.agents
                       }, null, 8, ["plan-id", "agents"])
                     ], 40, ie))), 128))
                   ]),
-                  C.value.length && C.value.length < T.value ? (t(), $(l(Z), {
+                  w.value.length && w.value.length < W.value ? (l(), x(o(Z), {
                     key: 1,
                     variant: "text",
                     "data-plans-more": "",
-                    onClick: S
+                    onClick: R
                   }, {
-                    default: g(() => [...u[0] || (u[0] = [
-                      h("Show more", -1)
+                    default: b(() => [..._[0] || (_[0] = [
+                      k("Show more", -1)
                     ])]),
                     _: 1
-                  })) : x("", !0)
+                  })) : A("", !0)
                 ];
               }),
               _: 1
             }, 8, ["tab"])
-          ], 64)) : (t(), $(l(J), {
+          ], 64)) : (l(), x(o(J), {
             key: 0,
             shape: "cards"
           }))
@@ -191,7 +194,7 @@ const ae = {
       _: 1
     }));
   }
-}, ye = /* @__PURE__ */ z(he, [["__scopeId", "data-v-e7a41a05"]]);
+}, ge = /* @__PURE__ */ E(fe, [["__scopeId", "data-v-0ceb8dc1"]]);
 export {
-  ye as default
+  ge as default
 };

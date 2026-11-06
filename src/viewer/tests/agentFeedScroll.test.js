@@ -4,6 +4,7 @@ import {context as agentContext} from "./support/agentWindowContext.js";
 import {AGENT_EDIT_KEYS} from "./support/fileFeedWindowContext.js";
 import AgentFileEdits from "../../suites/coding/web/src/AgentFileEdits.vue";
 import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue";
+import {outputWindowContext} from "./support/outputWindowContext.js";
 import Output from "../../core/modules/processes/web/src/Output.vue";
 
 const FOOT = 1000;
@@ -56,9 +57,10 @@ const newest = (element) => element.querySelector("[data-scroll-newest]");
 test("the output window opens at the foot and follows a new line", async () => {
     const run = {id: 3, line: "make", state: "finished"};
     const held = {lines: ["one"]};
-    const window = context({"process feed --limit 1": page([run]), "process feed --id 3": page([run]), "output peek 3 --summary": {ok: true, get value() {return {lines: held.lines};}}});
+    const window = outputWindowContext({"process feed --limit 1": page([run]), "process feed --id 3": page([run]), "output peek 3 --summary": {ok: true, get value() {return {lines: held.lines};}}});
     window.follow = (patterns, heard) => (held.heard = heard);
     const element = await mounted(Output, window);
+    await vi.waitFor(() => expect(element.querySelector("[data-output-text]")?.textContent).toBe("one"));
     const pane = paneOf(element);
     expect(pane.querySelector("[data-output-text]").textContent).toBe("one");
     expect(pane.scrollTop).toBe(FOOT);

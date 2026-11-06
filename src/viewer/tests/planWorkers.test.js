@@ -1,4 +1,7 @@
+import {planWindowContext} from "./support/planWindowContext.js";
 import {afterEach, expect, test, vi} from "vitest";
+import {h, provide, ref} from "vue";
+import {provideDockCard} from "@journal/window-kit";
 import {context, mounted, mountedDock, settle} from "./support/windowContext.js";
 import PlanCards from "../../core/modules/plans/web/src/PlanCards.vue";
 import PlanDock from "../../core/modules/plans/web/src/PlanDock.vue";
@@ -17,7 +20,7 @@ const card = (id, agents, working = []) => ({id, title: `Plan ${id}`, state: "st
 const TWO = [...AGENTS, {id: 13, name: "Grace Hopper", task_id: 3, task_title: "Print"}];
 
 test("a plan card shows the plan, its bar and who has it, in one row for none, one and several agents, and no tasks", async () => {
-    const window = context({"plan board": {ok: true, value: {open_total: 3, closed_total: 0, plans: [card(1, []), card(2, AGENTS), card(3, TWO)]}}});
+    const window = planWindowContext({"plan board": {ok: true, value: {open_total: 3, closed_total: 0, plans: [card(1, []), card(2, AGENTS), card(3, TWO)]}}});
     const element = await mounted(PlanCards, {...window, tabs: TABS});
     const [none, one, several] = [1, 2, 3].map((id) => element.querySelector(`[data-row="${id}"]`));
     for (const row of [none, one, several]) {
@@ -37,7 +40,11 @@ test("a plan card shows the plan, its bar and who has it, in one row for none, o
 test("a plan's dock card lists each agent working on the plan once, above its phases", async () => {
     const outline = {delegated: true, agents: AGENTS, phases: [{id: 1, title: "Build", tasks: [{id: 1}, {id: 2}]}]};
     const window = context({"plan outline": {ok: true, value: outline}});
-    const element = await mountedDock(PlanDock, window, {target_id: 5});
+    const card = {setup() {
+        provideDockCard(provide, {data: ref(outline), reload: async () => {}});
+        return () => h(PlanDock);
+    }};
+    const element = await mountedDock(card, window, {target_id: 5});
     await vi.waitFor(() => expect(element.textContent).toContain("Build"));
     expect([...element.querySelectorAll("[data-plan-dock-agent]")].map((agent) => agent.textContent)).toEqual(["Lady Lovelace"]);
     expect(element.textContent).toContain("Build");

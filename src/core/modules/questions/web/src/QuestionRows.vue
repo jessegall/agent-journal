@@ -1,8 +1,12 @@
 <script setup>
-import {ListTools, RowList, WindowRoom, useListTools, useRows} from "@journal/window-kit";
+import {ListTools, RowList, WindowRoom, useListTools, useWindow} from "@journal/window-kit";
 import QuestionCard from "./QuestionCard.vue";
 
-const {rows, failure, loaded, load} = useRows("question list --all", ["question.*"]);
+const window = useWindow();
+window.state.tab = window.shared ? "shared" : "list";
+const key = window.shared ? `question.${window.shared.id}` : "questions";
+const {rows, failure, loaded, load} = window.props[key];
+if (window.shared) window.reload(key);
 const tools = useListTools(rows, {title: (row) => row.text, isOpen: (row) => row.state === "open"});
 </script>
 

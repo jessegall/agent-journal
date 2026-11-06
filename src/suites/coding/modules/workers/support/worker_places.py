@@ -1,3 +1,4 @@
+from core.modules.helpers.support.agent_use import AgentUse
 from datetime import timedelta
 
 from core.base.clock import Clock
@@ -28,7 +29,8 @@ class WorkerPlaces:
     worker and a resume also count a resume handed over in the last two minutes that has not bound yet.
     Delivered work with its process stopped takes no run place."""
 
-    def __init__(self, agents: AgentRows, queries: Queries, limits: AgentTypeLimits, kept: KeptRows, clock: Clock, scopes: Scopes) -> None:
+    def __init__(self, agents: AgentRows, queries: Queries, limits: AgentTypeLimits, kept: KeptRows, clock: Clock, scopes: Scopes, use: AgentUse) -> None:
+        self.use = use
         self.agents, self.queries, self.limits, self.kept, self.clock, self.scopes = agents, queries, limits, kept, clock, scopes
 
     def running(self) -> tuple[Agent, ...]:
@@ -54,7 +56,7 @@ class WorkerPlaces:
         workers = self.kept_workers()
         if self.kept_limit() != UNLIMITED_AGENT_COUNT and len(workers) >= self.kept_limit():
             names = ", ".join(f"agent:{worker.id}" for worker in workers[:KEPT_NAMES_SHOWN])
-            raise Refusal(f"the limit of {self.kept_limit()} workers is reached: {names}", TypeLimits.retirement_instruction(workers))
+            raise Refusal(f"the limit of {self.kept_limit()} workers is reached: {names}", self.use.retire_suggestion(CodingAgentRole.WORKER) or TypeLimits.retirement_instruction(workers))
 
     def run_limit(self) -> int:
         return self.limits.lookup(CodingAgentRole.WORKER).run

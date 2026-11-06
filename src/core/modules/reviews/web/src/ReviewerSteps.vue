@@ -1,20 +1,13 @@
 <script setup>
-import {ref} from "vue";
+import {computed} from "vue";
 import {EmptyState, ListTools, TimeAgo, WindowRoom, useListTools, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
-const reviews = ref([]);
-const queued = ref(0);
+const {data: board} = context.props.board;
+const reviews = computed(() => board.value?.reviews ?? []);
+const queued = computed(() => board.value?.queued ?? 0);
 const tools = useListTools(reviews, {title: (review) => review.title});
 
-async function load() {
-    const answer = await context.read("review board");
-    reviews.value = answer.ok ? answer.value.reviews : [];
-    queued.value = answer.ok ? answer.value.queued : 0;
-}
-
-context.follow(["review.*", "review_step.*", "reviewer.*"], load);
-load();
 </script>
 
 <template>

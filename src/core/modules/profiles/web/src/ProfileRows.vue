@@ -1,13 +1,14 @@
 <script setup>
 import {computed, ref} from "vue";
-import {ago, Btn, EmptyState, ListRow, SearchBar, matchesSearch, useRows} from "@journal/window-kit";
+import {ago, Btn, EmptyState, ListRow, SearchBar, matchesSearch, useWindow} from "@journal/window-kit";
 import HelperStartForm from "./HelperStartForm.vue";
 import ProfilePanel from "./ProfilePanel.vue";
 
 const NEW_PROFILE = {name: "", title: "", description: "", agent_type: "helper", access: "read-only", program: "", independent: false, mcp_tools: [], changed: [], notes: [], problem: "", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: false, uses: 0};
 const ACCESS_WORDS = {"read-only": "Read-only", writing: "Writing"};
 
-const {rows, listing, failure, loaded, act, actionFailure, context} = useRows("profile list", []);
+const context = useWindow();
+const {rows, listing, failure, loaded, act, actionFailure} = context.props.profiles;
 const types = computed(() => listing.value ? listing.value.types : []);
 const opened = ref("");
 const query = ref("");

@@ -1,9 +1,11 @@
+import {planWindowContext} from "./support/planWindowContext.js";
 import {beforeAll, expect, test} from "vitest";
 import {context, mounted, mountedDock, page, settle} from "./support/windowContext.js";
 import {loadStates} from "../src/domain/states.js";
 import TaskDock from "../../core/modules/tasks/web/src/TaskDock.vue";
 import QuestionDock from "../../core/modules/questions/web/src/QuestionDock.vue";
 import StateRows from "../kit/StateRows.vue";
+import {commandsWindowContext} from "./support/commandsWindowContext.js";
 import Outputs from "../../core/modules/processes/web/src/Outputs.vue";
 import NudgeList from "../../core/modules/drivers/web/src/NudgeList.vue";
 import HookCallList from "../../core/modules/drivers/web/src/HookCallList.vue";
@@ -36,7 +38,7 @@ test("a question dock uses question state labels", async () => {
 });
 
 test("command output uses process state labels", async () => {
-    const element = await mounted(Outputs, context({"process feed": page([{id: 2, state: "checking", line: "check cart"}])}));
+    const element = await mounted(Outputs, commandsWindowContext({"process feed": page([{id: 2, state: "checking", line: "check cart"}])}));
     expect(element.querySelector(".state").textContent).toBe("Checking the result");
 });
 
@@ -52,7 +54,7 @@ test("agent calls show their readable event label", async () => {
 });
 
 test.each([["reviewing", "Review required"], ["approved", "Approved"]])("plan cards label %s and retain its styling", async (state, label) => {
-    const window = context({"plan board": {ok: true, value: {open_total: 1, closed_total: 0, plans: [{id: 3, title: "Cart", state, task_count: 0, completed_count: 0, current_phase: 0}]}}});
+    const window = planWindowContext({"plan board": {ok: true, value: {open_total: 1, closed_total: 0, plans: [{id: 3, title: "Cart", state, task_count: 0, completed_count: 0, current_phase: 0}]}}});
     window.tabs = [{key: "open", label: "Open", read: "plan board", count_field: "open_total"}];
     const element = await mounted(PlanCards, window);
     const badge = element.querySelector("[data-plan-state]");

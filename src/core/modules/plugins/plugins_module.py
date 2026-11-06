@@ -29,6 +29,8 @@ from core.base.setting.setting_scope import SettingScope
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
+from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
@@ -99,6 +101,17 @@ class PluginsModule(Module):
               ModelDeclaration(PluginQueueFile, excluded_subcommands=ALL_SUBCOMMANDS)]
     moves = [PluginsMove]
     windows = [WindowDeclaration("plugins.plugins", "Plugins", "plugins.js", WindowLoading.COMPONENT, skeleton=PLUGINS_PLUGINS_SKELETON, search=WindowSearch(PluginSearcher, "Search the plugins"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.PLUGIN, reads=["plugin events", "plugin record", "plugin list", "plugin settings", "plugin services", "plugin preview", "plugin latest", "plugin dashboard", "plugin dashboards", "plugin descriptions"],
+                                 keys=[WindowKey("plugins", "plugin list", events=["plugin.*"]),
+                                       WindowKey("dashboards", "plugin dashboards", events=["plugin.*"]),
+                                       WindowKey("descriptions", "plugin descriptions", events=["plugin.*"]),
+                                       WindowKey("services", "plugin services", events=["plugin.*"], reload_seconds=15),
+                                       WindowKey("events", "plugin events", events=["plugin.*"], reload_seconds=15),
+                                       WindowKey("preview", "plugin preview {source}", loading=KeyLoading.REQUESTED),
+                                       WindowKey("latest.*", "plugin latest {id}", named_ids=True, loading=KeyLoading.REQUESTED),
+                                       WindowKey("settings.*", "plugin settings {id}", named_ids=True, loading=KeyLoading.REQUESTED),
+                                       WindowKey("record.*", "plugin record {id}", named_ids=True, loading=KeyLoading.REQUESTED),
+                                       WindowKey("dashboard", "plugin dashboard {plugin}", tab="dashboard"),
+                                       WindowKey("dashboard-poll", "plugin dashboard {plugin}", tab="dashboard-poll", reload_seconds=60)],
                                  runs=["plugin upgrade", "plugin enable", "plugin disable", "plugin install", "plugin remove", "plugin configure", "message send"], events=["plugin.*"])]
     migrations = [PluginOutputEnvironmentMigration, PluginEventDeliveriesMigration, PluginSessionMigration, PluginOutputIndexMigration, PluginsTablesMigration, PluginQueueIndexMigration]
     handlers = [PrunePluginDeliveriesHandler, RunPluginCommandHandler, SendPluginStepLineHandler, DeliverFileEditHandler, UpgradePluginHandler, InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler,

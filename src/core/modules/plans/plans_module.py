@@ -52,6 +52,8 @@ from core.modules.plans.queries.plan_query import PlanQuery
 from core.modules.plans.support.plan_shared_rows import PlanSharedRows
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
+from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_tab import WindowTab
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
@@ -109,6 +111,11 @@ class PlansModule(Module):
                                                            "Your message reaches the agent before the plan starts")]))]
     windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, skeleton=PLANS_PLANS_SKELETON, icon=WindowIcon.PLAN, reads=["plan board", "task list", "plan list", "plan show", "plan progress", "plan outline", "plan inspect", "plan comments", "link list", "phase list", "phase show"],
                                  events=["plan.*", "phase.*", "task.*"], shared_reads=["plan show id", "plan progress plan_id", "phase list plan", "phase show id"],
+                                 keys=[WindowKey("open", "plan board", tab="open", events=["plan.*", "phase.*", "task.*"], arguments=["limit"]),
+                                       WindowKey("closed", "plan board --closed", tab="closed", events=["plan.*", "phase.*", "task.*"], arguments=["limit"]),
+                                       WindowKey("older-open", "plan board", loading=KeyLoading.REQUESTED, arguments=["before-id"]),
+                                       WindowKey("older-closed", "plan board --closed", loading=KeyLoading.REQUESTED, arguments=["before-id"]),
+                                       WindowKey("plan.*", "plan show {id}", loading=KeyLoading.REQUESTED)],
                                  tabs=[WindowTab("open", "Open", "plan board", "open_total"), WindowTab("closed", "Closed", "plan board --closed", "closed_total")])]
     shared_rows = [PlanSharedRows]
     seeders = [PlansSeeder]

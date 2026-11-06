@@ -1,7 +1,7 @@
 <script setup>
-import {AgentRowList, WindowRoom, useRows} from "@journal/window-kit";
+import {AgentRowList, WindowRoom, useWindow} from "@journal/window-kit";
 
-const {rows, failure, loaded} = useRows("agent list --role reviewer", ["agent.*"]);
+const {rows, failure, loaded} = useWindow().props.reviewers;
 </script>
 
 <template>

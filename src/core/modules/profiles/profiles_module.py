@@ -5,6 +5,8 @@ from core.modules.profiles.commands.reset_profile.reset_profile_subcommand impor
 from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
+from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
@@ -30,4 +32,6 @@ class ProfilesModule(Module):
     subcommands = [ResetProfileSubcommand, RemoveProfileSubcommand, ProfileListSubcommand, SaveProfileSubcommand]
     listeners = [ProfilePublishListener]
     windows = [WindowDeclaration("profiles.profiles", "Agent profiles", "profiles.js", WindowLoading.COMPONENT, skeleton=PROFILES_PROFILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.AGENT, search=WindowReadSearch("profile list", "Find a profile", ("name", "description", "agent_type", "model", "codex_model")),
-                                 reads=["helper availability", "profile list"], runs=["helper start", "helper send", "profile save", "profile reset", "profile remove"])]
+                                 reads=["helper availability", "profile list"],
+                                 keys=[WindowKey("profiles", "profile list"), WindowKey("availability", "helper availability", arguments=["profile", "program"], loading=KeyLoading.REQUESTED)],
+                                 runs=["helper start", "helper send", "profile save", "profile reset", "profile remove"])]

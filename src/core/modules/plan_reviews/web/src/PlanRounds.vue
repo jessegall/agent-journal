@@ -1,28 +1,19 @@
 <script setup>
-import {computed, ref, watch} from "vue";
+import {computed, watch} from "vue";
 import {InspectorPart, TimeAgo, peekRef, useWindow} from "@journal/window-kit";
 
 // how many review rounds a plan had, and for each when it ran, who read it and its reports, newest first
-const context = useWindow();
-const row = context.option("row");
-const rounds = ref([]);
-const failure = ref("");
+const window = useWindow();
+const row = window.option("row");
+const key = computed(() => `rounds.${row.value.id}`);
+const rounds = computed(() => window.props[key.value].rows.value);
+const failure = computed(() => window.props[key.value].failure.value);
 const newest = computed(() => [...rounds.value].reverse());
 const reviewerCount = (round) => (round.reviewers.length === 1 ? "1 reviewer" : `${round.reviewers.length} reviewers`);
 const reviewerNames = (round) => round.reviewers.map((reviewer) => reviewer.name).join(", ");
 const openReport = (report) => peekRef(`reports:${report.id}`);
-let reading = 0;
-
-async function load() {
-    const turn = ++reading;
-    const answer = await context.read(`plan rounds ${row.value.id}`);
-    if (turn !== reading) return;
-    failure.value = answer.ok ? "" : answer.error;
-    rounds.value = answer.ok ? answer.value.rows : [];
-}
-
-context.follow(["plan.*"], load);
-watch(() => row.value.id, load, {immediate: true});
+watch(key, (name) => window.reload(name), {immediate: true});
+window.follow(["plan.*"], () => window.reload(key.value));
 </script>
 
 <template>

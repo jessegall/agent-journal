@@ -5,6 +5,7 @@ from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.viewer.button_condition import ButtonCondition
 from core.base.viewer.button_declaration import ButtonDeclaration
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
@@ -47,4 +48,6 @@ class ProjectRulesModule(Module):
     button_slots = list(PROPOSED_SLOT)
     buttons = [ButtonDeclaration("project-rules.approve", PROPOSED_SLOT, "Approve", "rule approve {row_id}", primary=True, condition=PROPOSED_CONDITION),
                ButtonDeclaration("project-rules.deny", PROPOSED_SLOT, "Deny", "rule deny {row_id}", condition=PROPOSED_CONDITION)]
-    windows = [WindowDeclaration("project-rules.rules", "Rules", "rules.js", WindowLoading.COMPONENT, skeleton=PROJECT_RULES_RULES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.RULE, reads=["rule list"], runs=["rule approve", "rule deny", "rule remove"], events=["rule.*"])]
+    windows = [WindowDeclaration("project-rules.rules", "Rules", "rules.js", WindowLoading.COMPONENT, skeleton=PROJECT_RULES_RULES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.RULE, reads=["rule list"],
+                                 keys=[WindowKey("rules", "rule list", events=["rule.*"], arguments=["limit", "before-id", "after-id"], page_size=50)],
+                                 runs=["rule approve", "rule deny", "rule remove"], events=["rule.*"])]

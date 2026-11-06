@@ -1,3 +1,4 @@
+from core.modules.helpers.support.agent_use import AgentUse
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.drivers.models.helper_job import HelperJob
@@ -313,3 +314,10 @@ def test_refusals_fit_and_a_kept_limit_with_all_running_says_wait(new_story):
     story.home.socket("launcher").unlink()
     story.expect_rows("all of them run" in outcome.output_text, max(len(line) for line in outcome.output_text.splitlines()) <= 120)
 
+
+def test_a_refusal_for_no_kept_place_suggests_the_idle_agent_of_the_model_with_the_most_to_spare(new_story):
+    story = new_story(fixture=ReportedHelper)
+    helper = helper_agent(story)
+    story.expect_text("agent mix", f"journal-researcher, {helper.program_model}: jobs 1, kept 1, idle", actor=story.agent)
+    story.expect_rows(f"journal agent retire {helper.id}" in story.container.get(AgentUse).retire_suggestion("journal-researcher"),
+                      story.container.get(AgentUse).retire_suggestion("journal-planner") == "")

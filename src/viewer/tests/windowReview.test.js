@@ -1,3 +1,4 @@
+import {planWindowContext} from "./support/planWindowContext.js";
 import {ref} from "vue";
 import {expect, test} from "vitest";
 import PlanCards from "../../core/modules/plans/web/src/PlanCards.vue";
@@ -9,7 +10,7 @@ import {taskWindowContext} from "./support/taskWindowContext.js";
 // task 5489: the windows as version 4 drew them
 
 test("a plan is a card with its task count, its phase and its state, open plans apart from closed ones", async () => {
-    const window = context({
+    const window = planWindowContext({
         "plan board --closed": {ok: true, value: {open_total: 1, closed_total: 1, plans: [{id: 2, title: "Old", state: "completed", task_count: 2, completed_count: 2, current_phase: 1}]}},
         "plan board": {ok: true, value: {open_total: 1, closed_total: 1, plans: [{id: 1, title: "Checkout", state: "started", task_count: 4, completed_count: 1, current_phase: 2}]}},
     });

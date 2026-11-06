@@ -1,3 +1,4 @@
+import {planWindowContext} from "./support/planWindowContext.js";
 import {readdirSync, readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
@@ -47,7 +48,7 @@ async function expectMinimumOnSwitch(element, tabKey, content) {
 test("the plans window shows a skeleton for the minimum when another tab is chosen", async () => {
     const board = {ok: true, value: {open_total: 1, closed_total: 1, plans: []}};
     const tabs = [{key: "open", label: "Open", read: "plan board", count_field: "open_total"}, {key: "closed", label: "Closed", read: "plan board --closed", count_field: "closed_total"}];
-    const element = await mounted(PlanCards, {...context({"plan board": board}), tabs});
+    const element = await mounted(PlanCards, {...planWindowContext({"plan board": board}), tabs});
     await wait(MINIMUM_MS * 2);
     expect(element.querySelector("[data-tab-body]")).not.toBeNull();
     await expectMinimumOnSwitch(element, "closed", ".plans-note");

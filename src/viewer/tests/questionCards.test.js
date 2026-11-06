@@ -1,3 +1,5 @@
+import {questionsWindowContext} from "./support/questionsWindowContext.js";
+import {questionCardContext} from "./support/questionCardContext.js";
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {afterEach, expect, test} from "vitest";
@@ -13,7 +15,7 @@ const source = (path) => readFileSync(resolve(__dirname, path), "utf8");
 const rule = (text, selector) => text.match(new RegExp(`${selector.replace(/[.()]/g, "\\$&")} \\{([^}]*)\\}`))[1];
 const CARD = "../../core/modules/questions/web/src/QuestionCard.vue";
 
-const inWindow = (rows) => mounted(QuestionRows, {...context({"question list": page(rows)}), run: async () => ({ok: true, value: null})});
+const inWindow = (rows) => mounted(QuestionRows, {...questionsWindowContext({"question list": page(rows)}), run: async () => ({ok: true, value: null})});
 
 test("an open question in the window is a flush card: a dot, its number and time, rows with a ring and a chip, and the answer foot", async () => {
     const element = await inWindow([QUESTION]);
@@ -81,7 +83,7 @@ test("the window's blocks run edge to edge with no box, a line above and below a
 });
 
 test("a question in the chat keeps its box, its tag band over the recommended option and its buttons inside the answer box", async () => {
-    const chat = {...context({"question show 41": {ok: true, value: QUESTION}}), option: () => ({value: {target_id: 41}}), run: async () => ({ok: true, value: null})};
+    const chat = {...questionCardContext({"question show 41": {ok: true, value: QUESTION}}), option: () => ({value: {target_id: 41}}), run: async () => ({ok: true, value: null})};
     const element = await mounted(QuestionMarkCard, chat);
     const card = element.querySelector("[data-question-card]");
     expect(card.classList.contains("flush")).toBe(false);
