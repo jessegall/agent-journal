@@ -33,6 +33,7 @@ from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
 CEILING_SETTING = "journal.core.plugins.hold_window_ms"
+UNREADABLE_MANIFEST_FAULT = "its manifest cannot be read"
 
 
 class PluginRule(DriverRule):
@@ -53,6 +54,7 @@ class PluginRule(DriverRule):
         commands: list[Command[object]] = []
         events = PluginEventNames().events(hook)
         values: dict[int, dict[str, object]] = {}
+        commands.extend(RecordPluginFault(plugin.id, UNREADABLE_MANIFEST_FAULT) for plugin in self.runnable.unreadable())
         for runnable in self.runnable.enabled():
             plugin, manifest = runnable.plugin, runnable.manifest
             if runnable.is_changed:

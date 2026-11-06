@@ -1,3 +1,4 @@
+from core.base.model.event_form import EventForm
 from core.base.file_access import FileAccess
 from core.base.file_version import FileVersion
 import json
@@ -8,6 +9,7 @@ from functools import lru_cache
 
 from core.base.refusal import Refusal
 from core.base.type_guards import is_list, is_mapping
+from core.modules.plugins.support.manifest_listener import ManifestListener
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.manifest_alias import ManifestAlias
 from core.modules.plugins.support.manifest_dashboard import ManifestDashboard
@@ -30,8 +32,8 @@ class PluginManifest:
     inside a window, the settings its settings file lists, the tone of each type of card it shows, the
     folder of its skills, the services it keeps running, and what its install requires, sets up and
     reads back, how its services answer a health check, which helpers besides the main agent each
-    event reaches, the aliases it ships, the dashboard it writes, what it says it is for, and the folders of
-    the project a worker's shell line may read for it."""
+    event reaches, the aliases it ships, the dashboard it writes, what it says it is for, the folders of
+    the project a worker's shell line may read for it, and the scripts it runs for event keys."""
 
     name: str
     title: str
@@ -53,6 +55,7 @@ class PluginManifest:
     dashboard: ManifestDashboard | None
     description: str = ""
     project_reads: tuple[str, ...] = ()
+    listeners: tuple[ManifestListener, ...] = ()
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -65,23 +68,34 @@ class PluginManifest:
         names: object = fields["hears"] if "hears" in fields else None
         windows: object = fields["holds"] if "holds" in fields else None
         project_reads: object = fields["project_reads"] if "project_reads" in fields else None
+        listeners = cls.read_listeners(fields["listen"], folder) if "listen" in fields else ()
         return cls(str(fields["name"]), str(fields["title"]), str(fields["version"]), program,
                    tuple(str(name) for name in names) if is_list(names) else (), tuple(cls.event_window(entry) for entry in windows) if is_list(windows) else (),
-                   cls.read_settings(folder, settings_file), tuple(file for file in (MANIFEST_FILE, program, settings_file) if file),
+                   cls.read_settings(folder, settings_file), tuple(dict.fromkeys(file for file in (MANIFEST_FILE, program, settings_file, *(listener.inside_script(form) for listener in listeners for form in EventForm)) if file)),
                    cls.read_card_tones(fields["cards"] if "cards" in fields else None), str(fields["skills"]) if "skills" in fields else "",
                    cls.read_services(fields["services"] if "services" in fields else None), cls.read_requirements(fields["requires"] if "requires" in fields else None),
                    cls.read_setup_steps(fields["setup"] if "setup" in fields else None), str(fields["installed"]) if "installed" in fields else "",
                    cls.read_health(fields["health"] if "health" in fields else None), cls.read_reaches(fields["reaches"] if "reaches" in fields else None),
                    cls.read_aliases(fields["aliases"] if "aliases" in fields else None), cls.read_dashboard(fields["dashboard"] if "dashboard" in fields else None),
                    str(fields["description"]) if "description" in fields else "",
-                   tuple(str(entry) for entry in project_reads) if is_list(project_reads) else ())
+                   tuple(str(entry) for entry in project_reads) if is_list(project_reads) else (), listeners)
+
+    @classmethod
+    def loaded_fields(cls, path: Path, version: FileVersion) -> Mapping[str, object]:
+        fields = cls.kept_fields(path, version)
+        if isinstance(fields, Refusal):
+            raise fields
+        return fields
 
     @classmethod
     @lru_cache(maxsize=128)
-    def loaded_fields(cls, path: Path, version: FileVersion) -> Mapping[str, object]:
-        fields: object = json.loads(FileAccess.shared().read(path))
+    def kept_fields(cls, path: Path, version: FileVersion) -> Mapping[str, object] | Refusal:
+        try:
+            fields: object = json.loads(FileAccess.shared().read(path))
+        except json.JSONDecodeError as error:
+            return Refusal(f"the manifest {path} is not valid JSON: {error}", "correct the file, or remove and install the plugin again")
         if not is_mapping(fields) or not all(field in fields for field in REQUIRED_FIELDS):
-            raise Refusal(f"the manifest {path} lacks one of {', '.join(REQUIRED_FIELDS)}", "a plugin manifest states its name, title and version")
+            return Refusal(f"the manifest {path} lacks one of {', '.join(REQUIRED_FIELDS)}", "a plugin manifest states its name, title and version")
         return fields
 
     @staticmethod
@@ -134,6 +148,10 @@ class PluginManifest:
         return {PluginAnswer.entry_type(entry): str(entry["tone"]) if "tone" in entry else "" for entry in entries}
 
     @staticmethod
+    def read_listeners(listen: object, folder: Path) -> tuple[ManifestListener, ...]:
+        return tuple(ManifestListener.parsed(entry, folder) for entry in listen) if is_list(listen) else tuple([ManifestListener(str(listen), is_wrong=True)])
+
+    @staticmethod
     def event_window(entry: object) -> EventWindow:
         if is_mapping(entry) and "event" in entry:
             window: object = entry["window_ms"] if "window_ms" in entry else 0
@@ -177,6 +195,9 @@ class PluginManifest:
         limits = [window.window_ms for window in self.event_windows if window.event == event and window.window_ms > 0]
         return min(limits[0], ceiling_ms) if limits else ceiling_ms
 
+    def script_for_key(self, key: str, form: EventForm) -> str:
+        return next((listener.inside_script(form) for listener in self.listeners if listener.event == key and listener.script(form)), "")
+
     def project_folders(self, project_root: Path) -> tuple[Path, ...]:
         real_root = project_root.resolve()
         folders = ((real_root / entry).resolve() for entry in self.project_reads if not Path(entry).is_absolute())
@@ -192,4 +213,5 @@ class PluginManifest:
         entries += [("service", service.name, " ".join(service.command)) for service in self.services]
         entries += [("alias", alias.name, alias.line) for alias in self.aliases]
         entries += [("reads", "Project folder", folder) for folder in self.project_reads]
+        entries += [(form.value, listener.event, listener.script(form)) for listener in self.listeners for form in EventForm if listener.script(form)]
         return [{"category": category, "label": label, "command": command} for category, label, command in entries]

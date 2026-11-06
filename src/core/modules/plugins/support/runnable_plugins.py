@@ -1,3 +1,4 @@
+from core.base.refusal import Refusal
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.plugin_digest import PluginDigest
@@ -9,16 +10,26 @@ from core.modules.plugins.support.runnable_plugin import RunnablePlugin
 class RunnablePlugins:
     """The one place that decides which plugins may run now: the enabled ones, leaving out a plugin whose upgrade is
     under way, so its manifest is never read while the upgrade replaces its folder. Each comes with its manifest and
-    whether its files changed; only the plugins whose files are as installed run."""
+    whether its files changed; only the plugins whose files are as installed run. A manifest that cannot be read
+    is a fault of that plugin alone: it is left out here and reported by unreadable."""
 
     def __init__(self, plugins: PluginQuery, folders: PluginFolders) -> None:
         self.plugins, self.folders = plugins, folders
 
     def enabled(self) -> list[RunnablePlugin]:
-        return [self.runnable(plugin) for plugin in self.plugins.enabled_plugins() if not self.folders.is_upgrading(plugin.name)]
+        return [self.runnable(plugin) for plugin in self.plugins.enabled_plugins() if not self.folders.is_upgrading(plugin.name) and self.readable_manifest(plugin) is not None]
 
     def running(self) -> list[RunnablePlugin]:
         return [runnable for runnable in self.enabled() if not runnable.is_changed]
+
+    def unreadable(self) -> list[Plugin]:
+        return [plugin for plugin in self.plugins.enabled_plugins() if not self.folders.is_upgrading(plugin.name) and self.readable_manifest(plugin) is None]
+
+    def readable_manifest(self, plugin: Plugin) -> PluginManifest | None:
+        try:
+            return PluginManifest.read(self.folders.code(plugin.name))
+        except Refusal:
+            return None
 
     def runnable(self, plugin: Plugin) -> RunnablePlugin:
         code = self.folders.code(plugin.name)

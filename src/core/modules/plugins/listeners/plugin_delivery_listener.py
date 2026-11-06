@@ -12,6 +12,7 @@ from core.base.command.command import Command
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
+from core.base.refusal import Refusal
 from core.base.type_guards import is_mapping
 from core.modules.environments.models.environment import Environment
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
@@ -49,7 +50,11 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         plugin = self.queries.query(Plugin).filter(id=delivery.plugin_id).first()
         if plugin is None or not plugin.enabled:
             return
-        manifest = PluginManifest.read(self.folders.code(plugin.name))
+        try:
+            manifest = PluginManifest.read(self.folders.code(plugin.name))
+        except Refusal as refusal:
+            self.record(logged, delivery, RecordPluginFault(delivery.plugin_id, f"{refusal.reason} at {delivery.event}"))
+            return
         environment = self.queries.query(Environment).find(delivery.environment_id).name
         data: object = json.loads(delivery.data)
         event_data = {str(key): value for key, value in data.items()} if is_mapping(data) else {}

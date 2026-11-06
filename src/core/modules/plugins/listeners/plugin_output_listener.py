@@ -8,7 +8,9 @@ from core.base.cli.console import Console
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
+from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.base.query.queries import Queries
+from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.plugins.models.enums.plugin_card_tone import PluginCardTone
@@ -42,7 +44,12 @@ class PluginOutputListener(CommitListener[Created[PluginOutput]]):
     def handle(self, event: Created[PluginOutput], logged: LoggedEvent) -> None:
         row = event.row
         plugin = self.queries.query(Plugin).find(row.plugin_id)
-        manifest, answer, actor = PluginManifest.read(self.folders.code(plugin.name)), PluginAnswer.parsed(row.output), self.actors.actor(MODULE_NAME)
+        answer, actor = PluginAnswer.parsed(row.output), self.actors.actor(MODULE_NAME)
+        try:
+            manifest = PluginManifest.read(self.folders.code(plugin.name))
+        except Refusal as refusal:
+            self.bus.run(RecordPluginFault(plugin.id, refusal.reason), actor, cause_id=logged.id)
+            return
         is_main = self.queries.query(Agent).find(row.session_agent_id).role == AgentRole.MAIN
         for card in answer.cards if is_main else ():
             tone = card.tone or (manifest.card_tones[card.card_type] if card.card_type in manifest.card_tones else "")

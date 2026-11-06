@@ -3,10 +3,19 @@ from pathlib import Path
 
 import pytest
 
+from core.base.command.bus import Bus
+from core.modules.plugins.commands.deliver_plugin_event.deliver_plugin_event import DeliverPluginEvent
+from core.base.model.event_form import EventForm
+from core.modules.plugins.support.plugin_manifest import PluginManifest
+from core.modules.plugins.support.plugin_subscription import PluginSubscription
+from core.modules.plugins.support.plugin_subscriptions import PluginSubscriptions
+from core.testing.hook_samples import HookSamples
 from server.booting_work import BootingWork
+from tests.stories.core.modules.plugins.hooks import REMOVAL_SAMPLE
+from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.modules.plugins.support.event_modules import FORMER_NOTE_CREATED, NOTE_CREATED, NOTES, NOTES_GONE
 from tests.stories.core.modules.plugins.support.event_stories import (
-    PIN_CREATED, PIN_LINE, SECOND_JOB, TASK_CREATED, event_folder, event_page, event_plugin_story, expect_listed, install_event_plugin, plugin_data, plugin_page, plugin_row, script_calls)
+    EVENT_SCRIPTS, PIN_CREATED, PIN_LINE, SECOND_JOB, TASK_CREATED, event_folder, event_page, event_plugin_story, expect_listed, install_event_plugin, plugin_data, plugin_page, plugin_row, script_calls)
 from tests.stories.core.modules.plugins.support.plugin_samples import sample_plugin_folder
 
 PREVIEW = Path("src/core/modules/plugins/web/src/PluginInstallPreview.vue")
@@ -167,3 +176,48 @@ def test_s13_a_script_changed_on_disk_switches_the_plugin_off_and_the_chat_says_
     story.run_listeners()
     story.expect_text("message list --environment main", "The plugin events is switched off", actor=story.user)
     story.expect_rows(plugin_row(story).enabled is False, not plugin_data(story, "changed-script-ran").exists())
+
+
+def test_s13_a_script_changed_on_disk_switches_the_plugin_off_at_the_next_hook(new_story):
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "see.sh"})
+    script = story.home.folder / "plugins" / "events" / "see.sh"
+    script.write_text(script.read_text() + "\n")
+    story.hook("s-1", HookSamples.prompt("go on"))
+    story.expect_text("message list --environment main", "The plugin events is switched off", actor=story.user)
+    story.expect_rows(plugin_row(story).enabled is False)
+
+
+def test_a_manifest_edited_into_broken_json_faults_that_plugin_and_others_still_answer_the_hook(new_story):
+    story = install_runner(event_plugin_story(new_story, name="broken", program="see.sh", hears=["command_starting"]))
+    install_event_plugin(story, scripts={"refuse.sh": EVENT_SCRIPTS["refuse.sh"]}, name="answers", program="refuse.sh", hears=["command_starting"], holds=[{"event": "command_starting", "window_ms": 5000}])
+    story.run("setting set journal.core.plugins.hold_window_ms 5000 --project", actor=story.user)
+    (story.home.folder / "plugins" / "broken" / "journal-plugin.json").write_text("{ half written")
+    story.expect_hook_refusal("s-1", REMOVAL_SAMPLE, "[plugin answers] not today")
+    story.run_listeners()
+    page = plugin_page(story)
+    page.expect_fault("its manifest cannot be read", name="broken")
+    story.expect_rows(plugin_row(story, "broken").enabled is True)
+
+
+def test_a_delivery_for_a_manifest_edited_into_broken_json_is_a_fault_and_is_not_tried_again(new_story):
+    story = event_plugin_story(new_story, name="broken", program="see.sh", hears=["file_edited"])
+    story.container.get(Bus).run(DeliverPluginEvent(plugin_row(story, "broken").id, story.agent.id, "file_edited", "{}"), story.user, environment_id=1)
+    (story.home.folder / "plugins" / "broken" / "journal-plugin.json").write_text("{ half written")
+    story.run_listeners()
+    story.run_listeners()
+    story.expect_rows(not script_calls(story, "see.sh", "broken"))
+    plugin_page(story).expect_fault("not valid JSON", name="broken")
+
+
+def test_the_subscriptions_hold_each_form_of_a_real_key_and_leave_out_what_is_wrong(new_story):
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "refuse.sh", "commit": "../other/run.sh"}, {"event": TASK_CREATED, "guard": "see.sh", "listen": "pin.sh"}, {"event": WRONG_KEY, "commit": "see.sh"}, 42)
+    install_event_plugin(story, {"event": TASK_CREATED, "guard": "see.sh"}, {"event": BOOTING, "guard": "refuse.sh"}, name="second")
+    subscriptions = story.container.get(PluginSubscriptions)
+    story.expect_rows(subscriptions.scripts("task.create", EventForm.GUARD) == (PluginSubscription("events", "refuse.sh"), PluginSubscription("second", "see.sh")))
+    story.expect_rows(subscriptions.scripts("task.create", EventForm.LISTEN) == tuple([PluginSubscription("events", "pin.sh")]))
+    story.expect_rows(subscriptions.scripts("task.create", EventForm.COMMIT) == (), subscriptions.scripts("journal.booting", EventForm.GUARD) == ())
+    story.expect_rows("pin.sh" in plugin_manifest(story).files, "refuse.sh" in plugin_manifest(story).files, "../other/run.sh" not in plugin_manifest(story).files)
+
+
+def plugin_manifest(story) -> PluginManifest:
+    return PluginManifest.read(story.home.folder / "plugins" / "events")
