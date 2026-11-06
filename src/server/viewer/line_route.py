@@ -7,6 +7,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.cli.console import USAGE_CODE, Console
 from core.base.cli.line_run import LineRun
+from core.base.cli.subcommand_lookup import SubcommandLookup
 from core.base.cli.usage_error import UsageError
 from core.base.container import Container
 from core.base.database.database import Database
@@ -16,6 +17,7 @@ from core.base.journal_home import JournalHome
 from core.base.refusal import Refusal
 from core.base.caller.caller import Caller
 from core.base.registry.stale_registry_error import StaleRegistryError
+from core.base.subcommand.subcommand import Subcommand
 from core.modules.viewer.commands.support.window_lines import WindowLines
 from server.endpoints.cli_endpoint import CLI_LIMIT_SECONDS
 from server.listener_thread import ListenerThread
@@ -68,6 +70,22 @@ class LineRoute:
             return LineAnswer(USAGE_CODE, error=str(error))
         except ShareRefusal as refusal:
             return LineAnswer(REFUSED_CODE, error=refusal.reason)
+
+    def read_lines(self) -> list[str]:
+        """Every line that only reads, as noun and verb, by the check WindowLines makes of a parsed line."""
+        container = self.line_run.synced(None, None)
+        try:
+            lookup = container.get(SubcommandLookup)
+            return [f"{noun} {verb}" for noun in lookup.cli_names() for verb in lookup.names(noun) if not isinstance(lookup.subcommand(noun, verb), Subcommand)]
+        finally:
+            container.get(Database).close()
+
+    def report_repeated_lines(self, window: str, line: str, count: int) -> None:
+        container = self.line_run.synced(None, None)
+        try:
+            container.get(RequestWatch).report_repeated_lines(window, line, count)
+        finally:
+            container.get(Database).close()
 
     def run_line(self, container: Container, window: str, argv: list[str], person_id: int, environment: str, shared: SharedRow | None) -> LineAnswer:
         person, stream = Actor(person_id, ActorType.USER), io.StringIO()

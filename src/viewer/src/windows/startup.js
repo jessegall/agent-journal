@@ -11,21 +11,8 @@ import {WindowSubscriptions} from "./windowSubscriptions.js";
 const SHELL_WINDOW = "viewer.shell";
 const PHONE_WORKER = "/viewer/phone-sw.js";
 
-// reads that several parts of a page ask for at its start are asked once: the second asker takes the answer of the first, which is
-// kept only while it is on its way
-const SHARED_READS = new Set(["suite current"]);
-
 // a page's reads and runs through the shell's own window
-export const shellReader = (environment) => {
-    const asking = new Map();
-    return (line) => {
-        const key = Array.isArray(line) ? line.slice(0, 2).join(" ") : "";
-        if (!SHARED_READS.has(key)) return lineResult(SHELL_WINDOW, line, environment);
-        const sent = JSON.stringify(line);
-        if (!asking.has(sent)) asking.set(sent, lineResult(SHELL_WINDOW, line, environment).finally(() => asking.delete(sent)));
-        return asking.get(sent);
-    };
-};
+export const shellReader = (environment) => (line) => lineResult(SHELL_WINDOW, line, environment);
 
 // who the cookie acts for, as GET /api/session answers it: its type (person, phone or share) and the person; the page start and the
 // windows both ask, so the answer is kept for the length of the page

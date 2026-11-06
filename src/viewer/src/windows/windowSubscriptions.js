@@ -1,4 +1,5 @@
 import {shallowRef} from "vue";
+import {transport} from "../api/transport.js";
 
 // every follow of every window, kept by the host: a hidden window's events are held back and it hears one refresh
 // when it shows again, and the host stops a window's follows when it takes the window down or mounts it again
@@ -32,6 +33,7 @@ export class WindowSubscriptions {
     }
 
     dispatch(event) {
+        transport.readsOutdated();
         for (const follow of this.follows) {
             if (!follow.patterns.some((pattern) => matches(pattern, event.event))) continue;
             if (follow.visible()) follow.heard(event);

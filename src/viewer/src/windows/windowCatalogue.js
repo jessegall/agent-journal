@@ -1,5 +1,5 @@
-import {checkServer} from "../state/updating.js";
 import {transport} from "../api/transport.js";
+import {browserEvents} from "./browserEvents.js";
 import {computed, shallowRef, toValue, watch} from "vue";
 import {withFamilyOptions} from "./chatOptions.js";
 import {browserCopy} from "./paneLayout.js";
@@ -95,43 +95,18 @@ export async function fetchWindowCatalogue(environment) {
     return await response.json();
 }
 
-// the stream resumes by itself from the last event it had; a break makes the page ask whether the server went away
+// a page's events, through the stream the tabs of the browser share
 export function followEvents(environment, heard, patterns = ["*.*"]) {
-    let source = null;
-    let cursor = null;
-    let active = "";
-    let requested = "";
-
-    function open() {
-        if (source && (active === requested || cursor === null)) return;
-        source?.close();
-        const query = new URLSearchParams({environment});
-        for (const pattern of requested.split("\n")) query.append("follow", pattern);
-        if (cursor !== null) query.set("cursor", String(cursor));
-        active = requested;
-        const opened = transport.stream(`/api/events?${query}`);
-        source = opened;
-        opened.addEventListener("cursor", (message) => {
-            if (source !== opened) return;
-            cursor = JSON.parse(message.data).id;
-            open();
-        });
-        opened.onmessage = (message) => {
-            if (source !== opened) return;
-            const event = JSON.parse(message.data);
-            cursor = event.id;
-            heard(event);
-        };
-        opened.onerror = checkServer;
-    }
-
+    const follower = {environment, heard, patterns: []};
+    const events = browserEvents();
+    let unfollow = null;
     const stop = watch(() => [...new Set(toValue(patterns))].sort().join("\n"), (next) => {
-        requested = next;
-        open();
+        follower.patterns = next.split("\n");
+        if (unfollow) events.tellWanted();
+        else unfollow = events.follow(follower);
     }, {immediate: true});
     return () => {
         stop();
-        source?.close();
-        source = null;
+        unfollow();
     };
 }
