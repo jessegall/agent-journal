@@ -37,10 +37,10 @@ class KeptWorkerTasks:
 
     def checked_cut(self, worker: Agent, task_ids: tuple[int, ...]) -> tuple[Task, ...]:
         tasks = tuple(self.queries.query(Task).find_many(list(task_ids)))
-        if tasks[0].state is TaskState.BLOCKED and self.waits.only_on_tasks(tasks[0].id):
+        if tasks[0].state is TaskState.BLOCKED and self.waits.has_only_task_waits(tasks[0].id):
             raise Refusal(f"task {tasks[0].id} waits on an open task", "send it when that one is done")
         for task in tasks:
-            if task.state is not TaskState.OPEN and not (task.state is TaskState.BLOCKED and self.waits.only_on_tasks(task.id)):
+            if task.state is not TaskState.OPEN and not (task.state is TaskState.BLOCKED and self.waits.has_only_task_waits(task.id)):
                 raise Refusal(f"task {task.id} is {task.state.value}", "a worker takes an open task")
         worktree = self.worktrees.worker_worktree(worker.id)
         if worktree is not None:

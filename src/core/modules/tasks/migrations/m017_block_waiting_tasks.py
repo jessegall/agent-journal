@@ -7,7 +7,7 @@ OPEN_DEPENDENCIES = """SELECT task_dependencies.task_id, task_dependencies.depen
     AND NOT (blocker.state IN ('started', 'testing') AND blocker.delegated_to IS NOT NULL AND blocker.delegated_to = waiting.delegated_to)"""
 
 
-class SettleWaitingTasksMigration(Migration):
+class BlockWaitingTasksMigration(Migration):
     """Moves every open task that waits on an open task to blocked, with a wait on that task, so it opens by itself."""
 
     number = 17

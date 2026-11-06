@@ -2,7 +2,7 @@ import pytest
 
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.modules.tasks.migrations.m017_settle_waiting_tasks import SettleWaitingTasksMigration
+from core.modules.tasks.migrations.m017_block_waiting_tasks import BlockWaitingTasksMigration
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from core.testing.story_fixture import StoryFixture
 
@@ -85,7 +85,7 @@ def test_the_migration_blocks_each_open_task_that_waits_on_an_open_task(new_stor
     database = story.container.get(Database)
     database.update(Statement("DELETE FROM task_waits"))
     database.update(Statement("UPDATE tasks SET state = 'open', reason = '' WHERE id = 1"))
-    for statement in SettleWaitingTasksMigration.statements:
+    for statement in BlockWaitingTasksMigration.statements:
         database.update(Statement(statement))
     story.expect_rows(state_of(story, 1) == "blocked")
     story.expect_success('task cancel 2 --reason "Not needed"', actor=story.agent)

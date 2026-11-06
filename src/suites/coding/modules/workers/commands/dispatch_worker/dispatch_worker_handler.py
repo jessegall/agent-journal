@@ -61,7 +61,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     def dispatched(self, command: DispatchWorker, tasks: list[Task], context: Context) -> WorkerLaunch:
         task = tasks[0]
         for listed in tasks:
-            if not self.can_be_queued(listed, listed is task):
+            if not self.queueable(listed, listed is task):
                 raise Refusal(f"task {listed.id} is {listed.state.value}", "a worker is dispatched to an open task")
         environment = self.environments.find(task.environment_id)
         caller = self.rows.find(Agent, context.actor.id)
@@ -90,8 +90,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             raise
         return WorkerLaunch(opened.worker, worktree, self.worker_command.command(opened.worker, worktree, environment, task))
 
-    def can_be_queued(self, task: Task, is_first: bool) -> bool:
-        return task.state is TaskState.OPEN or (not is_first and task.state is TaskState.BLOCKED and self.waits.only_on_tasks(task.id))
+    def queueable(self, task: Task, is_first: bool) -> bool:
+        return task.state is TaskState.OPEN or (not is_first and task.state is TaskState.BLOCKED and self.waits.has_only_task_waits(task.id))
 
     def check_idle(self, folder: str, request: WorkerRequest, tasks: list[Task]) -> None:
         idle = self.available_workers.first(folder, request)

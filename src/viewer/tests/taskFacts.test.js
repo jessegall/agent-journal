@@ -46,3 +46,15 @@ test("a task nobody holds shows no agent and no note", () => {
     expect(element.querySelector("[data-task-agent]")).toBeNull();
     expect(element.querySelector("[data-task-held-by]")).toBeNull();
 });
+
+test("the plan of a task is a link that opens it, and a task in no plan says so", () => {
+    const inPlan = document.createElement("div");
+    createApp({render: () => h(TaskFacts, {task: {id: 7, state: "open", priority: 200}, place: {plan_id: 1097, plan_title: "One read"}})}).mount(inPlan);
+    const link = inPlan.querySelector("[data-task-plan-link]");
+    expect(link.textContent).toBe("Plan 1097: One read");
+    link.click();
+    expect(window.location.hash + window.location.search + window.location.pathname).toContain("1097");
+    const noPlan = mountedFor({state: "open"});
+    expect(noPlan.querySelector("[data-task-plan-link]")).toBeNull();
+    expect(noPlan.textContent).toContain("Not in a plan");
+});

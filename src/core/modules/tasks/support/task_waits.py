@@ -31,7 +31,7 @@ class TaskWaits:
             self.repository.save_change(task, task.moved(TaskLifecycle.unblock), context)
             self.notify_agents(task, context)
 
-    def only_on_tasks(self, task_id: int) -> bool:
+    def has_only_task_waits(self, task_id: int) -> bool:
         return all(wait.target.startswith(TASK_TARGET_PREFIX) for wait in self.pending_task(task_id))
 
     def notify_agents(self, task: Task, context: Context) -> None:
