@@ -73,6 +73,7 @@ class ViewerWorkload:
                             "windows/windowContext.js", "windows/windowSubscriptions.js")))
         definition["build"] = sha256(b"".join(FileAccess.shared().binary(path) for path in source_files)).hexdigest()
         definition["dataset"] = sha256(json.dumps(asdict(self), sort_keys=True).encode()).hexdigest()
+        definition["counter_scope"] = "/api/line and /api/lines; joined callers entering JoinedRead; receipt HTTP excluded"
         return definition
 
 
@@ -160,6 +161,7 @@ class ReadMeasurement:
                            "tables": dict(self.points.tables), "statements": dict(self.points.statements),
                            "update_statements": dict(self.points.update_statements)}
         value["database_points"] = self.points.total
+        value["database_scope"] = "command containers opened through Database.opened; request-log bookkeeping excluded"
         value["file_bytes_kind"] = "logical bytes through FileAccess and bounded output byte ranges, including cache hits"
         value["overhead_scope"] = "callbacks and query-plan collection; developer logging remains enabled"
         return value
