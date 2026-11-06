@@ -2,6 +2,7 @@ from core.base.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.database.kept_rows import KeptRows
 from core.base.query.queries import Queries
+from core.base.query.conditions.among import Among
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
@@ -9,14 +10,20 @@ from core.modules.messages.models.enums.work_source_origin import WorkSourceOrig
 from core.modules.messages.models.message import Message
 from core.modules.messages.models.message_work_source import MessageWorkSource
 from core.modules.messages.queries.message_query import MessageQuery
+from core.modules.messages.support.work_source_snapshot import WorkSourceSnapshot
+from core.modules.messages.support.assigned_work_sources import AssignedWorkSources
+from core.modules.drivers.support.helper_job_rows import HelperJobRows
+from core.modules.agents.support.agent_rows import AgentRows
 
 
 class WorkSources:
     """Selects addressed person requests without changing delivery state."""
 
-    def __init__(self, queries: Queries, messages: MessageQuery, repository: Repository, kept: KeptRows) -> None:
+    def __init__(self, queries: Queries, messages: MessageQuery, repository: Repository, kept: KeptRows,
+                 jobs: HelperJobRows, assignments: AssignedWorkSources, agents: AgentRows) -> None:
         self.queries, self.messages, self.repository = queries, messages, repository
         self.kept = kept
+        self.jobs, self.assignments, self.agents = jobs, assignments, agents
 
     def current(self, context: Context) -> MessageWorkSource | None:
         return self.kept.read("message_work_sources",
@@ -68,3 +75,31 @@ class WorkSources:
         if selected.used:
             return
         self.repository.update(selected, context, used=True, provisional=False)
+
+    def for_work(self, context: Context) -> WorkSourceSnapshot | None:
+        if context.actor.type is not ActorType.AGENT or self.agents.find(context.actor.id).ended_at is not None:
+            return None
+        assigned = self.assignments.current(context)
+        if assigned is not None:
+            return assigned
+        job = self.jobs.open_job(context.actor.id)
+        if job is not None:
+            return WorkSourceSnapshot(job.source_message_id, job.source_version, job.environment_id, job.source_unavailable)
+        selected = self.current(context)
+        if selected is None or selected.message_id is None:
+            return None
+        return WorkSourceSnapshot(selected.message_id, selected.version, selected.environment_id)
+
+    def snapshot(self, context: Context) -> WorkSourceSnapshot:
+        if context.environment_id is None:
+            raise Refusal("a request snapshot needs one environment")
+        return self.for_work(context) or WorkSourceSnapshot(None, 0, context.environment_id)
+
+    def is_available(self, source: WorkSourceSnapshot, context: Context) -> bool:
+        return not source.unavailable and source.message_id is not None and source.environment_id == context.environment_id and self.messages.filter(id=source.message_id).matching(Among("type", PERSON_MESSAGE_TYPES)).exists()
+
+    def use_snapshot(self, source: WorkSourceSnapshot, context: Context) -> None:
+        selected = self.current(context)
+        if selected is None or selected.message_id != source.message_id or selected.version != source.version:
+            return
+        self.use(selected, context)

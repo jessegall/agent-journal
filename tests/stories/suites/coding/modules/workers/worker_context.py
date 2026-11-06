@@ -12,6 +12,8 @@ from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.documents.support.trail_fixtures import IMAGE_BYTES, SelectedTrail, Trail, feature, pending, send_picture
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
+from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from core.base.driver.tool_type import ToolType
 
 
 @dataclass(frozen=True)
@@ -44,7 +46,9 @@ def assigned_worker(worker_trail):
 
 def advance(trail: WorkerTrail, worker: Actor) -> None:
     trail.repository.changed(worker.id, "cart.py", "TOTAL = 2\n")
-    trail.story.expect_success('proof make 1 "cart.py:1, assignment completed"', actor=worker)
+    worktree = trail.story.container.get(WorktreeQuery).worker_worktree(worker.id)
+    assert worktree is not None
+    trail.story.expect_success(f'proof make 1 "cart.py:1, assignment completed" --task {worktree.task_id}', actor=worker)
     trail.story.expect_success("worker next", actor=worker)
 
 
@@ -64,7 +68,6 @@ def test_worker_context_excludes_unrelated_messages(assigned_worker):
     feature("Unrelated confidential message" not in result.output_text, result.output_text)
 
 
-@pending(6887)
 def test_worker_queued_tasks_use_their_own_sources(worker_trail):
     worker_trail.switch(1)
     worker_trail.make_task("Second queued assignment")
@@ -78,6 +81,56 @@ def test_worker_queued_tasks_use_their_own_sources(worker_trail):
     worker_trail.story.expect_success('task make "From second job" --environment main', actor=worker)
     worker_trail.expect_link("message:1", "task:4", "about")
     worker_trail.expect_no_link("message:2", "task:4")
+
+
+def test_worker_followup_changes_source_only_after_delivery(assigned_worker):
+    trail, worker = assigned_worker.trail, assigned_worker.worker
+    trail.switch(1)
+    trail.command(f'worker send {worker.id} "Handle the original request next"')
+    trail.story.expect_success("task overview 1", actor=worker)
+    trail.story.expect_success('task make "Work already running" --environment main', actor=worker)
+    trail.expect_link("message:2", "task:2", "about")
+    reply = trail.story.hook(worker_session(trail.story, worker), HookSamples.tool_use("Read", ToolType.READ, [], None))
+    assert any("Handle the original request next" in line for line in reply.lines), reply.lines
+    trail.story.expect_success('task make "Work from delivered followup" --environment main', actor=worker)
+    trail.expect_link("message:1", "task:3", "about")
+    trail.expect_no_link("message:2", "task:3")
+
+
+def test_resumed_worker_does_not_keep_the_old_job_source(assigned_worker):
+    trail, worker = assigned_worker.trail, assigned_worker.worker
+    trail.story.expect_success("task overview 1", actor=worker)
+    trail.story.expect_success('task make "First sourced worker output" --environment main', actor=worker)
+    trail.expect_link("message:2", "task:2", "about")
+    trail.command(f"agent end {worker.id}")
+    trail.command("message clear-work-source")
+    launcher = FakeLauncher(trail.story.home.socket("launcher"))
+    trail.command(f'worker send {worker.id} "A separate unsourced job"')
+    trail.story.run_listeners()
+    launcher.expect_started(worker.id, worker_session(trail.story, worker), trail.repository.worktree_folder(worker.id))
+    trail.story.home.socket("launcher").unlink()
+    trail.story.hook(worker_session(trail.story, worker), HookSamples.session_start())
+    trail.story.expect_success("task overview 1", actor=worker)
+    trail.story.expect_success('task make "Unsourced resumed output" --environment main', actor=worker)
+    trail.expect_no_link("message:2", "task:3")
+
+
+def test_deleted_worker_source_is_not_a_reused_message_number(worker_trail):
+    trail = worker_trail
+    original = trail.person("messages.chat", "message", "send", "Temporary worker request")
+    trail.switch(original["id"])
+    worker = dispatch(trail)
+    trail.person("messages.chat", "message", "delete", str(original["id"]))
+    replacement = trail.person("messages.chat", "message", "send", "A different worker request")
+    assert replacement["id"] == original["id"]
+    trail.switch(replacement["id"])
+    trail.story.expect_success("task overview 1", actor=worker)
+    trail.story.expect_success('task make "Old unavailable assignment output" --environment main', actor=worker)
+    trail.expect_no_link(f'message:{replacement["id"]}', "task:2")
+    trail.command(f'worker send {worker.id} "Now handle the replacement request"')
+    trail.story.hook(worker_session(trail.story, worker), HookSamples.tool_use("Read", ToolType.READ, [], None))
+    trail.story.expect_success('task make "New assignment output" --environment main', actor=worker)
+    trail.expect_link(f'message:{replacement["id"]}', "task:3", "about")
 
 
 @pending(6892)

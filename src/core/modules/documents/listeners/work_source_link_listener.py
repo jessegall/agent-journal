@@ -41,13 +41,13 @@ class WorkSourceLinkListener(SaveListener[Created[Task] | Updated[Task] | Create
             return
         if self.library.is_copy(row.model_name, row.id):
             return
-        selected = self.sources.current(context)
-        if selected is None or selected.message_id is None:
+        selected = self.sources.for_work(context)
+        if selected is None or selected.message_id is None or not self.sources.is_available(selected, context):
             return
         relations = (LinkType.SUBJECT,) if isinstance(event, Created) else (LinkType.SUBJECT, LinkType.EDITED)
         self.links.save_many(tuple(Link(creator_id=context.actor.id, source_model=Message.model_name, source_id=selected.message_id,
                                         target_model=row.model_name, target_id=row.id, link_type=relation) for relation in relations), context)
-        self.sources.use(selected, context)
+        self.sources.use_snapshot(selected, context)
 
     def is_direct(self, row: Model, context: Context) -> bool:
         command = context.command

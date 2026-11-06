@@ -24,6 +24,8 @@ from core.modules.helpers.commands.helper_availability.helper_availability_subco
 from core.modules.helpers.rules.helper_report_rule import HelperReportRule
 from core.modules.helpers.rules.unstarted_helper_rule import UnstartedHelperRule
 from core.modules.helpers.support.helper_settings import HELPER_SETTINGS
+from core.modules.helpers.listeners.helper_job_source_listener import HelperJobSourceListener
+from core.modules.helpers.listeners.deleted_helper_source_listener import DeletedHelperSourceListener
 
 
 class HelpersModule(Module):
@@ -41,5 +43,5 @@ class HelpersModule(Module):
     nudges = HELPER_NUDGES
     skills = [SkillDeclaration("journal-helpers", "Start a helper for a bounded read, send it more, stop it, and read its report; read it before the first helper command of a session", keywords=["helper start"])]
     subcommands = [StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand, HelperAvailabilitySubcommand]
-    listeners = [NewMainHelpersListener, HelperResumeListener, HelperProgramListener, HelperEndedListener, HelperJobMarkListener]
+    listeners = [NewMainHelpersListener, HelperResumeListener, HelperProgramListener, HelperEndedListener, HelperJobMarkListener, HelperJobSourceListener, DeletedHelperSourceListener]
     driver_rules = [UnstartedHelperRule, HelperReportRule]

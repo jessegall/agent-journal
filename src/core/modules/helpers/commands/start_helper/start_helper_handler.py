@@ -1,4 +1,5 @@
 from uuid import uuid4
+from dataclasses import replace
 
 from core.base.command.bus import Bus
 from core.base.command.context import Context
@@ -19,6 +20,7 @@ from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.base.provider.providers import Providers
 from core.modules.profiles.commands.count_profile_use.count_profile_use import CountProfileUse
 from core.modules.profiles.support.profile_files import ProfileFiles
+from core.modules.messages.support.work_sources import WorkSources
 
 BRIEF_LIMIT_CHARACTERS = 100000
 SHORT_BRIEF_CHARACTERS = 200
@@ -29,9 +31,10 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
 
     command = StartHelper
 
-    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, launcher: LauncherLink, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers) -> None:
+    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, launcher: LauncherLink, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers, sources: WorkSources) -> None:
         self.profiles, self.types, self.limits, self.launcher, self.bus, self.repository, self.reuse = profiles, types, limits, launcher, bus, repository, reuse
         self.programs, self.folders, self.providers = programs, folders, providers
+        self.sources = sources
 
     def handle(self, command: StartHelper, context: Context) -> Agent:
         if len(command.brief) > BRIEF_LIMIT_CHARACTERS:
@@ -50,9 +53,13 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
         model = self.limits.checked_model(program, command.program_model or self.providers.provider(program).profile_model(profile))
         self.programs.checked(program, self.folders.folder(parent))
         start = StartAgent(str(uuid4()), program, agent_type.key, parent.id, program_model=model, profile=profile.name, given_name=command.given_name, access=profile.access or agent_type.access)
+        source_context = replace(context, environment_id=parent.environment_id)
+        source = self.sources.snapshot(source_context)
         helper = self.bus.dispatch(start, context)
         self.repository.save(HelperJob(session_agent_id=parent.id, creator_id=context.actor.id, tool_key=helper.session, helper_id=helper.id, profile=profile.name, program_model=model,
-                                       description=command.given_name or profile.name, brief=command.brief, instruction=command.brief[:SHORT_BRIEF_CHARACTERS]), context)
+                                       description=command.given_name or profile.name, brief=command.brief, instruction=command.brief[:SHORT_BRIEF_CHARACTERS],
+                                       source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp), context)
+        self.sources.use_snapshot(source, source_context)
         self.bus.dispatch(CountProfileUse(profile.name), context)
         return helper
 
