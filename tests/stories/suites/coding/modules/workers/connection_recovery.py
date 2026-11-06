@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.support.worker_job import SILENT_AGENT_SOURCE
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import timedelta
@@ -262,3 +263,21 @@ def test_reconnection_wakes_each_silent_worker_with_work(recovery):
 
 def test_a_second_wake_during_a_session_launch_does_not_start_another_process(nested_recovery):
     nested_recovery.story.expect_rows(len(nested_recovery.launches) == 1)
+
+
+def test_a_silent_main_agent_with_open_tasks_is_woken_under_auto_mode(recovery):
+    story = recovery.story
+    story.expect_success('task make "For later" --environment main', actor=story.agent)
+    recovery.advance(SILENT_SECONDS + 1)
+    recovery.tick()
+    story.expect_rows(len(recovery.lines(story.agent.id, SILENT_AGENT_SOURCE)) == 1)
+
+
+def test_a_silent_main_agent_is_not_woken_for_open_tasks_with_auto_mode_off(recovery):
+    story = recovery.story
+    story.expect_success("setting set journal.suites.coding.auto-mode off --environment main")
+    story.expect_success('task make "For later" --environment main', actor=story.agent)
+    recovery.advance(SILENT_SECONDS + 1)
+    recovery.tick()
+    story.expect_rows(recovery.lines(story.agent.id, SILENT_AGENT_SOURCE) == [])
+

@@ -23,6 +23,7 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.waits.models.wait import Wait
 from core.modules.waits.models.enums.wait_state import WaitState
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 from suites.coding.modules.workers.commands.send_silent_agent_lines.send_silent_agent_lines import SendSilentAgentLines
 from suites.coding.modules.workers.commands.report_silent_agent.report_silent_agent import ReportSilentAgent
 from suites.coding.modules.workers.models.proof import Proof
@@ -64,7 +65,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
             lines[line.session_agent_id].append(line)
         span = self.settings.minutes(SILENT_AGENT_MINUTES)
         for agent in agents:
-            has_work = agent.id in working or (agent.role == CodingAgentRole.MAIN and bool(tasks))
+            has_work = agent.id in working or (agent.role == CodingAgentRole.MAIN and bool(tasks) and self.settings.flag(AUTO_MODE_SETTING))
             activity = activities[agent.id]
             if not has_work or agent.id in excluded or agent.paused_at is not None or not activity.is_inactive(context.timestamp, span.count):
                 continue
