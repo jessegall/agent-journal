@@ -15,6 +15,7 @@ class RemovePluginHandler(Handler[RemovePlugin, str]):
     the person removes."""
 
     command = RemovePlugin
+    runs_once = True
 
     def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_files: PluginSkillFiles, repository: Repository, readers: PluginReaders) -> None:
         self.plugins, self.folders, self.skill_files, self.repository, self.readers = plugins, folders, skill_files, repository, readers
