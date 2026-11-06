@@ -1194,7 +1194,9 @@ class Uc {
       return (r = o.signal) == null ? void 0 : r.addEventListener("abort", s[l], { once: !0 });
     });
     try {
-      const o = await Ae.sent(Hc, Vs({ lines: t.map((r) => r.body) }, n.signal), t.map((r) => Gs(r.body, st)), Us), { answers: l } = await o.json();
+      const o = await Ae.sent(Hc, Vs({ lines: t.map((r) => r.body) }, n.signal), t.map((r) => Gs(r.body, st)), Us);
+      if (!o.ok) throw new Error(`the journal answered ${o.status} to a batch of lines`);
+      const { answers: l } = await o.json();
       t.forEach((r, i) => r.resolve(l[i]));
     } catch (o) {
       n.signal.aborted ? (this.waiting.push(...a), a.size && this.sendSoon()) : o.name === "TimeoutError" ? t.forEach((l) => Ae.whenFree(() => this.readAlone(l))) : t.forEach((l) => l.reject(o));
@@ -11146,7 +11148,7 @@ function D8(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const P8 = ci(() => import("./VoiceFigure-D82Czbkc.js").then((e) => e.V)), j8 = "1.2.0", q8 = "3.5";
+const P8 = ci(() => import("./VoiceFigure-ueznOh-l.js").then((e) => e.V)), j8 = "1.2.0", q8 = "3.5";
 export {
   cd as $,
   Se as A,
