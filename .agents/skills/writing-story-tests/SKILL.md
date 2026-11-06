@@ -1,11 +1,11 @@
 ---
 name: writing-story-tests
-description: Write stories before changing agent behaviour, using this checkout's real commands, hooks and StoryFixture API.
+description: Write stories of agent behaviour, using this checkout's real commands, hooks and StoryFixture API.
 ---
 
 # Writing story tests
 
-Write the behaviour as stories before implementing it. Cover the ordinary case, the relevant row states and callers,
+Write the behaviour as stories. Cover the ordinary case, the relevant row states and callers,
 refusals and recovery. Put related cases in one file under `tests/stories/core/modules/<module>/` or
 `tests/stories/suites/coding/modules/<module>/`, following the neighbouring files.
 
@@ -42,13 +42,13 @@ serves all stories. Unit tests cover individual building blocks, rather than rep
 
 ## Run the affected stories
 
-Run the new file and confirm its new cases fail for the expected missing behaviour:
+Run the file and the affected neighbouring files when the behaviour is written:
 
 ```sh
 .venv/bin/python -m pytest tests/stories/suites/coding/modules/workers/status.py -q
 ```
 
-Implement the behaviour, then run that file and the affected neighbouring files. After a failure, run the failed
+After a failure, run the failed
 tests by name and the files changed since. Workers run only the tests of their changes; the main agent owns any
 required full-suite run. The `journal suite` command is unavailable in this checkout.
 

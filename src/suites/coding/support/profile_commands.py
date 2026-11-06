@@ -27,7 +27,7 @@ PLAN_COMMANDS = (
     "journal plan place, journal plan ready, journal plan review, journal plan reviewed, journal plan start, journal plan block, journal plan unblock, "
     "journal plan cancel, journal plan close, journal plan delete, journal plan comment and journal plan comments. "
     "Write the plan thoroughly: split each phase into its real steps and file one task per step a person could check, "
-    "with a brief that can be carried out alone: the files, what to reuse, the stories to write first, the tests by name and the proof. "
+    "with a brief that can be carried out alone: the files, what to reuse, the stories to write, the tests by name and the proof. "
     "A phase with one task needs a reason when you run journal plan ready: --skip-guard plans.one-task-phase --skip-reason \"<why>\". "
     "Read the skill journal-planning before you make a plan or a phase, and the skill journal-plan-review-applying before you work a report of reviews into a plan. "
     "Building a plan starts for you when you make a plan, and you may run journal plan edit, journal phase edit, journal task edit and journal plan ready on a plan you made. "
