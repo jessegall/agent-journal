@@ -62,7 +62,7 @@ watch([show, words, filters], () => {
 });
 context.follow(["agent.*", "task.*", ...context.sources.flatMap((source) => source.events)], coalesced(load, READ_RATES.pageOfAgents));
 load();
-const factsOf = (row) => row.facts ?? facts.value.find((fact) => fact.id === row.id) ?? null;
+const factsOf = (row) => facts.value.find((fact) => fact.id === row.id) ?? row.facts ?? null;
 const shown = rows;
 // a search is what makes an empty list mean nothing matches; the tab alone does not
 const searching = computed(() => Boolean(words.value.trim()) || filterCount.value > 0);

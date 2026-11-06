@@ -40,3 +40,5 @@ class AgentListingState:
     state: AgentListState
     resume_reason: str | None
     facts: Mapping[str, object]
+    job_command: tuple[str, ...]
+    job_task_flag: str

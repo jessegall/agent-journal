@@ -5,6 +5,7 @@ import InformationBar from "../../../../../viewer/src/shell/InformationBar.vue";
 import AgentCommand from "./AgentCommand.vue";
 import AgentTaskGroup from "./AgentTaskGroup.vue";
 import TranscriptRows from "./TranscriptRows.vue";
+import AgentActions from "./AgentActions.vue";
 
 // one agent as a calm two lines: the profile and given name with its time, then the provider, model, type and task count; a click opens the card on
 // its number, usage, tasks, transcript, files and terminal;
@@ -54,8 +55,13 @@ const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(s
 // a running helper's card names the command it runs, as the foot of the chat does for the main agent, or says plainly that it ran none
 const context = useWindow();
 const isReader = computed(() => props.row.access === "read-only");
-const cardTabs = computed(() => isReader.value ? context.tabs.filter((item) => ["transcript", "terminal"].includes(item.key)) : context.tabs);
+const retired = computed(() => Boolean(props.row.retired_at) || props.row.state === "retired");
+const cardTabs = computed(() => {
+    if (retired.value) return context.tabs.filter((item) => item.key === "transcript");
+    return isReader.value ? context.tabs.filter((item) => ["transcript", "terminal"].includes(item.key)) : context.tabs;
+});
 const tab = ref(cardTabs.value[0]);
+watch(cardTabs, (tabs) => { if (!tabs.some((item) => item.key === tab.value?.key)) tab.value = tabs[0]; });
 watch(() => props.open, (open) => { if (open) tab.value = cardTabs.value[0]; });
 const components = Object.fromEntries(context.tabs.filter((tab) => tab.component).map((tab) => [tab.key, defineAsyncComponent(() => loadWindowComponent(tab.component))]));
 const isRunningHelper = computed(() => props.row.role === "helper" && !props.row.ended_at);
@@ -113,6 +119,7 @@ readCommand();
         <template v-if="report"><p class="agent-summary" data-agent-report><span>Last report: </span>{{ report }}</p></template>
         <template v-if="row.retirement_reason"><p class="agent-summary" data-agent-retirement-reason>Retirement reason: {{ row.retirement_reason }}</p></template>
         <template v-if="row.resume_reason"><p class="agent-summary" data-agent-resume-reason>{{ row.resume_reason }}</p></template>
+        <AgentActions :row="row" />
         <template v-if="!open && (showsCommand || (totalCount && tasksPerHour))">
             <span :class="['agent-foot', {'agent-work-start': !job && !planTask}]" data-agent-foot>
                 <template v-if="showsCommand">
@@ -156,7 +163,7 @@ readCommand();
                                 <p class="agent-label" data-agent-no-job>No job recorded</p>
                             </template>
                             </template>
-                            <TranscriptRows :line="`agent transcript ${row.id}`" :agent="isReader ? (isRunningHelper ? row.id : null) : row.id" :helper="isReader && isRunningHelper" padding="0" />
+                            <TranscriptRows :line="`agent transcript ${row.id}`" padding="0" />
                         </template>
                         <template v-for="(component, key) in components" :key="key" #[key]>
                             <component :is="component" :agent="row.id" />

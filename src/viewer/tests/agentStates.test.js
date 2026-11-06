@@ -30,6 +30,12 @@ test("retired agents show their reason and the upgrade count", async () => {
     expect(element.querySelector("[data-agents-upgrade]").textContent).toBe("Retired during the upgrade: 12");
 });
 
+test("live usage facts update a card while its page still holds earlier facts", async () => {
+    const helper = {...AGENTS[1], facts: {tasks: [], job_returned: "Earlier report"}};
+    const element = await mounted(Agents, context({"agent cards --options": agentFilterOptions, "agent cards": page([helper]), "usage agents --closed": page([{id: helper.id, tasks: [], job_returned: "Latest report"}])}));
+    expect(cardOf(element, helper.id).querySelector("[data-agent-report]").textContent).toContain("Latest report");
+});
+
 test("the server supplies the agent tabs and the chosen state is sent back", async () => {
     const held = context({"agent cards --options": agentFilterOptions, "agent cards": page([]), "usage agents --closed": page([])});
     const element = await mounted(Agents, held);

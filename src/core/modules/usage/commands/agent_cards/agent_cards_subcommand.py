@@ -6,6 +6,7 @@ from core.modules.profiles.support.profile_files import ProfileFiles
 from core.base.agent_role import AgentRole
 from core.base.caller.caller import Caller
 from core.base.provider.providers import Providers
+from core.base.registry.registry import Registry
 from core.modules.agents.models.agent import Agent, UPGRADE_RETIREMENT_REASON
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.usage.commands.usage_agents.usage_agents_subcommand import UsageAgentsSubcommand
@@ -34,10 +35,11 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
     name = "cards"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, activity: AgentActivity, profiles: ProfileFiles, providers: Providers, folders: AgentFolders, usage: UsageAgentsSubcommand) -> None:
+    def __init__(self, queries: Queries, activity: AgentActivity, profiles: ProfileFiles, providers: Providers, folders: AgentFolders, usage: UsageAgentsSubcommand, registry: Registry) -> None:
         self.queries, self.activity, self.profiles = queries, activity, profiles
         self.providers, self.folders = providers, folders
         self.usage = usage
+        self.registry = registry
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--options", action="store_true")
@@ -83,9 +85,13 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         states = {**dict.fromkeys(running, AgentListState.RUNNING), **dict.fromkeys(idle, AgentListState.IDLE)}
         agents = {agent.id: agent for agent in self.queries.query(Agent).find_many(tuple(row.id for row in page.rows))}
         job_roles = self.usage.suites.agent_policy().job_roles
+        job_commands = {entry.key: entry.job_command for entry in self.registry.agent_types}
+        task_flags = {entry.key: entry.job_task_flag for entry in self.registry.agent_types}
         return Page(tuple(AgentListingState(**vars(row), state=states.get(row.id, AgentListState.RETIRED),
                                            resume_reason=self.resume_reason(agents[row.id]) if row.id in idle else None,
-                                           facts=self.usage.facts(row, job_roles, titles).json()) for row in page.rows),
+                                           facts=self.usage.facts(row, job_roles, titles).json(),
+                                           job_command=job_commands.get(row.role, ()),
+                                           job_task_flag=task_flags.get(row.role, "")) for row in page.rows),
                     page.number, page.size, page.total)
 
     def resume_reason(self, agent: Agent) -> str | None:

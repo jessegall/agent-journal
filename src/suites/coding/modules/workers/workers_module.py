@@ -220,10 +220,10 @@ class WorkersModule(Module):
     name = "journal.suites.coding.workers"
     profiles = WORKER_PROFILES
     agent_types = [AgentType("worker", "Worker", extends="helper", access=Access.WRITING, separate_folder=True,
-                             default_profile="journal-worker", start_line="journal worker dispatch", roster=WorkerRoster, run_limit_key=WORKER_RUN_LIMIT, kept_limit_key=WORKER_KEPT_LIMIT)]
+                             default_profile="journal-worker", start_line="journal worker dispatch", roster=WorkerRoster, run_limit_key=WORKER_RUN_LIMIT, kept_limit_key=WORKER_KEPT_LIMIT, job_command=("worker", "send"), job_task_flag="--task")]
     parent_suite = "coding"
     templates = WORKER_TEMPLATES
-    window_extensions = [*(WindowExtension(name, reads=["proof list", "worker waits", "worker progress"],
+    window_extensions = [*(WindowExtension(name, reads=["proof list", "worker waits", "worker progress"], runs=["worker send"],
                                           events=["proof.*", "worker_worktree.*"],
                                           sources=[WindowSource("waits", "worker waits", ["agent.*", "task.*", "proof.*", "worker_worktree.*"]),
                                                    WindowSource("progress", "worker progress", ["task.*", "worker_worktree.*"]),
