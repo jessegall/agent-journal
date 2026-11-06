@@ -7,7 +7,7 @@ const EXAMPLE = `{
     "title": "Standup",
     "version": "1.0.0",
     "program": "run.sh",
-    "hears": ["task.close"],
+    "hears": ["file_edited"],
     "settings": "settings.json",
     "requires": {"node": {"check": "node --version", "hint": "install Node 20"}},
     "setup": [{"name": "packages", "run": "npm install"}],
@@ -30,8 +30,58 @@ const KEYS = [
     ["reaches", "For an event, which helpers besides the main agent it reaches."],
     ["aliases", "The commands it provides under short names."],
     ["dashboard", "A page it writes, with a name and a title."],
+    ["project_reads", "Folders of the project, by relative path, that the shell line of a worker may read for it. A path that leaves the project is never opened."],
 ];
-const ANSWER = '{"answer": "refuse", "reason": "why", "line": "a line for the agent", "commands": ["task log 7 done"], "cards": [], "require_skills": []}';
+const ANSWER = '{"answer": "refuse", "reason": "why", "tell": "a line for the agent", "commands": ["task log 7 done"], "cards": [], "require_skills": []}';
+const EVENT_LINE = `{
+    "v": 1,
+    "event": "file_edited",
+    "agent": 612,
+    "skills": ["journal"],
+    "checkout": {
+        "kind": "worktree",
+        "root": "/Users/me/project/.journal/worktrees/main/worker-612",
+        "project_root": "/Users/me/project",
+        "branch": "journal/main/worker-612",
+        "base_branch": "version-5",
+        "base_commit": "38fa149f35",
+        "exists": true
+    },
+    "data": {
+        "path": "src/order.py",
+        "cwd": "/Users/me/project/.journal/worktrees/main/worker-612",
+        "file": {
+            "relative": "src/order.py",
+            "path": "/Users/me/project/.journal/worktrees/main/worker-612/src/order.py",
+            "project_path": "/Users/me/project/src/order.py",
+            "status": "changed",
+            "renamed_from": "",
+            "in_base": true,
+            "linked": false
+        }
+    }
+}`;
+const PATH_RULES = [
+    "A plugin never works out a checkout: the journal says which one it is, in checkout.",
+    "relative is the name of a file. It runs from the root of the checkout with /, and it is the same for one file in the project and in every worktree, so a plugin matches files on it and nothing else.",
+    "Every absolute path is a real path, with every link resolved, so it can be compared with any other.",
+    "A plugin may keep a relative path and an agent. With those two the journal answers the rest.",
+    "Fields are added and their meaning never changes. A change of meaning raises v.",
+];
+const FILE_FIELDS = [
+    ["path", "Its real place in this checkout."],
+    ["project_path", "Where the same name lies in the project. It may not exist."],
+    ["status", "changed, added, deleted or renamed. One edit of a moved file says added; the list of changes at a hand-in says renamed."],
+    ["renamed_from", "The old relative name, for renamed."],
+    ["in_base", "Whether the commit the checkout started from holds this name."],
+    ["linked", "The name lies under a link in the checkout, such as a shared node_modules, so path is outside root."],
+];
+const CALLS = [
+    ["journal plugin checkout [--agent <n>] --json", "The checkout object above."],
+    ["journal plugin changes [--agent <n>] [--since <commit>] --json", "One file object for each name that differs, by default from the commit the checkout started from."],
+    ["journal plugin file <relative> [--agent <n>] [--from checkout, project or base]", "The text of that name in that place. A name that is not there exits with code 4."],
+    ["journal plugin run [--agent <n>] [--read-only] -- <command>", "Runs a command at the root of the checkout, with the sandbox of that agent. Only a plugin or a person may call it."],
+];
 </script>
 
 <template>
@@ -50,6 +100,26 @@ const ANSWER = '{"answer": "refuse", "reason": "why", "line": "a line for the ag
             <h3>Answering an event</h3>
             <p>The program prints JSON, and printing nothing allows the event. Every key is optional:</p>
             <pre>{{ ANSWER }}</pre>
+            <h3>What an event gives the program</h3>
+            <p>One line of JSON on its input. An event about a file has a <code>file</code> in its data, and the list of changes at a hand-in holds one for each name.</p>
+            <pre>{{ EVENT_LINE }}</pre>
+            <ul>
+                <li v-for="rule in PATH_RULES" :key="rule">{{ rule }}</li>
+            </ul>
+            <dl>
+                <template v-for="[field, text] in FILE_FIELDS" :key="field">
+                    <dt>{{ field }}</dt>
+                    <dd>{{ text }}</dd>
+                </template>
+            </dl>
+            <h3>Asking the journal about a checkout</h3>
+            <p>A plugin may name any agent, and so may you. An agent names only itself, reads its own checkout, and in the project only the folders in <code>project_reads</code>.</p>
+            <dl>
+                <template v-for="[call, text] in CALLS" :key="call">
+                    <dt><code>{{ call }}</code></dt>
+                    <dd>{{ text }}</dd>
+                </template>
+            </dl>
             <h3>Environment variables</h3>
             <p>A plugin runs as you, with <code>journal</code> on its path. <code>$JOURNAL_PLUGIN_DIR</code> is its folder, <code>$JOURNAL_PLUGIN_DATA</code> a folder for its data, and <code>$JOURNAL_SETTINGS</code> a file with its settings.</p>
             <h3>Dashboard</h3>
@@ -69,6 +139,7 @@ const ANSWER = '{"answer": "refuse", "reason": "why", "line": "a line for the ag
 }
 
 .plugin-guide p,
+.plugin-guide li,
 .plugin-guide dd {
     margin: 0 0 12px;
     color: var(--text-2);
