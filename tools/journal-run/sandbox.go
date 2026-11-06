@@ -101,7 +101,7 @@ func runSandbox(options Options, folder Folder) (shellSandbox, error) {
 	if err != nil {
 		return shellSandbox{}, err
 	}
-	limit, err := workerReadLimit(options.WriteFolder, options.Home)
+	limit, err := workerReadLimit(options.WriteFolder, options.Home, options.ReadFolders)
 	if err != nil {
 		return shellSandbox{}, err
 	}

@@ -14,11 +14,12 @@ type readLimit struct {
 }
 
 // workerReadLimit denies the main checkout, which holds the worktree, and keeps what a worker's programs run from:
-// the worktree, the shared git store, the rules the judge reads, the journal's programs and linked libraries.
+// the worktree, the shared git store, the rules the judge reads, the journal's programs, linked libraries and the
+// folders plugins declare.
 // The file in a worktree's git folder where the journal lists what it placed there, named in worktree_git.py.
 const worktreeExcludeFile = "journal-exclude"
 
-func workerReadLimit(worktree, journalHome string) (readLimit, error) {
+func workerReadLimit(worktree, journalHome string, declared []string) (readLimit, error) {
 	resolved, err := filepath.EvalSymlinks(worktree)
 	if err != nil {
 		return readLimit{}, err
@@ -43,7 +44,20 @@ func workerReadLimit(worktree, journalHome string) (readLimit, error) {
 			readable = append(readable, target)
 		}
 	}
-	return readLimit{Denied: main, Readable: append(readable, excludedLinkTargets(resolved)...)}, nil
+	return readLimit{Denied: main, Readable: append(append(readable, excludedLinkTargets(resolved)...), declaredFolders(declared, main)...)}, nil
+}
+
+// declaredFolders keeps the folders that resolve to somewhere inside the main checkout: never the checkout itself or
+// a place outside it, so a fault in the journal cannot open the whole project.
+func declaredFolders(declared []string, main string) []string {
+	var folders []string
+	for _, folder := range declared {
+		resolved, err := filepath.EvalSymlinks(folder)
+		if err == nil && resolved != main && strings.HasPrefix(resolved, main+string(filepath.Separator)) {
+			folders = append(folders, resolved)
+		}
+	}
+	return folders
 }
 
 // excludedLinkTargets are the folders that library links lower in the worktree point at: the journal lists every

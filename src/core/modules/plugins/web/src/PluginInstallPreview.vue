@@ -3,7 +3,7 @@ import {Btn, Dialog} from "@journal/window-kit";
 
 defineProps({preview: {type: Object, required: true}});
 const emit = defineEmits(["close", "install"]);
-const CATEGORIES = {requires: "Checks", setup: "Sets up", installed: "Asks", program: "On events", service: "Keeps running", alias: "Command"};
+const CATEGORIES = {requires: "Checks", setup: "Sets up", installed: "Asks", program: "On events", service: "Keeps running", alias: "Command", reads: "Reads from the project"};
 </script>
 
 <template>

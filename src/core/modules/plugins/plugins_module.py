@@ -3,7 +3,9 @@ from core.modules.plugins.migrations.m004_plugin_session import PluginSessionMig
 from core.modules.plugins.migrations.m003_plugin_output_index import PluginOutputIndexMigration
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.plugins.commands.deliver_file_edit.deliver_file_edit_handler import DeliverFileEditHandler
+from core.base.project_reads import ProjectReads
 from core.modules.plugins.support.plugin_nudges import PLUGIN_NUDGES
+from core.modules.plugins.support.plugin_project_reads import PluginProjectReads
 from core.base.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch
@@ -91,6 +93,7 @@ class PluginsModule(Module):
                 SettingValue("condition_limit_seconds", "Service condition limit", "The most seconds a plugin service's condition may take before it counts as failed.",
                              SettingType.NUMBER, default=10, scope=SettingScope.PROJECT)]
     driver_rules = [PluginRule]
+    bindings = {ProjectReads: PluginProjectReads}
     marks = PLUGIN_MARKS
     tick_handlers = [TickHandler(TickInterval(seconds=1), PluginCardReading(), "plugin card reading")]
     listeners = [LoginPathListener, PluginSkillPublishListener, PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]

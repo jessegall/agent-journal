@@ -30,7 +30,8 @@ class PluginManifest:
     inside a window, the settings its settings file lists, the tone of each type of card it shows, the
     folder of its skills, the services it keeps running, and what its install requires, sets up and
     reads back, how its services answer a health check, which helpers besides the main agent each
-    event reaches, the aliases it ships, the dashboard it writes and what it says it is for."""
+    event reaches, the aliases it ships, the dashboard it writes, what it says it is for, and the folders of
+    the project a worker's shell line may read for it."""
 
     name: str
     title: str
@@ -51,6 +52,7 @@ class PluginManifest:
     aliases: tuple[ManifestAlias, ...]
     dashboard: ManifestDashboard | None
     description: str = ""
+    project_reads: tuple[str, ...] = ()
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -62,6 +64,7 @@ class PluginManifest:
         settings_file = str(fields["settings"]) if "settings" in fields else ""
         names: object = fields["hears"] if "hears" in fields else None
         windows: object = fields["holds"] if "holds" in fields else None
+        project_reads: object = fields["project_reads"] if "project_reads" in fields else None
         return cls(str(fields["name"]), str(fields["title"]), str(fields["version"]), program,
                    tuple(str(name) for name in names) if is_list(names) else (), tuple(cls.event_window(entry) for entry in windows) if is_list(windows) else (),
                    cls.read_settings(folder, settings_file), tuple(file for file in (MANIFEST_FILE, program, settings_file) if file),
@@ -70,7 +73,8 @@ class PluginManifest:
                    cls.read_setup_steps(fields["setup"] if "setup" in fields else None), str(fields["installed"]) if "installed" in fields else "",
                    cls.read_health(fields["health"] if "health" in fields else None), cls.read_reaches(fields["reaches"] if "reaches" in fields else None),
                    cls.read_aliases(fields["aliases"] if "aliases" in fields else None), cls.read_dashboard(fields["dashboard"] if "dashboard" in fields else None),
-                   str(fields["description"]) if "description" in fields else "")
+                   str(fields["description"]) if "description" in fields else "",
+                   tuple(str(entry) for entry in project_reads) if is_list(project_reads) else ())
 
     @classmethod
     @lru_cache(maxsize=128)
@@ -173,6 +177,11 @@ class PluginManifest:
         limits = [window.window_ms for window in self.event_windows if window.event == event and window.window_ms > 0]
         return min(limits[0], ceiling_ms) if limits else ceiling_ms
 
+    def project_folders(self, project_root: Path) -> tuple[Path, ...]:
+        real_root = project_root.resolve()
+        folders = ((real_root / entry).resolve() for entry in self.project_reads if not Path(entry).is_absolute())
+        return tuple(folder for folder in folders if folder != real_root and folder.is_relative_to(real_root))
+
     def run_rows(self) -> list[Mapping[str, str]]:
         entries = [("requires", requirement.name, requirement.check) for requirement in self.requirements]
         entries += [("setup", step.name, step.line) for step in self.setup_steps]
@@ -182,4 +191,5 @@ class PluginManifest:
             entries.append(("program", ", ".join(self.event_names) or "No events", self.program))
         entries += [("service", service.name, " ".join(service.command)) for service in self.services]
         entries += [("alias", alias.name, alias.line) for alias in self.aliases]
+        entries += [("reads", "Project folder", folder) for folder in self.project_reads]
         return [{"category": category, "label": label, "command": command} for category, label, command in entries]

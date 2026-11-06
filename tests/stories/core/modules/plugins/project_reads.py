@@ -1,5 +1,6 @@
 import json
 import os
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -8,6 +9,7 @@ import pytest
 
 from core.base.driver.command_category import CommandCategory
 from core.base.shell_sandbox import ShellSandbox
+from core.modules.processes.support.runner_line import READ_FOLDERS_VARIABLE
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.plugins.support.checkout_stories import checkout_story, real
@@ -28,14 +30,18 @@ def with_project_folder(folder: str):
 
 
 def worker_line_reading(story, folder: str) -> str:
-    """The line a worker's shell line becomes, for a program that reads a file in the project folder."""
+    story.container.get(ShellSandbox).is_required = True
     path = f"{real(story.repository.folder)}/{folder}/config.json"
     reply = story.hook(story.worker_session, HookSamples.shell(f"cat {path}", ShellPart("cat", CommandCategory.READ, [path])))
     return str(reply.updated_input["command"])
 
 
+def declared_folders(line: str) -> list[str]:
+    value = next(token.split("=", 1)[1] for token in shlex.split(line) if token.startswith(f"{READ_FOLDERS_VARIABLE}="))
+    return value.split(os.pathsep)
+
+
 def worker_reads(story, folder: str) -> subprocess.CompletedProcess[str]:
-    """Runs the worker's line with the real runner and its real sandbox, which every story otherwise leaves out."""
     real_runner_at(story.home)
     story.container.bind(ShellSandbox, ShellSandbox(story.home))
     return subprocess.run(["sh", "-c", worker_line_reading(story, folder)], cwd=story.worktree, capture_output=True, text=True, timeout=RUN_LIMIT_SECONDS,
@@ -44,12 +50,12 @@ def worker_reads(story, folder: str) -> subprocess.CompletedProcess[str]:
 
 def test_s52_a_project_folder_a_plugin_declares_opens_for_the_shell_line_of_a_worker(new_story):
     story = checkout_story(new_story, before_dispatch=with_project_folder(".rules"), project_reads=[".rules"])
-    story.expect_rows(f"--read-folder {real(story.repository.folder)}/.rules" in worker_line_reading(story, ".rules"))
+    story.expect_rows(declared_folders(worker_line_reading(story, ".rules")) == [f"{real(story.repository.folder)}/.rules"])
 
 
 def test_s52_a_folder_no_plugin_declares_is_not_opened(new_story):
     story = checkout_story(new_story, before_dispatch=with_project_folder(".rules"))
-    story.expect_rows("--read-folder" not in worker_line_reading(story, ".rules"))
+    story.expect_rows(READ_FOLDERS_VARIABLE not in worker_line_reading(story, ".rules"))
 
 
 @needs_a_mac
@@ -83,13 +89,12 @@ def test_s52_a_worker_cannot_read_commandments_when_no_plugin_declares_it_after_
 def test_s52_a_second_plugin_declares_another_folder_and_each_is_open_for_the_shell_line(new_story):
     story = checkout_story(new_story, before_dispatch=with_project_folder(".rules"), project_reads=[".rules"])
     install_event_plugin(story, name="second", project_reads=[".more"])
-    line = worker_line_reading(story, ".rules")
-    story.expect_rows(f"--read-folder {real(story.repository.folder)}/.rules" in line, f"--read-folder {real(story.repository.folder)}/.more" in line)
+    story.expect_rows(declared_folders(worker_line_reading(story, ".rules")) == [f"{real(story.repository.folder)}/.rules", f"{real(story.repository.folder)}/.more"])
 
 
 def test_s52_an_entry_that_leaves_the_project_is_wrong_on_the_card_and_is_not_opened(new_story):
     story = checkout_story(new_story, project_reads=[OUTSIDE_THE_PROJECT])
-    story.expect_rows(OUTSIDE_THE_PROJECT not in worker_line_reading(story, ".rules"), "--read-folder" not in worker_line_reading(story, ".rules"))
+    story.expect_rows(READ_FOLDERS_VARIABLE not in worker_line_reading(story, ".rules"))
     card = plugin_page(story).card()
     story.expect_rows(any(OUTSIDE_THE_PROJECT in json.dumps(row) and "wrong" in str(row["state"]) for row in card))
 

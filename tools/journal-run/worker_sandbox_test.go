@@ -27,7 +27,7 @@ func TestWorkerShellSandbox(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	limit, err := workerReadLimit(worktree, filepath.Join(main, ".journal"))
+	limit, err := workerReadLimit(worktree, filepath.Join(main, ".journal"), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -148,7 +148,7 @@ func TestWorkerReadLimit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	limit, err := workerReadLimit(worktree, home)
+	limit, err := workerReadLimit(worktree, home, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -194,11 +194,51 @@ func TestWorkerReadLimitOpensALibraryLinkedLowerInTheWorktree(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(gitFolder, worktreeExcludeFile), []byte("/src/viewer/node_modules\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	limit, err := workerReadLimit(worktree, filepath.Join(main, ".journal"))
+	limit, err := workerReadLimit(worktree, filepath.Join(main, ".journal"), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !slices.Contains(limit.Readable, library) {
 		t.Fatalf("the library is not readable: %v", limit.Readable)
+	}
+}
+
+func TestWorkerReadLimitOpensADeclaredFolderAndNeverTheCheckoutItself(t *testing.T) {
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	main, worktree, outside := filepath.Join(root, "main"), filepath.Join(root, "worktree"), filepath.Join(root, "outside")
+	rules := filepath.Join(main, ".rules")
+	for _, folder := range []string{rules, filepath.Join(main, ".journal"), worktree, outside} {
+		if err := os.MkdirAll(folder, 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	linkedOut := filepath.Join(main, "linked-out")
+	if err := os.Symlink(outside, linkedOut); err != nil {
+		t.Fatal(err)
+	}
+	limit, err := workerReadLimit(worktree, filepath.Join(main, ".journal"), []string{rules, main, outside, linkedOut, filepath.Join(main, "missing")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Contains(limit.Readable, rules) {
+		t.Fatalf("the declared folder is not readable: %v", limit.Readable)
+	}
+	for _, wrong := range []string{main, outside, linkedOut, filepath.Join(main, "missing")} {
+		if slices.Contains(limit.Readable, wrong) {
+			t.Fatalf("%s must stay closed: %v", wrong, limit.Readable)
+		}
+	}
+}
+
+func TestReadFoldersVariableIsReadAndCleared(t *testing.T) {
+	t.Setenv(readFoldersVariable, "/project/.rules"+string(os.PathListSeparator)+"/project/.more")
+	if folders := readFolders(); !slices.Equal(folders, []string{"/project/.rules", "/project/.more"}) {
+		t.Fatalf("the folders were misread: %v", folders)
+	}
+	if value, present := os.LookupEnv(readFoldersVariable); present {
+		t.Fatalf("the variable stays set for a run inside this one: %q", value)
 	}
 }

@@ -28,6 +28,7 @@ type Options struct {
 	OnlyReads            bool
 	ReadOnlyShell        bool
 	WriteFolder          string
+	ReadFolders          []string
 	Sandbox              shellSandbox
 	Aliases              []string
 	Line                 string

@@ -1,3 +1,4 @@
+import os
 import shlex
 from pathlib import Path
 
@@ -8,6 +9,7 @@ from core.base.cli.shell_handoff import RUNNER_VARIABLE
 MOST_OUTPUT_VARIABLE = "JOURNAL_RUN_MOST_OUTPUT"
 READ_FLAGS_VARIABLE = "JOURNAL_RUN_READING"
 QUEUE_WAIT_VARIABLE = "JOURNAL_RUN_QUEUE_WAIT"
+READ_FOLDERS_VARIABLE = "JOURNAL_RUN_READ_FOLDERS"
 
 
 class RunnerLine:
@@ -29,4 +31,5 @@ class RunnerLine:
         variables = f" {MOST_OUTPUT_VARIABLE}={run.most_output_bytes}" if run.most_output_bytes else ""
         variables += f" {READ_FLAGS_VARIABLE}={shlex.quote(','.join(run.read_flags))}" if run.read_flags else ""
         variables += f" {QUEUE_WAIT_VARIABLE}={run.queue_wait_seconds}" if run.queued else ""
+        variables += f" {READ_FOLDERS_VARIABLE}={shlex.quote(os.pathsep.join(str(folder) for folder in run.read_folders))}" if run.read_folders else ""
         return f"{SESSION_VARIABLE}={shlex.quote(session)} {RUNNER_VARIABLE}={process_id}{variables} {shlex.quote(str(runner))} --process {process_id} --limit {run.seconds}{background} -- {shlex.quote(line)}"
