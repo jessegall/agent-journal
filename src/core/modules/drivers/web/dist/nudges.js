@@ -1,35 +1,35 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-f7b7a86d9a1d")) { const style = document.createElement("style"); style.id = "window-styles-f7b7a86d9a1d"; style.textContent = "details[data-v-769933cd]{width:100%;font-size:12px}summary[data-v-769933cd]{cursor:pointer}.check[data-v-769933cd]{padding:8px 0;border-bottom:1px solid var(--border)}.check span[data-v-769933cd]{margin-left:8px}.note[data-v-769933cd]{color:var(--text-3)}p[data-v-769933cd]{margin:4px 0 0;white-space:pre-wrap}.activity[data-v-8eea68d2]{width:100%}.summary[data-v-8eea68d2]{display:flex;gap:10px}.main[data-v-8eea68d2]{flex:1}.note[data-v-8eea68d2]{color:var(--text-3);font-size:12px}.nudge[data-v-695c4b5c]{min-width:0;padding:6px 0}.nudge-head[data-v-695c4b5c]{display:flex;gap:10px;align-items:baseline;margin:0 0 2px;font-size:12px}.nudge-key[data-v-695c4b5c]{color:var(--text);font-weight:500}.nudge-type[data-v-695c4b5c],.nudge-count[data-v-695c4b5c]{color:var(--text-3)}.nudge-type[data-type=refusal][data-v-695c4b5c]{color:var(--tone-bad)}.nudge-type[data-type=steering][data-v-695c4b5c]{color:var(--accent-text)}.nudge-text[data-v-695c4b5c]{margin:0;color:var(--text-2);font-size:12.5px;overflow-wrap:anywhere}\n"; document.head.appendChild(style); }
-import { openBlock as u, createBlock as i, unref as t, withCtx as o, createVNode as l, createElementVNode as s, toDisplayString as a } from "vue";
-import { useRows as _, WindowRoom as r, RowList as p } from "@journal/window-kit";
-import { _ as g, n as m } from "./_plugin-vue_export-helper-BEOZ8alP.js";
-const y = {
+if (!document.getElementById("window-styles-c8a274be9ed6")) { const style = document.createElement("style"); style.id = "window-styles-c8a274be9ed6"; style.textContent = "details[data-v-769933cd]{width:100%;font-size:12px}summary[data-v-769933cd]{cursor:pointer}.check[data-v-769933cd]{padding:8px 0;border-bottom:1px solid var(--border)}.check span[data-v-769933cd]{margin-left:8px}.note[data-v-769933cd]{color:var(--text-3)}p[data-v-769933cd]{margin:4px 0 0;white-space:pre-wrap}.activity[data-v-8eea68d2]{width:100%}.summary[data-v-8eea68d2]{display:flex;gap:10px}.main[data-v-8eea68d2]{flex:1}.note[data-v-8eea68d2]{color:var(--text-3);font-size:12px}.nudge[data-v-824ccc38]{min-width:0;padding:6px 0}.nudge-head[data-v-824ccc38]{display:flex;gap:10px;align-items:baseline;margin:0 0 2px;font-size:12px}.nudge-key[data-v-824ccc38]{color:var(--text);font-weight:500}.nudge-type[data-v-824ccc38],.nudge-count[data-v-824ccc38]{color:var(--text-3)}.nudge-type[data-type=refusal][data-v-824ccc38]{color:var(--tone-bad)}.nudge-type[data-type=steering][data-v-824ccc38]{color:var(--accent-text)}.nudge-text[data-v-824ccc38]{margin:0;color:var(--text-2);font-size:12.5px;overflow-wrap:anywhere}\n"; document.head.appendChild(style); }
+import { openBlock as u, createBlock as l, unref as t, withCtx as a, createVNode as _, createElementVNode as s, toDisplayString as o } from "vue";
+import { useWindow as p, WindowRoom as r, RowList as g } from "@journal/window-kit";
+import { _ as m, n as y } from "./_plugin-vue_export-helper-BEOZ8alP.js";
+const f = {
   class: "nudge",
   "data-nudge": ""
-}, f = { class: "nudge-head" }, h = { class: "nudge-key" }, x = ["data-type"], v = { class: "nudge-count" }, N = { class: "nudge-text" }, b = {
+}, h = { class: "nudge-head" }, x = { class: "nudge-key" }, v = ["data-type"], N = { class: "nudge-count" }, k = { class: "nudge-text" }, w = {
   __name: "NudgeList",
-  setup(k) {
-    const { rows: d, failure: n, loaded: c } = _("nudge list", ["nudge_record.*"]);
-    return (L, R) => (u(), i(t(r), null, {
-      default: o(() => [
-        l(t(p), {
-          rows: t(d),
-          failure: t(n),
-          loaded: t(c),
+  setup(L) {
+    const d = p(), { rows: n, failure: c, loaded: i } = d.props.nudges;
+    return (b, B) => (u(), l(t(r), null, {
+      default: a(() => [
+        _(t(g), {
+          rows: t(n),
+          failure: t(c),
+          loaded: t(i),
           empty: "No module declares a nudge",
           hint: "Instructions available to agents appear here, grouped by module."
         }, {
-          default: o(({ row: e }) => [
-            s("div", y, [
-              s("p", f, [
-                s("span", h, a(e.key), 1),
+          default: a(({ row: e }) => [
+            s("div", f, [
+              s("p", h, [
+                s("span", x, o(e.key), 1),
                 s("span", {
                   class: "nudge-type",
                   "data-type": e.type
-                }, a(t(m)(e.type)), 9, x),
-                s("span", v, "said " + a(e.delivery_count) + " " + a(e.delivery_count === 1 ? "time" : "times"), 1)
+                }, o(t(y)(e.type)), 9, v),
+                s("span", N, "said " + o(e.delivery_count) + " " + o(e.delivery_count === 1 ? "time" : "times"), 1)
               ]),
-              s("p", N, a(e.text), 1)
+              s("p", k, o(e.text), 1)
             ])
           ]),
           _: 1
@@ -38,7 +38,7 @@ const y = {
       _: 1
     }));
   }
-}, V = /* @__PURE__ */ g(b, [["__scopeId", "data-v-695c4b5c"]]);
+}, W = /* @__PURE__ */ m(w, [["__scopeId", "data-v-824ccc38"]]);
 export {
-  V as default
+  W as default
 };
