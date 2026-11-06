@@ -3,9 +3,10 @@ import json
 import os
 import signal
 import subprocess
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 
 from core.base.agent_checkouts import AgentCheckouts
+from core.base.change.event_log import HIDDEN
 from core.base.journal_home import JournalHome
 from core.base.model.event_form import EventForm
 from core.base.running_scripts import RunningScripts
@@ -15,10 +16,10 @@ from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.skills.support.loaded_skills import LoadedSkills
 from core.modules.plugins.support.login_path import LoginPath
-from core.modules.plugins.support.plugin_late_error import PluginLateError
 from core.modules.plugins.support.plugin_socket import PluginSocket
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 from core.modules.plugins.support.plugin_stopped_error import PluginStoppedError
+from core.modules.plugins.support.script_pipes import ScriptPipes
 
 PASSED_VARIABLES = ("HOME", "LANG", "LC_ALL", "TMPDIR", "USER")
 SETTINGS_FILE = ".journal-settings.json"
@@ -35,7 +36,7 @@ class PluginProgram:
     def __init__(self, home: JournalHome, folders: PluginFolders, sockets: PluginSocketPaths, skills: LoadedSkills, checkouts: AgentCheckouts, scripts: RunningScripts) -> None:
         self.home, self.folders, self.sockets, self.skills, self.checkouts, self.scripts = home, folders, sockets, skills, checkouts, scripts
 
-    def run(self, call: PluginCall, limit_ms: int | None) -> PluginAnswer:
+    def run(self, call: PluginCall, limit_ms: int | None, on_wait: Callable[[], None] | None = None) -> PluginAnswer:
         manifest = call.manifest
         folder = self.folders.code(manifest.name)
         self.write_settings(manifest.name, call.settings)
@@ -53,26 +54,31 @@ class PluginProgram:
         program = call.script or manifest.program
         try:
             process = subprocess.Popen([str(folder / program)], cwd=folder, env=self.environment(manifest.name, call.environment), stdin=subprocess.PIPE,
-                                       stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, start_new_session=True)
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True)
         except OSError as error:
             raise PluginFaultError(f"{program} could not start: {error.strerror}") from None
         self.scripts.start(process, manifest.name, call.event.name, call.form, call.timestamp)
+        pipes = ScriptPipes(process, self.stop)
         try:
-            output, _ = process.communicate(line + "\n", timeout=None if limit_ms is None else limit_ms / 1000)
+            output = pipes.answer(line, limit_ms, on_wait)
             stop_reason = self.scripts.stop_reason(process)
-        except subprocess.TimeoutExpired:
-            self.stop(process)
-            raise PluginLateError(f"it ran past {limit_ms} ms") from None
         finally:
             self.scripts.finish(process)
         if stop_reason:
             raise PluginStoppedError.because(stop_reason)
         if process.returncode != 0:
-            raise PluginFaultError(f"it ended with code {process.returncode}")
+            raise PluginFaultError(self.ended_text(process.returncode, pipes.error_tail(), call))
         try:
             return PluginAnswer.parsed(output)
         except json.JSONDecodeError:
             raise PluginFaultError("its answer is not JSON") from None
+
+    @staticmethod
+    def ended_text(code: int, errors: str, call: PluginCall) -> str:
+        for value in call.settings.values():
+            if str(value):
+                errors = errors.replace(str(value), HIDDEN)
+        return f"it ended with code {code}: {errors}" if errors else f"it ended with code {code}"
 
     def line(self, call: PluginCall) -> str:
         skills = self.skills.names(call.agent_id) if call.agent_id is not None else ()
@@ -88,7 +94,7 @@ class PluginProgram:
         finally:
             try:
                 process.communicate(timeout=STOP_LIMIT_SECONDS)
-            except subprocess.TimeoutExpired:
+            except (subprocess.TimeoutExpired, ValueError):
                 for pipe in (process.stdin, process.stdout):
                     if pipe is not None:
                         pipe.close()
