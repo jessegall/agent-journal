@@ -1,14 +1,20 @@
+import subprocess
 import sys
 
 import pytest
 
+from core.base.model.event_form import EventForm
 from core.base.query.queries import Queries
+from core.base.registry.registry import Registry
+from core.base.running_scripts import SWITCHED_OFF_REASON, RunningScripts
 from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.plugins.commands.support.plugin_service_round import PluginServiceRound
+from core.modules.plugins.support.service_processes import ServiceProcesses
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, REMOVAL_SAMPLE
 from tests.stories.core.modules.plugins.support.event_modules import FAILS_LATER, LATER_REFUSAL, NOTE_CREATED, NOTES, REFUSED_TITLE
 from tests.stories.core.modules.plugins.support.refusing_modules import LATER_KEY_REFUSAL, REFUSED_NOTE_TITLE, REFUSED_NOTES
 from tests.stories.core.modules.plugins.support.event_stories import (
-    REFUSAL, SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, EventPluginStarted, deliveries, event_plugin_story, install_event_plugin, logged_events, plugin_data, plugin_page, script_calls, tasks_titled)
+    REFUSAL, SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, EventPluginStarted, deliveries, event_plugin_story, install_event_plugin, logged_events, plugin_data, plugin_page, plugin_row, script_calls, tasks_titled)
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 
 GUARD_WORDS = "noted by the guard"
@@ -19,6 +25,7 @@ GUARD_SKIP = "plugins.event-guard"
 SKIP_REASON = '--skip-reason "the plugin is wrong here"'
 HOLD_SETTING = "setting set journal.core.plugins.hold_window_ms {} --project"
 CEILING_MS = 1000
+STOP_LIMIT_SECONDS = 5
 BLOCKED_ON_A_PIPE = 'mkfifo "$JOURNAL_PLUGIN_DATA/never-written"\nread answer < "$JOURNAL_PLUGIN_DATA/never-written"'
 LOCK_CHECK = """import sqlite3, sys
 connection = sqlite3.connect(sys.argv[1], timeout=0, isolation_level=None)
@@ -101,6 +108,27 @@ def test_s24_a_guard_script_runs_with_no_lock_held_and_the_command_then_finishes
     install_event_plugin(story, {"event": TASK_CREATED, "guard": "lock.sh"}, scripts={"lock.sh": check})
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.expect_rows(plugin_data(story, "lock").read_text() == "free\n", len(tasks_titled(story, SECOND_JOB_TITLE)) == 1)
+
+
+def test_s25_switching_a_plugin_off_goes_through_and_the_round_stops_its_running_script(new_story):
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "see.sh"})
+    scripts = story.container.get(RunningScripts)
+    process = subprocess.Popen(["sleep", "60"], stdin=subprocess.PIPE, text=True, start_new_session=True)
+    try:
+        scripts.start(process, "events", TASK_CREATED, EventForm.GUARD, story.clock.timestamp())
+        story.expect_success("plugin disable events", actor=story.user)
+        story.expect_rows(process.poll() is None, plugin_row(story).enabled is False)
+        story.container.get(PluginServiceRound).run(ServiceProcesses())
+        story.expect_rows(process.wait(timeout=STOP_LIMIT_SECONDS) != 0, scripts.stop_reason(process) == SWITCHED_OFF_REASON)
+    finally:
+        scripts.finish(process)
+        process.kill()
+        process.communicate()
+
+
+def test_s25_a_plugin_row_offers_only_commit_so_no_script_can_hold_the_switch(new_story):
+    story = new_story(fixture=EventPluginStarted)
+    story.expect_rows(tuple(story.container.get(Registry).event_keys["plugin.update"].forms) == tuple([EventForm.COMMIT]))
 
 
 def test_s26_explain_shows_what_would_happen_and_runs_no_script(new_story):

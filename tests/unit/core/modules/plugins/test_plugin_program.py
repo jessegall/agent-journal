@@ -2,6 +2,7 @@ from types import SimpleNamespace
 import json
 import time
 import subprocess
+import threading
 from pathlib import Path
 from unittest.mock import Mock
 
@@ -29,6 +30,11 @@ cat > /dev/null
 sleep 1
 echo '{"v": 1, "tell": "done"}'
 """
+WAITING_PROGRAM = """#!/bin/sh
+cat > /dev/null
+sleep 60
+"""
+POLL_SECONDS = 0.01
 LIMIT_MS = 1000
 END_SECONDS = 2.5
 
@@ -81,3 +87,25 @@ def test_a_script_that_cannot_start_is_the_plugins_fault(tmp_path: Path) -> None
 def test_a_call_with_no_limit_waits_for_the_script_it_names(tmp_path: Path) -> None:
     program, call = program_at(tmp_path, QUICK_PROGRAM, "run.sh")
     assert program.run(call, None).line == "done"
+
+
+def test_a_script_that_was_stopped_is_a_fault_that_says_so_and_does_not_count(tmp_path: Path) -> None:
+    program, call = program_at(tmp_path, WAITING_PROGRAM, "run.sh")
+    failures: list[PluginFaultError] = []
+
+    def run() -> None:
+        try:
+            program.run(call, None)
+        except PluginFaultError as fault:
+            failures.append(fault)
+
+    thread = threading.Thread(target=run)
+    thread.start()
+    deadline = time.monotonic() + END_SECONDS
+    while not program.scripts.running("late") and time.monotonic() < deadline:
+        time.sleep(POLL_SECONDS)
+    program.scripts.stop("late")
+    thread.join(END_SECONDS)
+    assert str(failures[0]) == "it was stopped when the plugin was switched off"
+    assert failures[0].counts_toward_failing is False
+    assert program.scripts.running("late") == ()

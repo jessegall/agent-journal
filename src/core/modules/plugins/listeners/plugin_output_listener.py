@@ -57,7 +57,7 @@ class PluginOutputListener(CommitListener[Created[PluginOutput]]):
                 self.bus.run(ShowMark(PluginMarkType.CARD, TONES[tone], key, f"{plugin.name}: {card.label}",
                                       detail=card.detail, figure="" if tone == PluginCardTone.GOOD else answer.duration_text()), actor, cause_id=logged.id)
         for line in answer.commands[:MOST_COMMAND_LINES]:
-            self.console.run(shlex.split(line), Caller(actor), io.StringIO())
+            self.console.run(shlex.split(line), Caller(actor, plugin_script=plugin.name), io.StringIO())
         published = self.skill_files.names(self.folders.code(plugin.name), manifest)
         for name in [name for name in answer.required_skills if name in published and row.session_agent_id is not None]:
             self.bus.run(RequestSkill(row.session_agent_id, name), actor, cause_id=logged.id)

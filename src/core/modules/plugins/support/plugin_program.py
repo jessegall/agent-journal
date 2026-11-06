@@ -17,6 +17,7 @@ from core.modules.plugins.support.login_path import LoginPath
 from core.modules.plugins.support.plugin_late_error import PluginLateError
 from core.modules.plugins.support.plugin_socket import PluginSocket
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
+from core.modules.plugins.support.plugin_stopped_error import PluginStoppedError
 
 PASSED_VARIABLES = ("HOME", "LANG", "LC_ALL", "TMPDIR", "USER")
 SETTINGS_FILE = ".journal-settings.json"
@@ -57,11 +58,14 @@ class PluginProgram:
         self.scripts.start(process, manifest.name, call.event.name, call.form, call.timestamp)
         try:
             output, _ = process.communicate(line + "\n", timeout=None if limit_ms is None else limit_ms / 1000)
+            stop_reason = self.scripts.stop_reason(process)
         except subprocess.TimeoutExpired:
             self.stop(process)
             raise PluginLateError(f"it ran past {limit_ms} ms") from None
         finally:
             self.scripts.finish(process)
+        if stop_reason:
+            raise PluginStoppedError.because(stop_reason)
         if process.returncode != 0:
             raise PluginFaultError(f"it ended with code {process.returncode}")
         try:

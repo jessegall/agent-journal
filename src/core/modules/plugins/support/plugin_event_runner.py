@@ -49,7 +49,7 @@ class PluginEventRunner:
         try:
             answer = self.program.run(call, None)
         except PluginFaultError as fault:
-            self.record(RecordPluginFault(plugin.id, f"{fault} {where}"))
+            self.record(RecordPluginFault.of(plugin.id, fault, where))
             return None
         if plugin.fault_count:
             self.record(ClearPluginFaults(plugin.id))

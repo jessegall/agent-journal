@@ -71,7 +71,7 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         try:
             answer = self.program.run(call, None if delivery.script else DELIVERY_LIMIT_MS)
         except PluginFaultError as fault:
-            self.record(logged, delivery, RecordPluginFault(delivery.plugin_id, f"{fault} at {delivery.event}{COMMIT_SUFFIX if delivery.script else ''}"))
+            self.record(logged, delivery, RecordPluginFault.of(delivery.plugin_id, fault, f"at {delivery.event}{COMMIT_SUFFIX if delivery.script else ''}"))
             return
         if delivery.script and answer.is_refusal():
             self.record(logged, delivery, RecordPluginFault(delivery.plugin_id, f"it answered refuse at {delivery.event}{COMMIT_SUFFIX}: {answer.reason}"))
