@@ -26,5 +26,5 @@ class HelperResumeListener(CommitListener[Changed[Agent]]):
             return
         helpers = self.queries.query(Agent).filter(parent_id=event.row.id, role=AgentRole.HELPER).matching(Greater("ended_at", "")).all_rows()
         for helper in tuple(helpers):
-            if any(job.ended_at is None for job in self.jobs.helper_jobs(helper.id)):
+            if self.jobs.open_job(helper.id) is not None:
                 self.resume.resume(helper, RESUME_JOB_TEXT)

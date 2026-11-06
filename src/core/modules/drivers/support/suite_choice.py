@@ -14,7 +14,14 @@ class SuiteChoice:
         self.registry, self.settings = registry, settings
 
     def suite(self) -> SuiteEntry | None:
-        configured_suite = self.registry.suite(self.settings.text(SUITE_SETTING))
+        return self.suite_with_setting(self.settings.text(SUITE_SETTING))
+
+    def suite_name(self, setting: str) -> str:
+        suite = self.suite_with_setting(setting)
+        return suite.name if suite is not None else ""
+
+    def suite_with_setting(self, setting: str) -> SuiteEntry | None:
+        configured_suite = self.registry.suite(setting)
         if configured_suite is not None:
             return configured_suite
         tops = self.registry.default_suite_roots()

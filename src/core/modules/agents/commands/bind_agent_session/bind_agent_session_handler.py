@@ -5,6 +5,7 @@ from core.base.repository.repository import Repository
 from core.modules.agents.commands.bind_agent_session.bind_agent_session import BindAgentSession
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.agents.support.single_main_agent import SingleMainAgent
 from core.modules.drivers.support.suite_choice import SuiteChoice
 
 
@@ -15,8 +16,8 @@ class BindAgentSessionHandler(Handler[BindAgentSession, Agent]):
 
     command = BindAgentSession
 
-    def __init__(self, agents: AgentRows, repository: Repository, suites: SuiteChoice) -> None:
-        self.agents, self.repository, self.suites = agents, repository, suites
+    def __init__(self, agents: AgentRows, repository: Repository, suites: SuiteChoice, single_main: SingleMainAgent) -> None:
+        self.agents, self.repository, self.suites, self.single_main = agents, repository, suites, single_main
 
     def handle(self, command: BindAgentSession, context: Context) -> Agent:
         agent = self.agents.find(command.row_id)
@@ -25,5 +26,7 @@ class BindAgentSessionHandler(Handler[BindAgentSession, Agent]):
         session_agent = self.agents.session(command.session)
         if session_agent is not None and session_agent.id != agent.id:
             self.repository.save_change(agent, agent.ended(context.timestamp, self.suites.agent_policy()), context)
-            return self.repository.update(session_agent, context, ended_at=None, pid=agent.pid, process_started_at=agent.process_started_at, launch_agent_id=agent.id)
-        return self.repository.update(agent, context, session=command.session)
+            reopened = self.repository.update(session_agent, context, ended_at=None, pid=agent.pid, process_started_at=agent.process_started_at, launch_agent_id=agent.id, launch_name=agent.original_launch_name)
+            self.single_main.end(reopened, context)
+            return reopened
+        return self.repository.update(agent, context, session=command.session, launch_name=agent.original_launch_name)

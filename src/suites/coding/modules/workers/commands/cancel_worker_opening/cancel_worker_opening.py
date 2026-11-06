@@ -5,6 +5,6 @@ from core.base.command.command import Command
 
 @dataclass(frozen=True)
 class CancelWorkerOpening(Command[None]):
-    """Deletes the agent row and the new worktree row of a dispatch whose cut failed."""
+    """Undoes a dispatch that never got cut: its new worktree row goes, and its agent row goes or ends."""
 
     worktree_id: int

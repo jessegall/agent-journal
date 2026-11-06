@@ -52,8 +52,8 @@ def test_a_worker_that_says_stuck_while_its_run_goes_tells_its_main_agent_nothin
     repository_environment(story)
     main = story.agent
     worker = dispatched_worker(story)
-    story.expect_success("setting set journal.core.processes.readers-forced off --environment main", actor=main)
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main", actor=main)
+    story.expect_success("setting set journal.core.processes.readers-forced off --environment main")
+    story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
     story.agent = worker
     start_process(story, "make check", category=CommandCategory.TEST_RUN)
     story.agent = main

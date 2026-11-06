@@ -29,6 +29,7 @@ class Agent(EnvironmentScoped, Model):
     pid: int | None = None
     process_started_at: Timestamp | None = None
     launch_agent_id: int | None = None
+    launch_name: str | None = None
     paused_at: Timestamp | None = None
     program_model: str = ""
     profile: str = ""
@@ -42,6 +43,10 @@ class Agent(EnvironmentScoped, Model):
 
     def ended(self, timestamp: Timestamp, policy: AgentPolicy) -> "Agent":
         return self.changed(ended_at=timestamp, paused_at=self.paused_at if self.role in policy.pause_retention_roles else None)
+
+    @property
+    def original_launch_name(self) -> str:
+        return self.launch_name if self.launch_name is not None else self.session
 
     @property
     def terminal_id(self) -> int:

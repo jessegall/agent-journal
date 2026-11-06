@@ -11,6 +11,7 @@ from core.base.module.module import Module
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.sync_notes import SyncNotes
 from core.modules.settings.models.setting import Setting
+from core.modules.settings.guards.person_set_setting_guard import PersonSetSettingGuard
 from core.modules.settings.listeners.setting_rows_listener import SettingRowsListener
 from core.modules.settings.support.undeclared_setting_notes import UndeclaredSettingNotes
 from core.modules.settings.models.secret_setting import SecretSetting
@@ -52,5 +53,6 @@ class SettingsModule(Module):
                                  reads=["managed-hook list", "hook-call feed"], runs=["managed-hook set", "managed-hook scan", "managed-hook give-back"], events=["managed-hook.*", "hook_call.*"])]
     subcommands = [SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand, ListManagedHooksSubcommand, SetManagedHookSubcommand, ScanManagedHooksSubcommand, RestoreManagedHooksSubcommand]
     bindings = {GuardSwitches: SettingGuardSwitches, SyncNotes: UndeclaredSettingNotes}
+    guards = [PersonSetSettingGuard]
     listeners = [SettingRowsListener]
     moves = [SettingsMove]

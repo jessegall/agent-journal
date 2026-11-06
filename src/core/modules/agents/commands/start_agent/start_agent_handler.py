@@ -9,6 +9,7 @@ from core.base.timestamp import Timestamp
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.agents.support.single_main_agent import SingleMainAgent
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.agent_type_book import AgentTypeBook
@@ -20,20 +21,27 @@ from core.base.shell_sandbox import ShellSandbox
 class StartAgentHandler(Handler[StartAgent, Agent]):
     """Makes the actor of a new session, then its agent row with the actor's id, in one transaction, or
     reopens the ended row of a resumed session so the agent keeps its number and its tasks; a pid given
-    without its start time gets the start the process table reads for it."""
+    without its start time gets the start the process table reads for it. A main agent ends the others of
+    its environment."""
 
     command = StartAgent
 
-    def __init__(self, agents: AgentRows, repository: Repository, chain: ProcessChain, types: AgentTypeBook, sandbox: ShellSandbox) -> None:
+    def __init__(self, agents: AgentRows, repository: Repository, chain: ProcessChain, types: AgentTypeBook, sandbox: ShellSandbox, single_main: SingleMainAgent) -> None:
         self.agents, self.repository, self.chain = agents, repository, chain
         self.types = types
         self.sandbox = sandbox
+        self.single_main = single_main
 
     def prepare(self, command: StartAgent, actor: Actor) -> None:
         if self.types.find(command.role).access is Access.READ:
             self.sandbox.check()
 
     def handle(self, command: StartAgent, context: Context) -> Agent:
+        agent = self.opened(command, context)
+        self.single_main.end(agent, context)
+        return agent
+
+    def opened(self, command: StartAgent, context: Context) -> Agent:
         if context.environment_id is None:
             raise Refusal("an agent starts in an environment", "name one with --environment")
         self.types.find(command.role)

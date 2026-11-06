@@ -36,7 +36,7 @@ class EndHelpersPastLimitsHandler(Handler[EndHelpersPastLimits, None]):
 
     def handle(self, command: EndHelpersPastLimits, context: Context) -> None:
         for helper in tuple(self.queries.query(Agent).filter(role=AgentRole.HELPER).matching(IsNull("ended_at")).all_rows()):
-            job = next((row for row in self.jobs.helper_jobs(helper.id) if row.ended_at is None), None)
+            job = self.jobs.open_job(helper.id)
             if job is not None and helper.parent_id is not None:
                 self.check(helper, job, context)
 

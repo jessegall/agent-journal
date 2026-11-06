@@ -6,7 +6,6 @@ from core.base.command.bus import Bus
 from core.base.command.command import Command
 from core.base.driver.refusal_skips import RefusalSkips
 from core.base.guard.guards import LIFECYCLE_GUARD
-from core.base.module.driver_entries import DRIVERS_MODULE
 from core.base.query.queries import Queries
 from core.base.refusal_log import RefusalLog
 from core.base.registry.registry import Registry
@@ -31,8 +30,7 @@ class TableRefusalSkips(RefusalSkips):
 
     def has_refused(self, agent_id: int, rule: str) -> bool:
         call = self.queries.query(HookCall).filter(session_agent_id=agent_id, answer=HookAnswer.REFUSED).newest().first()
-        rules = call.metadata.module_part(DRIVERS_MODULE).get("rules", []) if call is not None else []
-        return any(row.get("rule") == rule and row.get("outcome") == "refused" for row in rules)
+        return call is not None and any(row.get("rule") == rule for row in call.refused_rules)
 
     def check_guards(self, actor: Actor, guards: Sequence[str], reason: str) -> None:
         if actor.type is ActorType.AGENT:

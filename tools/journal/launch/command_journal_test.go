@@ -5,18 +5,49 @@ import (
 	"testing"
 )
 
-func TestTheCommandJournalReadsEnvironmentsWithTheirSuiteAndWhetherALiveSessionHoldsThem(t *testing.T) {
-	answers := map[string]string{
-		"environment list": `{"rows": [{"id": 1, "name": "main", "folder": "/work/shop", "branch": "main"}], "page": 1, "size": 1000, "total": 1}`,
-		"agent list":       `{"rows": [{"id": 2, "environment_id": 1, "role": "main", "ended_at": null, "session": "s-1", "program": "claude"}]}`,
-		"suite current":    `{"suite": "coding", "drivers": "main: coding.builder"}`,
-	}
+func TestTheCommandJournalReadsEveryEnvironmentInOneRequest(t *testing.T) {
+	var requests []string
 	journal := CommandJournal{Run: func(argv ...string) (string, error) {
-		return answers[strings.Join(argv[:2], " ")], nil
+		requests = append(requests, strings.Join(argv, " "))
+		return `{"rows": [{"id": 1, "name": "main", "folder": "/work/shop", "branch": "main", "suite": "coding", "main_running": true}, {"id": 2, "name": "second", "folder": "/work/two", "branch": "two", "suite": "coding", "main_running": false}]}`, nil
 	}}
 	environments, err := journal.Environments()
-	if err != nil || len(environments) != 1 || environments[0] != (Environment{ID: 1, Name: "main", Folder: "/work/shop", Branch: "main", Suite: "coding", Working: true}) {
+	if err != nil || len(environments) != 2 || environments[0] != (Environment{ID: 1, Name: "main", Folder: "/work/shop", Branch: "main", Suite: "coding", Working: true}) || environments[1].Working {
 		t.Fatalf("the environments read are %+v, %v", environments, err)
+	}
+	if len(requests) != 1 || requests[0] != "environment menu --json" {
+		t.Fatalf("the journal was asked %v", requests)
+	}
+}
+
+func TestTheCommandJournalStopsTheRunningMainsItIsToldOfPastAThousandAgents(t *testing.T) {
+	var requests []string
+	journal := CommandJournal{Run: func(argv ...string) (string, error) {
+		requests = append(requests, strings.Join(argv, " "))
+		if argv[1] == "running-main-agents" {
+			return `{"rows": [{"id": 1205}]}`, nil
+		}
+		return "", nil
+	}}
+	if err := journal.StopMainAgent("main"); err != nil {
+		t.Fatal(err)
+	}
+	wanted := []string{"agent running-main-agents --environment main --json", "agent stop 1205 --environment main"}
+	if strings.Join(requests, "; ") != strings.Join(wanted, "; ") {
+		t.Fatalf("the journal was asked %v", requests)
+	}
+}
+
+func TestTheCommandJournalKeepsTheOrderOfTheMainSessions(t *testing.T) {
+	journal := CommandJournal{Run: func(argv ...string) (string, error) {
+		if strings.Join(argv, " ") != "agent main-sessions claude --environment main --json" {
+			t.Fatalf("the journal was asked %v", argv)
+		}
+		return `{"rows": [{"session": "s-new"}, {"session": "s-old"}]}`, nil
+	}}
+	conversations, err := journal.Conversations("main", "claude")
+	if err != nil || len(conversations) != 2 || conversations[0].Session != "s-new" {
+		t.Fatalf("the conversations read are %+v, %v", conversations, err)
 	}
 }
 

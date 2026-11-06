@@ -30,6 +30,12 @@ from server.server_context import ServerContext
 
 
 STOP_NAME = "stop"
+TOOL_NAME = "pre_tool_use"
+LEAST_BUSY_SECONDS = 0.1
+REQUEST_LOG_BUSY_SECONDS = 0.05
+ROLE_FIELD = "role"
+MAIN_ROLE = "main"
+UNCHECKED_TOOL = "the journal could not check this tool, so it did not run: {reason}. Run it once more. If that is refused as well, stop and write in your report that the journal does not answer."
 
 
 def is_stop_body(data: object) -> bool:
@@ -38,12 +44,18 @@ def is_stop_body(data: object) -> bool:
     return STOP_NAME in (str(data.get("event")).lower(), str(data.get("hook_event_name")).lower())
 
 
+def requires_check(data: object) -> bool:
+    return is_mapping(data) and data.get("event") == TOOL_NAME and data.get(ROLE_FIELD) not in (None, "", MAIN_ROLE)
+
+
 class HookEndpoint:
     """Answers POST /hook: reads a hook's object, prepared or raw, and runs it through the hook
     route on a synced journal over the connection the server's hooks share, waiting for another
-    writer up to the hook limit. A stale registry, a wait past the limit or a fault outside the
-    rules lets the hook through with one line, except a stop, which is refused, since a stop the
-    journal cannot check may leave work open; a fault goes to the server log."""
+    writer up to the hook limit, which leaves the client time to hear the answer. A stale registry,
+    a wait past the limit or a fault outside the rules lets the hook through with one line, except a
+    stop, which is refused, since a stop the journal cannot check may leave work open, and a tool of
+    a worker or helper, which never runs unchecked; a fault goes to the server log. The request log
+    takes no time from other hooks: a record that has to wait is dropped."""
 
     def __init__(self, timing: Timing, context: ServerContext) -> None:
         self.timing, self.context = timing, context
@@ -72,18 +84,19 @@ class HookEndpoint:
         outcome = HookAnswer.REFUSED
         try:
             with container.get(RequestWatch).watching(["hook", program]):
-                reply = self.prepared_answer(data, program, headers, database, container)
+                reply = self.prepared_answer(data, program, headers, database, container, started_at)
             outcome = HookAnswer.REFUSED if reply.refusal else HookAnswer.ALLOWED
             return reply
         finally:
             try:
+                database.set_busy_timeout(REQUEST_LOG_BUSY_SECONDS)
                 container.get(HookRequestLog).record(program, headers, data, (perf_counter() - started_at) * 1000, outcome)
             except sqlite3.Error as error:
                 self.context.files.log_line(f"request recording failed: {error}")
 
-    def prepared_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, container: Container) -> HookReply:
+    def prepared_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, container: Container, started_at: float) -> HookReply:
         event = self.event(data, program, headers, container.get(Providers))
-        database.set_busy_timeout(self.context.hook_limit_seconds)
+        database.set_busy_timeout(max(self.context.hook_limit_seconds - (perf_counter() - started_at), LEAST_BUSY_SECONDS))
         tools = container.get(PerformanceTools)
         start_points = tools.begin()
         try:
@@ -114,10 +127,14 @@ class HookEndpoint:
         self.context.files.log_line("".join(traceback.format_exception(error)))
         if is_stop_body(data):
             return HookReply(refusal=f"the journal failed on this stop and holds it: {type(error).__name__}: {error}")
+        if requires_check(data):
+            return HookReply(refusal=UNCHECKED_TOOL.format(reason=f"{type(error).__name__}: {error}"))
         return HookReply.allowed(f"the journal failed on this hook and let it through: {type(error).__name__}: {error}")
 
     def unchecked(self, data: object, reason: Exception) -> HookReply:
         if is_stop_body(data):
             return HookReply(refusal=f"the journal could not check this stop and holds it: {reason}")
+        if requires_check(data):
+            return HookReply(refusal=UNCHECKED_TOOL.format(reason=reason))
         return HookReply.allowed(f"the journal let this through unchecked: {reason}")
 
