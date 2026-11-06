@@ -241,6 +241,12 @@ class WorktreeGit:
         untracked = self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--others", "--exclude-standard").stdout.splitlines()
         return tuple(dict.fromkeys(path for path in (*tracked, *untracked) if path))
 
+    def has_commit(self, folder: str, commit: str) -> bool:
+        return self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", f"{commit}^{{commit}}").returncode == 0
+
+    def commit_holds(self, folder: str, commit: str, relative: str) -> bool:
+        return self.git(folder, GIT_LIMIT_SECONDS, "cat-file", "-e", f"{commit}:{relative}").returncode == 0
+
     def checked(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:
         finished = self.git(folder, limit_seconds, *arguments)
         if finished.returncode != 0:

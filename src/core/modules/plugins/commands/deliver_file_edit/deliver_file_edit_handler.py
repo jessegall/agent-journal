@@ -1,6 +1,9 @@
 import json
+from pathlib import Path
 
+from core.base.agent_checkouts import AgentCheckouts
 from core.base.agent_role import AgentRole
+from core.base.checkout_file import CheckoutFile
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -19,13 +22,16 @@ class DeliverFileEditHandler(Handler[DeliverFileEdit, None]):
 
     command = DeliverFileEdit
 
-    def __init__(self, runnable: RunnablePlugins, queries: Queries, bus: Bus) -> None:
-        self.runnable, self.queries, self.bus = runnable, queries, bus
+    def __init__(self, runnable: RunnablePlugins, queries: Queries, bus: Bus, checkouts: AgentCheckouts) -> None:
+        self.runnable, self.queries, self.bus, self.checkouts = runnable, queries, bus, checkouts
 
     def handle(self, command: DeliverFileEdit, context: Context) -> None:
         role = self.queries.query(Agent).find(command.agent_id).role
-        data = json.dumps({"path": command.path, "type": "edit", OLD_TYPE_KEY: "edit", "lines": [dict(row) for row in command.lines], "cwd": command.folder})
-        for runnable in self.runnable.running():
-            manifest = runnable.manifest
-            if FILE_EDITED in manifest.event_names and (role == AgentRole.MAIN or manifest.reaches_role(FILE_EDITED, role)):
-                self.bus.dispatch(DeliverPluginEvent(runnable.plugin.id, command.agent_id, FILE_EDITED, data), context)
+        hearing = [runnable for runnable in self.runnable.running() if FILE_EDITED in runnable.manifest.event_names and (role == AgentRole.MAIN or runnable.manifest.reaches_role(FILE_EDITED, role))]
+        if not hearing:
+            return
+        written = Path(command.folder) / command.path
+        file = CheckoutFile.named(self.checkouts.checkout_of_file(command.agent_id, written), written)
+        data = json.dumps({"path": command.path, "type": "edit", OLD_TYPE_KEY: "edit", "lines": [dict(row) for row in command.lines], "cwd": command.folder, "file": file.values()})
+        for runnable in hearing:
+            self.bus.dispatch(DeliverPluginEvent(runnable.plugin.id, command.agent_id, FILE_EDITED, data), context)

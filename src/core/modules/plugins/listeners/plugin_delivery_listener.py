@@ -1,6 +1,11 @@
 import json
+from collections.abc import Mapping
+from pathlib import Path
 
+from core.base.agent_checkouts import AgentCheckouts
 from core.base.change.logged_event import LoggedEvent
+from core.base.checkout import Checkout
+from core.base.checkout_file import CheckoutFile
 from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.command.command import Command
@@ -26,6 +31,7 @@ from core.modules.plugins.support.plugins_module_name import MODULE_NAME
 from core.base.change.created import Created
 
 DELIVERY_LIMIT_MS = 60_000
+FILE_FIELD = "file"
 
 
 class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
@@ -34,8 +40,8 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
 
     name = "plugins.delivery"
 
-    def __init__(self, queries: Queries, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, clock: Clock, bus: Bus, actors: ModuleActors) -> None:
-        self.queries, self.folders, self.program, self.settings, self.clock, self.bus, self.actors = queries, folders, program, settings, clock, bus, actors
+    def __init__(self, queries: Queries, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, clock: Clock, bus: Bus, actors: ModuleActors, checkouts: AgentCheckouts) -> None:
+        self.queries, self.folders, self.program, self.settings, self.clock, self.bus, self.actors, self.checkouts = queries, folders, program, settings, clock, bus, actors, checkouts
 
     def handle(self, event: Created[PluginDelivery], logged: LoggedEvent) -> None:
         delivery = event.row
@@ -45,8 +51,11 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         manifest = PluginManifest.read(self.folders.code(plugin.name))
         environment = self.queries.query(Environment).find(delivery.environment_id).name
         data: object = json.loads(delivery.data)
-        plugin_event = PluginEvent(delivery.event, {str(key): value for key, value in data.items()} if is_mapping(data) else {})
-        call = PluginCall(manifest, plugin_event, environment, self.clock.timestamp(), self.settings.values(plugin, manifest), delivery.session_agent_id)
+        event_data = {str(key): value for key, value in data.items()} if is_mapping(data) else {}
+        file_checkout = self.file_checkout(delivery, event_data)
+        if file_checkout is not None:
+            event_data[FILE_FIELD] = self.with_file_state(file_checkout, event_data[FILE_FIELD])
+        call = PluginCall(manifest, PluginEvent(delivery.event, event_data), environment, self.clock.timestamp(), self.settings.values(plugin, manifest), delivery.session_agent_id, file_checkout)
         try:
             answer = self.program.run(call, DELIVERY_LIMIT_MS)
         except PluginFaultError as fault:
@@ -58,6 +67,15 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
             PluginQueue(self.folders.data(plugin.name)).add(environment, delivery.session_agent_id, answer.line, f"delivery-{delivery.id}")
         if answer.has_output():
             self.record(logged, delivery, AddPluginOutput(plugin.id, delivery.session_agent_id, answer.output))
+
+    def file_checkout(self, delivery: PluginDelivery, event_data: Mapping[str, object]) -> Checkout | None:
+        file = event_data.get(FILE_FIELD)
+        return self.checkouts.checkout_of_file(delivery.session_agent_id, Path(str(file["path"]))) if is_mapping(file) else None
+
+    def with_file_state(self, checkout: Checkout, values: object) -> dict[str, object]:
+        """Asks how the file stands here and not when the delivery is saved, since this runs with no lock and may run git."""
+        file = CheckoutFile.restored(values)
+        return file.with_state(self.checkouts.file_state(checkout, file.relative)).values()
 
     def record(self, logged: LoggedEvent, delivery: PluginDelivery, command: Command[object]) -> None:
         self.bus.run(command, self.actors.actor(MODULE_NAME), cause_id=logged.id)

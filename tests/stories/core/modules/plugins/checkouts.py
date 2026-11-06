@@ -133,8 +133,8 @@ def test_s49_an_edit_under_a_linked_library_is_linked_and_stays_with_the_worktre
 
 def released_with_an_edit(new_story):
     story = checkout_story(new_story)
-    scanned_edit(story, story.worker_session, ORDER, folder=story.worktree)
     story.expect_success(f'worker release {story.worker.id} "{RELEASE_REASON}"', actor=story.agent)
+    scanned_edit(story, story.worker_session, ORDER, folder=story.worktree)
     return story
 
 

@@ -25,3 +25,7 @@ class Checkout:
     @classmethod
     def of_copy(cls, folder: Path, project_folder: Path, branch: str, base_branch: str, base_commit: str, exists: bool) -> "Checkout":
         return cls(CheckoutKind.WORKTREE, folder.resolve(), project_folder.resolve(), branch, base_branch, base_commit, exists)
+
+    def values(self) -> dict[str, object]:
+        return {"kind": self.kind.value, "root": str(self.root), "project_root": str(self.project_root), "branch": self.branch, "base_branch": self.base_branch,
+                "base_commit": self.base_commit, "exists": self.exists}
