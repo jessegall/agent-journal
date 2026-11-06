@@ -11,7 +11,7 @@ def test_a_title_over_its_limit_is_refused_with_a_line_that_says_where_the_rest_
     story = new_story(fixture=AgentStarted)
     story.expect_refusal(f'question ask "{"x" * 61}" --context "Some sentences." --environment main', "a question's title is 1 to 60 characters, not 61", actor=story.agent)
     story.expect_refusal(f'question ask "{"x" * 61}" --context "Some sentences." --environment main', "put the rest in --context", actor=story.agent)
-    story.expect_success(f'question ask "{"x" * 60}" --context "Some sentences." --environment main', "question 1 asked", actor=story.agent)
+    story.expect_success(f'question ask "{"x" * 60}" --context "Some sentences." --environment main', "question 1 asked; waiting for the answer", actor=story.agent)
 
 
 def test_a_question_without_context_is_refused_with_a_line_that_says_what_to_add(new_story):
