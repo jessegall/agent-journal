@@ -1,21 +1,24 @@
 import json
 import sqlite3
 from datetime import timedelta
+from pathlib import Path
 from threading import Event
 
 import pytest
 
 from core.base.provider.transcript_entries import TranscriptEntries
-from core.base.database.database import BUSY_TIMEOUT_SECONDS
+from core.base.database.database import BUSY_TIMEOUT_SECONDS, Database
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.server.support.server_client import server_story
 from server.endpoints.hook_endpoint import HookEndpoint
+from server.hook.hook_delivery_retries import HookDeliveryRetries
 from server.hook.queue_priority import QueuePriority
 
 AGENT_TEXT = "Loading the nudge records takes 10.5 seconds, so I am reading the query code now."
 TOOL_FINISHED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
 HOOK_DELAY = timedelta(seconds=30)
+RETRY_BUSY_SECONDS = 0.05
 
 
 def agent_row(story, text: str, age: timedelta = timedelta()) -> dict[str, object]:
@@ -207,6 +210,35 @@ def test_a_lost_hook_answer_retries_its_messages_after_another_writer_releases_t
     refusal, delivered_lines = server.hook_decision(hook_body("already-delivered"), {})
     server.story.expect_rows(refusal == "")
     server.story.expect_rows("new message 1" not in str(delivered_lines))
+
+
+def lost_answers_folder(story) -> Path:
+    folder = story.home.folder / "runtime" / "lost-hook-answers"
+    folder.mkdir(parents=True, exist_ok=True)
+    return folder
+
+
+@pytest.mark.parametrize("file_name", ["999999", "not-a-number"])
+def test_a_lost_answer_file_that_cannot_be_retried_is_logged_and_removed_and_the_hook_is_answered(server, file_name):
+    folder = lost_answers_folder(server.story)
+    (folder / file_name).touch()
+    server.expect_hook_answer("/hook", hook_body(f"after-{file_name}"), 200, "new message 1")
+    server.story.expect_rows(not list(folder.iterdir()), f"lost hook answer {file_name} cannot be retried and is removed" in server.story.error_log_text())
+
+
+def test_a_retry_that_finds_the_database_busy_fails_nothing_and_keeps_its_file(builder):
+    reply = builder.hook("s-1", HookSamples.prompt("go on"))
+    retries = HookDeliveryRetries(builder.home)
+    retries.keep(reply.hook_call_id)
+    builder.container.get(Database).set_busy_timeout(RETRY_BUSY_SECONDS)
+    with sqlite3.connect(builder.home.database) as writer:
+        writer.execute("BEGIN IMMEDIATE")
+        retries.retry(builder.container)
+        writer.rollback()
+    folder = lost_answers_folder(builder)
+    builder.expect_rows(list(folder.iterdir()), "will retry at the next hook" in builder.error_log_text())
+    retries.retry(builder.container)
+    builder.expect_rows(not list(folder.iterdir()))
 
 
 def test_a_hook_returns_its_connection_with_the_default_busy_timeout(server):

@@ -26,6 +26,7 @@ FAILURE_LIMIT_ATTEMPTS = 3
 CHAIN_LIMIT_ROUNDS = 50
 COSTLY_LISTENER_POINTS = 500
 SLOW_LISTENER_SECONDS = 0.5
+PROGRAM_STOP_RUN_ORDER = 500
 PLUGIN_RUN_ORDER = 1000
 
 
@@ -49,7 +50,10 @@ class CommitListenerRunner:
 
     def run_ordinary(self) -> None:
         self.flush_exceptions()
-        self.run_rounds([entry for entry in self.commit_entries() if not self.is_urgent(entry) and not self.is_plugin(entry)], [])
+        self.run_rounds([entry for entry in self.commit_entries() if not self.is_urgent(entry) and not self.has_slow_round(entry)], [])
+
+    def run_program_stops(self) -> None:
+        self.run_rounds([entry for entry in self.commit_entries() if self.has_slow_round(entry) and not self.is_plugin(entry)], [])
 
     def run_plugin_deliveries(self) -> None:
         self.run_rounds([entry for entry in self.commit_entries() if self.is_plugin(entry)], [])
@@ -73,13 +77,16 @@ class CommitListenerRunner:
     def is_plugin(self, entry: ListenerEntry) -> bool:
         return self.run_order(entry) >= PLUGIN_RUN_ORDER
 
+    def has_slow_round(self, entry: ListenerEntry) -> bool:
+        return self.run_order(entry) >= PROGRAM_STOP_RUN_ORDER
+
     def run_rounds(self, entries: list[ListenerEntry], urgent_entries: list[ListenerEntry]) -> None:
         if self.positions_stale:
             self.positions, self.positions_stale = {}, False
         state = self.container.get(PerformanceState)
         boot_event = state.boot_event()
         for _ in range(CHAIN_LIMIT_ROUNDS):
-            if boot_event and not self.cursors.has_pending_events(boot_event, [entry.name for entry in self.commit_entries() if self.is_plugin(entry)]):
+            if boot_event and not self.cursors.has_pending_events(boot_event, [entry.name for entry in self.commit_entries() if self.has_slow_round(entry)]):
                 state.finish_start()
             if not self.cursors.has_unhandled_events():
                 return
