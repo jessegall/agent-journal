@@ -1,3 +1,4 @@
+from core.modules.processes.support.progress_listing import ProgressListing
 from core.modules.processes.support.run_counts import RunCounts
 from dataclasses import replace
 
@@ -35,11 +36,12 @@ class RunnerRewriteRule(DriverRule):
     history = True
     overlay_proof = True
 
-    def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory, listings: RunCounts, types: AgentTypeBook, folders: AgentWriteFolder, shell_sandbox: ShellSandbox) -> None:
+    def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory, listings: RunCounts, types: AgentTypeBook, folders: AgentWriteFolder, shell_sandbox: ShellSandbox, progress_listing: ProgressListing) -> None:
         self.limits, self.runner, self.hook_history, self.listings = limits, runner, hook_history, listings
         self.types = types
         self.folders = folders
         self.shell_sandbox = shell_sandbox
+        self.progress_listing = progress_listing
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
@@ -66,7 +68,9 @@ class RunnerRewriteRule(DriverRule):
         process = next((made for made in results if isinstance(made, Process)), None)
         if process is None:
             return {}
-        run = replace(run, count_line=self.listings.line(process))
+        listing = self.progress_listing.for_process(process)
+        run = replace(run, count_line=self.listings.line(process), progress_count_line=listing.line if listing else "",
+                      progress_count_position=listing.position if listing else 0, progress_count_pattern=listing.pattern if listing else "")
         kept = {str(field): value for field, value in hook.event.tool_input().items() if field != BACKGROUND_FLAG}
         return {**kept, "command": RunnerLine.build(self.runner.path, process.id, run, shell.runner_text, hook.event.session)}
 

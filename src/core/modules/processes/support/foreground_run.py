@@ -21,6 +21,9 @@ class ForegroundRun:
     part_commands: tuple[PartCommand, ...] = ()
 
     count_line: str = ""
+    progress_count_line: str = ""
+    progress_count_position: int = 0
+    progress_count_pattern: str = ""
     most_output_bytes: int = 0
     read_flags: tuple[str, ...] = ()
     queue_wait_seconds: int = 5

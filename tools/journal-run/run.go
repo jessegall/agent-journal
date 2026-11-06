@@ -18,6 +18,9 @@ const pollInterval = 20 * time.Millisecond
 // runner; when it is nil the run goes on in this program.
 type Options struct {
 	Count                string
+	ProgressCount        string
+	ProgressPosition     int
+	ProgressPattern      string
 	Listing              ListingOptions
 	Process              int
 	LimitSeconds         int
@@ -76,7 +79,7 @@ func Run(options Options, client Client, stdout io.Writer) int {
 	folder, parts := NewFolder(options.Home, options.Process), Parts(options.Line)
 	listing := options.Listing
 	listing.Shell = options.Shell
-	if err := folder.Start(options.Line, parts, LockWait(options.Home, options.Process, parts, options.Aliases, options.OnlyReads)+CountWait(folder.Path, options.Count, listing)+SlotWait(options.Home, options.Process, options.Queue, options.SlotWaitLimitSeconds)+Script(parts, folder.Path)); err != nil {
+	if err := folder.Start(options.Line, parts, LockWait(options.Home, options.Process, parts, options.Aliases, options.OnlyReads)+CountWait(folder.Path, options.Count, listing)+SlotWait(options.Home, options.Process, options.Queue, options.SlotWaitLimitSeconds)+Script(parts, folder.Path, ProgressListing{Line: options.ProgressCount, Position: options.ProgressPosition, Pattern: options.ProgressPattern, Options: listing})); err != nil {
 		fmt.Fprintf(stdout, "the journal could not keep process %d: %v\n", options.Process, err)
 		return Bypass(options, stdout)
 	}

@@ -333,3 +333,27 @@ class OutputFolder:
     def write_count(self, process_id: int, text: str, status: int) -> None:
         self.write(process_id, COUNT_OUTPUT, text)
         self.write_number(process_id, COUNT_STATUS, status)
+
+    def progress_count_status(self, process_id: int) -> int | None:
+        return self.number(process_id, "progress-count/counted")
+
+    def progress_count_text(self, process_id: int) -> str:
+        return self.text(process_id, "progress-count/count.out")
+
+    def has_progress_count(self, process_id: int) -> bool:
+        return (self.home.folder / FOLDER_NAME / str(process_id) / "count-known").exists()
+
+    def mark_progress_count(self, process_id: int) -> None:
+        self.write(process_id, "count-known", "1")
+
+    def progress_count_read(self, process_id: int) -> bool:
+        return (self.home.folder / FOLDER_NAME / str(process_id) / "progress-count-read").exists()
+
+    def mark_progress_count_read(self, process_id: int) -> None:
+        self.write(process_id, "progress-count-read", "1")
+
+    def write_progress_count(self, process_id: int, text: str, status: int) -> None:
+        folder = self.home.folder / FOLDER_NAME / str(process_id) / "progress-count"
+        folder.mkdir(parents=True, exist_ok=True)
+        FileAccess.shared().write(folder / COUNT_OUTPUT, text)
+        FileAccess.shared().write(folder / COUNT_STATUS, str(status))
