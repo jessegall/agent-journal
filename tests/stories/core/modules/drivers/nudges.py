@@ -149,7 +149,7 @@ def test_a_hook_reads_only_the_records_of_its_own_lines(new_story):
     context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
     with story.container.get(Database).transaction():
         log.write(story.agent.id, RuleAnswers(["lead"], [RuleRecord("sample", "lead", answer.outcome, answer)]), context)
-    rows = story.container.get(NudgeRecords).rows_of(story.agent.id, [own])
+    rows = story.container.get(NudgeRecords).nudge_rows(story.agent.id, [own])
     expect_value([row.key for row in rows], ["sample.own"])
 
 
@@ -163,7 +163,7 @@ def test_a_line_on_a_clock_finds_its_newest_record_though_its_text_changed(new_s
     context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
     with story.container.get(Database).transaction():
         log.write(story.agent.id, RuleAnswers(["lead"], [RuleRecord("sample", "lead", answer.outcome, answer)]), context)
-    rows = story.container.get(NudgeRecords).rows_of(story.agent.id, [changed])
+    rows = story.container.get(NudgeRecords).nudge_rows(story.agent.id, [changed])
     expect_value([row.text for row in rows], ["Used 10"])
 
 
