@@ -170,21 +170,21 @@ def test_s17_a_commit_script_that_never_ends_holds_up_no_listener_and_a_server_s
 
 
 def test_a_commit_delivery_a_server_stop_cut_short_and_one_still_queued_run_after_the_restart(journal, client):
-    started, never_written, calls = (journal.home.folder.parent / name for name in ("started", "never-written", "calls"))
+    started, unwritten_pipe, run_log = (journal.home.folder.parent / name for name in ("started", "never-written", "calls"))
     os.mkfifo(started)
-    os.mkfifo(never_written)
-    script = f"""echo run >> '{calls}'\nif [ "$(wc -l < '{calls}' | tr -d ' ')" = 1 ]; then echo started > '{started}'; read answer < '{never_written}'; fi"""
+    os.mkfifo(unwritten_pipe)
+    script = f"""echo run >> '{run_log}'\nif [ "$(wc -l < '{run_log}' | tr -d ' ')" = 1 ]; then echo started > '{started}'; read answer < '{unwritten_pipe}'; fi"""
     start_with_plugin(journal, client, {"event": TASK_CREATED, "commit": "script.sh"}, script)
     expect_line(journal, client, *SECOND_JOB_LINE)
     assert "started" in wait_for_line(started)
     expect_line(journal, client, "task", "make", LATER_JOB_TITLE, "--brief", "Do it", "--environment", "main")
     journal.stop_with(client)
-    assert calls.read_text().split() == ["run"]
+    assert run_log.read_text().split() == ["run"]
     journal.start_server()
     journal.wait_healthy()
     deadline = time.monotonic() + STARTED_LIMIT_SECONDS
-    while len(calls.read_text().split()) < 3:
-        assert time.monotonic() < deadline, calls.read_text()
+    while len(run_log.read_text().split()) < 3:
+        assert time.monotonic() < deadline, run_log.read_text()
         time.sleep(READ_SLICE_SECONDS)
 
 
