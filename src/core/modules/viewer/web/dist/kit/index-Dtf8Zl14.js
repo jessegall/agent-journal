@@ -1575,7 +1575,7 @@ function Ou({ window: e, environment: t, agent: n, visible: a, permissions: s, e
     cancel: () => I.abort(),
     signal: I.signal,
     subscriptions: l,
-    follow: (z, X) => l.follow(e, z.filter((re) => o.some((ie) => gs(ie, re))), (re) => {
+    follow: (z, X) => l.follow(e, [z].flat().filter((re) => o.some((ie) => gs(ie, re))), (re) => {
       W.clear(), X(re);
     }, a),
     open: r,
@@ -11373,7 +11373,7 @@ function m8(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const p8 = wi(() => import("./VoiceFigure--k4T0w03.js").then((e) => e.V)), g8 = "1.2.0", v8 = "3.5";
+const p8 = wi(() => import("./VoiceFigure-B5KZMuk1.js").then((e) => e.V)), g8 = "1.2.0", v8 = "3.5";
 export {
   Id as $,
   _e as A,
