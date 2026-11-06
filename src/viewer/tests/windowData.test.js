@@ -50,6 +50,24 @@ test("the first load asks for what is on screen, with the tab in its state", asy
     expect(data.props.closed.data.value).toBeUndefined();
 });
 
+test("a late answer cannot replace a newer read of the same key", async () => {
+    const waiting = [];
+    const {app, data} = mounted({answer: (request) => request.only.length
+        ? new Promise((resolve) => waiting.push(resolve))
+        : {ok: true, value: {declared: DECLARED, keys: {}}}});
+    await settled();
+    const older = data.reload("rows");
+    await settled();
+    const newer = data.reload("rows");
+    await settled();
+    waiting[1]({ok: true, value: {declared: DECLARED, keys: {rows: {ok: true, value: "newer"}}}});
+    await newer;
+    waiting[0]({ok: true, value: {declared: DECLARED, keys: {rows: {ok: true, value: "older"}}}});
+    await older;
+    expect(data.props.rows.data.value).toBe("newer");
+    app.unmount();
+});
+
 test("a tab switch asks only for the key of that tab, and not again", async () => {
     const {asked, tab} = mounted({});
     await settled();

@@ -20,8 +20,10 @@ export function useWindowData(context) {
     const asked = [];
     const waiting = new Set();
     const joined = {names: new Set(), answer: null};
+    const readNumbers = {};
     let declared = {};
     let join = 0;
+    let latestRead = 0;
 
     function propOf(name) {
         const key = () => declared[name] ?? declared[`${name.slice(0, name.lastIndexOf("."))}.*`] ?? {};
@@ -61,13 +63,18 @@ export function useWindowData(context) {
     }
 
     async function read(only) {
+        const number = ++latestRead;
+        const names = only.length ? only : Object.keys(declared).filter((name) => !name.endsWith(ID_KEY_SUFFIX) && declared[name].loading === "first" && isOnScreen(name));
+        names.forEach((name) => (readNumbers[name] = number));
         const answer = await context.readKeys({only, state: {...state}});
         if (!answer.ok) {
-            if (answer.failure !== "cancelled") (only.length ? only : Object.keys(held)).forEach((name) => props[name].showFirst(answer));
+            if (answer.failure !== "cancelled") (only.length ? only : Object.keys(held)).filter((name) => (readNumbers[name] ?? 0) <= number).forEach((name) => props[name].showFirst(answer));
             return false;
         }
         follow(answer.value.declared);
         Object.entries(answer.value.keys).forEach(([name, result]) => {
+            if ((readNumbers[name] ?? 0) > number) return;
+            readNumbers[name] = number;
             props[name].readAt = Date.now();
             if (result.ok) props[name].data.value = result.value;
             props[name].showFirst(result);

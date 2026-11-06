@@ -28,7 +28,7 @@ def test_the_feed_reads_its_selected_agents_edits_and_saved_view_together(file_f
     server, cookie, _ = file_feed_server
     status, answer = window_data(server, cookie, window="coding.file-feed", query=f"environment=main&edits.agent={server.story.agent.id}")
     server.story.expect_rows(status == 200, set(answer["keys"]) == {"edits", "view"})
-    assert answer["keys"]["view"]["code"] == 0, answer["keys"]["view"]
+    server.story.expect_rows(answer["keys"]["view"]["code"] == 0)
     rows = answer["keys"]["edits"]["value"]["rows"]
     server.story.expect_rows(len(rows) == 1, rows[0]["path"] == "cart.py", rows[0]["session_agent_id"] == server.story.agent.id,
                              answer["keys"]["view"]["value"]["value"]["headers"])

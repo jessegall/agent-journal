@@ -13,6 +13,7 @@ from core.base.viewer.window_search import WindowSearch
 from suites.coding.support.file_edit_searcher import FileEditSearcher
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_key import WindowKey
+from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.auto_scroll import AutoScroll
 from core.base.viewer.choice_option import ChoiceOption
 from core.base.viewer.window_icon import WindowIcon
@@ -84,7 +85,10 @@ class CodingModule(Module):
     listeners = [FullTestRunListener]
     subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand, FileEditFileSubcommand, RecordFileChangesSubcommand]
     windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, skeleton=CODING_GIT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"]),
-               WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, skeleton=CODING_FILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"], search=WindowReadSearch("project-file find", "Find a file in the project")),
+               WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, skeleton=CODING_FILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"], search=WindowReadSearch("project-file find", "Find a file in the project"),
+                                 keys=[WindowKey("entries", "project-file list {folder}"),
+                                       WindowKey("matches", "project-file find {words}", loading=KeyLoading.REQUESTED),
+                                       WindowKey("file", "project-file show {path}", loading=KeyLoading.REQUESTED)]),
                WindowDeclaration("coding.work-mode", "Work mode", "work-mode.js", WindowLoading.COMPONENT, skeleton=CODING_WORK_MODE_SKELETON, icon=WindowIcon.WINDOW, place=WindowPlace.HEADER,
                                  reads=["suite current", "setting show", "usage bars"], runs=["driver choose", "setting set"]),
                WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, skeleton=CODING_FILE_FEED_SKELETON, search=WindowSearch(FileEditSearcher, "Filter files"), icon=WindowIcon.FILE, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM, reads=[*FILE_EDIT_READS, "file-edit file", "window setting"],

@@ -1,16 +1,16 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-673ac7e81b93")) { const style = document.createElement("style"); style.id = "window-styles-673ac7e81b93"; style.textContent = ".file-feed[data-v-8b399261]{display:flex;flex:1;flex-direction:column;min-height:0}.file-feed-older[data-v-8b399261]{align-self:flex-start;margin:0 0 6px;padding:2px 8px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.file-feed-older[data-v-8b399261]:hover{background:var(--hover);color:var(--text)}.main[data-v-54b1097d]{flex:1}.note[data-v-54b1097d]{color:var(--text-3);font-size:12px}.feed-bar-lines[data-v-db39481b]{display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding:6px 10px;font-size:13px}.file-feed[data-v-56c0605f]{display:flex;flex-direction:column;height:100%;min-height:0;container-type:inline-size}.file-feed-flow[data-v-56c0605f]{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;padding:12px}.file-feed.flush .file-feed-flow[data-v-56c0605f]{gap:0;padding:0}.file-feed-failure[data-v-56c0605f]{padding:8px 12px;color:var(--danger)}.files[data-v-dbafbde1]{display:flex;flex-direction:column;height:100%;min-height:0}.files-bar[data-v-dbafbde1]{flex-wrap:wrap;gap:4px}.files-body[data-v-dbafbde1]{display:grid;flex:1;grid-template-columns:minmax(220px,1fr) 3fr;min-height:0}.files-list[data-v-dbafbde1]{overflow-y:auto;padding:6px;border-right:1px solid var(--border)}.files-row[data-v-dbafbde1]{display:flex;gap:8px;align-items:center;width:100%;padding:4px 8px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;font-size:13px;text-align:left;cursor:pointer}.files-row[data-v-dbafbde1]:hover,.files-row.on[data-v-dbafbde1]{background:var(--hover)}.files-name[data-v-dbafbde1]{overflow:hidden;min-width:0;text-overflow:ellipsis;white-space:nowrap}.files-reader[data-v-dbafbde1]{overflow:auto;padding:14px 18px}.files-path[data-v-dbafbde1]{margin:0 0 10px;font-size:14px;font-weight:600}.files-text[data-v-dbafbde1]{margin:0;font-family:var(--mono, monospace);font-size:12.5px;line-height:1.5}.files-line[data-v-dbafbde1]{display:block;white-space:pre}.files-line.target[data-v-dbafbde1]{background:var(--hover)}.files-number[data-v-dbafbde1]{display:inline-block;width:44px;margin-right:12px;color:var(--text-3);text-align:right;-webkit-user-select:none;user-select:none}.files-note[data-v-dbafbde1]{margin:6px 8px;color:var(--text-2);font-size:13px}.git[data-v-bb046fe6]{display:flex;flex-direction:column;gap:24px;padding:24px 28px}.part[data-v-bb046fe6]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}h3[data-v-bb046fe6]{margin:0;font-size:13px;font-weight:600}.row[data-v-bb046fe6]{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;width:100%;font-size:13px}.row.current .name[data-v-bb046fe6]{font-weight:600}.name[data-v-bb046fe6],.subject[data-v-bb046fe6]{min-width:0;overflow-wrap:anywhere}.subject[data-v-bb046fe6]{flex:1}.sha[data-v-bb046fe6],.fact[data-v-bb046fe6]{color:var(--text-3);font-size:12px}.sha[data-v-bb046fe6]{font-family:var(--font-mono, ui-monospace, monospace)}.fact.failed[data-v-bb046fe6]{color:var(--danger)}.output-lines[data-v-c2fb1783]{overflow:auto}.output-follow[data-v-c2fb1783]{position:sticky;bottom:8px;display:block;width:fit-content;margin-left:auto;padding:3px 10px;border:1px solid var(--border-2);border-radius:999px;background:var(--raised);color:var(--text);font:inherit;font-size:11.5px;cursor:pointer;-webkit-user-select:none;user-select:none}.output-follow[data-v-c2fb1783]:hover{border-color:var(--accent)}.terminal-output[data-v-9b455f08]{max-height:240px;margin:4px 0 8px 18px;color:var(--text-3);white-space:pre-wrap;overflow-wrap:anywhere}.terminal[data-v-0d28fa33]{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--code-bg)}.terminal[data-v-0d28fa33] .terminal-body{flex:1;min-height:0;margin:0;padding:8px 12px;overflow:auto;color:var(--text-1);font-family:var(--font-mono, ui-monospace, monospace);font-size:12px;line-height:1.45}.terminal-row[data-v-0d28fa33]{display:flex;gap:7px;align-items:baseline}.terminal-mark[data-v-0d28fa33],.terminal-state[data-v-0d28fa33]{flex:none;color:var(--text-3)}.terminal-row.refused .terminal-text[data-v-0d28fa33],.terminal-row.refused .terminal-state[data-v-0d28fa33]{color:var(--danger)}.terminal-text[data-v-0d28fa33]{min-width:0;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.terminal-text.open[data-v-0d28fa33]{overflow-wrap:anywhere;white-space:pre-wrap}.terminal-run[data-v-0d28fa33]{display:flex;align-items:center;gap:8px;padding:6px 12px;border-top:1px solid var(--border);font-family:var(--font-mono, ui-monospace, monospace);font-size:12px}.terminal-prompt[data-v-0d28fa33]{color:var(--text-3)}.terminal-input[data-v-0d28fa33]{flex:1;min-width:0;border:0;outline:0;background:transparent;color:inherit;font:inherit}.terminal-failure[data-v-0d28fa33]{padding:8px 12px;color:var(--text-3)}.agentset[data-v-5e189437]{position:relative;display:flex;align-items:center;gap:10px;padding:3px 4px 3px 8px;border:1px solid var(--border-2);border-radius:8px}.agentset-settings[data-v-5e189437]{display:inline-flex;align-items:center;padding:3px 5px;border:0;border-radius:5px;background:none;color:var(--text-2);cursor:pointer}.agentset-settings[data-v-5e189437]:hover,.agentset-settings[aria-expanded=true][data-v-5e189437]{background:var(--hover);color:var(--text)}.agentset-menu[data-v-5e189437]{position:absolute;top:calc(100% + 8px);right:0;z-index:40;display:flex;flex-direction:column;gap:10px;width:260px;padding:12px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised);box-shadow:0 12px 32px #00000073}.agentset-row[data-v-5e189437]{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--text-2);font-size:12.5px}.agentset-failure[data-v-5e189437]{margin:0;color:var(--danger);font-size:12px}.agentset-ask[data-v-5e189437]{margin:0 0 8px;font-size:13px}.agentset-ask-buttons[data-v-5e189437]{display:flex;justify-content:flex-end;gap:8px}\n"; document.head.appendChild(style); }
-import { ref as c, computed as B, watch as T, openBlock as l, createElementBlock as o, createVNode as g, unref as f, withCtx as w, createTextVNode as C, Fragment as _, renderList as N, createBlock as P, toDisplayString as n, createElementVNode as u, createCommentVNode as O, normalizeClass as x } from "vue";
-import { useWindow as z, SearchBar as E, Btn as F, Skeleton as U, Icon as D } from "@journal/window-kit";
-import { _ as R } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const W = { class: "files" }, q = { class: "files-body" }, A = {
+if (!document.getElementById("window-styles-77e47b4ec492")) { const style = document.createElement("style"); style.id = "window-styles-77e47b4ec492"; style.textContent = ".file-feed[data-v-9177a858]{display:flex;flex:1;flex-direction:column;min-height:0}.file-feed-older[data-v-9177a858]{align-self:flex-start;margin:0 0 6px;padding:2px 8px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.file-feed-older[data-v-9177a858]:hover{background:var(--hover);color:var(--text)}.main[data-v-14b3f513]{flex:1}.note[data-v-14b3f513]{color:var(--text-3);font-size:12px}.feed-bar-lines[data-v-91d6f280]{display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding:6px 10px;font-size:13px}.file-feed[data-v-664713bb]{display:flex;flex-direction:column;height:100%;min-height:0;container-type:inline-size}.file-feed-flow[data-v-664713bb]{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;padding:12px}.file-feed.flush .file-feed-flow[data-v-664713bb]{gap:0;padding:0}.file-feed-failure[data-v-664713bb]{padding:8px 12px;color:var(--danger)}.files[data-v-6331643f]{display:flex;flex-direction:column;height:100%;min-height:0}.files-bar[data-v-6331643f]{flex-wrap:wrap;gap:4px}.files-body[data-v-6331643f]{display:grid;flex:1;grid-template-columns:minmax(220px,1fr) 3fr;min-height:0}.files-list[data-v-6331643f]{overflow-y:auto;padding:6px;border-right:1px solid var(--border)}.files-row[data-v-6331643f]{display:flex;gap:8px;align-items:center;width:100%;padding:4px 8px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;font-size:13px;text-align:left;cursor:pointer}.files-row[data-v-6331643f]:hover,.files-row.on[data-v-6331643f]{background:var(--hover)}.files-name[data-v-6331643f]{overflow:hidden;min-width:0;text-overflow:ellipsis;white-space:nowrap}.files-reader[data-v-6331643f]{overflow:auto;padding:14px 18px}.files-path[data-v-6331643f]{margin:0 0 10px;font-size:14px;font-weight:600}.files-text[data-v-6331643f]{margin:0;font-family:var(--mono, monospace);font-size:12.5px;line-height:1.5}.files-line[data-v-6331643f]{display:block;white-space:pre}.files-line.target[data-v-6331643f]{background:var(--hover)}.files-number[data-v-6331643f]{display:inline-block;width:44px;margin-right:12px;color:var(--text-3);text-align:right;-webkit-user-select:none;user-select:none}.files-note[data-v-6331643f]{margin:6px 8px;color:var(--text-2);font-size:13px}.git[data-v-f6654836]{display:flex;flex-direction:column;gap:24px;padding:24px 28px}.part[data-v-f6654836]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}h3[data-v-f6654836]{margin:0;font-size:13px;font-weight:600}.row[data-v-f6654836]{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;width:100%;font-size:13px}.row.current .name[data-v-f6654836]{font-weight:600}.name[data-v-f6654836],.subject[data-v-f6654836]{min-width:0;overflow-wrap:anywhere}.subject[data-v-f6654836]{flex:1}.sha[data-v-f6654836],.fact[data-v-f6654836]{color:var(--text-3);font-size:12px}.sha[data-v-f6654836]{font-family:var(--font-mono, ui-monospace, monospace)}.fact.failed[data-v-f6654836]{color:var(--danger)}.output-lines[data-v-07980c45]{overflow:auto}.output-follow[data-v-07980c45]{position:sticky;bottom:8px;display:block;width:fit-content;margin-left:auto;padding:3px 10px;border:1px solid var(--border-2);border-radius:999px;background:var(--raised);color:var(--text);font:inherit;font-size:11.5px;cursor:pointer;-webkit-user-select:none;user-select:none}.output-follow[data-v-07980c45]:hover{border-color:var(--accent)}.terminal-output[data-v-684bbf73]{max-height:240px;margin:4px 0 8px 18px;color:var(--text-3);white-space:pre-wrap;overflow-wrap:anywhere}.terminal[data-v-eb1177fa]{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--code-bg)}.terminal[data-v-eb1177fa] .terminal-body{flex:1;min-height:0;margin:0;padding:8px 12px;overflow:auto;color:var(--text-1);font-family:var(--font-mono, ui-monospace, monospace);font-size:12px;line-height:1.45}.terminal-row[data-v-eb1177fa]{display:flex;gap:7px;align-items:baseline}.terminal-mark[data-v-eb1177fa],.terminal-state[data-v-eb1177fa]{flex:none;color:var(--text-3)}.terminal-row.refused .terminal-text[data-v-eb1177fa],.terminal-row.refused .terminal-state[data-v-eb1177fa]{color:var(--danger)}.terminal-text[data-v-eb1177fa]{min-width:0;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.terminal-text.open[data-v-eb1177fa]{overflow-wrap:anywhere;white-space:pre-wrap}.terminal-run[data-v-eb1177fa]{display:flex;align-items:center;gap:8px;padding:6px 12px;border-top:1px solid var(--border);font-family:var(--font-mono, ui-monospace, monospace);font-size:12px}.terminal-prompt[data-v-eb1177fa]{color:var(--text-3)}.terminal-input[data-v-eb1177fa]{flex:1;min-width:0;border:0;outline:0;background:transparent;color:inherit;font:inherit}.terminal-failure[data-v-eb1177fa]{padding:8px 12px;color:var(--text-3)}.agentset[data-v-dc6f22ef]{position:relative;display:flex;align-items:center;gap:10px;padding:3px 4px 3px 8px;border:1px solid var(--border-2);border-radius:8px}.agentset-settings[data-v-dc6f22ef]{display:inline-flex;align-items:center;padding:3px 5px;border:0;border-radius:5px;background:none;color:var(--text-2);cursor:pointer}.agentset-settings[data-v-dc6f22ef]:hover,.agentset-settings[aria-expanded=true][data-v-dc6f22ef]{background:var(--hover);color:var(--text)}.agentset-menu[data-v-dc6f22ef]{position:absolute;top:calc(100% + 8px);right:0;z-index:40;display:flex;flex-direction:column;gap:10px;width:260px;padding:12px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised);box-shadow:0 12px 32px #00000073}.agentset-row[data-v-dc6f22ef]{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--text-2);font-size:12.5px}.agentset-failure[data-v-dc6f22ef]{margin:0;color:var(--danger);font-size:12px}.agentset-ask[data-v-dc6f22ef]{margin:0 0 8px;font-size:13px}.agentset-ask-buttons[data-v-dc6f22ef]{display:flex;justify-content:flex-end;gap:8px}\n"; document.head.appendChild(style); }
+import { ref as g, computed as _, watch as E, openBlock as s, createElementBlock as a, createVNode as C, unref as o, withCtx as V, createTextVNode as w, Fragment as v, renderList as N, createBlock as T, toDisplayString as u, createElementVNode as d, createCommentVNode as F, normalizeClass as I } from "vue";
+import { useWindow as U, SearchBar as D, Btn as L, Skeleton as O, Icon as R } from "@journal/window-kit";
+import { _ as W } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+const q = { class: "files" }, A = { class: "files-body" }, G = {
   class: "files-list",
   "data-files-list": ""
-}, G = {
+}, H = {
   key: 0,
   class: "files-note",
   role: "alert"
-}, H = {
+}, J = {
   key: 2,
   class: "files-note"
 }, K = ["data-file", "onClick"], M = { class: "files-name" }, Q = { class: "files-reader" }, X = {
@@ -23,116 +23,115 @@ const W = { class: "files" }, q = { class: "files-body" }, A = {
 }, ee = {
   class: "files-text",
   "data-file-text": ""
-}, te = ["data-file-line"], le = { class: "files-number" }, se = {
+}, te = ["data-file-line"], se = { class: "files-number" }, le = {
   key: 2,
   class: "files-note"
 }, ae = {
   __name: "ProjectFiles",
   setup(oe) {
-    const V = z(), i = c(""), r = c(""), v = c(null), p = c(""), d = c(null), h = c(""), m = c(0), j = B(() => i.value ? i.value.split("/") : []), k = (t) => j.value.slice(0, t + 1).join("/"), I = B(() => {
-      var t;
-      return (((t = d.value) == null ? void 0 : t.text) ?? "").split(`
+    const n = U();
+    n.state["entries.folder"] = "";
+    const r = g(""), c = g(""), h = _(() => n.props[c.value.trim() ? "matches" : "entries"]), p = _(() => h.value.loaded.value ? h.value.rows.value : null), B = _(() => h.value.failure.value), { data: f, failure: P } = n.props.file, m = g(0), j = _(() => r.value ? r.value.split("/") : []), k = (e) => j.value.slice(0, e + 1).join("/"), $ = _(() => {
+      var e;
+      return (((e = f.value) == null ? void 0 : e.text) ?? "").split(`
 `);
     });
-    let S = 0;
-    async function J() {
-      const t = ++S, s = r.value.trim(), e = await V.read(s ? `project-file find ${JSON.stringify(s)}` : `project-file list ${JSON.stringify(i.value)}`);
-      t === S && (p.value = e.ok ? "" : e.error, v.value = e.ok ? e.value.rows : []);
+    function x() {
+      const e = c.value.trim();
+      n.state["entries.folder"] = r.value, n.state["matches.words"] = e, n.reload(e ? "matches" : "entries");
     }
-    function L(t, s) {
-      var e;
-      t && s === m.value && ((e = t.scrollIntoView) == null || e.call(t, { block: "center" }));
+    function z(e, i) {
+      var t;
+      e && i === m.value && ((t = e.scrollIntoView) == null || t.call(e, { block: "center" }));
     }
-    async function $(t, s = 0) {
-      if (t.folder) {
-        r.value = "", i.value = t.id;
+    function S(e, i = 0) {
+      if (e.folder) {
+        c.value = "", r.value = e.id;
         return;
       }
-      m.value = s;
-      const e = await V.read(`project-file show ${JSON.stringify(t.id)}`);
-      h.value = e.ok ? "" : e.error, d.value = e.ok ? e.value : null;
+      m.value = i, n.state["file.path"] = e.id, n.reload("file");
     }
-    T([i, r], J, { immediate: !0 });
-    const y = new URLSearchParams(window.location.search);
-    return y.get("file") && $({ id: y.get("file"), folder: !1 }, Number(y.get("line")) || 0), (t, s) => (l(), o("div", W, [
-      g(f(E), {
-        modelValue: r.value,
-        "onUpdate:modelValue": s[1] || (s[1] = (e) => r.value = e),
+    E([r, c], x);
+    const y = new URLSearchParams(globalThis.location.search);
+    return y.get("file") && S({ id: y.get("file"), folder: !1 }, Number(y.get("line")) || 0), (e, i) => (s(), a("div", q, [
+      C(o(D), {
+        modelValue: c.value,
+        "onUpdate:modelValue": i[1] || (i[1] = (t) => c.value = t),
         class: "files-bar",
         "data-files-search": ""
       }, {
-        default: w(() => [
-          g(f(F), {
+        default: V(() => [
+          C(o(L), {
             small: "",
             "data-files-root": "",
-            disabled: !i.value,
-            onClick: s[0] || (s[0] = (e) => i.value = "")
+            disabled: !r.value,
+            onClick: i[0] || (i[0] = (t) => r.value = "")
           }, {
-            default: w(() => [...s[2] || (s[2] = [
-              C("Project", -1)
+            default: V(() => [...i[2] || (i[2] = [
+              w("Project", -1)
             ])]),
             _: 1
           }, 8, ["disabled"]),
-          (l(!0), o(_, null, N(j.value, (e, a) => (l(), P(f(F), {
-            key: k(a),
+          (s(!0), a(v, null, N(j.value, (t, l) => (s(), T(o(L), {
+            key: k(l),
             small: "",
-            "data-files-crumb": k(a),
-            onClick: (b) => i.value = k(a)
+            "data-files-crumb": k(l),
+            onClick: (b) => r.value = k(l)
           }, {
-            default: w(() => [
-              C(n(e), 1)
+            default: V(() => [
+              w(u(t), 1)
             ]),
             _: 2
           }, 1032, ["data-files-crumb", "onClick"]))), 128))
         ]),
         _: 1
       }, 8, ["modelValue"]),
-      u("div", q, [
-        u("div", A, [
-          p.value ? (l(), o("p", G, n(p.value), 1)) : v.value === null ? (l(), P(f(U), {
+      d("div", A, [
+        d("div", G, [
+          B.value ? (s(), a("p", H, u(B.value), 1)) : p.value === null ? (s(), T(o(O), {
             key: 1,
             shape: "rows"
-          })) : v.value.length ? O("", !0) : (l(), o("p", H, n(r.value ? "No file matches" : "This folder is empty"), 1)),
-          (l(!0), o(_, null, N(v.value ?? [], (e) => {
-            var a;
-            return l(), o("button", {
-              key: e.id,
+          })) : p.value.length ? F("", !0) : (s(), a("p", J, u(c.value ? "No file matches" : "This folder is empty"), 1)),
+          (s(!0), a(v, null, N(p.value ?? [], (t) => {
+            var l;
+            return s(), a("button", {
+              key: t.id,
               type: "button",
-              class: x(["files-row", { on: e.id === ((a = d.value) == null ? void 0 : a.path) }]),
-              "data-file": e.id,
-              onClick: (b) => $(e)
+              class: I(["files-row", { on: t.id === ((l = o(f)) == null ? void 0 : l.path) }]),
+              "data-file": t.id,
+              onClick: (b) => S(t)
             }, [
-              g(f(D), {
-                name: e.folder ? "folder" : "file",
+              C(o(R), {
+                name: t.folder ? "folder" : "file",
                 size: 13
               }, null, 8, ["name"]),
-              u("span", M, n(r.value ? e.id : e.name), 1)
+              d("span", M, u(c.value ? t.id : t.name), 1)
             ], 10, K);
           }), 128))
         ]),
-        u("div", Q, [
-          h.value ? (l(), o("p", X, n(h.value), 1)) : d.value ? (l(), o(_, { key: 1 }, [
-            u("h2", Y, n(d.value.path), 1),
-            d.value.cut ? (l(), o("p", Z, "Only the start of this file is shown.")) : O("", !0),
-            u("pre", ee, [
-              (l(!0), o(_, null, N(I.value, (e, a) => (l(), o("span", {
-                key: a,
+        d("div", Q, [
+          o(P) ? (s(), a("p", X, u(o(P)), 1)) : o(f) ? (s(), a(v, { key: 1 }, [
+            d("h2", Y, u(o(f).path), 1),
+            o(f).cut ? (s(), a("p", Z, "Only the start of this file is shown.")) : F("", !0),
+            d("pre", ee, [
+              (s(!0), a(v, null, N($.value, (t, l) => (s(), a("span", {
+                key: l,
                 ref_for: !0,
-                ref: (b) => L(b, a + 1),
-                class: x(["files-line", { target: a + 1 === m.value }]),
-                "data-file-line": a + 1
+                ref: (b) => z(b, l + 1),
+                class: I(["files-line", { target: l + 1 === m.value }]),
+                "data-file-line": l + 1
               }, [
-                u("span", le, n(a + 1), 1),
-                C(n(e) + `
+                d("span", se, u(l + 1), 1),
+                w(u(t) + `
 `, 1)
               ], 10, te))), 128))
             ])
-          ], 64)) : (l(), o("p", se, "Choose a file to read it here."))
+          ], 64)) : (s(), a("p", le, "Choose a file to read it here."))
         ])
       ])
     ]));
   }
-}, ce = /* @__PURE__ */ R(ae, [["__scopeId", "data-v-dbafbde1"]]);
+}, ce = /* @__PURE__ */ W(ae, [["__scopeId", "data-v-6331643f"]]);
 export {
   ce as default
 };

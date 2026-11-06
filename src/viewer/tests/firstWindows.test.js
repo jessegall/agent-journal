@@ -4,6 +4,7 @@ import {ref} from "vue";
 import {context, drawn, mounted, page, settle} from "./support/windowContext.js";
 import {fileEditsWindowContext} from "./support/fileEditsWindowContext.js";
 import {fileFeedWindowContext} from "./support/fileFeedWindowContext.js";
+import {projectFilesWindowContext} from "./support/projectFilesWindowContext.js";
 import {context as agentContext} from "./support/agentWindowContext.js";
 import Chat from "../../core/modules/messages/web/src/Chat.vue";
 import TaskList from "../../core/modules/tasks/web/src/tasks.js";
@@ -182,14 +183,14 @@ test("a line typed in the terminal goes to the agent, and a refusal gives it bac
 
 test("the files window opens the file its address names", async () => {
     window.history.pushState({}, "", "?page=coding.files&file=src/cart.py");
-    const shown = {...context({'project-file list ""': page([])}), read: async (line) => (line.startsWith("project-file show") ? {ok: true, value: {path: "src/cart.py", text: "TOTAL = 0"}} : page([]))};
+    const shown = {...projectFilesWindowContext({}), read: async (line) => (line.startsWith("project-file show") ? {ok: true, value: {path: "src/cart.py", text: "TOTAL = 0"}} : page([]))};
     const lines = [];
     const reading = shown.read;
     shown.read = async (line) => (lines.push(line), reading(line));
     const element = await mounted(ProjectFiles, shown);
     window.history.pushState({}, "", "?");
     await settle();
-    expect(lines).toContain('project-file show "src/cart.py"');
+    expect(lines).toContain("project-file show src/cart.py");
     expect(element.textContent).toContain("TOTAL = 0");
 });
 
@@ -197,7 +198,7 @@ test("the files window marks the line its address names and scrolls it into view
     window.history.pushState({}, "", "?page=coding.files&file=src/cart.py&line=2");
     const scrolled = [];
     window.HTMLElement.prototype.scrollIntoView = function () { scrolled.push(this.dataset.fileLine); };
-    const shown = {...context({'project-file list ""': page([])}), read: async (line) => (line.startsWith("project-file show") ? {ok: true, value: {path: "src/cart.py", text: "TOTAL = 0\nTAX = 1\nFEE = 2"}} : page([]))};
+    const shown = {...projectFilesWindowContext({}), read: async (line) => (line.startsWith("project-file show") ? {ok: true, value: {path: "src/cart.py", text: "TOTAL = 0\nTAX = 1\nFEE = 2"}} : page([]))};
     const element = await mounted(ProjectFiles, shown);
     window.history.pushState({}, "", "?");
     await settle();
