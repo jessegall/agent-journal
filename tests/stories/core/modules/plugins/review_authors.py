@@ -2,12 +2,15 @@ import json
 from datetime import timedelta
 from pathlib import Path
 
+from core.base.change.event_log import HIDDEN
+from core.base.command.bus import Bus
 from core.base.running_scripts import RunningScripts
+from core.modules.plugins.commands.prune_plugin_deliveries.prune_plugin_deliveries import PrunePluginDeliveries
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from tests.stories.core.modules.plugins.event_many import WORKTREE_MERGE
 from tests.stories.core.modules.plugins.support.checkout_stories import checkout_story
 from tests.stories.core.modules.plugins.support.event_stories import (
-    SECOND_JOB, TASK_CREATED, deliveries, event_page, event_plugin_story, install_event_plugin, plugin_row, script_calls)
+    SECOND_JOB, TASK_CREATED, deliveries, event_page, event_plugin_story, install_event_plugin, logged_events, plugin_row, script_calls)
 
 SAMPLE = Path("docs/samples/tidy-worktrees")
 KEEP_COUNT = 50
@@ -70,11 +73,20 @@ def test_s91_a_hand_in_names_odd_file_names_exactly(new_story):
     story.expect_rows(set(names) <= rows)
 
 
-def test_s92_old_deliveries_past_the_newest_are_pruned_on_the_tick(new_story):
+def test_s92_old_deliveries_past_the_newest_are_pruned_and_a_recent_one_stays(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "see.sh"})
     for number in range(KEEP_COUNT + 2):
         story.expect_success(f'task make "Job {number}" --brief "Do it" --environment main', actor=story.agent)
+    story.container.get(Bus).run(PrunePluginDeliveries(), story.user)
+    story.expect_rows(len(deliveries(story)) == KEEP_COUNT + 2)
     story.advance(timedelta(days=8))
-    story.tick("s-1")
-    story.run_listeners()
+    story.container.get(Bus).run(PrunePluginDeliveries(), story.user)
     story.expect_rows(len(deliveries(story)) == KEEP_COUNT)
+    story.expect_text("plugin record events --inputs", "Job", actor=story.user)
+
+
+def test_s92_a_delivery_keeps_its_data_out_of_the_event_log(new_story):
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "see.sh"})
+    story.expect_success(SECOND_JOB, actor=story.agent)
+    logged = logged_events(story, "plugin_delivery.create")
+    story.expect_rows(logged[-1].data["data"] == [HIDDEN, HIDDEN])

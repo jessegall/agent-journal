@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import ClassVar
 
 from core.base.model.model import Model
 
@@ -12,6 +13,8 @@ class PluginDelivery(Model):
     model_name = "plugin_delivery"
     event_forms = ()
     cli_name = "plugin-delivery"
+
+    hidden_fields: ClassVar[frozenset[str]] = frozenset({"data"})
 
     plugin_id: int
     environment_id: int | None = None
