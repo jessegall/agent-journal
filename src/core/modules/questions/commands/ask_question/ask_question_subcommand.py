@@ -11,8 +11,8 @@ from core.modules.documents.support.row_refs import RowRefs
 
 
 class AskQuestionSubcommand(Subcommand[AskQuestion, Question]):
-    """`journal question ask <title> --context <sentences> --options a b --recommend a`: the agent asks the user and waits for the
-    answer."""
+    """`journal question ask <title> --context <sentences> --options a b --recommend a`: the agent asks the
+    user and waits for the answer."""
 
     cli_name = "question"
     name = "ask"

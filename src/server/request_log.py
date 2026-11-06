@@ -45,7 +45,7 @@ class RequestLog:
             settings = container.get(SettingValues).project
             stored_count = container.get(HookRequestsTable).kept_row_count()
             enabled = settings.flag(HOOK_REQUEST_LOG_SETTING)
-            limit = settings.number(HOOK_REQUEST_LOG_SIZE_SETTING)
+            limit = settings.number(HOOK_REQUEST_LOG_SIZE_SETTING) if enabled else 0
         with self.lock:
             return {**self.counts, "epoch": self.epoch, "enabled": enabled, "retained": stored_count, "retention_limit": limit,
                     "recording_ms": self.recording_ms}

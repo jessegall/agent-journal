@@ -33,10 +33,10 @@ class RestoreWorkerTestsHandler(Handler[RestoreWorkerTests, tuple[WorkerTestRequ
             return ()
         task_id = self.worktrees.worker_worktree(process.session_agent_id).task_id
         parts = self.queries.query(ProcessPart).filter(process_id=process.id, category=CommandCategory.TEST_RUN).all_rows()
-        used = self.queries.query(WorkerTestRequest).filter(worker_id=process.session_agent_id, task_id=task_id, state=WorkerTestRequestState.USED)
+        used = {request.command: request for request in self.queries.query(WorkerTestRequest).filter(worker_id=process.session_agent_id, task_id=task_id, state=WorkerTestRequestState.USED).oldest().all_rows()}
         restored = []
-        for text in dict.fromkeys(WorkerTestFlag.of_run_part(part).command for part in parts):
-            request = used.filter(command=text).newest().first()
+        for text in dict.fromkeys(WorkerTestFlag.run_part_flag(part).command for part in parts):
+            request = used.get(text)
             if request is not None:
                 restored.append(self.repository.save_change(request, request.moved(WorkerTestRequestLifecycle.restore), context))
                 self.bus.dispatch(MakeTaskLog(task_id, f"request {request.id} was not used: its run stopped before it started"), context)

@@ -12,7 +12,7 @@ from tests.stories.suites.coding.modules.workers.phase_test_requests import WHY,
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, RunRequest
 
 
-def stopped_before_starting(allowed, count_text: str, status: int) -> None:
+def stop_run_at_count(allowed, count_text: str, status: int) -> None:
     install_runner(allowed.story)
     expect_reply_allowed(allowed.run_test())
     expect_requests(allowed, RunRequest(1, TEST_LINE, WHY, "used"))
@@ -24,7 +24,7 @@ def stopped_before_starting(allowed, count_text: str, status: int) -> None:
 
 @pytest.mark.parametrize("count_text,status", [("no number\n", 0), ("collected 100 items\n", 143)])
 def test_an_allowed_run_stopped_by_an_unknown_count_before_it_starts_keeps_its_permission(allowed, count_text, status):
-    stopped_before_starting(allowed, count_text, status)
+    stop_run_at_count(allowed, count_text, status)
     expect_requests(allowed, RunRequest(1, TEST_LINE, WHY, "allowed"))
     allowed.story.expect_text("task inspect 1 --json", "request 1 was not used", actor=allowed.story.agent)
     expect_reply_allowed(allowed.run_test())
@@ -33,7 +33,7 @@ def test_an_allowed_run_stopped_by_an_unknown_count_before_it_starts_keeps_its_p
 
 def test_an_allowed_run_stopped_for_having_too_many_tests_before_it_starts_keeps_its_permission(allowed):
     allowed.story.run("setting set journal.suites.coding.workers.worker-run-most-tests 5 --environment main")
-    stopped_before_starting(allowed, "\nJOURNAL_COUNT_PART_1\ncollected 8 items\n", 0)
+    stop_run_at_count(allowed, "\nJOURNAL_COUNT_PART_1\ncollected 8 items\n", 0)
     expect_requests(allowed, RunRequest(1, TEST_LINE, WHY, "allowed"))
 
 

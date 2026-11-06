@@ -22,17 +22,16 @@ class WorkerTestFlag:
 
     @classmethod
     def parsed(cls, part: Part) -> "WorkerTestFlag":
-        return cls.of_words(part.text, part.program, part.arguments)
+        return cls.arguments_flag(part.text, part.program, part.arguments)
 
     @classmethod
-    def of_run_part(cls, part: ProcessPart) -> "WorkerTestFlag":
-        """The flag of a part the runner kept, read from its text the way the hook read the part."""
-        words = shlex.split(part.text)
-        position = next((number for number, word in enumerate(words) if Path(word).name == part.program), -1)
-        return cls.of_words(part.text, part.program, tuple(words[position + 1:]))
+    def run_part_flag(cls, part: ProcessPart) -> "WorkerTestFlag":
+        tokens = shlex.split(part.text)
+        position = next((number for number, token in enumerate(tokens) if Path(token).name == part.program), -1)
+        return cls.arguments_flag(part.text, part.program, tuple(tokens[position + 1:]))
 
     @classmethod
-    def of_words(cls, text: str, program: str, arguments: tuple[str, ...]) -> "WorkerTestFlag":
+    def arguments_flag(cls, text: str, program: str, arguments: tuple[str, ...]) -> "WorkerTestFlag":
         is_flagged, reason, kept = False, "", []
         remaining = iter(arguments)
         for word in remaining:
