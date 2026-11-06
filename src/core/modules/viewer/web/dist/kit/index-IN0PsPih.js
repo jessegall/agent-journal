@@ -1194,7 +1194,9 @@ class Uc {
       return (r = o.signal) == null ? void 0 : r.addEventListener("abort", s[l], { once: !0 });
     });
     try {
-      const o = await Ae.sent(Hc, Vs({ lines: t.map((r) => r.body) }, n.signal), t.map((r) => Gs(r.body, st)), Us), { answers: l } = await o.json();
+      const o = await Ae.sent(Hc, Vs({ lines: t.map((r) => r.body) }, n.signal), t.map((r) => Gs(r.body, st)), Us);
+      if (!o.ok) throw new Error(`the journal answered ${o.status} to a batch of lines`);
+      const { answers: l } = await o.json();
       t.forEach((r, i) => r.resolve(l[i]));
     } catch (o) {
       n.signal.aborted ? (this.waiting.push(...a), a.size && this.sendSoon()) : o.name === "TimeoutError" ? t.forEach((l) => Ae.whenFree(() => this.readAlone(l))) : t.forEach((l) => l.reject(o));
@@ -6205,9 +6207,9 @@ const W0 = ["title"], H0 = {
               class: "dock-age",
               "data-dock-age": ""
             }, [
-              e.collapsed || !((O = s.value) != null && O.leaves_after_seconds) ? (c(), h(G, { key: 0 }, [
+              (O = s.value) != null && O.leaves_after_seconds ? E("", !0) : (c(), h(G, { key: 0 }, [
                 Q(w(l.value), 1)
-              ], 64)) : E("", !0)
+              ], 64))
             ], 512)
           ];
         }),
@@ -6311,7 +6313,7 @@ const W0 = ["title"], H0 = {
       }, 8, ["label", "type", "folded", "body", "collapsed", "data-figure-closing"]);
     };
   }
-}, Mo = /* @__PURE__ */ K(Y0, [["__scopeId", "data-v-68ee4c3c"]]), J0 = ["title", "aria-label"], Z0 = { class: "run-chip-in" }, X0 = {
+}, Mo = /* @__PURE__ */ K(Y0, [["__scopeId", "data-v-460364d0"]]), J0 = ["title", "aria-label"], Z0 = { class: "run-chip-in" }, X0 = {
   key: 0,
   class: "run-chip-ring"
 }, Q0 = { class: "run-chip-name" }, ev = { class: "run-chip-bar" }, tv = "processes.output", nv = {
@@ -11146,7 +11148,7 @@ function D8(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const P8 = ci(() => import("./VoiceFigure-D82Czbkc.js").then((e) => e.V)), j8 = "1.2.0", q8 = "3.5";
+const P8 = ci(() => import("./VoiceFigure-Bm1_6mo-.js").then((e) => e.V)), j8 = "1.2.0", q8 = "3.5";
 export {
   cd as $,
   Se as A,
