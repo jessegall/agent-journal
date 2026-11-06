@@ -17,7 +17,7 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.open_dependency import OpenDependency
 
-UNAPPROVED_PLAN_STATES = ("draft", "ready")
+FOLLOWED_PLAN_STATES = ("approved", "started")
 
 
 class TaskQuery(Query[Task]):
@@ -75,13 +75,17 @@ class TaskQuery(Query[Task]):
     def open_tasks(self) -> Self:
         return self.filter(state=TaskState.OPEN)
 
-    def waiting_for_a_worker(self) -> Self:
+    def waiting_for_a_worker(self, worker_ids: Sequence[int]) -> Self:
+        """Open tasks no worker holds: a worker holds the tasks delegated to it while its row is running or its id is in worker_ids."""
         running_worker = SubqueryMatch("delegated_to", Select("agents").matching(IsNull("ended_at")).column("id"))
-        return self.open_tasks().matching(SubqueryMatch("id", Select("tasks").matching(running_worker).column("id"), negated=True)).matching(self.not_in_unapproved_plan())
+        kept_by_running = Select("tasks").matching(running_worker).column("id")
+        kept_by_listed = Select("tasks").matching(Among("delegated_to", worker_ids)).column("id")
+        return (self.open_tasks().matching(SubqueryMatch("id", kept_by_running, negated=True)).matching(SubqueryMatch("id", kept_by_listed, negated=True))
+                .matching(self.not_in_unapproved_plan()))
 
     def not_in_unapproved_plan(self) -> Condition:
-        """Leaves out tasks in a phase of a plan the user has not approved, since no worker may start one."""
-        unapproved_plans = Select("plans").matching(Among("state", UNAPPROVED_PLAN_STATES)).column("id")
+        """Leaves out tasks in a phase of a plan in any state but approved or started, since no worker may start one."""
+        unapproved_plans = Select("plans").matching(Among("state", FOLLOWED_PLAN_STATES, negated=True)).column("id")
         unapproved_phases = Select("phases").matching(SubqueryMatch("plan_id", unapproved_plans)).column("id")
         return SubqueryMatch("id", Select("phase_tasks").matching(SubqueryMatch("phase_id", unapproved_phases)).column("task_id"), negated=True)
 
