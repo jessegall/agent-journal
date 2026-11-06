@@ -1,9 +1,11 @@
 <script setup>
-import {RowList, WindowRoom, useRows, useWindow} from "@journal/window-kit";
+import {RowList, WindowRoom, useWindow} from "@journal/window-kit";
 
 const STATE_TEXT = {pending: "to do", in_progress: "doing", completed: "done"};
 
-const {rows, failure, loaded} = useRows(`todo-item list --agent ${useWindow().agent} --oldest`, ["todo_item.*"]);
+const window = useWindow();
+window.state["todos.agent"] = String(window.agent);
+const {rows, failure, loaded} = window.props.todos;
 </script>
 
 <template>

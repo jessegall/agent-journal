@@ -35,10 +35,12 @@ test("the points window of an agent with no worktree says so", async () => {
 });
 
 test("the to-do list window shows its agent's items in order with their state", async () => {
-    const windowContext = context({"todo-item list": page([{id: 1, text: "Add the tax", state: "completed"}, {id: 2, text: "Round to cents", state: "in_progress"}])}, 2);
+    const windowContext = context({"todo-item list": page([{id: 1, text: "Add the tax", state: "completed"}, {id: 2, text: "Round to cents", state: "in_progress"}])}, 2, {
+        todos: {line: "todo-item list --oldest", events: ["todo_item.*"]},
+    });
     const text = await drawn(Todos, windowContext);
     expect(text).toContain("Add the tax");
     expect(text).toContain("done");
     expect(text).toContain("doing");
-    expect(windowContext.reads[0]).toBe("todo-item list --agent 2 --oldest");
+    expect(windowContext.reads[0]).toBe("todo-item list --oldest --agent 2");
 });
