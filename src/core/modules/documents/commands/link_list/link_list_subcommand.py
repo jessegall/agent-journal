@@ -1,52 +1,80 @@
 from argparse import ArgumentParser, Namespace
-from collections.abc import Sequence
+from dataclasses import asdict
 
 from core.base.caller.caller import Caller
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
+from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.type_guards import is_tuple
+from core.modules.documents.conditions.link_counterparts import FirstLinkCounterpart, LinkCounterparts
+from core.modules.documents.conditions.link_scope import LinkScope, LinkSide
+from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
+from core.modules.documents.support.link_endpoint import LinkEndpointReader
+from core.modules.documents.support.link_page import LinkPage, LinkRead, LinkCounterpart
+from core.modules.documents.support.row_ref import RowRef
 from core.modules.documents.support.row_refs import RowRefs
 
 
-class LinkListSubcommand(ReadSubcommand[Sequence[Link]]):
-    """`journal link list --source <model or table:n>` or `--target <model or table:n>`: the links from a row, or
-    the links that lead to it, each with what it means and the title of the row at each end."""
+class LinkListSubcommand(ReadSubcommand[LinkPage]):
+    """Reads bounded relation pages or distinct counterparts with their matching relation labels."""
 
     cli_name = "link"
     name = "list"
 
-    def __init__(self, queries: Queries, row_refs: RowRefs) -> None:
-        self.queries, self.row_refs = queries, row_refs
+    def __init__(self, queries: Queries, row_refs: RowRefs, endpoints: LinkEndpointReader) -> None:
+        self.queries, self.row_refs, self.endpoints = queries, row_refs, endpoints
 
     def arguments(self, parser: ArgumentParser) -> None:
         ends = parser.add_mutually_exclusive_group(required=True)
         ends.add_argument("--source")
         ends.add_argument("--target")
+        ends.add_argument("--row")
+        parser.add_argument("--page", type=int, default=1)
+        parser.add_argument("--page-size", type=int, default=25)
+        parser.add_argument("--type", type=LinkType, choices=tuple(LinkType), action="append", default=[])
+        parser.add_argument("--group-counterparts", action="store_true")
 
-    def read(self, arguments: Namespace, caller: Caller) -> Sequence[Link]:
-        links = self.queries.query(Link)
-        if arguments.target:
-            target = self.row_refs.parsed(arguments.target)
-            return tuple(links.filter(target_model=target.model, target_id=target.row_id).oldest().all_rows())
-        source = self.row_refs.parsed(arguments.source)
-        return tuple(links.filter(source_model=source.model, source_id=source.row_id).oldest().all_rows())
+    def read(self, arguments: Namespace, caller: Caller) -> LinkPage:
+        size = min(arguments.page_size, 50)
+        if arguments.page < 1 or size < 1 or arguments.page > 9223372036854775807 // size:
+            raise Refusal("use a positive link page and page size within the supported range")
+        side = next(side for side in LinkSide if getattr(arguments, side.value))
+        reference = self.row_refs.parsed(getattr(arguments, side.value))
+        scope = LinkScope(reference, side)
+        query = self.queries.query(Link).matching(scope)
+        types = tuple(dict.fromkeys(arguments.type))
+        if types:
+            query = query.matching(Among("link_type", types))
+        counterparts = ()
+        if arguments.group_counterparts:
+            page = query.matching(FirstLinkCounterpart(query.select, reference)).oldest().page(arguments.page, size)
+            counterparts = tuple(scope.counterpart(link) for link in page.rows)
+            links = tuple(query.matching(LinkCounterparts(reference, counterparts)).oldest().limited(size * len(LinkType) * 2))
+        else:
+            page = query.oldest().page(arguments.page, size)
+            links = page.rows
+        references = {end for link in links for end in (RowRef(link.source_model, link.source_id), RowRef(link.target_model, link.target_id))}
+        endpoints = self.endpoints.read(references)
+        rows = tuple(LinkRead(link, endpoints[RowRef(link.source_model, link.source_id)], endpoints[RowRef(link.target_model, link.target_id)]) for link in links)
+        groups = tuple(LinkCounterpart(endpoints[counterpart],
+                       tuple(sorted({str(link.link_type) for link in links if scope.counterpart(link) == counterpart})),
+                       tuple(link.id for link in links if scope.counterpart(link) == counterpart)) for counterpart in counterparts)
+        command = f"journal link list --{side} {reference.text} --page {arguments.page + 1} --page-size {size}"
+        command += "".join(f" --type {kind}" for kind in types)
+        if arguments.group_counterparts:
+            command += " --group-counterparts"
+        return LinkPage(rows, groups, arguments.page, size, page.total, None if page.is_last else command)
 
     def write_output(self, value: object, output: Output) -> None:
-        links = [row for row in value if isinstance(row, Link)] if is_tuple(value) else []
-        titles = self.titles(links)
-        output.write("\n".join(f"{row.source_model}:{row.source_id}  {row.link_type}  {row.target_model}:{row.target_id}" for row in links), {"rows": [{**output.values(row), "source_title": titles[(row.source_model, row.source_id)], "target_title": titles[(row.target_model, row.target_id)]} for row in links]})
-
-    def titles(self, links: Sequence[Link]) -> dict[tuple[str, int], str]:
-        ends = {end for row in links for end in ((row.source_model, row.source_id), (row.target_model, row.target_id))}
-        titles = {end: "" for end in ends}
-        for model_name in {name for name, _ in ends}:
-            model = self.row_refs.model(model_name)
-            if model is None:
-                continue
-            ids = [row_id for name, row_id in ends if name == model_name]
-            rows = self.queries.query(model).matching(Among("id", ids)).all_rows()
-            titles.update({(model_name, row.id): str(getattr(row, "title", "")) for row in rows})
-        return titles
+        if not isinstance(value, LinkPage):
+            return
+        rows = [{**output.values(row.link), "source_title": row.source.title, "target_title": row.target.title,
+                 "source": asdict(row.source), "target": asdict(row.target)} for row in value.rows]
+        lines = [f"{row.link.source_model}:{row.link.source_id}  {row.link.link_type}  {row.link.target_model}:{row.link.target_id}" for row in value.rows]
+        if value.next_command is not None:
+            lines.append(value.next_command)
+        output.write("\n".join(lines), {"rows": rows, "counterparts": [asdict(counterpart) for counterpart in value.counterparts],
+                     "page": value.page, "page_size": value.page_size, "total": value.total, "has_more": value.next_command is not None,
+                     "next_page": value.page + 1 if value.next_command is not None else None, "next_command": value.next_command})

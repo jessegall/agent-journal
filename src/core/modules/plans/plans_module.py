@@ -105,7 +105,7 @@ class PlansModule(Module):
                                  menu=tuple([ButtonMenuItem("Approve with a message", "plan approve {row_id} --message={message}",
                                                            tuple([TextField("message", "Message to the agent")]),
                                                            "Your message reaches the agent before the plan starts")]))]
-    windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, skeleton=PLANS_PLANS_SKELETON, icon=WindowIcon.PLAN, reads=["plan board", "task list", "plan list", "plan show", "plan progress", "plan outline", "plan inspect", "phase list", "phase show"],
+    windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, skeleton=PLANS_PLANS_SKELETON, icon=WindowIcon.PLAN, reads=["plan board", "task list", "plan list", "plan show", "plan progress", "plan outline", "plan inspect", "plan comments", "link list", "phase list", "phase show"],
                                  events=["plan.*", "phase.*", "task.*"], shared_reads=["plan show id", "plan progress plan_id", "phase list plan", "phase show id"],
                                  tabs=[WindowTab("open", "Open", "plan board", "open_total"), WindowTab("closed", "Closed", "plan board --closed", "closed_total")])]
     shared_rows = [PlanSharedRows]

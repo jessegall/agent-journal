@@ -2,6 +2,7 @@ from core.base.model.model import Model
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.query.query import Query
+from core.base.page import Page
 from core.base.query.conditions.subquery_match import SubqueryMatch
 from core.modules.documents.commands.support.comment_read import CommentRead
 from core.modules.documents.models.comment_selection import CommentSelection
@@ -22,16 +23,20 @@ class RowComments:
         self.queries = queries
 
     def comments(self, row: Model) -> tuple[Message, ...]:
-        return tuple(self.query(row).oldest().all_rows())
+        return tuple(self.query(row).oldest().limited(25))
 
     def query(self, row: Model) -> Query[Message]:
         links = self.queries.query(Link).filter(target_model=row.model_name, target_id=row.id, link_type=LinkType.COMMENT, source_model=MESSAGE_MODEL).oldest()
         return self.queries.query(Message).matching(SubqueryMatch("id", links.select.column("source_id")))
 
     def reads(self, row: TextRow | Plan | Task) -> tuple[CommentRead, ...]:
-        messages = self.comments(row)
-        selections = {selection.message_id: selection for selection in self.queries.query(CommentSelection).matching(Among("message_id", [message.id for message in messages])).all_rows()}
-        return tuple(self.read(message, selections.get(message.id), row) for message in messages)
+        return self.page(row).rows
+
+    def page(self, row: TextRow | Plan | Task, number: int = 1, size: int = 25) -> Page[CommentRead]:
+        messages = self.query(row).oldest().page(number, size)
+        ids = tuple(message.id for message in messages.rows)
+        selections = {selection.message_id: selection for selection in self.queries.query(CommentSelection).matching(Among("message_id", ids)).limited(len(ids))}
+        return Page(tuple(self.read(message, selections.get(message.id), row) for message in messages.rows), number, size, messages.total)
 
     def read(self, message: Message, selection: CommentSelection | None, row: TextRow | Plan | Task) -> CommentRead:
         created_at = message.created_at.text if message.created_at else ""

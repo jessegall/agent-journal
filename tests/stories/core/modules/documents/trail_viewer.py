@@ -3,6 +3,11 @@ import json
 import pytest
 
 from core.base.change.event_log import EventLog
+from core.base.database.database import Database
+from core.base.database.statement import Statement
+from core.base.driver.tool_type import ToolType
+from core.testing.hook_samples import HookSamples
+from core.testing.story_fixture import StoryFixture
 from server.viewer.event_stream import EventStream
 from tests.stories.core.modules.documents.upgrade import old_release_trail
 from tests.stories.core.modules.documents.support.trail_fixtures import (
@@ -55,6 +60,10 @@ def test_link_and_comment_pages_are_bounded(trail, noun, number):
     feature(not {row["id"] for row in first["rows"]} & {row["id"] for row in second["rows"]}, "comment pages overlap")
     links = requested_read(trail, "viewer.shell", ["link", "list", "--target", f"{noun}:{number}", "--page", "1", "--page-size", "2"])
     feature(len(links["rows"]) == 2 and links["total"] >= 4, "link response is unbounded")
+    clamped = requested_read(trail, "viewer.shell", [noun, "comments", str(number), "--page-size", "999"])
+    feature(clamped["page_size"] == 50, str(clamped))
+    refused = viewer_answer(trail.story, "viewer.shell", [noun, "comments", str(number), "--page", "0"])
+    feature(refused.code == 1 and bool(refused.error), "an invalid comment page became an empty success")
 
 
 @pending(6852)
@@ -64,6 +73,50 @@ def test_type_filter_precedes_paging(linked_trail):
     answer = requested_read(trail, "viewer.shell", ["link", "list", "--target", "task:1", "--type", "comments_on", "--page", "1", "--page-size", "1"])
     feature(len(answer["rows"]) == 1 and answer["total"] == 1, "filter counted unrelated relations")
     feature(answer["rows"][0]["link_type"] == "comments_on", str(answer))
+
+
+@pending(6852)
+def test_counterpart_pages_keep_all_relation_types_once(linked_trail):
+    trail = linked_trail
+    trail.command('task edit 1 --brief "message:2 and doc:1"')
+    trail.story.run_listeners()
+    words = ["link", "list", "--row", "task:1", "--group-counterparts", "--page-size", "1"]
+    first = requested_read(trail, "viewer.shell", words)
+    pages = [first, *(requested_read(trail, "viewer.shell", [*words, "--page", str(page)]) for page in range(2, first["total"] + 1))]
+    counterparts = [entry for page in pages for entry in page["counterparts"]]
+    keys = [(entry["endpoint"]["model"], entry["endpoint"]["id"]) for entry in counterparts]
+    feature(len(keys) == len(set(keys)) == first["total"], str(pages))
+    message = next(entry for entry in counterparts if entry["endpoint"]["model"] == "message" and entry["endpoint"]["id"] == 2)
+    feature({"about", "edited", "mentions"} <= set(message["relations"]), str(message))
+
+
+@pending(6852)
+def test_log_and_phase_endpoint_metadata_names_parent(trail):
+    trail.command('task log 1 "Audit totals doc:1"')
+    trail.command('phase make --plan 1 "Audit phase doc:1" --goal "Review totals"')
+    trail.story.run_listeners()
+    answer = requested_read(trail, "viewer.shell", ["link", "list", "--target", "doc:1"])
+    endpoints = {entry["source_model"]: entry["source"] for entry in answer["rows"]}
+    feature(endpoints["task_log"]["title"] == "Audit totals doc:1" and endpoints["task_log"]["open_ref"] == "tasks:1", str(endpoints))
+    feature(endpoints["phase"]["title"] == "Audit phase doc:1" and endpoints["phase"]["open_ref"] == "plans:1", str(endpoints))
+
+
+class MissingLinkEndpoint(StoryFixture):
+    parent = ApprovedTrailPlan
+
+    def steps(self, story):
+        database = story.container.get(Database)
+        now = story.clock.timestamp().text
+        with database.transaction():
+            database.insert(Statement("INSERT INTO links (creator_id, source_model, source_id, target_model, target_id, link_type, created_at, updated_at) VALUES (?, 'message', 2, 'doc', 999, 'mentions', ?, ?)", (story.agent.id, now, now)))
+
+
+@pending(6852)
+def test_missing_endpoints_return_unavailable_metadata(new_story):
+    trail = Trail(new_story(fixture=MissingLinkEndpoint))
+    answer = requested_read(trail, "viewer.shell", ["link", "list", "--source", "message:2"])
+    missing = next(entry["target"] for entry in answer["rows"] if entry["target_id"] == 999)
+    feature(not missing["exists"] and missing["open_ref"] is None and "unavailable" in missing["title"], str(missing))
 
 
 @pending(6895)
@@ -100,11 +153,11 @@ def test_migrated_comment_opens_original_target(old_release_trail):
     assert trail.person("viewer.shell", "doc", "show", "1")["id"] == 1
 
 
-@pending(6851)
 def test_plan_start_pointer_is_read_before_work(new_story):
     trail = Trail(new_story(fixture=ApprovedTrailPlan))
     trail.person("viewer.shell", "plan", "start", "1")
-    notice = "\n".join(trail.tick().lines)
+    trail.tick()
+    notice = "\n".join(trail.story.hook("s-1", HookSamples.tool_use("Read", ToolType.READ, [], None)).lines)
     feature("plan context 1" in notice, notice)
     context = trail.context("plan")
     feature("messages" in context, str(context))

@@ -1,21 +1,27 @@
 from core.base.cli.row_links import RowLinks
 from core.base.query.queries import Queries
 from core.modules.documents.models.link import Link
+from core.modules.documents.conditions.link_scope import LinkScope, LinkSide
+from core.modules.documents.conditions.link_counterparts import FirstLinkCounterpart
+from core.modules.documents.support.row_ref import RowRef
 
 LINKS_SHOWN = 50
 
 
 class StoredRowLinks(RowLinks):
-    """Names the rows a row links to and the rows that link to it, newest first, on one line, each as
-    model:number."""
+    """Names bounded distinct counterparts in both directions and gives the next page command."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
     def lines(self, model_name: str, row_id: int, exceptions: tuple[str, ...] = ()) -> list[str]:
-        links = self.queries.query(Link)
-        outgoing_links = links.filter(source_model=model_name, source_id=row_id).newest().page(1, LINKS_SHOWN).rows
-        incoming_links = links.filter(target_model=model_name, target_id=row_id).newest().page(1, LINKS_SHOWN).rows
-        names = [*(f"{link.target_model}:{link.target_id}" for link in outgoing_links), *(f"{link.source_model}:{link.source_id}" for link in incoming_links)]
-        shown_names = [name for name in dict.fromkeys(names) if name not in exceptions]
-        return [f"links: {', '.join(shown_names)}"] if shown_names else []
+        reference = RowRef(model_name, row_id)
+        scope = LinkScope(reference, LinkSide.BOTH)
+        query = self.queries.query(Link).matching(scope)
+        page = query.matching(FirstLinkCounterpart(query.select, reference)).oldest().page(1, LINKS_SHOWN)
+        names = tuple(scope.counterpart(link).text for link in page.rows)
+        shown_names = tuple(name for name in names if name not in exceptions)
+        lines = [f"links: {', '.join(shown_names)}"] if shown_names else []
+        if not page.is_last:
+            lines.append(f"more links: journal link list --row {reference.text} --group-counterparts --page 2 --page-size {LINKS_SHOWN}")
+        return lines
