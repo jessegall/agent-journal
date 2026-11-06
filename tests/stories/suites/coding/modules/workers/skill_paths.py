@@ -19,4 +19,5 @@ def test_a_workers_skill_refusal_names_the_whole_long_folder(new_story, program,
     folder = "journal-commandments-plain-code-words-and-the-architecture-of-process-reader-requests"
     story.expect_success(f"skill require {worker.id} {folder}")
     expected = repository.worktree_folder(worker.id) / skills_folder / folder / "SKILL.md"
-    story.expect_hook_refusal(session, HookSamples.edit("cart.py").with_fields(program=program), f"read this first: {expected}")
+    instruction = f"read this first: {expected}" if program == "codex" else f"load this first with the Skill tool: {folder}"
+    story.expect_hook_refusal(session, HookSamples.edit("cart.py").with_fields(program=program), instruction)

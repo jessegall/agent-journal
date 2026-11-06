@@ -50,16 +50,15 @@ def test_plugin_changes_reach_worktrees_and_withdraw_skills_when_disabled(new_st
         story.expect_rows(not (folder / program_folder / "sample-rules").exists())
 
 
-def test_a_claude_workers_skill_reminder_names_its_own_worktree(new_story):
+def test_a_claude_workers_skill_reminder_names_the_skill_to_load_with_the_skill_tool(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
-    repository = repository_environment(story)
+    repository_environment(story)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
     story.container.get(SkillRequirement).is_required = True
     story.hook(session, HookSamples.session_start())
     story.expect_success(f"skill require {worker.id} journal")
-    expected = repository.worktree_folder(worker.id) / ".claude/skills/journal/SKILL.md"
-    story.expect_hook_refusal(session, HookSamples.edit("cart.py"), f"read this first: {expected}")
+    story.expect_hook_refusal(session, HookSamples.edit("cart.py"), "load this first with the Skill tool: journal")
 
 
 def test_a_codex_workers_skill_reminder_names_its_programs_folder_in_its_worktree(new_story):

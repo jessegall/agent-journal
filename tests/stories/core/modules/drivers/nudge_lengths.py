@@ -9,7 +9,7 @@ def test_a_line_someone_wrote_and_a_path_to_open_stay_whole():
 
 
 def expect_nudge_skill_with(item, path, expected) -> None:
-    actual = item.nudge(path=path).text
+    actual = item.nudge(instruction=path).text
     assert expected in actual, actual
 
 
