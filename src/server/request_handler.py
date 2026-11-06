@@ -186,7 +186,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         try:
             context = self.journal_server().context
-            code = CliEndpoint(context.home, ListenerWake(context.listener_thread)).answer(request, ChunkStream(self.send_chunk))
+            code = CliEndpoint(context.home, ListenerWake(context.listener_thread), context.reported_findings).answer(request, ChunkStream(self.send_chunk))
         except Exception as error:
             self.journal_server().context.files.log_line("".join(traceback.format_exception(error)))
             self.send_chunk(f"{type(error).__name__}: {error}\n".encode())

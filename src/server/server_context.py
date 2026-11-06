@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from core.base.database.reported_findings import ReportedFindings
 from core.base.journal_home import JournalHome
 from core.base.timestamp import Timestamp
 from server.code_version import CodeVersion
@@ -15,7 +16,7 @@ HOOK_LIMIT_SECONDS = 4.5
 class ServerContext:
     """What every request of one server shares: the journal's folder, the code the server started with, its
     files, when it started, its listener thread, the database connection its hooks share, the viewer's
-    listener, and how long a hook waits for another writer."""
+    listener, how long a hook waits for another writer, and the findings of repeated work it has reported."""
 
     home: JournalHome
     code_version: CodeVersion
@@ -26,3 +27,4 @@ class ServerContext:
     viewer: ViewerListener
     tunnel: ServerTunnel
     hook_limit_seconds: float = HOOK_LIMIT_SECONDS
+    reported_findings: ReportedFindings = field(default_factory=ReportedFindings)

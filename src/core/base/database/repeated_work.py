@@ -13,7 +13,7 @@ from core.base.database.point_tally import PointTally
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.file_access import FILE_READ_EVENT, FILE_CHANGE_EVENT
-from core.testing.repeated_calls_error import RepeatedCallsError
+from core.base.database.repeated_calls_error import RepeatedCallsError
 
 READ_LIMIT_REPEATS = 1
 READ_TEXT_LIMIT_REPEATS = 10
@@ -60,7 +60,8 @@ ALLOWED_FILE_READS = {
 
 
 class RepeatedWork(PointTally):
-    """Counts database work and rejects repeated reads and commands within each story request."""
+    """Counts database work and rejects repeated reads and commands within each request: it raises at the first
+    repeat and again at the end of the request if anything was found."""
 
     def __init__(self, database: Database | None = None, read_text_limit: int = READ_TEXT_LIMIT_REPEATS) -> None:
         super().__init__()
@@ -89,6 +90,9 @@ class RepeatedWork(PointTally):
             yield
         finally:
             OPEN_REQUEST.reset(token)
+        self.conclude()
+
+    def conclude(self) -> None:
         if self.findings:
             raise RepeatedCallsError("\n".join(self.findings))
 
@@ -102,7 +106,7 @@ class RepeatedWork(PointTally):
             self.check_scan(statement)
         if self.is_allowed_read():
             return
-        self.clear_reads_on_change()
+        self.reset_stale_reads()
         self.reads[statement] += 1
         self.read_texts[statement.sql] += 1
         if self.reads[statement] == 1:
@@ -112,7 +116,7 @@ class RepeatedWork(PointTally):
         if self.read_texts[statement.sql] == self.read_text_limit + 1:
             self.reject(f"one request read this SQL more than {self.read_text_limit} times: {statement.sql}\n{self.caller_lines()}")
 
-    def clear_reads_on_change(self) -> None:
+    def reset_stale_reads(self) -> None:
         change_mark = self.database.change_mark() if self.database is not None else None
         if change_mark != self.read_mark:
             self.reads, self.read_mark = Counter(), change_mark

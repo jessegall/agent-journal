@@ -11,8 +11,8 @@ from core.base.actor import Actor
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.query.queries import Queries
 from core.modules.environments.models.environment import Environment
-from core.testing.repeated_calls_error import RepeatedCallsError
-from core.testing.repeated_work import COMMAND_LIMIT_REPEATS, READ_LIMIT_REPEATS, READ_TEXT_LIMIT_REPEATS
+from core.base.database.repeated_calls_error import RepeatedCallsError
+from core.base.database.repeated_work import COMMAND_LIMIT_REPEATS, READ_LIMIT_REPEATS, READ_TEXT_LIMIT_REPEATS
 from core.testing.story_line_run import StoryLineRun
 
 REPEATED_READ = Statement("SELECT 1")
