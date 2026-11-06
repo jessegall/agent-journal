@@ -69,7 +69,7 @@ def test_a_start_at_the_limit_says_so(new_story):
     story = new_story(fixture=StartedHelper)
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.run(f"setting set {HELPER_RUN_LIMIT} 1 --project", actor=story.user)
-    story.expect_text("helper availability --environment main", "All 1 helpers are running", actor=story.user)
+    story.expect_text("helper availability --profile journal-researcher --environment main", "1 of journal-researcher run", actor=story.user)
     launcher.server.close()
 
 

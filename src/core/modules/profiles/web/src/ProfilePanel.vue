@@ -38,6 +38,7 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
 
 <template>
     <SidePanel :title="profile.title || profile.name || 'New profile'" :abstract="profile.name ? used : 'Instructions, type and model for an agent'" @close="emit('close')">
+        <slot />
         <div class="profile-panel" data-profile-panel>
             <template v-if="profile.title"><small>{{ profile.name }}</small></template>
             <template v-if="!profile.name">
