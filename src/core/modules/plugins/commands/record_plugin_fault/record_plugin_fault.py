@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 from core.base.command.command import Command
 from core.modules.plugins.models.plugin import Plugin
-from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 
 
 @dataclass(frozen=True)
@@ -12,7 +11,3 @@ class RecordPluginFault(Command[Plugin]):
     plugin_id: int
     fault: str
     counts_toward_failing: bool = True
-
-    @classmethod
-    def fault_record(cls, plugin_id: int, fault: PluginFaultError, location: str) -> "RecordPluginFault":
-        return cls(plugin_id, f"{fault} {location}", fault.counts_toward_failing)

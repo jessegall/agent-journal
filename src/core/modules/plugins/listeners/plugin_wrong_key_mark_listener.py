@@ -16,7 +16,7 @@ from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 
 
-UNDECLARED_READS_TEXT = "Plugin {plugin} runs commands in worker shells, and those shells no longer read project folders it has not declared. If it reads one, it declares project_reads in its manifest."
+UNDECLARED_READS_TEXT = "Plugin {plugin} runs commands in the shells of limited agents, and those shells no longer read project folders it has not declared. If it reads one, it declares project_reads in its manifest."
 
 
 class PluginWrongKeyMarkListener(MarkListener[RegistrySynced]):
