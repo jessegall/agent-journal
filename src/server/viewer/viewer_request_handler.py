@@ -23,7 +23,7 @@ from server.viewer.missing_module_file_error import MissingModuleFileError
 from server.viewer.line_answer import LineAnswer
 from server.viewer.line_route import REFUSED_CODE
 from server.viewer.viewer_line_request import ViewerLineRequest
-from server.viewer.window_data_request import DATA_ONLY_HEADER, WINDOW_HEADER, WindowDataRequest
+from server.viewer.window_data_request import KEYS_HEADER, WINDOW_HEADER, WindowDataRequest
 from server.viewer.viewer_lines_request import ViewerLinesRequest
 from server.viewer.pair_request import PairRequest
 from server.viewer.session_type import SessionType
@@ -153,7 +153,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer_message_file(viewer, route.path.removeprefix(MESSAGE_FILES))
             return
         if route.path == WINDOW_ROUTE:
-            self.answer_window_data(viewer, token, route.query)
+            self.answer_window_data(viewer, viewer.login.person_id(token), route.query)
             return
         if route.path == WINDOWS_ROUTE:
             try:
@@ -316,17 +316,15 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.viewer().untrack_request()
         event_stream.follow(request, self.stream_message, shared)
 
-    def answer_window_data(self, viewer: ViewerServer, token: str, query: str) -> None:
+    def answer_window_data(self, viewer: ViewerServer, person_id: int, query: str) -> None:
         try:
-            request = WindowDataRequest.parsed(self.headers.get(WINDOW_HEADER), self.headers.get(DATA_ONLY_HEADER), query)
+            request = WindowDataRequest.parsed(self.headers.get(WINDOW_HEADER), self.headers.get(KEYS_HEADER), query)
             started_at, received_at, request_id = perf_counter(), datetime.now(timezone.utc).isoformat(), str(uuid4())
-            person_id = viewer.login.person_id(token)
             answer = viewer.routes.window_data.answer(request, person_id)
-            declared = viewer.routes.window_data.declared(request.window)
         except ViewerRequestError as error:
             self.answer(400, {"error": str(error)})
             return
-        self.answer(200, answer.body(declared), {"X-Journal-Request-Id": request_id})
+        self.answer(200, asdict(answer.body()), {"X-Journal-Request-Id": request_id})
         self.wfile.flush()
         http = ViewerHttpRequest(request_id, received_at, request_id, (perf_counter() - started_at) * 1000, 0, person_id)
         viewer.routes.request_log.record_viewers([ViewerRequestRecord(http, line, index, timed.duration_ms, 0.0, timed.answer.code, timed.points)
