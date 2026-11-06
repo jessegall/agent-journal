@@ -36,6 +36,24 @@ def phase_handed_in(new_story, monkeypatch):
     return worker
 
 
+@pytest.fixture
+def gone_with_tests_running(new_story, monkeypatch):
+    worker = worker_on_plan(new_story, monkeypatch)
+    worker.prove_and_move_on(TEST_LINE)
+    worker.prove_and_move_on()
+    worker.prove_and_move_on(OTHER_TEST_LINE)
+    worker.story.run(f"agent edit {worker.worker.id} --pid 700 --process-started-at {PROCESS_START}")
+    worker.story.use_processes()
+    return worker
+
+
+def test_a_worker_waiting_on_the_tests_of_its_hand_in_is_not_told_to_go_on(gone_with_tests_running):
+    gone_with_tests_running.story.tick(MAIN_SESSION)
+    gone_with_tests_running.story.expect_text("proof show 1", "state: running", actor=gone_with_tests_running.story.agent)
+    assert gone_with_tests_running.main_agent_lines() == (), gone_with_tests_running.main_agent_lines()
+    assert not any("tasks left" in line for line in gone_with_tests_running.worker_lines()), gone_with_tests_running.worker_lines()
+
+
 def test_a_worker_that_ended_in_a_phase_is_started_again_as_today(program_gone):
     program_gone.story.tick(MAIN_SESSION)
     assert any("stopped with" in line and "started again" in line for line in program_gone.main_agent_lines()), program_gone.main_agent_lines()
