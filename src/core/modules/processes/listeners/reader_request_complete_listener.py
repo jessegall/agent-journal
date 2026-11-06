@@ -1,11 +1,13 @@
 from dataclasses import replace
 
 from core.base.clock import Clock
+from core.base.command.bus import Bus
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
+from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
@@ -14,7 +16,6 @@ from core.modules.processes.queries.conditions.reader_sample_scope import Reader
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
-from core.modules.processes.support.run_slots import RunSlots
 from core.modules.processes.support.run_title import RunTitle
 from core.base.change.changed import Changed
 from core.base.change.deleted import Deleted
@@ -27,8 +28,8 @@ class ReaderRequestCompleteListener(SaveListener[Changed[Reader]]):
     name = "processes.reader-request-complete"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, requests: ReaderRequestQuery, judge: ReaderJudge, repository: Repository, clock: Clock, slots: RunSlots, rows: ReaderRows) -> None:
-        self.queries, self.requests, self.judge, self.repository, self.clock, self.slots, self.rows = queries, requests, judge, repository, clock, slots, rows
+    def __init__(self, queries: Queries, requests: ReaderRequestQuery, judge: ReaderJudge, repository: Repository, clock: Clock, bus: Bus, rows: ReaderRows) -> None:
+        self.queries, self.requests, self.judge, self.repository, self.clock, self.bus, self.rows = queries, requests, judge, repository, clock, bus, rows
 
     def handle(self, event: Changed[Reader], context: Context) -> None:
         if isinstance(event, Deleted):
@@ -46,4 +47,4 @@ class ReaderRequestCompleteListener(SaveListener[Changed[Reader]]):
                 for output in self.queries.query(Output).filter(process_id=waiting.process_id, ended_at=None).all_rows():
                     self.repository.save(replace(output, reader_id=reader.id, reader_position=waiting.position, read_offset=0, seen_offset=0,
                                                  title=RunTitle.title(reader, waiting.command or waiting.text)), context)
-            self.slots.grant(context)
+            self.bus.dispatch(GrantRunSlots(), context)

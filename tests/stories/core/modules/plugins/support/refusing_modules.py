@@ -1,0 +1,56 @@
+from dataclasses import dataclass
+
+from core.base.command.command import Command
+from core.base.command.context import Context
+from core.base.command.handler import Handler
+from core.base.module.module import Module
+from core.base.query.queries import Queries
+from core.base.refusal import Refusal
+from core.base.repository.repository import Repository
+from core.modules.processes.models.process import Process
+
+REFUSING = "tests.stories.core.modules.plugins.support.refusing_modules:RefusingModule"
+LATER_KEY_REFUSAL = "a later key refuses this"
+
+
+@dataclass(frozen=True)
+class DeleteProcessRow(Command[None]):
+    process_id: int
+    is_refused: bool
+
+
+class DeleteProcessRowHandler(Handler[DeleteProcessRow, None]):
+    command = DeleteProcessRow
+
+    def __init__(self, queries: Queries, repository: Repository) -> None:
+        self.queries, self.repository = queries, repository
+
+    def handle(self, command: DeleteProcessRow, context: Context) -> None:
+        self.repository.delete(self.queries.query(Process).find(command.process_id), context)
+        if command.is_refused:
+            raise Refusal(LATER_KEY_REFUSAL)
+
+
+@dataclass(frozen=True)
+class OrphanProcessRow(Command[None]):
+    process_id: int
+    is_refused: bool
+
+
+class OrphanProcessRowHandler(Handler[OrphanProcessRow, None]):
+    command = OrphanProcessRow
+
+    def __init__(self, queries: Queries, repository: Repository) -> None:
+        self.queries, self.repository = queries, repository
+
+    def handle(self, command: OrphanProcessRow, context: Context) -> None:
+        process = self.queries.query(Process).find(command.process_id)
+        self.repository.save_change(process, process.orphan(context.timestamp, context.actor), context)
+        if command.is_refused:
+            raise Refusal(LATER_KEY_REFUSAL)
+
+
+class RefusingModule(Module):
+    name = "acme.refusing"
+    requires_core = ">=5,<6"
+    handlers = [DeleteProcessRowHandler, OrphanProcessRowHandler]

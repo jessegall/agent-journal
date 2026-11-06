@@ -1,16 +1,16 @@
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
 from core.base.change.moved import Moved
-from core.base.listener.save_listener import SaveListener
+from core.base.change.logged_event import LoggedEvent
+from core.base.listener.commit_listener import CommitListener
 from core.base.model.model import Model
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_group import ProcessGroup
-from core.base.command.context import Context
 
 
 
-class OrphanedProcessKillListener(SaveListener[Moved[Process]]):
-    """Kills the process group of a run that was marked orphaned, so nothing keeps running unread."""
+class OrphanedProcessKillListener(CommitListener[Moved[Process]]):
+    """Kills the process group of a run once it is final that it was marked orphaned, so nothing keeps running unread."""
 
     name = "processes.orphaned-process-kill"
     moves = tuple([ProcessLifecycle.orphan])
@@ -18,6 +18,6 @@ class OrphanedProcessKillListener(SaveListener[Moved[Process]]):
     def __init__(self, group: ProcessGroup, folder: OutputFolder) -> None:
         self.group, self.folder = group, folder
 
-    def handle(self, event: Moved[Process], context: Context) -> None:
+    def handle(self, event: Moved[Process], logged: LoggedEvent) -> None:
         process = event.row
         self.group.stop(process.pid or self.folder.pid(process.id), process.id)
