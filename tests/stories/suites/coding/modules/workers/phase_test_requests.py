@@ -168,3 +168,11 @@ def test_a_person_is_never_asked_about_a_request(requested):
 def test_each_step_of_a_request_is_on_the_task_log(allowed):
     expect_reply_allowed(allowed.run_test())
     allowed.story.expect_text("task inspect 1 --json", TEST_LINE, WHY, "allowed the run of request 1", "ran request 1", actor=allowed.story.agent)
+
+
+def test_an_allowed_saved_run_with_no_read_flag_is_refused_and_keeps_its_permission(allowed):
+    allowed.save_test_alias()
+    expect_reply_refusal(allowed.run_saved_test(read_flag=""), "--tail")
+    expect_requests(allowed, RunRequest(1, TEST_LINE, WHY, "allowed"))
+    allowed.run_saved_test()
+    expect_requests(allowed, RunRequest(1, TEST_LINE, WHY, "used"))

@@ -54,6 +54,11 @@ class SavedCommandRule(DriverRule):
         long_parts = [part for part in parts if part.classification.category.is_long_running and not set(ASKING_FLAGS) & set(part.arguments)]
         return bool(long_parts) and len(long_parts) != len(parts)
 
+    def part_refusal(self, part: Part, shell: ShellLine, role: str) -> Nudge | None:
+        if not shell.aliases_loaded or role not in self.suites.agent_policy().saved_command_roles:
+            return None
+        return self.refusal(part, role)
+
     def refusal(self, part: Part, role: str) -> Nudge | None:
         if part.saved_command:
             return self.saved_refusal(part)
