@@ -18,7 +18,7 @@ import {pressButton} from "./markButtons.js";
 import {peekRef} from "../route.js";
 
 // one item docked above the chat, drawn as version 4 drew a docked card: the type's icon and title, its buttons, and the body its module gives it
-const emit = defineEmits(["fold", "undock"]);
+const emit = defineEmits(["fold", "undock", "open"]);
 const props = defineProps({item: {type: Object, required: true}, folded: Boolean, collapsed: Boolean, leaving: Boolean, refusal: {type: String, default: ""}});
 const declaration = computed(() => dockDeclaration(props.item.type));
 const now = useSharedNow();
@@ -84,6 +84,7 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
         :body="Boolean(declaration?.folds)"
         :collapsed="collapsed"
         :data-figure-closing="leaving ? '' : null"
+        @click="collapsed && emit('open')"
     >
         <template #edge>
             <template v-if="leaving && !item.kept"><DockLeave :ends-at="leaveSeconds(item)" /></template>

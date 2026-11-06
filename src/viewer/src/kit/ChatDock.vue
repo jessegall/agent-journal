@@ -184,6 +184,7 @@ defineExpose({card});
     margin: 3px 0 6px;
     border-block: 1px solid var(--border-inner);
 }
+.chat-dock.collapsed { cursor: pointer; }
 .chat-dock.collapsed .chat-dock-body {
     grid-template-rows: 0fr;
     margin: 0;

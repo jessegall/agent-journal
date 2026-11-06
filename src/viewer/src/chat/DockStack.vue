@@ -52,7 +52,20 @@ const runs = computed(() =>
 );
 const rows = computed(() => docked.value.filter((item) => !runs.value.includes(item) && !isRunItem(item, dockDeclaration)));
 const going = computed(() => runs.value.filter((run) => !isLeaving(run)));
-const shared = computed(() => (grouped.value = groupedRuns(runs.value.length, grouped.value, going.value.length)) && !opened.value && !props.collapsed);
+const sizeChoice = rememberedRef(`dock-size:${store.identity?.root || location.host}`, null);
+const collapsedFor = (item) => sizeChoice.value ? sizeChoice.value.collapsed && !sizeChoice.value.opened.includes(item.id) : props.collapsed;
+const anyCollapsed = computed(() => docked.value.some(collapsedFor));
+const shared = computed(() => (grouped.value = groupedRuns(runs.value.length, grouped.value, going.value.length)) && !opened.value && !docked.value.some(collapsedFor));
+
+function changeAll() {
+    sizeChoice.value = {collapsed: !anyCollapsed.value, opened: []};
+}
+
+function openCard(item) {
+    if (!collapsedFor(item)) return;
+    const opened = sizeChoice.value?.collapsed ? sizeChoice.value.opened : [];
+    sizeChoice.value = {collapsed: true, opened: [...opened, item.id]};
+}
 
 // a card the person folded or unfolded by hand keeps that, the rest follow the chat's scroll
 const byHand = rememberedRef(`dock-folded:${store.identity?.root || location.host}`, {});
@@ -84,21 +97,25 @@ function release(item) {
 
 <template>
     <TransitionGroup tag="div" name="dock" :duration="DOCK_ARRIVAL_MS" class="dock-stack">
+        <div v-if="docked.length > 1" key="dock-all" class="dock-all">
+            <Btn small bordered data-dock-all @click="changeAll">{{ anyCollapsed ? "Open all" : "Collapse all" }}</Btn>
+        </div>
         <template v-for="item in rows" :key="item.id">
             <DockWrapper
                 :item="item"
                 :class="{timed: isLeaving(item)}"
                 :leaving="isLeaving(item) && !held.has(item.id)"
                 :folded="foldedFor(item)"
-                :collapsed="collapsed"
+                :collapsed="collapsedFor(item)"
                 :refusal="refusals[item.id]"
+                @open="openCard(item)"
                 @fold="fold(item)"
                 @undock="undock(item, $event)"
                 @mouseenter="hold(item)"
                 @mouseleave="release(item)"
             />
         </template>
-        <template v-if="grouped && opened && !collapsed">
+        <template v-if="grouped && opened && !anyCollapsed">
             <div key="runs-head" class="dock-runs-head">
                 <span>{{ runs.length }} runs</span>
                 <Btn small bordered aria-expanded="true" data-dock-runs-fold @click="foldRuns">
@@ -113,8 +130,9 @@ function release(item) {
                 :class="{timed: isLeaving(item)}"
                 :leaving="isLeaving(item) && !held.has(item.id)"
                 :folded="foldedFor(item)"
-                :collapsed="collapsed"
+                :collapsed="collapsedFor(item)"
                 :refusal="refusals[item.id]"
+                @open="openCard(item)"
                 @fold="fold(item)"
                 @undock="undock(item, $event)"
                 @mouseenter="hold(item)"
@@ -144,6 +162,15 @@ function release(item) {
 </template>
 
 <style scoped>
+.dock-all {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 14px;
+    background: var(--raised);
+}
+
 .dock-stack {
     display: flex;
     flex-direction: column;
