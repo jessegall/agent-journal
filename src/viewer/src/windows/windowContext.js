@@ -9,6 +9,9 @@ export {OPEN_VIEW, WINDOW_CONTEXT, useWindow} from "@journal/window-kit";
 // the page a pane stage draws, given to the windows in its panes
 export const PANE_PAGE = Symbol("pane-page");
 
+// what a page gives the inspector to draw the sections modules add to it; a page that provides none, such as a share, draws no section
+export const INSPECTOR_HOST = Symbol("inspector-host");
+
 const FAILURES = {1: "refused", 2: "usage", 3: "fault"};
 const READ_COALESCE_MS = 100;
 const QUIET_AFTER_READS_MS = 50;

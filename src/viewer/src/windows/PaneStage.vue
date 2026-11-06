@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, provide, ref, watch, watchEffect} from "vue";
-import {OPEN_VIEW, PANE_PAGE} from "./windowContext.js";
+import {INSPECTOR_HOST, OPEN_VIEW, PANE_PAGE} from "./windowContext.js";
 import LayoutPicker from "../agents/LayoutPicker.vue";
 import {useLayoutPresets} from "./layoutPresets.js";
 import Btn from "../kit/Btn.vue";
@@ -60,6 +60,7 @@ const props = defineProps({
     face: {type: String, default: "person"},
 });
 
+provide(INSPECTOR_HOST, {catalogue: props.catalogue, subscriptions: props.subscriptions, environment: props.environment, prompts: props.prompts, shellRead: props.shellRead});
 const presets = props.shellRead ? useLayoutPresets({environment: props.environment, page: props.page, shellLine: props.shellRead, catalogue: props.catalogue, store: props.store}) : null;
 const isAgentWindow = (name) => props.catalogue.window(name)?.shows === "one-agent";
 // an agent window follows the page's main agent unless its pane was set to another
