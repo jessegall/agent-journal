@@ -14,7 +14,7 @@ import PlanInspector from "./PlanInspector.vue";
 import ProcessQueueInspector from "./ProcessQueueInspector.vue";
 import RowMoves from "./RowMoves.vue";
 import ResourceHeading from "./ResourceHeading.vue";
-import {cliOf, creatorNameOf, fieldsOf, headingOf, titleOf} from "../domain/resourceNouns.js";
+import {cliOf, creatorNameOf, fieldsOf, headingOf, ownerNameOf, titleOf} from "../domain/resourceNouns.js";
 import ModuleBody from "../windows/ModuleBody.vue";
 
 // the inspector: the row the address opens, over the page, as version 4's side panel drew it; each opened row stacks on the one before
@@ -24,6 +24,7 @@ const opened = computed(() => route.value.open);
 const noun = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
 const row = ref(null);
 const creator = ref("");
+const owner = ref("");
 const failure = ref("");
 const fullyOpen = ref(false);
 let reading = 0;
@@ -37,13 +38,14 @@ const isDocument = computed(() => DOCUMENT_NOUNS.has(noun.value));
 const title = computed(() => titleOf(noun.value, row.value, opened.value?.id));
 const text = computed(() => row.value?.body || row.value?.brief || (TEXT_NOUNS.has(noun.value) ? row.value?.text : "") || "");
 const html = computed(() => (text.value ? render(text.value, {env: "", rowNames: false}) : ""));
-const fields = computed(() => fieldsOf(row.value, text.value, creator.value));
+const fields = computed(() => fieldsOf(row.value, text.value, creator.value, owner.value));
 
 async function load() {
     const open = opened.value;
     const turn = ++reading;
     row.value = null;
     creator.value = "";
+    owner.value = "";
     failure.value = "";
     if (!open || OWN_INSPECTORS.has(cliOf(open.table))) return;
     const name = cliOf(open.table);
@@ -52,6 +54,14 @@ async function load() {
     failure.value = answer.ok ? "" : answer.error;
     row.value = answer.ok ? answer.value : null;
     if (row.value?.creator_id) creator.value = await creatorOf(row.value.creator_id, turn);
+    if (row.value?.agent_id) owner.value = await ownerOf(row.value, turn);
+    else if (row.value) owner.value = ownerNameOf(row.value, null);
+}
+
+// the agent a row belongs to is read once for the row, by name
+async function ownerOf(owned, turn) {
+    const agent = await props.read(["agent", "show", String(owned.agent_id)]);
+    return turn === reading && agent.ok ? ownerNameOf(owned, agent.value) : "";
 }
 
 // the creator is read once for the row: its actor, and its agent when the actor is one
@@ -181,6 +191,9 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                             <p class="field-name">{{ field.label }}</p>
                                             <template v-if="field.isTime">
                                                 <TimeAgo class="field-value" :at="field.value" />
+                                            </template>
+                                            <template v-else-if="field.link">
+                                                <p class="field-value"><button type="button" class="field-link" data-resource-link @click="peek(field.link.table, field.link.id)">{{ field.value }}</button></p>
                                             </template>
                                             <template v-else>
                                                 <p class="field-value">{{ field.value }}</p>
@@ -417,6 +430,20 @@ h3 {
     margin: 0;
     font-size: 13px;
     overflow-wrap: anywhere;
+}
+
+.field-link {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--accent-text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.field-link:hover {
+    color: var(--text);
 }
 
 .failure {
