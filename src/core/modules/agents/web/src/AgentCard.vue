@@ -89,7 +89,7 @@ readCommand();
             <template v-else>
                 <span class="agent-time" data-agent-motion>{{ runTime }}</span>
             </template>
-            <span v-if="facts?.last_activity" class="agent-last-heard" data-agent-last-heard>Last heard: <TimeAgo :at="facts.last_activity" /></span>
+            <template v-if="facts?.last_activity"><span class="agent-last-heard" data-agent-last-heard>Last heard: <TimeAgo :at="facts.last_activity" /></span></template>
             </span>
         </span>
         <span class="agent-line">
@@ -103,7 +103,7 @@ readCommand();
         </template>
         <template v-if="job">
             <span :class="['agent-line', {'agent-work-start': !planTask}]">
-                <span class="agent-job" data-agent-job :title="job"><button v-if="jobRef" type="button" class="agent-job-link" :data-peek="jobRef" @click.stop="peekRef(jobRef)">{{ job }}</button><template v-else>{{ job }}</template></span>
+                <span class="agent-job" data-agent-job :title="job"><template v-if="jobRef"><button type="button" class="agent-job-link" :data-peek="jobRef" @click.stop="peekRef(jobRef)">{{ job }}</button></template><template v-else>{{ job }}</template></span>
                 <template v-if="totalCount">
                     <span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span>
                 </template>

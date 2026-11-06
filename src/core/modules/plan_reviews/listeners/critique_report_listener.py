@@ -10,7 +10,7 @@ from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
 from core.modules.documents.models.report import Report
 from core.modules.plans.models.plan import Plan
-from core.modules.skills.commands.require_skill.require_skill import RequireSkill
+from core.modules.skills.commands.request_skill.request_skill import RequestSkill
 from core.modules.plan_reviews.support.review_state import REVIEWED_MOVE, REVIEWING
 from core.base.change.created import Created
 
@@ -36,9 +36,9 @@ class CritiqueReportListener(CommitListener[Created[Link]]):
         if plan.state != REVIEWING:
             return
         for agent_id in self.applying_agent_ids(plan):
-            self.bus.run(RequireSkill(agent_id, REVIEW_APPLYING_SKILL), self.actors.actor(MODULE_NAME), cause_id=logged.id)
+            self.bus.run(RequestSkill(agent_id, REVIEW_APPLYING_SKILL), self.actors.actor(MODULE_NAME), cause_id=logged.id)
         self.bus.run(MoveRow(Plan.model_name, plan.id, REVIEWED_MOVE.name), self.actors.actor(MODULE_NAME), cause_id=logged.id)
 
     def applying_agent_ids(self, plan: Plan) -> tuple[int, ...]:
         maker = self.queries.query(Agent).filter(id=plan.creator_id).first()
-        return (maker.id,) if maker is not None else tuple(agent.id for agent in MainAgentFinder.rows(self.queries))
+        return tuple([maker.id]) if maker is not None else tuple(agent.id for agent in MainAgentFinder.rows(self.queries))
