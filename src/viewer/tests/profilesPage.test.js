@@ -3,6 +3,7 @@ import {createApp, h} from "vue";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
 import {context, page, settle} from "./support/windowContext.js";
 import ProfileRows from "../../core/modules/profiles/web/src/ProfileRows.vue";
+import {profileWindowContext} from "./support/profileWindowContext.js";
 
 vi.stubGlobal("ResizeObserver", class {
     observe() {}
@@ -25,7 +26,7 @@ afterEach(() => {
 // the page drawn in the document, over a journal that lists these profiles and answers each line it runs as the given function says
 async function drawn(profiles = [RESEARCHER, BUILDER], run = async () => ({ok: true, value: null})) {
     const lines = [];
-    const window_ = {...context({"profile list": {...page(profiles), value: {...page(profiles).value, types: TYPES}}}), run: async (line) => (lines.push(line), run(line))};
+    const window_ = {...profileWindowContext({"profile list": {...page(profiles), value: {...page(profiles).value, types: TYPES}}}), run: async (line) => (lines.push(line), run(line))};
     host = document.createElement("div");
     document.body.append(host);
     app = createApp({render: () => h(ProfileRows)});

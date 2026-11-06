@@ -19,12 +19,16 @@ const blocked = computed(() => !canSend.value || !(availability.value.can_start 
 async function load() {
     const request = ++latestRequest;
     loading.value = true;
-    const answer = await context.read(`helper availability --profile ${props.profile}${program.value ? ` --program ${program.value}` : ""}`);
+    context.state["availability.profile"] = props.profile;
+    if (program.value) context.state["availability.program"] = program.value;
+    else delete context.state["availability.program"];
+    await context.reload("availability");
     if (request !== latestRequest) return;
-    if (answer.ok) availability.value = answer.value;
+    const prop = context.props.availability;
+    if (!prop.failure.value) availability.value = prop.data.value;
     else {
         availability.value = UNAVAILABLE;
-        notice.value = answer.error;
+        notice.value = prop.failure.value;
     }
     loading.value = false;
 }
