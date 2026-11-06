@@ -3,8 +3,12 @@ import Points from "../../suites/coding/modules/workers/web/src/Points.vue";
 import Todos from "../../suites/coding/modules/workers/web/src/Todos.vue";
 import {context, drawn, page} from "./support/windowContext.js";
 
+const pointsContext = (answers, agent) => context(answers, agent, {
+    points: {line: "worker-worktree points", events: ["proof.*", "worker_worktree.*"]},
+});
+
 test("the points window shows each point of the worker's brief with its proof, in one read", async () => {
-    const windowContext = context(
+    const windowContext = pointsContext(
         {
             "worker-worktree points": {
                 ok: true,
@@ -26,7 +30,7 @@ test("the points window shows each point of the worker's brief with its proof, i
 });
 
 test("the points window of an agent with no worktree says so", async () => {
-    const text = await drawn(Points, context({"worker-worktree points": {ok: true, value: {points: []}}}, 2));
+    const text = await drawn(Points, pointsContext({"worker-worktree points": {ok: true, value: {points: []}}}, 2));
     expect(text).toContain("This agent has no task brief to prove");
 });
 
