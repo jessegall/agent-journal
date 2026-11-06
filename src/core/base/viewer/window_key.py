@@ -15,8 +15,8 @@ class WindowKey:
     belongs to if any, the events and the timer that reload it on its own, and the names in the window's
     state it takes as flags of its line. A page_size makes it a list read a page at a time, and an argument
     ids lets it read the rows with given ids together. A key named run.* is one key per id, such as run.12,
-    with {id} in its line, and named_ids lets that id be a name; answered_line means its read answers the
-    line and window that fill it."""
+    with {id} in its line, and named_ids lets that id be a name; another word in braces is one word from the
+    state under the key; answered_line means its read answers the line and window that fill it."""
 
     name: str
     read: str
@@ -51,7 +51,7 @@ class WindowKey:
         return not self.has_ids and self.loading == KeyLoading.FIRST and (self.tab is None or self.tab == tab)
 
     def line(self, state: Mapping[str, str]) -> list[str]:
-        line = self.read.split()
+        line = [state.get(f"{self.name}.{word[1:-1]}", "") if word.startswith("{") else word for word in self.read.split()]
         for flag_name in self.arguments:
             flag_value = state.get(f"{self.name}.{flag_name}", state.get(flag_name))
             if flag_value is not None:

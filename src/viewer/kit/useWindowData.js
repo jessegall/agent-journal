@@ -101,6 +101,8 @@ export function useWindowData(context) {
     // a key with ids, such as rounds.*, reloads the ids that were read
     const loadedNames = (name) => (name.endsWith(ID_KEY_SUFFIX) ? Object.keys(held).filter((heldName) => heldName.startsWith(name.slice(0, -1)) && held[heldName].readAt) : [name]);
 
+    const reloadSecondsOf = (name) => (declared[name] ?? declared[`${name.split(".")[0]}.*`]).reload_seconds;
+
     function heard(event) {
         const names = Object.keys(declared).filter((name) => event.event === REFRESH_EVENT || declared[name].events.some((pattern) => matches(pattern, event.event)));
         names.filter((name) => declared[name].page_size).forEach((name) => props[name].heard(event));
@@ -119,13 +121,13 @@ export function useWindowData(context) {
     }
 
     watch(() => state.tab, () => {
-        const only = Object.keys(declared).filter((name) => isOnScreen(name) && !props[name].readAt);
+        const only = Object.keys(declared).filter((name) => !name.endsWith(ID_KEY_SUFFIX) && isOnScreen(name) && !props[name].readAt);
         if (only.length) read(only);
     });
     onUnmounted(() => clearTimeout(join));
     function reloadDueKeys() {
         const now = Date.now();
-        const due = Object.keys(declared).filter((name) => declared[name].reload_seconds > 0 && isOnScreen(name) && now - props[name].readAt >= declared[name].reload_seconds * 1000);
+        const due = Object.keys(declared).filter((name) => declared[name].reload_seconds > 0 && isOnScreen(name)).flatMap(loadedNames).filter((name) => now - props[name].readAt >= reloadSecondsOf(name) * 1000);
         if (due.length) reloadSoon(due);
     }
     usePoll(reloadDueKeys, () => context.visible.value, TIMER_TICK_MS);
