@@ -8,6 +8,9 @@ description: Start a helper for a bounded read, send it more, stop it, and read 
 A helper is an agent program of its own that works for you on one bounded job and reports back. A read-only helper
 reads; work that writes goes to a worker or stays with you.
 
+- Choose the model first: the least expensive one that fits the job. Reuse a kept helper only when it is on that model,
+  and never because a stronger one happens to be there. When no kept helper on that model is idle and no place is free,
+  retire a finished helper and start one on the simpler model.
 - A helper stays kept after its process stops. It is idle until retired, and can take another job on the same
   agent number and session. Give new work to a compatible idle helper, even when the subject changes; prefer the
   one that already knows the work. A missing session, a nearly full context or an unfinished job can prevent reuse.

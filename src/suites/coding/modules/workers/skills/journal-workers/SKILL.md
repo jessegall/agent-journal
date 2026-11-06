@@ -10,7 +10,10 @@ stays kept on the same agent number and session until retired.
 
 ## As the one who sends
 
-- Give new work to a kept worker that can take it, even when the subject changes; prefer the one that already knows
+- Choose the model first: the least expensive one that fits the job. Reuse a kept worker only when it is on that model,
+  and never because a stronger one happens to be there. When no kept worker on that model is idle and no place is free,
+  retire a finished worker and start one on the simpler model.
+- Give new work to a kept worker on that model that can take it, even when the subject changes; prefer the one that already knows
   the work. `journal worker send <n> --task <task> [<task> ...]` assigns its next tasks. A kept worker can take them on
   its open worktree; after its work is merged, a send creates a new worktree in its old folder on the same session.
   What it already delivered and its proofs stay recorded. An unmerged branch is never overwritten.
