@@ -20,6 +20,7 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.gone_agents import GoneAgents
+from suites.coding.modules.workers.support.kept_worker_tasks import KeptWorkerTasks
 from suites.coding.modules.workers.support.worker_recipient import WorkerRecipient
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -36,10 +37,10 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
     runs_once = True
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks) -> None:
         self.rows, self.worktrees, self.repository, self.git, self.nudger = rows, worktrees, repository, git, nudger
         self.advance, self.bus, self.missing_agents = advance, bus, missing_agents
-        self.sources, self.task_sources = sources, task_sources
+        self.sources, self.task_sources, self.kept_tasks = sources, task_sources, kept_tasks
         self.conflicts: tuple[str, ...] = ()
         self.is_gone = False
 
@@ -47,6 +48,10 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         worker = self.rows.required(Agent, command.worker_id)
         if worker.retired_at is not None:
             raise Refusal(f"worker {worker.id} is retired, for good", "journal worker dispatch <task> starts a new one")
+        if not command.job and not command.task_ids:
+            raise Refusal("a send needs a job or a task", f'journal worker send {worker.id} "<job>", or --task <task>')
+        if command.task_ids:
+            self.kept_tasks.prepare(worker, command, actor)
         self.is_gone = worker.ended_at is None and bool(self.missing_agents.find([worker]))
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
@@ -67,6 +72,8 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         previous = self.task_sources.current(replace(context, actor=Actor(command.worker_id, ActorType.AGENT)))
         if self.is_gone:
             self.bus.dispatch(EndGoneWorker(command.worker_id), context)
+        if command.task_ids:
+            return self.kept_tasks.handed(worker, worktree, command, context)
         if worktree.state is WorktreeState.DELIVERED:
             self.advance.restart_task(worktree, self.rows.required(Task, worktree.task_id), context)
             self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)

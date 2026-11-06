@@ -1,4 +1,5 @@
 from datetime import timedelta
+from pathlib import Path
 
 from unittest.mock import patch
 
@@ -9,8 +10,10 @@ from suites.coding.modules.workers.commands.end_idle_worker.end_idle_worker impo
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from core.base.journal_home import LAUNCHER_SOCKET
 from core.testing.fake_launcher import FakeLauncher
+from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.worktree_samples import commit_in_worktree
 
 REASON = '--reason "Its work is finished"'
@@ -111,3 +114,38 @@ def test_a_worker_resume_at_the_run_limit_is_held_and_starts_when_a_place_frees(
     story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 2 --environment main", actor=story.user)
     WorkerResumeRetry()(story.container)
     story.expect_rows(started_before == 1, len(launcher.starts) == 2)
+
+
+def test_a_kept_worker_takes_a_new_task_on_its_open_worktree_and_what_it_delivered_stays(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = delivered_worker(story, repository)
+    task_id = story.new_row_id('task make "A second task"', actor=story.agent)
+    story.expect_success(f"worker send {worker.id} --task {task_id}", actor=story.agent)
+    story.expect_text(f"task show {task_id}", "state: started", f"holder_id: {worker.id}", actor=story.agent)
+    story.expect_text("task show 1", "state: testing", actor=story.agent)
+    story.expect_text("proof list --task 1", "cart.py:1", actor=story.agent)
+
+
+def test_a_merged_worker_gets_a_new_cut_on_its_session(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    task_id = story.new_row_id('task make "A second task"', actor=story.agent)
+    story.expect_success(f"worker send {worker.id} --task {task_id}", actor=story.agent)
+    story.expect_text(f"task show {task_id}", "state: started", f"holder_id: {worker.id}", actor=story.agent)
+    worktree = story.container.get(WorktreeQuery).worker_worktree(worker.id)
+    story.expect_rows(worktree.task_id == task_id, Path(worktree.folder).is_dir())
+
+
+def test_an_unmerged_branch_is_never_overwritten(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = delivered_worker(story, repository)
+    story.expect_success(f'worker release {worker.id} "Not needed"', actor=story.agent)
+    task_id = story.new_row_id('task make "A second task"', actor=story.agent)
+    story.expect_refusal(f"worker send {worker.id} --task {task_id}", "unmerged work", actor=story.agent)
+
