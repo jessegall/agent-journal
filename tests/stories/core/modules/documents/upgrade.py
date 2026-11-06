@@ -15,13 +15,14 @@ from core.base.database.moved_row import MovedRow
 from core.base.module.move_check import MoveCheck
 from core.base.module.module_finder import ModuleFinder
 from core.base.registry.registry import Registry
+from core.base.timestamp import Timestamp
 from core.modules.documents.documents_module import DocumentsModule
 from core.modules.documents.upgrade.documents_move import DocumentsMove
 from core.modules.questions.questions_module import QuestionsModule
 from core.modules.questions.upgrade.questions_move import QuestionsMove
 from core.modules.questions.upgrade.question_links_move import QuestionLinksMove
 from install.upgrade_journal import UpgradeJournal
-from tests.stories.core.modules.documents.support.trail_fixtures import Trail, feature, pending
+from tests.stories.core.modules.documents.support.trail_fixtures import Trail, feature
 
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 
@@ -103,7 +104,6 @@ def old_release_trail(new_story):
     return Trail(story)
 
 
-@pending(6853)
 def test_message_work_links_move_without_document_endpoint(historical_trail):
     trail = historical_trail
     rows = trail.links("message:1")
@@ -111,19 +111,19 @@ def test_message_work_links_move_without_document_endpoint(historical_trail):
     feature({("task", 1), ("plan", 1)} <= subjects, json.dumps(rows))
 
 
-@pending(6853)
 def test_old_edited_and_comment_links_keep_creator_and_timestamps(historical_trail):
     trail = historical_trail
     rows = trail.links("message:1")
     restored = [row for row in rows if row["target_model"] == "task" and row["target_id"] == 1]
     feature({row["link_type"] for row in restored} >= {"about", "edited", "comments_on"}, json.dumps(restored))
-    feature(all(row["created_at"] == "2026-10-01T10:00:00+00:00" and row["updated_at"] == "2026-10-02T10:00:00+00:00" for row in restored), json.dumps(restored))
-    feature(len({row["creator_id"] for row in restored}) == 1, "migration changed creators across relations")
+    feature(all(Timestamp.parsed(row["created_at"]) == Timestamp.parsed("2026-10-01T10:00:00+00:00")
+                and Timestamp.parsed(row["updated_at"]) == Timestamp.parsed("2026-10-02T10:00:00+00:00") for row in restored), json.dumps(restored))
+    expected_creator = trail.story.container.get(MoveMap).new_id("users", 1)
+    feature({row["creator_id"] for row in restored} == {expected_creator}, "migration changed the mapped creator")
     reply = trail.person("viewer.shell", "message", "show", "2")
     assert reply["parent_id"] == 1 and reply["text"] == "Shipping it"
 
 
-@pending(6853)
 def test_historical_refers_to_keeps_its_distinct_type(historical_trail):
     trail = historical_trail
     rows = trail.links("message:1")
@@ -131,13 +131,11 @@ def test_historical_refers_to_keeps_its_distinct_type(historical_trail):
     feature("refers_to" in relations and "mentions" not in relations, "explicit refers_to was lost or relabelled as a mention")
 
 
-@pending(6853)
 def test_question_links_move_after_question_ids(historical_trail):
     trail = historical_trail
     trail.expect_link("question:1", "message:1", "about")
 
 
-@pending(6853)
 def test_retry_duplicate_unmapped_and_other_domain_links_are_accounted_for(historical_trail):
     trail = historical_trail
     trail.expect_link("message:1", "task:1", "about")
@@ -148,7 +146,6 @@ def test_retry_duplicate_unmapped_and_other_domain_links_are_accounted_for(histo
     assert "depends" in trail.story.upgrade_text and "revision_of" in trail.story.upgrade_text
 
 
-@pending(6853)
 def test_recovery_after_finished_documents_move(old_release_trail):
     trail = old_release_trail
     source = next((trail.story.home.folder / "version-4").glob("*/journal.db"))
@@ -164,7 +161,6 @@ def test_recovery_after_finished_documents_move(old_release_trail):
     trail.story.expect_text("doc show 1 --all", "A later edit stays")
 
 
-@pending(6853)
 def test_migrated_task_overview_reads_original_conversation(historical_trail):
     trail = historical_trail
     result = trail.story.run("task overview 1")
@@ -172,7 +168,6 @@ def test_migrated_task_overview_reads_original_conversation(historical_trail):
     feature("Ship the cart today" in result.output_text and "Shipping it" in result.output_text, result.output_text)
 
 
-@pending(6853)
 def test_multiple_moves_of_one_module_keep_all_counts(historical_trail):
     story = historical_trail.story
     entries = [entry for entry in story.container.get(Registry).moves if entry.module == DocumentsModule.name]
@@ -199,7 +194,8 @@ def test_recovery_reuses_an_unmapped_partial_copy_without_overwriting_it(old_rel
                                                       "created_at": "2026-09-01T00:00:00+00:00", "updated_at": "2026-09-02T00:00:00+00:00"})
     trail.story.container.get(MoveRunner).run(source)
     rows = [row for row in trail.links("message:1") if row["link_type"] == "edited"]
-    assert len(rows) == 1 and rows[0]["id"] == copied_id and rows[0]["updated_at"] == "2026-09-02T00:00:00+00:00"
+    assert len(rows) == 1 and rows[0]["id"] == copied_id and rows[0]["creator_id"] == 1
+    assert Timestamp.parsed(rows[0]["updated_at"]) == Timestamp.parsed("2026-09-02T00:00:00+00:00")
     assert trail.story.container.get(MoveMap).new_id("links", old_id) == copied_id
 
 
@@ -241,7 +237,8 @@ def test_recovery_uses_the_existing_upgrade_entry_with_retained_source(old_relea
 def test_a_message_converted_to_a_card_is_not_used_as_a_message_endpoint(historical_trail):
     assert "maps to chat_marks" in historical_trail.story.upgrade_text
     historical_trail.expect_no_link("message:3", "task:1")
-    historical_trail.expect_link("message:1", "agent:1", "sent_to")
+    agent_id = historical_trail.story.container.get(MoveMap).new_id("agents", 1)
+    historical_trail.expect_link("message:1", f"agent:{agent_id}", "sent_to")
 
 
 def test_recovery_declares_direct_dependencies_without_a_second_links_claim(historical_trail):

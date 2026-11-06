@@ -15,7 +15,6 @@ from tests.stories.core.modules.documents.support.trail_fixtures import (
     Trail,
     feature,
     linked_trail,
-    pending,
     trail,
     viewer_answer,
 )
@@ -155,7 +154,6 @@ def test_deleting_the_selected_message_clears_its_source(trail):
     trail.expect_no_link("message:3", "task:2")
 
 
-@pending(6853)
 def test_migrated_comment_opens_original_target(old_release_trail):
     trail = old_release_trail
     message = next(row for row in trail.person("messages.chat", "message", "feed")["rows"] if row["id"] == 1)
