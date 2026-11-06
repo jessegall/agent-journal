@@ -5,6 +5,8 @@ import pytest
 
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingOn
 from tests.stories.server.support.server_client import server_story, viewer_answer
+from core.modules.developer.support.hook_request_log import HookRequestLog
+from core.modules.drivers.models.enums.hook_answer import HookAnswer
 
 
 @pytest.fixture
@@ -48,6 +50,9 @@ def test_single_and_batch_requests_name_http_commands_windows_and_environments(a
     assert sum(row["http_duration_ms"] is not None for row in attributed) == 2
     assert all(row["command_duration_ms"] >= 0 for row in attributed)
     assert all(row["received_at"] for row in attributed)
+    for name in ("database_points", "database_rows", "database_bytes"):
+        assert all(row[name] >= 0 for row in attributed)
+        assert any(row[name] > 0 for row in attributed)
     assert single_headers["X-Journal-Request-Id"] != batch_headers["X-Journal-Request-Id"]
     _, status = request(server, cookie, "/api/request-log-status")
     assert status["attempted"] == status["recorded"] == 3
@@ -113,8 +118,13 @@ def test_logging_off_keeps_no_rows_or_receipt_writes(attributed_server):
 
 def test_legacy_line_requests_and_historical_rows_still_display(attributed_server):
     server, cookie = attributed_server
+    server.story.container.get(HookRequestLog).record("", {}, {"event": "Legacy event"}, 2.5, HookAnswer.ALLOWED, role="viewer")
     request(server, cookie, "/api/line", {"window": "agents.agents", "line": ["agent", "list"], "environment": "main"})
     row = records(server, cookie)[0]
     assert row["event"] == "agent list"
     assert row["body"]["attribution"]["complete"] is True
     assert row["duration_ms"] >= 0
+    historical = records(server, cookie)[1]
+    assert historical["event"] == "Legacy event"
+    assert historical["body"] == {"event": "Legacy event"}
+    assert historical["duration_ms"] == 2.5

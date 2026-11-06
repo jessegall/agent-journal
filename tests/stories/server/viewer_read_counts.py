@@ -1,6 +1,7 @@
 import json
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
 from hashlib import sha256
 from pathlib import Path
 import os
@@ -70,17 +71,18 @@ def viewer_workload() -> ViewerWorkload:
             ("documents.doc", "doc"), ("processes.output", "process")) for number in (1, 2)),
         ("running", "background", "finished", "failed", "running"), (0, 0, 4096, 65536, 1024), 60, 30,
         tuple(WorkloadEvent(2 * index, index % 2 == 0,
-                            ("message", "send", f"Scheduled event {index:02d}"),
+                            ("message", "edit", str((51 if index % 2 == 0 else 101) + index // 2), "--text", f"Scheduled event {index:02d}"),
                             "main" if index % 2 == 0 else "elsewhere") for index in range(30)),
         (ReadLine("messages.chat", ("message", "feed", "--after-id", "50", "--before-id", "76", "--limit", "25")),
          ReadLine("messages.chat", ("message", "feed", "--after-id", "75", "--before-id", "101", "--limit", "25")),
          ReadLine("messages.chat", ("dock-item", "main")),
          ReadLine("tasks.tasks", ("task", "list", "--page", "2", "--limit", "5")),
-         ReadLine("processes.outputs", ("output", "list", "--page", "1", "--limit", "5")),
+         ReadLine("processes.outputs", ("process", "feed", "--limit", "5")),
          ReadLine("processes.output", ("output", "page", "4", "--limit", "5"))),
         {"journal.core.developer.tools": True, "journal.core.developer.tools.repeated-work": True,
          "journal.core.developer.tools.hooks.request-log": True,
-         "journal.core.developer.tools.hooks.request-log-size": 10000})
+         "journal.core.developer.tools.hooks.request-log-size": 10000,
+         "journal.core.docking.most-items": 10, "journal.core.processes.orphan-seconds": 600})
 
 
 class ViewerReadDataset(StoryFixture):
@@ -88,15 +90,12 @@ class ViewerReadDataset(StoryFixture):
 
     def steps(self, story):
         story.expect_success("environment make elsewhere /work/elsewhere")
-        story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)
-        for key, value in viewer_workload().settings.items():
-            if key == "journal.core.developer.tools":
-                continue
-            story.expect_success(f"setting set {key} {json.dumps(value)} --project", actor=story.user)
         story.expect_success("setting set journal.core.viewer.tour-completed true --project", actor=story.user)
         for number in range(1, 101):
             story.expect_success(f'message send "Displayed message {number:03d}" --environment main', actor=story.user)
             story.expect_success(f'task make "Backing task {number:03d}" --environment main', actor=story.user)
+        for number in range(15):
+            story.expect_success(f'message send "Unrelated message {number:02d}" --environment elsewhere', actor=story.user)
         for number in (1, 2):
             story.expect_success(f'memory make "Memory {number}" --weight 5 --environment main', actor=story.user)
             story.expect_success(f'question ask "Question {number}?" --environment main', actor=story.agent)
@@ -114,7 +113,8 @@ def build_workload_outputs_and_docks(story) -> None:
     for dock in current["rows"]:
         story.expect_success(f'dock remove {dock["id"]} --environment main', actor=story.user)
     for kind, model, number in viewer_workload().docks:
-        story.expect_success(f"dock add {kind} {model} {number} --environment main", actor=story.user)
+        dock_id = story.new_row_id(f"dock add {kind} {model} {number} --environment main", actor=story.user)
+        story.expect_success(f"dock keep {dock_id} --environment main", actor=story.user)
 
 
 @dataclass(frozen=True)
@@ -142,16 +142,21 @@ class ReadMeasurement:
                            "tables": dict(self.points.tables), "statements": dict(self.points.statements),
                            "update_statements": dict(self.points.update_statements)}
         value["database_points"] = self.points.total
-        value["file_bytes_kind"] = "logical bytes through FileAccess, including cache hits"
+        value["file_bytes_kind"] = "logical bytes through FileAccess and bounded output byte ranges, including cache hits"
         value["overhead_scope"] = "callbacks and query-plan collection; developer logging remains enabled"
         return value
 
 
 class WorkloadServer:
-    def __init__(self, server):
+    def __init__(self, server, prior_settings: dict[str, object]):
         self.server = server
         self.workload = viewer_workload()
         self.cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+        self.prior_settings = prior_settings
+
+    def manifest(self) -> dict[str, object]:
+        return {**self.workload.manifest(), "settings_before": self.prior_settings,
+                "restore_method": "restore child values through setting set, then restore the tools group; discard the story journal"}
 
     def action(self, line: tuple[str, ...], environment: str = "main") -> object:
         status, _, text = viewer_answer(self.server.viewer_port(), "/api/line", self.cookie, "",
@@ -174,6 +179,14 @@ class WorkloadServer:
                                                           "line": ["developer", "hook-requests"]})["rows"]
         attributed = tuple(row["body"]["attribution"] for row in rows if
                            row["body"].get("attribution", {}).get("client_id") == funnel["client_id"])
+        if "start_status" in funnel:
+            start = funnel["start_status"]
+            if status["epoch"] != start["epoch"]:
+                raise IncompleteViewerSample.for_reason("the server restarted during the sample")
+            attributed = tuple(row for row in attributed if
+                               datetime.fromisoformat(funnel["opened_at"]) <= datetime.fromisoformat(row["received_at"]) <= datetime.fromisoformat(funnel["closed_at"]))
+            status = {**status, **{key: status[key] - start[key] for key in (
+                "attempted", "recorded", "dropped", "disabled", "receipt_dropped", "recording_ms")}}
         if not all(row["complete"] for row in attributed):
             raise IncompleteViewerSample.for_reason("some joined reads have no completion receipt")
         commands = {row["command_id"]: row for row in attributed}
@@ -187,7 +200,8 @@ class WorkloadServer:
         if status["receipt_dropped"] or funnel["receiptFailures"]:
             raise IncompleteViewerSample.for_reason("completion receipts were lost")
         validate_sample(evidence)
-        return {**evidence, "epoch": status["epoch"], "retention_limit": status["retention_limit"]}
+        return {**evidence, "epoch": status["epoch"], "retention_limit": status["retention_limit"],
+                "recording_ms": status["recording_ms"], "settings": self.workload.settings}
 
     def read(self, lines: tuple[ReadLine, ...]) -> ReadMeasurement:
         databases = []
@@ -200,16 +214,24 @@ class WorkloadServer:
         byte_range = OutputFolder.byte_range
 
         def opened(home):
-            started_at = perf_counter()
             database = open_database(home)
-            database.connection.set_trace_callback(statements.append)
+            started_at = perf_counter()
+
+            def traced(sql):
+                traced_at = perf_counter()
+                statements.append(sql)
+                overhead.append(perf_counter() - traced_at)
+
+            database.connection.set_trace_callback(traced)
             databases.append(database)
             close_database = database.close
 
             def close():
                 collected_at = perf_counter()
                 database.connection.set_trace_callback(None)
-                selected = tuple(dict.fromkeys(sql for sql in statements if sql.lstrip().upper().startswith("SELECT")))[:3]
+                queries = tuple(dict.fromkeys(sql for sql in statements if sql.lstrip().upper().startswith("SELECT")))
+                selected = tuple(sql for sql in queries if any(table in sql.lower() for table in (
+                    "from chat_messages", "from messages", "from tasks", "from process_rows", "from dock_items")))[:5]
                 for sql in selected:
                     rows = database.connection.execute("EXPLAIN QUERY PLAN " + sql).fetchall()
                     plans.append(QueryPlan(sql, tuple(str(row[3]) for row in rows)))
@@ -222,12 +244,16 @@ class WorkloadServer:
 
         def binary(access, path):
             value = read_binary(access, path)
+            counted_at = perf_counter()
             file_sizes.append(len(value))
+            overhead.append(perf_counter() - counted_at)
             return value
 
         def output_range(folder, process_id, first, last):
             value = byte_range(folder, process_id, first, last)
+            counted_at = perf_counter()
             file_sizes.append(len(value))
+            overhead.append(perf_counter() - counted_at)
             return value
 
         started_at = perf_counter()
@@ -247,9 +273,38 @@ class WorkloadServer:
 @contextmanager
 def workload_server(new_story, *, listen: bool = False):
     story = new_story(fixture=ViewerReadDataset)
+    tools_key = "journal.core.developer.tools"
+    before = {tools_key: json.loads(story.run(f"setting show {tools_key} --json", actor=story.user).output_text)}
+    story.expect_success(f"setting switch {tools_key} on --project", actor=story.user)
+    for key, value in viewer_workload().settings.items():
+        if key == tools_key:
+            continue
+        before[key] = json.loads(story.run(f"setting show {key} --json", actor=story.user).output_text)
+        story.expect_success(f"setting set {key} {json.dumps(value)} --project", actor=story.user)
+    story.advance(datetime.now(timezone.utc) - story.clock.timestamp().value)
     build_workload_outputs_and_docks(story)
-    with server_story(story, listener_thread_started=listen) as server:
-        yield WorkloadServer(server)
+    try:
+        with server_story(story, listener_thread_started=listen) as server:
+            yield WorkloadServer(server, before)
+    finally:
+        for key, setting in before.items():
+            if key == tools_key:
+                continue
+            story.expect_success(f'setting set {key} {json.dumps(setting["value"])} --project', actor=story.user)
+        state = "on" if before[tools_key]["value"] else "off"
+        story.expect_success(f"setting switch {tools_key} {state} --project", actor=story.user)
+
+
+@pytest.fixture
+def read_sample(new_story):
+    with workload_server(new_story) as sample:
+        yield sample
+
+
+@pytest.fixture
+def browser_sample(new_story):
+    with workload_server(new_story, listen=True) as sample:
+        yield sample
 
 
 class IncompleteViewerSample(AssertionError):
@@ -274,6 +329,10 @@ def validate_sample(evidence: dict[str, object]) -> None:
     if any(type(evidence[section][key]) is not int or evidence[section][key] < 0
            for section in ("attribution", "funnel") for key in counts):
         raise IncompleteViewerSample.for_reason("every counter must be a nonnegative integer")
+    if not {"attempted", "recorded", "dropped"} <= evidence["losses"].keys():
+        raise IncompleteViewerSample.for_reason("every loss count is required")
+    if not {"retained", "required"} <= evidence["retention"].keys():
+        raise IncompleteViewerSample.for_reason("the retained and required record counts are required")
     losses = evidence["losses"]
     if losses["dropped"] != 0 or losses["attempted"] != losses["recorded"]:
         raise IncompleteViewerSample.for_reason("the log lost records")
@@ -284,25 +343,51 @@ def validate_sample(evidence: dict[str, object]) -> None:
         raise IncompleteViewerSample.for_reason("the attributed log and funnel counters disagree")
 
 
-def run_workload_browser(new_story, tmp_path: Path, case: str = "schedule") -> dict[str, object]:
-    with workload_server(new_story, listen=True) as sample:
+def validate_workload_result(result: dict[str, object]) -> None:
+    if not result["sample_complete"]:
+        raise IncompleteViewerSample.for_reason(result["incomplete_reason"])
+    validate_sample(result["counter_agreement"])
+
+
+def run_workload_browser(sample: WorkloadServer, tmp_path: Path, case: str = "schedule") -> dict[str, object]:
+        measured = sample.read(sample.workload.reads).report()
         manifest = tmp_path / "viewer-workload.json"
         result_file = tmp_path / f"viewer-{case}.json"
-        FileAccess.shared().write(manifest, json.dumps(sample.workload.manifest()))
+        FileAccess.shared().write(manifest, json.dumps(sample.manifest()))
         address = f"http://127.0.0.1:{sample.server.viewer_port()}/?key={sample.server.viewer_key('Ada')}&environment=main"
         script = Path(__file__).resolve().parents[3] / "src/viewer/tests/viewerReadCounts.browser.mjs"
         completed = subprocess.run(["node", str(script), address, str(manifest), str(result_file), case],
                                    cwd=script.parent.parent, env=os.environ, capture_output=True, text=True, timeout=180)
         assert completed.returncode == 0, completed.stdout + completed.stderr
         result = json.loads(FileAccess.shared().read(result_file))
+        result["server_reads"] = measured
         assert result["workload"]["identifier"] == sample.workload.identifier
-        assert result["workload"]["build"] == sample.workload.manifest()["build"]
-        if case != "failure-return":
+        assert result["workload"]["build"] == json.loads(FileAccess.shared().read(manifest))["build"]
+        try:
             result["counter_agreement"] = sample.attributed_evidence(result["result"]["funnel"])
+            result["sample_complete"] = True
+        except IncompleteViewerSample as error:
+            result["sample_complete"] = False
+            result["incomplete_reason"] = str(error)
+        status, _, text = viewer_answer(sample.server.viewer_port(), "/api/request-log-status", sample.cookie, "")
+        assert status == 200, text
+        result["log_status"] = json.loads(text)
         FileAccess.shared().write(result_file, json.dumps(result))
-        print(json.dumps({"workload": result["workload"], "case": case, "result": result["result"],
+        print(json.dumps({"identifier": result["workload"]["identifier"], "build": result["workload"]["build"],
+                          "dataset": result["workload"]["dataset"], "case": case,
+                          "sample_complete": result["sample_complete"], "log_status": result["log_status"],
+                          "funnel": result["result"]["funnel"]["counts"], "server_reads": measured,
                           "artifact": str(result_file)}, sort_keys=True))
         return result
+
+
+def run_canonical_viewer_workload(new_story, output_folder: Path) -> tuple[dict[str, object], ...]:
+    output_folder.mkdir(parents=True, exist_ok=True)
+    results = []
+    for case in ("schedule", "hidden-pane", "hidden-tab", "initially-hidden", "failure-return", "action-event-race"):
+        with workload_server(new_story, listen=True) as sample:
+            results.append(run_workload_browser(sample, output_folder, case))
+    return tuple(results)
 
 
 def test_workload_pins_dataset_pages_docks_settings_and_schedule():
@@ -318,62 +403,76 @@ def test_workload_pins_dataset_pages_docks_settings_and_schedule():
     assert workload.settings["journal.core.developer.tools.repeated-work"] is True
 
 
-def test_real_batch_counters_include_payload_points_statements_and_plans(new_story):
+def test_workload_records_and_restores_prior_setting_values(new_story):
     with workload_server(new_story) as sample:
-        measured = sample.read(sample.workload.reads)
-        assert all(answer["code"] == 0 for answer in measured.answers), measured.answers
-        assert measured.connections == 1
-        assert measured.payload_bytes > 0
-        assert measured.points.rows > 0
-        assert measured.points.bytes > 0
-        assert measured.statement_count >= len(measured.points.statements)
-        assert any("SELECT" in plan.sql.upper() for plan in measured.plans)
-        assert all(plan.steps for plan in measured.plans)
-        print(json.dumps(measured.report(), sort_keys=True))
+        previous = sample.prior_settings
+        story = sample.server.story
+        assert previous["journal.core.developer.tools"]["value"] is False
+        assert previous["journal.core.developer.tools.hooks.request-log-size"]["value"] == 50
+        assert sample.manifest()["settings_before"] == previous
+    restored = json.loads(story.run("setting show journal.core.developer.tools --json", actor=story.user).output_text)
+    assert restored["value"] is False
+    story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)
+    for key, value in previous.items():
+        if key == "journal.core.developer.tools":
+            continue
+        restored = json.loads(story.run(f"setting show {key} --json", actor=story.user).output_text)
+        assert restored["value"] == value["value"]
+    story.expect_success("setting switch journal.core.developer.tools off --project", actor=story.user)
 
 
-def test_fixture_creates_ten_mixed_docks_and_fifty_loaded_messages(new_story):
-    with workload_server(new_story) as sample:
-        docks = sample.read((ReadLine("messages.chat", ("dock-item", "main")),)).answers[0]["value"]["rows"]
-        assert len(docks) == 10
-        assert len({dock["type"] for dock in docks}) == 5
-        rows = sample.loaded_messages()
-        assert len(rows) == 50
-        assert {row["id"] for row in rows} == set(range(51, 101))
+def test_real_batch_counters_include_payload_points_statements_and_plans(read_sample):
+    measured = read_sample.read(read_sample.workload.reads)
+    assert all(answer["code"] == 0 for answer in measured.answers), [answer["error"] for answer in measured.answers if answer["code"]]
+    assert measured.connections == 1
+    assert measured.payload_bytes > 0
+    assert measured.points.rows > 0
+    assert measured.points.bytes > 0
+    assert measured.statement_count >= len(measured.points.statements)
+    assert any("SELECT" in plan.sql.upper() for plan in measured.plans)
+    assert all(plan.steps for plan in measured.plans)
+    print(json.dumps(measured.report(), sort_keys=True))
 
 
-def test_older_loaded_rows_refresh_after_delete_and_an_action_event_race(new_story):
-    with workload_server(new_story) as sample:
-        before = sample.loaded_messages()
-        assert 60 in {row["id"] for row in before}
-        sample.action(("message", "delete", "60"))
-        sample.action(("message", "send", "An action racing the refresh"))
-        after = sample.loaded_messages()
-        assert 60 not in {row["id"] for row in after}
-        assert 101 not in {row["id"] for row in after}
-        assert {row["id"] for row in after} == set(range(51, 101)) - {60}
+def test_fixture_creates_ten_mixed_docks_and_fifty_loaded_messages(read_sample):
+    docks = read_sample.read((ReadLine("messages.chat", ("dock-item", "main")),)).answers[0]["value"]["rows"]
+    active = [dock for dock in docks if dock["state"] == "docked"]
+    assert len(active) == 10
+    assert len({dock["type"] for dock in active}) == 5
+    rows = read_sample.loaded_messages()
+    assert len(rows) == 50
+    assert {row["id"] for row in rows} == set(range(51, 101))
 
 
-def test_small_page_does_not_load_the_large_message_backing_set(new_story):
-    with workload_server(new_story) as sample:
-        small = sample.read((ReadLine("messages.chat", ("message", "feed", "--limit", "5")),))
-        large = sample.read((ReadLine("messages.chat", ("message", "feed", "--limit", "100")),))
-        assert len(small.answers[0]["value"]["rows"]) == 5
-        assert len(large.answers[0]["value"]["rows"]) == 100
-        assert small.points.rows < large.points.rows
-        assert small.points.bytes < large.points.bytes
-        assert small.payload_bytes < large.payload_bytes
+def test_older_loaded_rows_refresh_after_delete_and_an_action_event_race(read_sample):
+    before = read_sample.loaded_messages()
+    assert 60 in {row["id"] for row in before}
+    read_sample.action(("message", "delete", "60"))
+    created = read_sample.action(("message", "send", "An action racing the refresh"))
+    after = read_sample.loaded_messages()
+    assert 60 not in {row["id"] for row in after}
+    assert created["id"] not in {row["id"] for row in after}
+    assert {row["id"] for row in after} == set(range(51, 101)) - {60}
 
 
-def test_output_bytes_and_small_pages_use_the_fixed_large_file(new_story):
-    with workload_server(new_story) as sample:
-        small = sample.read((ReadLine("processes.output", ("output", "page", "4", "--limit", "5")),))
-        large = sample.read((ReadLine("processes.output", ("output", "page", "4", "--limit", "1024")),))
-        assert small.answers[0]["value"]["total"] == 65536
-        assert len(small.answers[0]["value"]["lines"]) == 5
-        assert len(large.answers[0]["value"]["lines"]) == 1024
-        assert small.file_bytes < large.file_bytes
-        assert small.payload_bytes < large.payload_bytes
+def test_small_page_does_not_load_the_large_message_backing_set(read_sample):
+    small = read_sample.read((ReadLine("messages.chat", ("message", "feed", "--limit", "5")),))
+    large = read_sample.read((ReadLine("messages.chat", ("message", "feed", "--limit", "100")),))
+    assert len(small.answers[0]["value"]["rows"]) == 5
+    assert len(large.answers[0]["value"]["rows"]) == 100
+    assert small.points.rows < large.points.rows
+    assert small.points.bytes < large.points.bytes
+    assert small.payload_bytes < large.payload_bytes
+
+
+def test_output_bytes_and_small_pages_use_the_fixed_large_file(read_sample):
+    small = read_sample.read((ReadLine("processes.output", ("output", "page", "4", "--limit", "5")),))
+    large = read_sample.read((ReadLine("processes.output", ("output", "page", "4", "--limit", "1024")),))
+    assert small.answers[0]["value"]["total"] == 65536
+    assert len(small.answers[0]["value"]["lines"]) == 5
+    assert len(large.answers[0]["value"]["lines"]) == 1024
+    assert small.file_bytes < large.file_bytes
+    assert small.payload_bytes < large.payload_bytes
 
 
 @pytest.mark.parametrize("missing", ["attribution", "retention", "losses", "funnel"])
@@ -399,10 +498,18 @@ def test_complete_attribution_and_funnel_agreement_is_accepted():
 
 
 @pytest.mark.parametrize("case", ["hidden-pane", "hidden-tab", "initially-hidden", "failure-return", "action-event-race"])
-def test_browser_visibility_failure_recovery_and_return(new_story, tmp_path, case):
-    run_workload_browser(new_story, tmp_path, case)
+def test_browser_visibility_failure_recovery_and_return(browser_sample, tmp_path, case):
+    result = run_workload_browser(browser_sample, tmp_path, case)
+    if case != "failure-return":
+        validate_workload_result(result)
 
 
-def test_canonical_visible_and_hidden_schedule(new_story, tmp_path):
-    result = run_workload_browser(new_story, tmp_path)
+def test_canonical_visible_and_hidden_schedule(browser_sample, tmp_path):
+    result = run_workload_browser(browser_sample, tmp_path)
     assert result["result"]["elapsedMs"] >= 90000
+    if result["sample_complete"]:
+        validate_workload_result(result)
+        return
+    assert result["log_status"]["dropped"] or result["log_status"]["receipt_dropped"]
+    with pytest.raises(IncompleteViewerSample):
+        validate_workload_result(result)

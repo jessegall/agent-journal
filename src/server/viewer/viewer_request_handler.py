@@ -245,13 +245,14 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             turn = nullcontext() if tuple(request.line[:2]) in UNQUEUED_LINES else viewer.routes.queue.viewer_turn(" ".join(request.line), request.window, viewer.routes.priorities.priority(request.window))
             with turn:
                 queued_ms = (perf_counter() - started_at) * 1000
-                answered = viewer.routes.line_route.answer(request.window, request.line, viewer.login.person_id(token), request.environment, session.shared)
+                timed = viewer.routes.line_route.timed_single_answer(request.window, request.line, viewer.login.person_id(token), request.environment, session.shared)
+                answered = timed.answer
         except ShareRefusal as refusal:
             self.answer(403, {"error": refusal.reason})
             return
         duration_ms = (perf_counter() - started_at) * 1000
         http = ViewerHttpRequest(request_id, received_at, "", duration_ms, len(body or b""), viewer.login.person_id(token))
-        viewer.routes.request_log.record_viewer(ViewerRequestRecord(http, request, 0, duration_ms - queued_ms, queued_ms, answered.code))
+        viewer.routes.request_log.record_viewer(ViewerRequestRecord(http, request, 0, timed.duration_ms, queued_ms, answered.code, timed.points))
         self.answer(200, asdict(answered), {"X-Journal-Request-Id": request_id})
 
     def answer_notices(self, viewer: ViewerServer, token: str, body: bytes | None) -> None:

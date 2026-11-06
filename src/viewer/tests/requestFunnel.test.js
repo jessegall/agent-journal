@@ -52,6 +52,7 @@ test("the funnel counts one batch HTTP request, its commands by window, late joi
     await settled();
     transport.recording = true;
     const joined = lineResult("a.b", "usage tool", "main");
+    await settled();
     subscriptions.dispatch({event: "hook_call.create"});
     const trailing = lineResult("a.b", "usage tool", "main");
     const joinedTrailing = lineResult("a.b", "usage tool", "main");

@@ -10,12 +10,20 @@ const viewerFolder = fileURLToPath(new URL("..", import.meta.url));
 const pause = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 const isCommand = (request) => /\/api\/lines?$/.test(new URL(request.url()).pathname);
 
+async function until(page, predicate, argument) {
+    const deadline_at = Date.now() + 10000;
+    while (!(await page.evaluate(predicate, argument))) {
+        assert.ok(Date.now() < deadline_at, `the controlled viewer never reached ${predicate}`);
+        await pause(25);
+    }
+}
+
 function chromiumPath() {
     if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
-    if (existsSync(chromium.executablePath())) return chromium.executablePath();
     const cache = join(homedir(), "Library/Caches/ms-playwright");
     const folders = existsSync(cache) ? readdirSync(cache).filter((name) => name.startsWith("chromium_headless_shell-")).sort().reverse() : [];
-    return folders.map((folder) => join(cache, folder, "chrome-headless-shell-mac-arm64/chrome-headless-shell")).find(existsSync);
+    return folders.map((folder) => join(cache, folder, "chrome-headless-shell-mac-arm64/chrome-headless-shell")).find(existsSync)
+        ?? (existsSync(chromium.executablePath()) ? chromium.executablePath() : undefined);
 }
 
 async function fixtureCode() {
@@ -35,8 +43,7 @@ async function fixtureCode() {
 
 async function controlledPage(context, address, code, initiallyHidden) {
     const page = await context.newPage();
-    await page.goto(address);
-    await page.locator(".composer-input").waitFor();
+    await context.request.get(address);
     await page.route("**/read-counts-fixture", (route) => route.fulfill({contentType: "text/html", body: `
         <!doctype html><html><head><script type="importmap">{"imports":{
         "vue":"/viewer/vendor/vue-3.5.esm-browser.prod.js","@journal/window-kit":"/viewer/kit/window-kit.js"}}
@@ -44,6 +51,7 @@ async function controlledPage(context, address, code, initiallyHidden) {
     await page.goto(new URL("/read-counts-fixture", address).href);
     await page.addScriptTag({type: "module", content: code});
     await page.waitForFunction(() => Boolean(globalThis.readFixture));
+    await page.evaluate(() => readFixture.transport.isRead(["message", "feed"]));
     await page.clock.install();
     await page.clock.pauseAt(new Date());
     await page.evaluate((hidden) => {
@@ -69,24 +77,28 @@ async function controlledPage(context, address, code, initiallyHidden) {
         fixture.app.mount("#fixture");
     }, initiallyHidden);
     await page.clock.runFor(100);
-    await page.waitForFunction(() => readFixture.results.length === 1);
+    await until(page, () => readFixture.results.length === 1);
     return page;
 }
 
 async function advancePoll(page) {
     const previous = await page.evaluate(() => readFixture.results.length);
-    await page.clock.runFor(2100);
+    await page.clock.fastForward(2100);
     const hidden = await page.evaluate(() => readFixture.hidden);
-    if (!hidden) await page.waitForFunction((before) => readFixture.results.length > before, previous);
+    if (!hidden) await until(page, (before) => readFixture.results.length > before, previous);
 }
 
-async function funnelEvidence(page) {
-    return page.evaluate(async () => {
+async function funnelEvidence(page, baseline = null) {
+    const evidence = await page.evaluate(async () => {
         const transport = globalThis[Symbol.for("journal.transport")];
         await transport.flushReadReceipts();
         return {client_id: transport.clientId, counts: transport.requestTotals(), receiptFailures: transport.receiptFailures,
             windows: Object.fromEntries([...transport.lineCounts.keys()].map((window) => [window, transport.requestCounts(window)]))};
     });
+    if (!baseline) return evidence;
+    return {...evidence, counts: Object.fromEntries(Object.entries(evidence.counts).map(([key, count]) => [key, count - baseline.counts[key]])),
+        receiptFailures: evidence.receiptFailures - baseline.receiptFailures, opened_at: baseline.opened_at,
+        closed_at: new Date().toISOString(), start_status: baseline.start_status};
 }
 
 async function visibilityCase(context, address, code, caseName) {
@@ -118,7 +130,10 @@ async function visibilityCase(context, address, code, caseName) {
         document.dispatchEvent(new Event("visibilitychange"));
     });
     await page.clock.runFor(200);
-    await page.waitForFunction(() => readFixture.results.at(-1).ok);
+    await until(page, () => readFixture.results.at(-1).ok);
+    await page.evaluate(() => readFixture.app.unmount());
+    await page.clock.resume();
+    await until(page, () => readFixture.transport.joinedReads.size === 0);
     const after = await page.evaluate(() => ({counts: readFixture.transport.sentCounts("messages.chat"),
         eventCalls: readFixture.eventCalls, successfulReturn: readFixture.results.at(-1).ok}));
     const funnel = await funnelEvidence(page);
@@ -129,6 +144,7 @@ async function visibilityCase(context, address, code, caseName) {
 async function raceCase(context, address, code) {
     const page = await controlledPage(context, address, code, false);
     await page.evaluate(() => readFixture.app.unmount());
+    await page.clock.resume();
     let release;
     const held = new Promise((resolve) => { release = resolve; });
     let intercepted;
@@ -144,7 +160,7 @@ async function raceCase(context, address, code) {
     await page.evaluate(() => {
         readFixture.first = readFixture.lineResult("messages.chat", "message feed --limit 5", "main", undefined, true);
     });
-    await page.clock.runFor(100);
+    await pause(100);
     await seen;
     await page.evaluate(() => {
         readFixture.joined = readFixture.lineResult("messages.chat", "message feed --limit 5", "main", undefined, true);
@@ -156,7 +172,7 @@ async function raceCase(context, address, code) {
         readFixture.trailing = readFixture.lineResult("messages.chat", "message feed --limit 5", "main", undefined, true);
     });
     release();
-    await page.clock.runFor(200);
+    await pause(200);
     const answers = await page.evaluate(() => Promise.all([readFixture.first, readFixture.joined, readFixture.trailing]));
     assert.deepEqual(answers[0], answers[1]);
     assert.ok(answers[2].value.rows.some((row) => row.text === "Action during a held read"));
@@ -175,9 +191,14 @@ async function scheduleCase(context, address, workload, code) {
     await page.locator("[data-message]").first().waitFor();
     await page.addScriptTag({type: "module", content: code});
     await page.waitForFunction(() => Boolean(globalThis.readFixture));
-    assert.equal(await page.locator(".dock-title").count(), workload.docks.length);
+    await page.locator(".dock-stack .chat-dock").nth(workload.docks.length - 1).waitFor();
+    assert.equal(await page.locator(".dock-stack .chat-dock").count(), workload.docks.length);
     const rows = await page.locator("[data-message]").count();
     assert.equal(rows, workload.displayed_rows);
+    await until(page, () => globalThis[Symbol.for("journal.transport")].joinedReads.size === 0);
+    const baseline = await funnelEvidence(page);
+    baseline.opened_at = new Date().toISOString();
+    baseline.start_status = await (await page.request.get(new URL("/api/request-log-status", address).href)).json();
     const snapshot = () => page.evaluate(() => {
         const transport = globalThis[Symbol.for("journal.transport")];
         return Object.fromEntries([...transport.lineCounts.keys()].map((window) => [window, transport.sentCounts(window)]));
@@ -190,6 +211,7 @@ async function scheduleCase(context, address, workload, code) {
         assert.equal(answer.ok, true, JSON.stringify(answer));
     }
     await pause(Math.max(0, startedAt + workload.visible_seconds * 1000 - Date.now()));
+    assert.equal(await page.locator("[data-message]").count(), workload.displayed_rows);
     const visible = await snapshot();
     await page.evaluate(() => {
         Object.defineProperty(document, "hidden", {configurable: true, get: () => true});
@@ -203,7 +225,8 @@ async function scheduleCase(context, address, workload, code) {
     });
     await pause(1000);
     const returned = await snapshot();
-    const funnel = await funnelEvidence(page);
+    await until(page, () => globalThis[Symbol.for("journal.transport")].joinedReads.size === 0);
+    const funnel = await funnelEvidence(page, baseline);
     await page.close();
     return {before, visible, hidden, returned, funnel, scheduleClock: "wall", elapsedMs: Date.now() - startedAt};
 }
