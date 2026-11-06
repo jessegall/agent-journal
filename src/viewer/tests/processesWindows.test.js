@@ -1,4 +1,4 @@
-import {expect, test} from "vitest";
+import {expect, test, vi} from "vitest";
 import {outputWindowContext} from "./support/outputWindowContext.js";
 import {commandsWindowContext} from "./support/commandsWindowContext.js";
 import Output from "../../core/modules/processes/web/src/Output.vue";
@@ -67,7 +67,7 @@ test("the output window shows the reader's lines and the whole text on a button,
     };
     const windowContext = recording(answers, {output: 4});
     const element = await mounted(Output, windowContext);
-    expect(element.textContent).toContain("3: FAILED a");
+    await vi.waitFor(() => expect(element.textContent).toContain("3: FAILED a"));
     answers["output peek 4 --summary"] = {ok: true, value: {lines: ["output 4 is running: 4 lines, 52 characters", "3: FAILED a", "4: FAILED b"]}};
     windowContext.heard.forEach((follow) => follow.heard({event: "output.update"}));
     await new Promise((resolve) => setTimeout(resolve, 60));
@@ -75,15 +75,17 @@ test("the output window shows the reader's lines and the whole text on a button,
     expect(element.textContent).toContain("4: FAILED b");
     element.querySelector(".whole").click();
     await settle();
-    expect(element.textContent).toContain("setup");
+    await vi.waitFor(() => expect(element.textContent).toContain("setup"));
     expect(windowContext.reads).toContain("output page 4");
 });
 
 test("a pruned output says so, and the output window has its stop and watch buttons", async () => {
     const pruned = recording({"process feed --id 3": page([run(3, "make", "finished")]), "output peek 3 --summary": {ok: true, value: {lines: ["output 3 was pruned"]}}}, {output: 3});
-    expect((await mounted(Output, pruned)).textContent).toContain("output 3 was pruned");
+    const prunedElement = await mounted(Output, pruned);
+    await vi.waitFor(() => expect(prunedElement.textContent).toContain("output 3 was pruned"));
     const running = recording({"process feed --id 5": page([run(5, "make", "running")]), "output peek 5 --summary": {ok: true, value: {lines: ["output 5 is running"]}}}, {output: 5});
     const element = await mounted(Output, running);
+    await vi.waitFor(() => expect(element.querySelector(".stop")).not.toBeNull());
     element.querySelector(".stop").click();
     element.querySelector(".watch").click();
     await settle();

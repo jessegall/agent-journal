@@ -1,4 +1,4 @@
-import {expect, test} from "vitest";
+import {expect, test, vi} from "vitest";
 import {useOutputPages} from "../src/composables/outputPages.js";
 import MarkBody from "../src/chat/MarkBody.vue";
 import {outputWindowContext} from "./support/outputWindowContext.js";
@@ -88,10 +88,10 @@ test("the output window reads pages for the whole output, and its reader lines b
     }, 3);
     window.setting = async () => 3;
     const element = await mounted(Output, window);
-    await settle();
+    await vi.waitFor(() => expect(element.textContent).toContain("read"));
     element.querySelector(".whole").click();
     await settle();
-    expect(window.reads).toContain("output page 3");
+    await vi.waitFor(() => expect(window.reads).toContain("output page 3"));
     expect(window.reads.some((line) => line.includes("--all"))).toBe(false);
 });
 

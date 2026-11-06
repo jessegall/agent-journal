@@ -51,6 +51,7 @@ test("the output window opens at the foot and follows a new line", async () => {
     const window = outputWindowContext({"process feed --limit 1": page([run]), "process feed --id 3": page([run]), "output peek 3 --summary": {ok: true, get value() {return {lines: held.lines};}}});
     window.follow = (patterns, heard) => (held.heard = heard);
     const element = await mounted(Output, window);
+    await vi.waitFor(() => expect(element.querySelector("[data-output-text]")?.textContent).toBe("one"));
     const pane = paneOf(element);
     expect(pane.querySelector("[data-output-text]").textContent).toBe("one");
     expect(pane.scrollTop).toBe(FOOT);
