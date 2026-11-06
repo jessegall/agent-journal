@@ -100,7 +100,7 @@ def main(argv: list[str]) -> int:
     phones = PhoneSessions(home, listener_thread)
     login = ViewerLogin(phones, ShareSessions(phones.journal_output), SessionFile(home.viewer_sessions_file))
     reported_findings = ReportedFindings()
-    viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login, reported_findings), last_port(home), inherited_socket=waiting_server.viewer_socket() if waiting_server else None)
+    viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login, reported_findings, hook_database.queue), last_port(home), inherited_socket=waiting_server.viewer_socket() if waiting_server else None)
     home.viewer_port_file.write_text(str(viewer.port))
     ticker_thread = ListenerThread(ticker.tick, lambda error: files.log_line(f"the ticker could not tick: {error}"), TICK_PERIOD_SECONDS, "ticker")
     tunnel = ServerTunnel(home)
