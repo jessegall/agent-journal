@@ -16,7 +16,7 @@ class PluginSubscriptions:
         self.subscriptions: dict[tuple[str, EventForm], tuple[PluginSubscription, ...]] = {}
 
     def scripts(self, log_name: str, form: EventForm) -> tuple[PluginSubscription, ...]:
-        state = tuple((plugin.id, plugin.version, plugin.files_digest) for plugin in self.runnable.switched_on())
+        state = tuple((plugin.id, plugin.version, plugin.files_digest) for plugin in self.runnable.enabled_rows())
         if state != self.state:
             self.state = state
             self.subscriptions = self.build_map(self.runnable.running())

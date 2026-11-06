@@ -251,7 +251,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(403, {"error": refusal.reason})
             return
         duration_ms = (perf_counter() - started_at) * 1000
-        http = ViewerHttpRequest(request_id, received_at, "", duration_ms, len(body or b""), viewer.login.person_id(token))
+        http = ViewerHttpRequest(request_id, received_at, None, duration_ms, self.payload_bytes(body), viewer.login.person_id(token))
         viewer.routes.request_log.record_viewer(ViewerRequestRecord(http, request, 0, timed.duration_ms, queued_ms, answered.code, timed.points))
         self.answer(200, asdict(answered), {"X-Journal-Request-Id": request_id})
 
@@ -308,11 +308,15 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
                 queued_ms = (perf_counter() - started_at) * 1000
                 command_answers = viewer.routes.line_route.timed_answers(ViewerLinesRequest([line for _, line in command_lines]), person_id, session.shared)
             duration_ms = (perf_counter() - started_at) * 1000
-            http = ViewerHttpRequest(request_id, received_at, request_id, duration_ms, len(body or b""), person_id)
+            http = ViewerHttpRequest(request_id, received_at, request_id, duration_ms, self.payload_bytes(body), person_id)
             for (index, line), timed in zip(command_lines, command_answers, strict=True):
                 answers[index] = timed.answer
                 viewer.routes.request_log.record_viewer(ViewerRequestRecord(http, line, index, timed.duration_ms, queued_ms, timed.answer.code, timed.points))
         self.answer(200, {"answers": [asdict(answers[index]) for index in range(len(request.lines))]}, {"X-Journal-Request-Id": request_id})
+
+    @staticmethod
+    def payload_bytes(body: bytes | None) -> int:
+        return 0 if body is None else len(body)
 
     def answer_share_comments(self, viewer: ViewerServer, session: ViewerSession, body: bytes | None) -> None:
         if session.share_id is None or not session.comments:

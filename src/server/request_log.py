@@ -14,18 +14,9 @@ from core.modules.developer.support.hook_request_log import HookRequestLog
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING, HOOK_REQUEST_LOG_SIZE_SETTING
 from core.modules.settings.bindings.support.setting_values import SettingValues
+from server.request_log_entry import RequestLogEntry
 from server.viewer.read_attribution import ReadAttribution
 from server.viewer.viewer_request_record import ViewerRequestRecord
-
-
-@dataclass(frozen=True)
-class RequestLogEntry:
-    line: list[str]
-    role: str
-    duration_ms: float
-    queued_ms: float
-    code: int
-    body: object
 
 
 class RequestLog:
@@ -52,7 +43,7 @@ class RequestLog:
     def status(self) -> dict[str, object]:
         with self.connected() as container:
             settings = container.get(SettingValues).project
-            stored_count = container.get(HookRequestsTable).retained_count()
+            stored_count = container.get(HookRequestsTable).kept_row_count()
             enabled = settings.flag(HOOK_REQUEST_LOG_SETTING)
             limit = settings.number(HOOK_REQUEST_LOG_SIZE_SETTING)
         with self.lock:

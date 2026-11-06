@@ -139,7 +139,7 @@ async function readAnswer(body, signal, unbatched) {
 export async function lineResult(window, line, environment, signal = undefined, unbatched = false) {
     const body = {window, line: Array.isArray(line) ? line : lineWords(line), environment};
     if (!(await transport.isRead(body.line))) return lineAnswer(() => lineBatch.write({...body, attribution: {
-        client_id: transport.clientId, command_id: crypto.randomUUID(), joined_callers: 0, trailing_of: "", complete: true}}), signal);
+        client_id: transport.clientId, command_id: crypto.randomUUID(), joined_callers: 0, followed_command_id: "", complete: true}}), signal);
     return transport.joined(JSON.stringify(body), (stop, attribution) => readAnswer({...body, attribution}, stop, unbatched), signal, body).catch(() => CANCELLED);
 }
 

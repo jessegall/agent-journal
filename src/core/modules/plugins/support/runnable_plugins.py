@@ -15,7 +15,7 @@ class RunnablePlugins:
     def __init__(self, plugins: PluginQuery, folders: PluginFolders, declared_events: PluginDeclaredEvents) -> None:
         self.plugins, self.folders, self.declared_events = plugins, folders, declared_events
 
-    def switched_on(self) -> tuple[Plugin, ...]:
+    def enabled_rows(self) -> tuple[Plugin, ...]:
         return tuple(self.plugins.enabled_plugins())
 
     def enabled(self) -> list[RunnablePlugin]:

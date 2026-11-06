@@ -204,7 +204,7 @@ class Transport {
 
     readAttribution(run) {
         return {client_id: this.clientId, command_id: run.id, joined_callers: run.callers - 1,
-            trailing_of: run.trailingOf, complete: false};
+            followed_command_id: run.trailingOf, complete: false};
     }
 
     trackRead({window, line}, event, run) {

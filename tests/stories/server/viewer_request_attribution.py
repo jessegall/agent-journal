@@ -30,10 +30,10 @@ def records(server, cookie):
                                            "line": ["developer", "hook-requests"]})["rows"]
 
 
-def line(window="agents.agents", environment="main", command="agent list", command_id="read-1", trailing_of=""):
+def line(window="agents.agents", environment="main", command="agent list", command_id="read-1", followed_command_id=""):
     return {"window": window, "environment": environment, "line": command.split(),
             "attribution": {"client_id": "browser-1", "command_id": command_id,
-                            "joined_callers": 0, "trailing_of": trailing_of, "complete": False}}
+                            "joined_callers": 0, "followed_command_id": followed_command_id, "complete": False}}
 
 
 def test_single_and_batch_requests_name_http_commands_windows_and_environments(attributed_server):
@@ -65,7 +65,7 @@ def test_single_and_batch_requests_name_http_commands_windows_and_environments(a
 def test_late_join_receipts_complete_the_original_rows_and_name_trailing_reads(attributed_server):
     server, cookie = attributed_server
     request(server, cookie, "/api/line", line())
-    request(server, cookie, "/api/line", line(command_id="read-2", trailing_of="read-1"))
+    request(server, cookie, "/api/line", line(command_id="read-2", followed_command_id="read-1"))
     request(server, cookie, "/api/read-receipts", {"receipts": [
         {"client_id": "browser-1", "command_id": "read-1", "joined_callers": 2},
         {"client_id": "browser-1", "command_id": "read-2", "joined_callers": 0}]})
@@ -73,7 +73,7 @@ def test_late_join_receipts_complete_the_original_rows_and_name_trailing_reads(a
     expect_value(len(attributed), 2)
     expect_value(all(row["complete"] for row in attributed), True)
     expect_value(sum(row["joined_callers"] for row in attributed), 2)
-    expect_value(sum(bool(row["trailing_of"]) for row in attributed), 1)
+    expect_value(sum(bool(row["followed_command_id"]) for row in attributed), 1)
     _, status = request(server, cookie, "/api/request-log-status")
     expect_value(status["receipt_attempted"] == status["receipt_recorded"] == 2, True)
     expect_value(status["receipt_dropped"], 0)

@@ -232,7 +232,7 @@ class WorkloadServer:
         evidence = {"attribution": {"http_requests": len({row["request_id"] for row in attributed}),
                                     "logical_commands": len(attributed),
                                     "joined_callers": sum(row["joined_callers"] for row in commands.values()),
-                                    "trailing_reads": sum(bool(row["trailing_of"]) for row in commands.values())},
+                                    "trailing_reads": sum(bool(row["followed_command_id"]) for row in commands.values())},
                     "retention": {"required": status["recorded"], "retained": status["retained"]},
                     "losses": {"attempted": status["attempted"], "recorded": status["recorded"], "dropped": status["dropped"]},
                     "funnel": funnel["counts"]}

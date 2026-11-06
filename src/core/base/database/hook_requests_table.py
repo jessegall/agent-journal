@@ -19,7 +19,7 @@ class HookRequestsTable:
                 [size],
             ))
 
-    def retained_count(self) -> int:
+    def kept_row_count(self) -> int:
         return int(self.database.rows(Statement("SELECT count(*) FROM hook_requests"))[0][0])
 
     def complete_viewer_read(self, person_id: int, client_id: str, command_id: str, joined_callers: int) -> int:

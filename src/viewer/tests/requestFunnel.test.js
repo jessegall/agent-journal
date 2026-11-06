@@ -63,7 +63,7 @@ test("the funnel counts one batch HTTP request, its commands by window, late joi
     expect(transport.requestCounts("a.b")).toMatchObject({http_requests: 2, logical_commands: 2, joined_callers: 2, trailing_reads: 1});
     expect(server.receipts).toHaveLength(2);
     expect(server.receipts.map((receipt) => receipt.joined_callers)).toEqual([1, 1]);
-    expect(server.receipts[1].trailing_of).toBe(server.receipts[0].command_id);
+    expect(server.receipts[1].followed_command_id).toBe(server.receipts[0].command_id);
     const batch = [lineResult("a.b", "usage tool", "main"), lineResult("c.d", "plan outline 1", "main")];
     await settled();
     await server.answer();
