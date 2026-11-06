@@ -84,8 +84,8 @@ class DatabaseQuestions(StoryFixture):
     parent = BuilderStarted
 
     def steps(self, story):
-        story.run('question ask "Which database?" --environment main', actor=story.agent)
-        story.run('question ask "Which cache?" --environment main', actor=story.agent)
+        story.run('question ask "Which database?" --context "A story asks this so its card and answer can be checked." --environment main', actor=story.agent)
+        story.run('question ask "Which cache?" --context "A story asks this so its card and answer can be checked." --environment main', actor=story.agent)
 
 
 def expect_fields_search(search, expected) -> None:

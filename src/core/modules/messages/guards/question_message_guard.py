@@ -18,4 +18,4 @@ class QuestionMessageGuard(Guard[Created[Message]]):
         if message.type is not MessageType.AGENT or not QuestionMessage.is_choice(message.text):
             return
         raise Refusal("a choice for the user belongs in the question tool",
-                      'journal question ask "<question>" --options "<choice>" "<choice>" --recommend "<choice>"')
+                      'journal question ask "<short title>" --context "<a few sentences>" --options "<choice>" "<choice>" --recommend "<choice>"')

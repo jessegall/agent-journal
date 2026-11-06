@@ -17,7 +17,7 @@ def question_document_server(new_story):
 def test_a_quoted_question_stays_open_globally_and_can_be_answered_from_the_viewer(question_document_server, model_name, position):
     server = question_document_server
     story = server.story
-    story.expect_success(f'question ask "Keep the cart?" --row {model_name}:1 --quote cart --options Yes No --recommend Yes --environment main', actor=story.agent)
+    story.expect_success(f'question ask "Keep the cart?" --context "A story asks this so its card and answer can be checked." --row {model_name}:1 --quote cart --options Yes No --recommend Yes --environment main', actor=story.agent)
     question = json.loads(story.run("question show 1 --json", actor=story.agent).output_text)
     expect_value((question["row_model"], question["row_id"], question["quote"], question["position"]), (model_name, 1, "cart", position))
     story.expect_text("question list", "Keep the cart?", actor=story.agent)
@@ -32,9 +32,9 @@ def test_a_quoted_question_stays_open_globally_and_can_be_answered_from_the_view
 
 def test_an_explicit_quote_position_is_kept_and_a_whole_document_question_needs_no_quote(new_story):
     story = new_story(fixture=ReadableTexts)
-    story.expect_success('question ask "Why this word?" --row doc:1 --quote cart --position 10 --environment main', actor=story.agent)
+    story.expect_success('question ask "Why this word?" --context "A story asks this so its card and answer can be checked." --row doc:1 --quote cart --position 10 --environment main', actor=story.agent)
     story.expect_text("question show 1 --json", '"position": 10', actor=story.agent)
-    story.expect_success('question ask "Is this complete?" --row report:1 --environment main', actor=story.agent)
+    story.expect_success('question ask "Is this complete?" --context "A story asks this so its card and answer can be checked." --row report:1 --environment main', actor=story.agent)
     question = json.loads(story.run("question show 2 --json", actor=story.agent).output_text)
     expect_value((question["row_model"], question["row_id"], question["quote"], question["position"]), ("report", 1, "", None))
 
@@ -47,5 +47,5 @@ def test_an_explicit_quote_position_is_kept_and_a_whole_document_question_needs_
 ])
 def test_an_invalid_question_place_is_refused_without_creating_a_question(new_story, flags, reason):
     story = new_story(fixture=ReadableTexts)
-    story.expect_refusal(f'question ask "Which text?" {flags} --environment main', reason, actor=story.agent)
+    story.expect_refusal(f'question ask "Which text?" --context "A story asks this so its card and answer can be checked." {flags} --environment main', reason, actor=story.agent)
     story.expect_success("question list", "no open questions", actor=story.agent)

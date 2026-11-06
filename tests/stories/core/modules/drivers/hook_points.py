@@ -87,7 +87,7 @@ def filled_hook_points(new_story):
 def busy_hook_points(filled_hook_points):
     story, database, _ = filled_hook_points
     for number in range(22):
-        story.expect_success(f'question ask "Choose database {number}" --options sqlite postgres --environment main', actor=story.agent)
+        story.expect_success(f'question ask "Choose database {number}" --context "A story asks this so its card and answer can be checked." --options sqlite postgres --environment main', actor=story.agent)
         story.expect_success(f"question answer {number + 1} --answer sqlite", actor=story.user)
     for number in range(6):
         story.expect_success(f'sequence make "Sequence {number}" --steps "Read the task | Do the task"', actor=story.user)

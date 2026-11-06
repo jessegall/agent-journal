@@ -35,6 +35,6 @@ class RequestSettingHandler(Handler[RequestSetting, SettingRequest]):
             raise Refusal("say why the setting should change", "--reason '<why>'")
         value = SettingText().value(entry, command.text)
         SetSettingHandler.environment(entry, command.project, context.environment_id)
-        text = f"Change {entry.title} ({entry.key}) from {self.values.current(entry.key).value} to {value}? Reason: {command.reason.strip()}"
-        question = self.bus.dispatch(AskQuestion(text, (APPROVE_OPTION, REFUSE_OPTION)), context)
+        details = f"{entry.title} ({entry.key}) would change from {self.values.current(entry.key).value} to {value}. Reason: {command.reason.strip()}"
+        question = self.bus.dispatch(AskQuestion(f"Change {entry.title}?", details, (APPROVE_OPTION, REFUSE_OPTION)), context)
         return self.repository.save(SettingRequest(creator_id=context.actor.id, question_id=question.id, key=entry.key, value=command.text, project=command.project), context)

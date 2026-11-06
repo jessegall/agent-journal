@@ -25,7 +25,7 @@ class StartedTaskMark(StoryFixture):
 
 
 def open_main_question(story):
-    story.run(f'question ask "{MAIN_QUESTION}" --options a b', actor=story.agent)
+    story.run(f'question ask "{MAIN_QUESTION}" --context "A story asks this so its card and answer can be checked." --options a b', actor=story.agent)
 
 
 def main_hook_call(story):

@@ -11,3 +11,4 @@ class WorkerTestRequestLifecycle(Lifecycle):
 
     allow = Move("allow", [WorkerTestRequestState.REQUESTED], WorkerTestRequestState.ALLOWED)
     use = Move("use", [WorkerTestRequestState.ALLOWED], WorkerTestRequestState.USED)
+    restore = Move("restore", [WorkerTestRequestState.USED], WorkerTestRequestState.ALLOWED)

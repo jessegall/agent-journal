@@ -48,7 +48,7 @@ async function check(width, height, name) {
             left: Math.round(box.left - window.left), right: Math.round(window.right - box.right), border: [style.borderTopWidth, style.borderBottomWidth, style.borderLeftWidth], radius: style.borderTopLeftRadius,
             maxWidth: style.maxWidth, background: style.backgroundColor, rowsFull: rows.every((row) => Math.round(row.width) === Math.round(box.width)), rowCount: rows.length,
             ring: Boolean(card.querySelector(".question-ring")), chip: card.querySelector(".question-chip")?.textContent ?? "", footFull: Math.round(foot.width) === Math.round(box.width),
-            buttonsInside: buttons.every((button) => button.right <= foot.right && button.left >= foot.left), textFits: text.scrollWidth <= text.clientWidth + 1, buttonLines: new Set(buttons.map((button) => Math.round(button.top))).size,
+            buttonsInside: buttons.every((button) => button.right <= foot.right && button.left >= foot.left), textFits: text.scrollWidth <= text.clientWidth + 1, contextFits: card.querySelector("[data-question-context]").scrollWidth <= card.clientWidth, buttonLines: new Set(buttons.map((button) => Math.round(button.top))).size,
             overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
             chain: (() => {
                 const found = [];
@@ -66,6 +66,7 @@ async function check(width, height, name) {
     assert.ok(facts.ring && facts.chip === "Recommended");
     assert.ok(facts.footFull && facts.buttonsInside, "the foot band holds its buttons");
     assert.ok(facts.textFits, "the whole question text shows");
+    assert.ok(facts.contextFits, "the whole context shows");
     for (const scheme of ["dark", "light"]) {
         await page.emulateMedia({colorScheme: scheme});
         const lines = await page.locator('[data-question-card].flush[data-state="open"]').first().evaluate((card) => {

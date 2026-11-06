@@ -4,6 +4,7 @@ from pathlib import Path
 
 from core.modules.processes.support.background_commands import JOURNAL
 from core.base.driver.part import Part
+from core.modules.processes.models.process_part import ProcessPart
 
 FLAG = "--ask-main"
 FLAG_WITH_VALUE = f"{FLAG}="
@@ -21,26 +22,37 @@ class WorkerTestFlag:
 
     @classmethod
     def parsed(cls, part: Part) -> "WorkerTestFlag":
+        return cls.of_words(part.text, part.program, part.arguments)
+
+    @classmethod
+    def of_run_part(cls, part: ProcessPart) -> "WorkerTestFlag":
+        """The flag of a part the runner kept, read from its text the way the hook read the part."""
+        words = shlex.split(part.text)
+        position = next((number for number, word in enumerate(words) if Path(word).name == part.program), -1)
+        return cls.of_words(part.text, part.program, tuple(words[position + 1:]))
+
+    @classmethod
+    def of_words(cls, text: str, program: str, arguments: tuple[str, ...]) -> "WorkerTestFlag":
         is_flagged, reason, kept = False, "", []
-        arguments = iter(part.arguments)
-        for word in arguments:
+        remaining = iter(arguments)
+        for word in remaining:
             if word == FLAG:
-                is_flagged, reason, kept = True, *cls.reason_after_flag(next(arguments, ""), kept)
+                is_flagged, reason, kept = True, *cls.reason_after_flag(next(remaining, ""), kept)
             elif word.startswith(FLAG_WITH_VALUE):
                 is_flagged, reason = True, word.removeprefix(FLAG_WITH_VALUE)
-            elif part.program == JOURNAL and word in JOURNAL_READ_FLAGS:
-                next(arguments, "")
+            elif program == JOURNAL and word in JOURNAL_READ_FLAGS:
+                next(remaining, "")
             else:
                 kept.append(word)
-        return cls(is_flagged, reason.strip(), shlex.join([cls.program_text(part), *kept]))
+        return cls(is_flagged, reason.strip(), shlex.join([cls.program_text(text, program), *kept]))
 
     @staticmethod
     def reason_after_flag(word: str, kept: list[str]) -> tuple[str, list[str]]:
         return ("", [*kept, word]) if word.startswith("-") else (word, kept)
 
     @staticmethod
-    def program_text(part: Part) -> str:
+    def program_text(text: str, program: str) -> str:
         try:
-            return next((word for word in shlex.split(part.text) if Path(word).name == part.program), part.program)
+            return next((word for word in shlex.split(text) if Path(word).name == program), program)
         except ValueError:
-            return part.program
+            return program

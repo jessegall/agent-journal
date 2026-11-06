@@ -35,7 +35,11 @@ A line typed into your terminal starts with `[journal]`: the journal typed it, n
 
 A choice only the user can make is asked as a question, not written into a reply.
 
-- `journal question ask "<the question>" --options "a" "b" --recommend "b"`: each choice is quoted on its own, and
-  `--recommend` names your choice word for word. You are then waiting, and stopping is fine.
+- `journal question ask "<title>" --context "<sentences>" --options "a" "b" --recommend "b"`: each choice is quoted on its
+  own, and `--recommend` names your choice word for word. You are then waiting, and stopping is fine.
+- A question must read on its own, by someone who has not seen your work. The title is a short line of up to 60
+  characters that names the decision, such as `Which database?`; the command refuses a longer one. `--context` is
+  required and is a few plain sentences: what is being decided, why it came up, and what each option means. Name the
+  thing in full words instead of a task number or a name only you know. Keep the details in the context, not the title.
 - Each option says who acts, the agent or the user.
 - `journal question list` shows what is open, and `journal question show N` shows one with its answer.

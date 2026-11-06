@@ -47,7 +47,7 @@ def test_the_task_conditions_follow_a_task(new_story):
 
 def test_the_question_conditions_follow_a_question(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.run('question ask "Which one?" --options "a" "b" --environment main', actor=story.agent)
+    story.run('question ask "Which one?" --context "A story asks this so its card and answer can be checked." --options "a" "b" --environment main', actor=story.agent)
     expect_absent_true_question_answered(1, story)
     expect_absent_true_questions_closed(story)
     story.run('question answer 1 --answer "a"')
