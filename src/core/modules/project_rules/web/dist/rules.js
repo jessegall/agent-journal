@@ -1,8 +1,8 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-30ae83516d77")) { const style = document.createElement("style"); style.id = "window-styles-30ae83516d77"; style.textContent = ".rule-dock[data-v-93922fb6]{margin:3px 0 6px;border-block:1px solid var(--border-inner);padding:7px 14px 8px 36px;color:var(--text);font-size:13px;line-height:1.5}.rules-page[data-v-5af01d05]{display:flex;flex-direction:column;gap:8px}.rules-refusal[data-v-5af01d05]{margin:0;color:var(--danger);font-size:12.5px}.rule[data-v-5af01d05]{display:flex;flex:1;flex-wrap:wrap;gap:8px;align-items:center;min-width:0;padding:4px 0}.rule-text[data-v-5af01d05]{flex:1 1 240px;min-width:0}.rule-state[data-v-5af01d05]{color:var(--warn);font-size:12px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-5aa5d5d6d2bc")) { const style = document.createElement("style"); style.id = "window-styles-5aa5d5d6d2bc"; style.textContent = ".rule-dock[data-v-5c184a03]{margin:3px 0 6px;border-block:1px solid var(--border-inner);padding:7px 14px 8px 36px;color:var(--text);font-size:13px;line-height:1.5}.rules-page[data-v-741afd9c]{display:flex;flex-direction:column;gap:8px}.rules-refusal[data-v-741afd9c]{margin:0;color:var(--danger);font-size:12.5px}.rule[data-v-741afd9c]{display:flex;flex:1;flex-wrap:wrap;gap:8px;align-items:center;min-width:0;padding:4px 0}.rule-text[data-v-741afd9c]{flex:1 1 240px;min-width:0}.rule-state[data-v-741afd9c]{color:var(--warn);font-size:12px}\n"; document.head.appendChild(style); }
 import { computed as w, ref as B, openBlock as l, createBlock as f, unref as o, withCtx as a, createElementVNode as s, createElementBlock as v, toDisplayString as _, createCommentVNode as D, createVNode as u, Fragment as P, createTextVNode as i } from "vue";
 import { useWindow as V, WindowRoom as O, RowList as T, Btn as p } from "@journal/window-kit";
-import { _ as $ } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+import { _ as $ } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const b = { class: "rules-page" }, A = {
   key: 0,
   class: "rules-refusal",
@@ -78,7 +78,7 @@ const b = { class: "rules-page" }, A = {
       _: 1
     }));
   }
-}, q = /* @__PURE__ */ $(F, [["__scopeId", "data-v-5af01d05"]]);
+}, q = /* @__PURE__ */ $(F, [["__scopeId", "data-v-741afd9c"]]);
 export {
   q as default
 };

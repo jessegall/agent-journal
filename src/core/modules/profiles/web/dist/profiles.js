@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-7e3d235eb579")) { const style = document.createElement("style"); style.id = "window-styles-7e3d235eb579"; style.textContent = ".helper-start[data-v-aca41abb]{display:grid;gap:12px;padding:0 0 20px;margin-bottom:20px;border-bottom:1px solid var(--border-2)}h3[data-v-aca41abb]{margin:0;font-size:14px;font-weight:600}.field[data-v-aca41abb]{display:grid;gap:4px}.field>span[data-v-aca41abb]{color:var(--text-2);font-size:12px;font-weight:500}select[data-v-aca41abb]{padding:6px 9px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);color:var(--text);font:inherit}.reason[data-v-aca41abb],.notice[data-v-aca41abb]{margin:0;color:var(--text-3);font-size:12px;line-height:1.5;overflow-wrap:anywhere}.idle-helper[data-v-aca41abb]{display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-panel[data-v-70b7fb65]{display:flex;flex-direction:column;gap:14px}.profile-panel-note[data-v-70b7fb65]{margin:0;color:var(--text-3);font-size:12.5px}.profile-panel-check[data-v-70b7fb65]{display:flex;gap:8px;align-items:center;font-size:13px}.profile-panel-grow[data-v-70b7fb65]{flex:1}.profiles[data-v-a1a03008]{padding:0 0 40px}.bar[data-v-a1a03008]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-a1a03008]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-a1a03008]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-a1a03008]{color:var(--danger)}.empty[data-v-a1a03008]{margin:40px auto;max-width:480px}.rows[data-v-a1a03008]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-a1a03008]{text-align:left}.profile-meta[data-v-a1a03008]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-a1a03008]{color:var(--text-2)}.profile-used[data-v-a1a03008]{color:var(--text-3);white-space:nowrap}.profile-warning[data-v-a1a03008]{color:var(--tone-warn)}.profile-used.never[data-v-a1a03008]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-a1a03008]{flex:1 1 100%}.profile-meta[data-v-a1a03008]{display:none}}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-1ad2f4f92d51")) { const style = document.createElement("style"); style.id = "window-styles-1ad2f4f92d51"; style.textContent = ".helper-start[data-v-11cb72ba]{display:grid;gap:12px;padding:0 0 20px;margin-bottom:20px;border-bottom:1px solid var(--border-2)}h3[data-v-11cb72ba]{margin:0;font-size:14px;font-weight:600}.field[data-v-11cb72ba]{display:grid;gap:4px}.field>span[data-v-11cb72ba]{color:var(--text-2);font-size:12px;font-weight:500}select[data-v-11cb72ba]{padding:6px 9px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);color:var(--text);font:inherit}.reason[data-v-11cb72ba],.notice[data-v-11cb72ba]{margin:0;color:var(--text-3);font-size:12px;line-height:1.5;overflow-wrap:anywhere}.idle-helper[data-v-11cb72ba]{display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-panel[data-v-d0c0e8cf]{display:flex;flex-direction:column;gap:14px}.profile-panel-note[data-v-d0c0e8cf]{margin:0;color:var(--text-3);font-size:12.5px}.profile-panel-check[data-v-d0c0e8cf]{display:flex;gap:8px;align-items:center;font-size:13px}.profile-panel-grow[data-v-d0c0e8cf]{flex:1}.profiles[data-v-3ef8bd35]{padding:0 0 40px}.bar[data-v-3ef8bd35]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-3ef8bd35]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-3ef8bd35]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-3ef8bd35]{color:var(--danger)}.empty[data-v-3ef8bd35]{margin:40px auto;max-width:480px}.rows[data-v-3ef8bd35]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-3ef8bd35]{text-align:left}.profile-meta[data-v-3ef8bd35]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-3ef8bd35]{color:var(--text-2)}.profile-used[data-v-3ef8bd35]{color:var(--text-3);white-space:nowrap}.profile-warning[data-v-3ef8bd35]{color:var(--tone-warn)}.profile-used.never[data-v-3ef8bd35]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-3ef8bd35]{flex:1 1 100%}.profile-meta[data-v-3ef8bd35]{display:none}}\n"; document.head.appendChild(style); }
 import { ref as x, computed as _, watch as G, openBlock as n, createElementBlock as c, withModifiers as ae, createElementVNode as y, createVNode as s, unref as l, withDirectives as K, Fragment as F, renderList as U, toDisplayString as g, vModelSelect as oe, withCtx as d, createTextVNode as P, createCommentVNode as h, createBlock as I, renderSlot as ne, vModelCheckbox as se, normalizeClass as re } from "vue";
 import { useWindow as Q, TextArea as z, Btn as B, TextInput as O, SidePanel as ie, FormField as N, Segmented as D, ModelPicker as J, DiffCard as ue, matchesSearch as de, SearchBar as pe, EmptyState as q, ListRow as ve, ago as fe } from "@journal/window-kit";
 const H = (m, W) => {
@@ -123,7 +123,7 @@ const H = (m, W) => {
       a.value ? (n(), c("p", xe, g(a.value), 1)) : h("", !0)
     ], 32));
   }
-}, we = /* @__PURE__ */ H(Ce, [["__scopeId", "data-v-aca41abb"]]), $e = {
+}, we = /* @__PURE__ */ H(Ce, [["__scopeId", "data-v-11cb72ba"]]), $e = {
   class: "profile-panel",
   "data-profile-panel": ""
 }, Se = { key: 0 }, Te = {
@@ -398,7 +398,7 @@ const H = (m, W) => {
       _: 3
     }, 8, ["title", "abstract"]));
   }
-}, Re = /* @__PURE__ */ H(je, [["__scopeId", "data-v-70b7fb65"]]), Ve = {
+}, Re = /* @__PURE__ */ H(je, [["__scopeId", "data-v-d0c0e8cf"]]), Ve = {
   class: "profiles",
   "data-profiles": ""
 }, Ne = {
@@ -556,7 +556,7 @@ const H = (m, W) => {
       }, 8, ["types", "profile", "used"])) : h("", !0)
     ]));
   }
-}, De = /* @__PURE__ */ H(Fe, [["__scopeId", "data-v-a1a03008"]]);
+}, De = /* @__PURE__ */ H(Fe, [["__scopeId", "data-v-3ef8bd35"]]);
 export {
   De as default
 };
