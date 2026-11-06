@@ -93,6 +93,21 @@ def test_all_rows_stops_after_a_short_page(entries: Query[LogEntry], row_count: 
     assert len(reads) == statement_count
 
 
+def test_all_rows_reads_a_long_table_without_a_statement_per_small_page(entries: Query[LogEntry]):
+    statements = TableStatements(entries.table)
+    for number in range(8, 61):
+        entry = LogEntry(title=f"Book {number}")
+        entries.database.insert(statements.insert(entries.table.row(entry, entries.table.columns), AT))
+    reads: list[str] = []
+    entries.database.connection.set_trace_callback(reads.append)
+
+    rows = list(entries.oldest().all_rows())
+
+    entries.database.connection.set_trace_callback(None)
+    assert [row.id for row in rows] == list(range(1, 61))
+    assert len(reads) == 1
+
+
 class ShelfEntries(Query[LogEntry]):
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, LogEntry)

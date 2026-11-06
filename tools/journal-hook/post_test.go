@@ -265,6 +265,25 @@ func TestTheStopWindowEndsBeforeTheProgramsHookTimeoutWithAnAskToSpare(t *testin
 	}
 }
 
+func TestAWorkersOrHelpersHookWaitsInTheQueueAndAMainAgentsDoesNot(t *testing.T) {
+	root := t.TempDir()
+	for _, role := range []string{"worker", "helper"} {
+		for _, eventName := range []string{"pre_tool_use", "post_tool_use", "stop", "prompt"} {
+			if limit := limitOf(root, eventName, role); limit != agentHookWait {
+				t.Fatalf("%s %s waits %s, not %s", role, eventName, limit, agentHookWait)
+			}
+		}
+	}
+	for _, role := range []string{"", "main"} {
+		if limit := limitOf(root, "pre_tool_use", role); limit != 5*time.Second {
+			t.Fatalf("a main agent's tool waits %s", limit)
+		}
+	}
+	if agentHookWait >= 60*time.Second {
+		t.Fatalf("%s is past the hook timeout of 60 seconds", agentHookWait)
+	}
+}
+
 func TestLimitInUsesTheWaitSetForAToolAndNothingElse(t *testing.T) {
 	root := t.TempDir()
 	runtime := filepath.Join(root, ".journal", "runtime")

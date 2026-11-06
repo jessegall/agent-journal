@@ -23,6 +23,7 @@ from core.base.query.unknown_column_error import UnknownColumnError
 
 M = TypeVar("M", bound=Model | ViewModel, covariant=True)
 PAGE_SIZE_ROWS = 25
+READ_ALL_BATCH_ROWS = 1000
 AGENT_COLUMN = "agent_id"
 SESSION_COLUMN = "session_agent_id"
 ROW_KEY = "id"
@@ -94,7 +95,7 @@ class Query(Generic[M]):
         rows = self.limited(1)
         return rows[0] if rows else None
 
-    def all_rows(self, size: int = PAGE_SIZE_ROWS) -> Iterator[M]:
+    def all_rows(self, size: int = READ_ALL_BATCH_ROWS) -> Iterator[M]:
         offset = 0
         while rows := self.rows(self.select.sliced(size, offset)):
             yield from rows

@@ -21,7 +21,9 @@ from core.base.registry.registry import Registry
 from core.modules.drivers.commands.support.nudge_log import NudgeLog
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.drivers.models.nudge_record import NudgeRecord
-from core.modules.processes.support.process_nudges import RUN_NAME
+from core.modules.drivers.support.nudge_records import NudgeRecords
+from core.modules.processes.support.reader_request_notices import ReaderRequestNotices
+from core.modules.processes.support.process_nudges import READER_REQUEST, RUN_NAME
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
@@ -136,3 +138,40 @@ def test_many_nudges_read_records_together(new_story):
             log.write(story.agent.id, answers, context)
     record_reads = [call for call in reads.call_args_list if "SELECT * FROM nudge_records" in call.args[0].sql]
     expect_value(len(record_reads), 1)
+
+
+def test_a_hook_reads_only_the_records_of_its_own_lines(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    log = story.container.get(NudgeLog)
+    others = [Nudge(f"sample.other.{number}", NudgeType.STEERING, f"Line {number}") for number in range(30)]
+    own = Nudge("sample.own", NudgeType.STEERING, "Own line")
+    answer = RuleAnswer.with_nudges(*others, own)
+    context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
+    with story.container.get(Database).transaction():
+        log.write(story.agent.id, RuleAnswers(["lead"], [RuleRecord("sample", "lead", answer.outcome, answer)]), context)
+    rows = story.container.get(NudgeRecords).rows_of(story.agent.id, [own])
+    expect_value([row.key for row in rows], ["sample.own"])
+
+
+def test_a_line_on_a_clock_finds_its_newest_record_though_its_text_changed(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    log = story.container.get(NudgeLog)
+    interval = Interval(Seconds(300))
+    first = Nudge("sample.clock", NudgeType.STEERING, "Used 10", interval=interval)
+    changed = Nudge("sample.clock", NudgeType.STEERING, "Used 20", interval=interval)
+    answer = RuleAnswer.with_nudges(first)
+    context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
+    with story.container.get(Database).transaction():
+        log.write(story.agent.id, RuleAnswers(["lead"], [RuleRecord("sample", "lead", answer.outcome, answer)]), context)
+    rows = story.container.get(NudgeRecords).rows_of(story.agent.id, [changed])
+    expect_value([row.text for row in rows], ["Used 10"])
+
+
+def test_a_reader_request_notice_sees_its_last_reminder(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    log = story.container.get(NudgeLog)
+    answer = RuleAnswer.with_nudges(Nudge(f"{READER_REQUEST.key}.7", NudgeType.STEERING, "Add a reader"))
+    context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
+    with story.container.get(Database).transaction():
+        log.write(story.agent.id, RuleAnswers(["lead"], [RuleRecord("sample", "lead", answer.outcome, answer)]), context)
+    expect_value(story.container.get(ReaderRequestNotices).has_recent_notice(story.agent.id, 7, story.clock.timestamp()), True)

@@ -6,6 +6,7 @@ import {build} from "vite";
 const MODULE_FOLDERS = [fileURLToPath(new URL("../../core", import.meta.url)), fileURLToPath(new URL("../../suites", import.meta.url)), fileURLToPath(new URL("../../tunnels", import.meta.url))];
 const SKIPPED = new Set(["node_modules", "dist", "__pycache__"]);
 
+// the config is loaded by the runner, since a worker's linked node_modules is read-only and the default loader writes there
 // every module's window build in the core and the suites, each a web/vite.config.js written with windowBuild
 function windowConfigs(folder) {
     const config = join(folder, "web", "vite.config.js");
@@ -16,4 +17,4 @@ function windowConfigs(folder) {
     return found;
 }
 
-for (const config of MODULE_FOLDERS.flatMap(windowConfigs)) await build({configFile: config, logLevel: "warn"});
+for (const config of MODULE_FOLDERS.flatMap(windowConfigs)) await build({configFile: config, configLoader: "runner", logLevel: "warn"});

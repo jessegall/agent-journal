@@ -14,7 +14,7 @@ import PlanInspector from "./PlanInspector.vue";
 import ProcessQueueInspector from "./ProcessQueueInspector.vue";
 import RowMoves from "./RowMoves.vue";
 import ResourceHeading from "./ResourceHeading.vue";
-import {cliOf, fieldsOf, headingOf, titleOf} from "../domain/resourceNouns.js";
+import {cliOf, creatorNameOf, fieldsOf, headingOf, titleOf} from "../domain/resourceNouns.js";
 import ModuleBody from "../windows/ModuleBody.vue";
 
 // the inspector: the row the address opens, over the page, as version 4's side panel drew it; each opened row stacks on the one before
@@ -23,6 +23,7 @@ const props = defineProps({read: {type: Function, required: true}, catalogue: {t
 const opened = computed(() => route.value.open);
 const noun = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
 const row = ref(null);
+const creator = ref("");
 const failure = ref("");
 const fullyOpen = ref(false);
 let reading = 0;
@@ -36,12 +37,13 @@ const isDocument = computed(() => DOCUMENT_NOUNS.has(noun.value));
 const title = computed(() => titleOf(noun.value, row.value, opened.value?.id));
 const text = computed(() => row.value?.body || row.value?.brief || (TEXT_NOUNS.has(noun.value) ? row.value?.text : "") || "");
 const html = computed(() => (text.value ? render(text.value, {env: "", rowNames: false}) : ""));
-const fields = computed(() => fieldsOf(row.value, text.value));
+const fields = computed(() => fieldsOf(row.value, text.value, creator.value));
 
 async function load() {
     const open = opened.value;
     const turn = ++reading;
     row.value = null;
+    creator.value = "";
     failure.value = "";
     if (!open || OWN_INSPECTORS.has(cliOf(open.table))) return;
     const name = cliOf(open.table);
@@ -49,6 +51,14 @@ async function load() {
     if (turn !== reading) return;
     failure.value = answer.ok ? "" : answer.error;
     row.value = answer.ok ? answer.value : null;
+    if (row.value?.creator_id) creator.value = await creatorOf(row.value.creator_id, turn);
+}
+
+// the creator is read once for the row: its actor, and its agent when the actor is one
+async function creatorOf(id, turn) {
+    const actor = await props.read(["actor", "show", String(id)]);
+    const agent = actor.ok && actor.value.type === "agent" ? await props.read(["agent", "show", String(id)]) : {ok: false};
+    return turn === reading && actor.ok ? creatorNameOf(actor.value, agent.ok ? agent.value : null) : "";
 }
 
 watch(() => `${opened.value?.table}:${opened.value?.id}`, load, {immediate: true});
