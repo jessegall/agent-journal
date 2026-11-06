@@ -1,8 +1,11 @@
 import socket
+import sys
 import threading
 import time
 from socketserver import ThreadingMixIn
 from typing import Any
+
+from server.client_disconnected import client_disconnected
 
 DRAIN_POLL_SECONDS = 0.05
 
@@ -20,6 +23,10 @@ class TrackedRequests(ThreadingMixIn):
         self.thread_lock = threading.Lock()
         self.inherited_socket = inherited_socket
         super().__init__(*arguments, **options)
+
+    def handle_error(self, request: Any, client_address: Any) -> None:
+        if not client_disconnected(sys.exception()):
+            super().handle_error(request, client_address)  # type: ignore[misc]
 
     def server_bind(self) -> None:
         if self.inherited_socket is None:

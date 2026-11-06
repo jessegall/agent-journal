@@ -2,8 +2,8 @@ import {readMarkDeclarations} from "../domain/markRegistry.js";
 import {leaves, wellShaped} from "../domain/panes.js";
 import {mainDriver} from "./homeLayout.js";
 import {optionsFromHidden} from "../domain/markFamilies.js";
+import {SHELL_WINDOW} from "./shellWindow.js";
 
-const SHELL_WINDOW = "viewer.shell";
 const MOVED = "layouts_moved";
 
 // the windows version 4's views became

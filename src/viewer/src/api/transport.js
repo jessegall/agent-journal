@@ -2,6 +2,7 @@ import {onPhone} from "../platform/phone.js";
 import {holdPressed} from "../platform/pressed.js";
 import {covered, serverGone} from "../state/updating.js";
 import {JoinedRead} from "./joinedRead.js";
+import {SHELL_WINDOW} from "../windows/shellWindow.js";
 
 const WAIT_MS = 20000;
 const READS_AT_ONCE = 4;
@@ -11,7 +12,6 @@ const REFUSED_STATUS = 403;
 const REPEATED_LINES_ROUTE = "/api/repeated-lines";
 const REPEATED_LINES = 10;
 const REPEATED_LINES_WITHIN_MS = 2000;
-const SHELL_WINDOW = "viewer.shell";
 const UPLOAD_WAIT_MS = 300000;
 export const LONG_WAIT_MS = 600000;
 const RELOAD_TRIES = 6;

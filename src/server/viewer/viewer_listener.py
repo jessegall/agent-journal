@@ -1,11 +1,8 @@
 import socket
-import sys
 import threading
 import time
 from http.server import HTTPServer
-from typing import Any
 
-from server.client_disconnected import client_disconnected
 from server.handover_descriptors import QUEUED_CONNECTIONS
 from server.tracked_requests import TrackedRequests
 from server.viewer.viewer_login import ViewerLogin
@@ -57,10 +54,6 @@ class ViewerListener(TrackedRequests, HTTPServer):
 
     def start(self) -> None:
         self.thread.start()
-
-    def handle_error(self, request: Any, client_address: Any) -> None:
-        if not client_disconnected(sys.exception()):
-            super().handle_error(request, client_address)
 
     def stop(self) -> None:
         self.shutdown()

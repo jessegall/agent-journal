@@ -55,13 +55,13 @@ class EventStream:
 
     @staticmethod
     def known_environments(environment_names: EnvironmentNames, names: tuple[str, ...]) -> dict[int | None, str]:
-        known: dict[int | None, str] = {}
+        environments_by_id: dict[int | None, str] = {}
         for name in names:
             try:
-                known[environment_names.environment_id(name)] = name
+                environments_by_id[environment_names.environment_id(name)] = name
             except Refusal:
                 continue
-        return known
+        return environments_by_id
 
     @staticmethod
     def message(event: LoggedEvent, environment: str | None) -> str:

@@ -13,6 +13,7 @@ from server.request_log import RequestLog
 from server.viewer.event_stream import EventStream
 from server.viewer.file_route import LIMIT_BYTES
 from server.viewer.events_request import EventsRequest
+from core.base.database.repeated_lines import RepeatedLines
 from core.base.change.event_pattern_error import EventPatternError
 from server.viewer.missing_module_file_error import MissingModuleFileError
 from server.viewer.line_answer import LineAnswer
@@ -206,7 +207,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return
         if urlsplit(self.path).path == REPEATED_LINES_ROUTE:
             report = json.loads(body or b"{}")
-            viewer.routes.line_route.report_repeated_lines(str(report.get("window", "")), str(report.get("line", "")), int(report.get("count", 0)))
+            viewer.routes.line_route.report_repeated_lines(RepeatedLines(str(report.get("window", "")), str(report.get("line", "")), int(report.get("count", 0))))
             self.answer(200, {})
             return
         if urlsplit(self.path).path != LINE_ROUTE:
@@ -252,7 +253,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(400, {"error": str(error)})
             return
         if shared is not None:
-            request = replace(request, environments=(shares.environment_name(shared.environment_id),))
+            request = replace(request, environments=tuple([shares.environment_name(shared.environment_id)]))
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Cache-Control", "no-store")

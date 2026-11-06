@@ -7,8 +7,8 @@ import {AllowancePrompts} from "./allowancePrompts.js";
 import {lineResult} from "./windowContext.js";
 import {WindowCatalogue, fetchWindowCatalogue, followEvents} from "./windowCatalogue.js";
 import {WindowSubscriptions} from "./windowSubscriptions.js";
+import {SHELL_WINDOW} from "./shellWindow.js";
 
-const SHELL_WINDOW = "viewer.shell";
 const PHONE_WORKER = "/viewer/phone-sw.js";
 
 // a page's reads and runs through the shell's own window

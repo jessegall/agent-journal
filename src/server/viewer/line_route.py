@@ -2,6 +2,7 @@ import io
 import json
 from time import perf_counter
 
+from core.base.database.repeated_lines import RepeatedLines
 from core.base.database.request_watch import RequestWatch
 from core.base.request_queue import RequestQueue
 from core.base.actor import Actor
@@ -82,18 +83,17 @@ class LineRoute:
             return LineAnswer(REFUSED_CODE, error=refusal.reason)
 
     def read_lines(self) -> list[str]:
-        """Every line that only reads, as noun and verb, by the check WindowLines makes of a parsed line."""
         container = self.line_run.synced(None, None)
         try:
             lookup = container.get(SubcommandLookup)
-            return [f"{noun} {verb}" for noun in lookup.cli_names() for verb in lookup.names(noun) if not isinstance(lookup.subcommand(noun, verb), Subcommand)]
+            return [f"{command} {subcommand}" for command in lookup.cli_names() for subcommand in lookup.names(command) if not isinstance(lookup.subcommand(command, subcommand), Subcommand)]
         finally:
             container.get(Database).close()
 
-    def report_repeated_lines(self, window: str, line: str, count: int) -> None:
+    def report_repeated_lines(self, repeated: RepeatedLines) -> None:
         container = self.line_run.synced(None, None)
         try:
-            container.get(RequestWatch).report_repeated_lines(window, line, count)
+            container.get(RequestWatch).report_repeated_lines(repeated)
         finally:
             container.get(Database).close()
 

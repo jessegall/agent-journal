@@ -25,13 +25,41 @@ def logged_in(server) -> str:
     return server.expect_viewer_login(server.viewer_key("Ada"))
 
 
+def expect_answered(status: int, body: str) -> None:
+    assert status == 200, body
+
+
+def expect_only_reads_listed(reads: set[str]) -> None:
+    assert {"task list", "usage tool", "message feed", "agent main"} <= reads
+    assert not {"message send", "message edit", "task close", "viewer-layout save"} & reads
+
+
+def expect_slow_line_logged_slow(duration_of: dict[str, float]) -> None:
+    assert duration_of[" ".join(SLOW_LINE)] >= SLOW_SECONDS * 1000, duration_of
+    assert duration_of[" ".join(QUICK_LINE)] < SLOW_SECONDS * 1000, duration_of
+
+
+def expect_event_of_environment(response: http.client.HTTPResponse, environment: str) -> None:
+    assert response.status == 200
+    data = ""
+    while not data:
+        line = response.fp.readline().decode().strip()
+        if line.startswith("data:") and '"task.' in line:
+            data = line.removeprefix("data:")
+    assert json.loads(data)["environment"] == environment
+
+
+def expect_reported_times(server, times: int) -> None:
+    log = server.story.home.error_log
+    text = log.read_text() if log.exists() else ""
+    assert text.count("sent 12 lines of usage tool") == times, text
+
+
 def test_the_server_lists_the_lines_that_only_read(recording_server):
     server = recording_server
     status, _, body = viewer_answer(server.viewer_port(), "/api/read-lines", logged_in(server), "")
-    assert status == 200, body
-    reads = set(json.loads(body)["reads"])
-    assert {"task list", "usage tool", "message feed", "agent main"} <= reads
-    assert not {"message send", "message edit", "task close", "viewer-layout save"} & reads
+    expect_answered(status, body)
+    expect_only_reads_listed(set(json.loads(body)["reads"]))
 
 
 def test_each_line_of_a_batch_logs_its_own_time(recording_server):
@@ -39,19 +67,17 @@ def test_each_line_of_a_batch_logs_its_own_time(recording_server):
     cookie = logged_in(server)
     answered = LineRoute.batch_answer
 
-    def slow_for_one_line(route, container, request, person_id, shared):
+    def delayed_batch_answer(route, container, request, person_id, shared):
         if request.line == SLOW_LINE:
             sleep(SLOW_SECONDS)
         return answered(route, container, request, person_id, shared)
 
     lines = [{"window": "viewer.shell", "line": line, "environment": "main"} for line in (SLOW_LINE, QUICK_LINE)]
-    with patch.object(LineRoute, "batch_answer", slow_for_one_line):
+    with patch.object(LineRoute, "batch_answer", delayed_batch_answer):
         status, _, body = viewer_answer(server.viewer_port(), "/api/lines", cookie, "", {"lines": lines})
-    assert status == 200, body
+    expect_answered(status, body)
     rows = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})["rows"]
-    duration_of = {row["body"]["event"]: row["duration_ms"] for row in rows if "event" in row["body"]}
-    assert duration_of[" ".join(SLOW_LINE)] >= SLOW_SECONDS * 1000, duration_of
-    assert duration_of[" ".join(QUICK_LINE)] < SLOW_SECONDS * 1000, duration_of
+    expect_slow_line_logged_slow({row["body"]["event"]: row["duration_ms"] for row in rows if "event" in row["body"]})
 
 
 def test_one_stream_carries_the_environments_of_many_tabs_and_names_each_events_environment(recording_server):
@@ -64,14 +90,7 @@ def test_one_stream_carries_the_environments_of_many_tabs_and_names_each_events_
     connection = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
     try:
         connection.request("GET", connection_query, headers={"Host": f"127.0.0.1:{port}", "Cookie": cookie})
-        response = connection.getresponse()
-        assert response.status == 200
-        data = ""
-        while not data:
-            line = response.fp.readline().decode().strip()
-            if line.startswith("data:") and '"task.' in line:
-                data = line.removeprefix("data:")
-        assert json.loads(data)["environment"] == "main"
+        expect_event_of_environment(connection.getresponse(), "main")
     finally:
         connection.close()
 
@@ -85,7 +104,5 @@ def test_a_window_sending_many_lines_of_one_noun_and_verb_is_a_development_error
     report = {"window": "agents.cards", "line": "usage tool", "count": 12}
     for _ in range(2):
         status, _, body = viewer_answer(server.viewer_port(), "/api/repeated-lines", cookie, "", report)
-        assert status == 200, body
-    log = server.story.home.error_log
-    text = log.read_text() if log.exists() else ""
-    assert text.count("sent 12 lines of usage tool") == (1 if reported else 0), text
+        expect_answered(status, body)
+    expect_reported_times(server, 1 if reported else 0)

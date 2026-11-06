@@ -1,5 +1,7 @@
 from contextlib import AbstractContextManager, nullcontext
 
+from core.base.database.repeated_lines import RepeatedLines
+
 
 class RequestWatch:
     """Watches one live request for repeated work. This one watches nothing; a module with a setting for it
@@ -8,5 +10,5 @@ class RequestWatch:
     def watching(self, argv: list[str]) -> AbstractContextManager[None]:
         return nullcontext()
 
-    def report_repeated_lines(self, window: str, line: str, count: int) -> None:
+    def report_repeated_lines(self, repeated: RepeatedLines) -> None:
         return None
