@@ -11,10 +11,10 @@ class RunVisibility:
         self.kept = kept
 
     def visible_part(self, process: Process) -> ProcessPart | None:
-        return self.visible_part_in(process, self.parts(process.id))
+        return self.select_visible_part(process, self.parts(process.id))
 
     @staticmethod
-    def visible_part_in(process: Process, parts: tuple[ProcessPart, ...]) -> ProcessPart | None:
+    def select_visible_part(process: Process, parts: tuple[ProcessPart, ...]) -> ProcessPart | None:
         categorized = next((part for part in parts if part.is_visible), None)
         return categorized or (parts[0] if parts and process.creator_id != process.session_agent_id else None)
 

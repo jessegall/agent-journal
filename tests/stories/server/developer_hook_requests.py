@@ -118,10 +118,10 @@ def test_requests_show_the_sender_and_queue_time(recording_server):
     server.expect_cli_exit("task list", "/", 0, "")
     value = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})
     rows = value["rows"]
-    assert [row["sender"] for row in rows[:4]] == ["Command line", "Viewer", "Worker: Ada", "Main agent"]
-    assert [row["event"] for row in rows[:2]] == ["task list", "task list"]
-    assert all(row["queued_ms"] >= 0 for row in rows[:4])
-    assert rows[0]["queued_ms"] == 0
+    server.story.expect_rows([row["sender"] for row in rows[:4]] == ["Command line", "Viewer", "Worker: Ada", "Main agent"])
+    server.story.expect_rows([row["event"] for row in rows[:2]] == ["task list", "task list"])
+    server.story.expect_rows(all(row["queued_ms"] >= 0 for row in rows[:4]))
+    server.story.expect_rows(rows[0]["queued_ms"] == 0)
 
 
 def test_a_hook_shows_the_time_it_waited_for_another(recording_server):
@@ -134,7 +134,7 @@ def test_a_hook_shows_the_time_it_waited_for_another(recording_server):
         answer.result()
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
     value = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})
-    assert value["rows"][0]["queued_ms"] >= 50
+    server.story.expect_rows(value["rows"][0]["queued_ms"] >= 50)
 
 
 def test_recording_drops_requests_instead_of_waiting_for_a_writer(recording_server):
@@ -146,20 +146,20 @@ def test_recording_drops_requests_instead_of_waiting_for_a_writer(recording_serv
         started_at = perf_counter()
         server.viewer_line_value(cookie, {"line": ["task", "list"], "environment": "main", "window": "tasks.tasks"})
         server.expect_cli_exit("task list", "/", 0, "")
-        assert perf_counter() - started_at < 1
+        server.story.expect_rows(perf_counter() - started_at < 1)
     finally:
         writer.rollback()
         writer.close()
     value = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})
-    assert not any(row["event"] == "task list" for row in value["rows"])
+    server.story.expect_rows(not any(row["event"] == "task list" for row in value["rows"]))
 
 
 def test_queue_inspector_shows_an_empty_queue(recording_server):
     server = recording_server
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
     value = server.viewer_line_value(cookie, {"line": ["developer", "request-queue"], "environment": "main", "window": "developer.hook-requests"})
-    assert value["running"] == []
-    assert value["waiting"] == []
+    server.story.expect_rows(value["running"] == [])
+    server.story.expect_rows(value["waiting"] == [])
 
 
 def test_queue_inspector_shows_hook_priority_without_waiting(recording_server):
@@ -173,13 +173,13 @@ def test_queue_inspector_shows_hook_priority_without_waiting(recording_server):
         with server.context.hook_database.used(QueuePriority.AGENT_HOOK, 1):
             first = pool.submit(server.expect_hook_answer, "/hook", dict(worker.body), 200, '"refusal":')
             with server.context.hook_database.queue.changed:
-                assert server.context.hook_database.queue.changed.wait_for(lambda: len(server.context.hook_database.queue.waiting_hooks) == 1, timeout=0.4)
+                server.story.expect_rows(server.context.hook_database.queue.changed.wait_for(lambda: len(server.context.hook_database.queue.waiting_hooks) == 1, timeout=0.4))
             second = pool.submit(server.expect_hook_answer, "/hook", dict(main.body), 200, '"refusal":')
             with server.context.hook_database.queue.changed:
-                assert server.context.hook_database.queue.changed.wait_for(lambda: len(server.context.hook_database.queue.waiting_hooks) == 2, timeout=0.4)
+                server.story.expect_rows(server.context.hook_database.queue.changed.wait_for(lambda: len(server.context.hook_database.queue.waiting_hooks) == 2, timeout=0.4))
             value = server.viewer_line_value(cookie, {"line": ["developer", "request-queue"], "environment": "main", "window": "developer.hook-requests"})
-            assert [row["sender"] for row in value["waiting"][:2]] == ["Main agent", "Worker: Ada"]
-            assert all(row["waited_ms"] > 0 for row in value["waiting"][:2])
+            server.story.expect_rows([row["sender"] for row in value["waiting"][:2]] == ["Main agent", "Worker: Ada"])
+            server.story.expect_rows(all(row["waited_ms"] > 0 for row in value["waiting"][:2]))
         first.result()
         second.result()
 
@@ -191,10 +191,10 @@ def test_queue_inspector_shows_a_waiting_viewer_without_waiting_for_the_hook(rec
         with server.context.hook_database.used(QueuePriority.AGENT_HOOK, 1):
             answer = pool.submit(server.viewer_line_value, cookie, {"line": ["task", "list"], "environment": "main", "window": "tasks.tasks"})
             with server.context.hook_database.queue.changed:
-                assert server.context.hook_database.queue.changed.wait_for(lambda: bool(server.context.hook_database.queue.waiting_viewers), timeout=0.4)
+                server.story.expect_rows(server.context.hook_database.queue.changed.wait_for(lambda: bool(server.context.hook_database.queue.waiting_viewers), timeout=0.4))
             value = server.viewer_line_value(cookie, {"line": ["developer", "request-queue"], "environment": "main", "window": "developer.hook-requests"})
-            assert value["running"][0]["event"] == "hook"
-            assert any(row["sender"] == "Viewer" and row["event"] == "task list" for row in value["waiting"])
+            server.story.expect_rows(value["running"][0]["event"] == "hook")
+            server.story.expect_rows(any(row["sender"] == "Viewer" and row["event"] == "task list" for row in value["waiting"]))
         answer.result()
 
 
@@ -218,5 +218,5 @@ def test_a_mixed_batch_does_not_hold_the_queue_inspection(recording_server):
     with server.context.hook_database.used(QueuePriority.AGENT_HOOK, 1):
         started_at = perf_counter()
         status, _, body = viewer_answer(server.viewer_port(), "/api/lines", cookie, "", {"lines": [queue, task]})
-        assert status == 400 and "read the request queue separately" in body
-        assert perf_counter() - started_at < 0.5
+        server.story.expect_rows(status == 400 and "read the request queue separately" in body)
+        server.story.expect_rows(perf_counter() - started_at < 0.5)

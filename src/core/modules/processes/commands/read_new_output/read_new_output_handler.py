@@ -36,10 +36,10 @@ class ReadNewOutputHandler(Handler[ReadNewOutput, Output]):
             self.folder.append_reader_lines(process.id, advance.lines)
         if advance.progress != process.progress and process.state in OPEN:
             self.repository.update(process, context, progress=advance.progress)
-        saved = self.repository.update(output, context, read_offset=advance.read_offset, seen_offset=advance.seen_offset, read_lines=advance.read_lines, reader_lines=len(self.folder.reader_lines(process.id)),
+        saved = self.repository.update(output, context, read_offset=advance.read_offset, seen_offset=advance.received_offset, read_lines=advance.read_lines, reader_lines=len(self.folder.reader_lines(process.id)),
                                        reader_summary=advance.summary, progress=advance.progress, steps_passed=advance.steps_passed, steps_failed=advance.steps_failed,
                                        test_count=advance.test_count)
-        if advance.progress_count_seen:
+        if advance.progress_count_read:
             self.folder.mark_progress_count_read(process.id)
         if advance.test_count and not self.folder.has_progress_count(process.id):
             self.folder.mark_progress_count(process.id)

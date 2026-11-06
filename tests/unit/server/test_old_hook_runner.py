@@ -1,6 +1,6 @@
 from contextlib import nullcontext
 from types import SimpleNamespace
-from unittest.mock import Mock
+from unittest.mock import ANY, Mock
 
 import pytest
 
@@ -11,7 +11,7 @@ from server.hook.queue_priority import QueuePriority
 
 @pytest.mark.parametrize("event,refused", [("stop", True), ("pre_tool_use", False)])
 def test_an_old_hook_runner_gets_an_immediate_unchecked_answer(event, refused):
-    context = SimpleNamespace(hook_database=SimpleNamespace(used=lambda priority, limit, owner: nullcontext()), hook_limit_seconds=1, agent_hook_limit_seconds=1,
+    context = SimpleNamespace(hook_database=SimpleNamespace(used=lambda priority, limit, owner, request: nullcontext()), hook_limit_seconds=1, agent_hook_limit_seconds=1,
                               listener_thread=SimpleNamespace(wake=Mock()))
     endpoint = HookEndpoint(Mock(), context)
     endpoint.routed_answer = Mock(side_effect=OldHookRunnerError.detected())
@@ -29,4 +29,4 @@ def test_a_hook_takes_its_place_in_the_queue_by_its_role(role, priority, limit):
     endpoint = HookEndpoint(Mock(), context)
     endpoint.routed_answer = Mock(side_effect=OldHookRunnerError.detected())
     endpoint.answer({"event": "pre_tool_use", "role": role, "session": "s-1"}, "claude", {})
-    used.assert_called_once_with(priority, limit, "s-1")
+    used.assert_called_once_with(priority, limit, "s-1", ANY)

@@ -349,7 +349,11 @@ def test_an_ended_worker_sent_a_job_resumes_its_session_with_the_job(new_story):
 
 def test_a_worker_with_no_worktree_is_not_sent_a_job(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
-    story.expect_refusal('worker send 99 "Add the tax"', "worker 99 has no worktree", actor=story.agent)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    story.expect_refusal(f'worker send {worker.id} "Add the tax"', f"worker {worker.id} has no worktree", actor=story.agent)
 
 
 def ended_worker(new_story):

@@ -7,8 +7,7 @@ from suites.coding.modules.workers.models.proof import Proof
 
 
 class MakeProofSubcommand(Subcommand[MakeProof, Proof]):
-    """`journal proof make <point> --task <task> "<text>" --test "<command>"`: a worker's proof for one point of its task's brief,
-    with the test command the journal runs to check it."""
+    """Creates a proof for a task point."""
 
     cli_name = "proof"
     name = "make"
