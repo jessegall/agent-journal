@@ -16,4 +16,4 @@ class ResetTaskReadsHandler(Handler[ResetTaskReads, None]):
 
     def handle(self, command: ResetTaskReads, context: Context) -> None:
         for row in tuple(self.queries.query(TaskRead).filter(session_agent_id=command.agent_id).all_rows()):
-            self.repository.delete(row, context)
+            self.repository.delete_stored(row, context)
