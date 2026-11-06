@@ -10,9 +10,7 @@ from suites.coding.modules.workers.commands.end_gone_worker.end_gone_worker impo
 
 
 class EndGoneWorkerHandler(Handler[EndGoneWorker, None]):
-    """The journal ends a worker whose process is gone, as itself and not as the main agent whose tick noticed, so
-    the worker is told to carry on rather than counted as stopped on purpose, and its process is forgotten, since
-    nothing is left of it to stop before a resume."""
+    """End a worker whose recorded process is no longer running."""
 
     command = EndGoneWorker
 

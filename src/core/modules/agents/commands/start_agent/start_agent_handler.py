@@ -18,10 +18,7 @@ from core.base.shell_sandbox import ShellSandbox
 
 
 class StartAgentHandler(Handler[StartAgent, Agent]):
-    """Makes the actor of a new session, then its agent row with the actor's id, in one transaction, or
-    reopens the ended row of a resumed session so the agent keeps its number, its tasks and the process its
-    launcher recorded; a pid given without its start time gets the start the process table reads for it. A main agent ends the others of
-    its environment."""
+    """Create or resume an agent and record its process."""
 
     command = StartAgent
 
@@ -52,11 +49,11 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
             if command.pid is None:
                 return self.repository.save(replace(started, ended_at=None), context)
             return self.repository.save(replace(started, ended_at=None, pid=command.pid,
-                                                process_started_at=command.process_started_at or self.chain.started_at(command.pid)), context)
+                                                process_started_at=command.process_started_at or self.chain.process_started_at(command.pid)), context)
         actor = self.repository.save(ActorRecord(type=ActorType.AGENT, name=command.session, creator_id=context.actor.id), context)
         agent = Agent(id=actor.id, parent_id=command.parent_id, creator_id=context.actor.id, access=command.access,
                       session=command.session, program=command.program, role=command.role, pid=command.pid,
-                      process_started_at=command.process_started_at or self.chain.started_at(command.pid),
+                      process_started_at=command.process_started_at or self.chain.process_started_at(command.pid),
                       program_model=command.program_model, profile=command.profile, given_name=command.given_name)
         return self.repository.save(agent, context)
 

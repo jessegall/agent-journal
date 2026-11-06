@@ -15,7 +15,7 @@ from core.base.driver.hook_route import HookRoute
 from core.base.actor import Actor
 from core.base.command.bus import Bus
 from core.base.provider.providers import Providers
-from core.base.provider.written_rows import WrittenRows
+from core.base.provider.transcript_entries import TranscriptEntries
 from core.base.query.queries import Queries
 from core.base.journal_container import synced_database_container
 from core.base.module.code_fingerprint import CodeFingerprint
@@ -29,7 +29,7 @@ from core.modules.developer.support.hook_request_log import HookRequestLog
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
-from core.modules.messages.commands.return_message_deliveries.return_message_deliveries import ReturnMessageDeliveries
+from core.modules.messages.commands.reset_message_deliveries.reset_message_deliveries import ResetMessageDeliveries
 from server.hook.raw_hook_body import RawHookBody, is_raw_body
 from server.hook.hook_headers import HookHeaders
 from server.hook.hook_database_busy_error import HookDatabaseBusyError
@@ -105,7 +105,7 @@ class HookEndpoint:
             with self.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, self.context.hook_limit_seconds) as database:
                 container = synced_database_container(self.context.home, database)
                 call = container.get(Queries).query(HookCall).find(reply.hook_call_id)
-                container.get(Bus).run(ReturnMessageDeliveries(call.id), Actor.core(), environment_id=call.environment_id)
+                container.get(Bus).run(ResetMessageDeliveries(call.id), Actor.core(), environment_id=call.environment_id)
         except HookDatabaseBusyError as error:
             self.context.files.log_line(f"the deliveries of hook call {reply.hook_call_id} stay as they are: {error}")
 
@@ -117,7 +117,7 @@ class HookEndpoint:
             return self.unchecked(data, error)
         container.bind(Timing, self.timing)
         container.bind(ReportedFindings, self.context.reported_findings)
-        container.bind(WrittenRows, self.context.written_rows)
+        container.bind(TranscriptEntries, self.context.transcript_entries)
         self.timing.stamp("hook_synced")
         outcome = HookAnswer.REFUSED
         try:

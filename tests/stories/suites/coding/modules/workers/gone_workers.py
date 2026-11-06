@@ -16,15 +16,15 @@ WORKER_PID = 700
 RUNNING_PROGRAM = ProcessRow(WORKER_PID, 1, Timestamp(datetime(2026, 10, 31, 9, 0, tzinfo=timezone.utc)))
 
 
-def launcher_answering(story, answer: bytes, request_count: int = 1) -> FakeLauncher:
+def start_launcher(story, answer: bytes, request_count: int = 1) -> FakeLauncher:
     path = story.home.socket(LAUNCHER_SOCKET)
     path.unlink(missing_ok=True)
     return FakeLauncher(path, answer=answer, request_count=request_count)
 
 
-def expect_started_again(story, launcher: FakeLauncher) -> None:
+def expect_restart(story, launcher: FakeLauncher) -> None:
     launcher.thread.join(10)
-    assert launcher.requests, "the launcher was handed nothing"
+    story.expect_rows(bool(launcher.requests))
     story.expect_text(f"agent-line list --agent {story.worker.id}", "Add the tax")
 
 
@@ -41,11 +41,11 @@ def worker_story(new_story):
 
 
 @pytest.fixture
-def launched(worker_story):
+def running_worker(worker_story):
     """A worker the launcher started and answered the pid of, whose program runs."""
     story = worker_story
     story.use_processes(RUNNING_PROGRAM)
-    launcher_answering(story, f"started {WORKER_PID}\n".encode())
+    start_launcher(story, f"started {WORKER_PID}\n".encode())
     story.worker = dispatched_worker(story)
     story.run_listeners()
     story.advance(timedelta(minutes=5))
@@ -53,45 +53,45 @@ def launched(worker_story):
 
 
 @pytest.fixture
-def ended_unseen(launched):
+def ended_worker(running_worker):
     """The same worker after its program ended with no end hook and a tick noticed."""
-    launched.use_processes()
-    launched.tick(MAIN_SESSION)
-    launched.run_listeners()
-    return launched
+    running_worker.use_processes()
+    running_worker.tick(MAIN_SESSION)
+    running_worker.run_listeners()
+    return running_worker
 
 
-def test_the_launcher_answering_a_pid_records_the_workers_process(launched):
-    launched.expect_text(f"agent show {launched.worker.id}", f"pid: {WORKER_PID}", "process_started_at: 2026-10-31T09:00:00")
+def test_the_start_launcher_a_pid_records_the_workers_process(running_worker):
+    running_worker.expect_text(f"agent show {running_worker.worker.id}", f"pid: {WORKER_PID}", "process_started_at: 2026-10-31T09:00:00")
 
 
-def test_a_worker_whose_end_hook_was_lost_is_ended_at_a_tick(ended_unseen):
-    ended_unseen.expect_text(f"agent show {ended_unseen.worker.id}", "ended_at: 2026")
+def test_a_worker_whose_end_hook_was_lost_is_ended_at_a_tick(ended_worker):
+    ended_worker.expect_text(f"agent show {ended_worker.worker.id}", "ended_at: 2026")
 
 
-def test_a_running_worker_is_not_ended_at_a_tick(launched):
-    launched.tick(MAIN_SESSION)
-    launched.expect_no_text(f"agent show {launched.worker.id}", "ended_at:")
+def test_a_running_worker_is_not_ended_at_a_tick(running_worker):
+    running_worker.tick(MAIN_SESSION)
+    running_worker.expect_no_text(f"agent show {running_worker.worker.id}", "ended_at:")
 
 
-def test_a_send_after_a_tick_ended_the_worker_restarts_it(ended_unseen):
-    launcher = launcher_answering(ended_unseen, f"started {WORKER_PID}\n".encode())
-    ended_unseen.expect_text(f'worker send {ended_unseen.worker.id} "Add the tax"', "was not running: the job starts it again", actor=ended_unseen.agent)
-    ended_unseen.run_listeners()
-    expect_started_again(ended_unseen, launcher)
+def test_a_send_after_a_tick_ended_the_worker_restarts_it(ended_worker):
+    launcher = start_launcher(ended_worker, f"started {WORKER_PID}\n".encode())
+    ended_worker.expect_text(f'worker send {ended_worker.worker.id} "Add the tax"', "was not running: the job starts it again", actor=ended_worker.agent)
+    ended_worker.run_listeners()
+    expect_restart(ended_worker, launcher)
 
 
-def test_a_send_finds_a_process_gone_before_the_tick_does_and_restarts_the_worker(launched):
-    launched.use_processes()
-    launcher = launcher_answering(launched, b"started\n")
-    launched.expect_text(f'worker send {launched.worker.id} "Add the tax"', "was not running: the job starts it again", actor=launched.agent)
-    launched.expect_text(f"agent show {launched.worker.id}", "ended_at: 2026")
-    launched.run_listeners()
-    expect_started_again(launched, launcher)
+def test_a_send_finds_a_process_gone_before_the_tick_does_and_restarts_the_worker(running_worker):
+    running_worker.use_processes()
+    launcher = start_launcher(running_worker, b"started\n")
+    running_worker.expect_text(f'worker send {running_worker.worker.id} "Add the tax"', "was not running: the job starts it again", actor=running_worker.agent)
+    running_worker.expect_text(f"agent show {running_worker.worker.id}", "ended_at: 2026")
+    running_worker.run_listeners()
+    expect_restart(running_worker, launcher)
 
 
-def test_a_send_to_a_running_worker_says_it_takes_the_job(launched):
-    launched.expect_success(f'worker send {launched.worker.id} "Add the tax"', f"worker {launched.worker.id} takes the job", actor=launched.agent)
+def test_a_send_to_a_running_worker_says_it_takes_the_job(running_worker):
+    running_worker.expect_success(f'worker send {running_worker.worker.id} "Add the tax"', f"worker {running_worker.worker.id} takes the job", actor=running_worker.agent)
 
 
 def test_a_send_to_a_worker_with_no_recorded_process_says_the_journal_cannot_tell(worker_story):
@@ -99,47 +99,47 @@ def test_a_send_to_a_worker_with_no_recorded_process_says_the_journal_cannot_tel
     worker_story.expect_text(f'worker send {worker.id} "Add the tax"', "its process is not recorded, so the journal cannot say whether it runs", f"journal worker status {worker.id}", actor=worker_story.agent)
 
 
-def test_a_send_with_no_launcher_says_the_worker_is_not_running(ended_unseen):
-    ended_unseen.home.socket(LAUNCHER_SOCKET).unlink(missing_ok=True)
-    ended_unseen.expect_text(f'worker send {ended_unseen.worker.id} "Add the tax"', "is not running and has the job waiting", "needs the launcher", actor=ended_unseen.agent)
+def test_a_send_with_no_launcher_says_the_worker_is_not_running(ended_worker):
+    ended_worker.home.socket(LAUNCHER_SOCKET).unlink(missing_ok=True)
+    ended_worker.expect_text(f'worker send {ended_worker.worker.id} "Add the tax"', "is not running and has the job waiting", "needs the launcher", actor=ended_worker.agent)
 
 
-def test_a_restarted_worker_keeps_its_new_process_through_its_first_hook(ended_unseen):
-    worker = ended_unseen.worker
-    fresh = ProcessRow(WORKER_PID + 1, 1, RUNNING_PROGRAM.started_at)
-    ended_unseen.use_processes(fresh)
-    launcher = launcher_answering(ended_unseen, f"started {fresh.pid}\n".encode())
-    ended_unseen.expect_text(f'worker send {worker.id} "Add the tax"', "the job starts it again", actor=ended_unseen.agent)
-    ended_unseen.run_listeners()
+def test_a_restarted_worker_keeps_its_new_process_through_its_first_hook(ended_worker):
+    worker = ended_worker.worker
+    new_process = ProcessRow(WORKER_PID + 1, 1, RUNNING_PROGRAM.started_at)
+    ended_worker.use_processes(new_process)
+    launcher = start_launcher(ended_worker, f"started {new_process.pid}\n".encode())
+    ended_worker.expect_text(f'worker send {worker.id} "Add the tax"', "the job starts it again", actor=ended_worker.agent)
+    ended_worker.run_listeners()
     launcher.thread.join(10)
-    ended_unseen.hook(worker_session(ended_unseen, worker), HookSamples.session_start())
-    ended_unseen.expect_text(f"agent show {worker.id}", f"pid: {fresh.pid}")
-    ended_unseen.expect_no_text(f"agent show {worker.id}", "ended_at:")
-    ended_unseen.tick(MAIN_SESSION)
-    ended_unseen.expect_no_text(f"agent show {worker.id}", "ended_at:")
+    ended_worker.hook(worker_session(ended_worker, worker), HookSamples.session_start())
+    ended_worker.expect_text(f"agent show {worker.id}", f"pid: {new_process.pid}")
+    ended_worker.expect_no_text(f"agent show {worker.id}", "ended_at:")
+    ended_worker.tick(MAIN_SESSION)
+    ended_worker.expect_no_text(f"agent show {worker.id}", "ended_at:")
 
 
-def test_a_launcher_that_answers_no_pid_leaves_no_old_process_on_the_worker(launched):
-    worker = launched.worker
-    launched.expect_success(f"agent end {worker.id}", actor=launched.agent)
-    launcher = launcher_answering(launched, b"started\n")
-    launched.expect_text(f'worker send {worker.id} "Add the tax"', "the job starts it again", actor=launched.agent)
-    launched.run_listeners()
+def test_a_launcher_that_answers_no_pid_leaves_no_old_process_on_the_worker(running_worker):
+    worker = running_worker.worker
+    running_worker.expect_success(f"agent end {worker.id}", actor=running_worker.agent)
+    launcher = start_launcher(running_worker, b"started\n")
+    running_worker.expect_text(f'worker send {worker.id} "Add the tax"', "the job starts it again", actor=running_worker.agent)
+    running_worker.run_listeners()
     launcher.thread.join(10)
-    launched.expect_no_text(f"agent show {worker.id}", "pid:")
+    running_worker.expect_no_text(f"agent show {worker.id}", "pid:")
 
 
-def test_a_send_to_a_paused_worker_says_it_waits_for_the_resume(launched):
-    worker = launched.worker
-    launched.expect_success(f"agent pause {worker.id}", actor=launched.agent)
-    launched.use_processes()
-    launched.expect_text(f'worker send {worker.id} "Add the tax"', "is paused: the job waits until it is resumed", actor=launched.agent)
+def test_a_send_to_a_paused_worker_says_it_waits_for_the_resume(running_worker):
+    worker = running_worker.worker
+    running_worker.expect_success(f"agent pause {worker.id}", actor=running_worker.agent)
+    running_worker.use_processes()
+    running_worker.expect_text(f'worker send {worker.id} "Add the tax"', "is paused: the job waits until it is resumed", actor=running_worker.agent)
 
 
 def test_a_helper_whose_end_hook_was_lost_is_ended_at_a_tick(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.use_processes(RUNNING_PROGRAM)
-    launcher = launcher_answering(story, f"started {WORKER_PID}\n".encode())
+    launcher = start_launcher(story, f"started {WORKER_PID}\n".encode())
     helper = story.new_row_id('helper start journal-researcher --brief "Read src/cart.py" --environment main', actor=story.agent)
     story.run_listeners()
     launcher.thread.join(10)
