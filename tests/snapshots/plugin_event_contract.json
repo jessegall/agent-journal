@@ -717,6 +717,60 @@
       "target_model"
     ]
   },
+  "core.documents.link_correction.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "link_creator_id",
+      "link_id",
+      "link_type",
+      "source_id",
+      "source_model",
+      "target_id",
+      "target_model"
+    ]
+  },
+  "core.documents.link_correction.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "link_creator_id",
+      "link_id",
+      "link_type",
+      "source_id",
+      "source_model",
+      "target_id",
+      "target_model"
+    ]
+  },
+  "core.documents.link_correction.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "link_creator_id",
+      "link_id",
+      "link_type",
+      "source_id",
+      "source_model",
+      "target_id",
+      "target_model"
+    ]
+  },
   "core.documents.open_document.created": {
     "forms": [
       "commit",
@@ -1009,6 +1063,11 @@
       "report_message_id",
       "returned",
       "session_agent_id",
+      "source_line_id",
+      "source_message_id",
+      "source_unavailable",
+      "source_version",
+      "started_at",
       "tool_key"
     ]
   },
@@ -1031,6 +1090,11 @@
       "report_message_id",
       "returned",
       "session_agent_id",
+      "source_line_id",
+      "source_message_id",
+      "source_unavailable",
+      "source_version",
+      "started_at",
       "tool_key"
     ]
   },
@@ -1053,6 +1117,11 @@
       "report_message_id",
       "returned",
       "session_agent_id",
+      "source_line_id",
+      "source_message_id",
+      "source_unavailable",
+      "source_version",
+      "started_at",
       "tool_key"
     ]
   },
@@ -1947,6 +2016,7 @@
       "peer_key",
       "reactions",
       "read_at",
+      "read_notice_at",
       "recipient",
       "session_agent_id",
       "target_agent_id",
@@ -1972,6 +2042,7 @@
       "peer_key",
       "reactions",
       "read_at",
+      "read_notice_at",
       "recipient",
       "session_agent_id",
       "target_agent_id",
@@ -1997,11 +2068,63 @@
       "peer_key",
       "reactions",
       "read_at",
+      "read_notice_at",
       "recipient",
       "session_agent_id",
       "target_agent_id",
       "text",
       "type"
+    ]
+  },
+  "core.messages.message_work_source.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_id",
+      "creator_id",
+      "environment_id",
+      "message_id",
+      "origin",
+      "provisional",
+      "selection_number",
+      "used"
+    ]
+  },
+  "core.messages.message_work_source.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_id",
+      "creator_id",
+      "environment_id",
+      "message_id",
+      "origin",
+      "provisional",
+      "selection_number",
+      "used"
+    ]
+  },
+  "core.messages.message_work_source.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_id",
+      "creator_id",
+      "environment_id",
+      "message_id",
+      "origin",
+      "provisional",
+      "selection_number",
+      "used"
     ]
   },
   "core.phone.phone.created": {
@@ -2458,6 +2581,48 @@
       "started_at",
       "state",
       "title"
+    ]
+  },
+  "core.plans.plan_context_read.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "plan_id",
+      "session_agent_id",
+      "start_event_id"
+    ]
+  },
+  "core.plans.plan_context_read.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "plan_id",
+      "session_agent_id",
+      "start_event_id"
+    ]
+  },
+  "core.plans.plan_context_read.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "plan_id",
+      "session_agent_id",
+      "start_event_id"
     ]
   },
   "core.plugins.command_starting": {
@@ -6003,6 +6168,60 @@
       "count",
       "creator_id",
       "notice_at",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worker_task_source.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "source_line_id",
+      "source_message_id",
+      "source_unavailable",
+      "source_version",
+      "started_at",
+      "task_id",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worker_task_source.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "source_line_id",
+      "source_message_id",
+      "source_unavailable",
+      "source_version",
+      "started_at",
+      "task_id",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worker_task_source.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "source_line_id",
+      "source_message_id",
+      "source_unavailable",
+      "source_version",
+      "started_at",
+      "task_id",
       "worktree_id"
     ]
   },

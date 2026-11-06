@@ -9,7 +9,7 @@ def test_the_feed_brings_an_agents_hook_calls_with_only_the_fields_the_window_dr
     answer = story.run(f"hook-call feed --session-agent-id {story.agent.id} --json", actor=story.user)
     answer.expect_text('"hook": "stop"')
     answer.expect_text('"refusal"')
-    answer.expect_no_text('"lines"')
+    answer.expect_no_text('"lines":')
     answer.expect_no_text('"updated_input"')
     answer.expect_no_text('"metadata"')
 

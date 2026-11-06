@@ -69,7 +69,6 @@ def test_person_made_work_has_no_borrowed_source(scenario):
     scenario.story.expect_rows(not any(row["target_model"] == "task" and row["target_id"] == 2 for row in scenario.links("message:2")))
 
 
-@pending(6890)
 def test_immediate_start_sees_committed_source(scenario):
     scenario.make_task()
     scenario.expect_link("message:2", "task:2", "about")

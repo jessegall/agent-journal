@@ -14,7 +14,7 @@ from core.modules.skills.support.skill_files import SkillFiles
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
 from suites.coding.modules.workers.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.commands.support.worktree_commands import WorktreeCommands
-from suites.coding.modules.workers.support.worker_settings import LIBRARY_COPIES, LIBRARY_LINKS, WORKTREE_COMMANDS
+from suites.coding.modules.workers.support.worker_settings import LIBRARY_COPIES, LIBRARY_LINKS, WORKTREE_COMMANDS, WORKTREE_COMMANDS_NAME
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
@@ -54,4 +54,4 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
         for provider in self.providers.all():
             manager.import_hooks(type(provider), Path(command.folder))
         self.libraries.exclude(command.folder, list(self.skills.place(Path(command.folder))))
-        self.commands.run(command.folder, self.git.head(command.folder), self.settings.texts(WORKTREE_COMMANDS), (*links, *copies))
+        self.commands.run(command.folder, self.git.head(command.folder), self.settings.texts(WORKTREE_COMMANDS), (*links, *copies), WORKTREE_COMMANDS_NAME)

@@ -16,12 +16,14 @@ from core.modules.processes.support.streaming_hints import StreamingHints
 
 SILENT_SECONDS = 30
 STALLED_SECONDS = 300
+RUNS_CHECKED = 5
 PYTHON_PROGRAM = "python"
 
 
 class SilentRunRule(DriverRule):
     """Tells an agent that a test, a build or a Python run still going has printed nothing, or has gone quiet
-    long after its last line, so its reader has nothing to show, and how to make that tool print as it runs."""
+    long after its last line, so its reader has nothing to show, and how to make that tool print as it runs. It checks the agent's newest
+    runs only, so a hook's read stays small however many are going."""
 
     name = "processes.silent-run"
     hook = HookWildcard.ALL_HOOKS
@@ -33,7 +35,7 @@ class SilentRunRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if not hook.event.accepts_lines:
             return RuleAnswer.allowed()
-        running = self.processes.agent(hook.agent_id).running().moved().minimum_age(hook.timestamp, SILENT_SECONDS).all_rows()
+        running = self.processes.agent(hook.agent_id).running().moved().minimum_age(hook.timestamp, SILENT_SECONDS).newest().limited(RUNS_CHECKED)
         return RuleAnswer.with_nudges(*(nudge for process in running if (nudge := self.silent_run_nudge(process, hook.timestamp))))
 
     def silent_run_nudge(self, process: Process, timestamp: Timestamp) -> Nudge | None:

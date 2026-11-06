@@ -31,7 +31,7 @@ class ExplicitEditedRequest(StoryFixture):
 
 
 def test_answer_without_message_records_one_authorized_source(scenario):
-    scenario.command('question ask "Which rounding rule?" --options "Up" "Nearest" --recommend "Nearest"')
+    scenario.command('question ask "Which rounding rule?" --context "A story asks this so its card and answer can be checked." --options "Up" "Nearest" --recommend "Nearest"')
     scenario.person("questions.questions", "question", "answer", "1", "--answer", "Nearest")
     question = json.loads(scenario.command("question show 1 --json").output_text)
     feature(question["message_id"] is not None, "a real viewer answer has no canonical message")
@@ -47,7 +47,7 @@ def test_answer_without_message_records_one_authorized_source(scenario):
 
 
 def test_answered_question_exposes_its_answer_source(scenario):
-    scenario.command('question ask "Which tax?" --options "Local" "Export"')
+    scenario.command('question ask "Which tax?" --context "A story asks this so its card and answer can be checked." --options "Local" "Export"')
     scenario.person("questions.questions", "question", "answer", "1", "--answer", "Local")
     source = json.loads(scenario.command("question show 1 --json").output_text)["message_id"]
     lines = "\n".join(scenario.story.hook("s-1", HookSamples.prompt("go on")).lines)
@@ -57,7 +57,7 @@ def test_answered_question_exposes_its_answer_source(scenario):
 
 def test_answer_notification_does_not_replace_active_request(scenario):
     scenario.select()
-    scenario.command('question ask "Keep discount?" --options "Yes" "No"')
+    scenario.command('question ask "Keep discount?" --context "A story asks this so its card and answer can be checked." --options "Yes" "No"')
     scenario.person("questions.questions", "question", "answer", "1", "--answer", "Yes")
     scenario.tick()
     scenario.make_task()
@@ -98,7 +98,7 @@ def test_context_reads_the_latest_explicitly_selected_request_text(new_story):
 
 
 def test_viewer_answer_is_authored_and_addressed_to_the_asking_agent(scenario):
-    scenario.command('question ask "Which date?" --options "Monday" "Tuesday"')
+    scenario.command('question ask "Which date?" --context "A story asks this so its card and answer can be checked." --options "Monday" "Tuesday"')
     scenario.person("questions.questions", "question", "answer", "1", "--answer", "Tuesday")
     question = json.loads(scenario.command("question show 1 --json").output_text)
     scenario.story.expect_rows(question["message_id"] is not None)
@@ -113,7 +113,7 @@ def test_viewer_answer_is_authored_and_addressed_to_the_asking_agent(scenario):
 
 def test_answer_only_becomes_source_after_explicit_selection(scenario):
     scenario.select()
-    scenario.command('question ask "Which currency?" --options "EUR" "USD"')
+    scenario.command('question ask "Which currency?" --context "A story asks this so its card and answer can be checked." --options "EUR" "USD"')
     scenario.person("questions.questions", "question", "answer", "1", "--answer", "EUR")
     source = json.loads(scenario.command("question show 1 --json").output_text)["message_id"]
     scenario.story.expect_rows(source is not None)
@@ -127,7 +127,7 @@ def test_answer_only_becomes_source_after_explicit_selection(scenario):
 
 
 def test_answer_can_reuse_its_existing_person_message(scenario):
-    scenario.command('question ask "Which rounding?" --options "Up" "Nearest"')
+    scenario.command('question ask "Which rounding?" --context "A story asks this so its card and answer can be checked." --options "Up" "Nearest"')
     supplied = scenario.person("messages.chat", "message", "send", "Nearest", "--target-agent", str(scenario.story.agent.id))
     initial_feed = scenario.person("messages.chat", "message", "feed")["rows"]
     scenario.person("questions.questions", "question", "answer", "1", "--answer", "Nearest", "--message-id", str(supplied["id"]))
@@ -146,7 +146,7 @@ def test_update_notification_names_the_explicit_selection_command(scenario):
 
 @pytest.mark.parametrize("invalid", ["agent-message", "other-recipient", "other-author"])
 def test_person_answer_refuses_a_source_with_wrong_author_or_addressee(scenario, invalid):
-    scenario.command('question ask "Which answer source?" --options "A" "B"')
+    scenario.command('question ask "Which answer source?" --context "A story asks this so its card and answer can be checked." --options "A" "B"')
     if invalid == "agent-message":
         supplied = json.loads(scenario.command('message send "A" --json').output_text)
     elif invalid == "other-recipient":
@@ -166,8 +166,8 @@ def test_person_answer_refuses_a_source_with_wrong_author_or_addressee(scenario,
 
 
 def test_multiple_answer_notices_keep_selection_commands_valid(scenario):
-    scenario.command('question ask "Which start?" --options "Early" "Late"')
-    scenario.command('question ask "Which finish?" --options "Early" "Late"')
+    scenario.command('question ask "Which start?" --context "A story asks this so its card and answer can be checked." --options "Early" "Late"')
+    scenario.command('question ask "Which finish?" --context "A story asks this so its card and answer can be checked." --options "Early" "Late"')
     scenario.person("questions.questions", "question", "answer", "1", "--answer", "Early")
     scenario.person("questions.questions", "question", "answer", "2", "--answer", "Late")
     sources = [json.loads(scenario.command(f"question show {number} --json").output_text)["message_id"] for number in (1, 2)]

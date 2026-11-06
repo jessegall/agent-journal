@@ -28,6 +28,7 @@ const MARK_FAMILY = {type: "task", family_icon: "task", mark_icon: "task", group
 const REPORT_DOCK = {id: 1, type: "report", target_model: "reports", target_id: 1146, kept: false, state: "docked", leaves_at: null, title: "Report 1146: What the review found", text: "Two reviewers found 17 gaps in the plan"};
 const REPORT_FAMILY = {type: "report", icon: "report", folds: true, title: "Report {row_id}: {row_title}", buttons: [], leaves_after_seconds: 0, reads: ["report show"]};
 
+const apps = [];
 let mounted = [];
 let lines;
 let runs;
@@ -59,11 +60,16 @@ function windowContext(answers) {
     };
 }
 
+function mountedApp(app, element) {
+    app.mount(element);
+    apps.push(app);
+}
+
 async function mountedChat(answers = {}) {
     const context = windowContext({"message feed": [FIRST_MESSAGE, SECOND_MESSAGE], "chat-mark main": [MARK], "dock-item main": [REPORT_DOCK], "pin list": [], ...answers});
     const element = document.createElement("div");
     document.body.append(element);
-    createApp({setup: () => () => h(Chat), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
+    mountedApp(createApp({setup: () => () => h(Chat), provide: {[WINDOW_CONTEXT]: context}}), element);
     mounted.push(element);
     await settled();
     return element;
@@ -81,6 +87,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+    apps.splice(0).forEach((app) => app.unmount());
     mounted.forEach((element) => element.remove());
     mounted = [];
     vi.unstubAllGlobals();
@@ -122,7 +129,7 @@ test("marks: a mark's line names the row's own title and carries no check mark",
 
 test("marks: a mark drawn on its own names the row's title as well", async () => {
     const element = document.createElement("div");
-    createApp(() => h(MarkHost, {mark: MARK})).mount(element);
+    mountedApp(createApp(() => h(MarkHost, {mark: MARK})), element);
     mounted.push(element);
     await settled();
     expect(element.textContent).toContain("Fix the cart total");
@@ -130,7 +137,7 @@ test("marks: a mark drawn on its own names the row's title as well", async () =>
 
 test("docked items: a card shows its title, a line of its text, and buttons to open and to close it", async () => {
     const element = document.createElement("div");
-    createApp({render: () => h(DockWrapper, {item: REPORT_DOCK}), provide: {[WINDOW_CONTEXT]: context({})}}).mount(element);
+    mountedApp(createApp({render: () => h(DockWrapper, {item: REPORT_DOCK}), provide: {[WINDOW_CONTEXT]: context({})}}), element);
     mounted.push(element);
     await settled();
     expect(element.textContent).toContain("Report 1146: What the review found");
@@ -145,7 +152,7 @@ test("docked items: a declared button goes the moment it is pressed, and comes b
     let answer;
     vi.stubGlobal("fetch", perLine(() => new Promise((resolve) => (answer = resolve))));
     const element = document.createElement("div");
-    createApp({setup: () => () => h(DockWrapper, {item: ITEM}), provide: {[WINDOW_CONTEXT]: {environment: "main"}}}).mount(element);
+    mountedApp(createApp({setup: () => () => h(DockWrapper, {item: ITEM}), provide: {[WINDOW_CONTEXT]: {environment: "main"}}}), element);
     mounted.push(element);
     await settled();
     const button = () => element.querySelector("[data-dock-action='declared']");
@@ -163,7 +170,7 @@ test("docked items: a declared button goes the moment it is pressed, and comes b
 test("a refused close of a docked card says why on the card", async () => {
     vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 1, error: "this card stays"})})));
     const element = document.createElement("div");
-    createApp({setup: () => () => h(DockStack, {items: [REPORT_DOCK]}), provide: {[WINDOW_CONTEXT]: {environment: "main"}}}).mount(element);
+    mountedApp(createApp({setup: () => () => h(DockStack, {items: [REPORT_DOCK]}), provide: {[WINDOW_CONTEXT]: {environment: "main"}}}), element);
     mounted.push(element);
     await settled();
     element.querySelector("[data-dock-action='undock']").click();
@@ -311,7 +318,7 @@ test("bars: each window button carries its own icon before its own label", async
     vi.stubGlobal("innerWidth", 1280);
     const element = document.createElement("div");
     document.body.append(element);
-    createApp(() => h(PaneStage, {store, catalogue, subscriptions: new WindowSubscriptions(), environment: "main", face: "person"})).mount(element);
+    mountedApp(createApp(() => h(PaneStage, {store, catalogue, subscriptions: new WindowSubscriptions(), environment: "main", face: "person"})), element);
     mounted.push(element);
     await nextTick();
     await settled();

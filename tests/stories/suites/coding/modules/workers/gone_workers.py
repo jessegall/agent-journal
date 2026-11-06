@@ -83,11 +83,12 @@ def test_a_send_after_a_tick_ended_the_worker_restarts_it(ended_worker):
 
 def test_a_send_finds_a_process_gone_before_the_tick_does_and_restarts_the_worker(running_worker):
     running_worker.use_processes()
-    launcher = start_launcher(running_worker, b"started\n")
+    launcher = start_launcher(running_worker, b"started\n", request_count=2)
     running_worker.expect_text(f'worker send {running_worker.worker.id} "Add the tax"', "was not running: the job starts it again", actor=running_worker.agent)
     running_worker.expect_text(f"agent show {running_worker.worker.id}", "ended_at: 2026")
     running_worker.run_listeners()
     expect_restart(running_worker, launcher)
+    running_worker.expect_rows("stop" in launcher.requests[0], "command" in launcher.requests[1])
 
 
 def test_a_send_to_a_running_worker_says_it_takes_the_job(running_worker):
