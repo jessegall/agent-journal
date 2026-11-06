@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_key_line import WindowKeyLine
 from server.viewer.line_route import LineRoute
+from server.viewer.shared_row import SharedRow
 from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.viewer_lines_request import ViewerLinesRequest
 from server.viewer.viewer_request_error import ViewerRequestError
@@ -24,15 +25,15 @@ class WindowDataRoute:
             raise ViewerRequestError(f"no window {window}")
         return declaration.keys
 
-    def answer(self, request: WindowDataRequest, person_id: int) -> WindowDataAnswer:
+    def answer(self, request: WindowDataRequest, person_id: int, shared: SharedRow | None = None) -> WindowDataAnswer:
         keys = request.selected_keys(self.declared(request.window))
         lines = [ViewerLineRequest(request.window, key.line(request.state), request.environment) for key in keys]
-        self.replace_answered_lines(keys, lines, request, person_id)
-        return WindowDataAnswer(keys, tuple(lines), self.lines.timed_answers(ViewerLinesRequest(list(lines)), person_id), self.declared(request.window))
+        self.replace_answered_lines(keys, lines, request, person_id, shared)
+        return WindowDataAnswer(keys, tuple(lines), self.lines.timed_answers(ViewerLinesRequest(list(lines)), person_id, shared), self.declared(request.window))
 
-    def replace_answered_lines(self, keys: Sequence[WindowKey], lines: list[ViewerLineRequest], request: WindowDataRequest, person_id: int) -> None:
+    def replace_answered_lines(self, keys: Sequence[WindowKey], lines: list[ViewerLineRequest], request: WindowDataRequest, person_id: int, shared: SharedRow | None) -> None:
         places = [place for place, key in enumerate(keys) if key.answered_line]
-        answers = self.lines.timed_answers(ViewerLinesRequest([lines[place] for place in places]), person_id)
+        answers = self.lines.timed_answers(ViewerLinesRequest([lines[place] for place in places]), person_id, shared)
         for place, timed in zip(places, answers):
             if timed.answer.code != 0:
                 continue

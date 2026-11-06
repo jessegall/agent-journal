@@ -146,14 +146,14 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(401, {"error": "open the address journal viewer prints to log in"})
             return
         session = viewer.login.session(token)
-        if session.type is SessionType.SHARE and route.path.startswith("/api/") and route.path not in (SESSION_ROUTE, EVENTS_ROUTE, SHARE_COMMENTS_ROUTE):
+        if session.type is SessionType.SHARE and route.path.startswith("/api/") and route.path not in (SESSION_ROUTE, EVENTS_ROUTE, SHARE_COMMENTS_ROUTE, WINDOW_ROUTE):
             self.answer(403, {"error": "a share link opens only the row it shares"})
             return
         if route.path.startswith(MESSAGE_FILES):
             self.answer_message_file(viewer, route.path.removeprefix(MESSAGE_FILES))
             return
         if route.path == WINDOW_ROUTE:
-            self.answer_window_data(viewer, viewer.login.person_id(token), route.query)
+            self.answer_window_data(viewer, session, viewer.login.person_id(token), route.query)
             return
         if route.path == WINDOWS_ROUTE:
             try:
@@ -316,11 +316,11 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.viewer().untrack_request()
         event_stream.follow(request, self.stream_message, shared)
 
-    def answer_window_data(self, viewer: ViewerServer, person_id: int, query: str) -> None:
+    def answer_window_data(self, viewer: ViewerServer, session: ViewerSession, person_id: int, query: str) -> None:
         try:
             request = WindowDataRequest.parsed(self.headers.get(WINDOW_HEADER), self.headers.get(KEYS_HEADER), query)
             started_at, received_at, request_id = perf_counter(), datetime.now(timezone.utc).isoformat(), str(uuid4())
-            answer = viewer.routes.window_data.answer(request, person_id)
+            answer = viewer.routes.window_data.answer(request, person_id, session.shared)
         except ViewerRequestError as error:
             self.answer(400, {"error": str(error)})
             return
