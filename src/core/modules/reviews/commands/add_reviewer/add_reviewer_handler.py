@@ -1,3 +1,5 @@
+from core.base.actor import Actor
+from core.base.shell_sandbox import ShellSandbox
 from core.base.agent_role import AgentRole
 from core.base.command.bus import Bus
 from core.base.command.context import Context
@@ -15,9 +17,14 @@ class AddReviewerHandler(Handler[AddReviewer, Reviewer]):
     """Starts the agent session of a new reviewer and saves the reviewer under the agent's number."""
 
     command = AddReviewer
+    caller_prepares = True
 
-    def __init__(self, reviewers: ReviewerQuery, settings: ReviewSettings, bus: Bus, repository: Repository) -> None:
+    def __init__(self, reviewers: ReviewerQuery, settings: ReviewSettings, bus: Bus, repository: Repository, sandbox: ShellSandbox) -> None:
+        self.sandbox = sandbox
         self.reviewers, self.settings, self.bus, self.repository = reviewers, settings, bus, repository
+
+    def prepare(self, command: AddReviewer, actor: Actor) -> None:
+        self.sandbox.check()
 
     def handle(self, command: AddReviewer, context: Context) -> Reviewer:
         if context.environment_id is None:

@@ -1,5 +1,5 @@
 from core.base.command.bus import Bus
-from core.modules.agents.commands.stop_agent.stop_agent import StopAgent
+from suites.coding.modules.workers.commands.end_idle_worker.end_idle_worker import EndIdleWorker
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.worktree_samples import commit_in_worktree
@@ -8,7 +8,7 @@ REASON = '--reason "Its work is finished"'
 
 
 def stopped(story, worker) -> None:
-    story.container.get(Bus).run(StopAgent(worker.id, retain_tasks=True), story.agent)
+    story.container.get(Bus).run(EndIdleWorker(worker.id), story.agent)
 
 
 def test_a_worker_with_unmerged_work_is_not_retired(new_story):

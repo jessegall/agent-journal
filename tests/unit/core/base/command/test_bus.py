@@ -44,6 +44,18 @@ RECORDED_CONTEXTS: list[Context] = []
 
 
 @dataclass(frozen=True)
+class PreparedItem(Command[Item]):
+    title: str
+
+
+class PreparedItemHandler(Handler[PreparedItem, Item]):
+    command = PreparedItem
+
+    def prepare(self, command: PreparedItem, actor: Actor) -> None:
+        return None
+
+
+@dataclass(frozen=True)
 class ItemPair(Command[Item]):
     first: str
     second: str
@@ -292,7 +304,7 @@ def handlers(*pairs: tuple[type, type]) -> dict[str, DottedPath]:
 
 @pytest.fixture
 def container(tmp_path):
-    registry = Registry("abc", {}, handlers((MakeCommand, MakeHandler), (MoveCommand, MoveHandler), (ItemPair, ItemPairHandler), (BlockedItem, BlockedItemHandler)), {}, (),
+    registry = Registry("abc", {}, handlers((PreparedItem, PreparedItemHandler), (MakeCommand, MakeHandler), (MoveCommand, MoveHandler), (ItemPair, ItemPairHandler), (BlockedItem, BlockedItemHandler)), {}, (),
                         [ListenerEntry(TryARefusedItem.name, EventPattern(TryARefusedItem.event), ListenerTiming.SAVE, DottedPath.class_path(TryARefusedItem), 1)])
     return sample_container(tmp_path, registry)
 
@@ -415,3 +427,10 @@ def test_a_container_nobody_opened_runs_no_outside_work_and_says_why(outside_con
     outside_container.instances.pop(Bus, None)
     outside_container.get(Bus).run(EndlessItem("Dune"), AGENT)
     assert ROUNDS == [1] and WORK_RUNS == []
+
+
+def test_a_dispatch_refuses_a_handler_with_a_prepare_step(container):
+    bus = container.get(Bus)
+    command = PreparedItem("Dune")
+    with container.get(Database).transaction(), pytest.raises(TransactionError, match="has a prepare step"):
+        bus.dispatch(command, Context(AGENT, bus.clock.timestamp(), command))

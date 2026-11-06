@@ -1,6 +1,8 @@
 from uuid import uuid4
 from dataclasses import replace
 
+from core.base.actor import Actor
+from core.base.shell_sandbox import ShellSandbox
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -31,10 +33,14 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
 
     command = StartHelper
 
-    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, launcher: LauncherLink, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers, sources: WorkSources) -> None:
+    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, launcher: LauncherLink, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers, sources: WorkSources, sandbox: ShellSandbox) -> None:
+        self.sandbox = sandbox
         self.profiles, self.types, self.limits, self.launcher, self.bus, self.repository, self.reuse = profiles, types, limits, launcher, bus, repository, reuse
         self.programs, self.folders, self.providers = programs, folders, providers
         self.sources = sources
+
+    def prepare(self, command: StartHelper, actor: Actor) -> None:
+        self.sandbox.check()
 
     def handle(self, command: StartHelper, context: Context) -> Agent:
         if len(command.brief) > BRIEF_LIMIT_CHARACTERS:
