@@ -1,0 +1,40 @@
+import threading
+import time
+
+from server.hook.queue_priority import QueuePriority
+from server.hook.queue_round_yield import QueueRoundYield
+from server.hook.server_queue import ServerQueue
+
+WAIT_SECONDS = 5.0
+
+
+def test_a_round_with_no_hook_running_or_waiting_goes_on_at_once():
+    started = time.monotonic()
+    QueueRoundYield(ServerQueue()).give_way()
+    assert time.monotonic() - started < 0.5
+
+
+def test_a_round_waits_while_a_hook_runs_and_goes_on_when_it_ends():
+    queue, waited = ServerQueue(), []
+    round_yield = QueueRoundYield(queue, WAIT_SECONDS)
+
+    def round_between_events() -> None:
+        started = time.monotonic()
+        round_yield.give_way()
+        waited.append(time.monotonic() - started)
+
+    with queue.hook_turn(QueuePriority.MAIN_AGENT_HOOK, WAIT_SECONDS):
+        thread = threading.Thread(target=round_between_events)
+        thread.start()
+        time.sleep(0.3)
+        assert thread.is_alive()
+    thread.join(WAIT_SECONDS)
+    assert not thread.is_alive() and waited[0] >= 0.3
+
+
+def test_a_round_gives_up_waiting_at_its_limit_so_busy_hooks_never_stop_it():
+    queue = ServerQueue()
+    with queue.hook_turn(QueuePriority.MAIN_AGENT_HOOK, WAIT_SECONDS):
+        started = time.monotonic()
+        QueueRoundYield(queue, 0.2).give_way()
+        assert 0.15 <= time.monotonic() - started < 2.0

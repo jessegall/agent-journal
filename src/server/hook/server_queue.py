@@ -86,6 +86,15 @@ class ServerQueue(RequestQueue):
                     return
                 self.changed.wait(remaining)
 
+    def wait_for_hooks(self, limit_seconds: float) -> None:
+        deadline = monotonic() + limit_seconds
+        with self.changed:
+            while self.running_owners or self.waiting_hooks:
+                remaining = deadline - monotonic()
+                if remaining <= 0:
+                    return
+                self.changed.wait(remaining)
+
     @property
     def running_hooks(self) -> int:
         return len(self.running_owners)
