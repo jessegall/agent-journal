@@ -57,7 +57,10 @@ class PluginEventListener(SaveListener[Changed[Model]]):
         if not subscriptions:
             return
         row = change.row
-        event_id = max(logged.id for logged in self.log.row_events(self.tables.table(type(row)).name, row.id) if logged.event == log_name)
+        logged = self.log.latest_row(self.tables.table(type(row)).name, row.id, [log_name])
+        if logged is None:
+            raise ValueError(f"no {log_name} event was written for row {row.id}")
+        event_id = logged.id
         data = json.dumps(PluginPayload.change_payload(change, EventForm.COMMIT, self.log, event_id))
         environment_id = PluginPayload.environment_id(change)
         agent_id = context.actor.id if context.actor.type is ActorType.AGENT else None
