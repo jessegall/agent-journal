@@ -37,6 +37,12 @@ class ReportingRequestWatch(RequestWatch):
             original.add(work.points().minus(start_points))
             self.report(argv, work.findings)
 
+    def report_repeated_lines(self, window: str, line: str, count: int) -> None:
+        if not self.settings.project.flag(REPEATED_WORK_SETTING):
+            return
+        text = f"the window {window} sent {count} lines of {line} in a short time, each for another id: it should read them in one line"
+        self.report([window], [RepeatedFinding(f"viewer lines {window} {line}", text)])
+
     def report(self, argv: list[str], findings: list[RepeatedFinding]) -> None:
         for finding in self.reported.unreported(findings):
             self.errors.reported(argv, RepeatedCallsError(finding.text))

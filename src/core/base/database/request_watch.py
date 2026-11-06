@@ -7,3 +7,6 @@ class RequestWatch:
 
     def watching(self, argv: list[str]) -> AbstractContextManager[None]:
         return nullcontext()
+
+    def report_repeated_lines(self, window: str, line: str, count: int) -> None:
+        return None

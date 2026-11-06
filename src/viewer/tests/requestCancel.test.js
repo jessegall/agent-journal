@@ -50,7 +50,7 @@ test("a window still shown draws its answer", async () => {
     drawn.value = "";
     const waiting = slowFetch();
     mounted();
-    await new Promise((resolve) => setTimeout(resolve));
+    await new Promise((resolve) => setTimeout(resolve, 5));
     waiting.forEach((answer) => answer("rows"));
     await new Promise((resolve) => setTimeout(resolve));
     expect(drawn.value).toBe("rows rows");

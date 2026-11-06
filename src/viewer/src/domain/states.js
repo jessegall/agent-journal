@@ -1,9 +1,10 @@
+import {transport} from "../api/transport.js";
 import {wordLabel} from "./labels.js";
 
 // the states the installed modules add, by type of row and word, read once when the windows start
 let added = {};
 
-export async function loadStates(read = fetch) {
+export async function loadStates(read = (url) => transport.raw(url)) {
     const answer = await read("/api/states").catch(() => null);
     if (answer?.ok) added = (await answer.json()).states;
 }

@@ -37,7 +37,7 @@ async function loadRow() {
     const noun = cliOf(props.item.target_model ?? "");
     const line = `${noun} show`;
     if (!declaration.value?.reads?.includes(line)) return;
-    const answer = await lineResult(props.item.type, [noun, "show", String(props.item.target_id)], context.environment);
+    const answer = await lineResult(props.item.type, [noun, "show", String(props.item.target_id)], context.environment, context.signal);
     if (turn !== reading) return;
     row.value = answer.ok ? {...answer.value, id: props.item.target_id, noun} : {id: props.item.target_id, noun};
 }

@@ -1,3 +1,4 @@
+import {transport} from "../api/transport.js";
 import {reloadWhenFree} from "../platform/busyField.js";
 
 const STORAGE_KEY = "journal.stale-build-reload";
@@ -5,7 +6,7 @@ const BUNDLE = 'script[type="module"][src*="/assets/index-"]';
 const bundleOf = (page) => page.querySelector(BUNDLE)?.getAttribute("src") ?? "";
 
 // after a restart a tab may hold an older build than the server now serves, and only a new page load brings the new one; a field being typed in holds the reload
-export async function reloadIfNewBuild(page = document, ask = fetch, reload = () => reloadWhenFree(window)) {
+export async function reloadIfNewBuild(page = document, ask = (url, init) => transport.quietRead(url, init), reload = () => reloadWhenFree(window)) {
     const running = bundleOf(page);
     const answer = running ? await ask("/viewer/", {cache: "no-store"}).catch(() => null) : null;
     if (!answer?.ok) return false;

@@ -45,6 +45,8 @@ VENDOR_ROUTE = "/viewer/vendor/"
 SHELL_PAGE = "index.html"
 LINE_ROUTE = "/api/line"
 LINES_ROUTE = "/api/lines"
+READ_LINES_ROUTE = "/api/read-lines"
+REPEATED_LINES_ROUTE = "/api/repeated-lines"
 EVENTS_ROUTE = "/api/events"
 SHARE_COMMENTS_ROUTE = "/api/share/comments"
 WINDOWS_ROUTE = "/api/windows"
@@ -151,6 +153,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if route.path == SESSION_ROUTE:
             self.answer(200, asdict(viewer.routes.session_route.answer(token)))
             return
+        if route.path == READ_LINES_ROUTE:
+            self.answer(200, {"reads": viewer.routes.line_route.read_lines()})
+            return
         if route.path == SHARE_COMMENTS_ROUTE:
             self.answer_share_comments(viewer, viewer.login.session(token), None)
             return
@@ -199,6 +204,11 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if urlsplit(self.path).path == LINES_ROUTE:
             self.answer_lines(viewer, token, body)
             return
+        if urlsplit(self.path).path == REPEATED_LINES_ROUTE:
+            report = json.loads(body or b"{}")
+            viewer.routes.line_route.report_repeated_lines(str(report.get("window", "")), str(report.get("line", "")), int(report.get("count", 0)))
+            self.answer(200, {})
+            return
         if urlsplit(self.path).path != LINE_ROUTE:
             self.answer(404, {"error": f"no route {self.path}"})
             return
@@ -242,7 +252,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(400, {"error": str(error)})
             return
         if shared is not None:
-            request = replace(request, environment=shares.environment_name(shared.environment_id))
+            request = replace(request, environments=(shares.environment_name(shared.environment_id),))
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Cache-Control", "no-store")
@@ -270,11 +280,10 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             first_window = min((line.window for _, line in command_lines), key=viewer.routes.priorities.priority)
             with viewer.routes.queue.viewer_turn("; ".join(" ".join(line.line) for _, line in command_lines), first_window, viewer.routes.priorities.priority(first_window)):
                 queued_ms = (perf_counter() - started_at) * 1000
-                command_answers = viewer.routes.line_route.answers(ViewerLinesRequest([line for _, line in command_lines]), person_id, session.shared)
-            duration_ms = (perf_counter() - started_at) * 1000
-            for (index, line), answer in zip(command_lines, command_answers, strict=True):
-                answers[index] = answer
-                RequestLog(viewer.routes.line_route.line_run.home).record(line.line, "viewer", duration_ms, queued_ms, answer.code)
+                command_answers = viewer.routes.line_route.timed_answers(ViewerLinesRequest([line for _, line in command_lines]), person_id, session.shared)
+            for (index, line), timed in zip(command_lines, command_answers, strict=True):
+                answers[index] = timed.answer
+                RequestLog(viewer.routes.line_route.line_run.home).record(line.line, "viewer", timed.duration_ms, queued_ms, timed.answer.code)
         self.answer(200, {"answers": [asdict(answers[index]) for index in range(len(request.lines))]})
 
     def answer_share_comments(self, viewer: ViewerServer, session: ViewerSession, body: bytes | None) -> None:
