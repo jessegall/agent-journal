@@ -88,8 +88,8 @@ class TaskQuery(Query[Task]):
         return SubqueryMatch("id", Select("phase_tasks").matching(SubqueryMatch("phase_id", unapproved_phases)).column("task_id"), negated=True)
 
     def next_open(self, excluded_id: int | None, exclusion: Condition) -> Task | None:
-        free_tasks = self.open_tasks().matching(IsNull("delegated_to")).matching(self.no_open_dependency()).matching(exclusion).all_rows()
-        return min((task for task in free_tasks if task.id != excluded_id), key=lambda task: (-task.priority, task.id), default=None)
+        free_tasks = self.open_tasks().matching(IsNull("delegated_to")).matching(self.no_open_dependency()).matching(exclusion)
+        return (free_tasks if excluded_id is None else free_tasks.matching(Among("id", (excluded_id,), negated=True))).descending("priority").ordered("id").first()
 
 
     def closed_counts(self, starts: Sequence[Timestamp]) -> list[int]:

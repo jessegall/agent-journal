@@ -9,9 +9,9 @@ from core.base.query.conditions.has_value import HasValue
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.query.query import Query
+from core.modules.memories.models.enums.memory_order import MemoryOrder
 from core.modules.memories.models.memory import Memory
 
-ORDERS = ("newest", "weight")
 SEARCHED_COLUMNS = ("text", "reason")
 
 
@@ -27,7 +27,7 @@ class MemoryListSubcommand(ListSubcommand):
         parser.add_argument("--main-agent", action="store_true")
         parser.add_argument("--other-agents", action="store_true")
         parser.add_argument("--search", default="")
-        parser.add_argument("--order", choices=ORDERS, default=ORDERS[0])
+        parser.add_argument("--order", type=MemoryOrder, choices=tuple(MemoryOrder), default=MemoryOrder.NEWEST)
 
     def refined(self, query: Query[Model], arguments: Namespace) -> Query[Model]:
         if arguments.main_agent:
@@ -36,4 +36,4 @@ class MemoryListSubcommand(ListSubcommand):
             query = query.matching(HasValue("agent_id"))
         if arguments.search.split():
             query = query.matching(ContainsEvery(SEARCHED_COLUMNS, arguments.search.split()))
-        return query.descending("weight") if arguments.order == "weight" else query
+        return query.descending("weight") if arguments.order is MemoryOrder.WEIGHT else query
