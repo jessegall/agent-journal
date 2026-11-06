@@ -24,12 +24,6 @@
         ],
         "reject": [
             {
-                "all": [
-                    {"of": "parent", "name": "line"},
-                    {"of": "parent/parent", "child": {"nameIn": ["events", "loading", "page_size"]}}
-                ]
-            },
-            {
                 "textLike": "For example*"
             },
             {
