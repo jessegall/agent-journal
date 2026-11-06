@@ -95,6 +95,8 @@ never starts is retired after the idle time.
 - Prove each one with `journal proof make <point> --task <task> "<file:line, and the test>" --test "<command>"`: the journal runs that
   test command in your worktree. A proof with no test waits for the main agent's check.
 - Correct your own unchecked proof with `journal proof edit <proof> --task <task> "<text>" --test "<command>"`, or with `journal proof make` again for the same point. The main agent can return a checked proof with `journal proof short <proof> "<reason>"`.
+- Before you hand in, run `journal sins --changes` over your own changes and fix each finding at its source. What it
+  still finds after the merge comes back to you.
 - At each hand-in, say what you did differently from the task or left out: `journal worker next --differences "<what>"`,
   or `--differences none`; the same goes for `journal worker deliver`.
 - `journal worker next` hands your task over for testing: the plugins judge your changes, a refusal says what to put

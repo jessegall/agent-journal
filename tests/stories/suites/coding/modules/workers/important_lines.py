@@ -1,13 +1,13 @@
 from core.base.actor import Actor
 from core.base.command.bus import Bus
 from suites.coding.modules.workers.commands.record_own_test_failure.record_own_test_failure import RecordOwnTestFailure
-from suites.coding.modules.workers.support.worker_test_failures import WorkerTestFailures
+from suites.coding.modules.workers.support.worker_test_failures import ALL_RUN_TESTS, WorkerTestFailures
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, FIRST_PROOF, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
-LEFT_OUT = "Left out the phone width, no test exists for it"
-OWN_LINE = "python3 -m pytest tests/stories/cart.py -q"
+OMISSION = "Left out the phone width, no test exists for it"
+WORKER_RUN_LINE = "python3 -m pytest tests/stories/cart.py -q"
 
 
 def proved_worker(story):
@@ -28,9 +28,9 @@ def test_a_hand_in_must_say_what_differs_from_the_task(new_story):
 def test_a_difference_is_an_important_line_the_merge_asks_an_answer_to(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository, worker = proved_worker(story)
-    story.expect_success(f'worker deliver --differences "{LEFT_OUT}"', actor=worker)
+    story.expect_success(f'worker deliver --differences "{OMISSION}"', actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
-    story.expect_text(f"worker logs {worker.id}", f"! {LEFT_OUT}", actor=story.agent)
+    story.expect_text(f"worker logs {worker.id}", f"! {OMISSION}", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_refusal(f"worker merge {worker.id}", "important log lines you have not answered", actor=story.agent)
     story.expect_success(f'worker merge {worker.id} --read-important "The phone width follows in its own task"', actor=story.agent)
@@ -63,13 +63,13 @@ def test_a_test_failing_five_times_in_a_workers_own_runs_is_kept_from_the_worker
     _, worker = proved_worker(story)
     bus = story.container.get(Bus)
     for _ in range(5):
-        bus.run(RecordOwnTestFailure(worker.id, 1, OWN_LINE), Actor.core(), environment_id=1)
-    assert "failed 5 times" not in story.run("task overview 1", actor=worker).output_text
+        bus.run(RecordOwnTestFailure(worker.id, 1, WORKER_RUN_LINE), Actor.core(), environment_id=1)
+    story.expect_rows("failed 5 times" not in story.run("task overview 1", actor=worker).output_text)
     story.expect_success("worker deliver --differences none", actor=worker)
     story.expect_text(f"worker logs {worker.id}", "! its own runs failed 5 times: tests/stories/cart.py", actor=story.agent)
 
 
-def test_a_failed_run_is_counted_for_each_test_file_it_names():
-    story_line = "vitest run tests/windowData.test.js tests/chat_test.go --reporter=dot"
-    assert WorkerTestFailures.test_names(story_line) == ("tests/windowData.test.js", "tests/chat_test.go")
-    assert WorkerTestFailures.test_names("journal viewer-tests") == ("the whole run",)
+def test_a_failed_run_is_counted_for_each_test_file_it_names(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    story.expect_rows(WorkerTestFailures.test_names("vitest run tests/windowData.test.js tests/chat_test.go --reporter=dot") == ["tests/windowData.test.js", "tests/chat_test.go"],
+                      WorkerTestFailures.test_names("journal viewer-tests") == [ALL_RUN_TESTS])

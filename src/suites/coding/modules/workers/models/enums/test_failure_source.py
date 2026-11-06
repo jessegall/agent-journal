@@ -4,5 +4,5 @@ from enum import StrEnum
 class TestFailureSource(StrEnum):
     """Where a worker's failed test ran: in the journal's run of a hand-in, or in the worker's own run."""
 
-    HAND_IN = "hand_in"
-    OWN_RUN = "own_run"
+    DELIVERY = "delivery"
+    WORKER_RUN = "worker_run"
