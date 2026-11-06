@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.clock import Clock
 from core.base.query.queries import Queries
+from core.base.scope.actor_scope import ActorScope
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
@@ -15,6 +16,7 @@ class UsageFitnessSubcommand(ReadSubcommand[AgentFitness]):
 
     cli_name = "usage"
     name = "fitness"
+    disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, measures: FitnessMeasures, clock: Clock) -> None:
         self.queries, self.measures, self.clock = queries, measures, clock

@@ -1,6 +1,7 @@
 import json
 
 from datetime import timedelta
+from unittest.mock import patch
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
@@ -119,3 +120,19 @@ def expect_nudge(nudge, expected) -> None:
 def expect_endswith_nudge(nudge, text) -> None:
     actual = nudge.text.endswith(text)
     assert actual, actual
+
+
+def test_many_nudges_read_records_together(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    log = story.container.get(NudgeLog)
+    database = story.container.get(Database)
+    nudges = [Nudge(f"sample.{number}", NudgeType.STEERING, f"Line {number}") for number in range(12)]
+    answer = RuleAnswer.with_nudges(*nudges)
+    answers = RuleAnswers(["lead"], [RuleRecord("sample", "lead", answer.outcome, answer)])
+    context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
+    with patch.object(database, "rows", wraps=database.rows) as reads:
+        log.skipped_lines(story.agent.id, answers, context.timestamp)
+        with database.transaction():
+            log.write(story.agent.id, answers, context)
+    record_reads = [call for call in reads.call_args_list if "SELECT * FROM nudge_records" in call.args[0].sql]
+    expect_value(len(record_reads), 1)
