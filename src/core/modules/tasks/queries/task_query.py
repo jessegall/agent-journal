@@ -7,6 +7,7 @@ from typing import Self
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.model.tables import Tables
+from core.base.query.conditions.among import Among
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.query import Query
 from core.base.query.condition import Condition
@@ -15,6 +16,8 @@ from core.base.query.select import Select
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.open_dependency import OpenDependency
+
+UNAPPROVED_PLAN_STATES = ("draft", "ready")
 
 
 class TaskQuery(Query[Task]):
@@ -74,7 +77,13 @@ class TaskQuery(Query[Task]):
 
     def waiting_for_a_worker(self) -> Self:
         running_worker = SubqueryMatch("delegated_to", Select("agents").matching(IsNull("ended_at")).column("id"))
-        return self.open_tasks().matching(SubqueryMatch("id", Select("tasks").matching(running_worker).column("id"), negated=True))
+        return self.open_tasks().matching(SubqueryMatch("id", Select("tasks").matching(running_worker).column("id"), negated=True)).matching(self.not_in_unapproved_plan())
+
+    def not_in_unapproved_plan(self) -> Condition:
+        """Leaves out tasks in a phase of a plan the user has not approved, since no worker may start one."""
+        unapproved_plans = Select("plans").matching(Among("state", UNAPPROVED_PLAN_STATES)).column("id")
+        unapproved_phases = Select("phases").matching(SubqueryMatch("plan_id", unapproved_plans)).column("id")
+        return SubqueryMatch("id", Select("phase_tasks").matching(SubqueryMatch("phase_id", unapproved_phases)).column("task_id"), negated=True)
 
     def next_open(self, excluded_id: int | None, exclusion: Condition) -> Task | None:
         free_tasks = self.open_tasks().matching(IsNull("delegated_to")).matching(self.no_open_dependency()).matching(exclusion).all_rows()
