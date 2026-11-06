@@ -104,8 +104,10 @@ def test_context_continuations_do_not_change_work_source(linked_trail):
 
 @pending(6890)
 def test_overview_includes_source_comment_and_original_message(linked_trail):
+    before = linked_trail.source_rows(linked_trail.story.agent.id)
     outcome = linked_trail.command("task overview 1")
     feature("Original cart request" in outcome.output_text and "Implement the cart request" in outcome.output_text, outcome.output_text)
+    feature(before == linked_trail.source_rows(linked_trail.story.agent.id), "overview changed the selected source")
 
 
 @pending(6890)
@@ -154,9 +156,15 @@ def test_plan_comments_and_report_references_reach_task_overview(linked_trail):
     linked_trail.command("phase place 1 --phase 1")
     linked_trail.person("viewer.shell", "plan", "comment", "1", "Keep the plan approval details")
     linked_trail.command('report make "Plan findings" --abstract "Findings" --body "A long report body" --about plan:1')
+    linked_trail.command('doc make "Cart design" --body "A long design body"')
+    linked_trail.command('plan edit 1 --document-id 1')
+    linked_trail.command('plan ready 1')
+    linked_trail.person("messages.chat", "plan", "approve", "1", "--message", "Approved cart scope")
     outcome = linked_trail.command("task overview 1")
     feature("Keep the plan approval details" in outcome.output_text and "Plan findings" in outcome.output_text, outcome.output_text)
     feature("A long report body" not in outcome.output_text, "overview expanded a report instead of naming it")
+    feature("Cart design" in outcome.output_text and "Plan approval" in outcome.output_text, outcome.output_text)
+    feature("A long design body" not in outcome.output_text, "overview expanded the design body")
 
 
 def test_text_continuation_cannot_open_an_unrelated_message(linked_trail):

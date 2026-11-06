@@ -1,5 +1,5 @@
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_comment import TaskComment
@@ -22,11 +22,12 @@ class TaskBrief:
         older_comments = self.comment_total - len(self.comments)
         if older_comments > 0:
             lines.append(f"{older_comments} older comments: journal task comments {self.task.id}")
-        lines += [f"message {comment.message_id}:\n" + "\n".join(f"> {line}" for line in comment.text.splitlines()) for comment in self.comments] or [f"no comments on task {self.task.id}"]
+        lines += [f"message {comment.message_id}:\n" + "\n".join(f"> {line}" for line in comment.text.splitlines()) +
+                  (f"\n{comment.next_command}" if comment.next_command is not None else "") for comment in self.comments] or [f"no comments on task {self.task.id}"]
         older_logs = self.log_total - len(self.log_lines)
         if older_logs > 0:
             lines.append(f"{older_logs} older log lines: journal task-log list --task {self.task.id}")
-        return [*lines, *(f"log: {line}" for line in self.log_lines), *self.context.lines()]
+        return [*lines, *(f"log: {part}" for line in self.log_lines for part in line.splitlines()), *self.context.lines()]
 
     def json(self) -> Mapping[str, object]:
-        return {"id": self.task.id, "title": self.task.title, "brief": self.task.brief, "comments": [{"id": comment.message_id, "text": comment.text} for comment in self.comments], "comment_total": self.comment_total, "log": list(self.log_lines), "log_total": self.log_total, "context": self.context.json()}
+        return {"id": self.task.id, "title": self.task.title, "brief": self.task.brief, "comments": [asdict(comment) for comment in self.comments], "comment_total": self.comment_total, "log": list(self.log_lines), "log_total": self.log_total, "context": self.context.json()}

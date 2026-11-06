@@ -29,8 +29,10 @@ class ReadTaskBriefHandler(Handler[ReadTaskBrief, TaskBrief]):
         conversation = self.reader.overview(task, Caller(context.actor, context.environment_id))
         comments = self.comments.query(task)
         comment_total = comments.count()
-        comments = comments.with_select(comments.select.column(MessageTextSegment(0, 1599).columns(comments.table.columns)))
-        recent_comments = tuple(TaskComment(message.id, message.text) for message in reversed(comments.newest().limited(5)))
+        comments = comments.with_select(comments.select.column(MessageTextSegment(0, 1600).columns(comments.table.columns)))
+        recent_comments = tuple(TaskComment(message.id, message.text[:1600],
+                               f"journal task context {task.id} --message {message.id} --text-offset 1600" if len(message.text) > 1600 else None)
+                               for message in reversed(comments.newest().limited(5)))
         logs = self.queries.query(TaskLog).filter(task_id=task.id)
         log_total = logs.count()
         log_lines = tuple(log.line for log in reversed(logs.newest().limited(5)))
