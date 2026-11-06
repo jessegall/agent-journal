@@ -3,9 +3,10 @@ export const DOES = [
     {key: "nudge", value: "nudge", label: "Remind the agent", hint: "A short note only the agent sees. It carries on with its work.", ask: "What to remind the agent of", example: "Add the change to src/CHANGELOG.md in plain words."},
     {key: "instruct", value: "instruct", label: "Tell the agent to do something now", hint: "The agent sees “Do this now:” followed by your text.", ask: "What the agent should do", example: "Stop and ask me before you touch the database."},
     {key: "deny", value: "deny", label: "Block a command or file change", hint: "The command or file change is refused, and the agent is given your reason.", ask: "Reason the agent is given", example: "Never force-push. Ask me first."},
+    {key: "skill", value: "skill", label: "Make the agent read a skill", hint: "The agent must read the skill before it continues.", ask: "Which skill the agent must read", example: "journal-plans"},
 ];
 
-export const TIME_DOES = DOES.filter((option) => option.value !== "deny");
+export const TIME_DOES = DOES.filter((option) => !["deny", "skill"].includes(option.value));
 
 export const EXAMPLES = [
     {name: "Block a command", phrases: ["push --force"], action: "deny", text: "Never force-push. Ask me first."},
@@ -70,6 +71,7 @@ function wordsText(words) {
 }
 
 const DOING = {
+    skill: (text) => `make the agent read ${text}`,
     nudge: (text) => `remind the agent ${text}`,
     instruct: (text) => `tell the agent to do this now: ${text}`,
     deny: (text) => `block it and tell the agent ${text}`,
@@ -82,7 +84,7 @@ const TIME_OPENINGS = {
 };
 
 export function sentence(trigger) {
-    const doing = DOING[trigger.action](trigger.text ? quoted(trigger.text) : "(no text yet)");
+    const doing = DOING[trigger.action](trigger.action === "skill" ? quoted(trigger.skill || "the skill") : trigger.text ? quoted(trigger.text) : "(no text yet)");
     if (trigger.type === "time") return `${TIME_OPENINGS[trigger.time](trigger)}, ${doing}.`;
     if (!trigger.phrases.length) return "Add the words to watch for and choose what happens.";
     return `When ${wordsText(trigger.phrases)} appears, ${doing}.`;

@@ -169,8 +169,8 @@ def test_a_read_only_helper_reads_and_writes_rows_of_its_own(new_story, helper_f
 
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
-@pytest.mark.parametrize("arguments", [("task", "close", "1"), ("task", "edit", "1"), ("doc", "delete", "1"), ("plan", "start", "1"), ("rule", "make", "x"), ("setting", "set", "a", "b")],
-                         ids=["close a task", "edit a task", "delete a doc", "start a plan", "make a rule", "set a setting"])
+@pytest.mark.parametrize("arguments", [("task", "close", "1"), ("task", "edit", "1"), ("task", "delete", "1"), ("plan", "start", "1"), ("rule", "make", "x"), ("setting", "set", "a", "b")],
+                         ids=["close a task", "edit a task", "delete a task", "start a plan", "make a rule", "set a setting"])
 def test_a_read_only_helper_writes_no_row_of_another(new_story, helper_fixture, arguments):
     story, session = helper_story(new_story, helper_fixture)
     story.expect_hook_refusal(session, journal_line(*arguments), OUTWARD_JOURNAL_LINE.nudge().text)

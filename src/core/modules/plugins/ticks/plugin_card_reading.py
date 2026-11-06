@@ -6,7 +6,7 @@ from core.base.container import Container
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
-from core.modules.plugins.queries.plugin_query import PluginQuery
+from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_queue import PluginQueue
 
@@ -18,7 +18,8 @@ class PluginCardReading:
     def __call__(self, container: Container) -> bool:
         queries, bus = container.get(Queries), container.get(Bus)
         outputs_added = 0
-        for plugin in container.get(PluginQuery).enabled_plugins():
+        for runnable in container.get(RunnablePlugins).running():
+            plugin = runnable.plugin
             queue = PluginQueue(container.get(PluginFolders).data(plugin.name))
             with closing(queue.claim_cards()) as claims:
                 for claim in claims:

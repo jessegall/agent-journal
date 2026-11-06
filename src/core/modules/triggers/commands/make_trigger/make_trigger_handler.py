@@ -1,4 +1,6 @@
 from dataclasses import asdict
+from core.modules.skills.support.skill_catalogue import SkillCatalogue
+from core.modules.triggers.models.enums.trigger_action import TriggerAction
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -14,10 +16,13 @@ class MakeTriggerHandler(Handler[MakeTrigger, Trigger]):
 
     command = MakeTrigger
 
-    def __init__(self, repository: Repository, approval: TriggerApproval) -> None:
-        self.repository, self.approval = repository, approval
+    def __init__(self, repository: Repository, approval: TriggerApproval, catalogue: SkillCatalogue) -> None:
+        self.repository, self.approval, self.catalogue = repository, approval, catalogue
 
     def handle(self, command: MakeTrigger, context: Context) -> Trigger:
         if not command.phrases:
             raise Refusal("a trigger needs a phrase", "give them as 'deploy, release'")
-        return self.repository.save(Trigger(creator_id=context.actor.id, phrases=tuple(command.phrases), action=command.action, text=command.text, needs_enabling=self.approval.needs_user(context.actor), **asdict(command.details)), context)
+        if command.action is TriggerAction.SKILL and not any(skill.folder == command.details.skill for skill in self.catalogue.skills()):
+            raise Refusal(f"skill {command.details.skill} is not available", "choose a skill from journal skill list")
+        text = f"Read {command.details.skill}" if command.action is TriggerAction.SKILL else command.text
+        return self.repository.save(Trigger(creator_id=context.actor.id, phrases=tuple(command.phrases), action=command.action, text=text, needs_enabling=self.approval.needs_user(context.actor), **asdict(command.details)), context)

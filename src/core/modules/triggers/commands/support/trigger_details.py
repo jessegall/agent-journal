@@ -9,6 +9,7 @@ from core.modules.triggers.models.trigger import ALL_PLACES
 class TriggerDetails:
     """What a new trigger holds besides what sets it off and its text, so one command saves all of it at once."""
 
+    skill: str | None = None
     name: str = ""
     description: str = ""
     watch_places: tuple[str, ...] = ALL_PLACES
@@ -18,6 +19,7 @@ class TriggerDetails:
 
     @staticmethod
     def add_arguments(parser: ArgumentParser) -> None:
+        parser.add_argument("--skill")
         parser.add_argument("--name", default="")
         parser.add_argument("--description", default="")
         parser.add_argument("--watch-places", nargs="+", default=ALL_PLACES)
@@ -27,4 +29,4 @@ class TriggerDetails:
 
     @classmethod
     def parsed(cls, arguments: Namespace) -> "TriggerDetails":
-        return cls(arguments.name, arguments.description, tuple(arguments.watch_places), arguments.match_mode, arguments.conditions, arguments.extra_actions)
+        return cls(arguments.skill, arguments.name, arguments.description, tuple(arguments.watch_places), arguments.match_mode, arguments.conditions, arguments.extra_actions)

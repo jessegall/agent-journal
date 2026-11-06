@@ -21,6 +21,7 @@ from core.base.timestamp import Timestamp
 from core.base.timing_log import TimingLog
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
+from core.base.database.reported_findings import ReportedFindings
 from server.booting_work import BootingWork
 from server.code_sync_work import CodeSyncWork
 from server.code_version import CodeVersion
@@ -98,7 +99,8 @@ def main(argv: list[str]) -> int:
     hook_database = HookDatabase(home)
     phones = PhoneSessions(home, listener_thread)
     login = ViewerLogin(phones, ShareSessions(phones.journal_output), SessionFile(home.viewer_sessions_file))
-    viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login), last_port(home), inherited_socket=waiting_server.viewer_socket() if waiting_server else None)
+    reported_findings = ReportedFindings()
+    viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login, reported_findings), last_port(home), inherited_socket=waiting_server.viewer_socket() if waiting_server else None)
     home.viewer_port_file.write_text(str(viewer.port))
     ticker_thread = ListenerThread(ticker.tick, lambda error: files.log_line(f"the ticker could not tick: {error}"), TICK_PERIOD_SECONDS, "ticker")
     tunnel = ServerTunnel(home)
@@ -115,7 +117,7 @@ def main(argv: list[str]) -> int:
     ticker.register(TickHandler(TickInterval(seconds=SERVICES_CHECK_SECONDS), lambda container: plugin_services.follow(), "plugin services", starts_immediately=True))
     ticker.register(TickHandler(TickInterval(seconds=HEALTH_CHECK_SECONDS), lambda container: plugin_services.check_health(), "plugin health"))
     ticker.register(TickHandler(TickInterval(seconds=BACKUP_CHECK_SECONDS), lambda container: backup.follow(), "database copies", starts_immediately=True))
-    server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread, hook_database, viewer, tunnel),
+    server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread, hook_database, viewer, tunnel, reported_findings),
                            waiting_server.journal_socket() if waiting_server else None)
     if waiting_server is not None:
         waiting_server.wait_turn()

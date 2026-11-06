@@ -8,7 +8,7 @@ from core.modules.triggers.models.enums.trigger_action import TriggerAction
 
 
 class MakeTriggerSubcommand(ShowTriggerLineSubcommand[MakeTrigger]):
-    """`journal trigger make "deploy, release" "<text>" [--do nudge|instruct|deny]`."""
+    """Makes a phrase trigger that gives text, refuses a call or requires a skill."""
 
     cli_name = "trigger"
     name = "make"
@@ -16,7 +16,7 @@ class MakeTriggerSubcommand(ShowTriggerLineSubcommand[MakeTrigger]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("phrases")
-        parser.add_argument("text")
+        parser.add_argument("text", nargs="?", default="")
         parser.add_argument("--do", type=TriggerAction, choices=list(TriggerAction), default=TriggerAction.NUDGE)
         TriggerDetails.add_arguments(parser)
 

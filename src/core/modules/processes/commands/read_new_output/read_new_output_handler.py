@@ -36,7 +36,7 @@ class ReadNewOutputHandler(Handler[ReadNewOutput, Output]):
             self.folder.append_reader_lines(process.id, advance.lines)
         if advance.progress != process.progress and process.state in OPEN:
             self.repository.update(process, context, progress=advance.progress)
-        return self.repository.update(output, context, read_offset=advance.read_offset, read_lines=advance.read_lines, reader_lines=len(self.folder.reader_lines(process.id)),
+        return self.repository.update(output, context, read_offset=advance.read_offset, seen_offset=advance.seen_offset, read_lines=advance.read_lines, reader_lines=len(self.folder.reader_lines(process.id)),
                                             reader_summary=advance.summary, progress=advance.progress, steps_passed=advance.steps_passed, steps_failed=advance.steps_failed,
                                       test_count=advance.test_count)
 
@@ -49,6 +49,6 @@ class ReadNewOutputHandler(Handler[ReadNewOutput, Output]):
         return output
 
     def advance(self, command: ReadNewOutput, process: Process, output: Output) -> ReaderAdvance | None:
-        if command.prepared is not None and command.prepared.output.read_offset == output.read_offset:
+        if command.prepared is not None and command.prepared.output.seen_offset == output.seen_offset:
             return command.prepared.advance
         return self.step.advance(process, output, command.is_final)

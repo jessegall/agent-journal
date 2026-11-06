@@ -69,7 +69,7 @@ def test_a_named_run_that_passes_lifts_the_refusal(new_story):
     story.expect_hook_allowed("s-1", full_line())
 
 
-def test_a_skip_passes_the_refusal_once_keeps_its_reason_and_obeying_starts_the_count_again(new_story):
+def test_a_skip_passes_the_refusal_once_keeps_its_reason_and_a_retry_of_the_same_refused_line_is_not_obeying(new_story):
     story = failed_run_story(new_story)
     story.expect_hook_refusal("s-1", full_line(), REFUSED)
     story.advance(timedelta(seconds=1))
@@ -84,7 +84,7 @@ def test_a_skip_passes_the_refusal_once_keeps_its_reason_and_obeying_starts_the_
     story.expect_hook_refusal("s-1", full_line(), REFUSED)
     story.advance(timedelta(seconds=1))
     story.expect_success(SKIP, actor=story.agent)
-    story.expect_success("refusal-skip show 2", "streak: 1", actor=story.user)
+    story.expect_success("refusal-skip show 2", "streak: 2", actor=story.user)
 
 
 def test_a_skip_with_no_refusal_before_it_is_refused(new_story):

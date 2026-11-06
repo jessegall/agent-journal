@@ -117,10 +117,10 @@ class Console:
             return SUCCESS_CODE
         self.commit_listeners.run()
         command, skipped = subcommand.command(arguments, caller), self.flags.skipped_guards(arguments)
-        self.refusal_skips.check_guards(caller.actor, arguments.skip_guard, arguments.skip_reason)
         if arguments.explain:
             output.explanation(self.bus.explain(command, caller.actor, skipped, environment_id))
             return SUCCESS_CODE
+        self.refusal_skips.check_guards(caller.actor, sorted(skipped), arguments.skip_reason)
         newest_event_id = self.events.newest_id()
         value = self.bus.run(command, caller.actor, skipped, environment_id=environment_id)
         actor_events = [event for event in self.events.events_past(newest_event_id) if event.actor_id == caller.actor.id]

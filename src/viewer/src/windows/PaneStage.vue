@@ -169,7 +169,7 @@ const openCount = (key, anchor) => {
     const name = COUNT_WINDOWS[key];
     const groups = key === "helpers" ? helperGroups() : props.catalogue.dropdown(name) ? [{name, title: windowTitle(name), count: 0}] : [];
     if (groups.length) openDropdown.value = {key, groups, anchor};
-    else if (props.catalogue.window(name)) openView(name);
+    else if (props.catalogue.window(name)) goTo(name);
 };
 const pairedPhones = ref([]);
 async function readPhones() {
