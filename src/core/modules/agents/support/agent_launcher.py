@@ -19,8 +19,8 @@ class AgentLauncher:
     """Hands the running launcher an agent's program, folder and agent row to start, and says what it did: an
     agent whose program still runs is not started again, and its line waits for its next hook or for the
     program to end. The agent's session goes along as its launch name, so a program that picks its own
-    session, as Codex does, is bound to this row by its first hook, and its role goes along for the hook to read
-    without the server. A launcher older than this journal answers
+    session, as Codex does, is bound to this row by its first hook, and its role goes along for the hook to
+    read without the server. A launcher older than this journal answers
     nothing, which counts as started; no launcher at all counts as failed."""
 
     def __init__(self, link: LauncherLink, bus: Bus, sessions: AgentLaunchGuard) -> None:

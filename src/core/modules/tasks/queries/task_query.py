@@ -72,9 +72,9 @@ class TaskQuery(Query[Task]):
     def open_tasks(self) -> Self:
         return self.filter(state=TaskState.OPEN)
 
-    def waiting_for_a_worker(self) -> Self:
-        running_worker = SubqueryMatch("delegated_to", Select("agents").matching(IsNull("ended_at")).column("id"))
-        return self.open_tasks().matching(SubqueryMatch("id", Select("tasks").matching(running_worker).column("id"), negated=True))
+    def without_active_delegate(self) -> Self:
+        active_delegates = SubqueryMatch("delegated_to", Select("agents").matching(IsNull("ended_at")).column("id"))
+        return self.open_tasks().matching(SubqueryMatch("id", Select("tasks").matching(active_delegates).column("id"), negated=True))
 
     def next_open(self, excluded_id: int | None, exclusion: Condition) -> Task | None:
         free_tasks = self.open_tasks().matching(IsNull("delegated_to")).matching(self.no_open_dependency()).matching(exclusion).all_rows()

@@ -57,13 +57,12 @@ class ReaderStep:
                              self.run.summary(reader, text) or output.reader_summary, progress,
                              steps_passed=passed, steps_failed=failed, test_count=test_count, replaces=restarted)
 
-    def step_progress(self, reader: Reader, unfinished: str, done: int, test_count: int, current: int) -> int:
-        """The finished steps and those on the unfinished last line, out of the count; the last line is counted for this figure only."""
+    def step_progress(self, reader: Reader, unfinished: str, completed_steps: int, test_count: int, current: int) -> int:
         total = self.run.count(reader, unfinished, test_count)
         if not total:
             return current
-        under_way = StepTally.counted(reader.step_pattern, "", unfinished)
-        return min(100, (done + under_way.passed + under_way.failed) * 100 // total)
+        partial_steps = StepTally.counted(reader.step_pattern, "", unfinished)
+        return min(100, (completed_steps + partial_steps.passed + partial_steps.failed) * 100 // total)
 
     def script_advance(self, process: Process, output: Output, reader: Reader, is_final: bool) -> ReaderAdvance | None:
         advanced = self.text_advance(process, output, reader, is_final)

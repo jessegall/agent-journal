@@ -14,7 +14,6 @@ from core.base.query.query import Query
 from core.modules.drivers.models.support.views import tool_use_counts_select
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
-from core.base.module.driver_entries import DRIVERS_MODULE
 
 STOPS_READ = 20
 TURN_HOOKS = (HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE, HookEventName.STOP)
@@ -48,7 +47,7 @@ class HookCallQuery(Query[HookCall]):
         if call is None:
             return False
         is_silent = call.creation_timestamp().elapsed_seconds(checked_at) >= IDLE_LIMIT_SECONDS
-        return is_silent or (call.hook in IDLE_HOOKS and call.answer == HookAnswer.ALLOWED and not call.is_compaction_start) or bool(call.metadata.module_part(DRIVERS_MODULE).get("interrupted"))
+        return is_silent or (call.hook in IDLE_HOOKS and call.answer == HookAnswer.ALLOWED and not call.is_compaction_start) or call.is_interrupted
 
     def is_compacting(self, agent_id: int, checked_at: Timestamp) -> bool:
         call = self.kept.read_newest(self.table.name, self.agent(agent_id).matching(Among("hook", (*TURN_HOOKS, HookEventName.COMPACT))).newest().first,

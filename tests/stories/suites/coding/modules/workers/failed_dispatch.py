@@ -20,7 +20,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import D
 STEP_FAILURE = "this step of the dispatch failed"
 
 
-def failed_step(*details: object, **more: object) -> None:
+def failed_step(*details: object, **options: object) -> None:
     raise Refusal(STEP_FAILURE, "try again")
 
 

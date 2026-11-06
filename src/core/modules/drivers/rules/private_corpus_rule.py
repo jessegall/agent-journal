@@ -14,7 +14,7 @@ SANDBOXED_TEST_ALIAS = re.compile(r"^journal\s+alias\s+add\s+\S+\s+[\"']?(?:\S+=
 
 class PrivateCorpusRule(DriverRule):
     """The private command corpus under .journal/corpus is never named by a shell line, whoever runs it, except to
-    hand its path to a go test, which the corpus tests run in a sandbox; the refusal is a safety refusal with no skip."""
+    hand its path to a go test, which the corpus tests run in a sandbox; the refusal has no skip."""
 
     name = "drivers.private-corpus"
     hook = HookEventName.PRE_TOOL_USE

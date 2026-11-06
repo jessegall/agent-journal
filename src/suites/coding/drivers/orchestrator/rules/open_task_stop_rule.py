@@ -23,5 +23,5 @@ class OpenTaskStopRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if len(self.worktrees.open_worktrees()) >= self.settings.number(WORKER_LIMIT):
             return RuleAnswer.allowed()
-        open_ids = [str(task.id) for task in self.tasks.waiting_for_a_worker().oldest().page().rows]
+        open_ids = [str(task.id) for task in self.tasks.without_active_delegate().oldest().page().rows]
         return RuleAnswer.refused(OPEN_TASKS_WAIT.nudge(tasks=', '.join(open_ids))) if open_ids else RuleAnswer.allowed()

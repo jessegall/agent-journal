@@ -112,8 +112,8 @@ def test_a_read_only_helper_runs_nothing_that_changes_or_reaches_out(new_story, 
 @pytest.mark.parametrize("line", ["phase make --plan 1 Totals", "phase place 1 --phase 1", "phase move 1 --to 2", "doc --help", "agent stop --help"])
 def test_a_read_only_planner_can_file_its_plan_and_ask_any_command_for_its_help(new_story, line):
     story, session = helper_story(new_story, PROGRAMS[0])
-    words = line.split()
-    story.expect_hook_allowed(session, shell(f"journal {line}", part("journal", CommandCategory.JOURNAL, *words)))
+    arguments = line.split()
+    story.expect_hook_allowed(session, shell(f"journal {line}", part("journal", CommandCategory.JOURNAL, *arguments)))
 
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)

@@ -71,6 +71,10 @@ class HookCall(EnvironmentScoped, Model):
         return value if isinstance(value, str) else ""
 
     @property
+    def is_interrupted(self) -> bool:
+        return bool(self.metadata.module_part(DRIVERS_MODULE).get("interrupted"))
+
+    @property
     def is_compaction(self) -> bool:
         return self.hook == HookEventName.COMPACT
 

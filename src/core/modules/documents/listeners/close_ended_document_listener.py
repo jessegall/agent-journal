@@ -3,7 +3,7 @@ from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
 from core.modules.agents.events.agent_ended import AgentEnded
 from core.modules.documents.models.open_document import OpenDocument
-from core.modules.documents.support.ended_documents import EndedDocuments
+from core.modules.documents.actions.ended_documents import EndedDocuments
 
 
 class CloseEndedDocumentListener(CommitListener[AgentEnded]):

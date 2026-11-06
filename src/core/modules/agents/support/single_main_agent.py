@@ -20,6 +20,6 @@ class SingleMainAgent:
         if opened.role != AgentRole.MAIN:
             return
         with self.scopes.opened(None, opened.environment_id):
-            replaced_mains = [main for main in self.agents.running_main_agents() if main.id != opened.id]
-        for main in replaced_mains:
+            other_agents = [main for main in self.agents.running_main_agents() if main.id != opened.id]
+        for main in other_agents:
             self.bus.dispatch(EndReplacedMain(main.id), replace(context, actor=Actor.core(), environment_id=opened.environment_id))

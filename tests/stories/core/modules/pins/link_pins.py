@@ -103,4 +103,4 @@ def test_a_link_in_the_command_and_output_is_checked_once(new_story):
     with patch.object(database, "rows", wraps=database.rows) as reads:
         expect_pin_lines(story.hook("s-1", shell_call(f"curl {link}", link)))
     pin_reads = [call for call in reads.call_args_list if "SELECT 1 FROM pins WHERE closed_at IS NULL AND link IN" in call.args[0].sql]
-    assert len(pin_reads) == 1
+    story.expect_rows(len(pin_reads) == 1)
