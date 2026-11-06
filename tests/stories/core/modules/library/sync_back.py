@@ -411,8 +411,9 @@ def test_keeping_the_library_version_keeps_the_text_in_the_revisions_even_after_
     edit_body(story, copy, "Edited again.")
     story.expect_success(f"library resolve {copy.id} --keep library", f"doc {copy.row_id} follows library doc {copy.item_id}, version 2. Status: In sync", actor=story.user)
     story.expect_rows(story.row(Doc, copy.row_id).body == "Admin text.", stored_copy(story, copy).state is CopyState.SYNCED, stored_copy(story, copy).base_version == 2)
-    story.expect_text(f"doc revision {copy.row_id} 2", "Edited again.", actor=story.user)
-    story.expect_text(f"doc revision {copy.row_id} 3", "Admin text.", actor=story.user)
+    story.expect_text(f"doc revision {copy.row_id} 2", "Edited here.", actor=story.user)
+    story.expect_text(f"doc revision {copy.row_id} 3", "Edited again.", actor=story.user)
+    story.expect_text(f"doc revision {copy.row_id} 4", "Admin text.", actor=story.user)
 
 
 def test_an_agent_cannot_resolve_a_copy(new_story, shared_server):

@@ -57,7 +57,7 @@ ALIAS_SUGGESTION = NudgeDeclaration("processes.alias_suggestion", NudgeType.STEE
 READER_HINT = NudgeDeclaration("processes.reader_hint", NudgeType.STEERING, "reader {reader} already reads output {output}", interval=Interval(Seconds(600)))
 SHARED_TITLE = NudgeDeclaration("processes.shared_title", NudgeType.STEERING, "outputs {outputs} share one title: give each its own with journal output title <n> \"<what it does>\"", interval=Interval(Seconds(600)))
 RUN_QUEUE_HALTED = NudgeDeclaration("processes.run_queue_halted", NudgeType.STEERING, "the process queue is halted, so no queued run starts: journal queue resume when it may go on", interval=Interval(Seconds(300)), turn_limited=False)
-UPDATE_WAITING = NudgeDeclaration("processes.update_waiting", NudgeType.STEERING, "an update waits for runs {runs} to end: no new command starts until it is done", interval=Interval(Seconds(300)), turn_limited=False)
+UPDATE_WAITING = NudgeDeclaration("processes.update_waiting", NudgeType.STEERING, "an update waits for {outputs} to end: no new command starts until it is done", interval=Interval(Seconds(300)), turn_limited=False)
 LARGE_OUTPUT_READ = NudgeDeclaration("processes.large_output_read", NudgeType.STEERING, "output {output} has {lines} lines: read it with --summary, --tail K or --lines A-B", interval=Interval(Seconds(604800)))
 RETRY_LOOP = NudgeDeclaration("processes.retry_loop", NudgeType.REFUSAL, "no retry loops: run the command once and read its error")
 FAILED_FULL_RUN = NudgeDeclaration("processes.failed_full_run", NudgeType.REFUSAL, "your last full test run failed: re-run the failed tests by name first", turn_limited=False)

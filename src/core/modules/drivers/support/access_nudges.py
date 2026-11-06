@@ -19,7 +19,7 @@ ENDED_AGENT = NudgeDeclaration("drivers.ended_agent", NudgeType.SAFETY_REFUSAL, 
 NATIVE_SUBAGENT = NudgeDeclaration("drivers.native_subagent", NudgeType.SAFETY_REFUSAL, 'use journal helper start <profile> --brief "<job>"; journal profile list names them')
 NATIVE_SUBAGENT_WITHOUT_LAUNCH = NudgeDeclaration("drivers.native_subagent_no_launch", NudgeType.SAFETY_REFUSAL, "keep this work yourself: a helper needs journal launch, and none runs")
 
-PRIVATE_CORPUS = NudgeDeclaration("drivers.private_corpus", NudgeType.SAFETY_REFUSAL, "the private command corpus under .journal/corpus is never read or run outside its sandboxed go test: say in your report what you need")
+PRIVATE_CORPUS = NudgeDeclaration("drivers.private_corpus", NudgeType.SAFETY_REFUSAL, "the private command corpus is read or run only in its sandboxed go test: say in your report what you need")
 
 SKIPS_SPENT = NudgeDeclaration("drivers.skips_spent", NudgeType.STEERING, "agent:{agent} skipped {count} refusals in a row and lost the skip: journal refusal restore {agent}", turn_limited=False, wakes_agent=True)
 ACCESS_NUDGES = [PRIVATE_CORPUS, SKIPS_SPENT, NATIVE_SUBAGENT, NATIVE_SUBAGENT_WITHOUT_LAUNCH, ENDED_AGENT, UNKNOWN_AGENT, UNJUDGED_LINE, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, TOOL_RESTRICTION, COMMAND_RESTRICTION, READONLY, FILE_ACCESS_RESTRICTION, JOURNAL_RESTRICTION,

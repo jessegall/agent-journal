@@ -11,7 +11,7 @@ LONGEST_NOTICE_CHARACTERS = 800
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
 NUDGE_LIST_NAMES = re.compile(r"NUDGES$")
 # what a line may name: a row's number, a count, or a short fact that is no row's words
-ALLOWED_PLACEHOLDERS = frozenset({"tool", "limit", "place", "listing", 
+ALLOWED_PLACEHOLDERS = frozenset({"tool", "limit", "place", "listing", "doc",
     "uses", "action", "agent", "block", "branch", "category", "check", "command", "count", "dump", "emoji", "environment", "folder", "job", "kept", "left", "limit", "lines", "memories", "memory", "message",
     "messages", "minutes", "name", "other", "outcome", "output", "outputs", "percent", "phase", "place", "plan", "process", "program", "programs", "proof", "proofs", "question", "queue", "refusal", "request",
     "path", "reader", "result", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "transcription", "url", "wait", "worker", "workers", "writes", "hint", "items", "hint",
