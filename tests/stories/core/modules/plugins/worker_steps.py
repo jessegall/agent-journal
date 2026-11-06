@@ -46,3 +46,25 @@ def test_a_plugin_holding_a_merge_refuses_it_with_its_reason(new_story):
     worker = checked_worker(story, story.repository)
     story.repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_refusal(f"worker merge {worker.id}", "[plugin steps] cart.py is not judged yet", actor=story.agent)
+
+
+def delivered_with_file(new_story, name: str):
+    story = step_plugin_story(new_story, "worker_delivering")
+    worker = dispatched_worker(story)
+    story.repository.changed(worker.id, name, "TOTAL = 1\n")
+    story.run(FIRST_PROOF, actor=worker)
+    story.expect_success(DELIVERY, actor=worker)
+    return story, worker
+
+
+def test_what_a_plugin_tells_at_a_delivery_reaches_the_worker_and_its_main_agent(new_story):
+    story, worker = delivered_with_file(new_story, "told.py")
+    story.expect_text(f"agent-line list --agent {worker.id}", "[plugin steps] the judging did not finish", actor=worker)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "[plugin steps] the judging did not finish", actor=story.agent)
+
+
+def test_a_plugin_that_fails_at_a_delivery_is_on_record_and_says_the_step_was_not_judged(new_story):
+    story, worker = delivered_with_file(new_story, "broken.py")
+    story.expect_text("plugin list --json", "at worker_delivering", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "[plugin steps] could not judge this step", actor=story.agent)
+

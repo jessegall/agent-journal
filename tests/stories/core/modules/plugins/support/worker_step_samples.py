@@ -6,6 +6,8 @@ line=$(cat)
 case "$line" in
   *'"worker_delivering"'*'"cart.py"'*) echo '{"v": 1, "answer": "refuse", "reason": "cart.py has a sin"}' ;;
   *'"worker_merging"'*'"cart.py"'*) echo '{"v": 1, "answer": "refuse", "reason": "cart.py is not judged yet"}' ;;
+  *'"worker_delivering"'*'"told.py"'*) echo '{"v": 1, "answer": "tell", "tell": "the judging did not finish"}' ;;
+  *'"worker_delivering"'*'"broken.py"'*) exit 3 ;;
 esac
 """
 

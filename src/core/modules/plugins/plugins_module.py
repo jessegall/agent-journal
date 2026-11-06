@@ -1,3 +1,4 @@
+from core.modules.plugins.commands.send_plugin_step_line.send_plugin_step_line_handler import SendPluginStepLineHandler
 from core.modules.plugins.migrations.m004_plugin_session import PluginSessionMigration
 from core.modules.plugins.migrations.m003_plugin_output_index import PluginOutputIndexMigration
 from core.base.skill.skill_declaration import SkillDeclaration
@@ -82,7 +83,7 @@ class PluginsModule(Module):
     windows = [WindowDeclaration("plugins.plugins", "Plugins", "plugins.js", WindowLoading.COMPONENT, skeleton=PLUGINS_PLUGINS_SKELETON, search=WindowSearch(PluginSearcher, "Search the plugins"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.PLUGIN, reads=["plugin record", "plugin list", "plugin settings", "plugin services", "plugin preview", "plugin latest", "plugin dashboard", "plugin dashboards", "plugin descriptions"],
                                  runs=["plugin upgrade", "plugin enable", "plugin disable", "plugin install", "plugin remove", "plugin configure", "message send"], events=["plugin.*"])]
     migrations = [PluginSessionMigration, PluginOutputIndexMigration, PluginsTablesMigration, PluginQueueIndexMigration]
-    handlers = [DeliverFileEditHandler, UpgradePluginHandler, InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler,
+    handlers = [SendPluginStepLineHandler, DeliverFileEditHandler, UpgradePluginHandler, InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler,
                 RecordPluginFaultHandler, ClearPluginFaultsHandler, AddPluginOutputHandler,
                 ClearPluginQueueFileHandler]
     settings = [SettingValue("hold_window_ms", "Plugin answer limit", "The most milliseconds a plugin may take to answer an event it holds before the agent goes on.",
