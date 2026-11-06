@@ -15,6 +15,7 @@ from core.modules.tasks.models.task import Task
 MAIN_ROLE = "main"
 SECONDS_IN_DAY = 86400
 SECONDS_IN_HOUR = 3600
+IDLE_AGES_SHOWN = 4
 
 
 @dataclass(frozen=True)
@@ -73,7 +74,7 @@ class AgentUse:
                 f"{self.age(agent)}, and {most_spare.model} ran {most_spare.jobs} jobs with {len(most_spare.kept)} kept")
 
     def age(self, agent: Agent) -> str:
-        seconds = agent.ended_at.elapsed_seconds(self.clock.timestamp())
+        seconds = int(agent.ended_at.elapsed_seconds(self.clock.timestamp()))
         return f"{seconds // SECONDS_IN_DAY}d" if seconds >= SECONDS_IN_DAY else f"{seconds // SECONDS_IN_HOUR}h"
 
     def report(self) -> str:
@@ -83,6 +84,6 @@ class AgentUse:
         days = self.settings.number(AGENT_USE_DAYS)
         lines = [f"jobs of the last {days} days, and the agents kept"]
         for use in models:
-            idle = ", ".join(self.age(agent) for agent in use.idle())
+            idle = ", ".join(self.age(agent) for agent in use.idle()[:IDLE_AGES_SHOWN])
             lines.append(f"{use.kind}, {use.model}: jobs {use.jobs}, kept {len(use.kept)}" + (f", idle {idle}" if idle else ""))
         return "\n".join(lines)
