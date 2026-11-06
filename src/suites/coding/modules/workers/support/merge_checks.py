@@ -1,5 +1,5 @@
 from core.base.query.queries import Queries
-from suites.coding.modules.workers.support.worker_log_lines import WorkerReview
+from suites.coding.modules.workers.support.worker_review import WorkerReview
 from core.base.database.kept_rows import KeptRows
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.base.refusal import Refusal

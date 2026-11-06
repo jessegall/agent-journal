@@ -96,7 +96,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
 
     def reopen_work(self, worktree: Worktree, failed: list[Proof], context: Context) -> None:
         for task_id in sorted({row.task_id for row in failed}):
-            self.failures.record_hand_in(worktree.session_agent_id, task_id, ", ".join(sorted({row.test_command for row in failed if row.task_id == task_id})), context)
+            self.failures.record_delivery(worktree.session_agent_id, task_id, ", ".join(sorted({row.test_command for row in failed if row.task_id == task_id})), context)
         for task_id in sorted({row.task_id for row in failed}):
             task = self.rows.required(Task, task_id)
             if task.state is TaskState.TESTING:

@@ -1,6 +1,7 @@
 from core.base.command.bus import Bus
 from core.modules.tasks.commands.make_task_log.make_task_log import MakeTaskLog
-from suites.coding.modules.workers.support.worker_log_lines import WorkerLogLines, WorkerReview
+from suites.coding.modules.workers.support.worker_log_lines import WorkerLogLines
+from suites.coding.modules.workers.support.worker_review import WorkerReview
 from core.base.command.context import Context
 from core.base.conflict_files import ConflictFiles
 from pathlib import Path

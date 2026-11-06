@@ -13,4 +13,4 @@ class RecordOwnTestFailureHandler(Handler[RecordOwnTestFailure, None]):
         self.failures = failures
 
     def handle(self, command: RecordOwnTestFailure, context: Context) -> None:
-        self.failures.record_own_run(command.worker_id, command.task_id, command.line, context)
+        self.failures.record_worker_run(command.worker_id, command.task_id, command.line, context)

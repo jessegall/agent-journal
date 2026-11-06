@@ -304,7 +304,7 @@ def test_three_failed_hand_ins_of_a_task_give_the_main_agent_a_line_the_worker_n
         story.expect_success("worker deliver --differences none", actor=worker)
         story.run_listeners()
     ended(story, started[2], 1)
-    assert "failed 3 hand-ins" not in story.run("task overview 1", actor=worker).output_text
+    story.expect_rows("failed 3 hand-ins" not in story.run("task overview 1", actor=worker).output_text)
     repository.changed(worker.id, "cart.py", "TOTAL = 9\n")
     story.expect_success("worker deliver --differences none", actor=worker)
     story.run_listeners()

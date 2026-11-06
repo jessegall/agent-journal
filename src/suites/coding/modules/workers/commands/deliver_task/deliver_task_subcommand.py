@@ -9,7 +9,7 @@ from suites.coding.modules.workers.commands.support.worker_step_check import DEL
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.deliver_task.deliver_task import DeliverTask
-from suites.coding.modules.workers.support.hand_in_differences import add_differences_argument, required_differences
+from suites.coding.modules.workers.support.delivery_differences import differences_flag, required_differences
 
 
 class DeliverTaskSubcommand(Subcommand[DeliverTask, Task]):
@@ -21,7 +21,7 @@ class DeliverTaskSubcommand(Subcommand[DeliverTask, Task]):
     outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
-        add_differences_argument(parser)
+        differences_flag(parser)
 
     def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, phases: WorkerPhases) -> None:
         self.worktrees, self.step_check, self.phases = worktrees, step_check, phases

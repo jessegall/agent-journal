@@ -6,7 +6,7 @@ from core.base.subcommand.subcommand import Subcommand
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.start_next_worker_task.start_next_worker_task import StartNextWorkerTask
-from suites.coding.modules.workers.support.hand_in_differences import add_differences_argument, required_differences
+from suites.coding.modules.workers.support.delivery_differences import differences_flag, required_differences
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.commands.support.worker_step_check import DELIVERY_EVENTS, WorkerStepCheck
@@ -24,7 +24,7 @@ class StartNextWorkerTaskSubcommand(Subcommand[StartNextWorkerTask, Task]):
         self.worktrees, self.step_check, self.phases = worktrees, step_check, phases
 
     def arguments(self, parser: ArgumentParser) -> None:
-        add_differences_argument(parser)
+        differences_flag(parser)
 
     def command(self, arguments: Namespace, caller: Caller) -> StartNextWorkerTask:
         differences = required_differences(arguments)

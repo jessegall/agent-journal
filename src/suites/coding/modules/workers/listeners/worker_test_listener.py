@@ -76,13 +76,13 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Moved[Process] | Created[
             self.bus.run(RecordWorkerTest(proofs[0].id, passed, f"failed: journal output read of process {process.id}"), Actor.core(), cause_id=logged.id)
             self.start_next(logged)
         elif process.category is CommandCategory.TEST_RUN and (process.state is not ProcessState.FINISHED or process.exit_code != 0):
-            self.record_own_failure(process, logged)
+            self.record_failed_run(process, logged)
         first_answer = self.queries.query(AffectedTest).filter(process_id=process.id).matching(Among("state", (AffectedTestState.PICKING, AffectedTestState.TESTING))).first()
         if first_answer is not None:
             passed = process.state is ProcessState.FINISHED and process.exit_code == 0
             self.bus.run(RecordAffectedTest(first_answer.id, process.id, passed), Actor.core(), cause_id=logged.id)
 
-    def record_own_failure(self, process: Process, logged: LoggedEvent) -> None:
+    def record_failed_run(self, process: Process, logged: LoggedEvent) -> None:
         worktree = self.worktrees.worker_worktree(process.session_agent_id)
         if worktree is not None:
             self.bus.run(RecordOwnTestFailure(process.session_agent_id, worktree.task_id, process.line), Actor.core(), cause_id=logged.id)
