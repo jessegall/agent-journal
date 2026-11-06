@@ -1,7 +1,7 @@
 from core.base.command.outside_work import OutsideWork
 
 
-class OutsideRunRollback(Exception):
+class OutsideRunRollbackError(Exception):
     """Rolls a command back so its outside work runs with no lock held, and the command runs again. It is no refusal,
     so what catches a refusal lets it pass."""
 

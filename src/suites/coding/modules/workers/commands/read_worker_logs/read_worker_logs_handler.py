@@ -10,7 +10,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_log import TaskLog
-from suites.coding.modules.workers.commands.worker_logs.worker_logs import ReadWorkerLogs
+from suites.coding.modules.workers.commands.read_worker_logs.read_worker_logs import ReadWorkerLogs
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery

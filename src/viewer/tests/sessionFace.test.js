@@ -1,22 +1,33 @@
 import {createApp, h, nextTick} from "vue";
-import {afterEach, expect, test, vi} from "vitest";
+import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import WindowShell from "../src/windows/WindowShell.vue";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
 import {settledByTimer} from "./settled.js";
+import {trackMutationObservers} from "./support/mutationObservers.js";
 
 const summary = {name: "notes.summary", title: "Notes summary", entry_url: "", line: "task list", loading: "document", reads: ["task list"], runs: [], unavailable_reason: ""};
 const calendar = {...summary, name: "notes.calendar", title: "Notes calendar", line: "plan list"};
 const DESKTOP_WIDTH = 1200;
 const NARROW_WIDTH = 600;
 
-afterEach(() => vi.unstubAllGlobals());
+let apps = [];
+let checkObservers;
+beforeEach(() => { checkObservers = trackMutationObservers(); });
+afterEach(() => {
+    apps.forEach((app) => app.unmount());
+    apps = [];
+    checkObservers();
+    vi.unstubAllGlobals();
+});
 
 async function shell(session, width) {
     vi.stubGlobal("innerWidth", width);
     vi.stubGlobal("fetch", async () => ({json: async () => ({code: 0, value: {rows: []}, error: ""})}));
     const catalogue = new WindowCatalogue(async () => ({windows: [summary, calendar]}));
     const element = document.createElement("div");
-    createApp(() => h(WindowShell, {environment: "main", layout: ["notes.summary", "notes.calendar"], catalogue, events: () => () => {}, session: async () => session})).mount(element);
+    const app = createApp(() => h(WindowShell, {environment: "main", layout: ["notes.summary", "notes.calendar"], catalogue, events: () => () => {}, session: async () => session}));
+    app.mount(element);
+    apps.push(app);
     await settledByTimer();
     return element;
 }

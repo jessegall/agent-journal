@@ -121,7 +121,7 @@ def test_each_event_of_a_model_has_a_key_and_metadata_has_none():
 def test_a_file_event_keeps_its_name_whole_and_is_commit_only():
     declaring = type("FilesModule", tuple([Module]), {"name": "journal.core.settings", "requires_core": ">=5", "file_events": ["managed-hook.changed"]})
     entry = next(entry for entry in module_check().event_keys([declaring]) if entry.event == "managed-hook.changed")
-    assert entry == EventKeyEntry("core.settings.managed-hook.changed", "managed-hook.changed", "journal.core.settings", tuple([EventForm.COMMIT]))
+    assert entry == EventKeyEntry("core.settings.managed-hook.changed", "managed-hook.changed", "journal.core.settings", tuple([EventForm.COMMIT]), "a managed hook was changed")
 
 
 def test_a_model_with_no_forms_has_no_key_and_its_events_stay_known():

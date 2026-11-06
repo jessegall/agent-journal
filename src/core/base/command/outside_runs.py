@@ -1,7 +1,7 @@
 from collections import Counter
 from collections.abc import Sequence
 
-from core.base.command.outside_run_rollback import OutsideRunRollback
+from core.base.command.outside_run_rollback_error import OutsideRunRollbackError
 from core.base.command.outside_turn import OutsideTurn
 from core.base.command.outside_work import OutsideWork
 
@@ -21,7 +21,7 @@ class OutsideRuns:
         self.rounds = 0
         self.reached: Counter[tuple[str, str]] = Counter()
         self.answers: dict[tuple[str, str, int], Sequence[object]] = {}
-        self.unfinished: OutsideRunRollback | None = None
+        self.unfinished: OutsideRunRollbackError | None = None
 
     @property
     def from_plugin_script(self) -> bool:
@@ -46,8 +46,8 @@ class OutsideRuns:
     def record(self, turn: OutsideTurn, answers: Sequence[object]) -> None:
         self.answers[(turn.form, turn.log_name, turn.position)] = answers
 
-    def rollback(self, work: OutsideWork) -> OutsideRunRollback:
-        self.unfinished = OutsideRunRollback(work)
+    def rollback(self, work: OutsideWork) -> OutsideRunRollbackError:
+        self.unfinished = OutsideRunRollbackError(work)
         return self.unfinished
 
     def refuse_unfinished_work(self) -> None:
