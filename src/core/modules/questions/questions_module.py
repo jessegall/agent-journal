@@ -72,5 +72,5 @@ class QuestionsModule(Module):
                                  reads=["question show"], keys=[WindowKey("question.*", "question show {id}", events=["question.*"], loading=KeyLoading.REQUESTED)],
                                  runs=["question answer", "question close", "message send"], events=["question.*"]),
                WindowDeclaration("questions.waiting", "Waiting", "waiting.js", WindowLoading.COMPONENT, skeleton=QUESTIONS_WAITING_SKELETON, icon=WindowIcon.HALT,
-                                 reads=["wait waiting"], events=["wait.*"])]
+                                 reads=["wait waiting"], keys=[WindowKey("waits", "wait waiting", events=["wait.*"])], events=["wait.*"])]
     seeders = [QuestionsSeeder]

@@ -1,8 +1,8 @@
 <script setup>
 import {computed} from "vue";
-import {RowList, WindowRoom, useRows} from "@journal/window-kit";
+import {RowList, WindowRoom, useWindow} from "@journal/window-kit";
 
-const {rows: waits, failure, loaded} = useRows("wait waiting", ["wait.*"]);
+const {rows: waits, failure, loaded} = useWindow().props.waits;
 
 function waited(openedAt) {
     return `${Math.max(0, Math.round((Date.now() - Date.parse(openedAt)) / 60000))} min`;
