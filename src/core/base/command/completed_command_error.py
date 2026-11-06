@@ -1,7 +1,7 @@
 from core.base.refusal import Refusal
 
 
-class CompletedCommand(Refusal):
+class CompletedCommandError(Refusal):
     """A refused command whose work has already been completed or whose row has ended."""
 
     @property

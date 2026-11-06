@@ -22,7 +22,7 @@ def test_dispatch_send_resume_and_restart_keep_the_model_on_the_command_and_card
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     monkeypatch.setenv("CODEX_HOME", str(story.home.folder / "codex"))
-    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answers=(b"started\n", b"failed\n"), request_count=4)
+    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answers=(b"started\n", b"failed\n"), request_count=5)
     worker = checked_worker(story, repository, f"worker dispatch --program {program} --model {model} 1")
     session = worker_session(story, worker)
     rollout = story.home.folder / "codex" / "sessions" / f"rollout-test-{session}.jsonl"
@@ -40,7 +40,7 @@ def test_dispatch_send_resume_and_restart_keep_the_model_on_the_command_and_card
         WorkerResumeRetry()(story.container)
         expect_identity(story, worker, model)
     launcher.expect_started(worker.id, session, repository.worktree_folder(worker.id))
-    story.expect_rows(len(launcher.requests) == 4)
-    for request in launcher.requests:
+    story.expect_rows(len(launcher.starts) == 4)
+    for request in launcher.starts:
         command = request["command"]
         story.expect_rows(command[command.index(flag) + 1] == model)

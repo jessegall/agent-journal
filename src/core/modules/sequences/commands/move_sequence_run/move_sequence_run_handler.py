@@ -1,7 +1,7 @@
 from dataclasses import replace
 
 from core.base.command.context import Context
-from core.base.command.completed_command import CompletedCommand
+from core.base.command.completed_command_error import CompletedCommandError
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
@@ -67,7 +67,7 @@ class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
         if command.sequence_id is None:
             raise Refusal("name the sequence to run", "journal sequence run <n>")
         if self.runs.is_running(context.actor.id, command.sequence_id):
-            raise CompletedCommand(f"sequence {command.sequence_id} is already running", "finish it with journal sequence next, or give it up with journal sequence abandon")
+            raise CompletedCommandError(f"sequence {command.sequence_id} is already running", "finish it with journal sequence next, or give it up with journal sequence abandon")
         agent = self.rows.find(Agent, context.actor.id)
         if agent is None:
             raise Refusal("only an agent runs a sequence", "the agent runs journal sequence run <n>")

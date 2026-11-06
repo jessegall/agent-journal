@@ -1,13 +1,12 @@
 import time
 
 from core.base.caller.process_table import ProcessTable
-from core.base.leftover_process import LeftoverProcess
+from core.base.leftover_process import POLL_SECONDS, LeftoverProcess
 from core.base.provider.providers import Providers
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.launcher_link import LauncherLink
 
 STOP_WAIT_SECONDS = 5
-STOP_POLL_SECONDS = 0.05
 
 
 class AgentProgram:
@@ -32,10 +31,11 @@ class AgentProgram:
         for child in reversed(children):
             if commands[child]:
                 LeftoverProcess.stop(child, commands[child])
-        LeftoverProcess.stop(pid, program)
+        if not LeftoverProcess.stop(pid, program):
+            commands[pid] = program
         deadline = time.monotonic() + STOP_WAIT_SECONDS
         while self.running(commands) and time.monotonic() < deadline:
-            time.sleep(STOP_POLL_SECONDS)
+            time.sleep(POLL_SECONDS)
         return not self.running(commands)
 
     def descendants(self, pid: int) -> list[int]:

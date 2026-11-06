@@ -36,6 +36,7 @@ class CommitListenerRunner:
                  exceptions: ExceptionSink, scopes: Scopes) -> None:
         self.registry, self.log, self.container, self.errors, self.cursors, self.exceptions, self.scopes = registry, log, container, errors, cursors, exceptions, scopes
         self.positions: dict[str, int] = {}
+        self.positions_stale = False
 
     def run(self) -> None:
         self.flush_exceptions()
@@ -73,6 +74,8 @@ class CommitListenerRunner:
         return self.run_order(entry) >= PLUGIN_RUN_ORDER
 
     def run_rounds(self, entries: list[ListenerEntry], urgent_entries: list[ListenerEntry]) -> None:
+        if self.positions_stale:
+            self.positions, self.positions_stale = {}, False
         state = self.container.get(PerformanceState)
         boot_event = state.boot_event()
         for _ in range(CHAIN_LIMIT_ROUNDS):
@@ -127,7 +130,7 @@ class CommitListenerRunner:
         self.prepare_rows(entry, matching)
         for event in matching:
             if not self.cursors.claimed(entry.name, position, event.id):
-                self.positions = self.cursors.positions()
+                self.positions_stale = True
                 return progress
             if not self.handle_event(entry, event):
                 self.cursors.claimed(entry.name, event.id, position)
