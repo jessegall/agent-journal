@@ -63,3 +63,8 @@ class WorkSources:
         if selected is None or selected.message_id != message.id or not selected.provisional or selected.used:
             return
         self.clear(context)
+
+    def use(self, selected: MessageWorkSource, context: Context) -> None:
+        if selected.used:
+            return
+        self.repository.update(selected, context, used=True, provisional=False)

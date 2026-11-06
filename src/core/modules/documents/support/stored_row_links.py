@@ -17,5 +17,5 @@ class StoredRowLinks(RowLinks):
         outgoing_links = links.filter(source_model=model_name, source_id=row_id).newest().page(1, LINKS_SHOWN).rows
         incoming_links = links.filter(target_model=model_name, target_id=row_id).newest().page(1, LINKS_SHOWN).rows
         names = [*(f"{link.target_model}:{link.target_id}" for link in outgoing_links), *(f"{link.source_model}:{link.source_id}" for link in incoming_links)]
-        shown_names = [name for name in names if name not in exceptions]
+        shown_names = [name for name in dict.fromkeys(names) if name not in exceptions]
         return [f"links: {', '.join(shown_names)}"] if shown_names else []

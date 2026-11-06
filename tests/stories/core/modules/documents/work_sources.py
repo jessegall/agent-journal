@@ -34,7 +34,6 @@ def provisional_thanks(unselected_trail):
     return unselected_trail
 
 
-@pending(6886)
 def test_comment_request_creates_task_plan_doc_and_report(trail):
     trail.make_task()
     trail.command('plan make "Requested plan" --environment main')
@@ -44,7 +43,6 @@ def test_comment_request_creates_task_plan_doc_and_report(trail):
         trail.expect_link("message:2", target, "about")
 
 
-@pending(6886)
 def test_a_selected_source_survives_more_than_two_minutes(trail):
     trail.story.advance(timedelta(hours=2))
     trail.make_task()
@@ -52,7 +50,6 @@ def test_a_selected_source_survives_more_than_two_minutes(trail):
 
 
 @pytest.mark.parametrize("field,text", [("brief", "Apply precise rounding"), ("title", "Rounded cart"), ("outcome", "An explicit revised outcome")])
-@pending(6886)
 def test_direct_text_edits_keep_about_and_edited(trail, field, text):
     command = f"task edit 1 --{field} {shlex.quote(text)}"
     trail.command(command)
@@ -72,12 +69,24 @@ def test_person_made_work_has_no_borrowed_source(trail):
     assert not any(row["target_model"] == "task" and row["target_id"] == 2 for row in trail.links("message:2"))
 
 
-@pending(6886)
+@pending(6890)
 def test_immediate_start_sees_committed_source(trail):
     trail.make_task()
+    trail.expect_link("message:2", "task:2", "about")
     trail.command("task start 2")
     answer = trail.requested_command("task overview 2")
     feature("Implement the cart request" in answer.output_text, answer.output_text)
+
+
+def test_refused_resource_save_does_not_consume_the_selected_request(trail):
+    refused = trail.story.run('task make "" --environment main', actor=trail.story.agent)
+    assert refused.code == 1, refused.output_text
+    selected = trail.source_rows(trail.story.agent.id)
+    feature(len(selected) == 1 and not selected[0].used, "refused save consumed the selected request")
+    trail.make_task()
+    trail.expect_link("message:2", "task:2", "about")
+    selected = trail.source_rows(trail.story.agent.id)
+    feature(selected[0].used, "successful save did not consume provisional selection")
 
 
 def test_first_single_read_can_select_but_batch_read_does_not(unselected_trail):

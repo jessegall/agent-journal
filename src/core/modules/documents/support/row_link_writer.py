@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from core.base.command.context import Context
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
@@ -26,5 +28,4 @@ class RowLinkWriter:
                     existing[key] = self.repository.save(link, context)
                 saved.append(existing[key])
         return tuple(saved)
-from collections.abc import Sequence
 

@@ -50,12 +50,12 @@ def test_a_plan_a_document_and_a_report_link_too(new_story):
     lines.expect_text("report:")
 
 
-def test_a_task_made_more_than_two_minutes_after_the_reply_is_not_linked(new_story):
+def test_a_selected_request_still_links_work_after_more_than_two_minutes(new_story):
     story = replied_story(new_story)
     story.advance(timedelta(seconds=121))
     story.run('task make "Fix the totals" --environment main', actor=story.agent)
     story.run_listeners()
-    story.expect_no_text("message read 1", "links:", actor=story.user)
+    story.expect_text("message read 1", "links: task:1", actor=story.user)
 
 
 def test_a_task_made_with_no_reply_to_a_person_is_not_linked(new_story):

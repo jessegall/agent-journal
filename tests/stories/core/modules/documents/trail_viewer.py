@@ -22,7 +22,6 @@ def requested_read(trail, window, words):
     return answer.value
 
 
-@pending(6886)
 def test_comment_work_and_source_open_through_viewer_routes(trail):
     comment = trail.comment("viewer.shell", "task", 1, "Use whole cents")
     trail.select(comment["id"])
