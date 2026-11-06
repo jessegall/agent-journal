@@ -5475,7 +5475,7 @@ const dg = { class: "chat-dock-fold" }, fg = ["aria-label"], hg = { class: "chat
       ])
     ], 2));
   }
-}, jl = /* @__PURE__ */ K(gg, [["__scopeId", "data-v-50fe9157"]]), vg = {
+}, jl = /* @__PURE__ */ K(gg, [["__scopeId", "data-v-74d44b19"]]), vg = {
   class: "dock-leave",
   "aria-hidden": "true"
 }, la = 5, yg = {
@@ -6047,7 +6047,7 @@ const f0 = {
       _: 1
     }, 8, ["duration"]));
   }
-}, L2 = /* @__PURE__ */ K(g0, [["__scopeId", "data-v-d4c81ace"]]), ft = { notice: 0.42, gap: 8, shuffles: 3, seconds: 2.4, frames: 48, fps: 20, lift: 0.12 }, kn = (e) => Math.min(Math.max(e, 0), 1), v0 = (e) => {
+}, L2 = /* @__PURE__ */ K(g0, [["__scopeId", "data-v-25882fa9"]]), ft = { notice: 0.42, gap: 8, shuffles: 3, seconds: 2.4, frames: 48, fps: 20, lift: 0.12 }, kn = (e) => Math.min(Math.max(e, 0), 1), v0 = (e) => {
   const t = kn(e);
   return t * t * (3 - 2 * t);
 }, rt = (e, t, n) => v0((e - t) / (n - t));
@@ -10575,7 +10575,7 @@ function Nx(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const Dx = jr(() => import("./VoiceFigure-Cyq059rT.js").then((e) => e.V)), Px = "1.2.0", jx = "3.5";
+const Dx = jr(() => import("./VoiceFigure-BgBVdl2C.js").then((e) => e.V)), Px = "1.2.0", jx = "3.5";
 export {
   $y as $,
   xe as A,
