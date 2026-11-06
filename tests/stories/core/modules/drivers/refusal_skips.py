@@ -89,7 +89,7 @@ def test_a_skip_passes_the_refusal_once_keeps_its_reason_and_a_retry_of_the_same
 
 def test_a_skip_with_no_refusal_before_it_is_refused(new_story):
     story = new_story(fixture=BuilderWithUser)
-    story.expect_refusal(SKIP, "has not refused you", actor=story.agent)
+    story.expect_refusal(SKIP, "has not refused you since your last skip", actor=story.agent)
 
 
 def test_a_skip_with_no_reason_is_refused(new_story):

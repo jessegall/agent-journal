@@ -25,6 +25,9 @@ else: no docstring inside a method, no comment inside a method, no docstring und
   one line; a method's body carries no prose.
 - **`field-docstring`** - a docstring under a field or a constant. Name the field so it needs none, or say it in
   the class's one line.
+- **`column-word-in-text`** - a word ending in `_at` between the words of a sentence, such as `has not refused you
+  skipped_at your last skip`. A rename of a variable reached the text. Write the words a person uses: `since your
+  last skip`.
 
 ## The fix
 

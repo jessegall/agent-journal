@@ -39,6 +39,7 @@
         "architecture_viewer_window_declared_without_icon",
         "naming_plain_viewer_text",
         "naming_plain_journal_text",
+        "naming_column_word_in_text",
         "naming_plain_viewer_script_text",
         "naming_plain_viewer_page_text",
         "naming_sentence_label",
