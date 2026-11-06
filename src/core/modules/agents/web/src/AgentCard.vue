@@ -128,7 +128,7 @@ readCommand();
                             </div>
                         </template>
                         <template v-else-if="facts && row.ended_at">
-                            <p class="agent-label" data-agent-no-job>No job kept from version 4</p>
+                            <p class="agent-label" data-agent-no-job>No job recorded</p>
                         </template>
                         <TranscriptRows :line="`agent transcript ${row.id}`" :agent="isRunningHelper ? row.id : null" :helper="isRunningHelper" padding="0" />
                     </div>
