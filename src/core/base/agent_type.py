@@ -19,3 +19,5 @@ class AgentType:
     run_limit_key: str = ""
     kept_limit_key: str = ""
     profile_limits_key: str = ""
+    job_command: tuple[str, ...] = ()
+    job_task_flag: str = ""

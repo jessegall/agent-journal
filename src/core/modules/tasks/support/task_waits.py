@@ -14,6 +14,8 @@ from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
 WAIT_ENDED_SOURCE = "tasks.wait-ended"
 
+TASK_TARGET_PREFIX = "tasks:"
+
 
 class TaskWaits:
     """Ends a blocked task's waits, and opens the task when the last of them has ended."""
@@ -29,7 +31,12 @@ class TaskWaits:
             self.repository.save_change(task, task.moved(TaskLifecycle.unblock), context)
             self.notify_agents(task, context)
 
+    def has_only_task_waits(self, task_id: int) -> bool:
+        return all(wait.target.startswith(TASK_TARGET_PREFIX) for wait in self.pending_task(task_id))
+
     def notify_agents(self, task: Task, context: Context) -> None:
+        if task.delegated_to is not None:
+            return
         for agent in tuple(MainAgentFinder.rows(self.queries)):
             self.nudger.send(agent.id, TASK_REOPENED, WAIT_ENDED_SOURCE, context, task=task.id)
 

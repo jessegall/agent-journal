@@ -39,6 +39,7 @@ from server.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
 from core.base.plugin_script_processes import PluginScriptProcesses
 from server.ordinary_listener_work import OrdinaryListenerWork
 from server.plugin_listener_work import PluginListenerWork
+from server.program_stop_listener_work import ProgramStopListenerWork
 from server.urgent_listener_work import UrgentListenerWork
 from server.ticker import Ticker
 from server.viewer.session_file import SessionFile
@@ -102,7 +103,9 @@ def main(argv: list[str]) -> int:
     listener_round = JournalRound(home, "listener thread", OrdinaryListenerWork(), queue=hook_database.queue)
     plugin_round = JournalRound(home, "plugin listener thread", PluginListenerWork(), queue=hook_database.queue)
     plugin_thread = ListenerThread(plugin_round.run, plugin_round.report, name="plugin listeners")
-    listener_thread = ListenerThread(listener_round.run, listener_round.report, linked_threads=(urgent_thread, plugin_thread))
+    stop_round = JournalRound(home, "program stop thread", ProgramStopListenerWork(), queue=hook_database.queue)
+    stop_thread = ListenerThread(stop_round.run, stop_round.report, name="program stops")
+    listener_thread = ListenerThread(listener_round.run, listener_round.report, linked_threads=(urgent_thread, plugin_thread, stop_thread))
     ticker = Ticker(home, Ticker.module_handlers(finder), listener_thread.wake, queue=hook_database.queue)
     phones = PhoneSessions(home, listener_thread)
     login = ViewerLogin(phones, ShareSessions(phones.journal_output), SessionFile(home.viewer_sessions_file))
@@ -146,6 +149,7 @@ def main(argv: list[str]) -> int:
     listener_thread.start()
     urgent_thread.start()
     plugin_thread.start()
+    stop_thread.start()
     ticker_thread.start()
     viewer.start()
     files.clear_restart()
@@ -154,7 +158,7 @@ def main(argv: list[str]) -> int:
         server.serve_requests()
         server.drain(DRAIN_LIMIT_SECONDS)
     finally:
-        threads = (ticker_thread, listener_thread, urgent_thread, plugin_thread)
+        threads = (ticker_thread, listener_thread, urgent_thread, plugin_thread, stop_thread)
         for thread in threads:
             thread.signal_stop()
         PluginScriptProcesses.shared(home).stop_all()

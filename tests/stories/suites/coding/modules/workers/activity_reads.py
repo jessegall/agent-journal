@@ -27,7 +27,7 @@ def four_tasks(new_story):
 def four_workers(four_tasks):
     story = four_tasks
     for number in range(1, 5):
-        story.expect_success(f"worker dispatch --fresh --model sonnet {number}", actor=story.agent)
+        story.expect_success(f"worker dispatch --fresh 'A new worker' --model sonnet {number}", actor=story.agent)
     return story
 
 
@@ -59,7 +59,7 @@ def test_a_later_tick_reads_fresh_activity_after_a_worker_acts(four_workers):
 def test_a_worker_dispatch_reads_its_whole_task_batch_once_per_transaction(four_tasks):
     story = four_tasks
     with patch.object(Database, "rows", autospec=True, side_effect=Database.rows) as reads:
-        story.expect_success("worker dispatch --fresh --model sonnet 1 2 3 4", actor=story.agent)
+        story.expect_success("worker dispatch --fresh 'A new worker' --model sonnet 1 2 3 4", actor=story.agent)
     batch_reads = [call for call in reads.call_args_list if "FROM tasks WHERE id IN (?, ?, ?, ?)" in call.args[1].sql]
     expect_value(len(batch_reads), BATCH_READS)
 

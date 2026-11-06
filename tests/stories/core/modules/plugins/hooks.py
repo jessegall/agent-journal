@@ -1,13 +1,18 @@
 import json
 import os
+import subprocess
+from pathlib import Path
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.file_access import FileAccess
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.command_effect import CommandEffect
+from core.modules.plugins.support.login_path import LoginPath
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.support.scanned_edits import scanned_edit
+from tests.stories.core.modules.plugins.support.event_stories import event_plugin_story, install_event_plugin
 from tests.stories.core.modules.plugins.support.plugin_samples import sample_plugin_folder
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import BuilderStarted
@@ -115,3 +120,51 @@ def test_a_line_read_by_a_hook_is_not_read_again_before_it_is_deleted(new_story)
     story.expect_absent_hook_line("s-1", LISTING_SAMPLE, "four sins in e.py")
     story.run_listeners()
     story.expect_rows(not any(queue.iterdir()))
+
+
+def test_the_starts_of_one_hook_read_the_login_path_once(new_story, monkeypatch):
+    story = install_runner(event_plugin_story(new_story, program="see.sh", hears=["command_starting"], holds=["command_starting"]))
+    install_event_plugin(story, program="see.sh", hears=["command_starting"], holds=["command_starting"], name="second")
+    story.run("setting set journal.core.plugins.hold_window_ms 5000 --project", actor=story.user)
+    login_path = LoginPath(story.home)
+    login_path.file.parent.mkdir(parents=True, exist_ok=True)
+    login_path.file.write_text("/usr/bin:/bin")
+    reads = read_counter(monkeypatch, login_path.file)
+    starts = start_counter(monkeypatch, "see.sh")
+    line = HookSamples.shell("ls && pwd", *(ShellPart(name, CommandCategory.READ, []) for name in ("ls", "pwd")))
+    story.expect_hook_allowed("s-1", line)
+    story.expect_rows(sorted(starts) == ["events", "events", "second", "second"], reads == [login_path.file.resolve()])
+
+
+def test_a_hook_starts_no_script_for_an_edit_the_plugin_hears_and_does_not_hold(new_story, monkeypatch):
+    story = install_runner(event_plugin_story(new_story, program="see.sh", hears=["file_edited"]))
+    starts = start_counter(monkeypatch, "see.sh")
+    scanned_edit(story, "s-1", "a.py")
+    story.run_listeners()
+    starts_on_edit = list(starts)
+    story.expect_hook_allowed("s-1", LISTING_SAMPLE)
+    story.expect_rows(starts_on_edit == ["events"], starts == starts_on_edit)
+
+def read_counter(monkeypatch, file: Path) -> list[Path]:
+    reads: list[Path] = []
+    read = FileAccess.binary
+
+    def counted(self, path):
+        reads.extend([Path(path).resolve()] if Path(path).resolve() == file.resolve() else [])
+        return read(self, path)
+
+    monkeypatch.setattr(FileAccess, "binary", counted)
+    return reads
+
+
+def start_counter(monkeypatch, program: str) -> list[str]:
+    """The plugin of each start of the program, in order."""
+    starts: list[str] = []
+    popen = subprocess.Popen
+
+    def counted(arguments, *call_arguments, **options):
+        starts.extend([options["env"]["JOURNAL_PLUGIN"]] if str(arguments[0]).endswith(program) else [])
+        return popen(arguments, *call_arguments, **options)
+
+    monkeypatch.setattr(subprocess, "Popen", counted)
+    return starts

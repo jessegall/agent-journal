@@ -9,6 +9,7 @@ from core.base.viewer.registry_lines import RegistryLines
 from core.base.viewer.skeleton_part import SkeletonPart
 from core.base.viewer.toggle_option import ToggleOption
 from core.base.viewer.window_icon import WindowIcon
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_size import WindowSize
 from core.base.viewer.window_search import WindowSearch
 from core.base.viewer.window_read_search import WindowReadSearch
@@ -31,7 +32,7 @@ class WindowDeclaration:
     the read line its tab counts with and the read lines a share link may use, each written as the line and,
     after a space, the argument that names an id of the shared row or of a row it includes, the search its
     bar offers, the skeleton of itself the viewer draws while it loads, and for a section the inspector slots
-    it is drawn in."""
+    it is drawn in, and the keys of data it reads through one route."""
 
     name: str
     title: str
@@ -60,6 +61,7 @@ class WindowDeclaration:
     slots: Sequence[str] = ()
     request_priority: WindowPriority = WindowPriority.NORMAL
     unqueued: bool = False
+    keys: Sequence[WindowKey] = ()
 
     def problems(self, module_name: str, web_folder: Path, provided: RegistryLines) -> list[str]:
         problems = DeclarationNames.prefix_problems(f"the window {self.name}", self.name, module_name)
@@ -78,6 +80,12 @@ class WindowDeclaration:
                      if not any(source.read.startswith(line) for line in self.reads)]
         problems += [f"{self.name} follows {pattern} for source {source.key} without declaring it" for source in self.sources
                      for pattern in source.events if pattern not in self.events]
+        key_names = [key.name for key in self.keys]
+        problems += [f"{self.name} names the key {name} twice" for name in dict.fromkeys(key_names) if key_names.count(name) > 1]
+        problems += [f"{self.name} fills its key {key.name} with an undeclared read" for key in self.keys if key.read not in self.reads]
+        problems += [f"{self.name} reloads its key {key.name} on {pattern} without following it" for key in self.keys
+                     for pattern in key.events if pattern not in self.events]
+        problems += [f"{self.name} reloads its key {key.name} every {key.reload_seconds} seconds, and a timer is above 0" for key in self.keys if key.reload_seconds < 0]
         if self.shows is WindowShows.SELECTED_AGENT and self.place not in (WindowPlace.PANE, WindowPlace.DROPDOWN):
             problems.append(f"{self.name} shows one agent's work but is drawn in a {self.place.value}: use a pane or dropdown")
         problems += DeclarationNames.icon_problems(f"the window {self.name}", self.icon)

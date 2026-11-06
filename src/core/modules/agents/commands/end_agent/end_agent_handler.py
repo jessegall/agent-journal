@@ -1,7 +1,7 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
-from core.base.command.completed_command import CompletedCommand
+from core.base.command.completed_command_error import CompletedCommandError
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
@@ -20,5 +20,5 @@ class EndAgentHandler(Handler[EndAgent, Agent]):
     def handle(self, command: EndAgent, context: Context) -> Agent:
         agent = self.rows.required(Agent, command.row_id)
         if agent.ended_at is not None:
-            raise CompletedCommand(f"agent {agent.id} has ended already", f"journal agent show {agent.id}")
+            raise CompletedCommandError(f"agent {agent.id} has ended already", f"journal agent show {agent.id}")
         return self.repository.save_change(agent, agent.ended(context.timestamp, self.suites.agent_policy()), context)

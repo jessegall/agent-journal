@@ -10,6 +10,7 @@ import Agents from "../../core/modules/agents/web/src/agents.js";
 import Helpers from "../../core/modules/agents/web/src/helpers.js";
 import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue";
 import {age, ago} from "../src/format/time.js";
+import {agentFilterOptions} from "./support/agentFilterOptions.js";
 
 vi.stubGlobal("matchMedia", () => ({matches: true}));
 
@@ -51,6 +52,7 @@ const answers = {
 const WORKERS = AGENTS.map((row) => (row.id === 3 ? {...row, role: "worker"} : row));
 const window = (facts = FACTS, options = {}, agents = AGENTS) => ({
     ...context({
+        "agent cards --options": agentFilterOptions,
         "agent list --show running": page(agents.filter((row) => !row.ended_at)),
         "agent list --show idle": page(agents.filter((row) => row.ended_at && row.role === "helper")),
         "agent list --show retired": page(agents.filter((row) => row.ended_at && row.role !== "helper")),
@@ -63,8 +65,9 @@ const window = (facts = FACTS, options = {}, agents = AGENTS) => ({
 const drawn = (facts, options, agents) => mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, window(facts, options, agents));
 const cardOf = (element, id) => element.querySelector(`[data-agent-open="${id}"]`);
 
-test("the agents window filters on running, idle, retired or all", async () => {
+test("the agents window filters on working, idle, retired or all from the server", async () => {
     const element = await drawn();
+    expect([...element.querySelectorAll('.segmented button')].map((button) => button.textContent.trim())).toEqual(["Working", "Idle", "Retired", "All"]);
     expect(cardOf(element, 2)).not.toBeNull();
     expect(cardOf(element, 1)).toBeNull();
     await pickButton(element, "Idle");

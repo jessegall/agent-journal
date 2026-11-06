@@ -17,6 +17,7 @@ from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault impor
 from core.modules.plugins.models.enums.refusable_event import RefusableEvent
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_queue_file import PluginQueueFile
+from core.modules.plugins.support.hook_facts import HookFacts
 from core.modules.plugins.support.plugin_event import PluginEvent
 from core.modules.plugins.support.plugin_declared_event import CEILING_SETTING
 from core.modules.plugins.support.plugin_event_names import PluginEventNames
@@ -47,6 +48,7 @@ class PluginRule(DriverRule):
         lines: list[str] = []
         commands: list[Command[object]] = []
         events = PluginEventNames().events(hook)
+        facts = self.runs.hook_facts(hook.agent_id)
         for check in self.runnable.checks():
             commands.extend(check.records(""))
             if check.is_changed:
@@ -63,7 +65,7 @@ class PluginRule(DriverRule):
                     commands.append(DeliverPluginEvent(plugin.id, hook.agent_id, commit.key if commit else event.name, json.dumps(dict(event.data)), commit.script if commit else ""))
                 if event.name not in manifest.window_names():
                     continue
-                refusal = self.refusal_text(hook, runnable, event, lines, commands)
+                refusal = self.refusal_text(hook, runnable, event, lines, commands, facts)
                 if refusal:
                     return RuleAnswer(refusal=refusal, nudges=(*(PLUGIN_LINE.nudge(text=line) for line in lines), PLUGIN_REFUSAL.nudge(text=refusal)), commands=tuple(commands))
         return RuleAnswer(nudges=tuple(PLUGIN_LINE.nudge(text=line) for line in lines), commands=tuple(commands))
@@ -82,15 +84,15 @@ class PluginRule(DriverRule):
     def reaches(hook: AgentHook, manifest: PluginManifest, event: str) -> bool:
         return hook.role == AgentRole.MAIN or manifest.reaches_role(event, hook.role)
 
-    def refusal_text(self, hook: AgentHook, runnable: RunnablePlugin, event: PluginEvent, lines: list[str], commands: list[Command[object]]) -> str:
+    def refusal_text(self, hook: AgentHook, runnable: RunnablePlugin, event: PluginEvent, lines: list[str], commands: list[Command[object]], facts: HookFacts) -> str:
         plugin, manifest = runnable.plugin, runnable.manifest
         guard = manifest.declared_event(event.name, EventForm.GUARD)
         request = PluginRunRequest(runnable, PluginEvent(guard.key, event.data) if guard else event, EventForm.GUARD, manifest.window_ms(event.name, self.setting_values.number(CEILING_SETTING)),
-                                   f"at {event.name}", hook.event.environment, hook.timestamp, hook.agent_id, guard.script if guard else "")
+                                   f"at {event.name}", hook.event.environment, hook.timestamp, hook.agent_id, guard.script if guard else "", hook_waits=True, facts=facts.value)
         outcome = self.runs.run(request)
         if outcome.is_late:
             return ""
-        commands.extend(outcome.records)
+        commands.extend(record for record in outcome.records if record not in commands)
         answer = outcome.answer
         if answer is None:
             return ""

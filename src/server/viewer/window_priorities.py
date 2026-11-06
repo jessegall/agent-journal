@@ -24,6 +24,9 @@ class WindowPriorities:
     def unqueued_lines(self) -> frozenset[tuple[str, ...]]:
         return frozenset(tuple(line.split()[:2]) for window in self.windows if window.unqueued for line in window.reads)
 
+    def window(self, name: str) -> WindowDeclaration | None:
+        return next((window for window in self.windows if window.name == name), None)
+
     def priority(self, window: str) -> WindowPriority:
         return self.declared.get(window, WindowPriority.NORMAL)
 

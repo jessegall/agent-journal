@@ -22,8 +22,8 @@ PYTHON_PROGRAM = "python"
 
 class SilentRunRule(DriverRule):
     """Tells an agent that a test, a build or a Python run still going has printed nothing, or has gone quiet
-    long after its last line, so its reader has nothing to show, and how to make that tool print as it runs. It checks the agent's newest
-    runs only, so a hook's read stays small however many are going."""
+    long after its last line, so its reader has nothing to show, and how to make that tool print as it runs.
+    It checks the agent's newest runs only, so a hook's read stays small however many are going."""
 
     name = "processes.silent-run"
     hook = HookWildcard.ALL_HOOKS

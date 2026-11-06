@@ -11,8 +11,9 @@ from suites.coding.modules.workers.commands.send_worker.send_worker import SendW
 
 
 class SendWorkerSubcommand(Subcommand[SendWorker, AgentLine]):
-    """`journal worker send <n> "<job>"`: a worker that reported takes its next job, with its memory of the
-    last, and the answer says whether it runs, is started again or cannot be told."""
+    """`journal worker send <n> ["<job>"] [--task <task> ...]`: a worker that reported takes its next job or
+    tasks, with its memory of the last, and the answer says whether it runs, is started again or cannot be
+    told."""
 
     cli_name = "worker"
     name = "send"
@@ -23,10 +24,13 @@ class SendWorkerSubcommand(Subcommand[SendWorker, AgentLine]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("worker_id", type=int)
-        parser.add_argument("job")
+        parser.add_argument("job", nargs="?", default="")
+        parser.add_argument("--task", type=int, nargs="+", default=[], help="tasks the worker takes next")
+        parser.add_argument("--library-link", action="append", default=[], help="a folder of the environment to link into a new worktree")
+        parser.add_argument("--library-copy", action="append", default=[], help="a folder of the environment to copy into a new worktree")
 
     def command(self, arguments: Namespace, caller: Caller) -> SendWorker:
-        return SendWorker(arguments.worker_id, arguments.job)
+        return SendWorker(arguments.worker_id, arguments.job, tuple(arguments.task), tuple(arguments.library_link), tuple(arguments.library_copy))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, AgentLine):

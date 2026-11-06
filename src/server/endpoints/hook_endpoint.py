@@ -108,11 +108,12 @@ class HookEndpoint:
 
     def prepared_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, container: Container, deadline: float, sender: HookSender) -> HookReply:
         event = self.event(data, program, headers, container.get(Providers))
-        database.set_busy_timeout(max(deadline - perf_counter(), LEAST_BUSY_SECONDS))
         tools = container.get(PerformanceTools)
         start_points = tools.begin()
         try:
+            database.set_busy_timeout(LEAST_BUSY_SECONDS)
             HookDeliveryRetries(self.context.home).retry(container)
+            database.set_busy_timeout(max(deadline - perf_counter(), LEAST_BUSY_SECONDS))
             route = container.get(HookRoute)
             self.timing.stamp("route_ready")
             return route.answer(event)

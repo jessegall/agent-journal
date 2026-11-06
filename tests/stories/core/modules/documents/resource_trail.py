@@ -8,7 +8,7 @@ from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from core.modules.documents.commands.record_mentions.record_mentions import RecordMentions
-from core.modules.documents.support.row_ref import RowRef
+from core.modules.documents.references.row_ref import RowRef
 from tests.stories.core.modules.library.support.copy_stories import new_item, shared_server
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.suites.coding.modules.workers.worker_context import assigned_worker, worker_scenario

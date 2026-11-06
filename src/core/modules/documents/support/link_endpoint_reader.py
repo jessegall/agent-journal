@@ -2,7 +2,7 @@ from core.base.model.model import Model
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.modules.documents.conditions.link_endpoint_columns import LinkEndpointColumns
-from core.modules.documents.support.row_ref import RowRef
+from core.modules.documents.references.row_ref import RowRef
 from core.modules.documents.support.row_refs import RowRefs
 from core.modules.plans.models.phase import Phase
 from core.modules.tasks.models.task_log import TaskLog

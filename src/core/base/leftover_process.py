@@ -13,15 +13,17 @@ class LeftoverProcess:
     """A process a killed journal left running, found by its saved pid and stopped with its group."""
 
     @classmethod
-    def stop(cls, pid: int, program: str) -> None:
+    def stop(cls, pid: int, program: str) -> bool:
         if program not in cls.command_line(pid):
-            return
+            return True
         cls.signal(pid, signal.SIGTERM)
         deadline = time.monotonic() + STOP_LIMIT_SECONDS
         while program in cls.command_line(pid) and time.monotonic() < deadline:
             time.sleep(POLL_SECONDS)
-        if program in cls.command_line(pid):
-            cls.signal(pid, signal.SIGKILL)
+        if program not in cls.command_line(pid):
+            return True
+        cls.signal(pid, signal.SIGKILL)
+        return False
 
     @staticmethod
     def signal(pid: int, number: int) -> None:

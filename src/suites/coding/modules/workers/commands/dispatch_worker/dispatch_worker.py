@@ -18,3 +18,4 @@ class DispatchWorker(Command[WorkerLaunch]):
     program_model: str = ""
     profile: str = ""
     given_name: str = ""
+    new_agent_reason: str = ""

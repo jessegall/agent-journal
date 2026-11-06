@@ -7,6 +7,7 @@ from server.hook.server_queue import ServerQueue
 from server.viewer.event_stream import EventStream
 from server.viewer.file_route import FileRoute
 from server.viewer.line_route import LineRoute
+from server.viewer.window_data_route import WindowDataRoute
 from server.viewer.module_files import ModuleFiles
 from server.viewer.share_route import ShareRoute
 from server.viewer.push_route import PushRoute
@@ -30,6 +31,7 @@ class ViewerRoutes:
         self.request_log = RequestLog(home)
         self.priorities = self.request_log.priorities
         self.line_route, self.event_stream = LineRoute(home, listener_thread, reported, queue, self.request_log.completed), EventStream(home)
+        self.window_data = WindowDataRoute(self.priorities, self.line_route)
         self.module_files, self.windows_route = ModuleFiles(home), WindowsRoute(home)
         self.buttons_route = ButtonsRoute(home)
         self.chat_declarations_route, self.session_route = ChatDeclarationsRoute(home), SessionRoute(login, home)

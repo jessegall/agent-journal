@@ -9,7 +9,7 @@ from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.documents.commands.record_mentions.record_mentions import RecordMentions
-from core.modules.documents.support.row_ref import RowRef
+from core.modules.documents.references.row_ref import RowRef
 from core.base.change.event_subscriber import E
 
 MODULE_NAME = "journal.core.documents"

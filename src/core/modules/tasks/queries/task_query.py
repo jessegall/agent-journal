@@ -89,7 +89,7 @@ class TaskQuery(Query[Task]):
 
     def next_open(self, excluded_id: int | None, exclusion: Condition) -> Task | None:
         free_tasks = self.open_tasks().matching(IsNull("delegated_to")).matching(self.no_open_dependency()).matching(exclusion)
-        return (free_tasks if excluded_id is None else free_tasks.matching(Among("id", (excluded_id,), negated=True))).descending("priority").ordered("id").first()
+        return (free_tasks if excluded_id is None else free_tasks.matching(Among("id", [excluded_id], negated=True))).descending("priority").ordered("id").first()
 
 
     def closed_counts(self, starts: Sequence[Timestamp]) -> list[int]:

@@ -1,10 +1,15 @@
 import json
+from pathlib import Path
 import os
 import select
 import signal
 from datetime import timedelta
 
 from core.base.actor import Actor
+from core.base.file_access import FileAccess
+from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.plugins.support.plugin_program import SETTINGS_FILE
+from core.modules.skills.support.loaded_skills import LoadedSkills
 from core.base.actor_type import ActorType
 from core.base.database.database import Database
 from core.base.database.statement import Statement
@@ -15,12 +20,19 @@ from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_services import PluginServices
 from core.modules.plugins.support.service_processes import ServiceProcesses
-from tests.stories.core.modules.plugins.hooks import REMOVAL_SAMPLE
+from core.base.driver.command_category import CommandCategory
+from core.base.driver.command_effect import CommandEffect
+from core.testing.hook_samples import HookSamples
+from core.testing.shell_part import ShellPart
+from tests.stories.core.modules.plugins.support.event_stories import plugin_row
+from tests.stories.core.support.scanned_edits import scanned_edit
+from tests.stories.core.modules.plugins.hooks import REMOVAL_SAMPLE, start_counter
 from tests.stories.core.modules.plugins.support.service_samples import service_plugin_folder
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 END_LIMIT_SECONDS = 5
+REMOVAL_PART = ShellPart("rm", CommandCategory.EDIT, ["-rf", "build"], effects=[CommandEffect.DELETES_FILES])
 
 
 def served_story(new_story):
@@ -39,6 +51,78 @@ def test_a_service_that_answers_is_asked_in_place_of_the_program(new_story):
         story.expect_hook_refusal("s-1", REMOVAL_SAMPLE, "[plugin served] the service says no")
     finally:
         story.processes.close()
+
+
+def test_a_line_of_four_parts_reaches_the_service_as_four_events_and_starts_no_program(new_story, monkeypatch):
+    story = served_story(new_story)
+    try:
+        starts = start_counter(monkeypatch, "run.sh")
+        story.expect_hook_refusal("s-1", four_parts(REMOVAL_PART), "[plugin served] the service says no")
+        served_lines = (story.home.folder / "plugin-data" / "served" / "asked").read_text().splitlines()
+        story.expect_rows(len(served_lines) == 4, starts == [])
+    finally:
+        story.processes.close()
+
+
+def test_a_line_of_four_parts_reads_the_agent_and_its_skills_as_a_line_of_one_part_does_and_writes_the_settings_once(new_story, monkeypatch):
+    story = served_story(new_story)
+    try:
+        call_counts = counted_calls(monkeypatch)
+        story.expect_hook_refusal("s-1", HookSamples.shell("rm -rf build", REMOVAL_PART), "[plugin served] the service says no")
+        one_part_counts = dict(call_counts)
+        call_counts.update(settings=0, agent=0, skills=0)
+        story.expect_hook_refusal("s-1", four_parts(REMOVAL_PART), "[plugin served] the service says no")
+        served_events = [json.loads(line) for line in (story.home.folder / "plugin-data" / "served" / "asked").read_text().splitlines()]
+        story.expect_rows([line["data"]["position"] for line in served_events[-4:]] == [0, 1, 2, 3], one_part_counts["skills"] == 1, call_counts["agent"] == one_part_counts["agent"], call_counts["skills"] == 1, one_part_counts["settings"] + call_counts["settings"] <= 1)
+    finally:
+        story.processes.close()
+
+
+def counted_calls(monkeypatch) -> dict[str, int]:
+    call_counts = {"settings": 0, "agent": 0, "skills": 0}
+    write, find, names = FileAccess.write, AgentRows.find, LoadedSkills.names
+
+    def counted_write(self, file, *arguments, **options):
+        call_counts["settings"] += 1 if Path(file).name == SETTINGS_FILE else 0
+        return write(self, file, *arguments, **options)
+
+    def counted_find(self, agent_id):
+        call_counts["agent"] += 1
+        return find(self, agent_id)
+
+    def counted_names(self, agent_id):
+        call_counts["skills"] += 1
+        return names(self, agent_id)
+
+    monkeypatch.setattr(FileAccess, "write", counted_write)
+    monkeypatch.setattr(AgentRows, "find", counted_find)
+    monkeypatch.setattr(LoadedSkills, "names", counted_names)
+    return call_counts
+
+
+def test_a_line_of_four_parts_starts_no_program_while_the_service_is_closed(new_story, monkeypatch):
+    story = served_story(new_story)
+    story.processes.close()
+    starts = start_counter(monkeypatch, "run.sh")
+    story.expect_hook_allowed("s-1", four_parts(ShellPart("whoami", CommandCategory.READ, [])))
+    story.expect_hook_allowed("s-1", four_parts(ShellPart("whoami", CommandCategory.READ, [])))
+    served = plugin_row(story, "served")
+    story.expect_rows(starts == [], served.fault_count == 0, not served.failing)
+    story.expect_text("plugin list", "last fault: its service answers is closed, so the event went through unjudged at command_starting", actor=story.user)
+
+
+def test_a_delivery_runs_the_program_while_the_service_is_closed_and_records_no_fault(new_story, monkeypatch):
+    story = served_story(new_story)
+    story.processes.close()
+    starts = start_counter(monkeypatch, "run.sh")
+    scanned_edit(story, "s-1", "a.py")
+    story.run_listeners()
+    served = plugin_row(story, "served")
+    story.expect_rows(starts == ["served"], served.fault_count == 0, served.last_fault == "")
+
+
+def four_parts(last: ShellPart):
+    return HookSamples.shell(f"ls && pwd && date && {last.program} {' '.join(last.arguments)}", *(ShellPart(name, CommandCategory.READ, []) for name in ("ls", "pwd", "date")), last)
 
 
 def test_the_services_read_names_each_service_and_whether_it_runs(new_story):

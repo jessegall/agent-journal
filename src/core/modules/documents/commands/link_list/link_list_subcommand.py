@@ -19,7 +19,7 @@ from core.modules.documents.support.link_endpoint_reader import LinkEndpointRead
 from core.modules.documents.support.link_page import LinkPage
 from core.modules.documents.support.link_read import LinkRead
 from core.modules.documents.support.link_counterpart import LinkCounterpart
-from core.modules.documents.support.row_ref import RowRef
+from core.modules.documents.references.row_ref import RowRef
 from core.modules.documents.support.row_refs import RowRefs
 
 

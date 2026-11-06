@@ -8,12 +8,12 @@ from tests.stories.core.support.fixtures import PlanTaskWaiting, PlanTasksWaitin
 
 def test_the_next_task_starter_skips_a_task_that_waits_and_starts_the_next_free_one(free_plan_task):
     story = free_plan_task
-    story.expect_success(lines.THIRD_TASK_DETAILS, "state: open")
+    story.expect_success(lines.THIRD_TASK_DETAILS, "state: blocked")
 
 
 def test_the_next_task_starter_starts_nothing_when_every_open_task_waits(waiting_plan_task):
     story = waiting_plan_task
-    story.expect_success(lines.THIRD_TASK_DETAILS, "state: open")
+    story.expect_success(lines.THIRD_TASK_DETAILS, "state: blocked")
 
 
 class NextPlanTaskClosed(StoryFixture):
@@ -38,5 +38,5 @@ def free_plan_task(new_story):
 @pytest.fixture
 def waiting_plan_task(new_story):
     story = new_story(fixture=WaitingPlanTaskClosed)
-    story.expect_success(lines.TASK_DETAILS, "state: open")
+    story.expect_success(lines.TASK_DETAILS, "state: blocked")
     return story

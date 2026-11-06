@@ -38,7 +38,7 @@ class RemoveLinkHandler(Handler[RemoveLink, None]):
             raise Refusal("only about and edited attribution links can be removed")
         self.authorize(link.creator_id, context)
         message = self.rows.required(Message, link.source_id) if link.source_model == Message.model_name else None
-        if not self.is_request_here(message, context):
+        if not self.local_request(message, context):
             raise Refusal("correct a person request attribution in this environment")
         if link.target_model not in ("task", "plan", "doc", "report"):
             raise Refusal("correct a request attribution in this environment")
@@ -50,7 +50,7 @@ class RemoveLinkHandler(Handler[RemoveLink, None]):
         self.repository.delete_stored(link, context)
 
     @staticmethod
-    def is_request_here(message: Message | None, context: Context) -> bool:
+    def local_request(message: Message | None, context: Context) -> bool:
         return message is not None and message.type in PERSON_MESSAGE_TYPES and message.environment_id == context.environment_id
 
     def authorize(self, creator_id: int, context: Context) -> None:

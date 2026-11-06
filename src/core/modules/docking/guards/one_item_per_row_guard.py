@@ -1,6 +1,6 @@
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
-from core.base.command.completed_command import CompletedCommand
+from core.base.command.completed_command_error import CompletedCommandError
 from core.modules.docking.guards.support.docking_arrival import DockingArrival
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.base.change.changed import Changed
@@ -22,4 +22,4 @@ class OneItemPerRowGuard(Guard[Changed[DockItem]]):
             return
         matching = self.items.docked(item.dock_id).type_items(item.type).row_items(item.target_model, item.target_id)
         if any(sibling.id != item.id for sibling in matching.all_rows()):
-            raise CompletedCommand(f"{item.target_model} {item.target_id} is docked already as {item.type}", "it is docked once for each type")
+            raise CompletedCommandError(f"{item.target_model} {item.target_id} is docked already as {item.type}", "it is docked once for each type")

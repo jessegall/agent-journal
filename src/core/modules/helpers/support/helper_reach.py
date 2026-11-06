@@ -22,6 +22,14 @@ class HelperReach:
             raise Refusal(f"helper {helper.id} answers to agent:{helper.parent_id}", "only its parent, the main agent or a person sends to it or stops it")
         return helper
 
+    def new_parent(self, helper: Agent, actor: Actor) -> int | None:
+        if actor.type is not ActorType.AGENT or actor.id == helper.parent_id:
+            return None
+        sender = self.agents.find(actor.id)
+        parent = self.agents.find(helper.parent_id) if helper.parent_id is not None else None
+        is_older_main = parent is None or parent.role == AgentRole.MAIN
+        return sender.id if sender.role == AgentRole.MAIN and is_older_main else None
+
     def may_reach(self, helper: Agent, actor_id: int) -> bool:
         actor = self.agents.find(actor_id)
         return actor.id == helper.parent_id or (actor.role == AgentRole.MAIN and actor.environment_id == helper.environment_id)

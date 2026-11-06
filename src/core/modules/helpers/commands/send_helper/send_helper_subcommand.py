@@ -16,9 +16,11 @@ class SendHelperSubcommand(Subcommand[SendHelper, int]):
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("helper_id", type=int)
         parser.add_argument("job")
+        parser.add_argument("--plan", type=int, default=None, help="the plan this job reviews")
+        parser.add_argument("--steer", action="store_true", help="add this to the job the helper is working on")
 
     def command(self, arguments: Namespace, caller: Caller) -> SendHelper:
-        return SendHelper(arguments.helper_id, arguments.job)
+        return SendHelper(arguments.helper_id, arguments.job, arguments.steer, arguments.plan)
 
     def write_output(self, value: object, output: Output) -> None:
         output.write(f"helper {value} takes the job", {"helper_id": value})

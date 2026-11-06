@@ -232,7 +232,7 @@ def test_a_dispatch_on_a_file_an_ended_worker_changed_is_refused_naming_it(new_s
 
 def test_fresh_passes_and_a_dispatch_on_other_files_goes_out(new_story):
     story, _ = ended_worker_story(new_story)
-    story.expect_hook_allowed("s-1", dispatch_sample("2", "--model", "sonnet", "--fresh"))
+    story.expect_hook_allowed("s-1", dispatch_sample("2", "--model", "sonnet", "--fresh", "A new worker"))
     story.expect_hook_allowed("s-1", dispatch_sample("3", "--model", "sonnet"))
 
 
@@ -330,8 +330,8 @@ def test_the_board_lists_tasks_delegated_to_a_worker_in_a_group_of_their_own_apa
 
 
 
-def expect_card_listed(story, show: str, agent_id: int, listed: bool) -> None:
-    outcome = story.run(f"agent cards --environment main --show {show} --json", actor=story.agent)
+def expect_card_listed(story, filter_name: str, agent_id: int, listed: bool) -> None:
+    outcome = story.run(f"agent cards --environment main --show {filter_name} --json", actor=story.agent)
     assert outcome.code == 0, outcome.output_text
     rows = json.loads(outcome.output_text)["rows"]
     assert (agent_id in [row["id"] for row in rows]) is listed, rows
@@ -356,7 +356,8 @@ def test_a_merged_worker_with_a_task_still_assigned_is_not_listed_as_running(new
     story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     expect_card_listed(story, "running", worker.id, False)
-    expect_card_listed(story, "retired", worker.id, True)
+    expect_card_listed(story, "idle", worker.id, True)
+    expect_card_listed(story, "retired", worker.id, False)
 
 
 def test_a_workers_facts_carry_its_model_profile_and_name_with_no_status_file(new_story):

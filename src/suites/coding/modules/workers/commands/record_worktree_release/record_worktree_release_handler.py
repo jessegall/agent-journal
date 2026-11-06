@@ -32,7 +32,7 @@ class RecordWorktreeReleaseHandler(Handler[RecordWorktreeRelease, Worktree]):
         worktree = self.rows.required(Worktree, command.worktree_id)
         abandoned = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.abandon), context)
         task = self.rows.required(Task, worktree.task_id)
-        if task.delegated_to == worktree.session_agent_id:
+        if task.delegated_to == worktree.session_agent_id and task.state in ASSIGNED_STATES:
             self.release_task(task, command.reason, context)
         for assigned_task in tuple(self.queries.query(Task).filter(delegated_to=worktree.session_agent_id).matching(Among("state", ASSIGNED_STATES)).all_rows()):
             if not self.has_all_proofs_checked(assigned_task, worktree):

@@ -9,3 +9,5 @@ class SendHelper(Command[int]):
 
     helper_id: int
     job: str
+    steer: bool = False
+    review_plan_id: int | None = None

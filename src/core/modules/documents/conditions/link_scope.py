@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from core.base.database.statement import Statement
 from core.modules.documents.models.link import Link
-from core.modules.documents.support.row_ref import RowRef
+from core.modules.documents.references.row_ref import RowRef
 from core.modules.documents.conditions.link_side import LinkSide
 
 
