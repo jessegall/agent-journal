@@ -154,13 +154,32 @@ test("task 6894: counterpart pages append once and preserve every label", async 
         return {ok: true, value: {rows: [], counterparts, total: 11, page: second ? 2 : 1, page_size: 10, next_page: second ? null : 2}};
     };
     const element = await mounted(PlanLinks, context({}), {id: 1, read});
-    expect(element.querySelectorAll("[data-plan-link]")).toHaveLength(10);
     element.querySelector("[data-page-more]").click();
+    await settle();
+    element.querySelector("[data-link-show-more]").click();
     await settle();
     expect(element.querySelectorAll("[data-plan-link]")).toHaveLength(11);
     expect(element.textContent).toContain("edited");
     expect(requests.at(-1)).toContain("--group-counterparts");
     expect(requests.at(-1)[requests.at(-1).indexOf("--page") + 1]).toBe("2");
+});
+
+test("task 7104: many links fold per kind and Show more opens the rest of that kind", async () => {
+    const rows = [
+        ...Array.from({length: 8}, (_, at) => linkedItem("task", at + 1, ["about"], `tasks:${at + 1}`)),
+        ...Array.from({length: 2}, (_, at) => linkedItem("report", at + 1, ["about"], `reports:${at + 1}`)),
+    ];
+    const element = await mounted(PlanLinks, context({}), {id: 1, read: planRead(rows, [])});
+    expect([...element.querySelectorAll("[data-link-kind]")].map((node) => node.textContent.trim())).toEqual(["task 8", "report 2"]);
+    expect(element.querySelectorAll('[data-plan-link][data-link-model="task"]')).toHaveLength(3);
+    expect(element.querySelectorAll('[data-plan-link][data-link-model="report"]')).toHaveLength(2);
+    const fold = element.querySelector("[data-link-show-more]");
+    expect(fold.textContent).toBe("Show 5 more");
+    expect(element.querySelectorAll("[data-link-show-more]")).toHaveLength(1);
+    fold.click();
+    await settle();
+    expect(element.querySelectorAll('[data-plan-link][data-link-model="task"]')).toHaveLength(8);
+    expect(element.querySelector("[data-link-show-more]")).toBeNull();
 });
 
 test("task 6894: a relation failure remains visible", async () => {
