@@ -13,7 +13,7 @@ from tests.stories.support.story_checks import expect_value
 
 
 @pytest.mark.parametrize("name,matched_events,unmatched_events", [
-    ("documents.reply-links", ("message.create",),
+    ("documents.reply-links", ["message.create"],
      ("message.update", "task.update", "doc.create", "agent.create", "proof.queue")),
     ("workers.tests", ("proof.queue", "proof.run", "process.finish", "affected_test.create", "affected_test.update"),
      ("proof.check", "task.start", "affected_test.delete")),

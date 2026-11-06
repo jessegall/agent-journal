@@ -55,12 +55,13 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
             raise Refusal("a helper needs the launcher, which is not running", "keep your work and start the journal with journal launch")
         parent = self.limits.checked_parent(context)
         self.limits.checked_new_place(profile.name)
-        if not command.new_helper and not profile.independent:
+        reuses_helpers = not command.new_helper and not profile.independent
+        if reuses_helpers:
             self.check_reuse(parent, profile, command.brief)
         program = command.program or profile.program or parent.program
         model = self.limits.checked_model(program, command.program_model or self.providers.provider(program).profile_model(profile))
         self.programs.checked(program, self.folders.folder(parent))
-        if not command.new_helper and not profile.independent:
+        if reuses_helpers:
             self.check_idle(profile, program, model)
         start = StartAgent(str(uuid4()), program, agent_type.key, parent.id, program_model=model, profile=profile.name, given_name=command.given_name, access=profile.access or agent_type.access)
         source_context = replace(context, environment_id=parent.environment_id)
@@ -74,10 +75,10 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
         return helper
 
     def check_idle(self, profile: AgentProfile, program: str, model: str) -> None:
-        idle = self.kept.idle(profile.name, program, model)
-        if idle:
-            others = f" (also {', '.join(str(helper.id) for helper in idle[1:3])})" if idle[1:] else ""
-            raise Refusal(f'helper {idle[0].id} is idle: journal helper send {idle[0].id} "<job>"{others}', "or start a new one with --fresh")
+        idle_helpers = self.kept.idle(profile.name, program, model)
+        if idle_helpers:
+            next_helpers = f" (also {', '.join(str(helper.id) for helper in idle_helpers[1:3])})" if idle_helpers[1:] else ""
+            raise Refusal(f'helper {idle_helpers[0].id} is idle: journal helper send {idle_helpers[0].id} "<job>"{next_helpers}', "or start a new one with --fresh")
 
     def check_reuse(self, parent: Agent, profile: AgentProfile, brief: str) -> None:
         job = self.reuse.known_job(parent.id, profile.name, brief)

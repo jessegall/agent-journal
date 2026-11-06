@@ -5,5 +5,5 @@ from core.modules.messages.listeners.deleted_source_listener import DeletedSourc
 class DeletedHelperSourceListener(DeletedSourceListener):
     """Keeps deleted request references unavailable in all affected helper jobs."""
 
-    name = "helpers.deleted-source"
     source_model = HelperJob
+    name = "helpers.deleted-source"

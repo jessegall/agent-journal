@@ -74,7 +74,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         self.repository.save(Message(creator_id=context.actor.id, type=MessageType.PEER, text=command.job, read_at=context.timestamp, delivered_at=context.timestamp,
                                      recipient=WorkerRecipient.text(command.worker_id)), context)
         line = self.nudger.send_text(command.worker_id, job, WORKER_JOB_SOURCE, context)
-        if resumed or source.differs_from(previous):
+        if resumed or source.changed(previous):
             self.repository.save(WorkerTaskSource(creator_id=context.actor.id, worktree_id=worktree.id, task_id=worktree.task_id,
                                                   environment_id=worktree.environment_id, source_message_id=source.message_id,
                                                   source_version=source.version, source_unavailable=source.unavailable, source_line_id=line.id,

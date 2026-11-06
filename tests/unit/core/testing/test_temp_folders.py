@@ -78,7 +78,7 @@ def test_the_template_cache_removes_the_least_recently_used_folder_over_its_limi
     newer = filled(tmp_path / "newer", 100)
     os.utime(older, (1, 1))
 
-    cache.remove_over_limit()
+    cache.remove_oldest_templates()
 
     assert not older.exists() and newer.is_dir()
 

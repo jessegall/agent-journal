@@ -5,5 +5,5 @@ from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSo
 class DeletedWorkerSourceListener(DeletedSourceListener):
     """Keeps deleted request references unavailable in assigned tasks and follow-ups."""
 
-    name = "workers.deleted-source"
     source_model = WorkerTaskSource
+    name = "workers.deleted-source"

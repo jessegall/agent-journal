@@ -16,8 +16,8 @@ PYTEST_PREFIX = "pytest-"
 
 
 class TempFolders:
-    """The folder one test run keeps its temporary files in, inside the user's pytest folder. A passed run removes its
-    folder, a failed run keeps it under a failed name, and only the newest failed runs are kept."""
+    """The folder one test run keeps its temporary files in, inside the user's pytest folder. A passed run removes
+    its folder, a failed run keeps it under a failed name, and only the newest failed runs are kept."""
 
     def __init__(self, user_folder: Path | None = None) -> None:
         self.user_folder = user_folder or self.default_user_folder()
@@ -42,7 +42,7 @@ class TempFolders:
     def remove_old(self) -> None:
         limit = time.time() - RUNNING_FOLDER_SECONDS
         failed = sorted(self.folders(FAILED_PREFIX), key=lambda folder: folder.name, reverse=True)
-        stale = [folder for prefix in (RUNNING_PREFIX, PYTEST_PREFIX) for folder in self.folders(prefix) if FolderStat.modified_at(folder) < limit]
+        stale = [folder for prefix in (RUNNING_PREFIX, PYTEST_PREFIX) for folder in self.folders(prefix) if FolderStat.modified_time(folder) < limit]
         for folder in failed[KEPT_FAILED_RUNS:] + stale:
             shutil.rmtree(folder, ignore_errors=True)
 

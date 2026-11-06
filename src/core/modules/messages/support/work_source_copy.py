@@ -12,5 +12,5 @@ class WorkSourceCopy:
     selecting_actor_id: int | None = None
     origin: str = "job snapshot"
 
-    def differs_from(self, previous: "WorkSourceCopy | None") -> bool:
+    def changed(self, previous: "WorkSourceCopy | None") -> bool:
         return previous is None or previous.message_id != self.message_id or previous.unavailable != self.unavailable

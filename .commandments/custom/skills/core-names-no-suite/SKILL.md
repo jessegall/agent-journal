@@ -25,7 +25,7 @@ the suite provide the answer. Never replace a coding word with a generic word wh
 same coding decision in core.
 
 Classify findings before moving code. A browser service worker and a pytest execution process are
-ordinary technical terms, not coding-suite agents. The exact pytest protocol field `workeroutput` is
+ordinary technical terms, not coding-suite agents. The exact pytest protocol fields `workeroutput` and `workerinput` are
 allowed. Suite-owned migrations preserve old suite columns; core's schema declares only generic data.
 
 ## Example
