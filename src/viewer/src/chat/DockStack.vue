@@ -172,8 +172,8 @@ function release(item) {
 }
 
 .dock-all :deep([data-dock-all]) {
-    border-color: var(--border-3);
-    background: var(--bg-2);
+    border: 0;
+    background: none;
 }
 
 .dock-stack {

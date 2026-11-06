@@ -201,10 +201,7 @@ defineExpose({card});
 .chat-dock.collapsed :deep(.dock-failure) { display: none; }
 .chat-dock.collapsed .chat-dock-head { margin-top: 0; }
 .chat-dock.collapsed .chat-dock-card.waiting::before {
-    display: block;
-    height: 2px;
-    background: var(--tone-warn);
-    content: "";
+    display: none;
 }
 
 .chat-dock-foot {
