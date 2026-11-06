@@ -9,6 +9,7 @@ afterEach(() => mounted.splice(0).forEach((element) => element.remove()));
 
 async function mount({driver = "coding.builder", values = {}, follow = () => {}} = {}) {
     const runs = [];
+    const opened = [];
     const context = {
         environment: "main",
         read: async (line) => {
@@ -21,6 +22,7 @@ async function mount({driver = "coding.builder", values = {}, follow = () => {}}
             return {ok: true};
         },
         follow,
+        open: (window) => opened.push(window),
         option: () => ({value: null}),
     };
     const element = document.createElement("div");
@@ -28,10 +30,10 @@ async function mount({driver = "coding.builder", values = {}, follow = () => {}}
     mounted.push(element);
     createApp({setup: () => () => h(WorkMode), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
     await settled();
-    return {element, runs, context};
+    return {element, runs, opened, context};
 }
 
-test("the two modes show as version 4's segmented buttons, the current one on, and a pick chooses the driver", async () => {
+test("the work modes show the current choice and a pick chooses the driver", async () => {
     const {element, runs} = await mount({driver: "coding.orchestrator"});
     const options = [...element.querySelectorAll(".segmented-option")];
     expect(options.map((option) => option.textContent.trim())).toEqual(["Builder", "Orchestrator"]);
@@ -42,46 +44,40 @@ test("the two modes show as version 4's segmented buttons, the current one on, a
     expect(element.querySelector(".segmented-option.on").textContent.trim()).toBe("Builder");
 });
 
-test("the settings open under the caret, and a change sets the setting", async () => {
-    const {element, runs} = await mount({values: {"journal.suites.coding.workers.worker-run-limit": 3}});
-    expect(element.querySelector("[data-work-menu]")).toBeNull();
+test("the settings menu links to running and kept limits for every agent type", async () => {
+    const {element, runs, opened} = await mount();
     element.querySelector("[data-work-settings]").click();
     await settled();
-    const limit = element.querySelector("[data-work-menu] input");
-    expect(limit.value).toBe("3");
-    limit.value = "4";
-    limit.dispatchEvent(new Event("change"));
+    expect(element.querySelector("[data-work-menu] input")).toBeNull();
+    element.querySelector("[data-open-agent-limits]").click();
     await settled();
-    expect(runs).toEqual(["setting set journal.suites.coding.workers.worker-run-limit 4 --environment main"]);
+    expect(opened).toEqual(["agents.agents"]);
+    expect(element.querySelector("[data-work-menu]")).toBeNull();
+    expect(runs).toEqual([]);
 });
 
-test("the limit is read for this environment each time the settings open", async () => {
-    const values = {"journal.suites.coding.workers.worker-run-limit": 4};
-    const {element, context} = await mount({values});
+test("opening the menu reads its remaining settings for this environment", async () => {
+    const {element, context} = await mount();
     const reads = [];
     const read = context.read;
-    context.read = async (line) => {
-        reads.push(line);
-        return read(line);
-    };
-    values["journal.suites.coding.workers.worker-run-limit"] = 6;
+    context.read = async (line) => { reads.push(line); return read(line); };
     element.querySelector("[data-work-settings]").click();
     await settled();
-    expect(reads).toContain("setting show journal.suites.coding.workers.worker-run-limit --environment main");
-    expect(element.querySelector("[data-work-menu] input").value).toBe("6");
+    expect(reads).toContain("setting show journal.suites.coding.auto-mode --environment main");
+    expect(reads).toContain("setting show journal.suites.coding.workers.builder-dispatches-workers --environment main");
+    expect(reads.some((line) => line.includes("worker-run-limit"))).toBe(false);
 });
 
-test("a setting event reads the limit again", async () => {
-    const values = {"journal.suites.coding.workers.worker-run-limit": 4};
+test("a setting event refreshes the mode menu settings", async () => {
+    const values = {"journal.suites.coding.workers.builder-dispatches-workers": true};
     const followed = [];
     const {element} = await mount({values, follow: (patterns, handler) => followed.push({patterns, handler})});
     element.querySelector("[data-work-settings]").click();
     await settled();
-    expect(element.querySelector("[data-work-menu] input").value).toBe("4");
-    values["journal.suites.coding.workers.worker-run-limit"] = 6;
+    values["journal.suites.coding.workers.builder-dispatches-workers"] = false;
     followed.find((one) => one.patterns.includes("setting.*")).handler({event: "setting.update"});
     await settled();
-    expect(element.querySelector("[data-work-menu] input").value).toBe("6");
+    expect(element.querySelector("[data-work-menu] [role=switch]").getAttribute("aria-checked")).toBe("false");
 });
 
 test("the auto switch lives here and sets auto mode", async () => {

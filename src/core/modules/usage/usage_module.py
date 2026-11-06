@@ -2,6 +2,7 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.modules.usage.models.agent_listing import AgentListing
 from core.modules.usage.models.agent_filter_options_view import AgentFilterOptionsView
 from core.modules.usage.commands.agent_cards.agent_cards_subcommand import AgentCardsSubcommand
+from core.modules.usage.commands.agent_limits.agent_limits_subcommand import AgentLimitsSubcommand
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
@@ -36,7 +37,7 @@ class UsageModule(Module):
     views = [AgentCard, AgentListing, AgentFilterOptionsView]
     listeners = [EndedAgentStatusListener]
     moves = [StatisticsMove]
-    subcommands = [AgentCardsSubcommand, UsageAgentsSubcommand, UsageFitnessSubcommand, UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, UsageAgentSubcommand, StatisticListSubcommand]
+    subcommands = [AgentLimitsSubcommand, AgentCardsSubcommand, UsageAgentsSubcommand, UsageFitnessSubcommand, UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, UsageAgentSubcommand, StatisticListSubcommand]
     windows = [WindowDeclaration("usage.usage", "Usage", "usage.js", WindowLoading.COMPONENT, skeleton=USAGE_USAGE_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"]),
                WindowDeclaration("usage.cost", "Cost", "cost.js", WindowLoading.COMPONENT, skeleton=USAGE_COST_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"]),
                WindowDeclaration("usage.fitness", "Fitness", "fitness.js", WindowLoading.COMPONENT, skeleton=USAGE_FITNESS_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, shows=WindowShows.SELECTED_AGENT, reads=["usage fitness"]),

@@ -2,6 +2,7 @@
 import {computed, nextTick, onUnmounted, ref, watch} from "vue";
 import {READ_RATES, coalesced, Btn, EmptyState, MenuItem, MenuLabel, RowList, SearchBar, Segmented, toggleFilter, useDeclaredRows, useRows, useWindow} from "@journal/window-kit";
 import AgentCard from "./AgentCard.vue";
+import AgentLimits from "./AgentLimits.vue";
 
 // `texts` is what the window says when it is empty on each tab, {running, closed, all}, each {title, hint}: what is empty in its own terms and what brings rows
 const props = defineProps({line: {type: String, required: true}, empty: {type: String, required: true}, texts: {type: Object, default: () => ({})}});
@@ -137,6 +138,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 
 <template>
     <div ref="agents" :class="['agents', {focused: openRow}]">
+        <AgentLimits />
         <SearchBar v-model="words" placeholder="Search agents" :menu-count="filterCount" data-agents-search>
                 <template #menu>
                     <MenuLabel>Type</MenuLabel>

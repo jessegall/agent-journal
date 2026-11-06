@@ -2,6 +2,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from core.base.registry.registry import Registry
+from core.base.registry.agent_type_entry import AgentTypeEntry
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
 from core.modules.agents.models.agent import Agent
@@ -34,6 +35,9 @@ class AgentTypeLimits:
         entry = next((entry for entry in self.registry.agent_types if entry.key == role), None)
         if entry is None or not entry.run_limit_key:
             return None
+        return self.for_type(entry, profile)
+
+    def for_type(self, entry: AgentTypeEntry, profile: str = "") -> TypeLimits:
         profile_limits = entry.profile_limits_key and self.profile_limits(entry.profile_limits_key, profile)
         return profile_limits or TypeLimits(self.settings.number(entry.run_limit_key), self.settings.number(entry.kept_limit_key))
 

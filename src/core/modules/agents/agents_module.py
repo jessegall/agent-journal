@@ -78,8 +78,8 @@ from core.modules.agents.seeders.agents_seeder import AgentsSeeder
 from core.modules.agents.support.skeletons import AGENTS_AGENTS_SKELETON, AGENTS_HELPERS_SKELETON, AGENTS_TRANSCRIPT_SKELETON
 
 
-CARD_READS = ["agent cards", "agent list", "agent programs", "usage agents", "usage tool", "agent transcript", "hook-call feed", "task show", "task list", "process-part list"]
-CARD_EVENTS = ["agent.*", "hook_call.*", "task.*", "process_part.*"]
+CARD_READS = ["agent limits", "setting show", "agent cards", "agent list", "agent programs", "usage agents", "usage tool", "agent transcript", "hook-call feed", "task show", "task list", "process-part list"]
+CARD_EVENTS = ["setting.*", "agent.*", "hook_call.*", "task.*", "process_part.*"]
 CARD_TABS = [WindowTab("tasks", "Tasks", "usage agents", "tasks"), WindowTab("transcript", "Transcript", "agent transcript")]
 
 
@@ -98,8 +98,8 @@ class AgentsModule(Module):
     handlers = [RetireAgentHandler, EndReplacedMainHandler, RecordAgentLaunchFailureHandler, RecordAgentProcessHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
     subcommands = [RetireAgentSubcommand, RunningMainAgentsSubcommand, MainSessionsSubcommand, ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand]
     bindings = {CallerResolver: AgentCallerResolver, AgentCheckouts: AgentProjectCheckouts}
-    windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, skeleton=AGENTS_AGENTS_SKELETON, search=WindowSearch(AgentSearcher, "Search the agents"), icon=WindowIcon.AGENT, reads=["agent show", *CARD_READS], runs=["message send", "helper send", "agent retire"], events=CARD_EVENTS, tabs=CARD_TABS),
-               WindowDeclaration("agents.helpers", "Helpers", "helpers.js", WindowLoading.COMPONENT, skeleton=AGENTS_HELPERS_SKELETON, icon=WindowIcon.SUBAGENT, shows=WindowShows.SELECTED_AGENT, search=WindowSearch(AgentSearcher, "Search the agents"), reads=CARD_READS, runs=["message send", "helper send", "helper stop", "agent retire"],
+    windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, skeleton=AGENTS_AGENTS_SKELETON, search=WindowSearch(AgentSearcher, "Search the agents"), icon=WindowIcon.AGENT, reads=["agent show", *CARD_READS], runs=["setting set", "message send", "helper send", "agent retire"], events=CARD_EVENTS, tabs=CARD_TABS),
+               WindowDeclaration("agents.helpers", "Helpers", "helpers.js", WindowLoading.COMPONENT, skeleton=AGENTS_HELPERS_SKELETON, icon=WindowIcon.SUBAGENT, shows=WindowShows.SELECTED_AGENT, search=WindowSearch(AgentSearcher, "Search the agents"), reads=CARD_READS, runs=["setting set", "message send", "helper send", "helper stop", "agent retire"],
                                  events=CARD_EVENTS, tabs=CARD_TABS),
                WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, skeleton=AGENTS_TRANSCRIPT_SKELETON, icon=WindowIcon.DOCUMENT, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM,
                                  reads=["agent transcript", "hook-call feed"], runs=["message send"], events=["hook_call.*"])]

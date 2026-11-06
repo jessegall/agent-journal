@@ -17,7 +17,7 @@ const K = (e, t) => {
       style: ge(j(t))
     }, null, 4));
   }
-}, Vt = /* @__PURE__ */ K(di, [["__scopeId", "data-v-6c018b03"]]), fi = { class: "skeleton-line" }, hi = 2e3, mi = {
+}, Vt = /* @__PURE__ */ K(di, [["__scopeId", "data-v-1c6fdf5f"]]), fi = { class: "skeleton-line" }, hi = 2e3, mi = {
   __name: "SkeletonLine",
   props: { filled: Boolean, still: Boolean, bars: { type: Array, default: () => [] } },
   setup(e) {
@@ -35,7 +35,7 @@ const K = (e, t) => {
       ], 2)
     ]));
   }
-}, ht = /* @__PURE__ */ K(mi, [["__scopeId", "data-v-484fe8a0"]]), Pt = Zr({
+}, ht = /* @__PURE__ */ K(mi, [["__scopeId", "data-v-341b98f6"]]), Pt = Zr({
   props: { value: { type: [String, Number], default: "" } },
   setup(e, { slots: t }) {
     return () => {
@@ -190,7 +190,7 @@ const K = (e, t) => {
       _: 1
     }, 8, ["value"]));
   }
-}, Et = /* @__PURE__ */ K(xi, [["__scopeId", "data-v-ef519c5f"]]), $i = {
+}, Et = /* @__PURE__ */ K(xi, [["__scopeId", "data-v-5a4a3667"]]), $i = {
   key: 1,
   class: "empty-state titled"
 }, Mi = { class: "empty-state-title" }, Si = { class: "empty-state-text" }, _i = {
@@ -212,7 +212,7 @@ const K = (e, t) => {
       ue(t.$slots, "default", {}, void 0, !0)
     ]));
   }
-}, Qt = /* @__PURE__ */ K(Ei, [["__scopeId", "data-v-b27e89b0"]]), Ai = { class: "fold-group" }, Ci = ["aria-expanded"], Oi = { class: "fold-label" }, Ti = {
+}, Qt = /* @__PURE__ */ K(Ei, [["__scopeId", "data-v-bbb14fd6"]]), Ai = { class: "fold-group" }, Ci = ["aria-expanded"], Oi = { class: "fold-label" }, Ti = {
   key: 0,
   class: "fold-count"
 }, Ri = {
@@ -243,7 +243,7 @@ const K = (e, t) => {
       e.open ? ue(a.$slots, "default", {}, void 0, !0, 0) : E("", !0)
     ]));
   }
-}, i5 = /* @__PURE__ */ K(Ri, [["__scopeId", "data-v-9ef1865c"]]), Ii = Symbol("open-view"), Te = Symbol.for("journal.window-context");
+}, i5 = /* @__PURE__ */ K(Ri, [["__scopeId", "data-v-5a6a4d36"]]), Ii = Symbol("open-view"), Te = Symbol.for("journal.window-context");
 function ft() {
   const e = Ee(Te, null);
   if (!e) throw new Error("useWindow is called only inside a window the viewer hosts");
@@ -433,7 +433,7 @@ const Li = ["stroke-width", "innerHTML"], ye = {
       style: ge({ width: `${e.size}px`, height: `${e.size}px`, borderWidth: e.size > 14 ? "2px" : "1px" })
     }, null, 4));
   }
-}, Di = /* @__PURE__ */ K(Ni, [["__scopeId", "data-v-eb453d6f"]]), Pi = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
+}, Di = /* @__PURE__ */ K(Ni, [["__scopeId", "data-v-37ba86f3"]]), Pi = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
   __name: "Btn",
   props: {
     variant: { type: String, default: "ghost" },
@@ -485,7 +485,7 @@ const Li = ["stroke-width", "innerHTML"], ye = {
       _: 3
     }, 16, ["type", "href", "class", "aria-busy", "disabled"]));
   }
-}), de = /* @__PURE__ */ K(Pi, [["__scopeId", "data-v-ededdadf"]]), ji = {
+}), de = /* @__PURE__ */ K(Pi, [["__scopeId", "data-v-7068e4e1"]]), ji = {
   key: 0,
   class: "more-items"
 }, qi = {
@@ -512,7 +512,7 @@ const Li = ["stroke-width", "innerHTML"], ye = {
       }, 8, ["disabled"])) : E("", !0)
     ])) : E("", !0);
   }
-}, Yn = /* @__PURE__ */ K(Fi, [["__scopeId", "data-v-10464014"]]), Wi = {
+}, Yn = /* @__PURE__ */ K(Fi, [["__scopeId", "data-v-5355e7f5"]]), Wi = {
   key: 0,
   class: "resource-links",
   "data-resource-links": ""
@@ -588,7 +588,7 @@ const Li = ["stroke-width", "innerHTML"], ye = {
       }, null, 8, ["more", "loading", "failure"])
     ])) : E("", !0);
   }
-}, Ji = /* @__PURE__ */ K(Yi, [["__scopeId", "data-v-cb36876d"]]), Zi = (e, t, n) => Math.max(t, Math.min(n, e)), Xi = (e, t, n = `${t}s`) => `${e} ${e === 1 ? t : n}`, el = /* @__PURE__ */ new WeakMap(), Qi = (e, t) => el.set(e, t);
+}, Ji = /* @__PURE__ */ K(Yi, [["__scopeId", "data-v-516eba32"]]), Zi = (e, t, n) => Math.max(t, Math.min(n, e)), Xi = (e, t, n = `${t}s`) => `${e} ${e === 1 ? t : n}`, el = /* @__PURE__ */ new WeakMap(), Qi = (e, t) => el.set(e, t);
 function ec(e, t) {
   for (let n = t; n; n = el.get(n) ?? n.parentElement) if (n === e) return !0;
   return !1;
@@ -685,7 +685,7 @@ const Ot = 8, tc = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       ], 16)
     ], 8, ["disabled"]));
   }
-}), Jn = /* @__PURE__ */ K(tc, [["__scopeId", "data-v-3d203970"]]), nc = { class: "split-button" }, ac = {
+}), Jn = /* @__PURE__ */ K(tc, [["__scopeId", "data-v-7f046e0d"]]), nc = { class: "split-button" }, ac = {
   __name: "SplitButton",
   props: { variant: { type: String, default: "ghost" }, small: Boolean, disabled: Boolean, menuLabel: { type: String, default: "More ways" } },
   emits: ["main"],
@@ -739,7 +739,7 @@ const Ot = 8, tc = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       }, 8, ["anchor"])) : E("", !0)
     ]));
   }
-}, sc = /* @__PURE__ */ K(ac, [["__scopeId", "data-v-c258494d"]]), oc = ["aria-checked", "aria-haspopup", "onClick"], lc = {
+}, sc = /* @__PURE__ */ K(ac, [["__scopeId", "data-v-9908ef1d"]]), oc = ["aria-checked", "aria-haspopup", "onClick"], lc = {
   key: 0,
   class: "segmented-dot"
 }, rc = {
@@ -779,7 +779,7 @@ const Ot = 8, tc = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       ], 2);
     };
   }
-}, Zn = /* @__PURE__ */ K(cc, [["__scopeId", "data-v-c89bc92d"]]), nl = typeof document < "u" && document.documentElement.classList.contains("phone");
+}, Zn = /* @__PURE__ */ K(cc, [["__scopeId", "data-v-7d0b33ab"]]), nl = typeof document < "u" && document.documentElement.classList.contains("phone");
 function Fa(e = document) {
   const t = e.activeElement;
   return !!t && (t.isContentEditable || t.matches("input, textarea") && !!t.value);
@@ -1472,7 +1472,7 @@ const du = (e) => `show-${e}`, f5 = (e, t, n) => e.filter((a) => {
       o.value ? (c(), h("p", hu, w(o.value), 1)) : E("", !0)
     ], 64));
   }
-}, pu = /* @__PURE__ */ K(mu, [["__scopeId", "data-v-14be8a5c"]]), gu = { class: "form-field" }, vu = { class: "form-field-head" }, yu = ["for"], bu = {
+}, pu = /* @__PURE__ */ K(mu, [["__scopeId", "data-v-8c3f5d57"]]), gu = { class: "form-field" }, vu = { class: "form-field-head" }, yu = ["for"], bu = {
   key: 0,
   class: "form-field-aside"
 }, wu = {
@@ -1500,7 +1500,7 @@ const du = (e) => `show-${e}`, f5 = (e, t, n) => e.filter((a) => {
       e.help ? (c(), h("p", wu, w(e.help), 1)) : E("", !0)
     ]));
   }
-}, xu = /* @__PURE__ */ K(ku, [["__scopeId", "data-v-dd7cdcff"]]), Ua = {
+}, xu = /* @__PURE__ */ K(ku, [["__scopeId", "data-v-8f255b8f"]]), Ua = {
   mounted(e, { value: t }) {
     e.value = t ?? "";
   },
@@ -1518,7 +1518,7 @@ const du = (e) => `show-${e}`, f5 = (e, t, n) => e.filter((a) => {
       [j(Ua), j(t).value]
     ]);
   }
-}), Mu = /* @__PURE__ */ K($u, [["__scopeId", "data-v-e130a5b9"]]), Su = {
+}), Mu = /* @__PURE__ */ K($u, [["__scopeId", "data-v-11521837"]]), Su = {
   __name: "ButtonField",
   props: { field: { type: Object, required: !0 }, value: { type: String, required: !0 }, environment: { type: String, required: !0 } },
   emits: ["pick"],
@@ -1720,7 +1720,7 @@ const Tu = ["aria-modal", "aria-label", "aria-labelledby"], Ru = {
       }, 8, ["onAfterLeave"])
     ]));
   }
-}, xl = /* @__PURE__ */ K(Du, [["__scopeId", "data-v-6d1ecd98"]]), Pu = (e, t, n = {}) => gs(e.runs).map((a) => a.replace(/\{(\w+)\}/g, (s, o) => o === "row_id" ? String((t == null ? void 0 : t.id) ?? "") : n[o]));
+}, xl = /* @__PURE__ */ K(Du, [["__scopeId", "data-v-484a731f"]]), Pu = (e, t, n = {}) => gs(e.runs).map((a) => a.replace(/\{(\w+)\}/g, (s, o) => o === "row_id" ? String((t == null ? void 0 : t.id) ?? "") : n[o]));
 async function rn(e, t, n, a = {}) {
   try {
     return await Zc(e.module, n) ? lt(yl, Pu(e, t, a), n) : { ok: !1, error: "" };
@@ -1958,7 +1958,7 @@ const jt = (e) => Xn[e], Ml = new Map($l.flatMap((e) => [e, e.replace(/s$/, ""),
       _: 1
     }, 8, ["title"]));
   }
-}, Vu = /* @__PURE__ */ K(Uu, [["__scopeId", "data-v-f26c27a7"]]), Gu = {
+}, Vu = /* @__PURE__ */ K(Uu, [["__scopeId", "data-v-e77a3ca7"]]), Gu = {
   key: 0,
   class: "menu-item-check",
   "aria-hidden": "true"
@@ -1982,7 +1982,7 @@ const jt = (e) => Xn[e], Ml = new Map($l.flatMap((e) => [e, e.replace(/s$/, ""),
       ])) : ue(t.$slots, "default", {}, void 0, !0, 2)
     ], 2));
   }
-}, $t = /* @__PURE__ */ K(Yu, [["__scopeId", "data-v-fec99974"]]), Ju = ["aria-busy"], Zu = {
+}, $t = /* @__PURE__ */ K(Yu, [["__scopeId", "data-v-9c67fe37"]]), Ju = ["aria-busy"], Zu = {
   key: 0,
   class: "button-slot-failure",
   role: "alert"
@@ -2097,7 +2097,7 @@ const jt = (e) => Xn[e], Ml = new Map($l.flatMap((e) => [e, e.replace(/s$/, ""),
       ], 64))
     ], 10, Ju));
   }
-}, Qu = /* @__PURE__ */ K(Xu, [["__scopeId", "data-v-a07b49a4"]]), ed = {
+}, Qu = /* @__PURE__ */ K(Xu, [["__scopeId", "data-v-08a87e69"]]), ed = {
   class: "running",
   "data-running-command": ""
 }, td = ["title"], nd = {
@@ -2123,7 +2123,7 @@ const jt = (e) => Xn[e], Ml = new Map($l.flatMap((e) => [e, e.replace(/s$/, ""),
       })
     ]));
   }
-}, h5 = /* @__PURE__ */ K(ad, [["__scopeId", "data-v-d3240219"]]), sd = ["aria-checked", "aria-label", "title"], od = {
+}, h5 = /* @__PURE__ */ K(ad, [["__scopeId", "data-v-8311b32c"]]), sd = ["aria-checked", "aria-label", "title"], od = {
   key: 0,
   class: "switch-inner"
 }, ld = {
@@ -2153,7 +2153,7 @@ const jt = (e) => Xn[e], Ml = new Map($l.flatMap((e) => [e, e.replace(/s$/, ""),
       e.word && !e.labelled ? (c(), h("span", ld, w(e.word), 1)) : E("", !0)
     ], 10, sd));
   }
-}, m5 = /* @__PURE__ */ K(rd, [["__scopeId", "data-v-1bfb90f3"]]);
+}, m5 = /* @__PURE__ */ K(rd, [["__scopeId", "data-v-688091a6"]]);
 function _l(e, t, n) {
   try {
     const a = e().getItem(t);
@@ -2276,7 +2276,7 @@ const gd = { class: "inspector-part" }, vd = { class: "inspector-part-title" }, 
       ue(t.$slots, "default", {}, void 0, !0)
     ]));
   }
-}, v5 = /* @__PURE__ */ K(yd, [["__scopeId", "data-v-0da7fa52"]]), bd = {
+}, v5 = /* @__PURE__ */ K(yd, [["__scopeId", "data-v-426868e9"]]), bd = {
   key: 1,
   class: "row-list-failure"
 }, wd = ["data-row"], kd = {
@@ -2340,7 +2340,7 @@ const gd = { class: "inspector-part" }, vd = { class: "inspector-part-title" }, 
       }, "Show more")) : E("", !0)
     ], 64));
   }
-}, xd = /* @__PURE__ */ K(kd, [["__scopeId", "data-v-6c7ba696"]]), $d = {
+}, xd = /* @__PURE__ */ K(kd, [["__scopeId", "data-v-3eb1aa55"]]), $d = {
   class: "agent-rows",
   "data-agent-rows": ""
 }, Md = {
@@ -2376,7 +2376,7 @@ const gd = { class: "inspector-part" }, vd = { class: "inspector-part-title" }, 
       }))
     ]));
   }
-}, y5 = /* @__PURE__ */ K(Od, [["__scopeId", "data-v-a01e5a17"]]), Td = {
+}, y5 = /* @__PURE__ */ K(Od, [["__scopeId", "data-v-7e3656dc"]]), Td = {
   __name: "DashboardBadge",
   props: { text: { type: String, required: !0 }, tone: { type: String, default: "" } },
   setup(e) {
@@ -2384,7 +2384,7 @@ const gd = { class: "inspector-part" }, vd = { class: "inspector-part-title" }, 
       class: Z(["badge", e.tone])
     }, w(e.text), 3));
   }
-}, Rl = /* @__PURE__ */ K(Td, [["__scopeId", "data-v-9e7e1157"]]), Rd = ["aria-valuenow", "aria-valuemax"], Id = {
+}, Rl = /* @__PURE__ */ K(Td, [["__scopeId", "data-v-6ef74765"]]), Rd = ["aria-valuenow", "aria-valuemax"], Id = {
   __name: "ProgressBar",
   props: {
     value: { type: Number, required: !0 },
@@ -2408,7 +2408,7 @@ const gd = { class: "inspector-part" }, vd = { class: "inspector-part-title" }, 
       }, null, 4)
     ], 10, Rd));
   }
-}, Bd = /* @__PURE__ */ K(Id, [["__scopeId", "data-v-9eba6a85"]]), Ld = { class: "bars" }, Nd = { class: "bar-name" }, Dd = { class: "bar-value" }, Pd = {
+}, Bd = /* @__PURE__ */ K(Id, [["__scopeId", "data-v-5045237e"]]), Ld = { class: "bars" }, Nd = { class: "bar-name" }, Dd = { class: "bar-value" }, Pd = {
   __name: "BarList",
   props: { items: { type: Array, required: !0 }, unit: { type: String, default: "" } },
   emits: ["open"],
@@ -2435,7 +2435,7 @@ const gd = { class: "inspector-part" }, vd = { class: "inspector-part-title" }, 
       }, 1032, ["type", "class", "onClick"]))), 128))
     ]));
   }
-}, jd = /* @__PURE__ */ K(Pd, [["__scopeId", "data-v-663427f4"]]), qd = { class: "bars" }, Fd = {
+}, jd = /* @__PURE__ */ K(Pd, [["__scopeId", "data-v-09485718"]]), qd = { class: "bars" }, Fd = {
   key: 0,
   class: "bars-title"
 }, Wd = {
@@ -2453,7 +2453,7 @@ const gd = { class: "inspector-part" }, vd = { class: "inspector-part-title" }, 
       }, null, 8, ["items", "unit"])
     ]));
   }
-}, Hd = /* @__PURE__ */ K(Wd, [["__scopeId", "data-v-7135bb11"]]), zd = {
+}, Hd = /* @__PURE__ */ K(Wd, [["__scopeId", "data-v-a9861a72"]]), zd = {
   __name: "DashboardGroup",
   props: { node: { type: Object, required: !0 } },
   emits: ["open", "file"],
@@ -2475,7 +2475,7 @@ const gd = { class: "inspector-part" }, vd = { class: "inspector-part-title" }, 
       }, null, 8, ["node"]))), 128))
     ], 6));
   }
-}, Cn = /* @__PURE__ */ K(zd, [["__scopeId", "data-v-d142a3f4"]]), Ud = {
+}, Cn = /* @__PURE__ */ K(zd, [["__scopeId", "data-v-2a5c17d3"]]), Ud = {
   key: 0,
   class: "card-head"
 }, Vd = { class: "card-title" }, Gd = {
@@ -2502,7 +2502,7 @@ const gd = { class: "inspector-part" }, vd = { class: "inspector-part-title" }, 
       }, null, 8, ["node"])
     ], 2));
   }
-}, Yd = /* @__PURE__ */ K(Kd, [["__scopeId", "data-v-67b72d40"]]), Jd = { processes: "process", memories: "memory", replies: "reply" }, Gt = (e) => (Jd[e] ?? e.replace(/s$/, "")).replace(/_/g, "-"), Ga = [], Zd = 2e3, at = /* @__PURE__ */ new Map(), Xd = /(^|[^"'>=\w/])(https?:\/\/[^\s<]*[^\s<.,;:!?)\]'"])/g, Qd = /(<code>[\s\S]*?<\/code>|<a [\s\S]*?<\/a>)/;
+}, Yd = /* @__PURE__ */ K(Kd, [["__scopeId", "data-v-bb0b3bdb"]]), Jd = { processes: "process", memories: "memory", replies: "reply" }, Gt = (e) => (Jd[e] ?? e.replace(/s$/, "")).replace(/_/g, "-"), Ga = [], Zd = 2e3, at = /* @__PURE__ */ new Map(), Xd = /(^|[^"'>=\w/])(https?:\/\/[^\s<]*[^\s<.,;:!?)\]'"])/g, Qd = /(<code>[\s\S]*?<\/code>|<a [\s\S]*?<\/a>)/;
 function At(e, { first: t = !1 } = {}) {
   t ? Ga.unshift(e) : Ga.push(e), at.clear();
 }
@@ -3085,7 +3085,7 @@ const _h = ["innerHTML"], Eh = ["innerHTML"], Ah = {
       innerHTML: a.value
     }, null, 8, Eh));
   }
-}, bt = /* @__PURE__ */ K(Ah, [["__scopeId", "data-v-d8e75741"]]), Ch = { class: "fact" }, Oh = { class: "fact-label" }, Th = {
+}, bt = /* @__PURE__ */ K(Ah, [["__scopeId", "data-v-7cbf7b8a"]]), Ch = { class: "fact" }, Oh = { class: "fact-label" }, Th = {
   __name: "DashboardFact",
   props: { label: { type: String, required: !0 }, body: { type: String, required: !0 } },
   setup(e) {
@@ -3097,7 +3097,7 @@ const _h = ["innerHTML"], Eh = ["innerHTML"], Ah = {
       }, null, 8, ["text"])
     ]));
   }
-}, Rh = /* @__PURE__ */ K(Th, [["__scopeId", "data-v-3a88ecf8"]]), Ih = { class: "list" }, Bh = { class: "list-label" }, Lh = {
+}, Rh = /* @__PURE__ */ K(Th, [["__scopeId", "data-v-a0ce1d97"]]), Ih = { class: "list" }, Bh = { class: "list-label" }, Lh = {
   key: 1,
   class: "list-note"
 }, Nh = {
@@ -3126,7 +3126,7 @@ const _h = ["innerHTML"], Eh = ["innerHTML"], Ah = {
       }, 1032, ["type", "class", "onClick"]))), 128))
     ]));
   }
-}, Dh = /* @__PURE__ */ K(Nh, [["__scopeId", "data-v-ebe2ae0a"]]), Ph = { class: "table" }, jh = {
+}, Dh = /* @__PURE__ */ K(Nh, [["__scopeId", "data-v-e2e240a1"]]), Ph = { class: "table" }, jh = {
   key: 0,
   class: "table-row empty"
 }, qh = {
@@ -3163,7 +3163,7 @@ const _h = ["innerHTML"], Eh = ["innerHTML"], Ah = {
       !e.rows.length && e.empty ? (c(), h("div", jh, w(e.empty), 1)) : E("", !0)
     ]));
   }
-}, Fh = /* @__PURE__ */ K(qh, [["__scopeId", "data-v-9326a52e"]]), Wh = { class: "stat-value" }, Hh = { class: "stat-label" }, zh = {
+}, Fh = /* @__PURE__ */ K(qh, [["__scopeId", "data-v-349d16ca"]]), Wh = { class: "stat-value" }, Hh = { class: "stat-label" }, zh = {
   key: 0,
   class: "stat-note"
 }, Uh = {
@@ -3191,7 +3191,7 @@ const _h = ["innerHTML"], Eh = ["innerHTML"], Ah = {
       _: 1
     }, 8, ["type", "class"]));
   }
-}, Vh = /* @__PURE__ */ K(Uh, [["__scopeId", "data-v-ad0db6d6"]]), Gh = { class: "code" }, Kh = /* @__PURE__ */ Object.assign({ name: "DashboardNode" }, {
+}, Vh = /* @__PURE__ */ K(Uh, [["__scopeId", "data-v-bf2aa36f"]]), Gh = { class: "code" }, Kh = /* @__PURE__ */ Object.assign({ name: "DashboardNode" }, {
   __name: "DashboardNode",
   props: { node: { type: Object, required: !0 } },
   emits: ["open", "file"],
@@ -3298,7 +3298,7 @@ const _h = ["innerHTML"], Eh = ["innerHTML"], Ah = {
       _: 1
     }, 8, ["value"]));
   }
-}), Gl = /* @__PURE__ */ K(Kh, [["__scopeId", "data-v-cbdcf540"]]), Yh = { class: "dashboard" }, Jh = { class: "trail" }, Zh = ["onClick"], Xh = {
+}), Gl = /* @__PURE__ */ K(Kh, [["__scopeId", "data-v-92ed1e03"]]), Yh = { class: "dashboard" }, Jh = { class: "trail" }, Zh = ["onClick"], Xh = {
   key: 0,
   class: "gone",
   role: "status"
@@ -3372,7 +3372,7 @@ const _h = ["innerHTML"], Eh = ["innerHTML"], Ah = {
       ], 64)) : E("", !0)
     ]));
   }
-}, em = /* @__PURE__ */ K(Qh, [["__scopeId", "data-v-fbe83734"]]), nt = { padX: 14, padY: 10, line: 17, lineChars: 24, charWidth: 7.4, minWidth: 120 }, je = { lineChars: 28, charWidth: 6.4, line: 14, pad: 4 }, Pe = { across: 48, down: 110, margin: 32, labelSpace: 14 }, tm = 6;
+}, em = /* @__PURE__ */ K(Qh, [["__scopeId", "data-v-9e88e6d3"]]), nt = { padX: 14, padY: 10, line: 17, lineChars: 24, charWidth: 7.4, minWidth: 120 }, je = { lineChars: 28, charWidth: 6.4, line: 14, pad: 4 }, Pe = { across: 48, down: 110, margin: 32, labelSpace: 14 }, tm = 6;
 function xs(e, t) {
   const n = [];
   for (const a of String(e).split(/\s+/).filter(Boolean)) {
@@ -3642,7 +3642,7 @@ const ro = (e, t) => e.x < t.x + t.width && t.x < e.x + e.width && e.y < t.y + t
       _: 1
     }, 8, ["title"]));
   }
-}, _m = /* @__PURE__ */ K(Sm, [["__scopeId", "data-v-51d24cfe"]]), io = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>', co = {
+}, _m = /* @__PURE__ */ K(Sm, [["__scopeId", "data-v-6f337720"]]), io = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>', co = {
   words: '<rect x="2.5" y="3" width="11" height="8" rx="2"/><polyline points="5,11 5,13.5 8,11"/>',
   summary: '<line x1="3" y1="4.5" x2="13" y2="4.5"/><line x1="3" y1="8" x2="11" y2="8"/><line x1="3" y1="11.5" x2="8" y2="11.5"/>',
   warning: '<polygon points="8,2.5 14,13 2,13"/><line x1="8" y1="6.5" x2="8" y2="9.3"/><circle class="f" cx="8" cy="11.2" r=".75"/>',
@@ -3721,7 +3721,7 @@ const ro = (e, t) => e.x < t.x + t.width && t.x < e.x + e.width && e.y < t.y + t
       innerHTML: n.value
     }, null, 8, Em));
   }
-}, ut = /* @__PURE__ */ K(Am, [["__scopeId", "data-v-beb5935c"]]), Cm = {
+}, ut = /* @__PURE__ */ K(Am, [["__scopeId", "data-v-939f191f"]]), Cm = {
   __name: "FoldSign",
   props: { open: Boolean },
   setup(e) {
@@ -3732,7 +3732,7 @@ const ro = (e, t) => e.x < t.x + t.width && t.x < e.x + e.width && e.y < t.y + t
       N(ut, { name: "fold" })
     ], 2));
   }
-}, kt = /* @__PURE__ */ K(Cm, [["__scopeId", "data-v-d03899bb"]]), Om = ["data-tip", "aria-label"], Tm = {
+}, kt = /* @__PURE__ */ K(Cm, [["__scopeId", "data-v-a570162c"]]), Om = ["data-tip", "aria-label"], Tm = {
   key: 0,
   class: "mact-word"
 }, Rm = {
@@ -3750,7 +3750,7 @@ const ro = (e, t) => e.x < t.x + t.width && t.x < e.x + e.width && e.y < t.y + t
       n[0] || (n[0] = v("span", { class: "hit" }, null, -1))
     ], 10, Om));
   }
-}, Kl = /* @__PURE__ */ K(Rm, [["__scopeId", "data-v-3b292e09"]]), Yl = 120, On = 280, Jl = 160, Im = () => {
+}, Kl = /* @__PURE__ */ K(Rm, [["__scopeId", "data-v-2824bb7d"]]), Yl = 120, On = 280, Jl = 160, Im = () => {
   var e;
   return (e = window.matchMedia) == null ? void 0 : e.call(window, "(prefers-reduced-motion: reduce)").matches;
 }, Bm = ["leaving", "resizing", "entering"];
@@ -3871,7 +3871,7 @@ const Nm = { class: "growing-card-top" }, Dm = ["aria-expanded"], Pm = { class: 
       ])
     ], 2));
   }
-}, Hm = /* @__PURE__ */ K(Wm, [["__scopeId", "data-v-f2b4930d"]]), zm = {
+}, Hm = /* @__PURE__ */ K(Wm, [["__scopeId", "data-v-9cee1e01"]]), zm = {
   key: 0,
   class: "message-links-few",
   "data-message-links-rows": ""
@@ -3960,7 +3960,7 @@ const Nm = { class: "growing-card-top" }, Dm = ["aria-expanded"], Pm = { class: 
       }, null, 8, ["more", "loading", "failure"])
     ], 2));
   }
-}, n1 = /* @__PURE__ */ K(t1, [["__scopeId", "data-v-e9bc783c"]]), a1 = ["title", "aria-label"], s1 = {
+}, n1 = /* @__PURE__ */ K(t1, [["__scopeId", "data-v-417b955f"]]), a1 = ["title", "aria-label"], s1 = {
   viewBox: "0 0 19 12",
   fill: "none",
   stroke: "currentColor",
@@ -3987,7 +3987,7 @@ const Nm = { class: "growing-card-top" }, Dm = ["aria-expanded"], Pm = { class: 
       ]))
     ], 10, a1));
   }
-}, r1 = /* @__PURE__ */ K(l1, [["__scopeId", "data-v-6dc92808"]]);
+}, r1 = /* @__PURE__ */ K(l1, [["__scopeId", "data-v-6c0a4358"]]);
 function i1(e, t = Date.now()) {
   if (!e) return "";
   const n = typeof e == "string" ? Date.parse(e) / 1e3 : e, a = Math.max(0, t / 1e3 - n);
@@ -4462,7 +4462,7 @@ const k1 = ["data-incoming", "data-ref"], x1 = ["data-figure-mark", "data-figure
       }, null, 8, ["links", "total", "more", "loading", "failure", "onMore"])) : E("", !0)
     ], 8, x1));
   }
-}, w5 = /* @__PURE__ */ K(V1, [["__scopeId", "data-v-0be1107c"]]), G1 = /* @__PURE__ */ Object.assign({ name: "SkeletonParts" }, {
+}, w5 = /* @__PURE__ */ K(V1, [["__scopeId", "data-v-bc09cda6"]]), G1 = /* @__PURE__ */ Object.assign({ name: "SkeletonParts" }, {
   __name: "SkeletonParts",
   props: { parts: { type: Array, default: () => [] } },
   setup(e) {
@@ -4544,7 +4544,7 @@ const k1 = ["data-incoming", "data-ref"], x1 = ["data-figure-mark", "data-figure
       ], 64))), 128);
     };
   }
-}), K1 = /* @__PURE__ */ K(G1, [["__scopeId", "data-v-fa8baeaf"]]), Y1 = {
+}), K1 = /* @__PURE__ */ K(G1, [["__scopeId", "data-v-b78e62d9"]]), Y1 = {
   class: "window-skeleton",
   "aria-busy": "true",
   "aria-label": "Loading",
@@ -4557,7 +4557,7 @@ const k1 = ["data-incoming", "data-ref"], x1 = ["data-figure-mark", "data-figure
       N(K1, { parts: e.parts }, null, 8, ["parts"])
     ]));
   }
-}, $s = /* @__PURE__ */ K(J1, [["__scopeId", "data-v-52f66b64"]]), jn = [
+}, $s = /* @__PURE__ */ K(J1, [["__scopeId", "data-v-a5cff6ec"]]), jn = [
   { key: 100, label: "Low" },
   { key: 200, label: "Normal" },
   { key: 300, label: "High" },
@@ -4597,7 +4597,7 @@ const k1 = ["data-incoming", "data-ref"], x1 = ["data-figure-mark", "data-figure
       }, null, 4)
     ], 10, Z1));
   }
-}, x5 = /* @__PURE__ */ K(Q1, [["__scopeId", "data-v-b10e610f"]]), mo = (e) => [...new Set(e.agents.map((t) => t.name))], $5 = (e) => mo(e).length === 1 ? `Worker: ${mo(e)[0]}` : "Delegated", ep = { working: "working", busy: "working", compacting: "working", waiting: "waiting", you: "waiting", stuck: "waiting", silent: "waiting", stopped: "stopped" }, po = (e) => ep[e.card.state] || "idle", tp = (e, t) => e.n - t.n || e.type.localeCompare(t.type) || e.key.localeCompare(t.key), go = { working: 0, waiting: 1, idle: 2, stopped: 3 }, vo = (e, t) => go[po(e)] - go[po(t)], yo = {
+}, x5 = /* @__PURE__ */ K(Q1, [["__scopeId", "data-v-549d72cf"]]), mo = (e) => [...new Set(e.agents.map((t) => t.name))], $5 = (e) => mo(e).length === 1 ? `Worker: ${mo(e)[0]}` : "Delegated", ep = { working: "working", busy: "working", compacting: "working", waiting: "waiting", you: "waiting", stuck: "waiting", silent: "waiting", stopped: "stopped" }, po = (e) => ep[e.card.state] || "idle", tp = (e, t) => e.n - t.n || e.type.localeCompare(t.type) || e.key.localeCompare(t.key), go = { working: 0, waiting: 1, idle: 2, stopped: 3 }, vo = (e, t) => go[po(e)] - go[po(t)], yo = {
   state: (e, t) => t.time - e.time,
   active: (e, t) => t.time - e.time
 }, M5 = (e, t, n = []) => t === "number" ? [...e].sort((a, s) => vo(a, s) || n.indexOf(a.key) - n.indexOf(s.key) || tp(a, s)) : [...e].sort((a, s) => vo(a, s) || (yo[t] || yo.state)(a, s)), np = { class: "list-row" }, ap = {
@@ -4634,7 +4634,7 @@ const k1 = ["data-incoming", "data-ref"], x1 = ["data-figure-mark", "data-figure
       e.text ? (c(), h("span", ip, w(e.text), 1)) : E("", !0)
     ]));
   }
-}, S5 = /* @__PURE__ */ K(cp, [["__scopeId", "data-v-dfc8c3a7"]]), up = {
+}, S5 = /* @__PURE__ */ K(cp, [["__scopeId", "data-v-30fac05a"]]), up = {
   claude: [
     { key: "haiku", label: "haiku", note: "fast, for mechanical work" },
     { key: "sonnet", label: "sonnet", note: "careful work without invention" },
@@ -4742,7 +4742,7 @@ const k1 = ["data-incoming", "data-ref"], x1 = ["data-figure-mark", "data-figure
       }, 8, ["anchor", "min-width"])) : E("", !0)
     ], 2));
   }
-}, wp = /* @__PURE__ */ K(bp, [["__scopeId", "data-v-29dfcce5"]]), _5 = {
+}, wp = /* @__PURE__ */ K(bp, [["__scopeId", "data-v-9d0322ab"]]), _5 = {
   __name: "ModelPicker",
   props: {
     provider: { type: String, default: "claude" },
@@ -4831,7 +4831,7 @@ const k1 = ["data-incoming", "data-ref"], x1 = ["data-figure-mark", "data-figure
       }, 8, ["onAfterLeave"])
     ]));
   }
-}, E5 = /* @__PURE__ */ K(_p, [["__scopeId", "data-v-c9a3f43a"]]), Ep = {
+}, E5 = /* @__PURE__ */ K(_p, [["__scopeId", "data-v-82aa5dd1"]]), Ep = {
   key: 1,
   class: "text-field-label"
 }, Ap = {
@@ -4882,7 +4882,7 @@ const k1 = ["data-incoming", "data-ref"], x1 = ["data-figure-mark", "data-figure
       [j(Ua), o.value]
     ]);
   }
-}), A5 = /* @__PURE__ */ K(Cp, [["__scopeId", "data-v-d9c38ca8"]]);
+}), A5 = /* @__PURE__ */ K(Cp, [["__scopeId", "data-v-631ba0ce"]]);
 async function Op(e, t, n) {
   if (!e) return n(t);
   const { target: a, fields: s } = e, o = Object.fromEntries(Object.keys(s).map((i) => [i, a[i]])), l = () => Object.assign(a, o);
@@ -4975,7 +4975,7 @@ const Tp = { class: "title" }, Rp = { class: "state" }, Ip = {
       _: 1
     }, 8, ["rows", "failure", "loaded", "empty"]));
   }
-}, O5 = /* @__PURE__ */ K(Ip, [["__scopeId", "data-v-9191a6f0"]]);
+}, O5 = /* @__PURE__ */ K(Ip, [["__scopeId", "data-v-46749af8"]]);
 function Bp(e = 1e3, t = null) {
   const n = R(Date.now() / 1e3);
   let a = 0;
@@ -5202,7 +5202,7 @@ const jp = ["title", "data-figure-mark", "data-folded", "data-open"], qp = {
       }, void 0, !0)
     ], 16, jp));
   }
-}), nr = /* @__PURE__ */ K(eg, [["__scopeId", "data-v-2aa9c496"]]), tg = 60;
+}), nr = /* @__PURE__ */ K(eg, [["__scopeId", "data-v-dc93aa50"]]), tg = 60;
 function ng(e, t) {
   const n = R([]), a = R(0);
   let s = -1, o = 0, l = !1;
@@ -5350,7 +5350,7 @@ const gg = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\
       }, "Follow")) : E("", !0)
     ], 544));
   }
-}, bg = /* @__PURE__ */ K(yg, [["__scopeId", "data-v-c2fb1783"]]), wg = 1e4;
+}, bg = /* @__PURE__ */ K(yg, [["__scopeId", "data-v-07980c45"]]), wg = 1e4;
 class kg {
   constructor(t, n) {
     this.frame = t, this.context = n, this.heardAt = null, this.received = this.received.bind(this);
@@ -5415,7 +5415,7 @@ const xg = {
       }, null, 8, Mg)
     ], 64));
   }
-}, Eg = /* @__PURE__ */ K(_g, [["__scopeId", "data-v-32a49046"]]), $n = (e) => e ? e.split(", ") : [];
+}, Eg = /* @__PURE__ */ K(_g, [["__scopeId", "data-v-f3cb2f7c"]]), $n = (e) => e ? e.split(", ") : [];
 function Ag({ title: e, type: t, lines: n }) {
   return `${e} wants to ${t === "reads" ? "read" : "run"}: ${n.join(", ")}. Allow?`;
 }
@@ -5459,7 +5459,7 @@ const Og = {
       ])
     ]));
   }
-}, Bg = /* @__PURE__ */ K(Ig, [["__scopeId", "data-v-cad69fe2"]]), ba = {
+}, Bg = /* @__PURE__ */ K(Ig, [["__scopeId", "data-v-9319ffca"]]), ba = {
   __name: "WindowPlaceholder",
   props: { name: { type: String, required: !0 }, reason: { type: String, required: !0 }, retry: Boolean, removable: Boolean },
   emits: ["retry", "remove"],
@@ -5589,7 +5589,7 @@ const Og = {
       }, null, 8, ["name"]))
     ], 8, Lg));
   }
-}, Kt = /* @__PURE__ */ K(Ng, [["__scopeId", "data-v-c4443e2b"]]), or = {
+}, Kt = /* @__PURE__ */ K(Ng, [["__scopeId", "data-v-bd481e0c"]]), or = {
   __name: "FrameWindow",
   props: {
     entry: { type: Object, required: !0 },
@@ -5812,7 +5812,7 @@ const Og = {
       ])
     ], 2));
   }
-}, Qa = /* @__PURE__ */ K(Ug, [["__scopeId", "data-v-f4d037e5"]]), Vg = ["title", "aria-label", "onClick"], Gg = {
+}, Qa = /* @__PURE__ */ K(Ug, [["__scopeId", "data-v-4e5e4ce1"]]), Vg = ["title", "aria-label", "onClick"], Gg = {
   key: 0,
   class: "mark-refusal",
   role: "alert"
@@ -5844,7 +5844,7 @@ const Og = {
       a.value ? (c(), h("span", Gg, w(a.value), 1)) : E("", !0)
     ], 64));
   }
-}, Yg = /* @__PURE__ */ K(Kg, [["__scopeId", "data-v-7a62c88e"]]);
+}, Yg = /* @__PURE__ */ K(Kg, [["__scopeId", "data-v-c8022f67"]]);
 function rr(e, t) {
   const n = Ve(/* @__PURE__ */ new Map()), a = (o) => n.value = new Map(o.map((l) => [l.type, l])), s = async () => {
     try {
@@ -5917,7 +5917,7 @@ const ir = rr("/api/marks", "marks"), T5 = ir.fetchAll, Jg = ir.find, Zg = ["dat
       ], 10, Xg));
     };
   }
-}, n0 = /* @__PURE__ */ K(t0, [["__scopeId", "data-v-8196402d"]]), a0 = ["data-ref"], s0 = ["inert"], o0 = { class: "group-fold" }, l0 = { class: "thread-group" }, r0 = {
+}, n0 = /* @__PURE__ */ K(t0, [["__scopeId", "data-v-822c50ad"]]), a0 = ["data-ref"], s0 = ["inert"], o0 = { class: "group-fold" }, l0 = { class: "thread-group" }, r0 = {
   __name: "MarkGroup",
   props: { group: { type: Object, required: !0 } },
   setup(e) {
@@ -5963,7 +5963,7 @@ const ir = rr("/api/marks", "marks"), T5 = ir.fetchAll, Jg = ir.find, Zg = ["dat
       ], 10, s0)) : E("", !0)
     ], 8, a0));
   }
-}, R5 = /* @__PURE__ */ K(r0, [["__scopeId", "data-v-45b58b9b"]]);
+}, R5 = /* @__PURE__ */ K(r0, [["__scopeId", "data-v-163808b2"]]);
 function i0(e) {
   const t = R(null), n = new ResizeObserver(() => t.value = e.value.offsetHeight);
   return Be(() => n.observe(e.value)), _t(() => n.disconnect()), t;
@@ -6013,7 +6013,7 @@ const c0 = { class: "chat-dock-fold" }, u0 = ["aria-label"], d0 = { class: "chat
       ])
     ], 2));
   }
-}, ur = /* @__PURE__ */ K(m0, [["__scopeId", "data-v-74d44b19"]]), p0 = {
+}, ur = /* @__PURE__ */ K(m0, [["__scopeId", "data-v-faaa3f0d"]]), p0 = {
   class: "dock-leave",
   "aria-hidden": "true"
 }, wa = 5, g0 = {
@@ -6025,7 +6025,7 @@ const c0 = { class: "chat-dock-fold" }, u0 = ["aria-label"], d0 = { class: "chat
       v("i", { style: a })
     ]));
   }
-}, dr = /* @__PURE__ */ K(g0, [["__scopeId", "data-v-2a7bc150"]]), v0 = { reviewing: "Under review" }, y0 = (e, t) => e || v0[t == null ? void 0 : t.state] || "", Je = { word: "cancel", label: "Cancel", flag: "--reason", ask: "Why is it cancelled?" }, b0 = {
+}, dr = /* @__PURE__ */ K(g0, [["__scopeId", "data-v-3be36688"]]), v0 = { reviewing: "Under review" }, y0 = (e, t) => e || v0[t == null ? void 0 : t.state] || "", Je = { word: "cancel", label: "Cancel", flag: "--reason", ask: "Why is it cancelled?" }, b0 = {
   draft: [{ word: "ready", label: "Mark ready" }, Je],
   ready: [Je],
   approved: [{ word: "start", label: "Start", main: !0 }, Je],
@@ -6313,7 +6313,7 @@ const W0 = ["title"], H0 = {
       }, 8, ["label", "type", "folded", "body", "collapsed", "data-figure-closing"]);
     };
   }
-}, Mo = /* @__PURE__ */ K(Y0, [["__scopeId", "data-v-460364d0"]]), J0 = ["title", "aria-label"], Z0 = { class: "run-chip-in" }, X0 = {
+}, Mo = /* @__PURE__ */ K(Y0, [["__scopeId", "data-v-5760f52b"]]), J0 = ["title", "aria-label"], Z0 = { class: "run-chip-in" }, X0 = {
   key: 0,
   class: "run-chip-ring"
 }, Q0 = { class: "run-chip-name" }, ev = { class: "run-chip-bar" }, tv = "processes.output", nv = {
@@ -6363,7 +6363,7 @@ const W0 = ["title"], H0 = {
       ], 12, J0);
     };
   }
-}, av = /* @__PURE__ */ K(nv, [["__scopeId", "data-v-f864bc58"]]), sv = 24, ov = 8, B5 = 420;
+}, av = /* @__PURE__ */ K(nv, [["__scopeId", "data-v-ea37a735"]]), sv = 24, ov = 8, B5 = 420;
 function L5({ top: e, before: t, height: n, shown: a }) {
   const s = n - e - a;
   return s <= sv ? !0 : e < t && s > ov ? !1 : null;
@@ -6588,7 +6588,7 @@ const uv = {
       _: 1
     }, 8, ["duration"]));
   }
-}, N5 = /* @__PURE__ */ K(mv, [["__scopeId", "data-v-ea618218"]]), wt = { notice: 0.42, gap: 8, shuffles: 3, seconds: 2.4, frames: 48, fps: 20, lift: 0.12 }, Tn = (e) => Math.min(Math.max(e, 0), 1), pv = (e) => {
+}, N5 = /* @__PURE__ */ K(mv, [["__scopeId", "data-v-fb45f5a5"]]), wt = { notice: 0.42, gap: 8, shuffles: 3, seconds: 2.4, frames: 48, fps: 20, lift: 0.12 }, Tn = (e) => Math.min(Math.max(e, 0), 1), pv = (e) => {
   const t = Tn(e);
   return t * t * (3 - 2 * t);
 }, mt = (e, t, n) => pv((e - t) / (n - t));
@@ -8014,7 +8014,7 @@ const Fb = ["data-type"], Wb = { class: "figure-floor-name" }, Hb = {
       v("span", Wb, w(e.floor.type), 1)
     ], 12, Fb));
   }
-}, zb = /* @__PURE__ */ K(Hb, [["__scopeId", "data-v-4e0f1e2e"]]), Ub = {
+}, zb = /* @__PURE__ */ K(Hb, [["__scopeId", "data-v-ac620b01"]]), Ub = {
   class: "figure-floors",
   "aria-hidden": "true"
 }, Vb = {
@@ -8034,7 +8034,7 @@ const Fb = ["data-type"], Wb = { class: "figure-floor-name" }, Hb = {
       }, null, 8, ["floor"]))), 128))
     ]));
   }
-}, c8 = /* @__PURE__ */ K(Vb, [["__scopeId", "data-v-e519168b"]]), Ra = (e) => typeof e == "number" ? e : Date.parse(e);
+}, c8 = /* @__PURE__ */ K(Vb, [["__scopeId", "data-v-c8fb9617"]]), Ra = (e) => typeof e == "number" ? e : Date.parse(e);
 function u8(e, t) {
   const n = (s, o) => ({ type: s, id: `${s}:${o.id}`, row: o, time: Ra(o.created_at) / 1e3 });
   return [...e.map((s) => n("message", s)), ...t.map((s) => n("mark", s))].sort((s, o) => Ra(s.row.created_at) - Ra(o.row.created_at) || (s.type === o.type ? s.row.id - o.row.id : s.type === "message" ? -1 : 1));
@@ -8209,7 +8209,7 @@ const nw = { class: "cards-page" }, aw = { class: "cards-bar" }, sw = { class: "
       ue(a.$slots, "default", {}, void 0, !0)
     ]));
   }
-}, w8 = /* @__PURE__ */ K(fw, [["__scopeId", "data-v-990e6b37"]]), Wo = "newest";
+}, w8 = /* @__PURE__ */ K(fw, [["__scopeId", "data-v-b9e18f79"]]), Wo = "newest";
 function k8(e, { title: t, isOpen: n = null }) {
   var u;
   const a = (u = Ee(Te, null)) == null ? void 0 : u.search, s = R(""), o = R(Wo), l = R("all"), r = I(() => {
@@ -8265,7 +8265,7 @@ const hw = {
       })
     ]));
   }
-}, x8 = /* @__PURE__ */ K(gw, [["__scopeId", "data-v-3accb764"]]), vw = ["aria-selected", "data-tab", "onClick"], yw = {
+}, x8 = /* @__PURE__ */ K(gw, [["__scopeId", "data-v-ffe6b8a5"]]), vw = ["aria-selected", "data-tab", "onClick"], yw = {
   key: 0,
   class: "inner-tab-count",
   "data-tab-count": ""
@@ -8318,7 +8318,7 @@ const hw = {
       }, null, 6)
     ], 512));
   }
-}, $8 = /* @__PURE__ */ K(bw, [["__scopeId", "data-v-63fcd326"]]), ww = {
+}, $8 = /* @__PURE__ */ K(bw, [["__scopeId", "data-v-e0def8d7"]]), ww = {
   class: "tab-body",
   "data-tab-body": ""
 }, kw = { "data-tab-content": "" }, xw = {
@@ -8348,13 +8348,13 @@ const hw = {
       ])
     ]));
   }
-}, M8 = /* @__PURE__ */ K(xw, [["__scopeId", "data-v-63876533"]]), $w = {}, Mw = { class: "menu-label" };
+}, M8 = /* @__PURE__ */ K(xw, [["__scopeId", "data-v-fe3ebcad"]]), $w = {}, Mw = { class: "menu-label" };
 function Sw(e, t) {
   return c(), h("span", Mw, [
     ue(e.$slots, "default", {}, void 0, !0)
   ]);
 }
-const rs = /* @__PURE__ */ K($w, [["render", Sw], ["__scopeId", "data-v-aa955b3e"]]), _w = {
+const rs = /* @__PURE__ */ K($w, [["render", Sw], ["__scopeId", "data-v-71c11156"]]), _w = {
   class: "search-bar",
   "data-search-bar": ""
 }, Ew = { class: "search-bar-control" }, Aw = ["value", "placeholder", "aria-label"], Cw = ["aria-expanded"], Ow = {
@@ -8481,7 +8481,7 @@ const rs = /* @__PURE__ */ K($w, [["render", Sw], ["__scopeId", "data-v-aa955b3e
       ]);
     };
   }
-}, Rw = /* @__PURE__ */ K(Tw, [["__scopeId", "data-v-45374bed"]]), Iw = {
+}, Rw = /* @__PURE__ */ K(Tw, [["__scopeId", "data-v-8617b565"]]), Iw = {
   __name: "ListTools",
   props: { tools: { type: Object, required: !0 }, placeholder: { type: String, default: "Search" } },
   emits: ["pick"],
@@ -8547,7 +8547,7 @@ const rs = /* @__PURE__ */ K($w, [["render", Sw], ["__scopeId", "data-v-aa955b3e
       _: 3
     }, 8, ["modelValue", "placeholder"]));
   }
-}, S8 = /* @__PURE__ */ K(Iw, [["__scopeId", "data-v-dab0064d"]]);
+}, S8 = /* @__PURE__ */ K(Iw, [["__scopeId", "data-v-9c2114d0"]]);
 function _8() {
   const e = R(null);
   return { opened: e, toggle: (n) => {
@@ -8679,7 +8679,7 @@ const Ww = ["title"], Hw = {
       j(a) ? (c(), h("span", Hw, w(j(n).length), 1)) : E("", !0)
     ], 10, Ww)) : E("", !0);
   }
-}, R8 = /* @__PURE__ */ K(zw, [["__scopeId", "data-v-d073c504"]]), Uw = ["title"], Vw = ["title"], Gw = { class: "diff-card-dir" }, Kw = { class: "diff-card-name" }, Yw = ["title"], Jw = ["title"], Zw = {
+}, R8 = /* @__PURE__ */ K(zw, [["__scopeId", "data-v-999f2559"]]), Uw = ["title"], Vw = ["title"], Gw = { class: "diff-card-dir" }, Kw = { class: "diff-card-name" }, Yw = ["title"], Jw = ["title"], Zw = {
   key: 0,
   class: "diff-card-note"
 }, Xw = ["href"], Qw = ["src", "alt"], ek = { class: "diff-card-rows" }, tk = { class: "diff-row-num" }, nk = { class: "diff-row-sign" }, ak = { class: "diff-row-code" }, sk = {
@@ -8816,7 +8816,7 @@ const Ww = ["title"], Hw = {
       ], 64)) : E("", !0)
     ], 2));
   }
-}, I8 = /* @__PURE__ */ K(sk, [["__scopeId", "data-v-23581cbb"]]), ok = {
+}, I8 = /* @__PURE__ */ K(sk, [["__scopeId", "data-v-9c99c502"]]), ok = {
   key: 0,
   class: "window-failure"
 }, lk = {
@@ -9112,7 +9112,7 @@ const Ww = ["title"], Hw = {
       ], 2)) : E("", !0);
     };
   }
-}, yk = /* @__PURE__ */ K(vk, [["__scopeId", "data-v-0262f48f"]]), bk = /* @__PURE__ */ new Set(["completed", "cancelled"]), wk = (e) => bk.has(e), Vn = (e) => wk(e) ? "done" : e, kk = { class: "facts" }, xk = { class: "fact wide" }, $k = { class: "fact-value" }, Mk = {
+}, yk = /* @__PURE__ */ K(vk, [["__scopeId", "data-v-5254ddd4"]]), bk = /* @__PURE__ */ new Set(["completed", "cancelled"]), wk = (e) => bk.has(e), Vn = (e) => wk(e) ? "done" : e, kk = { class: "facts" }, xk = { class: "fact wide" }, $k = { class: "fact-value" }, Mk = {
   key: 0,
   class: "fact"
 }, Sk = { class: "fact-value" }, _k = { class: "fact" }, Ek = { class: "fact-label" }, Ak = ["title"], Ck = {
@@ -9177,7 +9177,7 @@ const Ww = ["title"], Hw = {
       ]);
     };
   }
-}, Nk = /* @__PURE__ */ K(Lk, [["__scopeId", "data-v-2bcdca7a"]]), Dk = {
+}, Nk = /* @__PURE__ */ K(Lk, [["__scopeId", "data-v-19f073bc"]]), Dk = {
   key: 0,
   class: "block-history",
   "data-task-block-history": ""
@@ -9198,7 +9198,7 @@ const Ww = ["title"], Hw = {
       ]))), 128))
     ])) : E("", !0);
   }
-}, qk = /* @__PURE__ */ K(jk, [["__scopeId", "data-v-b41f213b"]]), Fk = {
+}, qk = /* @__PURE__ */ K(jk, [["__scopeId", "data-v-3019b030"]]), Fk = {
   started: "In progress",
   testing: "Testing",
   paused: "Paused",
@@ -9343,7 +9343,7 @@ const Ww = ["title"], Hw = {
       })
     ]));
   }
-}, Yr = /* @__PURE__ */ K(Uk, [["__scopeId", "data-v-ae24a63f"]]), Vk = {
+}, Yr = /* @__PURE__ */ K(Uk, [["__scopeId", "data-v-b13c7c09"]]), Vk = {
   class: "part",
   "data-resource-waits": ""
 }, Gk = ["onClick"], Kk = { class: "wait-id" }, Yk = { class: "wait-title" }, Jk = {
@@ -9369,7 +9369,7 @@ const Ww = ["title"], Hw = {
       ], 8, Gk))), 128))
     ]));
   }
-}, Uo = /* @__PURE__ */ K(Jk, [["__scopeId", "data-v-8fb2e251"]]), Zk = {
+}, Uo = /* @__PURE__ */ K(Jk, [["__scopeId", "data-v-96a767b5"]]), Zk = {
   key: 1,
   class: "part",
   "data-task-outcome": ""
@@ -9414,7 +9414,7 @@ const Ww = ["title"], Hw = {
       }, null, 8, ["waits"])) : E("", !0)
     ], 64));
   }
-}, n2 = /* @__PURE__ */ K(t2, [["__scopeId", "data-v-4a3f1e79"]]), a2 = {
+}, n2 = /* @__PURE__ */ K(t2, [["__scopeId", "data-v-b628bea5"]]), a2 = {
   class: "task-details",
   "data-task-details": ""
 }, s2 = { class: "since" }, o2 = {
@@ -9487,7 +9487,7 @@ const Ww = ["title"], Hw = {
       ]);
     };
   }
-}, f2 = /* @__PURE__ */ K(d2, [["__scopeId", "data-v-408e9f91"]]), h2 = 50, m2 = { messages: 25 }, p2 = (e) => m2[e] || h2, g2 = {
+}, f2 = /* @__PURE__ */ K(d2, [["__scopeId", "data-v-7b9702f2"]]), h2 = 50, m2 = { messages: 25 }, p2 = (e) => m2[e] || h2, g2 = {
   class: "task-log",
   "aria-label": "Task log"
 }, v2 = {
@@ -9592,7 +9592,7 @@ const Ww = ["title"], Hw = {
       ], 64))
     ]));
   }
-}, $2 = /* @__PURE__ */ K(x2, [["__scopeId", "data-v-98b3a6b1"]]), M2 = { class: "comment-side-head" }, S2 = {
+}, $2 = /* @__PURE__ */ K(x2, [["__scopeId", "data-v-91807335"]]), M2 = { class: "comment-side-head" }, S2 = {
   key: 0,
   class: "comment-none"
 }, _2 = { key: 0 }, E2 = {
@@ -9642,7 +9642,7 @@ const Ww = ["title"], Hw = {
       }, null, 8, ["more", "loading", "failure"])
     ], 2));
   }
-}, O2 = /* @__PURE__ */ K(C2, [["__scopeId", "data-v-276284a3"]]);
+}, O2 = /* @__PURE__ */ K(C2, [["__scopeId", "data-v-798005b2"]]);
 var Ko;
 /Mac|iPhone|iPad/.test(((Ko = navigator.userAgentData) == null ? void 0 : Ko.platform) || navigator.platform);
 function T2(e, t) {
@@ -9765,7 +9765,7 @@ const R2 = ["placeholder"], I2 = { class: "actions" }, B2 = { class: "error" }, 
       ]))
     ], 2));
   }
-}, q2 = /* @__PURE__ */ K(j2, [["__scopeId", "data-v-b68baddd"]]);
+}, q2 = /* @__PURE__ */ K(j2, [["__scopeId", "data-v-54460909"]]);
 function F2(e, t) {
   const n = R([]), a = R(!1), s = R(null), o = R(0), l = R(!1), r = R("");
   let i = 0, u = 0;
@@ -10046,7 +10046,7 @@ const W2 = { class: "top" }, H2 = {
       }, 8, ["anchor"])) : E("", !0)
     ], 2));
   }
-}, B8 = /* @__PURE__ */ K(Z2, [["__scopeId", "data-v-7a9aa909"]]);
+}, B8 = /* @__PURE__ */ K(Z2, [["__scopeId", "data-v-a6bebf87"]]);
 function X2(e) {
   return e && e.__esModule && Object.prototype.hasOwnProperty.call(e, "default") ? e.default : e;
 }
@@ -11131,7 +11131,7 @@ const t5 = /* @__PURE__ */ X2(e5), n5 = ["width", "height", "viewBox"], a5 = ["w
       }, null, 8, s5)
     ], 8, n5));
   }
-}, L8 = /* @__PURE__ */ K(o5, [["__scopeId", "data-v-489f0852"]]), l5 = {
+}, L8 = /* @__PURE__ */ K(o5, [["__scopeId", "data-v-b4458227"]]), l5 = {
   __name: "WindowRoom",
   props: { padding: { type: String, default: "8px 12px" } },
   setup(e) {
@@ -11143,12 +11143,12 @@ const t5 = /* @__PURE__ */ X2(e5), n5 = ["width", "height", "viewBox"], a5 = ["w
       ue(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, N8 = /* @__PURE__ */ K(l5, [["__scopeId", "data-v-47e67f04"]]);
+}, N8 = /* @__PURE__ */ K(l5, [["__scopeId", "data-v-79847aff"]]);
 function D8(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const P8 = ci(() => import("./VoiceFigure-Bm1_6mo-.js").then((e) => e.V)), j8 = "1.2.0", q8 = "3.5";
+const P8 = ci(() => import("./VoiceFigure-Dz_dIAgh.mjs").then((e) => e.V)), j8 = "1.2.0", q8 = "3.5";
 export {
   cd as $,
   Se as A,
