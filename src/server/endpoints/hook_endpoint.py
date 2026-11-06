@@ -35,6 +35,7 @@ TOOL_NAME = "pre_tool_use"
 LEAST_BUSY_SECONDS = 0.1
 REQUEST_LOG_BUSY_SECONDS = 0.05
 ROLE_FIELD = "role"
+SESSION_FIELD = "session"
 MAIN_ROLE = "main"
 UNCHECKED_TOOL = "the journal could not check this tool, so it did not run: {reason}. Run it once more. If that is refused as well, stop and write in your report that the journal does not answer."
 
@@ -47,6 +48,10 @@ def is_stop_body(data: object) -> bool:
 
 def queue_priority(data: object) -> QueuePriority:
     return QueuePriority.AGENT_HOOK if is_mapping(data) and data.get(ROLE_FIELD) not in (None, "", MAIN_ROLE) else QueuePriority.MAIN_AGENT_HOOK
+
+
+def hook_owner(data: object) -> str:
+    return str(data.get(SESSION_FIELD, "")) if is_mapping(data) else ""
 
 
 def requires_check(data: object) -> bool:
@@ -70,7 +75,7 @@ class HookEndpoint:
         try:
             priority = queue_priority(data)
             limit_seconds = self.context.agent_hook_limit_seconds if priority is QueuePriority.AGENT_HOOK else self.context.hook_limit_seconds
-            with self.context.hook_database.used(priority, limit_seconds) as database:
+            with self.context.hook_database.used(priority, limit_seconds, hook_owner(data)) as database:
                 self.timing.stamp("hook_locked")
                 return self.routed_answer(data, program, headers, database, started_at, limit_seconds)
         except (HookDatabaseBusyError, OldHookRunnerError) as error:
