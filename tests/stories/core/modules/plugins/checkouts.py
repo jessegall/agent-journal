@@ -48,14 +48,14 @@ def helper_of_the_worker(story) -> Agent:
 def test_s46_the_checkout_of_the_main_agent_is_the_project(new_story):
     story = checkout_story(new_story)
     project = story.repository.folder.resolve()
-    assert checkout_object(story, story.agent.id) == Checkout(CheckoutType.MAIN, project, project, ENVIRONMENT_BRANCH)
+    story.expect_rows(checkout_object(story, story.agent.id) == Checkout(CheckoutType.MAIN, project, project, ENVIRONMENT_BRANCH))
 
 
 def test_s45_the_checkout_of_a_worker_is_its_worktree(new_story):
     story = checkout_story(new_story)
     repository = story.repository
-    assert checkout_object(story, story.worker.id) == Checkout(CheckoutType.WORKTREE, story.worktree.resolve(), repository.folder.resolve(), repository.worker_branch(story.worker.id),
-                                                               ENVIRONMENT_BRANCH, repository.tip(ENVIRONMENT_BRANCH), True)
+    story.expect_rows(checkout_object(story, story.worker.id) == Checkout(CheckoutType.WORKTREE, story.worktree.resolve(), repository.folder.resolve(), repository.worker_branch(story.worker.id),
+                                                                       ENVIRONMENT_BRANCH, repository.tip(ENVIRONMENT_BRANCH), True))
 
 
 def test_s50_the_checkout_of_a_released_worker_says_it_does_not_exist_and_names_the_branch(new_story):
@@ -67,7 +67,7 @@ def test_s50_the_checkout_of_a_released_worker_says_it_does_not_exist_and_names_
 
 def test_s56_the_checkout_of_a_helper_of_a_worker_is_the_checkout_of_the_worker(new_story):
     story = checkout_story(new_story)
-    assert checkout_object(story, helper_of_the_worker(story).id) == checkout_object(story, story.worker.id)
+    story.expect_rows(checkout_object(story, helper_of_the_worker(story).id) == checkout_object(story, story.worker.id))
 
 
 def test_s48_the_checkout_of_a_worker_behind_a_link_holds_real_paths(new_story):
@@ -122,10 +122,10 @@ def test_s47_an_environment_folder_whose_name_appears_twice_in_the_path_gives_th
 def test_s48_a_project_behind_a_link_gives_real_paths_and_the_same_event_for_both_names(new_story):
     story = checkout_story(new_story, linked=True)
     linked_worktree = story.home.folder.parent / "linked-project" / story.worktree.relative_to(story.repository.folder)
-    by_link = edit_event(story, story.worker_session, folder=linked_worktree)
-    by_real_path = edit_event(story, story.worker_session, folder=story.worktree.resolve())
-    story.expect_rows(checkout_of(by_link)["root"] == real(story.worktree), checkout_of(by_link)["project_root"] == real(story.repository.folder), file_of(by_link)["relative"] == ORDER)
-    story.expect_rows(checkout_of(by_link) == checkout_of(by_real_path), file_of(by_link) == file_of(by_real_path))
+    link_event = edit_event(story, story.worker_session, folder=linked_worktree)
+    resolved_event = edit_event(story, story.worker_session, folder=story.worktree.resolve())
+    story.expect_rows(checkout_of(link_event)["root"] == real(story.worktree), checkout_of(link_event)["project_root"] == real(story.repository.folder), file_of(link_event)["relative"] == ORDER)
+    story.expect_rows(checkout_of(link_event) == checkout_of(resolved_event), file_of(link_event) == file_of(resolved_event))
 
 
 def test_s49_an_edit_under_a_linked_library_is_linked_and_stays_with_the_worktree(new_story):
@@ -278,10 +278,10 @@ def test_s60_the_full_line_of_a_file_edited_for_a_worker_does_not_move(new_story
     data = event_data(call)
     story.expect_rows(set(call) == {"v", "event", "at", "environment", "agent", "role", "window_ms", "skills", "checkout", "data"})
     story.expect_rows(call["v"] == 1, call["event"] == "file_edited", call["environment"] == "main", call["agent"] == story.worker.id, call["role"] == "worker", call["window_ms"] == DELIVERY_LIMIT_MS)
-    assert call["checkout"] == {"kind": "worktree", "root": worktree, "project_root": project, "branch": story.repository.worker_branch(story.worker.id), "base_branch": ENVIRONMENT_BRANCH,
-                                "base_commit": story.repository.tip(ENVIRONMENT_BRANCH), "exists": True}, call["checkout"]
+    story.expect_rows(call["checkout"] == {"kind": "worktree", "root": worktree, "project_root": project, "branch": story.repository.worker_branch(story.worker.id), "base_branch": ENVIRONMENT_BRANCH,
+                                            "base_commit": story.repository.tip(ENVIRONMENT_BRANCH), "exists": True})
     story.expect_rows(data["path"] == ORDER, data["cwd"] == str(story.worktree))
-    assert data["file"] == {"relative": ORDER, "path": f"{worktree}/{ORDER}", "project_path": f"{project}/{ORDER}", "status": "changed", "renamed_from": "", "in_base": True, "linked": False}, data["file"]
+    story.expect_rows(data["file"] == {"relative": ORDER, "path": f"{worktree}/{ORDER}", "project_path": f"{project}/{ORDER}", "status": "changed", "renamed_from": "", "in_base": True, "linked": False})
 
 
 def test_s62_changes_since_a_commit_names_what_differs_with_files_not_yet_committed_and_new_ones(new_story):

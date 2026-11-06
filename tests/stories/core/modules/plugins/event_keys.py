@@ -11,7 +11,7 @@ from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.modules.plugins.support.event_modules import CLASHING, CLASHING_KEY, NOTE_CREATED, NOTES, NOTES_MOVED
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-NO_KEY_MODELS = ("plugin_delivery", "plugin_output", "plugin_queue_file")
+EXCLUDED_MODELS = ("plugin_delivery", "plugin_output", "plugin_queue_file")
 METADATA_CHANGE = ".metadata"
 ALL_FORMS = "guard listen commit"
 SYSTEM_KEYS = ("core.journal.booting", "core.registry.sync", "core.upgrade.moved", "core.upgrade.finished", "core.settings.managed-hook.changed")
@@ -50,7 +50,7 @@ def test_s1_a_model_with_a_lifecycle_lists_each_move(author):
 def test_s1_a_model_with_change_names_lists_each_name(author):
     keys = {row["key"]: row for row in key_rows(author)}
     for name in HookCall.change_names:
-        assert keys[f"core.drivers.hook_call.{name}"]["forms"] == ["commit"], keys[f"core.drivers.hook_call.{name}"]
+        author.expect_rows(keys[f"core.drivers.hook_call.{name}"]["forms"] == ["commit"])
 
 
 def test_s1_metadata_is_not_listed(author):
@@ -61,17 +61,17 @@ def test_s1_metadata_is_not_listed(author):
 def test_s1_a_system_event_lists_only_the_commit_form(author):
     keys = {row["key"]: row for row in key_rows(author)}
     for key in SYSTEM_KEYS:
-        assert keys[key]["forms"] == ["commit"], keys[key]
+        author.expect_rows(keys[key]["forms"] == ["commit"])
 
 
 def test_s2_every_known_event_has_a_key_or_a_stated_reason_and_no_two_share_one(author):
     rows = key_rows(author)
     events = {row["event"] for row in rows}
-    reasons = (METADATA_CHANGE, *(f"{model}." for model in NO_KEY_MODELS))
-    known = Registry.read(author.container.get(Database)).events
-    missing = [event for event in known if event not in events and not any(reason in event for reason in reasons)]
-    shared = [key for key, count in Counter(row["key"] for row in rows).items() if count > 1]
-    author.expect_rows(bool(rows), not missing, not shared)
+    reasons = (METADATA_CHANGE, *(f"{model}." for model in EXCLUDED_MODELS))
+    registered_events = Registry.read(author.container.get(Database)).events
+    unkeyed_events = [event for event in registered_events if event not in events and not any(reason in event for reason in reasons)]
+    duplicate_keys = [key for key, count in Counter(row["key"] for row in rows).items() if count > 1]
+    author.expect_rows(bool(rows), not unkeyed_events, not duplicate_keys)
 
 
 def test_s2_the_registry_of_the_real_modules_holds_their_keys(author):
@@ -94,10 +94,10 @@ def test_s2_a_suite_that_is_not_installed_adds_no_keys(author):
 
 def test_s3_a_listener_class_and_a_model_file_that_move_folders_change_no_key(author):
     author.expect_sync_success(NOTES)
-    before = author.run("event keys", actor=author.agent).output_text
+    original_keys = author.run("event keys", actor=author.agent).output_text
     modules = json.loads(author.home.module_list.read_text())
     author.home.module_list.write_text(json.dumps([NOTES_MOVED if module == NOTES else module for module in modules]))
-    code, text = author.synced()
-    assert code == 0, text
-    after = author.run("event keys", actor=author.agent).output_text
-    assert NOTE_CREATED in before and before == after, f"the keys changed:\n{before}\n{after}"
+    code, _ = author.synced()
+    author.expect_rows(code == 0)
+    current_keys = author.run("event keys", actor=author.agent).output_text
+    author.expect_rows(NOTE_CREATED in original_keys, original_keys == current_keys)

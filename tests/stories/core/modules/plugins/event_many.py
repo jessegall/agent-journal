@@ -7,8 +7,8 @@ from tests.stories.core.modules.plugins.support.event_stories import (
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
-MANY_ROWS = 30
-LIMIT_ROUNDS = 20
+NOTE_COUNT = 30
+ROUND_LIMIT = 20
 WORKTREE_MERGE = "suites.coding.workers.worker_worktree.merge"
 SECOND_PIN_TITLE = "More notes"
 SECOND_PIN_LINE = f'pin make "{SECOND_PIN_TITLE}" --link https://example.org/more --environment main'
@@ -50,13 +50,13 @@ def test_s32_a_plugin_that_is_off_gets_no_script_and_coming_back_on_replays_noth
     commands_as_in_a_server(story)
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.expect_rows(len(deliveries(story)) == 1)
-    guards_before, listens_before = len(script_calls(story, "guard.sh")), len(script_calls(story, "pin.sh"))
+    initial_guard_count, initial_listen_count = len(script_calls(story, "guard.sh")), len(script_calls(story, "pin.sh"))
     event_page.switch_off()
     story.run_listeners()
     story.expect_rows(not script_calls(story, "see.sh"))
     story.expect_success('task make "Third job" --brief "Do it" --environment main', actor=story.agent)
     story.run_listeners()
-    story.expect_rows(len(script_calls(story, "guard.sh")) == guards_before, len(script_calls(story, "pin.sh")) == listens_before, not script_calls(story, "see.sh"))
+    story.expect_rows(len(script_calls(story, "guard.sh")) == initial_guard_count, len(script_calls(story, "pin.sh")) == initial_listen_count, not script_calls(story, "see.sh"))
     event_page.switch_on()
     story.run_listeners()
     story.expect_rows(not script_calls(story, "see.sh"))
@@ -67,9 +67,9 @@ def test_s32_a_plugin_that_is_off_gets_no_script_and_coming_back_on_replays_noth
 
 def test_s33_a_command_on_thirty_rows_stops_asking_after_twenty_rounds_and_still_commits(new_story):
     story = event_plugin_story(new_story, {"event": NOTE_CREATED, "guard": "see.sh"}, modules=[NOTES])
-    story.container.get(Bus).run(ManyNotes(MANY_ROWS), story.user)
+    story.container.get(Bus).run(ManyNotes(NOTE_COUNT), story.user)
     notes = list(story.container.get(Queries).query(EventNote).all_rows())
-    story.expect_rows(len(notes) == MANY_ROWS, len(script_calls(story, "see.sh")) == LIMIT_ROUNDS, "were skipped" in story.error_log_text())
+    story.expect_rows(len(notes) == NOTE_COUNT, len(script_calls(story, "see.sh")) == ROUND_LIMIT, "were skipped" in story.error_log_text())
 
 
 def test_s34_a_merge_runs_no_guard_script_and_runs_its_commit_script(new_story):
@@ -77,17 +77,17 @@ def test_s34_a_merge_runs_no_guard_script_and_runs_its_commit_script(new_story):
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
-    before = repository.tip(ENVIRONMENT_BRANCH)
+    original_commit = repository.tip(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
-    repository.expect_merge_commits_after(ENVIRONMENT_BRANCH, before, 1)
+    repository.expect_merge_commits_after(ENVIRONMENT_BRANCH, original_commit, 1)
     story.expect_rows(not script_calls(story, "refuse.sh"), "were skipped" in story.error_log_text(), "runs only once" in story.error_log_text())
     story.run_listeners()
     story.expect_rows(len(script_calls(story, "see.sh")) == 1)
 
 
 def test_s35_a_commit_script_does_not_hear_its_own_write(new_story):
-    write = answer_with_commands('task make "Written by the script" --brief "Do it" --environment main')
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "write.sh"}, scripts={"write.sh": write})
+    command_answer = answer_with_commands('task make "Written by the script" --brief "Do it" --environment main')
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "write.sh"}, scripts={"write.sh": command_answer})
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.run_listeners()
     story.run_listeners()

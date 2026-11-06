@@ -26,9 +26,9 @@ ALL_FORMS = {"guard": "refuse.sh", "listen": "pin.sh", "commit": "see.sh"}
 WRONG_ENTRIES = [[{"guard": "see.sh"}], [42], [{"event": 42, "guard": "see.sh"}]]
 
 
-def expect_no_script_ran(story, *scripts: str) -> None:
-    ran = {script: script_calls(story, script) for script in scripts if script_calls(story, script)}
-    assert not ran, f"these scripts ran: {ran}"
+def expect_no_script_calls(story, *scripts: str) -> None:
+    calls = {script: script_calls(story, script) for script in scripts if script_calls(story, script)}
+    story.expect_rows(not calls)
 
 
 def replace_module(story, old: str, new: str) -> None:
@@ -63,7 +63,7 @@ def test_s5_a_wrong_key_is_marked_installs_and_runs_nothing_while_the_rest_of_th
     story.expect_success("task delete 2", actor=story.agent)
     story.expect_success(PIN_LINE, actor=story.agent)
     story.run_listeners()
-    expect_no_script_ran(story, "see.sh")
+    expect_no_script_calls(story, "see.sh")
     story.expect_rows(len(script_calls(story, "right.sh")) == 1)
     story.expect_rows("No such event" in PREVIEW.read_text(), "Nothing reaches this script." in CARD.read_text())
 
@@ -155,11 +155,11 @@ def test_s12_an_upgrade_that_changes_what_it_listens_to_shows_new_and_no_longer_
 def test_s12_a_new_script_file_changes_the_digest_and_an_upgrade_takes_the_new_digest(event_page):
     story = event_page.story
     install_event_plugin(story, {"event": TASK_CREATED, "commit": "see.sh"})
-    before = plugin_row(story).files_digest
+    original_digest = plugin_row(story).files_digest
     event_folder(story, {"event": TASK_CREATED, "commit": "see.sh"}, {"event": PIN_CREATED, "commit": "extra.sh"}, scripts={"extra.sh": ""}, version="1.1.0")
     event_page.upgrade_offer()
     event_page.upgrade()
-    story.expect_rows(plugin_row(story).files_digest != before)
+    story.expect_rows(plugin_row(story).files_digest != original_digest)
     story.expect_success(PIN_LINE, actor=story.agent)
     story.run_listeners()
     event_page.expect_on()
