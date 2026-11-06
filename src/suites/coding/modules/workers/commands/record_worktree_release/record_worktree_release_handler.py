@@ -37,10 +37,10 @@ class RecordWorktreeReleaseHandler(Handler[RecordWorktreeRelease, Worktree]):
         if task.delegated_to == worktree.session_agent_id and task.state in ASSIGNED_STATES:
             self.release_task(task, command.reason, context)
             changed_ids.append(task.id)
-        for assigned_task in tuple(self.queries.query(Task).filter(delegated_to=worktree.session_agent_id).matching(Among("state", ASSIGNED_STATES)).all_rows()):
-            if not self.has_all_proofs_checked(assigned_task, worktree):
-                self.release_task(assigned_task, command.reason, context)
-                changed_ids.append(assigned_task.id)
+        assigned_tasks = tuple(self.queries.query(Task).filter(delegated_to=worktree.session_agent_id).matching(Among("state", ASSIGNED_STATES)).all_rows())
+        for unproved_task in [assigned_task for assigned_task in assigned_tasks if not self.has_all_proofs_checked(assigned_task, worktree)]:
+            self.release_task(unproved_task, command.reason, context)
+            changed_ids.append(unproved_task.id)
         for delegated in tuple(self.queries.query(Task).filter(delegated_to=worktree.session_agent_id).matching(Among("state", WAITING_STATES)).all_rows()):
             self.repository.update(delegated, context, delegated_to=None)
             changed_ids.append(delegated.id)
