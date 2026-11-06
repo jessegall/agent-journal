@@ -13,6 +13,9 @@ const (
 	EnvironmentQuestion  = "Which environment?"
 	NameQuestion         = "The new environment's name?"
 	BranchQuestion       = "The branch it works on?"
+	RunningQuestion      = "A main agent is running in this environment. Stop it and start here?"
+	StopRunning          = "stop it and start here"
+	LeaveRunning         = "leave it running and quit"
 	ConversationQuestion = "Which conversation?"
 	PromptQuestion       = "Permission prompts?"
 	NewEnvironment       = "a new environment"
@@ -52,7 +55,11 @@ type Journal interface {
 	Conversations(environment, program string) ([]Conversation, error)
 	MakeEnvironment(environment Environment) error
 	PrepareWorktree(folder, source, environment string) error
+	StopMainAgent(environment string) error
 }
+
+// ErrLeftRunning is the answer of a person who keeps the main agent that runs in the chosen environment: nothing starts.
+var ErrLeftRunning = errors.New("the running main agent was left running, and nothing started")
 
 // Request is what the command line asked for: the program, the project's folder, and a worktree when one is named.
 type Request struct {
@@ -77,17 +84,19 @@ type Choice struct {
 }
 
 type boot struct {
-	journal  Journal
-	terminal Terminal
-	request  Request
-	choice   Choice
+	journal     Journal
+	terminal    Terminal
+	request     Request
+	choice      Choice
+	mainRunning bool
+	stopsMain   bool
 }
 
 // Boot asks the boot menu's questions one at a time, the last answer as the default and the left arrow going back
 // to the last question asked, and gives back the launch it settled.
 func Boot(journal Journal, terminal Terminal, request Request) (Choice, error) {
 	menu := &boot{journal: journal, terminal: terminal, request: request, choice: Choice{Answers: map[string]string{}, Variables: map[string]string{}}}
-	steps := []func() (bool, error){menu.suite, menu.environment, menu.conversation, menu.prompts}
+	steps := []func() (bool, error){menu.suite, menu.environment, menu.running, menu.conversation, menu.prompts}
 	previousSteps := []int{}
 	for index := 0; index < len(steps); {
 		isQuestion, err := steps[index]()
@@ -104,6 +113,11 @@ func Boot(journal Journal, terminal Terminal, request Request) (Choice, error) {
 			previousSteps = append(previousSteps, index)
 		}
 		index++
+	}
+	if menu.stopsMain {
+		if err := journal.StopMainAgent(menu.choice.Environment); err != nil {
+			return Choice{}, err
+		}
 	}
 	menu.choice.Variables[EnvironmentVariable], menu.choice.Variables[ActiveVariable] = menu.choice.Environment, "1"
 	return menu.choice, nil
@@ -176,6 +190,7 @@ func (menu *boot) newEnvironment() error {
 
 func (menu *boot) useEnvironment(environment Environment) error {
 	menu.choice.Environment, menu.choice.Folder = environment.Name, environment.Folder
+	menu.mainRunning = environment.Working
 	worktrees := Worktrees{Root: menu.request.Root}
 	if filepath.Dir(environment.Folder) != worktrees.Folder() {
 		return nil
@@ -227,6 +242,23 @@ func (menu *boot) worktreeEnvironment(environments []Environment) error {
 		return nil
 	}
 	return menu.journal.PrepareWorktree(folder, menu.request.Root, name)
+}
+
+// running asks before a second main agent starts in an environment: one environment has one main agent.
+func (menu *boot) running() (bool, error) {
+	menu.stopsMain = false
+	if !menu.mainRunning {
+		return false, nil
+	}
+	answer, err := menu.answer(Question{Title: RunningQuestion, Options: []string{StopRunning, LeaveRunning}})
+	if err != nil {
+		return true, err
+	}
+	if answer == LeaveRunning {
+		return true, ErrLeftRunning
+	}
+	menu.stopsMain = true
+	return true, nil
 }
 
 func (menu *boot) conversation() (bool, error) {

@@ -31,6 +31,10 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 	restore := terminal.Raw()
 	choice, err := launch.Boot(journal, terminal, request)
 	restore()
+	if errors.Is(err, launch.ErrLeftRunning) {
+		fmt.Fprintln(stdout, err)
+		return 0
+	}
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return ErrorCode

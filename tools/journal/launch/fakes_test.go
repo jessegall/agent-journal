@@ -51,6 +51,7 @@ var (
 
 // fakeJournal answers the launcher's questions to the journal from rows a story sets, and keeps what it was asked to make.
 type fakeJournal struct {
+	stoppedMains  []string
 	suites        []string
 	environments  []Environment
 	conversations []Conversation
@@ -59,6 +60,11 @@ type fakeJournal struct {
 }
 
 func (journal *fakeJournal) Suites() ([]string, error) { return journal.suites, nil }
+
+func (journal *fakeJournal) StopMainAgent(environment string) error {
+	journal.stoppedMains = append(journal.stoppedMains, environment)
+	return nil
+}
 
 func (journal *fakeJournal) Environments() ([]Environment, error) { return journal.environments, nil }
 

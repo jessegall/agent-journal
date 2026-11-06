@@ -1,3 +1,7 @@
+from core.base.refusal import Refusal
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
+from core.modules.agents.commands.end_agent.end_agent import EndAgent
+from core.modules.agents.commands.stop_agent.stop_agent import StopAgent
 from dataclasses import replace
 
 from core.base.actor import Actor
@@ -86,4 +90,15 @@ class AgentHookRoute(HookRoute):
         environments = self.queries.query(Environment).filter(name=event.environment).limited(1)
         if not environments:
             return None
+        if role == AgentRole.MAIN:
+            self.end_running_mains(environments[0].id)
         return self.bus.run(StartAgent(event.session, event.program, role, parent_id), Actor.core(), environment_id=environments[0].id)
+
+    def end_running_mains(self, environment_id: int) -> None:
+        with self.bus.scopes.read_scope((), None, environment_id):
+            mains = MainAgentFinder.all_running(self.queries)
+        for main in mains:
+            try:
+                self.bus.run(StopAgent(main.id), Actor.core(), environment_id=environment_id)
+            except Refusal:
+                self.bus.run(EndAgent(row_id=main.id), Actor.core(), environment_id=environment_id)

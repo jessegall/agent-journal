@@ -113,6 +113,22 @@ func (journal CommandJournal) rows(argv ...string) ([]map[string]any, error) {
 	return page.Rows, nil
 }
 
+// StopMainAgent stops the main agents that run in the environment, each through the journal.
+func (journal CommandJournal) StopMainAgent(environment string) error {
+	agents, err := journal.rows("agent", "list", "--environment", environment)
+	if err != nil {
+		return err
+	}
+	for _, agent := range agents {
+		if agent["ended_at"] == nil && text(agent, "role") == MainRole {
+			if _, err := journal.Run("agent", "stop", fmt.Sprint(agent["id"]), "--environment", environment); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func hasOpenMain(agents []map[string]any, environmentID any) bool {
 	for _, agent := range agents {
 		if agent["environment_id"] == environmentID && agent["ended_at"] == nil && text(agent, "role") == "main" {

@@ -1,6 +1,7 @@
 package launch
 
 import (
+	"errors"
 	"strings"
 	"testing"
 )
@@ -102,3 +103,30 @@ func TestTheLastAnswerIsOfferedAsTheDefault(t *testing.T) {
 		t.Fatalf("a launch with the last answers as defaults chose %+v, %v", choice, err)
 	}
 }
+
+func runningMainProject() *fakeJournal {
+	journal := codingProject()
+	journal.environments = []Environment{{Name: "main", Folder: "/work/shop", Branch: "main", Suite: "coding", Working: true}}
+	return journal
+}
+
+func TestARunningMainAgentIsStoppedOnceThePersonSaysSo(t *testing.T) {
+	journal := runningMainProject()
+	terminal := keys(enterPress, enterPress, enterPress, enterPress)
+	if _, err := Boot(journal, terminal, Request{Program: "claude", Root: "/work/shop"}); err != nil {
+		t.Fatal(err)
+	}
+	if len(journal.stoppedMains) != 1 || journal.stoppedMains[0] != "main" {
+		t.Fatalf("stopped %v", journal.stoppedMains)
+	}
+}
+
+func TestLeavingARunningMainAgentStartsNothingAndStopsNothing(t *testing.T) {
+	journal := runningMainProject()
+	terminal := keys(enterPress, downPress, enterPress)
+	_, err := Boot(journal, terminal, Request{Program: "claude", Root: "/work/shop"})
+	if !errors.Is(err, ErrLeftRunning) || len(journal.stoppedMains) != 0 {
+		t.Fatalf("err %v, stopped %v", err, journal.stoppedMains)
+	}
+}
+
