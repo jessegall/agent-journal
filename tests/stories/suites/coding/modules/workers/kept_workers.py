@@ -1,3 +1,4 @@
+from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from datetime import timedelta
 from pathlib import Path
 
@@ -148,4 +149,20 @@ def test_an_unmerged_branch_is_never_overwritten(new_story):
     story.expect_success(f'worker release {worker.id} "Not needed"', actor=story.agent)
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
     story.expect_refusal(f"worker send {worker.id} --task {task_id}", "unmerged work", actor=story.agent)
+
+
+def test_a_dispatch_with_an_idle_worker_is_refused_with_its_send_line_and_fresh_passes(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    monkeypatch.setattr(ClaudeCodeProvider, "session_resumes_here", lambda provider, folder, session: True)
+    stopped(story, worker)
+    second, third = (story.new_row_id(f'task make "Task {number}"', actor=story.agent) for number in (2, 3))
+    story.expect_refusal(f"worker dispatch --model sonnet {second} {third}", f"journal worker send {worker.id} --task {second} {third}", actor=story.agent)
+    new_worker = dispatched_worker(story, f"worker dispatch --model sonnet --fresh 'Another model of thinking' {second} {third}")
+    worktree = story.container.get(WorktreeQuery).worker_worktree(new_worker.id)
+    story.expect_rows(worktree.fresh_reason == "Another model of thinking")
 

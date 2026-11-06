@@ -11,3 +11,4 @@ class OpenWorkerWorktree(Command[OpenedWorker]):
 
     start: StartAgent
     task_id: int
+    fresh_reason: str = ""
