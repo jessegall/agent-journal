@@ -7,6 +7,7 @@ def test_the_main_agent_is_the_running_one_though_a_newer_one_has_ended(new_stor
     story = new_story(fixture=BuilderStarted)
     newer = story.new_row_id("agent start s-2 claude main --environment main")
     story.expect_success(f"agent end {newer}")
+    story.expect_success("agent start s-1 claude main --environment main")
     story.expect_success("agent main --environment main", f"agent {story.agent.id}")
 
 

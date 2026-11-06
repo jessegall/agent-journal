@@ -38,6 +38,7 @@ func hookContext(getenv func(string) string, root, folder string, processID int,
 		Classifier:  classify.ClassifierOf(filepath.Join(root, ".journal", "command_table.json")),
 		Programs:    programs.LoadTable(filepath.Join(root, ".journal", "programs.json")),
 		Launch:      os.Getenv("JOURNAL_LAUNCH"),
+		Role:        getenv(RoleVariable),
 	}, false
 }
 

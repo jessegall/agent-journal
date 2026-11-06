@@ -19,6 +19,7 @@ type Context struct {
 	Classifier  *classify.Classifier
 	FiredAtMs   int64
 	Launch      string
+	Role        string
 	Programs    Table
 }
 
@@ -115,6 +116,7 @@ func preparedFrom(programName string, program Program, body []byte, read commonB
 		Actor:        context.Actor,
 		Environment:  context.Environment,
 		Launch:       context.Launch,
+		Role:         context.Role,
 		Raw:          json.RawMessage(body),
 	}
 	if read.AgentID != nil {

@@ -59,6 +59,9 @@ func main() {
 	}
 	requestTiming.Stamp("go_stdin")
 	prepared, skip, err := preparedHook(program, root, body, context)
+	if err != nil && mustBeChecked(context.Role, context.Programs.Programs[program].Events[hookName(body)]) {
+		os.Exit(Answered(os.Stdout, os.Stderr, context.Programs.Programs[program], hookName(body), "pre_tool_use", checkRequired, nil, root, LimitFor("pre_tool_use"), prepared.Foreign...))
+	}
 	if skip || err != nil {
 		os.Exit(foreignAnswered(os.Stdout, os.Stderr, context.Programs.Programs[program], hookName(body), prepared.Foreign))
 	}
@@ -77,6 +80,7 @@ func main() {
 		actor:       context.Actor,
 		actorToken:  os.Getenv("JOURNAL_ACTOR_TOKEN"),
 		launch:      os.Getenv("JOURNAL_LAUNCH"),
+		role:        context.Role,
 		firing:      context.Firing,
 		firedAtMs:   context.FiredAtMs,
 		body:        object,
@@ -86,6 +90,9 @@ func main() {
 	if status != http.StatusOK {
 		if code, handled := answerWithoutServer(os.Stdout, os.Stderr, prepared.Event, prepared.Foreign); handled {
 			os.Exit(code)
+		}
+		if status != restartTimedOut && mustBeChecked(context.Role, prepared.Event) {
+			status = checkRequired
 		}
 	}
 	os.Exit(Answered(os.Stdout, os.Stderr, context.Programs.Programs[program], hookName(body), prepared.Event, status, answer, root, limit, prepared.Foreign...))

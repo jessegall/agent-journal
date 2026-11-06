@@ -83,7 +83,9 @@ func TestASecondLaunchKeepsTheFirstProgramsReachable(t *testing.T) {
 		t.Errorf("a stop of the first launch's program answered %q", answer)
 	}
 	_ = secondSocket.Close()
-	if _, err := net.Dial("unix", path); err != nil {
-		t.Errorf("the first launch did not get its socket back: %v", err)
+	probe, err := net.Dial("unix", path)
+	if err != nil {
+		t.Fatalf("the first launch did not get its socket back: %v", err)
 	}
+	_ = probe.Close()
 }

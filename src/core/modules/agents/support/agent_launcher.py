@@ -12,13 +12,15 @@ from core.modules.agents.support.launch_answer import LaunchAnswer
 FAILED_ANSWER = b"failed\n"
 RUNNING_ANSWER = b"running\n"
 LAUNCH_VARIABLE = "JOURNAL_LAUNCH"
+ROLE_VARIABLE = "JOURNAL_ROLE"
 
 
 class AgentLauncher:
     """Hands the running launcher an agent's program, folder and agent row to start, and says what it did: an
     agent whose program still runs is not started again, and its line waits for its next hook or for the
     program to end. The agent's session goes along as its launch name, so a program that picks its own
-    session, as Codex does, is bound to this row by its first hook. A launcher older than this journal answers
+    session, as Codex does, is bound to this row by its first hook, and its role goes along for the hook to read
+    without the server. A launcher older than this journal answers
     nothing, which counts as started; no launcher at all counts as failed."""
 
     def __init__(self, link: LauncherLink, bus: Bus, sessions: AgentLaunchGuard) -> None:
@@ -35,7 +37,7 @@ class AgentLauncher:
 
     def start(self, agent: Agent, environment: Environment, command: LaunchCommand) -> LaunchAnswer:
         answer = self.link.sent({"agent_id": agent.id, "session": agent.session, "environment": environment.name, "folder": str(command.folder),
-                                 "command": list(command.arguments), "variables": {**command.variables, LAUNCH_VARIABLE: agent.session}}, ANSWER_BYTES)
+                                 "command": list(command.arguments), "variables": {**command.variables, LAUNCH_VARIABLE: agent.session, ROLE_VARIABLE: agent.role}}, ANSWER_BYTES)
         if answer == RUNNING_ANSWER:
             return LaunchAnswer.RUNNING
         if answer in (None, FAILED_ANSWER):

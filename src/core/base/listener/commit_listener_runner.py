@@ -1,3 +1,4 @@
+from time import perf_counter
 from functools import cached_property
 
 from core.base.change.event_log import EventLog
@@ -23,6 +24,7 @@ from core.base.refusal import Refusal
 FAILURE_LIMIT_ATTEMPTS = 3
 CHAIN_LIMIT_ROUNDS = 50
 COSTLY_LISTENER_POINTS = 500
+SLOW_LISTENER_SECONDS = 0.5
 
 
 class CommitListenerRunner:
@@ -152,11 +154,15 @@ class CommitListenerRunner:
             raise CommitListenerError(f"{entry.path.text} is no commit listener")
         tools = self.container.get(PerformanceCosts)
         start_points = tools.begin()
+        started_at = perf_counter()
         try:
             with self.scopes.event_scope(listener_class.disabled_scopes, event):
                 built_event = self.container.get(EventBuilder).built(listener_class.event_type(event.event), event)
                 if built_event is not None:
                     self.container.get(listener_class).handle(built_event, event)
+            elapsed = perf_counter() - started_at
+            if elapsed >= SLOW_LISTENER_SECONDS:
+                self.errors.noted(f"listener {entry.name} took {elapsed * 1000:.0f} ms on event {event.id} {event.event}")
             cost = tools.cost(start_points)
             if cost is not None and cost.total >= COSTLY_LISTENER_POINTS:
                 self.errors.noted(f"listener {entry.name} cost {cost.line()} on event {event.id} {event.event}")

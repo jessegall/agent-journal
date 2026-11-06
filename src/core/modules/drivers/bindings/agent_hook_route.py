@@ -1,7 +1,3 @@
-from core.base.refusal import Refusal
-from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from core.modules.agents.commands.end_agent.end_agent import EndAgent
-from core.modules.agents.commands.stop_agent.stop_agent import StopAgent
 from dataclasses import replace
 
 from core.base.actor import Actor
@@ -18,8 +14,9 @@ from core.base.agent_role import AgentRole
 from core.modules.agents.commands.bind_agent_session.bind_agent_session import BindAgentSession
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.drivers.models.hook_call import HookCall
-from core.modules.drivers.support.access_nudges import ENDED_HELPER
+from core.modules.drivers.support.access_nudges import ENDED_AGENT, UNKNOWN_AGENT
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
 from core.modules.drivers.support.hook_durations import HookDurations
 from core.modules.environments.models.environment import Environment
@@ -29,12 +26,13 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 class AgentHookRoute(HookRoute):
     """Answers a hook as the agent that sent it: finds its open agent by session, then by the
     launch name it was started under, saving the real session on it, starts the main agent at its
-    session's first hook, gives back the stored answer of a hook sent twice, and lets through,
-    without a record, a hook from an agent it does not know."""
+    session's first hook, gives back the stored answer of a hook sent twice, refuses the tools of a
+    program whose agent has ended and asks the launcher to stop it, and lets through, without a
+    record, a hook from an agent it does not know, unless a worker or helper sent it for a tool."""
 
-    def __init__(self, bus: Bus, queries: Queries, errors: ErrorLog, durations: HookDurations, settings: SettingValues, agents: AgentRows) -> None:
+    def __init__(self, bus: Bus, queries: Queries, errors: ErrorLog, durations: HookDurations, settings: SettingValues, agents: AgentRows, launcher: LauncherLink) -> None:
         self.bus, self.queries, self.errors, self.durations, self.settings = bus, queries, errors, durations, settings
-        self.agents = agents
+        self.agents, self.launcher = agents, launcher
 
     def answer(self, event: HookEvent) -> HookReply:
         self.durations.begin()
@@ -47,17 +45,24 @@ class AgentHookRoute(HookRoute):
             return HookReply.stored(stored_call)
         agent = self.agent(event)
         if agent is None:
-            return self.ended_helper_reply(event)
+            return self.ended_agent_reply(event)
         reply = self.bus.run(RecordHookCall(event, agent.id), Actor(agent.id, ActorType.AGENT), environment_id=agent.environment_id)
         with self.bus.scopes.read_scope((), None, agent.environment_id):
             measured = self.durations.measured(event, reply.labelled_lines or [*reply.lines, reply.refusal])
         return replace(reply, terminal="\n".join(line for line in (reply.terminal, measured) if line))
 
-    def ended_helper_reply(self, event: HookEvent) -> HookReply:
-        row = self.agents.session(event.session)
-        if row is None or row.role != AgentRole.HELPER or event.event != HookEventName.PRE_TOOL_USE:
+    def ended_agent_reply(self, event: HookEvent) -> HookReply:
+        row = self.ended_agent(event)
+        if row is None and event.is_check_required:
+            return HookReply(refusal=UNKNOWN_AGENT.nudge().text)
+        if row is None or event.event != HookEventName.PRE_TOOL_USE:
             return HookReply.allowed()
-        return HookReply(refusal=ENDED_HELPER.nudge().text)
+        self.launcher.request_stop(row.terminal_id)
+        return HookReply(refusal=ENDED_AGENT.nudge().text)
+
+    def ended_agent(self, event: HookEvent) -> Agent | None:
+        rows = (self.agents.session(event.session), self.agents.launch_row(event.launch) if event.launch else None)
+        return next((row for row in rows if row is not None and row.ended_at is not None), None)
 
     def agent(self, event: HookEvent) -> Agent | None:
         main = self.open_agent(event.session) or self.launch_name_agent(event)
@@ -74,13 +79,18 @@ class AgentHookRoute(HookRoute):
     def launch_name_agent(self, event: HookEvent) -> Agent | None:
         if not event.launch:
             return None
-        agent = self.open_agent(event.launch)
+        agent = self.open_agent(event.launch) or self.cleared_agent(event)
         if agent is None:
-            if self.agents.session(event.session) is not None:
-                return None
-            self.errors.noted(f"a {event.program} session {event.session} came under launch name {event.launch}, which no open agent holds; let through")
+            if self.agents.session(event.session) is None and self.ended_agent(event) is None:
+                self.errors.noted(f"a {event.program} session {event.session} came under launch name {event.launch}, which no open agent holds; let through")
             return None
         return self.bus.run(BindAgentSession(agent.id, event.session), Actor.core(), environment_id=agent.environment_id)
+
+    def cleared_agent(self, event: HookEvent) -> Agent | None:
+        if not event.is_clear_start:
+            return None
+        agent = self.agents.launch_row(event.launch)
+        return agent if agent is not None and agent.ended_at is None else None
 
     def open_agent(self, session: str) -> Agent | None:
         agent = self.agents.session(session)
@@ -90,15 +100,4 @@ class AgentHookRoute(HookRoute):
         environment = self.queries.query(Environment).filter(name=event.environment).first()
         if environment is None:
             return None
-        if role == AgentRole.MAIN:
-            self.end_running_main_agents(environment.id)
         return self.bus.run(StartAgent(event.session, event.program, role, parent_id), Actor.core(), environment_id=environment.id)
-
-    def end_running_main_agents(self, environment_id: int) -> None:
-        with self.bus.scopes.read_scope((), None, environment_id):
-            main_agents = MainAgentFinder.all_running(self.queries)
-        for main in main_agents:
-            try:
-                self.bus.run(StopAgent(main.id), Actor.core(), environment_id=environment_id)
-            except Refusal:
-                self.bus.run(EndAgent(row_id=main.id), Actor.core(), environment_id=environment_id)

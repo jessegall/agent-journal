@@ -67,6 +67,10 @@
       "type": "boolean",
       "description": "whether the agent program reads lines in its answer to this hook"
     },
+    "role": {
+      "type": "string",
+      "description": "the role the journal started the program under, empty for a program it did not start with one"
+    },
     "launch": {
       "type": "string",
       "description": "the launch name the journal started the program under, or empty"

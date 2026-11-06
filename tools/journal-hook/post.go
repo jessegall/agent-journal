@@ -45,6 +45,19 @@ var (
 	RestartMarkLimit = 2 * time.Minute
 )
 
+// RoleVariable is the variable the journal starts a worker's or helper's program with, so the hook knows the role without
+// the server.
+const RoleVariable = "JOURNAL_ROLE"
+
+// checkRequired is the status a hook gets whose tool may not run unchecked and which the journal did not answer.
+const checkRequired = http.StatusPreconditionRequired
+
+// mustBeChecked says whether the hook is a tool of an agent that is not a main agent, which never runs a tool the journal
+// did not check; only a main agent goes on when the journal does not answer.
+func mustBeChecked(role, eventName string) bool {
+	return eventName == "pre_tool_use" && role != "" && role != "main"
+}
+
 // LimitFor is how long the hook waits for the journal's answer before it goes on without it, as hook.sh's
 // ANSWER_SECONDS: a session start may wait on a boot, a stop and a prompt may wait on a decision, a tool waits least.
 func LimitFor(eventName string) time.Duration {
@@ -87,6 +100,7 @@ type delivery struct {
 	actor       string
 	actorToken  string
 	launch      string
+	role        string
 	firing      string
 	firedAtMs   int64
 	body        []byte
@@ -96,14 +110,17 @@ type delivery struct {
 
 // post sends the hook to the server of the project at root, as hook.sh does: it first stamps the time the hook fired,
 // and the version a session start runs on, then posts within the limit; a hook the server does not answer with 200 or
-// 409 in time goes on without it and is noted in bypass.log, unless the server is restarting, which it waits for. The
+// 409 in time goes on without it and is noted in bypass.log, unless the server is restarting, which it waits for, or the
+// tool must be checked, which is refused and so bypasses nothing. The
 // transport is the network's, or a test's. Once version 5's install has set the switch, the hook goes to /hook on
 // version 5's socket with its timing.
 func post(outgoing delivery, transport http.RoundTripper, firedTime time.Time) (status int, answer []byte) {
 	stamped(outgoing, firedTime)
 	status, answer = heldThroughRestart(outgoing, transport)
 	if status != http.StatusOK && status != http.StatusConflict && status != restartTimedOut {
-		noteBypass(outgoing, firedTime)
+		if !mustBeChecked(outgoing.role, outgoing.event) {
+			noteBypass(outgoing, firedTime)
+		}
 		startMissingServer(outgoing.root)
 	}
 	return status, answer

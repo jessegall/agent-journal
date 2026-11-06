@@ -17,7 +17,7 @@ class ForcedReaders(StoryFixture):
     parent = BuilderStarted
 
     def steps(self, story: Story) -> None:
-        story.run("setting set journal.core.processes.readers-forced on --environment main", actor=story.agent)
+        story.run("setting set journal.core.processes.readers-forced on --environment main")
         story.run("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
         story.run("agent start s-reader claude worker --environment main")
 

@@ -18,3 +18,11 @@ TOOL_USE_COUNTS_SELECT = "SELECT {sums} FROM hook_calls WHERE session_agent_id =
 
 def tool_use_counts_select(start_count: int) -> str:
     return TOOL_USE_COUNTS_SELECT.format(sums=", ".join(TOOL_USE_COUNT_TERM for _ in range(start_count)))
+
+
+ENVIRONMENT_MENU_ROWS_SELECT = (
+    "SELECT environments.id, environments.name, environments.folder, environments.branch,"
+    " coalesce((SELECT json_extract(settings.value, '$') FROM settings WHERE settings.environment_id = environments.id AND settings.key = 'journal.core.drivers.suite'),"
+    " (SELECT json_extract(settings.value, '$') FROM settings WHERE settings.environment_id IS NULL AND settings.key = 'journal.core.drivers.suite'), '') AS suite_setting,"
+    " EXISTS (SELECT 1 FROM agents WHERE agents.environment_id = environments.id AND agents.role = 'main' AND agents.ended_at IS NULL) AS main_running FROM environments"
+)

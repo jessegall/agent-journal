@@ -14,12 +14,13 @@ UNJUDGED_LINE = NudgeDeclaration("drivers.unjudged_line", NudgeType.SAFETY_REFUS
 OLD_HOOK_LINE = NudgeDeclaration("drivers.old_hook_line", NudgeType.SAFETY_REFUSAL, "your hooks are too old to judge this line: update the journal, then start the agent again")
 OUTWARD_JOURNAL_LINE = NudgeDeclaration("drivers.outward_journal_line", NudgeType.SAFETY_REFUSAL, "this journal command reaches past the journal: say in your report what should be run")
 LIMITED_TOOL = NudgeDeclaration("drivers.limited_tool", NudgeType.SAFETY_REFUSAL, "a read-only agent has no {tool}: say in your report what you need")
-ENDED_HELPER = NudgeDeclaration("drivers.ended_helper", NudgeType.SAFETY_REFUSAL, "this helper has ended: stop your work, nothing more is recorded")
+UNKNOWN_AGENT = NudgeDeclaration("drivers.unknown_agent", NudgeType.SAFETY_REFUSAL, "the journal has no agent for this session, so this tool did not run: write in your report what happened")
+ENDED_AGENT = NudgeDeclaration("drivers.ended_agent", NudgeType.SAFETY_REFUSAL, "this agent has ended: stop your work, nothing more is recorded")
 NATIVE_SUBAGENT = NudgeDeclaration("drivers.native_subagent", NudgeType.SAFETY_REFUSAL, 'use journal helper start <profile> --brief "<job>"; journal profile list names them')
 NATIVE_SUBAGENT_WITHOUT_LAUNCH = NudgeDeclaration("drivers.native_subagent_no_launch", NudgeType.SAFETY_REFUSAL, "keep this work yourself: a helper needs journal launch, and none runs")
 
 PRIVATE_CORPUS = NudgeDeclaration("drivers.private_corpus", NudgeType.SAFETY_REFUSAL, "the private command corpus under .journal/corpus is never read or run outside its sandboxed go test: say in your report what you need")
 
 SKIPS_SPENT = NudgeDeclaration("drivers.skips_spent", NudgeType.STEERING, "agent:{agent} skipped {count} refusals in a row and lost the skip: journal refusal restore {agent}", turn_limited=False, wakes_agent=True)
-ACCESS_NUDGES = [PRIVATE_CORPUS, SKIPS_SPENT, NATIVE_SUBAGENT, NATIVE_SUBAGENT_WITHOUT_LAUNCH, ENDED_HELPER, UNJUDGED_LINE, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, TOOL_RESTRICTION, COMMAND_RESTRICTION, READONLY, FILE_ACCESS_RESTRICTION, JOURNAL_RESTRICTION,
+ACCESS_NUDGES = [PRIVATE_CORPUS, SKIPS_SPENT, NATIVE_SUBAGENT, NATIVE_SUBAGENT_WITHOUT_LAUNCH, ENDED_AGENT, UNKNOWN_AGENT, UNJUDGED_LINE, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, TOOL_RESTRICTION, COMMAND_RESTRICTION, READONLY, FILE_ACCESS_RESTRICTION, JOURNAL_RESTRICTION,
                  SHELL_RESTRICTION, PROGRAM_RESTRICTION, GIT_RESTRICTION, FULL_TEST_RESTRICTION]

@@ -60,6 +60,9 @@ func Answered(stdout, stderr io.Writer, program programs.Program, hookName, even
 	if status == restartTimedOut {
 		reply = restartTimedOutReply(event)
 	}
+	if status == checkRequired {
+		reply = Reply{Refusal: uncheckedRefusal(limit)}
+	}
 	if status == http.StatusOK {
 		reply = Reply{}
 		json.Unmarshal(answer, &reply)
@@ -172,6 +175,12 @@ func restartTimedOutReply(event string) Reply {
 		return Reply{Refusal: fmt.Sprintf(check, "this tool use did not run")}
 	}
 	return Reply{Lines: []string{fmt.Sprintf(check, "this went through unchecked")}}
+}
+
+// uncheckedRefusal is the refusal of a worker's or helper's tool the journal did not answer for. It tells the agent to try
+// once more and what to do then, so a journal that stays away never leaves it retrying in silence.
+func uncheckedRefusal(limit time.Duration) string {
+	return fmt.Sprintf("[journal] The journal did not answer within %d seconds, so this tool did not run: a worker or helper runs no tool the journal did not check. Run it once more. If that is refused as well, stop and write in your report that the journal does not answer.", int(limit.Seconds()))
 }
 
 // missedLine is the line given to an agent whose hook went around the journal.

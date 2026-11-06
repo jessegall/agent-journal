@@ -15,7 +15,7 @@ class ProcessSetting(Enum):
                                       SettingType.NUMBER, default=15)
     READER_BLOCK_MINUTES = SettingValue("reader-block-minutes", "Minutes to wait for a reader", "How long an agent waits for a proper reader. Runs start after at most 30 minutes even with a longer block.", SettingType.NUMBER, default=25)
     READER_SAVE_TRIES = SettingValue("reader-save-tries", "Reader save tries", "Failed reader saves allowed before the main agent is asked to help. Zero asks the main agent immediately.", SettingType.NUMBER, default=3)
-    READERS_FORCED = SettingValue("readers-forced", "Require output readers", "Pause agents whose commands have no usable output reader.", SettingType.FLAG, default=True)
+    READERS_FORCED = SettingValue("readers-forced", "Require output readers", "Pause agents whose commands have no usable output reader.", SettingType.FLAG, default=True, person_set=True)
     WAITING_FOREGROUND_SECONDS = SettingValue("foreground-while-waiting", "Seconds while a message waits",
                                               "Seconds a command runs in the foreground while your message is waiting.", SettingType.NUMBER, default=10)
     QUEUE_WAIT_SECONDS = SettingValue("queue-wait-seconds", "Seconds to wait for a run slot",

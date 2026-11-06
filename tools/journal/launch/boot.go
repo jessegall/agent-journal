@@ -32,8 +32,6 @@ const (
 	MainWorktreeRefusal  = "main is the project's own checkout, never a worktree: give --worktree another name, or leave the name out for a made-up one"
 	EnvironmentVariable  = "JOURNAL_ENV"
 	ActiveVariable       = "AGENT_JOURNAL_ACTIVE"
-	WorkerRole           = "worker"
-	MainRole             = "main"
 	ClaudeProgram        = "claude"
 )
 
@@ -47,10 +45,9 @@ type Environment struct {
 	Working bool
 }
 
-// Conversation is one past session of a program in an environment, with the role of its agent.
+// Conversation is one past main session of a program in an environment.
 type Conversation struct {
 	Session    string
-	Role       string
 	Title      string
 	ModifiedAt time.Time
 }
@@ -362,20 +359,14 @@ func (menu *boot) conversation() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	main_agents := []Conversation{}
-	for _, conversation := range conversations {
-		if conversation.Role == MainRole || conversation.Role == "" {
-			main_agents = append(main_agents, conversation)
-		}
-	}
 	if menu.request.Program == ClaudeProgram {
 		home, _ := os.UserHomeDir()
-		main_agents = ClaudeTranscripts{Home: home}.Titled(menu.choice.Folder, main_agents)
+		conversations = ClaudeTranscripts{Home: home}.Titled(menu.choice.Folder, conversations)
 	} else {
-		main_agents = limited(main_agents)
+		conversations = limited(conversations)
 	}
 	options, sessions, currentAt := []string{}, map[string]string{}, time.Now()
-	for _, conversation := range main_agents {
+	for _, conversation := range conversations {
 		label := conversation.Label(currentAt)
 		options, sessions[label] = append(options, label), conversation.Session
 	}

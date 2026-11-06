@@ -66,16 +66,13 @@ func TestANewEnvironmentAsksItsNameAndBranchAndIsMadeInTheChosenSuite(t *testing
 	}
 }
 
-func TestAWorkersConversationIsNeverOffered(t *testing.T) {
+func TestAConversationOfTheJournalIsOffered(t *testing.T) {
 	journal := codingProject()
-	journal.conversations = []Conversation{{Session: "w-1", Role: "worker"}, {Session: "s-1", Role: "main"}}
+	journal.conversations = []Conversation{{Session: "s-1"}}
 	terminal := keys(enterPress, enterPress, enterPress)
-	choice, err := Boot(journal, terminal, Request{Program: "claude", Root: "/work/shop"})
+	choice, err := Boot(journal, terminal, Request{Program: "codex", Root: "/work/shop"})
 	if err != nil || choice.Session != "s-1" {
 		t.Fatalf("the launch chose %+v, %v", choice, err)
-	}
-	if strings.Contains(terminal.screenText(), "w-1") {
-		t.Fatalf("a worker's conversation was offered:\n%s", terminal.screenText())
 	}
 }
 
@@ -129,4 +126,3 @@ func TestLeavingARunningMainAgentStartsNothingAndStopsNothing(t *testing.T) {
 		t.Fatalf("err %v, stopped %v", err, journal.stoppedMains)
 	}
 }
-

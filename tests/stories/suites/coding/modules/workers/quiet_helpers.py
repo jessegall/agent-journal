@@ -70,8 +70,8 @@ def test_a_worker_that_made_a_call_is_not_named_as_never_started(new_story):
 def test_the_inactive_line_of_a_worker_with_a_queued_run_says_so(new_story):
     story, worker = idle_worker(new_story)
     main = story.agent
-    story.expect_success("setting set journal.core.processes.readers-forced off --environment main", actor=main)
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main", actor=main)
+    story.expect_success("setting set journal.core.processes.readers-forced off --environment main")
+    story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
     start_process(story, "make first", category=CommandCategory.TEST_RUN)
     start_process(story, "make second", category=CommandCategory.TEST_RUN)
     story.expect_success("setting set journal.core.processes.main-runs-take-slots on --environment main", actor=main)

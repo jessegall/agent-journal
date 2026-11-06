@@ -19,6 +19,12 @@ class AgentRows:
             return self.kept.read("agents", lambda: self.queries.query(Agent).filter(session=session).first(),
                                   "session = ?", [session], name="agents.session")
 
+    def launch_row(self, launch_name: str) -> Agent | None:
+        with self.scopes.opened(None, disabled=[EnvironmentScope]):
+            bound = self.kept.read("agents", lambda: self.queries.query(Agent).filter(launch_name=launch_name).first(),
+                                   "launch_name = ?", [launch_name], name="agents.launch_row")
+        return bound if bound is not None else self.session(launch_name)
+
     def find(self, agent_id: int) -> Agent:
         return self.rows.required(Agent, agent_id)
 

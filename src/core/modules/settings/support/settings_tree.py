@@ -13,4 +13,4 @@ SETTINGS_SETTINGS = [SettingValue("backup-minutes", "Copy the database every (mi
                      SettingValue("backup-count", "Database copies to keep", "How many of the newest database copies stay in .journal/backups-watch.",
                                   SettingType.NUMBER, default=2, scope=SettingScope.PROJECT),
                      SettingGroup("guard", "Guards and rules", "Guards and rules switched off for the whole project.",
-                                  any_key=SettingValue("*", "On", "Whether this guard or rule is on.", SettingType.FLAG, default=True, scope=SettingScope.PROJECT))]
+                                  any_key=SettingValue("*", "On", "Whether this guard or rule is on.", SettingType.FLAG, default=True, scope=SettingScope.PROJECT, person_set=True))]

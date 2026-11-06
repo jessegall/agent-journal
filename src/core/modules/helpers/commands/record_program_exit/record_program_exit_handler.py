@@ -35,7 +35,7 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
         if agent.role == AgentRole.MAIN:
             return
         actor = Actor(agent.id, ActorType.AGENT)
-        job = next((row for row in self.jobs.helper_jobs(agent.id) if row.ended_at is None), None)
+        job = self.jobs.open_job(agent.id)
         if job is not None and self.needs_exit_report(agent):
             self.report_exit(agent, job, command, actor)
         if agent.ended_at is None:
