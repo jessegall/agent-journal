@@ -1,4 +1,5 @@
 import shutil
+from pathlib import Path
 
 from core.base.actor import Actor
 from core.base.command.context import Context
@@ -43,14 +44,21 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
         if not command.confirmed:
             return
         self.steps.check_requirements(manifest, source)
-        FileAccess.shared().update_timestamp(self.folders.upgrade_mark(plugin.name))
-        code = self.folders.code(plugin.name)
+        mark = self.folders.upgrade_mark(plugin.name)
+        FileAccess.shared().update_timestamp(mark)
+        try:
+            self.replaced(manifest, source, self.folders.code(plugin.name))
+        except Exception:
+            mark.unlink(missing_ok=True)
+            raise
+
+    def replaced(self, manifest: PluginManifest, source: Path, code: Path) -> None:
         new_code, old_code = code.with_name(code.name + NEW_SUFFIX), code.with_name(code.name + OLD_SUFFIX)
         shutil.rmtree(new_code, ignore_errors=True)
-        shutil.copytree(source, new_code, ignore=EXCLUDED_NAMES)
         try:
+            shutil.copytree(source, new_code, ignore=EXCLUDED_NAMES)
             self.steps.run_setup(manifest, new_code)
-        except Refusal:
+        except Exception:
             shutil.rmtree(new_code, ignore_errors=True)
             raise
         shutil.rmtree(old_code, ignore_errors=True)

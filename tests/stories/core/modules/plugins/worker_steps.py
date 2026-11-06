@@ -1,3 +1,5 @@
+import json
+
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.testing.hook_samples import HookSamples
 from core.base.actor import Actor
@@ -88,3 +90,15 @@ def test_a_plugin_whose_files_changed_is_switched_off_and_the_chat_says_so(new_s
     story.hook("s-1", HookSamples.prompt("go on"))
     story.expect_text("message list --environment main", "The plugin steps is switched off", actor=story.user)
 
+
+
+def test_a_failed_upgrade_leaves_no_upgrade_mark_and_the_next_delivery_reaches_the_plugin(new_story):
+    story = step_plugin_story(new_story, "worker_delivering")
+    source = step_plugin_folder(story.home.folder.parent, "worker_delivering") / "journal-plugin.json"
+    source.write_text(json.dumps({**json.loads(source.read_text()), "version": "1.1.0", "setup": [{"name": "Build the cache", "run": "exit 4"}]}))
+    story.expect_refusal("plugin upgrade steps --yes", "the setup step Build the cache failed", actor=story.user)
+    story.expect_rows(not story.container.get(PluginFolders).upgrade_mark("steps").exists())
+    worker = dispatched_worker(story)
+    story.repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
+    story.run(FIRST_PROOF, actor=worker)
+    story.expect_refusal(DELIVERY, "[plugin steps] cart.py has a sin", actor=worker)
