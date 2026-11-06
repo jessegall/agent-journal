@@ -47,9 +47,17 @@ class SendHelperHandler(Handler[SendHelper, int]):
             self.repository.save(next_job.changed(source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, source_line_id=line.id), context)
             self.sources.use_copy(source, source_context)
             return helper.id
+        if last_job.ended_at is None:
+            with self.scopes.opened(context.actor.id, context.environment_id, [ActorScope]):
+                self.nudger.send_text(helper.id, command.job, HELPER_JOB_SOURCE, context, wakes_agent=True)
+            self.repository.save(last_job.changed(brief=f"{last_job.brief}\n\n{command.job}"), context)
+            return helper.id
         self.check_resume(helper)
+        parent_id = self.reach.taking_over(helper, context.actor) or last_job.session_agent_id
+        if parent_id != helper.parent_id:
+            self.repository.save(helper.changed(parent_id=parent_id), context)
         next_job = last_job.next_job(helper.session, command.job, command.job[:SHORT_JOB_CHARACTERS], context.actor.id)
-        self.repository.save(next_job.changed(source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp), context)
+        self.repository.save(next_job.changed(session_agent_id=parent_id, source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp), context)
         self.sources.use_copy(source, source_context)
         return helper.id
 

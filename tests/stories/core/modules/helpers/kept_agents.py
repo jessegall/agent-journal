@@ -1,3 +1,4 @@
+from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
@@ -131,7 +132,7 @@ def test_launches_in_flight_count(new_story, monkeypatch):
     story.expect_success('setting set journal.core.helpers.helper-profile-limits \'["journal-researcher:1:8"]\' --project', actor=story.user)
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.expect_success(f'helper send {helper.id} "One more job"', actor=story.agent)
-    story.expect_refusal(f'helper send {helper.id} "And another"', "1 of journal-researcher run", actor=story.agent)
+    story.expect_refusal("helper start journal-researcher --fresh 'A second reader' --brief 'Read src/other.py' --environment main", "1 of journal-researcher run", actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()
 
@@ -174,3 +175,31 @@ def test_a_nearly_full_session_is_not_offered(new_story, monkeypatch):
     story.expect_rows(kept.idle("journal-researcher", "", "")[0].id == helper.id)
     monkeypatch.setattr(ClaudeCodeProvider, "context_percent", lambda provider, home, session: 80)
     story.expect_rows(kept.idle("journal-researcher", "", "") == ())
+
+
+def test_two_sends_to_one_idle_helper_run_one_session(new_story, monkeypatch):
+    story = new_story(fixture=EndedHelper)
+    helper = helper_agent(story)
+    resumable_session(story, helper, monkeypatch)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.expect_success(f'helper send {helper.id} "One more job"', actor=story.agent)
+    story.expect_success(f'helper send {helper.id} "And another"', actor=story.agent)
+    open_jobs = story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).matching(IsNull("ended_at")).all_rows()
+    story.expect_rows(len(tuple(open_jobs)) == 1)
+    launcher.server.close()
+    story.home.socket("launcher").unlink()
+
+
+def test_a_new_main_takes_over_an_idle_helper_and_gets_its_report(new_story, monkeypatch):
+    story = new_story(fixture=EndedHelper)
+    helper = helper_agent(story)
+    resumable_session(story, helper, monkeypatch)
+    story.run(f"agent end {story.agent.id}", actor=story.user)
+    second = Actor(story.new_row_id("agent start s-2 claude main --environment main"), ActorType.AGENT)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.expect_success(f'helper send {helper.id} "One more job"', actor=second)
+    job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).newest().first()
+    story.expect_rows(helper_agent(story).parent_id == second.id, job.session_agent_id == second.id)
+    launcher.server.close()
+    story.home.socket("launcher").unlink()
+
