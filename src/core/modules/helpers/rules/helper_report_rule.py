@@ -29,7 +29,7 @@ class HelperReportRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         helper = self.agents.find(hook.agent_id)
-        job = next((row for row in self.jobs.helper_jobs(helper.id) if row.ended_at is None), None)
+        job = self.jobs.open_job(helper.id)
         if helper.parent_id is None or job is None:
             return RuleAnswer.allowed()
         return RuleAnswer.allowed().running(RecordParentReport(helper.id, helper.parent_id, self.report(hook, helper), job.id))

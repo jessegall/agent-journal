@@ -1,5 +1,3 @@
-from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from core.modules.agents.commands.end_replaced_main.end_replaced_main import EndReplacedMain
 from dataclasses import replace
 
 from core.base.actor import Actor
@@ -100,12 +98,4 @@ class AgentHookRoute(HookRoute):
         environments = self.queries.query(Environment).filter(name=event.environment).limited(1)
         if not environments:
             return None
-        if role == AgentRole.MAIN:
-            self.end_running_main_agents(environments[0].id)
         return self.bus.run(StartAgent(event.session, event.program, role, parent_id), Actor.core(), environment_id=environments[0].id)
-
-    def end_running_main_agents(self, environment_id: int) -> None:
-        with self.bus.scopes.read_scope((), None, environment_id):
-            main_agents = MainAgentFinder.all_running(self.queries)
-        for main in main_agents:
-            self.bus.run(EndReplacedMain(main.id), Actor.core(), environment_id=environment_id)

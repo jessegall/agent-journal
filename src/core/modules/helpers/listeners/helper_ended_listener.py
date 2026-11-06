@@ -37,8 +37,8 @@ class HelperEndedListener(CommitListener[AgentEnded]):
         helper = event.row
         if helper.role != AgentRole.HELPER:
             return
-        open_jobs = [job for job in self.jobs.helper_jobs(helper.id) if job.ended_at is None]
-        if not open_jobs:
+        job = self.jobs.open_job(helper.id)
+        if job is None:
             self.home.terminal_file(helper.id).unlink(missing_ok=True)
             return
         if self.is_paused(helper):
@@ -48,7 +48,7 @@ class HelperEndedListener(CommitListener[AgentEnded]):
             self.resume.resume(helper, waiting.text)
             return
         stopped = logged.actor_id != helper.id
-        self.end_job(helper, open_jobs[-1], STOPPED if stopped else "", logged)
+        self.end_job(helper, job, STOPPED if stopped else "", logged)
         self.home.terminal_file(helper.id).unlink(missing_ok=True)
         if stopped:
             self.launcher.stop(helper.id)

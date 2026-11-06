@@ -87,11 +87,19 @@ class LaunchTerminal:
         self.wait_for(SUITE_QUESTION)
         os.write(self.controller, str(self.suite_number).encode() + ENTER)
 
-    def expect_program_after_the_menu(self) -> None:
+    def wait_at_the_last_question(self) -> None:
         self.pick_suite()
-        for question in (ENVIRONMENT_QUESTION, CONVERSATION_QUESTION, PROMPT_QUESTION):
+        for question in (ENVIRONMENT_QUESTION, CONVERSATION_QUESTION):
             self.press_enter_on(question)
+        self.wait_for(PROMPT_QUESTION)
+
+    def expect_program_after_the_last_question(self) -> None:
+        os.write(self.controller, ENTER)
         self.wait_for(PROGRAM_LINE)
+
+    def expect_program_after_the_menu(self) -> None:
+        self.wait_at_the_last_question()
+        self.expect_program_after_the_last_question()
 
     def expect_program_after_stopping_the_running_main(self) -> None:
         self.pick_suite()

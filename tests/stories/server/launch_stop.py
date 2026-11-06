@@ -84,3 +84,15 @@ def test_the_viewer_stop_ends_a_launched_main_and_its_launch(launched):
         launched.server.expect_viewer_line(cookie, body, 200, '"code": 0')
         launch.expect_ended()
         story.expect_rows(launched.open_main_ids() == [])
+
+
+def test_two_launches_at_once_end_with_one_main_and_the_first_launch_ended(launched):
+    with launched.launch() as first, launched.launch() as second:
+        first.wait_at_the_last_question()
+        second.wait_at_the_last_question()
+        first.expect_program_after_the_last_question()
+        second.expect_program_after_the_last_question()
+        first.expect_ended()
+        second.expect_running()
+        launched.server.story.expect_rows(len(launched.open_main_ids()) == 1)
+

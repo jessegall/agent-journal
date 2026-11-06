@@ -51,3 +51,32 @@ def test_a_session_that_ends_by_itself_has_no_program_stopped(replaced_story):
     story.hook("s-1", HookSamples.sample("session_end"))
     story.run_listeners()
     story.expect_rows(launcher.requests == [])
+
+
+def test_two_launches_at_once_end_with_one_main_and_the_first_is_stopped(new_story):
+    story = new_story(SAMPLES, fixture=SampleSuiteChoice)
+    first_id = story.new_row_id("agent start launch-a claude main --environment main")
+    launcher = FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n")
+    second_id = story.new_row_id("agent start launch-b claude main --environment main")
+    story.expect_text(f"agent show {first_id}", "ended_at: 20")
+    story.expect_absent(f"agent show {second_id}", "ended_at: 20")
+    story.run_listeners()
+    launcher.thread.join(timeout=5)
+    story.expect_rows(launcher.requests == [{"agent_id": first_id, "stop": True}])
+
+
+def test_a_resumed_main_ends_the_main_that_runs_and_keeps_its_own_program(replaced_story):
+    story, old = replaced_story
+    launch_row_id = story.new_row_id("agent start launch-a claude main --environment main")
+    story.expect_text(f"agent show {old.id}", "ended_at: 20")
+    launcher = FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n")
+    resumed = hook_agent(story, story.hook("s-1", HookSamples.session_start().with_fields(launch="launch-a")))
+    story.run_listeners()
+    story.expect_rows(resumed.id == old.id, launch_row_id not in [request["agent_id"] for request in launcher.requests])
+    story.expect_absent(f"agent show {old.id}", "ended_at: 20")
+
+
+def test_a_worker_that_starts_ends_no_main(replaced_story):
+    story, old = replaced_story
+    story.run(f"agent start w-1 claude worker --parent {old.id} --environment main")
+    story.expect_absent(f"agent show {old.id}", "ended_at: 20")
