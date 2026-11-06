@@ -17,6 +17,7 @@ class Message(EnvironmentScoped, Model):
     shared_rows = True
     cli_name = "message"
     search_fields = ["text"]
+    search_rank = 1
     hidden_fields = frozenset(["is_chat_visible"])
 
     environment_id: int = 0

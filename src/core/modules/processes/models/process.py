@@ -20,6 +20,8 @@ class Process(EnvironmentScoped, Model):
     shared_rows = True
     cli_name = "process"
     search_fields = ["line"]
+    search_rank = -1
+    search_ignored_start = "journal search "
     lifecycle = ProcessLifecycle
 
     environment_id: int = 0

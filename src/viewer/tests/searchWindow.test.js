@@ -43,3 +43,10 @@ test("a search that holds nothing says so", async () => {
     const {element} = await search({hits: [], total: 0}, "zebra");
     expect(element.querySelector("[data-no-hits]").textContent).toBe("No results match all these words: zebra");
 });
+
+test("a search where no row holds every word says so in one line and lists the closest rows", async () => {
+    const {element} = await search({...HITS, closest: true}, "cart euros");
+    expect(element.querySelector("[data-closest]").textContent).toBe("No result holds all these words: cart euros, these hold most of them, the closest first");
+    expect(element.querySelector("[data-total]")).toBeNull();
+    expect(element.querySelectorAll("[data-hit]")).toHaveLength(2);
+});

@@ -2,18 +2,25 @@ from collections.abc import Sequence
 
 from core.base.model.model import Model
 from core.base.query.conditions.contains_every import ContainsEvery
+from core.base.query.conditions.contains_some import ContainsSome
+from core.base.query.conditions.excluding import Excluding
+from core.base.query.conditions.prefix import Prefix
 from core.base.query.queries import Queries
+from core.base.query.query import Query
 from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.modules.search.support.search_hit import SearchHit
 from core.modules.search.support.search_result import SearchResult
 
 HIT_LIMIT_ROWS = 40
+CLOSEST_SCAN_ROWS = 300
 
 
 class RowSearch:
-    """Finds the rows of every model that names its search fields which hold every term, newest first across
-    the models, at most 40, with how many hold them in all."""
+    """Finds the rows of every model that names its search fields which hold every term, a message before other
+    rows and then the newest first, at most 40, with how many hold them in all. When no row holds every term of
+    several, it finds the rows that hold at least half of them, the ones holding most first. A search command
+    run by an agent is no row that holds the words it searched for."""
 
     def __init__(self, registry: Registry, queries: Queries) -> None:
         self.registry, self.queries = registry, queries
@@ -28,7 +35,20 @@ class RowSearch:
         if unknown:
             raise Refusal(f"{unknown[0]} is no model search reads", f"name one of: {', '.join(sorted(searched))}")
         search_models = [searched[name] for name in model_names] or list(searched.values())
-        model_queries = [self.queries.query(model).matching(ContainsEvery(model.search_fields, terms)) for model in search_models]
-        hits = [SearchHit.matched(row, terms[0]) for query in model_queries for row in query.newest().limited(HIT_LIMIT_ROWS)]
-        newest = sorted(hits, key=lambda hit: hit.created_at, reverse=True)[:HIT_LIMIT_ROWS]
-        return SearchResult(terms, newest, sum(query.count() for query in model_queries))
+        model_queries = [self.searchable(model).matching(ContainsEvery(model.search_fields, terms)) for model in search_models]
+        hits = [SearchHit.matched(row, terms) for query in model_queries for row in query.newest().limited(HIT_LIMIT_ROWS)]
+        total = sum(query.count() for query in model_queries)
+        if total or len(terms) < 2:
+            return SearchResult(terms, sorted(hits, key=lambda hit: (-hit.rank, -hit.created_at.value.timestamp()))[:HIT_LIMIT_ROWS], total)
+        return self.closest(terms, search_models)
+
+    def closest(self, terms: Sequence[str], search_models: Sequence[type[Model]]) -> SearchResult:
+        enough = (len(terms) + 1) // 2
+        rows = [row for model in search_models for row in self.searchable(model).matching(ContainsSome(model.search_fields, terms)).newest().limited(CLOSEST_SCAN_ROWS)]
+        hits = [hit for hit in (SearchHit.matched(row, terms) for row in rows) if hit.held >= enough]
+        ranked = sorted(hits, key=lambda hit: (-hit.held, -hit.rank, -hit.created_at.value.timestamp()))
+        return SearchResult(terms, ranked[:HIT_LIMIT_ROWS], len(ranked), is_closest=True)
+
+    def searchable(self, model: type[Model]) -> Query[Model]:
+        query = self.queries.query(model)
+        return query.matching(Excluding(Prefix(model.search_fields[0], model.search_ignored_start))) if model.search_ignored_start else query
