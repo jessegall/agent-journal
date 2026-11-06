@@ -7,6 +7,7 @@ import {phoneWindowContext} from "./support/phoneWindowContext.js";
 import {useListTools} from "../kit/useListTools.js";
 import SuggestionRows from "../../core/modules/suggestions/web/src/SuggestionRows.vue";
 import QuestionRows from "../../core/modules/questions/web/src/QuestionRows.vue";
+import {commandsWindowContext} from "./support/commandsWindowContext.js";
 import Outputs from "../../core/modules/processes/web/src/Outputs.vue";
 import PhoneRows from "../../core/modules/phone/web/src/PhoneRows.vue";
 import ShareRows from "../../core/modules/sharing/web/src/ShareRows.vue";
@@ -78,6 +79,7 @@ test.each([
     const contexts = new Map([
         [TemplateCards, templateWindowContext],
         [PhoneRows, phoneWindowContext],
+        [Outputs, commandsWindowContext],
         [ShareRows, (answers) => context(answers, null, {shares: {line: "share list", events: ["share_link.*", "share_comment.*"]}})],
     ]);
     const element = await mounted(component, (contexts.get(component) ?? context)(answers));

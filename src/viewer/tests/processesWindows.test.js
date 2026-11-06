@@ -1,5 +1,6 @@
 import {expect, test} from "vitest";
 import {outputWindowContext} from "./support/outputWindowContext.js";
+import {commandsWindowContext} from "./support/commandsWindowContext.js";
 import Output from "../../core/modules/processes/web/src/Output.vue";
 import Outputs from "../../core/modules/processes/web/src/Outputs.vue";
 import {context, mounted, page, settle} from "./support/windowContext.js";
@@ -8,7 +9,7 @@ const run = (id, line, state, extra = {}) => ({id, line, state, exit_code: null,
 
 // a window context that keeps the lines it ran and the functions that follow events
 function recording(answers, options = {}) {
-    const windowContext = "output" in options ? outputWindowContext(answers, options.output) : context(answers);
+    const windowContext = "output" in options ? outputWindowContext(answers, options.output) : commandsWindowContext(answers);
     windowContext.runs = [];
     windowContext.heard = [];
     windowContext.run = async (line) => {
@@ -34,7 +35,8 @@ test("a state change is shown without a reload", async () => {
     const element = await mounted(Outputs, windowContext);
     expect(element.querySelector(".state").textContent).toBe("Running");
     answers["process feed"] = page([run(1, "make test", "failed", {exit_code: 2})]);
-    windowContext.heard.forEach((follow) => follow.heard());
+    windowContext.heard.forEach((follow) => follow.heard({event: "output.update"}));
+    await new Promise((resolve) => setTimeout(resolve, 60));
     await settle();
     expect(element.querySelector(".state").textContent).toBe("Failed");
     expect(windowContext.heard.some((follow) => follow.patterns.includes("process.*"))).toBe(true);
@@ -67,7 +69,8 @@ test("the output window shows the reader's lines and the whole text on a button,
     const element = await mounted(Output, windowContext);
     expect(element.textContent).toContain("3: FAILED a");
     answers["output peek 4 --summary"] = {ok: true, value: {lines: ["output 4 is running: 4 lines, 52 characters", "3: FAILED a", "4: FAILED b"]}};
-    windowContext.heard.forEach((follow) => follow.heard());
+    windowContext.heard.forEach((follow) => follow.heard({event: "output.update"}));
+    await new Promise((resolve) => setTimeout(resolve, 60));
     await settle();
     expect(element.textContent).toContain("4: FAILED b");
     element.querySelector(".whole").click();

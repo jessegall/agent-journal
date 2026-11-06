@@ -1,6 +1,6 @@
 <script setup>
-import {ref} from "vue";
-import {AutoScrollPane, EmptyState, OutputLines, WindowRoom, readOutputProp, useOutputPages, usePoll, useWindow} from "@journal/window-kit";
+import {onMounted, ref} from "vue";
+import {AutoScrollPane, EmptyState, OutputLines, WindowRoom, readOutputProp, useOutputPages, useWindow} from "@journal/window-kit";
 import RunButtons from "./RunButtons.vue";
 
 const context = useWindow();
@@ -41,7 +41,7 @@ async function toggle() {
 }
 
 context.follow(["process.*", "output.*"], load);
-usePoll(load, () => context.visible.value && isRunning());
+onMounted(load);
 </script>
 
 <template>

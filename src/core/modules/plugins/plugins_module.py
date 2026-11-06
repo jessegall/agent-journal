@@ -110,7 +110,8 @@ class PluginsModule(Module):
                                        WindowKey("latest.*", "plugin latest {id}", named_ids=True, loading=KeyLoading.REQUESTED),
                                        WindowKey("settings.*", "plugin settings {id}", named_ids=True, loading=KeyLoading.REQUESTED),
                                        WindowKey("record.*", "plugin record {id}", named_ids=True, loading=KeyLoading.REQUESTED),
-                                       WindowKey("dashboard.*", "plugin dashboard {id}", named_ids=True, loading=KeyLoading.REQUESTED)],
+                                       WindowKey("dashboard", "plugin dashboard {plugin}", tab="dashboard"),
+                                       WindowKey("dashboard-poll", "plugin dashboard {plugin}", tab="dashboard-poll", reload_seconds=60)],
                                  runs=["plugin upgrade", "plugin enable", "plugin disable", "plugin install", "plugin remove", "plugin configure", "message send"], events=["plugin.*"])]
     migrations = [PluginOutputEnvironmentMigration, PluginEventDeliveriesMigration, PluginSessionMigration, PluginOutputIndexMigration, PluginsTablesMigration, PluginQueueIndexMigration]
     handlers = [PrunePluginDeliveriesHandler, RunPluginCommandHandler, SendPluginStepLineHandler, DeliverFileEditHandler, UpgradePluginHandler, InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler,

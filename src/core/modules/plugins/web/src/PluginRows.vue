@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {READ_RATES, Dashboard, Dialog, Btn, Icon, Skeleton, TextInput, runChanged, usePoll, useWindow} from "@journal/window-kit";
+import {Dashboard, Dialog, Btn, Icon, Skeleton, TextInput, runChanged, useWindow} from "@journal/window-kit";
 import {fileAddress} from "./fileAddress.js";
 import PluginCard from "./PluginCard.vue";
 import PluginGuide from "./PluginGuide.vue";
@@ -14,6 +14,7 @@ import PluginUpgradeDialog from "./PluginUpgradeDialog.vue";
 // the plugins of this project as version 4's page drew them: a bar to install one from a source, a line on what installing means, a card for each plugin with its
 // switch, settings and removing it, with or without its data, and a card to ask the agent to make one; the services read again while the page is open
 const context = useWindow();
+context.state.tab = "list";
 const {rows, failure, loaded, load} = context.props.plugins;
 const {rows: boards} = context.props.dashboards;
 const boardOf = (row) => boards.value.find((board) => board.plugin === row.name);
@@ -95,16 +96,18 @@ const board = ref(null);
 
 function showBoard(row) {
     const {title, events} = boardOf(row);
-    board.value = {title, events, key: `dashboard.${row.name}`};
+    const key = events?.length ? "dashboard" : "dashboard-poll";
+    context.state[`${key}.plugin`] = row.name;
+    board.value = {title, events: events ?? [], key};
 }
 
 watch(board, (shown, previous, onCleanup) => {
+    context.state.tab = shown ? shown.key : "list";
     if (!shown) return;
-    context.reload(shown.key);
+    if (context.props[shown.key].loaded.value) context.reload(shown.key);
     const stop = context.follow(shown.events, () => context.reload(shown.key));
     if (stop) onCleanup(stop);
 });
-usePoll(() => context.reload(board.value.key), () => context.visible.value && board.value !== null, READ_RATES.documentWithNoEvents);
 
 async function askTheAgent() {
     const words = [wish.value.trim(), repository.value.trim() && `Build it in ${repository.value.trim()}.`].filter(Boolean).join(" ");

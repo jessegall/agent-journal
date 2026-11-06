@@ -5,6 +5,7 @@ import {loadStates} from "../src/domain/states.js";
 import TaskDock from "../../core/modules/tasks/web/src/TaskDock.vue";
 import QuestionDock from "../../core/modules/questions/web/src/QuestionDock.vue";
 import StateRows from "../kit/StateRows.vue";
+import {commandsWindowContext} from "./support/commandsWindowContext.js";
 import Outputs from "../../core/modules/processes/web/src/Outputs.vue";
 import NudgeList from "../../core/modules/drivers/web/src/NudgeList.vue";
 import HookCallList from "../../core/modules/drivers/web/src/HookCallList.vue";
@@ -37,7 +38,7 @@ test("a question dock uses question state labels", async () => {
 });
 
 test("command output uses process state labels", async () => {
-    const element = await mounted(Outputs, context({"process feed": page([{id: 2, state: "checking", line: "check cart"}])}));
+    const element = await mounted(Outputs, commandsWindowContext({"process feed": page([{id: 2, state: "checking", line: "check cart"}])}));
     expect(element.querySelector(".state").textContent).toBe("Checking the result");
 });
 
