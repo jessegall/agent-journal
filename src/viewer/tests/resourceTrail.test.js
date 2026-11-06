@@ -7,7 +7,6 @@ import {context, mounted, page, settle} from "./support/windowContext.js";
 import {linkPage} from "./support/linkPages.js";
 
 const REQUEST = {id: 1, type: "user", text: "Fix the cart totals", created_at: "2026-11-01T10:00:00Z"};
-const unbuilt = import.meta.env.MODE === "trail-red" ? test : test.fails;
 
 afterEach(() => (document.body.innerHTML = ""));
 
@@ -35,7 +34,7 @@ test("the receipt fixture renders the real message and requests its links", asyn
 
 const EDGE = {id: 1, source_model: "message", source_id: 1, target_model: "task", target_id: 4, source_title: "Request", target_title: "Cart totals", link_type: "about"};
 
-unbuilt("task 6895: another message's link event leaves this receipt alone", async () => {
+test("task 6895: another message's link event leaves this receipt alone", async () => {
     const windowContext = receiptContext();
     await mounted(MessageCard, windowContext, {message: REQUEST});
     const before = windowContext.requests.length;
@@ -53,13 +52,13 @@ test("a receipt refreshes when its own link changes", async () => {
     expect(windowContext.requests.length).toBeGreaterThan(before);
 });
 
-unbuilt("task 6895: edited work appears beside work created for the request", async () => {
+test("task 6895: edited work appears beside work created for the request", async () => {
     const element = await mounted(MessageCard, receiptContext([{...EDGE, link_type: "edited"}]), {message: REQUEST});
     expect(element.querySelector("[data-message-links]")?.textContent).toContain("task");
     expect(element.textContent.toLowerCase()).toContain("edited");
 });
 
-unbuilt("task 6895: a receipt uses returned titles without one task read per chip", async () => {
+test("task 6895: a receipt uses returned titles without one task read per chip", async () => {
     const windowContext = receiptContext([EDGE, {...EDGE, id: 2, target_id: 5}, {...EDGE, id: 3, target_id: 6}, {...EDGE, id: 4, target_id: 7}]);
     const element = await mounted(MessageCard, windowContext, {message: REQUEST});
     element.querySelector("[data-message-links-count]").click();
@@ -77,7 +76,7 @@ function planRead(counterparts, requests) {
     };
 }
 
-unbuilt("task 6894: both directions keep all relation labels on one counterpart", async () => {
+test("task 6894: both directions keep all relation labels on one counterpart", async () => {
     const rows = [linkedItem("task", 4, ["mentions", "about"], "tasks:4")];
     const element = await mounted(PlanLinks, context({}), {id: 1, read: planRead(rows, [])});
     expect(element.querySelectorAll("[data-plan-link]")).toHaveLength(1);
@@ -85,14 +84,14 @@ unbuilt("task 6894: both directions keep all relation labels on one counterpart"
     expect(element.textContent).toContain("about");
 });
 
-unbuilt("task 6894: missing endpoints stay visible but cannot open", async () => {
+test("task 6894: missing endpoints stay visible but cannot open", async () => {
     const missing = {endpoint: {model: "task", id: 4, title: "Task 4 unavailable", exists: false, unavailable: true, open_ref: null}, relations: ["about"], link_ids: [1]};
     const element = await mounted(PlanLinks, context({}), {id: 1, read: planRead([missing], [])});
     expect(element.textContent.toLowerCase()).toContain("unavailable");
     expect(element.querySelector("[data-plan-link]")?.disabled).toBe(true);
 });
 
-unbuilt.each([
+test.each([
     ["task_log", "tasks", 4],
     ["phase", "plans", 1],
 ])("task 6894: %s opens its parent", async (model, table, id) => {
@@ -125,28 +124,28 @@ async function documentRequests() {
     });
     element.querySelector('[data-document-tab="links"]').click();
     await settle();
-    return requests;
+    return {requests, element};
 }
 
-unbuilt("task 6894: the document inspector reads incoming as well as outgoing relations", async () => {
-    const requests = await documentRequests();
+test("task 6894: the document inspector reads incoming as well as outgoing relations", async () => {
+    const {requests, element} = await documentRequests();
     expect(requests.some((line) => line[0] === "link" && line.includes("--row") && line.includes("doc:4") && line.includes("--group-counterparts"))).toBe(true);
-    expect(document.querySelector("[data-document-links]").textContent).toContain("Incoming review");
+    expect(element.querySelector("[data-document-links]").textContent).toContain("Incoming review");
 });
 
-unbuilt("task 6894: the document inspector bounds every relation read", async () => {
-    const requests = await documentRequests();
+test("task 6894: the document inspector bounds every relation read", async () => {
+    const {requests} = await documentRequests();
     const links = requests.filter((line) => line[0] === "link");
     expect(links.length).toBeGreaterThan(0);
     expect(links.every((line) => line.includes("--page") && line.includes("--page-size"))).toBe(true);
 });
 
-unbuilt("task 6894: document comments use their own bounded read", async () => {
-    const requests = await documentRequests();
+test("task 6894: document comments use their own bounded read", async () => {
+    const {requests} = await documentRequests();
     expect(requests.some((line) => line[1] === "comments" && line.includes("--page") && line.includes("--page-size"))).toBe(true);
 });
 
-unbuilt("task 6894: counterpart pages append once and preserve every label", async () => {
+test("task 6894: counterpart pages append once and preserve every label", async () => {
     const requests = [];
     const read = async (line) => {
         requests.push(line);
@@ -164,12 +163,12 @@ unbuilt("task 6894: counterpart pages append once and preserve every label", asy
     expect(requests.at(-1)[requests.at(-1).indexOf("--page") + 1]).toBe("2");
 });
 
-unbuilt("task 6894: a relation failure remains visible", async () => {
+test("task 6894: a relation failure remains visible", async () => {
     const element = await mounted(PlanLinks, context({}), {id: 1, read: async () => ({ok: false, error: "Linked items could not be read"})});
     expect(element.querySelector("[role=alert]")?.textContent).toContain("Linked items could not be read");
 });
 
-unbuilt("task 6894: transcription links request bounded counterpart pages", async () => {
+test("task 6894: transcription links request bounded counterpart pages", async () => {
     const windowContext = context({});
     const requests = [];
     windowContext.read = async (line) => {
@@ -187,7 +186,7 @@ unbuilt("task 6894: transcription links request bounded counterpart pages", asyn
     expect(links.every((words) => words.includes("--page") && words.includes("--page-size") && words.includes("--group-counterparts"))).toBe(true);
 });
 
-unbuilt("task 6895: receipt relation filters and page bounds are sent to the server", async () => {
+test("task 6895: receipt relation filters and page bounds are sent to the server", async () => {
     const windowContext = receiptContext();
     await mounted(MessageCard, windowContext, {message: REQUEST});
     const links = windowContext.requests.filter((line) => line.slice(0, 2).join(" ") === "link list");

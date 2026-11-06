@@ -8,7 +8,6 @@ import {settle} from "./support/windowContext.js";
 afterEach(() => (document.body.innerHTML = ""));
 
 const SOURCE = () => ({noun: "doc", id: 4, title: "Cart"});
-const unbuilt = import.meta.env.MODE === "trail-red" ? test : test.fails;
 
 function mountedComments(answer, readPage = null) {
     const ran = [];
@@ -79,7 +78,7 @@ test("a refused comment comes off the sidebar and its words stay in the box", as
     expect(element.querySelector(".error").textContent).toBe("no");
 });
 
-unbuilt("task 6894: comment pages keep selection details and each comment once", async () => {
+test("task 6894: comment pages keep selection details and each comment once", async () => {
     const first = {id: 1, text: "On doc 4, Cart: first", body: "First body", quote: "cents", revision: 2};
     const second = {id: 2, text: "Second body", body: "Second body"};
     const {element, ran, comments} = mountedComments(() => ({ok: true}), (line) => {
@@ -97,7 +96,7 @@ unbuilt("task 6894: comment pages keep selection details and each comment once",
     expect(ran.some((line) => line.includes("--page 2 --page-size"))).toBe(true);
 });
 
-unbuilt("task 6894: comment read failures remain visible", async () => {
+test("task 6894: comment read failures remain visible", async () => {
     const {element, comments} = mountedComments(() => ({ok: true}), () => ({ok: false, error: "Comments could not be read"}));
     await settle();
     comments().open.value = true;

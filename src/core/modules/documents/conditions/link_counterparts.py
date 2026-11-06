@@ -30,8 +30,9 @@ class LinkCounterparts:
     def statement(self) -> Statement:
         if not self.counterparts:
             return Statement("0")
-        marks = ", ".join("(?, ?)" for _ in self.counterparts)
-        return Statement(f"""(CASE WHEN source_model = ? AND source_id = ? THEN target_model ELSE source_model END,
-            CASE WHEN source_model = ? AND source_id = ? THEN target_id ELSE source_id END) IN ({marks})""",
-                         (self.reference.model, self.reference.row_id, self.reference.model, self.reference.row_id,
-                          *(value for counterpart in self.counterparts for value in (counterpart.model, counterpart.row_id))))
+        pair = """((source_model = ? AND source_id = ? AND target_model = ? AND target_id = ?)
+            OR (target_model = ? AND target_id = ? AND source_model = ? AND source_id = ?))"""
+        return Statement("(" + " OR ".join(pair for _ in self.counterparts) + ")",
+                         tuple(value for counterpart in self.counterparts
+                               for value in (self.reference.model, self.reference.row_id, counterpart.model, counterpart.row_id,
+                                             self.reference.model, self.reference.row_id, counterpart.model, counterpart.row_id)))

@@ -37,7 +37,6 @@ def test_comment_work_and_source_open_through_viewer_routes(trail):
     assert trail.person("viewer.shell", "task", "show", "1")["id"] == 1
 
 
-@pending(6852)
 def test_both_directions_and_all_relations_have_one_counterpart(linked_trail):
     trail = linked_trail
     trail.command('task edit 1 --brief "message 2"')
@@ -49,7 +48,6 @@ def test_both_directions_and_all_relations_have_one_counterpart(linked_trail):
 
 
 @pytest.mark.parametrize("noun,number", [("task", 1), ("doc", 1)])
-@pending(6852)
 def test_link_and_comment_pages_are_bounded(trail, noun, number):
     for index in range(4):
         trail.comment("viewer.shell", noun, number, f"Bounded note {index}")
@@ -66,7 +64,6 @@ def test_link_and_comment_pages_are_bounded(trail, noun, number):
     feature(refused.code == 1 and bool(refused.error), "an invalid comment page became an empty success")
 
 
-@pending(6852)
 def test_type_filter_precedes_paging(linked_trail):
     trail = linked_trail
     trail.comment("viewer.shell", "task", 1, "A later comment")
@@ -75,7 +72,6 @@ def test_type_filter_precedes_paging(linked_trail):
     feature(answer["rows"][0]["link_type"] == "comments_on", str(answer))
 
 
-@pending(6852)
 def test_counterpart_pages_keep_all_relation_types_once(linked_trail):
     trail = linked_trail
     trail.command('task edit 1 --brief "message:2 and doc:1"')
@@ -90,7 +86,6 @@ def test_counterpart_pages_keep_all_relation_types_once(linked_trail):
     feature({"about", "edited", "mentions"} <= set(message["relations"]), str(message))
 
 
-@pending(6852)
 def test_counterpart_priority_survives_page_boundaries(linked_trail):
     trail = linked_trail
     trail.command('task edit 1 --brief "The design is doc:1"')
@@ -103,7 +98,6 @@ def test_counterpart_priority_survives_page_boundaries(linked_trail):
     feature(len(keys) == len(set(keys)) == first["total"], str(keys))
 
 
-@pending(6852)
 def test_log_and_phase_endpoint_metadata_names_parent(trail):
     trail.command('task log 1 "Audit totals doc:1"')
     trail.command('phase make --plan 1 "Audit phase doc:1" --goal "Review totals"')
@@ -124,7 +118,6 @@ class MissingLinkEndpoint(StoryFixture):
             database.insert(Statement("INSERT INTO links (creator_id, source_model, source_id, target_model, target_id, link_type, created_at, updated_at) VALUES (?, 'message', 2, 'doc', 999, 'mentions', ?, ?)", (story.agent.id, now, now)))
 
 
-@pending(6852)
 def test_missing_endpoints_return_unavailable_metadata(new_story):
     trail = Trail(new_story(fixture=MissingLinkEndpoint))
     answer = requested_read(trail, "viewer.shell", ["link", "list", "--source", "message:2"])
@@ -132,7 +125,6 @@ def test_missing_endpoints_return_unavailable_metadata(new_story):
     feature(not missing["exists"] and missing["open_ref"] is None and "unavailable" in missing["title"], str(missing))
 
 
-@pending(6895)
 def test_receipt_refresh_targets_only_changed_sources(linked_trail):
     log = linked_trail.story.container.get(EventLog)
     events = [event for event in log.events_past(0) if event.event == "link.create"]
@@ -148,7 +140,6 @@ def test_receipt_refresh_targets_only_changed_sources(linked_trail):
     feature(removed["source_model"] == "message" and removed["source_id"] == about.data["source_id"][1], str(removed))
 
 
-@pending(6852)
 def test_task_inspector_can_read_its_link_page(trail):
     trail.comment("viewer.shell", "task", 1, "A task-window comment")
     answer = requested_read(trail, "tasks.tasks", ["link", "list", "--target", "task:1", "--page", "1", "--page-size", "10"])
