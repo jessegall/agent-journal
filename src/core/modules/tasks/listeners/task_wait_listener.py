@@ -5,6 +5,7 @@ from core.base.model.tables import Tables
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_wait import TaskWait
 from core.modules.tasks.support.task_waits import TaskWaits
@@ -31,6 +32,10 @@ class TaskWaitListener(SaveListener[Changed[Model]]):
                 self.waits.remove(row)
                 return
             self.waits.remember(row)
+            return
+        if isinstance(row, HelperJob) and row.ended_at is not None:
+            for wait in self.waits.pending_target(f"helpers:{row.helper_id}:{row.id}"):
+                self.waits.resolved(wait, context)
             return
         lifecycle = self.book.lifecycle(type(row))
         if isinstance(row, Task) and row.state is not TaskState.BLOCKED:

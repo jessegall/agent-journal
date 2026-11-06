@@ -18,7 +18,7 @@ class WorkerTaskWaitTargets(TaskWaitTargets):
     """Validates worker wait targets and resolves them after the worker finishes."""
 
     def __init__(self, database: Database, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, waits: TaskWaits) -> None:
-        super().__init__(database)
+        super().__init__(database, queries)
         self.queries, self.worktrees, self.proofs, self.waits = queries, worktrees, proofs, waits
 
     @property
