@@ -69,7 +69,8 @@ test("scrolled to the top, the terminal reads an older page and adds its lines a
 test("opening a command reads one output page and closing it hides the output", async () => {
     const window = context({}, 7);
     window.read = async (line) => feed(line);
-    window.readKey = vi.fn(async () => ({ok: true, value: {lines: ["a result"], first_byte: 0, last_byte: 8, total: 8, cut_bytes: 0}}));
+    window.props = {};
+    window.readKey = vi.fn(async () => ({ok: true, value: {lines: ["a result"], first_byte: 0, last_byte: 8, total: 8, cut_bytes: 0, command: "full command\nwith another line"}}));
     window.option = () => ({value: "commands"});
     const element = await mounted(Terminal, window);
     const command = element.querySelector("[data-terminal-command] .terminal-text");
@@ -77,11 +78,13 @@ test("opening a command reads one output page and closing it hides the output", 
     command.click();
     await settle();
     expect(command.classList.contains("open")).toBe(true);
+    expect(command.textContent).toBe("full command\nwith another line");
     expect(element.querySelector("[data-terminal-output]").textContent).toContain("a result");
     expect(window.readKey).toHaveBeenCalledExactlyOnceWith("terminal-output.304", {});
     command.click();
     await settle();
     expect(command.classList.contains("open")).toBe(false);
+    expect(command.textContent).toBe("call 304");
     expect(element.querySelector("[data-terminal-output]")).toBeNull();
     expect(window.readKey).toHaveBeenCalledTimes(1);
 });

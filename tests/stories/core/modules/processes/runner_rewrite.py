@@ -36,7 +36,9 @@ def test_a_shell_hook_of_the_builder_is_answered_with_the_runner_line_and_a_proc
 def test_the_agent_terminal_reads_the_call_output_through_the_viewer(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     reply = story.hook("s-1", SERVER)
-    story.container.get(OutputFolder).write_output(1, 1, "server started\n")
+    folder = story.container.get(OutputFolder)
+    folder.write_start(1, "node serve.js", ["node serve.js"])
+    folder.write_output(1, 1, "server started\n")
     page = viewer(story, "agents.agents", ["output", "hook-page", str(reply.hook_call_id)])
     story.expect_rows(page["lines"] == ["server started"])
 
