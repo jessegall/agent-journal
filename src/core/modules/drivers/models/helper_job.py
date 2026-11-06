@@ -25,6 +25,7 @@ class HelperJob(EnvironmentScoped, Model):
     ended_at: Timestamp | None = None
     helper_id: int | None = None
     brief: str = ""
+    fresh_reason: str = ""
     report_message_id: int | None = None
     source_message_id: int | None = None
     source_version: int = 0

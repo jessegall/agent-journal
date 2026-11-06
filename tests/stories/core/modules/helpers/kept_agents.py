@@ -1,3 +1,5 @@
+from core.base.query.queries import Queries
+from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
@@ -23,7 +25,7 @@ class EndedHelper(StoryFixture):
 
 def expect_start_refused(story, reason: str) -> None:
     launcher = FakeLauncher(story.home.socket("launcher"))
-    story.expect_refusal('helper start journal-researcher --fresh --brief "Read src/till.py" --environment main', reason, actor=story.agent)
+    story.expect_refusal('helper start journal-researcher --fresh "A second reader" --brief "Read src/till.py" --environment main', reason, actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()
 
@@ -140,6 +142,17 @@ def test_a_start_with_an_idle_helper_is_refused_with_its_send_line(new_story, mo
     resumable_session(story, helper, monkeypatch)
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.expect_refusal('helper start journal-researcher --brief "Read src/till.py" --environment main', f'helper {helper.id} is idle: journal helper send {helper.id} "<job>"', actor=story.agent)
+    launcher.server.close()
+    story.home.socket("launcher").unlink()
+
+
+def test_fresh_with_a_reason_starts_a_new_helper_and_keeps_the_reason(new_story, monkeypatch):
+    story = new_story(fixture=EndedHelper)
+    resumable_session(story, helper_agent(story), monkeypatch)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.expect_success("helper start journal-researcher --fresh 'A second reader' --brief 'Read src/other.py' --environment main", actor=story.agent)
+    job = story.container.get(Queries).query(HelperJob).newest().first()
+    story.expect_rows(job.fresh_reason == "A second reader")
     launcher.server.close()
     story.home.socket("launcher").unlink()
 

@@ -13,4 +13,4 @@ class StartHelper(Command[Agent]):
     program: str = ""
     program_model: str = ""
     given_name: str = ""
-    new_helper: bool = False
+    fresh_reason: str = ""

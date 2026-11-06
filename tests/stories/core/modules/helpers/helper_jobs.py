@@ -130,7 +130,7 @@ def test_a_job_naming_files_an_ended_helper_knows_goes_to_that_helper(new_story)
 def test_fresh_starts_a_new_helper_on_files_an_ended_one_knows(new_story):
     story = new_story(fixture=EndedHelper)
     FakeLauncher(story.home.socket("launcher"))
-    story.expect_success(f"{START} --fresh", actor=story.agent)
+    story.expect_success(f"{START} --fresh 'A second reader'", actor=story.agent)
 
 
 def test_a_job_on_other_files_starts_a_new_helper(new_story):
