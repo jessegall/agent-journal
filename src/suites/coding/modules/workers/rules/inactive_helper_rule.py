@@ -31,6 +31,7 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.processes.queries.process_query import ProcessQuery
 from suites.coding.modules.workers.support.queue_run_workers import QueueRunWorkers
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
+from core.modules.agents.support.agent_rows import AgentRows
 
 WAITING_WORK_SOURCES = (*RESUMING_SOURCES, HELPER_JOB_SOURCE)
 
@@ -45,8 +46,8 @@ class InactiveHelperRule(DriverRule):
     roles = [AgentRole.MAIN, AgentRole.WORKER]
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, activities: AgentActivities, history: HookHistory, settings: SettingValues, processes: ProcessQuery, workers: QueueRunWorkers, requests: ReaderRequestQuery, types: AgentTypeBook, stops: WorkerStop) -> None:
-        self.queries, self.activities, self.hook_history, self.settings = queries, activities, history, settings
+    def __init__(self, agents: AgentRows, queries: Queries, activities: AgentActivities, history: HookHistory, settings: SettingValues, processes: ProcessQuery, workers: QueueRunWorkers, requests: ReaderRequestQuery, types: AgentTypeBook, stops: WorkerStop) -> None:
+        self.agents, self.queries, self.activities, self.hook_history, self.settings = agents, queries, activities, history, settings
         self.processes, self.workers = processes, workers
         self.requests = requests
         self.types, self.stops = types, stops
@@ -98,7 +99,7 @@ class InactiveHelperRule(DriverRule):
 
     def helpers(self, main_id: int) -> list[Agent]:
         roles = self.types.derived_types("helper")
-        helpers = self.queries.query(Agent).filter(parent_id=main_id).matching(Among("role", roles)).matching(IsNull("ended_at")).oldest().all_rows()
+        helpers = [agent for agent in self.agents.running(parent_id=main_id) if agent.role in roles]
         return sorted(helpers, key=lambda helper: roles.index(helper.role))
 
     def is_inactive(self, helper: Agent, activity: AgentActivity, hook: AgentHook, span: Seconds) -> bool:

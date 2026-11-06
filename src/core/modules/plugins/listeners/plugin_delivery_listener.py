@@ -2,9 +2,6 @@ import json
 from collections.abc import Mapping
 from pathlib import Path
 
-from core.base.command.server_stopping_error import ServerStoppingError
-from core.base.script_stop import ScriptStop
-from core.modules.plugins.support.plugin_stopped_error import PluginStoppedError
 from core.base.agent_checkouts import AgentCheckouts
 from core.base.change.logged_event import LoggedEvent
 from core.base.checkout import Checkout
@@ -18,24 +15,20 @@ from core.base.command.command import Command
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
 from core.base.type_guards import is_mapping
 from core.modules.environments.models.environment import Environment
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
-from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults import ClearPluginFaults
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_delivery import PluginDelivery
-from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_event_runner import PluginEventRunner
 from core.modules.plugins.support.plugin_event import PluginEvent
-from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
-from core.modules.plugins.support.plugin_manifest import PluginManifest
-from core.modules.plugins.support.plugin_program import PluginProgram
 from core.modules.plugins.support.plugin_queue import PluginQueue
-from core.modules.plugins.support.plugin_settings import PluginSettings
+from core.modules.plugins.support.plugin_run import PluginRun
+from core.modules.plugins.support.plugin_run_request import PluginRunRequest
 from core.modules.plugins.support.plugins_module_name import MODULE_NAME
+from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.base.change.created import Created
 
 FILE_FIELD = "file"
@@ -48,22 +41,19 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
     name = "plugins.delivery"
     run_order = PLUGIN_RUN_ORDER
 
-    def __init__(self, queries: Queries, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, clock: Clock, bus: Bus, actors: ModuleActors, checkouts: AgentCheckouts, runner: PluginEventRunner, policy: ScriptPolicy) -> None:
-        self.queries, self.folders, self.program, self.settings, self.clock, self.bus, self.actors, self.checkouts, self.runner, self.policy = queries, folders, program, settings, clock, bus, actors, checkouts, runner, policy
+    def __init__(self, queries: Queries, folders: PluginFolders, runnable: RunnablePlugins, runs: PluginRun, clock: Clock, bus: Bus, actors: ModuleActors, checkouts: AgentCheckouts, runner: PluginEventRunner, policy: ScriptPolicy) -> None:
+        self.queries, self.folders, self.runnable, self.runs, self.clock, self.bus, self.actors, self.checkouts, self.runner, self.policy = queries, folders, runnable, runs, clock, bus, actors, checkouts, runner, policy
 
     def handle(self, event: Created[PluginDelivery], logged: LoggedEvent) -> None:
         delivery = event.row
         plugin = self.queries.query(Plugin).filter(id=delivery.plugin_id).first()
         if plugin is None or not plugin.enabled:
             return
-        try:
-            manifest = PluginManifest.read(self.folders.code(plugin.name))
-        except Refusal as refusal:
-            self.record(logged, delivery, RecordPluginFault(delivery.plugin_id, f"{refusal.reason} at {delivery.event}"))
+        if delivery.script and not self.runner.may_try(plugin, delivery.event, EventForm.COMMIT):
             return
-        if manifest.needs_newer_journal:
-            return
-        if delivery.script and not self.may_run_script(plugin, manifest, delivery, logged):
+        check = self.runnable.check(plugin)
+        if check.runnable is None:
+            self.runner.record_check(check, f"at {delivery.event}", logged.id)
             return
         environment = self.queries.query(Environment).find(delivery.environment_id).name if delivery.environment_id is not None else ""
         data: object = json.loads(delivery.data)
@@ -71,32 +61,22 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         file_checkout = self.delivery_checkout(delivery, event_data)
         if file_checkout is not None:
             event_data[FILE_FIELD] = self.with_file_state(file_checkout, event_data[FILE_FIELD])
-        call = PluginCall(manifest, PluginEvent(delivery.event, event_data), environment, self.clock.timestamp(), self.settings.values(plugin, manifest), delivery.session_agent_id, file_checkout, script=delivery.script)
-        try:
-            answer = self.program.run(call, self.policy.commit_limit_ms if delivery.script else DELIVERY_LIMIT_MS)
-        except PluginStoppedError as stopped:
-            if stopped.stop is ScriptStop.SERVER:
-                raise ServerStoppingError.plugin_wait(plugin.name, delivery.event) from stopped
-            self.record_fault(logged, delivery, stopped)
-            return
-        except PluginFaultError as fault:
-            self.record_fault(logged, delivery, fault)
+        location = f"at {delivery.event}{COMMIT_SUFFIX if delivery.script else ''}"
+        request = PluginRunRequest(check.runnable, PluginEvent(delivery.event, event_data), EventForm.COMMIT, self.policy.commit_limit_ms if delivery.script else DELIVERY_LIMIT_MS,
+                                   location, environment, self.clock.timestamp(), delivery.session_agent_id, delivery.script, file_checkout)
+        outcome = self.runs.run(request)
+        answer = outcome.answer
+        if answer is None:
+            self.runs.record(request, outcome, logged.id)
             return
         if delivery.script and answer.is_refusal():
             self.record(logged, delivery, RecordPluginFault(delivery.plugin_id, f"it answered refuse at {delivery.event}{COMMIT_SUFFIX}: {answer.reason}"))
             return
-        if plugin.fault_count:
-            self.record(logged, delivery, ClearPluginFaults(delivery.plugin_id))
+        self.runs.record(request, outcome, logged.id)
         if answer.line and delivery.session_agent_id is not None:
             PluginQueue(self.folders.data(plugin.name)).add(environment, delivery.session_agent_id, answer.line, f"delivery-{delivery.id}")
         if answer.has_output():
             self.bus.run(AddPluginOutput(plugin.id, delivery.session_agent_id, answer.output, bool(delivery.script)), self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=delivery.environment_id)
-
-    def may_run_script(self, plugin: Plugin, manifest: PluginManifest, delivery: PluginDelivery, logged: LoggedEvent) -> bool:
-        return self.runner.may_try(plugin, delivery.event, EventForm.COMMIT) and self.runner.may_run(plugin, manifest, logged.id)
-
-    def record_fault(self, logged: LoggedEvent, delivery: PluginDelivery, fault: PluginFaultError) -> None:
-        self.record(logged, delivery, fault.fault_record(delivery.plugin_id, f"at {delivery.event}{COMMIT_SUFFIX if delivery.script else ''}"))
 
     def delivery_checkout(self, delivery: PluginDelivery, event_data: Mapping[str, object]) -> Checkout | None:
         file = event_data.get(FILE_FIELD)

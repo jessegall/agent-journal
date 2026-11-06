@@ -19,6 +19,7 @@ export {default as InspectorPart} from "./InspectorPart.vue";
 export {default as RowList} from "./RowList.vue";
 export {default as AgentRowList} from "./AgentRowList.vue";
 export {default as Dashboard} from "../src/kit/Dashboard.vue";
+export {default as DocumentRead} from "./DocumentRead.vue";
 export {default as MessageCard} from "./MessageCard.vue";
 export {default as TextDisplay} from "../src/kit/TextDisplay.vue";
 export {default as SkeletonLine} from "../src/kit/SkeletonLine.vue";

@@ -22,15 +22,15 @@ test("system log paging and filters are read on the server and filters return to
     await settle();
     expect(window.reads.at(-1)).toContain("--page 2");
     const source = element.querySelector("[data-log-source]");
-    source.value = "error";
+    source.value = "journal";
     source.dispatchEvent(new Event("change"));
     await settle();
-    expect(window.reads.at(-1)).toBe("developer system-logs --page 1 --source error");
+    expect(window.reads.at(-1)).toBe("developer system-logs --page 1 --source journal");
     const level = element.querySelector("[data-log-level]");
     level.value = "warning";
     level.dispatchEvent(new Event("change"));
     await settle();
-    expect(window.reads.at(-1)).toContain("--source error --level warning");
+    expect(window.reads.at(-1)).toContain("--source journal --level warning");
 });
 
 test("pause freezes log lines and filters until resume, and reports read failures", async () => {

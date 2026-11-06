@@ -12,3 +12,7 @@ class PluginStoppedError(PluginFaultError):
     def __init__(self, stop: ScriptStop) -> None:
         super().__init__(f"it was stopped when {stop.value}")
         self.stop = stop
+
+    @property
+    def is_server_stop(self) -> bool:
+        return self.stop is ScriptStop.SERVER

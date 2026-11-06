@@ -8,6 +8,8 @@ from core.base.change.event_type import EventType
 from core.base.change.logged_event import LoggedEvent
 from core.base.container import Container
 from core.base.error_log import ErrorLog
+from core.base.log_level import LogLevel
+from core.base.system_log_writer import SystemLogWriter
 from core.base.exception_sink import ExceptionSink
 from core.base.listener.commit_listener import CommitListener
 from core.base.database.listener_cursor_table import ListenerCursorTable
@@ -34,7 +36,8 @@ class CommitListenerRunner:
     """Runs commit listeners with at most once delivery across a server stop; reported failures are retried."""
 
     def __init__(self, registry: Registry, log: EventLog, container: Container, errors: ErrorLog, cursors: ListenerCursorTable,
-                 exceptions: ExceptionSink, scopes: Scopes) -> None:
+                 exceptions: ExceptionSink, scopes: Scopes, system_log: SystemLogWriter) -> None:
+        self.system_log = system_log
         self.registry, self.log, self.container, self.errors, self.cursors, self.exceptions, self.scopes = registry, log, container, errors, cursors, exceptions, scopes
         self.positions: dict[str, int] = {}
         self.positions_stale = False
@@ -62,7 +65,7 @@ class CommitListenerRunner:
         try:
             self.exceptions.flush()
         except Exception as failure:
-            self.errors.noted(f"waiting exceptions could not be recorded: {type(failure).__name__}: {failure}")
+            self.system_log.write(LogLevel.ERROR, f"waiting exceptions could not be recorded: {type(failure).__name__}: {failure}")
 
     def commit_entries(self) -> list[ListenerEntry]:
         return self.sorted_entries
@@ -180,12 +183,12 @@ class CommitListenerRunner:
                     self.container.get(listener_class).handle(built_event, event)
             elapsed = perf_counter() - started_at
             if elapsed >= SLOW_LISTENER_SECONDS:
-                self.errors.noted(f"listener {entry.name} took {elapsed * 1000:.0f} ms on event {event.id} {event.event}")
+                self.system_log.write(LogLevel.INFORMATION, f"listener {entry.name} took {elapsed * 1000:.0f} ms on event {event.id} {event.event}")
             cost = tools.cost(start_points)
             if cost is not None and cost.total >= COSTLY_LISTENER_POINTS:
-                self.errors.noted(f"listener {entry.name} cost {cost.line()} on event {event.id} {event.event}")
+                self.system_log.write(LogLevel.INFORMATION, f"listener {entry.name} cost {cost.line()} on event {event.id} {event.event}")
         except Refusal as refusal:
-            self.errors.noted(f"listener {entry.name} refused event {event.id}: {refusal}")
+            self.system_log.write(LogLevel.WARNING, f"listener {entry.name} refused event {event.id}: {refusal}")
             return True
         except ServerStoppingError:
             return False

@@ -138,8 +138,8 @@ def expect_count_marks(story, text, expected) -> None:
     assert actual == expected, actual
 
 
-def expect_error_log_with(story, expected) -> None:
-    actual = story.error_log_text()
+def expect_system_log_with(story, expected) -> None:
+    actual = story.system_log_text()
     assert expected in actual, actual
 
 

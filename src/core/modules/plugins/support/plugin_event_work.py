@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from core.base.cli.caller_stream import CallerStream
 from core.base.command.outside_runs import OutsideRuns
 from core.base.command.outside_turn import OutsideTurn
-from core.base.error_log import ErrorLog
+from core.base.log_level import LogLevel
+from core.base.system_log_writer import SystemLogWriter
 from core.base.model.event_form import EventForm
 from core.modules.plugins.support.plugin_code_faults import PLUGIN_CODE_FAULTS
 from core.modules.plugins.support.plugin_event_answer import PluginEventAnswer
@@ -18,7 +19,7 @@ class PluginEventWork:
     """Runs plugin scripts after the transaction and reports progress to the caller."""
 
     runner: PluginEventRunner
-    errors: ErrorLog
+    system_log: SystemLogWriter
     caller: CallerStream
     form: EventForm
     key: str
@@ -55,5 +56,5 @@ class PluginEventWork:
         except BrokenPipeError:
             raise
         except PLUGIN_CODE_FAULTS as error:
-            self.errors.noted(f"the {self.label()} failed in {subscription.plugin}: {type(error).__name__}: {error}")
+            self.system_log.write(LogLevel.ERROR, f"the {self.label()} failed in {subscription.plugin}: {type(error).__name__}: {error}")
             return None

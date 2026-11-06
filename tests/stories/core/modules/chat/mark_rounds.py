@@ -16,7 +16,7 @@ def test_an_expected_listener_refusal_is_logged_once_without_an_exception_mark(n
         story.run_listeners()
 
     story.expect_rows(not story.container.get(Queries).query(ChatMark).filter(type="chat.exception").exists())
-    story.expect_rows(story.error_log_text().count("listener chatsample.refused-mark refused event") == 1)
+    story.expect_rows(story.system_log_text().count("listener chatsample.refused-mark refused event") == 1)
     story.expect_rows(not story.container.get(Database).rows(Statement("SELECT * FROM listener_skips WHERE listener = 'chatsample.refused-mark'")))
 
 

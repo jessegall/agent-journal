@@ -10,4 +10,4 @@ def test_a_worker_without_a_recorded_model_is_not_resumed_on_a_different_model(n
     story.run_listeners()
     story.expect_success(f'worker send {worker.id} "Add the tax"', actor=story.agent)
     story.run_listeners()
-    story.expect_rows(f"worker {worker.id} has no recorded model" in story.error_log_text())
+    story.expect_rows(f"worker {worker.id} has no recorded model" in story.system_log_text())

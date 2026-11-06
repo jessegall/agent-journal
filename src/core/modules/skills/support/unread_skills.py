@@ -11,8 +11,10 @@ class UnreadSkills:
         self.queries, self.catalogue = queries, catalogue
 
     def names(self, agent_id: int) -> list[str]:
+        rows = tuple(self.queries.query(AgentSkill).filter(session_agent_id=agent_id, state=AgentSkillState.DUE).oldest().all_rows())
+        if not rows:
+            return []
         declared = {skill.folder for skill in self.catalogue.skills()}
-        rows = self.queries.query(AgentSkill).filter(session_agent_id=agent_id, state=AgentSkillState.DUE).oldest().all_rows()
         return [row.skill for row in rows if row.skill in declared]
 
     def unread(self, agent_id: int) -> list[str]:

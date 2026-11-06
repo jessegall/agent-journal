@@ -24,7 +24,7 @@ def test_a_session_under_an_unknown_launch_name_is_let_through_and_logged(new_st
     story.hook("s-1", HookSamples.session_start())
     story.expect_hook_silent("t-9", HookSamples.session_start().with_fields(program="codex", launch="worker-99"))
     story.expect_absent("agent list --environment 1", "t-9")
-    story.expect_rows("launch name worker-99" in story.error_log_text())
+    story.expect_rows("launch name worker-99" in story.system_log_text())
 
 
 def test_a_workers_tool_no_agent_holds_is_refused(new_story):
@@ -47,7 +47,7 @@ def test_a_worker_resumed_under_its_own_session_as_launch_name_is_reopened_and_i
     resumed = hook_agent(story, story.hook("t-1", HookSamples.session_start().with_fields(program=program, launch="t-1")))
     story.expect_rows(resumed.id == worker_id)
     story.expect_absent(f"agent show {worker_id}", "ended_at: 20")
-    story.expect_rows("launch name t-1" not in story.error_log_text())
+    story.expect_rows("launch name t-1" not in story.system_log_text())
 
 
 def test_a_launch_that_resumes_an_ended_session_reopens_that_agent_and_ends_the_launch_row(resumed_main):
@@ -72,7 +72,7 @@ def test_a_codex_worker_ended_before_its_first_hook_is_refused_its_tools_and_its
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.expect_hook_refusal("t-7", HookSamples.edit("a.py").with_fields(program="codex", launch="worker-7"), ENDED_AGENT.nudge().text)
     launcher.thread.join(timeout=5)
-    story.expect_rows(launcher.requests == [{"agent_id": worker_id, "stop": True}], "launch name worker-7" not in story.error_log_text())
+    story.expect_rows(launcher.requests == [{"agent_id": worker_id, "stop": True}], "launch name worker-7" not in story.system_log_text())
     story.expect_absent("agent list --environment main", "t-7")
 
 
@@ -110,7 +110,7 @@ def test_a_new_session_under_a_launch_that_is_no_clear_never_takes_the_agent(lau
     story, launched_id = launched_main
     story.expect_hook_silent("s-9", HookSamples.session_start().with_fields(launch="main-3"))
     story.expect_text(f"agent show {launched_id}", "session: s-3")
-    story.expect_rows("launch name main-3" in story.error_log_text())
+    story.expect_rows("launch name main-3" in story.system_log_text())
 
 
 @pytest.fixture

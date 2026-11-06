@@ -12,7 +12,7 @@ class HookNumbersFile:
     writes no row to count itself."""
 
     def __init__(self, home: JournalHome) -> None:
-        self.path = home.costly_hooks_log.parent / NUMBERS_FILE
+        self.path = home.system_log.parent / NUMBERS_FILE
 
     def read(self) -> list[HookNumber]:
         if not self.path.exists():

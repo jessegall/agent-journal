@@ -10,7 +10,7 @@ def test_a_rule_that_raises_is_recorded_written_to_the_error_log_and_the_others_
     story = new_story(SAMPLES, fixture=LeadStarted)
     story.expect_hook_allowed("s-1", HookSamples.stop(), "the lead stops here", "the journal's rule samples.failing-rule failed and was passed by")
     story.expect_text(lines.SECOND_HOOK_CALL, "samples.failing-rule: raised")
-    story.expect_rows("the sample rule failed" in story.error_log_text())
+    story.expect_rows("the sample rule failed" in story.system_log_text())
 
 
 def test_a_rule_another_module_marks_essential_is_ordinary_until_it_is_allowed(new_story):

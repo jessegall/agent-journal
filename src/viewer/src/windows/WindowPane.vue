@@ -3,7 +3,7 @@ import {computed, h, ref, watch} from "vue";
 import {windowPermissions} from "./allowancePrompts.js";
 import EmptyState from "../kit/EmptyState.vue";
 import WindowSkeleton from "../kit/WindowSkeleton.vue";
-import DocumentWindow from "./DocumentWindow.vue";
+import DocumentRead from "../../kit/DocumentRead.vue";
 import FrameWindow from "./FrameWindow.vue";
 import PageWindow from "./PageWindow.vue";
 import WindowHost from "./WindowHost.vue";
@@ -24,7 +24,7 @@ const props = defineProps({
 });
 
 const entry = computed(() => (props.bar ? props.catalogue.bar(props.name) : props.dropdown ? props.catalogue.dropdown(props.name) || props.catalogue.window(props.name) : props.catalogue.window(props.name)));
-const documentComponent = computed(() => entry.value && {render: () => h(DocumentWindow, {line: entry.value.line})});
+const documentComponent = computed(() => entry.value && {render: () => h(DocumentRead, {line: entry.value.line, events: entry.value.events})});
 const access = ref(null);
 const untrusted = computed(() => entry.value?.loading === "component" && !entry.value.allowed && !access.value?.component_trusted);
 const trustReason = computed(

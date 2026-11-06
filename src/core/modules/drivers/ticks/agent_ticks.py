@@ -3,11 +3,11 @@ from core.base.clock import Clock
 from core.base.container import Container
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_route import HookRoute
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.timestamp import MINUTE_SECONDS, Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.environments.models.environment import Environment
+from core.modules.agents.support.agent_rows import AgentRows
 
 MAIN_ACTOR = "agent"
 
@@ -18,7 +18,7 @@ class AgentTicks:
 
     def __call__(self, container: Container) -> None:
         queries, route, clock_time = container.get(Queries), container.get(HookRoute), container.get(Clock).timestamp()
-        agents = tuple(queries.query(Agent).matching(IsNull("ended_at")).all_rows())
+        agents = container.get(AgentRows).running()
         environments = {environment.id: environment for environment in queries.query(Environment).find_many([agent.environment_id for agent in agents])}
         for agent in agents:
             route.answer(self.tick(agent, environments[agent.environment_id].name, clock_time))

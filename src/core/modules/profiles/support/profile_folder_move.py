@@ -1,11 +1,12 @@
 import errno
-import logging
 import tomllib
 from pathlib import Path
 
 from core.base.access import Access
 from core.base.file_access import FileAccess
+from core.base.log_level import LogLevel
 from core.base.refusal import Refusal
+from core.base.system_log_writer import SystemLogWriter
 from core.base.text_digest import TextDigest
 from core.modules.profiles.support.profile_fields import ProfileFields
 from core.modules.profiles.support.profile_files import CLAUDE_FOLDER, CODEX_FOLDER, SHIPPED_PREFIX, ProfileFiles
@@ -15,8 +16,8 @@ from core.modules.profiles.support.profile_format import ProfileFormat
 class ProfileFolderMove:
     """Copies native profiles once and keeps later source changes beside the personal copy."""
 
-    def __init__(self, files: ProfileFiles, digest: TextDigest) -> None:
-        self.files, self.digest = files, digest
+    def __init__(self, files: ProfileFiles, digest: TextDigest, system_log: SystemLogWriter) -> None:
+        self.files, self.digest, self.system_log = files, digest, system_log
 
     def publish(self) -> None:
         try:
@@ -24,7 +25,7 @@ class ProfileFolderMove:
         except OSError as error:
             if not isinstance(error, PermissionError) and error.errno not in (errno.EROFS, errno.EACCES, errno.EPERM):
                 raise
-            logging.getLogger(__name__).warning("Profiles left unchanged: the profile folder is read-only (%s)", error)
+            self.system_log.write(LogLevel.WARNING, f"Profiles left unchanged: the profile folder is read-only ({error})")
 
     def run(self) -> tuple[Path, ...]:
         claude = tuple(self.files.folder(CLAUDE_FOLDER).glob("*.md"))
@@ -39,7 +40,7 @@ class ProfileFolderMove:
                     preserved.append(path)
             except (Refusal, ValueError, tomllib.TOMLDecodeError) as error:
                 preserved.append(path)
-                logging.getLogger(__name__).warning("Cannot copy profile %s: %s", path.name, error)
+                self.system_log.write(LogLevel.WARNING, f"Cannot copy profile {path.name}: {error}")
         paired = [self.files.folder(CODEX_FOLDER) / f"{path.stem}.toml" for path in preserved if path.suffix == ".md"]
         return (*preserved, *(path for path in paired if path.is_file()))
 
@@ -71,7 +72,7 @@ class ProfileFolderMove:
         fields.update(name=path.stem, source_digest=digest)
         self.files.save_fields(path.stem, fields)
         if "legacy_writing" in fields:
-            logging.getLogger(__name__).warning("Copied profile %s: Could write before; access is read-only", path.stem)
+            self.system_log.write(LogLevel.WARNING, f"Copied profile {path.stem}: Could write before; access is read-only")
         return True
 
     def copy_existing(self, source: Path, target: Path, text: str, digest: str) -> bool:

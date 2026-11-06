@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from core.base.database.database import Database
 from core.base.database.reported_findings import ReportedFindings
 from core.base.database.request_watch import RequestWatch
+from core.base.log_level import LogLevel
 from core.base.container import Container
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.old_hook_runner_error import OldHookRunnerError
@@ -76,11 +77,11 @@ class HookEndpoint:
                 database.set_busy_timeout(self.context.hook_limit_seconds)
                 retries.retry(synced_database_container(self.context.home, database))
         except HookDatabaseBusyError as error:
-            self.context.files.log_line(f"delivery reset for hook call {reply.hook_call_id} will retry at the next hook: {error}")
+            self.context.files.log_line(f"delivery reset for hook call {reply.hook_call_id} will retry at the next hook: {error}", LogLevel.WARNING)
         except sqlite3.OperationalError as error:
             if error.sqlite_errorcode != sqlite3.SQLITE_BUSY:
                 raise
-            self.context.files.log_line(f"delivery reset for hook call {reply.hook_call_id} will retry at the next hook: {error}")
+            self.context.files.log_line(f"delivery reset for hook call {reply.hook_call_id} will retry at the next hook: {error}", LogLevel.WARNING)
 
     def routed_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, started_at: float, sender: HookSender, queued_ms: float) -> HookReply:
         try:
@@ -103,7 +104,7 @@ class HookEndpoint:
                 database.set_busy_timeout(REQUEST_LOG_BUSY_SECONDS)
                 container.get(HookRequestLog).record_hook(program, headers, data, (perf_counter() - started_at) * 1000, outcome, queued_ms, sender.session)
             except sqlite3.Error as error:
-                self.context.files.log_line(f"request recording failed: {error}")
+                self.context.files.log_line(f"request recording failed: {error}", LogLevel.WARNING)
 
     def prepared_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, container: Container, deadline: float, sender: HookSender) -> HookReply:
         event = self.event(data, program, headers, container.get(Providers))
@@ -137,7 +138,7 @@ class HookEndpoint:
         return event
 
     def failure(self, sender: HookSender, error: Exception) -> HookReply:
-        self.context.files.log_line("".join(traceback.format_exception(error)))
+        self.context.files.log_line("".join(traceback.format_exception(error)), LogLevel.ERROR)
         if sender.is_stop:
             return HookReply(refusal=f"the journal failed on this stop and holds it: {type(error).__name__}: {error}")
         if sender.needs_check:

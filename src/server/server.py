@@ -13,6 +13,7 @@ if __name__ == "__main__":
 from core.base.container import Container
 from core.base.journal_container import opened_container, synced_database_container
 from core.base.journal_home import JournalHome
+from core.base.log_level import LogLevel
 from core.base.periodic_checks import PeriodicChecks
 from core.base.performance.performance_state import PerformanceState
 from core.base.ticker.tick_handler import TickHandler
@@ -111,7 +112,7 @@ def main(argv: list[str]) -> int:
     reported_findings = ReportedFindings()
     viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login, reported_findings, hook_database.queue), last_port(home), inherited_socket=waiting_server.viewer_socket() if waiting_server else None)
     home.viewer_port_file.write_text(str(viewer.port))
-    ticker_thread = ListenerThread(ticker.tick, lambda error: files.log_line(f"the ticker could not tick: {error}"), TICK_PERIOD_SECONDS, "ticker")
+    ticker_thread = ListenerThread(ticker.tick, lambda error: files.log_line(f"the ticker could not tick: {error}", LogLevel.ERROR), TICK_PERIOD_SECONDS, "ticker")
     tunnel = ServerTunnel(home)
     plugin_services = ServerPluginServices(home)
     backup = ServerBackup(home)

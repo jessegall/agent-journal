@@ -12,7 +12,7 @@ const EXAMPLE = `{
     "requires": {"node": {"check": "node --version", "hint": "install Node 20"}},
     "setup": [{"name": "packages", "run": "npm install"}],
     "services": [{"name": "web", "command": ["server.sh"], "restart": "on-failure"}],
-    "dashboard": {"name": "standup", "title": "Standup"}
+    "dashboard": {"name": "standup", "title": "Standup", "events": ["core.tasks.task.created"]}
 }`;
 const KEYS = [
     ["name, title, version", "Required. The name is how every command refers to the plugin."],
@@ -39,7 +39,7 @@ const KEYS = [
     ["skills", "The folder containing its skills."],
     ["reaches", "For an event, which helpers besides the main agent it reaches."],
     ["aliases", "The commands it provides under short names."],
-    ["dashboard", "A page it writes, with a name and a title."],
+    ["dashboard", "A page it writes, with a name, a title and the keys of the events that make the viewer read it again."],
     ["project_reads", "Folders of the project, by relative path, that the shell line of a limited agent may read for it. A path that leaves the project is never opened."],
 ];
 const ANSWER = '{"answer": "refuse", "reason": "why", "tell": "a line for the agent", "commands": ["task log 7 done"], "cards": [], "require_skills": []}';

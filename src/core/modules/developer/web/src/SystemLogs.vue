@@ -37,7 +37,7 @@ usePoll(load, () => !paused.value, READ_RATES.systemLogs);
     <WindowRoom padding="0">
         <section class="logs" data-system-logs aria-label="System logs">
             <div class="toolbar">
-                <label>Source <select v-model="source" data-log-source><option value="">All sources</option><template v-for="name in ['server', 'error', 'journal']" :key="name"><option :value="name">{{ name }}</option></template></select></label>
+                <label>Source <select v-model="source" data-log-source><option value="">All sources</option><template v-for="name in ['server', 'journal', 'bypass']" :key="name"><option :value="name">{{ name }}</option></template></select></label>
                 <label>Level <select v-model="level" data-log-level><option value="">All levels</option><template v-for="name in ['debug', 'info', 'warning', 'error', 'critical']" :key="name"><option :value="name">{{ name }}</option></template></select></label>
                 <button type="button" data-log-pause :aria-pressed="paused" @click="togglePause">{{ paused ? 'Resume' : 'Pause' }}</button>
             </div>

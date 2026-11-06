@@ -1,4 +1,5 @@
-from core.base.error_log import ErrorLog
+from core.base.log_level import LogLevel
+from core.base.system_log_writer import SystemLogWriter
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
@@ -28,8 +29,8 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
     command = RecordProgramExit
     transactional = False
 
-    def __init__(self, queries: Queries, jobs: HelperJobRows, providers: Providers, folders: AgentFolders, reasons: ExitReasons, bus: Bus, errors: ErrorLog) -> None:
-        self.queries, self.jobs, self.providers, self.folders, self.reasons, self.bus, self.errors = queries, jobs, providers, folders, reasons, bus, errors
+    def __init__(self, queries: Queries, jobs: HelperJobRows, providers: Providers, folders: AgentFolders, reasons: ExitReasons, bus: Bus, system_log: SystemLogWriter) -> None:
+        self.queries, self.jobs, self.providers, self.folders, self.reasons, self.bus, self.system_log = queries, jobs, providers, folders, reasons, bus, system_log
 
     def handle(self, command: RecordProgramExit, context: Context) -> None:
         agent = self.queries.query(Agent).find(command.agent_id)
@@ -45,7 +46,7 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
     def is_earlier_run(self, agent: Agent, command: RecordProgramExit) -> bool:
         if command.pid is None or agent.pid is None or command.pid == agent.pid:
             return False
-        self.errors.noted(f"agent {agent.id}: the exit of process {command.pid} changed nothing, since process {agent.pid} runs now")
+        self.system_log.write(LogLevel.INFORMATION, f"agent {agent.id}: the exit of process {command.pid} changed nothing, since process {agent.pid} runs now")
         return True
 
     def needs_exit_report(self, agent: Agent) -> bool:

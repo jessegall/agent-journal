@@ -4,7 +4,9 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.driver.hook_event import HookEvent
-from core.base.error_log import ErrorLog
+from core.base.log_level import LogLevel
+from core.base.request_values import RequestValues
+from core.base.system_log_writer import SystemLogWriter
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute
@@ -31,14 +33,14 @@ class AgentHookRoute(HookRoute):
     program whose agent has ended and asks the launcher to stop it, and lets through, without a
     record, a hook from an unknown agent when the event does not require an agent check."""
 
-    def __init__(self, bus: Bus, queries: Queries, errors: ErrorLog, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, rule_answers: HookRuleAnswers) -> None:
-        self.rule_answers = rule_answers
-        self.bus, self.queries, self.errors, self.durations, self.settings = bus, queries, errors, durations, settings
+    def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, rule_answers: HookRuleAnswers, request_values: RequestValues) -> None:
+        self.rule_answers, self.request_values = rule_answers, request_values
+        self.bus, self.queries, self.system_log, self.durations, self.settings = bus, queries, system_log, durations, settings
         self.agents, self.program = agents, program
 
     def answer(self, event: HookEvent) -> HookReply:
         self.durations.begin()
-        with self.settings.keep_rows():
+        with self.settings.keep_rows(), self.request_values.opened():
             return self.answered(event)
 
     def answered(self, event: HookEvent) -> HookReply:
@@ -87,7 +89,7 @@ class AgentHookRoute(HookRoute):
         agent = self.open_agent(event.launch) or self.cleared_agent(event)
         if agent is None:
             if self.agents.session(event.session) is None and self.ended_agent(event) is None:
-                self.errors.noted(f"a {event.program} session {event.session} came under launch name {event.launch}, which no open agent holds; let through")
+                self.system_log.write(LogLevel.WARNING, f"a {event.program} session {event.session} came under launch name {event.launch}, which no open agent holds; let through")
             return None
         return self.bus.run(BindAgentSession(agent.id, event.session), Actor.core(), environment_id=agent.environment_id)
 
