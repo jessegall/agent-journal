@@ -21,6 +21,10 @@ const title = computed(() => {
 });
 const tasks = computed(() => props.facts?.tasks ?? []);
 const queuedTasks = computed(() => tasks.value.filter((task) => task.state === "open"));
+const planTask = computed(() => {
+    const current = tasks.value.find((task) => task.id === props.facts?.task_id);
+    return current?.plan_id ? current : queuedTasks.value.find((task) => task.plan_id);
+});
 const job = computed(() => props.row.role === "helper" ? props.facts?.helper_job || "" : (props.facts?.job_enabled ? props.facts?.task_title || queuedTasks.value[0]?.title || "" : ""));
 const jobRef = computed(() => {
     const match = job.value.match(/\b(plan|doc)(?::|\s+)(\d+)\b/i);
@@ -99,6 +103,9 @@ readCommand();
                     <span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span>
                 </template>
             </span>
+        </template>
+        <template v-if="planTask">
+            <span class="agent-line"><button type="button" class="agent-plan" data-agent-plan :data-peek="`plans:${planTask.plan_id}`" @click.stop="peekRef(`plans:${planTask.plan_id}`)">Plan {{ planTask.plan_id }}: {{ planTask.plan_title }}</button></span>
         </template>
         <template v-if="!open && (showsCommand || (totalCount && tasksPerHour))">
             <span :class="['agent-foot', {'agent-work-start': !job}]" data-agent-foot>
@@ -434,6 +441,7 @@ readCommand();
 .agent-card:hover .agent-chevron { color: var(--text-2); }
 .agent-line, .agent-command { padding-left: 16px; }
 .agent-command { font-size: 11px; }
+.agent-plan { min-width: 0; overflow: hidden; padding: 0; border: 0; background: none; color: var(--accent-text); font: inherit; font-size: 11.5px; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
 .agent-job-link { padding: 0; border: 0; background: none; color: var(--accent-text); font: inherit; text-align: left; cursor: pointer; }
 .agent-waiting { color: var(--accent-text); font-size: 11.5px; text-decoration: none; }
 .agent-waiting:hover { color: var(--accent-text); text-decoration: underline; }
