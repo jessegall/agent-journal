@@ -23,6 +23,7 @@ from server.viewer.missing_module_file_error import MissingModuleFileError
 from server.viewer.line_answer import LineAnswer
 from server.viewer.line_route import REFUSED_CODE
 from server.viewer.viewer_line_request import ViewerLineRequest
+from server.viewer.window_data_request import DATA_ONLY_HEADER, WINDOW_HEADER, WindowDataRequest
 from server.viewer.viewer_lines_request import ViewerLinesRequest
 from server.viewer.pair_request import PairRequest
 from server.viewer.session_type import SessionType
@@ -50,6 +51,7 @@ VENDOR_ROUTE = "/viewer/vendor/"
 SHELL_PAGE = "index.html"
 LINE_ROUTE = "/api/line"
 LINES_ROUTE = "/api/lines"
+WINDOW_ROUTE = "/api/window"
 READ_LINES_ROUTE = "/api/read-lines"
 REPEATED_LINES_ROUTE = "/api/repeated-lines"
 READ_RECEIPTS_ROUTE = "/api/read-receipts"
@@ -89,7 +91,13 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if route == EVENTS_ROUTE:
             self.answer_get()
             return
-        queue = self.viewer().routes.queue
+        routes = self.viewer().routes
+        queue = routes.queue
+        if route == WINDOW_ROUTE:
+            window = self.headers.get(WINDOW_HEADER, "")
+            with queue.viewer_turn(f"GET {self.path}", window, routes.priorities.priority(window)):
+                self.answer_get()
+            return
         turn = queue.viewer_turn(f"GET {self.path}") if route.startswith("/api/") else queue.observing(QueueRequest.started("Viewer", f"GET {self.path}"))
         with turn:
             self.answer_get()
@@ -143,6 +151,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return
         if route.path.startswith(MESSAGE_FILES):
             self.answer_message_file(viewer, route.path.removeprefix(MESSAGE_FILES))
+            return
+        if route.path == WINDOW_ROUTE:
+            self.answer_window_data(viewer, token, route.query)
             return
         if route.path == WINDOWS_ROUTE:
             try:
@@ -304,6 +315,22 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.viewer().untrack_request()
         event_stream.follow(request, self.stream_message, shared)
+
+    def answer_window_data(self, viewer: ViewerServer, token: str, query: str) -> None:
+        try:
+            request = WindowDataRequest.parsed(self.headers.get(WINDOW_HEADER), self.headers.get(DATA_ONLY_HEADER), query)
+            started_at, received_at, request_id = perf_counter(), datetime.now(timezone.utc).isoformat(), str(uuid4())
+            person_id = viewer.login.person_id(token)
+            answer = viewer.routes.window_data.answer(request, person_id)
+            declared = viewer.routes.window_data.declared(request.window)
+        except ViewerRequestError as error:
+            self.answer(400, {"error": str(error)})
+            return
+        self.answer(200, answer.body(declared), {"X-Journal-Request-Id": request_id})
+        self.wfile.flush()
+        http = ViewerHttpRequest(request_id, received_at, request_id, (perf_counter() - started_at) * 1000, 0, person_id)
+        viewer.routes.request_log.record_viewers([ViewerRequestRecord(http, line, index, timed.duration_ms, 0.0, timed.answer.code, timed.points)
+                                                  for index, (line, timed) in enumerate(zip(answer.lines, answer.answers, strict=True))])
 
     def answer_lines(self, viewer: ViewerServer, token: str, body: bytes | None) -> None:
         try:

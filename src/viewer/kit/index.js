@@ -54,6 +54,7 @@ export {age, ago, perHour} from "../src/format/time.js";
 export {SHORT_CHAT, dockOpening} from "../src/domain/dockFold.js";
 export {usePoll} from "./usePoll.js";
 export {coalesced} from "../src/composables/coalesced.js";
+export {useWindowData} from "./useWindowData.js";
 export {READ_RATES} from "../src/composables/readRates.js";
 export {useNow} from "./useNow.js";
 export {default as TimeAgo} from "./TimeAgo.vue";
