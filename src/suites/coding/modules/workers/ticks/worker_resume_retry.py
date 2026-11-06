@@ -17,8 +17,9 @@ from suites.coding.modules.workers.support.worker_stop import WorkerStop
 
 class WorkerResumeRetry:
     """Every few seconds, each ended worker with a job still waiting is resumed again, since the launcher
-    refuses a worker while its program is open and nothing else asks once the program has ended. A job sent
-    before a person or another agent stopped the worker stays waiting."""
+    refuses a worker while its program is open and nothing else asks once the program has ended. A program still
+    open under an ended row is stopped, on this tick's own thread. A job sent before a person or another agent
+    stopped the worker stays waiting."""
 
     def __call__(self, container: Container) -> None:
         InternetConnection.shared(container.get(JournalHome)).check(container.get(ConnectionProbe), container.get(Clock).timestamp())
@@ -26,12 +27,7 @@ class WorkerResumeRetry:
         waiting = list(queries.query(AgentLine).filter(state=AgentLineState.WAITING).matching(Among("source", tuple(RESUMING_SOURCES))).oldest().all_rows())
         for worker in queries.query(Agent).find_many(list(dict.fromkeys(line.session_agent_id for line in waiting))):
             if self.may_resume(container, worker, [line for line in waiting if line.session_agent_id == worker.id]):
-                resume.resume(worker, Actor.core())
+                resume.resume_or_stop_held(worker, Actor.core())
 
     def may_resume(self, container: Container, worker: Agent, lines: list[AgentLine]) -> bool:
-        ended_at = worker.ended_at
-        if worker.role != AgentRole.WORKER or ended_at is None:
-            return False
-        if any(line.creation_timestamp().value > ended_at.value for line in lines):
-            return True
-        return not container.get(WorkerStop).was_stopped(worker)
+        return worker.role == AgentRole.WORKER and worker.ended_at is not None and container.get(WorkerStop).is_job_due(worker, lines)

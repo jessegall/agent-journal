@@ -14,6 +14,7 @@ WORKER_KEPT_LIMIT = f"{MODULE_KEY}.worker-kept-limit"
 DEFAULT_WORKER_COUNT = 2
 SILENT_AGENT_MINUTES = f"{MODULE_KEY}.silent-agent-minutes"
 INACTIVE_HELPER_MINUTES = f"{MODULE_KEY}.quiet-helper-minutes"
+INACTIVE_HELPER_GRACE_MINUTES = f"{MODULE_KEY}.quiet-helper-grace-minutes"
 WORKER_BATCH_SIZE = f"{MODULE_KEY}.worker-batch-size"
 WORKER_IDLE_HOURS = f"{MODULE_KEY}.worker-idle-hours"
 WORKER_TEST_LIMIT = f"{MODULE_KEY}.worker-run-most-tests"
@@ -29,7 +30,8 @@ WORKER_SETTINGS = [
     SettingValue("worker-kept-limit", "Workers kept", "Workers kept, running or idle, until retired. At 0 there is no limit.", SettingType.NUMBER, default=8, person_set=True),
     SettingValue("worker-idle-hours", "Worker idle hours", "Hours without tool use before an unfinished worker's process stops. Its task and working folder stay.", SettingType.NUMBER, default=6),
     SettingValue("worker-batch-size", "Worker batch size", "Recommended tasks per worker assignment. The main agent is prompted to add more when fewer are assigned.", SettingType.NUMBER, default=3),
-    SettingValue("quiet-helper-minutes", "Quiet helper minutes", "Minutes without tool use before the main agent is prompted to check a worker or helper.", SettingType.NUMBER, default=5),
+    SettingValue("quiet-helper-grace-minutes", "Quiet helper grace minutes", "Minutes without tool use, or with work that has not started, before the main agent first hears of a worker or helper.", SettingType.NUMBER, default=15),
+    SettingValue("quiet-helper-minutes", "Quiet helper minutes", "Minutes between the reminders to the main agent, until the worker or helper is stopped or back at work.", SettingType.NUMBER, default=5),
     SettingValue("library-links", "Library links", "Folders each worker's worktree links from the main checkout.", SettingType.LIST, default=()),
     SettingValue("library-copies", "Library copies", "Folders each worker's worktree gets a copy of.", SettingType.LIST, default=()),
     SettingValue(WORKTREE_COMMANDS_NAME, "Worktree commands", "Commands run in each new worker worktree before the worker starts.",

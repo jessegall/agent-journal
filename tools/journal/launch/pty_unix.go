@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"syscall"
+	"time"
 	"unsafe"
 )
 
@@ -47,6 +48,10 @@ func RunBelowBand(band *Band, command *exec.Cmd, input io.Reader, log io.Writer,
 	return wait()
 }
 
+// outputDrainWait is how long an ended program's last output is read for. A process it left behind can hold the terminal
+// open for good, and that must not keep the launch from seeing the program's end.
+const outputDrainWait = time.Second
+
 // StartInTerminal starts the terminal program and returns the function that copies its output and waits for it.
 func StartInTerminal(command *exec.Cmd, input io.Reader, screen io.Writer, log io.Writer) (func() error, error) {
 	return startIn(nil, command, input, screen, log)
@@ -80,8 +85,17 @@ func startIn(band *Band, command *exec.Cmd, input io.Reader, screen io.Writer, l
 			}
 		}()
 		go func() { _, _ = io.Copy(controller, input) }()
-		_, _ = io.Copy(io.MultiWriter(screen, log), controller)
-		return command.Wait()
+		copied := make(chan struct{})
+		go func() {
+			_, _ = io.Copy(io.MultiWriter(screen, log), controller)
+			close(copied)
+		}()
+		err := command.Wait()
+		select {
+		case <-copied:
+		case <-time.After(outputDrainWait):
+		}
+		return err
 	}, nil
 }
 

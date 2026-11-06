@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -104,6 +105,63 @@ def test_a_resume_the_launcher_refuses_leaves_the_stop_of_the_end_to_land(ended_
     story.expect_rows("command" in launcher.requests[0], launcher.requests[-1] == stop, launcher.requests.count(stop) == 1)
 
 
+def replaced_launcher(story, *answers: bytes) -> FakeLauncher:
+    path = story.home.socket(LAUNCHER_SOCKET)
+    path.unlink(missing_ok=True)
+    return FakeLauncher(path, request_count=len(answers), answers=answers)
+
+
+@pytest.fixture
+def worker_with_a_held_program(running_worker):
+    """A worker another agent ended and then sent a job, whose program the launcher still answers for."""
+    story = running_worker
+    start_launcher(story, b"running\n", request_count=10)
+    story.expect_success(f"agent end {story.worker.id}", actor=story.agent)
+    story.advance(timedelta(seconds=1))
+    story.run(f'worker send {story.worker.id} "Add the tax"', actor=story.agent)
+    story.run_listeners()
+    return story
+
+
+def test_a_resume_answered_as_running_stops_the_program_and_starts_again(worker_with_a_held_program):
+    story = worker_with_a_held_program
+    launcher = replaced_launcher(story, b"running\n", b"stopped\n", f"started {RESUMED_PID}\n".encode())
+    WorkerResumeRetry()(story.container)
+    story.expect_rows("command" in launcher.requests[0], launcher.requests[1] == {"agent_id": story.worker.id, "stop": True}, "command" in launcher.requests[2])
+    story.expect_text(f"agent show {story.worker.id}", f"pid: {RESUMED_PID}")
+    story.expect_text(f"agent-line list --agent {story.worker.id}", "entered")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", "could not resume")
+
+
+def test_a_program_the_launcher_still_holds_is_told_to_the_main_agent_once_with_its_pid(worker_with_a_held_program):
+    story = worker_with_a_held_program
+    replaced_launcher(story, *(b"running\n" for _ in range(6)))
+    WorkerResumeRetry()(story.container)
+    WorkerResumeRetry()(story.container)
+    told = story.run(f"agent-line list --agent {story.agent.id}").output_text
+    story.expect_rows(told.count(f"agent:{story.worker.id} could not resume: the launcher still holds its program, process {WORKER_PID}") == 1)
+
+
+def test_a_resume_a_launch_in_hand_holds_stops_nothing(worker_with_a_held_program):
+    story = worker_with_a_held_program
+    launcher = replaced_launcher(story, b"stopped\n")
+    with story.container.get(AgentLaunchGuard).lock(story.row(Agent, story.worker.id).session):
+        WorkerResumeRetry()(story.container)
+    story.expect_rows(launcher.requests == [])
+
+
+def test_a_send_to_an_ended_worker_does_not_say_it_starts(ended_worker):
+    start_launcher(ended_worker, b"running\n", request_count=4)
+    outcome = ended_worker.run(f'worker send {ended_worker.worker.id} "Add the tax"', actor=ended_worker.agent)
+    ended_worker.expect_rows("the job waits until it starts, and you are told if it does not" in outcome.output_text, "starts it again" not in outcome.output_text)
+
+
+def test_a_worker_whose_job_waits_to_start_is_not_listed_as_running(worker_with_a_held_program):
+    story = worker_with_a_held_program
+    listed = {show: [row["id"] for row in json.loads(story.run(f"agent cards --environment main --show {show} --json", actor=story.agent).output_text).get("rows", [])] for show in ("running", "idle")}
+    story.expect_rows(story.worker.id not in listed["running"], story.worker.id in listed["idle"])
+
+
 def test_the_start_launcher_a_pid_records_the_workers_process(running_worker):
     running_worker.expect_text(f"agent show {running_worker.worker.id}", f"pid: {WORKER_PID}", "process_started_at: 2026-10-31T09:00:00")
 
@@ -119,7 +177,7 @@ def test_a_running_worker_is_not_ended_at_a_tick(running_worker):
 
 def test_a_send_after_a_tick_ended_the_worker_restarts_it(ended_worker):
     launcher = start_launcher(ended_worker, f"started {WORKER_PID}\n".encode())
-    ended_worker.expect_text(f'worker send {ended_worker.worker.id} "Add the tax"', "was not running: the job starts it again", actor=ended_worker.agent)
+    ended_worker.expect_text(f'worker send {ended_worker.worker.id} "Add the tax"', "was not running: the job waits until it starts", actor=ended_worker.agent)
     ended_worker.run_listeners()
     expect_restart(ended_worker, launcher)
 
@@ -127,7 +185,7 @@ def test_a_send_after_a_tick_ended_the_worker_restarts_it(ended_worker):
 def test_a_send_finds_a_process_gone_before_the_tick_does_and_restarts_the_worker(running_worker):
     running_worker.use_processes()
     launcher = start_launcher(running_worker, b"started\n")
-    running_worker.expect_text(f'worker send {running_worker.worker.id} "Add the tax"', "was not running: the job starts it again", actor=running_worker.agent)
+    running_worker.expect_text(f'worker send {running_worker.worker.id} "Add the tax"', "was not running: the job waits until it starts", actor=running_worker.agent)
     running_worker.expect_text(f"agent show {running_worker.worker.id}", "ended_at: 2026")
     running_worker.run_listeners()
     expect_restart(running_worker, launcher)
@@ -152,7 +210,7 @@ def test_a_restarted_worker_keeps_its_new_process_through_its_first_hook(ended_w
     new_process = ProcessRow(WORKER_PID + 1, 1, RUNNING_PROGRAM.started_at)
     ended_worker.use_processes(new_process)
     launcher = start_launcher(ended_worker, f"started {new_process.pid}\n".encode())
-    ended_worker.expect_text(f'worker send {worker.id} "Add the tax"', "the job starts it again", actor=ended_worker.agent)
+    ended_worker.expect_text(f'worker send {worker.id} "Add the tax"', "the job waits until it starts", actor=ended_worker.agent)
     ended_worker.run_listeners()
     launcher.thread.join(10)
     ended_worker.hook(worker_session(ended_worker, worker), HookSamples.session_start())
@@ -166,7 +224,7 @@ def test_a_launcher_that_answers_no_pid_leaves_no_old_process_on_the_worker(runn
     worker = running_worker.worker
     running_worker.expect_success(f"agent end {worker.id}", actor=running_worker.agent)
     launcher = start_launcher(running_worker, b"started\n")
-    running_worker.expect_text(f'worker send {worker.id} "Add the tax"', "the job starts it again", actor=running_worker.agent)
+    running_worker.expect_text(f'worker send {worker.id} "Add the tax"', "the job waits until it starts", actor=running_worker.agent)
     running_worker.run_listeners()
     launcher.thread.join(10)
     running_worker.expect_no_text(f"agent show {worker.id}", "pid:")
