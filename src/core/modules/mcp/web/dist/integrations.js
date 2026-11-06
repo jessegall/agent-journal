@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-ed4341634dfc")) { const style = document.createElement("style"); style.id = "window-styles-ed4341634dfc"; style.textContent = ".failure[data-v-26c632f2]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.notice[data-v-26c632f2]{margin:0 0 8px;color:var(--text-2);font-size:12px}.top[data-v-26c632f2]{display:flex;align-items:baseline;gap:10px}.top .heading[data-v-26c632f2]{flex:1}.add[data-v-26c632f2]{display:flex;flex-wrap:wrap;gap:6px}.add input[data-v-26c632f2]{flex:1;min-width:120px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}.heading[data-v-26c632f2]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.server[data-v-26c632f2]{display:flex;flex:1;flex-direction:column;gap:6px;font-size:13px}.head[data-v-26c632f2]{display:flex;align-items:baseline;gap:10px}.title[data-v-26c632f2]{flex:1;font-weight:600}.standing[data-v-26c632f2],.subject[data-v-26c632f2],.key label[data-v-26c632f2]{color:var(--text-3);font-size:12px}.key[data-v-26c632f2]{display:flex;flex-direction:column;gap:4px}.key input[data-v-26c632f2]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}button[data-v-26c632f2]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-c97079ebf7c1")) { const style = document.createElement("style"); style.id = "window-styles-c97079ebf7c1"; style.textContent = ".failure[data-v-0c74f0e5]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.notice[data-v-0c74f0e5]{margin:0 0 8px;color:var(--text-2);font-size:12px}.top[data-v-0c74f0e5]{display:flex;align-items:baseline;gap:10px}.top .heading[data-v-0c74f0e5]{flex:1}.add[data-v-0c74f0e5]{display:flex;flex-wrap:wrap;gap:6px}.add input[data-v-0c74f0e5]{flex:1;min-width:120px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}.heading[data-v-0c74f0e5]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.server[data-v-0c74f0e5]{display:flex;flex:1;flex-direction:column;gap:6px;font-size:13px}.head[data-v-0c74f0e5]{display:flex;align-items:baseline;gap:10px}.title[data-v-0c74f0e5]{flex:1;font-weight:600}.standing[data-v-0c74f0e5],.subject[data-v-0c74f0e5],.key label[data-v-0c74f0e5]{color:var(--text-3);font-size:12px}.key[data-v-0c74f0e5]{display:flex;flex-direction:column;gap:4px}.key input[data-v-0c74f0e5]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}button[data-v-0c74f0e5]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
 import { reactive as j, computed as b, ref as S, openBlock as c, createBlock as M, unref as n, withCtx as f, createElementBlock as u, toDisplayString as d, createCommentVNode as m, createElementVNode as s, createTextVNode as $, createVNode as p, withModifiers as x, withDirectives as w, vModelText as C } from "vue";
 import { useRows as R, useListTools as W, WindowRoom as K, TimeAgo as q, Btn as A, ListTools as z, RowList as L, removed as T, added as G } from "@journal/window-kit";
 const H = (g, l) => {
@@ -150,7 +150,7 @@ const H = (g, l) => {
           ]),
           p(n(A), {
             small: "",
-            kind: "primary",
+            variant: "primary",
             type: "submit",
             disabled: !o.name.trim() || !o.target.trim()
           }, {
@@ -186,7 +186,7 @@ const H = (g, l) => {
       _: 1
     }));
   }
-}, _e = /* @__PURE__ */ H(he, [["__scopeId", "data-v-26c632f2"]]);
+}, _e = /* @__PURE__ */ H(he, [["__scopeId", "data-v-0c74f0e5"]]);
 export {
   _e as default
 };

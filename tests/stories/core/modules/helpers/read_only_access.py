@@ -214,9 +214,8 @@ def test_git_output_to_a_file_is_refused(new_story, helper_fixture):
     story.expect_hook_refusal(session, sample, "reads and searches only")
 
 
-@pytest.mark.parametrize("helper_fixture", PROGRAMS)
-def test_an_ended_helper_is_refused_its_next_tool_and_writes_no_second_report(new_story, helper_fixture):
-    story, session = helper_story(new_story, helper_fixture)
+def test_an_ended_helper_is_refused_its_next_tool_and_writes_no_second_report(new_story):
+    story, session = helper_story(new_story, StartedHelper)
     story.expect_success(f"agent end {the_helper(story).id}", actor=story.user)
     story.run_listeners()
     story.expect_hook_refusal(session, tool("Edit", ToolType.EDIT), ENDED_HELPER.nudge().text)

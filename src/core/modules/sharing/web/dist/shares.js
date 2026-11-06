@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-155bd73f873d")) { const style = document.createElement("style"); style.id = "window-styles-155bd73f873d"; style.textContent = ".shares[data-v-3c818f43]{display:flex;flex-direction:column;gap:12px}.shares-make[data-v-3c818f43],.shares-waiting[data-v-3c818f43],.shares-opens[data-v-3c818f43],.shares-open[data-v-3c818f43]{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}.shares-make[data-v-3c818f43],.shares-waiting[data-v-3c818f43],.shares-opens[data-v-3c818f43]{align-items:flex-start}.shares-target[data-v-3c818f43]{width:100%;min-width:0}.shares-option[data-v-3c818f43],.shares-row[data-v-3c818f43]{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}.shares-label[data-v-3c818f43]{margin:0;color:var(--text-3);font-size:12px;font-weight:500}.shares-name[data-v-3c818f43]{flex:1;min-width:0}.shares-link[data-v-3c818f43],.shares-comment[data-v-3c818f43]{margin:0;overflow-wrap:anywhere}.shares-hint[data-v-3c818f43],.shares-failure[data-v-3c818f43]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-a2d2855fb58a")) { const style = document.createElement("style"); style.id = "window-styles-a2d2855fb58a"; style.textContent = ".shares[data-v-f3223404]{display:flex;flex-direction:column;gap:12px}.shares-make[data-v-f3223404],.shares-waiting[data-v-f3223404],.shares-opens[data-v-f3223404],.shares-open[data-v-f3223404]{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}.shares-make[data-v-f3223404],.shares-waiting[data-v-f3223404],.shares-opens[data-v-f3223404]{align-items:flex-start}.shares-target[data-v-f3223404]{width:100%;min-width:0}.shares-option[data-v-f3223404],.shares-row[data-v-f3223404]{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}.shares-label[data-v-f3223404]{margin:0;color:var(--text-3);font-size:12px;font-weight:500}.shares-name[data-v-f3223404]{flex:1;min-width:0}.shares-link[data-v-f3223404],.shares-comment[data-v-f3223404]{margin:0;overflow-wrap:anywhere}.shares-hint[data-v-f3223404],.shares-failure[data-v-f3223404]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
 import { computed as M, ref as c, openBlock as t, createBlock as E, unref as o, withCtx as i, createElementVNode as n, withModifiers as G, withDirectives as O, vModelText as q, createVNode as d, createElementBlock as r, createCommentVNode as u, Fragment as _, renderList as P, toDisplayString as l, createTextVNode as h } from "vue";
 import { useWindow as H, useRows as J, useListTools as Q, WindowRoom as X, Segmented as Z, Switch as ee, Btn as m, ListTools as se, RowList as ae } from "@journal/window-kit";
 const te = (x, N) => {
@@ -133,7 +133,7 @@ const te = (x, N) => {
               }, l(s.line), 1))), 128))
             ])) : u("", !0),
             d(o(m), {
-              kind: "primary",
+              variant: "primary",
               type: "submit",
               disabled: !w.value.trim()
             }, {
@@ -159,7 +159,7 @@ const te = (x, N) => {
               n("span", ke, "An agent asks to share " + l(s.row_model) + " " + l(s.row_id) + ", " + l(D(s)) + l(s.locked ? ", with a password" : "") + l(s.comments ? ", with comments" : ""), 1),
               d(o(m), {
                 small: "",
-                kind: "primary",
+                variant: "primary",
                 "data-share-accept": "",
                 onClick: (v) => Y(s)
               }, {
@@ -246,7 +246,7 @@ const te = (x, N) => {
               }),
               d(o(m), {
                 small: "",
-                kind: "danger",
+                variant: "danger",
                 "data-share-stop-every-confirm": "",
                 onClick: j
               }, {
@@ -272,7 +272,7 @@ const te = (x, N) => {
       _: 1
     }));
   }
-}, $e = /* @__PURE__ */ te(Ce, [["__scopeId", "data-v-3c818f43"]]);
+}, $e = /* @__PURE__ */ te(Ce, [["__scopeId", "data-v-f3223404"]]);
 export {
   $e as default
 };

@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-70e2e2dab297")) { const style = document.createElement("style"); style.id = "window-styles-70e2e2dab297"; style.textContent = ".library-draft[data-v-32c7e86b]{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px}.library-draft-foot[data-v-32c7e86b]{display:flex;gap:6px;justify-content:flex-end}.library[data-v-32c7e86b]{display:flex;flex-direction:column;height:100%;min-height:0}.library-bar[data-v-32c7e86b]{gap:10px}.library-body[data-v-32c7e86b]{display:grid;flex:1;grid-template-columns:minmax(240px,2fr) 3fr;min-height:0}.library-list[data-v-32c7e86b]{overflow-y:auto;padding:6px 10px;border-right:1px solid var(--border)}.library-group[data-v-32c7e86b]{margin:12px 20px 6px;font-size:13px;font-weight:500;color:var(--text-2)}.library-row[data-v-32c7e86b]{display:flex;gap:12px;align-items:flex-start;width:100%;padding:10px 12px;border:0;border-radius:8px;background:none;color:inherit;text-align:left;cursor:pointer}.library-row[data-v-32c7e86b]:hover,.library-row.chosen[data-v-32c7e86b]{background:var(--hover)}.library-icon[data-v-32c7e86b]{flex:none;width:28px;height:34px;color:var(--text-3)}.library-text[data-v-32c7e86b]{display:flex;flex:1;flex-direction:column;gap:4px;min-width:0}.library-title[data-v-32c7e86b]{font-weight:600}.library-abstract[data-v-32c7e86b]{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;color:var(--text-2);font-size:13px}.library-ref[data-v-32c7e86b],.library-age[data-v-32c7e86b]{color:var(--text-3);font-size:12px}.library-reader[data-v-32c7e86b]{overflow-y:auto;padding:20px 28px}.reader-title[data-v-32c7e86b]{margin:0 0 6px;font-size:20px}.reader-abstract[data-v-32c7e86b]{margin:0 0 18px;color:var(--text-2)}.reader-empty[data-v-32c7e86b]{margin-top:120px;text-align:center}.reader-empty-title[data-v-32c7e86b]{margin:0 0 6px;font-weight:500}.reader-empty-text[data-v-32c7e86b],.library-more[data-v-32c7e86b]{margin:8px 12px;color:var(--muted);background:none;border:0;cursor:pointer}.library-note[data-v-32c7e86b]{margin:0;color:var(--text-2)}.library-note[data-v-32c7e86b]{padding:12px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-fccf6ca83523")) { const style = document.createElement("style"); style.id = "window-styles-fccf6ca83523"; style.textContent = ".library-draft[data-v-a7a48ada]{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px}.library-draft-foot[data-v-a7a48ada]{display:flex;gap:6px;justify-content:flex-end}.library[data-v-a7a48ada]{display:flex;flex-direction:column;height:100%;min-height:0}.library-bar[data-v-a7a48ada]{gap:10px}.library-body[data-v-a7a48ada]{display:grid;flex:1;grid-template-columns:minmax(240px,2fr) 3fr;min-height:0}.library-list[data-v-a7a48ada]{overflow-y:auto;padding:6px 10px;border-right:1px solid var(--border)}.library-group[data-v-a7a48ada]{margin:12px 20px 6px;font-size:13px;font-weight:500;color:var(--text-2)}.library-row[data-v-a7a48ada]{display:flex;gap:12px;align-items:flex-start;width:100%;padding:10px 12px;border:0;border-radius:8px;background:none;color:inherit;text-align:left;cursor:pointer}.library-row[data-v-a7a48ada]:hover,.library-row.chosen[data-v-a7a48ada]{background:var(--hover)}.library-icon[data-v-a7a48ada]{flex:none;width:28px;height:34px;color:var(--text-3)}.library-text[data-v-a7a48ada]{display:flex;flex:1;flex-direction:column;gap:4px;min-width:0}.library-title[data-v-a7a48ada]{font-weight:600}.library-abstract[data-v-a7a48ada]{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;color:var(--text-2);font-size:13px}.library-ref[data-v-a7a48ada],.library-age[data-v-a7a48ada]{color:var(--text-3);font-size:12px}.library-reader[data-v-a7a48ada]{overflow-y:auto;padding:20px 28px}.reader-title[data-v-a7a48ada]{margin:0 0 6px;font-size:20px}.reader-abstract[data-v-a7a48ada]{margin:0 0 18px;color:var(--text-2)}.reader-empty[data-v-a7a48ada]{margin-top:120px;text-align:center}.reader-empty-title[data-v-a7a48ada]{margin:0 0 6px;font-weight:500}.reader-empty-text[data-v-a7a48ada],.library-more[data-v-a7a48ada]{margin:8px 12px;color:var(--muted);background:none;border:0;cursor:pointer}.library-note[data-v-a7a48ada]{margin:0;color:var(--text-2)}.library-note[data-v-a7a48ada]{padding:12px}\n"; document.head.appendChild(style); }
 import { ref as i, computed as E, watch as J, openBlock as s, createElementBlock as d, createVNode as f, unref as v, withCtx as $, createTextVNode as T, toDisplayString as m, withModifiers as V, withDirectives as M, createElementVNode as c, vModelText as U, createCommentVNode as h, withKeys as R, createBlock as W, Fragment as N, renderList as Y, normalizeClass as Q } from "vue";
 import { useWindow as X, SearchBar as ee, Segmented as P, Btn as A, Skeleton as te, Icon as ae, TimeAgo as le, steppedItem as oe, peekRef as re } from "@journal/window-kit";
 const se = 1440 * 60 * 1e3, ne = [
@@ -20,8 +20,8 @@ function de(n, y, u = Date.now()) {
   if (y === "title") return n.length ? [{ key: "all", title: "", rows: n }] : [];
   const r = ne.map((a) => ({ ...a, rows: [] }));
   for (const a of n) {
-    const p = (u - Date.parse(a.updated_at)) / se;
-    r.find((_) => p < _.days).rows.push(a);
+    const b = (u - Date.parse(a.updated_at)) / se;
+    r.find((_) => b < _.days).rows.push(a);
   }
   return r.filter((a) => a.rows.length);
 }
@@ -34,7 +34,7 @@ const ve = (n, y) => {
   key: 0,
   class: "library-note",
   role: "alert"
-}, be = { class: "library-draft-foot" }, pe = { class: "library-body" }, fe = ["onKeydown"], me = {
+}, pe = { class: "library-draft-foot" }, be = { class: "library-body" }, fe = ["onKeydown"], me = {
   key: 1,
   class: "library-note"
 }, ke = { class: "library-note" }, we = {
@@ -52,24 +52,24 @@ const ve = (n, y) => {
     ], r = [
       { key: "newest", label: "Newest" },
       { key: "title", label: "A to Z" }
-    ], a = i("doc"), p = i("open"), _ = i("newest"), k = i(""), w = i(null), S = X(), C = i([]), K = i(0), x = i(""), D = i(!1), g = i(!1), b = i({ title: "", abstract: "", body: "" }), B = i(""), I = E(() => de(ie(ue(C.value, k.value), _.value), _.value)), z = E(() => a.value === "doc" ? "Document" : "Report");
+    ], a = i("doc"), b = i("open"), _ = i("newest"), k = i(""), w = i(null), S = X(), C = i([]), K = i(0), x = i(""), D = i(!1), g = i(!1), p = i({ title: "", abstract: "", body: "" }), B = i(""), I = E(() => de(ie(ue(C.value, k.value), _.value), _.value)), z = E(() => a.value === "doc" ? "Document" : "Report");
     async function L() {
-      const l = a.value, e = p.value, t = await S.read(`document library --kind ${l} --state ${e}`);
-      l !== a.value || e !== p.value || (x.value = t.ok ? "" : t.error, C.value = t.ok ? t.value.rows : [], K.value = t.ok ? t.value.total : 0, D.value = !0);
+      const l = a.value, e = b.value, t = await S.read(`document library --type ${l} --state ${e}`);
+      l !== a.value || e !== b.value || (x.value = t.ok ? "" : t.error, C.value = t.ok ? t.value.rows : [], K.value = t.ok ? t.value.total : 0, D.value = !0);
     }
     async function Z() {
-      const l = a.value, e = p.value, t = await S.read(`document library --kind ${l} --state ${e} --after ${Math.max(...C.value.map((o) => o.id))}`);
+      const l = a.value, e = b.value, t = await S.read(`document library --type ${l} --state ${e} --after ${Math.max(...C.value.map((o) => o.id))}`);
       if (!t.ok) return void (x.value = t.error);
-      l === a.value && e === p.value && (C.value = [...C.value, ...t.value.rows]);
+      l === a.value && e === b.value && (C.value = [...C.value, ...t.value.rows]);
     }
     function F(l) {
       w.value = l.id, re(`${a.value === "doc" ? "docs" : "reports"}:${l.id}`);
     }
     async function j() {
-      const { title: l, abstract: e, body: t } = b.value;
+      const { title: l, abstract: e, body: t } = p.value;
       if (!l.trim() || !e.trim()) return;
       const o = await S.run([a.value, "make", l.trim(), "--abstract", e.trim(), "--body", t.trim() || e.trim()]);
-      B.value = o.ok ? "" : o.error, o.ok && (g.value = !1, b.value = { title: "", abstract: "", body: "" }, L());
+      B.value = o.ok ? "" : o.error, o.ok && (g.value = !1, p.value = { title: "", abstract: "", body: "" }, L());
     }
     const q = () => {
       const l = O.value.find((e) => e.id === w.value);
@@ -81,7 +81,7 @@ const ve = (n, y) => {
     function H() {
       w.value ? w.value = null : k.value = "";
     }
-    return J([a, p], () => {
+    return J([a, b], () => {
       w.value = null, C.value = [], D.value = !1, L();
     }), S.follow(["doc.*", "report.*"], L), L(), (l, e) => (s(), d("div", ce, [
       f(v(ee), {
@@ -97,9 +97,9 @@ const ve = (n, y) => {
           }, null, 8, ["value"]),
           f(v(P), {
             options: u,
-            value: p.value,
+            value: b.value,
             "data-library-state": "",
-            onPick: e[1] || (e[1] = (t) => p.value = t)
+            onPick: e[1] || (e[1] = (t) => b.value = t)
           }, null, 8, ["value"]),
           f(v(P), {
             options: r,
@@ -127,29 +127,29 @@ const ve = (n, y) => {
         onSubmit: V(j, ["prevent"])
       }, [
         M(c("input", {
-          "onUpdate:modelValue": e[5] || (e[5] = (t) => b.value.title = t),
+          "onUpdate:modelValue": e[5] || (e[5] = (t) => p.value.title = t),
           placeholder: "Title",
           "aria-label": "Title"
         }, null, 512), [
-          [U, b.value.title]
+          [U, p.value.title]
         ]),
         M(c("input", {
-          "onUpdate:modelValue": e[6] || (e[6] = (t) => b.value.abstract = t),
+          "onUpdate:modelValue": e[6] || (e[6] = (t) => p.value.abstract = t),
           placeholder: "A short summary",
           "aria-label": "Abstract"
         }, null, 512), [
-          [U, b.value.abstract]
+          [U, p.value.abstract]
         ]),
         M(c("textarea", {
-          "onUpdate:modelValue": e[7] || (e[7] = (t) => b.value.body = t),
+          "onUpdate:modelValue": e[7] || (e[7] = (t) => p.value.body = t),
           rows: "4",
           placeholder: "The text",
           "aria-label": "Text"
         }, null, 512), [
-          [U, b.value.body]
+          [U, p.value.body]
         ]),
         B.value ? (s(), d("p", ye, m(B.value), 1)) : h("", !0),
-        c("div", be, [
+        c("div", pe, [
           f(v(A), {
             small: "",
             onClick: e[8] || (e[8] = (t) => g.value = !1)
@@ -161,9 +161,9 @@ const ve = (n, y) => {
           }),
           f(v(A), {
             small: "",
-            kind: "primary",
+            variant: "primary",
             type: "submit",
-            disabled: !b.value.title.trim() || !b.value.abstract.trim(),
+            disabled: !p.value.title.trim() || !p.value.abstract.trim(),
             "data-library-create": ""
           }, {
             default: $(() => [...e[13] || (e[13] = [
@@ -173,7 +173,7 @@ const ve = (n, y) => {
           }, 8, ["disabled"])
         ])
       ], 32)) : h("", !0),
-      c("div", pe, [
+      c("div", be, [
         c("div", {
           class: "library-list",
           tabindex: "0",
@@ -238,7 +238,7 @@ const ve = (n, y) => {
       ])
     ]));
   }
-}, Te = /* @__PURE__ */ ve(Se, [["__scopeId", "data-v-32c7e86b"]]);
+}, Te = /* @__PURE__ */ ve(Se, [["__scopeId", "data-v-a7a48ada"]]);
 export {
   Te as default
 };

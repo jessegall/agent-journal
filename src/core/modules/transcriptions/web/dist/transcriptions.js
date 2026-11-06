@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-a3638cb8d049")) { const style = document.createElement("style"); style.id = "window-styles-a3638cb8d049"; style.textContent = ".transcriptions[data-v-85e34e8f],.form[data-v-85e34e8f],.opened[data-v-85e34e8f]{display:flex;flex-direction:column;gap:8px}.bar[data-v-85e34e8f]{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.note[data-v-85e34e8f]{margin:0;color:var(--text-3);font-size:12px;font-weight:400}.failure[data-v-85e34e8f]{margin:0;color:var(--bad, var(--text-2));font-size:12px}.row[data-v-85e34e8f]{display:flex;flex-direction:column;gap:2px;width:100%;padding:8px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.title[data-v-85e34e8f]{margin:0;font-size:inherit;font-weight:600}input[data-v-85e34e8f],textarea[data-v-85e34e8f]{box-sizing:border-box;width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface, none);color:inherit;font:inherit}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-54bb36b0d778")) { const style = document.createElement("style"); style.id = "window-styles-54bb36b0d778"; style.textContent = ".transcriptions[data-v-e4202c3f],.form[data-v-e4202c3f],.opened[data-v-e4202c3f]{display:flex;flex-direction:column;gap:8px}.bar[data-v-e4202c3f]{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.note[data-v-e4202c3f]{margin:0;color:var(--text-3);font-size:12px;font-weight:400}.failure[data-v-e4202c3f]{margin:0;color:var(--bad, var(--text-2));font-size:12px}.row[data-v-e4202c3f]{display:flex;flex-direction:column;gap:2px;width:100%;padding:8px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.title[data-v-e4202c3f]{margin:0;font-size:inherit;font-weight:600}input[data-v-e4202c3f],textarea[data-v-e4202c3f]{box-sizing:border-box;width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface, none);color:inherit;font:inherit}\n"; document.head.appendChild(style); }
 import { ref as v, computed as P, openBlock as o, createBlock as B, unref as a, withCtx as c, createElementVNode as s, createVNode as d, createTextVNode as f, createElementBlock as u, Fragment as F, renderList as L, toDisplayString as l, createCommentVNode as m, withModifiers as j, withDirectives as N, vModelText as V } from "vue";
 import { useWindow as q, useRows as M, useListTools as z, WindowRoom as G, Btn as _, ListTools as H, RowList as J, TimeAgo as K, peekRef as Q } from "@journal/window-kit";
 const X = (y, w) => {
@@ -93,7 +93,7 @@ const X = (y, w) => {
             ]),
             d(a(_), {
               small: "",
-              kind: "primary",
+              variant: "primary",
               type: "submit",
               disabled: !D.value
             }, {
@@ -143,7 +143,7 @@ const X = (y, w) => {
             s("div", rt, [
               d(a(_), {
                 small: "",
-                kind: "primary",
+                variant: "primary",
                 "data-transcription-save": "",
                 disabled: p.value === r.value.text,
                 onClick: I
@@ -178,7 +178,7 @@ const X = (y, w) => {
       _: 1
     }));
   }
-}, ft = /* @__PURE__ */ X(dt, [["__scopeId", "data-v-85e34e8f"]]);
+}, ft = /* @__PURE__ */ X(dt, [["__scopeId", "data-v-e4202c3f"]]);
 export {
   ft as default
 };

@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-import { openBlock as t, createElementBlock as o, Fragment as r, createVNode as d, unref as c, withCtx as C, createTextVNode as m, toDisplayString as u, ref as h, normalizeClass as Q, createElementVNode as i, createCommentVNode as b, renderList as T, withModifiers as O, createBlock as R } from "vue";
+import { openBlock as t, createElementBlock as o, Fragment as r, createVNode as d, unref as c, withCtx as C, createTextVNode as m, toDisplayString as u, ref as h, normalizeClass as Q, createElementVNode as i, createCommentVNode as k, renderList as T, withModifiers as O, createBlock as R } from "vue";
 import { Btn as $, useWindow as I, TimeAgo as U, peekRef as j, TextInput as N } from "@journal/window-kit";
 import { _ as z } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const S = {
@@ -11,7 +11,7 @@ const S = {
       d(c($), {
         small: "",
         "data-question-close": "",
-        onClick: s[0] || (s[0] = (y) => w.$emit("close"))
+        onClick: s[0] || (s[0] = (v) => w.$emit("close"))
       }, {
         default: C(() => [...s[3] || (s[3] = [
           m("Close", -1)
@@ -22,7 +22,7 @@ const S = {
         small: "",
         disabled: e.elaborated,
         "data-question-elaborate": "",
-        onClick: s[1] || (s[1] = (y) => w.$emit("elaborate"))
+        onClick: s[1] || (s[1] = (v) => w.$emit("elaborate"))
       }, {
         default: C(() => [
           m(u(e.elaborated ? "Asked to elaborate" : "Elaborate"), 1)
@@ -30,10 +30,10 @@ const S = {
         _: 1
       }, 8, ["disabled"]),
       d(c($), {
-        kind: "primary",
+        variant: "primary",
         small: "",
         "data-question-answer": "",
-        onClick: s[2] || (s[2] = (y) => w.$emit("answer"))
+        onClick: s[2] || (s[2] = (v) => w.$emit("answer"))
       }, {
         default: C(() => [...s[4] || (s[4] = [
           m("Answer", -1)
@@ -69,30 +69,30 @@ const S = {
   props: { row: { type: Object, required: !0 }, flush: Boolean },
   emits: ["changed"],
   setup(e, { emit: w }) {
-    const s = e, y = w, V = I(), f = h(""), g = h(null), q = h(""), v = h(!1);
+    const s = e, v = w, V = I(), f = h(""), g = h(null), q = h(""), y = h(!1);
     async function x(l, a) {
       g.value = l, q.value = "";
       const n = await V.run(a);
-      if (n.ok) return void y("changed");
+      if (n.ok) return void v("changed");
       g.value = null, q.value = n.error;
     }
-    const k = () => ({ ...s.row, ...g.value }), A = (l) => x({ state: "answered", answer: l }, ["question", "answer", String(s.row.id), "--answer", l]), B = () => x({ state: "closed" }, ["question", "close", String(s.row.id)]);
+    const b = () => ({ ...s.row, ...g.value }), A = (l) => x({ state: "answered", answer: l }, ["question", "answer", String(s.row.id), "--answer", l]), B = () => x({ state: "closed" }, ["question", "close", String(s.row.id)]);
     function p() {
       const l = f.value.trim();
       l && A(l);
     }
     async function E() {
-      v.value = !0;
+      y.value = !0;
       const l = await V.run(["message", "send", `Elaborate on question ${s.row.id}: ask it again with more context on each option and which you would pick, and you choose.`]);
-      l.ok || (v.value = !1, q.value = l.error);
+      l.ok || (y.value = !1, q.value = l.error);
     }
     return (l, a) => (t(), o("section", {
       class: Q(["question", { flush: e.flush }]),
-      "data-state": k().state,
+      "data-state": b().state,
       "data-question-card": ""
     }, [
       i("header", F, [
-        e.flush ? (t(), o("i", L)) : b("", !0),
+        e.flush ? (t(), o("i", L)) : k("", !0),
         i("p", M, "Question " + u(e.row.id), 1),
         d(c(U), {
           class: "question-time",
@@ -106,14 +106,14 @@ const S = {
         "data-question-open": e.row.id,
         onClick: a[0] || (a[0] = (n) => c(j)(`questions:${e.row.id}`))
       }, u(e.row.text), 9, W),
-      k().state !== "open" ? (t(), o("p", G, [
-        k().state === "answered" ? (t(), o(r, { key: 0 }, [
+      b().state !== "open" ? (t(), o("p", G, [
+        b().state === "answered" ? (t(), o(r, { key: 0 }, [
           e.flush ? (t(), o(r, { key: 0 }, [
             a[3] || (a[3] = i("b", { class: "question-answered" }, "Answered:", -1)),
             a[4] || (a[4] = m()),
-            i("span", H, u(k().answer), 1)
+            i("span", H, u(b().answer), 1)
           ], 64)) : (t(), o(r, { key: 1 }, [
-            m("Answered: " + u(k().answer), 1)
+            m("Answered: " + u(b().answer), 1)
           ], 64))
         ], 64)) : (t(), o(r, { key: 1 }, [
           m("Closed")
@@ -127,10 +127,10 @@ const S = {
             "data-question-option": n,
             onClick: (oe) => A(n)
           }, [
-            e.flush ? (t(), o("i", P)) : b("", !0),
-            n === e.row.recommended && !e.flush ? (t(), o("span", X, "Recommended")) : b("", !0),
+            e.flush ? (t(), o("i", P)) : k("", !0),
+            n === e.row.recommended && !e.flush ? (t(), o("span", X, "Recommended")) : k("", !0),
             i("span", Y, u(n), 1),
-            n === e.row.recommended && e.flush ? (t(), o("span", Z, "Recommended")) : b("", !0)
+            n === e.row.recommended && e.flush ? (t(), o("span", Z, "Recommended")) : k("", !0)
           ], 10, K))), 128))
         ]),
         i("form", {
@@ -146,7 +146,7 @@ const S = {
             }, null, 8, ["modelValue"]),
             i("span", _, [
               d(S, {
-                elaborated: v.value,
+                elaborated: y.value,
                 onClose: B,
                 onElaborate: E,
                 onAnswer: p
@@ -160,7 +160,7 @@ const S = {
           }, {
             end: C(() => [
               d(S, {
-                elaborated: v.value,
+                elaborated: y.value,
                 onClose: B,
                 onElaborate: E,
                 onAnswer: p
@@ -170,7 +170,7 @@ const S = {
           }, 8, ["modelValue"]))
         ], 32)
       ], 64)),
-      q.value ? (t(), o("p", ee, u(q.value), 1)) : b("", !0)
+      q.value ? (t(), o("p", ee, u(q.value), 1)) : k("", !0)
     ], 10, D));
   }
 }, le = /* @__PURE__ */ z(te, [["__scopeId", "data-v-b7fa0d55"]]);

@@ -35,7 +35,7 @@ The Teams page has a Library tab. Each item shows its title, its kind, its versi
 whether it is already on your journal. Choose a kind or type words to search. Click an item to read it with its
 versions. The same from a line:
 
-    journal library list --kind doc --search "release"
+    journal library list --type doc --search "release"
     journal library show doc 12
     journal library versions doc 12
 

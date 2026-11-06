@@ -1,6 +1,6 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-bd7273dd4792")) { const style = document.createElement("style"); style.id = "window-styles-bd7273dd4792"; style.textContent = ".search-mark[data-v-7bd5473b]{display:flex;flex-direction:column;gap:1px;min-width:260px;max-width:520px;margin:2px 0 2px 12px}.search-child[data-v-7bd5473b]{display:flex;gap:10px;align-items:baseline;padding:4px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:12px;text-align:left;cursor:pointer}.search-child[data-v-7bd5473b]:hover:not(:disabled){background:var(--hover);color:var(--text)}.search-child[data-v-7bd5473b]:disabled{cursor:default}.search-child-name[data-v-7bd5473b]{flex:none;min-width:64px;color:var(--text-3)}.search-child-excerpt[data-v-7bd5473b]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.search-more[data-v-7bd5473b]{align-items:center;color:var(--text-3)}.search-none[data-v-7bd5473b]{margin:0;padding:4px 8px;color:var(--text-3);font-size:12px}.search[data-v-9c52413b]{display:flex;flex-direction:column;gap:14px}.search-chips[data-v-9c52413b]{display:flex;flex-wrap:wrap;gap:6px}.search-chip[data-v-9c52413b]{padding:2px 10px;border:0;border-radius:10px;background:var(--raised);color:var(--text-2);font-size:12px;cursor:pointer}.search-chip.on[data-v-9c52413b]{background:var(--accent);color:#fff}.search-hits[data-v-9c52413b]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.search-hit[data-v-9c52413b]{display:flex;gap:12px;width:100%;padding:8px 10px;border:0;border-radius:7px;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}.search-hit[data-v-9c52413b]:hover:not(:disabled){background:var(--hover)}.search-hit[data-v-9c52413b]:disabled{cursor:default}.search-hit-name[data-v-9c52413b]{flex:none;width:110px;color:var(--text-3)}.search-hit-excerpt[data-v-9c52413b]{flex:1;min-width:0}.search-note[data-v-9c52413b]{margin:0;color:var(--text-3)}\n"; document.head.appendChild(style); }
-import { ref as i, computed as b, openBlock as n, createElementBlock as o, createVNode as g, unref as d, withKeys as V, withModifiers as q, withCtx as y, createTextVNode as B, Fragment as _, renderList as x, normalizeClass as N, toDisplayString as l, createCommentVNode as S, createBlock as W, createElementVNode as u } from "vue";
+if (!document.getElementById("window-styles-c46a57cf463b")) { const style = document.createElement("style"); style.id = "window-styles-c46a57cf463b"; style.textContent = ".search-mark[data-v-7bd5473b]{display:flex;flex-direction:column;gap:1px;min-width:260px;max-width:520px;margin:2px 0 2px 12px}.search-child[data-v-7bd5473b]{display:flex;gap:10px;align-items:baseline;padding:4px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:12px;text-align:left;cursor:pointer}.search-child[data-v-7bd5473b]:hover:not(:disabled){background:var(--hover);color:var(--text)}.search-child[data-v-7bd5473b]:disabled{cursor:default}.search-child-name[data-v-7bd5473b]{flex:none;min-width:64px;color:var(--text-3)}.search-child-excerpt[data-v-7bd5473b]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.search-more[data-v-7bd5473b]{align-items:center;color:var(--text-3)}.search-none[data-v-7bd5473b]{margin:0;padding:4px 8px;color:var(--text-3);font-size:12px}.search[data-v-2ed05814]{display:flex;flex-direction:column;gap:14px}.search-chips[data-v-2ed05814]{display:flex;flex-wrap:wrap;gap:6px}.search-chip[data-v-2ed05814]{padding:2px 10px;border:0;border-radius:10px;background:var(--raised);color:var(--text-2);font-size:12px;cursor:pointer}.search-chip.on[data-v-2ed05814]{background:var(--accent);color:#fff}.search-hits[data-v-2ed05814]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.search-hit[data-v-2ed05814]{display:flex;gap:12px;width:100%;padding:8px 10px;border:0;border-radius:7px;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}.search-hit[data-v-2ed05814]:hover:not(:disabled){background:var(--hover)}.search-hit[data-v-2ed05814]:disabled{cursor:default}.search-hit-name[data-v-2ed05814]{flex:none;width:110px;color:var(--text-3)}.search-hit-excerpt[data-v-2ed05814]{flex:1;min-width:0}.search-note[data-v-2ed05814]{margin:0;color:var(--text-3)}\n"; document.head.appendChild(style); }
+import { ref as i, computed as V, openBlock as n, createElementBlock as o, createVNode as g, unref as d, withKeys as b, withModifiers as q, withCtx as y, createTextVNode as B, Fragment as _, renderList as x, normalizeClass as N, toDisplayString as l, createCommentVNode as S, createBlock as W, createElementVNode as u } from "vue";
 import { useWindow as K, SearchBar as O, Btn as j, Skeleton as z } from "@journal/window-kit";
 import { _ as D } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const E = { class: "search" }, F = {
@@ -28,7 +28,7 @@ const E = { class: "search" }, F = {
       sequence: "sequences.sequences",
       trigger: "triggers.triggers",
       check: "checks.checks"
-    }, k = K(), r = i(""), c = i(/* @__PURE__ */ new Set()), s = i(null), h = i(""), v = i(!1), f = b(() => {
+    }, k = K(), r = i(""), c = i(/* @__PURE__ */ new Set()), s = i(null), h = i(""), v = i(!1), f = V(() => {
       var a;
       return [.../* @__PURE__ */ new Set([...(((a = s.value) == null ? void 0 : a.hits) || []).map((t) => t.cli_name), ...c.value])].sort();
     });
@@ -48,11 +48,11 @@ const E = { class: "search" }, F = {
       g(d(O), {
         modelValue: r.value,
         "onUpdate:modelValue": t[0] || (t[0] = (e) => r.value = e),
-        onKeydown: V(q(m, ["prevent"]), ["enter"])
+        onKeydown: b(q(m, ["prevent"]), ["enter"])
       }, {
         default: y(() => [
           g(d(j), {
-            kind: "primary",
+            variant: "primary",
             small: "",
             "data-search-go": "",
             onClick: m
@@ -98,7 +98,7 @@ const E = { class: "search" }, F = {
       ], 64)) : S("", !0)
     ]));
   }
-}, Y = /* @__PURE__ */ D(J, [["__scopeId", "data-v-9c52413b"]]);
+}, Y = /* @__PURE__ */ D(J, [["__scopeId", "data-v-2ed05814"]]);
 export {
   Y as default
 };

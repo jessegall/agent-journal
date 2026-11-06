@@ -35,7 +35,7 @@ def test_shipped_types_restore_their_access_inheritance_and_worker_roster(new_st
                       all(role in registry.role_names for rule in registry.rules for role in rule.roles))
 
 
-@pytest.mark.parametrize("role", ["helper", "helper", "worker", "clerk"])
+@pytest.mark.parametrize("role", ["helper", "worker", "clerk"])
 def test_an_inactive_helper_of_any_registered_descendant_type_wakes_its_parent(new_story, role):
     story = new_story(fixture=FIXTURES[role])
     helper = json.loads(story.run(f"agent list --role {role} --json").output_text)["rows"][0]

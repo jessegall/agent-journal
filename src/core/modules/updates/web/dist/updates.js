@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-2fc8f9b5a01d")) { const style = document.createElement("style"); style.id = "window-styles-2fc8f9b5a01d"; style.textContent = ".releases[data-v-065e3ed5]{position:relative;min-height:100px}.failure[data-v-065e3ed5]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.cover[data-v-065e3ed5]{margin-bottom:8px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px;font-size:13px}.arrived[data-v-065e3ed5]{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px}.note[data-v-065e3ed5]{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;font-size:13px}.standing[data-v-065e3ed5],.release[data-v-065e3ed5]{display:flex;align-items:baseline;gap:10px;font-size:13px}.line[data-v-065e3ed5],.title[data-v-065e3ed5]{flex:1}.heading[data-v-065e3ed5]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.detail[data-v-065e3ed5]{color:var(--text-3);font-size:12px}button[data-v-065e3ed5]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-1bbecd74cb25")) { const style = document.createElement("style"); style.id = "window-styles-1bbecd74cb25"; style.textContent = ".releases[data-v-e981d072]{position:relative;min-height:100px}.failure[data-v-e981d072]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.cover[data-v-e981d072]{margin-bottom:8px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px;font-size:13px}.arrived[data-v-e981d072]{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px}.note[data-v-e981d072]{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;font-size:13px}.standing[data-v-e981d072],.release[data-v-e981d072]{display:flex;align-items:baseline;gap:10px;font-size:13px}.line[data-v-e981d072],.title[data-v-e981d072]{flex:1}.heading[data-v-e981d072]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.detail[data-v-e981d072]{color:var(--text-3);font-size:12px}button[data-v-e981d072]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
 import { ref as r, computed as R, openBlock as o, createBlock as N, unref as i, withCtx as h, createElementBlock as u, createCommentVNode as v, createElementVNode as s, createVNode as y, createTextVNode as D, toDisplayString as d, Fragment as I, renderList as P } from "vue";
 import { useRows as S, WindowRoom as T, Btn as F, RowList as V, TextDisplay as $ } from "@journal/window-kit";
 const E = (f, n) => {
@@ -53,7 +53,7 @@ const E = (f, n) => {
           e[2] || (e[2] = s("span", { class: "line" }, "The update is installed. Reload the page to see it.", -1)),
           y(i(F), {
             small: "",
-            kind: "primary",
+            variant: "primary",
             "data-update-reload": "",
             onClick: B
           }, {
@@ -73,7 +73,7 @@ const E = (f, n) => {
           a.value && !a.value.is_current ? (o(), N(i(F), {
             key: 0,
             small: "",
-            kind: "primary",
+            variant: "primary",
             "data-update-install": "",
             onClick: C
           }, {
@@ -137,7 +137,7 @@ const E = (f, n) => {
       _: 1
     }));
   }
-}, te = /* @__PURE__ */ E(Y, [["__scopeId", "data-v-065e3ed5"]]);
+}, te = /* @__PURE__ */ E(Y, [["__scopeId", "data-v-e981d072"]]);
 export {
   te as default
 };

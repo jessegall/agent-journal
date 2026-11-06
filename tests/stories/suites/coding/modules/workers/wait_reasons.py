@@ -49,6 +49,7 @@ def test_a_stopped_worker_with_a_task_says_what_it_waits_on_and_never_for_a_job(
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository_environment(story)
     worker = dispatched_worker(story)
+    story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
     database = story.container.get(Database)
     part = PartSpec("make test", "make", False, CommandCategory.TEST_RUN)
     command = StartProcess(worker.id, None, "make test", "/work/main", "zsh", CommandCategory.TEST_RUN, 30, [part])

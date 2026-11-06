@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-1206b1f9aaee")) { const style = document.createElement("style"); style.id = "window-styles-1206b1f9aaee"; style.textContent = ".worker-models[data-v-e982edb4]{display:flex;flex-direction:column;gap:8px}.worker-models-note[data-v-e982edb4]{margin:0;color:var(--text-3);font-size:12px}.worker-models-refusal[data-v-e982edb4]{margin:0;color:var(--danger);font-size:12.5px}.worker-model[data-v-e982edb4]{display:flex;flex:1;gap:14px;align-items:center;padding:4px 0}.worker-model-program[data-v-e982edb4]{flex:0 0 120px;color:var(--text-2);font-size:12px;font-weight:600}.worker-model-name[data-v-e982edb4]{display:flex;gap:8px;align-items:center}.number[data-v-ad3f073f]{color:var(--text-3);font-size:12px}.main[data-v-ad3f073f]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-ad3f073f]{color:var(--text-3);font-size:12px}.main[data-v-ef968966]{flex:1}.note[data-v-ef968966]{color:var(--text-3);font-size:12px}.worker-moment[data-v-4889fbf7]{display:flex;gap:10px;justify-content:space-between;width:100%;padding:6px 0;border:0;background:none;color:var(--text-2);font:inherit;font-size:13px;text-align:left;cursor:pointer}.worker-moment time[data-v-4889fbf7]{flex:none;color:var(--text-3);font-size:12px}.worker-tab-body[data-v-4596a516]{padding:14px 16px}.worktree[data-v-fe754622]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.worktree-names[data-v-fe754622]{flex:1;min-width:0}.worktree-holder[data-v-fe754622]{font-weight:500}.worktree-folder[data-v-fe754622]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.worktree-refusal[data-v-fe754622]{margin:2px 0 0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
-import { ref as v, openBlock as l, createBlock as _, unref as o, withCtx as a, createVNode as u, createElementVNode as s, toDisplayString as d, createElementBlock as p, createCommentVNode as g, Fragment as x, createTextVNode as k } from "vue";
-import { useRows as R, WindowRoom as W, RowList as j, Btn as c, removed as B } from "@journal/window-kit";
+if (!document.getElementById("window-styles-c79dadb77e59")) { const style = document.createElement("style"); style.id = "window-styles-c79dadb77e59"; style.textContent = ".worker-models[data-v-e982edb4]{display:flex;flex-direction:column;gap:8px}.worker-models-note[data-v-e982edb4]{margin:0;color:var(--text-3);font-size:12px}.worker-models-refusal[data-v-e982edb4]{margin:0;color:var(--danger);font-size:12.5px}.worker-model[data-v-e982edb4]{display:flex;flex:1;gap:14px;align-items:center;padding:4px 0}.worker-model-program[data-v-e982edb4]{flex:0 0 120px;color:var(--text-2);font-size:12px;font-weight:600}.worker-model-name[data-v-e982edb4]{display:flex;gap:8px;align-items:center}.number[data-v-ad3f073f]{color:var(--text-3);font-size:12px}.main[data-v-ad3f073f]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-ad3f073f]{color:var(--text-3);font-size:12px}.main[data-v-ef968966]{flex:1}.note[data-v-ef968966]{color:var(--text-3);font-size:12px}.worker-moment[data-v-4889fbf7]{display:flex;gap:10px;justify-content:space-between;width:100%;padding:6px 0;border:0;background:none;color:var(--text-2);font:inherit;font-size:13px;text-align:left;cursor:pointer}.worker-moment time[data-v-4889fbf7]{flex:none;color:var(--text-3);font-size:12px}.worker-tab-body[data-v-4596a516]{padding:14px 16px}.worktree[data-v-ca173274]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.worktree-names[data-v-ca173274]{flex:1;min-width:0}.worktree-holder[data-v-ca173274]{font-weight:500}.worktree-folder[data-v-ca173274]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.worktree-refusal[data-v-ca173274]{margin:2px 0 0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
+import { ref as v, openBlock as l, createBlock as _, unref as o, withCtx as a, createVNode as u, createElementVNode as s, toDisplayString as d, createElementBlock as p, createCommentVNode as g, Fragment as x, createTextVNode as c } from "vue";
+import { useRows as R, WindowRoom as W, RowList as j, Btn as k, removed as B } from "@journal/window-kit";
 import { _ as E } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const V = ["data-worktree"], b = { class: "worktree-names" }, P = { class: "worktree-holder" }, D = { class: "worktree-folder" }, F = {
   key: 0,
@@ -42,37 +42,37 @@ const V = ["data-worktree"], b = { class: "worktree-names" }, P = { class: "work
                 i.value[r.id] ? (l(), p("p", F, d(i.value[r.id]), 1)) : g("", !0)
               ]),
               n.value === r.id ? (l(), p(x, { key: 0 }, [
-                u(o(c), {
+                u(o(k), {
                   small: "",
                   "data-worktree-keep": "",
                   onClick: t[0] || (t[0] = (f) => n.value = "")
                 }, {
                   default: a(() => [...t[1] || (t[1] = [
-                    k("Keep it", -1)
+                    c("Keep it", -1)
                   ])]),
                   _: 1
                 }),
-                u(o(c), {
+                u(o(k), {
                   small: "",
-                  kind: "danger",
+                  variant: "danger",
                   "data-worktree-confirm": "",
                   onClick: (f) => m(r)
                 }, {
                   default: a(() => [...t[2] || (t[2] = [
-                    k("Yes, remove the folder", -1)
+                    c("Yes, remove the folder", -1)
                   ])]),
                   _: 1
                 }, 8, ["onClick"])
-              ], 64)) : N(r) ? g("", !0) : (l(), _(o(c), {
+              ], 64)) : N(r) ? g("", !0) : (l(), _(o(k), {
                 key: 1,
                 small: "",
-                kind: "danger",
+                variant: "danger",
                 title: "Remove this worktree folder, keeping its branch",
                 "data-worktree-remove": "",
                 onClick: (f) => m(r)
               }, {
                 default: a(() => [...t[3] || (t[3] = [
-                  k("Remove worktree", -1)
+                  c("Remove worktree", -1)
                 ])]),
                 _: 1
               }, 8, ["onClick"]))
@@ -84,7 +84,7 @@ const V = ["data-worktree"], b = { class: "worktree-names" }, P = { class: "work
       _: 1
     }));
   }
-}, S = /* @__PURE__ */ E(H, [["__scopeId", "data-v-fe754622"]]);
+}, S = /* @__PURE__ */ E(H, [["__scopeId", "data-v-ca173274"]]);
 export {
   S as default
 };

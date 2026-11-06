@@ -1,3 +1,6 @@
+from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
+from core.modules.processes.models.process_part import ProcessPart
+from core.base.query.queries import Queries
 from datetime import timedelta
 
 import shlex
@@ -87,8 +90,20 @@ def ended_run(story: Story, line: str, text: str, exit_code: int = 0) -> Process
     return process
 
 
-def moved_run(story: Story, line: str = "make build", category: CommandCategory | None = None) -> Process:
+def parts_started(story: Story, process: Process) -> None:
+    actor = Actor(process.session_agent_id, ActorType.AGENT)
+    for part in story.container.get(Queries).query(ProcessPart).filter(process_id=process.id).all_rows():
+        story.container.get(Bus).run(StartProcessPart(process.id, part.position), actor, environment_id=1)
+
+
+def started_run(story: Story, line: str = "make test && echo done", category: CommandCategory | None = None) -> Process:
     process = start_process(story, line, category=category)
+    parts_started(story, process)
+    return process
+
+
+def moved_run(story: Story, line: str = "make build", category: CommandCategory | None = None) -> Process:
+    process = started_run(story, line, category)
     story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
     return process
 

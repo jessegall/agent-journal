@@ -8,7 +8,7 @@ from core.modules.processes.commands.move_process.move_process import MoveProces
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
+from tests.stories.core.modules.processes.support.process_samples import parts_started, install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 MARKS = "chat-mark list --environment 1 --oldest"
@@ -18,6 +18,7 @@ HIDDEN = [("cat notes", CommandCategory.READ), ("grep -n word notes", CommandCat
 def worker_run(story, worker: Actor, line: str, category: CommandCategory) -> int:
     command = StartProcess(worker.id, None, line, "/work/main", "zsh", category, 30, [PartSpec(line, line.split()[0], False, category)])
     process = story.container.get(Bus).run(command, worker, environment_id=1)
+    parts_started(story, process)
     story.container.get(Bus).run(MoveProcess(process.id), worker, environment_id=1)
     story.run(f"output watch {process.id}", actor=worker)
     return process.id

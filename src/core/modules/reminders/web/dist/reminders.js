@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-0a9af1ae5254")) { const style = document.createElement("style"); style.id = "window-styles-0a9af1ae5254"; style.textContent = ".reminders[data-v-a44bc59b]{display:flex;flex-direction:column;gap:8px}.form[data-v-a44bc59b]{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.form>input[data-v-a44bc59b]{flex:1;min-width:200px}input[data-v-a44bc59b]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface, none);color:inherit;font:inherit}.row[data-v-a44bc59b]{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px}.text[data-v-a44bc59b]{flex:1;min-width:0}.note[data-v-a44bc59b]{color:var(--text-3);font-size:12px}.failure[data-v-a44bc59b]{margin:0;color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
-import { reactive as h, computed as S, openBlock as k, createBlock as N, unref as a, withCtx as r, createElementVNode as i, withModifiers as V, withDirectives as u, vModelText as _, createTextVNode as o, vModelCheckbox as $, createVNode as f, createElementBlock as D, toDisplayString as v, createCommentVNode as E } from "vue";
-import { useRows as O, WindowRoom as C, Btn as x, RowList as I, removed as M, added as w } from "@journal/window-kit";
+if (!document.getElementById("window-styles-2f3944c108db")) { const style = document.createElement("style"); style.id = "window-styles-2f3944c108db"; style.textContent = ".reminders[data-v-4ec7b3de]{display:flex;flex-direction:column;gap:8px}.form[data-v-4ec7b3de]{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.form>input[data-v-4ec7b3de]{flex:1;min-width:200px}input[data-v-4ec7b3de]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface, none);color:inherit;font:inherit}.row[data-v-4ec7b3de]{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px}.text[data-v-4ec7b3de]{flex:1;min-width:0}.note[data-v-4ec7b3de]{color:var(--text-3);font-size:12px}.failure[data-v-4ec7b3de]{margin:0;color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
+import { reactive as h, computed as S, openBlock as x, createBlock as N, unref as a, withCtx as r, createElementVNode as i, withModifiers as V, withDirectives as u, vModelText as _, createTextVNode as o, vModelCheckbox as $, createVNode as f, createElementBlock as D, toDisplayString as v, createCommentVNode as E } from "vue";
+import { useRows as O, WindowRoom as C, Btn as k, RowList as I, removed as M, added as w } from "@journal/window-kit";
 const A = (m, c) => {
   const l = m.__vccOpts || m;
   for (const [p, d] of c)
@@ -26,7 +26,7 @@ const A = (m, c) => {
       const n = ["reminder", "make", t.text.trim(), ...t.at ? ["--at", new Date(t.at).toISOString()] : [], ...Number(t.minutes) ? ["--every-minutes", String(t.minutes)] : [], ...t.once ? ["--once"] : []], e = { id: `making-${Date.now()}`, text: t.text.trim(), ended_at: null, due_at: t.at ? new Date(t.at).toISOString() : null, interval_seconds: Number(t.minutes) * 60 || 0, single_use: t.once };
       (await d(n, w(e))).ok && Object.assign(t, { text: "", at: "", minutes: "", once: !1 });
     }
-    return (n, e) => (k(), N(a(C), null, {
+    return (n, e) => (x(), N(a(C), null, {
       default: r(() => [
         i("div", B, [
           i("form", {
@@ -72,9 +72,9 @@ const A = (m, c) => {
               ]),
               e[6] || (e[6] = o(" Once", -1))
             ]),
-            f(a(x), {
+            f(a(k), {
               small: "",
-              kind: "primary",
+              variant: "primary",
               type: "submit",
               disabled: !y.value
             }, {
@@ -84,7 +84,7 @@ const A = (m, c) => {
               _: 1
             }, 8, ["disabled"])
           ], 32),
-          a(b) ? (k(), D("p", T, v(a(b)), 1)) : E("", !0),
+          a(b) ? (x(), D("p", T, v(a(b)), 1)) : E("", !0),
           f(a(I), {
             rows: a(c),
             failure: a(l),
@@ -99,7 +99,7 @@ const A = (m, c) => {
               }, [
                 i("span", F, v(s.text), 1),
                 i("span", q, v(g(s)), 1),
-                f(a(x), {
+                f(a(k), {
                   small: "",
                   "data-reminder-remove": "",
                   onClick: (G) => a(d)(["reminder", "delete", String(s.id)], a(M)(s.id))
@@ -118,7 +118,7 @@ const A = (m, c) => {
       _: 1
     }));
   }
-}, K = /* @__PURE__ */ A(z, [["__scopeId", "data-v-a44bc59b"]]);
+}, K = /* @__PURE__ */ A(z, [["__scopeId", "data-v-4ec7b3de"]]);
 export {
   K as default
 };
