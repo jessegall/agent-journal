@@ -75,7 +75,7 @@ def test_s72_a_success_that_clears_faults_gives_no_delivery(new_story):
 def test_s73_a_write_from_a_server_round_runs_no_script_and_notes_the_skip(new_story):
     story = event_plugin_story(new_story, {"event": NOTE_CREATED, "guard": "refuse.sh", "listen": "pin.sh"}, modules=[NOTES])
     synced_container(story.home).get(Bus).run(ManyNotes(1), story.user)
-    story.expect_rows(not script_calls(story, "refuse.sh"), not script_calls(story, "pin.sh"), "were skipped" in story.error_log_text(), story.container.get(Queries).query(EventNote).count() == 1)
+    story.expect_rows(not script_calls(story, "refuse.sh"), not script_calls(story, "pin.sh"), "were skipped" in story.system_log_text(), story.container.get(Queries).query(EventNote).count() == 1)
 
 
 def test_s74_a_line_from_a_script_in_a_direct_run_is_known_by_its_variable(new_story):
@@ -117,7 +117,7 @@ def test_s77_a_plugin_past_its_running_limit_has_its_guard_skipped(new_story):
     processes = sleeping_scripts(story, MOST_RUNNING)
     try:
         story.expect_success(SECOND_JOB, actor=story.agent)
-        story.expect_rows(not script_calls(story, "see.sh"), "was skipped" in story.error_log_text(), len(tasks_titled(story, SECOND_JOB_TITLE)) == 1)
+        story.expect_rows(not script_calls(story, "see.sh"), "was skipped" in story.system_log_text(), len(tasks_titled(story, SECOND_JOB_TITLE)) == 1)
     finally:
         for process in processes:
             story.container.get(PluginScriptProcesses).finish(process)
@@ -131,7 +131,7 @@ def test_s77_a_failing_plugin_has_its_guard_skipped_and_is_tried_again_after_fiv
     for _ in range(FAILING_COUNT):
         story.container.get(Bus).run(RecordPluginFault(plugin_id, "it ended with code 3"), story.user)
     story.expect_success(SECOND_JOB, actor=story.agent)
-    story.expect_rows(not script_calls(story, "see.sh"), "was skipped" in story.error_log_text())
+    story.expect_rows(not script_calls(story, "see.sh"), "was skipped" in story.system_log_text())
     story.advance(timedelta(minutes=6))
     story.expect_success('task make "Third job" --brief "Do it" --environment main', actor=story.agent)
     story.expect_rows(len(script_calls(story, "see.sh")) == 1, plugin_row(story).failing is False)

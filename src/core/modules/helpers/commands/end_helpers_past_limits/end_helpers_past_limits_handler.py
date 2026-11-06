@@ -3,7 +3,6 @@ from core.base.agent_role import AgentRole
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.scope.scopes import Scopes
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
@@ -18,6 +17,7 @@ from core.modules.helpers.support.helper_settings import HELPER_MAX_COST, HELPER
 from core.modules.helpers.support.helper_spend import HelperSpend
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.usage.support.status_files import StatusFiles
+from core.modules.agents.support.agent_rows import AgentRows
 
 WARNING_SHARE = 0.8
 
@@ -29,12 +29,12 @@ class EndHelpersPastLimitsHandler(Handler[EndHelpersPastLimits, None]):
     command = EndHelpersPastLimits
     transactional = False
 
-    def __init__(self, queries: Queries, jobs: HelperJobRows, settings: SettingValues, files: StatusFiles, scopes: Scopes, bus: Bus) -> None:
-        self.queries, self.jobs, self.settings, self.files, self.scopes = queries, jobs, settings, files, scopes
+    def __init__(self, queries: Queries, agents: AgentRows, jobs: HelperJobRows, settings: SettingValues, files: StatusFiles, scopes: Scopes, bus: Bus) -> None:
+        self.queries, self.agents, self.jobs, self.settings, self.files, self.scopes = queries, agents, jobs, settings, files, scopes
         self.bus = bus
 
     def handle(self, command: EndHelpersPastLimits, context: Context) -> None:
-        for helper in tuple(self.queries.query(Agent).filter(role=AgentRole.HELPER).matching(IsNull("ended_at")).all_rows()):
+        for helper in self.agents.running(AgentRole.HELPER):
             job = self.jobs.open_job(helper.id)
             if job is not None and helper.parent_id is not None:
                 self.check(helper, job, context)

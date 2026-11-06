@@ -1,11 +1,9 @@
-from core.base.file_access import FileAccess
-import time
-
 from core.base.database.database import Database
 from core.base.database.points import Points
 from core.base.driver.hook_event import HookEvent
-from core.base.journal_home import JournalHome
+from core.base.log_level import LogLevel
 from core.base.performance.performance_tool import PerformanceTool
+from core.base.system_log_writer import SystemLogWriter
 from core.modules.developer.support.hook_numbers_file import HookNumbersFile
 
 HOOK_LIMIT_POINTS = 50
@@ -13,12 +11,12 @@ STATEMENTS_LOGGED = 5
 
 
 class HookCostTool(PerformanceTool):
-    """Database points spent by hooks, with expensive queries recorded in the cost log."""
+    """Database points spent by hooks, with expensive queries written to the system log."""
 
     name = "drivers.hook-cost"
 
-    def __init__(self, database: Database, home: JournalHome, numbers: HookNumbersFile) -> None:
-        self.database, self.home, self.numbers = database, home, numbers
+    def __init__(self, database: Database, system_log: SystemLogWriter, numbers: HookNumbersFile) -> None:
+        self.database, self.system_log, self.numbers = database, system_log, numbers
 
     def measure(self, *values: object) -> object:
         event, points = values
@@ -28,9 +26,7 @@ class HookCostTool(PerformanceTool):
         if points.total < HOOK_LIMIT_POINTS:
             return f"hook {event.event.value} {points.total} points ({points.line()})"
         line = f"hook {event.event.value} {points.total} points ({points.line()}), over the {HOOK_LIMIT_POINTS} a hook may cost"
-        self.home.costly_hooks_log.parent.mkdir(parents=True, exist_ok=True)
-        with FileAccess.shared().writer(self.home.costly_hooks_log, "a") as log:
-            log.write(f"{time.strftime('%H:%M:%S')} {line}\n")
-            log.writelines(f"    {rows} rows: {sql}\n" for sql, rows in points.statements.most_common(STATEMENTS_LOGGED))
-            log.writelines(f"    {count} writes: {sql}\n" for sql, count in points.update_statements.most_common(STATEMENTS_LOGGED))
+        statement_lines = [f"    {rows} rows: {sql}" for sql, rows in points.statements.most_common(STATEMENTS_LOGGED)]
+        update_lines = [f"    {count} writes: {sql}" for sql, count in points.update_statements.most_common(STATEMENTS_LOGGED)]
+        self.system_log.write(LogLevel.WARNING, "\n".join((line, *statement_lines, *update_lines)))
         return line

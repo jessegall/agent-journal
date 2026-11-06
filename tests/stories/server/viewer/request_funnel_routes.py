@@ -51,7 +51,7 @@ def expect_event_of_environment(response: http.client.HTTPResponse, environment:
 
 
 def expect_reported_times(server, times: int) -> None:
-    log = server.story.home.error_log
+    log = server.story.home.system_log
     text = log.read_text() if log.exists() else ""
     assert text.count("sent 12 lines of usage tool") == times, text
 

@@ -65,7 +65,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
         rules = call.refused_rules if call is not None and call.creation_timestamp().text > skipped_at else ()
         refused = next((rule for rule in rules if rule.get("rule") == name), None)
         if refused is None:
-            raise Refusal(f"{name} has not refused you skipped_at your last skip", "a skip follows a refusal; carry on without one")
+            raise Refusal(f"{name} has not refused you since your last skip", "a skip follows a refusal; carry on without one")
         if refused.get("safety"):
             raise Refusal(f"{name} is a safety refusal and has no skip", "say in your report what you need")
 

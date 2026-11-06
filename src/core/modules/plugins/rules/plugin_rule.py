@@ -11,32 +11,25 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
-from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults import ClearPluginFaults
 from core.modules.plugins.commands.clear_plugin_queue_file.clear_plugin_queue_file import ClearPluginQueueFile
 from core.modules.plugins.commands.deliver_plugin_event.deliver_plugin_event import DeliverPluginEvent
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
-from core.modules.plugins.commands.switch_off_changed_plugin.switch_off_changed_plugin import SwitchOffChangedPlugin
 from core.modules.plugins.models.enums.refusable_event import RefusableEvent
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_queue_file import PluginQueueFile
 from core.modules.plugins.support.hook_facts import HookFacts
-from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_event import PluginEvent
 from core.modules.plugins.support.plugin_declared_event import CEILING_SETTING
 from core.modules.plugins.support.plugin_event_names import PluginEventNames
-from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
-from core.modules.plugins.support.plugin_late_error import PluginLateError
 from core.modules.plugins.support.plugin_manifest import PluginManifest
-from core.modules.plugins.support.plugin_program import PluginProgram
 from core.modules.plugins.support.plugin_queue import PluginQueue
-from core.modules.plugins.support.plugin_service_closed_error import PluginServiceClosedError
-from core.modules.plugins.support.plugin_settings import PluginSettings
+from core.modules.plugins.support.plugin_run import PluginRun
+from core.modules.plugins.support.plugin_run_request import PluginRunRequest
+from core.modules.plugins.support.runnable_plugin import RunnablePlugin
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.base.model.event_form import EventForm
 from core.modules.settings.bindings.support.setting_values import SettingValues
-
-UNREADABLE_MANIFEST_FAULT = "its manifest cannot be read"
 
 
 class PluginRule(DriverRule):
@@ -47,26 +40,23 @@ class PluginRule(DriverRule):
     drivers = ["*"]
     role_group = RoleGroup.PLUGIN
 
-    def __init__(self, runnable: RunnablePlugins, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, setting_values: SettingValues,
-                 queries: Queries) -> None:
-        self.runnable, self.folders, self.program, self.settings, self.setting_values = runnable, folders, program, settings, setting_values
+    def __init__(self, runnable: RunnablePlugins, folders: PluginFolders, runs: PluginRun, setting_values: SettingValues, queries: Queries) -> None:
+        self.runnable, self.folders, self.runs, self.setting_values = runnable, folders, runs, setting_values
         self.queries = queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         lines: list[str] = []
         commands: list[Command[object]] = []
         events = PluginEventNames().events(hook)
-        values: dict[int, dict[str, object]] = {}
-        facts = HookFacts(self.program, hook.agent_id)
-        commands.extend(RecordPluginFault(plugin.id, UNREADABLE_MANIFEST_FAULT) for plugin in self.runnable.unreadable())
-        for runnable in self.runnable.enabled():
+        facts = self.runs.hook_facts(hook.agent_id)
+        for check in self.runnable.checks():
+            commands.extend(check.records(""))
+            if check.is_changed:
+                lines.append(f"[plugin {check.plugin.name}] switched off: {check.reason}; the user switches it on again once they read the change")
+            runnable = check.runnable
+            if runnable is None:
+                continue
             plugin, manifest = runnable.plugin, runnable.manifest
-            if manifest.needs_newer_journal:
-                continue
-            if runnable.is_changed:
-                lines.append(f"[plugin {plugin.name}] switched off: its files changed since it was installed; the user switches it on again once they read the change")
-                commands.append(SwitchOffChangedPlugin(plugin.id))
-                continue
             if hook.event.accepts_lines:
                 self.queued(hook, plugin, lines, commands)
             for event in [event for event in events if event.name in manifest.event_names and self.reaches(hook, manifest, event.name)]:
@@ -75,7 +65,7 @@ class PluginRule(DriverRule):
                     commands.append(DeliverPluginEvent(plugin.id, hook.agent_id, commit.key if commit else event.name, json.dumps(dict(event.data)), commit.script if commit else ""))
                 if event.name not in manifest.window_names():
                     continue
-                refusal = self.refusal_text(hook, plugin, manifest, event, lines, commands, values, facts)
+                refusal = self.refusal_text(hook, runnable, event, lines, commands, facts)
                 if refusal:
                     return RuleAnswer(refusal=refusal, nudges=(*(PLUGIN_LINE.nudge(text=line) for line in lines), PLUGIN_REFUSAL.nudge(text=refusal)), commands=tuple(commands))
         return RuleAnswer(nudges=tuple(PLUGIN_LINE.nudge(text=line) for line in lines), commands=tuple(commands))
@@ -94,26 +84,18 @@ class PluginRule(DriverRule):
     def reaches(hook: AgentHook, manifest: PluginManifest, event: str) -> bool:
         return hook.role == AgentRole.MAIN or manifest.reaches_role(event, hook.role)
 
-    def refusal_text(self, hook: AgentHook, plugin: Plugin, manifest: PluginManifest, event: PluginEvent, lines: list[str], commands: list[Command[object]],
-                     values: dict[int, dict[str, object]], facts: HookFacts) -> str:
-        if plugin.id not in values:
-            values[plugin.id] = self.settings.values(plugin, manifest)
+    def refusal_text(self, hook: AgentHook, runnable: RunnablePlugin, event: PluginEvent, lines: list[str], commands: list[Command[object]], facts: HookFacts) -> str:
+        plugin, manifest = runnable.plugin, runnable.manifest
         guard = manifest.declared_event(event.name, EventForm.GUARD)
-        call = PluginCall(manifest, PluginEvent(guard.key, event.data) if guard else event, hook.event.environment, hook.timestamp, values[plugin.id], hook.agent_id, form=EventForm.GUARD, script=guard.script if guard else "", hook_waits=True, facts=facts.value)
-        try:
-            answer = self.program.run(call, manifest.window_ms(event.name, self.setting_values.number(CEILING_SETTING)))
-        except PluginLateError:
+        request = PluginRunRequest(runnable, PluginEvent(guard.key, event.data) if guard else event, EventForm.GUARD, manifest.window_ms(event.name, self.setting_values.number(CEILING_SETTING)),
+                                   f"at {event.name}", hook.event.environment, hook.timestamp, hook.agent_id, guard.script if guard else "", hook_waits=True, facts=facts.value)
+        outcome = self.runs.run(request)
+        if outcome.is_late:
             return ""
-        except PluginServiceClosedError as closed:
-            record = closed.fault_record(plugin.id, f"at {event.name}")
-            if plugin.last_fault != record.fault and record not in commands:
-                commands.append(record)
+        commands.extend(record for record in outcome.records if record not in commands)
+        answer = outcome.answer
+        if answer is None:
             return ""
-        except PluginFaultError as fault:
-            commands.append(fault.fault_record(plugin.id, f"at {event.name}"))
-            return ""
-        if plugin.last_fault:
-            commands.append(ClearPluginFaults(plugin.id))
         if answer.has_output():
             commands.append(AddPluginOutput(plugin.id, hook.agent_id, answer.output))
         answer_text = answer.reason if answer.is_refusal() else answer.line

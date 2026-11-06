@@ -7,13 +7,11 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
-from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.end_silent_helpers.end_silent_helpers import EndSilentHelpers
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
+from core.modules.agents.support.agent_rows import AgentRows
 
 SILENT_HELPER_SECONDS = 1800
 
@@ -24,11 +22,11 @@ class EndSilentHelpersHandler(Handler[EndSilentHelpers, None]):
 
     command = EndSilentHelpers
 
-    def __init__(self, queries: Queries, hook_calls: HookCallQuery, bus: Bus) -> None:
-        self.queries, self.hook_calls, self.bus = queries, hook_calls, bus
+    def __init__(self, agents: AgentRows, hook_calls: HookCallQuery, bus: Bus) -> None:
+        self.agents, self.hook_calls, self.bus = agents, hook_calls, bus
 
     def handle(self, command: EndSilentHelpers, context: Context) -> None:
-        helpers = self.queries.query(Agent).filter(role=AgentRole.HELPER).matching(IsNull("ended_at")).all_rows()
+        helpers = self.agents.running(AgentRole.HELPER)
         recent_limit = Timestamp(context.timestamp.value - timedelta(seconds=SILENT_HELPER_SECONDS))
         helpers = tuple(helpers)
         recently_called = {call.session_agent_id for call in self.hook_calls.matching(Among("session_agent_id", [helper.id for helper in helpers])).matching(Greater("created_at", recent_limit.text)).all_rows()}

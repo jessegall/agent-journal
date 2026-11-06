@@ -228,8 +228,8 @@ class Story:
         self.home.status_folder.mkdir(parents=True, exist_ok=True)
         FileAccess.shared().write(self.home.status_folder / f"{session}.json", json.dumps({"session_id": session, "context_window": {"used_percentage": percent}}))
 
-    def error_log_text(self) -> str:
-        return FileAccess.shared().read(self.home.error_log) if self.home.error_log.exists() else ""
+    def system_log_text(self) -> str:
+        return FileAccess.shared().read(self.home.system_log) if self.home.system_log.exists() else ""
 
     def expect_sync_refusal(self, module: str, text: str) -> None:
         registry_text = Registry.read(self.container.get(Database)).entries_text()

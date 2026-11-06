@@ -25,7 +25,7 @@ command refers to the plugin.
 | `skills` | The folder holding its skills. |
 | `reaches` | For an older event name, which helpers and workers it reaches besides the main agent. |
 | `aliases` | The commands it provides under short names. |
-| `dashboard` | A page it writes, with a name and a title. |
+| `dashboard` | A page it writes, with a name, a title and `events`, the keys of the events that make the viewer read it again while it is open. With no `events` an open page reads once a minute. |
 | `description` | What it is for. |
 | `project_reads` | Folders of the project a worker's shell line may read for it. |
 | `files` | Other files that count as what it runs. Changing one switches the plugin off until a person has read the change. A folder counts every file in it, and a big folder costs time at every step of an agent. |

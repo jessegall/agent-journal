@@ -3,21 +3,19 @@ import os
 import time
 from collections.abc import Generator
 from contextlib import contextmanager
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import IO
 from core.base.journal_home import SERVER_SOCKET, JournalHome
 from core.base.file_access import FileAccess
-from core.base.rotated_file import RotatedFile
+from core.base.log_level import LogLevel
+from core.base.log_source import LogSource
+from core.base.system_log_writer import LOG_LIMIT_BYTES, SystemLogWriter
 from core.base.server_restart_state import ServerRestartState
 from server.server_files_error import ServerFilesError
 
 
 SOCKET_FILE_MODE = 0o600
-LOG_FILE_MODE = 0o600
 LOCK_POLL_SECONDS = 0.05
-SERVER_LOG_LIMIT_BYTES = 10_000_000
-OUTPUT_DESCRIPTORS = (1, 2)
 def socket_path(home: JournalHome, name: str = SERVER_SOCKET) -> Path:
     return home.socket(name)
 class ServerFiles:
@@ -33,7 +31,8 @@ class ServerFiles:
         self.socket = socket_path(home)
         self.lock = home.folder / "server.lock"
         self.pid_file = home.folder / "server.pid"
-        self.log = home.folder / "runtime" / "server.log"
+        self.log = home.system_log
+        self.system_log = SystemLogWriter(home)
         self.maintenance = home.folder / "maintenance"
         self.run_lock = home.run_lock
         self.restart_mark = home.restart_mark
@@ -94,20 +93,11 @@ class ServerFiles:
 
     # Moves a log past its limit aside as server.log.1, and points the output the starter opened on the
     # old file at the new one; only the server that holds the lock calls it.
-    def rotate_log(self, limit_bytes: int = SERVER_LOG_LIMIT_BYTES) -> None:
-        inode = self.log.stat().st_ino if self.log.exists() else None
-        if not RotatedFile(self.log, limit_bytes).rotate():
-            return
-        descriptor = os.open(self.log, os.O_WRONLY | os.O_APPEND | os.O_CREAT, LOG_FILE_MODE)
-        for output in OUTPUT_DESCRIPTORS:
-            if os.fstat(output).st_ino == inode:
-                os.dup2(descriptor, output)
-        os.close(descriptor)
+    def rotate_log(self, limit_bytes: int = LOG_LIMIT_BYTES) -> None:
+        self.system_log.rotate(limit_bytes)
 
-    def log_line(self, text: str) -> None:
-        self.log.parent.mkdir(parents=True, exist_ok=True)
-        with self.log.open("a") as log:
-            log.write(f"{datetime.now(timezone.utc).isoformat(timespec='seconds')} {text}\n")
+    def log_line(self, text: str, level: LogLevel = LogLevel.INFORMATION) -> None:
+        self.system_log.write(level, text, LogSource.SERVER)
 
     def write_tunnel_pid(self, pid: int) -> None:
         self.tunnel_pid_file.write_text(str(pid))

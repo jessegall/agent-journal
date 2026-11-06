@@ -110,7 +110,9 @@ class PluginManifest:
     def read_dashboard(dashboard: object) -> ManifestDashboard | None:
         if not is_mapping(dashboard) or "name" not in dashboard:
             return None
-        return ManifestDashboard(str(dashboard["name"]), str(dashboard["title"]) if "title" in dashboard else str(dashboard["name"]))
+        event_keys = dashboard["events"] if "events" in dashboard else ()
+        return ManifestDashboard(str(dashboard["name"]), str(dashboard["title"]) if "title" in dashboard else str(dashboard["name"]),
+                                 tuple(str(key) for key in event_keys) if is_list(event_keys) else ())
 
     @staticmethod
     def read_aliases(aliases: object) -> tuple[ManifestAlias, ...]:

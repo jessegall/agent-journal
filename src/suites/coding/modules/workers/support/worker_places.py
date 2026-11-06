@@ -15,6 +15,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
 from suites.coding.support.coding_agent_role import CodingAgentRole
+from core.modules.agents.support.agent_rows import AgentRows
 
 AGENT_LINES_TABLE = "agent_lines"
 JOB_DELIVERY_SECONDS = 120
@@ -26,14 +27,11 @@ class WorkerPlaces:
     a resume also count a resume handed over in the last two minutes that has not bound yet. Delivered work with
     its process stopped takes no run place."""
 
-    def __init__(self, queries: Queries, limits: AgentTypeLimits, kept: KeptRows, clock: Clock, scopes: Scopes) -> None:
-        self.queries, self.limits, self.kept, self.clock, self.scopes = queries, limits, kept, clock, scopes
+    def __init__(self, agents: AgentRows, queries: Queries, limits: AgentTypeLimits, kept: KeptRows, clock: Clock, scopes: Scopes) -> None:
+        self.agents, self.queries, self.limits, self.kept, self.clock, self.scopes = agents, queries, limits, kept, clock, scopes
 
     def running(self) -> tuple[Agent, ...]:
-        return self.kept.scoped_read(AGENTS_TABLE, self.running_rows, "role = ?", [CodingAgentRole.WORKER.value], name="workers.running")
-
-    def running_rows(self) -> tuple[Agent, ...]:
-        return tuple(self.queries.query(Agent).filter(role=CodingAgentRole.WORKER).matching(IsNull("ended_at")).all_rows())
+        return self.agents.running(CodingAgentRole.WORKER)
 
     def kept_workers(self) -> tuple[Agent, ...]:
         return self.kept.scoped_read(AGENTS_TABLE, self.kept_rows, "role = ?", [CodingAgentRole.WORKER.value], name="workers.kept")

@@ -30,7 +30,7 @@ def test_an_allowed_stop_records_every_check_and_reason_through_the_viewer_route
                                 checks["memories.weigh-first-stop"]["reason"] == "no active memories.weighing layer",
                                 checks["workers.delivered-work-at-stop"]["reason"] == "no delivered proof needs a check at this stop")
     stop_server.story.expect_text(f"hook-call stops --session-agent-id {stop_server.story.agent.id} --json", "the agent has no task in hand")
-    stop_server.story.expect_rows("stop " in stop_server.story.error_log_text(), "the agent has no task in hand" in stop_server.story.error_log_text())
+    stop_server.story.expect_rows("stop " in stop_server.story.system_log_text(), "the agent has no task in hand" in stop_server.story.system_log_text())
 
 
 def test_a_refused_stop_keeps_later_checks_without_applying_their_commands(stop_server):

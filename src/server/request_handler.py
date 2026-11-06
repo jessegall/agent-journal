@@ -8,6 +8,7 @@ from http.server import BaseHTTPRequestHandler
 
 from core.base.caller.caller_request_error import CallerRequestError
 from core.base.cli.console import ERROR_CODE
+from core.base.log_level import LogLevel
 from core.base.timing import TIMING_HEADER, Timing
 from core.base.timing_log import TimingLog
 from core.base.caller.caller_request import CallerRequest
@@ -83,7 +84,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             TimingLog(context.home).write({"request_id": self.timing.request_id(self.sender_pid), "route": self.route, "line": self.line, "status": self.status,
                                           "exit_code": self.exit_code, "code_version": context.code_version.text[:12], "timing": self.timing.text()})
         except OSError as error:
-            context.files.log_line(f"timing line not written: {error}")
+            context.files.log_line(f"timing line not written: {error}", LogLevel.WARNING)
 
     def journal_server(self) -> JournalServer:
         return server_instance(self.server, JournalServer)
@@ -106,7 +107,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             if client_disconnected(error):
                 self.close_connection = True
                 return
-            self.journal_server().context.files.log_line("".join(traceback.format_exception(error)))
+            self.journal_server().context.files.log_line("".join(traceback.format_exception(error)), LogLevel.ERROR)
             self.answer_json(500, {"error": f"{type(error).__name__}: {error}"})
 
     def answer_get(self) -> None:
@@ -209,7 +210,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 queued_ms = (perf_counter() - started_at) * 1000
                 code = CliEndpoint(context.home, ListenerWake(context.listener_thread), context.reported_findings, queue, context.request_log.completed).answer(request, ChunkStream(self.send_chunk))
         except Exception as error:
-            self.journal_server().context.files.log_line("".join(traceback.format_exception(error)))
+            self.journal_server().context.files.log_line("".join(traceback.format_exception(error)), LogLevel.ERROR)
             self.send_chunk(f"{type(error).__name__}: {error}\n".encode())
             code = ERROR_CODE
         self.timing.stamp("command_done")

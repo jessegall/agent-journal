@@ -8,7 +8,8 @@ from core.base.change.event_log import EventLog
 from core.base.cli.caller_stream import CallerStream
 from core.base.command.bus import Bus
 from core.base.command.context import Context
-from core.base.error_log import ErrorLog
+from core.base.log_level import LogLevel
+from core.base.system_log_writer import SystemLogWriter
 from core.base.model.event_form import EventForm
 from core.base.model.model import Model
 from core.base.registry.registry import Registry
@@ -30,8 +31,8 @@ GUARD_NAME = "plugins.event-guard"
 class PluginEventScripts:
     """Gets guard and listen script answers for a change outside the transaction lock."""
 
-    def __init__(self, subscriptions: PluginSubscriptions, log: EventLog, errors: ErrorLog, registry: Registry, runner: PluginEventRunner, bus: Bus, running: PluginScriptProcesses, caller: CallerStream) -> None:
-        self.subscriptions, self.log, self.errors, self.registry, self.runner, self.bus, self.running, self.caller = subscriptions, log, errors, registry, runner, bus, running, caller
+    def __init__(self, subscriptions: PluginSubscriptions, log: EventLog, system_log: SystemLogWriter, registry: Registry, runner: PluginEventRunner, bus: Bus, running: PluginScriptProcesses, caller: CallerStream) -> None:
+        self.subscriptions, self.log, self.system_log, self.registry, self.runner, self.bus, self.running, self.caller = subscriptions, log, system_log, registry, runner, bus, running, caller
 
     def answers(self, form: EventForm, event: Changed[Model], context: Context) -> Sequence[PluginEventAnswer]:
         if isinstance(context.command, FAULT_WRITES):
@@ -50,12 +51,12 @@ class PluginEventScripts:
         if turn.answers is not None:
             return cast(Sequence[PluginEventAnswer], turn.answers)
         if runs.closed:
-            self.errors.noted(f"{form.value} scripts of {change.event} were skipped: {runs.closed_reason}")
+            self.system_log.write(LogLevel.WARNING, f"{form.value} scripts of {change.event} were skipped: {runs.closed_reason}")
             key = self.registry.event_key(change.event)
             for subscription in subscriptions:
                 self.running.skipped(subscription.plugin, key, form, runs.closed_reason, context.timestamp)
             return ()
-        raise runs.rollback(PluginEventWork(self.runner, self.errors, self.caller, form, self.registry.event_key(change.event), subscriptions, PluginPayload.change_payload(change, form, self.log, None),
+        raise runs.rollback(PluginEventWork(self.runner, self.system_log, self.caller, form, self.registry.event_key(change.event), subscriptions, PluginPayload.change_payload(change, form, self.log, None),
                                             PluginPayload.environment_id(change), self.agent_id(context), turn))
 
     def apply(self, answered: PluginEventAnswer, context: Context) -> None:

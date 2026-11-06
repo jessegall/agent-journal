@@ -13,9 +13,6 @@ from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.seconds import Seconds
 from core.base.page import Page
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_activity import AgentActivity
@@ -24,6 +21,7 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.processes.queries.process_query import ProcessQuery
 from suites.coding.modules.workers.support.queue_run_workers import QueueRunWorkers
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
+from core.modules.agents.support.agent_rows import AgentRows
 
 class InactiveHelperRule(DriverRule):
     """A tick names each inactive helper to its parent again after the configured number of minutes."""
@@ -34,8 +32,8 @@ class InactiveHelperRule(DriverRule):
     roles = [AgentRole.MAIN, AgentRole.WORKER]
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, activities: AgentActivities, history: HookHistory, settings: SettingValues, processes: ProcessQuery, workers: QueueRunWorkers, requests: ReaderRequestQuery, types: AgentTypeBook) -> None:
-        self.queries, self.activities, self.hook_history, self.settings = queries, activities, history, settings
+    def __init__(self, agents: AgentRows, activities: AgentActivities, history: HookHistory, settings: SettingValues, processes: ProcessQuery, workers: QueueRunWorkers, requests: ReaderRequestQuery, types: AgentTypeBook) -> None:
+        self.agents, self.activities, self.hook_history, self.settings = agents, activities, history, settings
         self.processes, self.workers = processes, workers
         self.requests = requests
         self.types = types
@@ -69,7 +67,7 @@ class InactiveHelperRule(DriverRule):
 
     def helpers(self, main_id: int) -> list[Agent]:
         roles = self.types.derived_types("helper")
-        helpers = self.queries.query(Agent).filter(parent_id=main_id).matching(Among("role", roles)).matching(IsNull("ended_at")).oldest().all_rows()
+        helpers = [agent for agent in self.agents.running(parent_id=main_id) if agent.role in roles]
         return sorted(helpers, key=lambda helper: roles.index(helper.role))
 
     def is_inactive(self, helper: Agent, activity: AgentActivity, hook: AgentHook, span: Seconds) -> bool:

@@ -51,7 +51,7 @@ def test_an_unexpected_error_exits_with_three_and_is_written_to_the_error_log(tm
     container.get(Database).update(Statement("DROP TABLE items"))
     code, output_text = run(container, "item", "list")
     assert code == 3 and "OperationalError" in output_text
-    assert JournalHome(tmp_path).error_log.exists()
+    assert JournalHome(tmp_path).system_log.exists()
 
 
 def test_a_stale_registry_is_refused(tmp_path, monkeypatch):
@@ -79,7 +79,7 @@ def test_an_error_after_the_commit_is_logged_and_the_saved_write_still_exits_wit
     container.bind(CommitListenerRunner, BrokenListenerRunner())
     code, output_text = run(container, "item", "make", "Dune")
     assert code == 0 and "created: item:1" in output_text
-    assert "a listener broke after the commit" in JournalHome(tmp_path).error_log.read_text()
+    assert "a listener broke after the commit" in JournalHome(tmp_path).system_log.read_text()
 
 
 class CountedRuns(CommitListenerRunner):

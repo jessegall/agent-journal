@@ -15,7 +15,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 GUIDE = Path("src/core/modules/plugins/web/src/PluginGuide.vue")
 SKILL = Path("src/core/modules/plugins/skills/journal-plugins/SKILL.md")
 MANIFEST = {"name": "standup", "title": "Standup", "version": "1.2.0", "description": "Writes the daily standup", "requires": {"sh": {"check": "command -v sh"}}, "setup": [{"name": "packages", "run": "true"}],
-            "services": [{"name": "web", "command": ["server.sh", "--quiet"]}], "dashboard": {"name": "daily", "title": "Daily"}}
+            "services": [{"name": "web", "command": ["server.sh", "--quiet"]}], "dashboard": {"name": "daily", "title": "Daily", "events": ["core.tasks.task.created", "core.tasks.task.nothing"]}}
 PAGES = {"title": "Today", "start": "start", "pages": {"start": {"title": "Today", "view": {"type": "stack", "children": []}}}}
 GIT_LIMIT_SECONDS = 30
 
@@ -90,6 +90,12 @@ def test_a_dashboard_is_listed_and_says_when_nothing_is_written(new_story):
     story = installed_plugin(new_story)
     story.expect_text("plugin dashboards", "standup: Daily")
     story.expect_text("plugin dashboard standup", "has written nothing on its dashboard yet")
+
+
+def test_a_dashboard_lists_the_events_it_names_by_their_viewer_names_and_leaves_out_an_unknown_key(new_story):
+    story = installed_plugin(new_story)
+    rows = json.loads(story.run("plugin dashboards --json").output_text)["rows"]
+    story.expect_rows(rows[0]["events"] == ["task.create"])
 
 
 def test_a_written_dashboard_is_read_back(new_story):
