@@ -1,0 +1,132 @@
+/* @code-commandments-generated */
+if (!document.getElementById("window-styles-8b6640210b8a")) { const style = document.createElement("style"); style.id = "window-styles-8b6640210b8a"; style.textContent = ".band[data-v-9cc4041c]{display:flex;align-items:center;gap:7px;height:28px;margin:0;padding:0 14px;background:var(--side);border-bottom:1px solid var(--border);color:var(--text-2);font-size:11.5px;font-weight:500;letter-spacing:.03em}.band svg[data-v-9cc4041c]{color:var(--text-3)}.band span[data-v-9cc4041c]{margin-left:auto;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.inspector[data-v-ee3cdb47]{display:flex;flex-direction:column;min-height:0;height:100%;background:var(--bg)}header[data-v-ee3cdb47]{display:flex;align-items:center;gap:8px;padding:14px;border-bottom:1px solid var(--border)}header h1[data-v-ee3cdb47]{flex:1;margin:0;font-size:14px}.limits[data-v-ee3cdb47],.empty[data-v-ee3cdb47]{margin:0;padding:14px;color:var(--text-3);font-size:12px}.entry[data-v-ee3cdb47]{display:grid;grid-template-columns:110px minmax(0,1fr) 70px;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px}.entry strong[data-v-ee3cdb47]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.entry span[data-v-ee3cdb47]:last-child{text-align:right;font-variant-numeric:tabular-nums}.detail-head[data-v-68f1d146]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-68f1d146]{margin:0;color:var(--text);font-size:14px}.slow[data-v-68f1d146]{color:#c58b35}.refused[data-v-68f1d146]{color:#d76b6b}.heading[data-v-68f1d146]{margin:0 0 8px;font-size:12px}pre[data-v-68f1d146]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}.note[data-v-68f1d146]{margin:0;color:var(--text-3);font-size:12px}.message[data-v-68f1d146]{padding:16px;line-height:1.6}.toolbar[data-v-4bbfe681]{display:flex;justify-content:space-between;padding:8px 12px}.queue-veil[data-v-4bbfe681]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-4bbfe681]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-4bbfe681]{position:relative;display:grid;grid-template-columns:minmax(360px,46%) 1px minmax(0,1fr);height:100%;min-height:0;overflow:hidden}.list[data-v-4bbfe681]{display:flex;flex-direction:column;min-height:0;min-width:0}.list-scroll[data-v-4bbfe681]{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}.columns[data-v-4bbfe681],.row[data-v-4bbfe681]{display:grid;grid-template-columns:minmax(80px,1.4fr) minmax(40px,.7fr) 32px 88px minmax(72px,1fr) 55px 60px;align-items:center;gap:5px;padding:10px;font-size:12px}.columns[data-v-4bbfe681]{flex:none;border-bottom:1px solid var(--border);color:var(--text-3)}.columns[data-v-4bbfe681]>:last-child,.duration[data-v-4bbfe681],.queued[data-v-4bbfe681],.parts[data-v-4bbfe681]{text-align:right}.parts[data-v-4bbfe681]{padding-right:12px;color:var(--text-3);font-variant-numeric:tabular-nums}.sender[data-v-4bbfe681]{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.sender[data-v-4bbfe681]:hover{color:var(--accent);text-decoration:underline}.day[data-v-4bbfe681]{display:flex;justify-content:space-between;padding:9px 16px;border-bottom:1px solid var(--border);background:var(--side);color:var(--text-3);font-size:11px}.row[data-v-4bbfe681]{width:100%;border:0;border-bottom:1px solid var(--border);background:none;color:inherit;font-family:inherit;text-align:left;cursor:pointer}.row[data-v-4bbfe681]:hover,.row.open[data-v-4bbfe681]{background:var(--surface-2, var(--border))}.event[data-v-4bbfe681]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.tool[data-v-4bbfe681]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-3)}time[data-v-4bbfe681],.duration[data-v-4bbfe681],.queued[data-v-4bbfe681]{font-variant-numeric:tabular-nums;white-space:nowrap}.slow .duration[data-v-4bbfe681],.detail-head .slow[data-v-4bbfe681]{color:#c58b35}.refused .event[data-v-4bbfe681],.refused .duration[data-v-4bbfe681],.detail-head .refused[data-v-4bbfe681]{color:#d76b6b}.note[data-v-4bbfe681]{margin:0;color:var(--text-3);font-size:12px}.detail[data-v-4bbfe681]{padding:20px;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain}.divider[data-v-4bbfe681]{background:var(--border)}.message[data-v-4bbfe681]{padding:16px;line-height:1.6}.detail-head[data-v-4bbfe681]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-4bbfe681]{margin:0;color:var(--text);font-size:14px}.heading[data-v-4bbfe681]{margin:0 0 8px;font-size:12px}pre[data-v-4bbfe681]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}@media(max-width:760px){.queue-button[data-v-4bbfe681]{align-self:flex-end;margin:8px 12px}.queue-veil[data-v-4bbfe681]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-4bbfe681]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-4bbfe681]{position:relative;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(140px,45%) 1px minmax(0,1fr)}}.request-rows[data-v-4bbfe681]{display:contents}.request-row-move[data-v-4bbfe681]{transition:transform .32s cubic-bezier(.2,.9,.25,1)}.request-row-enter-active[data-v-4bbfe681]{transition:opacity .2s ease-out}.request-row-enter-from[data-v-4bbfe681]{opacity:0}.request-row-leave-active[data-v-4bbfe681]{display:none}@media(prefers-reduced-motion:reduce){.request-row-move[data-v-4bbfe681],.request-row-enter-active[data-v-4bbfe681]{transition:none}}.numbers-tools[data-v-e1619853]{display:flex;gap:8px;margin-bottom:10px}.numbers-note[data-v-e1619853]{margin:0;color:var(--text-3);font-size:12.5px}.numbers-table[data-v-e1619853]{width:100%;border-collapse:collapse;font-size:12.5px}.numbers-table th[data-v-e1619853],.numbers-table td[data-v-e1619853]{padding:4px 8px;border-bottom:1px solid var(--border);text-align:left}.numbers-table th[data-v-e1619853]{color:var(--text-3);font-weight:500}.logs[data-v-2bdca692]{display:flex;flex-direction:column;height:100%;min-height:0}.toolbar[data-v-2bdca692],nav[data-v-2bdca692]{display:flex;align-items:center;gap:12px;padding:10px 12px;flex:none}.toolbar[data-v-2bdca692]{border-bottom:1px solid var(--border)}.toolbar label[data-v-2bdca692]{display:flex;align-items:center;gap:6px}.toolbar button[data-v-2bdca692]{margin-left:auto}.scroll[data-v-2bdca692]{flex:1;min-height:0;overflow:auto}table[data-v-2bdca692]{width:100%;border-collapse:collapse;font-size:12px}th[data-v-2bdca692]{position:sticky;top:0;background:var(--surface);text-align:left;color:var(--text-3)}th[data-v-2bdca692],td[data-v-2bdca692]{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top}time[data-v-2bdca692]{white-space:nowrap}.message[data-v-2bdca692]{white-space:pre-wrap;overflow-wrap:anywhere;width:100%;font-family:monospace}[data-level=error][data-v-2bdca692],[data-level=critical][data-v-2bdca692]{color:var(--danger, #c53a3a)}[data-level=warning][data-v-2bdca692]{color:var(--warning, #a76a13)}.empty[data-v-2bdca692]{padding:12px;color:var(--text-3)}nav[data-v-2bdca692]{justify-content:center;border-top:1px solid var(--border)}\n"; document.head.appendChild(style); }
+import { ref as r, computed as C, watch as y, openBlock as u, createBlock as N, unref as P, withCtx as $, createElementVNode as t, createTextVNode as k, withDirectives as h, createElementBlock as n, Fragment as g, renderList as m, toDisplayString as o, vModelSelect as w, createCommentVNode as x } from "vue";
+import { useWindow as V, usePoll as M, WindowRoom as B } from "@journal/window-kit";
+import { t as T } from "./toggleFeedPause-Dh68BHHr.mjs";
+import { _ as U } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+const j = {
+  class: "logs",
+  "data-system-logs": "",
+  "aria-label": "System logs"
+}, z = { class: "toolbar" }, A = ["value"], D = ["value"], E = ["aria-pressed"], F = {
+  key: 0,
+  role: "alert"
+}, R = { class: "scroll" }, W = ["data-level"], I = ["datetime"], q = { class: "message" }, G = {
+  key: 0,
+  class: "empty"
+}, H = { "aria-label": "Log pages" }, J = ["disabled"], K = ["disabled"], O = {
+  __name: "SystemLogs",
+  setup(Q) {
+    const L = V(), i = r(""), d = r(""), s = r(1), a = r(!1), v = r({ rows: [], total: 0, size: 50 }), c = r(""), _ = C(() => Math.max(1, Math.ceil(v.value.total / v.value.size)));
+    let f = 0;
+    async function p() {
+      const b = ++f, l = [`--page ${s.value}`];
+      i.value && l.push(`--source ${i.value}`), d.value && l.push(`--level ${d.value}`);
+      const e = await L.read(`developer system-logs ${l.join(" ")}`);
+      a.value || b !== f || (c.value = e.ok ? "" : e.error, e.ok && (v.value = e.value));
+    }
+    y([i, d], () => {
+      if (s.value !== 1) {
+        s.value = 1;
+        return;
+      }
+      a.value || p();
+    }), y(s, () => {
+      a.value || p();
+    });
+    function S() {
+      T(a, p);
+    }
+    return M(p, () => !a.value), (b, l) => (u(), N(P(B), { padding: "0" }, {
+      default: $(() => [
+        t("section", j, [
+          t("div", z, [
+            t("label", null, [
+              l[5] || (l[5] = k("Source ", -1)),
+              h(t("select", {
+                "onUpdate:modelValue": l[0] || (l[0] = (e) => i.value = e),
+                "data-log-source": ""
+              }, [
+                l[4] || (l[4] = t("option", { value: "" }, "All sources", -1)),
+                (u(), n(g, null, m(["server", "error", "journal"], (e) => t("option", {
+                  key: e,
+                  value: e
+                }, o(e), 9, A)), 64))
+              ], 512), [
+                [w, i.value]
+              ])
+            ]),
+            t("label", null, [
+              l[7] || (l[7] = k("Level ", -1)),
+              h(t("select", {
+                "onUpdate:modelValue": l[1] || (l[1] = (e) => d.value = e),
+                "data-log-level": ""
+              }, [
+                l[6] || (l[6] = t("option", { value: "" }, "All levels", -1)),
+                (u(), n(g, null, m(["debug", "info", "warning", "error", "critical"], (e) => t("option", {
+                  key: e,
+                  value: e
+                }, o(e), 9, D)), 64))
+              ], 512), [
+                [w, d.value]
+              ])
+            ]),
+            t("button", {
+              type: "button",
+              "data-log-pause": "",
+              "aria-pressed": a.value,
+              onClick: S
+            }, o(a.value ? "Resume" : "Pause"), 9, E)
+          ]),
+          c.value ? (u(), n("p", F, o(c.value), 1)) : x("", !0),
+          t("div", R, [
+            t("table", null, [
+              t("thead", null, [
+                t("tr", null, [
+                  (u(), n(g, null, m(["Time (UTC)", "Source", "Level", "Message"], (e) => t("th", { key: e }, o(e), 1)), 64))
+                ])
+              ]),
+              t("tbody", null, [
+                (u(!0), n(g, null, m(v.value.rows, (e) => (u(), n("tr", {
+                  key: e.id,
+                  "data-log-line": "",
+                  "data-level": e.level
+                }, [
+                  t("td", null, [
+                    t("time", {
+                      datetime: e.recorded_at,
+                      title: "Lines without a time use the preceding line's time, or the file's modified time."
+                    }, o(e.recorded_at), 9, I)
+                  ]),
+                  t("td", null, o(e.source), 1),
+                  t("td", null, o(e.level), 1),
+                  t("td", q, o(e.text), 1)
+                ], 8, W))), 128))
+              ])
+            ]),
+            !v.value.rows.length && !c.value ? (u(), n("p", G, "No log lines found.")) : x("", !0)
+          ]),
+          t("nav", H, [
+            t("button", {
+              type: "button",
+              "data-log-previous": "",
+              disabled: s.value <= 1 || a.value,
+              onClick: l[2] || (l[2] = (e) => s.value--)
+            }, "Previous", 8, J),
+            t("span", null, "Page " + o(s.value) + " of " + o(_.value), 1),
+            t("button", {
+              type: "button",
+              "data-log-next": "",
+              disabled: s.value >= _.value || a.value,
+              onClick: l[3] || (l[3] = (e) => s.value++)
+            }, "Next", 8, K)
+          ])
+        ])
+      ]),
+      _: 1
+    }));
+  }
+}, te = /* @__PURE__ */ U(O, [["__scopeId", "data-v-2bdca692"]]);
+export {
+  te as default
+};

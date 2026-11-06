@@ -11,7 +11,8 @@ try {
     const requests = sidebar.locator('[data-sidebar-window="developer.hook-requests"]');
     const section = sidebar.locator('[data-fold="developer"]');
     await sidebar.locator('[data-sidebar-window="settings.settings"]').waitFor();
-    assert.equal(await section.count(), 0);
+    await sidebar.locator('[data-sidebar-window="developer.system-logs"]').waitFor();
+    assert.equal(await section.count(), 1);
     const set = async (key, value) => {
         const answer = await page.evaluate(async ({key, value}) => {
             const response = await fetch("/api/line", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({window: "settings.settings", environment: "main", line: ["setting", "set", key, value, "--project"]})});
@@ -31,7 +32,8 @@ try {
     await numbers.waitFor({state: "detached"});
     assert.equal(await requests.count(), 1);
     await set(log, "false");
-    await section.waitFor({state: "detached"});
+    assert.equal(await section.count(), 1);
+    assert.equal(await sidebar.locator('[data-sidebar-window="developer.system-logs"]').count(), 1);
 } finally {
     await browser.close();
 }

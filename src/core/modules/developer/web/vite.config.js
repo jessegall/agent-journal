@@ -7,6 +7,7 @@ export default windowBuild({
     entries: {
         numbers: here("./src/numbers.js"),
         hookRequests: here("./src/hookRequests.js"),
+        systemLogs: here("./src/systemLogs.js"),
     },
     outDir: here("./dist"),
 });
