@@ -1,10 +1,31 @@
 <script setup>
-import {computed, ref} from "vue";
-import {WindowRoom, highlight, usePoll, useReadLine} from "@journal/window-kit";
+import {computed, ref, watch} from "vue";
+import {MenuItem, MenuLabel, MenuPanel, WindowRoom, highlight, usePoll, useReadLine} from "@journal/window-kit";
 import RequestQueueInspector from "./RequestQueueInspector.vue";
 
-const {value: requests, failure, load} = useReadLine(() => "developer hook-requests", {unbatched: true});
+const key = "journal.hook-requests.filters";
+const emptyFilters = () => ({kind: [], family: [], sender: []});
+function savedFilters() {
+    try { return {...emptyFilters(), ...JSON.parse(localStorage.getItem(key) || "{}")}; }
+    catch { return emptyFilters(); }
+}
+const filters = ref(savedFilters());
+const options = ref({family: ["process bookkeeping"], sender: []});
+const count = computed(() => Object.values(filters.value).reduce((sum, values) => sum + values.length, 0));
+const {value: requests, failure, load} = useReadLine(() => ["developer hook-requests", ...Object.entries(filters.value).flatMap(([name, values]) => values.map((value) => `--${name} ${JSON.stringify(value)}`))].join(" "), {unbatched: true});
 const rows = computed(() => requests.value?.rows ?? []);
+watch(rows, (value) => {
+    for (const name of ["family", "sender"]) options.value[name] = [...new Set([...options.value[name], ...value.map((row) => row[name]).filter(Boolean), ...filters.value[name]])].sort();
+});
+watch(filters, (value) => {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+    load();
+});
+function toggle(name, value) {
+    const values = filters.value[name];
+    filters.value = {...filters.value, [name]: values.includes(value) ? values.filter((item) => item !== value) : [...values, value]};
+}
+const filterAnchor = ref(null);
 const openedNumber = ref(0);
 const queueOpen = ref(false);
 const opened = computed(() => rows.value.find((row) => row.id === openedNumber.value));
@@ -20,7 +41,19 @@ usePoll(load, () => true);
     <WindowRoom padding="0">
         <div class="requests" data-hook-requests>
             <section class="list" aria-label="Recorded requests">
-                <button type="button" class="queue-button" data-request-queue-open @click="queueOpen = true">Request queue</button>
+                <div class="toolbar">
+                    <button type="button" data-filter-open @click="filterAnchor = $event.currentTarget">Filters<span v-if="count" data-filter-count> ({{ count }})</span></button>
+                    <button type="button" data-request-queue-open @click="queueOpen = true">Request queue</button>
+                    <MenuPanel v-if="filterAnchor" :anchor="filterAnchor" align="start" :min-width="220" :max-width="320" @close="filterAnchor = null">
+                        <MenuLabel>Type</MenuLabel>
+                        <MenuItem v-for="kind in ['hook', 'viewer', 'command line']" :key="kind" :data-filter-kind="kind" role="menuitemcheckbox" :checked="filters.kind.includes(kind)" :aria-checked="filters.kind.includes(kind)" @click="toggle('kind', kind)">{{ kind }}</MenuItem>
+                        <MenuLabel>Event or command</MenuLabel>
+                        <MenuItem v-for="family in options.family" :key="family" :data-filter-family="family" role="menuitemcheckbox" :checked="filters.family.includes(family)" :aria-checked="filters.family.includes(family)" @click="toggle('family', family)">{{ family }}</MenuItem>
+                        <MenuLabel>Sender</MenuLabel>
+                        <MenuItem v-for="sender in options.sender" :key="sender" role="menuitemcheckbox" :checked="filters.sender.includes(sender)" :aria-checked="filters.sender.includes(sender)" @click="toggle('sender', sender)">{{ sender }}</MenuItem>
+                        <MenuItem v-if="count" data-filter-clear @click="filters = emptyFilters()">Clear filters</MenuItem>
+                    </MenuPanel>
+                </div>
                 <div class="columns">
                     <span data-hook-column>Event</span>
                     <span data-hook-column>Tool</span>
@@ -79,7 +112,7 @@ usePoll(load, () => true);
 </template>
 
 <style scoped>
-.queue-button { align-self: flex-end; margin: 8px 12px; }
+.toolbar { display: flex; justify-content: space-between; padding: 8px 12px; }
 .queue-veil { position: absolute; inset: 0; display: flex; justify-content: flex-end; background: #0005; z-index: 3; }
 .queue-veil > * { width: min(560px, 100%); box-shadow: 0 0 24px #0003; }
 .requests {

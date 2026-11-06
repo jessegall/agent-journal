@@ -124,6 +124,23 @@ def test_requests_show_the_sender_and_queue_time(recording_server):
     server.story.expect_rows(rows[0]["queued_ms"] == 0)
 
 
+def test_request_filters_apply_on_the_viewer_route(recording_server):
+    server = recording_server
+    log = server.story.container.get(HookRequestLog)
+    for role, event in (("main", "stop"), ("main", "process part-start"), ("viewer", "task list"), ("cli", "agent list")):
+        log.record("claude", {}, {"event": event}, 1, HookAnswer.ALLOWED, role=role)
+    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+
+    def read(*flags):
+        return server.viewer_line_value(cookie, {"line": ["developer", "hook-requests", *flags], "environment": "main", "window": "developer.hook-requests"})["rows"]
+
+    assert [row["event"] for row in read()] == ["agent list", "task list", "stop"]
+    assert [row["event"] for row in read("--family", "process bookkeeping")] == ["process part-start"]
+    assert [row["event"] for row in read("--kind", "viewer", "--family", "task")] == ["task list"]
+    assert [row["event"] for row in read("--sender", "Main agent")] == ["stop"]
+    assert read("--kind", "viewer", "--sender", "Main agent") == []
+
+
 def test_a_hook_shows_the_time_it_waited_for_another(recording_server):
     server = recording_server
     sample = HookSamples.sample("post_tool_use").with_fields(firing="queued")

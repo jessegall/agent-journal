@@ -18,10 +18,12 @@ class HookRequestsSubcommand(ReadSubcommand[tuple[HookRequest, ...]]):
         self.log = log
 
     def arguments(self, parser: ArgumentParser) -> None:
-        return None
+        parser.add_argument("--kind", action="append", default=[])
+        parser.add_argument("--family", action="append", default=[])
+        parser.add_argument("--sender", action="append", default=[])
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[HookRequest, ...]:
-        return tuple(self.log.read())
+        return tuple(self.log.read(arguments.kind, arguments.family, arguments.sender))
 
     def write_output(self, value: object, output: Output) -> None:
         if is_tuple(value):
