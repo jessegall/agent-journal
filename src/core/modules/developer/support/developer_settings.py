@@ -30,6 +30,6 @@ DEVELOPER_SETTINGS = [
                                         SettingType.FLAG, default=True, scope=SettingScope.PROJECT),
                            SettingValue("repeated-work", "Errors for repeated work", "Shows an error in the chat when a request or agent call repeats a query, queries per list item or repeats a file read.",
                                         SettingType.FLAG, default=False, scope=SettingScope.PROJECT),
-                           SettingValue("slow-clock-ticks", "Costly clock ticks", "Shows a chat message when one tick costs more than 50 database points.",
+                           SettingValue("slow-clock-ticks", "Costly clock ticks", "Shows a warning in the chat when one tick costs more than 50 database points; Errors to the agent sends it on.",
                                         SettingType.FLAG, default=True, scope=SettingScope.PROJECT)]),
 ]

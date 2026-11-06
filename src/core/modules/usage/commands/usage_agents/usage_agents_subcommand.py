@@ -4,6 +4,7 @@ import json
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
+from core.base.clock import Clock
 from core.base.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.base.query.conditions.greater import Greater
@@ -11,9 +12,12 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.modules.drivers.support.driver_settings import BLOCK_CARD_SECONDS
 from core.modules.profiles.support.profile_files import ProfileFiles
+from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.base.profile.agent_profile import AgentProfile
 from core.modules.usage.models.agent_card import AgentCard
+from core.modules.usage.support.agent_blocked import AgentBlocked
 from core.modules.usage.support.agent_facts import AgentFacts
 from core.modules.usage.support.agent_facts_list import AgentFactsList
 from core.modules.usage.support.session_status import SessionStatus
@@ -32,8 +36,9 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     name = "agents"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles) -> None:
+    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock) -> None:
         self.queries, self.files, self.providers, self.home, self.suites, self.profiles = queries, files, providers, home, suites, profiles
+        self.settings, self.clock = settings, clock
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--closed", action="store_true", help="also the agents that ended most recently")
@@ -47,10 +52,11 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         return AgentFactsList(tuple(self.facts(card, job_roles, titles) for card in (*running, *ended)))
 
     def facts(self, card: AgentCard, job_roles: Collection[str], titles: dict[str, str]) -> AgentFacts:
+        blocked_reason = AgentBlocked(self.settings.number(BLOCK_CARD_SECONDS)).reason(card, self.clock.timestamp())
         status = self.files.status(card.session)
         return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
-                          tuple(json.loads(card.tasks)), self.waiting_state(card), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
-                          card.job_instruction, status.effort or self.session_effort(card), card.role in job_roles, card.job_returned, card.last_activity, self.helper_job(card), titles.get(card.profile or card.job_profile, card.profile or card.job_profile))
+                          tuple(json.loads(card.tasks)), self.waiting_state(card, blocked_reason), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
+                          card.job_instruction, status.effort or self.session_effort(card), card.role in job_roles, card.job_returned, card.last_activity, self.helper_job(card), titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason)
 
     @staticmethod
     def helper_job(card: AgentCard) -> str:
@@ -69,8 +75,8 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         return self.providers.session_effort(card.program, self.home, card.session)
 
     @staticmethod
-    def waiting_state(card: AgentCard) -> str:
-        if card.is_blocked:
+    def waiting_state(card: AgentCard, blocked_reason: str) -> str:
+        if blocked_reason:
             return BLOCKED_STATE
         return WAITING_STATE if card.paused_at is not None else ""
 
