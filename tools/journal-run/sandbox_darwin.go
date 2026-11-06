@@ -15,7 +15,7 @@ func systemSandbox(program string, writable []string, limit readLimit) (shellSan
 	}
 	var policy strings.Builder
 	policy.WriteString("(version 1)(allow default)(deny file-write*)(allow file-write* (literal \"/dev/null\"))")
-	policy.WriteString(`(allow file-write* (regex #"^/private/tmp/sh-thd-[0-9]+$"))`)
+	policy.WriteString(`(allow file-write-create (literal "/private/tmp"))(allow file-write* (regex #"^/(private/)?tmp/sh-thd-[0-9]+$"))`)
 	for _, folder := range writable {
 		resolved, err := filepath.EvalSymlinks(folder)
 		if err != nil {
