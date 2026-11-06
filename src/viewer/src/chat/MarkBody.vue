@@ -2,7 +2,8 @@
 import {peekRef} from "../route.js";
 import {useOutputPages} from "../composables/outputPages.js";
 import {STOPPED_VARIANTS} from "../domain/markLook.js";
-import {computed, inject, onUnmounted, ref, watch} from "vue";
+import {computed, inject, ref, watch} from "vue";
+import {usePoll} from "../../kit/usePoll.js";
 import OutputLines from "../kit/OutputLines.vue";
 import ModuleBody from "../windows/ModuleBody.vue";
 import {WINDOW_CONTEXT} from "../windows/windowContext.js";
@@ -29,7 +30,6 @@ const RUN_MODEL = "process";
 const TASK_MODEL = "task";
 const stopReason = computed(() => (STOPPED_VARIANTS.has(props.mark.variant) ? props.mark.detail || "" : ""));
 const taskId = computed(() => (props.mark.target_model === TASK_MODEL ? props.mark.target_id : 0));
-const POLL_MILLISECONDS = 2000;
 const pages = useOutputPages(
     (words) => context.run(words),
     () => props.mark.target_id
@@ -43,23 +43,14 @@ async function readOutput(step = pages.follow) {
     outputLoaded.value = true;
     outputFailure.value = answer.ok ? "" : answer.error;
 }
-let poll = null;
-const stopPoll = () => clearInterval(poll);
-watch(
-    () => props.shown && hasOutput.value,
-    (reading) => {
-        stopPoll();
-        if (!reading) return;
-        readOutput();
-        if (!props.mark.ended_at) poll = setInterval(readOutput, POLL_MILLISECONDS);
-    },
-    {immediate: true}
-);
+const reading = computed(() => props.shown && hasOutput.value);
+// the first read comes with the poll's start, a later opening reads at once, and a run that ended is read once more to its newest page
+watch(reading, (now) => now && readOutput());
+usePoll(() => reading.value && readOutput(), () => reading.value && !props.mark.ended_at);
 watch(
     () => props.mark.ended_at,
-    (ended) => ended && props.shown && hasOutput.value && (stopPoll(), readOutput(pages.newest))
+    (ended) => ended && reading.value && readOutput(pages.newest)
 );
-onUnmounted(stopPoll);
 </script>
 
 <template>

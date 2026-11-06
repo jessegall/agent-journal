@@ -1,11 +1,9 @@
 <script setup>
-import {computed, inject, ref} from "vue";
+import {computed, ref} from "vue";
 import ChatMark from "../kit/ChatMark.vue";
 import MarkBody from "./MarkBody.vue";
 import MarkButtons from "./MarkButtons.vue";
 import {markDeclaration} from "../domain/markRegistry.js";
-import {usePoll} from "../../kit/usePoll.js";
-import {WINDOW_CONTEXT} from "../windows/windowContext.js";
 import {markLook, STOPPED_VARIANTS} from "../domain/markLook.js";
 
 const OUTPUT_MODELS = new Set(["output", "process"]);
@@ -15,20 +13,7 @@ const DOCK_LINE = "dock add";
 // one chat mark of any declared type, drawn by version 4's ChatMark from the type's declaration
 const props = defineProps({mark: {type: Object, required: true}, allowedRuns: {type: Array, default: null}, docked: Boolean});
 const declaration = computed(() => markDeclaration(props.mark.type));
-// a running run's mark reads its output row every two seconds, which the journal's clock keeps current
-const context = inject(WINDOW_CONTEXT, null);
-const isRunningRun = computed(() => Boolean(context && props.mark.target_model === "process" && props.mark.target_id && !props.mark.ended_at));
-const livePercent = ref(null);
-usePoll(async () => {
-    if (!isRunningRun.value) return;
-    const answer = await context.read(["output", "list", "--process", String(props.mark.target_id)]);
-    if (answer.ok && answer.value.rows.length) livePercent.value = answer.value.rows[0].progress;
-}, () => isRunningRun.value);
-const look = computed(() => {
-    const drawn = markLook(props.mark, declaration.value);
-    const showsPercent = !drawn.figure || drawn.figure.endsWith("%");
-    return livePercent.value && isRunningRun.value && showsPercent ? {...drawn, figure: `${livePercent.value}%`, fraction: livePercent.value / 100} : drawn;
-});
+const look = computed(() => markLook(props.mark, declaration.value));
 // a mark with lines, an output or a body of its module's own opens in place on a click, and folds on the next; its row's action stays its own
 const opens = computed(() => Boolean(props.mark.lines || (props.mark.detail && STOPPED_VARIANTS.has(props.mark.variant)) || OUTPUT_MODELS.has(props.mark.target_model) || declaration.value?.body_url));
 const opened = ref(false);
