@@ -21,7 +21,7 @@ class ReportSilentAgentHandler(Handler[ReportSilentAgent, None]):
 
     def handle(self, command: ReportSilentAgent, context: Context) -> None:
         agent = self.queries.query(Agent).find(command.agent_id)
-        text = SILENT_AGENT_FAILED.nudge(agent=agent.id).text
+        text = SILENT_AGENT_FAILED.nudge(agent=agent.id, reason=command.reason).text
         notices = self.queries.query(AgentLine).filter(source=SILENT_FAILURE_SOURCE, text=text).matching(Minimum("created_at", command.inactive_at.text))
         if not notices.exists():
             self.main_agent_line.send(text, SILENT_FAILURE_SOURCE, context)

@@ -49,6 +49,7 @@ SMALL_TABLES = {
     "statistics": "One row per named statistic, listed together.",
     "hook_requests": "The developer's request log keeps only its newest requests.",
     "secrets": "A project's secrets form a small catalogue.",
+    "task_dependencies": "The waits between tasks form a small list, read once and answered from memory.",
     "docs": "The document library is read and counted as one small list.",
     "reports": "The report library is read and counted as one small list.",
 }

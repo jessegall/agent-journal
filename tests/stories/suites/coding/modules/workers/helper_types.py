@@ -39,9 +39,9 @@ def test_shipped_types_restore_their_access_inheritance_and_worker_roster(new_st
 def test_an_inactive_helper_of_any_registered_descendant_type_wakes_its_parent(new_story, role):
     story = new_story(fixture=FIXTURES[role])
     helper = json.loads(story.run(f"agent list --role {role} --json").output_text)["rows"][0]
-    story.advance(timedelta(minutes=5))
+    story.advance(timedelta(minutes=15))
     story.tick("s-1")
-    wanted = f"{role}:{helper['id']} has used no tool for 5 minutes"
+    wanted = f"{role}:{helper['id']} has used no tool for 15 minutes"
     story.expect_text(f"agent-line list --agent {story.agent.id}", wanted)
     lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows()
     story.expect_rows(any(wanted in line.text and line.wakes_agent for line in lines))
@@ -51,7 +51,7 @@ def test_an_ended_helper_is_left_out_of_the_inactive_notice(new_story):
     story = new_story(fixture=HelperStarted)
     helper = json.loads(story.run("agent list --role helper --json").output_text)["rows"][0]
     story.expect_success(f"agent end {helper['id']}")
-    story.advance(timedelta(minutes=5))
+    story.advance(timedelta(minutes=15))
     story.tick("s-1")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}",
                          f"helper:{helper['id']} has used no tool")

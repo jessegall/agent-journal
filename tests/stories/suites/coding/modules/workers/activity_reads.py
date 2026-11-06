@@ -33,18 +33,18 @@ def four_workers(four_tasks):
 
 def test_a_tick_reads_one_activity_set_for_four_workers(four_workers):
     story = four_workers
-    story.advance(timedelta(minutes=5))
+    story.advance(timedelta(minutes=15))
     with patch.object(Database, "rows", autospec=True, side_effect=Database.rows) as reads:
         story.tick("s-1")
     activity_reads = [call for call in reads.call_args_list if "FROM agent_activities" in call.args[1].sql]
     expect_value(len(activity_reads), 1)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "has used no tool for 5 minutes")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "has used no tool for 15 minutes")
 
 
 def test_a_later_tick_reads_fresh_activity_after_a_worker_acts(four_workers):
     story = four_workers
     workers = list(story.container.get(Queries).query(Agent).filter(parent_id=story.agent.id, role="worker").oldest().all_rows())
-    story.advance(timedelta(minutes=4))
+    story.advance(timedelta(minutes=14))
     story.tick("s-1")
     story.hook(worker_session(story, workers[0]), HookSamples.prompt("Continue the job"))
     story.advance(timedelta(minutes=1))

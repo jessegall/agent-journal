@@ -8,3 +8,5 @@ class LaunchAnswer(StrEnum):
     STARTED = "started"
     RUNNING = "running"
     FAILED = "failed"
+    LOCKED = "locked"
+    NOT_ASKED = "not asked"

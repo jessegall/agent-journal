@@ -43,4 +43,4 @@ class SendWorkerSubcommand(Subcommand[SendWorker, AgentLine]):
             return f"worker {worker.id} is paused: the job waits until it is resumed"
         if not self.home.socket(LAUNCHER_SOCKET).exists():
             return f"worker {worker.id} is not running and has the job waiting; an ended worker needs the launcher to start again"
-        return f"worker {worker.id} was not running: the job starts it again"
+        return f"worker {worker.id} was not running: the job waits until it starts, and you are told if it does not"

@@ -28,7 +28,7 @@ class AgentLauncher:
             raise Refusal(f"agent {agent.id} is retired, for good", "start a new agent")
         with self.sessions.lock(agent.session) as available:
             if not available:
-                return LaunchAnswer.RUNNING
+                return LaunchAnswer.LOCKED
             state = self.sessions.prepare(agent)
             if state is not AgentSessionState.READY:
                 return LaunchAnswer.FAILED if state is AgentSessionState.BLOCKED else LaunchAnswer.RUNNING
