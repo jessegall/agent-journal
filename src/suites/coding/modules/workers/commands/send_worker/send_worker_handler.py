@@ -20,7 +20,7 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.gone_agents import GoneAgents
-from suites.coding.modules.workers.support.kept_worker_tasks import KeptWorkerTasks
+from suites.coding.modules.workers.commands.send_worker.kept_worker_tasks import KeptWorkerTasks
 from suites.coding.modules.workers.support.worker_recipient import WorkerRecipient
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit

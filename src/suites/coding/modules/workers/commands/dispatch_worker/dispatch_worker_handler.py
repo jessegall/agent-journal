@@ -18,7 +18,8 @@ from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
-from suites.coding.modules.workers.support.idle_workers import IdleWorkers
+from suites.coding.modules.workers.support.available_workers import AvailableWorkers
+from suites.coding.modules.workers.support.worker_asked import WorkerAsked
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from suites.coding.modules.workers.support.worker_task_copies import WorkerTaskCopies
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
@@ -45,8 +46,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     transactional = False
 
     def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
-                 providers: Providers, programs: HelperPrograms, models: AllowedModels, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, idle_workers: IdleWorkers) -> None:
-        self.places, self.copies, self.idle_workers = places, copies, idle_workers
+                 providers: Providers, programs: HelperPrograms, models: AllowedModels, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers) -> None:
+        self.places, self.copies, self.available_workers = places, copies, available_workers
         self.queries, self.bus, self.settings = queries, bus, settings
         self.git, self.worker_command, self.worktrees, self.providers, self.programs, self.models = git, worker_command, worktrees, providers, programs, models
         self.environments, self.rows, self.types, self.profiles, self.scopes = environments, rows, types, profiles, scopes
@@ -74,15 +75,15 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         model = command.program_model or self.providers.provider(program).profile_model(profile)
         self.check_model(program, model)
         self.programs.installed(program)
-        if not command.fresh_reason.strip():
-            self.check_idle(environment.folder, profile.name, program, model, tasks)
+        if not command.new_agent_reason.strip():
+            self.check_idle(environment.folder, WorkerAsked(profile.name, program, model), tasks)
         if not self.places.has_kept_place():
             names = ", ".join(f"agent:{worker.id}" for worker in self.places.kept_workers()[:KEPT_NAMES_SHOWN])
             raise Refusal(f"{self.places.kept_limit()} workers are kept: {names}", 'journal agent retire <n> --reason "<why>"')
         start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
         source = self.sources.source_copy(replace(context, environment_id=task.environment_id))
         task_sources = self.copies.copies(tasks, source)
-        opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id, command.fresh_reason.strip()), context)
+        opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id, command.new_agent_reason.strip()), context)
         try:
             base_commit = self.git.tip(environment.folder, environment.branch)
             self.git.cut(environment.folder, opened.worktree)
@@ -94,8 +95,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             raise
         return WorkerLaunch(opened.worker, worktree, self.worker_command.command(opened.worker, worktree, environment, task))
 
-    def check_idle(self, folder: str, profile: str, program: str, model: str, tasks: list[Task]) -> None:
-        idle = self.idle_workers.first(folder, profile, program, model)
+    def check_idle(self, folder: str, asked: WorkerAsked, tasks: list[Task]) -> None:
+        idle = self.available_workers.first(folder, asked)
         if idle is not None:
             task_ids = " ".join(str(task.id) for task in tasks)
             raise Refusal(f"worker {idle.id} is idle: journal worker send {idle.id} --task {task_ids}", 'or --fresh "<why>"')

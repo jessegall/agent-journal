@@ -31,8 +31,9 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
 class KeptWorkerTasks:
-    """Hands new tasks to a kept worker. An open worktree takes them as its next tasks and what was delivered stays;
-    a merged worker gets a new cut in its old folder on the same session; an unmerged branch is never overwritten."""
+    """Hands new tasks to a kept worker. An open worktree takes them as its next tasks and what was delivered
+    stays; a merged worker gets a new cut in its old folder on the same session; an unmerged branch is never
+    overwritten."""
 
     def __init__(self, queries: Queries, repository: Repository, worktrees: WorktreeQuery, git: WorktreeGit, bus: Bus, nudger: Nudger,
                  environments: EnvironmentRows, advance: WorkerTaskAdvance, sources: WorkSources, copies: WorkerTaskCopies) -> None:

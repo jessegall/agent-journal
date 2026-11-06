@@ -12,9 +12,9 @@ FULL_SESSION_PERCENT = 80
 
 
 class KeptHelpers:
-    """Reads the idle helpers of a profile that can take a new job: not retired, process ended, no open job, on the
-    program and model asked for, with a session that resumes in its folder and is not nearly full. The newest comes
-    first."""
+    """Reads the idle helpers of a profile that can take a new job: not retired, process ended, no open job, on
+    the program and model asked for, with a session that resumes in its folder and is not nearly full. The newest
+    comes first."""
 
     def __init__(self, queries: Queries, providers: Providers, folders: AgentFolders, kept_rows: KeptRows, home: JournalHome) -> None:
         self.queries, self.providers, self.folders, self.kept_rows, self.home = queries, providers, folders, kept_rows, home
@@ -26,9 +26,9 @@ class KeptHelpers:
     def idle(self, profile: str, program: str, model: str) -> tuple[Agent, ...]:
         kept = self.queries.query(Agent).filter(role=AgentRole.HELPER, profile=profile).matching(IsNull("retired_at")).newest().all_rows()
         open_jobs = self.with_open_jobs(profile)
-        return tuple(helper for helper in kept if self.can_take_a_job(helper, open_jobs, program, model))
+        return tuple(helper for helper in kept if self.is_available(helper, open_jobs, program, model))
 
-    def can_take_a_job(self, helper: Agent, open_jobs: set[int | None], program: str, model: str) -> bool:
+    def is_available(self, helper: Agent, open_jobs: set[int | None], program: str, model: str) -> bool:
         if helper.ended_at is None or helper.id in open_jobs or (program and helper.program != program) or (model and helper.program_model != model):
             return False
         provider = self.providers.provider(helper.program)

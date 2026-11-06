@@ -55,7 +55,7 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
             raise Refusal("a helper needs the launcher, which is not running", "keep your work and start the journal with journal launch")
         parent = self.limits.checked_parent(context)
         self.limits.checked_new_place(profile.name)
-        reuses_helpers = not command.fresh_reason.strip() and not profile.independent
+        reuses_helpers = not command.new_agent_reason.strip() and not profile.independent
         if reuses_helpers:
             self.check_reuse(parent, profile, command.brief)
         program = command.program or profile.program or parent.program
@@ -68,7 +68,7 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
         source = self.sources.source_copy(source_context)
         helper = self.bus.dispatch(start, context)
         self.repository.save(HelperJob(session_agent_id=parent.id, creator_id=context.actor.id, tool_key=helper.session, helper_id=helper.id, profile=profile.name, program_model=model,
-                                       description=command.given_name or profile.name, brief=command.brief, fresh_reason=command.fresh_reason.strip(), instruction=command.brief[:SHORT_BRIEF_CHARACTERS],
+                                       description=command.given_name or profile.name, brief=command.brief, new_agent_reason=command.new_agent_reason.strip(), instruction=command.brief[:SHORT_BRIEF_CHARACTERS],
                                        source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp), context)
         self.sources.use_copy(source, source_context)
         self.bus.dispatch(CountProfileUse(profile.name), context)

@@ -153,7 +153,7 @@ def test_fresh_with_a_reason_starts_a_new_helper_and_keeps_the_reason(new_story,
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.expect_success("helper start journal-researcher --fresh 'A second reader' --brief 'Read src/other.py' --environment main", actor=story.agent)
     job = story.container.get(Queries).query(HelperJob).newest().first()
-    story.expect_rows(job.fresh_reason == "A second reader")
+    story.expect_rows(job.new_agent_reason == "A second reader")
     launcher.server.close()
     story.home.socket("launcher").unlink()
 

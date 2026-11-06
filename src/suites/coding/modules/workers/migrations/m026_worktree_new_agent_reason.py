@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class WorktreeFreshReasonMigration(Migration):
+class WorktreeNewAgentReasonMigration(Migration):
     """Adds the reason a worker started new though a kept worker could take the task."""
 
     number = 26

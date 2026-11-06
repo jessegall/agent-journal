@@ -111,10 +111,10 @@ def test_a_worker_resume_at_the_run_limit_is_held_and_starts_when_a_place_frees(
     story.expect_success(f'worker send {worker.id} "Add the tax"', actor=story.agent)
     story.run_listeners()
     WorkerResumeRetry()(story.container)
-    started_before = len(launcher.starts)
+    start_count_at_limit = len(launcher.starts)
     story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 2 --environment main", actor=story.user)
     WorkerResumeRetry()(story.container)
-    story.expect_rows(started_before == 1, len(launcher.starts) == 2)
+    story.expect_rows(start_count_at_limit == 1, len(launcher.starts) == 2)
 
 
 def test_a_kept_worker_takes_a_new_task_on_its_open_worktree_and_what_it_delivered_stays(new_story):
@@ -164,5 +164,5 @@ def test_a_dispatch_with_an_idle_worker_is_refused_with_its_send_line_and_fresh_
     story.expect_refusal(f"worker dispatch --model sonnet {second} {third}", f"journal worker send {worker.id} --task {second} {third}", actor=story.agent)
     new_worker = dispatched_worker(story, f"worker dispatch --model sonnet --fresh 'Another model of thinking' {second} {third}")
     worktree = story.container.get(WorktreeQuery).worker_worktree(new_worker.id)
-    story.expect_rows(worktree.fresh_reason == "Another model of thinking")
+    story.expect_rows(worktree.new_agent_reason == "Another model of thinking")
 

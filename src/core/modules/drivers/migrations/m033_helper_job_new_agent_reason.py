@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class HelperJobFreshReasonMigration(Migration):
+class HelperJobNewAgentReasonMigration(Migration):
     """Adds the reason a helper started new though another could take the job."""
 
     number = 33

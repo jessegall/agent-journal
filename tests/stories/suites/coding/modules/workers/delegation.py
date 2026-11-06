@@ -330,8 +330,8 @@ def test_the_board_lists_tasks_delegated_to_a_worker_in_a_group_of_their_own_apa
 
 
 
-def expect_card_listed(story, show: str, agent_id: int, listed: bool) -> None:
-    outcome = story.run(f"agent cards --environment main --show {show} --json", actor=story.agent)
+def expect_card_listed(story, filter_name: str, agent_id: int, listed: bool) -> None:
+    outcome = story.run(f"agent cards --environment main --show {filter_name} --json", actor=story.agent)
     assert outcome.code == 0, outcome.output_text
     rows = json.loads(outcome.output_text)["rows"]
     assert (agent_id in [row["id"] for row in rows]) is listed, rows

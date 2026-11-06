@@ -12,7 +12,8 @@ from suites.coding.modules.workers.commands.send_worker.send_worker import SendW
 
 class SendWorkerSubcommand(Subcommand[SendWorker, AgentLine]):
     """`journal worker send <n> ["<job>"] [--task <task> ...]`: a worker that reported takes its next job or
-    tasks, with its memory of the last, and the answer says whether it runs, is started again or cannot be told."""
+    tasks, with its memory of the last, and the answer says whether it runs, is started again or cannot be
+    told."""
 
     cli_name = "worker"
     name = "send"
