@@ -1,3 +1,4 @@
+from core.base.database.reported_findings import ReportedFindings
 from core.base.journal_home import JournalHome
 from server.listener_thread import ListenerThread
 from server.viewer.buttons_route import ButtonsRoute
@@ -22,8 +23,8 @@ class ViewerRoutes:
     skills, the files the chat carries, the session the cookie opened, a share link's opening,
     what waits on the person, and whether the server is restarting."""
 
-    def __init__(self, home: JournalHome, listener_thread: ListenerThread, login: ViewerLogin) -> None:
-        self.line_route, self.event_stream = LineRoute(home, listener_thread), EventStream(home)
+    def __init__(self, home: JournalHome, listener_thread: ListenerThread, login: ViewerLogin, reported: ReportedFindings) -> None:
+        self.line_route, self.event_stream = LineRoute(home, listener_thread, reported), EventStream(home)
         self.module_files, self.windows_route = ModuleFiles(home), WindowsRoute(home)
         self.buttons_route = ButtonsRoute(home)
         self.chat_declarations_route, self.session_route = ChatDeclarationsRoute(home), SessionRoute(login, home)
