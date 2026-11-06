@@ -3,6 +3,8 @@ import pytest
 import json
 from datetime import timedelta
 
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
@@ -73,3 +75,12 @@ def half_hour_session(new_story):
     story.expect_success('message send "Fix the cart" --environment main', actor=story.user)
     story.advance(timedelta(minutes=15))
     return story
+
+
+def test_an_agent_can_read_another_agents_wait_share(new_story):
+    story = new_story(fixture=UserJoined)
+    other = Actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
+    story.expect_success("wait stuck 'the build is down'", actor=other)
+    story.advance(timedelta(minutes=30))
+    answer = json.loads(story.run(f"usage fitness --agent {other.id} --json", actor=story.agent).output_text)
+    story.expect_rows(measure(answer, "wait_share")["value"] == 0.5)

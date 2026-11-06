@@ -9,10 +9,6 @@ class NudgeRecords:
     def __init__(self, queries: Queries, kept: KeptRows) -> None:
         self.queries, self.kept = queries, kept
 
-    def newest_row(self, agent_id: int, key: str) -> NudgeRecord | None:
-        rows = self.queries.query(NudgeRecord).filter(session_agent_id=agent_id, key=key).descending("last_delivered_at")
-        return self.kept.read("nudge_records", rows.first, "session_agent_id = ? AND key = ?", [agent_id, key], name=f"drivers.nudge:{key}")
-
-    def newest_text_row(self, agent_id: int, key: str, text: str) -> NudgeRecord | None:
-        rows = self.queries.query(NudgeRecord).filter(session_agent_id=agent_id, key=key, text=text).descending("last_delivered_at")
-        return self.kept.read("nudge_records", rows.first, "session_agent_id = ? AND key = ? AND text = ?", [agent_id, key, text], name=f"drivers.nudge:{text}")
+    def agent_rows(self, agent_id: int) -> list[NudgeRecord]:
+        rows = self.queries.query(NudgeRecord).filter(session_agent_id=agent_id).descending("last_delivered_at")
+        return self.kept.read("nudge_records", lambda: list(rows.all_rows()), "session_agent_id = ?", [agent_id], name="drivers.nudges")

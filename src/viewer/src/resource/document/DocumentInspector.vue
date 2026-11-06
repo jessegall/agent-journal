@@ -81,6 +81,12 @@ async function send(words) {
     await load();
 }
 
+async function closeRevision() {
+    const answer = await props.read(["doc", "close", String(props.id)]);
+    failure.value = answer.ok ? "" : answer.error;
+    if (answer.ok) await load();
+}
+
 function clearSelection() {
     if (!draft.value.trim()) selection.value = null;
 }
@@ -166,7 +172,7 @@ watch(notesMode, () => {
                 <DocumentLinks :links="links" />
             </template>
             <template v-else-if="shownTab === 'revisions'">
-                <DocumentRevisions :id="id" :revisions="revisions" :text="row.body" :read="read" @restored="load" />
+                <DocumentRevisions :id="id" :revisions="revisions" :text="row.body" :read="read" :editing="row.open_author_id !== null && row.open_author_id !== undefined" @close-revision="closeRevision" @restored="load" />
             </template>
             <template v-else-if="shownTab === 'comments'">
                 <DocumentSidebar v-model:mode="notesMode" tab :comments="comments" :questions="questions" :hot="hot" :lost="lost" :failure="questionFailure" :read="read" @show="showInText" @changed="load" />

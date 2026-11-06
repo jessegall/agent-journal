@@ -19,6 +19,8 @@ class EditTextHandler(Handler[EditText, TextRow]):
 
     def handle(self, command: EditText, context: Context) -> TextRow:
         text_row = self.queries.query(command.text_model).find(command.row_id)
+        if isinstance(text_row, Doc):
+            self.revisions.require_open(text_row, context)
         body = command.change.applied(text_row.body)
         if command.change.changes_body():
             MarkdownCheck.check(body)

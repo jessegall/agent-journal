@@ -7,7 +7,7 @@ import {settle, typeInto} from "./support/windowContext.js";
 afterEach(() => (document.body.innerHTML = ""));
 
 const BODY = "# One\nThe total is in cents.\n\n```python\ndef total():\n    return 1\n```\n\n| Point | Where |\n|---|---|\n| Tax | cart.py |\n";
-const ROW = {id: 4, title: "Cart", abstract: "How the cart counts", body: BODY, close_reason: "", created_at: "2026-11-01T10:00:00Z", updated_at: "2026-11-01T10:00:00Z", revision: 2};
+const ROW = {id: 4, title: "Cart", abstract: "How the cart counts", body: BODY, close_reason: "", created_at: "2026-11-01T10:00:00Z", updated_at: "2026-11-01T10:00:00Z", revision: 2, open_author_id: 42};
 const onWords = {id: 7, body: "Why cents?", quote: "in cents", position: 16, selection_type: "text", created_at: "2026-11-01T10:00:00Z"};
 const whole = {id: 8, body: "Good plan", quote: "", position: null, selection_type: "", created_at: "2026-11-01T10:00:00Z"};
 
@@ -26,7 +26,7 @@ function drawn(comments = [onWords, whole], width = 980) {
         if (line[1] === "inspect") return {ok: true, value: {...ROW, comments}};
         if (line[1] === "comment" && line.at(-1) === "no") return {ok: false, error: "refused"};
         if (line[0] === "link") return {ok: true, value: {rows: [{id: 1, target_model: "plan", target_id: 3, link_type: "mentions"}]}};
-        if (line[1] === "revisions") return {ok: true, value: {rows: [{number: 2, change: "Totals", created_at: "2026-11-01"}]}};
+        if (line[1] === "revisions") return {ok: true, value: {rows: [{number: 2, change: "Totals", author_name: "Lady Lovelace", created_at: "2026-11-01"}, {number: 1, change: "First", author_name: "Unknown", created_at: "2026-10-31"}]}};
         if (line[1] === "revision") return {ok: true, value: {body: "the old text"}};
         return {ok: true, value: {rows: []}};
     };
@@ -126,6 +126,26 @@ test("links and revisions are tabs, and a revision opens its text", async () => 
     element.querySelector('[data-text-revision="2"]').click();
     await settle();
     expect(element.querySelector("[data-text-revision-diff]").textContent).toContain("the old text");
+});
+
+test("each revision names its author and date, including an unknown old author", async () => {
+    const {element} = drawn();
+    await settle();
+    element.querySelector('[data-document-tab="revisions"]').click();
+    await settle();
+    expect(element.querySelector('[data-text-revision="2"]').textContent).toContain("Lady Lovelace");
+    expect(element.querySelector('[data-text-revision="2"]').textContent).toContain("2026-11-01");
+    expect(element.querySelector('[data-text-revision="1"]').textContent).toContain("Unknown");
+});
+
+test("a person can close the agent's open revision from the inspector", async () => {
+    const {element, ran} = drawn();
+    await settle();
+    element.querySelector('[data-document-tab="revisions"]').click();
+    await settle();
+    element.querySelector('[data-close-revision]').click();
+    await settle();
+    expect(ran).toContainEqual(['doc', 'close', '4']);
 });
 
 test("editing starts from the text as it is and saves abstract and body", async () => {

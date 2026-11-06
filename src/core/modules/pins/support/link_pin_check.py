@@ -3,6 +3,7 @@ from dataclasses import replace
 from datetime import timedelta
 
 from core.base.clock import Clock
+from core.base.database.kept_rows import KeptRows
 from core.base.driver.nudge import Nudge
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
@@ -28,8 +29,8 @@ class LinkPinCheck:
     the first link no open pin has is offered, each link on its own count, and a ! command the agent asks the
     user to run is asked to become a button. The link of a closed pin is offered again."""
 
-    def __init__(self, queries: Queries, clock: Clock) -> None:
-        self.queries, self.clock = queries, clock
+    def __init__(self, queries: Queries, clock: Clock, kept: KeptRows) -> None:
+        self.queries, self.clock, self.kept = queries, clock, kept
 
     def nudges(self, agent_text: str, tool_output: str = "") -> list[Nudge]:
         if self.claims_missing_pin(agent_text):
@@ -56,7 +57,9 @@ class LinkPinCheck:
     def first_unpinned(self, text: str) -> str | None:
         links = dict.fromkeys(url.rstrip(".,;:") for url in LINK.findall(text) if not LOCAL_ADDRESS.match(url) and not PR_ADDRESS.match(url))
         pins = self.queries.query(Pin).matching(IsNull("closed_at"))
-        return next((url for url in links if not pins.matching(Among("link", (url.rstrip("/"), f"{url.rstrip('/')}/"))).exists()), None)
+        return next((url for url in links if not self.kept.scoped_read(
+            "pins", lambda: pins.matching(Among("link", (url.rstrip("/"), f"{url.rstrip('/')}/"))).exists(),
+            "closed_at IS NULL AND link IN (?, ?)", [url.rstrip("/"), f"{url.rstrip('/')}/"], name="pins.open_link")), None)
 
     def claims_missing_pin(self, text: str) -> bool:
         if not PIN_CLAIM.search(text):

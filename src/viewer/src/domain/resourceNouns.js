@@ -75,4 +75,4 @@ function stateMoves(noun, row) {
     return (table?.[stateLook(noun, row.state)] ?? []).filter((move) => open.includes(move.word));
 }
 
-export const movesOf = (noun, row) => (noun === "doc" || noun === "report" ? textMoves(row) : noun === "agent" ? [...workerMoves(row), ...agentMoves(row)] : noun === "check" ? checkMoves(row) : noun === "question" ? questionMoves(row) : stateMoves(noun, row));
+export const movesOf = (noun, row) => (noun === "doc" || noun === "report" ? textMoves(row).map(move => ({...move, word: noun === "doc" ? "settle" : move.word})) : noun === "agent" ? [...workerMoves(row), ...agentMoves(row)] : noun === "check" ? checkMoves(row) : noun === "question" ? questionMoves(row) : stateMoves(noun, row));

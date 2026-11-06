@@ -8,11 +8,10 @@ from core.modules.documents.models.doc_revision import DocRevision
 
 
 class KeepRevisionSubcommand(Subcommand[KeepRevision, DocRevision]):
-    """`journal doc keep <n>`: keeps the open revision as it is; the next edit opens a new one."""
+    """`journal doc close <n>` saves the author's revision."""
 
     cli_name = "doc"
-    name = "keep"
-    outward = True
+    name = "close"
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("id", type=int)
@@ -22,4 +21,4 @@ class KeepRevisionSubcommand(Subcommand[KeepRevision, DocRevision]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, DocRevision):
-            output.line(f"revision {value.number} of doc {value.doc_id} kept; the next edit opens revision {value.number + 1}")
+            output.line(f"doc {value.doc_id} closed; revision {value.number} saved")
