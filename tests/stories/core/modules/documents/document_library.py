@@ -62,6 +62,11 @@ def test_the_documents_window_reads_the_library_and_a_text_by_number(new_story):
     window.expect_window_allowed("documents.documents", "doc show 1 --json")
 
 
+def test_the_documents_window_can_stand_in_a_pane_or_on_a_page_of_its_own(new_story):
+    window = WindowStory(new_story(fixture=UserJoined))
+    window.expect_declared_window("documents.documents", "component", "pane_or_page")
+
+
 def expect_title_library(story, text, expected) -> None:
     actual = [row['title'] for row in library(story, text)['rows']]
     assert actual == expected, actual

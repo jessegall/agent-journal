@@ -80,6 +80,7 @@ defineExpose({focus: () => field.value?.focus()});
     top: 0;
     display: flex;
     flex: none;
+    flex-wrap: wrap;
     gap: 8px;
     align-items: center;
     min-width: 0;
@@ -90,7 +91,7 @@ defineExpose({focus: () => field.value?.focus()});
 
 .search-bar-control {
     display: flex;
-    flex: 1;
+    flex: 1 1 200px;
     align-items: stretch;
     min-width: 0;
     height: 30px;

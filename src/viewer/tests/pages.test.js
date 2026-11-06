@@ -305,3 +305,11 @@ test("only an environment with an agent has a colored dot", async () => {
     expect(element.querySelector("[data-environment='main'] .dot").classList.contains("active")).toBe(true);
     expect(element.querySelector("[data-environment='development'] .dot").classList.contains("active")).toBe(false);
 });
+
+test("a window that stands in a pane or on a page is offered to the panes and listed in the sidebar", async () => {
+    const catalogue = new WindowCatalogue(async () => ({windows: [entry("docs.library", {place: "pane_or_page"}), entry("docs.notes", {place: "page"})]}));
+    await catalogue.load();
+    expect(catalogue.windows.value.map((window) => window.name)).toEqual(["docs.library"]);
+    expect(catalogue.pages.value.map((window) => window.name)).toEqual(["docs.library", "docs.notes"]);
+});
+

@@ -26,7 +26,7 @@ export class WindowCatalogue {
         this.person = offers.person_id ?? null;
         const offered = withFamilyOptions(offers.windows, await this.fetchMarks());
         this.windows.value = offered.filter((window) => !["bar", "page"].includes(window.place));
-        this.pages.value = offered.filter((window) => window.place === "page");
+        this.pages.value = offered.filter((window) => ["page", "pane_or_page"].includes(window.place));
         this.bars.value = offered.filter((window) => window.place === "bar");
         this.dropdowns.value = offered.filter((window) => window.place === "dropdown");
         this.loaded.value = true;
