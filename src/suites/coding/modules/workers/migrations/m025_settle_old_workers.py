@@ -5,7 +5,7 @@ KEPT = 8
 REASON = UPGRADE_RETIREMENT_REASON
 
 
-class SettleOldWorkersMigration(Migration):
+class RetireOldWorkersMigration(Migration):
     """Retires the ended workers beyond the newest of an environment, once, unless a worktree is still open for one."""
 
     number = 25

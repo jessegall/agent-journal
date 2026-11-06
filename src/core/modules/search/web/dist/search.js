@@ -1,6 +1,6 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-c46a57cf463b")) { const style = document.createElement("style"); style.id = "window-styles-c46a57cf463b"; style.textContent = ".search-mark[data-v-7bd5473b]{display:flex;flex-direction:column;gap:1px;min-width:260px;max-width:520px;margin:2px 0 2px 12px}.search-child[data-v-7bd5473b]{display:flex;gap:10px;align-items:baseline;padding:4px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:12px;text-align:left;cursor:pointer}.search-child[data-v-7bd5473b]:hover:not(:disabled){background:var(--hover);color:var(--text)}.search-child[data-v-7bd5473b]:disabled{cursor:default}.search-child-name[data-v-7bd5473b]{flex:none;min-width:64px;color:var(--text-3)}.search-child-excerpt[data-v-7bd5473b]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.search-more[data-v-7bd5473b]{align-items:center;color:var(--text-3)}.search-none[data-v-7bd5473b]{margin:0;padding:4px 8px;color:var(--text-3);font-size:12px}.search[data-v-2ed05814]{display:flex;flex-direction:column;gap:14px}.search-chips[data-v-2ed05814]{display:flex;flex-wrap:wrap;gap:6px}.search-chip[data-v-2ed05814]{padding:2px 10px;border:0;border-radius:10px;background:var(--raised);color:var(--text-2);font-size:12px;cursor:pointer}.search-chip.on[data-v-2ed05814]{background:var(--accent);color:#fff}.search-hits[data-v-2ed05814]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.search-hit[data-v-2ed05814]{display:flex;gap:12px;width:100%;padding:8px 10px;border:0;border-radius:7px;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}.search-hit[data-v-2ed05814]:hover:not(:disabled){background:var(--hover)}.search-hit[data-v-2ed05814]:disabled{cursor:default}.search-hit-name[data-v-2ed05814]{flex:none;width:110px;color:var(--text-3)}.search-hit-excerpt[data-v-2ed05814]{flex:1;min-width:0}.search-note[data-v-2ed05814]{margin:0;color:var(--text-3)}\n"; document.head.appendChild(style); }
-import { ref as i, computed as V, openBlock as n, createElementBlock as o, createVNode as g, unref as d, withKeys as b, withModifiers as q, withCtx as y, createTextVNode as B, Fragment as _, renderList as x, normalizeClass as N, toDisplayString as l, createCommentVNode as S, createBlock as W, createElementVNode as u } from "vue";
+if (!document.getElementById("window-styles-d729f496916c")) { const style = document.createElement("style"); style.id = "window-styles-d729f496916c"; style.textContent = ".search-mark[data-v-7bd5473b]{display:flex;flex-direction:column;gap:1px;min-width:260px;max-width:520px;margin:2px 0 2px 12px}.search-child[data-v-7bd5473b]{display:flex;gap:10px;align-items:baseline;padding:4px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:12px;text-align:left;cursor:pointer}.search-child[data-v-7bd5473b]:hover:not(:disabled){background:var(--hover);color:var(--text)}.search-child[data-v-7bd5473b]:disabled{cursor:default}.search-child-name[data-v-7bd5473b]{flex:none;min-width:64px;color:var(--text-3)}.search-child-excerpt[data-v-7bd5473b]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.search-more[data-v-7bd5473b]{align-items:center;color:var(--text-3)}.search-none[data-v-7bd5473b]{margin:0;padding:4px 8px;color:var(--text-3);font-size:12px}.search[data-v-ac790cb5]{display:flex;flex-direction:column;gap:14px}.search-chips[data-v-ac790cb5]{display:flex;flex-wrap:wrap;gap:6px}.search-chip[data-v-ac790cb5]{padding:2px 10px;border:0;border-radius:10px;background:var(--raised);color:var(--text-2);font-size:12px;cursor:pointer}.search-chip.on[data-v-ac790cb5]{background:var(--accent);color:#fff}.search-hits[data-v-ac790cb5]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.search-hit[data-v-ac790cb5]{display:flex;gap:12px;width:100%;padding:8px 10px;border:0;border-radius:7px;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}.search-hit[data-v-ac790cb5]:hover:not(:disabled){background:var(--hover)}.search-hit[data-v-ac790cb5]:disabled{cursor:default}.search-hit-name[data-v-ac790cb5]{flex:none;width:110px;color:var(--text-3)}.search-hit-excerpt[data-v-ac790cb5]{flex:1;min-width:0}.search-note[data-v-ac790cb5]{margin:0;color:var(--text-3)}\n"; document.head.appendChild(style); }
+import { ref as i, computed as b, openBlock as l, createElementBlock as o, createVNode as g, unref as u, withKeys as N, withModifiers as V, withCtx as y, createTextVNode as q, Fragment as _, renderList as x, normalizeClass as B, toDisplayString as n, createCommentVNode as S, createBlock as W, createElementVNode as d } from "vue";
 import { useWindow as K, SearchBar as O, Btn as j, Skeleton as z } from "@journal/window-kit";
 import { _ as D } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const E = { class: "search" }, F = {
@@ -14,11 +14,16 @@ const E = { class: "search" }, F = {
   class: "search-note",
   "data-no-hits": ""
 }, T = { class: "search-hits" }, U = ["disabled", "onClick"], A = { class: "search-hit-name" }, G = { class: "search-hit-excerpt" }, H = {
+  key: 0,
+  class: "search-note",
+  "data-closest": ""
+}, J = {
+  key: 1,
   class: "search-note",
   "data-total": ""
-}, J = {
+}, P = {
   __name: "SearchWindow",
-  setup(P) {
+  setup(Q) {
     const $ = {
       task: "tasks.tasks",
       plan: "plans.plans",
@@ -28,77 +33,77 @@ const E = { class: "search" }, F = {
       sequence: "sequences.sequences",
       trigger: "triggers.triggers",
       check: "checks.checks"
-    }, k = K(), r = i(""), c = i(/* @__PURE__ */ new Set()), s = i(null), h = i(""), v = i(!1), f = V(() => {
+    }, k = K(), c = i(""), r = i(/* @__PURE__ */ new Set()), t = i(null), h = i(""), v = i(!1), f = b(() => {
       var a;
-      return [.../* @__PURE__ */ new Set([...(((a = s.value) == null ? void 0 : a.hits) || []).map((t) => t.cli_name), ...c.value])].sort();
+      return [.../* @__PURE__ */ new Set([...(((a = t.value) == null ? void 0 : a.hits) || []).map((s) => s.cli_name), ...r.value])].sort();
     });
     async function m() {
-      const a = r.value.trim().split(/\s+/).filter(Boolean);
-      if (!a.length) return void (s.value = null);
+      const a = c.value.trim().split(/\s+/).filter(Boolean);
+      if (!a.length) return void (t.value = null);
       v.value = !0;
-      const t = c.value.size ? ` --model ${[...c.value].join(",")}` : "", e = await k.read(`search find ${a.map((p) => `"${p}"`).join(" ")}${t}`);
-      v.value = !1, h.value = e.ok ? "" : e.error, s.value = e.ok ? e.value : null;
+      const s = r.value.size ? ` --model ${[...r.value].join(",")}` : "", e = await k.read(`search find ${a.map((p) => `"${p}"`).join(" ")}${s}`);
+      v.value = !1, h.value = e.ok ? "" : e.error, t.value = e.ok ? e.value : null;
     }
     function C(a) {
-      const t = new Set(c.value);
-      t.has(a) ? t.delete(a) : t.add(a), c.value = t, m();
+      const s = new Set(r.value);
+      s.has(a) ? s.delete(a) : s.add(a), r.value = s, m();
     }
     const w = (a) => $[a.cli_name] || "";
-    return (a, t) => (n(), o("div", E, [
-      g(d(O), {
-        modelValue: r.value,
-        "onUpdate:modelValue": t[0] || (t[0] = (e) => r.value = e),
-        onKeydown: b(q(m, ["prevent"]), ["enter"])
+    return (a, s) => (l(), o("div", E, [
+      g(u(O), {
+        modelValue: c.value,
+        "onUpdate:modelValue": s[0] || (s[0] = (e) => c.value = e),
+        onKeydown: N(V(m, ["prevent"]), ["enter"])
       }, {
         default: y(() => [
-          g(d(j), {
+          g(u(j), {
             variant: "primary",
             small: "",
             "data-search-go": "",
             onClick: m
           }, {
-            default: y(() => [...t[1] || (t[1] = [
-              B("Search", -1)
+            default: y(() => [...s[1] || (s[1] = [
+              q("Search", -1)
             ])]),
             _: 1
           })
         ]),
         _: 1
       }, 8, ["modelValue", "onKeydown"]),
-      f.value.length ? (n(), o("div", F, [
-        (n(!0), o(_, null, x(f.value, (e) => (n(), o("button", {
+      f.value.length ? (l(), o("div", F, [
+        (l(!0), o(_, null, x(f.value, (e) => (l(), o("button", {
           key: e,
           type: "button",
-          class: N(["search-chip", { on: c.value.has(e) }]),
+          class: B(["search-chip", { on: r.value.has(e) }]),
           "data-model": e,
           onClick: (p) => C(e)
-        }, l(e), 11, I))), 128))
+        }, n(e), 11, I))), 128))
       ])) : S("", !0),
-      v.value ? (n(), W(d(z), {
+      v.value ? (l(), W(u(z), {
         key: 1,
         shape: "rows"
-      })) : h.value ? (n(), o("p", L, l(h.value), 1)) : s.value && !s.value.hits.length ? (n(), o("p", M, "No results match all these words: " + l(r.value.trim()), 1)) : s.value ? (n(), o(_, { key: 4 }, [
-        u("ul", T, [
-          (n(!0), o(_, null, x(s.value.hits, (e) => (n(), o("li", {
+      })) : h.value ? (l(), o("p", L, n(h.value), 1)) : t.value && !t.value.hits.length ? (l(), o("p", M, "No results match all these words: " + n(c.value.trim()), 1)) : t.value ? (l(), o(_, { key: 4 }, [
+        d("ul", T, [
+          (l(!0), o(_, null, x(t.value.hits, (e) => (l(), o("li", {
             key: `${e.cli_name}:${e.id}`
           }, [
-            u("button", {
+            d("button", {
               type: "button",
               class: "search-hit",
               "data-hit": "",
               disabled: !w(e),
-              onClick: (p) => d(k).open(w(e))
+              onClick: (p) => u(k).open(w(e))
             }, [
-              u("span", A, l(e.cli_name) + " " + l(e.id), 1),
-              u("span", G, l(e.excerpt), 1)
+              d("span", A, n(e.cli_name) + " " + n(e.id), 1),
+              d("span", G, n(e.excerpt), 1)
             ], 8, U)
           ]))), 128))
         ]),
-        u("p", H, l(s.value.total) + " " + l(s.value.total === 1 ? "result matches" : "results match") + " all these words: " + l(r.value.trim()) + l(s.value.total > s.value.hits.length ? `, the newest ${s.value.hits.length} are shown` : ""), 1)
+        t.value.closest ? (l(), o("p", H, "No result holds all these words: " + n(c.value.trim()) + ", these hold most of them, the closest first", 1)) : (l(), o("p", J, n(t.value.total) + " " + n(t.value.total === 1 ? "result matches" : "results match") + " all these words: " + n(c.value.trim()) + n(t.value.total > t.value.hits.length ? `, the newest ${t.value.hits.length} are shown` : ""), 1))
       ], 64)) : S("", !0)
     ]));
   }
-}, Y = /* @__PURE__ */ D(J, [["__scopeId", "data-v-2ed05814"]]);
+}, Z = /* @__PURE__ */ D(P, [["__scopeId", "data-v-ac790cb5"]]);
 export {
-  Y as default
+  Z as default
 };

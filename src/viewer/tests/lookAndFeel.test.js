@@ -15,6 +15,7 @@ import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
 import {paneLayout} from "../src/windows/paneLayout.js";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
+import {dockWindow} from "./support/dockWindow.js";
 
 // Version 5's desktop viewer against version 4's, one test per difference of report 1147 and one screenshot pair each (version 4 at port
 // 8420, version 5 on a demo, both 1280 wide, cropped to the part that differs). Each test states version 4's look; it fails until version 5 draws it.
@@ -152,7 +153,7 @@ test("docked items: a declared button goes the moment it is pressed, and comes b
     let answer;
     vi.stubGlobal("fetch", perLine(() => new Promise((resolve) => (answer = resolve))));
     const element = document.createElement("div");
-    mountedApp(createApp({setup: () => () => h(DockWrapper, {item: ITEM}), provide: {[WINDOW_CONTEXT]: {environment: "main"}}}), element);
+    mountedApp(createApp({setup: () => () => h(DockWrapper, {item: ITEM}), provide: {[WINDOW_CONTEXT]: dockWindow([ITEM])}}), element);
     mounted.push(element);
     await settled();
     const button = () => element.querySelector("[data-dock-action='declared']");
@@ -170,7 +171,7 @@ test("docked items: a declared button goes the moment it is pressed, and comes b
 test("a refused close of a docked card says why on the card", async () => {
     vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 1, error: "this card stays"})})));
     const element = document.createElement("div");
-    mountedApp(createApp({setup: () => () => h(DockStack, {items: [REPORT_DOCK]}), provide: {[WINDOW_CONTEXT]: {environment: "main"}}}), element);
+    mountedApp(createApp({setup: () => () => h(DockStack, {items: [REPORT_DOCK]}), provide: {[WINDOW_CONTEXT]: dockWindow([REPORT_DOCK])}}), element);
     mounted.push(element);
     await settled();
     element.querySelector("[data-dock-action='undock']").click();

@@ -1,37 +1,23 @@
 <script setup>
-import { computed, ref, watch, unref } from "vue";
-import {READ_RATES, coalesced, peekRef, SkeletonLine, useWindow} from "@journal/window-kit";
+import { computed, unref } from "vue";
+import {READ_RATES, coalesced, peekRef, SkeletonLine, useDockCard, useWindow} from "@journal/window-kit";
 
 const PREVIEW_PHASES = 5;
-const context = useWindow();
-const item = context.option("row");
-const foot = context.option("foot");
-const progress = ref(null);
-const loading = ref(true);
-const phases = ref([]);
-const planAgents = ref([]);
+const window = useWindow();
+const card = useDockCard();
+const item = window.option("row");
+const foot = window.option("foot");
+const progress = card.data;
+const loading = computed(() => !card.data.value);
+const phases = computed(() => card.data.value?.phases ?? []);
+const planAgents = computed(() => card.data.value?.agents ?? []);
 const agents = computed(() => [
   ...new Map(planAgents.value.map((agent) => [agent.id, agent])).values(),
 ]);
 const hidden = computed(() =>
   Math.max(0, phases.value.length - PREVIEW_PHASES),
 );
-async function load() {
-  const planId = item.value?.target_id;
-  if (!planId) return;
-  const [answer, counts] = await Promise.all([
-    context.read(`plan outline ${planId}`),
-    context.read(`plan progress ${planId}`),
-    new Promise((resolve) => setTimeout(resolve, 150)),
-  ]);
-  if (counts.ok) progress.value = counts.value;
-  loading.value = false;
-  phases.value = answer.ok ? answer.value.phases : [];
-  planAgents.value = answer.ok ? answer.value.agents : [];
-}
-
-context.follow(["phase.*", "phase_task.*", "task.*", "agent.*"], coalesced(load, READ_RATES.planCard));
-watch(() => item.value?.target_id, load, { immediate: true });
+window.follow(["phase.*", "phase_task.*", "task.*", "agent.*"], coalesced(card.reload, READ_RATES.planCard));
 </script>
 
 <template>
@@ -44,9 +30,9 @@ watch(() => item.value?.target_id, load, { immediate: true });
         ><span
           >Tasks:
           <b>{{
-            progress.completed_count
-              ? `${progress.completed_count} of ${progress.task_count}`
-              : progress.task_count
+            progress.finished
+              ? `${progress.finished} of ${progress.total}`
+              : progress.total
           }}</b></span
         ></template
       >

@@ -17,21 +17,26 @@ try {
     }
     assert.deepEqual((await window.locator('.segmented button').allTextContents()).map((text) => text.trim()), ["Working", "Idle", "Retired", "All"]);
     await window.getByRole('radio', {name: 'Idle', exact: true}).click();
-    await window.locator(`[data-agent-open="${helper}"] [data-agent-report]`).waitFor();
+    await window.locator(`[data-agent-open="${helper}"] [data-agent-job]`).waitFor();
     assert.equal(await window.locator('[data-agent-open]').count(), 2);
-    await window.locator('[data-agent-resume-reason]').first().waitFor();
     for (const colorScheme of ["light", "dark"]) {
         await page.emulateMedia({colorScheme});
         await window.screenshot({path: `${capture}-idle-${colorScheme}.png`, animations: "disabled"});
     }
+    await window.locator(`[data-agent-open="${helper}"]`).click();
+    await window.locator('[data-agent-report]').waitFor();
+    await window.locator('[data-agent-resume-reason]').first().waitFor();
+    await window.locator('.agent-back').click();
     await window.getByRole('radio', {name: 'Retired', exact: true}).click();
     await window.locator('[data-agents-upgrade]').waitFor();
-    await window.locator('[data-agent-retirement-reason]').waitFor();
     assert.equal(await window.locator('[data-agent-open]').count(), 1);
     for (const colorScheme of ["light", "dark"]) {
         await page.emulateMedia({colorScheme});
         await window.screenshot({path: `${capture}-retired-${colorScheme}.png`, animations: "disabled"});
     }
+    await window.locator('[data-agent-open]').first().click();
+    await window.locator('[data-agent-retirement-reason]').waitFor();
+    await window.locator('.agent-back').click();
     await window.getByRole('radio', {name: 'All', exact: true}).click();
     await page.waitForFunction(() => document.querySelectorAll('[data-window="agents.agents"] [data-agent-open]').length === 4);
 } finally {

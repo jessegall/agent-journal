@@ -5,6 +5,7 @@ import {startButtons} from "../src/domain/buttons.js";
 import {WINDOW_CONTEXT} from "../src/windows/windowContext.js";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 import "../src/tokens.css";
+import {dockWindow} from "./support/dockWindow.js";
 
 const body = (module, component) => `/@fs/${__PROJECT_ROOT__}/src/core/modules/${module}/web/src/${component}Dock.vue`;
 const declarations = [
@@ -84,6 +85,6 @@ const items = reactive(
 );
 const app = createApp({render: () => h(DockStack, {items, folded: true})});
 const subscriptions = new WindowSubscriptions();
-app.provide(WINDOW_CONTEXT, {environment: "main", subscriptions});
+app.provide(WINDOW_CONTEXT, dockWindow([], {subscriptions}));
 app.mount("#cards");
 window.dockDesign = {items, subscriptions};

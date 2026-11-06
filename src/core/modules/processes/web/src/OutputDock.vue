@@ -5,6 +5,7 @@ import {
   SkeletonLine,
   afterSkeletonMinimum,
   useNow,
+  useDockCard,
   useOutputPages,
   usePoll,
   useWindow,
@@ -32,15 +33,16 @@ const STANDINGS = {
   stopped: "stopped",
   orphaned: "stopped",
 };
-const context = useWindow();
-const item = context.option("row");
-const head = context.option("head");
-const foot = context.option("foot");
-const time = context.option("time");
-const folded = context.option("folded");
-const run = ref(null);
+const window = useWindow();
+const card = useDockCard();
+const item = window.option("row");
+const head = window.option("head");
+const foot = window.option("foot");
+const time = window.option("time");
+const folded = window.option("folded");
+const run = card.data;
 const pages = useOutputPages(
-  (words) => context.read(words.join(" ")),
+  card.readOutput,
   () => item.value?.target_id,
 );
 const lines = pages.lines;
@@ -82,8 +84,7 @@ const ranFor = computed(() => {
 async function load() {
   const id = item.value?.target_id;
   if (!id) return;
-  const shown = await context.read(`process card ${id}`);
-  run.value = shown.ok ? shown.value : null;
+  await card.reload();
   if (!opened.value) return;
   const box = terminal.value;
   const following =
@@ -100,7 +101,7 @@ async function load() {
 
 watch(opened, (open) => open && load());
 
-context.follow(
+window.follow(
   ["process.*"],
   (event) => event.row_id === item.value?.target_id && load(),
 );

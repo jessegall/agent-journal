@@ -123,24 +123,24 @@ def test_agent_tabs_read_working_idle_and_retired_through_the_viewer(agents_wind
     def read(*arguments):
         return server.viewer_line_value(cookie, {"window": "agents.agents", "environment": "main", "line": ["agent", "cards", *arguments]})
     options = read("--options")
-    assert [state["label"] for state in options["states"]] == ["Working", "Idle", "Retired", "All"]
-    assert options["upgrade_retired"] == 1
+    server.story.expect_rows([state["label"] for state in options["states"]] == ["Working", "Idle", "Retired", "All"])
+    server.story.expect_rows(options["upgrade_retired"] == 1)
     working = read("--show", "running")["rows"]
-    assert [row["session"] for row in working] == ["working-reviewer"]
+    server.story.expect_rows([row["session"] for row in working] == ["working-reviewer"])
     idle = read("--show", "idle")["rows"]
-    assert {row["role"] for row in idle} == {"helper", "worker"}
+    server.story.expect_rows({row["role"] for row in idle} == {"helper", "worker"})
     helper_row = next(row for row in idle if row["id"] == helper.id)
-    assert helper_row["resume_reason"] is None
-    assert isinstance(helper_row["facts"]["tasks"], list)
-    assert helper_row["facts"]["helper_job"] == "Read src/cart.py"
-    assert helper_row["facts"]["profile_title"] == "Researcher"
-    assert helper_row["facts"]["job_returned"]
-    assert "cannot resume" in next(row for row in idle if row["role"] == "worker")["resume_reason"]
-    assert next(row for row in idle if row["role"] == "worker")["facts"]["job_returned"] == "The worker found a repeated calculation."
+    server.story.expect_rows(helper_row["resume_reason"] is None)
+    server.story.expect_rows(isinstance(helper_row["facts"]["tasks"], list))
+    server.story.expect_rows(helper_row["facts"]["helper_job"] == "Read src/cart.py")
+    server.story.expect_rows(helper_row["facts"]["profile_title"] == "Researcher")
+    server.story.expect_rows(helper_row["facts"]["job_returned"])
+    server.story.expect_rows("cannot resume" in next(row for row in idle if row["role"] == "worker")["resume_reason"])
+    server.story.expect_rows(next(row for row in idle if row["role"] == "worker")["facts"]["job_returned"] == "The worker found a repeated calculation.")
     retired = read("--show", "retired")["rows"]
-    assert len(retired) == 1 and retired[0]["retirement_reason"] == UPGRADE_RETIREMENT_REASON
-    assert retired[0]["retired_at"] and retired[0]["state"] == "retired"
-    assert len(read("--show", "all")["rows"]) == 4
+    server.story.expect_rows(len(retired) == 1 and retired[0]["retirement_reason"] == UPGRADE_RETIREMENT_REASON)
+    server.story.expect_rows(retired[0]["retired_at"] and retired[0]["state"] == "retired")
+    server.story.expect_rows(len(read("--show", "all")["rows"]) == 4)
 
 
 def test_agent_tabs_keep_old_agents_details_on_later_pages(agents_window_server):
@@ -152,9 +152,9 @@ def test_agent_tabs_keep_old_agents_details_on_later_pages(agents_window_server)
         story.expect_success(f"agent end {agent}", actor=story.user)
     answer = server.viewer_line_value(cookie, {"window": "agents.agents", "environment": "main", "line": ["agent", "cards", "--show", "all", "--limit", "1"]})
     row = answer["rows"][0]
-    assert row["id"] == helper.id and answer["total"] == 55
-    assert row["facts"]["given_name"] and row["facts"]["profile_title"] == "Researcher"
-    assert row["facts"]["helper_job"] == "Read src/cart.py" and row["facts"]["job_returned"]
+    server.story.expect_rows(row["id"] == helper.id and answer["total"] == 55)
+    server.story.expect_rows(row["facts"]["given_name"] and row["facts"]["profile_title"] == "Researcher")
+    server.story.expect_rows(row["facts"]["helper_job"] == "Read src/cart.py" and row["facts"]["job_returned"])
 
 
 def test_agent_tabs_in_light_and_dark(agents_window_server):

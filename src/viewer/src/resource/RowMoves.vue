@@ -1,9 +1,10 @@
 <script setup>
 import {computed, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
+import InspectorActions from "../kit/InspectorActions.vue";
 import {movesOf} from "../domain/resourceNouns.js";
 
-// what a person can do to a row in its state, as buttons along the foot of its panel; a move that needs words asks for them first
+// the available actions for a row; an action that needs words asks for them first
 const props = defineProps({noun: {type: String, required: true}, id: {type: Number, required: true}, row: {type: Object, default: null}, read: {type: Function, required: true}, inline: Boolean});
 const emit = defineEmits(["done"]);
 const moves = computed(() => movesOf(props.noun, props.row));
@@ -34,7 +35,7 @@ defineExpose({moves, press});
 
 <template>
     <template v-if="moves.length">
-        <footer :class="['foot', {inline}]">
+        <InspectorActions :inline="inline">
             <template v-if="refusal">
                 <p class="refusal" role="alert" data-resource-refusal>{{ refusal }}</p>
             </template>
@@ -62,30 +63,18 @@ defineExpose({moves, press});
                     </template>
                 </div>
             </template>
-        </footer>
+        </InspectorActions>
     </template>
 </template>
 
 <style scoped>
-.foot {
-    flex: none;
-    padding: 8px 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--raised);
-}
-
-.foot.inline {
-    padding: 0;
-    border: 0;
-    background: none;
-}
-
 .moves,
 .ask {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     align-items: center;
+    justify-content: flex-end;
 }
 
 .ask-text {

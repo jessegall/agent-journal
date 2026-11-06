@@ -93,7 +93,7 @@ export function windowContext({window, environment, agent, visible, permissions,
         cancel: () => requests.abort(),
         signal: requests.signal,
         subscriptions,
-        follow: (patterns, heard) => subscriptions.follow(window, patterns.filter((pattern) => events.some((declared) => matches(declared, pattern))), (event) => {
+        follow: (patterns, heard) => subscriptions.follow(window, [patterns].flat().filter((pattern) => events.some((declared) => matches(declared, pattern))), (event) => {
             recent.clear();
             heard(event);
         }, visible),

@@ -12,6 +12,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.project_paths import ProjectPaths
+from core.base.journal_home import JournalHome
 from core.base.driver.refusal_line import RefusalLine
 from core.base.driver.rule_answers import RuleAnswers
 from core.base.refusal import Refusal
@@ -46,7 +47,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     runs_once = True
 
     def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository, choice: SuiteChoice,
-                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, system_log: SystemLogWriter) -> None:
+                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, system_log: SystemLogWriter, home: JournalHome) -> None:
+        self.home = home
         self.system_log = system_log
         self.required_commands = required_commands
         self.agents = agents
@@ -69,6 +71,10 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         moves = OneMovePerRow.split(answers.commands)
         tool = command.event.tool
         metadata = {**answers.metadata(), "foreign": [asdict(run) for run in command.event.foreign], "folder": str(command.event.raw.get("cwd", "")), "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start, "interrupted": command.event.is_interrupt, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}
+        if command.event.event == HookEventName.COMPACT or command.event.is_compaction_start:
+            percent = self.providers.provider(command.event.program).context_percent(self.home, command.event.session)
+            if percent is not None:
+                metadata["context_percent"] = percent
         if command.event.displayed_text:
             metadata[DISPLAYED_TEXT] = command.event.displayed_text
         call = self.repository.save(HookCall(session_agent_id=agent.id, creator_id=context.actor.id, hook=command.event.event,

@@ -32,14 +32,14 @@ def test_an_idle_worker_takes_an_open_task_through_the_agents_window(agent_task_
     def line(command):
         return server.viewer_line_value(cookie, {"window": "agents.agents", "environment": "main", "line": command})
     row = line(["agent", "cards", "--show", "idle"])["rows"][0]
-    assert row["id"] == worker and row["job_command"] == ["worker", "send"]
-    assert row["job_task_flag"] == "--task" and row["resume_reason"] is None
+    server.story.expect_rows(row["id"] == worker and row["job_command"] == ["worker", "send"])
+    server.story.expect_rows(row["job_task_flag"] == "--task" and row["resume_reason"] is None)
     line(["worker", "send", str(worker), "--task", str(task)])
     assigned = server.story.container.get(Queries).query(Task).find(task)
-    assert assigned.delegated_to == worker
+    server.story.expect_rows(assigned.delegated_to == worker)
 
 
 def test_the_worker_task_picker_in_light_and_dark(agent_task_server):
     server, _, worker, task = agent_task_server
     expect_browser(server, "agentTask.browser.mjs", [str(worker), str(task), "/tmp/worker-675-agent-task"])
-    assert server.story.container.get(Queries).query(Task).find(task).delegated_to == worker
+    server.story.expect_rows(server.story.container.get(Queries).query(Task).find(task).delegated_to == worker)

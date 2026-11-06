@@ -8,6 +8,7 @@ import Icon from "../../kit/Icon.vue";
 import Skeleton from "../../kit/Skeleton.vue";
 import {useResourceEvents} from "../resourceEvents.js";
 import InspectorSections from "../../windows/InspectorSections.vue";
+import InspectorActions from "../../kit/InspectorActions.vue";
 import RowMoves from "../RowMoves.vue";
 import {agentState, agentTitle, detailRows, finishedWords, givenName, identityParts, rowsOf, stripCells, totalOf} from "./agentView.js";
 import AgentBrief from "./AgentBrief.vue";
@@ -17,7 +18,7 @@ import AgentRecent from "./AgentRecent.vue";
 import AgentStrip from "./AgentStrip.vue";
 import AgentWho from "./AgentWho.vue";
 
-// the inspector of one agent: who it is, how it does, what it does now, what it was told, what it did lately and, behind folds, what it started and loaded; the actions stay in the foot
+// the agent's identity, activity, instructions and actions
 const props = defineProps({id: {type: Number, required: true}, read: {type: Function, required: true}, environment: {type: String, required: true}, backed: Boolean});
 const emit = defineEmits(["close", "back"]);
 const now = useNow();
@@ -70,6 +71,9 @@ onMounted(load);
             <Icon name="bot" :size="13" /><h1 data-resource-title>{{ row ? agentTitle(row) : `Agent ${id}` }}</h1>
             <CloseButton title="Close the panel" data-resource-close @click="emit('close')" />
         </header>
+        <template v-if="row && !row.ended_at">
+            <InspectorActions data-agent-actions><RowMoves noun="agent" :id="id" :row="row" :read="read" inline @done="load" /></InspectorActions>
+        </template>
         <div class="scroll">
             <template v-if="failure"><p class="failure" role="alert" data-resource-failure>{{ failure }}</p></template>
             <template v-else-if="row && inspection">
@@ -80,17 +84,10 @@ onMounted(load);
                 <AgentRecent :moves="inspection.recent" />
                 <AgentFolds :id="id" :read="read" :counts="counts" :loads="loads" :details="detailRows(row, inspection)" />
                 <InspectorSections slot-name="inspector.agent" :row="row" />
+                <template v-if="row.ended_at"><p class="ended" data-agent-ended>Ended {{ ago(row.ended_at, now) }}. It takes no more actions.</p></template>
             </template>
             <template v-else><Skeleton /></template>
         </div>
-        <footer class="foot" data-agent-foot>
-            <template v-if="row?.ended_at">
-                <span class="ended" data-agent-ended>Ended {{ ago(row.ended_at, now) }}. It takes no more actions.</span>
-            </template>
-            <template v-else-if="row">
-                <RowMoves noun="agent" :id="id" :row="row" :read="read" inline @done="load" />
-            </template>
-        </footer>
     </article>
 </template>
 
@@ -100,7 +97,5 @@ onMounted(load);
 h1 { flex: 1; margin: 0; color: var(--text); font-size: 11.5px; font-weight: 600; letter-spacing: .03em; }
 .scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
 .failure { padding: 10px 14px; color: var(--danger); font-size: 12px; }
-.foot { flex: none; padding: 8px 14px; border-top: 1px solid var(--border); background: var(--side); }
-.foot:empty { display: none; }
-.ended { color: var(--text-3); font-size: 12px; }
+.ended { padding: 8px 14px; color: var(--text-3); font-size: 12px; }
 </style>

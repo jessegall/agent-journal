@@ -2,6 +2,9 @@ import {nextTick, ref} from "vue";
 
 const NEAR_THE_TOP = 60;
 
+// the read of a page of output through a window's prop of it
+export const readOutputProp = (window) => (words) => window.readKey(`output.${words[2]}`, words[3] ? {[words[3].slice(2)]: words[4]} : {});
+
 // An output read a page at a time, never whole: the newest lines first, what is new on each follow, and an earlier page
 // when the reader scrolls near the top. A file the runner cut starts again from its newest lines.
 export function useOutputPages(read, processId) {

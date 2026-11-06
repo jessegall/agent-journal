@@ -1,5 +1,5 @@
 <script setup>
-import {computed, inject, ref, watch} from "vue";
+import {computed, provide, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import ButtonSlot from "../kit/ButtonSlot.vue";
 import ChatDock from "../kit/ChatDock.vue";
@@ -7,7 +7,8 @@ import DockLeave from "./DockLeave.vue";
 import FoldSign from "../kit/FoldSign.vue";
 import Icon from "../kit/Icon.vue";
 import MarkBody from "./MarkBody.vue";
-import {lineResult, WINDOW_CONTEXT} from "../windows/windowContext.js";
+import {provideDockCard, useWindow} from "../../kit/windowContextKey.js";
+import {readOutputProp} from "../composables/outputPages.js";
 import {useSharedNow} from "../composables/now.js";
 import {ago} from "../format/time.js";
 import {dockBadgeOf, cliOf} from "../domain/resourceNouns.js";
@@ -28,33 +29,22 @@ const foot = ref(null);
 const actions = ref(null);
 const time = ref(null);
 const look = computed(() => dockLook(props.item, declaration.value));
-const context = inject(WINDOW_CONTEXT);
-const row = ref(null);
-let reading = 0;
-
-async function loadRow() {
-    const turn = ++reading;
-    const noun = cliOf(props.item.target_model ?? "");
-    const line = `${noun} show`;
-    if (!declaration.value?.reads?.includes(line)) return;
-    const answer = await lineResult(props.item.type, [noun, "show", String(props.item.target_id)], context.environment, context.signal);
-    if (turn !== reading) return;
-    row.value = answer.ok ? {...answer.value, id: props.item.target_id, noun} : {id: props.item.target_id, noun};
-}
+const window = useWindow();
+const cardKey = computed(() => `dock.${props.item.id}`);
+const card = computed(() => window.props[cardKey.value].data.value);
+const noun = computed(() => cliOf(props.item.target_model ?? ""));
+const row = computed(() => ({...card.value, id: props.item.target_id, noun: noun.value}));
+const reloadCard = () => declaration.value?.reads?.length && window.reload(cardKey.value);
+provideDockCard(provide, {data: card, reload: reloadCard, readOutput: readOutputProp(window)});
 
 watch(
     () => [props.item.type, props.item.target_model, props.item.target_id, declaration.value],
     (_, previous, cleanup) => {
-        const noun = cliOf(props.item.target_model ?? "");
-        row.value = {id: props.item.target_id, noun};
-        loadRow();
-        const stop = context.subscriptions?.follow(`dock ${props.item.id}`, [`${noun.replaceAll("-", "_")}.*`], (event) => {
-            if (!event.row_id || event.row_id === props.item.target_id) loadRow();
+        reloadCard();
+        const stop = window.subscriptions?.follow(`dock ${props.item.id}`, [`${noun.value.replaceAll("-", "_")}.*`], (event) => {
+            if (!event.row_id || event.row_id === props.item.target_id) reloadCard();
         });
-        cleanup(() => {
-            reading += 1;
-            stop?.();
-        });
+        cleanup(() => stop?.());
     },
     {immediate: true}
 );
@@ -66,7 +56,7 @@ async function press(button) {
     const isDeclared = button.action === "declared";
     if (isDeclared) pressed.value = new Set([...pressed.value, button.label]);
     failure.value = "";
-    const answer = await pressButton(button, {id: props.item.target_id}, context.environment);
+    const answer = await pressButton(button, {id: props.item.target_id}, window.environment);
     if (answer?.ok !== false) return;
     pressed.value = new Set([...pressed.value].filter((label) => label !== button.label));
     failure.value = `Could not ${button.label.toLowerCase()}: ${answer.error}`;
@@ -150,8 +140,8 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
                 <ButtonSlot
                     :name="`dock.${item.type}`"
                     :row="row"
-                    :environment="context.environment"
-                    :read-only="context.readOnly"
+                    :environment="window.environment"
+                    :read-only="window.readOnly"
                     :object-name="cliOf(item.target_model)"
                     external-failure
                     @failure="failure = $event"

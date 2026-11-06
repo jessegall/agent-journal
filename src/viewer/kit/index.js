@@ -55,11 +55,10 @@ export {age, ago, perHour} from "../src/format/time.js";
 export {SHORT_CHAT, dockOpening} from "../src/domain/dockFold.js";
 export {usePoll} from "./usePoll.js";
 export {coalesced} from "../src/composables/coalesced.js";
-export {useWindowData} from "./useWindowData.js";
 export {READ_RATES} from "../src/composables/readRates.js";
 export {useNow} from "./useNow.js";
 export {default as TimeAgo} from "./TimeAgo.vue";
-export {useKeyRows, useRows, useDeclaredRows} from "./useRows.js";
+export {useRows, useDeclaredRows} from "./useRows.js";
 export {useDockRow} from "./useDockRow.js";
 export {afterSkeletonMinimum} from "./skeletonMinimum.js";
 export {matchesSearch} from "./searchFields.js";
@@ -77,7 +76,7 @@ export {default as TabBody} from "./TabBody.vue";
 export {default as ListTools} from "./ListTools.vue";
 export {default as SearchBar} from "./SearchBar.vue";
 export {useOpenRow} from "./useOpenRow.js";
-export {OPEN_VIEW, WINDOW_CONTEXT, useWindow} from "./windowContextKey.js";
+export {OPEN_VIEW, WINDOW_CONTEXT, provideDockCard, useDockCard, useWindow} from "./windowContextKey.js";
 export {loadWindowComponent} from "./loadWindowComponent.js";
 
 // the kit's own version: a breaking change to the window context, or a new Vue minor version, is a new major version

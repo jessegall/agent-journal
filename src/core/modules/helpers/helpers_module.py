@@ -1,5 +1,5 @@
 from core.modules.helpers.migrations.m001_helper_limit_key import HelperLimitKeyMigration
-from core.modules.helpers.migrations.m002_settle_old_helpers import SettleOldHelpersMigration
+from core.modules.helpers.migrations.m002_settle_old_helpers import RetireOldHelpersMigration
 from core.modules.helpers.migrations.m003_open_helper_jobs_index import OpenHelperJobsIndexMigration
 from core.base.module.module import Module
 from core.modules.helpers.guards.open_job_retire_guard import OpenJobRetireGuard
@@ -40,7 +40,7 @@ class HelpersModule(Module):
     seed_reason = "it keeps no rows of its own yet"
     move_reason = "version 4 had no helpers"
     requires_core = ">=5,<6"
-    migrations = [OpenHelperJobsIndexMigration, SettleOldHelpersMigration, HelperLimitKeyMigration]
+    migrations = [OpenHelperJobsIndexMigration, RetireOldHelpersMigration, HelperLimitKeyMigration]
     dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers"]
     settings = HELPER_SETTINGS
     guards = [OpenJobRetireGuard]

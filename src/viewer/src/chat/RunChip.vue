@@ -1,33 +1,29 @@
 <script setup>
-import {computed, inject, onBeforeUnmount, onMounted, ref} from "vue";
+import {computed, onBeforeUnmount, onMounted} from "vue";
 import MarkIcon from "../kit/MarkIcon.vue";
 import DockLeave from "./DockLeave.vue";
 import {isLeaving, leaveSeconds} from "../domain/dockItems.js";
-import {WINDOW_CONTEXT, lineResult} from "../windows/windowContext.js";
+import {useWindow} from "../../kit/windowContextKey.js";
 
 // one run in the compact row of several docked runs: where it stands as a ring or a sign, its name, a line of its progress,
 // and, once it ended, the countdown to its leaving along its top edge as its card has
-const OUTPUT_WINDOW = "processes.output";
 const TONES = {running: "var(--tone-work)", finished: "var(--tone-good)", failed: "var(--danger)"};
 const ICONS = {finished: "tick", failed: "cross", stopped: "stop", orphaned: "stop"};
 const props = defineProps({item: {type: Object, required: true}});
-const context = inject(WINDOW_CONTEXT, null);
-const environment = context?.environment ?? "";
-const card = ref(null);
+const window = useWindow();
+const key = computed(() => `run.${props.item.target_id}`);
+const card = computed(() => window.props[key.value].data.value);
 const running = computed(() => !card.value || card.value.state === "running" || card.value.state === "background");
 const name = computed(() => card.value?.title || card.value?.line || props.item.title || "");
 const tone = computed(() => (running.value ? TONES.running : TONES[card.value.state] ?? "var(--text-3)"));
 
-async function load() {
-    const answer = await lineResult(OUTPUT_WINDOW, ["process", "card", String(props.item.target_id)], environment, context?.signal);
-    if (answer.ok) card.value = answer.value;
-}
+const load = () => window.reload(key.value);
 
 // the card is read once and again whenever an event announces a change of this run
 let stop = null;
 onMounted(() => {
     load();
-    stop = context?.subscriptions?.follow(`run chip ${props.item.id}`, ["process.*"], (event) => {
+    stop = window.subscriptions?.follow(`run chip ${props.item.id}`, ["process.*"], (event) => {
         if (!event.row_id || event.row_id === props.item.target_id) load();
     });
 });

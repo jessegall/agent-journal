@@ -10,6 +10,7 @@ import {pressButton} from "../src/chat/markButtons.js";
 import {startWindows} from "../src/windows/startup.js";
 import {WINDOW_CONTEXT} from "../src/windows/windowContext.js";
 import {perLine, pickButton, settle} from "./support/windowContext.js";
+import {dockWindow} from "./support/dockWindow.js";
 
 const BUTTON = {module: "acme.review", icon: "words", label: "Review", runs: "note review {row_id}"};
 const PERMISSION = {label: "Review", line: BUTTON.runs};
@@ -51,7 +52,7 @@ async function drawn(windows, component, props) {
     const element = document.createElement("div");
     document.body.append(element);
     const app = createApp({render: () => h("div", [h(component, props), h(ButtonAllowance, {prompts: windows.prompts})])});
-    app.provide(WINDOW_CONTEXT, {environment: "main"});
+    app.provide(WINDOW_CONTEXT, dockWindow());
     app.mount(element);
     mounted.push(app);
     await settle();

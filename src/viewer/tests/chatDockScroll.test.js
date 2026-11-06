@@ -7,6 +7,7 @@ import {WINDOW_CONTEXT} from "../src/windows/windowContext.js";
 import {afterEach, expect, test, vi} from "vitest";
 import Chat from "../../core/modules/messages/web/src/Chat.vue";
 import {context, mounted, page} from "./support/windowContext.js";
+import {dockWindow} from "./support/dockWindow.js";
 
 vi.mock("@journal/window-kit", async (original) => {
     const kit = await original();
@@ -46,7 +47,7 @@ async function stack(count, collapsed = ref(false)) {
     const host = document.createElement("div");
     document.body.append(host);
     const app = createApp({render: () => h(DockStack, {items: Array.from({length: count}, (_, i) => item(i + 1)), collapsed: collapsed.value})});
-    app.provide(WINDOW_CONTEXT, {environment: "main"});
+    app.provide(WINDOW_CONTEXT, dockWindow());
     app.mount(host);
     await nextTick();
     return {host, app};
@@ -59,9 +60,11 @@ test("the bar appears only for multiple cards and keeps the chosen sizes", async
     single.app.unmount();
     const first = await stack(2);
     const button = first.host.querySelector("[data-dock-all]");
-    expect(button.textContent).toContain("Collapse all");
+    expect(button.getAttribute("aria-label")).toBe("Collapse all");
+    expect(button.textContent.trim()).toBe("");
     button.click();
     await nextTick();
+    expect(button.getAttribute("aria-label")).toBe("Open all");
     expect(first.host.querySelectorAll(".chat-dock.collapsed")).toHaveLength(2);
     first.host.querySelector(".chat-dock.collapsed").click();
     await nextTick();
@@ -98,6 +101,11 @@ test("a chosen collapse stays at the foot and without a choice follows scroll", 
 test("the all-docks button has no border or background", () => {
     const source = readFileSync(resolve(__dirname, "../src/chat/DockStack.vue"), "utf8");
     expect(source).toMatch(/\.dock-all :deep\(\[data-dock-all\]\)\s*\{\s*border:\s*0;\s*background:\s*none;\s*\}/);
+});
+
+test("the all-docks bar keeps little padding to the right of its chevron", () => {
+    const source = readFileSync(resolve(__dirname, "../src/chat/DockStack.vue"), "utf8");
+    expect(source).toMatch(/\.dock-all\s*\{[^}]*padding:\s*0 4px;/);
 });
 
 test("collapsed waiting cards hide the warning strip", () => {

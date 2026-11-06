@@ -5,6 +5,7 @@ import DockWrapper from "../src/chat/DockWrapper.vue";
 import {loadDockDeclarations} from "../src/domain/dockRegistry.js";
 import {WINDOW_CONTEXT} from "../src/windows/windowContext.js";
 import {settle} from "./support/windowContext.js";
+import {dockWindow} from "./support/dockWindow.js";
 
 const apps = [];
 afterEach(() => {
@@ -39,7 +40,7 @@ async function draw(declaration, extra = {}, folded = true) {
                 folded,
             }),
     });
-    app.provide(WINDOW_CONTEXT, {environment: "main"});
+    app.provide(WINDOW_CONTEXT, dockWindow());
     app.mount(host);
     apps.push(app);
     await settle();

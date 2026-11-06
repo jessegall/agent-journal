@@ -12,6 +12,7 @@ import Skeleton from "../../kit/Skeleton.vue";
 import TimeAgo from "../../../kit/TimeAgo.vue";
 import {useMeasuredWidth} from "../../composables/measuredWidth.js";
 import RowMoves from "../RowMoves.vue";
+import InspectorActions from "../../kit/InspectorActions.vue";
 import CommentCard from "./CommentCard.vue";
 import CommentComposer from "./CommentComposer.vue";
 import DocumentSidebar from "./DocumentSidebar.vue";
@@ -141,12 +142,11 @@ watch(notesMode, () => {
             <CloseButton title="Close the panel" data-resource-close @click="emit('close')" />
         </header>
         <template v-if="row">
-            <div class="document-actions" data-document-actions>
+            <InspectorActions data-document-actions>
                 <a class="document-share" data-resource-share :href="shareAddress(`${table}:${id}`)"><Icon name="share" :size="12" />Share</a>
                 <Btn bordered data-text-edit @click="editing = true">Edit</Btn>
-                <span class="document-tabs-space" />
                 <RowMoves inline :noun="noun" :id="id" :row="row" :read="read" @done="load" />
-            </div>
+            </InspectorActions>
         </template>
         <nav class="document-tabs">
             <button type="button" :class="['document-tab-button', {on: shownTab === 'text'}]" data-document-tab="text" @click="tab = 'text'">Text</button>
@@ -345,15 +345,6 @@ watch(notesMode, () => {
     color: var(--text-2);
 }
 
-.document-actions {
-    display: flex;
-    flex: none;
-    gap: 6px;
-    align-items: center;
-    padding: 0 14px 10px 24px;
-    background: var(--bg);
-}
-
 .document-share {
     display: inline-flex;
     gap: 6px;
@@ -385,8 +376,5 @@ watch(notesMode, () => {
         padding: 0 10px 0 12px;
     }
 
-    .document-actions {
-        padding: 0 10px 8px 16px;
-    }
 }
 </style>

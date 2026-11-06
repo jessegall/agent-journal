@@ -1,6 +1,7 @@
-import {createApp, h, nextTick, ref} from "vue";
+import {createApp, h, nextTick, ref, watch} from "vue";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {useWindowData} from "../kit/useWindowData.js";
+import {useWindow} from "../kit/windowContextKey.js";
 import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
 
 const DECLARED = {
@@ -23,7 +24,9 @@ function mounted({answer, visible = ref(true), tab = ref("open")}) {
     };
     let data;
     const app = createApp({setup() {
-        data = useWindowData({tab: () => tab.value});
+        data = useWindowData(context);
+        data.state.tab = tab.value;
+        watch(tab, (value) => (data.state.tab = value));
         return () => h("div");
     }});
     app.provide(WINDOW_CONTEXT, context);
@@ -43,8 +46,8 @@ test("the first load asks for what is on screen, with the tab in its state", asy
     const {asked, data} = mounted({});
     await settled();
     expect(asked).toEqual([{only: [], state: {tab: "open"}}]);
-    expect(data.data.rows.value).toBe("rows");
-    expect(data.data.closed).toBeUndefined();
+    expect(data.props.rows.data.value).toBe("rows");
+    expect(data.props.closed.data.value).toBeUndefined();
 });
 
 test("a tab switch asks only for the key of that tab, and not again", async () => {
@@ -96,9 +99,9 @@ test("a key that fails says so and keeps its last value", async () => {
     const {data} = mounted({answer: (request) => ({ok: true, value: {declared: DECLARED, keys: {rows: failing ? {ok: false, error: "No rows"} : {ok: true, value: "held"}}}})});
     await settled();
     failing = true;
-    await data.reload({only: ["rows"]});
-    expect(data.data.rows.value).toBe("held");
-    expect(data.data.rows.failure).toBe("No rows");
+    await Promise.all([data.reload({only: ["rows"]}), vi.advanceTimersByTimeAsync(0)]);
+    expect(data.props.rows.data.value).toBe("held");
+    expect(data.props.rows.failure.value).toBe("No rows");
 });
 
 test("the timers stop when the window ends", async () => {
@@ -107,4 +110,27 @@ test("the timers stop when the window ends", async () => {
     app.unmount();
     await vi.advanceTimersByTimeAsync(20000);
     expect(asked).toHaveLength(1);
+});
+
+test("a window reads through its props: a list's rows, and a reload of what it names", async () => {
+    const asked = [];
+    const answer = (request) => {
+        asked.push(request.only);
+        const names = request.only.length ? request.only : ["list"];
+        return {ok: true, value: {declared: {list: {tab: null, events: [], reload_seconds: 0, loading: "first", page_size: 50}}, keys: Object.fromEntries(names.map((name) => [name, {ok: true, value: {rows: [{id: 1}], page: 1, size: 50, total: 1}}]))}};
+    };
+    const context = {visible: ref(true), follow: () => {}, readKeys: async (request) => answer(request)};
+    let window;
+    const app = createApp({setup() {
+        window = useWindow();
+        return () => h("div");
+    }});
+    app.provide(WINDOW_CONTEXT, context);
+    app.mount(document.createElement("div"));
+    const {rows} = window.props.list;
+    await settled();
+    await vi.advanceTimersByTimeAsync(600);
+    expect(rows.value).toEqual([{id: 1}]);
+    await Promise.all([window.reload("list"), window.reload({only: ["other"]}), vi.advanceTimersByTimeAsync(0)]);
+    expect(asked).toEqual([[], ["list", "other"]]);
 });

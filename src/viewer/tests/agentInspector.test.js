@@ -86,10 +86,11 @@ test("the helpers, the skills and the details are folds that start closed, and t
     expect(text(element, "[data-agent-detail]")).toBe("Number:12");
 });
 
-test("a worker's actions stay in a foot with Merge as the main one and Stop in the danger colour, and Stop asks first", async () => {
+test("a worker's actions sit below the header with Merge as the main one and Stop in the danger colour, and Stop asks first", async () => {
     const {element, lines} = opened(WORKER);
     await settle();
-    const foot = element.querySelector("[data-agent-foot]");
+    const foot = element.querySelector("[data-agent-actions]");
+    expect(foot.previousElementSibling.matches("header.top")).toBe(true);
     expect([...foot.querySelectorAll("[data-move]")].map((move) => move.dataset.move)).toEqual(["send", "merge", "release", "pause", "stop"]);
     expect(foot.querySelector('[data-move="merge"]').classList.contains("primary")).toBe(true);
     expect(foot.querySelector('[data-move="stop"]').classList.contains("danger")).toBe(true);
@@ -122,7 +123,7 @@ test("the main agent is titled without a number, shows the tasks done of its pla
     expect(element.querySelector("[data-agent-brief]")).toBeNull();
     expect(element.querySelector("[data-agent-point]")).toBeNull();
     expect(lines.some((line) => line.startsWith("worker-worktree"))).toBe(false);
-    expect([...element.querySelectorAll("[data-agent-foot] [data-move]")].map((move) => move.dataset.move)).toEqual(["pause", "stop"]);
+    expect([...element.querySelectorAll("[data-agent-actions] [data-move]")].map((move) => move.dataset.move)).toEqual(["pause", "stop"]);
     element.querySelectorAll("[data-agent-fold]")[0].click();
     await settle();
     expect(text(element, "[data-agent-helper]")).toBe("CurieHelper 22");
@@ -145,7 +146,7 @@ test("an ended worker says how long it ran and what it finished, reads no tool a
     expect(element.querySelector('[data-agent-state="ended"]')).not.toBeNull();
     expect(text(element, "[data-agent-now]")).toContain("Finished 3 tasks");
     expect(lines.some((line) => line.startsWith("usage tool"))).toBe(false);
-    expect(element.querySelector("[data-agent-foot] [data-move]")).toBeNull();
+    expect(element.querySelector("[data-agent-actions] [data-move]")).toBeNull();
     expect(text(element, "[data-agent-ended]")).toBe("Ended 12m ago. It takes no more actions.");
     expect(text(element, "[data-agent-no-moves]")).toBe("Nothing yet.");
 });
@@ -171,7 +172,7 @@ test("a helper shows its instruction, no tasks an hour and its parent, and asks 
     [...element.querySelectorAll("[data-agent-fold]")].find((fold) => fold.textContent.includes("Details")).click();
     await settle();
     expect(texts(element, "[data-agent-detail]")).toContain("Parent agent:Agent 1");
-    expect([...element.querySelectorAll("[data-agent-foot] [data-move]")].map((move) => move.dataset.move)).toEqual(["pause", "stop"]);
+    expect([...element.querySelectorAll("[data-agent-actions] [data-move]")].map((move) => move.dataset.move)).toEqual(["pause", "stop"]);
 });
 
 test("a long brief is cut to four lines until it is asked for", async () => {
@@ -191,7 +192,7 @@ test("the panel is 600 wide, the strip and the foot wrap on a phone and only the
     expect(source("../src/resource/agent/AgentStrip.vue")).toMatch(/\.strip \{[^}]*flex-wrap: wrap/);
     expect(source("../src/resource/RowMoves.vue")).toMatch(/\.moves,\s*\.ask \{[^}]*flex-wrap: wrap/);
     expect(source("../src/resource/agent/AgentInspector.vue")).toMatch(/\.scroll \{[^}]*overflow-y: auto/);
-    expect(source("../src/resource/agent/AgentInspector.vue")).toMatch(/\.foot \{[^}]*flex: none/);
+    expect(source("../src/kit/InspectorActions.vue")).toMatch(/justify-content: flex-end/);
 });
 
 test("a fold reads only its count while it is closed, and its list when it opens, again after each reload while it stays open", async () => {

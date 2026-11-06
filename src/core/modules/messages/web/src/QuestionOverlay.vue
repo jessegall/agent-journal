@@ -8,17 +8,17 @@ const OPEN_STATE = "open";
 const ANSWERED_PAUSE_MILLISECONDS = 450;
 const props = defineProps({id: {type: Number, required: true}});
 const emit = defineEmits(["close"]);
-const context = useWindow();
+const window = useWindow();
 
 async function closeOnceSettled() {
-    const answer = await context.read(`question show ${props.id}`);
+    const answer = await window.readKey(`question.${props.id}`);
     if (answer.ok && answer.value.state !== OPEN_STATE) setTimeout(() => emit("close"), ANSWERED_PAUSE_MILLISECONDS);
 }
 
 const closeOnEscape = (event) => event.key === "Escape" && emit("close");
-window.addEventListener("keydown", closeOnEscape);
-onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
-context.follow(["question.*"], closeOnceSettled);
+globalThis.addEventListener("keydown", closeOnEscape);
+onUnmounted(() => globalThis.removeEventListener("keydown", closeOnEscape));
+window.follow(["question.*"], closeOnceSettled);
 </script>
 
 <template>

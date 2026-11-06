@@ -1,16 +1,11 @@
 <script setup>
-import { ref, unref } from "vue";
-import { useWindow } from "@journal/window-kit";
-const context = useWindow();
-const item = context.option("row");
-const foot = context.option("foot");
-const count = ref(0);
-async function load() {
-  const answer = await context.read(`dump items ${item.value.target_id}`);
-  if (answer.ok) count.value = answer.value.length;
-}
-context.follow(["dump_item.*"], load);
-load();
+import { computed, unref } from "vue";
+import { useDockCard, useWindow } from "@journal/window-kit";
+const window = useWindow();
+const card = useDockCard();
+const foot = window.option("foot");
+const count = computed(() => card.data.value?.length ?? 0);
+window.follow(["dump_item.*"], card.reload);
 </script>
 <template>
   <template v-if="unref(foot)"

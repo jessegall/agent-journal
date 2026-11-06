@@ -4,6 +4,7 @@ import DockStack from "../src/chat/DockStack.vue";
 import {loadDockDeclarations} from "../src/domain/dockRegistry.js";
 import {WINDOW_CONTEXT} from "../src/windows/windowContext.js";
 import {settle} from "./support/windowContext.js";
+import {dockWindow} from "./support/dockWindow.js";
 
 const answers = vi.hoisted(() => ({next: null}));
 vi.mock("../src/chat/markButtons.js", () => ({pressButton: () => answers.next}));
@@ -26,7 +27,7 @@ function drawn() {
     const element = document.createElement("div");
     document.body.append(element);
     const app = createApp({render: () => h(DockStack, {items: [ITEM]})});
-    app.provide(WINDOW_CONTEXT, {environment: "main"});
+    app.provide(WINDOW_CONTEXT, dockWindow());
     app.mount(element);
     return element;
 }

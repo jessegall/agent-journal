@@ -12,6 +12,7 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.driver.hook_event_name import HookEventName
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.hook_call import HookCall
+from core.modules.usage.support.compaction import Compaction
 from core.modules.usage.support.environment_usage import EnvironmentUsage
 from core.modules.usage.support.session_status import SessionStatus
 from core.modules.usage.support.status_files import StatusFiles
@@ -47,13 +48,14 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
         lines = [self.agent_line(agent, status) for agent, status in value.agents]
         lines.append(f"plan: {'; '.join(window.line for window in value.windows)}" if value.windows else "plan: no limits reported yet")
         lines.append(f"cost of the open sessions: ${value.cost_dollars:.2f}")
-        output.write("\n".join(lines), {"agents": [{**output.values(agent), "last_compacted_at": compactions.get(agent.id), "model": status.model, "effort": status.effort, "context_percent": status.context_percent,
+        output.write("\n".join(lines), {"agents": [{**output.values(agent), "last_compacted_at": compactions[agent.id].started_at if agent.id in compactions else None, "last_compaction": compactions[agent.id].json() if agent.id in compactions else None, "model": status.model, "effort": status.effort, "context_percent": status.context_percent,
                                                     "cost_dollars": status.cost_dollars} for agent, status in value.agents],
                                         "windows": [output.values(window) for window in value.windows], "cost_dollars": value.cost_dollars})
 
-    def last_compactions(self, agents: Sequence[Agent]) -> dict[int, str]:
-        calls = self.queries.query(HookCall).filter(hook=HookEventName.COMPACT).matching(Among("session_agent_id", tuple(agent.id for agent in agents))).oldest().all_rows()
-        return {call.session_agent_id: call.creation_timestamp().text for call in calls}
+    def last_compactions(self, agents: Sequence[Agent]) -> dict[int, Compaction]:
+        calls = self.queries.query(HookCall).matching(Among("hook", (HookEventName.COMPACT, HookEventName.SESSION_START))).matching(Among("session_agent_id", tuple(agent.id for agent in agents))).oldest().all_rows()
+        compactions = {agent.id: Compaction.last([call for call in calls if call.session_agent_id == agent.id]) for agent in agents}
+        return {agent_id: compaction for agent_id, compaction in compactions.items() if compaction is not None}
 
     @staticmethod
     def agent_line(agent: Agent, status: SessionStatus) -> str:

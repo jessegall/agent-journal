@@ -7,10 +7,19 @@ try {
     const page = await browser.newPage({viewport: {width: 1280, height: 960}});
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
+    const windowReads = [];
+    const chatLines = [];
+    page.on("request", (request) => {
+        if (request.headers()["x-journal-window"] === "messages.chat") windowReads.push(request.headers()["x-journal-data-only"] ?? "on screen");
+        if (request.url().includes("/api/line") && request.postData()?.includes("messages.chat")) chatLines.push(request.postData());
+    });
     await page.goto(address);
     const history = page.locator(".history");
     await history.getByText("Backlog message 120", {exact: true}).waitFor();
     assert.equal(await history.locator("[data-message]").count(), 50);
+    await page.waitForLoadState("networkidle");
+    assert.deepEqual(windowReads.slice(0, 2), ["on screen", "tool"], "the chat's first load is one request and the read that waits for it");
+    assert.deepEqual(chatLines, [], "the chat reads no line of its own");
     await history.evaluate((element) => {element.scrollTop = 0; element.dispatchEvent(new Event("scroll"));});
     await page.waitForFunction(() => document.querySelectorAll(".history [data-message]").length >= 100);
     const reads = [];
@@ -35,7 +44,7 @@ try {
         return history.querySelectorAll("[data-message]").length === 50 && history.textContent.includes("Backlog message 121") && history.scrollHeight - history.scrollTop - history.clientHeight < 2;
     });
     assert.equal(await history.locator('[data-row][style*="opacity"], [data-row][style*="display: none"]').count(), 0);
-    assert.ok(reads.includes("messages"), JSON.stringify(reads));
+    assert.ok(reads.some((keys) => keys?.split(",").includes("messages")), JSON.stringify(reads));
     await page.screenshot({path: capture, fullPage: true});
     assert.deepEqual(errors, []);
 } finally {

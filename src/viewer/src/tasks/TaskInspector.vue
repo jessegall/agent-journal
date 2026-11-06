@@ -31,10 +31,11 @@ const props = defineProps({
 const emit = defineEmits(["close", "step", "select", "back"]);
 const task = ref(null);
 const place = ref(null);
+const graph = ref(null);
 const failure = ref("");
 const refusal = ref("");
 const menu = ref(null);
-const footer = ref(null);
+const actions = ref(null);
 const tab = ref("details");
 const TABS = [
     {key: "details", label: "Details"},
@@ -56,14 +57,16 @@ const crumb = computed(() => {
 
 async function load() {
     const turn = ++reading;
-    const [answer, where] = await Promise.all([
+    const [answer, where, chain] = await Promise.all([
         props.read(["task", "inspect", String(props.id)]),
         props.read(["plan", "place", String(props.id)]),
+        props.read(["task", "graph"]),
     ]);
     if (turn !== reading) return;
     failure.value = answer.ok ? "" : answer.error;
     task.value = answer.ok ? answer.value : null;
     place.value = where.ok ? where.value : null;
+    graph.value = chain.ok ? chain.value : null;
 }
 
 watch(
@@ -71,6 +74,7 @@ watch(
     () => {
         task.value = null;
         place.value = null;
+        graph.value = null;
         menu.value = null;
         tab.value = "details";
         load();
@@ -93,10 +97,10 @@ async function setPriority(priority) {
 
 function pick(move) {
     menu.value = null;
-    footer.value.press(move);
+    actions.value.press(move);
 }
 
-const openStatus = (element) => footer.value?.moves.length && (menu.value = element);
+const openStatus = (element) => actions.value?.moves.length && (menu.value = element);
 defineExpose({openStatus});
 </script>
 
@@ -123,7 +127,7 @@ defineExpose({openStatus});
             <div class="body"><Skeleton /></div>
         </template>
         <template v-else>
-            <RowMoves ref="footer" noun="task" :id="id" :row="task" :read="read" @done="load" />
+            <RowMoves ref="actions" noun="task" :id="id" :row="task" :read="read" @done="load" />
             <header class="summary">
                 <div class="stamp">
                     Task {{ task.id }} · updated
@@ -140,6 +144,7 @@ defineExpose({openStatus});
                         <TaskDetails
                             :task="task"
                             :place="place"
+                            :graph="graph"
                             :refusal="refusal"
                             @status="openStatus"
                             @priority="setPriority"
@@ -159,7 +164,7 @@ defineExpose({openStatus});
         <template v-if="menu">
             <MenuPanel :anchor="menu" :min-width="220" :max-width="300" @close="menu = null">
                 <MenuLabel>Change the status of task {{ id }}</MenuLabel>
-                <template v-for="move in footer.moves" :key="move.word">
+                <template v-for="move in actions.moves" :key="move.word">
                     <MenuItem @click="pick(move)">{{ move.label }}</MenuItem>
                 </template>
             </MenuPanel>

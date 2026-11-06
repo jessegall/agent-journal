@@ -175,6 +175,29 @@ def test_a_session_says_when_it_was_last_compacted(new_story):
     story.expect_text("usage show --environment main --json", '"last_compacted_at": "2026', actor=story.user)
 
 
+def test_a_compaction_says_how_full_the_context_was_before_and_after(new_story):
+    story = new_story(fixture=UserJoined)
+    story.report_context_percent("s-1", 92)
+    story.hook("s-1", HookSamples.sample("compact"))
+    story.report_context_percent("s-1", 18)
+    story.hook("s-1", HookSamples.session_start().with_raw({"source": "compact"}))
+    compaction = json.loads(story.run("usage show --environment main --json", actor=story.user).output_text)["agents"][0]["last_compaction"]
+    expect_row(compaction, start_percent=92, end_percent=18)
+
+
+def test_a_compaction_not_yet_started_again_keeps_only_the_percent_before(new_story):
+    story = new_story(fixture=UserJoined)
+    story.report_context_percent("s-1", 70)
+    story.hook("s-1", HookSamples.sample("compact"))
+    compaction = json.loads(story.run("usage show --environment main --json", actor=story.user).output_text)["agents"][0]["last_compaction"]
+    expect_row(compaction, start_percent=70, end_percent=None)
+
+
+def test_a_session_never_compacted_has_no_last_compaction(new_story):
+    story = new_story(fixture=UserJoined)
+    expect_row(json.loads(story.run("usage show --environment main --json", actor=story.user).output_text)["agents"][0], last_compaction=None)
+
+
 def test_the_usage_names_the_effort_the_session_reported(new_story):
     story = new_story(fixture=UserJoined)
     save_status_file(story, "s-1", {"model": {"display_name": "Opus"}, "effort": {"level": "high"}})
