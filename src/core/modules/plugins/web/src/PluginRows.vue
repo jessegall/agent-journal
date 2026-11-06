@@ -50,7 +50,8 @@ const guide = ref(false);
 // an install shows everything the plugin would run first, and goes ahead only from there
 async function showPreview() {
     if (!source.value.trim()) return;
-    const key = `preview.${source.value.trim()}`;
+    const key = "preview";
+    context.state["preview.source"] = source.value.trim();
     await context.reload(key);
     const prop = context.props[key];
     refusal.value = prop.failure.value;

@@ -106,7 +106,7 @@ class PluginsModule(Module):
                                        WindowKey("descriptions", "plugin descriptions", events=["plugin.*"]),
                                        WindowKey("services", "plugin services", events=["plugin.*"], reload_seconds=15),
                                        WindowKey("events", "plugin events", events=["plugin.*"], reload_seconds=15),
-                                       WindowKey("preview.*", "plugin preview {id}", named_ids=True, loading=KeyLoading.REQUESTED),
+                                       WindowKey("preview", "plugin preview {source}", loading=KeyLoading.REQUESTED),
                                        WindowKey("latest.*", "plugin latest {id}", named_ids=True, loading=KeyLoading.REQUESTED),
                                        WindowKey("settings.*", "plugin settings {id}", named_ids=True, loading=KeyLoading.REQUESTED),
                                        WindowKey("record.*", "plugin record {id}", named_ids=True, loading=KeyLoading.REQUESTED),
