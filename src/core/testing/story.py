@@ -23,6 +23,7 @@ from core.base.database.database import Database
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute
+from core.base.command.script_policy import ScriptPolicy
 from core.base.journal_container import synced_container
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.journal_home import JournalHome
@@ -271,6 +272,7 @@ class Story:
 
 def story_container(home: JournalHome, clock: ManualClock, process_table: "FixedProcessTable") -> Container:
     container = synced_container(home)
+    container.bind(ScriptPolicy, ScriptPolicy(guards_run=True, commit_limit_ms=None))
     container.bind(Clock, clock)
     container.bind(ProcessTable, process_table)
     container.bind(ShellSandbox, StoryShellSandbox(home))

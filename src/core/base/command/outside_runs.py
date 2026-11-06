@@ -7,6 +7,7 @@ from core.base.command.outside_work import OutsideWork
 
 OUTSIDE_LIMIT_ROUNDS = 20
 RUNS_ONCE_REASON = "runs only once"
+NO_REQUEST_REASON = "only a request in a server runs them"
 ROUND_LIMIT_REASON = f"it reached {OUTSIDE_LIMIT_ROUNDS} rounds"
 
 
@@ -15,9 +16,8 @@ class OutsideRuns:
     each place. Closed means nothing raises, so what is still owed is skipped and a command always ends. It closes
     for a command that runs once, and after OUTSIDE_LIMIT_ROUNDS rounds."""
 
-    def __init__(self, closed: bool = True, plugin_script: str = "") -> None:
-        self.closed, self.plugin_script = closed, plugin_script
-        self.closed_reason = RUNS_ONCE_REASON
+    def __init__(self, closed: bool = True, plugin_script: str = "", closed_reason: str = RUNS_ONCE_REASON) -> None:
+        self.closed, self.plugin_script, self.closed_reason = closed, plugin_script, closed_reason
         self.rounds = 0
         self.reached: Counter[tuple[str, str]] = Counter()
         self.answers: dict[tuple[str, str, int], Sequence[object]] = {}

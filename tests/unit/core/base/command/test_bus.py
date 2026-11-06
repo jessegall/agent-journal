@@ -11,6 +11,7 @@ from core.base.command.transaction_error import TransactionError
 from core.base.command.command import Command
 from core.base.command.outside_runs import OUTSIDE_LIMIT_ROUNDS, OutsideRuns
 from core.base.command.outside_turn import OutsideTurn
+from core.base.command.script_policy import ScriptPolicy
 from core.base.database.kept_rows import KeptRows
 from core.base.query.queries import Queries
 from core.base.command.context import Context
@@ -302,7 +303,9 @@ def outside_container(tmp_path):
         kept.clear()
     pairs = handlers((MakeCommand, MakeHandler), (AskedItem, AskedItemHandler), (EndlessItem, EndlessItemHandler), (OnceItem, OnceItemHandler), (SwallowingItem, SwallowingItemHandler),
                      (KeptItem, KeptItemHandler), (FirstThenAsked, FirstThenAskedHandler), (SeenRuns, SeenRunsHandler), (PassedOn, PassedOnHandler), (OnceInside, OnceInsideHandler), (OuterOfOnce, OuterOfOnceHandler))
-    return sample_container(tmp_path, Registry("abc", {}, pairs, {}, (), ()))
+    container = sample_container(tmp_path, Registry("abc", {}, pairs, {}, (), ()))
+    container.bind(ScriptPolicy, ScriptPolicy(guards_run=True))
+    return container
 
 
 def titles(container) -> list[str]:
@@ -405,3 +408,10 @@ def test_dispatching_a_command_that_runs_once_closes_the_rest_of_the_command(out
     outside_container.get(Bus).run(OuterOfOnce("Dune"), AGENT)
     assert ROUNDS == [1, 1] and WORK_RUNS == []
     assert titles(outside_container) == ["Dune"]
+
+
+def test_a_container_nobody_opened_runs_no_outside_work_and_says_why(outside_container):
+    outside_container.bind(ScriptPolicy, ScriptPolicy())
+    outside_container.instances.pop(Bus, None)
+    outside_container.get(Bus).run(EndlessItem("Dune"), AGENT)
+    assert ROUNDS == [1] and WORK_RUNS == []

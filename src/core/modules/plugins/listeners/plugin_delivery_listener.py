@@ -8,6 +8,7 @@ from core.base.checkout import Checkout
 from core.base.checkout_file import CheckoutFile
 from core.base.clock import Clock
 from core.base.command.bus import Bus
+from core.base.command.script_policy import DELIVERY_LIMIT_MS, ScriptPolicy
 from core.base.listener.commit_listener_runner import PLUGIN_RUN_ORDER
 from core.base.command.command import Command
 from core.base.listener.commit_listener import CommitListener
@@ -33,7 +34,6 @@ from core.modules.plugins.support.plugin_settings import PluginSettings
 from core.modules.plugins.support.plugins_module_name import MODULE_NAME
 from core.base.change.created import Created
 
-DELIVERY_LIMIT_MS = 60_000
 FILE_FIELD = "file"
 COMMIT_SUFFIX = " (commit)"
 
@@ -46,8 +46,8 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
     name = "plugins.delivery"
     run_order = PLUGIN_RUN_ORDER
 
-    def __init__(self, queries: Queries, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, clock: Clock, bus: Bus, actors: ModuleActors, checkouts: AgentCheckouts, runner: PluginEventRunner) -> None:
-        self.queries, self.folders, self.program, self.settings, self.clock, self.bus, self.actors, self.checkouts, self.runner = queries, folders, program, settings, clock, bus, actors, checkouts, runner
+    def __init__(self, queries: Queries, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, clock: Clock, bus: Bus, actors: ModuleActors, checkouts: AgentCheckouts, runner: PluginEventRunner, policy: ScriptPolicy) -> None:
+        self.queries, self.folders, self.program, self.settings, self.clock, self.bus, self.actors, self.checkouts, self.runner, self.policy = queries, folders, program, settings, clock, bus, actors, checkouts, runner, policy
 
     def handle(self, event: Created[PluginDelivery], logged: LoggedEvent) -> None:
         delivery = event.row
@@ -69,7 +69,7 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
             event_data[FILE_FIELD] = self.with_file_state(file_checkout, event_data[FILE_FIELD])
         call = PluginCall(manifest, PluginEvent(delivery.event, event_data), environment, self.clock.timestamp(), self.settings.values(plugin, manifest), delivery.session_agent_id, file_checkout, script=delivery.script)
         try:
-            answer = self.program.run(call, None if delivery.script else DELIVERY_LIMIT_MS)
+            answer = self.program.run(call, self.policy.commit_limit_ms if delivery.script else DELIVERY_LIMIT_MS)
         except PluginFaultError as fault:
             self.record(logged, delivery, RecordPluginFault.of(delivery.plugin_id, fault, f"at {delivery.event}{COMMIT_SUFFIX if delivery.script else ''}"))
             return

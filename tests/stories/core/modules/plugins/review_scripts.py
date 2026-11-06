@@ -6,6 +6,7 @@ from datetime import timedelta
 from server.booting_work import BootingWork
 from core.base.caller.caller_request import CallerRequest
 from core.base.caller.caller_resolver import CallerResolver
+from core.base.caller.process_table import ProcessTable
 from core.base.command.bus import Bus
 from core.base.journal_container import synced_container
 from core.base.model.event_form import EventForm
@@ -80,7 +81,9 @@ def test_s73_a_write_from_a_server_round_runs_no_script_and_notes_the_skip(new_s
 
 def test_s74_a_line_from_a_script_in_a_direct_run_is_known_by_its_variable(new_story):
     story = event_plugin_story(new_story)
-    caller = synced_container(story.home).get(CallerResolver).caller(CallerRequest(variables={"JOURNAL_PLUGIN": "events", "USER": "Ada"}, folder="/", pid=os.getpid()))
+    container = synced_container(story.home)
+    container.bind(ProcessTable, story.process_table)
+    caller = container.get(CallerResolver).caller(CallerRequest(variables={"JOURNAL_PLUGIN": "events", "USER": "Ada"}, folder="/", pid=os.getpid()))
     story.expect_rows(caller.plugin_script == "events")
 
 
