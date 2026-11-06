@@ -70,7 +70,7 @@ def test_worker_next_rebases_before_the_next_task_starts(new_story):
     repository = repository_environment(story)
     story.expect_success('task make "Second job" --environment main', actor=story.agent)
     worker = worker_on_a_moved_base(story, repository, "worker dispatch --model sonnet 1 2")
-    story.expect_success("worker next", actor=worker)
+    story.expect_success("worker next --differences none", actor=worker)
     expect_on_the_tip(story, repository, worker)
 
 

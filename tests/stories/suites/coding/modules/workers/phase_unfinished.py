@@ -32,7 +32,7 @@ def phase_handed_in(new_story, monkeypatch):
     worker.prove_and_move_on(TEST_LINE)
     worker.prove_and_move_on(SECOND_TEST_LINE)
     worker.prove(TEST_LINE)
-    worker.story.run("worker deliver", actor=worker.worker)
+    worker.story.run("worker deliver --differences none", actor=worker.worker)
     return worker
 
 

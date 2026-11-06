@@ -14,6 +14,7 @@ class MakeTaskLogSubcommand(Subcommand[MakeTaskLog, TaskLog]):
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("task_id", type=int)
         parser.add_argument("line")
+        parser.add_argument("--important", action="store_true", help="the work differs from what the task asked, or something was left out or could not be worked out")
 
     def command(self, arguments: Namespace, caller: Caller) -> MakeTaskLog:
-        return MakeTaskLog(arguments.task_id, arguments.line)
+        return MakeTaskLog(arguments.task_id, arguments.line, important=arguments.important)

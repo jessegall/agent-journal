@@ -10,11 +10,11 @@ def test_merge_waits_for_the_main_agent_to_read_the_workers_logs(new_story):
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('task log 1 "Changed the cart"', actor=worker)
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
-    story.expect_success("worker deliver", actor=worker)
+    story.expect_success("worker deliver --differences none", actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_refusal(f"worker merge {worker.id}", f"journal worker logs {worker.id}", actor=story.agent)
-    story.expect_success(f"worker logs {worker.id}", "task 1: Fix the cart", "outcome: ", "Changed the cart", actor=story.agent)
+    story.expect_success(f"worker logs {worker.id}", "task 1: Fix the cart", "outcome: ", "1 notes: Changed the cart", actor=story.agent)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
 
 
@@ -24,7 +24,7 @@ def test_a_worker_with_no_logs_still_needs_a_read(new_story):
     worker = unread_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_refusal(f"worker merge {worker.id}", f"journal worker logs {worker.id}", actor=story.agent)
-    story.expect_success(f"worker logs {worker.id}", "no log lines", actor=story.agent)
+    story.expect_success(f"worker logs {worker.id}", "0 notes:", actor=story.agent)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
 
 
@@ -45,7 +45,7 @@ def test_a_new_delivery_requires_the_logs_to_be_read_again(new_story):
     repository.committed("cart.py", "TOTAL = 2\n", "Another total")
     story.expect_text(f"worker merge {worker.id}", "clashed on cart.py", actor=story.agent)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
-    story.expect_success("worker deliver", actor=worker)
+    story.expect_success("worker deliver --differences none", actor=worker)
     story.expect_refusal(f"worker merge {worker.id}", f"journal worker logs {worker.id}", actor=story.agent)
 
 
@@ -63,9 +63,9 @@ def test_logs_include_each_task_in_a_worker_batch(new_story):
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('task log 1 "Cart finished"', actor=worker)
     story.expect_success('proof make 1 --task 1 "cart.py:1"', actor=worker)
-    story.expect_success("worker next", actor=worker)
+    story.expect_success("worker next --differences none", actor=worker)
     repository.changed(worker.id, "tax.py", "TAX = 1\n")
     story.expect_success('task log 2 "Tax finished"', actor=worker)
     story.expect_success('proof make 1 --task 2 "tax.py:1"', actor=worker)
-    story.expect_success("worker deliver", actor=worker)
-    story.expect_success(f"worker logs {worker.id}", "task 1: Fix the cart", "Cart finished", "task 2: Calculate tax", "Tax finished", actor=story.agent)
+    story.expect_success("worker deliver --differences none", actor=worker)
+    story.expect_success(f"worker logs {worker.id}", "task 1: Fix the cart", "1 notes: Cart finished", "task 2: Calculate tax", "1 notes: Tax finished", actor=story.agent)

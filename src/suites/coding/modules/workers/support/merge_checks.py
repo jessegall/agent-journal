@@ -1,4 +1,5 @@
 from core.base.query.queries import Queries
+from suites.coding.modules.workers.support.worker_log_lines import WorkerReview
 from core.base.database.kept_rows import KeptRows
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.base.refusal import Refusal
@@ -13,6 +14,11 @@ class MergeChecks:
 
     def __init__(self, queries: Queries, proofs: ProofQuery, kept: KeptRows, environments: EnvironmentRows) -> None:
         self.queries, self.proofs, self.kept, self.environments = queries, proofs, kept, environments
+
+    def check_important_lines(self, worktree: Worktree, review: WorkerReview, answer: str) -> None:
+        if review.has_important_lines() and not answer.strip():
+            raise Refusal(f"worker {worktree.session_agent_id} has important log lines you have not answered",
+                          f'read them with journal worker logs {worktree.session_agent_id}, then journal worker merge {worktree.session_agent_id} --read-important "<what you make of them>"')
 
     def check_logs(self, worktree: Worktree) -> None:
         if worktree.logs_read_at is None:

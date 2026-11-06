@@ -116,7 +116,7 @@ def test_the_flag_on_an_allowed_command_is_refused_and_says_to_run_it_without_th
 
 def test_an_allowed_run_never_used_does_not_carry_over_to_the_next_task(allowed):
     allowed.change_and_prove()
-    allowed.story.expect_success("worker next", actor=allowed.worker)
+    allowed.story.expect_success("worker next --differences none", actor=allowed.worker)
     allowed.story.expect_rows(allowed.current_task() == 2)
     expect_reply_refusal(allowed.run_test(), FLAG)
 
@@ -153,7 +153,7 @@ def test_allowing_a_used_request_is_refused_and_says_so(allowed):
 def test_with_no_answer_the_worker_goes_on_and_the_request_stays_on_the_task_log(requested):
     requested.story.expect_text("task inspect 1 --json", TEST_LINE, WHY, actor=requested.story.agent)
     requested.change_and_prove()
-    requested.story.expect_success("worker next", actor=requested.worker)
+    requested.story.expect_success("worker next --differences none", actor=requested.worker)
     requested.story.expect_rows(requested.current_task() == 2)
     expect_requests(requested, REQUESTED)
     requested.story.expect_text("task inspect 1 --json", TEST_LINE, WHY, actor=requested.story.agent)

@@ -94,7 +94,7 @@ def displayed_task_states(worker) -> dict[int, str]:
 
 
 def test_worker_next_inside_a_phase_commits_and_gives_the_next_task_with_nothing_run(proved):
-    proved.story.expect_text("worker next", "task 2", actor=proved.worker)
+    proved.story.expect_text("worker next --differences none", "task 2", actor=proved.worker)
     proved.story.expect_rows(proved.current_task() == 2)
     proved.story.expect_rows(proved.started == [])
     proved.repository.expect_clean(proved.worker.id)
@@ -102,7 +102,7 @@ def test_worker_next_inside_a_phase_commits_and_gives_the_next_task_with_nothing
 
 
 def test_worker_next_is_still_refused_for_a_point_with_no_proof(on_plan):
-    on_plan.story.expect_refusal("worker next", "proof", actor=on_plan.worker)
+    on_plan.story.expect_refusal("worker next --differences none", "proof", actor=on_plan.worker)
     on_plan.story.expect_text("task show 2", "state: open", actor=on_plan.story.agent)
 
 
@@ -112,11 +112,11 @@ def test_a_proof_that_names_a_test_is_kept_and_runs_nothing_when_the_worker_move
 
 
 def test_worker_deliver_is_still_refused_while_a_task_is_queued(proved):
-    proved.story.expect_refusal("worker deliver", "still in your queue", actor=proved.worker)
+    proved.story.expect_refusal("worker deliver --differences none", "still in your queue", actor=proved.worker)
 
 
 def test_a_clash_with_the_base_branch_stops_the_move(conflict_waiting):
-    conflict_waiting.story.expect_refusal("worker next", "clashes", actor=conflict_waiting.worker)
+    conflict_waiting.story.expect_refusal("worker next --differences none", "clashes", actor=conflict_waiting.worker)
     conflict_waiting.story.expect_text("task show 1", "state: started", actor=conflict_waiting.story.agent)
 
 
@@ -129,7 +129,7 @@ def test_the_stalled_test_tick_does_not_start_the_proofs_of_a_task_moved_past(ad
 def test_the_stalled_test_tick_starts_a_test_left_behind_after_the_hand_in_of_a_phase(at_last_task, monkeypatch):
     with monkeypatch.context() as stopped_server:
         stopped_server.setattr(WorkerTestListener, "start_next", lambda listener, logged: None)
-        at_last_task.story.expect_text("worker next", "queued", actor=at_last_task.worker)
+        at_last_task.story.expect_text("worker next --differences none", "queued", actor=at_last_task.worker)
     at_last_task.story.expect_text("proof show 1", "state: queued", actor=at_last_task.story.agent)
     StalledWorkerTests()(at_last_task.story.container)
     at_last_task.story.expect_text("proof show 1", "state: running", actor=at_last_task.story.agent)
@@ -172,7 +172,7 @@ def test_a_cancelled_plan_cancels_the_workers_tasks_and_the_worker_may_stop(adva
 def test_a_task_outside_a_plan_and_then_a_task_of_a_plan_each_follow_their_own_flow(outside_task_first):
     expect_reply_allowed(outside_task_first.run_test())
     outside_task_first.change_and_prove(TEST_LINE)
-    outside_task_first.story.expect_text("worker next", "queued", actor=outside_task_first.worker)
+    outside_task_first.story.expect_text("worker next --differences none", "queued", actor=outside_task_first.worker)
     outside_task_first.end_all_tests()
     outside_task_first.story.expect_rows(outside_task_first.current_task() == 1)
     expect_reply_refusal(outside_task_first.run_test(), FLAG)
@@ -181,7 +181,7 @@ def test_a_task_outside_a_plan_and_then_a_task_of_a_plan_each_follow_their_own_f
 def test_a_task_of_a_plan_and_then_a_task_outside_it_each_follow_their_own_flow(plan_task_first):
     expect_reply_refusal(plan_task_first.run_test(), FLAG)
     plan_task_first.change_and_prove(TEST_LINE)
-    plan_task_first.story.expect_text("worker next", "queued", actor=plan_task_first.worker)
+    plan_task_first.story.expect_text("worker next --differences none", "queued", actor=plan_task_first.worker)
     plan_task_first.end_all_tests()
     plan_task_first.story.expect_rows(plan_task_first.current_task() == 5)
     expect_reply_allowed(plan_task_first.run_test())
@@ -204,7 +204,7 @@ def test_a_person_sees_a_task_moved_past_as_testing(advanced_without_test):
 
 
 def test_a_person_sees_the_tasks_of_a_phase_as_completed_once_its_tests_have_passed(at_last_task):
-    at_last_task.story.run("worker next", actor=at_last_task.worker)
+    at_last_task.story.run("worker next --differences none", actor=at_last_task.worker)
     at_last_task.end_all_tests()
     states = displayed_task_states(at_last_task)
     at_last_task.story.expect_rows((states[1], states[2], states[3], states[4]) == ("completed", "completed", "completed", "started"))

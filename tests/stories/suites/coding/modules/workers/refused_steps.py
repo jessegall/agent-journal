@@ -18,7 +18,7 @@ def working_story(new_story):
     return story, worker
 
 
-@pytest.mark.parametrize("step", ["worker next", "worker deliver"])
+@pytest.mark.parametrize("step", ["worker next --differences none", "worker deliver --differences none"])
 def test_a_worker_refused_by_a_plugin_five_times_is_named_to_the_main_agent(new_story, monkeypatch, step):
     story, worker = working_story(new_story)
     monkeypatch.setattr(PluginStepCheck, "refusal", lambda *_args, **_kwargs: REASON)

@@ -19,6 +19,7 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
+from suites.coding.modules.workers.support.worker_test_failures import WorkerTestFailures
 from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK, WORKER_PHASE_TESTS_FAILED, WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
@@ -34,7 +35,8 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
     command = RecordWorkerTest
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MainAgentLine, tasks: TaskQuery, advance: WorkerTaskAdvance, nudger: Nudger, rows: EventRows, phases: WorkerPhases) -> None:
+    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MainAgentLine, tasks: TaskQuery, advance: WorkerTaskAdvance, nudger: Nudger, rows: EventRows, phases: WorkerPhases, failures: WorkerTestFailures) -> None:
+        self.failures = failures
         self.queries, self.repository, self.main_agent_line, self.tasks, self.advance, self.nudger = queries, repository, main_agent_line, tasks, advance, nudger
         self.rows, self.phases = rows, phases
 
@@ -93,6 +95,8 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         self.advance.next_task(worktree, following, context)
 
     def reopen_work(self, worktree: Worktree, failed: list[Proof], context: Context) -> None:
+        for task_id in sorted({row.task_id for row in failed}):
+            self.failures.record_hand_in(worktree.session_agent_id, task_id, ", ".join(sorted({row.test_command for row in failed if row.task_id == task_id})), context)
         for task_id in sorted({row.task_id for row in failed}):
             task = self.rows.required(Task, task_id)
             if task.state is TaskState.TESTING:

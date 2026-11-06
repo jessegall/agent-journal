@@ -1,4 +1,6 @@
 from core.base.command.bus import Bus
+from core.modules.tasks.commands.make_task_log.make_task_log import MakeTaskLog
+from suites.coding.modules.workers.support.worker_log_lines import WorkerLogLines, WorkerReview
 from core.base.command.context import Context
 from core.base.conflict_files import ConflictFiles
 from pathlib import Path
@@ -32,7 +34,8 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     disabled_scopes = [ActorScope]
     transactional = False
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, checks: MergeChecks, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, settings: SettingValues, commands: WorktreeCommands) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, checks: MergeChecks, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, settings: SettingValues, commands: WorktreeCommands, log_lines: WorkerLogLines) -> None:
+        self.log_lines = log_lines
         self.rows, self.worktrees, self.checks, self.git = rows, worktrees, checks, git
         self.environments, self.bus, self.settings, self.commands = environments, bus, settings, commands
 
@@ -42,6 +45,9 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
             raise Refusal(f"worker {command.worker_id} has delivered nothing to merge", "journal worker-worktree list shows the worktrees")
         environment = self.environments.find(worktree.environment_id)
         self.check(worktree, environment)
+        review = self.log_lines.review(worktree.session_agent_id)
+        self.checks.check_important_lines(worktree, review, command.important_answer)
+        self.keep_answer(worktree, review, command.important_answer, context)
         task = self.rows.required(Task, worktree.task_id)
         uncommitted = self.git.uncommitted_overlap(environment.folder, worktree)
         if uncommitted:
@@ -57,6 +63,14 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         merge_outcome =self.bus.run_with_context(RecordWorktreeMerge(worktree.id, (), commit_before_merge, self.git.tip(environment.folder, worktree.base_branch)), context)
         self.git.remove(environment.folder, merge_outcome.worktree)
         return MergeOutcome(self.bus.run_with_context(RecordWorktreeRemoval(worktree.id), context), ())
+
+    def keep_answer(self, worktree: Worktree, review: WorkerReview, answer: str, context: Context) -> None:
+        for task in review.tasks:
+            lines = [(flagged_line, True) for flagged_line in review.flagged[task.id]]
+            if review.important_lines(task):
+                lines.append((f"main agent on the important lines: {answer}", False))
+            for line, important in lines:
+                self.bus.run(MakeTaskLog(task.id, line, important=important), context.actor, environment_id=worktree.environment_id)
 
     def check(self, worktree: Worktree, environment: Environment) -> None:
         ConflictFiles(Path(environment.folder)).check()

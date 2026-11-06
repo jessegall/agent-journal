@@ -67,7 +67,7 @@ onBeforeUnmount(() => {
             </template>
             <ol class="entries">
                 <template v-for="entry in entries" :key="entry.id">
-                    <li class="entry" data-task-log>
+                    <li :class="['entry', {important: entry.important}]" data-task-log :data-task-log-important="entry.important ? '' : null">
                         <time :datetime="entry.created_at">{{ new Date(entry.created_at).toLocaleString() }}</time>
                         <p>{{ entry.line }}</p>
                     </li>
@@ -106,6 +106,9 @@ time,
 .pages {
     color: var(--text-3);
     font-size: 12px;
+}
+.entry.important p {
+    color: var(--danger);
 }
 .entry p {
     margin: 6px 0 0;

@@ -18,6 +18,8 @@ INACTIVE_HELPER_GRACE_MINUTES = f"{MODULE_KEY}.quiet-helper-grace-minutes"
 WORKER_BATCH_SIZE = f"{MODULE_KEY}.worker-batch-size"
 WORKER_IDLE_HOURS = f"{MODULE_KEY}.worker-idle-hours"
 WORKER_TEST_LIMIT = f"{MODULE_KEY}.worker-run-most-tests"
+HAND_IN_FAILURES_TO_FLAG = f"{MODULE_KEY}.hand-in-failures-to-flag"
+OWN_TEST_FAILURES_TO_FLAG = f"{MODULE_KEY}.own-test-failures-to-flag"
 AFFECTED_TESTS_COMMAND = f"{MODULE_KEY}.affected-tests-command"
 PROJECT_TEST_COMMAND = f"{MODULE_KEY}.project-test-command"
 WORKER_SETTINGS = [
@@ -25,6 +27,8 @@ WORKER_SETTINGS = [
     SettingValue("affected-tests-command", "Affected tests command", "Find tests for changed files, one argument per line. Set the project test command too.", SettingType.TEXT, default=""),
     SettingValue("project-test-command", "Project test command", "Run selected test arguments. Set the affected tests command too.", SettingType.TEXT, default=""),
     SettingValue("worker-run-most-tests", "Test limit per worker command", "A worker command running more tests than this is refused or stopped. 0 means no limit. Journal runs do not count.", SettingType.NUMBER, default=25, person_set=True),
+    SettingValue("hand-in-failures-to-flag", "Failed hand-ins to flag", "Failed hand-ins of a task after which the main agent must read a line about it.", SettingType.NUMBER, default=3),
+    SettingValue("own-test-failures-to-flag", "Failed own tests to flag", "Failures of one test file in a worker's own runs after which the main agent must read a line about it.", SettingType.NUMBER, default=5),
     SettingValue("builder-dispatches-workers", "Builder sends workers", "Whether the builder may send workers.", SettingType.FLAG, default=True, person_set=True),
     SettingValue("worker-run-limit", "Workers running", "Workers that run at once in an environment. At 0 none run.", SettingType.NUMBER, default=DEFAULT_WORKER_COUNT, person_set=True),
     SettingValue("worker-kept-limit", "Workers kept", "Workers kept, running or idle, until retired. At 0 there is no limit.", SettingType.NUMBER, default=8, person_set=True),

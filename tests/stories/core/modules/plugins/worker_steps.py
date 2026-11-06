@@ -33,7 +33,7 @@ def test_a_plugin_holding_a_workers_delivery_also_refuses_its_move_to_the_next_t
     worker = dispatched_worker(story, f"{DISPATCH} 2")
     story.repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
     story.run(FIRST_PROOF, actor=worker)
-    story.expect_refusal("worker next", "[plugin steps] cart.py has a sin", actor=worker)
+    story.expect_refusal("worker next --differences none", "[plugin steps] cart.py has a sin", actor=worker)
     story.expect_text("task show 1", "state: started", actor=story.agent)
 
 

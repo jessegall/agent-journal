@@ -88,13 +88,13 @@ def test_outside_a_plan_a_test_run_goes_on_as_today(outside_plan):
 
 def test_outside_a_plan_worker_next_queues_the_tests_of_that_task(outside_plan):
     outside_plan.change_and_prove(TEST_LINE)
-    outside_plan.story.expect_text("worker next", "the tests of task 1 are queued", actor=outside_plan.worker)
+    outside_plan.story.expect_text("worker next --differences none", "the tests of task 1 are queued", actor=outside_plan.worker)
     outside_plan.story.expect_rows(len(outside_plan.started) == 1)
 
 
 def test_outside_a_plan_a_proof_with_no_test_waits_on_the_main_agent(outside_plan):
     outside_plan.change_and_prove()
-    outside_plan.story.run("worker next", actor=outside_plan.worker)
+    outside_plan.story.run("worker next --differences none", actor=outside_plan.worker)
     outside_plan.story.expect_text("proof show 1", "state: shown", actor=outside_plan.story.agent)
 
 
@@ -106,6 +106,6 @@ def test_outside_a_plan_the_flag_is_refused_with_no_need_to_ask(outside_plan):
 def test_the_main_agent_hears_nothing_while_a_worker_is_refused_and_works_through_a_phase(on_plan):
     on_plan.run_test()
     on_plan.change_and_prove()
-    on_plan.story.expect_success("worker next", actor=on_plan.worker)
+    on_plan.story.expect_success("worker next --differences none", actor=on_plan.worker)
     on_plan.story.expect_rows(on_plan.current_task() == 2)
     expect_main_agent_lines_absent(on_plan)

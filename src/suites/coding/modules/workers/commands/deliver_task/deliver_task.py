@@ -8,3 +8,5 @@ from core.modules.tasks.models.task import Task
 class DeliverTask(Command[Task]):
     """A worker says all its tasks are done: its worktree is committed and they wait for their proofs to be
     checked."""
+
+    differences: str
