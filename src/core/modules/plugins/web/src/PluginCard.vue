@@ -17,6 +17,7 @@ const WRONG_WORDS = {
     "wrong script": ["Wrong script", (row) => `${row.script} is not in the plugin's folder or cannot run, so it never runs.`],
     "wrong project read": ["Wrong folder", (row) => `${row.script} is not a folder inside the project, so it is not opened.`],
     "form not offered": ["Wrong form", () => "This event takes only After a change."],
+    "needs a newer journal": ["Newer journal needed", () => "It needs a newer journal, so it runs nothing."],
     renamed: ["Renamed", (row) => `This event is now called ${row.current_key}.`],
 };
 const scriptText = (row) => (row.limit_ms ? `${row.script}. Runs under the journal limit of ${row.limit_ms} ms.` : row.script);

@@ -14,6 +14,7 @@ from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
+from core.modules.plugins.support.plugin_manifest import LINE_VERSION
 from core.modules.skills.support.loaded_skills import LoadedSkills
 from core.modules.plugins.support.login_path import LoginPath
 from core.modules.plugins.support.plugin_socket import PluginSocket
@@ -83,7 +84,7 @@ class PluginProgram:
     def line(self, call: PluginCall) -> str:
         skills = self.skills.names(call.agent_id) if call.agent_id is not None else ()
         checkout = call.file_checkout or (self.checkouts.checkout(call.agent_id) if call.agent_id is not None else None)
-        return json.dumps({"v": 1, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "skills": list(skills), "checkout": checkout.values() if checkout is not None else {}, "data": dict(call.event.data)})
+        return json.dumps({"v": LINE_VERSION, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "skills": list(skills), "checkout": checkout.values() if checkout is not None else {}, "data": dict(call.event.data)})
 
     @staticmethod
     def stop(process: "subprocess.Popen[str]") -> None:

@@ -58,6 +58,8 @@ class PluginRule(DriverRule):
         commands.extend(RecordPluginFault(plugin.id, UNREADABLE_MANIFEST_FAULT) for plugin in self.runnable.unreadable())
         for runnable in self.runnable.enabled():
             plugin, manifest = runnable.plugin, runnable.manifest
+            if manifest.needs_newer_journal:
+                continue
             if runnable.is_changed:
                 lines.append(f"[plugin {plugin.name}] switched off: its files changed since it was installed; the user switches it on again once they read the change")
                 commands.append(SwitchOffChangedPlugin(plugin.id))

@@ -50,4 +50,4 @@ def test_s82_a_manifest_with_protocol_two_installs_runs_nothing_and_says_so_on_t
     install_event_plugin(story, {"event": TASK_CREATED, "guard": "see.sh"}, protocol=2)
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.expect_rows(not script_calls(story, "see.sh"))
-    event_page.expect_fault("needs a newer journal")
+    assert any(row["state"] == "needs a newer journal" for row in event_page.card()), event_page.card()

@@ -19,7 +19,7 @@ class RunnablePlugins:
         return [self.runnable(plugin) for plugin in self.plugins.enabled_plugins() if not self.folders.is_upgrading(plugin.name) and self.readable_manifest(plugin) is not None]
 
     def running(self) -> list[RunnablePlugin]:
-        return [runnable for runnable in self.enabled() if not runnable.is_changed]
+        return [runnable for runnable in self.enabled() if not runnable.is_changed and not runnable.manifest.needs_newer_journal]
 
     def unreadable(self) -> list[Plugin]:
         return [plugin for plugin in self.plugins.enabled_plugins() if not self.folders.is_upgrading(plugin.name) and self.readable_manifest(plugin) is None]

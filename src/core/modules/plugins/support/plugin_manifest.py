@@ -26,6 +26,9 @@ MANIFEST_FILE = "journal-plugin.json"
 REQUIRED_FIELDS = ("name", "title", "version")
 
 
+LINE_VERSION = 1
+
+
 @dataclass(frozen=True)
 class PluginManifest:
     """What a plugin folder says about itself in journal-plugin.json, as version 4 reads it: its name,
@@ -58,6 +61,7 @@ class PluginManifest:
     project_reads: tuple[str, ...] = ()
     listeners: tuple[ManifestListener, ...] = ()
     moments: tuple[PluginMoment, ...] = ()
+    protocol: int = LINE_VERSION
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -80,7 +84,7 @@ class PluginManifest:
                    cls.read_health(fields["health"] if "health" in fields else None), cls.read_reaches(fields["reaches"] if "reaches" in fields else None),
                    cls.read_aliases(fields["aliases"] if "aliases" in fields else None), cls.read_dashboard(fields["dashboard"] if "dashboard" in fields else None),
                    str(fields["description"]) if "description" in fields else "",
-                   tuple(str(entry) for entry in project_reads) if is_list(project_reads) else (), listeners)
+                   tuple(str(entry) for entry in project_reads) if is_list(project_reads) else (), listeners, (), cls.read_protocol(fields))
 
     @classmethod
     def loaded_fields(cls, path: Path, version: FileVersion) -> Mapping[str, object]:
@@ -148,6 +152,15 @@ class PluginManifest:
     def read_card_tones(cards: object) -> dict[str, str]:
         entries = [entry for entry in cards if is_mapping(entry) and PluginAnswer.entry_type(entry)] if is_list(cards) else []
         return {PluginAnswer.entry_type(entry): str(entry["tone"]) if "tone" in entry else "" for entry in entries}
+
+    @staticmethod
+    def read_protocol(fields: Mapping[str, object]) -> int:
+        protocol = fields["protocol"] if "protocol" in fields else LINE_VERSION
+        return protocol if isinstance(protocol, int) and not isinstance(protocol, bool) else LINE_VERSION
+
+    @property
+    def needs_newer_journal(self) -> bool:
+        return self.protocol > LINE_VERSION
 
     @staticmethod
     def read_listeners(listen: object, folder: Path) -> tuple[ManifestListener, ...]:
