@@ -57,6 +57,27 @@ def test_completed_hook_requests_record_the_real_duration_and_decision(recording
     expect_row(request, body=dict(sample.body))
 
 
+def test_a_disabled_hook_log_loads_no_agent_rows(recording_server, monkeypatch):
+    server = recording_server
+    server.story.expect_success("setting set journal.core.developer.tools.hooks.request-log false --project", actor=server.story.user)
+    costs = []
+    record_hook = HookRequestLog.record_hook
+
+    def record_counted(log, *args):
+        tally = log.queries.database.tally
+        started = tally.points()
+        result = record_hook(log, *args)
+        costs.append(tally.points().minus(started))
+        return result
+
+    monkeypatch.setattr(HookRequestLog, "record_hook", record_counted)
+    sample = HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", firing="unrecorded")
+    server.expect_hook_answer("/hook", dict(sample.body), 200, '"refusal":')
+    assert len(costs) == 1
+    assert costs[0].tables["agents"] == 0
+    assert not server.story.container.get(HookRequestLog).read()
+
+
 def test_a_hook_request_counts_the_parts_of_its_command_chain(recording_server):
     server = recording_server
     parts = [ShellPart("git", CommandCategory.VERSION_CONTROL, ["status"]), ShellPart("ls", CommandCategory.READ, [])]
