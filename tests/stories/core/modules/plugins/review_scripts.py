@@ -3,6 +3,7 @@ import os
 import subprocess
 from datetime import timedelta
 
+from server.booting_work import BootingWork
 from core.base.caller.caller_request import CallerRequest
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.command.bus import Bus
@@ -17,6 +18,7 @@ from tests.stories.core.modules.plugins.support.event_stories import (
     SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, event_page, event_plugin_story, install_event_plugin, plugin_data, plugin_page, plugin_row, script_calls, tasks_titled)
 
 MOST_RUNNING = 8
+WAIT_SECONDS = 15
 FAILING_COUNT = 5
 BACKGROUND_KEEPS_OUTPUT = """sleep 60 &
 echo '{"v": 1, "tell": "answered"}'"""
@@ -141,3 +143,34 @@ def test_s78_a_running_script_has_a_pid_file_and_a_finished_one_has_none(new_sto
         process.kill()
         process.communicate()
     story.expect_rows(not list(folder.glob(f"*{process.pid}*")))
+
+
+def test_s78_the_next_boot_stops_a_leftover_and_removes_its_pid_file(new_story):
+    story = event_plugin_story(new_story)
+    folder = story.container.get(PluginSocketPaths).folder
+    program = str(story.home.folder / "plugins" / "events" / "see.sh")
+    leftover = subprocess.Popen([program], stdin=subprocess.PIPE, start_new_session=True)
+    folder.mkdir(parents=True, exist_ok=True)
+    pid_file = folder / f"script-events-{leftover.pid}.pid"
+    pid_file.write_text(f"{leftover.pid}\n{program}")
+    try:
+        BootingWork().run(story.container)
+        story.expect_rows(leftover.wait(timeout=WAIT_SECONDS) != 0, not pid_file.exists())
+    finally:
+        leftover.kill()
+        leftover.communicate()
+
+
+def test_s78_a_pid_taken_by_another_program_is_left_alone(new_story):
+    story = event_plugin_story(new_story)
+    folder = story.container.get(PluginSocketPaths).folder
+    other = subprocess.Popen(["sleep", "60"], start_new_session=True)
+    folder.mkdir(parents=True, exist_ok=True)
+    pid_file = folder / f"script-events-{other.pid}.pid"
+    pid_file.write_text(f"{other.pid}\n/nowhere/see.sh")
+    try:
+        BootingWork().run(story.container)
+        story.expect_rows(other.poll() is None, not pid_file.exists())
+    finally:
+        other.kill()
+        other.wait()

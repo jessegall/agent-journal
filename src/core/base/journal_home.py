@@ -61,6 +61,10 @@ class JournalHome:
         return self.folder / "runtime" / "timing.log"
 
     @property
+    def plugin_socket_folder(self) -> Path:
+        return SHORT_SOCKET_FOLDER / f"journal-{hashlib.sha256(str(self.folder.resolve()).encode()).hexdigest()[:12]}"
+
+    @property
     def viewer_port_file(self) -> Path:
         return self.folder / "viewer-port"
 

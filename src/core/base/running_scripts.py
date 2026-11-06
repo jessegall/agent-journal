@@ -5,9 +5,12 @@ import subprocess
 import threading
 from collections.abc import Mapping, Sequence
 from functools import cache
+from pathlib import Path
 
 from core.base.caller.process_row import ProcessRow
 from core.base.journal_home import JournalHome
+from core.base.file_access import FileAccess
+from core.base.leftover_process import LeftoverProcess
 from core.base.model.event_form import EventForm
 from core.base.running_script import RunningScript
 from core.base.timestamp import Timestamp
@@ -25,7 +28,8 @@ class RunningScripts:
     the write lock on the hook path. A variable proves nothing, so the chain of processes is the only way to be a
     script."""
 
-    def __init__(self) -> None:
+    def __init__(self, pid_folder: Path | None = None) -> None:
+        self.pid_folder = pid_folder
         self.lock = threading.Lock()
         self.scripts: dict[int, RunningScript] = {}
         self.services: dict[int, str] = {}
@@ -36,16 +40,31 @@ class RunningScripts:
     @classmethod
     @cache
     def shared(cls, home: JournalHome) -> "RunningScripts":
-        return cls()
+        return cls(home.plugin_socket_folder)
 
     def start(self, process: "subprocess.Popen[str]", plugin: str, key: str, form: EventForm, started_at: Timestamp) -> None:
         with self.lock:
             self.scripts[process.pid] = RunningScript(process, plugin, key, form, started_at)
+        if self.pid_folder is not None:
+            self.pid_folder.mkdir(parents=True, exist_ok=True)
+            program = process.args[0] if isinstance(process.args, (list, tuple)) else process.args
+            FileAccess.shared().write(self.pid_folder / f"script-{plugin}-{process.pid}.pid", f"{process.pid}\n{program}")
 
     def finish(self, process: "subprocess.Popen[str]") -> None:
         with self.lock:
+            script = self.scripts.get(process.pid)
             self.scripts.pop(process.pid, None)
             self.stop_reasons.pop(process.pid, None)
+        if self.pid_folder is not None and script is not None:
+            (self.pid_folder / f"script-{script.plugin}-{process.pid}.pid").unlink(missing_ok=True)
+
+    def reap_leftovers(self) -> None:
+        if self.pid_folder is None or not self.pid_folder.is_dir():
+            return
+        for pid_file in self.pid_folder.glob("script-*.pid"):
+            pid, _, program = FileAccess.shared().read(pid_file).partition("\n")
+            LeftoverProcess.stop(int(pid), program)
+            pid_file.unlink(missing_ok=True)
 
     def stop_reason(self, process: "subprocess.Popen[str]") -> str:
         with self.lock:
