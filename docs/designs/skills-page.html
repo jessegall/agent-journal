@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skills page: agent-journal viewer</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* colours copied from src/viewer/src/tokens.css and light.css */
+.t-dark{color-scheme:dark;--side:#0d0e10;--bg:#131416;--bg-2:#101216;--raised:#18191c;--hover:#1d1e22;--sel:#212329;--chip:#24262b;--border:#25272b;--border-inner:#1d1f23;--border-2:#2f3136;--border-3:#3a3d44;--code-bg:#121316;--text:#e6e7ea;--text-2:#a9acb3;--text-3:#83868e;--text-4:#6b6e76;--accent:#5e64c9;--accent-text:#a3a8f0;--accent-dim:#2a2d5a;--good:#63b37c;--warn:#d8a94a;--danger:#df8b7e;--on-danger:#17181b;--sw-off:#3a3d44;--knob-off:#cfd2d8}
+.t-light{color-scheme:light;--side:#f5f5f7;--bg:#ffffff;--bg-2:#fafafb;--raised:#f6f6f8;--hover:#efeff2;--sel:#e8e9ee;--chip:#ececf0;--border:#e5e6ea;--border-inner:#eff0f3;--border-2:#d9dbe0;--border-3:#c9ccd3;--code-bg:#f5f6f8;--text:#1a1b1f;--text-2:#474a52;--text-3:#6b6e77;--text-4:#8b8e97;--accent:#5e64c9;--accent-text:#4a50b5;--accent-dim:#e5e6fa;--good:#2e8a4e;--warn:#a4731a;--danger:#bf4f3d;--on-danger:#ffffff;--sw-off:#c9ccd3;--knob-off:#ffffff}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:#e7e6e2;color:#1a1b1f;font:14px/1.5 "Geist",-apple-system,"Segoe UI",system-ui,sans-serif}
+a{color:#4a50b5}a:hover{color:#1a1b1f}
+/* the document around the frames */
+.doc{max-width:860px;padding:36px 40px 8px}
+.doc h1{margin:0 0 6px;font-size:24px;font-weight:600}
+.doc p{margin:0 0 10px;text-wrap:pretty}
+.turn{padding:30px 40px 34px;border-top:1px solid rgba(0,0,0,.09)}
+.turn>h2{margin:0 0 4px;font-size:16px;font-weight:600}
+.turn>p{margin:0 0 18px;max-width:780px;color:#474a52;text-wrap:pretty}
+.opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.opt{display:flex;flex-direction:column;gap:8px;max-width:100%;min-width:0}
+.opt-label{display:flex;gap:8px;align-items:baseline;font-size:12.5px;color:#474a52}
+.opt-id{padding:2px 7px;border-radius:5px;background:rgba(0,0,0,.09);color:#1a1b1f;font:600 11px ui-monospace,Menlo,monospace}
+.opt-id.pick{background:#5e64c9;color:#fff}
+.scrollx{max-width:100%;overflow-x:auto;border-radius:10px}
+/* the viewer */
+.app,.card{background:var(--bg);color:var(--text);font:13px/1.45 "Geist",-apple-system,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-ligatures:none}
+.app{display:flex;width:1240px;height:800px;overflow:hidden;border:1px solid rgba(0,0,0,.18);border-radius:10px}
+.app.is-phone{width:390px;height:780px;flex-direction:column;border-radius:26px}
+:where(.app,.card) button{font:inherit;color:inherit;cursor:pointer}
+:where(.app,.card) input{font:inherit;color:var(--text)}
+.ico{flex:none;width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.side{flex:none;display:flex;flex-direction:column;gap:1px;width:196px;padding:12px 8px;background:var(--side);border-right:1px solid var(--border)}
+.side-head{display:flex;gap:8px;align-items:center;padding:4px 8px 12px;font-weight:600}
+.logo{display:grid;place-items:center;width:20px;height:20px;border-radius:5px;background:var(--accent);color:#fff;font-size:11px}
+.side-item{padding:5px 8px;border-radius:6px;color:var(--text-2)}
+.side-item.on{background:var(--sel);color:var(--text)}
+.page{flex:1;min-width:0;display:flex;flex-direction:column}
+.page-head{flex:none;display:flex;gap:16px;align-items:center;padding:16px 20px 14px;border-bottom:1px solid var(--border)}
+.page-title{flex:1;min-width:0}
+.page-title h1{margin:0;font-size:16px;font-weight:600}
+.page-title p{margin:2px 0 0;color:var(--text-3);font-size:12.5px;text-wrap:pretty}
+.panes{flex:1;min-height:0;display:flex}
+.pane-list{flex:none;display:flex;flex-direction:column;width:440px;min-height:0;border-right:1px solid var(--border)}
+.pane-list.wide{flex:1;width:auto;border-right:0}
+.pane-detail{flex:1;min-width:0;overflow:auto}
+.bar{flex:none;display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border)}
+.search{position:relative;display:flex;gap:8px;align-items:center;height:32px;padding:0 4px 0 9px;border:1px solid var(--border-2);border-radius:7px;color:var(--text-3)}
+.search:focus-within{border-color:var(--accent)}
+.search input{flex:1;min-width:0;height:100%;border:0;outline:0;background:none;font-size:12.5px}
+.search input::placeholder,.input::placeholder,.chips input::placeholder{color:var(--text-4)}
+.icon-btn{display:grid;place-items:center;flex:none;width:24px;height:24px;padding:0;border:0;border-radius:5px;background:none;color:var(--text-3)}
+.icon-btn:hover{background:var(--hover);color:var(--text)}
+.menu{position:absolute;z-index:5;top:34px;right:0;width:150px;padding:4px;border:1px solid var(--border-3);border-radius:8px;background:var(--sel);box-shadow:0 8px 22px rgba(0,0,0,.3)}
+.menu-label{padding:4px 8px;color:var(--text-3);font-size:11px;font-weight:600}
+.menu-item{display:flex;justify-content:space-between;width:100%;padding:5px 8px;border:0;border-radius:5px;background:none;color:var(--text);text-align:left}
+.menu-item:hover{background:var(--hover)}
+.seg{display:inline-flex;gap:2px;max-width:100%;padding:2px;border:1px solid var(--border-2);border-radius:7px;align-self:flex-start}
+.seg.fill{display:flex;width:100%}
+.seg-opt{padding:3px 10px;border:0;border-radius:5px;background:none;color:var(--text-3);font-size:12px;white-space:nowrap}
+.seg-opt:hover{color:var(--text)}
+.seg-opt.on{background:var(--sel);color:var(--text)}
+.seg.fill .seg-opt{flex:1}
+.seg-opt em{margin-left:5px;color:var(--text-4);font-style:normal;font-variant-numeric:tabular-nums}
+.list{flex:1;min-height:0;overflow:auto;padding-bottom:20px}
+.list-head{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;padding:6px 14px;border-bottom:1px solid var(--border);background:var(--bg);color:var(--text-3);font-size:11.5px}
+.note{margin:0;padding:10px 14px 2px;color:var(--text-3);font-size:12px}
+.sec-head{display:flex;gap:8px;align-items:center;width:100%;padding:12px 14px 6px;border:0;background:none;color:var(--text);font-weight:600;text-align:left}
+.sec-head .ico{width:12px;height:12px;color:var(--text-3)}
+.sec-head small{color:var(--text-3);font-size:11.5px;font-weight:400}
+.cluster{display:flex;gap:8px;align-items:center;width:calc(100% - 28px);min-height:34px;margin:6px 14px 2px;padding:5px 10px;border:1px solid var(--border);border-radius:8px;background:var(--raised);color:var(--text);font-weight:500;text-align:left}
+.cluster:hover{background:var(--hover)}
+.cluster small{color:var(--text-4);font-size:11px;font-weight:400}
+.cluster .ico{width:12px;height:12px;margin-left:auto;color:var(--text-3)}
+.row{display:flex;gap:10px;align-items:center;padding-right:14px;border-bottom:1px solid var(--border-inner)}
+.row:hover{background:var(--raised)}
+.row.on{background:var(--sel)}
+.row.deep{padding-left:12px}
+.row-open{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;padding:8px 0 8px 14px;border:0;background:none;text-align:left}
+.row-name{overflow:hidden;font-weight:500;text-overflow:ellipsis;white-space:nowrap}
+.row-desc{overflow:hidden;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}
+.pane-list.wide .row-open{flex-direction:row;gap:14px;align-items:baseline}
+.pane-list.wide .row-name{flex:0 0 250px}
+.pane-list.wide .row-desc{flex:1;min-width:0}
+.meta{display:flex;flex-wrap:wrap;gap:2px 10px;color:var(--text-3);font-size:11.5px}
+.pane-list.wide .meta{flex:none}
+.tag{display:inline-flex;gap:5px;align-items:center}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--text-4)}
+.dot.good{background:var(--good)}.dot.warn{background:var(--warn)}
+.tag.warn{color:var(--warn)}
+.sw{position:relative;flex:none;width:28px;height:16px;padding:0;border:0;border-radius:8px;background:var(--sw-off)}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--knob-off);transition:transform .18s}
+.sw.on{background:var(--accent)}
+.sw.on::after{background:#fff;transform:translateX(12px)}
+.sw:focus-visible,.btn:focus-visible,.seg-opt:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.is-phone .sw{width:40px;height:24px;border-radius:12px;margin:10px 0}
+.is-phone .sw::after{width:20px;height:20px}
+.is-phone .sw.on::after{transform:translateX(16px)}
+.detail{display:flex;flex-direction:column;gap:20px;max-width:720px;padding:18px 24px 40px}
+.detail-head h2{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;margin:0 0 4px;font-size:15px;font-weight:600}
+.pill{padding:1px 7px;border-radius:4px;background:var(--chip);color:var(--text-2);font-size:11.5px;font-weight:400}
+.detail-head p{margin:0;color:var(--text-2);text-wrap:pretty}
+.status{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-2);color:var(--text-2);font-size:12.5px}
+.status span{flex:1 1 200px}
+.block{display:flex;flex-direction:column;gap:10px}
+.block-head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.block h3{margin:0;font-size:13px;font-weight:600}
+.help{margin:2px 0 0;color:var(--text-3);font-size:12px;text-wrap:pretty}
+.switch-word{display:flex;gap:8px;align-items:center;color:var(--text-2);font-size:12px}
+.sub{display:flex;flex-direction:column;gap:12px;padding:12px;border:1px solid var(--border);border-radius:8px}
+.sub-row{display:flex;gap:12px;align-items:center;justify-content:space-between}
+.label{display:block;margin-bottom:5px;color:var(--text-2);font-size:12px;font-weight:500}
+.btn{display:inline-flex;gap:6px;align-items:center;justify-content:center;min-height:26px;padding:3px 10px;border:1px solid var(--border-2);border-radius:6px;background:none;color:var(--text);font-size:12.5px;white-space:nowrap}
+.btn:hover{background:var(--hover)}
+.btn.primary{border-color:var(--accent);background:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent)}
+.btn[disabled]{cursor:default;opacity:.45}
+.btn.danger{border-color:var(--danger);background:none;color:var(--danger)}
+.btn.danger.sure{background:var(--danger);color:var(--on-danger)}
+.btn.wrap{white-space:normal;text-align:left;justify-content:flex-start}
+.is-phone .btn{min-height:44px;padding:6px 14px}
+.tcard{display:flex;flex-direction:column;gap:8px;padding:11px 12px;border:1px solid var(--border);border-radius:8px}
+.tcard.chosen{border-color:var(--accent)}
+.tcard.off .sentence{color:var(--text-3)}
+.sentence{margin:0;font-size:13px;line-height:1.5;text-wrap:pretty}
+.sentence b{font-weight:500}
+.tfoot{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;color:var(--text-3);font-size:12px}
+.tfoot .push{margin-left:auto;display:flex;gap:10px;align-items:center}
+.waiting{margin:0;color:var(--warn);font-size:12px}
+.builtin{margin:0;padding:0;list-style:none;color:var(--text-2);font-size:12.5px}
+.builtin li{padding:2px 0}
+.mono{padding:0 5px;border-radius:4px;background:var(--chip);font:12px "Geist Mono",ui-monospace,Menlo,monospace}
+.text{padding:14px 16px;border:1px solid var(--border);border-radius:8px;color:var(--text-2);line-height:1.6}
+.text h4{margin:14px 0 4px;color:var(--text);font-size:13px;font-weight:600}
+.text h4:first-child{margin-top:0}
+.text p{margin:0 0 8px;text-wrap:pretty}
+.text ul{margin:0 0 8px;padding-left:18px}
+.text pre{margin:0 0 8px;padding:8px 10px;overflow:auto;border-radius:6px;background:var(--code-bg);font:12px "Geist Mono",ui-monospace,Menlo,monospace}
+.editor{display:flex;flex-direction:column;gap:16px;padding:14px;border:1px solid var(--accent);border-radius:10px;background:var(--bg-2)}
+.editor-title{margin:0;font-size:13px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 8px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg)}
+.chips:focus-within{border-color:var(--accent)}
+.chip{display:inline-flex;gap:4px;align-items:center;padding:1px 4px 1px 8px;border-radius:99px;background:var(--hover);font-size:13px}
+.chip button{display:inline-grid;place-items:center;padding:2px;border:0;background:none;color:var(--text-3)}
+.chip .ico{width:10px;height:10px}
+.chips input{flex:1;min-width:140px;border:0;outline:0;background:none;font-size:13px}
+.input{width:100%;padding:6px 9px;border:1px solid var(--border-2);border-radius:7px;outline:0;background:var(--bg);font-size:12.5px}
+.input:focus{border-color:var(--accent)}
+.is-phone .input{min-height:44px;font-size:16px}
+.is-phone .chips input{min-height:32px;font-size:16px}
+.checks{display:flex;flex-direction:column;gap:2px}
+.check{display:flex;gap:8px;align-items:center;width:100%;padding:4px 0;border:0;background:none;color:var(--text);text-align:left}
+.box{flex:none;width:14px;height:14px;border:1px solid var(--border-3);border-radius:4px}
+.check.on .box{border-color:var(--accent);background:var(--accent);box-shadow:inset 0 0 0 2px var(--bg-2)}
+.is-phone .check{min-height:44px}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.is-phone .tiles{grid-template-columns:1fr}
+.tile{display:flex;flex-direction:column;gap:1px;padding:7px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);text-align:left}
+.tile small{color:var(--text-3);font-size:11.5px}
+.tile.on{border-color:var(--accent);background:var(--accent-dim)}
+.summary{padding:10px 12px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);line-height:1.5}
+.summary small{display:block;margin-bottom:3px;color:var(--text-3);font-size:11.5px}
+.summary b{font-weight:500}
+.try-result{margin:5px 0 0;font-size:12px;color:var(--text-3)}
+.try-result.hit{color:var(--good)}
+.fold-btn{display:flex;gap:6px;align-items:center;padding:0;border:0;background:none;color:var(--text-2);font-size:12.5px}
+.fold-btn .ico{width:12px;height:12px}
+.foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.foot-note{flex:1 1 100%;color:var(--text-3);font-size:12px}
+.foot-note.bad{color:var(--danger)}
+.empty .foot-note{flex:none}
+.foot .right{margin-left:auto;display:flex;gap:8px}
+.picker{position:relative}
+.picker-btn{display:flex;justify-content:space-between;align-items:center;width:100%;padding:6px 9px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);text-align:left}
+.picker-list{margin-top:4px;padding:4px;border:1px solid var(--border-3);border-radius:8px;background:var(--raised)}
+.picker-list .list-scroll{max-height:160px;overflow:auto}
+.empty{display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding:26px 20px;color:var(--text-3);text-wrap:pretty}
+.empty b{color:var(--text);font-size:13px;font-weight:600}
+.empty.centre{align-items:center;height:100%;justify-content:center;text-align:center}
+.empty p{margin:0;max-width:340px}
+.notice{margin:0;padding:7px 11px;border-radius:7px;background:var(--accent-dim);color:var(--text);font-size:12.5px}
+.trig-list{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:12px 14px 20px}
+.trig-head{flex:none;display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);color:var(--text-3);font-size:12px}
+.phone-bar{flex:none;display:flex;gap:8px;align-items:center;min-height:52px;padding:8px 12px;border-bottom:1px solid var(--border)}
+.phone-bar h1{margin:0;font-size:16px;font-weight:600}
+.phone-tabs{flex:none;padding:8px 14px 0}
+.phone-tabs .seg-opt{min-height:38px}
+.is-phone .bar .seg{overflow-x:auto}
+.is-phone .bar .seg-opt{min-height:36px}
+.is-phone .search{height:44px}
+.is-phone .search input{font-size:16px}
+.is-phone .icon-btn{width:40px;height:40px}
+.is-phone .row-open{padding:10px 0 10px 14px}
+.is-phone .detail{padding:14px 14px 30px}
+.is-phone .editor{border:0;border-radius:0;padding:14px;background:none}
+.phone-scroll{flex:1;min-height:0;overflow:auto}
+.back{display:inline-flex;gap:6px;align-items:center;min-height:44px;padding:0 8px;border:0;background:none;color:var(--accent-text)}
+.card{width:340px;min-height:170px;border:1px solid rgba(0,0,0,.18);border-radius:10px;overflow:hidden}
+.card-tag{padding:7px 14px;border-bottom:1px solid var(--border);color:var(--text-3);font-size:11.5px}
+.skel{display:flex;flex-direction:column;gap:12px;padding:20px}
+.skel i{display:block;height:10px;border-radius:5px;background:var(--hover)}
+.dialog{display:flex;flex-direction:column;gap:14px;padding:16px 18px}
+.dialog h3{margin:0;font-size:14px;font-weight:600}
+.menu-static{padding:4px;width:260px}
+.menu-line{display:flex;gap:8px;align-items:center;padding:4px 10px;color:var(--text-2);font-size:12.5px}
+.menu-line.wait{color:var(--text-3)}
+</style>
+</head>
+<body>
+
+<div class="doc">
+  <h1>A Skills page of its own</h1>
+  <p>The Skills page of the agent-journal viewer: a list of every skill, one switch for Required on each, and triggers that make an agent read a skill when your words appear. Every frame below is live: click rows, switches and buttons. All data is invented.</p>
+  <p>I pick <b>1a</b> for the page and <b>2a</b> for the trigger form. Reasons are under each.</p>
+</div>
+
+<section class="turn" data-screen-label="Page layout">
+  <h2>The page: list and open skill</h2>
+  <p><b>1a is my pick.</b> The list stays beside the open skill, so you can switch Required on several skills and read one without losing your place. Version 4 had this list but opened a skill in a panel that slid over it. Each skill keeps its own address, so it can be linked. <b>1b</b> is closer to version 4: more room per row, but opening a skill leaves the list.</p>
+  <div class="opts">
+    <div class="opt"><div class="opt-label"><span class="opt-id pick">1a</span>List beside the open skill, dark, with a skill open (my pick)</div><div class="scrollx"><div data-frame='{"theme":"t-dark","open":"journal-plans"}'></div></div></div>
+    <div class="opt"><div class="opt-label"><span class="opt-id pick">1a</span>Light, nothing open yet</div><div class="scrollx"><div data-frame='{"theme":"t-light"}'></div></div></div>
+    <div class="opt"><div class="opt-label"><span class="opt-id">1b</span>Full width list, dark. A click opens the skill as its own view with a way back</div><div class="scrollx"><div data-frame='{"theme":"t-dark","layout":"full"}'></div></div></div>
+  </div>
+</section>
+
+<section class="turn" data-screen-label="Trigger form">
+  <h2>Adding and editing a trigger</h2>
+  <p><b>2a is my pick.</b> The form opens in place, inside the skill, so the skill is already chosen. Only the words are needed: type one, press Enter, save. The rest has a sensible start: it watches what you write, and matches whole words so that "plan" does not fire on "planet". <b>2b</b> is the existing trigger dialog with one more action. It is cheaper to build, but it asks for a name and offers everything a trigger can do, which is a lot for a keyword.</p>
+  <div class="opts">
+    <div class="opt"><div class="opt-label"><span class="opt-id pick">2a</span>New trigger, dark. Try typing a word and a sentence</div><div class="scrollx"><div data-frame='{"theme":"t-dark","open":"journal-plans","draftNew":"journal-plans"}'></div></div></div>
+    <div class="opt"><div class="opt-label"><span class="opt-id pick">2a</span>Editing a trigger, light, with Pause and End this trigger</div><div class="scrollx"><div data-frame='{"theme":"t-light","open":"journal-plans","draftEdit":"t1"}'></div></div></div>
+    <div class="opt"><div class="opt-label"><span class="opt-id">2b</span>The existing dialog with one more action, dark (shortened)</div>
+      <div class="card t-dark" style="width:520px"><div class="dialog">
+        <h3>New trigger</h3>
+        <div><span class="label">Name</span><input class="input" value="Read the plans skill for a roadmap" aria-label="Name"></div>
+        <div class="summary"><small>What this trigger does</small>When “roadmap” appears, the agent must read journal-plans before it goes on.</div>
+        <div><span class="label">When these words appear</span><div class="chips"><span class="chip" style="padding-right:8px">roadmap</span></div></div>
+        <div><span class="label">What it does</span><div class="checks"><span class="check"><span class="box"></span>Remind the agent</span><span class="check"><span class="box"></span>Tell the agent to do something now</span><span class="check"><span class="box"></span>Block a command or file change</span><span class="check on"><span class="box"></span>Make the agent read a skill</span></div></div>
+        <div><span class="label">Which skill the agent must read</span><div class="picker-btn">journal-plans</div></div>
+        <div class="foot"><div class="right"><span class="btn">Cancel</span><span class="btn primary">Create trigger</span></div></div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<section class="turn" data-screen-label="All triggers">
+  <h2>All your triggers in one place</h2>
+  <p>A second view on the page lists every trigger that makes an agent read a skill. Add a trigger here and the form first asks which skill. A trigger an agent made waits until you turn it on, as triggers do today.</p>
+  <div class="opts">
+    <div class="opt"><div class="opt-label"><span class="opt-id pick">3a</span>Dark</div><div class="scrollx"><div data-frame='{"theme":"t-dark","tab":"triggers"}'></div></div></div>
+    <div class="opt"><div class="opt-label"><span class="opt-id pick">3a</span>Light, with no triggers yet</div><div class="scrollx"><div data-frame='{"theme":"t-light","tab":"triggers","noTriggers":true}'></div></div></div>
+  </div>
+</section>
+
+<section class="turn" data-screen-label="Phone">
+  <h2>Phone width</h2>
+  <p>The list fills the screen and a skill pushes over it with "Back to skills". Buttons and fields are at least 44 points. The trigger form takes the whole screen.</p>
+  <div class="opts">
+    <div class="opt"><div class="opt-label">List, dark</div><div data-frame='{"theme":"t-dark","phone":true}'></div></div>
+    <div class="opt"><div class="opt-label">One skill, light</div><div data-frame='{"theme":"t-light","phone":true,"open":"journal-plans"}'></div></div>
+    <div class="opt"><div class="opt-label">New trigger, dark</div><div data-frame='{"theme":"t-dark","phone":true,"open":"journal-plans","draftNew":"journal-plans"}'></div></div>
+    <div class="opt"><div class="opt-label">Triggers, light</div><div data-frame='{"theme":"t-light","phone":true,"tab":"triggers"}'></div></div>
+  </div>
+</section>
+
+<section class="turn" data-screen-label="Empty and failure states">
+  <h2>Empty, loading and failure states</h2>
+  <p>Each one says what is missing and what to do next.</p>
+  <div class="opts">
+    <div class="card t-dark"><div class="card-tag">No skills at all</div><div class="empty"><b>No skills are installed</b><p>A skill is a folder with a SKILL.md file. Add one under .claude/skills or .codex/skills in this project and it shows here.</p></div></div>
+    <div class="card t-light"><div class="card-tag">Search finds nothing</div><div class="empty"><b>No skill matches</b><p>Try other words.</p><button class="btn" type="button">Clear the search</button></div></div>
+    <div class="card t-dark"><div class="card-tag">Required, none switched on</div><div class="empty"><b>No skill is required</b><p>Switch on Required beside a skill, and the agent must read it when a conversation starts.</p></div></div>
+    <div class="card t-light"><div class="card-tag">Read by the main agent, none yet</div><div class="empty"><b>No skill is loaded in this conversation</b><p>Skills appear here with the time the agent read them.</p></div></div>
+    <div class="card t-dark"><div class="card-tag">One skill, no triggers</div><div class="empty"><b>No triggers yet</b><p>Add one, and the agent must read this skill as soon as your words appear.</p><button class="btn" type="button">Add a trigger</button></div></div>
+    <div class="card t-light"><div class="card-tag">Nothing opened (desktop)</div><div class="empty"><b>Choose a skill to read what it says</b><p>Switch on Required to make the agent read a skill at the start. Open a skill to add words that make the agent read it later.</p></div></div>
+    <div class="card t-dark"><div class="card-tag">The skill was removed</div><div class="empty"><b>The skill commandments-python-flow is no longer available</b><p>Its plugin may have been removed. Triggers for it do nothing until the skill is back.</p><button class="btn" type="button">Back to skills</button></div></div>
+    <div class="card t-light"><div class="card-tag">A switch could not be saved</div><div class="empty"><b>journal-plans is still not required</b><p>The change could not be saved. Nothing has changed for the agent.</p><button class="btn" type="button">Try again</button></div></div>
+    <div class="card t-dark"><div class="card-tag">A trigger could not be saved</div><div class="empty"><span class="foot-note bad">This pattern repeats a repeat, such as (a+)+, which is refused. Write a simpler pattern.</span><div class="foot"><span class="btn">Cancel</span><span class="btn primary">Create trigger</span></div></div></div>
+    <div class="card t-light"><div class="card-tag">Loading the list</div><div class="skel" role="status" aria-label="Loading the skills"><i style="width:70%"></i><i style="width:90%"></i><i style="width:60%"></i><i style="width:80%"></i></div></div>
+  </div>
+</section>
+
+<section class="turn" data-screen-label="Top bar menu">
+  <h2>The skills menu in the top bar</h2>
+  <p>It stays as it is: what the agent has read and still has to read. Only its last line changes where it goes: Browse every skill now opens this page.</p>
+  <div class="opts">
+    <div class="card t-dark" style="width:auto;min-height:0"><div class="menu-static">
+      <div class="menu-label">Read in this conversation</div>
+      <div class="menu-line">journal</div><div class="menu-line">journal-etiquette</div><div class="menu-line">journal-plans</div>
+      <div class="menu-label">Still to read</div>
+      <div class="menu-line wait">journal-tasks</div>
+      <button class="menu-item" type="button">Browse every skill</button>
+    </div></div>
+  </div>
+</section>
+
+<script>
+"use strict";
+const ICON = {
+  search: '<circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/>',
+  down: '<path d="m4 6 4 4 4-4"/>',
+  right: '<path d="m6 4 4 4-4 4"/>',
+  close: '<path d="m4 4 8 8M12 4l-8 8"/>',
+  plus: '<path d="M8 3v10M3 8h10"/>',
+  back: '<path d="m10 3-5 5 5 5"/>',
+  order: '<path d="M3 5h10M5 8h6M7 11h2"/>'
+};
+const icon = (name) => `<svg class="ico" viewBox="0 0 16 16" aria-hidden="true">${ICON[name]}</svg>`;
+const esc = (text) => String(text).replace(/[&<>"]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+
+const blank = {required: false, who: "all", again: true, state: "", at: "", words: [], cmds: []};
+const J = (name, desc, more) => Object.assign({name, source: "journal", desc}, blank, more);
+const P = (name, cluster, desc) => Object.assign({name, source: "plugin", cluster, desc: desc || ""}, blank);
+const cluster = (prefix, subjects) => subjects.map((subject) => P(`${prefix}-${subject}`, prefix));
+
+const SKILLS = [
+  J("journal", "Find your way in the journal: what it is, its basic ideas and which skill to read for what.", {required: true, state: "read", at: "09:12"}),
+  J("journal-etiquette", "Behave in the chat with the user and keep the journal's own workings out of it.", {required: true, state: "read", at: "09:12"}),
+  J("journal-tasks", "Declare, log and finish the current work.", {required: true, who: "main", state: "todo", cmds: ["task"]}),
+  J("journal-messages", "Read and answer the user's messages and ask the user questions.", {required: true, who: "main", state: "read", at: "09:14", cmds: ["message", "question"]}),
+  J("journal-memory", "Keep what matters beyond the context window with weighted memories.", {required: true, who: "main", state: "read", at: "09:14", cmds: ["memory"]}),
+  J("journal-plans", "Build and follow a plan of ordered tasks. Read it before the first plan command of a session, or when the user asks for a plan or a roadmap.", {required: true, who: "main", state: "read", at: "11:40", words: ["plan"], cmds: ["plan"]}),
+  J("journal-rules", "Project rules are standing instructions every agent gets at its start.", {cmds: ["rule"]}),
+  J("journal-documents", "Write lasting knowledge as documents and what was checked as reports.", {state: "changed", at: "10:02", cmds: ["doc", "report"]}),
+  J("journal-shell", "Run shell commands through the journal and read what they printed.", {cmds: ["output", "alias"]}),
+  J("journal-sequences", "Follow a sequence of steps one at a time.", {cmds: ["sequence"]}),
+  J("journal-checks", "Write and run scripts that pass or fail about the project.", {cmds: ["check"]}),
+  J("journal-workers", "Send a worker to write a bounded job, check its proofs and merge its work.", {cmds: ["worker"]}),
+  J("journal-plugins", "See what plugins do, install and upgrade them or propose one to the user.", {cmds: ["plugin"]}),
+  J("journal-secrets", "Use keys and logins without seeing them.", {words: ["secret"], cmds: ["secret"]}),
+  J("journal-dumps", "File what the user dropped in a dump by sorting the material by subject into rows of their own.", {words: ["dump", "drop", "paste"]}),
+  J("journal-flowcharts", "Draw a flowchart in the chat when the user asks for a diagram.", {words: ["diagram", "flowchart"]}),
+  J("journal-templates", "Find and use a template for a task, a plan or a review.", {cmds: ["template"]}),
+  P("commandments", "", "The index of this project's architectural disciplines and the commands that find and fix sins."),
+  P("commandments-plain-code-words", "", "Load it before naming a class, a method, a constant or a variable, so the code says what it is in plain words."),
+  P("commandments-plain-viewer-text", "", "Load it before writing any text a person reads in the viewer, so it says what it is in plain words."),
+  P("commandments-writing-detectors", "", "How to write a commandment of your own: a project-local rule that judges every file from then on."),
+  ...cluster("commandments-python", ["absence", "behaviour-per-method", "class-layout", "dependency-direction", "documentation", "duplication", "enums", "exceptions", "fix-at-the-source", "flow", "method-mood", "pass-the-object", "repeated-call-helper", "role-vocabulary", "tell-dont-ask", "templates", "type-honesty", "value-objects"]),
+  ...cluster("commandments-php", ["absence", "behaviour-per-method", "class-layout", "concurrent-state", "dependency-direction", "documentation", "enums-with-behaviour", "exceptions", "fix-at-the-source", "guard-clauses-and-flow", "laravel-idioms", "method-mood", "page-objects", "pass-the-object", "repeated-call-helper", "role-vocabulary", "route-actions", "spatie-data", "tell-dont-ask", "templates", "type-honesty", "value-objects"]),
+  ...cluster("commandments-typescript", ["absence", "duplication", "flow"]),
+  ...cluster("commandments-vue", ["mirrored-server-type", "vue-components", "vue-control-flow"]),
+  Object.assign({name: "skill-creator", source: "project", desc: "Create new skills, modify and improve existing skills, and measure skill performance."}, blank),
+  Object.assign({name: "writing-story-tests", source: "project", desc: "Write stories before changing agent behaviour, using this checkout's real commands and hooks."}, blank)
+];
+
+const TRIGGERS = [
+  {id: "t1", skill: "journal-plans", name: "Read the plans skill for a roadmap", words: ["roadmap", "milestone"], places: ["messages"], match: "word", on: true, fired: 4, waiting: false, conds: []},
+  {id: "t2", skill: "writing-story-tests", name: "Read the story tests skill for a test file", words: ["tests/stories"], places: ["commands", "files"], match: "part", on: true, fired: 12, waiting: false, conds: []},
+  {id: "t3", skill: "commandments-plain-viewer-text", name: "Read the viewer text skill for a page", words: [".vue"], places: ["files"], match: "part", on: false, fired: 2, waiting: false, conds: []},
+  {id: "t4", skill: "journal-secrets", name: "Read the secrets skill for a password", words: ["api key", "password"], places: ["messages"], match: "word", on: false, fired: 0, waiting: true, conds: []}
+];
+
+const EXAMPLES = [
+  {label: "Read journal-plans when I write roadmap", skill: "journal-plans", words: ["roadmap"], places: ["messages"], match: "word"},
+  {label: "Read journal-secrets when I write password", skill: "journal-secrets", words: ["password"], places: ["messages"], match: "word"},
+  {label: "Read writing-story-tests when a story test changes", skill: "writing-story-tests", words: ["tests/stories"], places: ["files"], match: "part"}
+];
+
+const PLACES = [
+  {key: "messages", label: "What you write to the agent", inline: "what you write to the agent"},
+  {key: "commands", label: "Commands the agent runs", inline: "the commands the agent runs"},
+  {key: "files", label: "Files the agent changes", inline: "the files the agent changes"}
+];
+const MATCHES = [
+  {key: "word", label: "Whole word", hint: "Not part of another word"},
+  {key: "part", label: "Part of the text", hint: "Capitals ignored"},
+  {key: "pattern", label: "Pattern", hint: "A regular expression"}
+];
+const CONDITIONS = [
+  {key: "agent", label: "Agent", example: "main or helper"},
+  {key: "environment", label: "Environment", example: "main"},
+  {key: "fired", label: "How often it has fired", example: "3"},
+  {key: "hours", label: "Hours of the day", example: "9-17"}
+];
+const PAGES = ["Home", "Settings", "Files", "Git", "Search", "Attachments", "Skills", "Profiles", "Plugins", "Secrets"];
+
+const clone = (value) => JSON.parse(JSON.stringify(value));
+const skillOf = (s, name) => s.skills.find((skill) => skill.name === name);
+const triggersOf = (s, name) => s.triggers.filter((trigger) => trigger.skill === name);
+const plural = (count, word) => `${count} ${word}${count === 1 ? "" : "s"}`;
+const listed = (items) => (items.length > 1 ? `${items.slice(0, -1).join(", ")} or ${items[items.length - 1]}` : items[0] || "");
+const sourceTitle = (key) => (key === "journal" ? "From the journal" : key === "plugin" ? "From the plugin code-commandments" : "From this project");
+
+function sentence(trigger) {
+  const name = trigger.skill || "the skill you choose";
+  if (!trigger.words.length) return "Add the words to watch for.";
+  const words = listed(trigger.words.map((word) => `“${esc(word)}”`));
+  const places = PLACES.filter((place) => trigger.places.includes(place.key)).map((place) => place.inline);
+  const where = places.length ? ` in ${listed(places)}` : "";
+  return `When <b>${words}</b> appears${where}, the agent must read <b>${esc(name)}</b> before it goes on.`;
+}
+
+function tryMatch(draft) {
+  const text = draft.tryText;
+  const words = [...draft.words, ...(draft.typed.trim() ? [draft.typed.trim()] : [])];
+  const quote = (word) => word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return words.find((word) => {
+    try {
+      if (draft.match === "pattern") return new RegExp(word).test(text);
+      if (draft.match === "part") return text.toLowerCase().includes(word.toLowerCase());
+      return new RegExp(`(^|\\W)${quote(word)}(\\W|$)`, "i").test(text);
+    } catch (wrong) {
+      return false;
+    }
+  });
+}
+
+const missing = (draft) => {
+  if (!draft.skill) return "Choose which skill the agent must read.";
+  if (!draft.words.length && !draft.typed.trim()) return "Add at least one word.";
+  return draft.places.length ? "" : "Choose where to look.";
+};
+
+const newDraft = (over) => Object.assign({id: "", skill: "", words: [], places: ["messages"], match: "word", name: "", conds: [], more: false, typed: "", tryText: "", sure: false, picking: false, pickWords: "", askSkill: false}, over);
+
+/* parts of the page */
+const sw = (on, label, action, arg) => `<button type="button" class="sw ${on ? "on" : ""}" role="switch" aria-checked="${on}" aria-label="${esc(label)}" title="${esc(label)}" data-do="${action}" data-arg="${esc(arg)}"></button>`;
+const seg = (options, value, action, fill) => `<span class="seg ${fill ? "fill" : ""}" role="radiogroup">${options.map((option) => `<button type="button" role="radio" aria-checked="${option.key === value}" class="seg-opt ${option.key === value ? "on" : ""}" data-do="${action}" data-arg="${option.key}">${esc(option.label)}${option.count === undefined ? "" : `<em>${option.count}</em>`}</button>`).join("")}</span>`;
+const tabs = (s, fill) => seg([{key: "skills", label: "Skills", count: s.skills.length}, {key: "triggers", label: "Triggers", count: s.triggers.length}], s.tab, "tab", fill);
+const wasRead = (skill) => skill.state === "read" || skill.state === "changed";
+
+function matching(s) {
+  const words = s.q.toLowerCase().split(/\s+/).filter(Boolean);
+  const passes = {all: () => true, required: (skill) => skill.required, read: wasRead}[s.filter];
+  const rows = s.skills.filter((skill) => passes(skill) && words.every((word) => `${skill.name} ${skill.desc}`.toLowerCase().includes(word)));
+  if (s.filter === "read") return [...rows].sort((a, b) => a.at.localeCompare(b.at));
+  if (s.order === "newest") return [...rows].reverse();
+  return [...rows].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function stateTag(skill) {
+  if (skill.state === "read") return `<span class="tag"><span class="dot good"></span>Read at ${skill.at}</span>`;
+  if (skill.state === "todo") return '<span class="tag warn"><span class="dot warn"></span>Still to read</span>';
+  if (skill.state === "changed") return '<span class="tag warn"><span class="dot warn"></span>Changed since it was read</span>';
+  return "";
+}
+
+function rowHtml(s, skill, deep) {
+  const count = triggersOf(s, skill.name).length;
+  const tags = [stateTag(skill), count ? `<span class="tag">${plural(count, "trigger")}</span>` : ""].filter(Boolean).join("");
+  return `<div class="row ${skill.name === s.open ? "on" : ""} ${deep ? "deep" : ""}">
+    <button type="button" class="row-open" data-do="open" data-arg="${esc(skill.name)}">
+      <span class="row-name">${esc(skill.name)}</span>
+      ${skill.desc ? `<span class="row-desc">${esc(skill.desc)}</span>` : ""}
+      ${tags ? `<span class="meta">${tags}</span>` : ""}
+    </button>
+    ${sw(skill.required, skill.required ? `Stop requiring ${skill.name} at the start` : `Require ${skill.name} at the start`, "req", skill.name)}
+  </div>`;
+}
+
+function groupHtml(s, rows) {
+  const searching = Boolean(s.q.trim()) || s.filter !== "all";
+  return ["journal", "plugin", "project"].map((source) => {
+    const members = rows.filter((skill) => skill.source === source);
+    if (!members.length) return "";
+    const closed = s.folded.has(source) && !searching;
+    const required = members.filter((skill) => skill.required).length;
+    const head = `<button type="button" class="sec-head" aria-expanded="${!closed}" data-do="fold" data-arg="${source}">${icon(closed ? "right" : "down")}${sourceTitle(source)} <small>${members.length}${required ? `, ${required} required` : ""}</small></button>`;
+    if (closed) return head;
+    const singles = members.filter((skill) => !skill.cluster).map((skill) => rowHtml(s, skill)).join("");
+    const names = [...new Set(members.filter((skill) => skill.cluster).map((skill) => skill.cluster))];
+    const clusters = names.map((name) => {
+      const inside = members.filter((skill) => skill.cluster === name);
+      const shut = s.folded.has(name) && !searching;
+      const on = inside.filter((skill) => skill.required).length;
+      return `<button type="button" class="cluster" aria-expanded="${!shut}" data-do="fold" data-arg="${name}">${name} <small>${inside.length}${on ? `, ${on} required` : ""}</small>${icon(shut ? "right" : "down")}</button>${shut ? "" : inside.map((skill) => rowHtml(s, skill, true)).join("")}`;
+    }).join("");
+    return head + singles + clusters;
+  }).join("");
+}
+
+function emptyList(s) {
+  if (!s.skills.length) return '<div class="empty"><b>No skills are installed</b><p>A skill is a folder with a SKILL.md file. Add one under .claude/skills or .codex/skills in this project and it shows here.</p></div>';
+  if (s.q.trim()) return '<div class="empty"><b>No skill matches</b><p>Try other words.</p><button type="button" class="btn" data-do="clear">Clear the search</button></div>';
+  if (s.filter === "required") return '<div class="empty"><b>No skill is required</b><p>Switch on Required beside a skill, and the agent must read it when a conversation starts.</p></div>';
+  return '<div class="empty"><b>No skill is loaded in this conversation</b><p>Skills appear here with the time the agent read them.</p></div>';
+}
+
+function listPane(s) {
+  const rows = matching(s);
+  const filters = [
+    {key: "all", label: "All", count: s.skills.length},
+    {key: "required", label: "Required", count: s.skills.filter((skill) => skill.required).length},
+    {key: "read", label: "Read by the main agent", count: s.skills.filter(wasRead).length}
+  ];
+  const menu = s.menu ? `<div class="menu"><div class="menu-label">Order</div>${[["az", "A to Z"], ["newest", "Newest"]].map(([key, label]) => `<button type="button" class="menu-item" data-do="order" data-arg="${key}">${label}${s.order === key ? "<span>On</span>" : ""}</button>`).join("")}</div>` : "";
+  const note = s.filter === "read" ? '<p class="note">The skills the main agent has read in this conversation.</p>' : "";
+  return `<div class="pane-list ${s.layout === "full" ? "wide" : ""}" ${s.phone ? 'style="width:auto;flex:1;border:0"' : ""}>
+    <div class="bar">
+      <div class="search">${icon("search")}<input data-model="q" data-focus="q" placeholder="Find a skill" aria-label="Find a skill" value="${esc(s.q)}"><button type="button" class="icon-btn" title="Order of the list" aria-label="Order of the list" data-do="menu">${icon("order")}</button>${menu}</div>
+      ${seg(filters, s.filter, "filter")}
+    </div>
+    <div class="list" data-scroll="list">
+      ${rows.length ? `<div class="list-head"><span>Skill</span><span>Required</span></div>${note}${s.filter === "read" ? rows.map((skill) => rowHtml(s, skill)).join("") : groupHtml(s, rows)}` : emptyList(s)}
+    </div>
+  </div>`;
+}
+
+function triggerCard(s, trigger) {
+  const fired = trigger.waiting ? "" : `<span>${trigger.fired ? `Fired ${plural(trigger.fired, "time")}` : "Not fired yet"}</span>`;
+  const chosen = s.draft && s.draft.id === trigger.id;
+  return `<div class="tcard ${trigger.on ? "" : "off"} ${chosen ? "chosen" : ""}">
+    <p class="sentence">${sentence(trigger)}</p>
+    ${trigger.waiting ? '<p class="waiting">An agent made this trigger. It does nothing until you turn it on.</p>' : ""}
+    <div class="tfoot">${fired}${!trigger.on && !trigger.waiting ? "<span>Paused</span>" : ""}
+      <span class="push"><button type="button" class="btn" data-do="edit" data-arg="${trigger.id}">Edit</button>
+      ${trigger.waiting ? `<button type="button" class="btn primary" data-do="enable" data-arg="${trigger.id}">Turn it on</button>` : sw(trigger.on, trigger.on ? "Pause this trigger" : "Resume this trigger", "pause", trigger.id)}</span>
+    </div>
+  </div>`;
+}
+
+function pickerHtml(s, draft) {
+  const words = draft.pickWords.toLowerCase();
+  const rows = s.skills.filter((skill) => skill.name.includes(words)).slice(0, 30);
+  const list = draft.picking ? `<div class="picker-list"><input class="input" data-model="pickWords" data-focus="pick" placeholder="Find a skill" aria-label="Find a skill" value="${esc(draft.pickWords)}"><div class="list-scroll">${rows.map((skill) => `<button type="button" class="menu-item" data-do="pickSkill" data-arg="${esc(skill.name)}">${esc(skill.name)}</button>`).join("")}</div></div>` : "";
+  return `<div class="picker"><span class="label">Which skill the agent must read</span><button type="button" class="picker-btn" aria-expanded="${draft.picking}" data-do="picking">${esc(draft.skill || "Choose a skill")}${icon("down")}</button>${list}</div>`;
+}
+
+function editorHtml(s) {
+  const draft = s.draft;
+  const held = draft.id ? s.triggers.find((trigger) => trigger.id === draft.id) : null;
+  const found = draft.tryText.trim() ? tryMatch(draft) : null;
+  const missed = missing(draft);
+  const conditions = draft.more ? `
+    <div><span class="label">Name</span><input class="input" data-model="name" data-focus="name" value="${esc(draft.name)}" placeholder="Read ${esc(draft.skill || "the skill")}" aria-label="Name"></div>
+    <div><span class="label">Only when</span><div class="foot">${CONDITIONS.map((type) => `<button type="button" class="btn" data-do="condAdd" data-arg="${type.key}">${icon("plus")}${type.label}</button>`).join("")}</div>
+    ${draft.conds.map((cond, place) => `<div class="sub-row" style="margin-top:6px"><span style="flex:none;width:150px">${CONDITIONS.find((type) => type.key === cond.type).label}</span><input class="input" data-model="cond" data-arg="${place}" data-focus="cond${place}" value="${esc(cond.value)}" placeholder="${CONDITIONS.find((type) => type.key === cond.type).example}" aria-label="Value"><button type="button" class="icon-btn" aria-label="Remove this condition" data-do="condDrop" data-arg="${place}">${icon("close")}</button></div>`).join("")}
+    <p class="help">With none, it always applies.</p></div>` : "";
+  const endButtons = held ? `${draft.sure ? '<button type="button" class="btn danger sure" data-do="endSure">Yes, end it</button>' : '<button type="button" class="btn danger" data-do="endAsk">End this trigger</button>'}<button type="button" class="btn" data-do="pauseDraft">${held.on ? "Pause" : "Resume"}</button>` : "";
+  return `<div class="editor">
+    <h3 class="editor-title">${held ? `Edit this trigger for ${esc(draft.skill)}` : draft.askSkill ? "New trigger" : `New trigger for ${esc(draft.skill)}`}</h3>
+    ${draft.askSkill ? pickerHtml(s, draft) : ""}
+    <div><span class="label">Watch for these words</span><div class="chips">${draft.words.map((word) => `<span class="chip">${esc(word)}<button type="button" aria-label="Remove ${esc(word)}" data-do="wordDrop" data-arg="${esc(word)}">${icon("close")}</button></span>`).join("")}<input data-model="typed" data-focus="typed" placeholder="Add a word, then Enter" aria-label="Add a word" value="${esc(draft.typed)}"></div></div>
+    <div><span class="label">Watch for the words in</span><div class="checks">${PLACES.map((place) => `<button type="button" role="checkbox" aria-checked="${draft.places.includes(place.key)}" class="check ${draft.places.includes(place.key) ? "on" : ""}" data-do="place" data-arg="${place.key}"><span class="box"></span>${place.label}</button>`).join("")}</div></div>
+    <div><span class="label">How the words must match</span><div class="tiles">${MATCHES.map((match) => `<button type="button" class="tile ${draft.match === match.key ? "on" : ""}" aria-pressed="${draft.match === match.key}" data-do="match" data-arg="${match.key}">${match.label}<small>${match.hint}</small></button>`).join("")}</div>${draft.match === "pattern" ? '<p class="help">Patterns have no time limit. A slow pattern can delay every command or file change. Patterns are limited to 200 characters.</p>' : ""}</div>
+    <div class="summary"><small>What this trigger does</small>${sentence({skill: draft.skill, words: [...draft.words, ...(draft.typed.trim() ? [draft.typed.trim()] : [])], places: draft.places})}</div>
+    <div><span class="label">Try a sentence</span><input class="input" data-model="tryText" data-focus="try" value="${esc(draft.tryText)}" placeholder="For example: what is the schedule for this" aria-label="Try a sentence">
+    ${draft.tryText.trim() ? `<p class="try-result ${found ? "hit" : ""}">${found ? `This would fire. It found “${esc(found)}”.` : "This would not fire."}</p>` : ""}</div>
+    <div><button type="button" class="fold-btn" aria-expanded="${draft.more}" data-do="more">${icon(draft.more ? "down" : "right")}More choices: its name and when it applies</button></div>
+    ${conditions}
+    <div class="foot">
+      <span class="foot-note" role="status">${esc(missed || (held ? "Changes apply the next time this trigger runs." : ""))}</span>
+      ${endButtons}
+      <span class="right"><button type="button" class="btn" data-do="cancel">Cancel</button><button type="button" class="btn primary" ${missed ? "disabled" : ""} data-do="save">${held ? "Save" : "Create trigger"}</button></span>
+    </div>
+  </div>`;
+}
+
+function statusHtml(skill) {
+  const lines = {
+    read: [`The main agent read this skill at ${skill.at}.`, "Make the agent read it again"],
+    todo: ["The main agent still has to read this skill. It cannot do anything else first.", ""],
+    changed: ["This skill changed after the main agent read it.", "Make the agent read it again"],
+    "": ["The main agent has not read this skill in this conversation.", "Make the agent read it now"]
+  }[skill.state];
+  return `<div class="status"><span>${lines[0]}</span>${lines[1] ? `<button type="button" class="btn" data-do="readNow" data-arg="${esc(skill.name)}">${lines[1]}</button>` : ""}</div>`;
+}
+
+function requiredHtml(skill) {
+  const details = !skill.required ? "" : `<div class="sub">
+    <div><span class="label">Which agents must read it</span>${seg([{key: "all", label: "Every agent"}, {key: "main", label: "Only the main agent"}], skill.who, "who")}</div>
+    ${skill.who === "all" ? `<div class="sub-row"><div><div>Read it again after the conversation is compacted</div><p class="help">Compacting empties what the agent has read.</p></div>${sw(skill.again, "Read it again after the conversation is compacted", "again", skill.name)}</div>` : '<p class="help" style="margin:0">The main agent reads it at the start and again after every compaction.</p>'}
+  </div>`;
+  return `<div class="block"><div class="block-head"><div><h3>Must the agent read it at the start?</h3><p class="help">When a conversation starts, the agent must read this skill before it may do anything else.</p></div><span class="switch-word">Required${sw(skill.required, skill.required ? `Stop requiring ${skill.name} at the start` : `Require ${skill.name} at the start`, "req", skill.name)}</span></div>${details}</div>`;
+}
+
+function builtinHtml(skill) {
+  if (!skill.words.length && !skill.cmds.length) return "";
+  const words = skill.words.length ? `<li>When you write ${skill.words.map((word) => `<span class="mono">${esc(word)}</span>`).join(" ")}</li>` : "";
+  const cmds = skill.cmds.length ? `<li>Before it runs a command about ${skill.cmds.map((cmd) => `<span class="mono">${esc(cmd)}</span>`).join(" ")}</li>` : "";
+  return `<div class="block"><div><h3>When the skill itself asks to be read</h3><p class="help">These come with the skill and cannot be changed here.</p></div><ul class="builtin">${words}${cmds}</ul></div>`;
+}
+
+function textHtml(skill) {
+  if (skill.name !== "journal-plans") return `<p>${esc(skill.desc)}</p><p>The full text of the skill shows here.</p>`;
+  return `<h4>Build and follow a plan</h4><p>A plan is an ordered list of tasks toward one goal. Make one when the work has more than a few steps, or when the user asks for a plan or a roadmap.</p><h4>Start a plan</h4><pre>journal plan make "Move the viewer to one page shell"</pre><ul><li>Name the goal in one sentence.</li><li>Add each task in the order it must happen.</li><li>Ask the user to approve the plan before the first task.</li></ul><h4>Follow a plan</h4><p>Work on one task at a time. When a task ends, read the next one before you start it.</p>`;
+}
+
+function detailHtml(s, skill) {
+  const triggers = triggersOf(s, skill.name);
+  const drafting = s.draft && s.draft.skill === skill.name && !s.draft.askSkill;
+  const source = skill.source === "journal" ? "From the journal" : skill.source === "plugin" ? "From a plugin" : "From this project";
+  const back = s.layout === "full" && !s.phone ? '<div><button type="button" class="btn" data-do="back">Back to skills</button></div>' : "";
+  const list = triggers.map((trigger) => (drafting && s.draft.id === trigger.id ? editorHtml(s) : triggerCard(s, trigger))).join("");
+  const fresh = drafting && !s.draft.id ? editorHtml(s) : "";
+  const none = !triggers.length && !fresh ? '<p class="help" style="margin:0">No triggers yet. Add one, and the agent must read this skill as soon as your words appear.</p>' : "";
+  return `<div class="detail">${back}
+    <div class="detail-head"><h2>${esc(skill.name)} <span class="pill">${source}</span></h2>${skill.desc ? `<p>${esc(skill.desc)}</p>` : ""}</div>
+    ${s.notice ? `<p class="notice" role="status">${esc(s.notice)}</p>` : ""}
+    ${statusHtml(skill)}
+    ${requiredHtml(skill)}
+    <div class="block"><div class="block-head"><div><h3>Make the agent read it when your words appear</h3></div>${drafting ? "" : `<button type="button" class="btn" data-do="add" data-arg="${esc(skill.name)}">${icon("plus")}Add a trigger</button>`}</div>${none}${list}${fresh}</div>
+    ${builtinHtml(skill)}
+    <div class="block"><div class="block-head"><h3>What the skill says</h3><button type="button" class="btn">Open SKILL.md</button></div><div class="text">${textHtml(skill)}</div></div>
+  </div>`;
+}
+
+const nothingOpen = '<div class="empty centre"><b>Choose a skill to read what it says</b><p>Switch on Required to make the agent read a skill at the start. Open a skill to add words that make the agent read it later.</p></div>';
+
+function triggerListHtml(s) {
+  if (!s.triggers.length) {
+    return `<div class="empty"><b>You have no triggers yet</b><p>A trigger makes the agent read a skill as soon as your words appear.</p><span class="label" style="margin:8px 0 0">Start with an example</span>${EXAMPLES.map((example, place) => `<button type="button" class="btn wrap" data-do="example" data-arg="${place}">${esc(example.label)}</button>`).join("")}</div>`;
+  }
+  return `<div class="trig-list" data-scroll="triggers">${s.notice ? `<p class="notice" role="status">${esc(s.notice)}</p>` : ""}${s.triggers.map((trigger) => triggerCard(s, trigger)).join("")}</div>`;
+}
+
+const triggerHead = '<div class="trig-head"><span>Triggers that make an agent read a skill. Other triggers, such as reminders and blocks, stay under Triggers.</span><button type="button" class="btn" data-do="add" data-arg="">Add a trigger</button></div>';
+
+function desktopBody(s) {
+  if (s.tab === "triggers") {
+    return `<div class="panes"><div class="pane-list">${triggerHead}${triggerListHtml(s)}</div><div class="pane-detail" data-scroll="detail">${s.draft ? `<div class="detail">${editorHtml(s)}</div>` : '<div class="empty centre"><b>Choose Edit on a trigger to change it</b><p>Or add a new one. Each trigger makes the agent read one skill.</p></div>'}</div></div>`;
+  }
+  const skill = s.open && skillOf(s, s.open);
+  if (s.layout === "full") {
+    return skill ? `<div class="pane-detail" data-scroll="detail">${detailHtml(s, skill)}</div>` : `<div class="panes">${listPane(s)}</div>`;
+  }
+  return `<div class="panes">${listPane(s)}<div class="pane-detail" data-scroll="detail">${skill ? detailHtml(s, skill) : nothingOpen}</div></div>`;
+}
+
+function desktopView(s) {
+  return `<aside class="side"><div class="side-head"><span class="logo">A</span>agent-journal</div>${PAGES.map((page) => `<span class="side-item ${page === "Skills" ? "on" : ""}">${page}</span>`).join("")}</aside>
+  <main class="page"><div class="page-head"><div class="page-title"><h1>Skills</h1><p>Instructions an agent reads before it does a kind of work. Choose which ones it must read, and when. This applies to the whole project.</p></div>${tabs(s)}</div>${desktopBody(s)}</main>`;
+}
+
+function phoneView(s) {
+  if (s.draft) return `<div class="phone-bar"><button type="button" class="back" data-do="cancel">${icon("back")}Cancel</button></div><div class="phone-scroll" data-scroll="edit">${editorHtml(s)}</div>`;
+  const skill = s.tab === "skills" && s.open && skillOf(s, s.open);
+  if (skill) return `<div class="phone-bar"><button type="button" class="back" data-do="back">${icon("back")}Back to skills</button></div><div class="phone-scroll" data-scroll="detail">${detailHtml(s, skill)}</div>`;
+  const head = `<div class="phone-bar"><h1>Skills</h1></div><div class="phone-tabs">${tabs(s, true)}</div>`;
+  if (s.tab === "triggers") return `${head}${triggerHead}${triggerListHtml(s)}`;
+  return `${head}${listPane(s)}`;
+}
+
+/* what a click does */
+const findTrigger = (s, id) => s.triggers.find((trigger) => trigger.id === id);
+const ACTIONS = {
+  tab: (s, arg) => { s.tab = arg; s.draft = null; s.notice = ""; },
+  filter: (s, arg) => { s.filter = arg; },
+  menu: (s) => { s.menu = !s.menu; },
+  order: (s, arg) => { s.order = arg; s.menu = false; },
+  clear: (s) => { s.q = ""; },
+  open: (s, arg) => { s.open = arg; s.draft = null; s.notice = ""; },
+  back: (s) => { s.open = null; s.draft = null; s.notice = ""; },
+  fold: (s, arg) => { if (s.folded.has(arg)) s.folded.delete(arg); else s.folded.add(arg); },
+  req: (s, arg) => { const skill = skillOf(s, arg); skill.required = !skill.required; },
+  who: (s, arg) => { skillOf(s, s.open).who = arg; },
+  again: (s, arg) => { const skill = skillOf(s, arg); skill.again = !skill.again; },
+  readNow: (s, arg) => { skillOf(s, arg).state = "todo"; s.notice = "The agent must read this skill before it does anything else."; },
+  add: (s, arg) => { s.draft = newDraft({skill: arg, askSkill: !arg}); s.notice = ""; },
+  edit: (s, arg) => { s.draft = newDraft(Object.assign(clone(findTrigger(s, arg)), {askSkill: s.tab === "triggers"})); s.notice = ""; },
+  example: (s, arg) => { s.draft = newDraft(Object.assign({askSkill: true}, clone(EXAMPLES[Number(arg)]))); },
+  cancel: (s) => { s.draft = null; },
+  picking: (s) => { s.draft.picking = !s.draft.picking; },
+  pickSkill: (s, arg) => { s.draft.skill = arg; s.draft.picking = false; s.draft.pickWords = ""; },
+  wordDrop: (s, arg) => { s.draft.words = s.draft.words.filter((word) => word !== arg); },
+  place: (s, arg) => { s.draft.places = s.draft.places.includes(arg) ? s.draft.places.filter((key) => key !== arg) : [...s.draft.places, arg]; },
+  match: (s, arg) => { s.draft.match = arg; },
+  more: (s) => { s.draft.more = !s.draft.more; },
+  condAdd: (s, arg) => { s.draft.conds.push({type: arg, value: ""}); },
+  condDrop: (s, arg) => { s.draft.conds.splice(Number(arg), 1); },
+  endAsk: (s) => { s.draft.sure = true; },
+  endSure: (s) => { s.triggers = s.triggers.filter((trigger) => trigger.id !== s.draft.id); s.draft = null; s.notice = "The trigger has ended."; },
+  pauseDraft: (s) => { const held = findTrigger(s, s.draft.id); held.on = !held.on; s.draft = null; },
+  pause: (s, arg) => { const held = findTrigger(s, arg); held.on = !held.on; },
+  enable: (s, arg) => { const held = findTrigger(s, arg); held.on = true; held.waiting = false; },
+  save: (s) => {
+    const draft = s.draft;
+    if (missing(draft)) return;
+    const typed = draft.typed.trim();
+    const words = typed && !draft.words.includes(typed) ? [...draft.words, typed] : draft.words;
+    const fields = {skill: draft.skill, name: draft.name || `Read ${draft.skill}`, words, places: draft.places, match: draft.match, conds: draft.conds};
+    const held = findTrigger(s, draft.id);
+    if (held) Object.assign(held, fields);
+    else s.triggers.push(Object.assign({id: `n${Date.now()}`, on: true, fired: 0, waiting: false}, fields));
+    s.draft = null;
+    s.notice = held ? "Saved. It applies the next time this trigger runs." : "Saved. It works from now on.";
+  }
+};
+
+function draw(root, s) {
+  const scrolls = {};
+  root.querySelectorAll("[data-scroll]").forEach((pane) => { scrolls[pane.dataset.scroll] = pane.scrollTop; });
+  const active = root.contains(document.activeElement) ? document.activeElement : null;
+  const focusKey = active && active.dataset ? active.dataset.focus : "";
+  const caret = focusKey ? active.selectionStart : 0;
+  root.className = `app ${s.theme} ${s.phone ? "is-phone" : ""}`;
+  root.innerHTML = s.phone ? phoneView(s) : desktopView(s);
+  root.querySelectorAll("[data-scroll]").forEach((pane) => { pane.scrollTop = scrolls[pane.dataset.scroll] || 0; });
+  if (!focusKey) return;
+  const again = root.querySelector(`[data-focus="${focusKey}"]`);
+  if (!again) return;
+  again.focus({preventScroll: true});
+  again.setSelectionRange(caret, caret);
+}
+
+function mount(root) {
+  const config = JSON.parse(root.dataset.frame);
+  const skills = clone(SKILLS);
+  const clusters = [...new Set(skills.map((skill) => skill.cluster).filter(Boolean))];
+  const s = {theme: config.theme, phone: Boolean(config.phone), layout: config.layout || "two", tab: config.tab || "skills", filter: "all", q: "", order: "az", menu: false, open: config.open || null, draft: null, notice: "", folded: new Set(clusters), skills, triggers: config.noTriggers ? [] : clone(TRIGGERS)};
+  if (config.draftNew) s.draft = newDraft({skill: config.draftNew, words: ["schedule"]});
+  if (config.draftEdit) s.draft = newDraft(clone(findTrigger(s, config.draftEdit)));
+
+  root.addEventListener("click", (event) => {
+    const target = event.target.closest("[data-do]");
+    if (!target) return;
+    event.preventDefault();
+    ACTIONS[target.dataset.do](s, target.dataset.arg || "");
+    draw(root, s);
+  });
+  root.addEventListener("input", (event) => {
+    const field = event.target.dataset.model;
+    if (!field) return;
+    if (field === "q") s.q = event.target.value;
+    else if (field === "cond") s.draft.conds[Number(event.target.dataset.arg)].value = event.target.value;
+    else s.draft[field] = event.target.value;
+    draw(root, s);
+  });
+  root.addEventListener("keydown", (event) => {
+    const field = event.target.dataset.model;
+    if (field === "q" && event.key === "Escape") { s.q = ""; draw(root, s); return; }
+    if (field !== "typed") return;
+    const typed = s.draft.typed.trim();
+    if (event.key === "Backspace" && !s.draft.typed && s.draft.words.length) { s.draft.words = s.draft.words.slice(0, -1); draw(root, s); return; }
+    if (event.key !== "Enter" && event.key !== ",") return;
+    event.preventDefault();
+    if (typed && !s.draft.words.includes(typed)) s.draft.words = [...s.draft.words, typed];
+    s.draft.typed = "";
+    draw(root, s);
+  });
+  draw(root, s);
+}
+
+document.querySelectorAll("[data-frame]").forEach(mount);
+</script>
+</body>
+</html>
+
