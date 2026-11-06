@@ -102,3 +102,13 @@ def test_the_context_percent_is_the_last_token_count_of_the_sessions_rollout(pro
     counts = [{"type": "event_msg", "payload": {"type": "token_count", "info": {"model_context_window": 200000, "last_token_usage": {"total_tokens": tokens}}}} for tokens in (20000, 50000)]
     rollout.write_text("".join(json.dumps(row) + "\n" for row in counts))
     assert (provider.context_percent(JournalHome(tmp_path), "t-1"), provider.context_percent(JournalHome(tmp_path), "t-2")) == (25, None)
+
+
+def test_a_session_resumes_only_in_the_folder_it_started_in(provider, tmp_path, monkeypatch):
+    project = tmp_path / "project"
+    rollout = tmp_path / "rollout-thread.jsonl"
+    rollout.write_text(json.dumps({"type": "session_meta", "payload": {"cwd": str(project)}}) + "\n")
+    monkeypatch.setattr(provider, "transcript", lambda _project, session: rollout if session == "thread" else None)
+    assert provider.session_resumes_here(project, "thread")
+    assert not provider.session_resumes_here(tmp_path / "other", "thread")
+    assert not provider.session_resumes_here(project, "launch-name-only")

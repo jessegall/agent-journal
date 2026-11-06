@@ -3,6 +3,9 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_folders import AgentFolders
+from core.modules.claude_code.providers.claude_code_provider import CONFIG_VARIABLE
+from core.modules.claude_code.providers.support.claude_folder_name import ClaudeFolderName
 from core.modules.drivers.models.helper_job import HelperJob
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_fixture import StoryFixture
@@ -30,6 +33,15 @@ def the_helper(story):
     return next(story.container.get(Queries).query(Agent).filter(role="helper").all_rows())
 
 
+def resumable_session(story, helper, monkeypatch) -> None:
+    """Puts the helper's Claude transcript where a resume in its folder finds it."""
+    monkeypatch.setenv(CONFIG_VARIABLE, str(story.home.folder.parent / "claude-config"))
+    project = story.container.get(AgentFolders).folder(helper)
+    transcript = story.home.folder.parent / "claude-config" / "projects" / ClaudeFolderName.folder_name(project) / f"{helper.session}.jsonl"
+    transcript.parent.mkdir(parents=True, exist_ok=True)
+    transcript.write_text("{}\n")
+
+
 def jobs_of(story, helper):
     return list(story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).oldest().all_rows())
 
@@ -53,10 +65,11 @@ def test_a_send_to_a_running_helper_adds_to_its_open_job(new_story):
     story.expect_text(f"agent-line list --agent {helper.id}", JOB)
 
 
-def test_a_send_to_an_ended_helper_opens_a_new_job_and_resumes_it(new_story):
+def test_a_send_to_an_ended_helper_opens_a_new_job_and_resumes_it(new_story, monkeypatch):
     story = new_story(fixture=EndedHelper)
     helper = the_helper(story)
     launcher = FakeLauncher(story.home.socket("launcher"))
+    resumable_session(story, the_helper(story), monkeypatch)
     story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.thread.join(timeout=5)

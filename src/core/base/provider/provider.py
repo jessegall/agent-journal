@@ -99,6 +99,9 @@ class Provider(ABC):
     @abstractmethod
     def transcript_row(self, line: str, position: int) -> TranscriptRow | None: ...
 
+    def session_resumes_here(self, project: Path, session: str) -> bool:
+        return self.transcript(project, session) is not None
+
     def last_reply(self, project: Path, session: str) -> str:
         path = self.transcript(project, session)
         lines = TranscriptTail(path).lines() if path else []
