@@ -96,19 +96,19 @@ readCommand();
                 <span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span>
             </template>
         </span>
+        <template v-if="planTask">
+            <span class="agent-line agent-work-start"><button type="button" class="agent-plan" data-agent-plan :data-peek="`plans:${planTask.plan_id}`" @click.stop="peekRef(`plans:${planTask.plan_id}`)">Plan {{ planTask.plan_id }}: {{ planTask.plan_title }}</button></span>
+        </template>
         <template v-if="job">
-            <span class="agent-line agent-work-start">
+            <span :class="['agent-line', {'agent-work-start': !planTask}]">
                 <span class="agent-job" data-agent-job :title="job"><button v-if="jobRef" type="button" class="agent-job-link" :data-peek="jobRef" @click.stop="peekRef(jobRef)">{{ job }}</button><template v-else>{{ job }}</template></span>
                 <template v-if="totalCount">
                     <span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span>
                 </template>
             </span>
         </template>
-        <template v-if="planTask">
-            <span class="agent-line"><button type="button" class="agent-plan" data-agent-plan :data-peek="`plans:${planTask.plan_id}`" @click.stop="peekRef(`plans:${planTask.plan_id}`)">Plan {{ planTask.plan_id }}: {{ planTask.plan_title }}</button></span>
-        </template>
         <template v-if="!open && (showsCommand || (totalCount && tasksPerHour))">
-            <span :class="['agent-foot', {'agent-work-start': !job}]" data-agent-foot>
+            <span :class="['agent-foot', {'agent-work-start': !job && !planTask}]" data-agent-foot>
                 <template v-if="showsCommand">
                     <AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" />
                 </template>
@@ -433,7 +433,7 @@ readCommand();
 
 .agent-card { gap: 2px; padding: 9px 14px; }
 .agent-head { gap: 6px; }
-.agent-times { display: flex; flex-direction: column; align-items: flex-end; flex: none; }
+.agent-times { display: flex; flex-direction: column; align-items: flex-end; flex: none; margin-left: auto; }
 .agent-last-heard { color: var(--text-4); font-size: 10px; white-space: nowrap; }
 .agent-dot { margin-right: 3px; }
 .agent-name { flex: 0 1 auto; }

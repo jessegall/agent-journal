@@ -16,6 +16,7 @@ export class WindowCatalogue {
         this.dropdowns = shallowRef([]);
         this.bars = shallowRef([]);
         this.pages = shallowRef([]);
+        this.sections = shallowRef([]);
         this.loaded = shallowRef(false);
         this.person = null;
         this.keptWindows = browserCopy.read(KEPT_WINDOWS_KEY) ?? {};
@@ -25,8 +26,9 @@ export class WindowCatalogue {
         const offers = await this.fetchOffers();
         this.person = offers.person_id ?? null;
         const offered = withFamilyOptions(offers.windows, await this.fetchMarks());
-        this.windows.value = offered.filter((window) => !["bar", "page"].includes(window.place));
+        this.windows.value = offered.filter((window) => !["bar", "page", "section"].includes(window.place));
         this.pages.value = offered.filter((window) => ["page", "pane_or_page"].includes(window.place));
+        this.sections.value = offered.filter((window) => window.place === "section");
         this.bars.value = offered.filter((window) => window.place === "bar");
         this.dropdowns.value = offered.filter((window) => window.place === "dropdown");
         this.loaded.value = true;
@@ -72,7 +74,11 @@ export class WindowCatalogue {
     }
 
     window(name) {
-        return this.windows.value.find((window) => window.name === name) || this.pages.value.find((window) => window.name === name) || null;
+        return [...this.windows.value, ...this.pages.value, ...this.sections.value].find((window) => window.name === name) || null;
+    }
+
+    sectionsAt(slot) {
+        return this.sections.value.filter((section) => section.slots.includes(slot));
     }
 
     dropdown(name) {

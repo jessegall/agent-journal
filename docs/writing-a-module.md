@@ -171,6 +171,63 @@ plain JavaScript source there inside the temporary package before installation. 
 component before installing it. A component's code has its own trust requirements; registering a
 button does not grant trust to a component.
 
+## Add a section to an inspector
+
+A section is a part of an inspector that your module adds, without the module that owns the row
+knowing. It is a window with the place `WindowPlace.SECTION` and a list of slots, so it has the same
+bundle, reads, permission, trust step and failure screen as any window. Each model has one slot,
+`inspector.<cli name>`, such as `inspector.plan`, `inspector.task` or `inspector.memory`. The
+[Acme plan notes package](../tests/stories/fixtures/acme_plan_notes/) adds a button and a section to
+plans with no change in the plans module. Its `module.py` is:
+
+```python
+class AcmePlanNotesModule(Module):
+    name = "acme.plan_notes"
+    requires_core = ">=5,<6"
+    parent_suite = "coding"
+    dependencies = ["journal.core.plans", "journal.core.viewer", "journal.suites.coding"]
+    handlers = [NotePlanHandler]
+    subcommands = [NotePlanSubcommand]
+    buttons = [ButtonDeclaration("plan_notes.note", tuple(["row.plan"]), "Note it", "plan-notes add {row_id}")]
+    windows = [WindowDeclaration("plan_notes.notes", "Notes", "notes.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION,
+                                 slots=tuple(["inspector.plan"]), icon=WindowIcon.PLAN, reads=["plan show"], events=["plan.*"],
+                                 skeleton=tuple([SkeletonPart.line()]))]
+```
+
+The section reads the row it is shown for with `useWindow().option("row")` and draws its heading with
+the kit's `InspectorPart`, so it looks like the rest of the inspector with no styles of its own. The
+sample's source is [web/notes.js](../tests/stories/fixtures/acme_plan_notes/web/notes.js). A section
+that has nothing to show draws nothing.
+
+Sync refuses a section with no slot, slots on any other window, an unknown slot, a slot of a module you
+do not list in `dependencies`, and a suite that names a section, since no pane offers one. A button
+cannot use an inspector slot, and a section cannot use a button slot. The sections of the journal come
+first, then the others in the order modules sync, all after the parts the inspector draws itself. A
+section has no position field.
+
+| What happens | What the person sees |
+|---|---|
+| Its module is not trusted | The section says how to trust it and loads nothing; the inspector works |
+| A read is not yet allowed | The section asks; after Allow it draws |
+| A read it did not declare | The read is refused, and the section shows the refusal it is answered with |
+| A read fails | `read` never throws: the section draws the failure from `{ok: false, error}` |
+| Its code throws | This window failed, with Retry, in that section only |
+| Its module is removed | The section and its button leave an open inspector without a reload |
+| Another suite is chosen | A section of a module that joined the old suite is not listed |
+
+A share page draws no section. A trusted section runs in the page with the viewer's rights, which is
+why trust is asked: nothing stops one that misbehaves on purpose. Only install code you trust.
+
+Install and trust the sample as you would any component module:
+
+```sh
+journal module add tests/stories/fixtures/acme_plan_notes
+journal window trust acme.plan_notes --environment main
+```
+
+The journal's own review rounds are built this way, in the module `journal.core.plan_reviews`. The
+plans module names neither the rounds nor the critique button, and a detector keeps it so.
+
 ## Install, use and remove
 
 Run these commands from the checkout root as a person. They use the same package folders and add

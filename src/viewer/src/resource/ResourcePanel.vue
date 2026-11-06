@@ -15,6 +15,7 @@ import ProcessQueueInspector from "./ProcessQueueInspector.vue";
 import RowMoves from "./RowMoves.vue";
 import ResourceHeading from "./ResourceHeading.vue";
 import {cliOf, creatorNameOf, fieldsOf, headingOf, ownerNameOf, titleOf} from "../domain/resourceNouns.js";
+import InspectorSections from "../windows/InspectorSections.vue";
 import ModuleBody from "../windows/ModuleBody.vue";
 
 // the inspector: the row the address opens, over the page, as version 4's side panel drew it; each opened row stacks on the one before
@@ -100,6 +101,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                             </header>
                             <div class="body">
                                 <ModuleBody :declaration="{type: 'skills.skills', body_url: catalogue.window('skills.skills').entry_url, shipped: true}" :row="{skillId: opened.id}" :environment="environment" />
+                                <InspectorSections slot-name="inspector.agent-skill" :row="{id: opened.id}" />
                             </div>
                         </template>
                         <template #agent>
@@ -187,6 +189,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                         <MemoryFacts :id="opened.id" :read="read" />
                                     </template>
                                     <ResourceFields :fields="fields" @peek="peek($event.table, $event.id)" />
+                                    <InspectorSections :slot-name="`inspector.${noun}`" :row="{...row, id: opened.id}" />
                                 </template>
                             </div>
                         </template>

@@ -19,6 +19,10 @@
     ],
     "base": "main",
     "detectors": [
+        "architecture_plans_names_no_mod_identifier",
+        "architecture_plans_names_no_mod_literal",
+        "architecture_plans_names_no_mod_viewer",
+        "architecture_plans_names_no_mod_script",
         "architecture_viewer_window_field_outside_entry",
         "architecture_viewer_window_loading_page",
         "architecture_viewer_pane_logic_outside_pane_actions",

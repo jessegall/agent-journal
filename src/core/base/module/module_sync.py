@@ -53,6 +53,7 @@ from core.base.registry.window_entry import WindowEntry
 from core.base.module.window_check import unavailable_reason
 from core.base.module.module import ListenerClass, Module
 from core.base.module.button_slots import ButtonSlots
+from core.base.module.inspector_slots import InspectorSlots
 from core.base.module.driver_entries import DriverEntries
 from core.base.module.provider_entries import ProviderEntries
 from core.base.registry.driver_rule_entry import DriverRuleEntry
@@ -159,6 +160,7 @@ class ModuleSync:
             templates=tuple(TemplateEntry(module.name, declaration) for module in modules for declaration in module.templates),
             buttons=self.buttons(modules),
             button_slots=self.button_slots(modules),
+            inspector_slots=tuple(sorted(InspectorSlots(modules).owners)),
             state_additions=tuple(StateAdditionEntry.declared(module.name, addition, module not in self.finder.default_modules()) for module in modules for addition in module.added_states),
             agent_types=tuple(AgentTypeEntry.declared(module.name, declaration) for module in modules for declaration in module.agent_types),
             profiles=tuple(ProfileEntry.declared(module.name, profile) for module in modules for profile in module.profiles),
@@ -178,7 +180,7 @@ class ModuleSync:
         return tuple(WindowEntry(window.name, module.name, window.title, window.entry, window.loading.value, window.place.value, tuple(window.roles),
                                  tuple(window.reads), tuple(window.runs), tuple(window.events), module in shipped, unavailable_reason(window.kit), window.icon.value,
                                  window.float_size.width, window.float_size.height, tuple(option.listed() for option in window.options), window.count, tuple(window.shared_reads), window.group, window.auto_scroll.value, tuple(tab.listed() for tab in window.tabs),
-                                 window.search.listed() if window.search is not None else {}, window.shows.value, tuple(part.listed() for part in window.skeleton), tuple(window.required_settings), tuple(source.listed() for source in window.sources), dict(window.links))
+                                 window.search.listed() if window.search is not None else {}, window.shows.value, tuple(part.listed() for part in window.skeleton), tuple(window.required_settings), tuple(source.listed() for source in window.sources), dict(window.links), tuple(window.slots))
                      for module in modules for window in map(extensions.extend, module.windows))
 
     def marks(self, modules: tuple[type[Module], ...]) -> tuple[MarkEntry, ...]:

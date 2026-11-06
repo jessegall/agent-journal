@@ -11,7 +11,7 @@ class WindowEntry:
     whose work it shows, the agent roles it is for, the read lines, commands and events it may use, whether
     the journal ships its module, why it is unavailable when its kit does not fit this viewer (empty when it
     does), and its icon, float size, pane menu options, count line, the read lines a share link may use,
-    its search, empty when it declares none, and its loading skeleton."""
+    its search, empty when it declares none, its loading skeleton and the inspector slots a section is drawn in."""
 
     name: str
     module: str
@@ -40,6 +40,7 @@ class WindowEntry:
     required_settings: Sequence[str] = ()
     sources: Sequence[Mapping[str, object]] = ()
     links: Mapping[str, str] = field(default_factory=dict[str, str])
+    slots: Sequence[str] = ()
 
     def listing(self, fingerprint: str) -> WindowListing:
         document = self.loading == WindowLoading.DOCUMENT
@@ -48,4 +49,4 @@ class WindowEntry:
         return WindowListing(self.name, self.module, self.title, entry_url, self.entry if document else "", self.loading, self.place, self.roles,
                              self.reads, self.runs, self.events, self.unavailable_reason, self.shipped, self.icon,
                              self.float_width, self.float_height, self.options, self.count, self.group, self.auto_scroll, self.tabs,
-                             search, self.shows, self.skeleton, self.sources, self.links)
+                             search, self.shows, self.skeleton, self.sources, self.links, self.slots)

@@ -17,6 +17,8 @@ try {
     await button.waitFor({timeout: 15000});
     const answer = page.waitForResponse((response) => response.url().endsWith("/api/line") && response.request().postDataJSON().line?.join(" ") === "findings note 1");
     await button.click();
+    console.log("The window's own prompt comes first, then the button's");
+    await page.getByRole("button", {name: "Allow", exact: true}).click();
     await page.getByRole("button", {name: "Allow", exact: true}).click();
     assert.match(await (await answer).text(), /Noted plan 1: Cart security/);
     assert.deepEqual(problems, []);

@@ -29,7 +29,8 @@ class WindowDeclaration:
     size it floats at, the options of its pane menu, the end it follows as rows arrive, the tabs inside it,
     the read line its tab counts with and the read lines a share link may use, each written as the line and,
     after a space, the argument that names an id of the shared row or of a row it includes, the search its
-    bar offers, and the skeleton of itself the viewer draws while it loads."""
+    bar offers, the skeleton of itself the viewer draws while it loads, and for a section the inspector slots
+    it is drawn in."""
 
     name: str
     title: str
@@ -55,6 +56,7 @@ class WindowDeclaration:
     required_settings: Sequence[str] = ()
     sources: Sequence[WindowSource] = ()
     links: Mapping[str, str] = field(default_factory=dict[str, str])
+    slots: Sequence[str] = ()
 
     def problems(self, module_name: str, web_folder: Path, provided: RegistryLines) -> list[str]:
         problems = DeclarationNames.prefix_problems(f"the window {self.name}", self.name, module_name)
@@ -94,6 +96,10 @@ class WindowDeclaration:
             problems.append(f"{self.name} searches with {self.search.read}, which is not one of its reads")
         if not self.skeleton:
             problems.append(f"{self.name} declares no skeleton of itself to draw while it loads")
+        if self.place is WindowPlace.SECTION and not self.slots:
+            problems.append(f"{self.name} is a section and names no slot")
+        if self.slots and self.place is not WindowPlace.SECTION:
+            problems.append(f"{self.name} names slots, and only a section has them")
         return problems
 
     @staticmethod
