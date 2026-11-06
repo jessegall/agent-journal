@@ -12,7 +12,7 @@ class SettingEntry:
     """A registered setting or setting group: its full key, the module that declares it and the group above
     it, its title and description, its type (group for a group), default, scope and choices, whether it is a
     secret (whose default is never kept) or a value an agent may set, for a group whether it can be switched
-    off, and for a reference the full key of the group it places here."""
+    off, for a reference the full key of the group it places here, and whether only a person may change it."""
 
     key: str
     module: str
@@ -27,11 +27,12 @@ class SettingEntry:
     toggleable: bool
     enabled: bool
     target: str = ""
+    person_set: bool = False
 
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "SettingEntry":
         return cls(stored["key"], stored["module"], stored["parent"], stored["title"], stored["description"], stored["type"], stored["default"],
-                   stored["secret"], stored["scope"], tuple(stored["choices"]), stored["toggleable"], stored["enabled"], stored.get("target", ""))
+                   stored["secret"], stored["scope"], tuple(stored["choices"]), stored["toggleable"], stored["enabled"], stored.get("target", ""), stored.get("person_set", False))
 
     def accepts(self, value: object) -> bool:
         if self.type == GROUP_TYPE:

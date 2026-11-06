@@ -27,6 +27,9 @@ The coding suite drives the main agent in one of two modes. Your first line of a
 ## Changing mode
 
 - `journal driver choose coding.builder` or `journal driver choose coding.orchestrator` changes the mode of an
-  environment. The work-mode control in the top bar of the viewer does the same, and asks first while the agent
-  works on a task or has helpers out.
+  environment for a person. The work-mode control in the top bar of the viewer does the same, and asks first while
+  the agent works on a task or has helpers out.
+- The mode, auto mode, the worker limit and the settings like them are the user's. An agent's write of one is refused.
+  A main agent asks with `journal setting request <key> <value> --reason "<why>"`: the user answers the question in
+  the chat, and an approval applies the change. Any other agent says what it needs in its report.
 - Workers, helpers and reviewers have drivers of their own; this choice is the main agent's only.

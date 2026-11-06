@@ -33,8 +33,8 @@ class TestLimitSetup(StoryFixture):
     parent = ForcedReaders
 
     def steps(self, story: Story) -> None:
-        story.run("setting set journal.suites.coding.workers.worker-run-most-tests 5 --environment main", actor=story.agent)
-        story.run("setting set journal.core.processes.readers-forced off --environment main", actor=story.agent)
+        story.run("setting set journal.suites.coding.workers.worker-run-most-tests 5 --environment main")
+        story.run("setting set journal.core.processes.readers-forced off --environment main")
 
 
 @pytest.fixture
@@ -48,7 +48,7 @@ def limited_run(new_story):
 def test_the_limit_defaults_to_25_and_an_environments_value_wins(new_story):
     story = new_story(fixture=ForcedReaders)
     story.expect_success("setting show journal.suites.coding.workers.worker-run-most-tests", "value: 25")
-    story.run("setting set journal.suites.coding.workers.worker-run-most-tests 10 --environment main", actor=story.agent)
+    story.run("setting set journal.suites.coding.workers.worker-run-most-tests 10 --environment main")
     story.expect_success("setting show journal.suites.coding.workers.worker-run-most-tests --environment main", "value: 10")
 
 
@@ -88,7 +88,7 @@ def test_a_part_that_ran_over_the_limit_last_time_is_refused_at_the_hook(limited
 @pytest.mark.parametrize("limit,count", [(5, 4), (0, 8)])
 def test_a_run_under_the_limit_and_a_limit_of_zero_go_on(limited_run, limit, count):
     story, process = limited_run
-    story.run(f"setting set journal.suites.coding.workers.worker-run-most-tests {limit} --environment main", actor=story.agent)
+    story.run(f"setting set journal.suites.coding.workers.worker-run-most-tests {limit} --environment main")
     story.container.get(OutputFolder).write_output(process.id, 1, f"collected {count} items\n")
     OutputReading()(story.container)
     story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.RUNNING)
@@ -127,8 +127,8 @@ def test_a_stopped_worker_is_started_again_with_the_count_and_limit(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.run("setting set journal.suites.coding.workers.worker-run-most-tests 5 --environment main", actor=story.agent)
-    story.run("setting set journal.core.processes.readers-forced off --environment main", actor=story.agent)
+    story.run("setting set journal.suites.coding.workers.worker-run-most-tests 5 --environment main")
+    story.run("setting set journal.core.processes.readers-forced off --environment main")
     process = story.container.get(Bus).run(StartProcess.single_part(worker.id, "pytest tests/restart.py", "/work", CommandCategory.TEST_RUN, 30), worker, environment_id=1)
     story.run(f"process background {process.id}", actor=worker)
     story.run(f"agent end {worker.id}", actor=worker)

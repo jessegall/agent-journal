@@ -17,7 +17,7 @@ BATCH_READS = 3
 def four_tasks(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository_environment(story)
-    story.run("setting set journal.suites.coding.workers.worker-limit 4 --environment main", actor=story.agent)
+    story.run("setting set journal.suites.coding.workers.worker-limit 4 --environment main")
     for number in range(2, 5):
         story.run(f'task make "Job {number}" --brief "Finish job {number}" --environment main', actor=story.agent)
     return story
