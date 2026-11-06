@@ -10,7 +10,7 @@ from core.base.upgrade.move_map import MoveMap
 from core.base.upgrade.move_report import MoveReport
 from core.base.upgrade.version_four_ref import VersionFourRef
 from core.modules.documents.models.enums.link_type import LinkType
-from core.modules.documents.support.row_ref import RowRef
+from core.modules.documents.references.row_ref import RowRef
 
 END_MODELS = {"docs": "doc", "reports": "report", "tasks": "task", "plans": "plan", "messages": "message",
               "questions": "question", "agents": "agent", "phases": "phase", "task_logs": "task_log"}

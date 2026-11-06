@@ -5,7 +5,7 @@ from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.documents.models.link import Link
 from core.modules.documents.models.link_correction import LinkCorrection
-from core.modules.documents.support.row_ref import RowRef
+from core.modules.documents.references.row_ref import RowRef
 
 
 class RowLinkWriter:

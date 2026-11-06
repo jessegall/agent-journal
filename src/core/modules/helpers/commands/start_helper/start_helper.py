@@ -13,4 +13,5 @@ class StartHelper(Command[Agent]):
     program: str = ""
     program_model: str = ""
     given_name: str = ""
-    new_helper: bool = False
+    new_agent_reason: str = ""
+    review_plan_id: int | None = None

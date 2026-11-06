@@ -28,6 +28,8 @@ from core.modules.messages.support.work_sources import WorkSources
 BRIEF_LIMIT_CHARACTERS = 100000
 SHORT_BRIEF_CHARACTERS = 200
 
+INDEPENDENT_REASON = "An independent profile starts a new helper for its own view."
+
 
 class StartHelperHandler(Handler[StartHelper, Agent]):
     """Starts a helper of a profile as a process the journal owns, in the folder of the agent that asked."""
@@ -55,29 +57,30 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
             raise Refusal("a helper needs the launcher, which is not running", "keep your work and start the journal with journal launch")
         parent = self.limits.checked_parent(context)
         self.limits.checked_new_place(profile.name)
-        if not command.new_helper and not profile.independent:
+        reuses_helpers = not command.new_agent_reason.strip() and not profile.independent
+        if reuses_helpers:
             self.check_reuse(parent, profile, command.brief)
         program = command.program or profile.program or parent.program
         model = self.limits.checked_model(program, command.program_model or self.providers.provider(program).profile_model(profile))
         self.programs.checked(program, self.folders.folder(parent))
-        if not command.new_helper and not profile.independent:
+        if reuses_helpers:
             self.check_idle(profile, program, model)
         start = StartAgent(str(uuid4()), program, agent_type.key, parent.id, program_model=model, profile=profile.name, given_name=command.given_name, access=profile.access or agent_type.access)
         source_context = replace(context, environment_id=parent.environment_id)
         source = self.sources.source_copy(source_context)
         helper = self.bus.dispatch(start, context)
         self.repository.save(HelperJob(session_agent_id=parent.id, creator_id=context.actor.id, tool_key=helper.session, helper_id=helper.id, profile=profile.name, program_model=model,
-                                       description=command.given_name or profile.name, brief=command.brief, instruction=command.brief[:SHORT_BRIEF_CHARACTERS],
+                                       description=command.given_name or profile.name, brief=command.brief, new_agent_reason=INDEPENDENT_REASON if profile.independent and not command.new_agent_reason.strip() else command.new_agent_reason.strip(), review_plan_id=command.review_plan_id, instruction=command.brief[:SHORT_BRIEF_CHARACTERS],
                                        source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp), context)
         self.sources.use_copy(source, source_context)
         self.bus.dispatch(CountProfileUse(profile.name), context)
         return helper
 
     def check_idle(self, profile: AgentProfile, program: str, model: str) -> None:
-        idle = self.kept.idle(profile.name, program, model)
-        if idle:
-            others = f" (also {', '.join(str(helper.id) for helper in idle[1:3])})" if idle[1:] else ""
-            raise Refusal(f'helper {idle[0].id} is idle: journal helper send {idle[0].id} "<job>"{others}', "or start a new one with --fresh")
+        idle_helpers = self.kept.idle(profile.name, program, model)
+        if idle_helpers:
+            next_helpers = f" (also {', '.join(str(helper.id) for helper in idle_helpers[1:3])})" if idle_helpers[1:] else ""
+            raise Refusal(f'helper {idle_helpers[0].id} is idle: journal helper send {idle_helpers[0].id} "<job>"{next_helpers}', 'or --fresh "<why>"')
 
     def check_reuse(self, parent: Agent, profile: AgentProfile, brief: str) -> None:
         job = self.reuse.known_job(parent.id, profile.name, brief)

@@ -17,7 +17,7 @@ class WorktreeQuery(Query[Worktree]):
                               "session_agent_id = ? AND removed_at IS NULL", [agent_id], name="workers.worker_worktree")
 
     def newest_worktree(self, agent_id: int) -> Worktree | None:
-        return self.kept.read_newest(self.table.name, self.with_removed().filter(session_agent_id=agent_id).first, "session_agent_id = ?", [agent_id], name="workers.newest_worktree")
+        return self.kept.read_newest(self.table.name, self.with_removed().filter(session_agent_id=agent_id).newest().first, "session_agent_id = ?", [agent_id], name="workers.newest_worktree")
 
     def open_worktrees(self) -> list[Worktree]:
         return list(self.kept.scoped_read(self.table.name, lambda: tuple(self.oldest().all_rows()), "removed_at IS NULL", name="workers.open_worktrees"))

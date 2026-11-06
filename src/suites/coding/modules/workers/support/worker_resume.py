@@ -22,18 +22,18 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from core.modules.agents.support.launch_answer import LaunchAnswer
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
+from suites.coding.modules.workers.support.worker_places import JOB_DELIVERY_SECONDS, WorkerPlaces
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from suites.coding.modules.workers.models.worktree import Worktree
-
-JOB_DELIVERY_SECONDS = 120
 
 
 class WorkerResume:
     """Resumes ended workers on waiting jobs and retries a job that did not start."""
 
-    def __init__(self, launcher: AgentLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock, requirement: TaskBriefRequirement) -> None:
+    def __init__(self, launcher: AgentLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock, requirement: TaskBriefRequirement,
+                 places: WorkerPlaces) -> None:
         self.launcher, self.queries, self.worktrees, self.worker_command, self.bus, self.clock = launcher, queries, worktrees, worker_command, bus, clock
-        self.requirement = requirement
+        self.requirement, self.places = requirement, places
 
     def resume(self, worker: Agent, actor: Actor) -> None:
         if worker.ended_at is None or worker.paused_at is not None:
@@ -56,6 +56,8 @@ class WorkerResume:
         self.launch_job(worker, worktree, job, actor)
 
     def launch_job(self, worker: Agent, worktree: Worktree, job: AgentLine, actor: Actor) -> None:
+        if not self.places.can_resume(worker):
+            return
         environment = self.queries.query(Environment).find(worktree.environment_id)
         answer = self.launcher.hand(worker, environment, self.worker_command.resumed(worker, worktree, environment, job.text))
         if answer is not LaunchAnswer.STARTED:

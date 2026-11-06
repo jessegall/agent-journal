@@ -40,8 +40,8 @@ class LifecycleGuard(Guard[Changed[Model]]):
         elif event.move is not None:
             if context.actor.type is ActorType.AGENT and lifecycle.is_third_party_move(event.move.name):
                 raise Refusal(f"the move {event.move.name} comes from a module the journal does not ship, so a person takes it", "press its button in the viewer")
-            stays_by_design = lifecycle.has_move(event.move.name) and old_state in lifecycle.move(event.move.name).sources
-            if old_state == event.move.target and old_state not in lifecycle.initial and not stays_by_design:
+            repeat_allowed = lifecycle.has_move(event.move.name) and old_state in lifecycle.move(event.move.name).sources
+            if old_state == event.move.target and old_state not in lifecycle.initial and not repeat_allowed:
                 raise CompletedCommandError(f"{event.old_row.cli_name} {event.old_row.id} is {old_state.value}, so it cannot {event.move.name}", lifecycle.suggestion(event.old_row.cli_name, event.old_row.id, old_state))
             self.require(lifecycle.has_move(event.move.name) and old_state in lifecycle.move(event.move.name).sources, event.old_row, lifecycle, f"so it cannot {event.move.name}")
         else:

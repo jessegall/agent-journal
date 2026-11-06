@@ -3,6 +3,8 @@ import socket
 import threading
 from pathlib import Path
 
+from core.modules.agents.support.launcher_link import STOP_FIELD
+
 ACCEPT_TIMEOUT_SECONDS = 10
 
 
@@ -34,7 +36,7 @@ class FakeLauncher:
 
     @property
     def starts(self) -> list[dict[str, object]]:
-        return [request for request in self.requests if "stop" not in request]
+        return [request for request in self.requests if STOP_FIELD not in request]
 
     def expect_started(self, agent_id: int, session: str, folder: Path) -> None:
         self.thread.join(ACCEPT_TIMEOUT_SECONDS)

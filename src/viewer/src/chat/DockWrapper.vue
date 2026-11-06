@@ -120,7 +120,7 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
                 </span>
             </template>
             <span ref="time" class="dock-age" data-dock-age>
-                <template v-if="collapsed || !declaration?.leaves_after_seconds">{{ age }}</template>
+                <template v-if="!declaration?.leaves_after_seconds">{{ age }}</template>
             </span>
         </template>
         <template #still>

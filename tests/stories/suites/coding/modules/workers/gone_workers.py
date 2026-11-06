@@ -6,13 +6,17 @@ from core.base.caller.process_row import ProcessRow
 from core.base.journal_home import LAUNCHER_SOCKET
 from core.base.leftover_process import LeftoverProcess
 from core.base.timestamp import Timestamp
+from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
 from core.testing.fake_launcher import FakeLauncher
+from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderWithUser, OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 
 MAIN_SESSION = "s-1"
 WORKER_PID = 700
+RESUMED_PID = 701
 RUNNING_PROGRAM = ProcessRow(WORKER_PID, 1, Timestamp(datetime(2026, 10, 31, 9, 0, tzinfo=timezone.utc)))
 
 
@@ -61,6 +65,45 @@ def ended_worker(running_worker):
     return running_worker
 
 
+@pytest.fixture
+def ended_worker(running_worker):
+    """The same worker after a tick noticed its program ended, with the listeners of that end still to run."""
+    running_worker.use_processes()
+    running_worker.tick(MAIN_SESSION)
+    return running_worker
+
+
+def test_a_worker_resumed_before_the_stop_of_its_end_keeps_its_new_program(running_worker):
+    story = running_worker
+    story.expect_success(f'worker send {story.worker.id} "Add the tax"', f"worker {story.worker.id} takes the job", actor=story.agent)
+    story.use_processes()
+    story.tick(MAIN_SESSION)
+    launcher = start_launcher(story, f"started {RESUMED_PID}\n".encode(), request_count=2)
+    WorkerResumeRetry()(story.container)
+    story.expect_rows(len(launcher.requests) == 1, "command" in launcher.requests[0])
+    story.run_listeners()
+    story.expect_rows(not any("stop" in request for request in launcher.requests))
+    story.expect_text(f"agent show {story.worker.id}", f"pid: {RESUMED_PID}")
+
+
+def test_a_launch_that_holds_the_session_keeps_the_stop_of_the_end_away(ended_worker):
+    story = ended_worker
+    launcher = start_launcher(story, b"stopped\n", request_count=2)
+    with story.container.get(AgentLaunchGuard).lock(story.row(Agent, story.worker.id).session):
+        story.run_listeners()
+    story.expect_rows(launcher.requests == [])
+
+
+def test_a_resume_the_launcher_refuses_leaves_the_stop_of_the_end_to_land(ended_worker):
+    story = ended_worker
+    path = story.home.socket(LAUNCHER_SOCKET)
+    path.unlink(missing_ok=True)
+    launcher = FakeLauncher(path, request_count=3, answers=(b"running\n", b"running\n", b"stopped\n"))
+    story.run_listeners()
+    stop = {"agent_id": story.worker.id, "stop": True}
+    story.expect_rows("command" in launcher.requests[0], launcher.requests[-1] == stop, launcher.requests.count(stop) == 1)
+
+
 def test_the_start_launcher_a_pid_records_the_workers_process(running_worker):
     running_worker.expect_text(f"agent show {running_worker.worker.id}", f"pid: {WORKER_PID}", "process_started_at: 2026-10-31T09:00:00")
 
@@ -83,12 +126,11 @@ def test_a_send_after_a_tick_ended_the_worker_restarts_it(ended_worker):
 
 def test_a_send_finds_a_process_gone_before_the_tick_does_and_restarts_the_worker(running_worker):
     running_worker.use_processes()
-    launcher = start_launcher(running_worker, b"started\n", request_count=2)
+    launcher = start_launcher(running_worker, b"started\n")
     running_worker.expect_text(f'worker send {running_worker.worker.id} "Add the tax"', "was not running: the job starts it again", actor=running_worker.agent)
     running_worker.expect_text(f"agent show {running_worker.worker.id}", "ended_at: 2026")
     running_worker.run_listeners()
     expect_restart(running_worker, launcher)
-    running_worker.expect_rows("stop" in launcher.requests[0], "command" in launcher.requests[1])
 
 
 def test_a_send_to_a_running_worker_says_it_takes_the_job(running_worker):

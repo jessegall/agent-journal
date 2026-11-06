@@ -11,7 +11,7 @@ reads; work that writes goes to a worker or stays with you.
 - `journal helper start <profile> --brief "<the job>"` starts one; `--program`, `--model` and `--name` choose how, and
   `journal profile list` names the profiles. It works in your folder, on the profile's model.
 - `journal helper send <n> "<job>"` gives the same helper more work, with its memory of the last. Send related work to the
-  helper that knows it. `--fresh` on a start asks for a new helper on files another already read.
+  helper that knows it. `--plan <n>` names the plan a review is for: an independent helper that reviewed it is refused the same plan. A send to a busy helper is refused unless `--steer` adds it to the job it is working on. `--fresh "<why>"` on a start asks for a new helper though another could take the job; the reason stays on the job.
 - `journal helper stop <n>` ends it and its program.
 - Its report comes to you as a line: a short one holds the text, a long one names a message to read with
   `journal message read <n>`. `journal message reports` lists the reports nobody has read yet.

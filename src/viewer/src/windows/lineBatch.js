@@ -64,6 +64,7 @@ export class LineBatch {
         sending.forEach((entry, index) => entry.signal?.addEventListener("abort", leavers[index], {once: true}));
         try {
             const response = await transport.sent(LINES_ROUTE, init({lines: sending.map((entry) => entry.body)}, cut.signal), sending.map((entry) => flightOf(entry.body, READ)), BATCH_WAIT_MS);
+            if (!response.ok) throw new Error(`the journal answered ${response.status} to a batch of lines`);
             const {answers} = await response.json();
             sending.forEach((entry, index) => entry.resolve(answers[index]));
         } catch (failure) {

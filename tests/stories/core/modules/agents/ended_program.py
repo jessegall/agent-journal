@@ -5,8 +5,12 @@ import pytest
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.caller.process_row import ProcessRow
+from core.base.command.bus import Bus
 from core.base.leftover_process import LeftoverProcess
+from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.timestamp import Timestamp
+from core.modules.agents.commands.end_agent.end_agent import EndAgent
+from core.modules.agents.models.agent import Agent
 from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.support.fixtures import UserJoined
 
@@ -71,6 +75,17 @@ def test_a_main_agent_that_ended_itself_gets_no_stop(new_story):
     story.expect_success(f"agent end {story.agent.id}", actor=story.agent)
     story.run_listeners()
     story.expect_rows(launcher.requests == [])
+
+
+def test_a_program_stop_waits_for_its_own_round_and_holds_no_ordinary_listener(new_story):
+    story = new_story(fixture=UserJoined)
+    worker_id, launcher = started_agent(story, "worker")
+    story.container.get(Bus).run(EndAgent(worker_id), story.user, environment_id=story.row(Agent, worker_id).environment_id)
+    runner = story.container.get(CommitListenerRunner)
+    runner.run_ordinary()
+    story.expect_rows(launcher.requests == [])
+    runner.run_program_stops()
+    story.expect_rows(launcher.requests == stops_of(worker_id))
 
 
 def test_a_stop_command_stops_the_program_itself_and_the_listener_adds_no_second_stop(new_story):

@@ -6,6 +6,7 @@ from core.base.agent_policy import AgentPolicy
 
 AGENTS_TABLE = "agents"
 ENDED_FIELD = "ended_at"
+PID_FIELD = "pid"
 
 
 @dataclass(frozen=True, kw_only=True)

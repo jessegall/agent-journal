@@ -12,11 +12,12 @@ esac
 """
 
 
-def step_plugin_folder(parent: Path, event_name: str) -> Path:
+def step_plugin_folder(parent: Path, event_name: str, services: list[dict[str, object]] | None = None) -> Path:
     folder = parent / "steps-plugin"
     folder.mkdir(parents=True, exist_ok=True)
     (folder / "journal-plugin.json").write_text(json.dumps({"name": "steps", "title": "Steps", "version": "1.0.0", "protocol": 1, "program": "run.sh",
-                                                             "hears": [event_name], "holds": [{"event": event_name, "window_ms": 5000}]}))
+                                                             "hears": [event_name], "holds": [{"event": event_name, "window_ms": 5000}],
+                                                             **({"services": services} if services else {})}))
     (folder / "run.sh").write_text(PROGRAM)
     (folder / "run.sh").chmod(0o755)
     return folder

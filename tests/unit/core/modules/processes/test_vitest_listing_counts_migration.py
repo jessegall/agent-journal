@@ -36,3 +36,12 @@ def test_a_journal_that_ran_the_listing_migration_gets_the_summary_count_too():
     rows = [tuple(row) for row in connection.execute("SELECT count_pattern, count_command FROM readers ORDER BY creator_id").fetchall()]
     assert rows == [(VITEST.count, VITEST.count_command), ("^([0-9]+)$", "listing")]
     assert re.search(VITEST.count, "      Tests  1 failed | 2 passed (3)").group(2) == "3"
+
+
+def test_the_count_command_counts_the_tests_a_quoted_alternation_selects(tmp_path):
+    tool = tmp_path / "tool"
+    tool.write_text("#!/bin/sh\n[ \"$1 $2\" = \"list -t\" ] && printf '%s\\n' 'a.test.js > one' 'a.test.js > two' 'b.test.js > three' | grep -E \"$3\"\n")
+    tool.chmod(0o755)
+    line = VITEST.count_command.replace("{part}", f"{tool} run -t 'one|two' --reporter=dot")
+    listed = subprocess.run(["sh", "-c", line], capture_output=True, text=True, check=True).stdout
+    assert re.search(VITEST.count, listed.strip()).group(1) == "2"

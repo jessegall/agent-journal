@@ -7,7 +7,7 @@ from core.base.query.queries import Queries
 from core.base.query.conditions.among import Among
 from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
-from core.modules.documents.support.row_ref import RowRef
+from core.modules.documents.references.row_ref import RowRef
 from core.modules.documents.support.resolved_row_ref import ResolvedRowRef
 
 REF = re.compile(r"^([a-z_]+):(\d+)$")

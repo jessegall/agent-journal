@@ -6,7 +6,7 @@ class FolderStat:
     """Facts about a folder that another test run may remove while they are read."""
 
     @staticmethod
-    def modified_at(folder: Path) -> float:
+    def modified_time(folder: Path) -> float:
         try:
             return folder.stat().st_mtime
         except FileNotFoundError:

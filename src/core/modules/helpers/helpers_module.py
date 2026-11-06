@@ -2,6 +2,7 @@ from core.modules.helpers.migrations.m001_helper_limit_key import HelperLimitKey
 from core.modules.helpers.migrations.m002_settle_old_helpers import SettleOldHelpersMigration
 from core.modules.helpers.migrations.m003_open_helper_jobs_index import OpenHelperJobsIndexMigration
 from core.base.module.module import Module
+from core.modules.helpers.guards.open_job_retire_guard import OpenJobRetireGuard
 from core.modules.helpers.commands.end_helper_job.end_helper_job_handler import EndHelperJobHandler
 from core.modules.helpers.commands.send_helper.send_helper_handler import SendHelperHandler
 from core.modules.helpers.commands.send_helper.send_helper_subcommand import SendHelperSubcommand
@@ -42,6 +43,7 @@ class HelpersModule(Module):
     migrations = [OpenHelperJobsIndexMigration, SettleOldHelpersMigration, HelperLimitKeyMigration]
     dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers"]
     settings = HELPER_SETTINGS
+    guards = [OpenJobRetireGuard]
     handlers = [StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler]
     tick_handlers = [TickHandler(TickInterval(seconds=60), HelperLimitsTick(), "helper limits")]
     nudges = HELPER_NUDGES

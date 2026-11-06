@@ -14,7 +14,7 @@ from core.testing.template_databases import TemplateDatabases
 
 STORY_OVERLAP = pytest.StashKey[StoryOverlap]()
 STORY_RUNS = pytest.StashKey[list[StorySteps]]()
-TEMP_RUN = pytest.StashKey[Path]()
+RUN_FOLDER = pytest.StashKey[Path]()
 STORY_STEPS_KEY = "journal_story_steps"
 SHARD_LIMIT_OPTION = "shard_limit_tests"
 
@@ -32,7 +32,7 @@ def pytest_cmdline_main(config: pytest.Config) -> None:
 def pytest_configure(config: pytest.Config) -> None:
     config.stash[STORY_OVERLAP] = StoryOverlap()
     if config.option.basetemp is None and not hasattr(config, "workerinput"):
-        config.stash[TEMP_RUN] = config.option.basetemp = TempFolders().start()
+        config.stash[RUN_FOLDER] = config.option.basetemp = TempFolders().start()
 
 
 def pytest_itemcollected(item: pytest.Item) -> None:
@@ -95,6 +95,6 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
 
 
 def pytest_terminal_summary(config: pytest.Config, exitstatus: int) -> None:
-    run = config.stash.get(TEMP_RUN, None)
-    if run is not None:
-        TempFolders().finish(run, exitstatus == pytest.ExitCode.OK)
+    run_folder = config.stash.get(RUN_FOLDER, None)
+    if run_folder is not None:
+        TempFolders().finish(run_folder, exitstatus == pytest.ExitCode.OK)

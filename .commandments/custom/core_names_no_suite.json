@@ -12,7 +12,7 @@
                     "all": [
                         {
                             "not": {
-                                "textMatches": "^[\\x22\\x27]?workeroutput[\\x22\\x27]?$"
+                                "textMatches": "^[\\x22\\x27]?worker(output|input)[\\x22\\x27]?$"
                             }
                         },
                         {

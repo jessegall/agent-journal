@@ -14,7 +14,12 @@ const HELD_STATES = new Set(["started", "testing", "blocked"]);
     <div class="facts">
         <div class="fact wide">
             <span class="fact-label">Plan</span>
-            <span class="fact-value">{{ place?.plan_id ? `Plan ${place.plan_id}: ${place.plan_title}` : "Not in a plan" }}</span>
+            <template v-if="place?.plan_id">
+                <button type="button" class="fact-value agent-link" :title="`Open plan ${place.plan_id}`" data-task-plan-link @click="peekRef(`plans:${place.plan_id}`)">Plan {{ place.plan_id }}: {{ place.plan_title }}</button>
+            </template>
+            <template v-else>
+                <span class="fact-value">Not in a plan</span>
+            </template>
         </div>
         <template v-if="place?.phase_total > 1">
             <div class="fact">

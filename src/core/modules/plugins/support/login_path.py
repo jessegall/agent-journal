@@ -1,7 +1,10 @@
 from core.base.file_access import FileAccess
 import os
 import subprocess
+from functools import lru_cache
+from pathlib import Path
 
+from core.base.file_version import FileVersion
 from core.base.journal_home import JournalHome
 
 FALLBACK_FOLDERS = ("/usr/local/bin", "/opt/homebrew/bin", "/usr/bin", "/bin")
@@ -20,7 +23,12 @@ class LoginPath:
         self.file = home.folder / "runtime" / "login-path"
 
     def value(self) -> str:
-        return FileAccess.shared().read(self.file) if self.file.is_file() else os.pathsep.join(FALLBACK_FOLDERS)
+        return self.kept(self.file, FileAccess.shared().version(self.file)) if self.file.is_file() else os.pathsep.join(FALLBACK_FOLDERS)
+
+    @staticmethod
+    @lru_cache(maxsize=8)
+    def kept(file: Path, version: FileVersion) -> str:
+        return FileAccess.shared().read(file)
 
     def read_shell(self) -> None:
         path = self.shell_path()

@@ -76,7 +76,7 @@ class WorkContextReader:
         visible = self.visible(row.environment_id, excluded)
         assigned = self.assignments.task_source(row.id, caller) if isinstance(row, Task) and caller.actor.type is ActorType.AGENT else None
         assignment_queries = []
-        if self.is_usable_here(assigned, row):
+        if self.usable_source(assigned, row):
             assignment_queries = [visible.filter(id=assigned.message_id).matching(Among("type", PERSON_MESSAGE_TYPES))]
         source_queries = tuple(visible.matching(SubqueryMatch("id", self.source_links(root).select.column("source_id"))) for root in rows)
         source_queries = (*assignment_queries, *source_queries)
@@ -135,7 +135,7 @@ class WorkContextReader:
         return [row] if plan is None else [row, plan]
 
     @staticmethod
-    def is_usable_here(assigned: WorkSourceCopy | None, row: Task | Plan) -> bool:
+    def usable_source(assigned: WorkSourceCopy | None, row: Task | Plan) -> bool:
         return assigned is not None and assigned.environment_id == row.environment_id and not assigned.unavailable and assigned.message_id is not None
 
     @staticmethod

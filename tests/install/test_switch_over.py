@@ -93,7 +93,7 @@ def run_hook(command: str, scratch: Scratch) -> subprocess.CompletedProcess[str]
                           text=True, timeout=TIMEOUT_SECONDS)
 
 
-def test_a_hook_of_a_session_that_started_before_the_switch_and_one_after_it_both_end_quietly_with_no_server(tmp_path):
+def test_a_hook_of_a_session_that_start_count_at_limit_the_switch_and_one_after_it_both_end_quietly_with_no_server(tmp_path):
     scratch = version_four_project_with_hooks(tmp_path)
     old_commands = hook_commands(scratch)
     assert upgrade(scratch, "--yes").returncode == 0

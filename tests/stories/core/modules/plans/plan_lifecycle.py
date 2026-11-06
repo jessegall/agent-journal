@@ -1,5 +1,6 @@
 import pytest
 
+from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.core.support.fixtures import PlanFirstTaskClosed, UserJoined
 from tests.stories.core.support import story_lines as lines
@@ -11,12 +12,20 @@ def test_a_plan_is_made_as_a_draft_in_the_callers_environment(new_story):
     story.expect_success('plan make "Version 5 core" --brief "the core and its modules" --environment main', "state: draft", "environment_id: 1")
 
 
+class StartedPlan(StoryFixture):
+    """Plan 1 made, marked ready, approved by a person and started."""
+
+    parent = UserJoined
+
+    def steps(self, story):
+        story.run(lines.NEW_PLAN)
+        story.expect_success("plan ready 1", "state: ready")
+        story.expect_success("plan approve 1 --environment main", "state: approved", actor=story.user)
+        story.expect_success("plan start 1", "state: started", actor=story.agent)
+
+
 def test_a_plan_moves_from_draft_to_completed(new_story):
-    story = new_story(fixture=UserJoined)
-    story.run(lines.NEW_PLAN)
-    story.expect_success("plan ready 1", "state: ready")
-    story.expect_success("plan approve 1 --environment main", "state: approved", actor=story.user)
-    story.expect_success("plan start 1", "state: started", actor=story.agent)
+    story = new_story(fixture=StartedPlan)
     story.expect_success('plan block 1 --reason "waits on a decision"', "state: blocked", actor=story.agent)
     story.expect_success("plan unblock 1", "state: started", actor=story.agent)
     story.expect_success("plan close 1", "state: completed", "closed_at: 2026-10-31T09:00:00.000000+00:00", actor=story.agent)
@@ -94,3 +103,11 @@ def test_a_plan_is_cancelled_by_itself_when_every_task_is_cancelled(new_story):
     story.run('task cancel 1 --reason "not needed"', actor=story.agent)
     story.run_listeners()
     story.expect_success("plan show 1", "state: cancelled", actor=story.agent)
+
+
+def test_a_started_plan_goes_back_for_approval_and_a_person_approves_it_again(new_story):
+    story = new_story(fixture=StartedPlan)
+    story.expect_success('plan rework 1 --reason "A new phase comes first"', "state: ready", actor=story.agent)
+    story.expect_refusal("plan approve 1 --environment main", "only a person approves", actor=story.agent)
+    story.expect_success("plan approve 1 --environment main", "state: approved", actor=story.user)
+    story.expect_success("plan start 1", "state: started", actor=story.agent)

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
-from core.modules.documents.support.row_ref import RowRef
+from core.modules.documents.references.row_ref import RowRef
 
 
 @dataclass(frozen=True)

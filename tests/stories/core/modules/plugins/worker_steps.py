@@ -10,10 +10,10 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import D
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 
-def step_plugin_story(new_story, event_name: str):
+def step_plugin_story(new_story, event_name: str, services: list[dict[str, object]] | None = None):
     story = new_story(fixture=OrchestratorWithOpenTask)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    story.run(f"plugin install {step_plugin_folder(story.home.folder.parent, event_name)} --yes", actor=story.user)
+    story.run(f"plugin install {step_plugin_folder(story.home.folder.parent, event_name, services)} --yes", actor=story.user)
     story.repository = repository_environment(story)
     return story
 
@@ -35,6 +35,14 @@ def test_a_plugin_holding_a_workers_delivery_also_refuses_its_move_to_the_next_t
     story.run(FIRST_PROOF, actor=worker)
     story.expect_refusal("worker next", "[plugin steps] cart.py has a sin", actor=worker)
     story.expect_text("task show 1", "state: started", actor=story.agent)
+
+
+def test_a_step_is_judged_by_the_program_while_the_plugins_answering_service_is_closed(new_story):
+    story = step_plugin_story(new_story, "worker_delivering", [{"name": "answers", "command": ["serve.py"], "answers": True}])
+    worker = dispatched_worker(story)
+    story.repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
+    story.run(FIRST_PROOF, actor=worker)
+    story.expect_refusal(DELIVERY, "[plugin steps] cart.py has a sin", actor=worker)
 
 
 def test_a_delivery_the_plugin_lets_through_is_delivered(new_story):

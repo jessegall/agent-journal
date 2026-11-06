@@ -172,7 +172,7 @@ class ServerQueue(RequestQueue):
 
     def note_sent(self, window: str) -> None:
         current_time = monotonic()
-        self.sent_at[window] = [*(earlier for earlier in self.sent_at.get(window, ()) if current_time - earlier < RECENT_REQUESTS_SECONDS), current_time]
+        self.sent_at[window] = [*(request_time for request_time in self.sent_at.get(window, ()) if current_time - request_time < RECENT_REQUESTS_SECONDS), current_time]
 
     def let_hooks_finish(self) -> None:
         self.wait_idle(self.viewer_wait_limit_seconds)
