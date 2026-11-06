@@ -1,7 +1,8 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {MenuItem, MenuLabel, MenuPanel, WindowRoom, highlight, peekRef, usePoll, useWindow} from "@journal/window-kit";
+import {MenuItem, MenuLabel, MenuPanel, WindowRoom, peekRef, toggleFilter, usePoll, useWindow} from "@journal/window-kit";
 import RequestQueueInspector from "./RequestQueueInspector.vue";
+import RequestDetails from "./RequestDetails.vue";
 
 const key = "journal.hook-requests.filters";
 const emptyFilters = () => ({kind: [], family: [], sender: []});
@@ -34,15 +35,11 @@ watch(filters, (value) => {
     try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
     if (!paused.value) load();
 });
-function toggle(name, value) {
-    const values = filters.value[name];
-    filters.value = {...filters.value, [name]: values.includes(value) ? values.filter((item) => item !== value) : [...values, value]};
-}
+function toggle(name, value) { filters.value = toggleFilter(filters.value, name, value); }
 const filterAnchor = ref(null);
 const openedNumber = ref(0);
 const queueOpen = ref(false);
 const opened = computed(() => rows.value.find((row) => row.id === openedNumber.value));
-const shown = (value) => highlight(JSON.stringify(value, null, 2), "json").join("\n");
 const isRefused = (row) => row.outcome === "refused";
 const isSlow = (row) => !isRefused(row) && row.duration_ms >= 500;
 const durationOf = (row) => `${Math.round(row.duration_ms)} ms`;
@@ -59,18 +56,18 @@ usePoll(load, () => !paused.value);
         <div class="requests" data-hook-requests>
             <section class="list" aria-label="Recorded requests">
                 <div class="toolbar">
-                    <button type="button" data-filter-open @click="filterAnchor = $event.currentTarget">Filters<span v-if="count" data-filter-count> ({{ count }})</span></button>
+                    <button type="button" data-filter-open @click="filterAnchor = $event.currentTarget">Filters<template v-if="count"><span data-filter-count> ({{ count }})</span></template></button>
                     <button type="button" data-feed-pause :aria-pressed="paused" @click="togglePause">{{ paused ? 'Resume' : 'Pause' }}</button>
                     <button type="button" data-request-queue-open @click="queueOpen = true">Request queue</button>
-                    <MenuPanel v-if="filterAnchor" :anchor="filterAnchor" align="start" :min-width="220" :max-width="320" @close="filterAnchor = null">
+                    <template v-if="filterAnchor"><MenuPanel :anchor="filterAnchor" align="start" :min-width="220" :max-width="320" @close="filterAnchor = null">
                         <MenuLabel>Type</MenuLabel>
-                        <MenuItem v-for="kind in ['hook', 'viewer', 'command line']" :key="kind" :data-filter-kind="kind" role="menuitemcheckbox" :checked="filters.kind.includes(kind)" :aria-checked="filters.kind.includes(kind)" @click="toggle('kind', kind)">{{ kind }}</MenuItem>
+                        <template v-for="kind in ['hook', 'viewer', 'command line']" :key="kind"><MenuItem :data-filter-kind="kind" role="menuitemcheckbox" :checked="filters.kind.includes(kind)" :aria-checked="filters.kind.includes(kind)" @click="toggle('kind', kind)">{{ kind }}</MenuItem></template>
                         <MenuLabel>Event or command</MenuLabel>
-                        <MenuItem v-for="family in options.family" :key="family" :data-filter-family="family" role="menuitemcheckbox" :checked="filters.family.includes(family)" :aria-checked="filters.family.includes(family)" @click="toggle('family', family)">{{ family }}</MenuItem>
+                        <template v-for="family in options.family" :key="family"><MenuItem :data-filter-family="family" role="menuitemcheckbox" :checked="filters.family.includes(family)" :aria-checked="filters.family.includes(family)" @click="toggle('family', family)">{{ family }}</MenuItem></template>
                         <MenuLabel>Sender</MenuLabel>
-                        <MenuItem v-for="sender in options.sender" :key="sender" role="menuitemcheckbox" :checked="filters.sender.includes(sender)" :aria-checked="filters.sender.includes(sender)" @click="toggle('sender', sender)">{{ sender }}</MenuItem>
-                        <MenuItem v-if="count" data-filter-clear @click="filters = emptyFilters()">Clear filters</MenuItem>
-                    </MenuPanel>
+                        <template v-for="sender in options.sender" :key="sender"><MenuItem role="menuitemcheckbox" :checked="filters.sender.includes(sender)" :aria-checked="filters.sender.includes(sender)" @click="toggle('sender', sender)">{{ sender }}</MenuItem></template>
+                        <template v-if="count"><MenuItem data-filter-clear @click="filters = emptyFilters()">Clear filters</MenuItem></template>
+                    </MenuPanel></template>
                 </div>
                 <div class="columns">
                     <span data-hook-column>Event</span>
@@ -98,7 +95,7 @@ usePoll(load, () => !paused.value);
                             <span class="tool">{{ row.tool || '—' }}</span>
                             <span class="parts" data-hook-parts>{{ row.part_count || '' }}</span>
                             <time :datetime="row.received_at">{{ row.time }}</time>
-                            <button v-if="row.agent_id" type="button" class="sender" :data-peek="`agents:${row.agent_id}`" @click.stop="peekRef(`agents:${row.agent_id}`)">{{ row.sender }}</button><span v-else>{{ row.sender }}</span>
+                            <template v-if="row.agent_id"><button type="button" class="sender" :data-peek="`agents:${row.agent_id}`" @click.stop="peekRef(`agents:${row.agent_id}`)">{{ row.sender }}</button></template><template v-else><span>{{ row.sender }}</span></template>
                             <span class="queued">{{ Math.round(row.queued_ms) }} ms</span>
                             <span class="duration">{{ durationOf(row) }}</span>
                         </div>
@@ -108,21 +105,7 @@ usePoll(load, () => !paused.value);
             </section>
             <div class="divider" data-hook-request-divider role="separator" aria-orientation="vertical" />
             <section class="detail" data-hook-request-detail-area aria-label="Request details">
-                <template v-if="opened">
-                    <div data-hook-request-detail>
-                        <div class="detail-head">
-                            <h2>{{ opened.event }}</h2>
-                            <span :class="{slow: isSlow(opened), refused: isRefused(opened)}">{{ opened.sender }} · queued {{ Math.round(opened.queued_ms) }} ms · {{ opened.outcome }} · {{ durationOf(opened) }}</span>
-                        </div>
-                        <h3 class="heading">Headers</h3>
-                        <pre data-hook-request-headers v-html="shown(opened.headers)" />
-                        <h3 class="heading">Body</h3>
-                        <pre data-hook-request-body v-html="shown(opened.body)" />
-                    </div>
-                </template>
-                <template v-else>
-                    <p class="note message">Select a request to see its headers and body.</p>
-                </template>
+                <RequestDetails :request="opened" />
             </section>
             <template v-if="queueOpen"><div class="queue-veil" @click.self="queueOpen = false"><RequestQueueInspector @close="queueOpen = false" /></div></template>
         </div>

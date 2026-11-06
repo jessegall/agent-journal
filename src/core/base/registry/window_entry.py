@@ -7,11 +7,7 @@ from core.base.viewer.window_loading import WindowLoading
 
 @dataclass(frozen=True)
 class WindowEntry:
-    """A registered window: its name, the module that declares it, its title, entry file, loading and place,
-    whose work it shows, the agent roles it is for, the read lines, commands and events it may use, whether
-    the journal ships its module, why it is unavailable when its kit does not fit this viewer (empty when it
-    does), and its icon, float size, pane menu options, count line, the read lines a share link may use,
-    its search, empty when it declares none, its loading skeleton and the inspector slots a section is drawn in."""
+    """A registered window and its viewer configuration."""
 
     name: str
     module: str

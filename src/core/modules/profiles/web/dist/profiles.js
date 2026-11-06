@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-409cfc3b2d5c")) { const style = document.createElement("style"); style.id = "window-styles-409cfc3b2d5c"; style.textContent = ".helper-start[data-v-a4f6a3c4]{display:grid;gap:8px;margin-top:12px}.field[data-v-a4f6a3c4]{display:grid;gap:4px}.reason[data-v-a4f6a3c4],.notice[data-v-a4f6a3c4]{margin:0}.profile-panel[data-v-ff9967b6]{display:flex;flex-direction:column;gap:14px}.profile-panel-note[data-v-ff9967b6]{margin:0;color:var(--text-3);font-size:12.5px}.profile-panel-check[data-v-ff9967b6]{display:flex;gap:8px;align-items:center;font-size:13px}.profile-panel-grow[data-v-ff9967b6]{flex:1}.profiles[data-v-a9d095e4]{padding:0 0 40px}.bar[data-v-a9d095e4]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-a9d095e4]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-a9d095e4]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-a9d095e4]{color:var(--danger)}.empty[data-v-a9d095e4]{margin:40px auto;max-width:480px}.rows[data-v-a9d095e4]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-a9d095e4]{text-align:left}.profile-meta[data-v-a9d095e4]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-a9d095e4]{color:var(--text-2)}.profile-used[data-v-a9d095e4]{color:var(--text-3);white-space:nowrap}.profile-warning[data-v-a9d095e4]{color:var(--tone-warn)}.profile-used.never[data-v-a9d095e4]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-a9d095e4]{flex:1 1 100%}.profile-meta[data-v-a9d095e4]{display:none}}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-9dc57fa5d035")) { const style = document.createElement("style"); style.id = "window-styles-9dc57fa5d035"; style.textContent = ".helper-start[data-v-a4f6a3c4]{display:grid;gap:8px;margin-top:12px}.field[data-v-a4f6a3c4]{display:grid;gap:4px}.reason[data-v-a4f6a3c4],.notice[data-v-a4f6a3c4]{margin:0}.profile-panel[data-v-8f9442aa]{display:flex;flex-direction:column;gap:14px}.profile-panel-note[data-v-8f9442aa]{margin:0;color:var(--text-3);font-size:12.5px}.profile-panel-check[data-v-8f9442aa]{display:flex;gap:8px;align-items:center;font-size:13px}.profile-panel-grow[data-v-8f9442aa]{flex:1}.profiles[data-v-297ef88b]{padding:0 0 40px}.bar[data-v-297ef88b]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-297ef88b]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-297ef88b]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-297ef88b]{color:var(--danger)}.empty[data-v-297ef88b]{margin:40px auto;max-width:480px}.rows[data-v-297ef88b]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-297ef88b]{text-align:left}.profile-meta[data-v-297ef88b]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-297ef88b]{color:var(--text-2)}.profile-used[data-v-297ef88b]{color:var(--text-3);white-space:nowrap}.profile-warning[data-v-297ef88b]{color:var(--tone-warn)}.profile-used.never[data-v-297ef88b]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-297ef88b]{flex:1 1 100%}.profile-meta[data-v-297ef88b]{display:none}}\n"; document.head.appendChild(style); }
 import { ref as T, computed as x, onMounted as le, openBlock as n, createElementBlock as c, withModifiers as ae, createElementVNode as y, withDirectives as q, vModelText as oe, Fragment as F, renderList as z, toDisplayString as h, vModelSelect as ne, createVNode as i, unref as t, withCtx as u, createTextVNode as $, createCommentVNode as b, watch as H, createBlock as S, vModelCheckbox as se, normalizeClass as re } from "vue";
 import { useWindow as ie, Btn as B, SidePanel as ue, FormField as _, TextInput as A, TextArea as Y, Segmented as U, ModelPicker as J, DiffCard as de, useRows as pe, matchesSearch as fe, SearchBar as ve, EmptyState as D, ListRow as me, ago as ce } from "@journal/window-kit";
 const G = (f, M) => {
@@ -345,7 +345,7 @@ const G = (f, M) => {
       _: 1
     }, 8, ["title", "abstract"]));
   }
-}, Ie = /* @__PURE__ */ G(Pe, [["__scopeId", "data-v-ff9967b6"]]), je = {
+}, Ie = /* @__PURE__ */ G(Pe, [["__scopeId", "data-v-8f9442aa"]]), je = {
   class: "profiles",
   "data-profiles": ""
 }, Re = {
@@ -500,7 +500,7 @@ const G = (f, M) => {
       ], 64)) : b("", !0)
     ]));
   }
-}, Ae = /* @__PURE__ */ G(Fe, [["__scopeId", "data-v-a9d095e4"]]);
+}, Ae = /* @__PURE__ */ G(Fe, [["__scopeId", "data-v-297ef88b"]]);
 export {
   Ae as default
 };

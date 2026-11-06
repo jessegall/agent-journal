@@ -96,3 +96,5 @@ export {useOutputPages} from "../src/composables/outputPages.js";
 export {default as OutputLines} from "../src/kit/OutputLines.vue";
 export {default as QrCode} from "../src/kit/QrCode.vue";
 export {default as WindowRoom} from "./WindowRoom.vue";
+
+export {toggleFilter} from "./toggleFilter.js";

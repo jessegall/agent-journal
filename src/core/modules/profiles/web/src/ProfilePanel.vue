@@ -39,7 +39,7 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
 <template>
     <SidePanel :title="profile.title || profile.name || 'New profile'" :abstract="profile.name ? used : 'Instructions, type and model for an agent'" @close="emit('close')">
         <div class="profile-panel" data-profile-panel>
-            <small v-if="profile.title">{{ profile.name }}</small>
+            <template v-if="profile.title"><small>{{ profile.name }}</small></template>
             <template v-if="!profile.name">
                 <FormField label="Name" for="profile-name" help="Letters, digits and dashes; the agent starts it by this name.">
                     <TextInput id="profile-name" :value="draft.name" placeholder="critic" @input="draft.name = $event.target.value.trim()" />

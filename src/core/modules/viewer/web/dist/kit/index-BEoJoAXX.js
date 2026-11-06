@@ -10509,7 +10509,12 @@ const X2 = /* @__PURE__ */ Y2(J2), Q2 = ["width", "height", "viewBox"], ek = ["w
       ce(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, Bx = /* @__PURE__ */ K(ak, [["__scopeId", "data-v-47e67f04"]]), Ix = Pr(() => import("./VoiceFigure-DPLDxgAR.js").then((e) => e.V)), Rx = "1.2.0", Lx = "3.5";
+}, Bx = /* @__PURE__ */ K(ak, [["__scopeId", "data-v-47e67f04"]]);
+function Ix(e, t, n) {
+  const a = e[t];
+  return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
+}
+const Rx = Pr(() => import("./VoiceFigure-BdYy-tI8.js").then((e) => e.V)), Lx = "1.2.0", Nx = "3.5";
 export {
   xy as $,
   xe as A,
@@ -10682,8 +10687,8 @@ export {
   o5 as c8,
   $0 as c9,
   hk as cA,
-  Rx as cB,
-  Lx as cC,
+  Lx as cB,
+  Nx as cC,
   kk as cD,
   kx as cE,
   Da as cF,
@@ -10735,7 +10740,7 @@ export {
   me as cy,
   bx as cz,
   Pe as d,
-  hx as d$,
+  dp as d$,
   yi as d0,
   _k as d1,
   uk as d2,
@@ -10763,18 +10768,18 @@ export {
   lc as dO,
   fk as dP,
   Ve as dQ,
-  tb as dR,
-  Sk as dS,
-  ix as dT,
-  vx as dU,
-  Xy as dV,
-  xx as dW,
-  ap as dX,
-  Oo as dY,
-  Fb as dZ,
-  dp as d_,
+  Ix as dR,
+  tb as dS,
+  Sk as dT,
+  ix as dU,
+  vx as dV,
+  Xy as dW,
+  xx as dX,
+  ap as dY,
+  Oo as dZ,
+  Fb as d_,
   Gn as da,
-  Ix as db,
+  Rx as db,
   Bx as dc,
   os as dd,
   dx as de,
@@ -10799,12 +10804,13 @@ export {
   $x as dy,
   Jp as dz,
   r5 as e,
-  Na as e0,
-  mx as e1,
-  px as e2,
-  ot as e3,
-  Mx as e4,
-  oc as e5,
+  hx as e0,
+  Na as e1,
+  mx as e2,
+  px as e3,
+  ot as e4,
+  Mx as e5,
+  oc as e6,
   y0 as f,
   Z4 as g,
   Jt as h,
