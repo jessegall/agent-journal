@@ -29,6 +29,18 @@ func DetachedProcess() *syscall.SysProcAttr {
 	return &syscall.SysProcAttr{Setsid: true}
 }
 
+func lockLauncherReplacement(path string) (func(), error) {
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o600)
+	if err != nil {
+		return nil, err
+	}
+	if err := syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+		_ = file.Close()
+		return nil, err
+	}
+	return func() { _ = file.Close() }, nil
+}
+
 // ProcessAlive is whether a process of that number still runs.
 func ProcessAlive(pid int) bool {
 	err := syscall.Kill(pid, 0)

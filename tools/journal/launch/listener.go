@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -40,6 +41,11 @@ type WorkerRequest struct {
 	Variables   map[string]string `json:"variables"`
 	InputLine   string            `json:"typed"`
 	Stop        bool              `json:"stop"`
+	Version     bool              `json:"version"`
+	Routes      bool              `json:"routes"`
+	Running     bool              `json:"running"`
+	AnyProgram  bool              `json:"any_program"`
+	LocalOnly   bool              `json:"local_only"`
 }
 
 // ProgramStart is one program the launcher starts: its agent row, its folder, its command line and the variables it
@@ -146,15 +152,23 @@ func exitCode(err error) int {
 // Listen takes requests on the launcher's socket: it starts each worker's program with its identity, and types a line
 // into the terminal of the agent a request names.
 func Listen(path string, starter Starter, inputs *TerminalInputs) (io.Closer, error) {
+	return ListenVersioned(path, starter, inputs, "")
+}
+
+// ListenVersioned replaces the public listener while older launches retain their terminals.
+func ListenVersioned(path string, starter Starter, inputs *TerminalInputs, version string) (*Listener, error) {
 	previous := setAsidePrevious(path)
 	listener, err := net.Listen("unix", path)
 	if err != nil {
+		restoreFirst(previous, path)
 		return nil, err
 	}
 	listener.(*net.UnixListener).SetUnlinkOnClose(false)
 	bound, err := os.Stat(path)
 	if err != nil {
 		_ = listener.Close()
+		_ = os.Remove(path)
+		restoreFirst(previous, path)
 		return nil, err
 	}
 	answers := &sync.WaitGroup{}
@@ -169,38 +183,36 @@ func Listen(path string, starter Starter, inputs *TerminalInputs) (io.Closer, er
 			answers.Add(1)
 			go func() {
 				defer answers.Done()
-				answered(connection, starter, inputs, previous)
+				answered(connection, starter, inputs, previous, version)
 			}()
 		}
 	}()
-	return launchSocket{listener: listener, path: path, previous: previous, bound: bound, answers: answers}, nil
+	return &Listener{listener: listener, path: path, previous: previous, bound: bound, answers: answers, inputs: inputs}, nil
 }
 
-// launchSocket is one launch's socket. A second launch in a project takes the name and keeps the first's socket beside
-// it, passing on what is not its own, so the first's programs can still be stopped and typed to.
-type launchSocket struct {
+// Listener keeps the public socket and every older terminal owner's socket.
+type Listener struct {
 	listener net.Listener
 	path     string
-	previous string
+	previous []string
 	bound    os.FileInfo
 	answers  *sync.WaitGroup
+	inputs   *TerminalInputs
 }
 
 // Close frees the name when it is still this launch's, gives it back to the launch before it, and waits for the answers
 // still owed.
-func (socket launchSocket) Close() error {
+func (socket *Listener) Close() error {
 	err := socket.listener.Close()
 	if current, statErr := os.Stat(socket.path); statErr == nil && os.SameFile(current, socket.bound) {
 		_ = os.Remove(socket.path)
-		if socket.previous != "" {
-			restorePrevious(socket.previous, socket.path)
-		}
+		restoreFirst(socket.previous, socket.path)
 	}
 	socket.awaitAnswers()
 	return err
 }
 
-func (socket launchSocket) awaitAnswers() {
+func (socket *Listener) awaitAnswers() {
 	finished := make(chan struct{})
 	go func() {
 		socket.answers.Wait()
@@ -212,49 +224,80 @@ func (socket launchSocket) awaitAnswers() {
 	}
 }
 
-func setAsidePrevious(path string) string {
+func setAsidePrevious(path string) []string {
 	connection, err := net.DialTimeout("unix", path, socketDialLimit)
 	if err != nil {
 		_ = os.Remove(path)
-		return ""
+		return nil
 	}
 	_ = connection.Close()
-	previous := path + "." + strconv.Itoa(os.Getpid())
-	if os.Rename(path, previous) != nil {
-		return ""
+	older, _ := socketAnswer(path, WorkerRequest{Routes: true})
+	var routes []string
+	_ = json.Unmarshal([]byte(older), &routes)
+	file, err := os.CreateTemp(filepath.Dir(path), "l-")
+	if err != nil {
+		return nil
 	}
-	return previous
+	previous := file.Name()
+	_ = file.Close()
+	_ = os.Remove(previous)
+	if os.Rename(path, previous) != nil {
+		return nil
+	}
+	return append([]string{previous}, routes...)
 }
 
-func restorePrevious(previous, path string) {
+func restorePrevious(previous, path string) bool {
 	connection, err := net.DialTimeout("unix", previous, socketDialLimit)
 	if err != nil {
 		_ = os.Remove(previous)
-		return
+		return false
 	}
 	_ = connection.Close()
-	_ = os.Rename(previous, path)
+	return os.Rename(previous, path) == nil
+}
+
+func restoreFirst(previous []string, path string) {
+	if _, err := os.Lstat(path); !os.IsNotExist(err) {
+		return
+	}
+	for _, previous := range previous {
+		if restorePrevious(previous, path) {
+			return
+		}
+	}
 }
 
 // forwarded passes a request this launch has no program for to the launch before it, and hands back its answer.
-func forwarded(connection net.Conn, request WorkerRequest, previous string) {
-	if previous == "" {
+func forwarded(connection net.Conn, request WorkerRequest, previous []string) {
+	if request.LocalOnly {
 		return
 	}
-	previousConnection, err := net.DialTimeout("unix", previous, socketDialLimit)
-	if err != nil {
-		return
-	}
-	defer previousConnection.Close()
-	if json.NewEncoder(previousConnection).Encode(request) == nil {
-		_, _ = io.Copy(connection, previousConnection)
+	if answer := previousAnswer(request, previous); answer != "" {
+		_, _ = io.WriteString(connection, answer+"\n")
 	}
 }
 
-func answered(connection net.Conn, starter Starter, inputs *TerminalInputs, previous string) {
+func answered(connection net.Conn, starter Starter, inputs *TerminalInputs, previous []string, version string) {
 	defer connection.Close()
 	var request WorkerRequest
 	if err := json.NewDecoder(connection).Decode(&request); err != nil {
+		return
+	}
+	if request.Version {
+		_, _ = io.WriteString(connection, version+"\n")
+		return
+	}
+	if request.Routes {
+		_ = json.NewEncoder(connection).Encode(previous)
+		return
+	}
+	if request.Running || request.AnyProgram {
+		if inputs.IsOpen(request.AgentID) || request.AnyProgram && inputs.HasPrograms() {
+			_, _ = io.WriteString(connection, RunningAnswer+"\n")
+			return
+		}
+		forwarded(connection, request, previous)
 		return
 	}
 	if request.Stop {
@@ -274,6 +317,10 @@ func answered(connection net.Conn, starter Starter, inputs *TerminalInputs, prev
 		return
 	}
 	if len(request.Command) == 0 {
+		return
+	}
+	if inputs.IsOpen(request.AgentID) || previousAnswer(WorkerRequest{AgentID: request.AgentID, Running: true}, previous) != "" {
+		_, _ = io.WriteString(connection, RunningAnswer+"\n")
 		return
 	}
 	variables := map[string]string{"JOURNAL_AGENT_ID": strconv.Itoa(request.AgentID), "JOURNAL_SESSION": request.Session, EnvironmentVariable: request.Environment, ActiveVariable: "1"}

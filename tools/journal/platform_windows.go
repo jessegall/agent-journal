@@ -2,7 +2,10 @@
 
 package main
 
-import "syscall"
+import (
+	"errors"
+	"syscall"
+)
 
 // ServerSupported says whether this platform runs the journal's server; on Windows every line runs directly.
 const ServerSupported = false
@@ -15,6 +18,10 @@ func LockIsFree(path string) bool {
 // DetachedProcess has nothing to set on Windows, where no server is started.
 func DetachedProcess() *syscall.SysProcAttr {
 	return nil
+}
+
+func lockLauncherReplacement(path string) (func(), error) {
+	return nil, errors.New("launcher replacement needs Unix sockets")
 }
 
 // ProcessAlive is never true on Windows, where no server is started.
