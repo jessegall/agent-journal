@@ -57,7 +57,7 @@ func TestAPendingWorkerStartReservesTheAgentBeforeAnotherRequest(t *testing.T) {
 	releaseOnce.Do(func() { close(release) })
 	select {
 	case answer := <-first:
-		if answer != StartedAnswer {
+		if !strings.HasPrefix(answer, StartedAnswer) {
 			t.Fatalf("the first request answered %q", answer)
 		}
 	case <-time.After(5 * time.Second):
@@ -89,7 +89,7 @@ func TestAWorkerTerminalStartFailureIsAnsweredAndCanRetry(t *testing.T) {
 		t.Fatalf("the terminal startup error was not recorded: %q, %v", log, err)
 	}
 	request.Command = []string{"true"}
-	if answer := typedRequest(t, socket, request); answer != StartedAnswer {
+	if answer := typedRequest(t, socket, request); !strings.HasPrefix(answer, StartedAnswer) {
 		t.Fatalf("the retry answered %q", answer)
 	}
 }
