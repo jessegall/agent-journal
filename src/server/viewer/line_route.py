@@ -1,6 +1,7 @@
 import io
 import json
 
+from core.base.database.request_watch import RequestWatch
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.cli.console import USAGE_CODE, Console
@@ -74,7 +75,8 @@ class LineRoute:
             else:
                 container.get(ShareScope).check(shared, argv, environment)
             caller = Caller(person, container.get(EnvironmentNames).environment_id(environment))
-            code = container.get(Console).run(self.json_line(argv), caller, stream)
+            with container.get(RequestWatch).watching(argv):
+                code = container.get(Console).run(self.json_line(argv), caller, stream)
         except UsageError as error:
             return LineAnswer(USAGE_CODE, error=str(error))
         except ShareRefusal:

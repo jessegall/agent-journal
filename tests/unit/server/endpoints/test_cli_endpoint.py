@@ -1,3 +1,4 @@
+from core.base.database.reported_findings import ReportedFindings
 import io
 import json
 
@@ -43,7 +44,7 @@ def test_the_answer_stamps_the_timing_the_request_carries(tmp_path):
     home = JournalHome(tmp_path)
     home.module_list.write_text(json.dumps([ITEMS]))
     assert LineRun(home).run(["module", "sync"], CallerRequest(), io.StringIO()) == 0
-    endpoint = CliEndpoint(home, synced_container(home).get(CommitListenerRunner))
+    endpoint = CliEndpoint(home, synced_container(home).get(CommitListenerRunner), ReportedFindings())
     timing = Timing.parsed("go_sent=1761904800015420")
     assert endpoint.answer(CliRequest(["item", "make", "Dune"], CallerRequest(), timing=timing), io.StringIO()) == 0
     assert [name for name, _ in timing.stamps] == ["go_sent", "command_started", "write_started", "handled", "committed"]

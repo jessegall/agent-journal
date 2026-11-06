@@ -1,3 +1,4 @@
+from core.base.database.reported_findings import ReportedFindings
 import http.client
 import json
 from datetime import datetime, timezone
@@ -213,7 +214,7 @@ class ServerStory:
 
     def expect_busy_timeout(self, seconds: float) -> None:
         idle_thread = ListenerThread(lambda: None, lambda error: None)
-        assert CliEndpoint(self.story.home, ListenerWake(idle_thread)).line_run.busy_timeout_seconds == seconds
+        assert CliEndpoint(self.story.home, ListenerWake(idle_thread), ReportedFindings()).line_run.busy_timeout_seconds == seconds
 
     def expect_stale_answer_and_released_files(self, line: str, task_listing: LineOutcome) -> None:
         answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "folder": "/"})
