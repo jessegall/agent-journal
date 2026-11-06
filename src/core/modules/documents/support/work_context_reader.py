@@ -1,6 +1,7 @@
 import base64
 import binascii
 import hashlib
+import shlex
 from dataclasses import replace
 
 from core.base.caller.caller import Caller
@@ -13,34 +14,40 @@ from core.base.refusal import Refusal
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.documents.commands.support.row_comments import RowComments
 from core.modules.documents.conditions.work_context_messages import WorkContextMessages, WorkContextSeeds, WorkContextReferenceColumns
+from core.modules.documents.conditions.context_message_type import ContextMessageType
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.report import Report
-from core.modules.documents.support.work_context_message import WorkContextMessage, WorkContextReference
-from core.modules.documents.support.work_context_page import WorkContextPage, WorkContextRequest, WorkContextText
-from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES, MessageType
+from core.modules.documents.support.work_context_message import WorkContextMessage, WorkContextReference, WorkContextAttachment
+from core.modules.documents.support.work_context_page import WorkContextPage, WorkContextRequest, WorkContextText, WorkContextAttachmentPage, WorkContextFile, WorkContextFileContent
+from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.support.work_sources import WorkSources
+from core.modules.messages.support.message_files import MessageFiles
+from core.modules.messages.support.message_captions import MessageCaptions
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.task_plans import TaskPlans
 from core.modules.tasks.models.task import Task
 
 CONTEXT_CHARACTERS = 8000
 ANCESTRY_LENGTH = 20
-CONTEXT_TYPES = (*PERSON_MESSAGE_TYPES, MessageType.AGENT)
 SOURCE_TYPES = (LinkType.SUBJECT, LinkType.EDITED)
+ATTACHMENTS_PER_PAGE = 5
+CAPTION_CHARACTERS = 512
+PAGE_ATTACHMENT_CHARACTERS = 2000
 
 
 class WorkContextReader:
     """Reads one bounded conversation through existing resource links and message threads."""
 
     def __init__(self, queries: Queries, messages: MessageQuery, comments: RowComments,
-                 plans: TaskPlans, sources: WorkSources) -> None:
+                 plans: TaskPlans, sources: WorkSources, files: MessageFiles) -> None:
         self.queries, self.messages, self.comments, self.plans, self.sources = queries, messages, comments, plans, sources
+        self.files = files
 
-    def read(self, row: Task | Plan, caller: Caller, request: WorkContextRequest) -> WorkContextPage | WorkContextText:
+    def read(self, row: Task | Plan, caller: Caller, request: WorkContextRequest) -> WorkContextPage | WorkContextText | WorkContextAttachmentPage | WorkContextFile:
         self.check(request)
         request = replace(request, page_size=min(request.page_size, 50))
         rows = self.related_rows(row)
@@ -49,8 +56,7 @@ class WorkContextReader:
         visible = self.visible(row.environment_id, excluded)
         source_queries = tuple(visible.matching(SubqueryMatch("id", self.source_links(root).select.column("source_id"))) for root in rows)
         source_selects = tuple(query.scoped(query.select).column("id") for query in source_queries)
-        comment_selects = tuple(self.comments.query(root).filter(environment_id=row.environment_id, is_chat_visible=True)
-                                .matching(Among("type", CONTEXT_TYPES)).matching(Among("id", excluded, negated=True)).select.column("id")
+        comment_selects = tuple(self.comments.query(root).matching(SubqueryMatch("id", visible.scoped(visible.select).column("id"))).select.column("id")
                                 for root in rows)
         seeds = WorkContextSeeds((*source_selects, *comment_selects))
         primary = visible.matching(SubqueryMatch("id", WorkContextSeeds(source_selects))).with_text_segment(0, CONTEXT_CHARACTERS).ordered("created_at", "id").first()
@@ -68,7 +74,7 @@ class WorkContextReader:
         if request.ancestor_cursor is not None:
             command += f" --ancestor-cursor {request.ancestor_cursor}"
         if request.message_id is not None:
-            return self.text(row, conversation, request, command)
+            return self.message_read(row, conversation, request, command)
         total = conversation.count()
         picked = self.page_rows(conversation, primary if start == 0 else None, request)
         rendered = self.rendered(picked, primary, rows, command)
@@ -88,6 +94,12 @@ class WorkContextReader:
             raise Refusal("name a positive message number")
         if request.message_id is None and request.text_offset:
             raise Refusal("a text offset needs --message")
+        if (request.attachment is not None or request.attachment_page is not None) and request.message_id is None:
+            raise Refusal("an attachment read needs --message in this context")
+        if request.attachment_page is not None and request.attachment_page < 1:
+            raise Refusal("use a positive attachment page")
+        if (request.attachment is not None or request.attachment_page is not None) and request.text_offset:
+            raise Refusal("read message text and attachments separately")
 
     def related_rows(self, row: Task | Plan) -> tuple[Task | Plan, ...]:
         if not isinstance(row, Task):
@@ -96,7 +108,8 @@ class WorkContextReader:
         return (row,) if plan is None else (row, plan)
 
     def visible(self, environment_id: int, excluded: tuple[int, ...]) -> MessageQuery:
-        return self.messages.filter(environment_id=environment_id, is_chat_visible=True).matching(Among("type", CONTEXT_TYPES)).matching(Among("id", excluded, negated=True))
+        users = self.queries.query(ActorRecord).filter(type=ActorType.USER).select.column("id")
+        return self.messages.filter(environment_id=environment_id, is_chat_visible=True).matching(ContextMessageType(users)).matching(Among("id", excluded, negated=True))
 
     def source_links(self, row: Task | Plan) -> Query[Link]:
         return self.queries.query(Link).filter(source_model="message", target_model=row.model_name, target_id=row.id).matching(Among("link_type", SOURCE_TYPES))
@@ -141,7 +154,8 @@ class WorkContextReader:
 
     def rendered(self, messages: tuple[Message, ...], primary: Message | None,
                  roots: tuple[Task | Plan, ...], command: str) -> tuple[WorkContextMessage, ...]:
-        actors = {actor.id: " ".join(actor.name.split()) for actor in self.queries.query(ActorRecord).matching(Among("id", tuple(message.creator_id for message in messages))).all_rows()}
+        actor_ids = tuple({number for message in messages for number in (message.creator_id, message.session_agent_id) if number is not None})
+        actors = {actor.id: actor for actor in self.queries.query(ActorRecord).matching(Among("id", actor_ids)).all_rows()}
         relations: dict[int, set[str]] = {message.id: set() for message in messages}
         for root in roots:
             links = self.queries.query(Link).filter(source_model="message", target_model=root.model_name, target_id=root.id)
@@ -153,28 +167,87 @@ class WorkContextReader:
             if link.target_id in relations:
                 relations[link.target_id].add(f"commented on by message:{link.source_id}")
         budget_order = sorted(messages, key=lambda message: primary is None or message.id != primary.id)
-        rendered: dict[int, WorkContextMessage] = {}
-        remaining = CONTEXT_CHARACTERS
+        attachments: dict[int, tuple[WorkContextAttachment, ...]] = {}
+        attachment_budget = PAGE_ATTACHMENT_CHARACTERS
         for message in budget_order:
-            text = message.text[:remaining]
+            preview = self.attachment_previews(message, command, 1, attachment_budget)
+            attachments[message.id] = preview
+            attachment_budget -= sum(len(file.name) + len(file.caption) for file in preview)
+        rendered: dict[int, WorkContextMessage] = {}
+        remaining = CONTEXT_CHARACTERS - (PAGE_ATTACHMENT_CHARACTERS - attachment_budget)
+        for message in budget_order:
+            reference_only = message.type is MessageType.JOURNAL
+            text = "" if reference_only else message.text[:remaining]
             remaining -= len(text)
-            offset = len(text) if len(message.text) > len(text) else None
+            offset = len(text) if not reference_only and len(message.text) > len(text) else None
             next_command = f"{command} --message {message.id} --text-offset {offset}" if offset is not None else None
+            if reference_only:
+                next_command = f"journal message show {message.id}"
             if message.parent_id is not None:
                 relations[message.id].add(f"reply message:{message.parent_id}")
             labels = tuple(sorted(relations[message.id])) or ("thread",)
-            rendered[message.id] = WorkContextMessage(message.id, text, actors.get(message.creator_id, f"actor:{message.creator_id}"),
-                message.creator_id, str(message.type), message.creation_timestamp().text, labels, offset, next_command)
+            actor_id = message.session_agent_id if message.type is MessageType.AGENT else message.creator_id
+            author = self.author(message, actors.get(actor_id))
+            rendered[message.id] = WorkContextMessage(message.id, text, author, None if reference_only else actor_id,
+                str(message.type), message.creation_timestamp().text, labels, offset, next_command,
+                attachments[message.id], len(message.files), self.attachment_next(message, attachments[message.id], command, 1), reference_only)
         return tuple(rendered[message.id] for message in messages)
 
-    def text(self, row: Task | Plan, conversation: MessageQuery, request: WorkContextRequest, command: str) -> WorkContextText:
+    def message_read(self, row: Task | Plan, conversation: MessageQuery, request: WorkContextRequest, command: str) -> WorkContextText | WorkContextAttachmentPage | WorkContextFile:
         message = conversation.filter(id=request.message_id).with_text_segment(request.text_offset, CONTEXT_CHARACTERS).first()
         if message is None:
             raise Refusal("this message is not available in the requested context", "use its context page or ancestry continuation")
-        text = message.text[:CONTEXT_CHARACTERS]
+        if message.type is MessageType.JOURNAL:
+            raise Refusal("this journal record is a reference, not a person request", f"journal message show {message.id}")
+        if request.attachment is not None:
+            data = self.files.read_attached(message, request.attachment)
+            caption = MessageCaptions.decoded(message).get(request.attachment, "")
+            return WorkContextFile(row.cli_name, row.id, message.id,
+                                   WorkContextFileContent(request.attachment, base64.b64encode(data).decode(), caption))
+        if request.attachment_page is not None:
+            preview = self.attachment_previews(message, command, request.attachment_page, CONTEXT_CHARACTERS)
+            return WorkContextAttachmentPage(row.cli_name, row.id, message.id, preview, request.attachment_page,
+                                              len(message.files), self.attachment_next(message, preview, command, request.attachment_page))
+        preview = self.attachment_previews(message, command, 1, PAGE_ATTACHMENT_CHARACTERS)
+        budget = CONTEXT_CHARACTERS - sum(len(file.name) + len(file.caption) for file in preview)
+        text = message.text[:budget]
         offset = request.text_offset + len(text) if len(message.text) > len(text) else None
         next_command = f"{command} --message {message.id} --text-offset {offset}" if offset is not None else None
-        return WorkContextText(row.cli_name, row.id, message.id, text, request.text_offset, offset, next_command)
+        actor_id = message.session_agent_id if message.type is MessageType.AGENT else message.creator_id
+        actor = self.queries.query(ActorRecord).filter(id=actor_id).first() if actor_id is not None else None
+        return WorkContextText(row.cli_name, row.id, message.id, text, request.text_offset, offset, next_command,
+                               self.author(message, actor), str(message.type), preview, len(message.files), self.attachment_next(message, preview, command, 1))
+
+    def author(self, message: Message, actor: ActorRecord | None) -> str:
+        if message.type is MessageType.JOURNAL:
+            return "Journal"
+        if message.type is MessageType.AGENT:
+            return f"Agent {' '.join(actor.name.split())}" if actor is not None and actor.type is ActorType.AGENT else "Agent (identity unavailable)"
+        return " ".join(actor.name.split()) if actor is not None and actor.type is ActorType.USER else "Person (identity unavailable)"
+
+    def attachment_previews(self, message: Message, command: str, page: int, budget: int) -> tuple[WorkContextAttachment, ...]:
+        if message.type is MessageType.JOURNAL:
+            return ()
+        captions = MessageCaptions.decoded(message)
+        names = message.files[(page - 1) * ATTACHMENTS_PER_PAGE:page * ATTACHMENTS_PER_PAGE]
+        previews = []
+        for name in names:
+            if len(name) > budget:
+                break
+            budget -= len(name)
+            caption = captions.get(name, "")
+            shown = caption[:min(budget, CAPTION_CHARACTERS)]
+            budget -= len(shown)
+            previews.append(WorkContextAttachment(name, shown,
+                            f"{command} --message {message.id} --attachment {shlex.quote(name)}", len(shown) < len(caption)))
+        return tuple(previews)
+
+    def attachment_next(self, message: Message, preview: tuple[WorkContextAttachment, ...], command: str, page: int) -> str | None:
+        start = (page - 1) * ATTACHMENTS_PER_PAGE
+        if start + len(preview) >= len(message.files):
+            return None
+        next_page = page + 1 if len(preview) == ATTACHMENTS_PER_PAGE else page
+        return f"{command} --message {message.id} --attachment-page {next_page}"
 
     def unavailable(self, roots: tuple[Task | Plan, ...], visible: MessageQuery) -> tuple[WorkContextReference, ...]:
         references: dict[int, set[str]] = {}
