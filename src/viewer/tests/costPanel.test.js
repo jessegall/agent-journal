@@ -1,7 +1,8 @@
 import {expect, test} from "vitest";
 import CostPanel from "../../core/modules/usage/web/src/CostPanel.vue";
 import UsagePanel from "../../core/modules/usage/web/src/UsagePanel.vue";
-import {context, mounted} from "./support/windowContext.js";
+import {mounted} from "./support/windowContext.js";
+import {usageWindowContext as context} from "./support/usageWindowContext.js";
 
 const AGENTS = [
     {id: 1, role: "main", model: "Opus 5.5", cost_dollars: 1052.5},
