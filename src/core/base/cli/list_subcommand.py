@@ -12,7 +12,7 @@ from core.base.page import Page, is_page
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.less import Less
 from core.base.query.queries import Queries
-from core.base.query.query import PAGE_SIZE_ROWS
+from core.base.query.query import PAGE_SIZE_ROWS, Query
 from core.base.cli.subcommand_columns import FOREIGN_KEY_SUFFIX, parser_argument
 from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
 
@@ -50,6 +50,13 @@ class ListSubcommand(ReadSubcommand[Page[Model]]):
                 continue
             if column != ENVIRONMENT_COLUMN:
                 parser_argument(parser, f"--{filter_flag(column)}", self.table.types[column])
+        self.model_arguments(parser)
+
+    def model_arguments(self, parser: ArgumentParser) -> None:
+        return None
+
+    def refined(self, query: Query[Model], arguments: Namespace) -> Query[Model]:
+        return query
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[Model]:
         self.columns = tuple(column for column in arguments.columns.split(",") if column)
@@ -63,6 +70,7 @@ class ListSubcommand(ReadSubcommand[Page[Model]]):
             query = query.matching(Greater("id", arguments.after_id))
         if arguments.before_id is not None:
             query = query.matching(Less("id", arguments.before_id))
+        query = self.refined(query, arguments)
         return (query.oldest() if arguments.oldest else query.newest()).page(arguments.page, arguments.limit)
 
     def write_output(self, value: object, output: Output) -> None:

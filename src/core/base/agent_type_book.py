@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 
+from core.base.access import Access
 from core.base.refusal import Refusal
 from core.base.registry.agent_type_entry import AgentTypeEntry
 
@@ -14,6 +15,12 @@ class AgentTypeBook:
         if key not in self.entries:
             raise Refusal(f"{key} is no agent type: no installed module registers it", "register it in a module's agent_types")
         return self.entries[key]
+
+    def label(self, key: str) -> str:
+        return self.entries[key].label if key in self.entries else key.capitalize()
+
+    def keys_with(self, access: Access) -> tuple[str, ...]:
+        return tuple(entry.key for entry in self.startable() if entry.access is access)
 
     def extends(self, key: str, base: str) -> bool:
         return base in self.entries and base in self.type_chain(key)
