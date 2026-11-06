@@ -2,6 +2,7 @@ import {ref} from "vue";
 import {expect, test, vi} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 import {suggestionWindowContext} from "./support/suggestionWindowContext.js";
+import {templateWindowContext} from "./support/templateWindowContext.js";
 import {useListTools} from "../kit/useListTools.js";
 import SuggestionRows from "../../core/modules/suggestions/web/src/SuggestionRows.vue";
 import QuestionRows from "../../core/modules/questions/web/src/QuestionRows.vue";
@@ -73,7 +74,7 @@ test.each([
     ["the dumps", DumpRows, {"dump board": {ok: true, value: {dumps: [], total: 0}}}],
     ["the reviews", ReviewerSteps, {"review board": {ok: true, value: {reviews: [], queued: 0}}}],
 ])("the list of %s has the bar", async (_, component, answers) => {
-    const element = await mounted(component, context(answers));
+    const element = await mounted(component, component === TemplateCards ? templateWindowContext(answers) : context(answers));
     expect(element.querySelector("[data-list-tools]")).not.toBeNull();
 });
 
