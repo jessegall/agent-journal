@@ -102,3 +102,24 @@ def test_a_failed_upgrade_leaves_no_upgrade_mark_and_the_next_delivery_reaches_t
     story.repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
     story.run(FIRST_PROOF, actor=worker)
     story.expect_refusal(DELIVERY, "[plugin steps] cart.py has a sin", actor=worker)
+
+
+def test_a_plugin_whose_files_changed_judges_no_worker_step(new_story):
+    story = step_plugin_story(new_story, "worker_delivering")
+    manifest = story.container.get(PluginFolders).code("steps") / "journal-plugin.json"
+    manifest.write_text(manifest.read_text() + "\n")
+    worker = dispatched_worker(story)
+    story.repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
+    story.run(FIRST_PROOF, actor=worker)
+    story.expect_success(DELIVERY, actor=worker)
+
+
+def test_a_plugin_being_upgraded_raises_nothing_in_the_step_check(new_story):
+    story = step_plugin_story(new_story, "worker_delivering")
+    folders = story.container.get(PluginFolders)
+    folders.upgrade_mark("steps").touch()
+    (folders.code("steps") / "journal-plugin.json").unlink()
+    worker = dispatched_worker(story)
+    story.repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
+    story.run(FIRST_PROOF, actor=worker)
+    story.expect_success(DELIVERY, actor=worker)
