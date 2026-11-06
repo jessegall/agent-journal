@@ -120,9 +120,9 @@ test("a clicked card inside the open one, such as a tab, does not close it", asy
 test("the window holds the open card, and the card's tab body scrolls within the height it is given", () => {
     const rows = readFileSync(resolve(__dirname, "../../core/modules/agents/web/src/AgentRows.vue"), "utf8");
     const card = readFileSync(resolve(__dirname, "../../core/modules/agents/web/src/AgentCard.vue"), "utf8");
+    const details = readFileSync(resolve(__dirname, "../../core/modules/agents/web/src/AgentCardDetails.vue"), "utf8");
     expect(rows).toContain("const openId = ref(null)");
     expect(card).not.toMatch(/const opened = ref/);
     expect(rows).toMatch(/\.agents\.focused :deep\(\.row-list\) \{[^}]*flex: 1;[^}]*min-height: 0;/);
-    expect(card).toMatch(/\.agent-card\.open \.agent-tab-body \{[^}]*flex: 1;[^}]*min-height: 0;/);
-    expect(card).toMatch(/\.agent-tab-body \{[^}]*overflow-y: auto;/);
+    expect(details).toMatch(/\.agent-tab-body \{[^}]*flex: 1;[^}]*min-height: 0;[^}]*overflow-y: auto;/);
 });
