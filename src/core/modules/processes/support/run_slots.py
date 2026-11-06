@@ -15,6 +15,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.support.process_setting import ProcessSetting
+from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
@@ -24,10 +25,10 @@ from core.modules.processes.support.run_admission import RunAdmission
 class RunSlots:
     """Admits every run, granting immediate runs and giving waiting runs capacity in order."""
 
-    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt, admission: RunAdmission, clock: Clock, listings: RunCounts, rows: EventRows, kept: KeptRows, scopes: Scopes) -> None:
+    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt, admission: RunAdmission, clock: Clock, listings: RunCounts, rows: EventRows, kept: KeptRows, scopes: Scopes, outputs: OutputQuery) -> None:
         self.queries, self.repository, self.folder, self.settings, self.halt = queries, repository, folder, settings, halt
         self.admission, self.clock, self.listings = admission, clock, listings
-        self.rows, self.kept, self.scopes = rows, kept, scopes
+        self.rows, self.kept, self.scopes, self.outputs = rows, kept, scopes, outputs
 
     def grant(self, context: Context) -> None:
         runs = self.running()
@@ -72,6 +73,6 @@ class RunSlots:
             return
         count = self.listings.count(process, self.folder.count_text(process.id)) if status == 0 else 0
         self.listings.reject_unknown(process, agent, status, count, context)
-        outputs = self.queries.query(Output).filter(process_id=process.id).limited(1)
-        if count and outputs and outputs[0].test_count != count:
-            self.repository.update(outputs[0], context, test_count=count)
+        output = self.outputs.process_output(process.id)
+        if count and output is not None and output.test_count != count:
+            self.repository.update(output, context, test_count=count)
