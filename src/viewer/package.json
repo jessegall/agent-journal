@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && vite build --config kit/vite.config.js && node kit/buildWindows.js",
-    "test": "vitest run"
+    "build": "vite build --configLoader runner && vite build --configLoader runner --config kit/vite.config.js && node kit/buildWindows.js",
+    "test": "vitest run --configLoader runner"
   },
   "dependencies": {
     "qrcode-generator": "^1.5.2",

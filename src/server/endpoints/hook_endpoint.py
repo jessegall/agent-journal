@@ -26,6 +26,7 @@ from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from server.hook.raw_hook_body import RawHookBody, is_raw_body
 from server.hook.hook_headers import HookHeaders
 from server.hook.hook_database_busy_error import HookDatabaseBusyError
+from server.hook.queue_priority import QueuePriority
 from server.server_context import ServerContext
 
 
@@ -42,6 +43,10 @@ def is_stop_body(data: object) -> bool:
     if not is_mapping(data):
         return False
     return STOP_NAME in (str(data.get("event")).lower(), str(data.get("hook_event_name")).lower())
+
+
+def queue_priority(data: object) -> QueuePriority:
+    return QueuePriority.AGENT_HOOK if is_mapping(data) and data.get(ROLE_FIELD) not in (None, "", MAIN_ROLE) else QueuePriority.MAIN_AGENT_HOOK
 
 
 def requires_check(data: object) -> bool:
@@ -63,16 +68,18 @@ class HookEndpoint:
     def answer(self, data: object, program: str, headers: Mapping[str, str]) -> HookReply:
         started_at = perf_counter()
         try:
-            with self.context.hook_database.used(self.context.hook_limit_seconds) as database:
+            priority = queue_priority(data)
+            limit_seconds = self.context.agent_hook_limit_seconds if priority is QueuePriority.AGENT_HOOK else self.context.hook_limit_seconds
+            with self.context.hook_database.used(priority, limit_seconds) as database:
                 self.timing.stamp("hook_locked")
-                return self.routed_answer(data, program, headers, database, started_at)
+                return self.routed_answer(data, program, headers, database, started_at, limit_seconds)
         except (HookDatabaseBusyError, OldHookRunnerError) as error:
             return self.unchecked(data, error)
         finally:
             self.timing.stamp("hook_answered")
             self.context.listener_thread.wake()
 
-    def routed_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, started_at: float) -> HookReply:
+    def routed_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, started_at: float, limit_seconds: float) -> HookReply:
         try:
             container = synced_database_container(self.context.home, database)
             container.get(Registry).require_current(container.get(CodeFingerprint).text(container.get(ModuleFinder).modules()))
@@ -84,7 +91,7 @@ class HookEndpoint:
         outcome = HookAnswer.REFUSED
         try:
             with container.get(RequestWatch).watching(["hook", program]):
-                reply = self.prepared_answer(data, program, headers, database, container, started_at)
+                reply = self.prepared_answer(data, program, headers, database, container, started_at + limit_seconds)
             outcome = HookAnswer.REFUSED if reply.refusal else HookAnswer.ALLOWED
             return reply
         finally:
@@ -94,9 +101,9 @@ class HookEndpoint:
             except sqlite3.Error as error:
                 self.context.files.log_line(f"request recording failed: {error}")
 
-    def prepared_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, container: Container, started_at: float) -> HookReply:
+    def prepared_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, container: Container, deadline: float) -> HookReply:
         event = self.event(data, program, headers, container.get(Providers))
-        database.set_busy_timeout(max(self.context.hook_limit_seconds - (perf_counter() - started_at), LEAST_BUSY_SECONDS))
+        database.set_busy_timeout(max(deadline - perf_counter(), LEAST_BUSY_SECONDS))
         tools = container.get(PerformanceTools)
         start_points = tools.begin()
         try:

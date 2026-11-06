@@ -75,6 +75,14 @@ async function changeLimit(event) {
     if (await setSetting(WORKER_LIMIT, value)) limit.value = value;
 }
 
+// the limit and the switches show what is in force for this environment now, so a change made anywhere, or since the last read, shows
+context.follow(["setting.*"], load);
+
+async function toggleMenu() {
+    open.value = !open.value;
+    if (open.value) await load();
+}
+
 const closeOnEscape = (event) => event.key === "Escape" && (open.value = false);
 window.addEventListener("keydown", closeOnEscape);
 onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
@@ -95,7 +103,7 @@ load();
                     </div>
                 </div>
             </template>
-            <button type="button" class="agentset-settings" data-work-settings title="Work mode settings" :aria-expanded="open" @click.stop="open = !open">
+            <button type="button" class="agentset-settings" data-work-settings title="Work mode settings" :aria-expanded="open" @click.stop="toggleMenu">
                 <Icon name="caret" :size="12" />
             </button>
             <template v-if="open">

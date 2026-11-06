@@ -90,6 +90,18 @@ func limitIn(root, eventName string) time.Duration {
 	return min(time.Duration(seconds)*time.Second, maxToolWait)
 }
 
+// agentHookWait is how long a hook of a worker or helper waits in the journal's queue for its answer: it is never
+// let through unchecked, so it waits rather than being refused, and stays below the 60 seconds a program gives a hook.
+const agentHookWait = 50 * time.Second
+
+// limitOf is limitIn for the role that sends the hook: a worker's or helper's hook waits in the queue.
+func limitOf(root, eventName, role string) time.Duration {
+	if role == "" || role == "main" {
+		return limitIn(root, eventName)
+	}
+	return agentHookWait
+}
+
 // delivery is one hook on its way to the journal: where it goes, who sends it, the prepared object, and the timing
 // main started.
 type delivery struct {

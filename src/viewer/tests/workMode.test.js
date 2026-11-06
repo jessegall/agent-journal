@@ -7,7 +7,7 @@ import {settle as settled} from "./support/windowContext.js";
 const mounted = [];
 afterEach(() => mounted.splice(0).forEach((element) => element.remove()));
 
-async function mount({driver = "coding.builder", values = {}} = {}) {
+async function mount({driver = "coding.builder", values = {}, follow = () => {}} = {}) {
     const runs = [];
     const context = {
         environment: "main",
@@ -20,7 +20,7 @@ async function mount({driver = "coding.builder", values = {}} = {}) {
             runs.push(line);
             return {ok: true};
         },
-        follow: () => {},
+        follow,
         option: () => ({value: null}),
     };
     const element = document.createElement("div");
@@ -53,6 +53,35 @@ test("the settings open under the caret, and a change sets the setting", async (
     limit.dispatchEvent(new Event("change"));
     await settled();
     expect(runs).toEqual(["setting set journal.suites.coding.workers.worker-limit 4 --environment main"]);
+});
+
+test("the limit is read for this environment each time the settings open", async () => {
+    const values = {"journal.suites.coding.workers.worker-limit": 4};
+    const {element, context} = await mount({values});
+    const reads = [];
+    const read = context.read;
+    context.read = async (line) => {
+        reads.push(line);
+        return read(line);
+    };
+    values["journal.suites.coding.workers.worker-limit"] = 6;
+    element.querySelector("[data-work-settings]").click();
+    await settled();
+    expect(reads).toContain("setting show journal.suites.coding.workers.worker-limit --environment main");
+    expect(element.querySelector("[data-work-menu] input").value).toBe("6");
+});
+
+test("a setting event reads the limit again", async () => {
+    const values = {"journal.suites.coding.workers.worker-limit": 4};
+    const followed = [];
+    const {element} = await mount({values, follow: (patterns, handler) => followed.push({patterns, handler})});
+    element.querySelector("[data-work-settings]").click();
+    await settled();
+    expect(element.querySelector("[data-work-menu] input").value).toBe("4");
+    values["journal.suites.coding.workers.worker-limit"] = 6;
+    followed.find((one) => one.patterns.includes("setting.*")).handler({event: "setting.update"});
+    await settled();
+    expect(element.querySelector("[data-work-menu] input").value).toBe("6");
 });
 
 test("the auto switch lives here and sets auto mode", async () => {

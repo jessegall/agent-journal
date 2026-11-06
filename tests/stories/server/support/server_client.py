@@ -35,6 +35,7 @@ from server.code_folders import CodeFolders
 from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer
 from server.server_context import ServerContext
 from server.hook.hook_database import HookDatabase
+from server.hook.queue_priority import QueuePriority
 from server.journal_round import JournalRound
 from server.listener_thread import ListenerThread
 from server.listener_wake import ListenerWake
@@ -52,6 +53,7 @@ from scripts.timing_report import logged_timings, report
 TIMEOUT_SECONDS = 10
 POLL_SECONDS = 0.05
 STORY_HOOK_LIMIT_SECONDS = 0.5
+LOCKED_HOOK_WAIT_SECONDS = 1.0
 
 
 @dataclass(frozen=True)
@@ -75,7 +77,7 @@ class ServerStory:
         self.story, self.socket_path, self.context = story, socket_path, context
 
     def expect_locked_hook_answer(self, body: object, text: str) -> None:
-        with self.context.hook_database.lock:
+        with self.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, LOCKED_HOOK_WAIT_SECONDS):
             self.expect_hook_answer("/hook", body, 200, text)
 
     def hook_decision(self, body: dict[str, object], headers: dict[str, str]) -> tuple[object, object]:
@@ -318,8 +320,9 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
         phones = PhoneSessions(home, listener_thread)
         login = ViewerLogin(phones, ShareSessions(phones.journal_output))
         reported = ReportedFindings()
+        hook_database = HookDatabase(home)
         context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
-                                HookDatabase(home), ViewerListener(login, ViewerRoutes(home, listener_thread, login, reported)), ServerTunnel(home), reported, STORY_HOOK_LIMIT_SECONDS)
+                                hook_database, ViewerListener(login, ViewerRoutes(home, listener_thread, login, reported, hook_database.queue)), ServerTunnel(home), reported, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS)
         context.viewer.routes.line_route = StoryLineRoute(home, listener_thread, reported)
         server = JournalServer(str(files.socket), RequestHandler, context)
         if listener_thread_started:

@@ -71,7 +71,7 @@ func main() {
 	if err != nil {
 		os.Exit(0)
 	}
-	limit := limitIn(root, prepared.Event)
+	limit := limitOf(root, prepared.Event, context.Role)
 	status, answer := postedUntilAnswered(delivery{
 		root:        root,
 		program:     program,
