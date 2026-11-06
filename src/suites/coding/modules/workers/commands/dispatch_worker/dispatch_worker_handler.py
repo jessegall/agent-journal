@@ -18,6 +18,7 @@ from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
+from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
 from core.modules.helpers.support.allowed_models import AllowedModels
 from core.modules.helpers.support.helper_programs import HelperPrograms
@@ -40,7 +41,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     transactional = False
 
     def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
-                 providers: Providers, programs: HelperPrograms, models: AllowedModels, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes) -> None:
+                 providers: Providers, programs: HelperPrograms, models: AllowedModels, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes, places: WorkerPlaces) -> None:
+        self.places = places
         self.queries, self.bus, self.settings = queries, bus, settings
         self.git, self.worker_command, self.worktrees, self.providers, self.programs, self.models = git, worker_command, worktrees, providers, programs, models
         self.environments, self.rows, self.types, self.profiles, self.scopes = environments, rows, types, profiles, scopes
@@ -56,9 +58,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             if listed.state is not TaskState.OPEN:
                 raise Refusal(f"task {listed.id} is {listed.state.value}", "a worker is dispatched to an open task")
         environment = self.environments.find(task.environment_id)
-        worker_limit = self.settings.number(WORKER_RUN_LIMIT)
-        if len(self.worktrees.open_worktrees()) >= worker_limit:
-            raise Refusal(f"{worker_limit} workers are out already", "merge or release one first")
+        if not self.places.has_free_place():
+            raise Refusal(f"{self.places.run_limit()} workers are running", "wait for one to report, or stop one")
         caller = self.rows.find(Agent, context.actor.id)
         program = command.program or (caller.program if caller is not None else "")
         if not program:
