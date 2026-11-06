@@ -2,7 +2,9 @@ import json
 
 from core.base.database.database import Database
 from core.modules.processes.migrations.m021_stock_reader_test_counts import StockReaderTestCountsMigration
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
+from install.restore_version_four import RestoreVersionFour
+from install.upgrade_journal import UpgradeJournal
+from tests.stories.fixtures.version_four import version_four_fixture
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.testing.expect_row import expect_row
 from tests.stories.support.story_checks import expect_output_2
@@ -15,23 +17,31 @@ def with_reader_files(folder):
     (readers / "merge.sh").write_text("#!/bin/sh\n# what a merge did\n# label: Worker merge\n# commands: journal worker merge\ncat\n")
 
 
-def test_version_4_reader_files_move_into_version_5_readers(new_story):
-    story = upgraded_story(new_story, prepare=with_reader_files)
-    rows = {row["name"]: row for row in json.loads(story.run("reader list --json").output_text)["rows"]}
-    expect_row(rows["cart-test"], type="pattern")
-    expect_row(rows["cart-test"], lines_pattern="^(ok|FAIL)\\s")
-    expect_row(rows["cart-test"], title="Cart tests")
-    expect_type_merge(rows, "script")
-    expect_endswith_script_merge(rows, "readers/merge.sh")
-    expect_commands_merge(rows, "journal worker merge")
+READER_FILES_LINE = "reader files (removed from the project, kept in the backup): 3 rows"
 
 
-def test_a_reader_file_named_as_a_reader_version_5_ships_keeps_version_5_s_and_is_counted(new_story):
-    def with_pytest_file(folder):
-        (folder / "readers").mkdir()
-        (folder / "readers" / "pytest.pattern").write_text("# old pytest\n^old\n")
-    story = upgraded_story(new_story, prepare=with_pytest_file)
-    expect_upgrade_text(story, "reader files version 5 ships a reader of the same name for: 1 rows")
+def test_the_upgrade_removes_version_4_readers_and_keeps_only_version_5s(new_story):
+    story = new_story()
+    version_four_fixture(story.home.folder / "journal.db")
+    with_reader_files(story.home.folder)
+    (story.home.folder / "readers" / "pytest.pattern").write_text("# old pytest\n^old\n")
+    dry_run = UpgradeJournal(story.home).run(dry_run=True).text
+    story.upgrade_text = UpgradeJournal(story.home).run(confirmed=True).text
+    names = {row["name"]: row for row in json.loads(story.run("reader list --json --limit 100").output_text)["rows"]}
+    story.expect_rows(READER_FILES_LINE in dry_run, READER_FILES_LINE in story.upgrade_text, "version 4's files moved into" in story.upgrade_text,
+                      "cart-test" not in names, "merge" not in names, "^old" not in names["pytest"]["lines_pattern"],
+                      not (story.home.folder / "readers").exists(), (story.home.folder / "version-4" / "readers" / "merge.sh").is_file())
+
+
+def test_a_restore_puts_version_4s_reader_files_back(new_story):
+    story = new_story()
+    version_four_fixture(story.home.folder / "journal.db")
+    with_reader_files(story.home.folder)
+    UpgradeJournal(story.home).run(confirmed=True)
+    story.container.get(Database).close()
+    outcome = RestoreVersionFour(story.home).run()
+    expect_row(outcome, code=0)
+    story.expect_rows((story.home.folder / "readers" / "merge.sh").is_file(), (story.home.folder / "version-4" / "readers" / "merge.sh").is_file())
 
 
 def test_stock_readers_get_their_count_and_a_project_reader_is_left_as_it_was(new_story):
@@ -64,18 +74,3 @@ def expect_count_pattern_vitest_with(rows, expected) -> None:
 def expect_changed_count_pattern_pytest(rows, expected) -> None:
     actual = rows['pytest']['count_pattern']
     assert actual != expected, actual
-
-
-def expect_type_merge(rows, expected) -> None:
-    actual = rows['merge']['type']
-    assert actual == expected, actual
-
-
-def expect_endswith_script_merge(rows, text) -> None:
-    actual = rows['merge']['script'].endswith(text)
-    assert actual, actual
-
-
-def expect_commands_merge(rows, expected) -> None:
-    actual = rows['merge']['commands']
-    assert actual == expected, actual

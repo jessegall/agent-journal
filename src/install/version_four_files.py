@@ -6,10 +6,11 @@ from install.version_four_backup import BACKUP_FOLDER, DATABASE, VERSION_FILE
 SIDE_FILES = ("-wal", "-shm")
 CODE_FOLDER = VERSION_FILE.parent
 SHELL_ENTRY = CODE_FOLDER.parent / "journal.sh"
+READERS_FOLDER = Path("readers")
 
 
 class VersionFourFiles:
-    """Moves the version 4 database, code and shell entry into its backup folder after an upgrade."""
+    """Moves the version 4 database, code, shell entry and reader files into its backup folder after an upgrade."""
 
     def __init__(self, journal: Path) -> None:
         self.journal = journal
@@ -36,4 +37,7 @@ class VersionFourFiles:
             (self.retired / SHELL_ENTRY).parent.mkdir(parents=True, exist_ok=True)
             shutil.move(self.journal / SHELL_ENTRY, self.retired / SHELL_ENTRY)
             moved.append(str(SHELL_ENTRY))
+        if (self.journal / READERS_FOLDER).is_dir() and not (self.retired / READERS_FOLDER).exists():
+            shutil.move(self.journal / READERS_FOLDER, self.retired / READERS_FOLDER)
+            moved.append(str(READERS_FOLDER))
         return moved
