@@ -4,6 +4,7 @@ export const READ_RATES = {
     agentCommand: 5000,
     planCard: 3000,
     openPanel: 5000,
+    documentWithNoEvents: 60000,
     pageOfAgents: 3000,
     projectHooks: 10000,
     numbers: 10000,

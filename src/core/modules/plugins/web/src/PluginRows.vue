@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {READ_RATES, Dashboard, Dialog, Btn, Icon, Skeleton, TextInput, runChanged, usePoll, useReadLine, useRows, useWindow} from "@journal/window-kit";
+import {READ_RATES, DocumentRead, Dialog, Btn, Icon, Skeleton, TextInput, runChanged, usePoll, useReadLine, useRows, useWindow} from "@journal/window-kit";
 import {fileAddress} from "./fileAddress.js";
 import PluginCard from "./PluginCard.vue";
 import PluginGuide from "./PluginGuide.vue";
@@ -90,10 +90,9 @@ function openFile(node) {
 
 const board = ref(null);
 
-async function showBoard(row) {
-    const answer = await context.read(["plugin", "dashboard", row.name]);
-    refusal.value = answer.ok ? "" : answer.error;
-    board.value = answer.ok ? {title: boardOf(row).title, document: answer.value} : null;
+function showBoard(row) {
+    const {title, events} = boardOf(row);
+    board.value = {title, events, line: ["plugin", "dashboard", row.name]};
 }
 
 async function askTheAgent() {
@@ -203,7 +202,7 @@ const {value: record, failure: recordFailure, load: showRecord} = useReadLine((r
         </template>
         <template v-if="board">
             <Dialog :title="board.title" @close="board = null">
-                <Dashboard :document="board.document" @file="openFile" />
+                <DocumentRead :line="board.line" :events="board.events" @file="openFile" />
             </Dialog>
         </template>
     </section>
