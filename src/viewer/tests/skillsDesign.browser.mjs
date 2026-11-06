@@ -7,6 +7,7 @@ try {
     const page = await browser.newPage({viewport: {width: 1440, height: 1000}});
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
+    await page.emulateMedia({colorScheme: "light"});
     await page.goto(address);
     await page.locator('[data-sidebar-window="skills.skills"]').click();
     await page.locator('[data-page="skills.skills"]').waitFor();
@@ -41,7 +42,7 @@ try {
     await page.screenshot({path: `${captures}-light-triggers.png`, animations: "disabled"});
     await skills.getByRole("button", {name: "Skills", exact: true}).click();
     await page.screenshot({path: `${captures}-light.png`, animations: "disabled"});
-    await page.evaluate(() => {localStorage.setItem("journal.color-scheme", "dark"); document.documentElement.dataset.theme = "dark"; document.documentElement.classList.add("dark");});
+    await page.emulateMedia({colorScheme: "dark"});
     await page.screenshot({path: `${captures}-dark.png`, animations: "disabled"});
     await page.setViewportSize({width: 390, height: 844});
     await page.screenshot({path: `${captures}-phone-skill.png`, animations: "disabled"});
@@ -50,7 +51,7 @@ try {
     await skills.getByLabel("Find a skill", {exact: true}).fill("nothing-matches-this");
     await skills.getByText("No skill matches", {exact: true}).waitFor();
     await page.screenshot({path: `${captures}-phone-empty.png`, animations: "disabled"});
-    await skills.getByRole("button", {name: "Clear the search", exact: true}).click();
+    await skills.getByRole("button", {name: "Clear the search", exact: true}).first().click();
     await skills.getByRole("button", {name: "project-notes", exact: true}).click();
     await skills.getByRole("button", {name: "Edit", exact: true}).click();
     await skills.getByRole("button", {name: "End this trigger", exact: true}).click();
