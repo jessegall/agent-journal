@@ -2,6 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from core.base.driver.rule_answer import RuleAnswer
+from core.base.driver.stop_check import StopCheck
 
 
 @dataclass(frozen=True)
@@ -14,6 +15,8 @@ class RuleRecord:
     outcome: str
     answer: RuleAnswer | None = None
     history: bool = False
+    applied: bool = True
+    reason: str = ""
 
     @property
     def saved_fields(self) -> Mapping[str, object]:
@@ -21,3 +24,11 @@ class RuleRecord:
                   "layer": self.layer if self.layer else None,
                   "dropped_lines": self.answer.dropped_lines if self.answer is not None and self.answer.dropped_lines else None}
         return {key: value for key, value in fields.items() if value is not None}
+
+    @property
+    def stop_check(self) -> StopCheck:
+        reason = self.reason or f"the rule was {self.outcome}"
+        if self.answer is not None:
+            reason = self.answer.refusal or self.answer.reason or self.reason or "; ".join(self.answer.lines) or "the rule found no reason to refuse"
+        return StopCheck(self.name, self.outcome, reason, self.applied and self.answer is not None,
+                         self.layer if self.layer else None)

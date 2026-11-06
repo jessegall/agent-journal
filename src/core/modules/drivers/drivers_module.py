@@ -1,3 +1,4 @@
+from core.modules.drivers.commands.hook_call_stops.hook_call_stops_subcommand import HookCallStopsSubcommand
 from core.modules.drivers.migrations.m026_driver_session import DriverSessionMigration
 from core.modules.drivers.migrations.m023_agent_line_repeats import AgentLineRepeatsMigration
 from core.modules.drivers.migrations.m022_nudge_total_index import NudgeTotalIndexMigration
@@ -157,7 +158,7 @@ class DriversModule(Module):
     views = [HookCallRow, NudgeTotal, AgentActivity, EnvironmentMenuRow]
     migrations = [HelperJobCreatedIndexMigration, HelperJobsClosedMigration, DriverSessionMigration, HelperJobHelperIndexMigration, HelperJobsMigration, AgentLineRepeatsMigration, NudgeTotalIndexMigration, AgentLineTextIndexMigration, BlockStopNameMigration, StrictBlocksMigration, HookChangeNamesMigration, StopBlocksMigration, DriversTablesMigration,HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration, NudgeRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration, SubagentDispatchesMigration, DispatchSubagentMigration, HookCallLineChangesMigration, HookCallTimeIndexesMigration, BlockGracePeriodsMigration, AgentLineStateIndexMigration, AgentLineWakesMigration, ReadIndexesMigration, SkippedRefusalsTableMigration, HookCallPartialIndexesMigration]
     handlers = [SkipRefusalHandler, UseRefusalSkipHandler, RestoreRefusalSkipHandler, SendJournalStartedLineHandler, PruneTempFoldersHandler, BlockUntilHandler, CloseAgentBlockHandler, EndSilentHelpersHandler, RecordBypassLineHandler, RecordMissingPromptHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
-    subcommands = [EnvironmentMenuSubcommand, SkipRefusalSubcommand, RestoreRefusalSkipSubcommand, SkipAgentBlockSubcommand,PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
+    subcommands = [HookCallStopsSubcommand, EnvironmentMenuSubcommand, SkipRefusalSubcommand, RestoreRefusalSkipSubcommand, SkipAgentBlockSubcommand,PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
     listeners = [JournalStartedListener, ManageHooksListener, AgentBlockSkipMarkListener, BypassLogListener, HookWaitFileListener, TypedLineListener, StopLineTypingListener, ClaimedLineReleaseListener, NewDriverLinesListener]
@@ -172,5 +173,5 @@ class DriversModule(Module):
                 EssentialAllowances: SettingEssentialAllowances}
     windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, skeleton=DRIVERS_NUDGES_SKELETON, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),
                WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, skeleton=DRIVERS_HOOK_CALLS_SKELETON, icon=WindowIcon.RUNS, shows=WindowShows.SELECTED_AGENT,
-                                 reads=["hook-call feed", "hook-call show"], events=["hook_call.*"])]
+                                 reads=["hook-call feed", "hook-call show", "hook-call stops"], events=["hook_call.*"])]
     seed_reason = "each suite chooses the drivers used by its demo"

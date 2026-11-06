@@ -21,9 +21,11 @@ class OpenTaskAssignmentRule(DriverRule):
         self.tasks, self.next_task, self.settings = tasks, next_task, settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if not self.settings.flag(AUTO_MODE_SETTING) or self.tasks.holder(hook.agent_id).started().exists():
-            return RuleAnswer.allowed()
+        if not self.settings.flag(AUTO_MODE_SETTING):
+            return RuleAnswer.allowed("auto mode is off")
+        if self.tasks.holder(hook.agent_id).started().exists():
+            return RuleAnswer.allowed("the agent already has a started task")
         following = self.next_task.following()
         if following is None:
-            return RuleAnswer.allowed()
+            return RuleAnswer.allowed("no open task is available to start")
         return RuleAnswer.refused(TASK_ASSIGNMENT.nudge(task=following.id)).running(StartTask(following.id))

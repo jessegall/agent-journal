@@ -21,7 +21,7 @@ class OpenTaskStopRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         open_worktrees = self.worktrees.open_worktrees()
         if len(open_worktrees) >= self.settings.number(WORKER_LIMIT):
-            return RuleAnswer.allowed()
+            return RuleAnswer.allowed("all worker places are occupied")
         waiting = self.tasks.delegation_candidates([worktree.session_agent_id for worktree in open_worktrees])
         open_ids = [str(task.id) for task in waiting.oldest().page().rows]
-        return RuleAnswer.refused(OPEN_TASKS_WAIT.nudge(tasks=', '.join(open_ids))) if open_ids else RuleAnswer.allowed()
+        return RuleAnswer.refused(OPEN_TASKS_WAIT.nudge(tasks=', '.join(open_ids))) if open_ids else RuleAnswer.allowed("no open task waits for a worker")

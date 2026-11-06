@@ -1,4 +1,7 @@
-HOOK_CALL_ROWS_SELECT = "SELECT id, session_agent_id, hook, tool, summary, answer, refusal FROM hook_calls"
+HOOK_CALL_ROWS_SELECT = (
+    "SELECT id, session_agent_id, hook, tool, summary, answer, refusal,"
+    " coalesce(json_extract(metadata, '$.\"journal.core.drivers\".stop_checks'), '[]') AS stop_checks FROM hook_calls"
+)
 
 AGENT_ACTIVITIES_SELECT = (
     "SELECT agents.id, agents.parent_id, agents.created_at, agents.ended_at,"

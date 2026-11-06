@@ -6,6 +6,7 @@ from core.base.command.command import Command
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.database.database import Database
+from core.base.error_log import ErrorLog
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_reply import HookReply
@@ -44,7 +45,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     runs_once = True
 
     def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository, choice: SuiteChoice,
-                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows) -> None:
+                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, errors: ErrorLog) -> None:
+        self.errors = errors
         self.required_commands = required_commands
         self.agents = agents
         self.nudges, self.nudger = nudges, nudger
@@ -75,6 +77,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                                              driver=hook.driver, answer=HookAnswer.REFUSED if answers.refusal else HookAnswer.ALLOWED, refusal=answers.refusal,
                                              lines="\n".join([*answers.lines, *handed_lines.texts]), updated_input=json.dumps(dict(answers.updated_input)),
                                              metadata=Metadata({DRIVERS_MODULE: metadata})), context)
+        if answers.stop_checks:
+            self.errors.noted(f"stop {call.id} agent {agent.id} {call.answer.value}: {json.dumps([asdict(check) for check in answers.stop_checks])}")
         self.nudges.write(agent.id, answers, context)
         self.required_commands.open(agent.id, answers.delivered_nudges, context)
         self.timing.stamp("call_saved")

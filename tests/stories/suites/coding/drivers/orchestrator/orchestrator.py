@@ -101,7 +101,7 @@ def test_a_task_of_a_plan_under_review_lets_the_orchestrator_stop(new_story):
 def test_an_undelegated_task_of_an_approved_plan_holds_the_orchestrator_at_stop(new_story):
     story = new_story(fixture=OrchestratorWithReadyPlanTask)
     story.expect_success("plan approve 1 --environment main", "state: approved", actor=story.user)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "open tasks wait for a worker: 2")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "plan:1 is approved and a worker place is free")
 
 
 def test_a_loose_open_task_holds_the_orchestrator_at_stop_beside_a_ready_plan(new_story):

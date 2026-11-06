@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 
 from core.base.driver.hook_event import HookEvent
+from core.base.driver.hook_event_name import HookEventName
+from core.base.agent_role import AgentRole
 from core.base.driver.open_row import OpenRow
 from core.base.timestamp import Timestamp
 
@@ -28,3 +30,7 @@ class AgentHook:
     @property
     def layer_ref(self) -> str:
         return self.layer.ref if self.layer is not None else ""
+
+    @property
+    def is_main_stop(self) -> bool:
+        return self.hook_name == HookEventName.STOP and self.role == AgentRole.MAIN

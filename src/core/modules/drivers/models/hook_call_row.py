@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from collections.abc import Mapping
 
 from core.base.model.view_model import ViewModel
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
@@ -22,3 +23,4 @@ class HookCallRow(ViewModel):
     summary: str
     answer: HookAnswer
     refusal: str
+    stop_checks: tuple[Mapping[str, object], ...] = ()
