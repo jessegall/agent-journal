@@ -56,5 +56,6 @@ def test_worktree_move_refusal():
 def test_proof_move_refusal():
     checked = PROOF.moved(ProofLifecycle.check)
     guard_checked(PROOF, checked)
-    assert refusal(checked, checked.moved(ProofLifecycle.short, shortfall="the rounding has no test")) == "proof 1 is checked, so it cannot short: checked is final"
+    guard_checked(checked, checked.moved(ProofLifecycle.short, shortfall="the rounding has no test"))
+    assert refusal(checked, checked.moved(ProofLifecycle.revise)) == "proof 1 is checked, so it cannot revise: from checked it can only go on with journal proof short 1"
     assert refusal(PROOF, PROOF.moved(ProofLifecycle.revise)) == "proof 1 is shown, so it cannot revise: from shown it can only go on with journal proof queue 1, journal proof check 1, journal proof short 1"

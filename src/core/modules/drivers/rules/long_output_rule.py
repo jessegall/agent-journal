@@ -8,7 +8,7 @@ from core.modules.drivers.support.driver_nudges import LONG_OUTPUT
 
 LONG_OUTPUT_LINE_COUNT = 400
 TEXT_FIELDS = ("stdout", "content", "output")
-FILE_FIELD = "file"
+RESPONSE_FILE_FIELD = "file"
 
 
 class LongOutputRule(DriverRule):
@@ -30,6 +30,6 @@ class LongOutputRule(DriverRule):
             return response
         if not is_mapping(response):
             return ""
-        if FILE_FIELD in response:
-            return cls.text(response[FILE_FIELD])
+        if RESPONSE_FILE_FIELD in response:
+            return cls.text(response[RESPONSE_FILE_FIELD])
         return next((text for text in (response[name] for name in TEXT_FIELDS if name in response) if isinstance(text, str)), "")

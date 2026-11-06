@@ -11,7 +11,7 @@ from core.modules.plugins.support.plugin_late_error import PluginLateError
 MOST_ANSWER_BYTES = 1_000_000
 ERROR_TAIL_BYTES = 2048
 READ_BYTES = 65536
-POLL_SECONDS = 0.05
+PIPE_POLL_SECONDS = 0.05
 WAIT_LINE_SECONDS = 60
 OUTPUT_JOIN_SECONDS = 1
 
@@ -53,7 +53,7 @@ class ScriptPipes:
             if wait_callback is not None and time.monotonic() >= next_line_at:
                 next_line_at += WAIT_LINE_SECONDS
                 self.notify_wait(wait_callback)
-            time.sleep(POLL_SECONDS)
+            time.sleep(PIPE_POLL_SECONDS)
         if self.exceeds_answer_limit():
             raise self.answer_limit_error()
 

@@ -89,6 +89,7 @@ test("a broken stream with the server gone puts the cover up", async () => {
 });
 
 test("a window's read waits out the restart and draws what the server then answers, never a failure", async () => {
+    transport.readLines = Promise.resolve(new Set(["usage show"]));
     const context = windowContext({window: "a.b", environment: "main", permissions: [], visible: () => true, subscriptions: {follow: () => {}}});
     const read = context.read("usage show");
     await vi.advanceTimersByTimeAsync(1);
@@ -99,6 +100,7 @@ test("a window's read waits out the restart and draws what the server then answe
 });
 
 test("a write that did not go through says so in plain words, and is not sent again", async () => {
+    transport.readLines = Promise.resolve(new Set());
     const answer = lineResult("a.b", ["task", "close", "1"], "main");
     await vi.advanceTimersByTimeAsync(1);
     const result = await answer;

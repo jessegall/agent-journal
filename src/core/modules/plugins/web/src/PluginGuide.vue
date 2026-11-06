@@ -43,34 +43,34 @@ const KEYS = [
     ["project_reads", "Folders of the project, by relative path, that the shell line of a worker may read for it. A path that leaves the project is never opened."],
 ];
 const ANSWER = '{"answer": "refuse", "reason": "why", "tell": "a line for the agent", "commands": ["task log 7 done"], "cards": [], "require_skills": []}';
-const EVENT_LINE = `{
-    "v": 1,
-    "event": "file_edited",
-    "agent": 612,
-    "skills": ["journal"],
-    "checkout": {
-        "kind": "worktree",
-        "root": "/Users/me/project/.journal/worktrees/main/worker-612",
-        "project_root": "/Users/me/project",
-        "branch": "journal/main/worker-612",
-        "base_branch": "version-5",
-        "base_commit": "38fa149f35",
-        "exists": true
+const EVENT_LINE = JSON.stringify({
+    v: 1,
+    event: "file_edited",
+    agent: 612,
+    skills: ["journal"],
+    checkout: {
+        kind: "worktree",
+        root: "/Users/me/project/.journal/worktrees/main/worker-612",
+        project_root: "/Users/me/project",
+        branch: "journal/main/worker-612",
+        base_branch: "version-5",
+        base_commit: "38fa149f35",
+        exists: true,
     },
-    "data": {
-        "path": "src/order.py",
-        "cwd": "/Users/me/project/.journal/worktrees/main/worker-612",
-        "file": {
-            "relative": "src/order.py",
-            "path": "/Users/me/project/.journal/worktrees/main/worker-612/src/order.py",
-            "project_path": "/Users/me/project/src/order.py",
-            "status": "changed",
-            "renamed_from": "",
-            "in_base": true,
-            "linked": false
-        }
-    }
-}`;
+    data: {
+        path: "src/order.py",
+        cwd: "/Users/me/project/.journal/worktrees/main/worker-612",
+        file: {
+            relative: "src/order.py",
+            path: "/Users/me/project/.journal/worktrees/main/worker-612/src/order.py",
+            project_path: "/Users/me/project/src/order.py",
+            status: "changed",
+            renamed_from: "",
+            in_base: true,
+            linked: false,
+        },
+    },
+}, null, 4);
 const PATH_RULES = [
     "A plugin never works out a checkout: the journal says which one it is, in checkout.",
     "relative is the name of a file. It runs from the root of the checkout with /, and it is the same for one file in the project and in every worktree, so a plugin matches files on it and nothing else.",
@@ -123,7 +123,7 @@ const CALLS = [
                 </template>
             </dl>
             <h3>Asking the journal about a checkout</h3>
-            <p>A plugin may name any agent, and so may you. An agent names only itself, reads its own checkout, and in the project only the folders in <code>project_reads</code>.</p>
+            <p>A plugin may name any agent, and so may you. An agent names only itself, reads the checkout it works in, and in the project only the folders in <code>project_reads</code>.</p>
             <dl>
                 <template v-for="[call, text] in CALLS" :key="call">
                     <dt><code>{{ call }}</code></dt>

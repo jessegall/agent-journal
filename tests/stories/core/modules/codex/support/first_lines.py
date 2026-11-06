@@ -1,5 +1,4 @@
 import json
-import shlex
 import subprocess
 
 from core.base.driver.tool_type import ToolType
@@ -23,18 +22,19 @@ def expect_memory_start(story) -> None:
     story.expect_success("skill write")
     answer = story.hook("s-1", HookSamples.session_start().with_fields(program="codex"))
     line = next(line for line in answer.lines if "memories to read" in line)
-    assert "journal skill require" in line and "cat" in line, line
-    assert line.index("journal skill require") < line.index("cat") < line.index("journal memory list"), line
+    assert line.index("journal skill require") < line.index("journal memory list"), line
 
 
 def expect_read_request(story) -> None:
     story.expect_success("skill write")
+    codex = hook_agent(story, story.hook("s-2", HookSamples.session_start().with_fields(program="codex", session="s-2")))
+    story.agent = codex
     path = story.container.get(SkillFiles).readable("journal-memory")
     answer = story.run(f"skill require {story.agent.id} journal-memory", actor=story.agent)
-    assert answer.code == 0 and answer.output_text.strip() == f"read: cat {shlex.quote(str(path))}", answer.output_text
+    assert answer.code == 0 and answer.output_text.strip().startswith("read this first: ") and "Skill tool" not in answer.output_text, answer.output_text
     raw = story.run(f"skill require {story.agent.id} journal-memory --json", actor=story.agent)
     assert raw.code == 0 and json.loads(raw.output_text)["state"] == "due", raw.output_text
-    story.hook("s-1", HookSamples.tool_use("Read", ToolType.READ, [str(path)], None))
+    story.hook("s-2", HookSamples.tool_use("Read", ToolType.READ, [str(path)], None).with_fields(program="codex", session="s-2"))
     story.run_listeners()
     story.expect_success(f"skill require {story.agent.id} journal-memory", "loaded: journal-memory", actor=story.agent)
 

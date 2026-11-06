@@ -19,20 +19,19 @@ def test_latest_matching_hook_reads_one_row_with_an_index(new_story, condition, 
         [(agent, agent, 'tool' if n == 0 else 'tick', str(n), 'refused' if n == 0 else 'allowed') for n in range(1000)],
     )
     statement = Statement(f"SELECT * FROM hook_calls WHERE session_agent_id = ? AND {condition} ORDER BY id DESC LIMIT 1", (agent, *parameters))
-    assert any(index in line for line in database.query_plan(statement))
-    before = database.tally.points().tables['hook_calls']
+    story.expect_rows(any(index in line for line in database.query_plan(statement)))
+    initial_reads = database.tally.points().tables['hook_calls']
     steps = []
     database.connection.set_progress_handler(lambda: steps.append(1) or 0, 1)
     try:
-        assert len(database.rows(statement)) == 1
+        story.expect_rows(len(database.rows(statement)) == 1)
     finally:
         database.connection.set_progress_handler(None, 0)
-    assert len(steps) < 100
-    assert database.tally.points().tables['hook_calls'] - before == 1
+    story.expect_rows(len(steps) < 100, database.tally.points().tables['hook_calls'] - initial_reads == 1)
 
 
 def test_agent_activity_uses_the_non_tick_index(new_story):
     story = new_story(fixture=AgentStarted)
     database = story.container.get(Database)
     plan = database.query_plan(Statement(AGENT_ACTIVITIES_SELECT + " WHERE agents.id = ?", (story.agent.id,)))
-    assert any("hook_calls_non_tick" in line for line in plan)
+    story.expect_rows(any("hook_calls_non_tick" in line for line in plan))

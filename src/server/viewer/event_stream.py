@@ -8,6 +8,7 @@ from core.base.database.database import Database
 from core.base.environment_names import EnvironmentNames
 from core.base.journal_container import synced_container
 from core.base.journal_home import JournalHome
+from core.base.refusal import Refusal
 from server.viewer.share_events import ShareEvents
 from server.viewer.shared_row import SharedRow
 from server.viewer.events_request import EventsRequest
@@ -18,7 +19,9 @@ HEARTBEAT = ": waiting\n\n"
 
 
 class EventStream:
-    """Streams followed events in one environment with a resume cursor, restricted to shared rows for a share."""
+    """Streams followed events of the environments asked for with a resume cursor, restricted to shared rows for a
+    share. The tabs of one browser share a stream, so each event names its environment and a name that is
+    gone leaves the others their events."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home
@@ -26,7 +29,7 @@ class EventStream:
     def follow(self, request: EventsRequest, output: Callable[[str], bool], shared: SharedRow | None = None) -> None:
         container = synced_container(self.home)
         try:
-            environment_id = container.get(EnvironmentNames).environment_id(request.environment)
+            names = self.known_environments(container.get(EnvironmentNames), request.environments)
             log, idle_seconds = container.get(EventLog), 0.0
             cursor_id = log.newest_id() if request.cursor_id is None else request.cursor_id
             if request.patterns is not None and not output(f"event: cursor\ndata: {json.dumps({'id': cursor_id})}\n\n"):
@@ -36,7 +39,7 @@ class EventStream:
                 followed = [event for event in events if request.matches(event.event)]
                 visible = followed if shared is None else ShareEvents(container, shared).admitted(followed)
                 for event in visible:
-                    if event.environment_id in (environment_id, None) and not output(self.message(event)):
+                    if (event.environment_id is None or event.environment_id in names) and not output(self.message(event, names.get(event.environment_id))):
                         return
                 if events:
                     cursor_id, idle_seconds = events[-1].id, 0.0
@@ -51,6 +54,16 @@ class EventStream:
             container.get(Database).close()
 
     @staticmethod
-    def message(event: LoggedEvent) -> str:
-        value = {"id": event.id, "event": event.event, "row_table": event.row_table, "row_id": event.row_id, "actor_id": event.actor_id}
+    def known_environments(environment_names: EnvironmentNames, names: tuple[str, ...]) -> dict[int | None, str]:
+        environments_by_id: dict[int | None, str] = {}
+        for name in names:
+            try:
+                environments_by_id[environment_names.environment_id(name)] = name
+            except Refusal:
+                continue
+        return environments_by_id
+
+    @staticmethod
+    def message(event: LoggedEvent, environment: str | None) -> str:
+        value = {"id": event.id, "event": event.event, "environment": environment, "row_table": event.row_table, "row_id": event.row_id, "actor_id": event.actor_id}
         return f"id: {event.id}\ndata: {json.dumps(value)}\n\n"

@@ -30,7 +30,7 @@ async function showMore(older) {
 </script>
 
 <template>
-    <template v-if="!loaded && !failure">
+    <template v-if="!loaded && !failure && !rows.length">
         <Skeleton :shape="shape" />
     </template>
     <template v-else-if="failure">

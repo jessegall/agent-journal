@@ -1,10 +1,7 @@
 import selectors
 import socket
-import sys
 import threading
 from socketserver import BaseRequestHandler, UnixStreamServer
-from typing import Any
-from server.client_disconnected import client_disconnected
 from server.handover_descriptors import QUEUED_CONNECTIONS
 from server.server_context import ServerContext
 from server.tracked_requests import TrackedRequests
@@ -37,10 +34,6 @@ class JournalServer(TrackedRequests, UnixStreamServer):
                         self.handle_request()
         finally:
             self.stopped.set()
-
-    def handle_error(self, request: Any, client_address: Any) -> None:
-        if not client_disconnected(sys.exception()):
-            super().handle_error(request, client_address)
 
     def request_stop(self) -> None:
         self.stopping.set()

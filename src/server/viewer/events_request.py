@@ -5,9 +5,9 @@ from core.base.change.event_pattern import EventPattern
 
 @dataclass(frozen=True)
 class EventsRequest:
-    """The environment, resume cursor and followed patterns of a stream; an omitted follow query keeps all events."""
+    """The environments, resume cursor and followed patterns of a stream; an omitted follow query keeps all events."""
 
-    environment: str
+    environments: tuple[str, ...]
     cursor_id: int | None
     patterns: tuple[EventPattern, ...] | None = None
 
@@ -18,4 +18,4 @@ class EventsRequest:
     def parsed(cls, query: dict[str, list[str]], last_event_id: str | None) -> "EventsRequest":
         cursor_text = last_event_id or query.get("cursor", [""])[0]
         patterns = tuple(EventPattern(pattern) for pattern in query["follow"] if pattern) if "follow" in query else None
-        return cls(query.get("environment", [""])[0], int(cursor_text) if cursor_text.isdigit() else None, patterns)
+        return cls(tuple(query.get("environment", [""])), int(cursor_text) if cursor_text.isdigit() else None, patterns)
