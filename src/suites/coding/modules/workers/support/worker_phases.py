@@ -36,6 +36,10 @@ class WorkerPhases:
         selected = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).newest().first()
         return selected is not None and selected.state is AffectedTestState.FAILED
 
+    def is_working_through_phase(self, worktree: Worktree) -> bool:
+        task = self.queries.query(Task).find(worktree.task_id)
+        return task.state is TaskState.STARTED and self.phase(task) is not None
+
     def holds_back(self, worker_id: int) -> bool:
         worktree = self.worktrees.worker_worktree(worker_id)
         if worktree is None:

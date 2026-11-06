@@ -2,6 +2,7 @@ import pytest
 
 from core.testing.expect_reply import expect_reply_allowed, expect_reply_refusal
 from core.testing.hook_samples import HookSamples
+from suites.coding.modules.workers.listeners.worker_test_listener import WorkerTestListener
 from suites.coding.modules.workers.ticks.stalled_worker_tests import StalledWorkerTests
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_folder
@@ -115,6 +116,18 @@ def test_the_stalled_test_tick_does_not_start_the_proofs_of_a_task_moved_past(mo
     StalledWorkerTests()(moved_past_a_test.story.container)
     assert moved_past_a_test.started == [], moved_past_a_test.started
     moved_past_a_test.story.expect_text("proof show 1", "state: shown", actor=moved_past_a_test.story.agent)
+
+
+def test_the_stalled_test_tick_starts_a_test_left_behind_after_the_hand_in_of_a_phase(on_plan, monkeypatch):
+    on_plan.prove_and_move_on(TEST_LINE)
+    on_plan.prove_and_move_on()
+    on_plan.prove()
+    with monkeypatch.context() as stopped_server:
+        stopped_server.setattr(WorkerTestListener, "start_next", lambda listener, logged: None)
+        on_plan.story.expect_text("worker next", "queued", actor=on_plan.worker)
+    on_plan.story.expect_text("proof show 1", "state: queued", actor=on_plan.story.agent)
+    StalledWorkerTests()(on_plan.story.container)
+    on_plan.story.expect_text("proof show 1", "state: running", actor=on_plan.story.agent)
 
 
 def test_a_test_already_running_ends_as_today_and_brings_the_next_task(running_from_before):
