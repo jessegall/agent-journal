@@ -5,6 +5,7 @@ from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from core.modules.drivers.support.nudger import Nudger
+from core.modules.plans.models.phase import Phase
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
@@ -18,7 +19,7 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
-from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK, WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
+from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK, WORKER_PHASE_TESTS_FAILED, WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
@@ -93,7 +94,17 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
             task = self.rows.required(Task, task_id)
             if task.state is TaskState.TESTING:
                 self.repository.save_change(task, task.moved(TaskLifecycle.retest), context)
-        if worktree.state is WorktreeState.DELIVERED:
-            self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)
-        outputs = ", ".join(str(row.process_id) for row in failed)
-        self.nudger.send(worktree.session_agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=outputs)
+        current = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context) if worktree.state is WorktreeState.DELIVERED else worktree
+        first_task_id = min(row.task_id for row in failed)
+        phase = self.phases.phase(self.rows.required(Task, first_task_id))
+        if phase is None:
+            outputs = ", ".join(str(row.process_id) for row in failed)
+            self.nudger.send(current.session_agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=outputs)
+            return
+        if current.task_id != first_task_id:
+            self.repository.save_change(current, current.moved(WorktreeLifecycle.advance, task_id=first_task_id), context)
+        failures = "; ".join(f"task {row.task_id} point {row.point}: {row.test_command}: journal output read {row.process_id} --summary" for row in failed)
+        self.send_phase_failures(current, phase, failures, context)
+
+    def send_phase_failures(self, worktree: Worktree, phase: Phase, failures: str, context: Context) -> None:
+        self.nudger.send(worktree.session_agent_id, WORKER_PHASE_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, phase=phase.id, failures=failures)
