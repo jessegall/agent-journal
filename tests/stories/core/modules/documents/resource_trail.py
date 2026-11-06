@@ -40,7 +40,6 @@ def test_link_types_can_share_endpoints(trail):
     assert {"comments_on", "mentions"} <= relations
 
 
-@pending(6846)
 def test_duplicate_transcription_link_is_idempotent(trail):
     trail.command('transcription make "Cart meeting" --text "Discuss totals" --environment main')
     trail.requested_command("transcription link 1 task 1")
@@ -104,7 +103,6 @@ def test_long_text_scanning_batches_distinct_references(trail):
     feature(len(task_lookups) <= 4, f"scanner made {len(task_lookups)} per-task existence queries for one batch")
 
 
-@pending(6846)
 def test_new_link_events_run_once_and_duplicates_run_none(trail):
     trail.command('transcription make "Event count" --text "Cart meeting" --environment main')
     trail.requested_command("transcription link 1 task 1")
@@ -114,7 +112,6 @@ def test_new_link_events_run_once_and_duplicates_run_none(trail):
     feature(len([event for event in events if event.is_creation]) == 1, "duplicate link emitted another creation event")
 
 
-@pending(6846)
 def test_replayed_and_competing_writes_keep_one_typed_link(link_server):
     trail = Trail(link_server.story)
     with ThreadPoolExecutor(max_workers=2) as workers:

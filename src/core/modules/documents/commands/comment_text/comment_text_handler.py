@@ -11,6 +11,7 @@ from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
 from core.modules.documents.models.text_row import TextRow
 from core.modules.documents.support.doc_revisions import DocRevisions
+from core.modules.documents.support.row_link_writer import RowLinkWriter
 from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.messages.models.message import Message
 
@@ -23,8 +24,9 @@ class CommentTextHandler(Handler[CommentText, Message]):
 
     command = CommentText
 
-    def __init__(self, bus: Bus, rows: EventRows, repository: Repository, revisions: DocRevisions) -> None:
+    def __init__(self, bus: Bus, rows: EventRows, repository: Repository, revisions: DocRevisions, links: RowLinkWriter) -> None:
         self.bus, self.rows, self.repository, self.revisions = bus, rows, repository, revisions
+        self.links = links
 
     def handle(self, command: CommentText, context: Context) -> Message:
         body = command.text.strip()
@@ -33,7 +35,7 @@ class CommentTextHandler(Handler[CommentText, Message]):
         text_row = self.rows.required(command.text_model, command.row_id)
         quoted = f'"{command.quote[:QUOTE_LIMIT_CHARACTERS]}": ' if command.quote else ""
         message = self.bus.dispatch(SendMessage(f"{quoted}{body}", commented_row=(text_row.model_name, text_row.id)), context)
-        self.repository.save(Link(creator_id=context.actor.id, source_model=message.model_name, source_id=message.id, target_model=text_row.model_name, target_id=text_row.id,
+        self.links.save(Link(creator_id=context.actor.id, source_model=message.model_name, source_id=message.id, target_model=text_row.model_name, target_id=text_row.id,
                                   link_type=LinkType.COMMENT), context)
         if isinstance(text_row, TextRow):
             self.repository.save(CommentSelection(message_id=message.id, creator_id=context.actor.id, body=body, quote=command.quote, position=command.position,
