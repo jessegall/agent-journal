@@ -20,8 +20,9 @@ FINISHED, ABANDONED, ENDED = "finished", "abandoned", "ended"
 
 
 class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
-    """Starts, takes up, moves on, ends and abandons the calling agent's one sequence run. A step moves on, or the
-    sequence ends, only once the checks the step lists have passed; abandoning needs none."""
+    """Starts, takes up, moves on, ends and abandons the calling agent's top sequence run, and says the step of the
+    run beneath when the top one ends. A step moves on, or the sequence ends, only once the checks the step lists
+    have passed; abandoning needs none."""
 
     command = MoveSequenceRun
 
@@ -32,13 +33,12 @@ class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
     def handle(self, command: MoveSequenceRun, context: Context) -> SequenceLine:
         current = self.runs.current(context.actor.id)
         if command.action == START:
-            return self.start(command, current, context)
+            return self.start(command, context)
         if current is None:
             raise Refusal("no sequence is running", "journal sequence run <n> starts one")
         sequence = self.rows.required(Sequence, current.sequence_id)
         if command.action == END:
-            self.repository.save(replace(current, ended_at=context.timestamp, outcome=f"{ENDED}: {command.reason}"), context)
-            return SequenceLine(f"sequence {sequence.id} ended: {command.reason}")
+            return self.end(command, current, context)
         if command.action == FOLLOW:
             return SequenceLine(StepLine.text(sequence, self.repository.save(replace(current, step_started=True), context)))
         if not current.step_started:
@@ -50,13 +50,25 @@ class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
         if not command.sure:
             raise Refusal(f"abandoning sequence {sequence.id}, {sequence.title}, leaves undone: {undone_steps}", "again with --sure to go through")
         self.repository.save(replace(current, ended_at=context.timestamp, outcome=f"{ABANDONED}: {command.reason}"), context)
-        return SequenceLine(f"sequence {sequence.id} abandoned")
+        return self.with_resumed_run(f"sequence {sequence.id} abandoned", context)
 
-    def start(self, command: MoveSequenceRun, current: SequenceRun | None, context: Context) -> SequenceLine:
-        if current is not None:
-            raise Refusal(f"sequence {current.sequence_id} is running", "finish it with journal sequence next, or give it up with journal sequence abandon")
+    def end(self, command: MoveSequenceRun, current: SequenceRun, context: Context) -> SequenceLine:
+        target = current if command.run_id is None else self.rows.required(SequenceRun, command.run_id)
+        self.repository.save(replace(target, ended_at=context.timestamp, outcome=f"{ENDED}: {command.reason}"), context)
+        text = f"sequence {target.sequence_id} ended: {command.reason}"
+        return self.with_resumed_run(text, context) if target.id == current.id else SequenceLine(text)
+
+    def with_resumed_run(self, text: str, context: Context) -> SequenceLine:
+        resumed = self.runs.current(context.actor.id)
+        if resumed is None:
+            return SequenceLine(text)
+        return SequenceLine(f"{text}\n{StepLine.text(self.rows.required(Sequence, resumed.sequence_id), resumed)}")
+
+    def start(self, command: MoveSequenceRun, context: Context) -> SequenceLine:
         if command.sequence_id is None:
             raise Refusal("name the sequence to run", "journal sequence run <n>")
+        if self.runs.is_running(context.actor.id, command.sequence_id):
+            raise Refusal(f"sequence {command.sequence_id} is already running", "finish it with journal sequence next, or give it up with journal sequence abandon")
         agent = self.rows.find(Agent, context.actor.id)
         if agent is None:
             raise Refusal("only an agent runs a sequence", "the agent runs journal sequence run <n>")
@@ -73,6 +85,6 @@ class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
     def next_step(self, sequence: Sequence, current: SequenceRun, context: Context) -> SequenceLine:
         if current.step_number >= len(sequence.steps):
             self.repository.save(replace(current, ended_at=context.timestamp, outcome=FINISHED), context)
-            return SequenceLine(f"sequence {sequence.id} ran its last step")
+            return self.with_resumed_run(f"sequence {sequence.id} ran its last step", context)
         moved = self.repository.save(replace(current, step_number=current.step_number + 1, step_started=False), context)
         return SequenceLine(StepLine.text(sequence, moved))

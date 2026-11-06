@@ -16,7 +16,7 @@ from core.base.model.model import Model
 
 
 class SequenceRowTriggerListener(CommitListener[Touched[Model]]):
-    """Starts a sequence for the triggering agent or the environment's idle main agent when a row event matches a
+    """Starts a sequence on top of the triggering agent's or the environment's main agent's stack when a row event matches a
     row trigger whose link source, if it names one, has a link to the row."""
 
     name = "sequences.row-trigger"
@@ -25,11 +25,10 @@ class SequenceRowTriggerListener(CommitListener[Touched[Model]]):
         self.queries, self.runs, self.bus, self.events = queries, runs, bus, events
 
     def handle(self, event: Touched[Model], logged: LoggedEvent) -> None:
-        matched = next((row for row in self.events.matching(logged.event) if self.is_linked(row.trigger, logged)), None)
-        if matched is None:
-            return
-        agent_id = self.acting_agent_id(logged)
-        if agent_id is not None and self.runs.current(agent_id) is None:
+        linked = [row for row in self.events.matching(logged.event) if self.is_linked(row.trigger, logged)]
+        agent_id = self.acting_agent_id(logged) if linked else None
+        matched = next((row for row in linked if agent_id is not None and not self.runs.is_running(agent_id, row.sequence.id)), None)
+        if agent_id is not None and matched is not None:
             self.bus.run(MoveSequenceRun(START, matched.sequence.id, subject_id=logged.row_id), Actor(agent_id, ActorType.AGENT), cause_id=logged.id)
 
     def acting_agent_id(self, logged: LoggedEvent) -> int | None:

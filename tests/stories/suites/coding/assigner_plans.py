@@ -8,6 +8,7 @@ from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask, BuilderWithStartedTask
 from tests.stories.suites.coding.support.task_expectations import expect_started_task_count
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.core.support.plan_steps import ready_plan
 
 
 # task 3 then task 2 sit in plan 1's first phase; task 4 is outside any plan and most urgent
@@ -21,7 +22,8 @@ def planned_tasks(story, *, started: bool) -> None:
     story.run("phase place 2 --phase 1", actor=story.agent)
     story.run('task make "Outside the plan" --environment main --priority high', actor=story.agent)
     if started:
-        for move in ("plan ready 1", "plan approve 1", "plan start 1"):
+        ready_plan(story, actor=story.user)
+        for move in ("plan approve 1", "plan start 1"):
             story.run(f"{move} --environment main", actor=story.user)
 
 
@@ -75,7 +77,8 @@ def test_a_later_phase_waits_until_the_earlier_phase_is_finished(new_story):
     story.run("phase place 2 --phase 1", actor=story.agent)
     story.run("phase place 3 --phase 2", actor=story.agent)
     story.run('task block 2 --reason "waits for the price list"', actor=story.user)
-    for move in ("plan ready 1", "plan approve 1", "plan start 1"):
+    ready_plan(story, actor=story.user)
+    for move in ("plan approve 1", "plan start 1"):
         story.run(f"{move} --environment main", actor=story.user)
     story.run('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()
@@ -118,8 +121,8 @@ def test_of_two_started_plans_the_one_started_first_goes_first(new_story):
         story.run(f'phase make --plan {plan_id} "First" --goal "it works"', actor=story.agent)
         story.run(f'task make "Task of {title}" --environment main', actor=story.agent)
         story.run(f"phase place {plan_id + 1} --phase {plan_id}", actor=story.agent)
-        for move in (f"plan ready {plan_id}", f"plan approve {plan_id}"):
-            story.run(f"{move} --environment main", actor=story.user)
+        ready_plan(story, plan_id, actor=story.user)
+        story.run(f"plan approve {plan_id} --environment main", actor=story.user)
     story.run("plan start 2")
     story.advance(timedelta(seconds=1))
     story.run("plan start 1")

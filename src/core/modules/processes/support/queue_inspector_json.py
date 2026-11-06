@@ -15,6 +15,7 @@ class QueueInspectorJson(TypedDict):
     waiting_count: int
     halted: bool
     halt_reason: str
+    halt_kind: str
     running: list[dict[str, object]]
     waiting: list[dict[str, object]]
     recent: list[dict[str, object]]

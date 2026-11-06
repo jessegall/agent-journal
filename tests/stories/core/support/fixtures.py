@@ -3,6 +3,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
+from tests.stories.core.support.plan_steps import ready_plan
 
 
 class MainEnvironment(StoryFixture):
@@ -183,7 +184,8 @@ class PlanAcrossPhases(StoryFixture):
         for title, phase in (("Release", 2), ("Cart", 1), ("Tax", 1)):
             task_id = story.new_row_id(f'task make "{title}" --environment main')
             story.run(f"phase place {task_id} --phase {phase}")
-        for move in ("ready", "approve", "start"):
+        ready_plan(story, actor=story.user)
+        for move in ("approve", "start"):
             story.run(f"plan {move} 1 --environment main", actor=story.user)
 
     def expect(self, story: Story) -> None:
@@ -244,7 +246,8 @@ class PlanWithCheckpoint(StoryFixture):
             story.run(f"phase place {task_id} --phase {phase}")
         story.run('task make "Outside" --environment main')
         story.run("task depend 2 --on 5")
-        for move in ("ready", "approve", "start"):
+        ready_plan(story, actor=story.user)
+        for move in ("approve", "start"):
             story.run(f"plan {move} 1 --environment main", actor=story.user)
 
     def expect(self, story: Story) -> None:
@@ -269,7 +272,8 @@ class StartedPlanTask(StoryFixture):
     parent = PlanTasksPlaced
 
     def steps(self, story: Story) -> None:
-        for move in ("ready", "approve", "start"):
+        ready_plan(story, actor=story.user)
+        for move in ("approve", "start"):
             story.run(f"plan {move} 1 --environment main", actor=story.user)
         story.run(lines.TASK_START, actor=story.agent)
 

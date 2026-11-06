@@ -37,7 +37,7 @@ class TemplatesModule(Module):
     templates = [TemplateDeclaration(title="General critique", targets=tuple(["plan"]), purpose="critique",
                                      brief="Read it as a whole and say what you would change, and why.")]
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.drivers", "journal.core.messages", "journal.core.documents", "journal.core.plans"]
+    dependencies = ["journal.core.actors", "journal.core.drivers", "journal.core.messages", "journal.core.documents", "journal.core.plans", "journal.core.agents", "journal.core.skills"]
     skills = [SkillDeclaration("journal-templates", "Find and use a template for a task, a plan or a review; read it before the first template command of a session", keywords=("template", "templates"), commands=["template"])]
     models = [ModelDeclaration(Template, query=TemplateQuery, excluded_subcommands=["make", "edit", "show", "list"])]
     migrations = [TemplatesTableMigration, TemplateModuleColumnMigration]

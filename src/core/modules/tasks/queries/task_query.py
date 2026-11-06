@@ -7,6 +7,7 @@ from typing import Self
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.model.tables import Tables
+from core.base.query.conditions.among import Among
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.query import Query
 from core.base.query.condition import Condition
@@ -16,9 +17,12 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.open_dependency import OpenDependency
 
+FOLLOWED_PLAN_STATES = ("approved", "started")
+
 
 class TaskQuery(Query[Task]):
-    """Reads tasks, with the filters the tasks module and its guards use by name."""
+    """Reads tasks, with the filters the tasks module and its guards use by name. Tasks waiting for a worker leave out
+    those a listed or running worker holds and those in a plan not approved or started, which no worker may start."""
 
     def __init__(self, database: Database, tables: Tables, kept: KeptRows) -> None:
         super().__init__(database, tables, Task)
@@ -72,9 +76,17 @@ class TaskQuery(Query[Task]):
     def open_tasks(self) -> Self:
         return self.filter(state=TaskState.OPEN)
 
-    def waiting_for_a_worker(self) -> Self:
+    def waiting_for_a_worker(self, worker_ids: Sequence[int]) -> Self:
         running_worker = SubqueryMatch("delegated_to", Select("agents").matching(IsNull("ended_at")).column("id"))
-        return self.open_tasks().matching(SubqueryMatch("id", Select("tasks").matching(running_worker).column("id"), negated=True))
+        kept_by_running = Select("tasks").matching(running_worker).column("id")
+        kept_by_listed = Select("tasks").matching(Among("delegated_to", worker_ids)).column("id")
+        return (self.open_tasks().matching(SubqueryMatch("id", kept_by_running, negated=True)).matching(SubqueryMatch("id", kept_by_listed, negated=True))
+                .matching(self.not_in_plan_awaiting_approval()))
+
+    def not_in_plan_awaiting_approval(self) -> Condition:
+        unapproved_plans = Select("plans").matching(Among("state", FOLLOWED_PLAN_STATES, negated=True)).column("id")
+        unapproved_phases = Select("phases").matching(SubqueryMatch("plan_id", unapproved_plans)).column("id")
+        return SubqueryMatch("id", Select("phase_tasks").matching(SubqueryMatch("phase_id", unapproved_phases)).column("task_id"), negated=True)
 
     def next_open(self, excluded_id: int | None, exclusion: Condition) -> Task | None:
         free_tasks = self.open_tasks().matching(IsNull("delegated_to")).matching(self.no_open_dependency()).matching(exclusion).all_rows()

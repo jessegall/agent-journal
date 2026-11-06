@@ -32,8 +32,8 @@ PLAN_BUILDING = Sequence(
     steps=(
         f"Agree on the goal: {PLAIN_WRITING}Settle with the user what is true when the plan is done, and put it in the plan's brief with `journal plan edit <plan n> --brief \"<goal>\"`",
         "Add the phases: Add the plan's phases in order with `journal phase make --plan <plan n> \"<title>\" --goal \"<what is true when done>\"`, and `--checkpoint` where the user should look before it goes on",
-        "File the tasks: File each task with `journal task make \"<title>\" --brief \"<done when>\"` and put it under its phase with `journal phase place <task> --phase <phase>`; one task per step a person could check",
-        "Mark the plan ready: When every phase has its tasks, `journal plan ready <plan n>` and tell the user in one line it is ready on the plan page. Only they approve it; `journal plan start <plan n>` once they have, never before",
+        "File the tasks: Split each phase into its real steps and file one task per step a person could check, with `journal task make \"<title>\" --brief \"<brief>\"` and `journal phase place <task> --phase <phase>`. Write each brief so it can be carried out alone: the files to change, what already does part of it and is reused, the stories to write first, the tests to run by name, and the proof that shows each point",
+        "Mark the plan ready: When every phase has its tasks, `journal plan ready <plan n>` and tell the user in one line it is ready on the plan page. A phase with one task is refused until you give the reason one task is enough, with `--skip-guard plans.one-task-phase --skip-reason \"<why>\"`; otherwise split it. Only the user approves the plan; `journal plan start <plan n>` once they have, never before",
     ),
 )
 UPDATE_WRITING = Sequence(
@@ -53,7 +53,7 @@ PLAN_REVIEW_APPLYING = Sequence(
     triggers=json.dumps([*json.loads(row_trigger("review.assign")), *json.loads(row_trigger("plan.review"))]),
     step_guards=guards(FILE_EDITS_OPEN, FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED),
     steps=(
-        f"Wait for the reviewers: {PLAIN_WRITING}Read what each reviewer finds as it comes back, noting every finding with the phase it belongs in; you may work on other files meanwhile",
+        f"Wait for the reviewers: {PLAIN_WRITING}Read the skill journal-plan-review-applying, then read what each reviewer finds as it comes back, noting every finding with the phase it belongs in; you may work on other files meanwhile",
         "Put the findings into the plan: Put each finding into the plan: a new task with `journal task make` placed with `journal phase place <task> --phase <phase>`, or a wider brief with `journal task edit <n> --brief \"<brief>\"`. File edits wait until this step is done",
         "Ready the plan: Compile the findings into one report with `journal report make \"<title>\" --abstract \"<what it found>\" --file <path>`. Then `journal plan reviewed <plan n>`, and tell the user in one or two plain lines what the reviews found, with the report's reference like report 3",
     ),

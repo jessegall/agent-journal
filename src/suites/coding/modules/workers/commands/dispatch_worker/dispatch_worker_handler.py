@@ -20,6 +20,7 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
 from core.modules.helpers.support.allowed_models import AllowedModels
+from core.modules.helpers.support.helper_programs import HelperPrograms
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from suites.coding.modules.workers.commands.open_worker_worktree.open_worker_worktree import OpenWorkerWorktree
@@ -39,9 +40,9 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     transactional = False
 
     def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
-                 providers: Providers, models: AllowedModels, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes) -> None:
+                 providers: Providers, programs: HelperPrograms, models: AllowedModels, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes) -> None:
         self.queries, self.bus, self.settings = queries, bus, settings
-        self.git, self.worker_command, self.worktrees, self.providers, self.models = git, worker_command, worktrees, providers, models
+        self.git, self.worker_command, self.worktrees, self.providers, self.programs, self.models = git, worker_command, worktrees, providers, programs, models
         self.environments, self.rows, self.types, self.profiles, self.scopes = environments, rows, types, profiles, scopes
 
     def handle(self, command: DispatchWorker, context: Context) -> WorkerLaunch:
@@ -64,8 +65,9 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             raise Refusal("a person's dispatch needs the program the worker runs", "add --program, such as the program of the environment's main agent")
         parent_id = caller.id if caller is not None else None
         profile = self.worker_profile(command.profile)
-        model = command.program_model or profile.program_model(program)
+        model = command.program_model or self.providers.provider(program).profile_model(profile)
         self.check_model(program, model)
+        self.programs.installed(program)
         start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
         opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id), context)
         try:

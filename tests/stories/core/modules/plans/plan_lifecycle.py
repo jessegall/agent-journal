@@ -3,6 +3,7 @@ import pytest
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.core.support.fixtures import PlanFirstTaskClosed, UserJoined
 from tests.stories.core.support import story_lines as lines
+from tests.stories.core.support.plan_steps import ready_plan
 
 
 def test_a_plan_is_made_as_a_draft_in_the_callers_environment(new_story):
@@ -27,7 +28,7 @@ def ready_plan_task(new_story):
     story.expect_success(lines.NEW_PLAN, actor=story.agent)
     phase = story.new_row_id('phase make --plan 1 "First" --goal "The first part is done"', actor=story.agent)
     task = story.new_row_id(f'task make "Planned work" --brief "Do the work" --phase {phase} --environment main', actor=story.agent)
-    story.expect_success("plan ready 1", actor=story.agent)
+    ready_plan(story, actor=story.agent)
     return story, task
 
 
@@ -87,7 +88,8 @@ def test_a_plan_is_cancelled_by_itself_when_every_task_is_cancelled(new_story):
     story.run('phase make --plan 1 "First" --goal "it works"', actor=story.agent)
     story.run('task make "Only task" --environment main', actor=story.agent)
     story.run("phase place 1 --phase 1", actor=story.agent)
-    for move in ("plan ready 1", "plan approve 1", "plan start 1"):
+    ready_plan(story, actor=story.user)
+    for move in ("plan approve 1", "plan start 1"):
         story.run(f"{move} --environment main", actor=story.user)
     story.run('task cancel 1 --reason "not needed"', actor=story.agent)
     story.run_listeners()

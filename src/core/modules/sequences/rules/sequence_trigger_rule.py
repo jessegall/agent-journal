@@ -16,7 +16,7 @@ EMPTY_TRIGGERS = "[]"
 
 class SequenceTriggerRule(DriverRule):
     """A prompt or a finished tool call that matches a sequence's trigger starts that sequence for the main
-    agent, unless one is running."""
+    agent on top of any run it has, unless that sequence already runs."""
 
     name = "sequences.triggers"
     hook = HookWildcard.ALL_HOOKS
@@ -29,9 +29,9 @@ class SequenceTriggerRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         candidates = self.queries.query(Sequence).matching(Equal("triggers", EMPTY_TRIGGERS, negated=True))
         triggered = [sequence for sequence in candidates.all_rows() if self.is_triggered(sequence, hook)]
-        if not triggered or self.runs.current(hook.agent_id) is not None:
+        sequence = next((sequence for sequence in triggered if not self.runs.is_running(hook.agent_id, sequence.id)), None)
+        if sequence is None:
             return RuleAnswer.allowed()
-        sequence = triggered[0]
         return RuleAnswer.with_nudges(SEQUENCE_STARTED.nudge(sequence=sequence.id)).running(MoveSequenceRun(START, sequence.id))
 
     @staticmethod
