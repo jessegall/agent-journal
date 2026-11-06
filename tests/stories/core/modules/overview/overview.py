@@ -148,13 +148,13 @@ def expect_replace_without(text, text_2, text_3, expected) -> None:
     assert expected not in actual, actual
 
 
-def test_the_overview_lists_the_skills_the_agent_must_load_with_their_paths(new_story):
+def test_the_overview_lists_the_skills_the_agent_must_load_with_how_to_load_each(new_story):
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
     story.container.bind(MainAgentSkills, MainAgentSkills())
     agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
     story.run_listeners()
-    story.expect_text("skill required", "journal-tasks: ", actor=agent)
-    story.expect_text("overview", "## skill required", "journal-tasks: ", actor=agent)
+    story.expect_text("skill required", "load this first with the Skill tool: journal-tasks", actor=agent)
+    story.expect_text("overview", "## skill required", "load this first with the Skill tool: journal-tasks", actor=agent)
 
 
 def test_a_person_has_no_skills_to_load(new_story):
