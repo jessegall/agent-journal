@@ -136,6 +136,15 @@ def test_a_shell_line_of_four_parts_starts_each_holding_plugin_once_and_reads_th
     story.expect_rows(sorted(starts) == ["events", "second"], reads == [login_path.file.resolve()])
 
 
+def test_a_hook_starts_no_script_for_an_edit_the_plugin_hears_and_does_not_hold(new_story, monkeypatch):
+    story = install_runner(event_plugin_story(new_story, program="see.sh", hears=["file_edited"]))
+    starts = start_counter(monkeypatch, "see.sh")
+    scanned_edit(story, "s-1", "a.py")
+    story.run_listeners()
+    started_before_hook = list(starts)
+    story.expect_hook_allowed("s-1", LISTING_SAMPLE)
+    story.expect_rows(started_before_hook == ["events"], starts == started_before_hook)
+
 def read_counter(monkeypatch, file: Path) -> list[Path]:
     reads: list[Path] = []
     read = FileAccess.binary
