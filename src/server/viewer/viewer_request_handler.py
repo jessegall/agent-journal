@@ -11,6 +11,7 @@ from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qsl, parse_qs, urlencode, urlsplit
 
 from server.server_instance import server_instance
+from server.hook.queue_request import QueueRequest
 from server.viewer.read_attribution import ReadAttribution
 from server.viewer.viewer_request_record import ViewerHttpRequest, ViewerRequestRecord
 from server.viewer.event_stream import EventStream
@@ -75,7 +76,6 @@ SKILLS_ROUTE = "/api/skills"
 MODULES_ROUTE = "/modules/"
 FRAME_POLICY = ("sandbox allow-scripts; default-src 'none'; script-src {listener}; style-src {listener} 'unsafe-inline'; img-src {listener} data:;"
                 " connect-src 'none'; form-action 'none'")
-UNQUEUED_LINES = (("developer", "request-queue"), ("developer", "hook-requests"))
 
 
 class ViewerRequestHandler(BaseHTTPRequestHandler):
@@ -85,6 +85,16 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
     origin loads its own, and answers the viewer's pages and data only with that cookie."""
 
     def do_GET(self) -> None:
+        route = urlsplit(self.path).path
+        if route == EVENTS_ROUTE:
+            self.answer_get()
+            return
+        queue = self.viewer().routes.queue
+        turn = queue.viewer_turn(f"GET {self.path}") if route.startswith("/api/") else queue.observing(QueueRequest.started("Viewer", f"GET {self.path}"))
+        with turn:
+            self.answer_get()
+
+    def answer_get(self) -> None:
         viewer = self.viewer()
         if self.headers.get("Host") != viewer.host:
             self.answer(403, {"error": "this listener answers only its own address"})
@@ -189,6 +199,14 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.answer(404, {"error": f"no route {route.path}"})
 
     def do_POST(self) -> None:
+        route = urlsplit(self.path).path
+        if route in (LINE_ROUTE, LINES_ROUTE):
+            self.answer_post()
+            return
+        with self.viewer().routes.queue.viewer_turn(f"POST {self.path}"):
+            self.answer_post()
+
+    def answer_post(self) -> None:
         viewer = self.viewer()
         body = self.rfile.read(int(self.headers.get("Content-Length", "0") or "0"))
         if self.headers.get("Host") != viewer.host:
@@ -227,8 +245,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             except (KeyError, TypeError, ValueError, ViewerRequestError) as error:
                 self.answer(400, {"error": str(error)})
                 return
-            viewer.routes.request_log.complete_reads(viewer.login.person_id(token), receipts)
             self.answer(200, {"received": len(receipts)})
+            self.wfile.flush()
+            viewer.routes.request_log.complete_reads(viewer.login.person_id(token), receipts)
             return
         if urlsplit(self.path).path != LINE_ROUTE:
             self.answer(404, {"error": f"no route {self.path}"})
@@ -242,7 +261,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         received_at, request_id = datetime.now(timezone.utc).isoformat(), str(uuid4())
         started_at = perf_counter()
         try:
-            turn = nullcontext() if tuple(request.line[:2]) in UNQUEUED_LINES else viewer.routes.queue.viewer_turn(" ".join(request.line), request.window, viewer.routes.priorities.priority(request.window))
+            turn = nullcontext() if viewer.routes.priorities.is_unqueued(request.line) else viewer.routes.queue.viewer_turn(" ".join(request.line), request.window, viewer.routes.priorities.priority(request.window))
             with turn:
                 queued_ms = (perf_counter() - started_at) * 1000
                 timed = viewer.routes.line_route.timed_single_answer(request.window, request.line, viewer.login.person_id(token), request.environment, session.shared)
@@ -252,8 +271,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return
         duration_ms = (perf_counter() - started_at) * 1000
         http = ViewerHttpRequest(request_id, received_at, None, duration_ms, self.payload_bytes(body), viewer.login.person_id(token))
-        viewer.routes.request_log.record_viewer(ViewerRequestRecord(http, request, 0, timed.duration_ms, queued_ms, answered.code, timed.points))
         self.answer(200, asdict(answered), {"X-Journal-Request-Id": request_id})
+        self.wfile.flush()
+        viewer.routes.request_log.record_viewer(ViewerRequestRecord(http, request, 0, timed.duration_ms, queued_ms, answered.code, timed.points))
 
     def answer_notices(self, viewer: ViewerServer, token: str, body: bytes | None) -> None:
         notices = viewer.routes.notices_route
@@ -294,12 +314,13 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         session, person_id = viewer.login.session(token), viewer.login.person_id(token)
         received_at, request_id = datetime.now(timezone.utc).isoformat(), str(uuid4())
         started_at = perf_counter()
-        inspections = [(index, line) for index, line in enumerate(request.lines) if line.line[:2] == ["developer", "request-queue"]]
-        command_lines = [(index, line) for index, line in enumerate(request.lines) if line.line[:2] != ["developer", "request-queue"]]
+        inspections = [(index, line) for index, line in enumerate(request.lines) if viewer.routes.priorities.is_unqueued(line.line)]
+        command_lines = [(index, line) for index, line in enumerate(request.lines) if not viewer.routes.priorities.is_unqueued(line.line)]
         if inspections and command_lines:
-            self.answer(400, {"error": "read the request queue separately from other lines"})
+            self.answer(400, {"error": "read inspection pages separately from other lines"})
             return
         answers: dict[int, LineAnswer] = {}
+        records: list[ViewerRequestRecord] = []
         for index, line in inspections:
             answers[index] = viewer.routes.line_route.answers(ViewerLinesRequest([line]), person_id, session.shared)[0]
         if command_lines:
@@ -311,8 +332,10 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             http = ViewerHttpRequest(request_id, received_at, request_id, duration_ms, self.payload_bytes(body), person_id)
             for (index, line), timed in zip(command_lines, command_answers, strict=True):
                 answers[index] = timed.answer
-                viewer.routes.request_log.record_viewer(ViewerRequestRecord(http, line, index, timed.duration_ms, queued_ms, timed.answer.code, timed.points))
+                records.append(ViewerRequestRecord(http, line, index, timed.duration_ms, queued_ms, timed.answer.code, timed.points))
         self.answer(200, {"answers": [asdict(answers[index]) for index in range(len(request.lines))]}, {"X-Journal-Request-Id": request_id})
+        self.wfile.flush()
+        viewer.routes.request_log.record_viewers(records)
 
     @staticmethod
     def payload_bytes(body: bytes | None) -> int:

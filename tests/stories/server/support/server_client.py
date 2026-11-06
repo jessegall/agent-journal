@@ -19,6 +19,7 @@ from urllib.parse import urlencode
 
 from core.base.cli.console import ERROR_CODE
 from core.base.journal_home import JournalHome
+from core.base.journal_container import synced_database_container
 from server.endpoints.cli_endpoint import CliEndpoint
 from core.base.timestamp import Timestamp
 from core.base.timing import TIMING_HEADER, Timing
@@ -342,15 +343,16 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
         files = ServerFiles(home)
         assert files.acquire_lock(), "a server already holds the lock of this journal"
         files.clear_leftover_socket()
-        listener_round = JournalRound(home, "listener thread", ListenerWork())
+        hook_database = HookDatabase(home, STORY_RUNNING_HOOKS_COUNT)
+        listener_round = JournalRound(home, "listener thread", ListenerWork(), queue=hook_database.queue)
         listener_thread = ListenerThread(listener_round.run, listener_round.report)
         phones = PhoneSessions(home, listener_thread)
         login = ViewerLogin(phones, ShareSessions(phones.journal_output))
         reported = ReportedFindings()
-        hook_database = HookDatabase(home, STORY_RUNNING_HOOKS_COUNT)
         context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
                                 hook_database, ViewerListener(login, ViewerRoutes(home, listener_thread, login, reported, hook_database.queue)), ServerTunnel(home), reported, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS)
-        context.viewer.routes.line_route = StoryLineRoute(home, listener_thread, reported)
+        context.request_log.refresh(synced_database_container(home, hook_database.databases[0]))
+        context.viewer.routes.line_route = StoryLineRoute(home, listener_thread, reported, completion_callback=context.request_log.completed)
         context.viewer.routes.line_route.line_run.request_queue = hook_database.queue
         server = JournalServer(str(files.socket), RequestHandler, context)
         if listener_thread_started:
@@ -367,6 +369,7 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
             server.request_stop()
             thread.join(TIMEOUT_SECONDS)
             server.drain(DRAIN_LIMIT_SECONDS)
+            context.request_log.close()
             context.hook_database.close()
             files.remove_server_files()
             server.server_close()

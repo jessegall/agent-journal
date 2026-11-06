@@ -1,4 +1,5 @@
 from core.base.command.context import Context
+from core.base.command.completed_command import CompletedCommand
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
@@ -18,7 +19,7 @@ class CloseAgentBlockHandler(Handler[CloseAgentBlock, AgentBlock]):
     def handle(self, command: CloseAgentBlock, context: Context) -> AgentBlock:
         block = self.queries.query(AgentBlock).find(command.agent_block_id)
         if block.closed_at is not None:
-            raise Refusal(f"agent_block {block.id} is settled already")
+            raise CompletedCommand(f"agent_block {block.id} is settled already")
         if command.skip_reason and block.grace is None:
             raise Refusal(f"agent_block {block.id} cannot be skipped", "run what it waits for, or answer what it waits on")
         return self.repository.update(block, context, closed_at=context.timestamp, skip_reason=command.skip_reason)

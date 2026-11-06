@@ -1,5 +1,5 @@
 import {onPhone} from "../platform/phone.js";
-import {holdPressed} from "../platform/pressed.js";
+import {SPINNER_AFTER_MS, holdPressed} from "../platform/pressed.js";
 import {covered, serverGone} from "../state/updating.js";
 import {JoinedRead} from "./joinedRead.js";
 import {SHELL_WINDOW} from "../windows/shellWindow.js";
@@ -68,6 +68,7 @@ class Transport {
         this.readsFlying = 0;
         this.readsWaiting = [];
         this.readLines = null;
+        this.knownReads = null;
         this.written = () => {};
         this.refused = () => {};
         this.watcher = () => {};
@@ -136,6 +137,19 @@ class Transport {
         this.out(REPEATED_LINES_ROUTE, {method: "POST", headers: {...VIEWER, "Content-Type": "application/json"}, body}, [{window: SHELL_WINDOW, line: REPEATED_LINES_ROUTE, kind: WRITE}]).catch(() => {});
     }
 
+    // a request a click causes, read or write, holds the button clicked from the moment it is asked until it is answered (platform/pressed.js):
+    // it is held when asked, as a read may wait for a place or a batch and leave after the click has been handled
+    // a read shows the spinner after a short wait, a write at once
+    held(ask, read = false) {
+        const release = holdPressed(read ? SPINNER_AFTER_MS : 0);
+        try {
+            return ask().finally(release);
+        } catch (error) {
+            release();
+            throw error;
+        }
+    }
+
     // the one place a request leaves
     async out(url, init, requests, limit = 0) {
         const landed = this.took(requests, url);
@@ -173,7 +187,13 @@ class Transport {
     // whether a line only reads, as the server knows its command: a line the server has not called a read is a write, which is never joined
     async isRead(words) {
         this.readLines ??= this.answeredReadLines();
-        return (await this.readLines).has(words.slice(0, 2).join(" "));
+        this.knownReads = await this.readLines;
+        return this.knownReads.has(words.slice(0, 2).join(" "));
+    }
+
+    // the same, at once and without asking: a line is taken for a write until the server's list of reads has come
+    knownRead(words) {
+        return Boolean(this.knownReads?.has(words.slice(0, 2).join(" ")));
     }
 
     answeredReadLines() {
@@ -280,9 +300,7 @@ class Transport {
 
     async send(method, url, body, wait = 0, tries = RELOAD_TRIES, headers = {}) {
         this.watcher("sent", method, url, body);
-        const release = method === "GET" ? () => {} : holdPressed();
         const res = await this.reach(method, url, body, wait, tries, headers).finally(() => {
-            release();
             this.watcher("answered", method, url, body);
         });
         return answered(res, `${res.status} ${res.statusText}`).catch((error) => {
@@ -293,7 +311,7 @@ class Transport {
 
     // a read whose failure says nothing about the server, so it puts no cover up
     quietRead(url, init = {}) {
-        return this.whenFree(() => this.out(url, init, [{window: SHELL_WINDOW, line: url, kind: READ}], WAIT_MS));
+        return this.held(() => this.whenFree(() => this.out(url, init, [{window: SHELL_WINDOW, line: url, kind: READ}], WAIT_MS)), true);
     }
 
     // a file's bytes, which are not JSON, at an address that names its environment itself
@@ -306,6 +324,10 @@ class Transport {
     // a read is keyed by what it reads, never by its query: while a read of a key is in flight, a read of the same key is not
     // sent, and its caller takes the answer of the one in flight
     request(method, url, body, wait = 0, headers = {}, key = url.split("?")[0]) {
+        return this.held(() => this.asked(method, url, body, wait, headers, key), method === "GET");
+    }
+
+    asked(method, url, body, wait, headers, key) {
         if (method !== "GET") return this.send(method, url, body, wait, RELOAD_TRIES, headers).then((got) => (this.written(url), got));
         if (covered() && !asksUpdateStatus(url))
             return Promise.reject(Object.assign(new Error("The journal is updating."), {updating: true}));
@@ -333,8 +355,8 @@ class Transport {
     // how long a read may take; a request the server never answered puts the cover up
     raw(url, init = {}, {window = SHELL_WINDOW, line = url, limit = WAIT_MS} = {}) {
         const kind = (init.method ?? "GET") === "GET" ? READ : WRITE;
-        if (kind === WRITE) return this.sent(url, init, [{window, line, kind}], 0);
-        return this.whenFree(() => this.sent(url, init, [{window, line, kind}], limit));
+        if (kind === WRITE) return this.held(() => this.sent(url, init, [{window, line, kind}], 0));
+        return this.held(() => this.whenFree(() => this.sent(url, init, [{window, line, kind}], limit)), true);
     }
 }
 

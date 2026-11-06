@@ -7,6 +7,11 @@ class GuardRefusal(Refusal):
     def __init__(self, guard: str, refusal: Refusal, skip_flag: str) -> None:
         super().__init__(refusal.reason, refusal.suggestion)
         self.guard, self.skip_flag = guard, skip_flag
+        self.refusal = refusal
+
+    @property
+    def is_completed(self) -> bool:
+        return self.refusal.is_completed
 
     @property
     def text(self) -> str:

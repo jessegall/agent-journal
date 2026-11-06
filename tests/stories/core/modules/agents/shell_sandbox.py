@@ -23,6 +23,10 @@ def test_a_helper_starts_after_a_verified_sandbox_check(sandbox_story):
     story.expect_text("agent start helper-1 claude helper --environment main", "session: helper-1")
 
 
+def test_a_helper_start_runs_the_sandbox_check(sandbox_story):
+    sandbox_story.expect_refusal('helper start journal-researcher --brief "Read src/till.py" --environment main', "read-only shell sandbox")
+
+
 def test_a_helper_refuses_a_missing_sandbox_runner(sandbox_story):
     story = sandbox_story
     story.expect_refusal("agent start helper-1 claude helper --environment main", "read-only shell sandbox")

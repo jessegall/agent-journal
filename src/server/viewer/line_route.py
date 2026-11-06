@@ -8,7 +8,8 @@ from core.base.request_queue import RequestQueue
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.cli.console import USAGE_CODE, Console
-from core.base.cli.line_run import LineRun
+from core.base.cli.line_run import LineRun, ignore_completed
+from collections.abc import Callable
 from core.base.cli.subcommand_lookup import SubcommandLookup
 from core.base.cli.usage_error import UsageError
 from core.base.container import Container
@@ -39,8 +40,8 @@ FLAG_SEPARATOR = "--"
 class LineRoute:
     """Checks and runs viewer lines, sharing one read container for a batch and returning each line's answer."""
 
-    def __init__(self, home: JournalHome, listener_thread: ListenerThread, reported: ReportedFindings, request_queue: RequestQueue | None = None) -> None:
-        self.line_run = LineRun(home, CLI_LIMIT_SECONDS, ListenerWake(listener_thread), reported, request_queue)
+    def __init__(self, home: JournalHome, listener_thread: ListenerThread, reported: ReportedFindings, request_queue: RequestQueue | None = None, completion_callback: Callable[[Container, list[str]], None] = ignore_completed) -> None:
+        self.line_run = LineRun(home, CLI_LIMIT_SECONDS, ListenerWake(listener_thread), reported, request_queue, completion_callback)
 
     def answer(self, window: str, argv: list[str], person_id: int, environment: str, shared: SharedRow | None = None) -> LineAnswer:
         return self.timed_single_answer(window, argv, person_id, environment, shared).answer
@@ -55,7 +56,7 @@ class LineRoute:
             answer = self.run_line(container, window, argv, person_id, environment, shared)
             return TimedLineAnswer(answer, (perf_counter() - started_at) * 1000, container.get(Database).tally.points())
         finally:
-            container.get(Database).close()
+            self.line_run.close(container, argv)
 
     def answers(self, request: ViewerLinesRequest, person_id: int, shared: SharedRow | None = None) -> list[LineAnswer]:
         return [timed.answer for timed in self.timed_answers(request, person_id, shared)]
@@ -70,7 +71,7 @@ class LineRoute:
         try:
             return [self.timed_answer(container, line, person_id, shared) for line in request.lines]
         finally:
-            container.get(Database).close()
+            self.line_run.close(container, [])
 
     def timed_answer(self, container: Container, request: ViewerLineRequest, person_id: int, shared: SharedRow | None) -> TimedLineAnswer:
         initial_values = container.get(Database).tally.points()

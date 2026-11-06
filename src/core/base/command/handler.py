@@ -19,6 +19,7 @@ class Handler(Generic[C, R]):
     command: ClassVar[type[Command[object]]]
     transactional: ClassVar[bool] = True
     runs_once: ClassVar[bool] = False
+    caller_prepares: ClassVar[bool] = False
     disabled_scopes: ClassVar[WholeScopes] = ()
 
     def prepare(self, command: C, actor: Actor) -> None:

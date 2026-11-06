@@ -1,4 +1,5 @@
 <script setup>
+import Shimmer from "./Shimmer.vue";
 import SkeletonLine from "./SkeletonLine.vue";
 import SwitchCase from "./SwitchCase.vue";
 
@@ -51,17 +52,14 @@ const HEADING = [
         <template #messages>
             <div class="skeleton-messages" aria-busy="true" :aria-label="label">
                 <template v-for="message in MESSAGES" :key="message.id">
-                    <div
-                        :class="['skeleton-message', {mine: message.mine}]"
-                        :style="{width: `${message.width}%`, height: `${message.height}px`}"
-                    />
+                    <Shimmer :class="['skeleton-message', {mine: message.mine}]" :style="{width: `${message.width}%`, height: `${message.height}px`}" />
                 </template>
             </div>
         </template>
         <template #older>
             <div class="skeleton-messages skeleton-older" aria-busy="true" :aria-label="label">
                 <template v-for="message in MESSAGES.slice(0, 3)" :key="message.id">
-                    <div :class="['skeleton-message', {mine: message.mine}]" :style="{width: `${message.width}%`, height: `${message.height}px`}" />
+                    <Shimmer :class="['skeleton-message', {mine: message.mine}]" :style="{width: `${message.width}%`, height: `${message.height}px`}" />
                 </template>
             </div>
         </template>
@@ -127,14 +125,7 @@ const HEADING = [
 }
 
 .skeleton-message {
-    flex: none;
     border-radius: 9px;
-    background-color: color-mix(in srgb, var(--raised) 60%, transparent);
-    background-image: linear-gradient(100deg, transparent 35%, color-mix(in srgb, var(--text-3) 22%, transparent) 50%, transparent 65%);
-    background-size: 200vw 100%;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    animation: skeleton-shimmer 1.6s linear infinite;
 }
 
 .skeleton-message.mine {
@@ -200,21 +191,5 @@ const HEADING = [
 
 .skeleton-text > .skeleton-heading {
     height: 84px;
-}
-
-@keyframes skeleton-shimmer {
-    from {
-        background-position: -100vw 0;
-    }
-
-    to {
-        background-position: 100vw 0;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .skeleton-message {
-        animation: none;
-    }
 }
 </style>

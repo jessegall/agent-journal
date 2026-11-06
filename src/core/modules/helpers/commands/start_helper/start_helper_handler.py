@@ -1,6 +1,8 @@
 from uuid import uuid4
 from dataclasses import replace
 
+from core.base.actor import Actor
+from core.base.shell_sandbox import ShellSandbox
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -14,6 +16,7 @@ from core.modules.agents.support.launcher_link import LauncherLink
 from core.base.profile.agent_profile import AgentProfile
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_reuse import HelperReuse
+from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.support.helper_programs import HelperPrograms
@@ -31,10 +34,15 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
 
     command = StartHelper
 
-    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, launcher: LauncherLink, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers, sources: WorkSources) -> None:
+    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, launcher: LauncherLink, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers, sources: WorkSources, sandbox: ShellSandbox, kept: KeptHelpers) -> None:
+        self.kept = kept
+        self.sandbox = sandbox
         self.profiles, self.types, self.limits, self.launcher, self.bus, self.repository, self.reuse = profiles, types, limits, launcher, bus, repository, reuse
         self.programs, self.folders, self.providers = programs, folders, providers
         self.sources = sources
+
+    def prepare(self, command: StartHelper, actor: Actor) -> None:
+        self.sandbox.check()
 
     def handle(self, command: StartHelper, context: Context) -> Agent:
         if len(command.brief) > BRIEF_LIMIT_CHARACTERS:
@@ -52,6 +60,8 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
         program = command.program or profile.program or parent.program
         model = self.limits.checked_model(program, command.program_model or self.providers.provider(program).profile_model(profile))
         self.programs.checked(program, self.folders.folder(parent))
+        if not command.new_helper and not profile.independent:
+            self.check_idle(profile, program, model)
         start = StartAgent(str(uuid4()), program, agent_type.key, parent.id, program_model=model, profile=profile.name, given_name=command.given_name, access=profile.access or agent_type.access)
         source_context = replace(context, environment_id=parent.environment_id)
         source = self.sources.source_copy(source_context)
@@ -62,6 +72,12 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
         self.sources.use_copy(source, source_context)
         self.bus.dispatch(CountProfileUse(profile.name), context)
         return helper
+
+    def check_idle(self, profile: AgentProfile, program: str, model: str) -> None:
+        idle = self.kept.idle(profile.name, program, model)
+        if idle:
+            others = f" (also {', '.join(str(helper.id) for helper in idle[1:3])})" if idle[1:] else ""
+            raise Refusal(f'helper {idle[0].id} is idle: journal helper send {idle[0].id} "<job>"{others}', "or start a new one with --fresh")
 
     def check_reuse(self, parent: Agent, profile: AgentProfile, brief: str) -> None:
         job = self.reuse.known_job(parent.id, profile.name, brief)

@@ -28,6 +28,8 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
         self.sandbox = sandbox
         self.single_main = single_main
 
+    caller_prepares = True
+
     def prepare(self, command: StartAgent, actor: Actor) -> None:
         if self.types.find(command.role).access is Access.READ:
             self.sandbox.check()

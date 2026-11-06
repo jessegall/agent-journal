@@ -8,3 +8,7 @@ class Refusal(Exception):
     @property
     def text(self) -> str:
         return f"{self.reason}: {self.suggestion}" if self.suggestion else self.reason
+
+    @property
+    def is_completed(self) -> bool:
+        return False

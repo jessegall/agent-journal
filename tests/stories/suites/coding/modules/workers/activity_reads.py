@@ -10,7 +10,7 @@ from tests.stories.support.story_checks import expect_value
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session, repository_environment
 
-BATCH_READS = 3
+BATCH_READS = 2
 
 
 @pytest.fixture

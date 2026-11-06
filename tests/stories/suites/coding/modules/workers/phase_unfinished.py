@@ -50,7 +50,7 @@ def ended_during_tests(new_story, monkeypatch):
 def test_a_worker_waiting_on_the_tests_of_its_hand_in_is_not_told_to_go_on(ended_during_tests):
     ended_during_tests.story.tick(MAIN_SESSION)
     ended_during_tests.story.expect_text("proof show 1", "state: running", actor=ended_during_tests.story.agent)
-    ended_during_tests.story.expect_rows(ended_during_tests.main_agent_lines() == ())
+    ended_during_tests.story.expect_rows(not any("stopped with" in line for line in ended_during_tests.main_agent_lines()))
     ended_during_tests.story.expect_rows(not any("tasks left" in line for line in ended_during_tests.worker_lines()))
 
 

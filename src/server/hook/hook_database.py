@@ -22,12 +22,14 @@ class HookDatabase:
     def used(self, priority: QueuePriority, wait_seconds: float, owner: str = "", request: QueueRequest | None = None) -> Generator[Database]:
         with self.queue.hook_turn(priority, wait_seconds, owner, request):
             database = self.free_databases.pop()
+            busy_timeout_seconds = database.busy_timeout_seconds()
             try:
                 yield database
             finally:
+                database.set_busy_timeout(busy_timeout_seconds)
                 self.free_databases.append(database)
 
     def close(self) -> None:
-        self.queue.wait_until_idle(CLOSE_WAIT_SECONDS)
+        self.queue.wait_idle(CLOSE_WAIT_SECONDS)
         for database in self.databases:
             database.close()

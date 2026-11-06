@@ -1,3 +1,9 @@
+from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
+from unittest.mock import patch
+
+from core.base.command.bus import Bus
+from core.base.database.database import Database
+from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
 from datetime import timedelta
 
 from core.base.driver.command_category import CommandCategory
@@ -98,3 +104,13 @@ def test_a_story_that_is_not_about_the_brief_is_not_blocked(new_story):
     story.run('task make "Fix the cart" --environment main', actor=story.agent)
     story.run("task start 1", actor=story.agent)
     story.expect_hook_allowed("s-1", EDIT)
+
+
+def test_resetting_many_task_reads_reads_each_row_no_more(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    for number in range(12):
+        task_id = story.new_row_id(f'task make "Read me {number}"', actor=story.agent)
+        story.expect_success(f"task overview {task_id}", actor=story.agent)
+    with patch.object(Database, "rows", autospec=True, side_effect=Database.rows) as reads:
+        story.container.get(Bus).run(ResetTaskReads(story.agent.id), story.agent)
+    story.expect_rows(not [call for call in reads.call_args_list if "FROM task_reads WHERE id IN" in call.args[1].sql])

@@ -16,13 +16,14 @@ RUNNING_HOOKS_COUNT = 3
 RUNNING_VIEWERS_COUNT = 4
 RECENT_REQUESTS_SECONDS = 10.0
 VIEWER_WAIT_LIMIT_SECONDS = 1.0
+CLI_WAIT_LIMIT_SECONDS = 1.0
 
 
 class ServerQueue(RequestQueue):
     """Orders hooks by priority, with at most one running per agent. A viewer request of a FIRST window runs at once;
     the others wait behind hooks, the window that sent fewest first, up to a limit, so none is starved."""
 
-    def __init__(self, running_hooks_count: int = RUNNING_HOOKS_COUNT, viewer_wait_limit_seconds: float = VIEWER_WAIT_LIMIT_SECONDS, running_viewers_count: int = RUNNING_VIEWERS_COUNT) -> None:
+    def __init__(self, running_hooks_count: int = RUNNING_HOOKS_COUNT, viewer_wait_limit_seconds: float = VIEWER_WAIT_LIMIT_SECONDS, running_viewers_count: int = RUNNING_VIEWERS_COUNT, cli_wait_limit_seconds: float = CLI_WAIT_LIMIT_SECONDS) -> None:
         self.running_hooks_count, self.viewer_wait_limit_seconds = running_hooks_count, viewer_wait_limit_seconds
         self.running_viewers_count = running_viewers_count
         self.running_viewers = 0
@@ -36,6 +37,54 @@ class ServerQueue(RequestQueue):
         self.waiting_requests: dict[int, QueueRequest] = {}
         self.running_requests: dict[int, RequestQueueEntry] = {}
         self.waiting_viewers: dict[int, QueueRequest] = {}
+        self.waiting_cli: dict[int, QueueRequest] = {}
+        self.running_cli = 0
+        self.cli_wait_limit_seconds = cli_wait_limit_seconds
+
+    @contextmanager
+    def observing(self, request: QueueRequest) -> Generator[None]:
+        number = next(self.arrivals)
+        with self.changed:
+            self.running_requests[number] = request.entry()
+            self.changed.notify_all()
+        try:
+            yield
+        finally:
+            with self.changed:
+                del self.running_requests[number]
+                self.changed.notify_all()
+
+    @contextmanager
+    def cli_turn(self, request: QueueRequest) -> Generator[None]:
+        number = next(self.arrivals)
+        with self.changed:
+            self.waiting_cli[number] = request
+            self.changed.notify_all()
+        try:
+            self.claim_cli_turn(number)
+            with self.changed:
+                del self.waiting_cli[number]
+                self.running_cli += 1
+            try:
+                with self.observing(request):
+                    yield
+            finally:
+                with self.changed:
+                    self.running_cli -= 1
+                    self.changed.notify_all()
+        finally:
+            with self.changed:
+                self.waiting_cli.pop(number, None)
+                self.changed.notify_all()
+
+    def claim_cli_turn(self, number: int) -> None:
+        deadline = monotonic() + self.cli_wait_limit_seconds
+        with self.changed:
+            while self.running_owners or self.waiting_hooks or self.running_cli or number != min(self.waiting_cli):
+                remaining = deadline - monotonic()
+                if remaining <= 0:
+                    return
+                self.changed.wait(remaining)
 
     @property
     def running_hooks(self) -> int:
@@ -89,7 +138,7 @@ class ServerQueue(RequestQueue):
             self.changed.notify_all()
         try:
             if priority is not WindowPriority.FIRST:
-                self.take_viewer_turn(number)
+                self.claim_viewer_turn(number)
             with self.changed:
                 del self.waiting_viewers[number]
                 self.running_requests[number] = request.entry()
@@ -107,7 +156,7 @@ class ServerQueue(RequestQueue):
                 self.viewer_windows.pop(number, None)
                 self.changed.notify_all()
 
-    def take_viewer_turn(self, number: int) -> None:
+    def claim_viewer_turn(self, number: int) -> None:
         deadline = monotonic() + self.viewer_wait_limit_seconds
         with self.changed:
             while not self.is_next_viewer(number):
@@ -122,13 +171,13 @@ class ServerQueue(RequestQueue):
         return number == min(self.waiting_viewers, key=lambda waiting: (len(self.sent_at[self.viewer_windows[waiting]]), waiting))
 
     def note_sent(self, window: str) -> None:
-        now = monotonic()
-        self.sent_at[window] = [*(sent for sent in self.sent_at.get(window, ()) if now - sent < RECENT_REQUESTS_SECONDS), now]
+        current_time = monotonic()
+        self.sent_at[window] = [*(earlier for earlier in self.sent_at.get(window, ()) if current_time - earlier < RECENT_REQUESTS_SECONDS), current_time]
 
     def let_hooks_finish(self) -> None:
-        self.wait_until_idle(self.viewer_wait_limit_seconds)
+        self.wait_idle(self.viewer_wait_limit_seconds)
 
-    def wait_until_idle(self, limit_seconds: float) -> None:
+    def wait_idle(self, limit_seconds: float) -> None:
         deadline = monotonic() + limit_seconds
         with self.changed:
             while self.running_owners or self.waiting_hooks:
@@ -143,4 +192,5 @@ class ServerQueue(RequestQueue):
             ordered = sorted(self.waiting_hooks, key=lambda place: (place[2] in self.running_owners, place[0], place[1]))
             waiting = tuple(self.waiting_requests[number].entry() for _, number, _ in ordered)
             viewers = tuple(request.entry() for request in self.waiting_viewers.values())
-            return RequestQueueStatus(running, (*waiting, *viewers), self.running_hooks_count, self.viewer_wait_limit_seconds, self.main_hook_seconds, self.agent_hook_seconds)
+            cli = tuple(request.entry() for request in self.waiting_cli.values())
+            return RequestQueueStatus(running, (*waiting, *cli, *viewers), self.running_hooks_count, self.viewer_wait_limit_seconds, self.main_hook_seconds, self.agent_hook_seconds)

@@ -1,5 +1,6 @@
 from typing import Protocol, TypeVar, runtime_checkable
 
+from core.base.actor import Actor
 from core.base.command.context import Context
 
 AgentRecord = TypeVar("AgentRecord")
@@ -13,4 +14,6 @@ class AgentRoster(Protocol[AgentRecord]):
 
     def retire_block(self, agent: AgentRecord) -> str: ...
 
-    def settle(self, agent: AgentRecord, context: Context) -> None: ...
+    def release(self, agent: AgentRecord, actor: Actor) -> None: ...
+
+    def close_holdings(self, agent: AgentRecord, context: Context) -> None: ...
