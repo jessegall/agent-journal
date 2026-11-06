@@ -1,3 +1,5 @@
+import subprocess
+
 import pytest
 
 from core.base.database.database import Database
@@ -23,6 +25,10 @@ def git_in_writes(monkeypatch, new_story):
 
 def expect_git_calls_outside(git_calls):
     assert git_calls == [], f"git ran with a write open: {git_calls}"
+
+
+def removal_past_its_limit(git, folder, worktree):
+    raise subprocess.TimeoutExpired("git worktree remove", 1)
 
 
 def test_a_dispatch_runs_git_with_no_write_open(git_in_writes):
@@ -60,4 +66,29 @@ def test_a_merge_runs_git_with_no_write_open(git_in_writes):
     git_calls.clear()
     story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    expect_git_calls_outside(git_calls)
+
+
+def test_a_release_runs_git_with_no_write_open(git_in_writes):
+    story, git_calls = git_in_writes
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    git_calls.clear()
+    story.expect_success(f'worker release {worker.id} "it went the wrong way"', actor=story.agent)
+    story.expect_text("task show 1", "state: open")
+    expect_git_calls_outside(git_calls)
+
+
+def test_a_release_whose_git_timed_out_takes_up_again_from_the_abandoned_worktree(git_in_writes, monkeypatch):
+    story, git_calls = git_in_writes
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    with monkeypatch.context() as patch:
+        patch.setattr(WorktreeGit, "remove", removal_past_its_limit)
+        failed = story.run(f'worker release {worker.id} "it went the wrong way"', actor=story.agent)
+    story.expect_rows(failed.code != 0)
+    story.expect_text("task show 1", "state: open")
+    git_calls.clear()
+    story.expect_success(f'worker release {worker.id} "it went the wrong way"', actor=story.agent)
+    story.expect_refusal(f'worker release {worker.id} "it went the wrong way"', "has no worktree out", actor=story.agent)
     expect_git_calls_outside(git_calls)

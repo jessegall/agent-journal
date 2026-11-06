@@ -7,7 +7,8 @@ from core.modules.helpers.support.helper_reach import HelperReach
 
 
 class StopHelperHandler(Handler[StopHelper, None]):
-    """Ends a helper's row; HelperEndedListener then ends its job as stopped and stops its program."""
+    """Ends a helper's row; HelperEndedListener then ends its job as stopped and EndedAgentProgramListener stops its
+    program."""
 
     command = StopHelper
 

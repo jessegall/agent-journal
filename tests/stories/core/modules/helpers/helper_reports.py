@@ -182,9 +182,10 @@ def test_a_helper_past_its_time_is_stopped_and_the_parent_hears_why(new_story):
     story = new_story(fixture=StartedHelper)
     enforced(story, 49)
     story.expect_text(LINES.format(agent=story.agent.id), "near its time limit")
+    launcher = FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n", request_count=2)
     enforced(story, 12)
     story.expect_text(LINES.format(agent=story.agent.id), "stopped at its time limit")
-    story.expect_rows(the_helper(story).ended_at is not None)
+    story.expect_rows(the_helper(story).ended_at is not None, launcher.requests == [{"agent_id": the_helper(story).id, "stop": True}])
 
 
 def test_the_parent_is_warned_once(new_story):

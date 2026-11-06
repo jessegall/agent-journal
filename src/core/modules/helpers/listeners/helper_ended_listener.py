@@ -10,7 +10,6 @@ from core.modules.messages.commands.record_parent_report.record_parent_report im
 from core.modules.agents.events.agent_ended import AgentEnded
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import HelperJob
-from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
@@ -24,14 +23,13 @@ STOPPED = "Stopped"
 
 class HelperEndedListener(CommitListener[AgentEnded]):
     """A helper that ends with a job line still waiting resumes for it; while it or its parent is paused its job
-    stays held; otherwise its open job ends with a report so the parent always hears, and one ended by another
-    agent or a person has its program stopped."""
+    stays held; otherwise its open job ends with a report so the parent always hears."""
 
     name = "helpers.helper-ended"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, jobs: HelperJobRows, resume: HelperResume, bus: Bus, launcher: LauncherLink, home: JournalHome) -> None:
-        self.queries, self.jobs, self.resume, self.bus, self.launcher, self.home = queries, jobs, resume, bus, launcher, home
+    def __init__(self, queries: Queries, jobs: HelperJobRows, resume: HelperResume, bus: Bus, home: JournalHome) -> None:
+        self.queries, self.jobs, self.resume, self.bus, self.home = queries, jobs, resume, bus, home
 
     def handle(self, event: AgentEnded, logged: LoggedEvent) -> None:
         helper = event.row
@@ -47,11 +45,8 @@ class HelperEndedListener(CommitListener[AgentEnded]):
         if waiting is not None:
             self.resume.resume(helper, waiting.text)
             return
-        stopped = logged.actor_id != helper.id
-        self.end_job(helper, job, STOPPED if stopped else "", logged)
+        self.end_job(helper, job, STOPPED if logged.actor_id != helper.id else "", logged)
         self.home.terminal_file(helper.id).unlink(missing_ok=True)
-        if stopped:
-            self.launcher.stop(helper.id)
 
     def is_paused(self, helper: Agent) -> bool:
         parent = self.queries.query(Agent).find(helper.parent_id) if helper.parent_id is not None else None
