@@ -43,7 +43,7 @@ async function clicked(event) {
     <component
         :is="href ? 'a' : 'button'"
         v-bind="passedOn"
-        :type="href ? undefined : 'button'"
+        :type="href ? undefined : attrs.type || 'button'"
         :href="href || undefined"
         :class="['btn', variant, {small, large, busy: shownBusy, fill, bordered}]"
         :aria-busy="shownBusy"
@@ -182,7 +182,7 @@ async function clicked(event) {
     font-size: 13.5px;
 }
 
-.btn:disabled:not(.busy) {
+.btn:disabled:not(.busy):not([data-busy]) {
     opacity: 0.45;
     cursor: default;
     pointer-events: none;

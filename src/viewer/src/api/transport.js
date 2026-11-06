@@ -136,14 +136,16 @@ class Transport {
         this.out(REPEATED_LINES_ROUTE, {method: "POST", headers: {...VIEWER, "Content-Type": "application/json"}, body}, [{window: SHELL_WINDOW, line: REPEATED_LINES_ROUTE, kind: WRITE}]).catch(() => {});
     }
 
-    // the one place a request leaves
+    // the one place a request leaves; a write holds the button whose click made it (platform/pressed.js) until it is answered
     async out(url, init, requests, limit = 0) {
         const landed = this.took(requests, url);
+        const released = requests[0].kind === WRITE ? holdPressed() : () => {};
         const leaving = limit ? {...init, signal: limited(init.signal, limit)} : init;
         try {
             return await fetch(url, requests[0].kind === WRITE ? {...leaving, priority: "high"} : leaving);
         } finally {
             landed();
+            released();
         }
     }
 
@@ -280,9 +282,7 @@ class Transport {
 
     async send(method, url, body, wait = 0, tries = RELOAD_TRIES, headers = {}) {
         this.watcher("sent", method, url, body);
-        const release = method === "GET" ? () => {} : holdPressed();
         const res = await this.reach(method, url, body, wait, tries, headers).finally(() => {
-            release();
             this.watcher("answered", method, url, body);
         });
         return answered(res, `${res.status} ${res.statusText}`).catch((error) => {

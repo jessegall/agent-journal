@@ -15,6 +15,7 @@ import {readSession} from "./windows/startup.js";
 import {shownPage} from "./shownPage.js";
 import {followColorScheme, pageTitle} from "./windows/colorScheme.js";
 import {pasteByHand} from "./platform/pasteByHand.js";
+import {watchPresses} from "./platform/pressed.js";
 import "./light.css";
 
 const PAGES = {environment: EnvironmentPage, view: ViewWindow, agent: AgentPage, shell: WindowShell, home: HomePage};
@@ -23,6 +24,7 @@ const pairingCode = new URLSearchParams(location.hash.slice(1)).get("code") || "
 document.title = pageTitle(shownPage.value.props.environment);
 followColorScheme();
 pasteByHand();
+watchPresses();
 const ENDED_LINK_MARK = 'meta[name="journal-share"][content="gone"]';
 const start = (answer) => {
     const app = location.pathname === PAIRING_PATH
