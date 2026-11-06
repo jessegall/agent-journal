@@ -1,0 +1,33 @@
+import json
+
+from core.testing.fake_launcher import FakeLauncher
+from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, StartedHelper, the_helper
+from tests.stories.server.support.browser_story import expect_browser
+from tests.stories.server.support.server_client import server_story
+
+
+def test_running_helper_job_is_in_the_agents_window(new_story, tmp_path):
+    story = new_story(fixture=StartedHelper)
+    helper = the_helper(story)
+    rows = json.loads(story.run("usage agents --environment main --json", actor=story.user).output_text)["rows"]
+    story.expect_rows(next(row for row in rows if row["id"] == helper.id)["helper_job"] == "Read src/cart.py")
+    with server_story(story) as server:
+        expect_browser(server, "helperJob.browser.mjs", [str(helper.id), str(tmp_path / "helper-job.png")])
+
+
+def test_ended_helper_keeps_its_last_job(new_story):
+    story = new_story(fixture=EndedHelper)
+    helper = the_helper(story)
+    rows = json.loads(story.run("usage agents --closed --environment main --json", actor=story.user).output_text)["rows"]
+    story.expect_rows(next(row for row in rows if row["id"] == helper.id)["helper_job"] == "Read src/cart.py")
+
+
+def test_resumed_helper_shows_its_new_job(new_story):
+    story = new_story(fixture=EndedHelper)
+    helper = the_helper(story)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.expect_success(f'helper send {helper.id} "Review plan 1093"', actor=story.agent)
+    launcher.thread.join(timeout=5)
+    launcher.server.close()
+    rows = json.loads(story.run("usage agents --closed --environment main --json", actor=story.user).output_text)["rows"]
+    story.expect_rows(next(row for row in rows if row["id"] == helper.id)["helper_job"] == "Review plan 1093")

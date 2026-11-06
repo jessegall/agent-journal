@@ -36,4 +36,6 @@ class AgentCard(EnvironmentScoped, ViewModel):
     job_profile: str
     job_description: str
     job_instruction: str
+    helper_job_description: str
+    helper_job_brief: str
     job_returned: str

@@ -1,6 +1,6 @@
 <script setup>
 import {computed, defineAsyncComponent, onUnmounted, ref, watch} from "vue";
-import {age, perHour, Btn, EmptyState, FoldGroup, Icon, InnerTabs, loadWindowComponent, SwitchCase, TabBody, TimeAgo, useNow, useWindow} from "@journal/window-kit";
+import {age, perHour, Btn, EmptyState, FoldGroup, Icon, InnerTabs, loadWindowComponent, SwitchCase, TabBody, TimeAgo, peekRef, useNow, useWindow} from "@journal/window-kit";
 import InformationBar from "../../../../../viewer/src/shell/InformationBar.vue";
 import AgentCommand from "./AgentCommand.vue";
 import AgentTaskGroup from "./AgentTaskGroup.vue";
@@ -21,7 +21,11 @@ const title = computed(() => {
 });
 const tasks = computed(() => props.facts?.tasks ?? []);
 const queuedTasks = computed(() => tasks.value.filter((task) => task.state === "open"));
-const job = computed(() => (props.facts?.job_enabled ? props.facts?.task_title || queuedTasks.value[0]?.title || "" : ""));
+const job = computed(() => props.row.role === "helper" ? props.facts?.helper_job || "" : (props.facts?.job_enabled ? props.facts?.task_title || queuedTasks.value[0]?.title || "" : ""));
+const jobRef = computed(() => {
+    const match = job.value.match(/\b(plan|doc)(?::|\s+)(\d+)\b/i);
+    return match ? `${match[1].toLowerCase() === "plan" ? "plans" : "docs"}:${match[2]}` : "";
+});
 const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, props.row.role === "main" ? "" : props.progress ? `${props.row.role} ${props.row.id}` : props.row.role, props.row.access === "read-only" ? "Access: Read-only" : ""].filter(Boolean).join(" · "));
 const endedReason = computed(() => (props.row.ended_at && props.facts?.job_returned?.startsWith(ENDED_WITHOUT_REPORT) ? props.facts.job_returned : ""));
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
@@ -90,7 +94,7 @@ readCommand();
         </span>
         <template v-if="job">
             <span class="agent-line agent-work-start">
-                <span class="agent-job" data-agent-job :title="job">{{ job }}</span>
+                <span class="agent-job" data-agent-job :title="job"><button v-if="jobRef" type="button" class="agent-job-link" :data-peek="jobRef" @click.stop="peekRef(jobRef)">{{ job }}</button><template v-else>{{ job }}</template></span>
                 <template v-if="totalCount">
                     <span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span>
                 </template>
@@ -430,6 +434,7 @@ readCommand();
 .agent-card:hover .agent-chevron { color: var(--text-2); }
 .agent-line, .agent-command { padding-left: 16px; }
 .agent-command { font-size: 11px; }
+.agent-job-link { padding: 0; border: 0; background: none; color: var(--accent-text); font: inherit; text-align: left; cursor: pointer; }
 .agent-waiting { color: var(--accent-text); font-size: 11.5px; text-decoration: none; }
 .agent-waiting:hover { color: var(--accent-text); text-decoration: underline; }
 .agent-back { display: grid; place-items: center; flex: none; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--text-3); cursor: pointer; }

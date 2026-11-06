@@ -11,7 +11,7 @@ const SHOWS = [
 ];
 // `texts` is what the window says when it is empty on each tab, {running, closed, all}, each {title, hint}: what is empty in its own terms and what brings rows
 const props = defineProps({line: {type: String, required: true}, empty: {type: String, required: true}, texts: {type: Object, default: () => ({})}});
-const {rows: facts} = useRows("usage agents --closed", ["agent.*", "task.*", "hook_call.*"]);
+const {rows: facts} = useRows("usage agents --closed", ["agent.*", "task.*", "hook_call.*", "helper_job.*"]);
 const {rows: waits} = useDeclaredRows("waits");
 const {rows: progress} = useDeclaredRows("progress");
 const progressOf = (row) => progress.value.find((progress) => progress.agent_id === row.id) ?? null;

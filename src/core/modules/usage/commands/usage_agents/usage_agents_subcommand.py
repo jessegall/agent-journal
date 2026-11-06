@@ -46,7 +46,14 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         status = self.files.status(card.session)
         return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.job_model, status.context_percent, status.cost_dollars, card.started_task_id, card.started_task_title,
                           tuple(json.loads(card.tasks)), self.waiting_state(card), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
-                          card.job_instruction, status.effort or self.session_effort(card), card.role in job_roles, card.job_returned, card.last_activity)
+                          card.job_instruction, status.effort or self.session_effort(card), card.role in job_roles, card.job_returned, card.last_activity, self.helper_job(card))
+
+    @staticmethod
+    def helper_job(card: AgentCard) -> str:
+        description = card.helper_job_description.strip()
+        if description and description not in (card.given_name, card.profile, card.job_profile):
+            return description[:100]
+        return next((line.strip()[:100] for line in card.helper_job_brief.splitlines() if line.strip()), "")
 
     def reported_model(self, card: AgentCard) -> str:
         return self.providers.reported_model(card.program, self.home, card.session)

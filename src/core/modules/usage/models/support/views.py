@@ -15,9 +15,11 @@ AGENT_CARDS_SELECT = (
     " coalesce((SELECT hook_calls.created_at FROM hook_calls WHERE hook_calls.session_agent_id = agents.id ORDER BY hook_calls.id DESC LIMIT 1), '') AS last_activity,"
     " coalesce(dispatch.program_model, '') AS job_model, coalesce(dispatch.profile, '') AS job_profile,"
     " coalesce(dispatch.description, '') AS job_description, coalesce(dispatch.instruction, '') AS job_instruction,"
+    " coalesce(current_job.description, '') AS helper_job_description, coalesce(current_job.brief, '') AS helper_job_brief,"
     " coalesce((SELECT latest.returned FROM helper_jobs AS latest WHERE latest.helper_id = agents.id ORDER BY latest.id DESC LIMIT 1), '') AS job_returned"
     " FROM agents"
     " LEFT JOIN helper_jobs AS dispatch ON dispatch.id = (SELECT min(helper_jobs.id) FROM helper_jobs WHERE helper_jobs.helper_id = agents.id)"
+    " LEFT JOIN helper_jobs AS current_job ON current_job.id = (SELECT id FROM helper_jobs WHERE helper_id = agents.id ORDER BY ended_at IS NULL DESC, id DESC LIMIT 1)"
 )
 
 AGENT_LISTING_SELECT = (
