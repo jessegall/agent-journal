@@ -20,7 +20,7 @@ class SwitchOffChangedPluginHandler(Handler[SwitchOffChangedPlugin, Plugin]):
     runs_once = True
 
     def __init__(self, queries: Queries, skill_removal: PluginSkillRemoval, repository: Repository, bus: Bus) -> None:
-        self.queries, self.skill_removal, self.repository, self.bus = queries, skill_files, repository, bus
+        self.queries, self.skill_removal, self.repository, self.bus = queries, skill_removal, repository, bus
 
     def handle(self, command: SwitchOffChangedPlugin, context: Context) -> Plugin:
         plugin = self.queries.query(Plugin).find(command.plugin_id)

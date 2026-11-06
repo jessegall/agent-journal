@@ -20,7 +20,7 @@ class RemovePluginHandler(Handler[RemovePlugin, str]):
     runs_once = True
 
     def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_removal: PluginSkillRemoval, repository: Repository, readers: PluginReaders, scripts: PluginScriptProcesses) -> None:
-        self.plugins, self.folders, self.skill_removal, self.repository, self.readers, self.scripts = plugins, folders, skill_files, repository, readers, scripts
+        self.plugins, self.folders, self.skill_removal, self.repository, self.readers, self.scripts = plugins, folders, skill_removal, repository, readers, scripts
 
     def prepare(self, command: RemovePlugin, actor: Actor) -> None:
         self.scripts.stop(command.name)
