@@ -1,0 +1,21 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "catch",
+        "where": [
+            {"descendant": {"is": "throw"}},
+            {"not": {"descendant": {"all": [{"is": "call"}, {"name": "unlink"}]}}},
+            {"of": "enclosingFunction", "descendant": {"all": [{"is": "call"}, {"name": "update_timestamp"}]}}
+        ],
+        "reject": [
+            {"testCode": true}
+        ]
+    },
+    "sin": {
+        "name": "mark-left-on-failure",
+        "description": "A function sets a mark file with update_timestamp and a failure path that raises leaves the mark in place, so the mark outlives the step it marks.",
+        "rule": "Remove the mark (unlink it) in every path that raises after it was set, or set it only after the step that can fail.",
+        "skill": "plain-code-words"
+    }
+}
