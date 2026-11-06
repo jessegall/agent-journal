@@ -21,7 +21,8 @@ FOLLOWED_PLAN_STATES = ("approved", "started")
 
 
 class TaskQuery(Query[Task]):
-    """Reads tasks, with the filters the tasks module and its guards use by name."""
+    """Reads tasks, with the filters the tasks module and its guards use by name. Tasks waiting for a worker leave out
+    those a listed or running worker holds and those in a plan not approved or started, which no worker may start."""
 
     def __init__(self, database: Database, tables: Tables, kept: KeptRows) -> None:
         super().__init__(database, tables, Task)
@@ -76,15 +77,13 @@ class TaskQuery(Query[Task]):
         return self.filter(state=TaskState.OPEN)
 
     def waiting_for_a_worker(self, worker_ids: Sequence[int]) -> Self:
-        """Open tasks no worker holds: a worker holds the tasks delegated to it while its row is running or its id is in worker_ids."""
         running_worker = SubqueryMatch("delegated_to", Select("agents").matching(IsNull("ended_at")).column("id"))
         kept_by_running = Select("tasks").matching(running_worker).column("id")
         kept_by_listed = Select("tasks").matching(Among("delegated_to", worker_ids)).column("id")
         return (self.open_tasks().matching(SubqueryMatch("id", kept_by_running, negated=True)).matching(SubqueryMatch("id", kept_by_listed, negated=True))
-                .matching(self.not_in_unapproved_plan()))
+                .matching(self.not_in_plan_awaiting_approval()))
 
-    def not_in_unapproved_plan(self) -> Condition:
-        """Leaves out tasks in a phase of a plan in any state but approved or started, since no worker may start one."""
+    def not_in_plan_awaiting_approval(self) -> Condition:
         unapproved_plans = Select("plans").matching(Among("state", FOLLOWED_PLAN_STATES, negated=True)).column("id")
         unapproved_phases = Select("phases").matching(SubqueryMatch("plan_id", unapproved_plans)).column("id")
         return SubqueryMatch("id", Select("phase_tasks").matching(SubqueryMatch("phase_id", unapproved_phases)).column("task_id"), negated=True)

@@ -6,6 +6,7 @@ from core.testing.shell_part import ShellPart
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.plan_steps import ready_plan
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
 READ_MESSAGE_HOOK = HookSamples.shell("journal message read 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")).with_fields(event="post_tool_use")
@@ -77,7 +78,7 @@ class OrchestratorWithReadyPlanTask(StoryFixture):
         story.run('plan make "The rebuild" --environment main', actor=story.agent)
         story.run('phase make --plan 1 "First" --goal "it works"', actor=story.agent)
         story.run('task make "Planned job" --brief "Do the planned job" --phase 1 --environment main', actor=story.agent)
-        story.run("plan ready 1", actor=story.agent)
+        ready_plan(story, actor=story.agent)
 
     def expect(self, story) -> None:
         story.expect_success("plan show 1", "state: ready")

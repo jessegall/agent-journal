@@ -32,8 +32,8 @@ PLAN_BUILDING = Sequence(
     steps=(
         f"Agree on the goal: {PLAIN_WRITING}Settle with the user what is true when the plan is done, and put it in the plan's brief with `journal plan edit <plan n> --brief \"<goal>\"`",
         "Add the phases: Add the plan's phases in order with `journal phase make --plan <plan n> \"<title>\" --goal \"<what is true when done>\"`, and `--checkpoint` where the user should look before it goes on",
-        "File the tasks: File each task with `journal task make \"<title>\" --brief \"<done when>\"` and put it under its phase with `journal phase place <task> --phase <phase>`; one task per step a person could check",
-        "Mark the plan ready: When every phase has its tasks, `journal plan ready <plan n>` and tell the user in one line it is ready on the plan page. Only they approve it; `journal plan start <plan n>` once they have, never before",
+        "File the tasks: Split each phase into its real steps and file one task per step a person could check, with `journal task make \"<title>\" --brief \"<brief>\"` and `journal phase place <task> --phase <phase>`. Write each brief so it can be carried out alone: the files to change, what already does part of it and is reused, the stories to write first, the tests to run by name, and the proof that shows each point",
+        "Mark the plan ready: When every phase has its tasks, `journal plan ready <plan n>` and tell the user in one line it is ready on the plan page. A phase with one task is refused until you give the reason one task is enough, with `--skip-guard plans.one-task-phase --skip-reason \"<why>\"`; otherwise split it. Only the user approves the plan; `journal plan start <plan n>` once they have, never before",
     ),
 )
 UPDATE_WRITING = Sequence(

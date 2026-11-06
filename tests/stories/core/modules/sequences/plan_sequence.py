@@ -48,6 +48,11 @@ def test_a_worker_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_no_
     expect_absent_marks_text(story, PLAN_SEQUENCE)
 
 
+def test_the_plan_sequence_asks_for_one_task_per_step_and_a_reason_for_a_phase_with_one_task(new_story):
+    story = new_story(fixture=StandardSequences)
+    story.expect_text("sequence show 1", PLAN_SEQUENCE, "one task per step a person could check", "stories to write first", "--skip-guard plans.one-task-phase")
+
+
 def test_a_helper_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_no_mark(new_story):
     story = new_story(fixture=StandardSequences)
     helper = Actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)

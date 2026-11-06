@@ -18,6 +18,8 @@ class PlansSeeder(Seeder):
         checkout = demo.new_id(f'phase make --plan {plan} "Checkout" --goal "the checkout pages work" --checkpoint', user)
         demo.run(f"phase place {demo.ids['task:started']} --phase {values}", user)
         demo.run(f"phase place {demo.ids['task:open']} --phase {checkout}", user)
+        demo.run(f'task make "Show the cart total in cents" --brief "The cart page shows cents." --phase {values} {demo.environment_flag}', user)
+        demo.run(f'task make "Show the delivery cost" --brief "The checkout shows the delivery cost." --phase {checkout} {demo.environment_flag}', user)
         demo.run(f"plan ready {plan}", user)
         demo.run(f"plan approve {plan} {demo.environment_flag}", user)
         self.dock_each_state(demo, user)

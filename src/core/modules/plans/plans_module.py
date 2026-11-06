@@ -8,6 +8,7 @@ from core.modules.plans.commands.close_plan.close_plan import ClosePlan
 from core.modules.plans.commands.start_plan.start_plan import StartPlan
 from core.modules.plans.listeners.next_plan_task_starter_listener import NextPlanTaskStarterListener
 from core.modules.plans.listeners.started_task_plan_listener import StartedTaskPlanListener
+from core.modules.plans.guards.one_task_phase_guard import OneTaskPhaseGuard
 from core.modules.plans.guards.phase_position_guard import PhasePositionGuard
 from core.modules.plans.guards.plan_close_guard import PlanCloseGuard
 from core.modules.plans.listeners.cancel_open_plan_tasks_listener import CancelOpenPlanTasksListener
@@ -84,7 +85,7 @@ class PlansModule(Module):
     subcommands = [CommentPlanSubcommand, PlanCommentsSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand, MakeTaskSubcommand]
     views = [PlanTask, PlanProgress, PlanCard, PlanOutlineTask, PlanEventRow]
-    guards = [PhasePositionGuard, PlanCloseGuard]
+    guards = [PhasePositionGuard, PlanCloseGuard, OneTaskPhaseGuard]
     listeners = [TaskPlanRowsListener, ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
                  FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener]
     marks = PLAN_MARKS
