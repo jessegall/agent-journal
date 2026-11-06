@@ -22,18 +22,18 @@ class HelperAvailability:
             self.limits.checked_launcher()
             parent = self.limits.checked_parent(caller)
             if profile is None:
-                return HelperStartState("", programs, can_start_fresh=True)
-            chosen = self.profiles.effective(profile)
-            selected_program = program or chosen.program or parent.program
+                return HelperStartState(None, programs, can_start_new=True)
+            selected_profile = self.profiles.effective(profile)
+            selected_program = program or selected_profile.program or parent.program
             self.programs.installed(selected_program)
-            model = self.limits.checked_model(selected_program, self.providers.provider(selected_program).profile_model(chosen))
+            model = self.limits.checked_model(selected_program, self.providers.provider(selected_program).profile_model(selected_profile))
             self.limits.checked_running(profile)
             idle = self.kept.idle(profile, selected_program, model)
             try:
                 self.limits.checked_kept(profile)
             except Refusal as refusal:
                 return HelperStartState(refusal.text, programs, idle, False, refusal.text)
-            reason = self.kept.idle_refusal(idle).text if idle and not chosen.independent else ""
+            reason = self.kept.idle_refusal(idle).text if idle and not selected_profile.independent else None
             return HelperStartState(reason, programs, idle, True)
         except Refusal as refusal:
             return HelperStartState(refusal.text, programs)

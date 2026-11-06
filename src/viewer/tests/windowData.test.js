@@ -1,6 +1,7 @@
 import {createApp, h, nextTick, ref} from "vue";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {useWindowData} from "../kit/useWindowData.js";
+import {WindowApi} from "../kit/WindowApi.js";
 import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
 
 const DECLARED = {
@@ -107,4 +108,29 @@ test("the timers stop when the window ends", async () => {
     app.unmount();
     await vi.advanceTimersByTimeAsync(20000);
     expect(asked).toHaveLength(1);
+});
+
+test("the window API gives a key's rows and reloads only what it names", async () => {
+    const asked = [];
+    const answer = (request) => {
+        asked.push(request.only);
+        const names = request.only.length ? request.only : ["list"];
+        return {ok: true, value: {declared: {list: {tab: "", events: [], reload_seconds: 0}}, keys: Object.fromEntries(names.map((name) => [name, {ok: true, value: {rows: [{id: 1}], page: 1, size: 50, total: 1}}]))}};
+    };
+    const context = {visible: ref(true), follow: () => {}, readKeys: async (request) => answer(request)};
+    let api;
+    let rows;
+    const app = createApp({setup() {
+        api = new WindowApi();
+        rows = api.rows("list").rows;
+        return () => h("div");
+    }});
+    app.provide(WINDOW_CONTEXT, context);
+    app.mount(document.createElement("div"));
+    await settled();
+    await vi.advanceTimersByTimeAsync(600);
+    expect(rows.value).toEqual([{id: 1}]);
+    await api.reload(["list"]);
+    expect(asked).toEqual([[], ["list"]]);
+    expect(api.key("list").value.total).toBe(1);
 });

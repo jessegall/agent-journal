@@ -1,14 +1,6 @@
 from dataclasses import dataclass
 
-
-@dataclass(frozen=True)
-class AgentProfileLimitCounts:
-    profile: str
-    title: str
-    running: int
-    kept: int
-    run_limit: int
-    kept_limit: int
+from core.modules.usage.support.agent_profile_limit_counts import AgentProfileLimitCounts
 
 
 @dataclass(frozen=True)
@@ -21,5 +13,5 @@ class AgentLimitCounts:
     kept_limit: int
     run_setting: str
     kept_setting: str
-    per_profile: bool
+    profile_specific: bool
     profiles: tuple[AgentProfileLimitCounts, ...]

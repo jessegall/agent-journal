@@ -71,16 +71,16 @@ watch([() => props.profile, program], load, {immediate: true});
                 <template v-for="name in availability.programs" :key="name"><option :value="name">{{ name }}</option></template>
             </select>
         </label>
-        <div v-for="helper in availability.idle_helpers" :key="helper.id" class="idle-helper" :data-helper-idle="helper.id">
+        <template v-for="helper in availability.idle_helpers" :key="helper.id"><div class="idle-helper" :data-helper-idle="helper.id">
             <span>{{ helper.name }} · Idle</span>
             <Btn type="button" :disabled="!canSend" :data-helper-send="helper.id" @click="send(helper.id)">Send the job</Btn>
-        </div>
-        <label v-if="availability.idle_helpers.length" class="field">
+        </div></template>
+        <template v-if="availability.idle_helpers.length"><label class="field">
             <span>Why start another helper?</span>
             <TextInput v-model="freshReason" :disabled="pending" data-helper-fresh-reason />
-        </label>
+        </label></template>
         <Btn type="submit" :disabled="blocked" data-helper-start-button>Start a helper</Btn>
-        <p v-if="availability.fresh_reason" class="reason" data-helper-fresh-blocked>{{ availability.fresh_reason }}</p>
+        <template v-if="availability.fresh_reason"><p class="reason" data-helper-fresh-blocked>{{ availability.fresh_reason }}</p></template>
         <template v-if="availability.reason && availability.reason !== availability.fresh_reason"><p class="reason" data-helper-start-reason>{{ availability.reason }}</p></template>
         <template v-if="notice"><p class="notice">{{ notice }}</p></template>
     </form>
