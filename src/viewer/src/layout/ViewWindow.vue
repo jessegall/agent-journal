@@ -142,3 +142,7 @@ watchEffect(() => {
     flex: 1;
 }
 </style>
+
+<style scoped>
+@media (max-width: 700px) { .view-window.standalone :deep(.sidebar) { display: none; } }
+</style>
