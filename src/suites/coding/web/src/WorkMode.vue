@@ -4,6 +4,7 @@ import {Icon, Segmented, Switch, WindowRoom, useOutside, useWindow} from "@journ
 
 const AUTO_MODE = "journal.suites.coding.auto-mode";
 const DISPATCHES = "journal.suites.coding.workers.builder-dispatches-workers";
+const MERGER = "journal.suites.coding.workers.merger-on";
 const MODES = [
     {key: "coding.builder", label: "Builder", tip: {title: "Builder", line: "The agent writes code and assigns work to workers when useful."}},
     {key: "coding.orchestrator", label: "Orchestrator", tip: {title: "Orchestrator", line: "The agent plans, hands the work to workers, then reviews and merges it; it writes code itself only where no worker can."}},
@@ -12,6 +13,7 @@ const context = useWindow();
 const mode = ref(MODES[0].key);
 const auto = ref(true);
 const dispatches = ref(true);
+const merger = ref(true);
 const open = ref(false);
 const root = ref(null);
 useOutside(root, () => (open.value = false));
@@ -28,6 +30,7 @@ async function load() {
     if (driver) mode.value = driver.key;
     auto.value = (await settingValue(AUTO_MODE)) !== false;
     dispatches.value = (await settingValue(DISPATCHES)) !== false;
+    merger.value = (await settingValue(MERGER)) !== false;
 }
 
 async function run(words) {
@@ -64,6 +67,10 @@ onUnmounted(() => window.removeEventListener("journal:toggle-auto", toggleAuto))
 
 async function toggleDispatches() {
     if (await setSetting(DISPATCHES, !dispatches.value)) dispatches.value = !dispatches.value;
+}
+
+async function toggleMerger() {
+    if (await setSetting(MERGER, !merger.value)) merger.value = !merger.value;
 }
 
 
@@ -103,7 +110,12 @@ load();
                         <span>Builder sends workers</span>
                         <Switch :on="dispatches" @change="toggleDispatches" />
                     </label>
-                    <button type="button" class="agentset-limits" data-open-agent-limits @click="context.open('agents.agents'), open = false">Agent running and kept limits</button>
+                    <template v-if="dispatches">
+                        <label class="agentset-row" title="A helper merges workers whose tests passed and passes on what the main agent must judge">
+                            <span>Merger takes in workers</span>
+                            <Switch :on="merger" data-merger-toggle @change="toggleMerger" />
+                        </label>
+                    </template>
                     <template v-if="failure">
                         <p class="agentset-failure" role="alert">{{ failure }}</p>
                     </template>
@@ -165,8 +177,6 @@ load();
     color: var(--text-2);
     font-size: 12.5px;
 }
-
-.agentset-limits { padding: 0; border: 0; background: none; color: var(--accent-text); font: inherit; font-size: 12.5px; text-align: left; cursor: pointer; }
 
 .agentset-failure {
     margin: 0;

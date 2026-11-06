@@ -44,16 +44,15 @@ test("the work modes show the current choice and a pick chooses the driver", asy
     expect(element.querySelector(".segmented-option.on").textContent.trim()).toBe("Builder");
 });
 
-test("the settings menu links to running and kept limits for every agent type", async () => {
-    const {element, runs, opened} = await mount();
+test("the settings menu has the merger's switch only while the builder sends workers", async () => {
+    const {element} = await mount();
     element.querySelector("[data-work-settings]").click();
     await settled();
-    expect(element.querySelector("[data-work-menu] input")).toBeNull();
-    element.querySelector("[data-open-agent-limits]").click();
+    expect(element.querySelector("[data-open-agent-limits]")).toBeNull();
+    expect(element.querySelector("[data-work-menu]").textContent).toContain("Merger takes in workers");
+    element.querySelector("[data-work-menu] .agentset-row input, [data-work-menu] .agentset-row button").click();
     await settled();
-    expect(opened).toEqual(["agents.agents"]);
-    expect(element.querySelector("[data-work-menu]")).toBeNull();
-    expect(runs).toEqual([]);
+    expect(element.querySelector("[data-work-menu]").textContent).not.toContain("Merger takes in workers");
 });
 
 test("opening the menu reads its remaining settings for this environment", async () => {

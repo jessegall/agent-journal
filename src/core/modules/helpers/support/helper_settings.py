@@ -8,7 +8,9 @@ HELPER_PROFILE_LIMITS = f"{MODULE_KEY}.helper-profile-limits"
 ALLOWED_MODELS = f"{MODULE_KEY}.allowed-models"
 HELPER_MAX_MINUTES = f"{MODULE_KEY}.helper-max-minutes"
 HELPER_MAX_COST = f"{MODULE_KEY}.helper-max-cost"
-HELPER_SETTINGS = [SettingValue("helper-run-limit", "Helpers running, per profile", "Helpers of each profile that run at once; six profiles at 4 make 24. At 0 none run.", SettingType.NUMBER, default=4, person_set=True),
+AGENT_USE_DAYS = "journal.core.helpers.agent-use-days"
+HELPER_SETTINGS = [SettingValue("agent-use-days", "Days of agent use counted", "Days of jobs counted when suggesting which kept agent to retire.", SettingType.NUMBER, default=14),
+                   SettingValue("helper-run-limit", "Helpers running, per profile", "Helpers of each profile that run at once; six profiles at 4 make 24. At 0 none run.", SettingType.NUMBER, default=4, person_set=True),
                    SettingValue("helper-kept-limit", "Helpers kept, per profile", "Helpers kept of each profile, running or idle, until retired. At 0 there is no limit.", SettingType.NUMBER, default=8, person_set=True),
                    SettingValue("helper-profile-limits", "Limits for one profile", "Entries of profile:run:kept, each winning for its profile. An environment list replaces the project list.", SettingType.LIST, default=(), person_set=True),
                    SettingValue("allowed-models", "Allowed models", "Models that agents may run, as program and model; empty allows all.", SettingType.LIST, default=(), person_set=True),

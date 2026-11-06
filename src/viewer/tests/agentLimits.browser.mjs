@@ -6,9 +6,7 @@ const browser = await chromium.launch({executablePath: process.env.CHROMIUM_PATH
 try {
     const page = await browser.newPage({viewport: {width: 1440, height: 1100}, reducedMotion: "reduce"});
     page.on("pageerror", (error) => console.error(error));
-    await page.goto(address);
-    await page.locator('[data-work-settings]').click();
-    await page.locator('[data-open-agent-limits]').click();
+    await page.goto(`${address}&page=agents.agents`);
     const limits = page.locator('[data-window="agents.agents"] [data-agent-limits]');
     await limits.locator('.summary').click();
     try {
