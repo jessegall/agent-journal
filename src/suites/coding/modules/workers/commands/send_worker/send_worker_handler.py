@@ -1,19 +1,23 @@
 from core.base.actor import Actor
+from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
+from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.modules.tasks.models.task import Task
+from suites.coding.modules.workers.commands.end_gone_worker.end_gone_worker import EndGoneWorker
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.gone_agents import GoneAgents
 from suites.coding.modules.workers.support.worker_recipient import WorkerRecipient
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -22,17 +26,21 @@ from suites.coding.modules.workers.support.worker_task_advance import WorkerTask
 
 class SendWorkerHandler(Handler[SendWorker, AgentLine]):
     """Gives a worker that still has its worktree its next job as a line, on the latest of its base branch; a
-    delivered worker's task goes back in hand. Git runs before the transaction, so no hook waits on it."""
+    delivered worker's task goes back in hand, and a worker whose process is gone is ended, so the job starts it
+    again. Git and the process table are read before the transaction, so no hook waits on them."""
 
     command = SendWorker
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, gone: GoneAgents) -> None:
         self.rows, self.worktrees, self.repository, self.git, self.nudger = rows, worktrees, repository, git, nudger
-        self.advance = advance
+        self.advance, self.bus, self.gone = advance, bus, gone
         self.conflicts: tuple[str, ...] = ()
+        self.is_gone = False
 
     def prepare(self, command: SendWorker, actor: Actor) -> None:
+        worker = self.rows.required(Agent, command.worker_id)
+        self.is_gone = worker.ended_at is None and bool(self.gone.of([worker]))
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
             return
@@ -45,6 +53,8 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
             raise Refusal(f"worker {command.worker_id} has no worktree", "journal worker dispatch <task> starts a new one")
+        if self.is_gone:
+            self.bus.dispatch(EndGoneWorker(command.worker_id), context)
         if worktree.state is WorktreeState.DELIVERED:
             self.advance.restart_task(worktree, self.rows.required(Task, worktree.task_id), context)
             self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)

@@ -285,6 +285,8 @@ func answered(connection net.Conn, starter Starter, inputs *TerminalInputs, prev
 		answer = RunningAnswer
 	} else if err != nil {
 		answer = FailedAnswer
+	} else if pid := inputs.ProgramPid(request.AgentID); pid > 0 {
+		answer = StartedAnswer + " " + strconv.Itoa(pid)
 	}
 	_, _ = io.WriteString(connection, answer+"\n")
 }

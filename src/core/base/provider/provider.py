@@ -22,9 +22,11 @@ from core.base.provider.peer_note import PeerNote
 from core.base.provider.program_model import ProgramModel
 from core.base.driver.refusal_style import RefusalStyle
 from core.base.provider.session_line import SessionLine
-from core.base.provider.transcript_author import AGENT_AUTHOR
+from core.base.provider.transcript_author import AGENT_AUTHOR, USER_AUTHOR
 from core.base.provider.transcript_row import TranscriptRow
 from core.base.provider.transcript_tail import TranscriptTail
+from core.base.provider.written_row import WrittenRow
+from core.base.timestamp import Timestamp
 
 
 class Provider(ABC):
@@ -100,6 +102,18 @@ class Provider(ABC):
         rows = (self.transcript_row(line, position) for position, line in enumerate(reversed(lines)))
         return next((row.text for row in rows if row and row.author == AGENT_AUTHOR), "")
 
+    def written_row(self, line: str) -> WrittenRow | None:
+        try:
+            row = self.transcript_row(line, 0)
+            if row is None or not self.is_own_writing(line, row):
+                return None
+            return WrittenRow(row.author != AGENT_AUTHOR, row.text, Timestamp.parsed(row.time))
+        except ValueError:
+            return None
+
+    def is_own_writing(self, line: str, row: TranscriptRow) -> bool:
+        return row.author in (AGENT_AUTHOR, USER_AUTHOR)
+
     @abstractmethod
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None: ...
 
@@ -120,7 +134,7 @@ class Provider(ABC):
     def line_sent(self, line: SessionLine) -> bool:
         return False
 
-    def peer_notes(self, path: Path) -> Sequence[PeerNote]:
+    def peer_note(self, line: str) -> Sequence[PeerNote]:
         return ()
 
     def context_percent(self, home: JournalHome, session: str) -> int | None:

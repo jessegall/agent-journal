@@ -95,5 +95,10 @@ class HookEvent:
     def is_continuing(self) -> bool:
         return self.raw.get("source") in CONTINUING_SOURCES
 
+    @property
+    def displayed_text(self) -> str:
+        text = self.raw.get("delta")
+        return text.strip() if self.raw.get("final") is True and isinstance(text, str) else ""
+
     def tool_input(self) -> Mapping[object, object]:
         return mapping(self.raw.get("tool_input", {}), "tool_input")

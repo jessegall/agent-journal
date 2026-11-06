@@ -23,10 +23,12 @@ from server.endpoints.cli_endpoint import CliEndpoint
 from core.base.timestamp import Timestamp
 from core.base.timing import TIMING_HEADER, Timing
 from core.base.timing_log import TimingLog
+from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from tests.stories.server.support.story_line_route import StoryLineRoute
 from core.testing.line_outcome import LineOutcome
 from core.base.query.queries import Queries
+from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.models.agent_skill import AgentSkill
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
@@ -80,6 +82,30 @@ class ServerStory:
     def expect_locked_hook_answer(self, body: object, text: str) -> None:
         with self.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, LOCKED_HOOK_WAIT_SECONDS):
             self.expect_hook_answer("/hook", body, 200, text)
+
+    def send_hook_and_leave(self, body: dict[str, object]) -> None:
+        """Holds the hook in the queue until its client has closed, after the server took the connection, as a
+        hook that gave up at its limit does, and waits until the server has answered it."""
+        data = json.dumps(body).encode()
+        with self.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, LOCKED_HOOK_WAIT_SECONDS), socket.socket(socket.AF_UNIX) as connection:
+            connection.connect(str(self.socket_path))
+            connection.sendall(f"POST /hook HTTP/1.1\r\nHost: journal\r\nContent-Length: {len(data)}\r\nConnection: close\r\n\r\n".encode() + data)
+            time.sleep(STORY_HOOK_LIMIT_SECONDS / 2)
+        deadline = time.monotonic() + TIMEOUT_SECONDS
+        while not self.story.container.get(Queries).query(HookCall).filter(firing=body["firing"]).exists():
+            assert time.monotonic() < deadline, f"the server never answered the hook {body['firing']}"
+            time.sleep(POLL_SECONDS)
+
+    def expect_hook_line_soon(self, text: str, firing: str) -> None:
+        deadline = time.monotonic() + TIMEOUT_SECONDS
+        tries = 0
+        while time.monotonic() < deadline:
+            tries += 1
+            body = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use", session="s-1", environment="main", firing=f"{firing}-{tries}", role="main").body
+            if text in request_answer(self.socket_path, "POST", "/hook", dict(body)).text:
+                return
+            time.sleep(POLL_SECONDS)
+        raise AssertionError(f"no hook was told {text!r} in {tries} tries")
 
     def hook_decision(self, body: dict[str, object], headers: dict[str, str]) -> tuple[object, object]:
         reply = request_answer(self.socket_path, "POST", "/hook?program=claude", body, headers).json()

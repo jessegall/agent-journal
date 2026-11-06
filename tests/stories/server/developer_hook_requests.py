@@ -80,6 +80,10 @@ def test_the_hook_requests_page_scrolls_and_shows_each_part_in_a_browser(recordi
     expect_browser(recording_server, "hookRequests.browser.mjs", [])
 
 
+def test_a_poll_on_a_slow_route_has_one_request_in_flight_and_resumes_after_a_failed_one(recording_server):
+    expect_browser(recording_server, "pollInFlight.browser.mjs", [])
+
+
 def expect_part_count(value, expected) -> None:
     actual = [row['part_count'] for row in value['rows']]
     assert actual == expected, actual

@@ -52,7 +52,7 @@ class MessagingTurn(StoryFixture):
     parent = MessagingSession
 
     def steps(self, story):
-        story.hook("s-1", HookSamples.prompt("Fix the cart"))
+        story.hook("s-1", HookSamples.prompt("[journal] fix the cart"))
 
 
 def started_story(new_story):
@@ -506,7 +506,7 @@ class StoppedLead(StoryFixture):
 
     def steps(self, story: Story) -> None:
         story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-        story.hook("s-1", HookSamples.prompt("Fix the cart"))
+        story.hook("s-1", HookSamples.prompt("[journal] fix the cart"))
         story.agent = hook_agent(story, story.hook("s-1", HookSamples.stop()))
 
     def expect(self, story: Story) -> None:
