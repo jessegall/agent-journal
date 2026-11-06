@@ -15,7 +15,7 @@ const PLAIN = {...DECLARED, type: "plans.plan"};
 const LEAVING = {...DECLARED, type: "processes.output", leaves_after_seconds: 5};
 const item = (type) => ({id: 5, type, target_model: "doc", target_id: 3, state: "docked", kept: false, leaves_at: null, text: "The abstract line", created_at: new Date(Date.now() - 601000).toISOString()});
 
-async function drawn(type) {
+async function drawn(type, collapsed = false) {
     loadDockDeclarations([DECLARED, PLAIN, LEAVING]);
     vi.stubGlobal("ResizeObserver", class {
         observe() {}
@@ -24,7 +24,7 @@ async function drawn(type) {
     });
     const element = document.createElement("div");
     document.body.append(element);
-    const app = createApp({render: () => h(DockStack, {items: [item(type)]})});
+    const app = createApp({render: () => h(DockStack, {items: [item(type)], collapsed})});
     app.provide(WINDOW_CONTEXT, {environment: "main"});
     app.mount(element);
     await settle();
@@ -45,5 +45,10 @@ test("every card shows its age and leaves the full text to Open", async () => {
 
 test("a card that leaves by itself shows no age, so its module can show how long it ran", async () => {
     const element = await drawn("processes.output");
+    expect(element.querySelector("[data-dock-age]").textContent).toBe("");
+});
+
+test("a collapsed card that leaves by itself shows no age either", async () => {
+    const element = await drawn("processes.output", true);
     expect(element.querySelector("[data-dock-age]").textContent).toBe("");
 });
