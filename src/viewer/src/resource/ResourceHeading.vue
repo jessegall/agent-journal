@@ -5,7 +5,9 @@ defineProps({label: String, title: String, abstract: String});
 <template>
     <div class="resource-heading">
         <p class="resource-type">{{ label }}</p>
-        <h2 class="resource-title" data-resource-title>{{ title }}</h2>
+        <template v-if="title">
+            <h2 class="resource-title" data-resource-title>{{ title }}</h2>
+        </template>
         <template v-if="abstract">
             <p class="resource-abstract">{{ abstract }}</p>
         </template>

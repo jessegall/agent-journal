@@ -1,12 +1,21 @@
 import {stateLook, stateOpenMoves} from "@journal/window-kit";
 
 export {cliOf} from "./modelNames.js";
-const HIDDEN = new Set(["id", "version", "metadata", "title", "brief", "body", "abstract"]);
+const HIDDEN = new Set(["id", "version", "metadata", "title", "brief", "body", "abstract", "state"]);
+const firstUpper = (words) => words.charAt(0).toUpperCase() + words.slice(1);
+const fieldLabel = (name) => firstUpper(name.replace(/_at$/, "").replaceAll("_", " "));
 
 export const titleOf = (noun, row, id) => row?.title || row?.name || `${noun} ${id}`;
 
-// the fields of a row with no page of its own: everything but what the head and the text already show, empty ones left out
-export const fieldsOf = (row) => Object.entries(row ?? {}).filter(([name, value]) => !HIDDEN.has(name) && value !== null && value !== "" && typeof value !== "object");
+// what the panel's head says of a row with no page of its own: its type and number, then its state
+export const headingOf = (noun, row, id) => [firstUpper(`${noun} ${id}`), row?.state && firstUpper(row.state)].filter(Boolean).join(" · ");
+
+// the fields of a row with no page of its own, with a label a person reads: everything but what the head and the text already show,
+// empty ones, row numbers and an unchanged updated time left out
+export const fieldsOf = (row, shownText = "") => Object.entries(row ?? {})
+    .filter(([name, value]) => !HIDDEN.has(name) && !name.endsWith("_id") && value !== null && value !== "" && typeof value !== "object" && value !== shownText)
+    .filter(([name, value]) => name !== "updated_at" || value !== row.created_at)
+    .map(([name, value]) => ({name, label: fieldLabel(name), value, isTime: name.endsWith("_at")}));
 
 const CANCEL = {word: "cancel", label: "Cancel", flag: "--reason", ask: "Why is it cancelled?"};
 

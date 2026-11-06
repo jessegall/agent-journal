@@ -122,9 +122,14 @@ test("a task shows its log, and a move that needs words asks for them before it 
     expect(lines).toContainEqual(["task", "close", "7", "--outcome", "fixed"]);
 });
 
-test("any other row shows its fields, labels above, and a refused read says why", async () => {
-    await opened("#?open=question:4", answering({"question show 4": {ok: true, value: {id: 4, title: "Which one?", state: "open", agent_id: 3}}}));
-    expect(shown().querySelector("[data-resource-fields]").textContent).toContain("agent_id");
+test("any other row shows plain labels with no row numbers or text twice, and a refused read says why", async () => {
+    await opened("#?open=memory:4", answering({"memory show 4": {ok: true, value: {id: 4, text: "Keep it", state: "active", weight: 9, creator_id: 78, environment_id: 5, created_at: "2026-11-06T10:30:28+00:00", updated_at: "2026-11-06T10:30:28+00:00"}}}));
+    const fields = shown().querySelector("[data-resource-fields]").textContent;
+    expect(fields).toContain("Weight");
+    expect(fields).toContain("Created");
+    expect(fields).not.toMatch(/creator|environment|Updated|Keep it|_at/);
+    expect(shown().querySelector(".resource-type").textContent).toBe("Memory 4 · Active");
+    expect(shown().querySelector("[data-resource-title]")).toBeNull();
     app.unmount();
     app = null;
     await opened("#?open=secret:1", answering({"secret show 1": {ok: false, error: "viewer.shell does not declare secret show"}}));

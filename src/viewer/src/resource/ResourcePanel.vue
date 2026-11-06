@@ -8,12 +8,13 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import TaskInspector from "../tasks/TaskInspector.vue";
 import AgentInspector from "./agent/AgentInspector.vue";
 import MemoryFacts from "./MemoryFacts.vue";
+import TimeAgo from "../../kit/TimeAgo.vue";
 import DocumentInspector from "./document/DocumentInspector.vue";
 import PlanInspector from "./PlanInspector.vue";
 import ProcessQueueInspector from "./ProcessQueueInspector.vue";
 import RowMoves from "./RowMoves.vue";
 import ResourceHeading from "./ResourceHeading.vue";
-import {cliOf, fieldsOf, titleOf} from "../domain/resourceNouns.js";
+import {cliOf, fieldsOf, headingOf, titleOf} from "../domain/resourceNouns.js";
 import ModuleBody from "../windows/ModuleBody.vue";
 
 // the inspector: the row the address opens, over the page, as version 4's side panel drew it; each opened row stacks on the one before
@@ -35,7 +36,7 @@ const isDocument = computed(() => DOCUMENT_NOUNS.has(noun.value));
 const title = computed(() => titleOf(noun.value, row.value, opened.value?.id));
 const text = computed(() => row.value?.body || row.value?.brief || (TEXT_NOUNS.has(noun.value) ? row.value?.text : "") || "");
 const html = computed(() => (text.value ? render(text.value, {env: "", rowNames: false}) : ""));
-const fields = computed(() => fieldsOf(row.value));
+const fields = computed(() => fieldsOf(row.value, text.value));
 
 async function load() {
     const open = opened.value;
@@ -139,8 +140,8 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                     </button>
                                 </template>
                                 <ResourceHeading
-                                    :label="`${noun} ${opened.id}${row?.state ? ` · ${row.state}` : ''}`"
-                                    :title="title"
+                                    :label="headingOf(noun, row, opened.id)"
+                                    :title="row?.title || row?.name"
                                     :abstract="row?.abstract"
                                 />
                                 <button type="button" class="head-button" data-resource-close aria-label="Close the panel" @click="close">
@@ -165,10 +166,15 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                     <template v-if="noun === 'memory'">
                                         <MemoryFacts :id="opened.id" :read="read" />
                                     </template>
-                                    <section class="section" data-resource-fields>
-                                        <template v-for="[name, value] in fields" :key="name">
-                                            <p class="field-name">{{ name }}</p>
-                                            <p class="field-value">{{ value }}</p>
+                                    <section class="section field-grid" data-resource-fields>
+                                        <template v-for="field in fields" :key="field.name">
+                                            <p class="field-name">{{ field.label }}</p>
+                                            <template v-if="field.isTime">
+                                                <TimeAgo class="field-value" :at="field.value" />
+                                            </template>
+                                            <template v-else>
+                                                <p class="field-value">{{ field.value }}</p>
+                                            </template>
                                         </template>
                                     </section>
                                 </template>
@@ -384,10 +390,17 @@ h3 {
     margin: 0;
 }
 
+.field-grid {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 6px 16px;
+    align-items: baseline;
+}
+
 .field-name {
-    margin: 12px 0 2px;
+    margin: 0;
     color: var(--text-3);
-    font-size: 11.5px;
+    font-size: 12px;
 }
 
 .field-value {
