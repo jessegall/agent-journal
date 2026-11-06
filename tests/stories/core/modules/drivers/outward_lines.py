@@ -16,6 +16,7 @@ def test_a_read_only_helper_gets_a_usage_error_for_a_subcommand_that_does_not_ex
     story = new_story(fixture=StartedHelper)
     helper = the_helper(story)
     story.expect_hook_allowed(helper.session, journal_line("task", "nosuch"))
+    story.expect_hook_allowed(helper.session, journal_line("doc", "delete", "1"))
     outcome = story.run("task nosuch", Actor(helper.id, ActorType.AGENT))
     story.expect_rows(outcome.code != 0, "task has no subcommand nosuch" in outcome.output_text)
 
