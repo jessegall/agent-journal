@@ -136,7 +136,11 @@ async function readAnswer(body, signal, unbatched) {
 }
 
 // a line of a window, read or write, whichever way it was asked: the server's knowledge of its command decides, and only a read is joined
-export async function lineResult(window, line, environment, signal = undefined, unbatched = false) {
+export function lineResult(window, line, environment, signal = undefined, unbatched = false) {
+    return transport.held(() => askedLine(window, line, environment, signal, unbatched));
+}
+
+async function askedLine(window, line, environment, signal, unbatched) {
     const body = {window, line: Array.isArray(line) ? line : lineWords(line), environment};
     if (!(await transport.isRead(body.line))) return lineAnswer(() => lineBatch.write({...body, attribution: {
         client_id: transport.clientId, command_id: crypto.randomUUID(), joined_callers: 0, followed_command_id: "", complete: true}}), signal);

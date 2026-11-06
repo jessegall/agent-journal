@@ -1,7 +1,7 @@
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {transport} from "../src/api/transport.js";
 import {watchPresses} from "../src/platform/pressed.js";
-import {lineBatch} from "../src/windows/lineBatch.js";
+import {lineResult} from "../src/windows/windowContext.js";
 
 let answerFetch;
 let fetches;
@@ -43,11 +43,40 @@ test("a button shows the spinner and is disabled while its request is in flight,
     expect(button.disabled).toBe(false);
 });
 
-test("a line a window writes holds its button too", async () => {
-    const button = drawnButton(() => lineBatch.write({window: "memories.memories", line: ["memory", "make", "A memory"]}));
+const asksReadLines = (url) => (url.includes("read-lines") ? Promise.resolve(new Response(JSON.stringify({reads: ["memory list"]}))) : new Promise((resolve) => (answerFetch = resolve)));
+
+test("a line a window writes holds its button too, though it leaves after the click is handled", async () => {
+    vi.stubGlobal("fetch", asksReadLines);
+    const button = drawnButton(() => lineResult("memories.memories", ["memory", "make", "A memory"], "main"));
     button.click();
     expect(button.dataset.busy).toBe("1");
+    await settle();
+    await settle();
+    expect(button.dataset.busy).toBe("1");
     expect(button.disabled).toBe(true);
+    reply(200, {code: 0, value: {}});
+    await settle();
+    expect(button.dataset.busy).toBeUndefined();
+});
+
+test("a read a click asks holds its button too, until it is answered", async () => {
+    vi.stubGlobal("fetch", asksReadLines);
+    const button = drawnButton(() => lineResult("memories.memories", ["memory", "list"], "main"));
+    button.click();
+    expect(button.dataset.busy).toBe("1");
+    await settle();
+    await settle();
+    expect(button.dataset.busy).toBe("1");
+    reply(200, {code: 0, value: {rows: []}});
+    await settle();
+    expect(button.dataset.busy).toBeUndefined();
+    expect(button.disabled).toBe(false);
+});
+
+test("a GET a click asks holds its button until it is answered", async () => {
+    const button = drawnButton(() => transport.request("GET", "/api/anything"));
+    button.click();
+    expect(button.dataset.busy).toBe("1");
     reply(200, {});
     await settle();
     expect(button.dataset.busy).toBeUndefined();

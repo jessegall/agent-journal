@@ -1,8 +1,8 @@
-// The one place a button shows that its request is in flight: a click on any button is noted here, and the request that starts
-// while that click is handled (api/transport.js, through holdPressed) puts a spinner on the button and disables it until the
-// request ends. No button opts in; a click that sends no request changes nothing. A button that sends its request around the
+// The one place a button shows that its request is in flight: a click on any button is noted here, and a request asked
+// while that click is handled, read or write (api/transport.js, Transport.held, through holdPressed), puts a spinner on the button and disables it
+// until the request ends. No button opts in; a click that sends no request changes nothing. A button that sends its request around the
 // transport (its own fetch) is not seen here.
-const BUTTON = "button, [role=button], a.btn";
+const BUTTON = 'button, [role="button"], [role="switch"], [role="menuitem"], a.btn';
 
 // the viewer and the window kit are built apart and each holds a copy of this file, as of the transport, so the state is shared
 // by the page: the button just clicked, and the buttons this file disabled (a button disabled by its own window is left as it was)

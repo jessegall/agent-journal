@@ -136,16 +136,26 @@ class Transport {
         this.out(REPEATED_LINES_ROUTE, {method: "POST", headers: {...VIEWER, "Content-Type": "application/json"}, body}, [{window: SHELL_WINDOW, line: REPEATED_LINES_ROUTE, kind: WRITE}]).catch(() => {});
     }
 
-    // the one place a request leaves; a write holds the button whose click made it (platform/pressed.js) until it is answered
+    // a request a click causes, read or write, holds the button clicked from the moment it is asked until it is answered (platform/pressed.js):
+    // it is held when asked, as a read may wait for a place or a batch and leave after the click has been handled
+    held(ask) {
+        const release = holdPressed();
+        try {
+            return ask().finally(release);
+        } catch (error) {
+            release();
+            throw error;
+        }
+    }
+
+    // the one place a request leaves
     async out(url, init, requests, limit = 0) {
         const landed = this.took(requests, url);
-        const released = requests[0].kind === WRITE ? holdPressed() : () => {};
         const leaving = limit ? {...init, signal: limited(init.signal, limit)} : init;
         try {
             return await fetch(url, requests[0].kind === WRITE ? {...leaving, priority: "high"} : leaving);
         } finally {
             landed();
-            released();
         }
     }
 
@@ -293,7 +303,7 @@ class Transport {
 
     // a read whose failure says nothing about the server, so it puts no cover up
     quietRead(url, init = {}) {
-        return this.whenFree(() => this.out(url, init, [{window: SHELL_WINDOW, line: url, kind: READ}], WAIT_MS));
+        return this.held(() => this.whenFree(() => this.out(url, init, [{window: SHELL_WINDOW, line: url, kind: READ}], WAIT_MS)));
     }
 
     // a file's bytes, which are not JSON, at an address that names its environment itself
@@ -306,6 +316,10 @@ class Transport {
     // a read is keyed by what it reads, never by its query: while a read of a key is in flight, a read of the same key is not
     // sent, and its caller takes the answer of the one in flight
     request(method, url, body, wait = 0, headers = {}, key = url.split("?")[0]) {
+        return this.held(() => this.asked(method, url, body, wait, headers, key));
+    }
+
+    asked(method, url, body, wait, headers, key) {
         if (method !== "GET") return this.send(method, url, body, wait, RELOAD_TRIES, headers).then((got) => (this.written(url), got));
         if (covered() && !asksUpdateStatus(url))
             return Promise.reject(Object.assign(new Error("The journal is updating."), {updating: true}));
@@ -333,8 +347,8 @@ class Transport {
     // how long a read may take; a request the server never answered puts the cover up
     raw(url, init = {}, {window = SHELL_WINDOW, line = url, limit = WAIT_MS} = {}) {
         const kind = (init.method ?? "GET") === "GET" ? READ : WRITE;
-        if (kind === WRITE) return this.sent(url, init, [{window, line, kind}], 0);
-        return this.whenFree(() => this.sent(url, init, [{window, line, kind}], limit));
+        if (kind === WRITE) return this.held(() => this.sent(url, init, [{window, line, kind}], 0));
+        return this.held(() => this.whenFree(() => this.sent(url, init, [{window, line, kind}], limit)));
     }
 }
 
