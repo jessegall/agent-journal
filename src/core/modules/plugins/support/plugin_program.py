@@ -7,6 +7,7 @@ from collections.abc import Mapping
 
 from core.base.agent_checkouts import AgentCheckouts
 from core.base.journal_home import JournalHome
+from core.base.model.event_form import EventForm
 from core.base.running_scripts import RunningScripts
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.plugin_call import PluginCall
@@ -38,9 +39,9 @@ class PluginProgram:
         manifest = call.manifest
         folder = self.folders.code(manifest.name)
         self.write_settings(manifest.name, call.settings)
-        skills = self.skills.names(call.agent_id) if call.agent_id is not None else ()
-        checkout = call.file_checkout or (self.checkouts.checkout(call.agent_id) if call.agent_id is not None else None)
-        line = json.dumps({"v": 1, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "skills": list(skills), "checkout": checkout.values() if checkout is not None else {}, "data": dict(call.event.data)})
+        line = self.line(call)
+        if call.form is not EventForm.COMMIT:
+            self.scripts.keep_line(manifest.name, line)
         socket_services = [service.name for service in manifest.services if service.answers]
         if not call.script and limit_ms is not None and socket_services and (service_socket := PluginSocket(self.sockets.answers(manifest.name, socket_services[0]))).is_open():
             try:
@@ -72,6 +73,11 @@ class PluginProgram:
             return PluginAnswer.parsed(output)
         except json.JSONDecodeError:
             raise PluginFaultError("its answer is not JSON") from None
+
+    def line(self, call: PluginCall) -> str:
+        skills = self.skills.names(call.agent_id) if call.agent_id is not None else ()
+        checkout = call.file_checkout or (self.checkouts.checkout(call.agent_id) if call.agent_id is not None else None)
+        return json.dumps({"v": 1, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "skills": list(skills), "checkout": checkout.values() if checkout is not None else {}, "data": dict(call.event.data)})
 
     @staticmethod
     def stop(process: "subprocess.Popen[str]") -> None:

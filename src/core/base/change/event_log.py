@@ -101,6 +101,10 @@ class EventLog:
     def events_past(self, event_id: int, limit: int = PAGE_SIZE_EVENTS) -> list[LoggedEvent]:
         return [LoggedEvent.parsed(row) for row in self.table.rows_past(event_id, limit)]
 
+    def newest_named(self, event: str) -> LoggedEvent | None:
+        row = self.table.newest_named(event)
+        return LoggedEvent.parsed(row) if row is not None else None
+
     def row_events(self, row_table: str, row_id: int) -> list[LoggedEvent]:
         return [LoggedEvent.parsed(row) for row in self.table.row_rows(row_table, row_id)]
 

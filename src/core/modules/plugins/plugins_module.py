@@ -39,6 +39,7 @@ from core.modules.plugins.commands.enable_plugin.enable_plugin_subcommand import
 from core.modules.plugins.commands.install_plugin.install_plugin_handler import InstallPluginHandler
 from core.modules.plugins.commands.install_plugin.install_plugin_subcommand import InstallPluginSubcommand
 from core.modules.plugins.commands.plugin_record.plugin_record_subcommand import PluginRecordSubcommand
+from core.modules.plugins.commands.plugin_try.plugin_try_subcommand import PluginTrySubcommand
 from core.modules.plugins.commands.plugin_list.plugin_list_subcommand import PluginListSubcommand
 from core.modules.plugins.commands.plugin_settings.plugin_settings_subcommand import PluginSettingsSubcommand
 from core.modules.plugins.commands.plugin_services.plugin_services_subcommand import PluginServicesSubcommand
@@ -110,5 +111,5 @@ class PluginsModule(Module):
     tick_handlers = [TickHandler(TickInterval(seconds=1), PluginCardReading(), "plugin card reading")]
     guards = [PluginEventGuard]
     listeners = [PluginEventListener, SystemEventDeliveryListener, LoginPathListener, PluginSkillPublishListener, PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]
-    subcommands = [PluginEventsSubcommand, RunPluginCommandSubcommand, PluginCheckoutSubcommand, PluginChangesSubcommand, PluginFileSubcommand, PluginRecordSubcommand, PluginListSubcommand, PluginSettingsSubcommand, PluginServicesSubcommand, UpgradePluginSubcommand, PluginPreviewSubcommand, PluginLatestSubcommand, PluginDashboardSubcommand, PluginDashboardsSubcommand, PluginDescriptionsSubcommand, ProposePluginSubcommand, InstallPluginSubcommand, EnablePluginSubcommand,
+    subcommands = [PluginTrySubcommand, PluginEventsSubcommand, RunPluginCommandSubcommand, PluginCheckoutSubcommand, PluginChangesSubcommand, PluginFileSubcommand, PluginRecordSubcommand, PluginListSubcommand, PluginSettingsSubcommand, PluginServicesSubcommand, UpgradePluginSubcommand, PluginPreviewSubcommand, PluginLatestSubcommand, PluginDashboardSubcommand, PluginDashboardsSubcommand, PluginDescriptionsSubcommand, ProposePluginSubcommand, InstallPluginSubcommand, EnablePluginSubcommand,
                    DisablePluginSubcommand, ConfigurePluginSubcommand, RemovePluginSubcommand]

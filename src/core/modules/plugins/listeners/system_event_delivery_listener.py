@@ -13,6 +13,7 @@ from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.plugins.commands.deliver_plugin_event.deliver_plugin_event import DeliverPluginEvent
+from core.modules.plugins.support.plugin_payload import PluginPayload
 from core.modules.plugins.support.plugin_subscriptions import PluginSubscriptions
 from core.modules.plugins.support.plugins_module_name import MODULE_NAME
 from core.modules.settings.support.managed_hook_changed import ManagedHookChanged
@@ -34,7 +35,6 @@ class SystemEventDeliveryListener(CommitListener[JournalBooting | RegistrySynced
         if not subscriptions:
             return
         key = self.registry.event_key(logged.event)
-        data = json.dumps({"form": EventForm.COMMIT.value, "final": True, "log_name": logged.event, "event_id": logged.id, "actor": {"type": self.queries.query(ActorRecord).find(logged.actor_id).type.value, "id": logged.actor_id},
-                           "command": logged.command, "cause_id": logged.cause_id, "row": {}, "old_row": {}, "changed": dict(logged.data)})
+        data = json.dumps(PluginPayload.logged(logged, self.queries.query(ActorRecord).find(logged.actor_id).type.value, {}, {}))
         for subscription in subscriptions:
             self.bus.run(DeliverPluginEvent(subscription.plugin_id, None, key, data, subscription.script, logged.id, logged.environment_id), self.actors.actor(MODULE_NAME), cause_id=logged.id)

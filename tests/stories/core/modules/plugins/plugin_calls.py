@@ -11,7 +11,9 @@ from core.modules.plugins.models.plugin_output import PluginOutput
 from core.modules.processes.models.process import Process
 from tests.stories.core.modules.plugins.event_guard import LOCK_CHECK
 from tests.stories.core.modules.plugins.support.checkout_stories import ORDER, checkout_story, real
-from tests.stories.core.modules.plugins.support.event_stories import EVENT_SCRIPTS, plugin_row, script_calls
+from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE
+from tests.stories.core.modules.plugins.support.event_stories import EVENT_SCRIPTS, event_plugin_story, plugin_row, script_calls
+from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.modules.plugins.support.runner_binaries import recording_runner_at
 
 SECRET_NAME = "secrets.txt"
@@ -173,3 +175,9 @@ def test_s61_trying_a_script_that_fails_leaves_no_fault(new_story):
 def test_s61_trying_a_key_with_no_event_yet_uses_an_empty_row(new_story):
     story = checkout_story(new_story, {"event": "core.pins.pin.created", "commit": "try.sh"}, scripts={"try.sh": TOLD_SCRIPT}, name="tidy-worktrees", program="try.sh")
     story.expect_text("plugin try tidy-worktrees core.pins.pin.created", "core.pins.pin.created", "the worktree is tidy", actor=story.user)
+
+
+def test_s61_the_inputs_of_a_plugin_show_a_held_event_that_has_no_row(new_story):
+    story = install_runner(event_plugin_story(new_story, program="see.sh", holds=["command_starting"]))
+    story.hook("s-1", LISTING_SAMPLE)
+    story.expect_text("plugin record events --inputs", "command_starting", actor=story.user)

@@ -11,6 +11,7 @@ from core.base.error_log import ErrorLog
 from core.base.model.event_form import EventForm
 from core.base.model.model import Model
 from core.base.registry.registry import Registry
+from core.base.running_scripts import RunningScripts
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
 from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults import ClearPluginFaults
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
@@ -29,8 +30,8 @@ class PluginEventScripts:
     so they run with no lock held, and the next round reads them. A change with no script is one lookup. Saving a
     fault runs no script, or a script on the plugin row that fails would record faults without end."""
 
-    def __init__(self, subscriptions: PluginSubscriptions, log: EventLog, errors: ErrorLog, registry: Registry, runner: PluginEventRunner, bus: Bus) -> None:
-        self.subscriptions, self.log, self.errors, self.registry, self.runner, self.bus = subscriptions, log, errors, registry, runner, bus
+    def __init__(self, subscriptions: PluginSubscriptions, log: EventLog, errors: ErrorLog, registry: Registry, runner: PluginEventRunner, bus: Bus, running: RunningScripts) -> None:
+        self.subscriptions, self.log, self.errors, self.registry, self.runner, self.bus, self.running = subscriptions, log, errors, registry, runner, bus, running
 
     def answers(self, form: EventForm, event: Changed[Model], context: Context) -> Sequence[PluginEventAnswer]:
         if isinstance(context.command, FAULT_WRITES):
@@ -44,6 +45,7 @@ class PluginEventScripts:
             return cast(Sequence[PluginEventAnswer], turn.answers)
         if runs.closed:
             self.errors.noted(f"{form.value} scripts of {change.event} were skipped: {runs.closed_reason}")
+            self.running.note_skip(change.event, runs.closed_reason)
             return ()
         raise runs.rollback(PluginEventWork(self.runner, self.errors, form, self.registry.event_key(change.event), subscriptions, PluginPayload.of(change, form, self.log, None),
                                             PluginPayload.environment_id(change), self.agent_id(context), turn))

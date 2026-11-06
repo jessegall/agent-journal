@@ -1,3 +1,4 @@
+from collections import deque
 import os
 import signal
 import subprocess
@@ -12,6 +13,7 @@ from core.base.running_script import RunningScript
 from core.base.timestamp import Timestamp
 
 
+KEPT_LINE_COUNT = 50
 SWITCHED_OFF_REASON = "the plugin was switched off"
 SERVER_STOP_REASON = "the server stopped"
 
@@ -28,6 +30,8 @@ class RunningScripts:
         self.scripts: dict[int, RunningScript] = {}
         self.services: dict[int, str] = {}
         self.stop_reasons: dict[int, str] = {}
+        self.sent_lines: dict[str, deque[str]] = {}
+        self.skips: dict[str, str] = {}
 
     @classmethod
     @cache
@@ -46,6 +50,22 @@ class RunningScripts:
     def stop_reason(self, process: "subprocess.Popen[str]") -> str:
         with self.lock:
             return self.stop_reasons.get(process.pid, "")
+
+    def keep_line(self, plugin: str, line: str) -> None:
+        with self.lock:
+            self.sent_lines.setdefault(plugin, deque(maxlen=KEPT_LINE_COUNT)).append(line)
+
+    def lines(self, plugin: str) -> tuple[str, ...]:
+        with self.lock:
+            return tuple(self.sent_lines.get(plugin, ()))
+
+    def note_skip(self, log_name: str, reason: str) -> None:
+        with self.lock:
+            self.skips[log_name] = reason
+
+    def newest_skip(self, log_name: str) -> str:
+        with self.lock:
+            return self.skips.get(log_name, "")
 
     def plugin_names(self) -> frozenset[str]:
         with self.lock:
