@@ -60,7 +60,8 @@ try {
     await pages[0].close();
     await send(pages[1], "Heard after the first tab left");
     await shows(pages[TABS - 1], "Heard after the first tab left");
-    assert.equal(streams, 1, "the stream passed on and is still one");
+    const held = await Promise.all(pages.slice(1).map((page) => page.evaluate(() => globalThis[Symbol.for("journal.transport")].inFlight().filter((flight) => flight.kind === "stream").length)));
+    assert.equal(held.reduce((sum, streamsOfTab) => sum + streamsOfTab, 0), 1, `the stream passed on and is still one: ${held}`);
 } finally {
     await browser.close();
 }

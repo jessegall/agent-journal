@@ -8,6 +8,7 @@ const BATCH_WAIT_MS = 5000;
 const init = (body, signal) => ({signal, method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
 const flightOf = (body, kind) => ({window: body.window, line: body.line.join(" "), kind});
 const slowKey = (body) => JSON.stringify(body.line);
+const cancelled = () => new DOMException("cancelled", "AbortError");
 
 // reads asked while none can leave go together in one request, answered in order; a read asked alone goes alone
 // a batch given no answer in time is given up and each of its lines goes alone, so a stuck line holds only itself; that line goes alone from then on, until it answers quickly again
@@ -27,30 +28,53 @@ export class LineBatch {
                 return;
             }
             this.waiting.push(entry);
-            this.timer ??= setTimeout(() => transport.whenFree(() => this.send()), WAIT_MS);
+            this.sendSoon();
         });
     }
 
-    write(body, signal) {
-        return new Promise((resolve, reject) => this.alone({body, signal, resolve, reject}, WRITE));
+    // a write always finishes, also when its window has gone: it carries no signal
+    write(body) {
+        return new Promise((resolve, reject) => this.alone({body, resolve, reject}, WRITE));
+    }
+
+    sendSoon() {
+        this.timer ??= setTimeout(() => transport.whenFree(() => this.send()), WAIT_MS);
     }
 
     async send() {
         const sending = this.waiting.filter((entry) => !entry.signal?.aborted);
-        this.waiting.filter((entry) => entry.signal?.aborted).forEach((entry) => entry.reject(new DOMException("cancelled", "AbortError")));
+        this.waiting.filter((entry) => entry.signal?.aborted).forEach((entry) => entry.reject(cancelled()));
         this.waiting = [];
         this.timer = null;
         if (sending.length === 1) return this.readAlone(sending[0]);
         if (!sending.length) return undefined;
+        await this.sendTogether(sending);
+        return undefined;
+    }
+
+    // a line whose window has gone leaves the batch: the request is cut and what others still wait on goes again without it
+    async sendTogether(sending) {
+        const cut = new AbortController();
+        const waiting = new Set(sending);
+        const leavers = sending.map((entry) => () => {
+            waiting.delete(entry);
+            entry.reject(cancelled());
+            cut.abort();
+        });
+        sending.forEach((entry, index) => entry.signal?.addEventListener("abort", leavers[index], {once: true}));
         try {
-            const response = await transport.sent(LINES_ROUTE, init({lines: sending.map((entry) => entry.body)}), sending.map((entry) => flightOf(entry.body, READ)), BATCH_WAIT_MS);
+            const response = await transport.sent(LINES_ROUTE, init({lines: sending.map((entry) => entry.body)}, cut.signal), sending.map((entry) => flightOf(entry.body, READ)), BATCH_WAIT_MS);
             const {answers} = await response.json();
             sending.forEach((entry, index) => entry.resolve(answers[index]));
         } catch (failure) {
-            if (failure.name === "TimeoutError") sending.forEach((entry) => transport.whenFree(() => this.readAlone(entry)));
+            if (cut.signal.aborted) {
+                this.waiting.push(...waiting);
+                if (waiting.size) this.sendSoon();
+            } else if (failure.name === "TimeoutError") sending.forEach((entry) => transport.whenFree(() => this.readAlone(entry)));
             else sending.forEach((entry) => entry.reject(failure));
+        } finally {
+            sending.forEach((entry, index) => entry.signal?.removeEventListener("abort", leavers[index]));
         }
-        return undefined;
     }
 
     async readAlone(entry) {

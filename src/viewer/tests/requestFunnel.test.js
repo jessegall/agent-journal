@@ -212,6 +212,63 @@ test("a window that goes cancels only its own wait, and the read stops when ever
     server.open.length = 0;
 });
 
+test("a window taken down cancels its reads in flight, and the answer is dropped with no failure", async () => {
+    heldServer();
+    const {windowContext} = await import("../src/windows/windowContext.js");
+    const context = windowContext({window: "a.b", environment: "main", visible: () => true, permissions: {}, subscriptions});
+    const asked = context.read("usage tool", {unbatched: true});
+    await settled();
+    expect(transport.inFlight("a.b")).toHaveLength(1);
+    context.cancel();
+    expect((await asked).failure).toBe("cancelled");
+    await settled();
+    expect(transport.inFlight("a.b")).toEqual([]);
+});
+
+test("a batch holding a read of a window taken down is cut to what others still wait on", async () => {
+    const server = heldServer();
+    const leaving = new AbortController();
+    const gone = lineResult("a.b", ["usage", "tool"], "main", leaving.signal);
+    const kept = [lineResult("c.d", ["usage", "tool"], "main"), lineResult("c.d", ["plan", "outline", "1"], "main")];
+    await settled();
+    expect(server.routes).toEqual(["/api/lines"]);
+    leaving.abort();
+    expect((await gone).failure).toBe("cancelled");
+    await settled();
+    expect(server.routes).toEqual(["/api/lines", "/api/lines"]);
+    expect(server.lines.slice(3)).toEqual(["usage tool", "plan outline 1"]);
+    await server.answer();
+    expect((await Promise.all(kept)).map((answer) => answer.value)).toEqual(["usage tool", "plan outline 1"]);
+});
+
+test("a hidden tab has not left: its reads stay in flight", async () => {
+    const server = heldServer();
+    const {windowContext} = await import("../src/windows/windowContext.js");
+    const context = windowContext({window: "a.b", environment: "main", visible: () => false, permissions: {}, subscriptions});
+    const asked = context.read("usage tool");
+    await settled();
+    Object.defineProperty(document, "hidden", {value: true, configurable: true});
+    document.dispatchEvent(new Event("visibilitychange"));
+    expect(transport.inFlight("a.b")).toHaveLength(1);
+    delete document.hidden;
+    await server.answer();
+    expect((await asked).ok).toBe(true);
+});
+
+test("a write always finishes, also when its window has gone", async () => {
+    const server = heldServer();
+    const {windowContext} = await import("../src/windows/windowContext.js");
+    const context = windowContext({window: "a.b", environment: "main", visible: () => true, permissions: {}, subscriptions});
+    const asked = context.run(["message", "send", "hello"]);
+    await settled();
+    context.cancel();
+    await settled();
+    expect(transport.inFlight("a.b"), "the write is still on its way").toHaveLength(1);
+    await server.answer();
+    expect(transport.inFlight("a.b")).toEqual([]);
+    expect((await asked).failure).toBe("cancelled");
+});
+
 test("a window sending one noun and verb for many ids in a short time is reported once", async () => {
     const server = heldServer();
     for (const id of Array.from({length: 12}, (_, index) => index)) lineResult("a.b", ["process", "card", String(id)], "main", undefined, true);

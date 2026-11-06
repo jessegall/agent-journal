@@ -86,6 +86,7 @@ export function typeInto(input, text) {
 
 // a fetch stand-in that answers one line at a time, as the stubs of these tests were written, also for the lines the viewer sends together
 export const perLine = (answer) => async (url, init) => {
+    if (url === "/api/read-lines") return {ok: true, status: 200, json: async () => ({reads: ["task list", "suite current"]})};
     if (!String(url).endsWith("/api/lines")) return answer(url, init);
     const answers = [];
     for (const line of JSON.parse(init.body).lines) answers.push(await (await answer("/api/line", {...init, body: JSON.stringify(line)})).json());

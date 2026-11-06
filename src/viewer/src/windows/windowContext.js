@@ -66,6 +66,7 @@ export function windowContext({window, environment, agent, visible, permissions,
         run: (line) => lineResult(window, line, environment, requests.signal),
         upload: (file) => uploaded(file, window, requests.signal),
         cancel: () => requests.abort(),
+        signal: requests.signal,
         subscriptions,
         follow: (patterns, heard) => subscriptions.follow(window, patterns.filter((pattern) => events.some((declared) => matches(declared, pattern))), (event) => {
             recent.clear();
@@ -121,14 +122,14 @@ async function readAnswer(body, signal, unbatched) {
 // a line of a window, read or write, whichever way it was asked: the server's knowledge of its command decides, and only a read is joined
 export async function lineResult(window, line, environment, signal = undefined, unbatched = false) {
     const body = {window, line: Array.isArray(line) ? line : lineWords(line), environment};
-    if (!(await transport.isRead(body.line))) return lineAnswer(() => lineBatch.write(body, signal), signal);
+    if (!(await transport.isRead(body.line))) return lineAnswer(() => lineBatch.write(body), signal);
     return transport.joined(JSON.stringify(body), (stop) => readAnswer(body, stop, unbatched), signal).catch(() => CANCELLED);
 }
 
 // a file the person attached, sent to the journal to wait for the message that names it: answers {ok, value: its pending name}
 async function uploaded(file, window, signal = undefined) {
     try {
-        const response = await transport.raw(`/api/files?name=${encodeURIComponent(file.name)}`, {signal, method: "POST", headers: {"Content-Type": "application/octet-stream"}, body: file}, {window, line: `upload ${file.name}`});
+        const response = await transport.raw(`/api/files?name=${encodeURIComponent(file.name)}`, {method: "POST", headers: {"Content-Type": "application/octet-stream"}, body: file}, {window, line: `upload ${file.name}`});
         const answer = await response.json();
         if (signal?.aborted) return CANCELLED;
         return response.ok ? {ok: true, value: answer.file} : {ok: false, failure: "refused", error: answer.error ?? "the file was not taken"};
