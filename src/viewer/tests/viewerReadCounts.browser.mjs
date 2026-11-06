@@ -145,6 +145,7 @@ async function visibilityCase(context, address, code, caseName, workload) {
 async function raceCase(context, address, code) {
     const page = await controlledPage(context, address, code, false);
     await page.evaluate(() => readFixture.app.unmount());
+    await page.evaluate(() => readFixture.transport.flushReadReceipts());
     await page.clock.resume();
     let release;
     const held = new Promise((resolve) => { release = resolve; });

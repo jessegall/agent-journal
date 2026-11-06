@@ -342,6 +342,12 @@ def read_sample(new_story):
 
 @pytest.fixture
 def browser_sample(new_story):
+    with workload_server(new_story) as sample:
+        yield sample
+
+
+@pytest.fixture
+def scheduled_sample(new_story):
     with workload_server(new_story, listen=True) as sample:
         yield sample
 
@@ -426,7 +432,7 @@ def run_canonical_viewer_workload(new_story, output_folder: Path) -> tuple[dict[
     output_folder.mkdir(parents=True, exist_ok=True)
     case_samples = []
     for case in ("schedule", "hidden-pane", "hidden-tab", "initially-hidden", "failure-return", "action-event-race"):
-        with workload_server(new_story, listen=True) as sample:
+        with workload_server(new_story, listen=case == "schedule") as sample:
             case_samples.append(run_workload_browser(sample, output_folder, case))
     return tuple(case_samples)
 
@@ -545,8 +551,8 @@ def test_browser_visibility_failure_recovery_and_return(browser_sample, tmp_path
         validate_workload_sample(sample_data)
 
 
-def test_canonical_visible_and_hidden_schedule(browser_sample, tmp_path):
-    sample_data = run_workload_browser(browser_sample, tmp_path)
+def test_canonical_visible_and_hidden_schedule(scheduled_sample, tmp_path):
+    sample_data = run_workload_browser(scheduled_sample, tmp_path)
     expect_value(sample_data["result"]["elapsedMs"] >= 90000, True)
     if sample_data["sample_complete"]:
         validate_workload_sample(sample_data)
