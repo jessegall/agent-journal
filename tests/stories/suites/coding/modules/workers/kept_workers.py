@@ -1,3 +1,4 @@
+from core.testing.hook_samples import HookSamples
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from datetime import timedelta
 from pathlib import Path
@@ -176,3 +177,13 @@ def test_a_worker_whose_task_was_cancelled_can_be_released(new_story):
     story.expect_success('task cancel 1 --reason "Not needed"', actor=story.user)
     story.expect_success(f'worker release {worker.id} "Its task was cancelled"', actor=story.agent)
     story.expect_rows(story.container.get(WorktreeQuery).worker_worktree(worker.id) is None)
+
+
+def test_stop_allowed_when_a_dispatch_cannot_proceed(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    story.expect_success("setting set journal.suites.coding.workers.worker-kept-limit 1 --environment main", actor=story.user)
+    dispatched_worker(story)
+    story.new_row_id('task make "A second task"', actor=story.agent)
+    story.expect_hook_allowed("s-1", HookSamples.sample("stop"))
+
