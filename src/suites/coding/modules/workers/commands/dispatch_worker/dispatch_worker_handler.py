@@ -18,6 +18,7 @@ from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.support.task_waits import TaskWaits
 from suites.coding.modules.workers.support.available_workers import AvailableWorkers
 from suites.coding.modules.workers.support.worker_request import WorkerRequest
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
@@ -45,8 +46,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     transactional = False
 
     def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
-                 providers: Providers, programs: HelperPrograms, models: AllowedModels, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers) -> None:
-        self.places, self.copies, self.available_workers = places, copies, available_workers
+                 providers: Providers, programs: HelperPrograms, models: AllowedModels, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, waits: TaskWaits) -> None:
+        self.places, self.copies, self.available_workers, self.waits = places, copies, available_workers, waits
         self.queries, self.bus, self.settings = queries, bus, settings
         self.git, self.worker_command, self.worktrees, self.providers, self.programs, self.models = git, worker_command, worktrees, providers, programs, models
         self.environments, self.rows, self.types, self.profiles, self.scopes = environments, rows, types, profiles, scopes
@@ -60,7 +61,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     def dispatched(self, command: DispatchWorker, tasks: list[Task], context: Context) -> WorkerLaunch:
         task = tasks[0]
         for listed in tasks:
-            if listed.state is not TaskState.OPEN:
+            if not self.can_be_queued(listed, listed is task):
                 raise Refusal(f"task {listed.id} is {listed.state.value}", "a worker is dispatched to an open task")
         environment = self.environments.find(task.environment_id)
         caller = self.rows.find(Agent, context.actor.id)
@@ -88,6 +89,9 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             self.bus.run_with_context(CancelWorkerOpening(opened.worktree.id), context)
             raise
         return WorkerLaunch(opened.worker, worktree, self.worker_command.command(opened.worker, worktree, environment, task))
+
+    def can_be_queued(self, task: Task, is_first: bool) -> bool:
+        return task.state is TaskState.OPEN or (not is_first and task.state is TaskState.BLOCKED and self.waits.only_on_tasks(task.id))
 
     def check_idle(self, folder: str, request: WorkerRequest, tasks: list[Task]) -> None:
         idle = self.available_workers.first(folder, request)

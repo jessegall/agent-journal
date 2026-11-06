@@ -214,7 +214,7 @@ class PlanTaskWaiting(StoryFixture):
         story.run("task depend 3 --on 1")
 
     def expect(self, story: Story) -> None:
-        story.expect_success(lines.THIRD_TASK_DETAILS, "state: open")
+        story.expect_success(lines.THIRD_TASK_DETAILS, "state: blocked")
 
 
 class PlanTasksWaitingOutside(StoryFixture):
