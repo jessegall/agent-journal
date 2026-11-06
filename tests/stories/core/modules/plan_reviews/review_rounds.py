@@ -14,7 +14,7 @@ from tests.stories.support.story_checks import expect_value
 
 ROUNDS_WINDOW = "plan_reviews.rounds"
 REPORT = 'report make "{title}" --abstract "What the review found" --body "Fine" --about plan:1 --environment main'
-CRITIQUE_SEND = 'template send 1 --on=plan:1 --set=agents=2 --set=size="a normal read" --environment main'
+CRITIQUE_COMMAND = 'template send 1 --on=plan:1 --set=agents=2 --set=size="a normal read" --environment main'
 
 
 class PlanReadyForACritique(StoryFixture):
@@ -46,7 +46,7 @@ def press(server, cookie, *line: str) -> None:
     server.viewer_line_value(cookie, {"window": "messages.chat", "line": list(line), "environment": "main"})
 
 
-def ask_for_a_critique(server, cookie) -> None:
+def request_critique(server, cookie) -> None:
     press(server, cookie, "template", "send", "1", "--on=plan:1", "--set=agents=2 agents", "--set=size=a normal read")
 
 
@@ -63,7 +63,7 @@ class TwoFinishedRounds(StoryFixture):
 
     def steps(self, story) -> None:
         for title in ("First critique", "Second critique"):
-            story.expect_success(CRITIQUE_SEND, actor=story.user)
+            story.expect_success(CRITIQUE_COMMAND, actor=story.user)
             story.expect_success(REPORT.format(title=title), actor=story.agent)
             story.run_listeners()
 
@@ -89,8 +89,8 @@ def test_two_critiques_each_ended_by_a_report_show_as_two_rounds_with_their_repo
                                  all(round_row["started_at"] and round_row["ended_at"] for round_row in listed))
 
 
-def test_a_person_presses_ask_for_a_critique_and_the_round_runs(rounds, cookie):
-    ask_for_a_critique(rounds, cookie)
+def test_a_person_presses_request_critique_and_the_round_runs(rounds, cookie):
+    request_critique(rounds, cookie)
     rounds.story.expect_text("plan show 1", "state: reviewing")
     rounds.story.expect_rows(len(rounds_of(rounds, cookie)) == 1)
 
@@ -100,13 +100,13 @@ def test_the_person_sees_two_rounds_newest_first_opens_a_report_and_ends_a_runni
 
 
 def test_a_running_round_has_no_end_and_says_who_asked(rounds, cookie):
-    ask_for_a_critique(rounds, cookie)
+    request_critique(rounds, cookie)
     running = rounds_of(rounds, cookie)[0]
     rounds.story.expect_rows(running["ended_at"] is None, running["asked_by"] == rounds.story.user.id, running["reports"] == [])
 
 
 def test_the_end_the_review_button_closes_the_round_with_no_report(rounds, cookie):
-    ask_for_a_critique(rounds, cookie)
+    request_critique(rounds, cookie)
     press(rounds, cookie, "plan", "reviewed", "1")
     ended = rounds_of(rounds, cookie)[0]
     rounds.story.expect_rows(ended["ended_at"] is not None, ended["reports"] == [])
@@ -123,13 +123,13 @@ def start_helper(story, brief: str) -> Agent:
 
 
 def test_helpers_whose_brief_names_the_plan_in_the_round_are_its_reviewers(rounds, cookie):
-    before = start_helper(rounds.story, "Give plan 1 a first read")
-    rounds.story.expect_success(CRITIQUE_SEND, actor=rounds.story.user)
-    named =[start_helper(rounds.story, "Give plan 1 a thorough review"), start_helper(rounds.story, "Read plan:1 for risks")]
+    prior_helper = start_helper(rounds.story, "Give plan 1 a first read")
+    rounds.story.expect_success(CRITIQUE_COMMAND, actor=rounds.story.user)
+    selected_helpers = [start_helper(rounds.story, "Give plan 1 a thorough review"), start_helper(rounds.story, "Read plan:1 for risks")]
     start_helper(rounds.story, "Give plan 10 a thorough review")
     reviewers = rounds_of(rounds, cookie)[0]["reviewers"]
-    expect_value(sorted(reviewer["agent_id"] for reviewer in reviewers), sorted(agent.id for agent in named))
-    rounds.story.expect_rows(before.id not in [reviewer["agent_id"] for reviewer in reviewers], all(reviewer["name"] for reviewer in reviewers))
+    expect_value(sorted(reviewer["agent_id"] for reviewer in reviewers), sorted(agent.id for agent in selected_helpers))
+    rounds.story.expect_rows(prior_helper.id not in [reviewer["agent_id"] for reviewer in reviewers], all(reviewer["name"] for reviewer in reviewers))
 
 
 def test_a_report_says_who_filed_it(two_rounds):
@@ -140,7 +140,7 @@ def test_a_report_says_who_filed_it(two_rounds):
 
 def test_reports_filed_outside_a_round_are_not_in_it(rounds, cookie):
     file_report(rounds, "Before the round")
-    ask_for_a_critique(rounds, cookie)
+    request_critique(rounds, cookie)
     inside = file_report(rounds, "Inside the round")
     file_report(rounds, "After the round")
     rounds.story.expect_rows([report["id"] for report in rounds_of(rounds, cookie)[0]["reports"]] == [inside])
@@ -163,7 +163,7 @@ def test_rounds_read_the_log_of_a_plan_reviewed_before_the_section_existed(round
 
 
 def test_a_person_reads_rounds_as_json_and_text(rounds, cookie):
-    ask_for_a_critique(rounds, cookie)
+    request_critique(rounds, cookie)
     rounds.story.expect_text("plan rounds 1", "round 1", actor=rounds.story.user)
     rows = json.loads(rounds.story.run("plan rounds 1 --json", actor=rounds.story.user).output_text)["rows"]
     rounds.story.expect_rows(len(rows) == 1)

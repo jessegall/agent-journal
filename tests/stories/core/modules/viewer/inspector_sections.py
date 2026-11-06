@@ -22,8 +22,8 @@ def listed_section(server, cookie, name: str) -> dict:
     return next(window for window in listed_windows(server, cookie) if window["name"] == name)
 
 
-def allow(server, cookie, window: str, kind: str) -> None:
-    server.viewer_line_value(cookie, {"window": "viewer.shell", "line": ["window", "allow", window, "--type", kind], "environment": "main"})
+def allow(server, cookie, window: str, permission_type: str) -> None:
+    server.viewer_line_value(cookie, {"window": "viewer.shell", "line": ["window", "allow", window, "--type", permission_type], "environment": "main"})
 
 
 def test_a_sample_module_adds_a_button_and_a_section_to_plans_with_no_change_in_the_plans_module(plan_notes, plan_notes_cookie):
@@ -44,9 +44,9 @@ def test_the_person_sees_the_samples_section_and_button_in_the_plan_inspector(pl
 
 
 def test_a_section_lists_the_slots_it_names_and_no_other(plan_notes, plan_notes_cookie):
-    elsewhere = listed_section(plan_notes, plan_notes_cookie, "sections.elsewhere")
-    expect_value(elsewhere["slots"], ["inspector.task", "inspector.doc", "inspector.report", "inspector.agent", "inspector.memory"])
-    plan_notes.story.expect_rows("inspector.plan" not in elsewhere["slots"])
+    other_section = listed_section(plan_notes, plan_notes_cookie, "sections.elsewhere")
+    expect_value(other_section["slots"], ["inspector.task", "inspector.doc", "inspector.report", "inspector.agent", "inspector.memory"])
+    plan_notes.story.expect_rows("inspector.plan" not in other_section["slots"])
 
 
 def test_the_person_sees_a_section_on_a_task_and_a_memory_and_not_on_a_plan(plan_notes):
@@ -85,7 +85,7 @@ def test_slots_on_a_pane_window_refuse_the_sync(new_story):
 
 def test_a_suite_that_names_a_section_refuses_the_sync(new_story):
     story = new_story(fixture=MainEnvironment)
-    story.expect_sync_refusal(section_modules.SUITE_NAMES_A_SECTION, "suite sections names the section section_suite.notes, which an inspector draws and no pane offers")
+    story.expect_sync_refusal(section_modules.SECTION_SUITE_MODULE, "suite sections names the section section_suite.notes, which an inspector draws and no pane offers")
 
 
 def test_a_button_on_an_inspector_slot_refuses_the_sync(new_story):
@@ -97,7 +97,7 @@ def test_a_correct_section_syncs_into_the_registry(new_story):
     story = new_story(fixture=MainEnvironment)
     story.expect_sync_success(section_modules.GOOD_SECTION)
     entry = Registry.read(story.container.get(Database)).window("good_section.notes")
-    expect_row(entry, place="section", slots=("inspector.plan",), module="good_section")
+    expect_row(entry, place="section", slots=tuple(["inspector.plan"]), module="good_section")
 
 
 def test_a_section_of_a_module_whose_suite_is_not_chosen_is_not_listed(plan_notes, plan_notes_cookie):

@@ -4,11 +4,7 @@ from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
 class WindowListing:
-    """A window as GET /api/windows lists it for the viewer: its name, module and title, its entry file's URL
-    with its module's fingerprint or, for a document, the line the viewer reads, how and where it is drawn,
-    whose work it shows, the agent roles it is for, the lines and events it declares, why it is unavailable,
-    whether the journal ships it, and its icon, float size, pane menu options, count line, loading skeleton and
-    the inspector slots a section is drawn in."""
+    """A registered window as listed for the viewer."""
 
     name: str
     module: str

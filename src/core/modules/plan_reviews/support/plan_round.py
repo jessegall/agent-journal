@@ -13,12 +13,12 @@ class PlanRound:
     number: int
     started_at: Timestamp
     ended_at: Timestamp | None
-    asked_by: int
+    requester_id: int
     reviewers: tuple[RoundReviewer, ...]
     reports: tuple[RoundReport, ...]
 
     def json(self) -> dict[str, object]:
-        return {"number": self.number, "started_at": self.started_at.text, "ended_at": self.ended_at.text if self.ended_at is not None else None, "asked_by": self.asked_by,
+        return {"number": self.number, "started_at": self.started_at.text, "ended_at": self.ended_at.text if self.ended_at is not None else None, "asked_by": self.requester_id,
                 "reviewers": [reviewer.json() for reviewer in self.reviewers], "reports": [report.json() for report in self.reports]}
 
     def line(self) -> str:
