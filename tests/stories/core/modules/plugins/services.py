@@ -19,6 +19,8 @@ from core.base.driver.command_category import CommandCategory
 from core.base.driver.command_effect import CommandEffect
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
+from tests.stories.core.modules.plugins.support.event_stories import plugin_row
+from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.core.modules.plugins.hooks import REMOVAL_SAMPLE, start_counter
 from tests.stories.core.modules.plugins.support.service_samples import service_plugin_folder
 from tests.stories.core.modules.processes.support.process_samples import install_runner
@@ -62,7 +64,20 @@ def test_a_line_of_four_parts_starts_no_program_while_the_service_is_closed(new_
     story.processes.close()
     starts = start_counter(monkeypatch, "run.sh")
     story.expect_hook_allowed("s-1", four_parts(ShellPart("whoami", CommandCategory.READ, [])))
-    story.expect_rows(starts == [])
+    story.expect_hook_allowed("s-1", four_parts(ShellPart("whoami", CommandCategory.READ, [])))
+    served = plugin_row(story, "served")
+    story.expect_rows(starts == [], served.fault_count == 0, not served.failing)
+    story.expect_text("plugin list", "last fault: its service answers is closed, so the event went through unjudged at command_starting", actor=story.user)
+
+
+def test_a_delivery_runs_the_program_while_the_service_is_closed_and_records_no_fault(new_story, monkeypatch):
+    story = served_story(new_story)
+    story.processes.close()
+    starts = start_counter(monkeypatch, "run.sh")
+    scanned_edit(story, "s-1", "a.py")
+    story.run_listeners()
+    served = plugin_row(story, "served")
+    story.expect_rows(starts == ["served"], served.fault_count == 0, served.last_fault == "")
 
 
 def four_parts(last: ShellPart):

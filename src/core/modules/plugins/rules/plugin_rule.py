@@ -29,6 +29,7 @@ from core.modules.plugins.support.plugin_late_error import PluginLateError
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_program import PluginProgram
 from core.modules.plugins.support.plugin_queue import PluginQueue
+from core.modules.plugins.support.plugin_service_closed_error import PluginServiceClosedError
 from core.modules.plugins.support.plugin_settings import PluginSettings
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.base.model.event_form import EventForm
@@ -96,15 +97,20 @@ class PluginRule(DriverRule):
         if plugin.id not in values:
             values[plugin.id] = self.settings.values(plugin, manifest)
         guard = manifest.declared_event(event.name, EventForm.GUARD)
-        call = PluginCall(manifest, PluginEvent(guard.key, event.data) if guard else event, hook.event.environment, hook.timestamp, values[plugin.id], hook.agent_id, form=EventForm.GUARD, script=guard.script if guard else "")
+        call = PluginCall(manifest, PluginEvent(guard.key, event.data) if guard else event, hook.event.environment, hook.timestamp, values[plugin.id], hook.agent_id, form=EventForm.GUARD, script=guard.script if guard else "", held=True)
         try:
             answer = self.program.run(call, manifest.window_ms(event.name, self.setting_values.number(CEILING_SETTING)))
         except PluginLateError:
             return ""
+        except PluginServiceClosedError as closed:
+            record = closed.fault_record(plugin.id, f"at {event.name}")
+            if plugin.last_fault != record.fault and record not in commands:
+                commands.append(record)
+            return ""
         except PluginFaultError as fault:
             commands.append(fault.fault_record(plugin.id, f"at {event.name}"))
             return ""
-        if plugin.fault_count:
+        if plugin.last_fault:
             commands.append(ClearPluginFaults(plugin.id))
         if answer.has_output():
             commands.append(AddPluginOutput(plugin.id, hook.agent_id, answer.output))
