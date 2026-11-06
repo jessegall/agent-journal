@@ -8,6 +8,7 @@ import {AllowancePrompts} from "../src/windows/allowancePrompts.js";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 import {WINDOW_CONTEXT} from "../src/windows/windowContext.js";
 import {perLine, settle} from "./support/windowContext.js";
+import {dockWindow} from "./support/dockWindow.js";
 
 const BUTTON = {name: "plans.approve", module: "journal.core.plans", slots: ["dock.plans.waiting", "row.plan"], label: "Approve", runs: "plan approve {row_id}", fields: [], menu: [], condition: {field: "state", values: ["ready"]}};
 const mounted = [];
@@ -38,7 +39,7 @@ async function draw(component, props, context = {}) {
     const element = document.createElement("div");
     document.body.append(element);
     const app = createApp({render: () => h(component, props)});
-    app.provide(WINDOW_CONTEXT, {environment: "main", ...context});
+    app.provide(WINDOW_CONTEXT, dockWindow(props.item ? [props.item] : [], context));
     app.mount(element);
     mounted.push(app);
     await settle();

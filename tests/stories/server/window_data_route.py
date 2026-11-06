@@ -8,6 +8,7 @@ from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story
 
 WINDOW = "messages.chat"
+DOCK_TYPE = "tasks.task"
 
 
 def window_data(server, cookie: str, keys: str = "", window: str = WINDOW, query: str = "environment=main") -> tuple[int, dict[str, object]]:
@@ -42,7 +43,7 @@ def test_a_window_with_no_data_only_header_gets_the_keys_on_screen_and_what_it_d
     server, cookie = chat
     story = server.story
     status, answer = window_data(server, cookie)
-    story.expect_rows(status == 200, set(answer["keys"]) == {"messages", "marks", "docks", "pins"},
+    story.expect_rows(status == 200, set(answer["keys"]) == {"messages", "marks", "docks", "pins", "mark-motion", "voice-profile", "voice-avatar", "voice-avatar-shown"},
                       answer["keys"]["messages"]["code"] == 0, answer["keys"]["messages"]["value"]["rows"][0]["text"] == "Hello",
                       answer["declared"]["messages"]["events"] == ["message.*"])
 
@@ -78,3 +79,21 @@ def test_a_key_that_fails_leaves_the_others(chat):
 def test_no_session_is_refused(chat):
     server, _ = chat
     server.story.expect_rows(window_data(server, "", keys="pins")[0] == 401)
+
+
+def test_a_docked_card_reads_its_type_first_read_of_its_target_under_its_own_key(chat):
+    server, cookie = chat
+    story = server.story
+    task = story.new_row_id('task make "Docked work" --environment main', actor=story.user)
+    item = story.new_row_id(f"dock-item make 1 {DOCK_TYPE} task {task} --environment main --skip-guard docking.item-title --skip-reason 'the title is not what this story reads'", actor=story.user)
+    status, answer = window_data(server, cookie, keys=f"dock.{item}")
+    story.expect_rows(status == 200, answer["keys"][f"dock.{item}"]["value"]["title"] == "Docked work",
+                      f"dock.{item}" not in window_data(server, cookie)[1]["keys"])
+
+
+def test_a_key_with_an_id_fills_its_line_and_needs_a_number(chat):
+    server, cookie = chat
+    story = server.story
+    status, answer = window_data(server, cookie, keys="question.77,run.77")
+    story.expect_rows(status == 200, answer["keys"]["question.77"]["code"] != 0, "77" in answer["keys"]["run.77"]["error"],
+                      window_data(server, cookie, keys="dock.all")[0] == 400)

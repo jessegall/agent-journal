@@ -13,7 +13,7 @@ export function useDeclaredRows(key) {
     return source ? useRows(source.read, source.events) : useRows("", []);
 }
 
-function rowList(context, askRows, pageSize, incremental) {
+export function rowList(context, askRows, pageSizeOf, isIncremental) {
     const rows = ref([]);
     const listing = ref(null);
     const failure = ref("");
@@ -35,9 +35,9 @@ function rowList(context, askRows, pageSize, incremental) {
 
     // a created row is asked for alone, after the newest one held; a held row that changed is read alone; anything else reads the page again
     async function heard(event) {
-        if (incremental && String(event?.event ?? "").endsWith(".delete")) return void (rows.value = rows.value.filter((row) => row.id !== event.row_id));
-        if (incremental && event?.row_id && !String(event.event ?? "").endsWith(".create") && rows.value.some((row) => row.id === event.row_id)) return changed(event.row_id);
-        const created = incremental && rows.value.length && String(event?.event ?? "").endsWith(".create");
+        if (isIncremental() && String(event?.event ?? "").endsWith(".delete")) return void (rows.value = rows.value.filter((row) => row.id !== event.row_id));
+        if (isIncremental() && event?.row_id && !String(event.event ?? "").endsWith(".create") && rows.value.some((row) => row.id === event.row_id)) return changed(event.row_id);
+        const created = isIncremental() && rows.value.length && String(event?.event ?? "").endsWith(".create");
         if (!created) return load();
         const newest = Math.max(...rows.value.map((row) => row.id));
         const turn = latestLoad;
@@ -56,7 +56,7 @@ function rowList(context, askRows, pageSize, incremental) {
         const result = await askRows({"before-id": oldest});
         if (turn !== latestLoad) return false;
         if (!result.ok || !result.value.rows.length) return (more.value = false);
-        more.value = followed(result.value, pageSize);
+        more.value = followed(result.value, pageSizeOf());
         const held = new Set(rows.value.map((row) => row.id));
         rows.value = [...rows.value, ...result.value.rows.filter((row) => !held.has(row.id))];
         return true;
@@ -64,12 +64,12 @@ function rowList(context, askRows, pageSize, incremental) {
 
     let latestLoad = 0;
     function showPage(result, take) {
-        const fresh = result.ok ? (context.shared ? [result.value] : result.value.rows) : [];
+        const fresh = result.ok ? (context.shared ? [result.value] : (result.value?.rows ?? [])) : [];
         // a read that failed keeps the rows held: it says nothing about them
         if (result.ok) rows.value = take(fresh);
         listing.value = result.ok ? result.value : null;
         const reach = fresh.length ? Math.min(...fresh.map((row) => row.id)) : 0;
-        if (result.ok && !rows.value.some((row) => row.id < reach)) more.value = !context.shared && followed(result.value, pageSize);
+        if (result.ok && result.value?.rows && !rows.value.some((row) => row.id < reach)) more.value = !context.shared && followed(result.value, pageSizeOf());
         failure.value = result.ok ? "" : result.error;
         afterSkeletonMinimum(startedAt, () => (loaded.value = true));
     }
@@ -81,7 +81,7 @@ function rowList(context, askRows, pageSize, incremental) {
     }
 
     const merged = (fresh) => {
-        if (!incremental || !fresh.length) return fresh;
+        if (!isIncremental() || !fresh.length) return fresh;
         const reach = Math.min(...fresh.map((row) => row.id));
         const newest = Math.max(...fresh.map((row) => row.id));
         return [...rows.value.filter((row) => row.id > newest), ...fresh, ...rows.value.filter((row) => row.id < reach)];
@@ -110,17 +110,10 @@ export function useRows(line, patterns, {incremental = false} = {}) {
     const pageSize = Number(line.match(/--limit[=\s]+(\d+)/)?.[1] ?? 50);
     const context = useWindow();
     const askRows = (flags) => context.read(context.shared && !Object.keys(flags).length ? `${context.shared.model} show ${context.shared.id}` : `${line}${flagWords(flags)}`);
-    const list = rowList(context, askRows, pageSize, incremental);
+    const list = rowList(context, askRows, () => pageSize, () => incremental);
     if (line) {
         context.follow(patterns, list.heard);
         list.load();
     }
-    return list;
-}
-
-// the same rows from a key of the window's data: the window's first load fills them, in one request with its other keys
-export function useKeyRows(windowData, key, {pageSize = 50, incremental = false} = {}) {
-    const list = rowList(useWindow(), (flags) => windowData.readKey(key, flags), pageSize, incremental);
-    windowData.handle(key, list.heard, list.showFirst);
     return list;
 }

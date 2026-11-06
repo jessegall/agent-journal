@@ -1,6 +1,7 @@
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 
 from core.base.viewer.window_key import WindowKey
+from core.base.viewer.window_key_line import WindowKeyLine
 from server.viewer.line_route import LineRoute
 from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.viewer_lines_request import ViewerLinesRequest
@@ -23,24 +24,17 @@ class WindowDataRoute:
             raise ViewerRequestError(f"no window {window}")
         return declaration.keys
 
-    def keys(self, request: WindowDataRequest) -> tuple[WindowKey, ...]:
-        declared_keys = self.declared(request.window)
-        if not request.requested_keys:
-            return tuple(key for key in declared_keys if key.shown_on(request.tab))
-        keys_by_name = {key.name: key for key in declared_keys}
-        return tuple(self.key_named(name, keys_by_name, request.window) for name in request.requested_keys)
-
-    @staticmethod
-    def key_named(name: str, keys_by_name: Mapping[str, WindowKey], window: str) -> WindowKey:
-        if name in keys_by_name:
-            return keys_by_name[name]
-        for key in keys_by_name.values():
-            id_key = key.of_id(name)
-            if id_key is not None:
-                return id_key
-        raise ViewerRequestError(f"{window} has no data {name}")
-
     def answer(self, request: WindowDataRequest, person_id: int) -> WindowDataAnswer:
-        keys = self.keys(request)
-        lines = tuple(ViewerLineRequest(request.window, key.line(request.state), request.environment) for key in keys)
-        return WindowDataAnswer(keys, lines, self.lines.timed_answers(ViewerLinesRequest(list(lines)), person_id), self.declared(request.window))
+        keys = request.selected_keys(self.declared(request.window))
+        lines = [ViewerLineRequest(request.window, key.line(request.state), request.environment) for key in keys]
+        self.replace_answered_lines(keys, lines, request, person_id)
+        return WindowDataAnswer(keys, tuple(lines), self.lines.timed_answers(ViewerLinesRequest(list(lines)), person_id), self.declared(request.window))
+
+    def replace_answered_lines(self, keys: Sequence[WindowKey], lines: list[ViewerLineRequest], request: WindowDataRequest, person_id: int) -> None:
+        places = [place for place, key in enumerate(keys) if key.answered_line]
+        answers = self.lines.timed_answers(ViewerLinesRequest([lines[place] for place in places]), person_id)
+        for place, timed in zip(places, answers):
+            if timed.answer.code != 0:
+                continue
+            key_line = WindowKeyLine.create(timed.answer.value)
+            lines[place] = ViewerLineRequest(key_line.window, list(key_line.line), request.environment)

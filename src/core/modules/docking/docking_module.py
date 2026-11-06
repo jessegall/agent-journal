@@ -11,6 +11,7 @@ from core.modules.docking.commands.add_dock_item.add_dock_item_subcommand import
 from core.modules.docking.commands.keep_dock_item.keep_dock_item_subcommand import KeepDockItemSubcommand
 from core.modules.docking.commands.remove_dock_item.remove_dock_item_subcommand import RemoveDockItemSubcommand
 from core.modules.docking.commands.release_dock_item.release_dock_item_subcommand import ReleaseDockItemSubcommand
+from core.modules.docking.commands.dock_item_read.dock_item_read_subcommand import DockItemReadSubcommand
 from core.modules.docking.commands.main_dock_items.main_dock_items_subcommand import MainDockItemsSubcommand
 from core.modules.docking.commands.make_dock.make_dock_handler import MakeDockHandler
 from core.modules.docking.guards.own_environment_guard import OwnEnvironmentGuard
@@ -50,7 +51,7 @@ class DockingModule(Module):
     models = [ModelDeclaration(Dock), ModelDeclaration(DockItem, query=DockItemQuery)]
     migrations = [DockItemSessionMigration, DocksTableMigration, ExistingEnvironmentDocksMigration, DockItemLabelsMigration, DockItemIndexesMigration, DockItemAgentsMigration, DockItemDueIndexMigration, PendingDockItemsIndexMigration, DockItemStateIndexMigration]
     handlers = [MakeDockHandler, AddDockItemHandler, KeepDockItemHandler, ReleaseDockItemHandler, RemoveDockItemHandler, ScheduleDockItemLeaveHandler]
-    subcommands = [AddDockItemSubcommand, KeepDockItemSubcommand, ReleaseDockItemSubcommand, RemoveDockItemSubcommand, MainDockItemsSubcommand]
+    subcommands = [DockItemReadSubcommand, AddDockItemSubcommand, KeepDockItemSubcommand, ReleaseDockItemSubcommand, RemoveDockItemSubcommand, MainDockItemsSubcommand]
     listeners = [EnvironmentDockListener, DockItemLeaveListener, PendingDockItemsListener]
     guards = [DockTypeGuard, DockTitleGuard, OneItemPerRowGuard, TypeCapacityGuard, DockCapacityGuard, OwnEnvironmentGuard]
     seeders = [DockingSeeder]

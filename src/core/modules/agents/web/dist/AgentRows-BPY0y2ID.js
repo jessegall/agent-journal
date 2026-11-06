@@ -386,8 +386,8 @@ function Ht(e, d = "agent") {
 }
 function Bt(e) {
   if (!e) return "Not compacted yet";
-  const d = new Date(e.at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "medium" });
-  return e.from_percent === null ? `Last compacted ${d}` : e.to_percent === null ? `Last compacted ${d}, from ${e.from_percent}%` : `Last compacted ${d}, from ${e.from_percent}% to ${e.to_percent}%, ${e.from_percent - e.to_percent}% taken off`;
+  const d = new Date(e.started_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "medium" });
+  return e.start_percent === null ? `Last compacted ${d}` : e.end_percent === null ? `Last compacted ${d}, from ${e.start_percent}%` : `Last compacted ${d}, from ${e.start_percent}% to ${e.end_percent}%, ${e.start_percent - e.end_percent}% taken off`;
 }
 const It = ["disabled", "title"], Et = ["title"], Nt = { class: "gauge usage" }, _t = ["disabled", "title"], qt = { class: "gauge" }, Wt = ["disabled", "title"], Ft = ["disabled"], Dt = ["disabled"], Pt = {
   key: 5,

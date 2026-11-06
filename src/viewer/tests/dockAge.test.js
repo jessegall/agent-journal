@@ -4,6 +4,7 @@ import DockStack from "../src/chat/DockStack.vue";
 import {loadDockDeclarations} from "../src/domain/dockRegistry.js";
 import {WINDOW_CONTEXT} from "../src/windows/windowContext.js";
 import {settle} from "./support/windowContext.js";
+import {dockWindow} from "./support/dockWindow.js";
 
 afterEach(() => {
     document.body.innerHTML = "";
@@ -25,7 +26,7 @@ async function drawn(type, collapsed = false) {
     const element = document.createElement("div");
     document.body.append(element);
     const app = createApp({render: () => h(DockStack, {items: [item(type)], collapsed})});
-    app.provide(WINDOW_CONTEXT, {environment: "main"});
+    app.provide(WINDOW_CONTEXT, dockWindow());
     app.mount(element);
     await settle();
     return element;

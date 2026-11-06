@@ -35,7 +35,7 @@ try {
         return history.querySelectorAll("[data-message]").length === 50 && history.textContent.includes("Backlog message 121") && history.scrollHeight - history.scrollTop - history.clientHeight < 2;
     });
     assert.equal(await history.locator('[data-row][style*="opacity"], [data-row][style*="display: none"]').count(), 0);
-    assert.ok(reads.includes("messages"), JSON.stringify(reads));
+    assert.ok(reads.some((keys) => keys?.split(",").includes("messages")), JSON.stringify(reads));
     await page.screenshot({path: capture, fullPage: true});
     assert.deepEqual(errors, []);
 } finally {

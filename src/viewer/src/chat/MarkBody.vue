@@ -1,12 +1,12 @@
 <script setup>
 import {peekRef} from "../route.js";
-import {useOutputPages} from "../composables/outputPages.js";
+import {readOutputProp, useOutputPages} from "../composables/outputPages.js";
 import {STOPPED_VARIANTS} from "../domain/markLook.js";
-import {computed, inject, ref, watch} from "vue";
+import {computed, ref, watch} from "vue";
 import {usePoll} from "../../kit/usePoll.js";
 import OutputLines from "../kit/OutputLines.vue";
 import ModuleBody from "../windows/ModuleBody.vue";
-import {WINDOW_CONTEXT} from "../windows/windowContext.js";
+import {useWindow} from "../../kit/windowContextKey.js";
 
 // what an opened mark shows: its module's own body where the declaration names one, else version 4's lines, summary and output
 const props = defineProps({
@@ -20,7 +20,7 @@ const props = defineProps({
     folded: Boolean,
 });
 
-const context = inject(WINDOW_CONTEXT);
+const window = useWindow();
 const lines = computed(() =>
     String(props.mark.lines || "")
         .split("\n")
@@ -31,7 +31,7 @@ const TASK_MODEL = "task";
 const stopReason = computed(() => (STOPPED_VARIANTS.has(props.mark.variant) ? props.mark.detail || "" : ""));
 const taskId = computed(() => (props.mark.target_model === TASK_MODEL ? props.mark.target_id : 0));
 const pages = useOutputPages(
-    (words) => context.run(words),
+    readOutputProp(window),
     () => props.mark.target_id
 );
 const outputLines = pages.lines;

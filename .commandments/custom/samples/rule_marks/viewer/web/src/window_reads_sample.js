@@ -8,7 +8,7 @@ export function rowsByItself(useRows) {
     return useRows("task list", ["task.*"]);
 }
 
-export function readsThroughItsApi(api) {
+export function readsThroughItsProps(window) {
     // @righteous architecture_viewer_window_reads_outside_its_api
-    return api.reload(["tasks"]);
+    return window.reload("tasks");
 }

@@ -82,7 +82,7 @@ class WindowDeclaration:
                      for pattern in source.events if pattern not in self.events]
         key_names = [key.name for key in self.keys]
         problems += [f"{self.name} names the key {name} twice" for name in dict.fromkeys(key_names) if key_names.count(name) > 1]
-        problems += [f"{self.name} fills its key {key.name} with an undeclared read" for key in self.keys if key.read_line not in self.reads]
+        problems += [f"{self.name} fills its key {key.name} with an undeclared read" for key in self.keys if " ".join(key.read.split()[:2]) not in self.reads]
         problems += [f"{self.name} reloads its key {key.name} on {pattern} without following it" for key in self.keys
                      for pattern in key.events if pattern not in self.events]
         problems += [f"{self.name} reloads its key {key.name} every {key.reload_seconds} seconds, and a timer is above 0" for key in self.keys if key.reload_seconds < 0]

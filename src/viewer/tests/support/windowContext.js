@@ -6,12 +6,20 @@ export const page = (rows) => ({ok: true, value: {rows, page: 1, size: 50, total
 
 // the chat window's keys as its module declares them, so a test answers a key by the line that fills it
 const WINDOW_KEYS = {
-    messages: {line: "message feed", events: ["message.*"]},
-    marks: {line: "chat-mark main", events: ["chat_mark.*"]},
+    messages: {line: "message feed", events: ["message.*"], page_size: 50},
+    marks: {line: "chat-mark main", events: ["chat_mark.*"], page_size: 50},
     docks: {line: "dock-item main", events: ["dock_item.*"]},
     pins: {line: "pin list", events: ["pin.*"]},
+    "mark-motion": {line: "setting show journal.core.developer.tools.mark-motion", events: ["setting.*"]},
+    "voice-profile": {line: "setting show journal.core.voices.profile", events: ["setting.*"]},
+    "voice-avatar": {line: "setting show journal.core.voices.avatar", events: ["setting.*"]},
+    "voice-avatar-shown": {line: "setting show journal.core.voices.avatar-shown", events: ["setting.*"]},
+    tool: {line: "usage tool", events: [], loading: "after_window"},
+    "main-agent": {line: "agent main", events: [], loading: "requested"},
 };
 
+const ID_KEY_LINES = {dock: "dock-item read", output: "output page", run: "process card", question: "question show"};
+const keyLine = (name) => WINDOW_KEYS[name]?.line ?? `${ID_KEY_LINES[name.split(".")[0]]} ${name.split(".")[1]}`;
 const keyFlags = (name, state) => Object.entries(state).filter(([flag]) => flag.startsWith(`${name}.`)).map(([flag, value]) => ` --${flag.slice(name.length + 1)} ${value}`).join("");
 
 export function context(answers, agent = null) {
@@ -34,9 +42,9 @@ export function context(answers, agent = null) {
         permissions: {reads: [], runs: [], missing: [], ask: async () => true},
         read,
         async readKeys({only = [], state = {}}) {
-            const names = only.length ? only : Object.keys(WINDOW_KEYS);
-            const results = await Promise.all(names.map((name) => this.read(`${WINDOW_KEYS[name].line}${keyFlags(name, state)}`)));
-            const declared = Object.fromEntries(Object.entries(WINDOW_KEYS).map(([name, key]) => [name, {tab: null, events: key.events, reload_seconds: 0}]));
+            const names = only.length ? only : Object.keys(WINDOW_KEYS).filter((name) => !WINDOW_KEYS[name].loading);
+            const results = await Promise.all(names.map((name) => this.read(`${keyLine(name)}${keyFlags(name, state)}${WINDOW_KEYS[name]?.page_size && !(`${name}.limit` in state) ? ` --limit ${WINDOW_KEYS[name].page_size}` : ""}`)));
+            const declared = Object.fromEntries(Object.entries(WINDOW_KEYS).map(([name, key]) => [name, {tab: null, events: key.events, reload_seconds: 0, loading: key.loading ?? "first", page_size: key.page_size ?? 0}]));
             return {ok: true, value: {declared, keys: Object.fromEntries(names.map((name, index) => [name, results[index]]))}};
         },
         run: async () => ({ok: true, value: null}),

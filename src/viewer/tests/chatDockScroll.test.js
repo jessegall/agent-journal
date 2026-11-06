@@ -7,6 +7,7 @@ import {WINDOW_CONTEXT} from "../src/windows/windowContext.js";
 import {afterEach, expect, test, vi} from "vitest";
 import Chat from "../../core/modules/messages/web/src/Chat.vue";
 import {context, mounted, page} from "./support/windowContext.js";
+import {dockWindow} from "./support/dockWindow.js";
 
 vi.mock("@journal/window-kit", async (original) => {
     const kit = await original();
@@ -46,7 +47,7 @@ async function stack(count, collapsed = ref(false)) {
     const host = document.createElement("div");
     document.body.append(host);
     const app = createApp({render: () => h(DockStack, {items: Array.from({length: count}, (_, i) => item(i + 1)), collapsed: collapsed.value})});
-    app.provide(WINDOW_CONTEXT, {environment: "main"});
+    app.provide(WINDOW_CONTEXT, dockWindow());
     app.mount(host);
     await nextTick();
     return {host, app};

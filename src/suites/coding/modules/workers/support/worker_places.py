@@ -24,9 +24,9 @@ KEPT_NAMES_SHOWN = 5
 
 
 class WorkerPlaces:
-    """How many workers run against the run limit. A run place is a process that has not ended; a new worker and
-    a resume also count a resume handed over in the last two minutes that has not bound yet. Delivered work with
-    its process stopped takes no run place."""
+    """How many workers run against the run limit. A run place is a process that has not ended; a new
+    worker and a resume also count a resume handed over in the last two minutes that has not bound yet.
+    Delivered work with its process stopped takes no run place."""
 
     def __init__(self, agents: AgentRows, queries: Queries, limits: AgentTypeLimits, kept: KeptRows, clock: Clock, scopes: Scopes) -> None:
         self.agents, self.queries, self.limits, self.kept, self.clock, self.scopes = agents, queries, limits, kept, clock, scopes

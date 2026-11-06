@@ -3,30 +3,23 @@ import {computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch}
 import {useComposerHeight} from "./composerHeight.js";
 import DumpForm from "./DumpForm.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
-import {READ_RATES, coalesced, Btn, DockStack, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, openInChat, patched, removed, shownMarks, usePins, WindowApi, withDayLines} from "@journal/window-kit";
+import {READ_RATES, coalesced, Btn, DockStack, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, openInChat, patched, removed, shownMarks, usePins, useWindow, withDayLines} from "@journal/window-kit";
 
-const PAGE_ROWS = 50;
-
-const windowApi = new WindowApi({state: () => ({"messages.limit": PAGE_ROWS, "marks.limit": PAGE_ROWS})});
-const {rows: messages, failure, loaded, load, loadLatest, older, act, context} = windowApi.rows("messages", {pageSize: PAGE_ROWS, incremental: true});
-context.markMotion = ref(false);
-async function readMarkMotion() {
-    const answer = await context.read("setting show journal.core.developer.tools.mark-motion");
-    context.markMotion.value = answer.ok && answer.value.value === true;
-}
-context.follow(["setting.*"], readMarkMotion);
-readMarkMotion();
-const {rows: allMarks, older: olderMarks, loadLatest: latestMarks} = windowApi.rows("marks", {pageSize: PAGE_ROWS, incremental: true});
-const {rows: docked} = windowApi.rows("docks");
+const window = useWindow();
+const {rows: messages, failure, loaded, load, loadLatest, older, act} = window.props.messages;
+const settingOf = (key) => window.props[key].data.value?.value;
+window.markMotion = computed(() => settingOf("mark-motion") === true);
+const {rows: allMarks, older: olderMarks, loadLatest: latestMarks} = window.props.marks;
+const {rows: docked} = window.props.docks;
 const dockedRows = computed(() => new Set(docked.value.filter((item) => item.state === "docked").map((item) => `${item.target_model}:${item.target_id}`)));
-const {rows: pins, act: runOnPin} = windowApi.rows("pins");
+const {rows: pins, act: runOnPin} = window.props.pins;
 const openQuestion = ref(0);
 const releaseQuestions = openInChat("question", (id) => {
     openQuestion.value = id;
     return true;
 });
 onUnmounted(releaseQuestions);
-const marks = computed(() => shownMarks(allMarks.value, markDeclaration, (key) => context.option(key).value));
+const marks = computed(() => shownMarks(allMarks.value, markDeclaration, (key) => window.option(key).value));
 const outgoing = ref([]);
 // a sent message shows at once as an echo, until its own row has been read: the echo goes for good when a message of the user with the same words has landed since, so an edit of that row brings it back no more
 const landed = (echo) => messages.value.some((row) => row.type === echo.type && row.text === echo.text && Date.parse(row.created_at) >= echo.created_at - ECHO_SLACK_MS);
@@ -39,21 +32,13 @@ const {visible: pinned} = usePins(() => pins.value);
 const quoteOf = (message) => messages.value.find((row) => row.id === message.parent_id)?.text ?? "";
 // the tool the agent has in hand, read each time a hook call lands, empty until it begins the next
 // the figure is the one the pane names, or by default the voice the user chose, shown as the figure settings say: always, only while the agent works, or never
-const VOICE_SETTINGS = ["profile", "avatar", "avatar-shown"];
-const voice = ref(null);
-async function readVoice() {
-    const answers = await Promise.all(VOICE_SETTINGS.map((key) => context.read(`setting show journal.core.voices.${key}`)));
-    const [profile, avatar, shown] = answers.map((answer) => (answer.ok ? answer.value.value : null));
-    voice.value = answers.every((answer) => answer.ok) ? {profile, avatar, avatar_shown: shown} : null;
-}
-context.follow(["setting.*"], readVoice);
-readVoice();
+const voice = computed(() => (window.props["voice-profile"].loaded.value ? {profile: settingOf("voice-profile"), avatar: settingOf("voice-avatar"), avatar_shown: settingOf("voice-avatar-shown")} : null));
 const voiceFigure = () => {
     if (!voice.value?.avatar || voice.value.avatar_shown === "never") return "";
     return voice.value.avatar_shown === "working" && !runningTool.value ? "" : voice.value.profile;
 };
 const figureVoice = computed(() => {
-    const chosen = context.option("figure").value;
+    const chosen = window.option("figure").value;
     if (chosen === "voice") return voiceFigure();
     return chosen && chosen !== "none" ? chosen : "";
 });
@@ -84,16 +69,19 @@ const shownVoice = ref("");
 watch(figureVoice, (chosen) => {
     if (chosen) shownVoice.value = chosen;
 }, {immediate: true});
-async function readTool() {
+const {data: toolProp, failure: toolFailure} = window.props.tool;
+watch([toolProp, toolFailure], () => {
+    const tool = toolFailure.value ? {} : (toolProp.value ?? {});
+    runningTool.value = tool.tool ?? "";
+    waitingFor.value = tool.wait_target ?? "";
+    thinking.value = Boolean(tool.thinking);
+    asking.value = Boolean(tool.asking);
+});
+heardAt.value = Date.now() / 1000;
+window.follow(["hook_call.*", "dock_item.*", "process_part.*"], coalesced(() => {
     heardAt.value = Date.now() / 1000;
-    const answer = await context.read("usage tool", {deferred: true});
-    runningTool.value = answer.ok ? answer.value.tool : "";
-    waitingFor.value = answer.ok ? answer.value.wait_target : "";
-    thinking.value = answer.ok ? Boolean(answer.value.thinking) : false;
-    asking.value = answer.ok ? Boolean(answer.value.asking) : false;
-}
-context.follow(["hook_call.*", "dock_item.*", "process_part.*"], coalesced(readTool, READ_RATES.runningTool));
-readTool();
+    window.reload("tool");
+}, READ_RATES.runningTool));
 const FOLD_AFTER_MS = 500;
 const ECHO_SLACK_MS = 2000;
 const FOOT_PIXELS = 40;
@@ -162,13 +150,13 @@ function returned() {
     if (document.activeElement === document.body || document.activeElement === null) focusComposer();
 }
 onMounted(() => {
-    window.addEventListener("focus", returned);
+    globalThis.addEventListener("focus", returned);
     document.addEventListener("visibilitychange", returned);
 });
 onBeforeUnmount(() => {
     takeFromBox();
     if (!editing.value) keepDraft(text.value);
-    window.removeEventListener("focus", returned);
+    globalThis.removeEventListener("focus", returned);
     document.removeEventListener("visibilitychange", returned);
 });
 const dragging = ref(false);
@@ -179,7 +167,7 @@ async function attach(files) {
         if (attached.value.some((entry) => entry.name === file.name)) continue;
         const entry = {name: file.name, pending: "", failure: ""};
         attached.value = [...attached.value, entry];
-        const result = await context.upload(file);
+        const result = await window.upload(file);
         entry.pending = result.ok ? result.value : "";
         entry.failure = result.ok ? "" : result.error;
         attached.value = [...attached.value];
@@ -258,7 +246,7 @@ async function saveEdit() {
     leaveEdit();
     // a message on its way has no number to edit: it goes with these words, or is edited once its send has answered
     if (row.local) return;
-    const result = await context.run(["message", "edit", String(row.id), "--text", words]);
+    const result = await window.run(["message", "edit", String(row.id), "--text", words]);
     sendFailure.value = result.ok ? "" : result.error;
     if (!result.ok) {
         row.text = before;
@@ -278,11 +266,11 @@ function sentLine(answering, commented, line, files) {
 let delivered = Promise.resolve();
 async function deliver(echo, answering, commented, files, sent) {
     let words = echo.text;
-    const result = await context.run(sentLine(answering, commented, words, files));
+    const result = await window.run(sentLine(answering, commented, words, files));
     if (!result.ok) (sendFailure.value = result.error, text.value = echo.text === sent.line ? sent.text : echo.text, attached.value = sent.attached, commenting.value = commented);
     while (result.ok && echo.text !== words) {
         words = echo.text;
-        const edited = await context.run(["message", "edit", String(result.value.id), "--text", words]);
+        const edited = await window.run(["message", "edit", String(result.value.id), "--text", words]);
         sendFailure.value = edited.ok ? "" : edited.error;
     }
     await load();
@@ -324,10 +312,10 @@ function slashFocus(event) {
     event.preventDefault();
     focusComposer();
 }
-window.addEventListener("keydown", slashFocus);
-onUnmounted(() => window.removeEventListener("keydown", slashFocus));
+globalThis.addEventListener("keydown", slashFocus);
+onUnmounted(() => globalThis.removeEventListener("keydown", slashFocus));
 // the words typed survive the window being closed or the page reloaded, one draft for each environment
-const draftKey = `journal.draft.${context.environment}`;
+const draftKey = `journal.draft.${window.environment}`;
 function readDraft() {
     try {
         return localStorage.getItem(draftKey) ?? "";
@@ -426,7 +414,7 @@ const linkOf = (pin) => (pin.link.startsWith("http") ? pin.link : `#open=${pin.l
 // a pin that holds a ! command is a button: it types the command into the main agent's terminal through the journal
 const isCommand = (pin) => pin.link.startsWith("!");
 async function runCommand(pin) {
-    const main = await context.read("agent main");
+    const main = await window.readKey("main-agent");
     if (main.ok && main.value.id) await runOnPin(["agent", "type", String(main.value.id), pin.link]);
 }
 </script>
@@ -482,7 +470,7 @@ async function runCommand(pin) {
                 </button>
             </Transition>
         </div>
-        <template v-if="context.option('floors').value">
+        <template v-if="window.option('floors').value">
             <FigureFloors />
         </template>
         <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" :idle="waitingFor ? `waiting for ${waitingFor}` : 'waiting'" /></p>
@@ -490,7 +478,7 @@ async function runCommand(pin) {
             <DockStack :items="docked" :folded="short" :collapsed="!docksOpen" :data-figure-docked-bars="dockedRows.size ? '' : null" />
         </div>
         <template v-if="dumping">
-            <DumpForm :run="context.run" @made="dumping = false" @close="dumping = false" />
+            <DumpForm :run="window.run" @made="dumping = false" @close="dumping = false" />
         </template>
         <template v-if="replying || commenting || editing">
             <p class="composer-quote" data-composer-quote>

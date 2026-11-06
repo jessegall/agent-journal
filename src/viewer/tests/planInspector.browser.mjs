@@ -10,7 +10,7 @@ async function open(page, table, id) {
     const panel = page.locator(table === "plans" ? "[data-plan-inspector]" : "[data-task-inspector]");
     await panel.locator("[data-resource-title]").waitFor();
     await page.locator("[data-resource-panel]:not(.opening)").waitFor();
-    await page.locator("[data-resource-panel]").evaluate((element) => Promise.all(element.getAnimations({subtree: true}).map((animation) => animation.finished)));
+    await page.locator("[data-resource-panel]").evaluate((element) => Promise.all(element.getAnimations({subtree: true}).map((animation) => animation.finished.catch(() => null))));
     return panel;
 }
 
@@ -97,7 +97,7 @@ async function checkActions(panel) {
 }
 
 async function screenshots(page, name, width) {
-    for (const colorScheme of ["light", "dark"]) {
+    for (const colorScheme of ["dark", "light"]) {
         await page.emulateMedia({colorScheme});
         await page.screenshot({path: `${shots}-${name}-${width}-${colorScheme}.png`});
     }

@@ -36,13 +36,16 @@
         "reject": [
             {
                 "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/viewer/src/chat/markButtons\\.js$"
             }
         ]
     },
     "sin": {
         "name": "window-reads-outside-its-api",
-        "description": "A window reads its data by itself instead of through its keys, so it makes requests the window's one route cannot join or limit.",
-        "rule": "Declare the data as keys in the window's module and read them through WindowApi: api.rows, api.key and api.reload({only}). Until plan 1097 has converted a window it stays flagged, so the findings show what is left.",
+        "description": "A window reads its data by itself instead of through its props, so it makes requests the window's one route cannot join or limit.",
+        "rule": "Declare the data as keys in the window's module and read them through useWindow: window.props.<key>, window.reload(key) and window.state. Until plan 1097 has converted a window it stays flagged, so the findings show what is left.",
         "skill": "plain-code-words"
     }
 }

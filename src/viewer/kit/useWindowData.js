@@ -1,60 +1,81 @@
-import {onUnmounted, reactive, watch} from "vue";
+import {onUnmounted, reactive, ref, watch} from "vue";
+import {rowList} from "./useRows.js";
 import {usePoll} from "./usePoll.js";
-import {useWindow} from "./windowContextKey.js";
 import {matches} from "../src/windows/windowSubscriptions.js";
 
 const RELOAD_JOIN_MS = 50;
 const REFRESH_EVENT = "refresh";
 const TIMER_TICK_MS = 1000;
+const REQUESTED = "requested";
+const AFTER_WINDOW = "after_window";
+const DEFAULT_PAGE_SIZE = 50;
+const namesOf = (only) => (typeof only === "string" ? [only] : (Array.isArray(only) ? only : (only?.only ?? [])));
 
-// a window's data by its keys: the first load asks for what is on screen, reload({only}) asks for those keys alone, and each key
-// reloads itself on the events and the timer its window declares; a key not on screen is read when its tab comes into focus
-export function useWindowData({state = () => ({}), tab = () => ""} = {}) {
-    const context = useWindow();
-    const data = reactive({});
-    const handlers = {};
+// a window's props, as its module declares them: the first read asks for what is on screen, reload asks for the props it names, and
+// each prop reloads itself on the events and the timer its window declares; a prop not on screen is read when its tab comes into focus
+export function useWindowData(context) {
+    const held = {};
+    const state = reactive({});
+    const asked = [];
     const waiting = new Set();
+    const joined = {names: new Set(), answer: null};
     let declared = {};
     let join = 0;
 
-    const part = (name) => (data[name] ??= {value: undefined, failure: "", loaded: false, readAt: 0});
-    const isOnScreen = (name) => !declared[name].tab || declared[name].tab === tab();
-    const currentState = () => (tab() ? {...state(), tab: tab()} : state());
+    function propOf(name) {
+        const key = () => declared[name] ?? {};
+        const data = ref(undefined);
+        const list = rowList(context, async (flags) => {
+            const result = await readKey(name, flags);
+            if (result.ok && !Object.keys(flags).length) data.value = result.value;
+            return result;
+        }, () => key().page_size || DEFAULT_PAGE_SIZE, () => Boolean(key().page_size));
+        return (held[name] = {...list, data, readAt: 0});
+    }
+    const props = new Proxy({}, {get: (_, name) => (typeof name !== "string" || name.startsWith("__v") ? undefined : (held[name] ?? propOf(name)))});
+    const isOnScreen = (name) => declared[name].loading !== REQUESTED && (!declared[name].tab || declared[name].tab === state.tab);
 
-    // a key a part of the window handles itself, such as a list of rows: its first answer and its events go to that part
-    function handle(name, heardEvent, showFirst) {
-        handlers[name] = {heardEvent, showFirst, isFirst: true};
+    // the reads of a page of a prop asked for at the same moment go in one request
+    function readKey(name, flags = {}) {
+        return new Promise((resolve) => {
+            asked.push({name, flags, resolve});
+            if (asked.length === 1) setTimeout(sendAsked);
+        });
     }
 
-    async function readKey(name, flags) {
-        const state = Object.fromEntries(Object.entries(flags).map(([flag, value]) => [`${name}.${flag}`, value]));
-        const answer = await context.readKeys({only: [name], state: {...currentState(), ...state}});
-        return answer.ok ? answer.value.keys[name] : answer;
+    async function sendAsked() {
+        const sending = asked.splice(0);
+        const flagState = Object.fromEntries(sending.flatMap(({name, flags}) => Object.entries(flags).map(([flag, value]) => [`${name}.${flag}`, value])));
+        const answer = await context.readKeys({only: [...new Set(sending.map(({name}) => name))], state: {...state, ...flagState}});
+        sending.forEach(({name, resolve}) => resolve(answer.ok ? answer.value.keys[name] : answer));
     }
 
-    function showAnswer(name, result) {
-        const handler = handlers[name];
-        if (!handler) return;
-        if (handler.isFirst || !result.ok) handler.showFirst(result);
-        handler.isFirst = false;
-    }
-
-    async function reload({only = []} = {}) {
-        const answer = await context.readKeys({only, state: currentState()});
+    async function read(only) {
+        const answer = await context.readKeys({only, state: {...state}});
         if (!answer.ok) {
-            if (answer.failure !== "cancelled") Object.keys(handlers).forEach((name) => showAnswer(name, answer));
-            if (answer.failure !== "cancelled") only.forEach((name) => (part(name).failure = answer.error));
+            if (answer.failure !== "cancelled") (only.length ? only : Object.keys(held)).forEach((name) => props[name].showFirst(answer));
             return false;
         }
-        Object.entries(answer.value.keys).forEach(([name, result]) => {
-            part(name).failure = result.ok ? "" : result.error;
-            part(name).loaded = true;
-            part(name).readAt = Date.now();
-            if (result.ok) part(name).value = result.value;
-            showAnswer(name, result);
-        });
         follow(answer.value.declared);
+        Object.entries(answer.value.keys).forEach(([name, result]) => {
+            props[name].readAt = Date.now();
+            if (result.ok) props[name].data.value = result.value;
+            props[name].showFirst(result);
+        });
         return true;
+    }
+
+    // reloads what it names, and the names asked for at the same moment go in one request
+    function reload(only) {
+        const names = namesOf(only);
+        if (!names.length) return read([]);
+        names.forEach((name) => joined.names.add(name));
+        return (joined.answer ??= new Promise((resolve) => setTimeout(() => {
+            const sending = [...joined.names];
+            joined.names.clear();
+            joined.answer = null;
+            resolve(read(sending));
+        })));
     }
 
     function reloadSoon(names) {
@@ -63,15 +84,15 @@ export function useWindowData({state = () => ({}), tab = () => ""} = {}) {
         join = setTimeout(() => {
             const only = [...waiting];
             waiting.clear();
-            if (only.length) reload({only});
+            if (only.length) read(only);
         }, RELOAD_JOIN_MS);
     }
 
     function heard(event) {
         const names = Object.keys(declared).filter((name) => event.event === REFRESH_EVENT || declared[name].events.some((pattern) => matches(pattern, event.event)));
-        names.filter((name) => handlers[name]).forEach((name) => handlers[name].heardEvent(event));
-        const ownNames = names.filter((name) => !handlers[name]);
-        ownNames.filter((name) => !isOnScreen(name)).forEach((name) => (part(name).loaded = false));
+        names.filter((name) => declared[name].page_size).forEach((name) => props[name].heard(event));
+        const ownNames = names.filter((name) => !declared[name].page_size);
+        ownNames.filter((name) => !isOnScreen(name)).forEach((name) => (props[name].readAt = 0));
         reloadSoon(ownNames.filter(isOnScreen));
     }
 
@@ -80,19 +101,21 @@ export function useWindowData({state = () => ({}), tab = () => ""} = {}) {
         declared = listed;
         const patterns = [...new Set(Object.values(listed).flatMap((key) => key.events))];
         if (patterns.length) context.follow(patterns, heard);
+        const afterWindow = Object.keys(listed).filter((name) => listed[name].loading === AFTER_WINDOW);
+        if (afterWindow.length) read(afterWindow);
     }
 
-    watch(tab, () => {
-        const only = Object.keys(declared).filter((name) => isOnScreen(name) && !part(name).loaded);
-        if (only.length) reload({only});
+    watch(() => state.tab, () => {
+        const only = Object.keys(declared).filter((name) => isOnScreen(name) && !props[name].readAt);
+        if (only.length) read(only);
     });
     onUnmounted(() => clearTimeout(join));
     function reloadDueKeys() {
         const now = Date.now();
-        const due = Object.keys(declared).filter((name) => declared[name].reload_seconds > 0 && isOnScreen(name) && now - part(name).readAt >= declared[name].reload_seconds * 1000);
+        const due = Object.keys(declared).filter((name) => declared[name].reload_seconds > 0 && isOnScreen(name) && now - props[name].readAt >= declared[name].reload_seconds * 1000);
         if (due.length) reloadSoon(due);
     }
     usePoll(reloadDueKeys, () => context.visible.value, TIMER_TICK_MS);
-    queueMicrotask(reload);
-    return {data, reload, readKey, handle};
+    queueMicrotask(() => read([]));
+    return {props, state, reload, readKey};
 }

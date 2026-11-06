@@ -48,7 +48,7 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
         lines = [self.agent_line(agent, status) for agent, status in value.agents]
         lines.append(f"plan: {'; '.join(window.line for window in value.windows)}" if value.windows else "plan: no limits reported yet")
         lines.append(f"cost of the open sessions: ${value.cost_dollars:.2f}")
-        output.write("\n".join(lines), {"agents": [{**output.values(agent), "last_compacted_at": compactions[agent.id].at if agent.id in compactions else None, "last_compaction": compactions[agent.id].json() if agent.id in compactions else None, "model": status.model, "effort": status.effort, "context_percent": status.context_percent,
+        output.write("\n".join(lines), {"agents": [{**output.values(agent), "last_compacted_at": compactions[agent.id].started_at if agent.id in compactions else None, "last_compaction": compactions[agent.id].json() if agent.id in compactions else None, "model": status.model, "effort": status.effort, "context_percent": status.context_percent,
                                                     "cost_dollars": status.cost_dollars} for agent, status in value.agents],
                                         "windows": [output.values(window) for window in value.windows], "cost_dollars": value.cost_dollars})
 
