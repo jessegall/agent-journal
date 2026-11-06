@@ -39,7 +39,9 @@ class AgentTextRule(DriverRule):
 
     def has_reply(self, agent_id: int, prompt: HookCall) -> bool:
         newest = self.messages.latest_agent_message(agent_id)
-        return newest is not None and newest.parent_id is not None and newest.creation_timestamp().value >= prompt.creation_timestamp().value
+        if newest is None or newest.parent_id is None or newest.creation_timestamp().value < prompt.creation_timestamp().value:
+            return False
+        return not self.messages.has_person_message_past(newest.id)
 
     def is_acknowledgement(self, text: str, prompt: HookCall) -> bool:
         if len(text) > SHORT_CHARACTERS or "?" in text or not prompt.summary.startswith(JOURNAL_LINE) or self.is_user_act(prompt.summary):

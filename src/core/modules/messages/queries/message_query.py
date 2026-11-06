@@ -1,3 +1,4 @@
+from core.base.query.conditions.greater import Greater
 from typing import Self
 
 from core.base.database.database import Database
@@ -37,6 +38,9 @@ class MessageQuery(Query[Message]):
 
     def addressed(self, agent_id: int) -> Self:
         return self.matching(MessageTarget(agent_id))
+
+    def has_person_message_past(self, message_id: int) -> bool:
+        return self.matching(Among("type", PERSON_MESSAGE_TYPES)).matching(Greater("id", message_id)).exists()
 
     def unread(self, agent_id: int) -> Self:
         return self.addressed(agent_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at"))
