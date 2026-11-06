@@ -26,7 +26,7 @@ ALL_FORMS = {"guard": "refuse.sh", "listen": "pin.sh", "commit": "see.sh"}
 WRONG_ENTRIES = [[{"guard": "see.sh"}], [42], [{"event": 42, "guard": "see.sh"}]]
 
 
-def expect_no_script_calls(story, *scripts: str) -> None:
+def expect_script_uncalled(story, *scripts: str) -> None:
     calls = {script: script_calls(story, script) for script in scripts if script_calls(story, script)}
     story.expect_rows(not calls)
 
@@ -63,7 +63,7 @@ def test_s5_a_wrong_key_is_marked_installs_and_runs_nothing_while_the_rest_of_th
     story.expect_success("task delete 2", actor=story.agent)
     story.expect_success(PIN_LINE, actor=story.agent)
     story.run_listeners()
-    expect_no_script_calls(story, "see.sh")
+    expect_script_uncalled(story, "see.sh")
     story.expect_rows(len(script_calls(story, "right.sh")) == 1)
     story.expect_rows("No such event" in PREVIEW.read_text(), "Nothing reaches this script." in CARD.read_text())
 

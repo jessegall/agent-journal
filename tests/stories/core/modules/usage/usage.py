@@ -322,12 +322,12 @@ def test_an_ended_sessions_status_file_can_disappear_during_the_read(ended_worke
     path = story.home.status_folder / "ended" / "s-2.json"
     read = FileAccess.read
 
-    def remove_before_read(access, file, *args, **kwargs):
+    def file_removing_read(access, file, *args, **kwargs):
         if file == path:
             path.unlink()
         return read(access, file, *args, **kwargs)
 
-    monkeypatch.setattr(FileAccess, "read", remove_before_read)
+    monkeypatch.setattr(FileAccess, "read", file_removing_read)
     story.expect_text("usage agents --closed --environment main --json", '"cost_dollars": null', actor=story.user)
     story.expect_rows(not path.exists())
 

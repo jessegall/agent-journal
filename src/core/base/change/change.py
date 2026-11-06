@@ -32,7 +32,7 @@ class Change(Generic[M]):
             raise MissingRowError("a change needs an old row, a new row or both")
 
     @classmethod
-    def from_event(cls, event: Changed[M], context: Context) -> "Change[M]":
+    def event_change(cls, event: Changed[M], context: Context) -> "Change[M]":
         if isinstance(event, Deleted):
             return cls(event.old_row or event.row, None, context)
         return cls(event.old_row, event.row, context)

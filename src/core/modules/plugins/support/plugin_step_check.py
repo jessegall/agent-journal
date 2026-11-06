@@ -40,7 +40,7 @@ class PluginStepCheck:
             try:
                 answer = self.program.run(call, None if guard else manifest.window_ms(event, STEP_CEILING_MS))
             except PluginFaultError as fault:
-                self.bus.run(RecordPluginFault.from_error(plugin.id, fault, f"at {event}"), Actor.core())
+                self.bus.run(RecordPluginFault.fault_record(plugin.id, fault, f"at {event}"), Actor.core())
                 self.line_sender(agent_id, f"[plugin {plugin.name}] could not judge this step: {fault}")
                 continue
             if answer.is_refusal():

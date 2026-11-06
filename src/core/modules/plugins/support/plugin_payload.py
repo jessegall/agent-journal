@@ -23,7 +23,7 @@ class PluginPayload:
                 "command": logged.command, "cause_id": logged.cause_id, "row": dict(row), "old_row": dict(old_row), "changed": dict(logged.data)}
 
     @staticmethod
-    def from_change(change: Change[Model], form: EventForm, log: EventLog, event_id: int | None) -> dict[str, object]:
+    def change_payload(change: Change[Model], form: EventForm, log: EventLog, event_id: int | None) -> dict[str, object]:
         context: Context = change.context
         return {"form": form.value, "final": form is EventForm.COMMIT, "log_name": change.event, "event_id": event_id,
                 "actor": {"type": context.actor.type.value, "id": context.actor.id}, "command": context.command.label(), "cause_id": context.cause_id,

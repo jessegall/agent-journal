@@ -21,7 +21,7 @@ from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_queue_file import PluginQueueFile
 from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_event import PluginEvent
-from core.modules.plugins.support.plugin_named_event import CEILING_SETTING
+from core.modules.plugins.support.plugin_declared_event import CEILING_SETTING
 from core.modules.plugins.support.plugin_event_names import PluginEventNames
 from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
@@ -102,7 +102,7 @@ class PluginRule(DriverRule):
         except PluginLateError:
             return ""
         except PluginFaultError as fault:
-            commands.append(RecordPluginFault.from_error(plugin.id, fault, f"at {event.name}"))
+            commands.append(RecordPluginFault.fault_record(plugin.id, fault, f"at {event.name}"))
             return ""
         if plugin.fault_count:
             commands.append(ClearPluginFaults(plugin.id))

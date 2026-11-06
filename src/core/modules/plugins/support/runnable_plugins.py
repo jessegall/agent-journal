@@ -4,14 +4,14 @@ from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.plugin_digest import PluginDigest
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
-from core.modules.plugins.support.plugin_named_events import PluginNamedEvents
+from core.modules.plugins.support.plugin_declared_events import PluginDeclaredEvents
 from core.modules.plugins.support.runnable_plugin import RunnablePlugin
 
 
 class RunnablePlugins:
     """Selects enabled plugins and reads their manifests and file changes."""
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, declared_events: PluginNamedEvents) -> None:
+    def __init__(self, plugins: PluginQuery, folders: PluginFolders, declared_events: PluginDeclaredEvents) -> None:
         self.plugins, self.folders, self.declared_events = plugins, folders, declared_events
 
     def enabled(self) -> list[RunnablePlugin]:
