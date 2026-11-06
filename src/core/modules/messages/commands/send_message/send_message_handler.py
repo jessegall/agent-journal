@@ -15,6 +15,9 @@ from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.support.message_files import MessageFiles
 from core.modules.messages.support.message_module import MESSAGES_MODULE
 from core.modules.messages.support.message_targets import MessageTargets
+from core.modules.messages.support.work_sources import WorkSources
+from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
+from core.modules.messages.models.enums.work_source_origin import WorkSourceOrigin
 
 
 ACTOR_MESSAGE_TYPES = {ActorType.USER: MessageType.USER, ActorType.AGENT: MessageType.AGENT}
@@ -26,9 +29,10 @@ class SendMessageHandler(Handler[SendMessage, Message]):
 
     command = SendMessage
 
-    def __init__(self, repository: Repository, files: MessageFiles, rows: EventRows, targets: MessageTargets, scopes: Scopes) -> None:
+    def __init__(self, repository: Repository, files: MessageFiles, rows: EventRows, targets: MessageTargets, scopes: Scopes, sources: WorkSources) -> None:
         self.repository, self.files, self.rows = repository, files, rows
         self.targets, self.scopes = targets, scopes
+        self.sources = sources
 
     def handle(self, command: SendMessage, context: Context) -> Message:
         if command.parent_id is not None and context.actor.type is ActorType.AGENT and MessageReactions.is_emoji(command.text):
@@ -39,6 +43,8 @@ class SendMessageHandler(Handler[SendMessage, Message]):
         if command.parent_id is None:
             return self.sent(command, None, context)
         parent = self.rows.required(Message, command.parent_id)
+        if actor.type is ActorType.AGENT and parent.type in PERSON_MESSAGE_TYPES:
+            self.sources.select(parent, WorkSourceOrigin.REPLY, context)
         with self.scopes.row_scope(parent):
             return self.sent(command, parent, context)
 

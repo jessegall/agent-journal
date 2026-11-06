@@ -84,7 +84,6 @@ def test_task_inspector_can_read_its_link_page(trail):
     feature(any(row["source_model"] == "message" for row in answer["rows"]), str(answer))
 
 
-@pending(6847)
 def test_deleting_the_selected_message_clears_its_source(trail):
     trail.person("messages.chat", "message", "send", "Remove this request")
     trail.switch(3)

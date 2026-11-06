@@ -20,6 +20,8 @@ class MessageTargets:
         return agent
 
     def stored_id(self, selected: Agent | None, given_id: int | None) -> int | None:
+        if given_id is not None:
+            return given_id
         if selected is None:
             return given_id
         return None if selected.role == AgentRole.MAIN else selected.id

@@ -80,7 +80,6 @@ def test_immediate_start_sees_committed_source(trail):
     feature("Implement the cart request" in answer.output_text, answer.output_text)
 
 
-@pending(6847)
 def test_first_single_read_can_select_but_batch_read_does_not(unselected_trail):
     trail = unselected_trail
     trail.command("message unread")
@@ -91,21 +90,18 @@ def test_first_single_read_can_select_but_batch_read_does_not(unselected_trail):
     trail.expect_source(2)
 
 
-@pending(6847)
 def test_routine_rereads_preserve_active_source(trail):
     trail.select(1)
     trail.make_task()
     trail.expect_source(2)
 
 
-@pending(6847)
 def test_work_from_selects_an_older_request(trail):
     trail.switch(1)
     trail.make_task()
     trail.expect_source(1)
 
 
-@pending(6847)
 def test_thanks_does_not_replace_active_request(trail):
     trail.person("messages.chat", "message", "send", "thanks")
     trail.select(3)
@@ -114,7 +110,6 @@ def test_thanks_does_not_replace_active_request(trail):
     trail.expect_source(2)
 
 
-@pending(6847)
 def test_compaction_keeps_source_and_new_agent_starts_without_one(trail):
     trail.story.hook("s-1", HookSamples.sample("compact"))
     trail.make_task()
@@ -124,7 +119,6 @@ def test_compaction_keeps_source_and_new_agent_starts_without_one(trail):
     feature(trail.source_ids(replacement.id) == (), "replacement agent inherited another agent's selected source")
 
 
-@pending(6847)
 def test_deleting_selected_message_clears_source(trail):
     trail.person("messages.chat", "message", "send", "Unread request to delete")
     trail.switch(3)
@@ -135,7 +129,6 @@ def test_deleting_selected_message_clears_source(trail):
 
 
 @pytest.mark.parametrize("number", [999, 0, -1])
-@pending(6847)
 def test_invalid_sources_leave_no_partial_write(trail, number):
     result = trail.story.run(f"message work-from {number}", actor=trail.story.agent)
     feature(result.code == 1, result.output_text)
@@ -143,7 +136,6 @@ def test_invalid_sources_leave_no_partial_write(trail, number):
     trail.expect_source(2)
 
 
-@pending(6847)
 def test_single_read_and_make_on_one_shell_line_uses_source(source_server):
     trail = Trail(source_server.story)
     binary = GoBuild.built("journal", trail.story.home.folder.parent / "journal-client")
@@ -170,7 +162,6 @@ def test_single_read_and_make_on_one_shell_line_uses_source(source_server):
     trail.expect_source(2)
 
 
-@pending(6847)
 def test_competing_source_selections_leave_one_valid_version(source_server):
     trail = Trail(source_server.story)
     with ThreadPoolExecutor(max_workers=2) as workers:
@@ -204,7 +195,6 @@ def test_task_named_in_reply_retains_existing_behaviour(trail):
     assert any(row["target_model"] == "task" and row["target_id"] == 1 and row["link_type"] == "about" for row in trail.links("message:2"))
 
 
-@pending(6847)
 def test_reacting_to_unused_provisional_acknowledgement_clears_only_that_source(provisional_thanks):
     trail = provisional_thanks
     trail.expect_source(3)
@@ -212,7 +202,6 @@ def test_reacting_to_unused_provisional_acknowledgement_clears_only_that_source(
     feature(trail.source_ids(trail.story.agent.id) == (), "unused provisional acknowledgement is still selected")
 
 
-@pending(6847)
 def test_reply_explicitly_switches_the_active_request(trail):
     trail.command('message reply 1 "I will handle the original request now"')
     trail.story.advance(timedelta(minutes=3))
@@ -221,7 +210,6 @@ def test_reply_explicitly_switches_the_active_request(trail):
 
 
 @pytest.mark.parametrize("environment,session", [("main", "other-main"), ("side", "side-main")], ids=["another-addressee", "another-environment"])
-@pending(6847)
 def test_unauthorized_source_does_not_replace_the_active_request(trail, environment, session, tmp_path):
     if environment != "main":
         folder = tmp_path / environment
@@ -243,7 +231,6 @@ def test_reading_an_agent_message_does_not_select_a_person_request(unselected_tr
     assert trail.source_ids(trail.story.agent.id) == ()
 
 
-@pending(6847)
 def test_work_from_rejects_a_non_person_message(trail):
     trail.command('message send "Agent progress only"')
     result = trail.story.run("message work-from 3", actor=trail.story.agent)

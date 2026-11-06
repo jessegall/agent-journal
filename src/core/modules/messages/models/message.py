@@ -27,6 +27,7 @@ class Message(EnvironmentScoped, Model):
     type: MessageType
     text: str
     read_at: Timestamp | None = None
+    read_notice_at: Timestamp | None = None
     delivered_at: Timestamp | None = None
     files: tuple[str, ...] = ()
     captions: str = "{}"
