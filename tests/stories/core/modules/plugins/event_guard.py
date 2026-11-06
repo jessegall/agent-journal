@@ -2,11 +2,18 @@ import sys
 
 import pytest
 
+from core.base.query.queries import Queries
+from core.modules.drivers.models.agent_line import AgentLine
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, REMOVAL_SAMPLE
+from tests.stories.core.modules.plugins.support.event_modules import FAILS_LATER, LATER_REFUSAL, NOTE_CREATED, NOTES, REFUSED_TITLE
+from tests.stories.core.modules.plugins.support.refusing_modules import LATER_KEY_REFUSAL, REFUSED_NOTE_TITLE, REFUSED_NOTES
 from tests.stories.core.modules.plugins.support.event_stories import (
     REFUSAL, SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, EventPluginStarted, deliveries, event_plugin_story, install_event_plugin, logged_events, plugin_data, plugin_page, script_calls, tasks_titled)
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 
+GUARD_WORDS = "noted by the guard"
+CARD_LABEL = "Lane open"
+WORDS_SCRIPT = f"""echo '{{"v": 1, "tell": "{GUARD_WORDS}", "cards": [{{"kind": "state", "key": "lane", "label": "{CARD_LABEL}", "tone": "good"}}]}}'"""
 COMMAND_STARTING = "core.plugins.command_starting"
 GUARD_SKIP = "plugins.event-guard"
 SKIP_REASON = '--skip-reason "the plugin is wrong here"'
@@ -49,6 +56,34 @@ def test_s22_a_guard_that_prints_nothing_saves_the_row_once_with_one_event(new_s
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "see.sh"})
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.expect_rows(len(script_calls(story, "see.sh")) == 1, len(tasks_titled(story, SECOND_JOB_TITLE)) == 1, len(logged_events(story, "task.create")) == 2)
+
+
+def agent_lines_saying(story, text: str) -> list[AgentLine]:
+    return [line for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows() if text in line.text]
+
+
+def test_s22_an_allowing_guard_tells_the_agent_and_shows_its_card_once(new_story):
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "words.sh"}, scripts={"words.sh": WORDS_SCRIPT})
+    story.expect_success(SECOND_JOB, actor=story.agent)
+    story.run_listeners()
+    story.expect_text("chat-mark list --environment 1", CARD_LABEL, actor=story.user)
+    story.expect_rows(len(agent_lines_saying(story, GUARD_WORDS)) == 1, len(script_calls(story, "words.sh")) == 1)
+
+
+def test_s22_what_an_allowing_guard_tells_rolls_back_when_a_later_listener_refuses(new_story):
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "words.sh"}, scripts={"words.sh": WORDS_SCRIPT}, modules=[FAILS_LATER])
+    story.expect_refusal(f'task make "{REFUSED_TITLE}" --brief "Do it" --environment main', LATER_REFUSAL, actor=story.agent)
+    story.run_listeners()
+    story.expect_no_text("chat-mark list --environment 1", CARD_LABEL, actor=story.user)
+    story.expect_rows(not agent_lines_saying(story, GUARD_WORDS), not tasks_titled(story, REFUSED_TITLE))
+
+
+def test_s22_another_guard_that_refuses_keeps_the_guard_script_from_running(new_story):
+    story = event_plugin_story(new_story, {"event": NOTE_CREATED, "guard": "see.sh"}, modules=[NOTES, REFUSED_NOTES])
+    story.expect_refusal(f'event-note make "{REFUSED_NOTE_TITLE}"', LATER_KEY_REFUSAL, actor=story.user)
+    story.expect_rows(not script_calls(story, "see.sh"))
+    story.expect_success('event-note make "A note"', actor=story.user)
+    story.expect_rows(len(script_calls(story, "see.sh")) == 1)
 
 
 @pytest.mark.parametrize(("script", "fault"), [("fail.sh", "it ended with code 3"), ("broken.sh", "its answer is not JSON"), ("gone.sh", "gone.sh")])

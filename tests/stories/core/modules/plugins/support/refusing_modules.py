@@ -3,7 +3,9 @@ from dataclasses import dataclass
 from core.base.command.bus import Bus
 from core.base.command.command import Command
 from core.base.command.context import Context
+from core.base.change.created import Created
 from core.base.command.handler import Handler
+from core.base.guard.guard import Guard
 from core.base.module.module import Module
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
@@ -13,7 +15,9 @@ from core.modules.processes.models.process import Process
 from tests.stories.core.modules.plugins.support.event_modules import EventNote
 
 REFUSING = "tests.stories.core.modules.plugins.support.refusing_modules:RefusingModule"
+REFUSED_NOTES = "tests.stories.core.modules.plugins.support.refusing_modules:RefusedNotesModule"
 LATER_KEY_REFUSAL = "a later key refuses this"
+REFUSED_NOTE_TITLE = "Refused note"
 
 
 @dataclass(frozen=True)
@@ -71,7 +75,23 @@ class OnceThenNoteHandler(Handler[OnceThenNote, EventNote]):
         return self.repository.save(EventNote(title=command.title), context)
 
 
+class RefusedNoteGuard(Guard[Created[EventNote]]):
+    """A note with the refused title is never saved."""
+
+    name = "acme.refused-note"
+
+    def check(self, event: Created[EventNote], context: Context) -> None:
+        if event.row.title == REFUSED_NOTE_TITLE:
+            raise Refusal(LATER_KEY_REFUSAL)
+
+
 class RefusingModule(Module):
     name = "acme.refusing"
     requires_core = ">=5,<6"
     handlers = [DeleteProcessRowHandler, OrphanProcessRowHandler, OnceThenNoteHandler]
+
+
+class RefusedNotesModule(Module):
+    name = "acme.refused-notes"
+    requires_core = ">=5,<6"
+    guards = [RefusedNoteGuard]

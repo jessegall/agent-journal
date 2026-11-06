@@ -12,6 +12,7 @@ class PluginEventGuard(Guard[Changed[Model]]):
     allowing script tells or shows rolls back with the change."""
 
     name = "plugins.event-guard"
+    runs_last = True
 
     def __init__(self, scripts: PluginEventScripts) -> None:
         self.scripts = scripts

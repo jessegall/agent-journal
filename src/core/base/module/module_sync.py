@@ -125,7 +125,7 @@ class ModuleSync:
         return tuple(migration() for migration in module.migrations)
 
     def registry(self, modules: tuple[type[Module], ...], rules: tuple[DriverRuleEntry, ...], actor_ids: dict[str, int]) -> Registry:
-        guards = [guard for module in modules for guard in module.guards]
+        guards = sorted((guard for module in modules for guard in module.guards), key=lambda guard: guard.runs_last)
         listeners = [(module, listener) for module in modules for listener in module.listeners]
         return Registry(
             fingerprint=self.fingerprint.text(modules),
