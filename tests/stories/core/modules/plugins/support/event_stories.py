@@ -144,11 +144,11 @@ def expect_listed(rows: Sequence[Mapping[str, object]], **fields: object) -> Non
 class PluginPage:
     """The viewer's Plugins page and its commands."""
 
-    def __init__(self, story: Story, send_line: Callable[[list[str]], object]) -> None:
-        self.story, self.send_line = story, send_line
+    def __init__(self, story: Story, line_sender: Callable[[list[str]], object]) -> None:
+        self.story, self.line_sender = story, line_sender
 
     def line(self, *line: str) -> dict[str, object]:
-        return cast(dict[str, object], self.send_line(list(line)))
+        return cast(dict[str, object], self.line_sender(list(line)))
 
     def preview(self, source: Path) -> list[dict[str, object]]:
         return cast(list[dict[str, object]], self.line("plugin", "preview", str(source))["rows"])
@@ -188,12 +188,12 @@ class PluginPage:
 def plugin_page(story: Story) -> PluginPage:
     route = StoryLineRoute(story.home, ListenerThread(lambda: None, lambda error: None), ReportedFindings())
 
-    def send_line(line: list[str]) -> object:
+    def line_sender(line: list[str]) -> object:
         story.steps.append(f"viewer line {line}")
         answer = route.answer(WINDOW, line, story.user.id, "main")
         assert answer.code == 0, f"{line} gave {answer.code}: {answer.error}"
         return answer.value
-    return PluginPage(story, send_line)
+    return PluginPage(story, line_sender)
 
 
 @pytest.fixture

@@ -65,7 +65,7 @@ class Module:
     listeners: ClassVar[list[ListenerClass]] = []
     file_events: ClassVar[list[str]] = []
     former_event_keys: ClassVar[dict[str, str]] = {}
-    named_plugin_events: ClassVar[list[str]] = []
+    declared_plugin_events: ClassVar[list[str]] = []
     removal: ClassVar[type[Migration] | None] = None
     bindings: ClassVar[dict[type, type]] = {}
     suites: ClassVar[list[type[Suite]]] = []
@@ -100,8 +100,8 @@ class Module:
     @classmethod
     def plugin_event_names(cls) -> list[str]:
         if "named_plugin_events" in cls.__dict__:
-            return cls.named_plugin_events
-        return getattr(cls, "plugin_moments", cls.named_plugin_events)
+            return cls.declared_plugin_events
+        return getattr(cls, "plugin_moments", cls.declared_plugin_events)
 
     @classmethod
     @cache

@@ -10,7 +10,7 @@ from tests.stories.core.modules.plugins.support.event_modules import NOTES
 from tests.stories.core.modules.plugins.support.event_stories import SECOND_JOB, TASK_CREATED, event_page, event_plugin_story, install_event_plugin, script_calls
 from pathlib import Path
 
-CONTRACT_SNAPSHOT = Path("tests/snapshots/plugin_event_contract.json")
+CONTRACT_FILE = Path("tests/snapshots/plugin_event_contract.json")
 
 
 def test_s79_the_runner_line_gives_read_folders_in_a_variable_and_no_flag(new_story):
@@ -38,9 +38,9 @@ def test_s80_a_plugin_with_project_reads_gets_no_mark(new_story):
 
 def test_s81_the_snapshot_a_test_holds_names_what_journal_event_keys_lists(new_story):
     story = event_plugin_story(new_story)
-    snapshot = json.loads(CONTRACT_SNAPSHOT.read_text())
+    contract_file = json.loads(CONTRACT_FILE.read_text())
     rows = {row["key"] for row in json.loads(story.run("event keys --json", actor=story.user).output_text)["rows"]}
-    story.expect_rows(TASK_CREATED in snapshot, TASK_CREATED in rows, snapshot[TASK_CREATED]["fields"] != [])
+    story.expect_rows(TASK_CREATED in contract_file, TASK_CREATED in rows, contract_file[TASK_CREATED]["fields"] != [])
 
 
 @pytest.mark.parametrize("protocol", [None, 1])

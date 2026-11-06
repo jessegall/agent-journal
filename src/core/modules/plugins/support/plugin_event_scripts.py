@@ -12,7 +12,7 @@ from core.base.error_log import ErrorLog
 from core.base.model.event_form import EventForm
 from core.base.model.model import Model
 from core.base.registry.registry import Registry
-from core.base.running_scripts import PluginScriptProcesses
+from core.base.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
 from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults import ClearPluginFaults
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault

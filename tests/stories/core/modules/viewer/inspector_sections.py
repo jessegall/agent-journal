@@ -44,9 +44,9 @@ def test_the_person_sees_the_samples_section_and_button_in_the_plan_inspector(pl
 
 
 def test_a_section_lists_the_slots_it_names_and_no_other(plan_notes, plan_notes_cookie):
-    other_section = listed_section(plan_notes, plan_notes_cookie, "sections.elsewhere")
-    expect_value(other_section["slots"], ["inspector.task", "inspector.doc", "inspector.report", "inspector.agent", "inspector.memory"])
-    plan_notes.story.expect_rows("inspector.plan" not in other_section["slots"])
+    second_section = listed_section(plan_notes, plan_notes_cookie, "sections.elsewhere")
+    expect_value(second_section["slots"], ["inspector.task", "inspector.doc", "inspector.report", "inspector.agent", "inspector.memory"])
+    plan_notes.story.expect_rows("inspector.plan" not in second_section["slots"])
 
 
 def test_the_person_sees_a_section_on_a_task_and_a_memory_and_not_on_a_plan(plan_notes):

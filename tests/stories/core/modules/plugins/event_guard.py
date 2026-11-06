@@ -6,7 +6,7 @@ import pytest
 from core.base.model.event_form import EventForm
 from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
-from core.base.running_scripts import PluginScriptProcesses
+from core.base.plugin_script_processes import PluginScriptProcesses
 from core.base.script_stop import ScriptStop
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.plugins.commands.support.plugin_service_round import PluginServiceRound

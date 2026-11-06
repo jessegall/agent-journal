@@ -94,7 +94,7 @@ class Registry:
     outward_lines: tuple[str, ...] = ()
     event_keys: dict[str, EventKeyEntry] = field(default_factory=dict[str, EventKeyEntry])
     former_event_keys: dict[str, str] = field(default_factory=dict[str, str])
-    named_plugin_events: tuple[str, ...] = ()
+    declared_plugin_events: tuple[str, ...] = ()
 
     @classmethod
     def read(cls, database: Database) -> "Registry":
@@ -162,7 +162,7 @@ class Registry:
             events=tuple(entries.get("events", [])),
             event_keys={event: EventKeyEntry.restored(entry) for event, entry in entries.get("event_keys", {}).items()},
             former_event_keys=dict(entries.get("former_event_keys", {})),
-            named_plugin_events=tuple(entries.get("plugin_moments", [])),
+            declared_plugin_events=tuple(entries.get("plugin_moments", [])),
             providers=tuple(ProviderEntry(provider["name"], DottedPath(provider["path"]), provider["module"], provider["title"]) for provider in entries.get("providers", [])),
             settings=tuple(SettingEntry.restored(setting) for setting in entries.get("settings", [])),
             shared_rows={model: DottedPath(path) for model, path in entries.get("shared_rows", {}).items()},
@@ -179,7 +179,7 @@ class Registry:
             "events": list(self.events),
             "event_keys": {event: asdict(entry) for event, entry in self.event_keys.items()},
             "former_event_keys": self.former_event_keys,
-            "plugin_moments": list(self.named_plugin_events),
+            "plugin_moments": list(self.declared_plugin_events),
             "models":{cli_name: {"module": entry.module, "model": entry.model.text, "commands": list(entry.commands), "excluded_subcommands": list(entry.excluded_subcommands)} for cli_name, entry in self.models.items()},
             "handlers": {command: path.text for command, path in self.handlers.items()},
             "subcommands": {line: path.text for line, path in self.subcommands.items()},
