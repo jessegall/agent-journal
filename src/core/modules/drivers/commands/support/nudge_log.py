@@ -27,7 +27,7 @@ class NudgeLog:
         if not lines:
             return frozenset()
         turn_start = self.turn_start(agent_id)
-        records = self.records.agent_rows(agent_id)
+        records = self.records.key_rows(agent_id, (nudge.key for nudge in lines))
         return frozenset((nudge.key, nudge.text) for nudge in lines if self.is_skipped(agent_id, nudge, turn_start, timestamp, records))
 
     def is_skipped(self, agent_id: int, nudge: Nudge, turn_start: Timestamp | None, timestamp: Timestamp, records: list[NudgeRecord]) -> bool:
@@ -50,7 +50,7 @@ class NudgeLog:
         nudges = (*answers.delivered_nudges, *answers.refusal_nudges)
         if not nudges:
             return
-        records = list(self.records.agent_rows(agent_id))
+        records = self.records.key_rows(agent_id, (nudge.key for nudge in nudges))
         for nudge in nudges:
             current = self.record(agent_id, nudge, records)
             if nudge.interval and current.text != nudge.text:

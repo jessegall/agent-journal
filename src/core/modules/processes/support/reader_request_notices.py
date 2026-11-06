@@ -17,7 +17,7 @@ class ReaderRequestNotices:
 
     def has_recent_notice(self, agent_id: int, request_id: int, current_time: Timestamp) -> bool:
         last_line = self.queries.query(AgentLine).filter(session_agent_id=agent_id, source=self.source(request_id)).newest().first()
-        record = self.records.newest_row(agent_id, f"{READER_REQUEST.key}.{request_id}")
+        record = next(iter(self.records.key_rows(agent_id, [f"{READER_REQUEST.key}.{request_id}"])), None)
         timestamps = [last_line.creation_timestamp()] if last_line is not None else []
         if record is not None and record.last_delivered_at is not None:
             timestamps.append(record.last_delivered_at)
