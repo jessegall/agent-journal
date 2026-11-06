@@ -1,17 +1,17 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-83ce529e6f37")) { const style = document.createElement("style"); style.id = "window-styles-83ce529e6f37"; style.textContent = ".phones[data-v-2856f50f]{display:flex;flex-direction:column;gap:16px}.phones-pair[data-v-2856f50f]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}.phones-code[data-v-2856f50f]{margin:0;font-size:18px;letter-spacing:.08em}.phones-hint[data-v-2856f50f],.phones-failure[data-v-2856f50f]{margin:0;color:var(--text-2)}.phones-abilities[data-v-2856f50f]{margin:0;padding-left:18px;color:var(--text-3);font-size:12.5px}.phones-name[data-v-2856f50f]{flex:1}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-0343b3c1d417")) { const style = document.createElement("style"); style.id = "window-styles-0343b3c1d417"; style.textContent = ".phones[data-v-10e2b08e]{display:flex;flex-direction:column;gap:16px}.phones-pair[data-v-10e2b08e]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}.phones-code[data-v-10e2b08e]{margin:0;font-size:18px;letter-spacing:.08em}.phones-hint[data-v-10e2b08e],.phones-failure[data-v-10e2b08e]{margin:0;color:var(--text-2)}.phones-abilities[data-v-10e2b08e]{margin:0;padding-left:18px;color:var(--text-3);font-size:12.5px}.phones-name[data-v-10e2b08e]{flex:1}\n"; document.head.appendChild(style); }
 import { computed as N, openBlock as s, createBlock as T, unref as e, withCtx as c, createElementVNode as o, createElementBlock as l, toDisplayString as a, createCommentVNode as h, createVNode as d, createTextVNode as x, Fragment as C, renderList as A } from "vue";
-import { useWindow as I, useListTools as P, WindowRoom as S, Btn as R, QrCode as V, ListTools as E, RowList as q, removed as F } from "@journal/window-kit";
-const O = (u, _) => {
+import { useWindow as I, useListTools as P, WindowRoom as S, Btn as R, QrCode as V, ListTools as E, RowList as b, removed as q } from "@journal/window-kit";
+const F = (u, _) => {
   const r = u.__vccOpts || u;
-  for (const [f, m] of _)
-    r[f] = m;
+  for (const [m, f] of _)
+    r[m] = f;
   return r;
-}, W = { class: "phones" }, $ = {
+}, O = { class: "phones" }, W = {
   key: 0,
   class: "phones-failure",
   "data-phone-tunnel": ""
-}, b = { class: "phones-pair" }, j = { class: "phones-code" }, D = {
+}, $ = { class: "phones-pair" }, j = { class: "phones-code" }, D = {
   key: 0,
   "data-phone-qr": ""
 }, Q = { class: "phones-hint" }, U = {
@@ -23,14 +23,14 @@ const O = (u, _) => {
 }, G = { class: "phones-name" }, H = {
   __name: "PhoneRows",
   setup(u) {
-    const _ = ["Read the chat and see what needs you", "Answer questions", "Read reports, documents, plans and tasks", "Approve a plan or ask for changes", "Send the agent instructions"], r = I(), { rows: f, failure: m, loaded: B, act: v, actionFailure: w, answer: i } = r.props.phones, { data: g } = r.props.tunnel, L = N(() => f.value.filter((p) => p.state === "paired")), k = P(L, { title: (p) => p.name });
+    const _ = ["Read the chat and see what needs you", "Answer questions", "Read reports, documents, plans and tasks", "Approve a plan or ask for changes", "Send the agent instructions"], r = I(), { rows: m, failure: f, loaded: B, act: v, actionFailure: w, answer: i } = r.props.phones, { data: g } = r.props.tunnel, L = N(() => m.value.filter((p) => p.state === "paired")), k = P(L, { title: (p) => p.name });
     return (p, n) => (s(), T(e(S), null, {
       default: c(() => {
         var y;
         return [
-          o("div", W, [
-            ((y = e(g)) == null ? void 0 : y.state) === "disconnected" ? (s(), l("p", $, "A phone can't reach this journal yet: " + a(e(g).reason), 1)) : h("", !0),
-            o("div", b, [
+          o("div", O, [
+            ((y = e(g)) == null ? void 0 : y.state) === "disconnected" ? (s(), l("p", W, "A phone can't reach this journal yet: " + a(e(g).reason), 1)) : h("", !0),
+            o("div", $, [
               d(e(R), {
                 variant: "primary",
                 onClick: n[0] || (n[0] = (t) => e(v)(["phone", "pair"]))
@@ -55,9 +55,9 @@ const O = (u, _) => {
               ])
             ]),
             d(e(E), { tools: e(k) }, null, 8, ["tools"]),
-            d(e(q), {
+            d(e(b), {
               rows: e(k).shown.value,
-              failure: e(m),
+              failure: e(f),
               loaded: e(B),
               empty: "No phone is paired",
               hint: "Paired phones appear here.",
@@ -67,7 +67,7 @@ const O = (u, _) => {
                 o("span", G, a(t.name), 1),
                 d(e(R), {
                   small: "",
-                  onClick: (J) => e(v)(["phone", "unpair", String(t.id)], e(F)(t.id))
+                  onClick: (J) => e(v)(["phone", "unpair", String(t.id)], e(q)(t.id))
                 }, {
                   default: c(() => [...n[2] || (n[2] = [
                     x("Unpair", -1)
@@ -83,7 +83,7 @@ const O = (u, _) => {
       _: 1
     }));
   }
-}, X = /* @__PURE__ */ O(H, [["__scopeId", "data-v-2856f50f"]]);
+}, X = /* @__PURE__ */ F(H, [["__scopeId", "data-v-10e2b08e"]]);
 export {
   X as default
 };
