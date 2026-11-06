@@ -11,6 +11,7 @@ from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qsl, parse_qs, urlencode, urlsplit
 
 from server.server_instance import server_instance
+from server.hook.queue_request import QueueRequest
 from server.viewer.read_attribution import ReadAttribution
 from server.viewer.viewer_request_record import ViewerHttpRequest, ViewerRequestRecord
 from server.viewer.event_stream import EventStream
@@ -84,6 +85,16 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
     origin loads its own, and answers the viewer's pages and data only with that cookie."""
 
     def do_GET(self) -> None:
+        route = urlsplit(self.path).path
+        if route == EVENTS_ROUTE:
+            self.answer_get()
+            return
+        queue = self.viewer().routes.queue
+        turn = queue.viewer_turn(f"GET {self.path}") if route.startswith("/api/") else queue.observing(QueueRequest.started("Viewer", f"GET {self.path}"))
+        with turn:
+            self.answer_get()
+
+    def answer_get(self) -> None:
         viewer = self.viewer()
         if self.headers.get("Host") != viewer.host:
             self.answer(403, {"error": "this listener answers only its own address"})
@@ -188,6 +199,14 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.answer(404, {"error": f"no route {route.path}"})
 
     def do_POST(self) -> None:
+        route = urlsplit(self.path).path
+        if route in (LINE_ROUTE, LINES_ROUTE):
+            self.answer_post()
+            return
+        with self.viewer().routes.queue.viewer_turn(f"POST {self.path}"):
+            self.answer_post()
+
+    def answer_post(self) -> None:
         viewer = self.viewer()
         body = self.rfile.read(int(self.headers.get("Content-Length", "0") or "0"))
         if self.headers.get("Host") != viewer.host:
