@@ -26,7 +26,7 @@ class DependencyWaits:
 
     def update_wait(self, task_id: int, dependency_id: int, context: Context) -> None:
         if self.queries.query(OpenDependency).filter(task_id=task_id, dependency_id=dependency_id).exists():
-            self.wait_on(self.queries.query(Task).find(task_id), dependency_id, context)
+            self.block_dependent(self.queries.query(Task).find(task_id), dependency_id, context)
         else:
             self.end_wait(task_id, dependency_id, context)
 
@@ -36,11 +36,11 @@ class DependencyWaits:
         tasks = {task.id: task for task in self.queries.query(Task).matching(Among("id", tuple({pair.task_id for pair in pairs}))).all_rows()}
         for pair in pairs:
             if pair.id in open_ids:
-                tasks[pair.task_id] = self.wait_on(tasks[pair.task_id], pair.dependency_id, context)
+                tasks[pair.task_id] = self.block_dependent(tasks[pair.task_id], pair.dependency_id, context)
             else:
                 self.end_wait(pair.task_id, pair.dependency_id, context)
 
-    def wait_on(self, task: Task, dependency_id: int, context: Context) -> Task:
+    def block_dependent(self, task: Task, dependency_id: int, context: Context) -> Task:
         target = f"tasks:{dependency_id}"
         wait = next((wait for wait in self.waits.pending_task(task.id) if wait.target == target), None)
         if wait is None and task.state in (TaskState.OPEN, TaskState.BLOCKED):

@@ -9,4 +9,4 @@ class LaunchAnswer(StrEnum):
     RUNNING = "running"
     FAILED = "failed"
     LOCKED = "locked"
-    NOT_ASKED = "not asked"
+    SKIPPED = "skipped"
