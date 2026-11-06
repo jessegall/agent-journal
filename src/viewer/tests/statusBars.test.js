@@ -3,6 +3,7 @@ import {expect, test} from "vitest";
 import AgentBar from "../src/shell/AgentBar.vue";
 import WindowDropdown from "../src/windows/WindowDropdown.vue";
 import InformationBar from "../src/shell/InformationBar.vue";
+import {opening, route} from "../src/route.js";
 
 globalThis.ResizeObserver ??= class {
     observe() {}
@@ -90,9 +91,13 @@ test("the bars follow events rather than read on a short clock", async () => {
     expect(stage).not.toContain("setInterval(readFacts");
 });
 
-test("the agent bar names the task the agent is working in, and nothing when it has none", () => {
+test("the agent bar opens its current task in the inspector, and shows nothing when it has none", async () => {
     const working = mounted(AgentBar, {agent: MAIN, task: {id: 5383, title: "Port the file pages"}});
     expect(working.querySelector("[data-agent-task]").textContent).toBe("Task 5383: Port the file pages");
+    working.querySelector("[data-agent-task]").click();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(route.value.open).toMatchObject({table: "tasks", id: 5383});
+    opening([]);
     expect(mounted(AgentBar, {agent: MAIN, task: null}).querySelector("[data-agent-task]")).toBeNull();
 });
 
