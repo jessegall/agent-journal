@@ -31,7 +31,7 @@ class MergeCheckoutRule(DriverRule):
         if self.hook_history.has_recent_answer(self.name, hook, REMINDER_SPAN):
             return RuleAnswer.allowed()
         nudges: list[Nudge] = []
-        delivered = list(self.delivered.delivered(hook.agent_id))
+        delivered = list(self.delivered.delivered())
         self.rows.prepare(Environment, [worktree.environment_id for worktree in delivered])
         for worktree in delivered:
             environment = self.rows.required(Environment, worktree.environment_id)

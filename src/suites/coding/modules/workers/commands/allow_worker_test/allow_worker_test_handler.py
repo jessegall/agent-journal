@@ -20,8 +20,8 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_TEST_ALLO
 
 
 class AllowWorkerTestHandler(Handler[AllowWorkerTest, WorkerTestRequest]):
-    """Allows a request that was asked, for the main agent of the worker's environment or a person only, logs it on the task and
-    tells the worker."""
+    """Allows a request that was asked, for the main agent of the worker's environment or a person only, logs it
+    on the task and tells the worker."""
 
     command = AllowWorkerTest
     disabled_scopes = [ActorScope]

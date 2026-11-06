@@ -36,7 +36,7 @@ class TaskWaits:
         if opened:
             self.notify_agents(opened, context)
 
-    def has_only_task_waits(self, task_id: int) -> bool:
+    def waits_target_tasks(self, task_id: int) -> bool:
         return all(wait.target.startswith(TASK_TARGET_PREFIX) for wait in self.pending_task(task_id))
 
     def notify_agents(self, tasks: Sequence[Task], context: Context) -> None:

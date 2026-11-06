@@ -8,17 +8,16 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 
 class WorkerWorktrees:
-    """The worktrees the workers of a main agent's environment have out, and those of them delivered: every main agent
-    of an environment counts as one."""
+    """The worktrees the workers of the current environment have out, and those of them delivered: every main
+    agent of an environment counts as one."""
 
     def __init__(self, queries: Queries, worktrees: WorktreeQuery, kept: KeptRows) -> None:
         self.queries, self.worktrees = queries, worktrees
         self.kept = kept
 
-    def main_worktrees(self, main_id: int) -> list[Worktree]:
-        environment_id = self.queries.query(Agent).find(main_id).environment_id
-        workers = self.kept.read("agents", lambda: tuple(self.queries.query(Agent).filter(environment_id=environment_id, role=AgentRole.WORKER).all_rows()),
-                                 "environment_id = ? AND role = ?", [environment_id, AgentRole.WORKER], name="workers.main_workers")
+    def main_worktrees(self) -> list[Worktree]:
+        workers = self.kept.scoped_read("agents", lambda: tuple(self.queries.query(Agent).filter(role=AgentRole.WORKER).all_rows()),
+                                        "role = ?", [AgentRole.WORKER], name="workers.main_workers")
         if not workers:
             return []
         worker_ids = {worker.id for worker in workers}
@@ -28,5 +27,5 @@ class WorkerWorktrees:
             worktree_index.setdefault(worktree.session_agent_id, worktree)
         return [worktree_index[worker.id] for worker in workers if worker.id in worktree_index]
 
-    def delivered(self, main_id: int) -> list[Worktree]:
-        return [worktree for worktree in self.main_worktrees(main_id) if worktree.state is WorktreeState.DELIVERED]
+    def delivered(self) -> list[Worktree]:
+        return [worktree for worktree in self.main_worktrees() if worktree.state is WorktreeState.DELIVERED]

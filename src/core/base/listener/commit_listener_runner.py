@@ -143,7 +143,7 @@ class CommitListenerRunner:
             if not self.cursors.claimed(entry.name, position, event.id):
                 self.positions_stale = True
                 return progress
-            self.turns.give_way()
+            self.turns.pause()
             if not self.handle_event(entry, event):
                 self.cursors.claimed(entry.name, event.id, position)
                 return progress

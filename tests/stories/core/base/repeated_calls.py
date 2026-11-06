@@ -145,5 +145,4 @@ def test_a_repeat_names_the_code_that_asked_not_the_layers_between(new_story):
     with pytest.raises(RepeatedCallsError) as raised:
         repeat_read(story, 2)
     text = str(raised.value)
-    assert "repeated_calls.py" in text and "repeat_read" in text
-    assert "core/base/database" not in text and "core/base/query" not in text
+    story.expect_rows("repeated_calls.py" in text, "repeat_read" in text, "core/base/database" not in text, "core/base/query" not in text)
