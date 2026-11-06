@@ -21,6 +21,6 @@
         "name": "enabled-plugins-outside-runnable-plugins",
         "description": "The enabled plugins are listed outside RunnablePlugins, so a plugin whose upgrade is under way or whose files changed is treated as runnable by this caller and not by another.",
         "rule": "Ask RunnablePlugins.running, or RunnablePlugins.enabled when the caller handles a changed plugin itself.",
-        "skill": "python-fix-at-the-source"
+        "skill": "python/fix-at-the-source"
     }
 }
