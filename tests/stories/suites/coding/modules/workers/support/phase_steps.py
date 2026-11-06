@@ -119,6 +119,14 @@ class StoryWorker:
             self.end_test(self.started[ended_count])
             ended_count += 1
 
+    def end_tests(self, *codes: int) -> None:
+        for process_id, code in zip(self.started, codes):
+            self.end_test(process_id, code)
+
+    def worktree_task(self) -> int:
+        rows = json.loads(self.story.run("worker-worktree list --json", actor=self.story.agent).output_text)["rows"]
+        return next(row["task_id"] for row in rows if row["session_agent_id"] == self.worker.id)
+
     def started_processes(self) -> tuple[Process, ...]:
         return tuple(self.story.row(Process, process_id) for process_id in self.started)
 
