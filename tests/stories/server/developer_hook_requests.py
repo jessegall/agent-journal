@@ -249,16 +249,13 @@ def test_command_line_can_read_the_request_queue(recording_server):
     recording_server.expect_cli_exit("developer request-queue", "/", 0, "Request queue")
 
 
-def test_a_mixed_batch_does_not_hold_the_queue_inspection(recording_server):
+def test_a_mixed_batch_answers_both_lines(recording_server):
     server = recording_server
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
     queue = {"line": ["developer", "request-queue"], "environment": "main", "window": "developer.hook-requests"}
     task = {"line": ["task", "list"], "environment": "main", "window": "tasks.tasks"}
-    with server.context.hook_database.used(QueuePriority.AGENT_HOOK, 1):
-        started_at = perf_counter()
-        status, _, body = viewer_answer(server.viewer_port(), "/api/lines", cookie, "", {"lines": [queue, task]})
-        server.story.expect_rows(status == 400 and "read inspection pages separately" in body)
-        server.story.expect_rows(perf_counter() - started_at < 0.5)
+    status, _, body = viewer_answer(server.viewer_port(), "/api/lines", cookie, "", {"lines": [queue, task]})
+    server.story.expect_rows(status == 200, [answer["code"] for answer in json.loads(body)["answers"]] == [0, 0])
 
 
 @pytest.mark.parametrize("command,window", [("request-queue", "developer.hook-requests"), ("hook-requests", "developer.hook-requests"), ("system-logs", "developer.system-logs")])

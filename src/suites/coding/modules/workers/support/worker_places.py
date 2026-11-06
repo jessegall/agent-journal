@@ -10,7 +10,7 @@ from core.base.refusal import Refusal
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
-from core.modules.agents.support.agent_type_limits import NO_LIMIT, AgentTypeLimits
+from core.modules.agents.support.agent_type_limits import NO_LIMIT, AgentTypeLimits, TypeLimits
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
@@ -44,9 +44,10 @@ class WorkerPlaces:
     def kept_limit(self) -> int:
         return self.limits.of(CodingAgentRole.WORKER).kept
 
-    def all_kept_run(self) -> bool:
+    def can_start_new(self) -> bool:
         workers = self.kept_workers()
-        return self.kept_limit() != NO_LIMIT and len(workers) >= self.kept_limit() and all(worker.ended_at is None for worker in workers)
+        all_kept_run = self.kept_limit() != NO_LIMIT and len(workers) >= self.kept_limit() and all(worker.ended_at is None for worker in workers)
+        return not all_kept_run and len(self.running()) < self.run_limit()
 
     def check_new_place(self) -> None:
         if len(self.running()) + self.resuming_count() >= self.run_limit():
@@ -54,9 +55,7 @@ class WorkerPlaces:
         workers = self.kept_workers()
         if self.kept_limit() != NO_LIMIT and len(workers) >= self.kept_limit():
             names = ", ".join(f"agent:{worker.id}" for worker in workers[:KEPT_NAMES_SHOWN])
-            stopped = next((worker for worker in workers if worker.ended_at is not None), None)
-            next_step = "all of them run: wait for a report" if stopped is None else f'journal agent retire {stopped.id} --reason "<why>"'
-            raise Refusal(f"the limit of {self.kept_limit()} workers is reached: {names}", next_step)
+            raise Refusal(f"the limit of {self.kept_limit()} workers is reached: {names}", TypeLimits.next_step_at_limit(workers))
 
     def run_limit(self) -> int:
         return self.limits.of(CodingAgentRole.WORKER).run
@@ -65,7 +64,7 @@ class WorkerPlaces:
         cutoff_time = self.clock.timestamp().value - timedelta(seconds=JOB_DELIVERY_SECONDS)
         cutoff_at = Timestamp(cutoff_time.replace(second=0, microsecond=0)).text
         with self.scopes.opened(self.scopes.actor_id, self.scopes.environment_id, [ActorScope]):
-            return self.kept.read(AGENT_LINES_TABLE, lambda: self.entered_lines(cutoff_at), "state = ? AND updated_at > ?", [AgentLineState.ENTERED, cutoff_at], name="workers.resuming_lines")
+            return self.kept.read(AGENT_LINES_TABLE, lambda: self.entered_lines(cutoff_at), "state = ? AND updated_at > ?", [AgentLineState.ENTERED, cutoff_at], name=f"workers.resuming_lines.{self.scopes.environment_id}")
 
     def entered_lines(self, cutoff_at: str) -> tuple[AgentLine, ...]:
         return tuple(self.queries.query(AgentLine).filter(state=AgentLineState.ENTERED).matching(Greater("updated_at", cutoff_at)).all_rows())
@@ -74,9 +73,6 @@ class WorkerPlaces:
         workers = {worker.id: worker for worker in self.kept_workers() if worker.ended_at is not None}
         return len({line.session_agent_id for line in self.resuming_lines() if line.source in RESUMING_SOURCES and line.session_agent_id in workers
                     and line.updated_at.text > workers[line.session_agent_id].ended_at.text})
-
-    def has_free_place(self) -> bool:
-        return len(self.running()) < self.run_limit()
 
     def can_resume(self, worker: Agent) -> bool:
         if worker.ended_at is None:

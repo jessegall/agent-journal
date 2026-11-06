@@ -17,7 +17,7 @@ async function load() {
     const flags = [`--page ${page.value}`];
     if (source.value) flags.push(`--source ${source.value}`);
     if (level.value) flags.push(`--level ${level.value}`);
-    const answer = await context.read(`developer system-logs ${flags.join(" ")}`);
+    const answer = await context.read(`developer system-logs ${flags.join(" ")}`, {unbatched: true});
     if (paused.value || number !== readNumber) return;
     failure.value = answer.ok ? "" : answer.error;
     if (answer.ok) listing.value = answer.value;

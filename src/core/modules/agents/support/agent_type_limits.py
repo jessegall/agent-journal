@@ -1,7 +1,10 @@
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 from core.base.registry.registry import Registry
 from core.modules.settings.bindings.support.setting_values import SettingValues
+
+from core.modules.agents.models.agent import Agent
 
 NO_LIMIT = 0
 
@@ -12,6 +15,11 @@ class TypeLimits:
 
     run: int
     kept: int
+
+    @staticmethod
+    def next_step_at_limit(agents: Iterable[Agent]) -> str:
+        stopped = next((agent for agent in agents if agent.ended_at is not None), None)
+        return "all of them run: wait for a report" if stopped is None else f'journal agent retire {stopped.id} --reason "<why>"'
 
 
 class AgentTypeLimits:
