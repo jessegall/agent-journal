@@ -8,8 +8,8 @@ from core.base.change.updated import Updated
 
 
 class PluginHealthMarkListener(MarkListener[Updated[Plugin]]):
-    """When a plugin starts failing the chat says so with its last fault, and says it again in place once the
-    plugin answers."""
+    """When a plugin starts failing the chat says so with its last fault, in a mark left open, and that mark says it
+    answers again and ends once the plugin answers."""
 
     name = "plugins.health-mark"
     disabled_scopes = [ActorScope]
@@ -20,6 +20,6 @@ class PluginHealthMarkListener(MarkListener[Updated[Plugin]]):
             return
         plugin = event.row
         if plugin.failing:
-            self.show(logged, PluginMarkType.HEALTH, PluginMarkVariant.FAILING, f"Plugin {plugin.name} is failing: {plugin.last_fault}", key=f"plugin-health:{plugin.id}")
+            self.show(logged, PluginMarkType.HEALTH, PluginMarkVariant.FAILING, f"Plugin {plugin.name} is failing: {plugin.last_fault}", key=f"plugin-health:{plugin.id}", ended=False)
             return
         self.show(logged, PluginMarkType.HEALTH, PluginMarkVariant.HEALTHY, f"Plugin {plugin.name} answers again", key=f"plugin-health:{plugin.id}")

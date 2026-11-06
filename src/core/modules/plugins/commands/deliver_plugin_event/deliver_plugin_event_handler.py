@@ -14,6 +14,6 @@ class DeliverPluginEventHandler(Handler[DeliverPluginEvent, PluginDelivery]):
         self.repository = repository
 
     def handle(self, command: DeliverPluginEvent, context: Context) -> PluginDelivery:
-        return self.repository.save(PluginDelivery(plugin_id=command.plugin_id, environment_id=context.environment_id, session_agent_id=command.agent_id,
+        return self.repository.save(PluginDelivery(plugin_id=command.plugin_id, environment_id=command.environment_id or context.environment_id, session_agent_id=command.agent_id,
                                                    creator_id=context.actor.id,
-                                                   event=command.event, data=command.data), context)
+                                                   event=command.event, data=command.data, script=command.script, event_id=command.event_id), context)

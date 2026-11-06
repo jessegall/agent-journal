@@ -4,6 +4,8 @@ from core.modules.plugins.migrations.m003_plugin_output_index import PluginOutpu
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.plugins.commands.deliver_file_edit.deliver_file_edit_handler import DeliverFileEditHandler
 from core.base.project_reads import ProjectReads
+from core.modules.plugins.listeners.plugin_event_listener import PluginEventListener
+from core.modules.plugins.listeners.system_event_delivery_listener import SystemEventDeliveryListener
 from core.modules.plugins.migrations.m005_plugin_event_deliveries import PluginEventDeliveriesMigration
 from core.modules.plugins.commands.plugin_events.plugin_events_subcommand import PluginEventsSubcommand
 from core.modules.plugins.support.plugin_event_names import PLAIN_EVENTS
@@ -105,6 +107,6 @@ class PluginsModule(Module):
     plugin_moments = [*PLAIN_EVENTS.values(), "tool_starting", "command_starting", "file_edited"]
     marks = PLUGIN_MARKS
     tick_handlers = [TickHandler(TickInterval(seconds=1), PluginCardReading(), "plugin card reading")]
-    listeners = [LoginPathListener, PluginSkillPublishListener, PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]
+    listeners = [PluginEventListener, SystemEventDeliveryListener, LoginPathListener, PluginSkillPublishListener, PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]
     subcommands = [PluginEventsSubcommand, RunPluginCommandSubcommand, PluginCheckoutSubcommand, PluginChangesSubcommand, PluginFileSubcommand, PluginRecordSubcommand, PluginListSubcommand, PluginSettingsSubcommand, PluginServicesSubcommand, UpgradePluginSubcommand, PluginPreviewSubcommand, PluginLatestSubcommand, PluginDashboardSubcommand, PluginDashboardsSubcommand, PluginDescriptionsSubcommand, ProposePluginSubcommand, InstallPluginSubcommand, EnablePluginSubcommand,
                    DisablePluginSubcommand, ConfigurePluginSubcommand, RemovePluginSubcommand]

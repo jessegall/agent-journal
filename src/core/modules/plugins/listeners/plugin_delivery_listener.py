@@ -20,7 +20,9 @@ from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults impor
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_delivery import PluginDelivery
+from core.modules.plugins.commands.switch_off_changed_plugin.switch_off_changed_plugin import SwitchOffChangedPlugin
 from core.modules.plugins.support.plugin_call import PluginCall
+from core.modules.plugins.support.plugin_digest import PluginDigest
 from core.modules.plugins.support.plugin_event import PluginEvent
 from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
@@ -33,6 +35,7 @@ from core.base.change.created import Created
 
 DELIVERY_LIMIT_MS = 60_000
 FILE_FIELD = "file"
+COMMIT_SUFFIX = " (commit)"
 
 
 class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
@@ -55,17 +58,25 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         except Refusal as refusal:
             self.record(logged, delivery, RecordPluginFault(delivery.plugin_id, f"{refusal.reason} at {delivery.event}"))
             return
+        if delivery.script and self.folders.is_upgrading(plugin.name):
+            return
+        if delivery.script and PluginDigest.digest(self.folders.code(plugin.name), manifest) != plugin.files_digest:
+            self.record(logged, delivery, SwitchOffChangedPlugin(plugin.id))
+            return
         environment = self.queries.query(Environment).find(delivery.environment_id).name if delivery.environment_id is not None else ""
         data: object = json.loads(delivery.data)
         event_data = {str(key): value for key, value in data.items()} if is_mapping(data) else {}
         file_checkout = self.delivery_checkout(delivery, event_data)
         if file_checkout is not None:
             event_data[FILE_FIELD] = self.with_file_state(file_checkout, event_data[FILE_FIELD])
-        call = PluginCall(manifest, PluginEvent(delivery.event, event_data), environment, self.clock.timestamp(), self.settings.values(plugin, manifest), delivery.session_agent_id, file_checkout)
+        call = PluginCall(manifest, PluginEvent(delivery.event, event_data), environment, self.clock.timestamp(), self.settings.values(plugin, manifest), delivery.session_agent_id, file_checkout, script=delivery.script)
         try:
-            answer = self.program.run(call, DELIVERY_LIMIT_MS)
+            answer = self.program.run(call, None if delivery.script else DELIVERY_LIMIT_MS)
         except PluginFaultError as fault:
-            self.record(logged, delivery, RecordPluginFault(delivery.plugin_id, f"{fault} at {delivery.event}"))
+            self.record(logged, delivery, RecordPluginFault(delivery.plugin_id, f"{fault} at {delivery.event}{COMMIT_SUFFIX if delivery.script else ''}"))
+            return
+        if delivery.script and answer.is_refusal():
+            self.record(logged, delivery, RecordPluginFault(delivery.plugin_id, f"it answered refuse at {delivery.event}{COMMIT_SUFFIX}: {answer.reason}"))
             return
         if plugin.fault_count:
             self.record(logged, delivery, ClearPluginFaults(delivery.plugin_id))

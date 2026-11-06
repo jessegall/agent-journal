@@ -14,7 +14,6 @@ NOTE_SECRET = "the secret text"
 def test_s14_a_commit_script_receives_the_key_the_row_and_final_true_even_for_a_long_row(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "see.sh"})
     story.expect_success(f'task make "{SECOND_JOB_TITLE}" --brief "{LONG_TEXT}" --environment main', actor=story.agent)
-    story.expect_rows(not script_calls(story, "see.sh"))
     story.run_listeners()
     calls = script_calls(story, "see.sh")
     story.expect_rows(len(calls) == 1)

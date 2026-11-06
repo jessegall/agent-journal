@@ -80,6 +80,12 @@ class EventLog:
             "created_at": timestamp,
         })
 
+    @staticmethod
+    def row_values(row: Model) -> dict[str, object]:
+        hidden = type(row).hidden_fields
+        values = {field.name: HIDDEN if field.name in hidden else stored(getattr(row, field.name)) for field in fields(row) if field.name not in BOOKKEEPING_FIELDS}
+        return {"id": row.id, **values}
+
     def data(self, change: Change[Model]) -> dict[str, list[object]]:
         names = change.fields if change.old_row and change.new_row else tuple(field.name for field in fields(change.row) if field.name not in BOOKKEEPING_FIELDS)
         hidden = type(change.row).hidden_fields

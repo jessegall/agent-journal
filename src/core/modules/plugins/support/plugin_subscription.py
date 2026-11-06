@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
@@ -7,3 +7,4 @@ class PluginSubscription:
 
     plugin: str
     script: str
+    plugin_id: int = field(default=0, compare=False)

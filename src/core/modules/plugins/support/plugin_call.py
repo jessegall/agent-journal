@@ -22,3 +22,4 @@ class PluginCall:
     agent_id: int | None = None
     file_checkout: Checkout | None = None
     form: EventForm = EventForm.COMMIT
+    script: str = ""

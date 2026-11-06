@@ -12,3 +12,6 @@ class DeliverPluginEvent(Command[PluginDelivery]):
     agent_id: int | None
     event: str
     data: str
+    script: str = ""
+    event_id: int | None = None
+    environment_id: int | None = None

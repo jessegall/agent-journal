@@ -33,7 +33,7 @@ class PluginProgram:
     def __init__(self, home: JournalHome, folders: PluginFolders, sockets: PluginSocketPaths, skills: LoadedSkills, checkouts: AgentCheckouts, scripts: RunningScripts) -> None:
         self.home, self.folders, self.sockets, self.skills, self.checkouts, self.scripts = home, folders, sockets, skills, checkouts, scripts
 
-    def run(self, call: PluginCall, limit_ms: int) -> PluginAnswer:
+    def run(self, call: PluginCall, limit_ms: int | None) -> PluginAnswer:
         manifest = call.manifest
         folder = self.folders.code(manifest.name)
         self.write_settings(manifest.name, call.settings)
@@ -41,18 +41,22 @@ class PluginProgram:
         checkout = call.file_checkout or (self.checkouts.checkout(call.agent_id) if call.agent_id is not None else None)
         line = json.dumps({"v": 1, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "skills": list(skills), "checkout": checkout.values() if checkout is not None else {}, "data": dict(call.event.data)})
         socket_services = [service.name for service in manifest.services if service.answers]
-        if socket_services and (service_socket := PluginSocket(self.sockets.answers(manifest.name, socket_services[0]))).is_open():
+        if not call.script and limit_ms is not None and socket_services and (service_socket := PluginSocket(self.sockets.answers(manifest.name, socket_services[0]))).is_open():
             try:
                 return PluginAnswer.parsed(service_socket.ask(line, limit_ms))
             except (ConnectionError, FileNotFoundError):
                 pass
             except json.JSONDecodeError:
                 raise PluginFaultError("its service's answer is not JSON") from None
-        process = subprocess.Popen([str(folder / manifest.program)], cwd=folder, env=self.environment(manifest.name, call.environment), stdin=subprocess.PIPE,
-                                   stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, start_new_session=True)
+        program = call.script or manifest.program
+        try:
+            process = subprocess.Popen([str(folder / program)], cwd=folder, env=self.environment(manifest.name, call.environment), stdin=subprocess.PIPE,
+                                       stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, start_new_session=True)
+        except OSError as error:
+            raise PluginFaultError(f"{program} could not start: {error.strerror}") from None
         self.scripts.start(process, manifest.name, call.event.name, call.form, call.timestamp)
         try:
-            output, _ = process.communicate(line + "\n", timeout=limit_ms / 1000)
+            output, _ = process.communicate(line + "\n", timeout=None if limit_ms is None else limit_ms / 1000)
         except subprocess.TimeoutExpired:
             self.stop(process)
             raise PluginLateError(f"it ran past {limit_ms} ms") from None
