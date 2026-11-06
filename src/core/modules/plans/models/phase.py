@@ -17,3 +17,4 @@ class Phase(Model):
     title: str
     goal: str = ""
     checkpoint: bool = False
+    test_command: str = ""

@@ -46,6 +46,12 @@ def test_a_phase_names_no_test_unless_it_is_told_one(new_story):
     assert json.loads(story.run("phase show 1 --json").output_text)["test_command"] == ""
 
 
+def test_a_phase_edit_changes_the_test_and_phase_show_reads_it(new_story):
+    story = plan_with_three_phases(new_story)
+    story.expect_success('phase edit 1 --test-command "pytest tests/values.py"', "test_command: pytest tests/values.py")
+    story.expect_success("phase show 1", "test_command: pytest tests/values.py")
+
+
 def test_a_phase_deleted_from_the_middle_closes_its_place_and_the_next_phase_takes_the_end(new_story):
     story = plan_with_three_phases(new_story)
     story.expect_text("phase delete 2", "phase:2")
