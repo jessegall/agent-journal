@@ -12,6 +12,7 @@ class TypeTerminalLineHandler(Handler[TypeTerminalLine, Agent]):
     line."""
 
     command = TypeTerminalLine
+    runs_once = True
 
     def __init__(self, queries: Queries, typing: TerminalTyping) -> None:
         self.queries, self.typing = queries, typing

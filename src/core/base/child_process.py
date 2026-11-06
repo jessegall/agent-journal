@@ -25,14 +25,20 @@ class ChildProcess:
         return self.process.wait(limit_seconds)
 
     def stop_group(self, limit_seconds: float) -> None:
-        if not self.running():
-            return
-        os.killpg(self.process.pid, signal.SIGTERM)
+        self.signal_group(signal.SIGTERM)
         try:
             self.process.wait(limit_seconds)
         except subprocess.TimeoutExpired:
-            os.killpg(self.process.pid, signal.SIGKILL)
+            self.signal_group(signal.SIGKILL)
             self.process.wait(limit_seconds)
+            return
+        self.signal_group(signal.SIGKILL)
+
+    def signal_group(self, number: signal.Signals) -> None:
+        try:
+            os.killpg(self.process.pid, number)
+        except (ProcessLookupError, PermissionError):
+            return
 
     def stop(self, limit_seconds: float) -> None:
         if not self.running():

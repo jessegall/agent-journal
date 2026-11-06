@@ -9,6 +9,11 @@ from core.base.command.bus import Bus
 from core.base.command.missing_handler_error import MissingHandlerError
 from core.base.command.transaction_error import TransactionError
 from core.base.command.command import Command
+from core.base.command.outside_runs import OUTSIDE_LIMIT_ROUNDS, OutsideRuns
+from core.base.command.outside_turn import OutsideTurn
+from core.base.command.script_policy import ScriptPolicy
+from core.base.database.kept_rows import KeptRows
+from core.base.query.queries import Queries
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.command.handlers.make_handler import MakeHandler
@@ -32,6 +37,10 @@ from tests.unit.core.base.model.test_model import Item
 from core.base.change.created import Created
 
 AGENT = Actor(7, ActorType.AGENT)
+ROUNDS: list[int] = []
+WORK_RUNS: list[str] = []
+KEPT_COUNTS: list[int] = []
+SEEN_CONTEXTS: list[Context] = []
 
 
 @dataclass(frozen=True)
@@ -85,6 +94,198 @@ class TryARefusedItem(SaveListener[Created[Item]]):
             return
 
 
+class AskedWork:
+    """A stand-in for a plugin's script: it counts its runs and leaves one answer."""
+
+    def __init__(self, turn: OutsideTurn) -> None:
+        self.turn = turn
+
+    def label(self) -> str:
+        return "asked work"
+
+    def run(self, runs: OutsideRuns) -> None:
+        WORK_RUNS.append(self.turn.log_name)
+        runs.record(self.turn, ("allowed",))
+
+
+@dataclass(frozen=True)
+class AskedItem(Command[Item]):
+    title: str
+
+
+class AskedItemHandler(Handler[AskedItem, Item]):
+    """Saves an item and asks for outside work once."""
+
+    command = AskedItem
+
+    def __init__(self, repository: Repository) -> None:
+        self.repository = repository
+
+    def handle(self, command: AskedItem, context: Context) -> Item:
+        ROUNDS.append(context.outside_runs.rounds)
+        item = self.repository.save(Item(title=command.title), context)
+        turn = context.outside_runs.turn("guard", "item.create")
+        if not turn.has_answers and not context.outside_runs.closed:
+            raise context.outside_runs.rollback(AskedWork(turn))
+        return item
+
+
+@dataclass(frozen=True)
+class EndlessItem(Command[Item]):
+    title: str
+
+
+class EndlessItemHandler(Handler[EndlessItem, Item]):
+    """Asks for new outside work each round, with no answer ever holding."""
+
+    command = EndlessItem
+
+    def __init__(self, repository: Repository) -> None:
+        self.repository = repository
+
+    def handle(self, command: EndlessItem, context: Context) -> Item:
+        ROUNDS.append(context.outside_runs.rounds)
+        item = self.repository.save(Item(title=command.title), context)
+        if not context.outside_runs.closed:
+            raise context.outside_runs.rollback(EndlessWork())
+        return item
+
+
+class EndlessWork:
+    def label(self) -> str:
+        return "endless work"
+
+    def run(self, runs: OutsideRuns) -> None:
+        WORK_RUNS.append("endless")
+
+
+@dataclass(frozen=True)
+class OnceItem(Command[Item]):
+    title: str
+
+
+class OnceItemHandler(EndlessItemHandler):
+    command = OnceItem
+    runs_once = True
+
+
+@dataclass(frozen=True)
+class SwallowingItem(Command[Item]):
+    title: str
+
+
+class SwallowingItemHandler(AskedItemHandler):
+    """Catches everything, as a broad except in a handler does."""
+
+    command = SwallowingItem
+
+    def handle(self, command: SwallowingItem, context: Context) -> Item:
+        try:
+            return super().handle(command, context)
+        except Exception:
+            return Item(id=0, title=command.title)
+
+
+@dataclass(frozen=True)
+class KeptItem(Command[Item]):
+    title: str
+
+
+class KeptItemHandler(AskedItemHandler):
+    """Reads the items through kept rows at the start of each round."""
+
+    command = KeptItem
+
+    def __init__(self, repository: Repository, kept: KeptRows, queries: Queries) -> None:
+        super().__init__(repository)
+        self.kept, self.queries = kept, queries
+
+    def handle(self, command: KeptItem, context: Context) -> Item:
+        KEPT_COUNTS.append(self.kept.read("items", self.queries.query(Item).count, name="items.count"))
+        item = super().handle(command, context)
+        KEPT_COUNTS.append(self.kept.read("items", self.queries.query(Item).count, name="items.count"))
+        return item
+
+
+@dataclass(frozen=True)
+class FirstThenAsked(Command[Item]):
+    first: str
+    second: str
+
+
+class FirstThenAskedHandler(Handler[FirstThenAsked, Item]):
+    """Runs two commands of its own, as a handler with outside work between them does."""
+
+    command = FirstThenAsked
+    transactional = False
+
+    def __init__(self, bus: Bus) -> None:
+        self.bus = bus
+
+    def handle(self, command: FirstThenAsked, context: Context) -> Item:
+        self.bus.run_with_context(MakeItem(title=command.first), context)
+        return self.bus.run_with_context(AskedItem(command.second), context)
+
+
+@dataclass(frozen=True)
+class SeenRuns(Command[int]):
+    pass
+
+
+class SeenRunsHandler(Handler[SeenRuns, int]):
+    command = SeenRuns
+
+    def handle(self, command: SeenRuns, context: Context) -> int:
+        SEEN_CONTEXTS.append(context)
+        return 0
+
+
+@dataclass(frozen=True)
+class PassedOn(Command[int]):
+    pass
+
+
+class PassedOnHandler(Handler[PassedOn, int]):
+    command = PassedOn
+    transactional = False
+
+    def __init__(self, bus: Bus) -> None:
+        self.bus = bus
+
+    def handle(self, command: PassedOn, context: Context) -> int:
+        return self.bus.run_with_context(SeenRuns(), context)
+
+
+@dataclass(frozen=True)
+class OnceInside(Command[Item]):
+    title: str
+
+
+class OnceInsideHandler(OnceItemHandler):
+    command = OnceInside
+
+
+@dataclass(frozen=True)
+class OuterOfOnce(Command[Item]):
+    title: str
+
+
+class OuterOfOnceHandler(Handler[OuterOfOnce, Item]):
+    """Dispatches a command that runs once, then reaches outside work: it must not raise, or the inner work would run again."""
+
+    command = OuterOfOnce
+
+    def __init__(self, bus: Bus) -> None:
+        self.bus = bus
+
+    def handle(self, command: OuterOfOnce, context: Context) -> Item:
+        ROUNDS.append(context.outside_runs.rounds)
+        item = self.bus.dispatch(OnceInside(command.title), context)
+        if not context.outside_runs.closed:
+            raise context.outside_runs.rollback(EndlessWork())
+        return item
+
+
 def handlers(*pairs: tuple[type, type]) -> dict[str, DottedPath]:
     return {DottedPath.class_path(command).text: DottedPath.class_path(handler) for command, handler in pairs}
 
@@ -94,6 +295,17 @@ def container(tmp_path):
     registry = Registry("abc", {}, handlers((MakeCommand, MakeHandler), (MoveCommand, MoveHandler), (ItemPair, ItemPairHandler), (BlockedItem, BlockedItemHandler)), {}, (),
                         [ListenerEntry(TryARefusedItem.name, EventPattern(TryARefusedItem.event), ListenerTiming.SAVE, DottedPath.class_path(TryARefusedItem), 1)])
     return sample_container(tmp_path, registry)
+
+
+@pytest.fixture
+def outside_container(tmp_path):
+    for kept in (ROUNDS, WORK_RUNS, KEPT_COUNTS, SEEN_CONTEXTS):
+        kept.clear()
+    pairs = handlers((MakeCommand, MakeHandler), (AskedItem, AskedItemHandler), (EndlessItem, EndlessItemHandler), (OnceItem, OnceItemHandler), (SwallowingItem, SwallowingItemHandler),
+                     (KeptItem, KeptItemHandler), (FirstThenAsked, FirstThenAskedHandler), (SeenRuns, SeenRunsHandler), (PassedOn, PassedOnHandler), (OnceInside, OnceInsideHandler), (OuterOfOnce, OuterOfOnceHandler))
+    container = sample_container(tmp_path, Registry("abc", {}, pairs, {}, (), ()))
+    container.bind(ScriptPolicy, ScriptPolicy(guards_run=True))
+    return container
 
 
 def titles(container) -> list[str]:
@@ -140,3 +352,66 @@ def test_a_command_no_handler_carries_out_is_a_clear_fault(container):
 
     with pytest.raises(MissingHandlerError, match="Unhandled"):
         container.get(Bus).run(Unhandled(), AGENT)
+
+
+def test_a_handler_can_run_again_unless_it_says_it_runs_once():
+    assert Handler.runs_once is False
+
+
+def test_a_command_that_rolls_back_once_runs_twice_and_saves_once(outside_container):
+    item = outside_container.get(Bus).run(AskedItem("Dune"), AGENT)
+    assert ROUNDS == [1, 2] and WORK_RUNS == ["item.create"]
+    assert titles(outside_container) == ["Dune"] and item.title == "Dune"
+
+
+def test_the_round_past_the_limit_goes_closed_and_the_command_commits(outside_container):
+    outside_container.get(Bus).run(EndlessItem("Dune"), AGENT)
+    assert len(ROUNDS) == OUTSIDE_LIMIT_ROUNDS + 1 and len(WORK_RUNS) == OUTSIDE_LIMIT_ROUNDS
+    assert titles(outside_container) == ["Dune"]
+
+
+def test_a_closed_run_never_raises_and_its_handler_runs_once(outside_container):
+    outside_container.get(Bus).run(OnceItem("Dune"), AGENT)
+    assert ROUNDS == [1] and WORK_RUNS == []
+    assert titles(outside_container) == ["Dune"]
+
+
+def test_explain_never_calls_the_work(outside_container):
+    outside_container.get(Bus).explain(EndlessItem("Dune"), AGENT)
+    assert WORK_RUNS == [] and titles(outside_container) == []
+
+
+def test_a_handler_that_swallows_the_rollback_is_caught(outside_container):
+    outside_container.get(Bus).run(SwallowingItem("Dune"), AGENT)
+    assert ROUNDS == [1, 2] and WORK_RUNS == ["item.create"]
+    assert titles(outside_container) == ["Dune"]
+
+
+def test_a_rolled_back_row_is_not_read_back_from_kept_rows(outside_container):
+    outside_container.get(Bus).run(KeptItem("Dune"), AGENT)
+    assert KEPT_COUNTS == [0, 0, 1]
+
+
+def test_a_nested_command_of_a_handler_with_no_transaction_rolls_back_alone(outside_container):
+    outside_container.get(Bus).run(FirstThenAsked("First", "Second"), AGENT)
+    assert ROUNDS == [1, 2]
+    assert titles(outside_container) == ["First", "Second"]
+
+
+def test_a_nested_command_keeps_the_skipped_guards_and_the_plugin_script(outside_container):
+    outside_container.get(Bus).run(PassedOn(), AGENT, frozenset({"plugins.event-guard"}), plugin_script="see.sh")
+    seen = SEEN_CONTEXTS[0]
+    assert seen.skipped_guards == {"plugins.event-guard"} and seen.outside_runs.from_plugin_script
+
+
+def test_dispatching_a_command_that_runs_once_closes_the_rest_of_the_command(outside_container):
+    outside_container.get(Bus).run(OuterOfOnce("Dune"), AGENT)
+    assert ROUNDS == [1, 1] and WORK_RUNS == []
+    assert titles(outside_container) == ["Dune"]
+
+
+def test_a_container_nobody_opened_runs_no_outside_work_and_says_why(outside_container):
+    outside_container.bind(ScriptPolicy, ScriptPolicy())
+    outside_container.instances.pop(Bus, None)
+    outside_container.get(Bus).run(EndlessItem("Dune"), AGENT)
+    assert ROUNDS == [1] and WORK_RUNS == []

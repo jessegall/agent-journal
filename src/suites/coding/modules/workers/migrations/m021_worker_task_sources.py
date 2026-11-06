@@ -4,7 +4,7 @@ from core.base.database.migration import Migration
 class WorkerTaskSourcesMigration(Migration):
     """Keeps each assigned task's request separately from later follow-ups."""
 
-    number = 20
+    number = 21
     statements = [
         "CREATE TABLE worker_task_sources (id INTEGER PRIMARY KEY, version INTEGER NOT NULL DEFAULT 1,"
         " metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)), created_at TEXT NOT NULL, updated_at TEXT NOT NULL,"

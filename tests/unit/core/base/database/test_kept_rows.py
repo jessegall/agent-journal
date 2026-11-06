@@ -139,3 +139,15 @@ def test_a_write_transaction_reuses_reads_until_another_write(database):
         table_reads = dict(database.tally.points().tables)
         assert kept.read("notes", collect_texts, name="notes.text") == tuple(["Temporary"])
         assert len(calls) == 1 and database.tally.points().tables == table_reads
+
+
+def test_a_write_by_another_connection_is_read_after_a_rollback_that_wrote_nothing(database, tmp_path):
+    kept = KeptRows(database)
+    assert kept.read("notes", lambda: texts(database), name="notes.texts") == ("Saved",)
+    with pytest.raises(RollbackRequested):
+        with database.transaction():
+            raise RollbackRequested()
+    script = Database.opened(JournalHome(tmp_path))
+    script.update(Statement("UPDATE notes SET version = 2, text = 'Written by the script' WHERE id = 1"))
+    script.close()
+    assert kept.read("notes", lambda: texts(database), name="notes.texts") == ("Written by the script",)

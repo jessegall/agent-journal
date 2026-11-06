@@ -11,6 +11,7 @@ class SaveLibraryCopyHandler(Handler[SaveLibraryCopy, LibraryCopy]):
     first when it comes from an item just fetched."""
 
     command = SaveLibraryCopy
+    runs_once = True
 
     def __init__(self, repository: Repository, shares: LibraryShares) -> None:
         self.repository, self.shares = repository, shares

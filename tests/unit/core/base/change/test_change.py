@@ -3,6 +3,9 @@ from datetime import datetime, timezone
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.change.change import Change
+from core.base.change.created import Created
+from core.base.change.deleted import Deleted
+from core.base.change.moved import Moved
 from core.base.command.context import Context
 from core.base.timestamp import Timestamp
 from core.base.metadata import Metadata
@@ -13,6 +16,13 @@ from tests.unit.core.base.model.test_model import Item
 AT = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 CONTEXT = Context(Actor(7, ActorType.AGENT), AT, MakeItem(title="Dune"))
 STORED = Item(id=4, version=1, title="Dune")
+
+
+def test_a_typed_event_gives_back_the_change_it_came_from():
+    moved = STORED.moved(ItemLifecycle.pause)
+    assert Change.of(Created(STORED), CONTEXT).event == "item.create"
+    assert Change.of(Moved(moved, STORED, ItemLifecycle.pause), CONTEXT).event == "item.pause"
+    assert Change.of(Deleted(STORED), CONTEXT) == Change(STORED, None, CONTEXT)
 
 
 def test_a_new_row_is_a_create():

@@ -14,11 +14,11 @@ type readLimit struct {
 }
 
 // workerReadLimit denies the main checkout, which holds the worktree, and keeps what a worker's programs run from:
-// the worktree, the shared git store, the rules the judge reads, the journal's programs and linked libraries.
+// the worktree, the shared git store, the journal's programs, linked libraries and the folders plugins declare.
 // The file in a worktree's git folder where the journal lists what it placed there, named in worktree_git.py.
 const worktreeExcludeFile = "journal-exclude"
 
-func workerReadLimit(worktree, journalHome string) (readLimit, error) {
+func workerReadLimit(worktree, journalHome string, declared []string) (readLimit, error) {
 	resolved, err := filepath.EvalSymlinks(worktree)
 	if err != nil {
 		return readLimit{}, err
@@ -27,7 +27,7 @@ func workerReadLimit(worktree, journalHome string) (readLimit, error) {
 	if err != nil {
 		return readLimit{}, err
 	}
-	readable := []string{resolved, filepath.Join(main, ".git"), filepath.Join(main, ".venv"), filepath.Join(main, "node_modules"), filepath.Join(main, ".commandments")}
+	readable := []string{resolved, filepath.Join(main, ".git"), filepath.Join(main, ".venv"), filepath.Join(main, "node_modules")}
 	for _, name := range []string{"bin", "runtime", "plugins", "plugin-data"} {
 		readable = append(readable, filepath.Join(main, filepath.Base(journalHome), name))
 	}
@@ -43,7 +43,22 @@ func workerReadLimit(worktree, journalHome string) (readLimit, error) {
 			readable = append(readable, target)
 		}
 	}
-	return readLimit{Denied: main, Readable: append(readable, excludedSymlinkTargets(resolved)...)}, nil
+	return readLimit{Denied: main, Readable: append(append(readable, excludedSymlinkTargets(resolved)...), declaredFolders(declared, main, filepath.Join(main, filepath.Base(journalHome)))...)}, nil
+}
+
+// declaredFolders keeps the folders that resolve to somewhere inside the main checkout: never the checkout itself, a
+// place outside it or the journal's folder, so a fault in the journal cannot open the whole project or its database.
+func declaredFolders(declared []string, main, home string) []string {
+	var folders []string
+	for _, folder := range declared {
+		resolved, err := filepath.EvalSymlinks(folder)
+		inside := resolved != main && strings.HasPrefix(resolved, main+string(filepath.Separator))
+		inHome := resolved == home || strings.HasPrefix(resolved, home+string(filepath.Separator))
+		if err == nil && inside && !inHome {
+			folders = append(folders, resolved)
+		}
+	}
+	return folders
 }
 
 // excludedSymlinkTargets are the folders that library links lower in the worktree point at: the journal lists every

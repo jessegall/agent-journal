@@ -1,13 +1,16 @@
+from core.base.model.event_form import EventForm
 from core.base.file_access import FileAccess
 from core.base.file_version import FileVersion
 import json
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from functools import lru_cache
 
 from core.base.refusal import Refusal
 from core.base.type_guards import is_list, is_mapping
+from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX, ManifestListener
+from core.modules.plugins.support.plugin_moment import PluginMoment
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.manifest_alias import ManifestAlias
 from core.modules.plugins.support.manifest_dashboard import ManifestDashboard
@@ -23,6 +26,9 @@ MANIFEST_FILE = "journal-plugin.json"
 REQUIRED_FIELDS = ("name", "title", "version")
 
 
+LINE_VERSION = 1
+
+
 @dataclass(frozen=True)
 class PluginManifest:
     """What a plugin folder says about itself in journal-plugin.json, as version 4 reads it: its name,
@@ -30,7 +36,8 @@ class PluginManifest:
     inside a window, the settings its settings file lists, the tone of each type of card it shows, the
     folder of its skills, the services it keeps running, and what its install requires, sets up and
     reads back, how its services answer a health check, which helpers besides the main agent each
-    event reaches, the aliases it ships, the dashboard it writes and what it says it is for."""
+    event reaches, the aliases it ships, the dashboard it writes, what it says it is for, the folders of
+    the project a worker's shell line may read for it, and the scripts it runs for event keys."""
 
     name: str
     title: str
@@ -51,6 +58,11 @@ class PluginManifest:
     aliases: tuple[ManifestAlias, ...]
     dashboard: ManifestDashboard | None
     description: str = ""
+    project_reads: tuple[str, ...] = ()
+    listeners: tuple[ManifestListener, ...] = ()
+    moments: tuple[PluginMoment, ...] = ()
+    protocol: int = LINE_VERSION
+    listed_files: tuple[str, ...] = ()
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -62,22 +74,35 @@ class PluginManifest:
         settings_file = str(fields["settings"]) if "settings" in fields else ""
         names: object = fields["hears"] if "hears" in fields else None
         windows: object = fields["holds"] if "holds" in fields else None
+        project_reads: object = fields["project_reads"] if "project_reads" in fields else None
+        listeners = cls.read_listeners(fields["listen"], folder) if "listen" in fields else ()
         return cls(str(fields["name"]), str(fields["title"]), str(fields["version"]), program,
                    tuple(str(name) for name in names) if is_list(names) else (), tuple(cls.event_window(entry) for entry in windows) if is_list(windows) else (),
-                   cls.read_settings(folder, settings_file), tuple(file for file in (MANIFEST_FILE, program, settings_file) if file),
+                   cls.read_settings(folder, settings_file), tuple(dict.fromkeys(file for file in (MANIFEST_FILE, program, settings_file, *(listener.inside_script(form) for listener in listeners for form in EventForm), *cls.extra_files(fields, folder)) if file and not file.startswith(SERVICE_PREFIX))),
                    cls.read_card_tones(fields["cards"] if "cards" in fields else None), str(fields["skills"]) if "skills" in fields else "",
                    cls.read_services(fields["services"] if "services" in fields else None), cls.read_requirements(fields["requires"] if "requires" in fields else None),
                    cls.read_setup_steps(fields["setup"] if "setup" in fields else None), str(fields["installed"]) if "installed" in fields else "",
                    cls.read_health(fields["health"] if "health" in fields else None), cls.read_reaches(fields["reaches"] if "reaches" in fields else None),
                    cls.read_aliases(fields["aliases"] if "aliases" in fields else None), cls.read_dashboard(fields["dashboard"] if "dashboard" in fields else None),
-                   str(fields["description"]) if "description" in fields else "")
+                   str(fields["description"]) if "description" in fields else "",
+                   tuple(str(entry) for entry in project_reads) if is_list(project_reads) else (), listeners, (), cls.read_protocol(fields), cls.read_listed_files(fields))
+
+    @classmethod
+    def loaded_fields(cls, path: Path, version: FileVersion) -> Mapping[str, object]:
+        fields = cls.kept_fields(path, version)
+        if isinstance(fields, Refusal):
+            raise fields
+        return fields
 
     @classmethod
     @lru_cache(maxsize=128)
-    def loaded_fields(cls, path: Path, version: FileVersion) -> Mapping[str, object]:
-        fields: object = json.loads(FileAccess.shared().read(path))
+    def kept_fields(cls, path: Path, version: FileVersion) -> Mapping[str, object] | Refusal:
+        try:
+            fields: object = json.loads(FileAccess.shared().read(path))
+        except json.JSONDecodeError as error:
+            return Refusal(f"the manifest {path} is not valid JSON: {error}", "correct the file, or remove and install the plugin again")
         if not is_mapping(fields) or not all(field in fields for field in REQUIRED_FIELDS):
-            raise Refusal(f"the manifest {path} lacks one of {', '.join(REQUIRED_FIELDS)}", "a plugin manifest states its name, title and version")
+            return Refusal(f"the manifest {path} lacks one of {', '.join(REQUIRED_FIELDS)}", "a plugin manifest states its name, title and version")
         return fields
 
     @staticmethod
@@ -130,6 +155,38 @@ class PluginManifest:
         return {PluginAnswer.entry_type(entry): str(entry["tone"]) if "tone" in entry else "" for entry in entries}
 
     @staticmethod
+    def read_listed_files(fields: Mapping[str, object]) -> tuple[str, ...]:
+        listed: object = fields["files"] if "files" in fields else None
+        return tuple(str(entry) for entry in listed) if is_list(listed) else ()
+
+    @classmethod
+    def extra_files(cls, fields: Mapping[str, object], folder: Path) -> tuple[str, ...]:
+        return tuple(name for entry in cls.read_listed_files(fields) if ManifestListener.stays_inside(entry, folder) for name in cls.walked_files(folder, entry))
+
+    @staticmethod
+    def walked_files(folder: Path, entry: str) -> tuple[str, ...]:
+        path = folder / entry
+        if not path.is_dir():
+            return tuple([entry])
+        return tuple(sorted(str(found.relative_to(folder)) for found in path.rglob("*") if found.is_file()))
+
+    def wrong_files(self, folder: Path) -> tuple[str, ...]:
+        return tuple(entry for entry in self.listed_files if not ManifestListener.stays_inside(entry, folder))
+
+    @staticmethod
+    def read_protocol(fields: Mapping[str, object]) -> int:
+        protocol = fields["protocol"] if "protocol" in fields else LINE_VERSION
+        return protocol if isinstance(protocol, int) and not isinstance(protocol, bool) else LINE_VERSION
+
+    @property
+    def needs_newer_journal(self) -> bool:
+        return self.protocol > LINE_VERSION
+
+    @staticmethod
+    def read_listeners(listen: object, folder: Path) -> tuple[ManifestListener, ...]:
+        return tuple(ManifestListener.parsed(entry, folder) for entry in listen) if is_list(listen) else tuple([ManifestListener(str(listen), is_wrong=True)])
+
+    @staticmethod
     def event_window(entry: object) -> EventWindow:
         if is_mapping(entry) and "event" in entry:
             window: object = entry["window_ms"] if "window_ms" in entry else 0
@@ -173,13 +230,43 @@ class PluginManifest:
         limits = [window.window_ms for window in self.event_windows if window.event == event and window.window_ms > 0]
         return min(limits[0], ceiling_ms) if limits else ceiling_ms
 
+    def with_moments(self, keys: Mapping[str, str]) -> "PluginManifest":
+        moments = tuple(PluginMoment(keys[listener.event], listener.event, form, listener.inside_script(form)) for listener in self.listeners if listener.event in keys
+                        for form in (EventForm.GUARD, EventForm.COMMIT) if listener.inside_script(form))
+        if not moments:
+            return self
+        names = tuple(dict.fromkeys((*self.event_names, *(moment.event for moment in moments))))
+        windows = tuple(EventWindow(moment.event, 0) for moment in moments if moment.form is EventForm.GUARD and moment.event not in self.window_names())
+        return replace(self, event_names=names, event_windows=(*self.event_windows, *windows), moments=moments)
+
+    def moment(self, event: str, form: EventForm) -> PluginMoment | None:
+        return next((moment for moment in self.moments if moment.event == event and moment.form is form), None)
+
+    def script_for_key(self, key: str, form: EventForm) -> str:
+        return next((listener.inside_script(form) for listener in self.listeners if listener.event == key and listener.script(form)), "")
+
+    def answers_as(self, script: str) -> bool:
+        name = script.removeprefix(SERVICE_PREFIX)
+        return any(service.name == name and service.answers for service in self.services)
+
+    def allows_skip(self, key: str) -> bool:
+        return all(listener.allows_skip for listener in self.listeners if listener.event == key)
+
+    def project_folders(self, project_root: Path, journal_folder: Path) -> tuple[Path, ...]:
+        real_root, real_journal = project_root.resolve(), journal_folder.resolve()
+        folders = ((real_root / entry).resolve() for entry in self.project_reads if not Path(entry).is_absolute())
+        return tuple(folder for folder in folders if folder != real_root and folder.is_relative_to(real_root) and not folder.is_relative_to(real_journal))
+
     def run_rows(self) -> list[Mapping[str, str]]:
         entries = [("requires", requirement.name, requirement.check) for requirement in self.requirements]
         entries += [("setup", step.name, step.line) for step in self.setup_steps]
+        entries += [("files", entry, entry) for entry in self.listed_files]
         if self.installed_command:
             entries.append(("installed", "Asked for its settings", self.installed_command))
         if self.program:
             entries.append(("program", ", ".join(self.event_names) or "No events", self.program))
         entries += [("service", service.name, " ".join(service.command)) for service in self.services]
         entries += [("alias", alias.name, alias.line) for alias in self.aliases]
+        entries += [("reads", "Project folder", folder) for folder in self.project_reads]
+        entries += [(form.value, listener.event, listener.script(form)) for listener in self.listeners for form in EventForm if listener.script(form)]
         return [{"category": category, "label": label, "command": command} for category, label, command in entries]

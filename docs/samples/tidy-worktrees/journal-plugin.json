@@ -1,0 +1,17 @@
+{
+  "name": "tidy-worktrees",
+  "title": "Tidy worktrees",
+  "version": "1.0.0",
+  "protocol": 1,
+  "settings": "settings.json",
+  "listen": [
+    {
+      "event": "core.tasks.task.created",
+      "guard": "tidy.py"
+    },
+    {
+      "event": "suites.coding.workers.worker_worktree.cut",
+      "commit": "tidy.py"
+    }
+  ]
+}

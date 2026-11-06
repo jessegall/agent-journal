@@ -1,6 +1,7 @@
 import shutil
 from pathlib import Path
 
+from core.base.running_scripts import RunningScripts
 from core.base.actor import Actor
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -30,9 +31,10 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
     server's next round of services, which sees the plugin's new digest."""
 
     command = UpgradePlugin
+    runs_once = True
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, staging: PluginStaging, steps: PluginInstallSteps, repository: Repository, skill_files: PluginSkillFiles, readers: PluginReaders, code_diff: PluginCodeDiff) -> None:
-        self.plugins, self.folders, self.staging, self.steps, self.repository, self.skill_files, self.readers, self.code_diff = plugins, folders, staging, steps, repository, skill_files, readers, code_diff
+    def __init__(self, plugins: PluginQuery, folders: PluginFolders, staging: PluginStaging, steps: PluginInstallSteps, repository: Repository, skill_files: PluginSkillFiles, readers: PluginReaders, code_diff: PluginCodeDiff, scripts: RunningScripts) -> None:
+        self.plugins, self.folders, self.staging, self.steps, self.repository, self.skill_files, self.readers, self.code_diff, self.scripts = plugins, folders, staging, steps, repository, skill_files, readers, code_diff, scripts
 
     def prepare(self, command: UpgradePlugin, actor: Actor) -> None:
         plugin = self.plugins.find_name(command.name)
@@ -46,6 +48,7 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
         self.steps.check_requirements(manifest, source)
         mark = self.folders.upgrade_mark(plugin.name)
         FileAccess.shared().update_timestamp(mark)
+        self.scripts.stop(plugin.name)
         try:
             self.replaced(manifest, source, self.folders.code(plugin.name))
         except Exception:

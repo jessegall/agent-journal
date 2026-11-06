@@ -8,6 +8,7 @@ class GrantRunSlotsHandler(Handler[GrantRunSlots, None]):
     """Grants the free spots to the queued runs."""
 
     command = GrantRunSlots
+    runs_once = True
 
     def __init__(self, slots: RunSlots) -> None:
         self.slots = slots

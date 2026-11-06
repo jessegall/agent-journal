@@ -28,6 +28,7 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
     it switched on with the settings its installed command answers. A name installed already is refused."""
 
     command = InstallPlugin
+    runs_once = True
 
     def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_files: PluginSkillFiles, steps: PluginInstallSteps, repository: Repository,
                  readers: PluginReaders, staging: PluginStaging) -> None:

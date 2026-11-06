@@ -34,7 +34,9 @@ from server.server_tunnel import ServerTunnel
 from server.hook.hook_database import HookDatabase
 from server.journal_round import JournalRound
 from server.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
+from core.base.running_scripts import RunningScripts
 from server.ordinary_listener_work import OrdinaryListenerWork
+from server.plugin_listener_work import PluginListenerWork
 from server.urgent_listener_work import UrgentListenerWork
 from server.ticker import Ticker
 from server.viewer.session_file import SessionFile
@@ -94,7 +96,9 @@ def main(argv: list[str]) -> int:
     urgent_round = JournalRound(home, "urgent listener thread", UrgentListenerWork())
     urgent_thread = ListenerThread(urgent_round.run, urgent_round.report, name="urgent listeners")
     listener_round = JournalRound(home, "listener thread", OrdinaryListenerWork())
-    listener_thread = ListenerThread(listener_round.run, listener_round.report, urgent_thread=urgent_thread)
+    plugin_round = JournalRound(home, "plugin listener thread", PluginListenerWork())
+    plugin_thread = ListenerThread(plugin_round.run, plugin_round.report, name="plugin listeners")
+    listener_thread = ListenerThread(listener_round.run, listener_round.report, linked_threads=(urgent_thread, plugin_thread))
     ticker = Ticker(home, Ticker.module_handlers(finder), listener_thread.wake)
     hook_database = HookDatabase(home)
     phones = PhoneSessions(home, listener_thread)
@@ -136,6 +140,7 @@ def main(argv: list[str]) -> int:
     listener_thread.wake()
     listener_thread.start()
     urgent_thread.start()
+    plugin_thread.start()
     ticker_thread.start()
     viewer.start()
     files.clear_restart()
@@ -144,9 +149,10 @@ def main(argv: list[str]) -> int:
         server.serve_requests()
         server.drain(DRAIN_LIMIT_SECONDS)
     finally:
-        threads = (ticker_thread, listener_thread, urgent_thread)
+        threads = (ticker_thread, listener_thread, urgent_thread, plugin_thread)
         for thread in threads:
             thread.signal_stop()
+        RunningScripts.shared(home).stop_all()
         plugin_services.close()
         tunnel.close()
         viewer.stop()

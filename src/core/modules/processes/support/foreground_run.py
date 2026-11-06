@@ -18,6 +18,7 @@ class ForegroundRun:
     read_command: bool = False
     shell_sandbox: bool = False
     folder: Path | None = None
+    read_folders: tuple[Path, ...] = ()
     part_commands: tuple[PartCommand, ...] = ()
 
     count_line: str = ""

@@ -4,12 +4,27 @@ import {Btn, Icon, MenuItem, MenuPanel, Switch} from "@journal/window-kit";
 
 // one installed plugin as version 4 drew it: its initials, title, version and switch, what it is for, any fault, where it came from, the services it runs,
 // and along its foot its settings, its dashboard, its log and a menu to check for updates or remove it; what opens below it comes in the slot
-const props = defineProps({plugin: {type: Object, required: true}, description: {type: String, default: ""}, services: {type: Array, default: () => []}, board: {type: Object, default: null}});
+const props = defineProps({plugin: {type: Object, required: true}, description: {type: String, default: ""}, services: {type: Array, default: () => []}, events: {type: Array, default: () => []}, board: {type: Object, default: null}});
 const emit = defineEmits(["toggle", "settings", "board", "record", "latest", "remove"]);
 const more = ref(null);
 const menu = ref(false);
 const initials = computed(() => props.plugin.title.split(/[\s_-]+/).filter(Boolean).slice(0, 2).map((word) => word[0].toUpperCase()).join(""));
 const where = computed(() => props.plugin.source.replace(/^https?:\/\/(www\.)?/, ""));
+
+const FORM_WORDS = {guard: "Before a change", listen: "During a change", commit: "After a change"};
+const WRONG_WORDS = {
+    "wrong key": ["Wrong event", () => "Nothing reaches this script. journal event keys lists the events."],
+    "wrong script": ["Wrong script", (row) => `${row.script} is not in the plugin's folder or cannot run, so it never runs.`],
+    "wrong project read": ["Wrong folder", (row) => `${row.script} is not a folder inside the project, so it is not opened.`],
+    "form not offered": ["Wrong form", () => "This event takes only After a change."],
+    "needs a newer journal": ["Newer journal needed", () => "It needs a newer journal, so it runs nothing."],
+    renamed: ["Renamed", (row) => `This event is now called ${row.current_key}.`],
+};
+const scriptText = (row) => (row.limit_ms ? `${row.script}. Runs under the journal limit of ${row.limit_ms} ms.` : row.script);
+const eventLabel = (row) => (row.started_at ? "Running" : WRONG_WORDS[row.state]?.[0] ?? FORM_WORDS[row.form] ?? "");
+const minutesSince = (moment) => Math.max(1, Math.round((Date.now() - Date.parse(moment)) / 60000));
+const minutesRunning = (row) => minutesSince(row.started_at);
+const eventText = (row) => (row.started_at ? `for ${minutesRunning(row)} minutes. Turn the plugin off to stop it.` : WRONG_WORDS[row.state]?.[1](row) ?? scriptText(row));
 
 function pick(event) {
     menu.value = false;
@@ -47,6 +62,21 @@ function pick(event) {
                     <span class="run" :data-plugin-service="service.id">
                         <span class="run-name">{{ service.service }}</span>
                         <span class="run-state">{{ service.running ? `running, process ${service.pid}` : "stopped" }}</span>
+                    </span>
+                </template>
+            </div>
+        </template>
+        <template v-if="events.length">
+            <div class="runs" data-plugin-events>
+                <span class="label">Listens to</span>
+                <template v-for="row in events" :key="row.id">
+                    <span class="run" :data-plugin-event="row.state">
+                        <span class="run-state">{{ eventLabel(row) }}</span>
+                        <span class="run-name">{{ row.key }}</span>
+                        <span class="run-state">{{ eventText(row) }}</span>
+                    </span>
+                    <span v-if="row.skip_reason" class="run" data-plugin-skip>
+                        <span class="run-state">Skipped {{ row.key }} {{ minutesSince(row.last_skipped_at) }} minutes ago: {{ row.skip_reason }}</span>
                     </span>
                 </template>
             </div>

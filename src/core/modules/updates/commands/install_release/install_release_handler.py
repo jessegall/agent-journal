@@ -21,6 +21,7 @@ class InstallReleaseHandler(Handler[InstallRelease, ReleaseInstall]):
     code, and records an attempt before starting the asynchronous handover."""
 
     command = InstallRelease
+    runs_once = True
 
     def __init__(self, source: ReleaseSource, home: JournalHome, repository: Repository, bus: Bus) -> None:
         self.source, self.home, self.repository, self.bus = source, home, repository, bus

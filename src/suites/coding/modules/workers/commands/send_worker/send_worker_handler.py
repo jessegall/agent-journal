@@ -33,6 +33,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
     """Send a job to a worker and prepare its worktree."""
 
     command = SendWorker
+    runs_once = True
     disabled_scopes = [ActorScope]
 
     def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources) -> None:

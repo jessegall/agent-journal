@@ -31,6 +31,7 @@ class Guards:
             if not self.is_checked(entry, change):
                 skipped.update({entry.name} & change.context.skipped_guards)
                 continue
+            skipped.update(name for name in change.context.skipped_guards if name.startswith(f"{entry.name}:"))
             self.check(entry, change)
         return frozenset(skipped)
 
