@@ -33,7 +33,7 @@ class Bus:
         handler = self.handler(command)
         handler.prepare(command, actor)
         with self.scopes.command_scope(handler.disabled_scopes, actor, environment_id):
-            runs = self.create_outside_runs(handler, plugin_script)
+            runs = self.create_deferred_runs(handler, plugin_script)
             if not handler.transactional:
                 return self.result(handler.handle(command, Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, self.scopes.environment_id or environment_id, outside_runs=runs)), command)
             while True:
@@ -50,7 +50,7 @@ class Bus:
                 except OutsideRunRollbackError as rollback:
                     rollback.work.run(runs)
 
-    def create_outside_runs(self, handler: Handler[Command[object], object], plugin_script: str) -> OutsideRuns:
+    def create_deferred_runs(self, handler: Handler[Command[object], object], plugin_script: str) -> OutsideRuns:
         if handler.runs_once or not handler.transactional:
             return OutsideRuns(True, plugin_script, SINGLE_RUN_REASON)
         return OutsideRuns(not self.policy.guards_run, plugin_script, SERVER_THREAD_REASON)

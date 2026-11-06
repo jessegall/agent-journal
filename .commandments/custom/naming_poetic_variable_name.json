@@ -11,8 +11,8 @@
         "reject": [
             {
                 "nameIn": [
-                    "runs_once",
-                    "plugin_moments"
+                    "commit_before_merge",
+                    "runs_once"
                 ]
             },
             {

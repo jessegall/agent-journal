@@ -42,7 +42,7 @@ def plugin_journal_line(journal, client: Path, *line: str) -> str:
     return f"""{journal_line(journal, client, *line)} > /dev/null\necho $? >> "$JOURNAL_PLUGIN_DATA/own-write\""""
 
 
-def plugin_write_outcome(journal) -> list[str]:
+def script_exit_codes(journal) -> list[str]:
     output_file = plugin_data(journal, "own-write")
     return output_file.read_text().split() if output_file.is_file() else []
 
@@ -107,7 +107,7 @@ def agent_run_line(journal, client: Path, command: str) -> str:
 def test_s29_a_script_that_writes_through_the_journal_does_not_wait_or_start_itself(journal, client):
     start_with_plugin(journal, client, {"event": TASK_CREATED, "listen": "script.sh"}, plugin_journal_line(journal, client, "task", "log", "1", "seen"))
     expect_line(journal, client, *SECOND_JOB_LINE)
-    assert len(script_calls(journal, "script.sh")) == 1 and plugin_write_outcome(journal) == ["0"], (script_calls(journal, "script.sh"), plugin_write_outcome(journal))
+    assert len(script_calls(journal, "script.sh")) == 1 and script_exit_codes(journal) == ["0"], (script_calls(journal, "script.sh"), script_exit_codes(journal))
     assert "seen" in expect_line(journal, client, "task", "overview", "1")
     assert expect_line(journal, client, "task", "list").count(SECOND_JOB_TITLE) == 1
 

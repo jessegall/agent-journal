@@ -61,10 +61,10 @@ class PluginEventRunner:
         except PluginStoppedError as stopped:
             if stopped.stop is ScriptStop.SERVER:
                 raise ServerStoppingError.plugin_wait(plugin.name, key) from stopped
-            self.record(RecordPluginFault.from_error(plugin.id, stopped, location))
+            self.record(RecordPluginFault.fault_record(plugin.id, stopped, location))
             return None
         except PluginFaultError as fault:
-            self.record(RecordPluginFault.from_error(plugin.id, fault, location))
+            self.record(RecordPluginFault.fault_record(plugin.id, fault, location))
             return None
         if plugin.fault_count:
             self.record(ClearPluginFaults(plugin.id))

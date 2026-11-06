@@ -36,7 +36,7 @@ class PluginEventScripts:
     def answers(self, form: EventForm, event: Changed[Model], context: Context) -> Sequence[PluginEventAnswer]:
         if isinstance(context.command, FAULT_WRITES):
             return ()
-        runs, change = context.outside_runs, Change.from_event(event, context)
+        runs, change = context.outside_runs, Change.event_change(event, context)
         subscriptions = self.subscriptions.scripts(change.event, form)
         if form is EventForm.GUARD:
             subscriptions = tuple(subscription for subscription in subscriptions if not (subscription.allows_skip and f"{GUARD_NAME}:{subscription.plugin}" in context.skipped_guards))
@@ -55,7 +55,7 @@ class PluginEventScripts:
             for subscription in subscriptions:
                 self.running.skipped(subscription.plugin, key, form, runs.closed_reason, context.timestamp)
             return ()
-        raise runs.rollback(PluginEventWork(self.runner, self.errors, self.caller, form, self.registry.event_key(change.event), subscriptions, PluginPayload.from_change(change, form, self.log, None),
+        raise runs.rollback(PluginEventWork(self.runner, self.errors, self.caller, form, self.registry.event_key(change.event), subscriptions, PluginPayload.change_payload(change, form, self.log, None),
                                             PluginPayload.environment_id(change), self.agent_id(context), turn))
 
     def apply(self, answered: PluginEventAnswer, context: Context) -> None:

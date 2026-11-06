@@ -105,7 +105,7 @@ def test_stopping_holds_no_write_lock_and_a_session_its_hooks_ended_stays_ended(
     story.expect_text(f"agent show {agent_id}", "ended_at:", actor=story.user)
 
 
-def no_launcher(story) -> None:
+def missing_launcher(story) -> None:
     return None
 
 
@@ -118,7 +118,7 @@ def different_program_launcher(story) -> None:
     FakeLauncher(story.home.socket("launcher"))
 
 
-@pytest.fixture(params=[no_launcher, stale_launcher_socket, different_program_launcher])
+@pytest.fixture(params=[missing_launcher, stale_launcher_socket, different_program_launcher])
 def stopped_main_agent(new_story, request):
     story = new_story(fixture=UserJoined)
     request.param(story)

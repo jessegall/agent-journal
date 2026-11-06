@@ -17,9 +17,9 @@ EXTERNAL_PATH = "../outside"
 
 
 def project_folder_setup(folder: str):
-    def create_folder(story) -> None:
+    def folder_maker(story) -> None:
         story.repository.library(folder, "config.json", RULES_TEXT)
-    return create_folder
+    return folder_maker
 
 
 def worker_read(story, folder: str) -> str:
