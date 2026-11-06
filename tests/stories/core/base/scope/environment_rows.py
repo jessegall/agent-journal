@@ -140,7 +140,7 @@ def test_plans_stay_in_their_environment(new_story):
 
 def test_questions_stay_in_their_environment(new_story):
     story = new_story(fixture=TwoEnvironmentsAtWork)
-    story.run('question ask "Ship staging?"', actor=staging_agent(story))
+    story.run('question ask "Ship staging?" --context "A story asks this so its card and answer can be checked."', actor=staging_agent(story))
     story.expect_text("question list", "Ship staging?", actor=staging_agent(story))
     story.expect_no_text("question list", "Ship staging?", actor=story.agent)
 

@@ -94,3 +94,17 @@ test("a question in the chat keeps its box, its tag band over the recommended op
     expect(rule(styles, ".question")).toMatch(/max-width: 640px;[\s\S]*padding: 14px 16px 16px;[\s\S]*border: 1px solid var\(--border-2\);[\s\S]*border-radius: 12px;[\s\S]*background: var\(--raised\)/);
     expect(rule(styles, ".question-option")).toMatch(/border: 1px solid var\(--border-2\);[\s\S]*border-radius: 8px/);
 });
+
+test("a question with context draws it under its title, and an old question with none draws just the title", async () => {
+    const asked = {...QUESTION, text: "Which database?", context: "The cart needs a store. sqlite is one file; postgres is a separate server."};
+    const element = await inWindow([asked, {...QUESTION, id: 39}]);
+    const [withContext, without] = [...element.querySelectorAll("[data-question-card]")];
+    const [, title, context] = [...withContext.children];
+    expect(title.hasAttribute("data-question-open")).toBe(true);
+    expect(title.textContent).toBe("Which database?");
+    expect(context.hasAttribute("data-question-context")).toBe(true);
+    expect(context.textContent).toBe(asked.context);
+    expect(without.querySelector("[data-question-context]")).toBeNull();
+    expect(without.querySelector("[data-question-open]").textContent).toBe(QUESTION.text);
+    expect(rule(source(CARD), ".question-context")).toContain("margin: 0;");
+});

@@ -31,6 +31,8 @@ class QuestionShowSubcommand(ReadSubcommand[Question]):
             output.row(value)
             return
         output.line(f"question {value.id}: {value.text}")
+        if value.context:
+            output.line(f"context: {value.context}")
         if value.options:
             output.line(f"choices: {' / '.join(value.options)}")
         output.line(f"state: {value.state}")

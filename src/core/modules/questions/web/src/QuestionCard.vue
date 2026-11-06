@@ -51,6 +51,9 @@ async function elaborate() {
             <TimeAgo class="question-time" :at="row.created_at" data-question-time />
         </header>
         <button type="button" class="question-open" :data-question-open="row.id" @click="peekRef(`questions:${row.id}`)">{{ row.text }}</button>
+        <template v-if="row.context">
+            <p class="question-context" data-question-context>{{ row.context }}</p>
+        </template>
         <template v-if="shown().state !== 'open'">
             <p class="question-closed" data-question-settled>
                 <template v-if="shown().state === 'answered'"><template v-if="flush"><b class="question-answered">Answered:</b> <span class="question-answer">{{ shown().answer }}</span></template><template v-else>Answered: {{ shown().answer }}</template></template>
@@ -140,6 +143,14 @@ async function elaborate() {
     line-height: 1.4;
     text-align: left;
     cursor: pointer;
+}
+
+.question-context {
+    margin: 0;
+    color: var(--text-2);
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre-line;
 }
 
 .question-options {
@@ -254,6 +265,11 @@ async function elaborate() {
     padding: 12px 0;
     font-size: 14px;
     line-height: 1.45;
+}
+
+.flush .question-context {
+    margin-top: -4px;
+    padding-bottom: 12px;
 }
 
 .flush .question-open:hover {

@@ -35,7 +35,7 @@ def test_each_pass_to_fail_reaches_the_agent(new_story, tmp_path):
 def test_a_failure_reaches_an_agent_waiting_on_a_question(new_story, tmp_path):
     story = new_story(fixture=BuilderWithUser)
     switch = failing_on_demand(story, tmp_path)
-    story.run('question ask "Which database?" --options sqlite postgres --environment main', actor=story.agent)
+    story.run('question ask "Which database?" --context "A story asks this so its card and answer can be checked." --options sqlite postgres --environment main', actor=story.agent)
     switch.unlink()
     story.run("check run 1", actor=story.user)
     expect_lines_of(story, FAILED)

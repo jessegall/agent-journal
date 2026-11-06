@@ -12,6 +12,6 @@ def test_task_question_and_file_feed_search_bars_stay_at_the_top_with_a_bottom_b
         story.expect_success(f'task make "Search task {number}" --brief "Search sample" --environment main', actor=story.user)
     story.expect_text("file-edit list", "src/search_29.py", actor=story.agent)
     for number in range(30):
-        story.expect_success(f'question ask "Search question {number}?" --environment main', actor=story.agent)
+        story.expect_success(f'question ask "Search question {number}?" --context "A story asks this so its card and answer can be checked." --environment main', actor=story.agent)
     with server_story(story) as server:
         expect_browser(server, "windowSearch.browser.mjs", ["/tmp/journal-worker-464-window-search", str(story.agent.id)])

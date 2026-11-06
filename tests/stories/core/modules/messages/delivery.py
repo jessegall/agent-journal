@@ -129,7 +129,7 @@ def test_a_new_message_is_typed_to_an_idle_agent_though_an_older_one_was_told_an
 
 def test_a_message_reaches_an_agent_that_waits_on_a_question(new_story):
     story = delivery_story(new_story)
-    story.run('question ask "Which one" --options "a" "b"', actor=story.agent)
+    story.run('question ask "Which one" --context "A story asks this so its card and answer can be checked." --options "a" "b"', actor=story.agent)
     post_message(story, "Are you still there")
     story.expect_hook_allowed("s-1", HookSamples.edit("cart.py"), "new message 1")
 
@@ -305,7 +305,7 @@ def test_a_paused_agent_that_is_idle_is_typed_a_message_so_the_user_can_chat(idl
 
 def test_an_agent_waiting_on_a_question_is_woken_by_a_new_message(delivery_typing):
     story, typing = delivery_typing
-    story.run('question ask "Which database?" --environment main', actor=story.agent)
+    story.run('question ask "Which database?" --context "A story asks this so its card and answer can be checked." --environment main', actor=story.agent)
     agent = hook_agent(story, story.hook("s-1", HookSamples.stop()))
     post_message(story, "Use sqlite")
     expect_row(typing, typed=[(agent.id, "[journal] new message 1")])
