@@ -1,3 +1,5 @@
+from core.base.refusal import Refusal
+from core.modules.helpers.support.helper_limits import HelperLimits
 
 from datetime import timedelta
 
@@ -107,6 +109,12 @@ def test_a_given_name_shows_on_the_helper(new_story):
     story = new_story(fixture=LauncherRuns)
     helper_id, _ = started(story, f'{START} --name "Lady Lovelace"')
     story.expect_success(f"agent show {helper_id}", "given_name: Lady Lovelace")
+
+
+def test_a_start_with_no_model_anywhere_is_refused_naming_the_flag(new_story):
+    story = new_story(fixture=LauncherRuns)
+    with pytest.raises(Refusal, match="this profile has no model for codex"):
+        story.container.get(HelperLimits).checked_model("codex", "")
 
 
 @pytest.mark.parametrize("line, reason", [
