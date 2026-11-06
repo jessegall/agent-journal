@@ -6,7 +6,11 @@ const MEETING = {id: 4, title: "Cart meeting", text: "Ada: the cart rounds twice
 
 function page({sources = []} = {}) {
     const ran = [];
-    const window = context({});
+    const window = context({}, null, {
+        transcriptions: {line: "transcription list", events: ["transcription.*"]},
+        sources: {line: "transcription sources"},
+        "links.*": {line: "link list --row transcription:{id} --group-counterparts", loading: "requested"},
+    });
     window.read = async (line) => {
         const words = Array.isArray(line) ? line.join(" ") : line;
         if (words.startsWith("transcription sources")) return {ok: true, value: {rows: sources}};
