@@ -5,6 +5,7 @@ from core.modules.questions.support.question_nudges import QUESTION_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.questions.commands.answer_question.answer_question import AnswerQuestion
+from core.modules.questions.commands.answer_question.answer_question_handler import AnswerQuestionHandler
 from core.modules.questions.commands.close_question.close_question import CloseQuestion
 from core.modules.questions.commands.ask_question.ask_question_handler import AskQuestionHandler
 from core.modules.questions.commands.ask_question.ask_question_subcommand import AskQuestionSubcommand
@@ -51,7 +52,7 @@ class QuestionsModule(Module):
     migrations = [QuestionEnvironmentStateIndexMigration, QuestionSessionMigration, QuestionAgentStateIndexMigration, QuestionsTablesMigration, AnswerMessageMigration, QuestionPlaceMigration]
     moves = [QuestionsMove]
     subcommands = [AskQuestionSubcommand, QuestionListSubcommand, QuestionShowSubcommand]
-    handlers = [AskQuestionHandler]
+    handlers = [AskQuestionHandler, AnswerQuestionHandler]
     guards = [MainAgentGuard, ActorOptionsGuard]
     driver_rules = [QuestionAnsweredRule, QuestionClosedRule, OwnQuestionToolRule]
     marks = QUESTION_MARKS

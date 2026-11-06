@@ -46,11 +46,11 @@ def read_source_ids(queries: Queries, registry: Registry, agent_id: int):
     return tuple(row.message_id for row in read_source_rows(queries, registry, agent_id) if row.message_id is not None)
 
 
-def viewer_answer(story: Story, window: str, words: list[str], environment: str = "main"):
+def viewer_answer(story: Story, window: str, words: list[str], environment: str = "main", person_id: int | None = None):
     story.steps.append(f"viewer {window} {environment}: {json.dumps(words)}")
     listeners = ListenerThread(story.run_listeners, pytest.fail)
     route = StoryLineRoute(story.home, listeners, ReportedFindings())
-    return route.run_line(story.container, window, words, story.user.id, environment, None)
+    return route.run_line(story.container, window, words, story.user.id if person_id is None else person_id, environment, None)
 
 
 def viewer(story: Story, window: str, words: list[str]):

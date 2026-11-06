@@ -9,6 +9,7 @@ from core.base.query.queries import Queries
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.queries.question_query import QuestionQuery
 from core.modules.waits.models.wait_target import WaitTarget
+from core.modules.questions.support.question_nudges import QUESTION_ANSWER_SOURCE
 
 
 class QuestionChanges:
@@ -25,7 +26,14 @@ class QuestionChanges:
             questions = questions.matching(Greater("updated_at", last_answer_at.text))
         rows = tuple(questions.oldest().all_rows())
         waiting_ids = self.waiting_ids([question.id for question in rows])
-        lines = [line.nudge(question=question.id) for question in rows if question.id not in waiting_ids]
+        lines = []
+        for question in rows:
+            if question.id in waiting_ids:
+                continue
+            lines.append(line.nudge(question=question.id))
+            if state is QuestionState.ANSWERED and question.message_id is not None:
+                lines.append(QUESTION_ANSWER_SOURCE.nudge(question=question.id, message=question.message_id,
+                             reference=f"question:{question.id} message:{question.message_id}"))
         return RuleAnswer.with_nudges(*lines)
 
     def waiting_ids(self, question_ids: list[int]) -> set[int]:
