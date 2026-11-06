@@ -14,9 +14,8 @@ and then it is followed.
 - `journal phase place <task> --phase <phase>` puts a task at the end of a phase.
 - `journal task make "<title>" --phase <phase>` makes a task at the end of that phase in one command. A missing phase
   or an ended plan refuses the command and leaves no new task.
-- Write a plan thoroughly: split each phase into its real steps and file one task per step a person could check. Write
-  each brief so it can be carried out alone: the files to change, what already does part of it and is reused, the
-  stories to write first, the tests to run by name, and the proof that shows each point.
+- How thorough a plan is, is in the skill journal-planning; working a critique into a plan is in the skill
+  journal-plan-review-applying. Both are read before `plan make`, `phase make` and `plan reviewed`.
 - `journal plan ready <n>` when every phase has its tasks. A phase with one task is refused until you give the reason one
   task is enough: `--skip-guard plans.one-task-phase --skip-reason "<why>"`. Only the user approves; `journal plan start <n>`
   begins it.

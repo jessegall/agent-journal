@@ -53,6 +53,11 @@ def test_the_plan_sequence_asks_for_one_task_per_step_and_a_reason_for_a_phase_w
     story.expect_text("sequence show 1", PLAN_SEQUENCE, "one task per step a person could check", "stories to write first", "--skip-guard plans.one-task-phase")
 
 
+def test_the_review_sequence_sends_the_agent_to_the_review_applying_skill(new_story):
+    story = new_story(fixture=StandardSequences)
+    story.expect_text("sequence show 2", "Applying a plan's reviews", "Read the skill journal-plan-review-applying")
+
+
 def test_a_helper_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_no_mark(new_story):
     story = new_story(fixture=StandardSequences)
     helper = Actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
