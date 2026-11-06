@@ -7,6 +7,7 @@ from pathlib import Path
 from core.base.child_process import ChildProcess
 from core.base.clock import Clock
 from core.base.leftover_process import LeftoverProcess
+from core.base.running_scripts import RunningScripts
 from core.modules.plugins.models.enums.service_restart import ServiceRestart
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.modules.plugins.support.service_fault import ServiceFault
@@ -37,8 +38,8 @@ class PluginServices:
     before its new one starts."""
 
     def __init__(self, runnable: RunnablePlugins, folders: PluginFolders, program: PluginProgram, sockets: PluginSocketPaths, setting_values: SettingValues,
-                 clock: Clock) -> None:
-        self.runnable, self.folders, self.program, self.sockets, self.setting_values, self.clock = runnable, folders, program, sockets, setting_values, clock
+                 clock: Clock, scripts: RunningScripts) -> None:
+        self.runnable, self.folders, self.program, self.sockets, self.setting_values, self.clock, self.scripts = runnable, folders, program, sockets, setting_values, clock, scripts
 
     def follow(self, processes: ServiceProcesses) -> list[ServiceFault]:
         wanted: set[tuple[str, str]] = set()
@@ -55,6 +56,7 @@ class PluginServices:
                     faults.extend(ServiceFault(plugin, fault) for fault in self.keep(processes, key, folder, service, manifest, plugin.files_digest))
         for key in [key for key in processes.running if key not in wanted]:
             processes.running.pop(key).stop_group(STOP_LIMIT_SECONDS)
+        self.scripts.keep_services({process.pid: plugin_name for (plugin_name, _), process in processes.running.items()})
         return faults
 
     def is_checkable(self, processes: ServiceProcesses, key: tuple[str, str]) -> bool:

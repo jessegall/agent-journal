@@ -2,7 +2,7 @@ import os
 import signal
 import subprocess
 import threading
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from functools import cache
 
 from core.base.caller.process_row import ProcessRow
@@ -13,7 +13,7 @@ from core.base.timestamp import Timestamp
 
 
 class RunningScripts:
-    """The plugin processes running now, one list for each journal home, since every request and round has a
+    """The plugin processes running now, scripts and services alike, one list for each journal home, since every request and round has a
     container of its own. A process is known by its pid alone: an unreaped Popen keeps its pid from being reused
     while it is listed. Nothing here reads the process table, because a program starts under the write lock on
     the hook path. A variable proves nothing, so the chain of processes is the only way to be a script."""
@@ -21,6 +21,7 @@ class RunningScripts:
     def __init__(self) -> None:
         self.lock = threading.Lock()
         self.scripts: dict[int, RunningScript] = {}
+        self.services: dict[int, str] = {}
 
     @classmethod
     @cache
@@ -35,9 +36,14 @@ class RunningScripts:
         with self.lock:
             self.scripts.pop(process.pid, None)
 
+    def keep_services(self, services: Mapping[int, str]) -> None:
+        with self.lock:
+            self.services = dict(services)
+
     def owner(self, steps: Sequence[ProcessRow]) -> str:
         with self.lock:
-            return next((self.scripts[step.pid].plugin for step in steps if step.pid in self.scripts), "")
+            owners = {**self.services, **{pid: script.plugin for pid, script in self.scripts.items()}}
+        return next((owners[step.pid] for step in steps if step.pid in owners), "")
 
     def running(self, plugin: str) -> tuple[RunningScript, ...]:
         with self.lock:

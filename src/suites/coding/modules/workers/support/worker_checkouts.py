@@ -1,9 +1,12 @@
 from pathlib import Path
 
 from core.base.checkout import Checkout
+from core.base.checkout_file import CheckoutFile
 from core.base.file_state import FileState
 from core.base.file_status import FileStatus
+from core.base.missing_file_refusal import MissingFileRefusal
 from core.base.query.queries import Queries
+from core.base.refusal import Refusal
 from core.modules.agents.bindings.agent_project_checkouts import AgentProjectCheckouts
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -45,6 +48,23 @@ class WorkerCheckouts(AgentProjectCheckouts):
             return state
         base_contains = self.git.commit_contains(folder, base, relative)
         return FileState(state.status if state.status is FileStatus.DELETED or base_contains else FileStatus.ADDED, base_contains)
+
+    def base_text(self, checkout: Checkout, relative: str) -> str:
+        folder, commit = str(checkout.project_root), checkout.base_commit or HEAD
+        if not self.git.has_commit(folder, commit):
+            raise Refusal(f"the commit {commit} is gone from this project, so {relative} cannot be read from it", "read it with --from project")
+        revision = commit if checkout.exists else checkout.base_branch
+        if not self.git.commit_contains(folder, revision, relative):
+            raise MissingFileRefusal(f"{relative} is not there, in {revision}", "it may be new in the checkout: read it with --from checkout")
+        return self.git.file_text(folder, revision, relative)
+
+    def changed_files(self, checkout: Checkout, since: str) -> tuple[CheckoutFile, ...]:
+        if not checkout.exists:
+            raise Refusal("the checkout of this agent is gone, so nothing differs there", "read a file with --from base")
+        folder, commit = str(checkout.root), since or checkout.base_commit or HEAD
+        if not self.git.has_commit(folder, commit):
+            raise Refusal(f"git does not know the commit {commit}", "name a commit of this project")
+        return tuple(change.checkout_file(checkout) for change in self.git.file_changes(folder, commit))
 
     def worktree_checkout(self, worktree: Worktree, agent: Agent) -> Checkout:
         folder = Path(worktree.folder)

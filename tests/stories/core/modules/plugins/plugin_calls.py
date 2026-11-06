@@ -1,6 +1,10 @@
+import io
 import json
+import shlex
 import sys
 
+from core.base.caller.caller import Caller
+from core.base.cli.console import Console
 from core.base.query.queries import Queries
 from core.modules.plugins.models.plugin_output import PluginOutput
 from core.modules.processes.models.process import Process
@@ -26,6 +30,44 @@ def test_s53_a_worker_cannot_read_a_project_file_by_asking(new_story):
 def test_s53_a_worker_cannot_name_another_agent(new_story):
     story = checkout_story(new_story)
     story.expect_refusal(f"plugin file {ORDER} --agent {story.agent.id}", "only itself", actor=story.worker)
+
+
+def test_s53_a_worker_cannot_leave_its_checkout_with_dots(new_story):
+    story = checkout_story(new_story)
+    story.repository.uncommitted(SECRET_NAME, "the secret\n")
+    for line in (f"plugin file ../../../../{SECRET_NAME}", f"plugin file ../../../../{SECRET_NAME} --from project", f"plugin file {story.repository.folder / SECRET_NAME}"):
+        story.expect_refusal(line, "leaves the checkout", actor=story.worker)
+        story.expect_no_text(line, "the secret", actor=story.worker)
+
+
+def test_s53_a_worker_cannot_leave_its_checkout_through_a_link(new_story):
+    story = checkout_story(new_story)
+    story.repository.uncommitted(SECRET_NAME, "the secret\n")
+    (story.worktree / "escape.txt").symlink_to(story.repository.folder / SECRET_NAME)
+    story.expect_refusal("plugin file escape.txt", "through a link", actor=story.worker)
+    story.expect_no_text("plugin file escape.txt", "the secret", actor=story.worker)
+
+
+def test_s53_a_person_may_read_the_project_for_any_agent(new_story):
+    story = checkout_story(new_story)
+    story.repository.uncommitted(SECRET_NAME, "the secret\n")
+    story.expect_text(f"plugin file {SECRET_NAME} --from project --agent {story.worker.id}", "the secret", actor=story.user)
+
+
+def test_s53_a_worker_reads_its_own_checkout_and_a_declared_folder_of_the_project(new_story):
+    story = checkout_story(new_story, before_dispatch=lambda story: story.repository.library(".rules", "config.json", "the rules\n"), project_reads=[".rules"])
+    story.repository.uncommitted(SECRET_NAME, "the secret\n")
+    story.expect_text(f"plugin file {ORDER}", "ORDER", actor=story.worker)
+    story.expect_text("plugin file .rules/config.json --from project", "the rules", actor=story.worker)
+    story.expect_refusal(f"plugin file {SECRET_NAME} --from project", "read limit", actor=story.worker)
+
+
+def test_s53_the_limit_of_an_agent_does_not_hold_a_line_from_a_plugin_script(new_story):
+    story = checkout_story(new_story)
+    story.repository.uncommitted(SECRET_NAME, "the secret\n")
+    caller = Caller(story.worker, 1, plugin_script="events")
+    code = story.container.get(Console).run(shlex.split(f"plugin file {SECRET_NAME} --from project --agent {story.agent.id}"), caller, io.StringIO())
+    story.expect_rows(code == 0)
 
 
 def worker_with_tools(new_story):

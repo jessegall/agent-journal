@@ -290,6 +290,9 @@ class WorktreeGit:
     def commit_contains(self, folder: str, commit: str, relative: str) -> bool:
         return self.git(folder, GIT_LIMIT_SECONDS, "cat-file", "-e", f"{commit}:{relative}").returncode == 0
 
+    def file_text(self, folder: str, revision: str, relative: str) -> str:
+        return self.checked(folder, GIT_LIMIT_SECONDS, "show", f"{revision}:{relative}").stdout
+
     def checked(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:
         finished = self.git(folder, limit_seconds, *arguments)
         if finished.returncode != 0:

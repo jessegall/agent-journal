@@ -66,3 +66,11 @@ def test_stop_ends_the_process_group_of_that_plugin_only(waiting_process):
     assert waiting_process.poll() is None
     scripts.stop("events")
     assert waiting_process.wait(timeout=WAIT_SECONDS) != 0
+
+
+def test_a_service_of_a_plugin_owns_the_line_like_a_script():
+    scripts = RunningScripts()
+    scripts.keep_services({5000: "served"})
+    assert scripts.owner([process_row(5001, 5000), process_row(5000, 1)]) == "served"
+    scripts.keep_services({})
+    assert scripts.owner([process_row(5000, 1)]) == ""

@@ -173,6 +173,9 @@ def test_s50_from_base_after_a_discard_says_the_commit_is_gone(new_story):
     story = released_with_an_edit(new_story)
     repository = story.repository
     repository.git("branch", "-f", ENVIRONMENT_BRANCH, repository.tip("main"))
+    for reference in repository.git("for-each-ref", "--format=%(refname)", "refs/worker-tips").stdout.split():
+        repository.git("update-ref", "-d", reference)
+    repository.git("branch", "-D", repository.worker_branch(story.worker.id))
     repository.git("reflog", "expire", "--expire=now", "--all")
     repository.git("gc", "--prune=now")
     story.expect_refusal(f"plugin file {ORDER} --agent {story.worker.id} --from base", "gone", actor=story.user)
