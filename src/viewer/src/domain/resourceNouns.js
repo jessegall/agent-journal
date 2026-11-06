@@ -10,12 +10,18 @@ export const titleOf = (noun, row, id) => row?.title || row?.name || `${noun} ${
 // what the panel's head says of a row with no page of its own: its type and number, then its state
 export const headingOf = (noun, row, id) => [firstUpper(`${noun} ${id}`), row?.state && firstUpper(row.state)].filter(Boolean).join(" · ");
 
+// who made a row, by name: an agent's given name, otherwise the name of the actor; "" while the creator is not read
+export const creatorNameOf = (actor, agent) => (actor?.type === "agent" && agent ? agent.given_name || firstUpper(agent.profile || agent.role) : actor?.name ?? "");
+
 // the fields of a row with no page of its own, with a label a person reads: everything but what the head and the text already show,
-// empty ones, row numbers and an unchanged updated time left out
-export const fieldsOf = (row, shownText = "") => Object.entries(row ?? {})
-    .filter(([name, value]) => !HIDDEN.has(name) && !name.endsWith("_id") && value !== null && value !== "" && typeof value !== "object" && value !== shownText)
-    .filter(([name, value]) => name !== "updated_at" || value !== row.created_at)
-    .map(([name, value]) => ({name, label: fieldLabel(name), value, isTime: name.endsWith("_at")}));
+// empty ones, row numbers and an unchanged updated time left out; the creator's name stands in for its row number
+export const fieldsOf = (row, shownText = "", creator = "") => [
+    ...Object.entries(row ?? {})
+        .filter(([name, value]) => !HIDDEN.has(name) && !name.endsWith("_id") && value !== null && value !== "" && typeof value !== "object" && value !== shownText)
+        .filter(([name, value]) => name !== "updated_at" || value !== row.created_at)
+        .map(([name, value]) => ({name, label: fieldLabel(name), value, isTime: name.endsWith("_at")})),
+    ...(creator ? [{name: "creator", label: "Created by", value: creator, isTime: false}] : []),
+];
 
 const STATE_BADGES = {reviewing: "Under review"};
 
