@@ -1,6 +1,7 @@
 from core.base.change.event_log import EventLog
 from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
+from core.base.listener.commit_listener_runner import PROGRAM_STOP_RUN_ORDER
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.commands.stop_agent.stop_agent import StopAgent
 from core.modules.agents.events.agent_ended import AgentEnded
@@ -16,6 +17,7 @@ class EndedAgentProgramListener(CommitListener[AgentEnded]):
     holds the session's lock, is a new program; the launch's own prepare step has dealt with the old one."""
 
     name = "agents.ended-agent-program"
+    run_order = PROGRAM_STOP_RUN_ORDER
     disabled_scopes = [ActorScope]
 
     def __init__(self, program: AgentProgram, log: EventLog, sessions: AgentLaunchGuard) -> None:

@@ -94,11 +94,14 @@ def test_a_launch_that_holds_the_session_keeps_the_stop_of_the_end_away(worker_e
     story.expect_rows(launcher.requests == [])
 
 
-def test_a_worker_ended_before_any_resume_gets_one_stop_ahead_of_its_restart(worker_ended_before_listeners):
+def test_a_resume_the_launcher_refuses_leaves_the_stop_of_the_end_to_land(worker_ended_before_listeners):
     story = worker_ended_before_listeners
-    launcher = start_launcher(story, b"stopped\n", request_count=2)
+    path = story.home.socket(LAUNCHER_SOCKET)
+    path.unlink(missing_ok=True)
+    launcher = FakeLauncher(path, request_count=3, answers=(b"running\n", b"running\n", b"stopped\n"))
     story.run_listeners()
-    story.expect_rows(launcher.requests[0] == {"agent_id": story.worker.id, "stop": True}, not any("stop" in request for request in launcher.requests[1:]))
+    stop = {"agent_id": story.worker.id, "stop": True}
+    story.expect_rows("command" in launcher.requests[0], launcher.requests[-1] == stop, launcher.requests.count(stop) == 1)
 
 
 def test_the_start_launcher_a_pid_records_the_workers_process(running_worker):
@@ -123,12 +126,11 @@ def test_a_send_after_a_tick_ended_the_worker_restarts_it(ended_worker):
 
 def test_a_send_finds_a_process_gone_before_the_tick_does_and_restarts_the_worker(running_worker):
     running_worker.use_processes()
-    launcher = start_launcher(running_worker, b"started\n", request_count=2)
+    launcher = start_launcher(running_worker, b"started\n")
     running_worker.expect_text(f'worker send {running_worker.worker.id} "Add the tax"', "was not running: the job starts it again", actor=running_worker.agent)
     running_worker.expect_text(f"agent show {running_worker.worker.id}", "ended_at: 2026")
     running_worker.run_listeners()
     expect_restart(running_worker, launcher)
-    running_worker.expect_rows("stop" in launcher.requests[0], "command" in launcher.requests[1])
 
 
 def test_a_send_to_a_running_worker_says_it_takes_the_job(running_worker):
