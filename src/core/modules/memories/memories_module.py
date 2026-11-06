@@ -1,3 +1,7 @@
+from core.modules.memories.commands.memory_agents.memory_agents_subcommand import MemoryAgentsSubcommand
+from core.modules.memories.commands.memory_list.memory_list_subcommand import MemoryListSubcommand
+from core.modules.memories.migrations.m009_memory_holder_index import MemoryHolderIndexMigration
+from core.modules.memories.models.memory_holder import MemoryHolder
 from core.modules.memories.migrations.m007_memory_session import MemorySessionMigration
 from core.modules.memories.migrations.m008_memory_removed_index import MemoryRemovedIndexMigration
 from core.modules.memories.migrations.m005_memory_scope_index import MemoryScopeIndexMigration
@@ -74,20 +78,20 @@ class MemoriesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.settings", "journal.core.chat", "journal.core.docking",
                     "journal.core.drivers", "journal.core.documents"]
     skills = [SkillDeclaration("journal-memory", "Keep what is important outside the context window with weighted memories; read it before the first memory command of a session, or when the context reaches a mark", keywords=("memory", "memories", "remember"), commands=["memory"])]
-    models = [ModelDeclaration(Memory, commands=[RemoveMemory], excluded_subcommands=["make"]), ModelDeclaration(MemoryKeyword),
+    models = [ModelDeclaration(Memory, commands=[RemoveMemory], excluded_subcommands=["make", "list"]), ModelDeclaration(MemoryKeyword),
               ModelDeclaration(MemoryDelivery, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(MemoryMark, excluded_subcommands=["make", "edit", "delete", "weigh", "skip"])]
-    migrations = [MemoryRemovedIndexMigration, MemorySessionMigration, MemoryOwnerMigration, MemoryScopeIndexMigration, MemoriesTablesMigration, MemoryTypesDropAgentWritableMigration, RemoveFadedMemoriesMigration, MemoryTypesDropFadesMigration]
+    migrations = [MemoryHolderIndexMigration, MemoryRemovedIndexMigration, MemorySessionMigration, MemoryOwnerMigration, MemoryScopeIndexMigration, MemoriesTablesMigration, MemoryTypesDropAgentWritableMigration, RemoveFadedMemoriesMigration, MemoryTypesDropFadesMigration]
     moves = [MemoriesMove]
-    views = [ActiveMemory, ContextMemory, KeywordMemory]
+    views = [ActiveMemory, ContextMemory, KeywordMemory, MemoryHolder]
     guards = [AgentScopeGuard, AgentWeightGuard, KeywordScopeGuard]
     handlers = [MakeMemoryHandler, WeighMemoriesHandler, ReadMemoryHandler, FadeMemoriesHandler, GiveMemoriesHandler, OpenMemoryMarkHandler, SkipMemoryMarkHandler]
     driver_rules = [StartDeliveryRule, KeywordDeliveryRule, OpenMarkRule]
     overlays = [WeighingOverlay]
     listeners = [StartMemoriesListener, CompactionFaderListener, TaskMemoryRemoverListener, MarkCloserListener, MemoryMadeMarkListener, MemoryWeighedMarkListener,
                  MemoryRemovedMarkListener, MemoryFadedMarkListener, MemoryGivenMarkListener, CompactionMarkListener]
-    subcommands = [MakeMemorySubcommand, WeighMemoriesSubcommand, ReadMemorySubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, SkipMemoryMarkSubcommand]
+    subcommands = [MemoryListSubcommand, MemoryAgentsSubcommand, MakeMemorySubcommand, WeighMemoriesSubcommand, ReadMemorySubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, SkipMemoryMarkSubcommand]
     marks = MEMORY_MARKS
     docks = MEMORY_DOCKS
-    windows = [WindowDeclaration("memories.memories", "Memories", "memories.js", WindowLoading.COMPONENT, skeleton=MEMORIES_MEMORIES_SKELETON, search=WindowSearch(MemorySearcher, "Search the memories"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILED, reads=["memory list", "environment list"], runs=["memory make"], events=["memory.*", "environment.*"])]
+    windows = [WindowDeclaration("memories.memories", "Memories", "memories.js", WindowLoading.COMPONENT, skeleton=MEMORIES_MEMORIES_SKELETON, search=WindowSearch(MemorySearcher, "Search the memories"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILED, reads=["memory list", "memory agents", "agent show"], runs=["memory make"], events=["memory.*", "agent.*"])]
     seeders = [MemoriesSeeder]
