@@ -8025,7 +8025,8 @@ const Wb = {
   projectHooks: 1e4,
   numbers: 1e4,
   services: 15e3,
-  libraryCopies: 3e4
+  libraryCopies: 3e4,
+  systemLogs: 5e3
 }, Hb = 1e3;
 function zb() {
   const e = R(Date.now()), t = setInterval(() => e.value = Date.now(), Hb);
@@ -11097,7 +11098,7 @@ function C8(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const O8 = si(() => import("./VoiceFigure-D-QsCJF1.js").then((e) => e.V)), T8 = "1.2.0", R8 = "3.5";
+const O8 = si(() => import("./VoiceFigure-AzIkkHVK.js").then((e) => e.V)), T8 = "1.2.0", R8 = "3.5";
 export {
   td as $,
   Se as A,
