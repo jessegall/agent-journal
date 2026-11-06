@@ -10,15 +10,24 @@ const OPEN = {id: 2, state: "active", row_model: "plan", row_id: 3, expires_at: 
 const SECOND = {...OPEN, id: 3};
 
 function window(rows = [WAITING, OPEN, SECOND], tunnel = "https://cart.tunler.example") {
-    const answers = {
-        "share list": page(rows),
+    const declared = {
+        shares: {events: ["share_link.*", "share_comment.*"], loading: "first", page_size: 0},
+        tunnel: {events: ["tunnel.*"], loading: "first", page_size: 0},
+        opens: {events: [], loading: "requested", page_size: 0},
+        "comments.*": {events: ["share_comment.*"], loading: "requested", page_size: 0},
     };
-    const held = {...context(answers), lines: []};
-    held.read = async (line) => {
-        if (!Array.isArray(line)) return answers[line] ?? {ok: false, error: `no answer for ${line}`};
-        if (line[1] === "status") return {ok: true, value: {address: tunnel}};
-        if (line[1] === "opens") return {ok: true, value: {rows: [{id: 0, line: "Plan 2, Cart"}, {id: 1, line: "3 phases"}]}};
-        return {ok: true, value: {rows: [{id: 9, visitor_name: "Bo", text: "Nice plan"}]}};
+    const answers = {
+        shares: page(rows),
+        tunnel: {ok: true, value: {address: tunnel}},
+        opens: page([{id: 0, line: "Plan 2, Cart"}, {id: 1, line: "3 phases"}]),
+        "comments.2": page([{id: 9, visitor_name: "Bo", text: "Nice plan"}]),
+    };
+    const held = {...context({}), lines: [], keyReads: []};
+    held.read = vi.fn(() => {throw new Error("Shares must read through its keys");});
+    held.readKeys = async ({only = [], state = {}}) => {
+        held.keyReads.push({only, state});
+        const names = only.length ? only : ["shares", "tunnel"];
+        return {ok: true, value: {declared, keys: Object.fromEntries(names.map((name) => [name, answers[name]]))}};
     };
     held.run = async (line) => (held.lines.push(line), {ok: true, value: {link: "/viewer/share/abc", expires_at: null}});
     return held;
@@ -33,6 +42,7 @@ test("a new link names its options and gives the full address through the tunnel
     target.dispatchEvent(new Event("change"));
     await settle();
     expect(element.querySelector("[data-share-opens]").textContent).toContain("3 phases");
+    expect(held.keyReads).toContainEqual({only: ["opens"], state: {"opens.target": "plans:2"}});
     const password = element.querySelector(".shares-password");
     password.value = "open-sesame";
     password.dispatchEvent(new Event("input"));
@@ -50,15 +60,17 @@ test("the links are read again when a link or comment changes, never on a timer"
     const held = window();
     const follows = [];
     held.follow = (patterns, heard) => follows.push({patterns, heard});
-    const reads = [];
-    const read = held.read;
-    held.read = (line) => (reads.push(line), read(line));
     await mounted(ShareRows, held);
-    expect(follows[0].patterns).toEqual(["share_link.*", "share_comment.*"]);
+    expect(follows[0].patterns).toEqual(["share_link.*", "share_comment.*", "tunnel.*"]);
     expect(timer).not.toHaveBeenCalled();
-    const before = reads.filter((line) => line === "share list").length;
+    expect(held.keyReads).toEqual([{only: [], state: {}}]);
     await follows[0].heard({event: "share_link.update"});
-    expect(reads.filter((line) => line === "share list").length).toBe(before + 1);
+    await new Promise((resolve) => setTimeout(resolve, 70));
+    expect(held.keyReads.at(-1)).toEqual({only: ["shares"], state: {}});
+    await follows[0].heard({event: "share_comment.make"});
+    await new Promise((resolve) => setTimeout(resolve, 70));
+    expect(held.keyReads.at(-1)).toEqual({only: ["shares"], state: {}});
+    expect(held.read).not.toHaveBeenCalled();
     timer.mockRestore();
 });
 
@@ -88,6 +100,10 @@ test("an open link shows its views and comments and stops, and every share stops
     element.querySelector('[data-share-row="2"] [data-share-comments-open]').click();
     await settle();
     expect(element.querySelector("[data-share-comment]").textContent).toContain("Nice plan");
+    expect(held.keyReads.at(-1)).toEqual({only: ["comments.2"], state: {}});
+    element.querySelector('[data-share-row="2"] [data-share-comments-open]').click();
+    await settle();
+    expect(element.querySelector("[data-share-comment]")).toBeNull();
     element.querySelector("[data-share-stop-every]").click();
     await settle();
     expect(held.lines).toEqual([]);

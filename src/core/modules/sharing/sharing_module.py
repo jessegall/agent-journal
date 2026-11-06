@@ -4,6 +4,8 @@ from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from core.modules.sharing.support.share_searcher import ShareSearcher
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
+from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.modules.sharing.commands.make_share_link.make_share_link_handler import MakeShareLinkHandler
@@ -48,4 +50,8 @@ class SharingModule(Module):
     moves = [ShareMove]
     seeders = [SharingSeeder]
     windows = [WindowDeclaration("sharing.shares", "Shares", "shares.js", WindowLoading.COMPONENT, skeleton=SHARING_SHARES_SKELETON, search=WindowSearch(ShareSearcher, "Search the links"), group="project", icon=WindowIcon.SHARE,
-                                 reads=["share list", "share comments", "share opens", "tunnel status"], runs=["share make", "share revoke", "share accept", "share deny"], events=["share_link.*", "share_comment.*"])]
+                                 reads=["share list", "share comments", "share opens", "tunnel status"], runs=["share make", "share revoke", "share accept", "share deny"], events=["share_link.*", "share_comment.*"],
+                                 keys=[WindowKey("shares", "share list", events=["share_link.*", "share_comment.*"]),
+                                       WindowKey("tunnel", "tunnel status", events=["tunnel.*"]),
+                                       WindowKey("opens", "share opens", arguments=["target"], loading=KeyLoading.REQUESTED),
+                                       WindowKey("comments.*", "share comments {id}", events=["share_comment.*"], loading=KeyLoading.REQUESTED)])]
