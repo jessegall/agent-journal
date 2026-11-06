@@ -4,6 +4,8 @@ from dataclasses import asdict
 from core.base.caller.caller import Caller
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
+from core.base.query.query import Query
+from core.base.page import Page
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
@@ -35,6 +37,7 @@ class LinkListSubcommand(ReadSubcommand[LinkPage]):
         parser.add_argument("--page-size", type=int, default=25)
         parser.add_argument("--type", type=LinkType, choices=tuple(LinkType), action="append", default=[])
         parser.add_argument("--group-counterparts", action="store_true")
+        parser.add_argument("--first-counterpart")
 
     def read(self, arguments: Namespace, caller: Caller) -> LinkPage:
         size = min(arguments.page_size, 50)
@@ -49,10 +52,12 @@ class LinkListSubcommand(ReadSubcommand[LinkPage]):
             query = query.matching(Among("link_type", types))
         counterparts = ()
         if arguments.group_counterparts:
-            page = query.matching(FirstLinkCounterpart(query.select, reference)).oldest().page(arguments.page, size)
+            page = self.counterpart_page(query.matching(FirstLinkCounterpart(query.select, reference)), reference, arguments, size)
             counterparts = tuple(scope.counterpart(link) for link in page.rows)
             links = tuple(query.matching(LinkCounterparts(reference, counterparts)).oldest().limited(size * len(LinkType) * 2))
         else:
+            if arguments.first_counterpart:
+                raise Refusal("a first counterpart needs --group-counterparts")
             page = query.oldest().page(arguments.page, size)
             links = page.rows
         references = {end for link in links for end in (RowRef(link.source_model, link.source_id), RowRef(link.target_model, link.target_id))}
@@ -65,7 +70,24 @@ class LinkListSubcommand(ReadSubcommand[LinkPage]):
         command += "".join(f" --type {kind}" for kind in types)
         if arguments.group_counterparts:
             command += " --group-counterparts"
+        if arguments.first_counterpart:
+            command += f" --first-counterpart {arguments.first_counterpart}"
         return LinkPage(rows, groups, arguments.page, size, page.total, None if page.is_last else command)
+
+    def counterpart_page(self, query: Query[Link], reference: RowRef, arguments: Namespace, size: int) -> Page[Link]:
+        if not arguments.first_counterpart:
+            return query.oldest().page(arguments.page, size)
+        first = self.row_refs.parsed(arguments.first_counterpart)
+        priority = query.matching(LinkCounterparts(reference, (first,))).oldest().first()
+        if priority is None:
+            return query.oldest().page(arguments.page, size)
+        total = query.count()
+        pool = query.matching(Among("id", (priority.id,), negated=True)).oldest()
+        if arguments.page == 1:
+            following = tuple(pool.limited(size - 1)) if size > 1 else ()
+            return Page((priority, *following), arguments.page, size, total)
+        selected = tuple(pool.rows(pool.select.sliced(size, (arguments.page - 1) * size - 1)))
+        return Page(selected, arguments.page, size, total)
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, LinkPage):

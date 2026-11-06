@@ -118,6 +118,7 @@ async function documentRequests() {
         read: async (line) => {
             requests.push(line);
             if (line[1] === "inspect") return {ok: true, value: {id: 4, title: "Cart", abstract: "Totals", body: "Use cents", revision: 1, comments: []}};
+            if (line[0] === "link") return {ok: true, value: {rows: [], counterparts: [linkedItem("report", 9, ["about"], "reports:9", "Incoming review")], total: 1}};
             return page([]);
         },
     });
@@ -129,6 +130,7 @@ async function documentRequests() {
 unbuilt("task 6894: the document inspector reads incoming as well as outgoing relations", async () => {
     const requests = await documentRequests();
     expect(requests.some((line) => line[0] === "link" && line.includes("--row") && line.includes("doc:4") && line.includes("--group-counterparts"))).toBe(true);
+    expect(document.querySelector("[data-document-links]").textContent).toContain("Incoming review");
 });
 
 unbuilt("task 6894: the document inspector bounds every relation read", async () => {

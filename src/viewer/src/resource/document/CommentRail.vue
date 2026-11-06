@@ -2,7 +2,7 @@
 import CommentCard from "./CommentCard.vue";
 
 // the comments of a document, in the margin beside its text or on their own tab
-defineProps({comments: {type: Array, required: true}, hot: {type: Number, default: 0}, lost: {type: Array, default: () => []}, tab: Boolean});
+defineProps({comments: {type: Array, required: true}, hot: {type: Number, default: 0}, lost: {type: Array, default: () => []}, tab: Boolean, total: {type: Number, default: 0}});
 defineEmits(["show"]);
 </script>
 
@@ -11,7 +11,7 @@ defineEmits(["show"]);
         <div class="rail-head">
             <h3>Comments</h3>
             <template v-if="comments.length">
-                <span>{{ comments.length }}</span>
+                <span>{{ total || comments.length }}</span>
             </template>
         </div>
         <template v-if="comments.length">

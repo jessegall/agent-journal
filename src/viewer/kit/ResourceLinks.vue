@@ -1,0 +1,81 @@
+<script setup>
+import {computed, ref, watch} from "vue";
+import MoreItems from "./MoreItems.vue";
+
+const props = defineProps({model: {type: String, required: true}, id: {type: Number, required: true}, read: {type: Function, required: true},
+    documentId: {type: Number, default: 0}, pageSize: {type: Number, default: 10}, changes: {type: Number, default: 0},
+    linkAttribute: {type: String, default: "data-resource-link"}, empty: {type: String, default: ""}});
+const emit = defineEmits(["open"]);
+const counterparts = ref([]);
+const nextPage = ref(null);
+const loading = ref(false);
+const failure = ref("");
+let reading = 0;
+const design = (row) => row.endpoint.model === "doc" && row.endpoint.id === props.documentId;
+const rows = computed(() => [...counterparts.value].sort((a, b) => Number(design(b)) - Number(design(a))));
+const unavailable = (row) => row.endpoint.unavailable || !row.endpoint.open_ref;
+const attributes = (row) => ({[props.linkAttribute]: true, "data-link-model": row.endpoint.model, "data-link-id": row.endpoint.id});
+
+async function load(page = 1) {
+    const turn = ++reading;
+    loading.value = true;
+    failure.value = "";
+    const line = ["link", "list", "--row", `${props.model}:${props.id}`, "--group-counterparts", "--page", String(page), "--page-size", String(props.pageSize)];
+    if (props.documentId) line.push("--first-counterpart", `doc:${props.documentId}`);
+    try {
+        const answer = await props.read(line);
+        if (turn !== reading) return;
+        if (!answer.ok) {
+            failure.value = answer.error;
+            return;
+        }
+        const incoming = answer.value.counterparts ?? [];
+        const combined = page === 1 ? incoming : [...counterparts.value, ...incoming];
+        counterparts.value = [...new Map(combined.map((row) => [`${row.endpoint.model}:${row.endpoint.id}`, row])).values()];
+        nextPage.value = answer.value.next_page ?? null;
+    } catch (error) {
+        if (turn === reading) failure.value = error.message;
+    } finally {
+        if (turn === reading) loading.value = false;
+    }
+}
+
+function open(row) {
+    if (unavailable(row)) return;
+    const [table, id] = row.endpoint.open_ref.split(":");
+    emit("open", {table, id: Number(id)});
+}
+
+const more = () => !loading.value && nextPage.value && load(nextPage.value);
+watch(() => `${props.model}:${props.id}:${props.documentId}:${props.changes}`, () => {
+    counterparts.value = [];
+    nextPage.value = null;
+    load();
+}, {immediate: true});
+</script>
+
+<template>
+    <template v-if="rows.length || loading || failure || empty">
+        <section class="resource-links" data-resource-links>
+            <template v-for="row in rows" :key="`${row.endpoint.model}:${row.endpoint.id}`">
+                <button type="button" class="resource-link" v-bind="attributes(row)" :disabled="unavailable(row)" @click="open(row)">
+                    <span class="type">{{ design(row) ? "Design document" : row.endpoint.model.replaceAll("_", " ") }} {{ row.endpoint.id }}</span>
+                    <span class="title">{{ row.endpoint.title }}</span>
+                    <span class="relations">{{ row.relations.join(", ") }}</span>
+                    <template v-if="unavailable(row)"><span class="unavailable">Unavailable</span></template>
+                </button>
+            </template>
+            <template v-if="!rows.length && !loading && !failure && empty"><p>{{ empty }}</p></template>
+            <MoreItems :more="Boolean(nextPage)" :loading="loading" :failure="failure" label="More linked items" @more="more" />
+        </section>
+    </template>
+</template>
+
+<style scoped>
+.resource-links {display: flex; flex-direction: column; gap: 6px;}
+.resource-link {display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; padding: 4px 0; border: 0; background: none; color: var(--text-2); font: inherit; text-align: left; cursor: pointer;}
+.resource-link:disabled {cursor: default; opacity: .65;}
+.type {color: var(--accent-text); font-size: 12px;}
+.title {overflow-wrap: anywhere;}
+.relations, .unavailable, p {color: var(--text-3); font-size: 12px;}
+</style>
