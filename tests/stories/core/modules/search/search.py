@@ -1,3 +1,4 @@
+from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_endswith_authorization, expect_startswith_listed, expect_value_with, expect_value_without, expect_visited_limit
 
@@ -10,10 +11,44 @@ def test_a_row_holding_every_word_in_any_of_its_fields_is_found_with_its_noun_an
     story.expect_text('search find cart cents', "task 1: ", actor=story.agent)
 
 
-def test_a_row_missing_one_word_is_not_found_and_no_hit_says_which_words(new_story):
+def test_a_row_missing_every_word_but_one_is_found_as_the_closest_and_the_line_says_so(new_story):
     story = new_story(fixture=UserJoined)
     story.run('task make "Fix the cart" --brief "totals in cents" --environment main', actor=story.user)
-    story.expect_success('search find cart euros', "nothing here holds all of: cart euros", actor=story.agent)
+    story.expect_text('search find cart euros', "no row holds all of: cart, euros, these hold most of them, the closest first", "task 1: ", actor=story.agent)
+
+
+def test_rows_holding_more_of_the_words_come_before_rows_holding_fewer(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('task make "Fix the cart in cents" --environment main', actor=story.user)
+    story.run('task make "Fix the cart in cents and euros" --environment main', actor=story.user)
+    story.expect_ordered_lines('search find cart cents euros pounds', "task 2: ", "task 1: ", actor=story.agent)
+
+
+def test_a_search_where_no_row_holds_even_half_the_words_finds_nothing(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('task make "Fix the cart" --brief "totals in cents" --environment main', actor=story.user)
+    story.expect_success('search find zebra euros pounds', "nothing here holds all of: zebra euros pounds", actor=story.agent)
+
+
+def test_a_word_matches_by_its_stem_so_hours_finds_two_hourly(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('task make "The two-hourly reviewer" --environment main', actor=story.user)
+    story.expect_text('search find reviewer two hours', "task 1: The two-hourly reviewer", actor=story.agent)
+
+
+def test_a_process_whose_only_match_is_a_search_command_is_left_out(new_story):
+    story = new_story(fixture=UserJoined)
+    start_process(story, "journal search find cart", limit_seconds=0)
+    start_process(story, "make cart", limit_seconds=0)
+    story.expect_text('search find cart', "process 2: make cart", actor=story.agent)
+    expect_value_without(story.run('search find cart', actor=story.agent).output_text, "process 1:")
+
+
+def test_a_message_ranks_above_a_process_that_holds_the_same_words(new_story):
+    story = new_story(fixture=UserJoined)
+    start_process(story, "make cart", limit_seconds=0)
+    story.run('message send "Fix the cart first" --environment main', actor=story.user)
+    story.expect_ordered_lines('search find cart', "message ", "process ", actor=story.agent)
 
 
 def test_words_match_whatever_their_case(new_story):

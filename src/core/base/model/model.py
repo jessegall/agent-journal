@@ -8,6 +8,7 @@ from core.base.model.lifecycle import Lifecycle
 from core.base.model.move import Move
 from core.base.timestamp import Timestamp
 from core.base.model.model_error import ModelError
+from core.base.search_term import SearchTerm
 
 
 STATE = "state"
@@ -22,6 +23,8 @@ class Model:
     hidden_fields: ClassVar[frozenset[str]] = frozenset()
     filter_fields: ClassVar[Sequence[str]] = ()
     search_fields: ClassVar[Sequence[str]] = ()
+    search_rank: ClassVar[int] = 0
+    search_ignored_start: ClassVar[str] = ""
     shared_rows: ClassVar[bool] = False
     change_names: ClassVar[Sequence[str]] = ()
     event_forms: ClassVar[tuple[EventForm, ...]] = tuple(EventForm)
@@ -46,6 +49,10 @@ class Model:
 
     def search_text(self) -> str:
         return " ".join(str(getattr(self, name)) for name in self.search_fields)
+
+    def terms_held(self, terms: Sequence[str]) -> int:
+        text = self.search_text().lower()
+        return sum(SearchTerm.stem(term) in text for term in terms)
 
     @property
     def is_saved(self) -> bool:
