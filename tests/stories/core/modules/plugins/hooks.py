@@ -153,9 +153,9 @@ def start_counter(monkeypatch, program: str) -> list[str]:
     starts: list[str] = []
     popen = subprocess.Popen
 
-    def counted(arguments, *rest, **options):
+    def counted(arguments, *call_arguments, **options):
         starts.extend([options["env"]["JOURNAL_PLUGIN"]] if str(arguments[0]).endswith(program) else [])
-        return popen(arguments, *rest, **options)
+        return popen(arguments, *call_arguments, **options)
 
     monkeypatch.setattr(subprocess, "Popen", counted)
     return starts

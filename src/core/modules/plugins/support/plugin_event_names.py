@@ -37,4 +37,4 @@ class PluginEventNames:
         parts = tool.shell.parts
         commands = [{"text": part.text, "files": [*part.input_paths, *part.output_paths], "position": place} for place, part in enumerate(parts)]
         files = list(dict.fromkeys(file for command in commands for file in command["files"]))
-        return [PluginEvent("command_starting", {"text": tool.shell.display_text, "files": files, "position": 0, "parts": len(parts), "commands": commands})]
+        return [PluginEvent("command_starting", {"text": " ; ".join(command["text"] for command in commands), "files": files, "position": 0, "parts": len(parts), "commands": commands})]

@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from unittest.mock import patch
 
 from core.base.command.bus import Bus
@@ -5,6 +7,9 @@ from core.base.database.database import Database
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.commands.end_idle_worker.end_idle_worker import EndIdleWorker
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from core.base.journal_home import LAUNCHER_SOCKET
+from core.testing.fake_launcher import FakeLauncher
+from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.worktree_samples import commit_in_worktree
 
@@ -87,3 +92,22 @@ def test_at_the_kept_maximum_a_dispatch_is_refused_with_a_retire_line(new_story)
     worker = dispatched_worker(story)
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
     story.expect_refusal(f"worker dispatch --model sonnet {task_id}", f"1 workers are kept: agent:{worker.id}", actor=story.agent)
+
+
+def test_a_worker_resume_at_the_run_limit_is_held_and_starts_when_a_place_frees(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"started\n", request_count=3)
+    worker = delivered_worker(story, repository)
+    story.run_listeners()
+    stopped(story, worker)
+    story.run_listeners()
+    story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 0 --environment main", actor=story.user)
+    story.advance(timedelta(seconds=1))
+    story.expect_success(f'worker send {worker.id} "Add the tax"', actor=story.agent)
+    story.run_listeners()
+    WorkerResumeRetry()(story.container)
+    started_before = len(launcher.starts)
+    story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 2 --environment main", actor=story.user)
+    WorkerResumeRetry()(story.container)
+    story.expect_rows(started_before == 1, len(launcher.starts) == 2)
