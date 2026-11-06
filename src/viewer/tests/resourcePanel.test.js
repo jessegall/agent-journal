@@ -136,6 +136,32 @@ test("any other row shows plain labels with no row numbers or text twice, and a 
     expect(shown().querySelector("[data-resource-failure]").textContent).toContain("does not declare");
 });
 
+const MEMORY = {id: 4, text: "Keep it", state: "active", weight: 9, creator_id: 78, environment_id: 5, created_at: "2026-11-06T10:30:28+00:00", updated_at: "2026-11-06T10:30:28+00:00"};
+
+test("a row names its creator by the given name of an agent, read once for the row", async () => {
+    const lines = [];
+    await opened("#?open=memory:4", answering({
+        "memory show 4": {ok: true, value: MEMORY},
+        "actor show 78": {ok: true, value: {id: 78, type: "agent", name: "session-9"}},
+        "agent show 78": {ok: true, value: {id: 78, role: "worker", profile: "journal-worker", given_name: "Lady Lovelace"}},
+    }, lines));
+    const fields = shown().querySelector("[data-resource-fields]").textContent;
+    expect(fields).toContain("Created by");
+    expect(fields).toContain("Lady Lovelace");
+    expect(fields).not.toContain("78");
+    expect(lines.filter((line) => line[0] === "actor" || line[0] === "agent")).toEqual([["actor", "show", "78"], ["agent", "show", "78"]]);
+});
+
+test("a row names a creator who is a person by the person's name", async () => {
+    const lines = [];
+    await opened("#?open=memory:4", answering({
+        "memory show 4": {ok: true, value: MEMORY},
+        "actor show 78": {ok: true, value: {id: 78, type: "user", name: "Jesse"}},
+    }, lines));
+    expect(shown().querySelector("[data-resource-fields]").textContent).toContain("Jesse");
+    expect(lines.some((line) => line[0] === "agent")).toBe(false);
+});
+
 
 test("the browser's back and forward walk the rows opened", async () => {
     await opened("#?open=plans:5", answering(PLAN));
