@@ -75,6 +75,9 @@ from core.modules.documents.models.report import Report
 from core.modules.documents.seeders.documents_seeder import DocumentsSeeder
 from core.modules.documents.upgrade.documents_move import DocumentsMove
 from core.modules.documents.support.skeletons import DOCUMENTS_DOCUMENTS_SKELETON
+from core.modules.documents.listeners.phase_mention_listener import PhaseMentionListener
+from core.modules.documents.listeners.task_log_mention_listener import TaskLogMentionListener
+from core.modules.documents.listeners.deleted_row_link_listener import DeletedRowLinkListener
 
 
 class DocumentsModule(Module):
@@ -99,7 +102,7 @@ class DocumentsModule(Module):
                                  reads=["document library", "doc show", "report show"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"])]
     views = [DocumentRow]
     handlers = [OpenDocHandler, RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]
-    listeners = [CloseEndedDocumentListener, PlanDocumentLinkListener, ReplyLinkListener, DocMentionListener, ReportMentionListener, PlanMentionListener, TaskMentionListener, MessageMentionListener, NewDocDockListener, NewReportDockListener, TextReadMarkListener]
+    listeners = [CloseEndedDocumentListener, PlanDocumentLinkListener, ReplyLinkListener, DocMentionListener, ReportMentionListener, PlanMentionListener, TaskMentionListener, MessageMentionListener, PhaseMentionListener, TaskLogMentionListener, DeletedRowLinkListener, NewDocDockListener, NewReportDockListener, TextReadMarkListener]
     marks = TEXT_MARKS
     docks = TEXT_DOCKS
     bindings = {RowLinks: StoredRowLinks}

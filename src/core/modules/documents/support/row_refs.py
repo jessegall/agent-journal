@@ -1,8 +1,10 @@
 import re
+from collections.abc import Sequence
 
 from core.base.model.model import Model
 from core.base.model.tables import Tables
 from core.base.query.queries import Queries
+from core.base.query.conditions.among import Among
 from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.modules.documents.support.row_ref import RowRef
@@ -39,3 +41,21 @@ class RowRefs:
     def existing(self, name: str, number: int) -> RowRef | None:
         model = self.model(name)
         return RowRef(model.model_name, number) if model is not None and self.queries.query(model).filter(id=number).exists() else None
+
+    def existing_many(self, references: Sequence[tuple[str, int]]) -> tuple[RowRef, ...]:
+        models = {name: self.model(name) for name, _ in references}
+        ids_by_model: dict[type[Model], set[int]] = {}
+        resolved: list[RowRef] = []
+        for name, number in references:
+            model = models[name]
+            if model is None:
+                continue
+            resolved.append(RowRef(model.model_name, number))
+            ids_by_model.setdefault(model, set()).add(number)
+        existing: set[RowRef] = set()
+        for model, numbers in ids_by_model.items():
+            ids = tuple(numbers)
+            for start in range(0, len(ids), 500):
+                rows = self.queries.query(model).matching(Among("id", ids[start:start + 500])).all_rows()
+                existing.update(RowRef(model.model_name, row.id) for row in rows)
+        return tuple(dict.fromkeys(ref for ref in resolved if ref in existing))

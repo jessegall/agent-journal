@@ -13,13 +13,11 @@ def test_document_alias_and_duplicates_keep_first_order():
 
 
 @pytest.mark.parametrize("text", ["task 12.5", "task 12-34", "other-task 12"], ids=["decimal", "range", "embedded-command"])
-@pytest.mark.xfail(strict=True, raises=AssertionError, reason="plan 1093 task 6885: token boundaries")
 def test_malformed_reference_tokens_are_ignored(text):
     assert MentionRefs.found(f"{text}; plan 7", ("task", "plan")) == (("plan", 7),)
 
 
 @pytest.mark.parametrize("number", ["0", "9223372036854775808", "9" * 5000], ids=["zero", "above-sqlite-id", "long-digit-run"])
-@pytest.mark.xfail(strict=True, raises=(AssertionError, ValueError), reason="plan 1093 task 6885: reject invalid ID before conversion")
 def test_reference_numbers_outside_id_range_are_ignored(number):
     assert MentionRefs.found(f"task {number}; plan 7", ("task", "plan")) == (("plan", 7),)
 

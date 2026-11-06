@@ -20,11 +20,13 @@ class RecordMentionsHandler(Handler[RecordMentions, int]):
         self.registry, self.row_refs, self.queries, self.links = registry, row_refs, queries, links
 
     def handle(self, command: RecordMentions, context: Context) -> int:
-        existing_refs = [self.row_refs.existing(name, number) for name, number in MentionRefs.found(command.text, self.registry.models)]
-        targets = [ref for ref in existing_refs if ref is not None and ref != command.source]
-        new_targets = [ref for ref in targets if not self.queries.query(Link).filter(source_model=command.source.model, source_id=command.source.row_id, target_model=ref.model,
-                                                                                    target_id=ref.row_id, link_type=LinkType.MENTION).exists()]
-        for ref in new_targets:
-            self.links.save(Link(creator_id=context.actor.id, source_model=command.source.model, source_id=command.source.row_id, target_model=ref.model,
-                                      target_id=ref.row_id, link_type=LinkType.MENTION), context)
+        if self.row_refs.existing(command.source.model, command.source.row_id) is None:
+            return 0
+        references = tuple(dict.fromkeys(ref for text in command.texts for ref in MentionRefs.found(text, self.registry.models)))
+        targets = self.row_refs.existing_many(references)
+        stored = self.queries.query(Link).filter(source_model=command.source.model, source_id=command.source.row_id, link_type=LinkType.MENTION).all_rows()
+        existing = {(link.target_model, link.target_id) for link in stored}
+        new_targets = [ref for ref in targets if ref != command.source and (ref.model, ref.row_id) not in existing]
+        self.links.save_many(tuple(Link(creator_id=context.actor.id, source_model=command.source.model, source_id=command.source.row_id, target_model=ref.model,
+                                        target_id=ref.row_id, link_type=LinkType.MENTION) for ref in new_targets), context)
         return len(new_targets)

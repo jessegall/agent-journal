@@ -3,7 +3,6 @@ from unittest.mock import patch
 from concurrent.futures import ThreadPoolExecutor
 
 from core.base.change.event_log import EventLog
-from core.base.database.repeated_calls_error import RepeatedCallsError
 from core.base.query.query import Query
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.command.bus import Bus
@@ -14,7 +13,7 @@ from tests.stories.core.modules.library.support.copy_stories import new_item, sh
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.suites.coding.modules.workers.worker_context import assigned_worker, worker_trail
 
-from tests.stories.core.modules.documents.support.trail_fixtures import MissingTrailBehaviour, Trail, feature, pending, trail
+from tests.stories.core.modules.documents.support.trail_fixtures import Trail, feature, trail
 from tests.stories.server.support.server_client import server_story
 
 
@@ -47,24 +46,21 @@ def test_duplicate_transcription_link_is_idempotent(trail):
     feature(len([row for row in trail.links("transcription:1") if row["target_id"] == 1 and row["target_model"] == "task"]) == 1, "duplicate transcription subject")
 
 
-@pending(6885)
 def test_fields_cannot_manufacture_a_reference(trail):
     trail.command('doc make "task" --abstract "1" --body "No reference"')
     trail.expect_no_link("doc:2", "task:1")
 
 
-@pending(6885)
 def test_deleted_sources_are_not_relinked_by_deferred_events(trail):
     with patch.object(CommitListenerRunner, "run", return_value=None):
         trail.command('task make "Will be deleted" --brief "doc 1" --environment main')
         trail.command("task delete 2")
     trail.story.run_listeners()
     actor = trail.story.container.get(ModuleActors).actor("journal.core.documents")
-    trail.story.container.get(Bus).run(RecordMentions(RowRef("task", 2), "doc 1"), actor, environment_id=1)
+    trail.story.container.get(Bus).run(RecordMentions(RowRef("task", 2), ("doc 1",)), actor, environment_id=1)
     feature(trail.links("task:2") == [], "deferred save recreated deleted source links")
 
 
-@pending(6885)
 def test_deleting_a_row_removes_touching_links(trail):
     trail.command('task edit 1 --brief "doc 1"')
     trail.story.run_listeners()
@@ -72,7 +68,6 @@ def test_deleting_a_row_removes_touching_links(trail):
     feature(trail.links("task:1") == [], "deletion retained outgoing mentions")
 
 
-@pending(6885)
 def test_prose_field_updates_keep_old_mentions(trail):
     trail.command("task start 1")
     trail.command('task close 1 --outcome "See doc 1"')
@@ -82,14 +77,12 @@ def test_prose_field_updates_keep_old_mentions(trail):
 
 
 @pytest.mark.parametrize("text", ["task 1.5", "task 1-2", "other-task 1"], ids=["decimal", "range", "embedded-name"])
-@pending(6885)
 def test_malformed_reference_tokens_are_ignored(trail, text):
     trail.command(f'doc make "Malformed reference" --abstract "Tokens" --body "{text}; plan 1"')
     trail.expect_no_link("doc:2", "task:1")
     trail.expect_link("doc:2", "plan:1", "mentions")
 
 
-@pytest.mark.xfail(strict=True, raises=(MissingTrailBehaviour, RepeatedCallsError), reason="plan 1093 task 6885: batch scanner lookups")
 def test_long_text_scanning_batches_distinct_references(trail):
     for number in range(2, 42):
         trail.make_task(f"Cart item {number}")
@@ -134,14 +127,12 @@ def test_library_copies_are_not_scanned(trail, shared_server):
                                            (("task log 1 'Read doc 1'",), "task_log:1"),
                                            (("task log 1 'First observation'", "task-log edit 1 --line 'Read doc 1'"), "task_log:1")],
                          ids=["phase-goal", "phase-title", "task-log-line", "task-log-update"])
-@pending(6885)
 def test_additional_prose_sources_are_scanned_on_updates(trail, commands, source):
     for command in commands:
         trail.command(command)
     trail.expect_link(source, "doc:1", "mentions")
 
 
-@pending(6885)
 def test_message_edits_are_scanned(trail):
     trail.person("messages.chat", "message", "edit", "1", "--text", "Read doc 1")
     trail.expect_link("message:1", "doc:1", "mentions")

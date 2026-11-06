@@ -2,6 +2,7 @@ from core.base.command.context import Context
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.documents.models.link import Link
+from core.modules.documents.support.row_ref import RowRef
 
 
 class RowLinkWriter:
@@ -11,9 +12,19 @@ class RowLinkWriter:
         self.queries, self.repository = queries, repository
 
     def save(self, link: Link, context: Context) -> Link:
-        existing = self.queries.query(Link).filter(source_model=link.source_model, source_id=link.source_id,
-                                                  target_model=link.target_model, target_id=link.target_id,
-                                                  link_type=link.link_type).first()
-        if existing is not None:
-            return existing
-        return self.repository.save(link, context)
+        return self.save_many((link,), context)[0]
+
+    def save_many(self, links: Sequence[Link], context: Context) -> tuple[Link, ...]:
+        sources = dict.fromkeys(RowRef(link.source_model, link.source_id) for link in links)
+        saved: list[Link] = []
+        for source in sources:
+            rows = self.queries.query(Link).filter(source_model=source.model, source_id=source.row_id).all_rows()
+            existing = {(row.target_model, row.target_id, row.link_type): row for row in rows}
+            for link in (row for row in links if row.source_model == source.model and row.source_id == source.row_id):
+                key = (link.target_model, link.target_id, link.link_type)
+                if key not in existing:
+                    existing[key] = self.repository.save(link, context)
+                saved.append(existing[key])
+        return tuple(saved)
+from collections.abc import Sequence
+
