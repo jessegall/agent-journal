@@ -16,6 +16,8 @@ from core.base.refusal import Refusal
 from core.base.running_scripts import RunningScripts
 from core.modules.agents.models.agent import Agent
 from core.modules.plugins.support.plugin_command_run import PluginCommandRun
+from core.modules.processes.models.process import Process
+from core.modules.processes.commands.stop_process.stop_process import StopProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.support.foreground_run import ForegroundRun
 from core.modules.processes.support.runner_binary import RunnerBinary
@@ -31,7 +33,7 @@ class PluginCommandRunner:
     def __init__(self, checkouts: AgentCheckouts, reads: ProjectReads, runner: RunnerBinary, scripts: RunningScripts, bus: Bus, queries: Queries) -> None:
         self.checkouts, self.reads, self.runner, self.scripts, self.bus, self.queries = checkouts, reads, runner, scripts, bus, queries
 
-    def run(self, agent_id: int, line: str, read_only: bool, plugin: str, context: Context) -> PluginCommandRun:
+    def run(self, agent_id: int, line: str, is_readonly: bool, plugin: str, context: Context) -> PluginCommandRun:
         checkout = self.checkouts.checkout(agent_id)
         if not checkout.exists:
             raise Refusal(f"the checkout of agent {agent_id} was removed, so nothing can run in it", "read its files with journal plugin file --from base")
@@ -39,17 +41,20 @@ class PluginCommandRunner:
             raise Refusal(f"the journal has no runner at {self.runner.path}", "install it again")
         start = StartProcess.single_part(agent_id, line, str(checkout.root), CommandCategory.UNKNOWN, RUN_LIMIT_SECONDS)
         process = self.bus.run(start, context.actor, environment_id=self.queries.query(Agent).find(agent_id).environment_id)
-        runner_line = RunnerLine.build(self.runner.path, process.id, self.foreground_run(checkout, read_only), line, "")
+        runner_line = RunnerLine.build(self.runner.path, process.id, self.foreground_run(checkout, is_readonly), line, "")
         running = subprocess.Popen(["sh", "-c", runner_line], cwd=checkout.root, env={name: value for name, value in os.environ.items() if name != SESSION_VARIABLE}, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                    text=True, start_new_session=True)
         self.scripts.start(running, plugin, RUN_KEY, EventForm.COMMIT, context.timestamp)
         try:
             output, _ = running.communicate()
+            stopped = self.scripts.stop_reason(running) is not None
         finally:
             self.scripts.finish(running)
+        if stopped and self.queries.query(Process).find(process.id).ended_at is None:
+            self.bus.run(StopProcess(process.id), context.actor)
         return PluginCommandRun(process.id, running.returncode, output)
 
-    def foreground_run(self, checkout: Checkout, read_only: bool) -> ForegroundRun:
-        folder: Path | None = checkout.root if checkout.checkout_type is CheckoutType.WORKTREE and not read_only else None
+    def foreground_run(self, checkout: Checkout, is_readonly: bool) -> ForegroundRun:
+        folder: Path | None = checkout.root if checkout.checkout_type is CheckoutType.WORKTREE and not is_readonly else None
         reads = self.reads.folders(checkout.project_root) if checkout.checkout_type is CheckoutType.WORKTREE else ()
-        return ForegroundRun(RUN_LIMIT_SECONDS, False, shell_sandbox=read_only or folder is not None, folder=folder, read_folders=reads)
+        return ForegroundRun(RUN_LIMIT_SECONDS, False, shell_sandbox=is_readonly or folder is not None, folder=folder, read_folders=reads)

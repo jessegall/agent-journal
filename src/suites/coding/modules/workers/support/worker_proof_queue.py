@@ -4,8 +4,11 @@ from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.drivers.support.main_agent_line import MainAgentLine
+from core.modules.plans.models.phase import Phase
+from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
+from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.worker_nudges import PROOF_WAITS
@@ -15,12 +18,14 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 import shlex
 
 PROOF_WAITS_SOURCE = "workers.proof-waits"
+PHASE_TEST_POINT = 0
 PENDING_AFFECTED_STATES = (AffectedTestState.QUEUED, AffectedTestState.PICKING, AffectedTestState.TESTING)
 
 
 class WorkerProofQueue:
     """Queues the test of every proof of a worktree that has not passed, says how many it queued, and tells the
-    main agent of the proofs with no test, which wait for its check."""
+    main agent of the proofs with no test, which wait for its check. At the end of a phase those proofs are
+    checked instead, and the phase's own test is added as a proof."""
 
     def __init__(self, proofs: ProofQuery, repository: Repository, main_agent_line: MainAgentLine, settings: SettingValues, git: WorktreeGit, queries: Queries) -> None:
         self.proofs, self.repository, self.main_agent_line, self.queries = proofs, repository, main_agent_line, queries
@@ -50,13 +55,24 @@ class WorkerProofQueue:
     def queue(self, worktree: Worktree, context: Context) -> int:
         queued_count = self.queue_proofs(worktree, context)
         self.send_untested_line(worktree, context)
+        return queued_count + self.queue_selected(worktree, context)
+
+    def queue_phase(self, worktree: Worktree, task: Task, phase: Phase, context: Context) -> int:
+        for proof in tuple(self.proofs.untested_proofs(worktree.id).all_rows()):
+            self.repository.save_change(proof, proof.moved(ProofLifecycle.check), context)
+        if phase.test_command and not self.proofs.worktree_proofs(worktree.id).filter(point=PHASE_TEST_POINT, task_id=task.id).exists():
+            self.repository.save(Proof(task_id=task.id, worktree_id=worktree.id, creator_id=worktree.session_agent_id, point=PHASE_TEST_POINT,
+                                       text=f"the test phase {phase.title} names", test_command=phase.test_command), context)
+        return self.queue_proofs(worktree, context) + self.queue_selected(worktree, context)
+
+    def queue_selected(self, worktree: Worktree, context: Context) -> int:
         picker = self.settings.text(AFFECTED_TESTS_COMMAND).strip()
         test = self.settings.text(PROJECT_TEST_COMMAND).strip()
-        if picker and test:
-            line = shlex.join([*shlex.split(picker), *self.git.changed_files(worktree)])
-            self.repository.save(AffectedTest(worktree_id=worktree.id, task_id=worktree.task_id, picker_command=line, test_command=test), context)
-            queued_count += 1
-        return queued_count
+        if not picker or not test:
+            return 0
+        line = shlex.join([*shlex.split(picker), *self.git.changed_files(worktree)])
+        self.repository.save(AffectedTest(worktree_id=worktree.id, task_id=worktree.task_id, picker_command=line, test_command=test), context)
+        return 1
 
     def send_untested_line(self, worktree: Worktree, context: Context) -> None:
         proofs = [str(proof.id) for proof in self.proofs.untested_proofs(worktree.id).oldest().all_rows()]

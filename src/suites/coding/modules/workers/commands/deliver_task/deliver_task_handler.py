@@ -10,23 +10,26 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from suites.coding.modules.workers.commands.deliver_task.deliver_task import DeliverTask
+from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test_handler import RecordWorkerTestHandler
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from suites.coding.modules.workers.support.worker_task_commit import WorkerTaskCommit
 
 
 class DeliverTaskHandler(Handler[DeliverTask, Task]):
-    """Hands in all a worker's tasks together, which a queued task refuses: commits its worktree, moves every task it
-    holds started to testing, delivers the worktree and queues the tests of its proofs."""
+    """Hands in all a worker's tasks together, which a queued task refuses: commits its worktree, moves every
+    task it holds started to testing, delivers the worktree and queues the tests of its proofs. On a phase
+    of a started plan it queues the whole phase, and with nothing to run it finishes at once."""
 
     command = DeliverTask
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, tasks: TaskQuery, queries: Queries) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, tasks: TaskQuery, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler) -> None:
         self.rows, self.worktrees, self.proof_queue, self.repository, self.task_commit, self.tasks = rows, worktrees, proof_queue, repository, task_commit, tasks
-        self.queries = queries
+        self.queries, self.phases, self.results = queries, phases, results
 
     def prepare(self, command: DeliverTask, actor: Actor) -> None:
         worktree = self.worktrees.worker_worktree(actor.id)
@@ -41,5 +44,11 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
         committed = self.worktrees.worker_worktree(context.actor.id)
         for started in tuple(self.tasks.holder(context.actor.id).started().all_rows()):
             self.repository.save_change(started, started.moved(TaskLifecycle.test), context)
-        self.proof_queue.queue(self.repository.save_change(committed, committed.moved(WorktreeLifecycle.deliver, logs_read_at=None), context), context)
+        delivered = self.repository.save_change(committed, committed.moved(WorktreeLifecycle.deliver, logs_read_at=None), context)
+        task = self.rows.required(Task, committed.task_id)
+        phase = self.phases.phase(task)
+        if phase is None:
+            self.proof_queue.queue(delivered, context)
+        elif not self.proof_queue.queue_phase(delivered, task, phase, context):
+            self.results.finish(delivered, context)
         return self.rows.required(Task, committed.task_id)

@@ -86,6 +86,10 @@ A cut worktree starts from `base_commit` of the branch. Nothing promises that it
 
 `suites.coding.workers.worker_worktree.cut` fires once the worktree exists and is prepared. `suites.coding.workers.worker_worktree.remove` fires when a merge or a release removes the worktree of a worker that started. A release of a worktree still opening and a failed start delete the row, so they fire `suites.coding.workers.worker_worktree.deleted` instead. The sweep of leftover folders has no row, so it fires nothing, and a folder removed by hand fires nothing until the worker is released.
 
+## A server stop
+
+A server stop kills a running commit script. That delivery, and any still queued, run after the next start, so a commit script can run twice for one event: make it safe to run again. A guard or listen script that a stop kills answers its waiting command with the stop, and nothing is written.
+
 ## A worker's merge
 
 `suites.coding.workers.worker_worktree.merge` in the commit form fires once for each merge, after the merge has committed, and never for a refused merge or one that clashed: a merge that clashes returns the worktree to its worker and fires `suites.coding.workers.worker_worktree.rework`. The guard and listen forms are skipped, because a merge runs only once. Its `row` holds `session_agent_id`, the worker; `task_id` and `merged_task_ids`, its tasks; `commit_before_merge` and `commit_after_merge`, the merged range on `base_branch`; `environment_id`; and `folder`, the worktree's path as a name, since the folder may be gone by then. `journal plugin changes --since <commit_before_merge>` lists the files.

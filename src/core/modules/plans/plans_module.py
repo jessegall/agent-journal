@@ -36,6 +36,7 @@ from core.modules.plans.migrations.m003_plan_state_index import PlanStateIndexMi
 from core.modules.plans.migrations.m004_plan_start_time import PlanStartTimeMigration
 from core.modules.plans.migrations.m005_plan_document import PlanDocumentMigration
 from core.modules.plans.migrations.m006_all_environments_plan_state_index import AllEnvironmentsPlanStateIndexMigration
+from core.modules.plans.migrations.m007_phase_test_command import PhaseTestCommandMigration
 from core.modules.plans.commands.plan_progress.plan_progress_subcommand import PlanProgressSubcommand
 from core.modules.plans.models.plan_event_row import PlanEventRow
 from core.modules.plans.models.plan_outline_task import PlanOutlineTask
@@ -80,7 +81,7 @@ class PlansModule(Module):
     skills = [SkillDeclaration("journal-plans", "Build and follow a plan of ordered tasks; read it before the first plan command of a session, or when the user asks for a plan or a roadmap", keywords=("plan", "plans", "roadmap", "phases"), commands=("plan", "phase")),
               SkillDeclaration("journal-planning", "How thorough a plan is: real steps in each phase, one task per step, and a brief an agent can carry out alone; read it before you make a plan or a phase", keywords=("plan", "phases"), commands=("plan make", "phase make"))]
     models = [ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"])]
-    migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration]
+    migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration]
     handlers = [MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler, ApprovePlanHandler]
     moves = [PlansMove]
     subcommands = [CommentPlanSubcommand, PlanCommentsSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,

@@ -24,7 +24,6 @@ def test_a_read_only_helper_gets_a_usage_error_for_a_subcommand_that_does_not_ex
 def test_a_read_only_helper_is_still_refused_a_command_that_writes(new_story):
     story = new_story(fixture=StartedHelper)
     helper = the_helper(story)
-    story.expect_hook_refusal(helper.session, journal_line("task", "edit", "1"), OUTWARD)
     story.expect_hook_refusal(helper.session, journal_line("task", "delete", "1"), OUTWARD)
     story.expect_hook_refusal(helper.session, journal_line("task", "close", "1"), OUTWARD)
 

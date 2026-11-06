@@ -12,6 +12,7 @@ class BootingWork(RoundWork):
     """Stops stale scripts and records the server boot event."""
 
     def run(self, container: Container) -> None:
+        container.get(RunningScripts).server_started()
         container.get(RunningScripts).stop_stale_processes()
         container.get(PerformanceState).begin_start()
         with container.get(Database).transaction():

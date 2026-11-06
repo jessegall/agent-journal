@@ -17,7 +17,8 @@ from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.worker_status import WorkerStatus
+from suites.coding.modules.workers.support.worker_phases import WorkerPhases
+from suites.coding.modules.workers.support.worker_status import WorkerStatus, WorkerStatusPhase
 from suites.coding.modules.workers.support.worker_status_page_json import WorkerStatusPageJson
 
 
@@ -25,9 +26,9 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | Refusal]):
     cli_name = "worker"
     name = "status"
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, unread_skills: UnreadSkills, files: SkillFiles) -> None:
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, unread_skills: UnreadSkills, files: SkillFiles, phases: WorkerPhases) -> None:
         self.queries, self.worktrees, self.proofs = queries, worktrees, proofs
-        self.unread_skills, self.files = unread_skills, files
+        self.unread_skills, self.files, self.phases = unread_skills, files, phases
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("worker_id", type=int, nargs="?")
@@ -47,20 +48,28 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | Refusal]):
         assignments = self.queries.query(Task).filter(delegated_to=worker_id).matching(Among("state", (TaskState.OPEN, TaskState.BLOCKED))).oldest().page(arguments.page, arguments.limit)
         worker = self.queries.query(Agent).find(worker_id)
         skills = tuple(self.files.agent_instruction(name, worker) for name in self.unread_skills.names(worker_id))
-        return WorkerStatus(worker_id, self.queries.query(Task).find(worktree.task_id), tests, assignments, skills)
+        current_task = self.queries.query(Task).find(worktree.task_id)
+        return WorkerStatus(worker_id, current_task, tests, assignments, skills, self.task_phase(current_task, worker_id))
+
+    def task_phase(self, task: Task, worker_id: int) -> WorkerStatusPhase | None:
+        phase = self.phases.phase(task)
+        return None if phase is None else WorkerStatusPhase(phase, len(self.phases.advanced(worker_id)))
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, WorkerStatus):
             super().write_output(value, output)
             return
-        lines = [f"Worker: {value.worker_id}", f"Current task: {value.current_task.id} ({value.current_task.state}) {value.current_task.title}",
+        phase_lines = () if value.phase is None else (f"Current phase: phase {value.phase.phase.id} ({value.phase.phase.title})", f"Tasks waiting for its end: {value.phase.tasks_waiting}")
+        lines = [f"Worker: {value.worker_id}", f"Current task: {value.current_task.id} ({value.current_task.state}) {value.current_task.title}", *phase_lines,
                  f"Tests waiting: {value.tests.total}", *(f"  proof {proof.id} ({proof.state}): {proof.test_command}" for proof in value.tests.rows),
                  f"Assignments remaining: {value.assignments.total}", *(f"  task {task.id} ({task.state}): {task.title}" for task in value.assignments.rows),
                  f"Skills to load: {len(value.skills)}", *(f"  {skill}" for skill in value.skills)]
         if not value.tests.is_last or not value.assignments.is_last:
             lines.append(f"--page {value.assignments.number + 1} for the next page")
-        output.write("\n".join(lines), {"worker_id": value.worker_id, "current_task": output.values(value.current_task),
-                                      "tests": self.page_json(value.tests, output), "assignments": self.page_json(value.assignments, output)})
+        data: dict[str, object] = {"worker_id": value.worker_id, "current_task": output.values(value.current_task),
+                                   "tests": self.page_json(value.tests, output), "assignments": self.page_json(value.assignments, output),
+                                   "phase": value.phase.listed() if value.phase is not None else None}
+        output.write("\n".join(lines), data)
 
     def page_json(self, page: Page[Proof] | Page[Task], output: Output) -> WorkerStatusPageJson:
         return {"rows": [output.values(row) for row in page.rows], "page": page.number, "size": page.size, "total": page.total}

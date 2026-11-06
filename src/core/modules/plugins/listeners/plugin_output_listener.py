@@ -46,8 +46,8 @@ class PluginOutputListener(CommitListener[Created[PluginOutput]]):
             self.bus.run(RecordPluginFault(plugin.id, refusal.reason), actor, cause_id=logged.id)
             return
         is_main = row.session_agent_id is not None and self.queries.query(Agent).find(row.session_agent_id).role == AgentRole.MAIN
-        shows_in_environment = row.shows_in_environment and row.environment_id is not None
-        for card in answer.cards if is_main or shows_in_environment else ():
+        environment_visible = row.shows_in_environment and row.environment_id is not None
+        for card in answer.cards if is_main or environment_visible else ():
             tone = card.tone or (manifest.card_tones[card.card_type] if card.card_type in manifest.card_tones else "")
             if tone in TONES:
                 key = f"plugin:{plugin.name}:{row.session_agent_id}:{card.key}" if is_main else f"plugin:{plugin.name}:{card.key}"

@@ -1123,6 +1123,7 @@
         "coding.terminal"
     ],
     "command_verbs": [
+        "Queue",
         "Approve",
         "Grant",
         "Halt",

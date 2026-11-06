@@ -36,6 +36,13 @@ def test_a_plan_whose_phases_each_have_two_tasks_is_made_ready_without_a_reason(
     story.expect_success("plan ready 1", "state: ready", actor=story.agent)
 
 
+def test_the_planning_skill_says_to_keep_phases_small(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success("skill write", actor=story.agent)
+    skill = story.home.folder.parent / ".claude" / "skills" / "journal-planning" / "SKILL.md"
+    story.expect_rows("keep phases small" in skill.read_text())
+
+
 def test_a_helper_edits_and_makes_ready_a_plan_it_made(new_story):
     story = new_story(fixture=UserJoined)
     helper = Actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)

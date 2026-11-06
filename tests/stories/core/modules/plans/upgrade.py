@@ -1,3 +1,5 @@
+import json
+
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 
 
@@ -20,6 +22,12 @@ def test_a_plan_in_review_moves_as_ready_with_its_phases_checkpoint_and_tasks_in
     expect_value_9("checkpoint: True", story, "phase show 2", "checkpoint: 1", "phase show 2")
     story.expect_text("phase-task show 1", "phase_id: 1")
     story.expect_text("phase-task show 1", "position: 1")
+
+
+def test_a_phase_of_an_upgraded_plan_reads_with_an_empty_test_command(new_story):
+    story = upgraded_story(new_story)
+    story.expect_success("plan show 3", "title: Cart rework")
+    story.expect_rows(json.loads(story.run("phase show 1 --json").output_text)["test_command"] == "")
 
 
 def test_the_plan_reviews_of_version_4_are_dropped_and_counted(new_story):

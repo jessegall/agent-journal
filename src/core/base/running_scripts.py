@@ -33,6 +33,7 @@ class RunningScripts:
         self.sent_lines: dict[str, deque[str]] = {}
         self.skips: dict[tuple[str, str, EventForm], ScriptSkip] = {}
         self.failing_tries: dict[str, Timestamp] = {}
+        self.server_stopped = False
 
     @classmethod
     @cache
@@ -40,8 +41,12 @@ class RunningScripts:
         return cls(home.plugin_socket_folder)
 
     def start(self, process: "subprocess.Popen[str]", plugin: str, key: str, form: EventForm, started_at: Timestamp) -> None:
+        script = RunningScript(process, plugin, key, form, started_at)
         with self.lock:
-            self.scripts[process.pid] = RunningScript(process, plugin, key, form, started_at)
+            self.scripts[process.pid] = script
+            stopped = self.server_stopped
+        if stopped:
+            self.killed((script,), ScriptStop.SERVER)
         if self.pid_folder is not None:
             self.pid_folder.mkdir(parents=True, exist_ok=True)
             program = process.args[0] if isinstance(process.args, (list, tuple)) else process.args
@@ -111,8 +116,13 @@ class RunningScripts:
     def stop(self, plugin: str) -> None:
         self.killed(self.running(plugin), ScriptStop.PLUGIN_DISABLED)
 
+    def server_started(self) -> None:
+        with self.lock:
+            self.server_stopped = False
+
     def stop_all(self) -> None:
         with self.lock:
+            self.server_stopped = True
             scripts = tuple(self.scripts.values())
         self.killed(scripts, ScriptStop.SERVER)
 

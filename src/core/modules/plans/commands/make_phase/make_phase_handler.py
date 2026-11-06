@@ -16,5 +16,5 @@ class MakePhaseHandler(Handler[MakePhase, Phase]):
 
     def handle(self, command: MakePhase, context: Context) -> Phase:
         phase = Phase(plan_id=command.plan_id, creator_id=context.actor.id, position=self.positions.next_position(Phase, "plan_id", command.plan_id),
-                      title=command.title, goal=command.goal, checkpoint=command.checkpoint)
+                      title=command.title, goal=command.goal, checkpoint=command.checkpoint, test_command=command.test_command)
         return self.repository.save(phase, context)

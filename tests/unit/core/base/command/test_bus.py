@@ -39,7 +39,7 @@ from core.base.change.created import Created
 AGENT = Actor(7, ActorType.AGENT)
 ROUNDS: list[int] = []
 WORK_RUNS: list[str] = []
-KEPT_COUNTS: list[int] = []
+CACHED_COUNTS: list[int] = []
 RECORDED_CONTEXTS: list[Context] = []
 
 
@@ -105,7 +105,7 @@ class OutsideTestWork:
 
     def run(self, runs: OutsideRuns) -> None:
         WORK_RUNS.append(self.turn.log_name)
-        runs.record(self.turn, ("allowed",))
+        runs.record(self.turn, ["allowed"])
 
 
 @dataclass(frozen=True)
@@ -201,9 +201,9 @@ class KeptItemHandler(CreateItemWithOutsideWorkHandler):
         self.kept, self.queries = kept, queries
 
     def handle(self, command: KeptItem, context: Context) -> Item:
-        KEPT_COUNTS.append(self.kept.read("items", self.queries.query(Item).count, name="items.count"))
+        CACHED_COUNTS.append(self.kept.read("items", self.queries.query(Item).count, name="items.count"))
         item = super().handle(command, context)
-        KEPT_COUNTS.append(self.kept.read("items", self.queries.query(Item).count, name="items.count"))
+        CACHED_COUNTS.append(self.kept.read("items", self.queries.query(Item).count, name="items.count"))
         return item
 
 
@@ -299,7 +299,7 @@ def container(tmp_path):
 
 @pytest.fixture
 def outside_container(tmp_path):
-    for records in (ROUNDS, WORK_RUNS, KEPT_COUNTS, RECORDED_CONTEXTS):
+    for records in (ROUNDS, WORK_RUNS, CACHED_COUNTS, RECORDED_CONTEXTS):
         records.clear()
     pairs = handlers((MakeCommand, MakeHandler), (CreateItemWithOutsideWork, CreateItemWithOutsideWorkHandler), (EndlessItem, EndlessItemHandler), (CreateItemOnce, CreateItemOnceHandler), (SwallowingItem, SwallowingItemHandler),
                      (KeptItem, KeptItemHandler), (CreateItemsWithOutsideWork, CreateItemsWithOutsideWorkHandler), (RecordContext, RecordContextHandler), (PassedOn, PassedOnHandler), (CreateNestedItemOnce, CreateNestedItemOnceHandler), (CreateItemAfterNestedOnce, CreateItemAfterNestedOnceHandler))
@@ -389,7 +389,7 @@ def test_a_handler_that_swallows_the_rollback_is_caught(outside_container):
 
 def test_a_rolled_back_row_is_not_read_back_from_kept_rows(outside_container):
     outside_container.get(Bus).run(KeptItem("Dune"), AGENT)
-    assert KEPT_COUNTS == [0, 0, 1]
+    assert CACHED_COUNTS == [0, 0, 1]
 
 
 def test_a_nested_command_of_a_handler_with_no_transaction_rolls_back_alone(outside_container):
