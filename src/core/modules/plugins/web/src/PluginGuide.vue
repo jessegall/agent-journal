@@ -23,6 +23,7 @@ const KEYS = [
     ["listen: guard", "Before a change. The script can refuse it, and then nothing is saved. Set \"skip\": false on the entry and nobody can pass it with --skip-guard plugins.event-guard:<plugin>; a person can always turn the plugin off."],
     ["listen: listen", "During a change. The script sees the item before it is saved, its answered commands are saved with the change, and a journal command it runs itself is saved at once and stays. An id it reads may still change, and only commit promises the change happened."],
     ["listen: commit", "After a change. The script runs after the change is saved and cannot stop it."],
+    ["docs/writing-a-plugin.md", "The whole contract for a plugin's author, with a working sample."],
     ["waiting", "A guard or listen script holds no lock, but whoever made the change waits for it. Turn the plugin off to stop a script that never ends."],
     ["files", "Other files of the plugin, by relative path, that count as what it runs: changing one switches it off until you read the change. A folder counts every file in it, and a big folder costs time at every step of an agent."],
     ["settings", "A JSON file listing its settings, each with a key, title and type."],
