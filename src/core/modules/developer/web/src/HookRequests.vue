@@ -1,10 +1,44 @@
 <script setup>
-import {computed, ref} from "vue";
-import {WindowRoom, highlight, usePoll, useReadLine} from "@journal/window-kit";
+import {computed, ref, watch} from "vue";
+import {MenuItem, MenuLabel, MenuPanel, WindowRoom, highlight, peekRef, usePoll, useWindow} from "@journal/window-kit";
 import RequestQueueInspector from "./RequestQueueInspector.vue";
 
-const {value: requests, failure, load} = useReadLine(() => "developer hook-requests", {unbatched: true});
+const key = "journal.hook-requests.filters";
+const emptyFilters = () => ({kind: [], family: [], sender: []});
+function savedFilters() {
+    try { return {...emptyFilters(), ...JSON.parse(localStorage.getItem(key) || "{}")}; }
+    catch { return emptyFilters(); }
+}
+const filters = ref(savedFilters());
+const paused = ref(false);
+const options = ref({family: ["process bookkeeping"], sender: []});
+const count = computed(() => Object.values(filters.value).reduce((sum, values) => sum + values.length, 0));
+const context = useWindow();
+const requests = ref(null);
+const failure = ref("");
+let readNumber = 0;
+async function load() {
+    const number = ++readNumber;
+    const line = ["developer hook-requests", ...Object.entries(filters.value).flatMap(([name, values]) => values.map((value) => `--${name} ${JSON.stringify(value)}`))].join(" ");
+    const answer = await context.read(line, {unbatched: true});
+    if (paused.value || number !== readNumber) return;
+    failure.value = answer.ok ? "" : answer.error;
+    if (answer.ok) requests.value = answer.value;
+}
 const rows = computed(() => requests.value?.rows ?? []);
+watch(requests, (value) => {
+    options.value.family = [...new Set(["process bookkeeping", ...(value.families || []), ...filters.value.family])].sort();
+    options.value.sender = [...new Set([...(value.senders || []), ...filters.value.sender])].sort();
+});
+watch(filters, (value) => {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+    if (!paused.value) load();
+});
+function toggle(name, value) {
+    const values = filters.value[name];
+    filters.value = {...filters.value, [name]: values.includes(value) ? values.filter((item) => item !== value) : [...values, value]};
+}
+const filterAnchor = ref(null);
 const openedNumber = ref(0);
 const queueOpen = ref(false);
 const opened = computed(() => rows.value.find((row) => row.id === openedNumber.value));
@@ -13,14 +47,31 @@ const isRefused = (row) => row.outcome === "refused";
 const isSlow = (row) => !isRefused(row) && row.duration_ms >= 500;
 const durationOf = (row) => `${Math.round(row.duration_ms)} ms`;
 
-usePoll(load, () => true);
+function togglePause() {
+    paused.value = !paused.value;
+    if (!paused.value) load();
+}
+usePoll(load, () => !paused.value);
 </script>
 
 <template>
     <WindowRoom padding="0">
         <div class="requests" data-hook-requests>
             <section class="list" aria-label="Recorded requests">
-                <button type="button" class="queue-button" data-request-queue-open @click="queueOpen = true">Request queue</button>
+                <div class="toolbar">
+                    <button type="button" data-filter-open @click="filterAnchor = $event.currentTarget">Filters<span v-if="count" data-filter-count> ({{ count }})</span></button>
+                    <button type="button" data-feed-pause :aria-pressed="paused" @click="togglePause">{{ paused ? 'Resume' : 'Pause' }}</button>
+                    <button type="button" data-request-queue-open @click="queueOpen = true">Request queue</button>
+                    <MenuPanel v-if="filterAnchor" :anchor="filterAnchor" align="start" :min-width="220" :max-width="320" @close="filterAnchor = null">
+                        <MenuLabel>Type</MenuLabel>
+                        <MenuItem v-for="kind in ['hook', 'viewer', 'command line']" :key="kind" :data-filter-kind="kind" role="menuitemcheckbox" :checked="filters.kind.includes(kind)" :aria-checked="filters.kind.includes(kind)" @click="toggle('kind', kind)">{{ kind }}</MenuItem>
+                        <MenuLabel>Event or command</MenuLabel>
+                        <MenuItem v-for="family in options.family" :key="family" :data-filter-family="family" role="menuitemcheckbox" :checked="filters.family.includes(family)" :aria-checked="filters.family.includes(family)" @click="toggle('family', family)">{{ family }}</MenuItem>
+                        <MenuLabel>Sender</MenuLabel>
+                        <MenuItem v-for="sender in options.sender" :key="sender" role="menuitemcheckbox" :checked="filters.sender.includes(sender)" :aria-checked="filters.sender.includes(sender)" @click="toggle('sender', sender)">{{ sender }}</MenuItem>
+                        <MenuItem v-if="count" data-filter-clear @click="filters = emptyFilters()">Clear filters</MenuItem>
+                    </MenuPanel>
+                </div>
                 <div class="columns">
                     <span data-hook-column>Event</span>
                     <span data-hook-column>Tool</span>
@@ -42,15 +93,15 @@ usePoll(load, () => true);
                         <template v-if="row.day_start">
                             <div class="day" data-hook-day>{{ row.day }}<span>UTC</span></div>
                         </template>
-                        <button type="button" :class="['row', {open: row.id === openedNumber, slow: isSlow(row), refused: isRefused(row)}]" :data-hook-request="row.id" :aria-pressed="row.id === openedNumber" :title="row.outcome" @click="openedNumber = row.id">
+                        <div role="button" tabindex="0" :class="['row', {open: row.id === openedNumber, slow: isSlow(row), refused: isRefused(row)}]" :data-hook-request="row.id" :aria-pressed="row.id === openedNumber" :title="row.outcome" @click="openedNumber = row.id" @keydown.enter="openedNumber = row.id">
                             <span class="event">{{ row.event }}</span>
                             <span class="tool">{{ row.tool || '—' }}</span>
                             <span class="parts" data-hook-parts>{{ row.part_count || '' }}</span>
                             <time :datetime="row.received_at">{{ row.time }}</time>
-                            <span>{{ row.sender }}</span>
+                            <button v-if="row.agent_id" type="button" class="sender" :data-peek="`agents:${row.agent_id}`" @click.stop="peekRef(`agents:${row.agent_id}`)">{{ row.sender }}</button><span v-else>{{ row.sender }}</span>
                             <span class="queued">{{ Math.round(row.queued_ms) }} ms</span>
                             <span class="duration">{{ durationOf(row) }}</span>
-                        </button>
+                        </div>
                     </template>
                     </TransitionGroup>
                 </div>
@@ -79,7 +130,7 @@ usePoll(load, () => true);
 </template>
 
 <style scoped>
-.queue-button { align-self: flex-end; margin: 8px 12px; }
+.toolbar { display: flex; justify-content: space-between; padding: 8px 12px; }
 .queue-veil { position: absolute; inset: 0; display: flex; justify-content: flex-end; background: #0005; z-index: 3; }
 .queue-veil > * { width: min(560px, 100%); box-shadow: 0 0 24px #0003; }
 .requests {
@@ -129,10 +180,12 @@ usePoll(load, () => true);
 }
 
 .parts {
-    padding-right: 4px;
+    padding-right: 12px;
     color: var(--text-3);
     font-variant-numeric: tabular-nums;
 }
+.sender { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.sender:hover { color: var(--accent); text-decoration: underline; }
 
 .day {
     display: flex;
