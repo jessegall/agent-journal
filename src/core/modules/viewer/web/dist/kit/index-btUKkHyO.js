@@ -5977,7 +5977,7 @@ const f0 = {
           onMouseenter: (Z) => $(B),
           onMouseleave: (Z) => E(B)
         }, null, 8, ["item", "class", "leaving", "folded", "collapsed", "refusal", "onOpen", "onFold", "onUndock", "onMouseenter", "onMouseleave"]))), 128)),
-        s.value && o.value && !e.collapsed ? (c(), h("div", h0, [
+        s.value && o.value && !k.value ? (c(), h("div", h0, [
           g("span", null, w(f.value.length) + " runs", 1),
           N(ue, {
             small: "",
@@ -6047,7 +6047,7 @@ const f0 = {
       _: 1
     }, 8, ["duration"]));
   }
-}, I2 = /* @__PURE__ */ K(g0, [["__scopeId", "data-v-ed4c8390"]]), ft = { notice: 0.42, gap: 8, shuffles: 3, seconds: 2.4, frames: 48, fps: 20, lift: 0.12 }, kn = (e) => Math.min(Math.max(e, 0), 1), v0 = (e) => {
+}, I2 = /* @__PURE__ */ K(g0, [["__scopeId", "data-v-d4c81ace"]]), ft = { notice: 0.42, gap: 8, shuffles: 3, seconds: 2.4, frames: 48, fps: 20, lift: 0.12 }, kn = (e) => Math.min(Math.max(e, 0), 1), v0 = (e) => {
   const t = kn(e);
   return t * t * (3 - 2 * t);
 }, rt = (e, t, n) => v0((e - t) / (n - t));
@@ -10543,7 +10543,7 @@ function Rx(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const Lx = jr(() => import("./VoiceFigure--opuAj8H.js").then((e) => e.V)), Nx = "1.2.0", Dx = "3.5";
+const Lx = jr(() => import("./VoiceFigure-Ch4nNTjJ.js").then((e) => e.V)), Nx = "1.2.0", Dx = "3.5";
 export {
   $y as $,
   xe as A,
