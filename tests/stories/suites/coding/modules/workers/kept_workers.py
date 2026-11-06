@@ -78,3 +78,12 @@ def test_a_retire_runs_git_outside_the_transaction(new_story):
     with patch.object(WorktreeGit, "git", recording_git):
         story.expect_success(f"agent retire {worker.id} {REASON}", actor=story.agent)
     story.expect_rows(bool(inside), not any(inside))
+
+
+def test_at_the_kept_maximum_a_dispatch_is_refused_with_a_retire_line(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    story.expect_success("setting set journal.suites.coding.workers.worker-kept-limit 1 --environment main", actor=story.user)
+    worker = dispatched_worker(story)
+    task_id = story.new_row_id('task make "A second task"', actor=story.agent)
+    story.expect_refusal(f"worker dispatch --model sonnet {task_id}", f"1 workers are kept: agent:{worker.id}", actor=story.agent)
