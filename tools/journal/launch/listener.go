@@ -69,7 +69,7 @@ type ProcessStarter struct {
 	Home          string
 	Inputs        *TerminalInputs
 	OnAnswer      func(agentID int, question, explanation string)
-	OnExit        func(agentID, exitCode int)
+	OnExit        func(agentID, exitCode, pid int)
 	openLog       func(string) (*TerminalLog, error)
 	startTerminal func(*exec.Cmd, io.Reader, io.Writer, io.Writer) (func() error, error)
 }
@@ -125,7 +125,7 @@ func (starter ProcessStarter) Start(start ProgramStart) error {
 		}
 		_ = log.Close()
 		if starter.OnExit != nil {
-			starter.OnExit(start.AgentID, exitCode(err))
+			starter.OnExit(start.AgentID, exitCode(err), command.Process.Pid)
 		}
 	}()
 	return nil
