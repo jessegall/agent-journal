@@ -117,7 +117,8 @@ test("every choice, text and template field is required before sending", async (
     typeInto(form.querySelector("textarea"), "A message with spaces");
     await settle();
     expect(form.querySelector("[data-button-send]").disabled).toBe(true);
-    await pickButton(form, "Security review · acme.review");
+    [...form.querySelectorAll('[role="radio"]')].find((option) => option.textContent.includes("Security review")).click();
+    await settle();
     expect(form.textContent).toContain("Check access and data");
     expect(form.querySelector("[data-button-send]").disabled).toBe(false);
     await pickButton(form, "Send");
