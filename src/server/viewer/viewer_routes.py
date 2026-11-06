@@ -29,7 +29,7 @@ class ViewerRoutes:
         self.queue = queue
         self.request_log = RequestLog(home)
         self.priorities = self.request_log.priorities
-        self.line_route, self.event_stream = LineRoute(home, listener_thread, reported, queue), EventStream(home)
+        self.line_route, self.event_stream = LineRoute(home, listener_thread, reported, queue, self.request_log.completed), EventStream(home)
         self.module_files, self.windows_route = ModuleFiles(home), WindowsRoute(home)
         self.buttons_route = ButtonsRoute(home)
         self.chat_declarations_route, self.session_route = ChatDeclarationsRoute(home), SessionRoute(login, home)

@@ -11,7 +11,7 @@ if __name__ == "__main__":
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from core.base.container import Container
-from core.base.journal_container import opened_container
+from core.base.journal_container import opened_container, synced_database_container
 from core.base.journal_home import JournalHome
 from core.base.periodic_checks import PeriodicChecks
 from core.base.performance.performance_state import PerformanceState
@@ -32,6 +32,7 @@ from server.server_context import ServerContext
 from server.server_plugin_services import ServerPluginServices
 from server.server_tunnel import ServerTunnel
 from server.hook.hook_database import HookDatabase
+from server.request_log import SETTINGS_REFRESH_SECONDS
 from server.journal_round import JournalRound
 from server.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
 from core.base.plugin_script_processes import PluginScriptProcesses
@@ -124,6 +125,7 @@ def main(argv: list[str]) -> int:
     ticker.register(TickHandler(TickInterval(seconds=BACKUP_CHECK_SECONDS), lambda container: backup.follow(), "database copies", starts_immediately=True))
     server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread, hook_database, viewer, tunnel, reported_findings),
                            waiting_server.journal_socket() if waiting_server else None)
+    ticker.register(TickHandler(TickInterval(seconds=SETTINGS_REFRESH_SECONDS), lambda container: server.context.request_log.refresh(container), "request log settings"))
     if waiting_server is not None:
         waiting_server.wait_turn()
         begin_files(home, files)
@@ -138,6 +140,7 @@ def main(argv: list[str]) -> int:
             starting_round.run()
         except Exception as error:
             starting_round.report(error)
+    server.context.request_log.refresh(synced_database_container(home, hook_database.databases[0]))
     listener_thread.wake()
     listener_thread.start()
     urgent_thread.start()
@@ -162,6 +165,7 @@ def main(argv: list[str]) -> int:
         for thread in threads:
             thread.join(deadline - time.monotonic())
         ticker.join(deadline - time.monotonic())
+        server.context.request_log.close()
         hook_database.close()
         if not server.is_handing_over:
             files.remove_server_files()

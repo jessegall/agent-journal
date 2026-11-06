@@ -245,8 +245,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             except (KeyError, TypeError, ValueError, ViewerRequestError) as error:
                 self.answer(400, {"error": str(error)})
                 return
-            viewer.routes.request_log.complete_reads(viewer.login.person_id(token), receipts)
             self.answer(200, {"received": len(receipts)})
+            self.wfile.flush()
+            viewer.routes.request_log.complete_reads(viewer.login.person_id(token), receipts)
             return
         if urlsplit(self.path).path != LINE_ROUTE:
             self.answer(404, {"error": f"no route {self.path}"})
@@ -270,8 +271,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return
         duration_ms = (perf_counter() - started_at) * 1000
         http = ViewerHttpRequest(request_id, received_at, None, duration_ms, self.payload_bytes(body), viewer.login.person_id(token))
-        viewer.routes.request_log.record_viewer(ViewerRequestRecord(http, request, 0, timed.duration_ms, queued_ms, answered.code, timed.points))
         self.answer(200, asdict(answered), {"X-Journal-Request-Id": request_id})
+        self.wfile.flush()
+        viewer.routes.request_log.record_viewer(ViewerRequestRecord(http, request, 0, timed.duration_ms, queued_ms, answered.code, timed.points))
 
     def answer_notices(self, viewer: ViewerServer, token: str, body: bytes | None) -> None:
         notices = viewer.routes.notices_route
@@ -318,6 +320,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(400, {"error": "read inspection pages separately from other lines"})
             return
         answers: dict[int, LineAnswer] = {}
+        records: list[ViewerRequestRecord] = []
         for index, line in inspections:
             answers[index] = viewer.routes.line_route.answers(ViewerLinesRequest([line]), person_id, session.shared)[0]
         if command_lines:
@@ -329,8 +332,10 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             http = ViewerHttpRequest(request_id, received_at, request_id, duration_ms, self.payload_bytes(body), person_id)
             for (index, line), timed in zip(command_lines, command_answers, strict=True):
                 answers[index] = timed.answer
-                viewer.routes.request_log.record_viewer(ViewerRequestRecord(http, line, index, timed.duration_ms, queued_ms, timed.answer.code, timed.points))
+                records.append(ViewerRequestRecord(http, line, index, timed.duration_ms, queued_ms, timed.answer.code, timed.points))
         self.answer(200, {"answers": [asdict(answers[index]) for index in range(len(request.lines))]}, {"X-Journal-Request-Id": request_id})
+        self.wfile.flush()
+        viewer.routes.request_log.record_viewers(records)
 
     @staticmethod
     def payload_bytes(body: bytes | None) -> int:

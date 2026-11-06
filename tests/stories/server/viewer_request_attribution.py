@@ -1,5 +1,8 @@
 import json
 import sqlite3
+from threading import Event
+from time import perf_counter
+from unittest.mock import patch
 
 import pytest
 
@@ -8,6 +11,7 @@ from tests.stories.server.support.server_client import server_story, viewer_answ
 from tests.stories.support.story_checks import expect_value
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from server.request_log import SETTINGS_REFRESH_SECONDS
 
 
 @pytest.fixture
@@ -20,7 +24,23 @@ def attributed_server(new_story):
 
 
 def request(server, cookie, path, body=None):
-    status, headers, text = viewer_answer(server.viewer_port(), path, cookie, "", body)
+    if path not in ("/api/line", "/api/lines", "/api/read-receipts"):
+        status, headers, text = viewer_answer(server.viewer_port(), path, cookie, "", body)
+        assert status == 200, text
+        return headers, json.loads(text)
+    recorded = Event()
+    method = "complete_reads" if path == "/api/read-receipts" else "save_many"
+    save = getattr(server.context.request_log, method)
+
+    def save_recorded(*args):
+        try:
+            save(*args)
+        finally:
+            recorded.set()
+
+    with patch.object(server.context.request_log, method, save_recorded):
+        status, headers, text = viewer_answer(server.viewer_port(), path, cookie, "", body)
+        assert recorded.wait(3), "the server did not finish recording the answered request"
     assert status == 200, text
     return headers, json.loads(text)
 
@@ -92,9 +112,10 @@ def test_contention_is_counted_as_a_drop_without_waiting_or_retrying(attributed_
     expect_value(records(server, cookie), [])
 
 
-def test_retention_loss_and_receipts_for_evicted_rows_are_visible(attributed_server):
+def test_retention_loss_and_receipts_for_evicted_rows_are_visible(attributed_server, monkeypatch):
     server, cookie = attributed_server
     server.story.expect_success("setting set journal.core.developer.tools.hooks.request-log-size 1 --project", actor=server.story.user)
+    monkeypatch.setattr("server.request_log.perf_counter", lambda: perf_counter() + SETTINGS_REFRESH_SECONDS)
     for number in range(3):
         request(server, cookie, "/api/line", line(command_id=f"read-{number}"))
     request(server, cookie, "/api/read-receipts", {"receipts": [
@@ -106,9 +127,10 @@ def test_retention_loss_and_receipts_for_evicted_rows_are_visible(attributed_ser
     expect_value(status["retention_limit"], 1)
 
 
-def test_logging_off_keeps_no_rows_or_receipt_writes(attributed_server):
+def test_logging_off_keeps_no_rows_or_receipt_writes(attributed_server, monkeypatch):
     server, cookie = attributed_server
     server.story.expect_success("setting set journal.core.developer.tools.hooks.request-log false --project", actor=server.story.user)
+    monkeypatch.setattr("server.request_log.perf_counter", lambda: perf_counter() + SETTINGS_REFRESH_SECONDS)
     request(server, cookie, "/api/line", line())
     _, status = request(server, cookie, "/api/request-log-status")
     expect_value(status["enabled"], False)

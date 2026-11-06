@@ -14,7 +14,6 @@ from core.base.caller.caller_request import CallerRequest
 from core.base.refusal import Refusal
 from core.base.type_guards import is_mapping
 from server.client_disconnected import client_disconnected
-from server.request_log import RequestLog
 from server.hook.queue_request import QueueRequest
 from core.base.caller.caller_request import SESSION_VARIABLE
 from server.viewer.viewer_key_route import ViewerKeyRoute
@@ -195,6 +194,7 @@ class RequestHandler(BaseHTTPRequestHandler):
     def answer_cli(self, request: CliRequest) -> None:
         started_at = perf_counter()
         queued_ms = 0.0
+        context = self.journal_server().context
         self.status = 200
         self.send_response(200)
         self.send_header("Content-Type", "text/plain; charset=utf-8")
@@ -202,22 +202,21 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_header("Trailer", EXIT_CODE_TRAILER)
         self.end_headers()
         try:
-            context = self.journal_server().context
             queued = QueueRequest.started("CLI", " ".join(request.argv), request.caller.variables.get(SESSION_VARIABLE, ""), "cli")
             queue = context.hook_database.queue
             turn = queue.observing(queued) if context.viewer.routes.priorities.is_unqueued(request.argv) else queue.cli_turn(queued)
             with turn:
                 queued_ms = (perf_counter() - started_at) * 1000
-                code = CliEndpoint(context.home, ListenerWake(context.listener_thread), context.reported_findings, queue).answer(request, ChunkStream(self.send_chunk))
+                code = CliEndpoint(context.home, ListenerWake(context.listener_thread), context.reported_findings, queue, context.request_log.completed).answer(request, ChunkStream(self.send_chunk))
         except Exception as error:
             self.journal_server().context.files.log_line("".join(traceback.format_exception(error)))
             self.send_chunk(f"{type(error).__name__}: {error}\n".encode())
             code = ERROR_CODE
-        RequestLog(self.journal_server().context.home).record(request.argv, "cli", (perf_counter() - started_at) * 1000, queued_ms, code)
         self.timing.stamp("command_done")
         self.exit_code = code
         self.wfile.write(f"0\r\n{EXIT_CODE_TRAILER}: {code}\r\n\r\n".encode())
         self.wfile.flush()
+        context.request_log.record(request.argv, "cli", (perf_counter() - started_at) * 1000, queued_ms, code)
 
     def send_chunk(self, data: bytes) -> None:
         self.wfile.write(f"{len(data):x}\r\n".encode() + data + b"\r\n")
