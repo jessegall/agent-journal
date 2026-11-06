@@ -15,6 +15,7 @@ from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.viewer.window_tab import WindowTab
 from core.base.viewer.window_source import WindowSource
 from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_priority import WindowPriority
 from core.base.viewer.window_place import WindowPlace
 from core.base.viewer.window_shows import WindowShows
 
@@ -57,6 +58,7 @@ class WindowDeclaration:
     sources: Sequence[WindowSource] = ()
     links: Mapping[str, str] = field(default_factory=dict[str, str])
     slots: Sequence[str] = ()
+    request_priority: WindowPriority = WindowPriority.NORMAL
 
     def problems(self, module_name: str, web_folder: Path, provided: RegistryLines) -> list[str]:
         problems = DeclarationNames.prefix_problems(f"the window {self.name}", self.name, module_name)

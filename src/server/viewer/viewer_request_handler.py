@@ -210,7 +210,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         session = viewer.login.session(token)
         started_at = perf_counter()
         try:
-            turn = nullcontext() if tuple(request.line[:2]) in UNQUEUED_LINES else viewer.routes.queue.viewer_turn(" ".join(request.line))
+            turn = nullcontext() if tuple(request.line[:2]) in UNQUEUED_LINES else viewer.routes.queue.viewer_turn(" ".join(request.line), request.window, viewer.routes.priorities.priority(request.window))
             with turn:
                 queued_ms = (perf_counter() - started_at) * 1000
                 answered = viewer.routes.line_route.answer(request.window, request.line, viewer.login.person_id(token), request.environment, session.shared)
@@ -267,7 +267,8 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         for index, line in inspections:
             answers[index] = viewer.routes.line_route.answers(ViewerLinesRequest([line]), person_id, session.shared)[0]
         if command_lines:
-            with viewer.routes.queue.viewer_turn("; ".join(" ".join(line.line) for _, line in command_lines)):
+            first_window = min((line.window for _, line in command_lines), key=viewer.routes.priorities.priority)
+            with viewer.routes.queue.viewer_turn("; ".join(" ".join(line.line) for _, line in command_lines), first_window, viewer.routes.priorities.priority(first_window)):
                 queued_ms = (perf_counter() - started_at) * 1000
                 command_answers = viewer.routes.line_route.answers(ViewerLinesRequest([line for _, line in command_lines]), person_id, session.shared)
             duration_ms = (perf_counter() - started_at) * 1000
