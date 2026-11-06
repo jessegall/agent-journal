@@ -23,7 +23,7 @@ from core.modules.documents.support.work_context_reader import WorkContextReader
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
-from tests.stories.core.modules.documents.support.trail_fixtures import feature, linked_trail, pending, LinkedTrail, Trail
+from tests.stories.core.modules.documents.support.trail_fixtures import feature, linked_trail, LinkedTrail, Trail
 
 
 class TaskWithoutSource(StoryFixture):
@@ -33,6 +33,19 @@ class TaskWithoutSource(StoryFixture):
         trail = Trail(story)
         edge = next(row for row in trail.links("message:2") if row["link_type"] == "about")
         trail.requested_command(f'link remove {edge["id"]}')
+
+
+class ContextTaskStarted(StoryFixture):
+    parent = LinkedTrail
+
+    def steps(self, story):
+        story.container.get(TaskBriefRequirement).is_required = True
+        Trail(story).command("task start 1")
+
+
+@pytest.fixture
+def started_context(new_story):
+    return Trail(new_story(fixture=ContextTaskStarted))
 
 
 def test_replies_are_visible_in_both_arrival_orders(linked_trail):
@@ -102,7 +115,6 @@ def test_context_continuations_do_not_change_work_source(linked_trail):
     linked_trail.expect_no_link("message:1", "task:2")
 
 
-@pending(6890)
 def test_overview_includes_source_comment_and_original_message(linked_trail):
     before = linked_trail.source_rows(linked_trail.story.agent.id)
     outcome = linked_trail.command("task overview 1")
@@ -110,7 +122,6 @@ def test_overview_includes_source_comment_and_original_message(linked_trail):
     feature(before == linked_trail.source_rows(linked_trail.story.agent.id), "overview changed the selected source")
 
 
-@pending(6890)
 def test_overview_bounded_queries_keep_source_and_counts(linked_trail):
     for number in range(12):
         linked_trail.command(f'task log 1 "Cart log {number}"')
@@ -121,10 +132,9 @@ def test_overview_bounded_queries_keep_source_and_counts(linked_trail):
     feature("context 1" in outcome.output_text and "--page" in outcome.output_text, outcome.output_text)
 
 
-@pending(6890)
-def test_start_return_and_compaction_require_the_same_context(linked_trail):
+def test_start_return_and_compaction_require_the_same_context(started_context):
+    linked_trail = started_context
     linked_trail.story.container.get(TaskBriefRequirement).is_required = True
-    linked_trail.command("task start 1")
     first = linked_trail.command("task overview 1")
     linked_trail.make_task("Interrupting cart work")
     linked_trail.story.advance(timedelta(seconds=1))
@@ -140,7 +150,6 @@ def test_start_return_and_compaction_require_the_same_context(linked_trail):
     linked_trail.story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
 
 
-@pending(6890)
 def test_context_cycles_and_missing_ends_do_not_hold_the_agent(linked_trail):
     linked_trail.person("messages.chat", "message", "delete", "1")
     linked_trail.story.container.get(TaskBriefRequirement).is_required = True
@@ -150,20 +159,21 @@ def test_context_cycles_and_missing_ends_do_not_hold_the_agent(linked_trail):
     linked_trail.story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
 
 
-@pending(6890)
 def test_plan_comments_and_report_references_reach_task_overview(linked_trail):
     linked_trail.command('phase make --plan 1 "Context phase"')
     linked_trail.command("phase place 1 --phase 1")
     linked_trail.person("viewer.shell", "plan", "comment", "1", "Keep the plan approval details")
     linked_trail.command('report make "Plan findings" --abstract "Findings" --body "A long report body" --about plan:1')
-    linked_trail.command('doc make "Cart design" --body "A long design body"')
-    linked_trail.command('plan edit 1 --document-id 1')
+    linked_trail.command('doc make "Overview design" --abstract "Cart scope" --body "A long design body"')
+    linked_trail.command('plan edit 1 --document-id 2')
+    linked_trail.make_task("Check the approved cart behavior")
+    linked_trail.command('phase place 2 --phase 1')
     linked_trail.command('plan ready 1')
-    linked_trail.person("messages.chat", "plan", "approve", "1", "--message", "Approved cart scope")
+    linked_trail.person("messages.chat", "plan", "approve", "1", "--message=Approved cart scope")
     outcome = linked_trail.command("task overview 1")
     feature("Keep the plan approval details" in outcome.output_text and "Plan findings" in outcome.output_text, outcome.output_text)
     feature("A long report body" not in outcome.output_text, "overview expanded a report instead of naming it")
-    feature("Cart design" in outcome.output_text and "Plan approval" in outcome.output_text, outcome.output_text)
+    feature("Overview design" in outcome.output_text and "Plan approval" in outcome.output_text, outcome.output_text)
     feature("A long design body" not in outcome.output_text, "overview expanded the design body")
 
 
@@ -256,13 +266,13 @@ def test_database_errors_are_not_replaced_by_empty_context(linked_trail):
                 story.container.get(WorkContextReader).read(row, Caller(story.agent, 1), WorkContextRequest())
 
 
-def test_overview_failure_does_not_record_a_read_or_release_the_gate(linked_trail):
+def test_overview_failure_does_not_record_a_read_or_release_the_gate(started_context):
+    linked_trail = started_context
     story = linked_trail.story
     story.container.get(TaskBriefRequirement).is_required = True
-    linked_trail.command("task start 1")
     with patch.object(WorkContextSeeds, "statement", return_value=Statement("SELECT missing_context_column FROM messages")):
-        with pytest.raises(sqlite3.OperationalError, match="missing_context_column"):
-            story.run("task overview 1", actor=story.agent)
+        outcome = story.run("task overview 1", actor=story.agent)
+    feature(outcome.code != 0 and "missing_context_column" in outcome.output_text, outcome.output_text)
     with story.container.get(Scopes).read_scope((), story.agent.id, 1):
         feature(not story.container.get(Queries).query(TaskRead).filter(task_id=1, session_agent_id=story.agent.id).exists(), "failed overview recorded TaskRead")
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "journal task overview 1")

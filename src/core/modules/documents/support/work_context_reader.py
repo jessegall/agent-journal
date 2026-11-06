@@ -151,12 +151,17 @@ class WorkContextReader:
         offset = (request.page - 1) * request.page_size
         size = request.page_size
         if primary is not None:
-            pool = pool.matching(Among("id", (primary.id,), negated=True))
+            anchors = (primary,)
+            if request.order is WorkContextOrder.NEWEST:
+                original = conversation.with_text_segment(0, CONTEXT_CHARACTERS).ordered("created_at", "id").first()
+                if original is not None and original.id != primary.id and size > 1:
+                    anchors = (primary, original)
+            pool = pool.matching(Among("id", tuple(message.id for message in anchors), negated=True))
             if request.page == 1:
-                reserved = (primary,)
-                size -= 1
+                reserved = anchors
+                size -= len(anchors)
             else:
-                offset -= 1
+                offset -= len(anchors)
         selected = tuple(pool.rows(pool.select.sliced(size, offset))) if size else ()
         return tuple(sorted((*reserved, *selected), key=lambda message: (message.creation_timestamp().text, message.id)))
 

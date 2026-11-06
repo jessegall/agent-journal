@@ -1,5 +1,5 @@
 from collections.abc import Mapping, Sequence
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 from core.base.caller.caller import Caller
 from core.modules.tasks.models.task import Task
@@ -13,6 +13,7 @@ class TaskConversation(Protocol):
     def json(self) -> Mapping[str, object]: ...
 
 
+@runtime_checkable
 class TaskContextReader(Protocol):
     """Reads a task's authorized conversation without selecting a request."""
 
