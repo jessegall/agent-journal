@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.refusal import Refusal
-from core.base.subcommand.positional_or_flag import add_positional_or_flag
+from core.base.subcommand.argument_alias import declare_argument_alias
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.triggers.models.enums.trigger_match import TriggerMatch
 from core.modules.triggers.support.trigger_trial import TriggerTrial
@@ -16,7 +16,7 @@ class TryTriggerSubcommand(ReadSubcommand[TriggerTrial]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         for name in ("phrases", "sentence"):
-            add_positional_or_flag(parser, name)
+            declare_argument_alias(parser, name)
         parser.add_argument("--match-mode", type=TriggerMatch, choices=list(TriggerMatch), default=TriggerMatch.WORD)
 
     def read(self, arguments: Namespace, caller: Caller) -> TriggerTrial:

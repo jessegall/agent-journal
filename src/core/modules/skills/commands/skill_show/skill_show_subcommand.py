@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
-from core.base.subcommand.positional_or_flag import add_positional_or_flag
+from core.base.subcommand.argument_alias import declare_argument_alias
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.skill_text import SkillText
@@ -20,7 +20,7 @@ class SkillShowSubcommand(ReadSubcommand[SkillText]):
         self.catalogue = catalogue
 
     def arguments(self, parser: ArgumentParser) -> None:
-        add_positional_or_flag(parser, "folder")
+        declare_argument_alias(parser, "folder")
 
     def read(self, arguments: Namespace, caller: Caller) -> SkillText:
         skill = next((entry for entry in self.catalogue.skills() if entry.folder == arguments.folder), None)
