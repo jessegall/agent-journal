@@ -30,6 +30,8 @@ var classifyCases = []struct {
 	{"journal sins src/core", "test run", []string{"reads_files", "runs_long"}, false},
 	{"journal suite run", "test run", []string{"reads_files", "runs_long"}, false},
 	{"journal task list", "journal", []string{}, false},
+	{`pytest tests/cart.py --ask-main "the rounding only shows in a real run"`, "test run", []string{"reads_files", "runs_long"}, false},
+	{`.venv/bin/python -m pytest tests/cart.py --ask-main "the rounding only shows in a real run"`, "test run", []string{"reads_files", "runs_long"}, false},
 }
 
 func TestEachCommandIsClassifiedByItsRowSubcommandAndFlags(t *testing.T) {

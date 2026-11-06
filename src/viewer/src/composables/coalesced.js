@@ -7,14 +7,15 @@ export function coalesced(read, gap) {
     let again = false;
     const answered = () => {
         flying = false;
+        last = Date.now();
         if (!again) return;
         again = false;
         ask();
     };
     const run = () => {
         timer = null;
-        last = Date.now();
         const answer = read();
+        last = Date.now();
         if (!(answer instanceof Promise)) return;
         flying = true;
         answer.catch(() => {}).finally(answered);

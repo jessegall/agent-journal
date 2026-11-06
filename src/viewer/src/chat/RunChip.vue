@@ -19,7 +19,7 @@ const name = computed(() => card.value?.title || card.value?.line || props.item.
 const tone = computed(() => (running.value ? TONES.running : TONES[card.value.state] ?? "var(--text-3)"));
 
 async function load() {
-    const answer = await lineResult(OUTPUT_WINDOW, ["process", "card", String(props.item.target_id)], environment);
+    const answer = await lineResult(OUTPUT_WINDOW, ["process", "card", String(props.item.target_id)], environment, context?.signal);
     if (answer.ok) card.value = answer.value;
 }
 

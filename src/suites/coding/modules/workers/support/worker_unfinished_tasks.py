@@ -4,14 +4,16 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 
 
 class WorkerUnfinishedTasks:
     """The tasks a worker still has to do when it stops: none when it holds no task it can go on with, or when
-    its tests are waiting, since those hand it its next task."""
+    its tests are waiting, since those hand it its next task. While it holds a started task, the tasks it moved
+    past inside a phase count too, since they wait for the end of that phase."""
 
-    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, processes: ProcessQuery) -> None:
-        self.tasks, self.worktrees, self.proofs, self.processes = tasks, worktrees, proofs, processes
+    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, processes: ProcessQuery, phases: WorkerPhases) -> None:
+        self.tasks, self.worktrees, self.proofs, self.processes, self.phases = tasks, worktrees, proofs, processes, phases
 
     def rows(self, worker_id: int) -> tuple[Task, ...]:
         started = self.tasks.started_tasks(worker_id)
@@ -19,7 +21,8 @@ class WorkerUnfinishedTasks:
         worktree = self.worktrees.worker_worktree(worker_id)
         if not started and (queued is None or (worktree is not None and self.proofs.tests_waiting(worktree.id))):
             return ()
-        return (*started, *self.tasks.queued_tasks(worker_id))
+        moved_past = self.phases.moved_past(worker_id) if started else ()
+        return (*moved_past, *started, *self.tasks.queued_tasks(worker_id))
 
     def last_progress_text(self, worker_id: int) -> str:
         tasks = self.tasks.filter(delegated_to=worker_id).all_rows()

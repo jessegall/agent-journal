@@ -15,6 +15,7 @@ class EditSubcommand(Subcommand[EditCommand[Model], Model]):
     the fields named are changed."""
 
     name = "edit"
+    outward = True
 
     def __init__(self, table: Table[Model]) -> None:
         self.table = table

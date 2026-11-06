@@ -3,7 +3,7 @@ import {computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch}
 import {useComposerHeight} from "./composerHeight.js";
 import DumpForm from "./DumpForm.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
-import {Btn, DockStack, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, openInChat, patched, removed, shownMarks, usePins, useRows, withDayLines} from "@journal/window-kit";
+import {READ_RATES, coalesced, Btn, DockStack, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, openInChat, patched, removed, shownMarks, usePins, useRows, withDayLines} from "@journal/window-kit";
 
 const {rows: messages, failure, loaded, load, loadLatest, older, act, context} = useRows("message feed --limit 50", ["message.*"], {incremental: true});
 context.markMotion = ref(false);
@@ -83,13 +83,13 @@ watch(figureVoice, (chosen) => {
 }, {immediate: true});
 async function readTool() {
     heardAt.value = Date.now() / 1000;
-    const answer = await context.read("usage tool");
+    const answer = await context.read("usage tool", {deferred: true});
     runningTool.value = answer.ok ? answer.value.tool : "";
     waitingFor.value = answer.ok ? answer.value.wait_target : "";
     thinking.value = answer.ok ? Boolean(answer.value.thinking) : false;
     asking.value = answer.ok ? Boolean(answer.value.asking) : false;
 }
-context.follow(["hook_call.*", "dock_item.*", "process_part.*"], readTool);
+context.follow(["hook_call.*", "dock_item.*", "process_part.*"], coalesced(readTool, READ_RATES.runningTool));
 readTool();
 const FOLD_AFTER_MS = 500;
 const ECHO_SLACK_MS = 2000;
@@ -232,7 +232,7 @@ async function removeMessage(message) {
     sendFailure.value = result.ok ? "" : result.error;
 }
 // the arrow up in an empty box brings back the newest message of yours the agent has not read, to change it; the arrow down or escape leaves it
-const lastOwn = () => messages.value.find((row) => ["user", "comment"].includes(row.type));
+const lastOwn = () => outgoing.value.at(-1) ?? messages.value.find((row) => ["user", "comment"].includes(row.type));
 function editUp(event) {
     if (text.value || !lastOwn()) return;
     event.preventDefault();
@@ -253,6 +253,8 @@ async function saveEdit() {
     const words = text.value;
     row.text = words;
     leaveEdit();
+    // a message on its way has no number to edit: it goes with these words, or is edited once its send has answered
+    if (row.local) return;
     const result = await context.run(["message", "edit", String(row.id), "--text", words]);
     sendFailure.value = result.ok ? "" : result.error;
     if (!result.ok) {
@@ -269,17 +271,33 @@ function sentLine(answering, commented, line, files) {
     return answering && !files.length ? ["message", "reply", String(answering.id), line] : ["message", "send", line, ...files];
 }
 
-async function send() {
+// messages leave one at a time, in the order they were written, each with the words its echo holds when its turn comes; words changed after it left follow as an edit
+let delivered = Promise.resolve();
+async function deliver(echo, answering, commented, files, sent) {
+    let words = echo.text;
+    const result = await context.run(sentLine(answering, commented, words, files));
+    if (!result.ok) (sendFailure.value = result.error, text.value = echo.text === sent.line ? sent.text : echo.text, attached.value = sent.attached, commenting.value = commented);
+    while (result.ok && echo.text !== words) {
+        words = echo.text;
+        const edited = await context.run(["message", "edit", String(result.value.id), "--text", words]);
+        sendFailure.value = edited.ok ? "" : edited.error;
+    }
+    await load();
+    outgoing.value = outgoing.value.filter((other) => other.id !== echo.id);
+}
+
+function send() {
     takeFromBox();
     if (editing.value) return saveEdit();
-    const sent = {text: text.value, attached: attached.value};
+    const sent = {text: text.value, attached: attached.value, line: text.value || attached.value.map((entry) => entry.name).join(", ")};
     const files = sent.attached.flatMap((entry) => ["--file", entry.pending]);
-    const line = sent.text || sent.attached.map((entry) => entry.name).join(", ");
+    const line = sent.line;
     const answering = replying.value;
     const commented = commenting.value;
     const comment = commented && !files.length;
     const echo = {id: `sending-${Date.now()}`, type: comment ? "comment" : "user", commented_row: comment ? `message:${commented.id}` : "", text: line, created_at: Date.now(), files: [], local: true};
     outgoing.value = [...outgoing.value, echo];
+    const held = outgoing.value.at(-1);
     // a sent message takes the reader to the foot at once, also one who had scrolled up, so the rows watch below sets the scroll with no glide
     atFoot = true;
     awayFromFoot.value = false;
@@ -290,15 +308,8 @@ async function send() {
     focusComposer();
     replying.value = null;
     commenting.value = null;
-    const words = sentLine(answering, commented, line, files);
-    if (!answering && !commented) {
-        const target = await context.read("agent main");
-        if (target.ok && target.value?.id) words.push("--target-agent", String(target.value.id));
-    }
-    const result = await context.run(words);
-    if (!result.ok) (sendFailure.value = result.error, text.value = sent.text, attached.value = sent.attached, commenting.value = commented);
-    await load();
-    outgoing.value = outgoing.value.filter((other) => other.id !== echo.id);
+    delivered = delivered.then(() => deliver(held, answering, commented, files, sent));
+    return delivered;
 }
 
 // enter sends, with or without the command key; shift enter is a new line, and an open input method keeps its enter
@@ -441,7 +452,7 @@ async function runCommand(pin) {
             <template v-if="paging">
                 <Skeleton shape="older" label="Loading older messages" />
             </template>
-            <RowList :rows="rows" :failure="failure" :loaded="loaded" :arrival="arrival" shape="messages" empty="No messages yet" hint="Send a message below to start a conversation.">
+            <RowList :rows="rows" :failure="outgoing.length ? '' : failure" :loaded="loaded" :arrival="arrival" shape="messages" empty="No messages yet" hint="Send a message below to start a conversation.">
                 <template #default="{row}">
                     <SwitchCase :value="row.type">
                         <template #day>

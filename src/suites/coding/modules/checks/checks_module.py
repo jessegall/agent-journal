@@ -1,5 +1,5 @@
 from core.modules.tasks.support.task_wait_attempts import TaskWaitAttempts
-from suites.coding.modules.checks.support.task_wait_attempts import CheckTaskWaitAttempts
+from suites.coding.modules.checks.support.check_task_wait_attempts import CheckTaskWaitAttempts
 from suites.coding.modules.checks.migrations.m008_open_check_hidden_index import OpenCheckHiddenIndexMigration
 from suites.coding.modules.checks.migrations.m007_check_task_wait_index import CheckTaskWaitIndexMigration
 from suites.coding.modules.checks.migrations.m006_open_check_result_index import OpenCheckResultIndexMigration

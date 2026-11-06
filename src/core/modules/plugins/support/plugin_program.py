@@ -10,6 +10,7 @@ from core.base.change.event_log import HIDDEN
 from core.base.journal_home import JournalHome
 from core.base.model.event_form import EventForm
 from core.base.running_scripts import RunningScripts
+from core.base.script_stop import ScriptStop
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.plugin_call import PluginCall
@@ -54,6 +55,8 @@ class PluginProgram:
         program = manifest.program if named_service else call.script or manifest.program
         if named_service and not program:
             raise PluginFaultError(f"its service {named_service} is not answering")
+        if self.scripts.server_stopped:
+            raise PluginStoppedError(ScriptStop.SERVER)
         try:
             process = subprocess.Popen([str(folder / program)], cwd=folder, env=self.environment(manifest.name, call.environment), stdin=subprocess.PIPE,
                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True)

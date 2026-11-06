@@ -467,6 +467,17 @@
                     ],
                     "type": "boolean"
                 },
+                "documents": {
+                    "$ref": "#/definitions/step",
+                    "description": "asked of a comment (`\"select\": \"comment\"`), the declaration the comment is written for passes the step: the node it sits above, or the node whose line it ends. A comment that documents nothing passes no step, so a rule can find the comments that are written about something and the ones that are written about nothing",
+                    "examples": [
+                        {
+                            "documents": {
+                                "is": "type-declaration"
+                            }
+                        }
+                    ]
+                },
                 "duplicated": {
                     "$ref": "#/definitions/bounds",
                     "description": "that many functions of the codebase, it among them, have its body, read from the tree, blind to spacing and comments",
@@ -1523,6 +1534,17 @@
                         }
                     ],
                     "type": "boolean"
+                },
+                "documents": {
+                    "$ref": "#/definitions/step",
+                    "description": "asked of a comment (`\"select\": \"comment\"`), the declaration the comment is written for passes the step: the node it sits above, or the node whose line it ends. A comment that documents nothing passes no step, so a rule can find the comments that are written about something and the ones that are written about nothing",
+                    "examples": [
+                        {
+                            "documents": {
+                                "is": "type-declaration"
+                            }
+                        }
+                    ]
                 },
                 "duplicated": {
                     "$ref": "#/definitions/bounds",
@@ -2591,6 +2613,17 @@
                     ],
                     "type": "boolean"
                 },
+                "documents": {
+                    "$ref": "#/definitions/step",
+                    "description": "asked of a comment (`\"select\": \"comment\"`), the declaration the comment is written for passes the step: the node it sits above, or the node whose line it ends. A comment that documents nothing passes no step, so a rule can find the comments that are written about something and the ones that are written about nothing",
+                    "examples": [
+                        {
+                            "documents": {
+                                "is": "type-declaration"
+                            }
+                        }
+                    ]
+                },
                 "duplicated": {
                     "$ref": "#/definitions/bounds",
                     "description": "that many functions of the codebase, it among them, have its body, read from the tree, blind to spacing and comments",
@@ -3628,6 +3661,17 @@
                         }
                     ],
                     "type": "boolean"
+                },
+                "documents": {
+                    "$ref": "#/definitions/step",
+                    "description": "asked of a comment (`\"select\": \"comment\"`), the declaration the comment is written for passes the step: the node it sits above, or the node whose line it ends. A comment that documents nothing passes no step, so a rule can find the comments that are written about something and the ones that are written about nothing",
+                    "examples": [
+                        {
+                            "documents": {
+                                "is": "type-declaration"
+                            }
+                        }
+                    ]
                 },
                 "duplicated": {
                     "$ref": "#/definitions/bounds",
@@ -4688,6 +4732,17 @@
                     ],
                     "type": "boolean"
                 },
+                "documents": {
+                    "$ref": "#/definitions/step",
+                    "description": "asked of a comment (`\"select\": \"comment\"`), the declaration the comment is written for passes the step: the node it sits above, or the node whose line it ends. A comment that documents nothing passes no step, so a rule can find the comments that are written about something and the ones that are written about nothing",
+                    "examples": [
+                        {
+                            "documents": {
+                                "is": "type-declaration"
+                            }
+                        }
+                    ]
+                },
                 "duplicated": {
                     "$ref": "#/definitions/bounds",
                     "description": "that many functions of the codebase, it among them, have its body, read from the tree, blind to spacing and comments",
@@ -5732,6 +5787,17 @@
                         }
                     ],
                     "type": "boolean"
+                },
+                "documents": {
+                    "$ref": "#/definitions/step",
+                    "description": "asked of a comment (`\"select\": \"comment\"`), the declaration the comment is written for passes the step: the node it sits above, or the node whose line it ends. A comment that documents nothing passes no step, so a rule can find the comments that are written about something and the ones that are written about nothing",
+                    "examples": [
+                        {
+                            "documents": {
+                                "is": "type-declaration"
+                            }
+                        }
+                    ]
                 },
                 "duplicated": {
                     "$ref": "#/definitions/bounds",
@@ -8066,6 +8132,17 @@
                     ],
                     "type": "boolean"
                 },
+                "documents": {
+                    "$ref": "#/definitions/step",
+                    "description": "asked of a comment (`\"select\": \"comment\"`), the declaration the comment is written for passes the step: the node it sits above, or the node whose line it ends. A comment that documents nothing passes no step, so a rule can find the comments that are written about something and the ones that are written about nothing",
+                    "examples": [
+                        {
+                            "documents": {
+                                "is": "type-declaration"
+                            }
+                        }
+                    ]
+                },
                 "duplicated": {
                     "$ref": "#/definitions/bounds",
                     "description": "that many functions of the codebase, it among them, have its body, read from the tree, blind to spacing and comments",
@@ -9278,6 +9355,17 @@
                         }
                     ],
                     "type": "boolean"
+                },
+                "documents": {
+                    "$ref": "#/definitions/step",
+                    "description": "asked of a comment (`\"select\": \"comment\"`), the declaration the comment is written for passes the step: the node it sits above, or the node whose line it ends. A comment that documents nothing passes no step, so a rule can find the comments that are written about something and the ones that are written about nothing",
+                    "examples": [
+                        {
+                            "documents": {
+                                "is": "type-declaration"
+                            }
+                        }
+                    ]
                 },
                 "duplicated": {
                     "$ref": "#/definitions/bounds",
@@ -10802,6 +10890,17 @@
                     ],
                     "type": "boolean"
                 },
+                "documents": {
+                    "$ref": "#/definitions/step",
+                    "description": "asked of a comment (`\"select\": \"comment\"`), the declaration the comment is written for passes the step: the node it sits above, or the node whose line it ends. A comment that documents nothing passes no step, so a rule can find the comments that are written about something and the ones that are written about nothing",
+                    "examples": [
+                        {
+                            "documents": {
+                                "is": "type-declaration"
+                            }
+                        }
+                    ]
+                },
                 "duplicated": {
                     "$ref": "#/definitions/bounds",
                     "description": "that many functions of the codebase, it among them, have its body, read from the tree, blind to spacing and comments",
@@ -12209,6 +12308,17 @@
                         }
                     ],
                     "type": "boolean"
+                },
+                "documents": {
+                    "$ref": "#/definitions/step",
+                    "description": "asked of a comment (`\"select\": \"comment\"`), the declaration the comment is written for passes the step: the node it sits above, or the node whose line it ends. A comment that documents nothing passes no step, so a rule can find the comments that are written about something and the ones that are written about nothing",
+                    "examples": [
+                        {
+                            "documents": {
+                                "is": "type-declaration"
+                            }
+                        }
+                    ]
                 },
                 "duplicated": {
                     "$ref": "#/definitions/bounds",
@@ -14797,6 +14907,17 @@
                     ],
                     "type": "boolean"
                 },
+                "documents": {
+                    "$ref": "#/definitions/step",
+                    "description": "asked of a comment (`\"select\": \"comment\"`), the declaration the comment is written for passes the step: the node it sits above, or the node whose line it ends. A comment that documents nothing passes no step, so a rule can find the comments that are written about something and the ones that are written about nothing",
+                    "examples": [
+                        {
+                            "documents": {
+                                "is": "type-declaration"
+                            }
+                        }
+                    ]
+                },
                 "duplicated": {
                     "$ref": "#/definitions/bounds",
                     "description": "that many functions of the codebase, it among them, have its body, read from the tree, blind to spacing and comments",
@@ -16633,6 +16754,17 @@
                         }
                     ],
                     "type": "boolean"
+                },
+                "documents": {
+                    "$ref": "#/definitions/step",
+                    "description": "asked of a comment (`\"select\": \"comment\"`), the declaration the comment is written for passes the step: the node it sits above, or the node whose line it ends. A comment that documents nothing passes no step, so a rule can find the comments that are written about something and the ones that are written about nothing",
+                    "examples": [
+                        {
+                            "documents": {
+                                "is": "type-declaration"
+                            }
+                        }
+                    ]
                 },
                 "duplicated": {
                     "$ref": "#/definitions/bounds",

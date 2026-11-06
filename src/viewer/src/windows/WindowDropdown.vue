@@ -113,7 +113,7 @@ const placed = computed(() => {
 }
 
 .dropdown[data-dropdown="agents.helpers"] {
-    width: min(360px, calc(100vw - 16px));
+    width: min(460px, calc(100vw - 16px));
 }
 
 .group-head {

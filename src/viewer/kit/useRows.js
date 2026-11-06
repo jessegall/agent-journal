@@ -70,7 +70,8 @@ export function useRows(line, patterns, {incremental = false} = {}) {
         const result = await context.read(context.shared ? `${context.shared.model} show ${context.shared.id}` : line);
         if (turn !== latestLoad) return;
         const fresh = result.ok ? (context.shared ? [result.value] : result.value.rows) : [];
-        rows.value = take(fresh);
+        // a read that failed keeps the rows held: it says nothing about them
+        if (result.ok) rows.value = take(fresh);
         listing.value = result.ok ? result.value : null;
         const reach = fresh.length ? Math.min(...fresh.map((row) => row.id)) : 0;
         if (result.ok && !rows.value.some((row) => row.id < reach)) more.value = !context.shared && followed(result.value, pageSize);

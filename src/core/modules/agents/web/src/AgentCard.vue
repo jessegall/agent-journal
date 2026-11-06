@@ -1,6 +1,6 @@
 <script setup>
 import {computed, defineAsyncComponent, onUnmounted, ref, watch} from "vue";
-import {age, perHour, Btn, EmptyState, FoldGroup, Icon, InnerTabs, loadWindowComponent, SwitchCase, TabBody, TimeAgo, peekRef, useNow, useWindow} from "@journal/window-kit";
+import {READ_RATES, coalesced, age, perHour, Btn, EmptyState, FoldGroup, Icon, InnerTabs, loadWindowComponent, SwitchCase, TabBody, TimeAgo, peekRef, useNow, useWindow} from "@journal/window-kit";
 import InformationBar from "../../../../../viewer/src/shell/InformationBar.vue";
 import AgentCommand from "./AgentCommand.vue";
 import AgentTaskGroup from "./AgentTaskGroup.vue";
@@ -65,11 +65,11 @@ const noCommandNote = ref("");
 const showsCommand = computed(() => props.row.role !== "main" && (!props.row.ended_at || stoppedWithWork.value || props.waitReason));
 async function readCommand() {
     if (!showsCommand.value) return;
-    const answer = await context.read(`usage tool --agent ${props.row.id}`);
+    const answer = await context.read(`usage tool --agent ${props.row.id}`, {deferred: true});
     runningCommand.value = answer.ok ? answer.value.tool : "";
     noCommandNote.value = answer.ok ? answer.value.note : "";
 }
-const stopFollowing = context.follow(["hook_call.*", "process_part.*"], readCommand);
+const stopFollowing = context.follow(["hook_call.*", "process_part.*"], coalesced(readCommand, READ_RATES.agentCommand));
 onUnmounted(() => stopFollowing?.());
 readCommand();
 </script>

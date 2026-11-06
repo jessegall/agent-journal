@@ -6,23 +6,27 @@ from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
+from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 
 
 class DeliveredWorkStopRule(DriverRule):
     """A main agent that stops while a worker's delivered work waits for its checks is refused once per
-    delivery, and always while a proof with no test waits, since nothing else ever moves it."""
+    delivery, and always while a proof with no test waits, since nothing else ever moves it. A worker still
+    working through a phase has nothing waiting: the end of the phase checks those proofs."""
 
     name = "workers.delivered-work-at-stop"
     hook = HookEventName.STOP
     drivers = ["coding.builder", "coding.orchestrator"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, delivered: WorkerWorktrees, proofs: ProofQuery, history: HookHistory) -> None:
-        self.delivered, self.proofs, self.hook_history = delivered, proofs, history
+    def __init__(self, delivered: WorkerWorktrees, proofs: ProofQuery, history: HookHistory, phases: WorkerPhases) -> None:
+        self.delivered, self.proofs, self.hook_history, self.phases = delivered, proofs, history, phases
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         for worktree in self.delivered.main_worktrees(hook.agent_id):
+            if self.phases.is_working_through_phase(worktree):
+                continue
             untested = [proof.id for proof in self.proofs.delivered_proofs(worktree.id).filter(test_command="").oldest().all_rows()]
             if untested:
                 return RuleAnswer.refused(PROOF_CHECK.nudge(worker=worktree.session_agent_id, task=worktree.task_id, proofs=', '.join(map(str, untested))))

@@ -1,3 +1,4 @@
+import json
 import os
 import select
 import shlex
@@ -83,16 +84,22 @@ def viewer_page(journal) -> PluginPage:
     return PluginPage(journal, lambda line: server.viewer_line_value(cookie, {"window": WINDOW, "line": line, "environment": "main"}))
 
 
-def started_agent(journal, client: Path) -> str:
-    details = expect_line(journal, client, "agent", "start", "s-1", "claude", "main", "--environment", "main")
-    return next(line for line in details.splitlines() if line.startswith("id: ")).removeprefix("id: ")
+def started_agent(journal, client: Path) -> None:
+    details = expect_line(journal, client, "agent", "start", "s-1", "claude", "main", "--environment", "main", "--json")
+    (journal.home.folder.parent / "agent-id").write_text(str(json.loads(details.splitlines()[0])["id"]))
+
+
+def agent_run_line(journal, client: Path, command: str) -> str:
+    """The shell text that runs a command in the checkout of the agent started_agent wrote down, once it is started."""
+    line = own_journal_line(journal, client, "plugin", "run", "--agent", "AGENT_ID", "--", "sh", "-c", command)
+    return line.replace("AGENT_ID", f'"$(cat {shlex.quote(str(journal.home.folder.parent / "agent-id"))})"')
 
 
 def test_s29_a_script_that_writes_through_the_journal_does_not_wait_or_start_itself(journal, client):
     start_with_plugin(journal, client, {"event": TASK_CREATED, "listen": "script.sh"}, own_journal_line(journal, client, "task", "log", "1", "seen"))
     expect_line(journal, client, *SECOND_JOB_LINE)
     assert len(script_calls(journal, "script.sh")) == 1 and own_write(journal) == ["0"], (script_calls(journal, "script.sh"), own_write(journal))
-    assert "seen" in expect_line(journal, client, "task", "inspect", "1")
+    assert "seen" in expect_line(journal, client, "task", "overview", "1")
     assert expect_line(journal, client, "task", "list").count(SECOND_JOB_TITLE) == 1
 
 
@@ -109,7 +116,7 @@ def test_s29_when_the_change_is_then_refused_the_own_write_of_the_script_stays(j
     start_with_plugin(journal, client, {"event": TASK_CREATED, "guard": "script.sh"}, script)
     finished = run_line(journal, client, *SECOND_JOB_LINE)
     assert finished.returncode == 1 and REFUSAL in finished.stdout + finished.stderr, finished.stdout + finished.stderr
-    assert "seen" in expect_line(journal, client, "task", "inspect", "1")
+    assert "seen" in expect_line(journal, client, "task", "overview", "1")
     assert SECOND_JOB_TITLE not in expect_line(journal, client, "task", "list")
 
 
@@ -160,7 +167,7 @@ def test_s58_a_journal_line_inside_plugin_run_stays_marked_as_the_plugin(journal
     finished = journal.home.folder.parent / "finished"
     os.mkfifo(finished)
     inner = journal_line(journal, client, "task", "edit", "1", "--title", "Written inside the run")
-    script =f'{own_journal_line(journal, client, "plugin", "run", "--agent", "1", "--", "sh", "-c", inner)}\necho finished > \'{finished}\''
+    script = f'{agent_run_line(journal, client, inner)}\necho finished > \'{finished}\''
     start_with_plugin(journal, client, {"event": "core.pins.pin.created", "commit": "script.sh"}, script, {"event": TASK_UPDATED, "guard": "refuse.sh"}, scripts={"refuse.sh": EVENT_SCRIPTS["refuse.sh"]})
     started_agent(journal, client)
     expect_line(journal, client, "pin", "make", "Notes", "--link", "https://example.org/notes", "--environment", "main")
@@ -174,7 +181,7 @@ def test_s58_switching_the_plugin_off_stops_its_run(journal, client):
     for pipe in (started, finished, never_written):
         os.mkfifo(pipe)
     hung = f"echo started > {started}; read answer < {never_written}"
-    script = f'{own_journal_line(journal, client, "plugin", "run", "--agent", "1", "--", "sh", "-c", hung)}\necho finished > \'{finished}\''
+    script = f'{agent_run_line(journal, client, hung)}\necho finished > \'{finished}\''
     start_with_plugin(journal, client, {"event": "core.pins.pin.created", "commit": "script.sh"}, script)
     started_agent(journal, client)
     expect_line(journal, client, "actor", "make", "user", "Ada")

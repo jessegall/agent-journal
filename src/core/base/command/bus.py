@@ -4,7 +4,7 @@ from core.base.clock import Clock
 from core.base.command.command import Command
 from core.base.command.context import Context
 from core.base.command.handler import Handler, is_handler_class
-from core.base.command.outside_run_rollback import OutsideRunRollback
+from core.base.command.outside_run_rollback_error import OutsideRunRollbackError
 from core.base.command.outside_runs import NO_REQUEST_REASON, RUNS_ONCE_REASON, OutsideRuns
 from core.base.command.script_policy import ScriptPolicy
 from core.base.container import Container
@@ -51,7 +51,7 @@ class Bus:
                         self.deadline.check()
                     self.timing.stamp("committed")
                     return command_output
-                except OutsideRunRollback as rollback:
+                except OutsideRunRollbackError as rollback:
                     rollback.work.run(runs)
 
     def outside_runs(self, handler: Handler[Command[object], object], plugin_script: str) -> OutsideRuns:

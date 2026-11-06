@@ -62,7 +62,7 @@ test("a new browser with no kept layout waits for the journal", () => {
 test("a window's own skeleton stays over it until its reads have answered", async () => {
     vi.useFakeTimers();
     let answer;
-    vi.stubGlobal("fetch", vi.fn(() => new Promise((resolve) => (answer = resolve))));
+    vi.stubGlobal("fetch", vi.fn((url) => (url === "/api/read-lines" ? Promise.resolve({ok: true, status: 200, json: async () => ({reads: ["usage show"]})}) : new Promise((resolve) => (answer = resolve)))));
     const Reading = {
         setup() {
             const context = inject(WINDOW_CONTEXT);

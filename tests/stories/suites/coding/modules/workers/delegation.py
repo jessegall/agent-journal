@@ -330,6 +330,35 @@ def test_the_board_lists_tasks_delegated_to_a_worker_in_a_group_of_their_own_apa
 
 
 
+def expect_card_listed(story, show: str, agent_id: int, listed: bool) -> None:
+    outcome = story.run(f"agent cards --environment main --show {show} --json", actor=story.agent)
+    assert outcome.code == 0, outcome.output_text
+    rows = json.loads(outcome.output_text)["rows"]
+    assert (agent_id in [row["id"] for row in rows]) is listed, rows
+
+
+def test_a_merged_worker_with_a_task_still_assigned_is_not_listed_as_running(new_story):
+    story, repository, worker = delegated_story(new_story)
+    expect_card_listed(story, "running", worker.id, True)
+    third = story.new_row_id('task make "Check it later" --brief "Check the cart later"', actor=story.agent)
+    story.expect_success(f"task assign {third} --to {worker.id}", actor=story.agent)
+    story.expect_success(f'task block {third} --reason "Waits for the release"', actor=story.agent)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
+    story.run("worker next", actor=worker)
+    repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
+    story.expect_success('proof make 1 --task 2 "cart.py:1, the second story"', actor=worker)
+    story.run("worker deliver", actor=worker)
+    story.run_listeners()
+    story.run("proof check 1", actor=story.agent)
+    story.run("proof check 2", actor=story.agent)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    expect_card_listed(story, "running", worker.id, False)
+    expect_card_listed(story, "retired", worker.id, True)
+
+
 def test_a_workers_facts_carry_its_model_profile_and_name_with_no_status_file(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository_environment(story)

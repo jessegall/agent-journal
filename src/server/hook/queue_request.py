@@ -10,10 +10,11 @@ class QueueRequest:
     event: str
     session: str
     queued_at: float
+    priority: str = ""
 
     @classmethod
-    def started(cls, sender: str, event: str, session: str = "") -> "QueueRequest":
-        return cls(sender, event, session, monotonic())
+    def started(cls, sender: str, event: str, session: str = "", priority: str = "") -> "QueueRequest":
+        return cls(sender, event, session, monotonic(), priority)
 
     def entry(self) -> RequestQueueEntry:
-        return RequestQueueEntry(self.sender, self.event, self.session, (monotonic() - self.queued_at) * 1000)
+        return RequestQueueEntry(self.sender, self.event, self.session, (monotonic() - self.queued_at) * 1000, self.priority)

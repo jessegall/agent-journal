@@ -11,6 +11,7 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 PIPE_TOKENS = frozenset(("|", "|&", ">", ">>", ">&", "&>", "--tail", "--head", "--cut"))
+FIRST_POINT = 1
 
 
 class MakeProofHandler(Handler[MakeProof, Proof]):
@@ -28,6 +29,8 @@ class MakeProofHandler(Handler[MakeProof, Proof]):
             raise Refusal("only a worker with a worktree out makes proofs", "journal worker-worktree list shows the worktrees")
         if command.task_id != worktree.task_id:
             raise Refusal(f"the worker's current task is {worktree.task_id}, not {command.task_id}", "name the task this proof is for")
+        if command.point < FIRST_POINT:
+            raise Refusal(f"the points of a brief start at {FIRST_POINT}, not {command.point}", f"journal task show {command.task_id} lists them")
         if self.is_piped(command.test_command):
             raise Refusal("a proof's test runs without a pipe, a redirect or a reading flag such as --tail, since the journal reads its whole output", "give the bare test command")
         existing = self.proofs.worktree_proofs(worktree.id).filter(point=command.point, task_id=worktree.task_id).first()

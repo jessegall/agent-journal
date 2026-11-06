@@ -29,20 +29,36 @@ export function windowContext({window, environment, agent, visible, permissions,
     const startedAt = performance.now();
     let reading = 0;
     let quiet = 0;
+    let markLoaded = () => {};
+    // resolved once the window has answered, or has ended, which is when a deferred read may go: an ended window's signal cancels it before it leaves
+    const loaded = new Promise((resolve) => (markLoaded = resolve));
+    requests.signal.addEventListener("abort", markLoaded, {once: true});
     const settle = () => {
         clearTimeout(quiet);
         quiet = setTimeout(() => {
-            if (reading === 0) afterSkeletonMinimum(startedAt, () => (answered.value = true));
+            if (reading !== 0) return;
+            afterSkeletonMinimum(startedAt, () => {
+                answered.value = true;
+                markLoaded();
+            });
         }, QUIET_AFTER_READS_MS);
     };
-    const read = (line, {unbatched = false} = {}) => {
-        const last = recent.get(line);
-        if (last && performance.now() - last.at < READ_COALESCE_MS) return last.answer;
+    const readNow = (line, unbatched) => {
         reading += 1;
-        const answer = lineRead(window, line, environment, requests.signal, unbatched).finally(() => {
+        return lineResult(window, line, environment, requests.signal, unbatched).finally(() => {
             reading -= 1;
             settle();
         });
+    };
+    // a deferred read is not counted among the reads the window waits for, and leaves once the window has loaded
+    const readAfterLoad = (line, unbatched) => {
+        settle();
+        return loaded.then(() => (requests.signal.aborted ? CANCELLED : lineResult(window, line, environment, requests.signal, unbatched)));
+    };
+    const read = (line, {unbatched = false, deferred = false} = {}) => {
+        const last = recent.get(line);
+        if (last && performance.now() - last.at < READ_COALESCE_MS) return last.answer;
+        const answer = deferred && !answered.value ? readAfterLoad(line, unbatched) : readNow(line, unbatched);
         recent.set(line, {answer, at: performance.now()});
         return answer;
     };
@@ -64,8 +80,9 @@ export function windowContext({window, environment, agent, visible, permissions,
         shared,
         read,
         run: (line) => lineResult(window, line, environment, requests.signal),
-        upload: (file) => uploaded(file, requests.signal),
+        upload: (file) => uploaded(file, window, requests.signal),
         cancel: () => requests.abort(),
+        signal: requests.signal,
         subscriptions,
         follow: (patterns, heard) => subscriptions.follow(window, patterns.filter((pattern) => events.some((declared) => matches(declared, pattern))), (event) => {
             recent.clear();
@@ -99,9 +116,9 @@ const UNREACHABLE = "The journal did not answer, so this may or may not have gon
 
 // a request cancelled by its signal answers CANCELLED, whether it was cut off or its answer came after, so a window that has
 // gone never draws the answer
-export async function lineResult(window, line, environment, signal = undefined, unbatched = false) {
+async function lineAnswer(asked, signal) {
     try {
-        const answer = await lineBatch.add({window, line: Array.isArray(line) ? line : lineWords(line), environment}, signal, unbatched);
+        const answer = await asked();
         if (signal?.aborted) return CANCELLED;
         return answer.code === 0 ? {ok: true, value: answer.value} : {ok: false, failure: FAILURES[answer.code] || "fault", error: refusalWords(answer.error)};
     } catch (error) {
@@ -111,17 +128,24 @@ export async function lineResult(window, line, environment, signal = undefined, 
 }
 
 // a read the server could not answer waits for the server to come back and asks again, so a window never draws the restart as a failure
-async function lineRead(window, line, environment, signal, unbatched = false) {
-    const answer = await lineResult(window, line, environment, signal, unbatched);
+async function readAnswer(body, signal, unbatched) {
+    const answer = await lineAnswer(() => lineBatch.read(body, signal, unbatched), signal);
     if (answer.failure !== "unreachable" || !covered()) return answer;
     await serverBack();
-    return signal.aborted ? CANCELLED : lineRead(window, line, environment, signal, unbatched);
+    return signal.aborted ? CANCELLED : readAnswer(body, signal, unbatched);
+}
+
+// a line of a window, read or write, whichever way it was asked: the server's knowledge of its command decides, and only a read is joined
+export async function lineResult(window, line, environment, signal = undefined, unbatched = false) {
+    const body = {window, line: Array.isArray(line) ? line : lineWords(line), environment};
+    if (!(await transport.isRead(body.line))) return lineAnswer(() => lineBatch.write(body), signal);
+    return transport.joined(JSON.stringify(body), (stop) => readAnswer(body, stop, unbatched), signal).catch(() => CANCELLED);
 }
 
 // a file the person attached, sent to the journal to wait for the message that names it: answers {ok, value: its pending name}
-async function uploaded(file, signal = undefined) {
+async function uploaded(file, window, signal = undefined) {
     try {
-        const response = await transport.raw(`/api/files?name=${encodeURIComponent(file.name)}`, {signal, method: "POST", headers: {"Content-Type": "application/octet-stream"}, body: file});
+        const response = await transport.raw(`/api/files?name=${encodeURIComponent(file.name)}`, {method: "POST", headers: {"Content-Type": "application/octet-stream"}, body: file}, {window, line: `upload ${file.name}`});
         const answer = await response.json();
         if (signal?.aborted) return CANCELLED;
         return response.ok ? {ok: true, value: answer.file} : {ok: false, failure: "refused", error: answer.error ?? "the file was not taken"};

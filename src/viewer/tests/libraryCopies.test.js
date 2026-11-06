@@ -1,4 +1,5 @@
 import {afterEach, expect, test, vi} from "vitest";
+import {READ_RATES} from "../src/composables/readRates.js";
 import {context, mounted, settle} from "./support/windowContext.js";
 import TeamsPage from "../../core/modules/library/web/src/TeamsPage.vue";
 import {diffRows} from "../../core/modules/library/web/src/copyDiff.js";
@@ -176,7 +177,7 @@ test("Sync now runs one round and reads the page again", async () => {
     expect(result.reads.length).toBeGreaterThan(reads);
 });
 
-test("the page reads again when a copy changes and every five seconds", async () => {
+test("the page reads again when a copy changes and at its read rate", async () => {
     const delays = [];
     const real = globalThis.setTimeout;
     vi.spyOn(globalThis, "setTimeout").mockImplementation((callback, delay, ...rest) => {
@@ -186,7 +187,7 @@ test("the page reads again when a copy changes and every five seconds", async ()
     const result = window([]);
     await mounted(TeamsPage, result);
     expect(result.followed).toEqual([["library_copy.*"]]);
-    expect(delays).toContain(5000);
+    expect(delays).toContain(READ_RATES.libraryCopies);
 });
 
 test("the difference of two texts marks the lines only in one of them", () => {

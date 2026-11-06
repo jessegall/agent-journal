@@ -7,5 +7,6 @@ class RequestQueueEntry:
     event: str
     session: str
     waited_ms: float
+    priority: str = ""
 
 

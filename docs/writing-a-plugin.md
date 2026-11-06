@@ -88,7 +88,7 @@ A cut worktree starts from `base_commit` of the branch. Nothing promises that it
 
 ## A worker's merge
 
-`suites.coding.workers.worker_worktree.merge` in the commit form fires once for each merge, after the merge has committed, and never for a refused merge or one that clashed. The guard and listen forms are skipped, because a merge runs only once. Its `row` holds `session_agent_id`, the worker; `task_id` and `merged_task_ids`, its tasks; `commit_before_merge` and `commit_after_merge`, the merged range on `base_branch`; `environment_id`; and `folder`, the worktree's path as a name, since the folder may be gone by then. `journal plugin changes --since <commit_before_merge>` lists the files.
+`suites.coding.workers.worker_worktree.merge` in the commit form fires once for each merge, after the merge has committed, and never for a refused merge or one that clashed: a merge that clashes returns the worktree to its worker and fires `suites.coding.workers.worker_worktree.rework`. The guard and listen forms are skipped, because a merge runs only once. Its `row` holds `session_agent_id`, the worker; `task_id` and `merged_task_ids`, its tasks; `commit_before_merge` and `commit_after_merge`, the merged range on `base_branch`; `environment_id`; and `folder`, the worktree's path as a name, since the folder may be gone by then. `journal plugin changes --since <commit_before_merge>` lists the files.
 
 ## Answering
 

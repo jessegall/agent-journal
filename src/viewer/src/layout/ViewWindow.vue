@@ -41,7 +41,6 @@ function navigate(name) {
 function followHistory() {
     const named = new URLSearchParams(location.search).get("page");
     if (named) page.value = named;
-    else location.reload();
 }
 const environments = ref([]);
 const mainAgent = ref(null);

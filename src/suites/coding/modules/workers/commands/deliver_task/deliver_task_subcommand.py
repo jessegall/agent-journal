@@ -4,7 +4,9 @@ from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.commands.support.worker_step_check import DELIVERY_EVENTS, WorkerStepCheck
+from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.deliver_task.deliver_task import DeliverTask
 
@@ -20,8 +22,8 @@ class DeliverTaskSubcommand(Subcommand[DeliverTask, Task]):
     def arguments(self, parser: ArgumentParser) -> None:
         return None
 
-    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck) -> None:
-        self.worktrees, self.step_check = worktrees, step_check
+    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, phases: WorkerPhases) -> None:
+        self.worktrees, self.step_check, self.phases = worktrees, step_check, phases
 
     def command(self, arguments: Namespace, caller: Caller) -> DeliverTask:
         worktree = self.worktrees.worker_worktree(caller.actor.id)
@@ -30,5 +32,10 @@ class DeliverTaskSubcommand(Subcommand[DeliverTask, Task]):
         return DeliverTask()
 
     def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, Task):
-            output.row(value)
+        if not isinstance(value, Task):
+            return
+        phase = self.phases.phase(value)
+        if phase is not None and value.state is TaskState.TESTING:
+            output.line(f"the tests of phase {phase.id} are queued: stop now, you hear when they end")
+            return
+        output.row(value)

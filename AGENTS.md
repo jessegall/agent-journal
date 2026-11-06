@@ -82,11 +82,11 @@ Where your harness raises each sin as you change a file, those marks cover what 
 nothing else: a tree you have not touched is judged only by asking.
 
 **Work another agent wrote is judged when you take it in.** A worker's edits are not judged as it
-writes them, so right after a merge run `journal sins --changes` over what came in and fix each
+writes them, so right after a merge run `commandments judge --changes` over what came in and fix each
 finding at its source, or send it back to a worker to fix. Taken in unjudged, it is judged by
 nobody.
 
-**Don't recognise a rule?** `.journal/plugins/code-commandments/bin/commandments-release info <sin>` prints what it flags, why, how it is fixed and
+**Don't recognise a rule?** `commandments info <sin>` prints what it flags, why, how it is fixed and
 a worked example — the detector name off the checklist works. Guessing at a rule you have not read
 is how a finding gets "fixed" by silencing it.
 

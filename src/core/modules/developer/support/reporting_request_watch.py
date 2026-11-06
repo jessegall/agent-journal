@@ -1,6 +1,7 @@
 from collections.abc import Generator
 from contextlib import contextmanager
 
+from core.base.database.repeated_lines import RepeatedLines
 from core.base.database.collecting_repeated_work import CollectingRepeatedWork
 from core.base.database.database import Database
 from core.base.database.repeated_calls_error import RepeatedCallsError
@@ -36,6 +37,12 @@ class ReportingRequestWatch(RequestWatch):
             self.database.tally = original
             original.add(work.points().minus(start_points))
             self.report(argv, work.findings)
+
+    def report_repeated_lines(self, repeated: RepeatedLines) -> None:
+        if not self.settings.project.flag(REPEATED_WORK_SETTING):
+            return
+        text = f"the window {repeated.window} sent {repeated.count} lines of {repeated.line} in a short time, each for another id: it should read them in one line"
+        self.report([repeated.window], [RepeatedFinding(f"viewer lines {repeated.window} {repeated.line}", text)])
 
     def report(self, argv: list[str], findings: list[RepeatedFinding]) -> None:
         for finding in self.reported.unreported(findings):

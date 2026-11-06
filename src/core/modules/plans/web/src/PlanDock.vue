@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch, unref } from "vue";
-import { peekRef, SkeletonLine, useWindow } from "@journal/window-kit";
+import {READ_RATES, coalesced, peekRef, SkeletonLine, useWindow} from "@journal/window-kit";
 
 const PREVIEW_PHASES = 5;
 const context = useWindow();
@@ -30,7 +30,7 @@ async function load() {
   planAgents.value = answer.ok ? answer.value.agents : [];
 }
 
-context.follow(["phase.*", "phase_task.*", "task.*", "agent.*"], load);
+context.follow(["phase.*", "phase_task.*", "task.*", "agent.*"], coalesced(load, READ_RATES.planCard));
 watch(() => item.value?.target_id, load, { immediate: true });
 </script>
 
