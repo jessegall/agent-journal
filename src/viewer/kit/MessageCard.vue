@@ -13,6 +13,8 @@ import {meta, tableOfWord} from "../src/domain/tables.js";
 import {useFittedBubble} from "../src/chat/fittedBubble.js";
 import {FACES, reactionGroups} from "../src/domain/reactionGroups.js";
 import "../src/text/all.js";
+import {useMessageLinkPages} from "../src/composables/messageLinkPages.js";
+import MoreItems from "./MoreItems.vue";
 
 // one message of the chat as version 4 drew it: a soft rounded card, the user's tinted and set to the right, the agent's to the left,
 // the text read as markdown (inline code, lists, bold), and the time under the card; a worker's report is its card headed with the worker, which opens it,
@@ -60,20 +62,8 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
 
 // the rows a person's message names, under it, as version 4's line of what it linked
 const context = inject(WINDOW_CONTEXT, null);
-const SUBJECT_LINK = "about";
-const SENT_LINK = "sent_to";
-const links = ref([]);
-const sentTo = ref([]);
-async function readLinks() {
-    if (!fromPerson.value || !context?.read || props.message.local) return;
-    const answer = await context.read(`link list --source message:${props.message.id}`);
-    if (!answer.ok) return;
-    const rows = answer.value.rows ?? answer.value ?? [];
-    links.value = rows.filter((link) => link.link_type === SUBJECT_LINK).map((link) => ({model: link.target_model, id: link.target_id}));
-    sentTo.value = rows.filter((link) => link.link_type === SENT_LINK).map((link) => link.target_id);
-}
-readLinks();
-context?.follow?.(["link.*"], readLinks);
+const {links, total, more, loading, failure, sentTo, sentMore, sentLoading, sentFailure, loadMore, loadSent} =
+    useMessageLinkPages(context, () => fromPerson.value && !props.message.local ? props.message.id : null, bubble);
 
 const picking = ref(false);
 const reactions = computed(() => reactionGroups(props.message.reactions));
@@ -163,11 +153,12 @@ function pick(face) {
             <template v-if="sentTo.length">
                 <div class="message-sent-to" data-message-sent-to>
                     <Icon name="send" :size="12" />
-                    <template v-for="id in sentTo" :key="id">
-                        <button type="button" class="message-sent-worker" :data-sent-worker="id" :title="`Open worker ${id}`" @click.stop="peekRef(`agents:${id}`)">Also sent to worker {{ id }}</button>
+                    <template v-for="target in sentTo" :key="target.id">
+                        <button type="button" class="message-sent-worker" :disabled="target.unavailable || !target.open_ref" :data-sent-worker="target.id" :title="`Open worker ${target.id}`" @click.stop="target.open_ref && peekRef(target.open_ref)">Also sent to worker {{ target.id }}<template v-if="target.unavailable"> (unavailable)</template></button>
                     </template>
                 </div>
             </template>
+            <MoreItems :more="sentMore" :loading="sentLoading" :failure="sentFailure" label="More recipients" @more="loadSent" />
             <div class="message-foot">
                 <time class="message-time">{{ time }}</time>
                 <template v-if="Number.isInteger(message.id)">
@@ -178,8 +169,8 @@ function pick(face) {
                     <ReadTicks :message="message" />
                 </template>
             </div>
-            <template v-if="links.length">
-                <MessageLinks :links="links" />
+            <template v-if="links.length || failure">
+                <MessageLinks :links="links" :total="total" :more="more" :loading="loading" :failure="failure" @more="loadMore" />
             </template>
         </article>
     </template>

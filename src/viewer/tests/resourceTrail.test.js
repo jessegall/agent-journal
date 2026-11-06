@@ -4,6 +4,7 @@ import PlanLinks from "../src/resource/PlanLinks.vue";
 import DocumentInspector from "../src/resource/document/DocumentInspector.vue";
 import TranscriptionRows from "../../core/modules/transcriptions/web/src/TranscriptionRows.vue";
 import {context, mounted, page, settle} from "./support/windowContext.js";
+import {linkPage} from "./support/linkPages.js";
 
 const REQUEST = {id: 1, type: "user", text: "Fix the cart totals", created_at: "2026-11-01T10:00:00Z"};
 const unbuilt = import.meta.env.MODE === "trail-red" ? test : test.fails;
@@ -19,7 +20,7 @@ function receiptContext(rows = []) {
         read: async (line) => {
             const words = Array.isArray(line) ? line : line.split(" ");
             requests.push(words);
-            return page(words[0] === "link" ? rows : []);
+            return words[0] === "link" ? linkPage(rows, words) : page([]);
         },
         follow: (patterns, heard) => base.subscriptions.follow("receipt", patterns, heard),
     };

@@ -137,9 +137,15 @@ def test_receipt_refresh_targets_only_changed_sources(linked_trail):
     log = linked_trail.story.container.get(EventLog)
     events = [event for event in log.events_past(0) if event.event == "link.create"]
     assert events, "fixture did not create an actual link event"
-    value = json.loads(EventStream.message(events[-1]).split("data: ", 1)[1])
+    value = json.loads(EventStream.message(events[-1], "main").split("data: ", 1)[1])
     feature("source_model" in value and "source_id" in value, f"receipt cannot identify its event source: {value}")
     feature(value["source_model"] == events[-1].data["source_model"][1], str(value))
+    about = next(event for event in events if event.data.get("link_type", (None, None))[1] == "about" and event.data.get("source_model", (None, None))[1] == "message")
+    cursor = log.newest_id()
+    requested_read(linked_trail, "viewer.shell", ["link", "remove", str(about.row_id)])
+    deleted = next(event for event in log.events_past(cursor) if event.event == "link.delete")
+    removed = json.loads(EventStream.message(deleted, "main").split("data: ", 1)[1])
+    feature(removed["source_model"] == "message" and removed["source_id"] == about.data["source_id"][1], str(removed))
 
 
 @pending(6852)

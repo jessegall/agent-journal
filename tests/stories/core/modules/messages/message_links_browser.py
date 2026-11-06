@@ -14,9 +14,10 @@ def test_one_link_shows_below_the_time_and_four_group_into_a_chip_that_opens_a_l
         story.expect_success(f'task make "Task number {number}" --brief "Sample" --environment main')
     single_message = story.new_row_id('message send "One link here" --environment main', actor=story.user)
     grouped_message = story.new_row_id('message send "Four links here" --environment main', actor=story.user)
+    phone_message = story.new_row_id('message send "Three links here" --environment main', actor=story.user)
     story.run(f'message send "{LONG_TEXT}" --environment main', actor=story.user)
     bus = story.container.get(Bus)
-    for message, tasks in ((single_message, [1]), (grouped_message, [1, 2, 3, 4])):
+    for message, tasks in ((single_message, [1]), (grouped_message, [1, 2, 3, 4]), (phone_message, [1, 2, 3])):
         for task in tasks:
             bus.run(RecordSubjectLink(message, "task", task), story.user, environment_id=1)
     with server_story(story) as server:

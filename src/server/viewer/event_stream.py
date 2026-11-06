@@ -65,5 +65,18 @@ class EventStream:
 
     @staticmethod
     def message(event: LoggedEvent, environment: str | None) -> str:
-        value = {"id": event.id, "event": event.event, "environment": environment, "row_table": event.row_table, "row_id": event.row_id, "actor_id": event.actor_id}
+        value: dict[str, object] = {"id": event.id, "event": event.event, "environment": environment, "row_table": event.row_table, "row_id": event.row_id, "actor_id": event.actor_id}
+        if event.row_table == "links":
+            sources = []
+            for position in (0, 1):
+                model = event.data.get("source_model", (None, None))[position]
+                number = event.data.get("source_id", (None, None))[position]
+                source = {"model": model, "id": number}
+                if isinstance(model, str) and type(number) is int and number > 0 and source not in sources:
+                    sources.append(source)
+            if sources:
+                value.update(source_model=sources[-1]["model"], source_id=sources[-1]["id"], sources=sources)
+            kinds = tuple(dict.fromkeys(kind for kind in event.data.get("link_type", ()) if isinstance(kind, str)))
+            if kinds:
+                value.update(link_type=kinds[-1], link_types=kinds)
         return f"id: {event.id}\ndata: {json.dumps(value)}\n\n"

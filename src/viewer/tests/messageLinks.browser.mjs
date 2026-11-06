@@ -28,7 +28,17 @@ try {
     await page.screenshot({path: capture});
     await four.locator("[data-message-links-count]").click();
     await four.locator("[data-message-links-list]").getByText("Task number 4").waitFor();
+    await four.locator("[data-message-links-count]").focus();
+    await page.keyboard.press("Enter");
+    assert.equal(await four.locator("[data-message-links-list]").count(), 0);
+    await page.keyboard.press("Enter");
+    await four.locator("[data-message-links-list]").getByText("Task number 4").waitFor();
     await page.screenshot({path: capture.replace(".png", "-open.png")});
+    await page.setViewportSize({width: 390, height: 960});
+    const three = page.locator("[data-message]", {hasText: "Three links here"});
+    assert.ok(await three.locator("[data-message-links-count]").isVisible());
+    await three.locator("[data-message-links-count]").click();
+    await three.locator("[data-message-links-list]").getByText("Task number 3").waitFor();
     assert.deepEqual(errors, []);
 } finally {
     await browser.close();

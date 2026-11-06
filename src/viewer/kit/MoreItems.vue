@@ -6,10 +6,10 @@ defineEmits(["more"]);
 </script>
 
 <template>
-    <div class="more-items">
+    <template v-if="failure || more"><div class="more-items">
         <template v-if="failure"><p role="alert">{{ failure }}</p></template>
         <template v-if="more"><Btn small data-page-more :disabled="loading" @click="$emit('more')">{{ loading ? "Loading" : label }}</Btn></template>
-    </div>
+    </div></template>
 </template>
 
 <style scoped>
