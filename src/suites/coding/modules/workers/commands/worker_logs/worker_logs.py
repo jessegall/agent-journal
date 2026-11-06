@@ -4,5 +4,5 @@ from core.base.command.command import Command
 
 
 @dataclass(frozen=True)
-class WorkerLogs(Command[str]):
+class ReadWorkerLogs(Command[str]):
     worker_id: int

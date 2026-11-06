@@ -1,18 +1,10 @@
-from dataclasses import dataclass
-
 from core.base.driver.command_category import CommandCategory
 from core.base.listener.event_rows import EventRows
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.run_visibility import RunVisibility
-
-
-@dataclass(frozen=True)
-class ProgressListingCommand:
-    line: str
-    position: int
-    pattern: str
+from core.modules.processes.support.progress_listing_command import ProgressListingCommand
 
 
 class ProgressListing:
@@ -21,7 +13,7 @@ class ProgressListing:
     def __init__(self, outputs: OutputQuery, rows: EventRows, visibility: RunVisibility) -> None:
         self.outputs, self.rows, self.visibility = outputs, rows, visibility
 
-    def for_process(self, process: Process) -> ProgressListingCommand | None:
+    def listing(self, process: Process) -> ProgressListingCommand | None:
         output = self.outputs.process_output(process.id)
         if output is None or output.reader_id is None:
             return None

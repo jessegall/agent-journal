@@ -21,7 +21,7 @@ const elapsed = (row) => `${Math.round(row.waited_ms)} ms`;
         <header><Icon name="terminal" :size="13" /><h1>Request queue</h1><CloseButton title="Close the request queue" @click="emit('close')" /></header>
         <p v-if="failure" class="empty" role="alert">{{ failure }}</p>
         <template v-else-if="queue">
-            <div class="limits">Hooks at once: {{ queue.hook_limit }} · Main agent wait: {{ queue.main_hook_seconds }} s · Worker wait: {{ queue.agent_hook_seconds }} s · Viewer wait: {{ queue.viewer_wait_seconds }} s</div>
+            <div class="limits">Hooks at once: {{ queue.hook_limit }} · Main agent wait: {{ queue.main_hook_seconds }} s · Other agent wait: {{ queue.agent_hook_seconds }} s · Viewer wait: {{ queue.viewer_wait_seconds }} s</div>
             <ProcessQueueBand icon="start" :count="queue.running.length">Running</ProcessQueueBand>
             <p v-if="!queue.running.length" class="empty" data-request-queue-empty>Nothing is running.</p>
             <div v-for="(row, index) in queue.running" :key="`running-${index}`" class="entry" data-request-queue-running><span>{{ row.sender }}</span><strong>{{ row.event }}</strong><span>{{ elapsed(row) }}</span></div>
