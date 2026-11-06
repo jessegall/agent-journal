@@ -45,3 +45,14 @@ def test_a_long_chat_is_read_one_page_at_a_time_newest_first(new_story):
         bus.run(ShowMark(SampleMarkType.EVENT_TYPE, SampleMarkVariant.PLAIN, f"moment:{number}", f"Mark {number}"), actor, environment_id=1)
     story.expect_text("chat-mark list --environment 1", "Mark 55", "page 1, 25 of 55 rows: --page 2 for the next")
     story.expect_text("chat-mark list --environment 1 --page 2", "Mark 30")
+
+
+def test_the_main_chat_lists_only_the_marks_with_the_ids_asked_for(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    bus, actor = story.container.get(Bus), module_actor(story, "chatsample")
+    for number in range(1, 4):
+        bus.run(ShowMark(SampleMarkType.EVENT_TYPE, SampleMarkVariant.PLAIN, f"moment:{number}", f"Mark {number}"), actor, environment_id=1)
+    answer = story.run("chat-mark main --environment main --ids 1,3 --json", actor=story.user)
+    answer.expect_text("Mark 1")
+    answer.expect_text("Mark 3")
+    answer.expect_no_text("Mark 2")

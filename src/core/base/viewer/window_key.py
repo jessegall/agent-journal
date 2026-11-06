@@ -11,7 +11,8 @@ ID_PLACE = "{id}"
 class WindowKey:
     """A named part of a window's data, a prop of the window: the read line that fills it, the tab it belongs to
     if any, the events and the timer that reload it on its own, and the names in the window's state it takes as
-    flags of its line. A page_size makes it a list read a page at a time. A key named run.* is one key per id, such
+    flags of its line. A page_size makes it a list read a page at a time, and an argument ids lets it read
+    the rows with given ids together. A key named run.* is one key per id, such
     as run.12, with {id} in its line, and answered_line means its read answers the line and window that fill it."""
 
     name: str
@@ -26,7 +27,7 @@ class WindowKey:
 
     def listed(self) -> Mapping[str, object]:
         return {"tab": self.tab, "events": list(self.events), "reload_seconds": self.reload_seconds, "loading": self.loading,
-                "page_size": self.page_size}
+                "page_size": self.page_size, "reads_ids": "ids" in self.arguments}
 
     @property
     def has_ids(self) -> bool:

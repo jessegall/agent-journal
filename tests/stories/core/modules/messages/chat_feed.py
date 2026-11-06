@@ -1,3 +1,5 @@
+from core.base.database.database import Database
+from core.base.registry.registry import Registry
 from tests.stories.core.support.fixtures import UserJoined
 
 
@@ -23,3 +25,21 @@ def test_the_feed_pages_by_id_newest_first(new_story):
     older = story.run("message feed --before-id 2 --json", actor=story.user)
     older.expect_text("first")
     older.expect_no_text("second")
+
+
+def test_the_feed_lists_only_the_rows_with_the_ids_asked_for(new_story):
+    story = new_story(fixture=UserJoined)
+    for text in ("first", "second", "third"):
+        story.run(f'message send "{text}" --environment main', actor=story.user)
+    answer = story.run("message feed --ids 1,3 --json", actor=story.user)
+    answer.expect_text("first")
+    answer.expect_text("third")
+    answer.expect_no_text("second")
+    story.run("message feed --ids 1,x", actor=story.user).expect_text("no list of whole numbers")
+
+
+def test_the_chat_window_reads_both_paged_keys_by_ids(new_story):
+    story = new_story(fixture=UserJoined)
+    window = Registry.read(story.container.get(Database)).window("messages.chat")
+    keys = {key.name: key for key in window.keys}
+    story.expect_rows("ids" in keys["messages"].arguments, "ids" in keys["marks"].arguments, keys["messages"].listed()["reads_ids"], keys["marks"].listed()["reads_ids"])
