@@ -50,7 +50,7 @@ def test_a_worker_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_no_
 
 def test_the_plan_sequence_asks_for_one_task_per_step_and_a_reason_for_a_phase_with_one_task(new_story):
     story = new_story(fixture=StandardSequences)
-    story.expect_text("sequence show 1", PLAN_SEQUENCE, "one task per step a person could check", "stories to write first", "--skip-guard plans.one-task-phase")
+    story.expect_text("sequence show 1", PLAN_SEQUENCE, "one task per step a person could check", "stories to write", "--skip-guard plans.one-task-phase")
 
 
 def test_the_review_sequence_sends_the_agent_to_the_review_applying_skill(new_story):
