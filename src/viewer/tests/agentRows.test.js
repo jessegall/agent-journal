@@ -237,6 +237,14 @@ test("an open helper's card has no tabs: its instruction folded above its transc
     expect(element.querySelector("[data-agent-instruction]")).toBeNull();
 });
 
+test("an ended helper with no job says none was kept from version 4, and draws", async () => {
+    const helper = {id: 6, session: "s-1", program: "claude", role: "helper", access: "read-only", ended_at: "2026-11-02T10:00:00Z"};
+    const lines = {"agent transcript 6": page([])};
+    const element = await mounted({render: () => h(AgentCard, {row: helper, facts: {instruction: ""}, open: true})}, context(lines));
+    expect(element.querySelector("[data-agent-no-job]").textContent).toBe("No job kept from version 4");
+    expect(element.querySelector("[data-agent-only-transcript]")).not.toBeNull();
+});
+
 test("an open worker's card keeps its tabs", async () => {
     const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null};
     const lines = {"usage tool --agent 4": {ok: true, value: {tool: "", note: ""}}};

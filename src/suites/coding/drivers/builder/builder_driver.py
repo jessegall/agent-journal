@@ -11,4 +11,4 @@ class BuilderDriver(Driver):
     suite = CodingSuite
     role = AgentRole.MAIN
     rules = [OpenTaskAssignmentRule]
-    opening_lines = ["You are the builder: you build tasks yourself or give them to workers, and may start helpers to read and search for you"]
+    opening_lines = ["You are the builder: you build tasks yourself or give them to workers, and may start helpers with journal helper start to read and search for you; the program's own subagents are refused"]
