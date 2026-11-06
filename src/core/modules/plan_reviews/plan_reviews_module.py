@@ -4,6 +4,7 @@ from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclarati
 from core.base.viewer.skeleton_part import SkeletonPart
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_key import WindowKey
+from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
@@ -35,5 +36,5 @@ class PlanReviewsModule(Module):
                                  condition=ButtonCondition("state", tuple(["reviewing"])), tip="The plan is ready again")]
     windows = [WindowDeclaration("plan_reviews.rounds", "Review rounds", "rounds.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION,
                                  slots=tuple(["inspector.plan"]), icon=WindowIcon.REVIEW,
-                                 reads=["plan rounds"], keys=[WindowKey("rounds.*", "plan rounds {id}")], events=["plan.*"],
+                                 reads=["plan rounds"], keys=[WindowKey("rounds.*", "plan rounds {id}", loading=KeyLoading.REQUESTED)], events=["plan.*"],
                                  skeleton=tuple([SkeletonPart.line()]))]

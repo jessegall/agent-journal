@@ -1,3 +1,4 @@
+import {planWindowContext} from "./support/planWindowContext.js";
 import {beforeAll, expect, test} from "vitest";
 import {context, mounted, mountedDock, page, settle} from "./support/windowContext.js";
 import {loadStates} from "../src/domain/states.js";
@@ -52,7 +53,7 @@ test("agent calls show their readable event label", async () => {
 });
 
 test.each([["reviewing", "Review required"], ["approved", "Approved"]])("plan cards label %s and retain its styling", async (state, label) => {
-    const window = context({"plan board": {ok: true, value: {open_total: 1, closed_total: 0, plans: [{id: 3, title: "Cart", state, task_count: 0, completed_count: 0, current_phase: 0}]}}});
+    const window = planWindowContext({"plan board": {ok: true, value: {open_total: 1, closed_total: 0, plans: [{id: 3, title: "Cart", state, task_count: 0, completed_count: 0, current_phase: 0}]}}});
     window.tabs = [{key: "open", label: "Open", read: "plan board", count_field: "open_total"}];
     const element = await mounted(PlanCards, window);
     const badge = element.querySelector("[data-plan-state]");
