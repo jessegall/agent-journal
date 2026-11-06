@@ -55,6 +55,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     def check(self, worktree: Worktree, environment: Environment) -> None:
         ConflictFiles(Path(environment.folder)).check()
         self.checks.check_proofs(worktree)
+        self.checks.check_logs(worktree)
         self.checks.check_base_branch(worktree)
         head = self.git.head(environment.folder)
         if head != worktree.base_branch:

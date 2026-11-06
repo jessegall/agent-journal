@@ -268,6 +268,7 @@ def test_the_last_delivery_delivers_the_worktree_and_the_merge_closes_every_task
     story.run("proof check 1", actor=story.agent)
     story.run("proof check 2", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
     story.expect_text("task show 2", "state: completed", actor=story.agent)

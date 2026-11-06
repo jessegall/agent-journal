@@ -173,6 +173,7 @@ def test_a_clash_only_on_built_files_merges_with_a_fresh_build(new_story):
     story.expect_success("worker deliver", actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
     repository.committed(BUILT_FILE, "built on the branch\n", "Another build")
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, "state: completed")
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
@@ -189,6 +190,7 @@ def test_a_worker_settles_a_clash_and_its_next_merge_goes_through(new_story):
     (repository.worktree_folder(worker.id) / "cart.py").write_text("TOTAL = 3\n")
     story.expect_success("worker deliver", actor=worker)
     story.expect_success("worker-worktree show 1", "state: delivered")
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")
 

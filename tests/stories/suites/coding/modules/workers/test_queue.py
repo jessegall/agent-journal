@@ -76,6 +76,7 @@ def test_all_tests_passing_checks_the_proofs_and_tells_the_main_agent_and_the_me
     expect_marks_text(story, "passed")
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{worker.id} all pass", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
 
@@ -134,6 +135,7 @@ def test_passed_tests_with_a_proof_with_no_test_ask_for_the_check_not_the_merge(
     expect_marks_text(story, "passed")
     story.expect_success("proof check 2", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
 
 
