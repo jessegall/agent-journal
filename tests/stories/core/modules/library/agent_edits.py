@@ -29,7 +29,12 @@ def stored_copy(story: Story, copy: LibraryCopy) -> LibraryCopy:
 
 
 def edit_body(story: Story, copy: LibraryCopy, body: str, agent: bool) -> None:
-    story.expect_success(f'doc edit {copy.row_id} --body "{body}"', actor=story.agent if agent else story.user)
+    if not agent:
+        story.expect_success(f'doc edit {copy.row_id} --body "{body}"', actor=story.user)
+        return
+    story.expect_success(f"doc open {copy.row_id}", actor=story.agent)
+    story.expect_success(f'doc edit {copy.row_id} --body "{body}"', actor=story.agent)
+    story.expect_success(f"doc close {copy.row_id}", actor=story.agent)
 
 
 def test_an_edit_by_an_agent_stays_on_this_journal_until_a_person_sends_it(new_story, shared_server, monkeypatch):

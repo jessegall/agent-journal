@@ -1,4 +1,6 @@
+import shlex
 import stat
+import subprocess
 
 import pytest
 
@@ -73,12 +75,15 @@ def test_a_count_without_groups_adds_matching_lines():
 def test_stock_patterns_match_real_pytest_collection_and_vitest_listing_output():
     pytest_reader, vitest_reader = STOCK_READERS[:2]
     assert ReaderRun().count(reader(count_pattern=pytest_reader.count), "11 tests collected in 0.01s\n", 0) == 11
-    listing = (
-        "tests/dockFold.test.js > scrolling down to the foot opens the docked cards, and scrolling up away from it folds them\n"
-        "tests/dockFold.test.js > a scroll that goes down but stays away from the foot, or up within the last few pixels, changes nothing\n"
-        "tests/dockFold.test.js > a card folded by hand keeps that, else it follows the scroll\n"
-    )
-    assert ReaderRun().count(reader(count_pattern=vitest_reader.count), listing, 0) == 3
+    names = [
+        "tests/dockFold.test.js > scrolling down to the foot opens the docked cards, and scrolling up away from it folds them",
+        "tests/dockFold.test.js > a scroll that goes down but stays away from the foot, or up within the last few pixels, changes nothing",
+        "tests/dockFold.test.js > a card folded by hand keeps that, else it follows the scroll",
+    ]
+    listing = "printf '%s\\n' " + " ".join(shlex.quote(name) for name in names) + " run --reporter=dot"
+    listed = subprocess.run(["sh", "-c", vitest_reader.count_command.replace("{part}", listing)], capture_output=True, text=True, check=True).stdout
+    assert ReaderRun().count(reader(count_pattern=vitest_reader.count), listed, 0) == 3
+    assert ReaderRun().count(reader(count_pattern=vitest_reader.count), " Test Files  1 passed (1)\n      Tests  1 failed | 2 passed (3)\n", 0) == 3
 
 
 def test_the_summary_is_the_last_match_with_its_groups_joined_or_the_whole_match():

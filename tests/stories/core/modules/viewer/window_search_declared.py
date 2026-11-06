@@ -26,7 +26,7 @@ PLACEHOLDERS = {
     "agents.helpers": "Search the agents",
     "settings.settings": "Find a setting",
     "messages.attachments": "Search file names and their messages",
-    "skills.skills": "Search the skills",
+    "skills.skills": "Find a skill",
     "profiles.profiles": "Find a profile",
     "search.search": "Search the journal",
     "coding.files": "Find a file in the project",
