@@ -94,7 +94,8 @@ never starts is retired after the idle time.
   This opens only a file on an authorized context message, without general access to the parent's chat.
 
 - `journal worker report "<what the task needs>"` sends your main agent a message number to read while you keep
-  working. Use it for a report or a request that does not require stopping.
+  working. Use it only for what the main agent must act on, never for progress: a finished task, a passing test and what
+  you do next go in `journal task log`.
 
 - `journal worker status` shows your current task, tests waiting and remaining assignments. The main agent can name
   a worker with `journal worker status <n>`. Use `--page` and `--limit` for longer lists, or `--json` for structured output.
