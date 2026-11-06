@@ -1,14 +1,19 @@
 from server.booting_work import BootingWork
 from core.base.change.event_log import HIDDEN
+from core.base.database.database import Database
 from core.base.listener.commit_listener_runner import CommitListenerRunner
+from core.base.model.event_form import EventForm
+from core.modules.plugins.support.plugin_subscriptions import PluginSubscriptions
 from tests.stories.core.modules.plugins.support.event_modules import FAILS_LATER, LATER_REFUSAL, NOTES, REFUSED_TITLE
 from tests.stories.core.modules.plugins.support.event_stories import (
-    SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, data_row, deliveries, event_data, event_plugin_story, plugin_data, plugin_page, plugin_row, script_calls, tasks_titled)
+    PIN_CREATED, SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, data_row, deliveries, event_data, event_plugin_story, plugin_data, plugin_page, plugin_row, script_calls, tasks_titled)
 
 LONG_TEXT = "a long brief " * 10000
 FAILING_COUNT = 5
 RECOVERING = 'if [ ! -e "$JOURNAL_PLUGIN_DATA/recovered" ]; then exit 3; fi'
 NOTE_SECRET = "the secret text"
+TOLD_LINE = "the job is noted"
+TOLD_SCRIPT = f"""echo '{{"v": 1, "tell": "{TOLD_LINE}"}}'"""
 
 
 def test_s14_a_commit_script_receives_the_key_the_row_and_final_true_even_for_a_long_row(new_story):
@@ -78,6 +83,46 @@ def test_s18_the_fifth_fault_shows_the_failing_mark_and_a_success_clears_it(new_
     story.run_listeners()
     story.expect_text("chat-mark list --environment 1", "Plugin events answers again", actor=story.user)
     story.expect_rows(plugin_row(story).fault_count == 0)
+
+
+def test_a_commit_script_that_answers_refuse_is_a_fault_and_the_change_stays(new_story):
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "refuse.sh"})
+    story.expect_success(SECOND_JOB, actor=story.agent)
+    story.run_listeners()
+    story.expect_rows(len(tasks_titled(story, SECOND_JOB_TITLE)) == 1, plugin_row(story).last_fault == f"it answered refuse at {TASK_CREATED} (commit): not today")
+
+
+def test_a_fault_write_starts_no_script_on_the_plugin_row(new_story):
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "fail.sh"}, {"event": "core.plugins.plugin.updated", "commit": "see.sh"})
+    story.expect_success(SECOND_JOB, actor=story.agent)
+    story.run_listeners()
+    story.expect_rows(plugin_row(story).fault_count == 1, len(script_calls(story, "fail.sh")) == 1, not script_calls(story, "see.sh"))
+
+
+def test_a_tell_goes_to_the_queue_of_the_agent_that_made_the_change(new_story):
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "told.sh"}, scripts={"told.sh": TOLD_SCRIPT})
+    story.expect_success(SECOND_JOB, actor=story.agent)
+    story.run_listeners()
+    queued = list(plugin_data(story, "queue").glob("delivery-*.json"))
+    story.expect_rows(len(queued) == 1, TOLD_LINE in queued[0].read_text())
+
+
+def test_a_tell_with_no_agent_is_dropped(new_story):
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "told.sh"}, scripts={"told.sh": TOLD_SCRIPT})
+    story.expect_success(SECOND_JOB, actor=story.user)
+    story.run_listeners()
+    story.expect_rows(len(script_calls(story, "told.sh")) == 1, not list(plugin_data(story, "queue").glob("delivery-*.json")), plugin_row(story).fault_count == 0)
+
+
+def test_a_change_with_no_script_on_its_key_writes_no_delivery_and_adds_no_query(new_story):
+    story = event_plugin_story(new_story, {"event": PIN_CREATED, "commit": "see.sh"})
+    subscriptions = story.container.get(PluginSubscriptions)
+    tally = story.container.get(Database).tally
+    subscriptions.scripts("task.create", EventForm.COMMIT)
+    before = tally.points()
+    story.expect_rows(subscriptions.scripts("task.create", EventForm.COMMIT) == (), tally.points().statements == before.statements)
+    story.expect_success(SECOND_JOB, actor=story.agent)
+    story.expect_rows(not deliveries(story))
 
 
 def test_s19_a_system_event_reaches_a_commit_script_with_no_agent_and_no_environment(new_story):

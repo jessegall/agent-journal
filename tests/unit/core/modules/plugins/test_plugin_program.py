@@ -13,6 +13,7 @@ from core.base.running_scripts import RunningScripts
 from core.base.timestamp import Timestamp
 from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_event import PluginEvent
+from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_late_error import PluginLateError
 from core.modules.plugins.support.plugin_manifest import PluginManifest
@@ -22,6 +23,11 @@ from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 DETACHED_CHILD_PROGRAM = """#!/bin/sh
 python3 -c 'import os, time; os.setsid(); time.sleep(6)' &
 sleep 6
+"""
+QUICK_PROGRAM = """#!/bin/sh
+cat > /dev/null
+sleep 1
+echo '{"v": 1, "tell": "done"}'
 """
 LIMIT_MS = 1000
 END_SECONDS = 2.5
@@ -46,17 +52,32 @@ def test_output_cleanup_stays_bounded_after_a_group_signal_fails(monkeypatch, fa
     process.stdout.close.assert_called_once()
 
 
-def test_a_late_program_whose_child_keeps_its_output_open_ends_soon_after_its_limit(tmp_path: Path) -> None:
+def program_at(tmp_path: Path, body: str, script: str = "") -> tuple[PluginProgram, PluginCall]:
     home = JournalHome(tmp_path / "journal")
     folders = PluginFolders(home)
     folder = folders.code("late")
     folder.mkdir(parents=True)
     (folder / "journal-plugin.json").write_text(json.dumps({"name": "late", "title": "Late", "version": "1", "program": "run.sh"}))
-    (folder / "run.sh").write_text(DETACHED_CHILD_PROGRAM)
+    (folder / "run.sh").write_text(body)
     (folder / "run.sh").chmod(0o755)
     program = PluginProgram(home, folders, PluginSocketPaths(home), SimpleNamespace(names=lambda agent_id: ()), AgentCheckouts(), RunningScripts())
-    call = PluginCall(PluginManifest.read(folder), PluginEvent("idle", {}), "main", Timestamp.parsed("2026-10-31T09:00:00+00:00"), {})
+    return program, PluginCall(PluginManifest.read(folder), PluginEvent("idle", {}), "main", Timestamp.parsed("2026-10-31T09:00:00+00:00"), {}, script=script)
+
+
+def test_a_late_program_whose_child_keeps_its_output_open_ends_soon_after_its_limit(tmp_path: Path) -> None:
+    program, call = program_at(tmp_path, DETACHED_CHILD_PROGRAM)
     started = time.monotonic()
     with pytest.raises(PluginLateError):
         program.run(call, LIMIT_MS)
     assert time.monotonic() - started < END_SECONDS
+
+
+def test_a_script_that_cannot_start_is_the_plugins_fault(tmp_path: Path) -> None:
+    program, call = program_at(tmp_path, QUICK_PROGRAM, "missing.sh")
+    with pytest.raises(PluginFaultError, match="missing.sh could not start"):
+        program.run(call, None)
+
+
+def test_a_call_with_no_limit_waits_for_the_script_it_names(tmp_path: Path) -> None:
+    program, call = program_at(tmp_path, QUICK_PROGRAM, "run.sh")
+    assert program.run(call, None).line == "done"
