@@ -8,6 +8,7 @@ from core.base.checkout import Checkout
 from core.base.checkout_file import CheckoutFile
 from core.base.clock import Clock
 from core.base.command.bus import Bus
+from core.base.listener.commit_listener_runner import PLUGIN_RUN_ORDER
 from core.base.command.command import Command
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
@@ -44,6 +45,7 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
     here and not when the delivery is saved, since this runs with no lock and the answer may run git."""
 
     name = "plugins.delivery"
+    run_order = PLUGIN_RUN_ORDER
 
     def __init__(self, queries: Queries, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, clock: Clock, bus: Bus, actors: ModuleActors, checkouts: AgentCheckouts) -> None:
         self.queries, self.folders, self.program, self.settings, self.clock, self.bus, self.actors, self.checkouts = queries, folders, program, settings, clock, bus, actors, checkouts

@@ -51,7 +51,16 @@ class RunningScripts:
             return tuple(script for script in self.scripts.values() if script.plugin == plugin)
 
     def stop(self, plugin: str) -> None:
-        for script in self.running(plugin):
+        self.killed(self.running(plugin))
+
+    def stop_all(self) -> None:
+        with self.lock:
+            scripts = tuple(self.scripts.values())
+        self.killed(scripts)
+
+    @staticmethod
+    def killed(scripts: Sequence[RunningScript]) -> None:
+        for script in scripts:
             try:
                 os.killpg(script.process.pid, signal.SIGKILL)
             except (ProcessLookupError, PermissionError):

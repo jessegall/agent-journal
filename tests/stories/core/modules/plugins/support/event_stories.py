@@ -3,6 +3,10 @@ from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import cast
 
+from core.base.cli.console import Console
+from server.listener_thread import ListenerThread
+from server.listener_wake import ListenerWake
+
 import pytest
 
 from core.base.actor import Actor
@@ -95,6 +99,10 @@ def script_calls(story: Story, script: str, plugin: str = "events") -> list[dict
     """The lines a script was given, one for each time it ran."""
     called = story.home.folder / "plugin-data" / plugin / f"{script}.called"
     return [json.loads(line) for line in called.read_text().splitlines()] if called.is_file() else []
+
+
+def commands_as_in_a_server(story: Story) -> None:
+    story.container.get(Console).commit_listeners = ListenerWake(ListenerThread(lambda: None, lambda error: None))
 
 
 def plugin_data(story: Story, name: str, plugin: str = "events") -> Path:
