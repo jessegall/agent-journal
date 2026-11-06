@@ -58,6 +58,12 @@
             },
             {
                 "file": "**/upgrade/**"
+            },
+            {
+                "file": "**/settings/commands/support/setting_store.py"
+            },
+            {
+                "file": "**/record_journal_exception/record_journal_exception_handler.py"
             }
         ]
     },
