@@ -735,7 +735,7 @@ const Lt = ["disabled", "title"], jt = ["title"], Et = { class: "gauge usage" },
       }, 8, ["anchor"])) : w("", !0)
     ], 2));
   }
-}, Ut = /* @__PURE__ */ ce(Kt, [["__scopeId", "data-v-cce150b4"]]), Zt = {
+}, Ut = /* @__PURE__ */ ce(Kt, [["__scopeId", "data-v-a3401630"]]), Zt = {
   class: "agent-command",
   "data-agent-command": ""
 }, Jt = {
@@ -910,7 +910,7 @@ const Lt = ["disabled", "title"], jt = ["title"], Et = { class: "gauge usage" },
     const Q = Object.fromEntries(r.tabs.filter((n) => n.component).map((n) => [n.key, Ge(() => lt(n.component))])), Z = g(() => t.row.role === "helper" && !t.row.ended_at), ue = () => r.run(["helper", "stop", String(t.row.id)]), X = z(!1), oe = z(""), ve = z(""), se = g(() => t.row.role !== "main" && (!t.row.ended_at || O.value || t.waitReason));
     async function re() {
       if (!se.value) return;
-      const n = await r.read(`usage tool --agent ${t.row.id}`);
+      const n = await r.read(`usage tool --agent ${t.row.id}`, { deferred: !0 });
       oe.value = n.ok ? n.value.tool : "", ve.value = n.ok ? n.value.note : "";
     }
     const fe = r.follow(["hook_call.*", "process_part.*"], Ne(re, qe.agentCommand));
@@ -1146,7 +1146,7 @@ const Lt = ["disabled", "title"], jt = ["title"], Et = { class: "gauge usage" },
       ], 42, na);
     };
   }
-}, Ta = /* @__PURE__ */ ce(Sa, [["__scopeId", "data-v-bb87550a"]]), Aa = ["data-agent-row"], je = "journal.agents.filters", $e = "cubic-bezier(0.2, 0.9, 0.25, 1)", za = {
+}, Ta = /* @__PURE__ */ ce(Sa, [["__scopeId", "data-v-6016aeb2"]]), Aa = ["data-agent-row"], je = "journal.agents.filters", $e = "cubic-bezier(0.2, 0.9, 0.25, 1)", za = {
   __name: "AgentRows",
   props: { line: { type: String, required: !0 }, empty: { type: String, required: !0 }, texts: { type: Object, default: () => ({}) } },
   setup(e) {
