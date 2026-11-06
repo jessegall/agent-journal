@@ -2,6 +2,9 @@ import json
 from collections.abc import Mapping
 from pathlib import Path
 
+from core.base.command.server_stopping_error import ServerStoppingError
+from core.base.script_stop import ScriptStop
+from core.modules.plugins.support.plugin_stopped_error import PluginStoppedError
 from core.base.agent_checkouts import AgentCheckouts
 from core.base.change.logged_event import LoggedEvent
 from core.base.checkout import Checkout
@@ -72,6 +75,8 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         try:
             answer = self.program.run(call, self.policy.commit_limit_ms if delivery.script else DELIVERY_LIMIT_MS)
         except PluginFaultError as fault:
+            if isinstance(fault, PluginStoppedError) and fault.stop is ScriptStop.SERVER:
+                raise ServerStoppingError.before(plugin.name, delivery.event) from None
             self.record(logged, delivery, RecordPluginFault.of(delivery.plugin_id, fault, f"at {delivery.event}{COMMIT_SUFFIX if delivery.script else ''}"))
             return
         if delivery.script and answer.is_refusal():

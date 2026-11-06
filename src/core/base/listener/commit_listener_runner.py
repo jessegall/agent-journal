@@ -1,6 +1,7 @@
 from time import perf_counter
 from functools import cached_property
 
+from core.base.command.server_stopping_error import ServerStoppingError
 from core.base.change.event_log import EventLog
 from core.base.change.changed import Changed
 from core.base.change.event_type import EventType
@@ -176,6 +177,8 @@ class CommitListenerRunner:
         except Refusal as refusal:
             self.errors.noted(f"listener {entry.name} refused event {event.id}: {refusal}")
             return True
+        except ServerStoppingError:
+            return False
         except Exception as error:
             failures = self.cursors.failure_count(entry.name, event.id)
             self.errors.reported(["listener", entry.name, "event", str(event.id)], error, event.environment_id)

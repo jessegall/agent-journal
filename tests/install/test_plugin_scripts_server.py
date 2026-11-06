@@ -169,6 +169,25 @@ def test_s17_a_commit_script_that_never_ends_holds_up_no_listener_and_a_server_s
     expect_process_ended(int(script_pid.read_text()))
 
 
+def test_a_commit_delivery_a_server_stop_cut_short_and_one_still_queued_run_after_the_restart(journal, client):
+    started, never_written, calls = (journal.home.folder.parent / name for name in ("started", "never-written", "calls"))
+    os.mkfifo(started)
+    os.mkfifo(never_written)
+    script = f"""echo run >> '{calls}'\nif [ "$(wc -l < '{calls}' | tr -d ' ')" = 1 ]; then echo started > '{started}'; read answer < '{never_written}'; fi"""
+    start_with_plugin(journal, client, {"event": TASK_CREATED, "commit": "script.sh"}, script)
+    expect_line(journal, client, *SECOND_JOB_LINE)
+    assert "started" in wait_for_line(started)
+    expect_line(journal, client, "task", "make", LATER_JOB_TITLE, "--brief", "Do it", "--environment", "main")
+    journal.stop_with(client)
+    assert calls.read_text().split() == ["run"]
+    journal.start_server()
+    journal.wait_healthy()
+    deadline = time.monotonic() + STARTED_LIMIT_SECONDS
+    while len(calls.read_text().split()) < 3:
+        assert time.monotonic() < deadline, calls.read_text()
+        time.sleep(READ_SLICE_SECONDS)
+
+
 def test_s58_a_journal_line_inside_plugin_run_stays_marked_as_the_plugin(journal, client):
     finished = journal.home.folder.parent / "finished"
     os.mkfifo(finished)
