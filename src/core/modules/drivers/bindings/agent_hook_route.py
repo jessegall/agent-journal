@@ -1,7 +1,5 @@
-from core.base.refusal import Refusal
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from core.modules.agents.commands.end_agent.end_agent import EndAgent
-from core.modules.agents.commands.stop_agent.stop_agent import StopAgent
+from core.modules.agents.commands.end_replaced_main.end_replaced_main import EndReplacedMain
 from dataclasses import replace
 
 from core.base.actor import Actor
@@ -110,7 +108,4 @@ class AgentHookRoute(HookRoute):
         with self.bus.scopes.read_scope((), None, environment_id):
             main_agents = MainAgentFinder.all_running(self.queries)
         for main in main_agents:
-            try:
-                self.bus.run(StopAgent(main.id), Actor.core(), environment_id=environment_id)
-            except Refusal:
-                self.bus.run(EndAgent(row_id=main.id), Actor.core(), environment_id=environment_id)
+            self.bus.run(EndReplacedMain(main.id), Actor.core(), environment_id=environment_id)
