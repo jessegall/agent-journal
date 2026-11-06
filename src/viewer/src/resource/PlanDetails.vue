@@ -48,11 +48,11 @@ const emit = defineEmits(["select", "open", "done"]);
                 </Folded>
             </section>
         </template>
-        <PlanLinks :id="plan.id" :document-id="plan.document_id" :read="read" @open="emit('open', $event)" />
         <section class="part">
             <h4>Phases</h4>
             <PlanPhases :phases="plan.phases" :current-phase="plan.current_phase" @select="emit('select', $event)" />
         </section>
+        <PlanLinks :id="plan.id" :document-id="plan.document_id" :read="read" @open="emit('open', $event)" />
         <InspectorSections slot-name="inspector.plan" :row="plan" />
     </div>
 </template>

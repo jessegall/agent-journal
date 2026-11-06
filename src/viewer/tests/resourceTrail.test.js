@@ -77,16 +77,21 @@ function planRead(counterparts, requests) {
 }
 
 test("task 6894: both directions keep all relation labels on one counterpart", async () => {
-    const rows = [linkedItem("task", 4, ["mentions", "about"], "tasks:4")];
+    const rows = [linkedItem("task", 4, ["mentions", "comments_on"], "tasks:4")];
     const element = await mounted(PlanLinks, context({}), {id: 1, read: planRead(rows, [])});
+    element.querySelector(".fold-head").click();
+    await settle();
     expect(element.querySelectorAll("[data-plan-link]")).toHaveLength(1);
     expect(element.textContent).toContain("mentions");
-    expect(element.textContent).toContain("about");
+    expect(element.textContent).toContain("comments on");
+    expect(element.textContent).not.toContain("comments_on");
 });
 
 test("task 6894: missing endpoints stay visible but cannot open", async () => {
     const missing = {endpoint: {model: "task", id: 4, title: "Task 4 unavailable", exists: false, unavailable: true, open_ref: null}, relations: ["about"], link_ids: [1]};
     const element = await mounted(PlanLinks, context({}), {id: 1, read: planRead([missing], [])});
+    element.querySelector(".fold-head").click();
+    await settle();
     expect(element.textContent.toLowerCase()).toContain("unavailable");
     expect(element.querySelector("[data-plan-link]")?.disabled).toBe(true);
 });
@@ -98,6 +103,8 @@ test.each([
     const opened = [];
     const rows = [linkedItem(model, 12, ["mentions"], `${table}:${id}`, "Audit totals")];
     const element = await mounted(PlanLinks, context({}), {id: 1, read: planRead(rows, []), onOpen: (value) => opened.push(value)});
+    element.querySelector(".fold-head").click();
+    await settle();
     element.querySelector("[data-plan-link]").click();
     await settle();
     expect(opened).toEqual([{table, id}]);
@@ -154,9 +161,10 @@ test("task 6894: counterpart pages append once and preserve every label", async 
         return {ok: true, value: {rows: [], counterparts, total: 11, page: second ? 2 : 1, page_size: 10, next_page: second ? null : 2}};
     };
     const element = await mounted(PlanLinks, context({}), {id: 1, read});
-    element.querySelector("[data-page-more]").click();
+    element.querySelector(".fold-head").click();
     await settle();
-    element.querySelector("[data-link-show-more]").click();
+    expect(element.querySelector("[data-page-more]").textContent).toContain("Show 1 more");
+    element.querySelector("[data-page-more]").click();
     await settle();
     expect(element.querySelectorAll("[data-plan-link]")).toHaveLength(11);
     expect(element.textContent).toContain("edited");
@@ -164,22 +172,26 @@ test("task 6894: counterpart pages append once and preserve every label", async 
     expect(requests.at(-1)[requests.at(-1).indexOf("--page") + 1]).toBe("2");
 });
 
-test("task 7104: many links fold per kind and Show more opens the rest of that kind", async () => {
+test("link filters read the selected kind and show counts for all kinds", async () => {
     const rows = [
         ...Array.from({length: 8}, (_, at) => linkedItem("task", at + 1, ["about"], `tasks:${at + 1}`)),
         ...Array.from({length: 2}, (_, at) => linkedItem("report", at + 1, ["about"], `reports:${at + 1}`)),
     ];
-    const element = await mounted(PlanLinks, context({}), {id: 1, read: planRead(rows, [])});
-    expect([...element.querySelectorAll("[data-link-kind]")].map((node) => node.textContent.trim())).toEqual(["task 8", "report 2"]);
-    expect(element.querySelectorAll('[data-plan-link][data-link-model="task"]')).toHaveLength(3);
-    expect(element.querySelectorAll('[data-plan-link][data-link-model="report"]')).toHaveLength(2);
-    const fold = element.querySelector("[data-link-show-more]");
-    expect(fold.textContent).toBe("Show 5 more");
-    expect(element.querySelectorAll("[data-link-show-more]")).toHaveLength(1);
-    fold.click();
+    const requests = [];
+    const read = async (line) => {
+        requests.push(line);
+        const filtered = line.includes("--kind") ? rows.filter((row) => row.endpoint.model === line[line.indexOf("--kind") + 1]) : rows;
+        return {ok: true, value: {counterparts: filtered, total: filtered.length, kinds: {task: 8, report: 2}, next_page: null}};
+    };
+    const element = await mounted(PlanLinks, context({}), {id: 1, read});
+    element.querySelector(".fold-head").click();
+    await settle();
+    expect([...element.querySelectorAll('[role="radio"]')].map((node) => node.textContent.trim())).toEqual(["All 10", "Tasks 8", "Reports 2"]);
+    [...element.querySelectorAll('[role="radio"]')].find((node) => node.textContent.includes("Tasks")).click();
     await settle();
     expect(element.querySelectorAll('[data-plan-link][data-link-model="task"]')).toHaveLength(8);
-    expect(element.querySelector("[data-link-show-more]")).toBeNull();
+    expect(requests.at(-1)).toContain("--kind");
+    expect(requests.at(-1)).toContain("task");
 });
 
 test("task 6894: a relation failure remains visible", async () => {

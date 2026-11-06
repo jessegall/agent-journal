@@ -97,6 +97,27 @@ def test_counterpart_priority_survives_page_boundaries(linked_scenario):
     feature(len(keys) == len(set(keys)) == first["total"], str(keys))
 
 
+def test_plan_links_exclude_its_tasks_and_phases_before_counting_and_filtering(scenario):
+    scenario.command('phase make --plan 1 "Build" --goal "Finish the cart"')
+    scenario.command('phase place 1 --phase 1')
+    scenario.command('task make "External work" --environment main')
+    scenario.command('doc make "Second design" --abstract "Details" --body "Notes"')
+    scenario.command('plan edit 1 --brief "task:1 phase:1 task:2 doc:1 doc:2"')
+    scenario.story.run_listeners()
+    base = ["link", "list", "--row", "plan:1", "--group-counterparts"]
+    all_links = requested_read(scenario, "viewer.shell", base)
+    outside = requested_read(scenario, "viewer.shell", [*base, "--outside-plan", "--page-size", "1"])
+    feature(outside["total"] == all_links["total"] - 2, str((all_links, outside)))
+    feature(outside["kinds"].get("task") == 1 and "phase" not in outside["kinds"], str(outside))
+    documents = requested_read(scenario, "viewer.shell", [*base, "--outside-plan", "--kind", "doc", "--page-size", "1"])
+    feature(documents["total"] == 2 and documents["kinds"] == outside["kinds"], str(documents))
+    feature("--outside-plan" in documents["next_command"] and "--kind doc" in documents["next_command"], str(documents))
+    task_links = requested_read(scenario, "viewer.shell", ["link", "list", "--row", "task:1", "--group-counterparts"])
+    feature(any(row["endpoint"]["model"] == "plan" for row in task_links["counterparts"]), str(task_links))
+    refused = viewer_answer(scenario.story, "viewer.shell", ["link", "list", "--row", "task:1", "--outside-plan"])
+    feature(refused.code == 1, str(refused))
+
+
 def test_log_and_phase_endpoint_metadata_names_parent(scenario):
     scenario.command('task log 1 "Audit totals doc:1"')
     scenario.command('phase make --plan 1 "Audit phase doc:1" --goal "Review totals"')
