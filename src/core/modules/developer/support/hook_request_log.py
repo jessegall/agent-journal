@@ -17,7 +17,13 @@ class HookRequestLog:
     def __init__(self, table: HookRequestsTable, queries: Queries, settings: SettingValues, clock: Clock) -> None:
         self.table, self.queries, self.settings, self.clock = table, queries, settings, clock
 
-    def read(self, kinds: list[str], families: list[str], senders: list[str]) -> list[HookRequest]:
+    def read(self) -> list[HookRequest]:
+        return list(self.queries.query(HookRequest).descending("id").all_rows())
+
+    def filter_options(self) -> list[tuple[str, str]]:
+        return self.table.filter_options()
+
+    def filtered(self, kinds: list[str], families: list[str], senders: list[str]) -> list[HookRequest]:
         query = self.queries.query(HookRequest).descending("id")
         for column, values in (("kind", kinds), ("family", families), ("sender", senders)):
             if values:

@@ -21,6 +21,7 @@ class HookRequest(ViewModel):
     id: int
     received_at: str
     program: str
+    agent_id: int
     kind: str
     family: str
     headers_json: str

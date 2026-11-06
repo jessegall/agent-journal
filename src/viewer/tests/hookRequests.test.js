@@ -66,3 +66,31 @@ test("with nothing recorded it says which option turns the log on", async () => 
     await settle();
     expect(element.textContent).toContain("Record agent calls");
 });
+
+test("pausing keeps the list and resuming reads again", async () => {
+    const window = context({});
+    let reads = 0;
+    window.read = async () => ({ok: true, value: {rows: [{id: ++reads, event: "stop", sender: "Main agent", duration_ms: 1}]}});
+    const element = await mounted(HookRequests, window);
+    await settle();
+    const button = element.querySelector("[data-feed-pause]");
+    button.click();
+    await settle();
+    expect(button.textContent).toBe("Resume");
+    expect(button.getAttribute("aria-pressed")).toBe("true");
+    expect(element.querySelector('[data-hook-request="1"]')).not.toBeNull();
+    button.click();
+    await settle();
+    expect(element.querySelector('[data-hook-request="2"]')).not.toBeNull();
+});
+
+test("an agent sender links to its card without opening request details", async () => {
+    const window = context({});
+    window.read = async () => ({ok: true, value: {rows: [{id: 1, agent_id: 42, sender: "Worker 42", event: "stop", duration_ms: 1}]}});
+    const element = await mounted(HookRequests, window);
+    await settle();
+    const sender = element.querySelector('[data-peek="agents:42"]');
+    expect(sender).not.toBeNull();
+    sender.click();
+    expect(element.querySelector("[data-hook-request-detail]")).toBeNull();
+});
