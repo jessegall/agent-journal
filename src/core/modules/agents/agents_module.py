@@ -80,9 +80,9 @@ from core.modules.agents.seeders.agents_seeder import AgentsSeeder
 from core.modules.agents.support.skeletons import AGENTS_AGENTS_SKELETON, AGENTS_HELPERS_SKELETON, AGENTS_TRANSCRIPT_SKELETON
 
 
-CARD_READS = ["agent limits", "setting show", "agent cards", "agent list", "agent programs", "usage agents", "usage tool", "agent transcript", "hook-call feed", "task show", "task list", "process-part list"]
+CARD_READS = ["agent limits", "setting show", "agent cards", "agent list", "agent programs", "usage agents", "usage tool", "agent transcript", "message agent-reports", "hook-call feed", "task show", "task list", "process-part list"]
 CARD_EVENTS = ["setting.*", "agent.*", "hook_call.*", "task.*", "process_part.*"]
-CARD_TABS = [WindowTab("tasks", "Tasks", "usage agents", "tasks"), WindowTab("transcript", "Transcript", "agent transcript")]
+CARD_TABS = [WindowTab("tasks", "Tasks", "usage agents", "tasks"), WindowTab("reports", "Reports", "message agent-reports", "reports"), WindowTab("transcript", "Transcript", "agent transcript")]
 
 
 class AgentsModule(Module):

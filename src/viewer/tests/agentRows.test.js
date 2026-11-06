@@ -38,6 +38,7 @@ const FACTS = [
 const DEFAULT_OPTIONS = {order: "number"};
 const TABS = [
     {key: "tasks", label: "Tasks", read: "usage agents", count_field: "tasks"},
+    {key: "reports", label: "Reports", read: "message agent-reports", count_field: "reports"},
     {key: "transcript", label: "Transcript", read: "agent transcript", count_field: ""},
     {key: "file-feed", label: "File feed", read: "file-edit list", count_field: "", component: "/modules/journal.suites.coding/agent-file-edits.js"},
     {key: "terminal", label: "Terminal", read: "hook-call feed", count_field: "", component: "/modules/journal.suites.coding/terminal.js"},
@@ -103,10 +104,10 @@ test("a closed card shows the profile, name and status without open-card details
     expect(card.querySelector(".agent-dot").dataset.state).toBe("blocked");
     expect(card.textContent).not.toContain("Running");
     expect(card.querySelector("[data-agent-instruction]")).toBeNull();
-    expect(card.title).toBe("claude · sonnet · high");
+    expect(card.title).toBe("");
     card.click();
     await settle();
-    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high");
+    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("");
 });
 
 test("closed cards use the shared agent facts read for their identity", async () => {
@@ -118,17 +119,18 @@ test("closed cards use the shared agent facts read for their identity", async ()
     expect(held.reads.filter((line) => line.startsWith("usage tool --agent"))).toHaveLength(0);
 });
 
-test("the identity sits between the name and job and stays the same when opened", async () => {
+test("worker identity changes from list details to its number when opened", async () => {
     const row = {id: 4, session: "s-worker", program: "codex", role: "worker", ended_at: null};
     const facts = {model: "gpt-6.1-sol", effort: "high", given_name: "Mary Shelley", job_enabled: true, task_title: "Window converter", tasks: []};
     const element = await mounted({render: () => h(AgentCard, {row, facts})}, context({}));
     const card = element.querySelector("[data-agent-open]");
     const identity = card.querySelector("[data-agent-identity]");
-    expect(identity.textContent).toBe("codex · gpt-6.1-sol · high");
+    expect(identity.textContent).toBe("codex · gpt-6.1-sol · high · worker 4");
     expect(identity.parentElement.previousElementSibling.classList.contains("agent-head")).toBe(true);
     expect(identity.parentElement.nextElementSibling.querySelector("[data-agent-job]").textContent).toBe("Window converter");
     const opened = await mounted({render: () => h(AgentCard, {row, facts, open: true})}, context({}));
-    expect(opened.querySelector("[data-agent-identity]").textContent).toBe(identity.textContent);
+    expect(opened.querySelector("[data-agent-identity]").textContent).toBe("worker 4");
+    expect(opened.querySelector("[data-agent-open]").title).toBe("");
 });
 
 test("a click opens the card on its instruction with no usage line or Inspect button of its own, and a second closes it", async () => {
@@ -146,7 +148,7 @@ test("a click opens the card on its instruction with no usage line or Inspect bu
     expect(cardOf(element, 3).querySelector("[data-agent-instruction]")).toBeNull();
 });
 
-test("an opened card has task, transcript, file and terminal tabs", async () => {
+test("an opened card has task, report, transcript, file and terminal tabs", async () => {
     const reads = [];
     const held = window(FACTS, {}, WORKERS);
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, {...held, reads, read: (line) => (reads.push(line), held.read(line))});
@@ -155,7 +157,7 @@ test("an opened card has task, transcript, file and terminal tabs", async () => 
     card.click();
     await settle();
     card = cardOf(element, 3);
-    expect([...card.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["tasks", "transcript", "file-feed", "terminal"]);
+    expect([...card.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["tasks", "reports", "transcript", "file-feed", "terminal"]);
     expect(card.querySelector("[data-tab=tasks]").classList.contains("on")).toBe(true);
     expect(reads).not.toContain("agent transcript 3");
     card.querySelector("[data-tab=transcript]").click();

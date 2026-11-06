@@ -1,7 +1,8 @@
 <script setup>
 import {computed} from "vue";
-import {age, perHour, Icon, TimeAgo, peekRef, useNow} from "@journal/window-kit";
+import {age, perHour, Btn, Icon, TimeAgo, peekRef, useNow, useWindow} from "@journal/window-kit";
 import AgentCardDetails from "./AgentCardDetails.vue";
+import InformationBar from "../../../../../viewer/src/shell/InformationBar.vue";
 
 const FALLBACK_TITLES = {helper: "Helper", reviewer: "Reviewer"};
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, open: Boolean});
@@ -24,7 +25,8 @@ const jobRef = computed(() => {
     const match = job.value.match(/\b(plan|doc)(?::|\s+)(\d+)\b/i);
     return match ? `${match[1].toLowerCase() === "plan" ? "plans" : "docs"}:${match[2]}` : "";
 });
-const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort].filter(Boolean).join(" · "));
+const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, props.row.role === "worker" ? `worker ${props.row.id}` : ""].filter(Boolean).join(" · "));
+const context = useWindow();
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
 const stoppedWithWork = computed(() => Boolean(props.row.ended_at) && props.row.role !== "main" && tasks.value.some((task) => UNFINISHED_STATES.has(task.state)));
@@ -41,7 +43,7 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
 </script>
 
 <template>
-    <div :class="['agent-card', {open}]" :data-agent-open="row.id" :aria-expanded="open" :role="open ? undefined : 'button'" :tabindex="open ? undefined : 0" :title="identity" @click="!open && emit('toggle')" @keydown.enter.self.prevent="!open && emit('toggle')" @keydown.space.self.prevent="!open && emit('toggle')">
+    <div :class="['agent-card', {open}]" :data-agent-open="row.id" :aria-expanded="open" :role="open ? undefined : 'button'" :tabindex="open ? undefined : 0" @click="!open && emit('toggle')" @keydown.enter.self.prevent="!open && emit('toggle')" @keydown.space.self.prevent="!open && emit('toggle')">
         <span class="agent-head">
             <template v-if="open"><button type="button" class="agent-back" title="Back to the list" aria-label="Back to the list" @click.stop="emit('toggle')"><Icon name="chevronRight" facing="left" :size="14" /></button></template>
             <span class="agent-dot" :data-state="dotState" data-agent-motion />
@@ -62,12 +64,15 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
             </span>
         </span>
         <span class="agent-line">
-            <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
+            <span class="agent-identity" data-agent-identity data-agent-motion>{{ open && row.role === 'worker' ? `worker ${row.id}` : open ? '' : identity }}</span>
             <template v-if="open"><span class="agent-session" data-agent-session>Session: {{ row.session }}</span></template>
             <template v-if="open && totalCount && !job">
                 <span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span>
             </template>
         </span>
+        <template v-if="open"><InformationBar :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: []}" card>
+            <template v-if="row.role === 'helper' && !row.ended_at"><Btn variant="ghost" small data-helper-stop @click.stop="context.run(['helper', 'stop', String(row.id)])">Stop</Btn></template>
+        </InformationBar></template>
         <template v-if="open && planTask">
             <span class="agent-line agent-work-start"><button type="button" class="agent-plan" data-agent-plan :data-peek="`plans:${planTask.plan_id}`" @click.stop="peekRef(`plans:${planTask.plan_id}`)">Plan {{ planTask.plan_id }}: {{ planTask.plan_title }}</button></span>
         </template>
