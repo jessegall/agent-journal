@@ -7,10 +7,9 @@ from core.base.leftover_process import LeftoverProcess
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.subcommand.row_list import RowList
-from core.modules.plugins.queries.plugin_query import PluginQuery
+from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.modules.plugins.support.manifest_service import ManifestService
 from core.modules.plugins.support.plugin_folders import PluginFolders
-from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 
 
@@ -22,14 +21,14 @@ class PluginServicesSubcommand(ReadSubcommand[RowList]):
     cli_name = "plugin"
     name = "services"
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, sockets: PluginSocketPaths) -> None:
-        self.plugins, self.folders, self.sockets = plugins, folders, sockets
+    def __init__(self, runnable: RunnablePlugins, folders: PluginFolders, sockets: PluginSocketPaths) -> None:
+        self.runnable, self.folders, self.sockets = runnable, folders, sockets
 
     def arguments(self, parser: ArgumentParser) -> None:
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
-        return RowList([self.row(plugin.name, service) for plugin in self.plugins.enabled_plugins() for service in PluginManifest.read(self.folders.code(plugin.name)).services if self.is_listed(plugin.name, service)])
+        return RowList([self.row(runnable.plugin.name, service) for runnable in self.runnable.running() for service in runnable.manifest.services if self.is_listed(runnable.plugin.name, service)])
 
     def is_listed(self, plugin_name: str, service: ManifestService) -> bool:
         return service.is_listed(self.sockets.pid(plugin_name, service.name))

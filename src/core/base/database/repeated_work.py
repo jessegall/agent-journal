@@ -3,6 +3,7 @@ from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from contextvars import ContextVar
 from functools import cache
+import os
 from pathlib import Path
 import sqlite3
 import re
@@ -15,11 +16,15 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.file_access import FILE_READ_EVENT, FILE_CHANGE_EVENT
 from core.base.database.repeated_calls_error import RepeatedCallsError
+from core.base.database.repeated_finding import RepeatedFinding
 
 READ_LIMIT_REPEATS = 1
 READ_TEXT_LIMIT_REPEATS = 10
 COMMAND_LIMIT_REPEATS = 3
 CALLER_FRAMES = 14
+SHOWN_CALLS = 2
+SOURCE_ROOT = Path(__file__).resolve().parents[3]
+PLACEHOLDER_LIST = re.compile(r"\?(?:\s*,\s*\?)+")
 COMMAND_AUDIT_EVENT = "subprocess.Popen"
 OPEN_REQUEST: ContextVar["RepeatedWork | None"] = ContextVar("open_request", default=None)
 SCAN_TABLE = re.compile(r"\bSCAN(?: TABLE)? (\w+)")
@@ -56,6 +61,7 @@ ALLOWED_READ_REPEATS = {
 }
 BULK_SEEDS = "core/base/seed/demo.py"
 READ_HELPERS = ("core/base/database/database.py", "core/base/database/bookkeeping_table.py", "unittest/mock.py", "<string>")
+WATCH_FILES = ("core/base/database/repeated_work.py", "core/base/database/collecting_repeated_work.py", *READ_HELPERS)
 ALLOWED_FILE_READS = {
     "core/modules/plugins/support/plugin_code_diff.py": "An upgrade preview compares every file of a plugin, its manifest among them.",
 }
@@ -73,7 +79,7 @@ class RepeatedWork(PointTally):
         self.read_origins: dict[Statement, str] = {}
         self.read_texts: Counter[str] = Counter()
         self.commands: Counter[str] = Counter()
-        self.findings: list[str] = []
+        self.findings: list[RepeatedFinding] = []
         self.checked_plans: set[Statement] = set()
         self.allowed_scans: dict[Statement, str] = {}
         self.file_reads: Counter[str] = Counter()
@@ -97,7 +103,7 @@ class RepeatedWork(PointTally):
 
     def conclude(self) -> None:
         if self.findings:
-            raise RepeatedCallsError("\n".join(self.findings))
+            raise RepeatedCallsError("\n".join(finding.text for finding in self.findings))
 
     def loaded(self, rows: Sequence[sqlite3.Row], statement: Statement) -> None:
         super().loaded(rows, statement)
@@ -113,11 +119,11 @@ class RepeatedWork(PointTally):
         self.reads[statement] += 1
         self.read_texts[statement.sql] += 1
         if self.reads[statement] == 1:
-            self.read_origins[statement] = self.caller_lines()
+            self.read_origins[statement] = self.shown_calls()
         if self.reads[statement] == READ_LIMIT_REPEATS + 1:
-            self.reject(f"one request read this more than {READ_LIMIT_REPEATS} times: {statement.sql} {statement.parameters}\nfirst read:\n{self.read_origins[statement]}repeated read:\n{self.caller_lines()}")
+            self.reject(self.found("read", self.sql_without_parameters(statement), f"one request read this more than {READ_LIMIT_REPEATS} times: {statement.sql} {statement.parameters}\nfirst read:\n{self.read_origins[statement]}\nrepeated read:"))
         if self.read_texts[statement.sql] == self.read_text_limit + 1:
-            self.reject(f"one request read this SQL more than {self.read_text_limit} times: {statement.sql}\n{self.caller_lines()}")
+            self.reject(self.found("read-sql", self.sql_without_parameters(statement), f"one request read this SQL more than {self.read_text_limit} times: {statement.sql} {statement.parameters}"))
 
     def reset_stale_reads(self) -> None:
         change_mark = self.database.change_mark() if self.database is not None else None
@@ -125,9 +131,9 @@ class RepeatedWork(PointTally):
             self.reads, self.read_mark = Counter(), change_mark
             self.read_origins.clear()
 
-    def reject(self, finding: str) -> None:
+    def reject(self, finding: RepeatedFinding) -> None:
         self.findings.append(finding)
-        raise RepeatedCallsError(finding)
+        raise RepeatedCallsError(finding.text)
 
     @staticmethod
     def is_allowed_read() -> bool:
@@ -171,7 +177,7 @@ class RepeatedWork(PointTally):
             if statement.scan_reason is not None:
                 self.allowed_scans[statement] = statement.scan_reason
                 continue
-            self.findings.append(f"one request scanned {match.group(1)}: {plan}\n{statement.sql} {statement.parameters}\n{self.caller_lines()}")
+            self.findings.append(self.found("scan", f"{match.group(1)}|{self.sql_without_parameters(statement)}", f"one request scanned {match.group(1)}: {plan}\n{statement.sql} {statement.parameters}"))
 
     @staticmethod
     def has_page_bounds(page: re.Match[str], statement: Statement) -> bool:
@@ -186,13 +192,27 @@ class RepeatedWork(PointTally):
         return any(plan in (f"CO-ROUTINE {table}", f"MATERIALIZE {table}") for plan in plans)
 
     @staticmethod
-    def caller_lines() -> str:
-        return "".join(f"  {frame.filename}:{frame.lineno} {frame.name}\n" for frame in traceback.extract_stack(limit=CALLER_FRAMES))
+    def sql_without_parameters(statement: Statement) -> str:
+        return PLACEHOLDER_LIST.sub("?...", " ".join(statement.sql.split()))
+
+    @staticmethod
+    def calls() -> list[str]:
+        """The calls that led to the watch, from the outermost: file relative to the source root, line and name."""
+        frames = [frame for frame in traceback.extract_stack(limit=CALLER_FRAMES) if not frame.filename.endswith(WATCH_FILES)]
+        return [f"{os.path.relpath(frame.filename, SOURCE_ROOT)}:{frame.lineno} {frame.name}" for frame in frames]
+
+    @classmethod
+    def shown_calls(cls) -> str:
+        return "\n".join(f"  {call}" for call in cls.calls()[-SHOWN_CALLS:])
+
+    @classmethod
+    def found(cls, kind: str, subject: str, text: str) -> RepeatedFinding:
+        return RepeatedFinding("|".join([kind, subject, *cls.calls()[-SHOWN_CALLS:]]), f"{text}\n{cls.shown_calls()}")
 
     def note_command(self, command: str) -> None:
         self.commands[command] += 1
         if self.commands[command] == COMMAND_LIMIT_REPEATS + 1:
-            self.reject(f"one request started this more than {COMMAND_LIMIT_REPEATS} times: {command}")
+            self.reject(self.found("command", command, f"one request started this more than {COMMAND_LIMIT_REPEATS} times: {command}"))
 
     def note_file_read(self, path: str) -> None:
         if self.is_allowed_file_read():
@@ -203,7 +223,7 @@ class RepeatedWork(PointTally):
         self.file_versions[path] = version
         self.file_reads[path] += 1
         if self.file_reads[path] == 2:
-            self.findings.append(f"one request read file twice: {path}\n{self.caller_lines()}")
+            self.findings.append(self.found("file", path, f"one request read file twice: {path}"))
 
     @staticmethod
     def file_version(path: str) -> int:

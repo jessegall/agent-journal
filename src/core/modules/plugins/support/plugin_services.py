@@ -8,7 +8,7 @@ from core.base.child_process import ChildProcess
 from core.base.clock import Clock
 from core.base.leftover_process import LeftoverProcess
 from core.modules.plugins.models.enums.service_restart import ServiceRestart
-from core.modules.plugins.queries.plugin_query import PluginQuery
+from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.modules.plugins.support.service_fault import ServiceFault
 from core.modules.plugins.support.manifest_service import ManifestService
 from core.modules.plugins.support.plugin_fault_error import PluginFaultError
@@ -36,16 +36,16 @@ class PluginServices:
     started again and named; a service a crashed server left running is stopped, by the pid kept for it,
     before its new one starts."""
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, program: PluginProgram, sockets: PluginSocketPaths, setting_values: SettingValues,
+    def __init__(self, runnable: RunnablePlugins, folders: PluginFolders, program: PluginProgram, sockets: PluginSocketPaths, setting_values: SettingValues,
                  clock: Clock) -> None:
-        self.plugins, self.folders, self.program, self.sockets, self.setting_values, self.clock = plugins, folders, program, sockets, setting_values, clock
+        self.runnable, self.folders, self.program, self.sockets, self.setting_values, self.clock = runnable, folders, program, sockets, setting_values, clock
 
     def follow(self, processes: ServiceProcesses) -> list[ServiceFault]:
         wanted: set[tuple[str, str]] = set()
         faults: list[ServiceFault] = []
-        for plugin in self.plugins.enabled_plugins():
+        for runnable in self.runnable.running():
+            plugin, manifest = runnable.plugin, runnable.manifest
             folder = self.folders.code(plugin.name)
-            manifest = PluginManifest.read(folder)
             for service in manifest.services:
                 key = (plugin.name, service.name)
                 wanted.add(key)
@@ -104,9 +104,9 @@ class PluginServices:
 
     def check_health(self, processes: ServiceProcesses) -> list[ServiceFault]:
         misses: list[ServiceFault] = []
-        for plugin in self.plugins.enabled_plugins():
+        for runnable in self.runnable.running():
+            plugin, manifest = runnable.plugin, runnable.manifest
             folder = self.folders.code(plugin.name)
-            manifest = PluginManifest.read(folder)
             for service in [service for service in manifest.services if (plugin.name, service.name) in processes.running]:
                 path = self.sockets.health(plugin.name, service.name)
                 if manifest.health is None or not path.is_socket():
