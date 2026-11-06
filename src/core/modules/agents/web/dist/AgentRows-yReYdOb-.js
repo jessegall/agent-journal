@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
 import { openBlock as a, createElementBlock as l, normalizeStyle as Me, normalizeClass as te, toDisplayString as f, createCommentVNode as m, createElementVNode as z, renderSlot as fe, computed as g, createVNode as y, withCtx as A, createTextVNode as k, Fragment as q, renderList as de, onUnmounted as we, ref as V, onMounted as Ve, createBlock as N, Teleport as Le, mergeProps as je, watch as ge, toRef as Be, unref as b, withModifiers as he, defineAsyncComponent as Oe, withKeys as xe, createSlots as Ee, resolveDynamicComponent as Ie, nextTick as $e } from "vue";
 import { peekRef as be, Icon as ke, RunningCommand as qe, FoldGroup as He, TaskStatusIcon as Ne, useNow as We, age as De, perHour as Fe, useWindow as Ae, loadWindowComponent as Pe, TimeAgo as Ce, Btn as Ze, InnerTabs as Ke, TabBody as Ue, SwitchCase as Ge, EmptyState as Ye, useRows as Je, useDeclaredRows as Se, SearchBar as Qe, Segmented as Xe, RowList as _e } from "@journal/window-kit";
-import { _ as ae, T as et } from "./TranscriptRows-DCpyNUhv.mjs";
+import { _ as ae, T as et } from "./TranscriptRows-ByPSYos4.js";
 const tt = ["stroke-width", "innerHTML"], F = {
   __name: "Icon",
   props: {
@@ -183,13 +183,13 @@ const tt = ["stroke-width", "innerHTML"], F = {
       ])) : fe(v.$slots, "default", {}, void 0, !0, 2)
     ], 2));
   }
-}, pe = /* @__PURE__ */ ae(ot, [["__scopeId", "data-v-9c67fe37"]]), lt = {}, st = { class: "menu-label" };
+}, pe = /* @__PURE__ */ ae(ot, [["__scopeId", "data-v-fec99974"]]), lt = {}, st = { class: "menu-label" };
 function rt(e, v) {
   return a(), l("span", st, [
     fe(e.$slots, "default", {}, void 0, !0)
   ]);
 }
-const ve = /* @__PURE__ */ ae(lt, [["render", rt], ["__scopeId", "data-v-71c11156"]]), it = {
+const ve = /* @__PURE__ */ ae(lt, [["render", rt], ["__scopeId", "data-v-aa955b3e"]]), it = {
   class: "skills-menu",
   "data-agent-skills-menu": ""
 }, ct = {
@@ -250,7 +250,7 @@ const ve = /* @__PURE__ */ ae(lt, [["render", rt], ["__scopeId", "data-v-71c1115
       })
     ]));
   }
-}, ut = /* @__PURE__ */ ae(dt, [["__scopeId", "data-v-27140adf"]]), ht = (e, v, d) => Math.max(v, Math.min(d, e)), Te = /* @__PURE__ */ new WeakMap(), pt = (e, v) => Te.set(e, v);
+}, ut = /* @__PURE__ */ ae(dt, [["__scopeId", "data-v-be514d47"]]), ht = (e, v, d) => Math.max(v, Math.min(d, e)), Te = /* @__PURE__ */ new WeakMap(), pt = (e, v) => Te.set(e, v);
 function gt(e, v) {
   for (let d = v; d; d = Te.get(d) ?? d.parentElement) if (d === e) return !0;
   return !1;
@@ -347,7 +347,7 @@ const ue = 8, ft = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       ], 16)
     ], 8, ["disabled"]));
   }
-}), mt = /* @__PURE__ */ ae(ft, [["__scopeId", "data-v-7f046e0d"]]);
+}), mt = /* @__PURE__ */ ae(ft, [["__scopeId", "data-v-3d203970"]]);
 async function yt(e, v, d) {
   if (!e) return d(v);
   const { target: c, fields: t } = e, p = Object.fromEntries(Object.keys(t).map((h) => [h, c[h]])), $ = () => Object.assign(c, p);
@@ -735,7 +735,7 @@ const kt = ["disabled", "title"], bt = ["title"], xt = { class: "gauge usage" },
       }, 8, ["anchor"])) : m("", !0)
     ], 2));
   }
-}, jt = /* @__PURE__ */ ae(Lt, [["__scopeId", "data-v-9b2b9486"]]), Bt = {
+}, jt = /* @__PURE__ */ ae(Lt, [["__scopeId", "data-v-cce150b4"]]), Bt = {
   class: "agent-command",
   "data-agent-command": ""
 }, Ot = {
@@ -766,7 +766,7 @@ const kt = ["disabled", "title"], bt = ["title"], xt = { class: "gauge usage" },
       }, null, 8, ["text", "idle"]))
     ]));
   }
-}, ze = /* @__PURE__ */ ae(Et, [["__scopeId", "data-v-bb905922"]]), It = ["data-agent-delegated", "onClick"], qt = { class: "agent-task-number" }, Nt = { class: "agent-task-title" }, Wt = ["title"], Dt = {
+}, ze = /* @__PURE__ */ ae(Et, [["__scopeId", "data-v-1b371fb5"]]), It = ["data-agent-delegated", "onClick"], qt = { class: "agent-task-number" }, Nt = { class: "agent-task-title" }, Wt = ["title"], Dt = {
   __name: "AgentTaskGroup",
   props: { section: { type: Object, required: !0 }, open: Boolean },
   emits: ["toggle"],
@@ -803,7 +803,7 @@ const kt = ["disabled", "title"], bt = ["title"], xt = { class: "gauge usage" },
       _: 1
     }, 8, ["label", "count", "open", "data-agent-section"]));
   }
-}, Ft = /* @__PURE__ */ ae(Dt, [["__scopeId", "data-v-acc154a9"]]), Pt = ["data-agent-open", "aria-expanded", "role", "tabindex", "title"], Zt = { class: "agent-head" }, Kt = ["data-state"], Ut = {
+}, Ft = /* @__PURE__ */ ae(Dt, [["__scopeId", "data-v-238ff959"]]), Pt = ["data-agent-open", "aria-expanded", "role", "tabindex", "title"], Zt = { class: "agent-head" }, Kt = ["data-state"], Ut = {
   class: "agent-title",
   "data-agent-title": "",
   "data-agent-motion": ""
@@ -1126,7 +1126,7 @@ const kt = ["disabled", "title"], bt = ["title"], xt = { class: "gauge usage" },
       ], 42, Pt);
     };
   }
-}, pa = /* @__PURE__ */ ae(ha, [["__scopeId", "data-v-1c5533dd"]]), ga = ["data-agent-row"], ye = "cubic-bezier(0.2, 0.9, 0.25, 1)", va = {
+}, pa = /* @__PURE__ */ ae(ha, [["__scopeId", "data-v-c63d1d9c"]]), ga = ["data-agent-row"], ye = "cubic-bezier(0.2, 0.9, 0.25, 1)", va = {
   __name: "AgentRows",
   props: { line: { type: String, required: !0 }, empty: { type: String, required: !0 }, texts: { type: Object, default: () => ({}) } },
   setup(e) {
@@ -1249,7 +1249,7 @@ const kt = ["disabled", "title"], bt = ["title"], xt = { class: "gauge usage" },
       }, f(s.value) + " more", 1)) : m("", !0)
     ], 2));
   }
-}, Ma = /* @__PURE__ */ ae(va, [["__scopeId", "data-v-14f36759"]]);
+}, Ma = /* @__PURE__ */ ae(va, [["__scopeId", "data-v-0e32b923"]]);
 export {
   Ma as A
 };
