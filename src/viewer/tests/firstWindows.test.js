@@ -1,6 +1,8 @@
 import {expect, test, vi} from "vitest";
 import {ref} from "vue";
 import {context, drawn, mounted, page, settle} from "./support/windowContext.js";
+import {fileEditsWindowContext} from "./support/fileEditsWindowContext.js";
+import {context as agentContext} from "./support/agentWindowContext.js";
 import Chat from "../../core/modules/messages/web/src/Chat.vue";
 import TaskList from "../../core/modules/tasks/web/src/tasks.js";
 import PlanList from "../../core/modules/plans/web/src/plans.js";
@@ -74,14 +76,14 @@ test("the plans window shows each plan's title and state", async () => {
 
 test("the agents window shows each helper's role", async () => {
     const rows = page([{id: 6, role: "worker", session: "s-3", program: "claude"}, {id: 7, role: "helper", session: "s-4", program: "claude"}]);
-    const text = await drawn(AgentList, context({"agent cards": rows}));
+    const text = await drawn(AgentList, agentContext({"agent cards": rows}));
     expect(text).toContain("Worker6");
     expect(text).toContain("Helper");
 });
 
 test("the helpers window lists every agent but the main one", async () => {
     const rows = page([{id: 2, role: "main", session: "s-1", program: "claude"}, {id: 5, role: "helper", session: "s-1/a", program: "claude"}, {id: 6, role: "worker", session: "w-1", program: "claude"}]);
-    const windowContext = context({"agent cards": page(rows.value.rows.filter((row) => row.role !== "main"))});
+    const windowContext = agentContext({"agent cards": page(rows.value.rows.filter((row) => row.role !== "main"))});
     const text = await drawn(SubagentList, windowContext);
     expect(text).toContain("Helper5");
     expect(text).toContain("Worker6");
@@ -104,7 +106,7 @@ test("the file feed shows its agent's edits with their counts", async () => {
 });
 
 test("the file edits window shows every agent's edits", async () => {
-    expect(await drawn(FileEdits, context({"file-edit list": page([{id: 1, path: "src/cart.py", added: 3, removed: 1, agent_id: 2}])}))).toContain("src/cart.py");
+    expect(await drawn(FileEdits, fileEditsWindowContext({"file-edit list": page([{id: 1, path: "src/cart.py", added: 3, removed: 1, session_agent_id: 2}])}))).toContain("src/cart.py");
 });
 
 test("a window shows the reason a read was refused", async () => {

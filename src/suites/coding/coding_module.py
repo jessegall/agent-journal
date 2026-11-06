@@ -12,6 +12,7 @@ from core.base.agent_type import AgentType
 from core.base.viewer.window_search import WindowSearch
 from suites.coding.support.file_edit_searcher import FileEditSearcher
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.auto_scroll import AutoScroll
 from core.base.viewer.choice_option import ChoiceOption
 from core.base.viewer.window_icon import WindowIcon
@@ -87,7 +88,7 @@ class CodingModule(Module):
                WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, skeleton=CODING_FILE_FEED_SKELETON, search=WindowSearch(FileEditSearcher, "Filter files"), icon=WindowIcon.FILE, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM, reads=FILE_EDIT_READS,
                                  events=["file_edit.create"]),
                WindowDeclaration("coding.file-edits", "File edits", "file-edits.js", WindowLoading.COMPONENT, skeleton=CODING_FILE_EDITS_SKELETON, search=WindowSearch(FileEditSearcher, "Filter files"), icon=WindowIcon.COMMIT, reads=[*FILE_EDIT_READS, "agent list"],
-                                 events=["file_edit.create"]),
+                                 events=["file_edit.create"], keys=[WindowKey("edits", "file-edit list", events=["file_edit.create"], arguments=["limit", "before-id", "after-id"], page_size=50)]),
                WindowDeclaration("coding.terminal", "Terminal", "terminal.js", WindowLoading.COMPONENT, skeleton=CODING_TERMINAL_SKELETON, icon=WindowIcon.TERMINAL, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM,
                                  reads=["agent terminal", "hook-call feed"], runs=["agent type"], events=["hook_call.*"],
                                  options=[ChoiceOption("verbosity", "Detail level", [("commands", "Commands"), ("journal", "Commands and journal"), ("everything", "Show everything")], "everything")])]
