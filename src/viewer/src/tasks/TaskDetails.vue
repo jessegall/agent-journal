@@ -3,11 +3,12 @@ import TimeAgo from "../../kit/TimeAgo.vue";
 import {updatedAt} from "../domain/row.js";
 import {statusIcon} from "../domain/taskStatus.js";
 import TaskFacts from "./TaskFacts.vue";
+import TaskChain from "./TaskChain.vue";
 import TaskBlockRenewals from "./TaskBlockRenewals.vue";
 import TaskSections from "./TaskSections.vue";
 import TaskStatusIcon from "./TaskStatusIcon.vue";
 
-defineProps({task: {type: Object, required: true}, place: {type: Object, default: null}, refusal: {type: String, default: ""}});
+defineProps({task: {type: Object, required: true}, place: {type: Object, default: null}, graph: {type: Object, default: null}, refusal: {type: String, default: ""}});
 const emit = defineEmits(["status", "priority", "select"]);
 const label = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 </script>
@@ -41,6 +42,9 @@ const label = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
                 <span class="label">Why it was cancelled</span>
                 <p class="text">{{ task.reason }}</p>
             </section>
+        </template>
+        <template v-if="graph">
+            <TaskChain :task="task" :graph="graph" @select="emit('select', $event)" />
         </template>
         <TaskFacts :task="task" :place="place" :refusal="refusal" @priority="emit('priority', $event)" />
         <TaskSections :task="task" @select="emit('select', $event)" />

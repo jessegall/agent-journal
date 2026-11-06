@@ -41,6 +41,7 @@ async function inspector(logs = async () => ({ok: true, value: {rows: [], is_las
                     block_renewals,
                 },
             };
+        if (line[1] === "graph") return {ok: true, value: {tasks: [], edges: []}};
         if (line[1] === "comments")
             return {ok: true, value: {rows: [{id: 2, text: `On task ${id.value}, Task ${id.value}: A comment on the task`}]}};
         return {ok: true, value: {rows: []}};
