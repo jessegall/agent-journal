@@ -23,6 +23,7 @@ from core.modules.plugins.support.plugin_payload import PluginPayload
 from core.modules.plugins.support.plugin_subscriptions import PluginSubscriptions
 
 FAULT_WRITES = (RecordPluginFault, ClearPluginFaults)
+GUARD_NAME = "plugins.event-guard"
 
 
 class PluginEventScripts:
@@ -38,6 +39,8 @@ class PluginEventScripts:
             return ()
         runs, change = context.outside_runs, Change.of(event, context)
         subscriptions = self.subscriptions.scripts(change.event, form)
+        if form is EventForm.GUARD:
+            subscriptions = tuple(subscription for subscription in subscriptions if not (subscription.allows_skip and f"{GUARD_NAME}:{subscription.plugin}" in context.skipped_guards))
         if not subscriptions or context.explanation is not None or runs.from_plugin_script:
             return ()
         turn = runs.turn(form.value, change.event)

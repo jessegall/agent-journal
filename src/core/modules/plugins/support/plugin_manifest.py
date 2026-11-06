@@ -245,6 +245,9 @@ class PluginManifest:
     def script_for_key(self, key: str, form: EventForm) -> str:
         return next((listener.inside_script(form) for listener in self.listeners if listener.event == key and listener.script(form)), "")
 
+    def allows_skip(self, key: str) -> bool:
+        return all(listener.allows_skip for listener in self.listeners if listener.event == key)
+
     def project_folders(self, project_root: Path) -> tuple[Path, ...]:
         real_root = project_root.resolve()
         folders = ((real_root / entry).resolve() for entry in self.project_reads if not Path(entry).is_absolute())

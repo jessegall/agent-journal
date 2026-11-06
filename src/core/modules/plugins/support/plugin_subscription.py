@@ -8,3 +8,4 @@ class PluginSubscription:
     plugin: str
     script: str
     plugin_id: int = field(default=0, compare=False)
+    allows_skip: bool = field(default=True, compare=False)

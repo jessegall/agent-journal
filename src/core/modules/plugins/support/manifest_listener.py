@@ -9,7 +9,8 @@ from core.base.type_guards import is_mapping
 class ManifestListener:
     """One entry of a manifest's listen list: the key it names and the script of each form, empty where none. An
     entry of the wrong shape is kept and marked wrong, so the card can show it, and a script path that leaves the
-    plugin's folder is kept and listed as outside, so it installs and never runs."""
+    plugin's folder is kept and listed as outside, so it installs and never runs. An entry with skip false cannot be
+    passed with --skip-guard."""
 
     event: str
     guard: str = ""
@@ -17,6 +18,7 @@ class ManifestListener:
     commit: str = ""
     is_wrong: bool = False
     outside_scripts: tuple[str, ...] = ()
+    allows_skip: bool = True
 
     @classmethod
     def parsed(cls, entry: object, folder: Path) -> "ManifestListener":
@@ -24,7 +26,7 @@ class ManifestListener:
             return cls(str(entry), is_wrong=True)
         scripts = [str(entry.get(form.value, "")) for form in EventForm]
         guard, listen, commit = scripts
-        return cls(str(entry["event"]), guard, listen, commit, outside_scripts=tuple(script for script in scripts if script and not cls.stays_inside(script, folder)))
+        return cls(str(entry["event"]), guard, listen, commit, outside_scripts=tuple(script for script in scripts if script and not cls.stays_inside(script, folder)), allows_skip=entry.get("skip") is not False)
 
     @staticmethod
     def stays_inside(script: str, folder: Path) -> bool:

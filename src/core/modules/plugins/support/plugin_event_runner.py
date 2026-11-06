@@ -53,7 +53,7 @@ class PluginEventRunner:
             return None
         if plugin.fault_count:
             self.record(ClearPluginFaults(plugin.id))
-        return PluginEventAnswer(plugin.name, plugin.id, answer)
+        return PluginEventAnswer(plugin.name, plugin.id, answer, subscription.allows_skip)
 
     def may_run(self, plugin: Plugin, manifest: PluginManifest, cause_id: int | None = None) -> bool:
         if self.folders.is_upgrading(plugin.name):

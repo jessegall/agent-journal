@@ -10,3 +10,4 @@ class PluginEventAnswer:
     plugin: str
     plugin_id: int
     answer: PluginAnswer
+    allows_skip: bool = True

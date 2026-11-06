@@ -32,5 +32,5 @@ class PluginSubscriptions:
                 for form in offered:
                     script = runnable.manifest.script_for_key(key, form)
                     if script:
-                        found.setdefault((event, form), []).append(PluginSubscription(runnable.plugin.name, script, runnable.plugin.id))
+                        found.setdefault((event, form), []).append(PluginSubscription(runnable.plugin.name, script, runnable.plugin.id, runnable.manifest.allows_skip(key)))
         return {place: tuple(rows) for place, rows in found.items()}
