@@ -39,7 +39,7 @@ class UsageModule(Module):
     listeners = [EndedAgentStatusListener]
     moves = [StatisticsMove]
     subcommands = [AgentLimitsSubcommand, AgentCardsSubcommand, UsageAgentsSubcommand, UsageFitnessSubcommand, UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, UsageAgentSubcommand, StatisticListSubcommand]
-    windows = [WindowDeclaration("usage.usage", "Usage", "usage.js", WindowLoading.COMPONENT, skeleton=USAGE_USAGE_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"]),
+    windows = [WindowDeclaration("usage.usage", "Usage", "usage.js", WindowLoading.COMPONENT, skeleton=USAGE_USAGE_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"], keys=[WindowKey("usage", "usage show", reload_seconds=30)]),
                WindowDeclaration("usage.cost", "Cost", "cost.js", WindowLoading.COMPONENT, skeleton=USAGE_COST_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"], keys=[WindowKey("usage", "usage show", reload_seconds=30)]),
                WindowDeclaration("usage.fitness", "Fitness", "fitness.js", WindowLoading.COMPONENT, skeleton=USAGE_FITNESS_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, shows=WindowShows.SELECTED_AGENT, reads=["usage fitness"], keys=[WindowKey("fitness", "usage fitness", arguments=["agent"])]),
                WindowDeclaration("usage.load", "Load", "load.js", WindowLoading.COMPONENT, skeleton=USAGE_MACHINE_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, shows=WindowShows.SELECTED_AGENT, reads=["usage fitness"], keys=[WindowKey("fitness", "usage fitness", arguments=["agent"])]),

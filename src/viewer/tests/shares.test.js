@@ -12,7 +12,7 @@ const SECOND = {...OPEN, id: 3};
 function window(rows = [WAITING, OPEN, SECOND], tunnel = "https://cart.tunler.example") {
     const declared = {
         shares: {events: ["share_link.*", "share_comment.*"], loading: "first", page_size: 0},
-        tunnel: {events: ["tunnel.*"], loading: "first", page_size: 0},
+        tunnel: {events: [], loading: "requested", page_size: 0},
         opens: {events: [], loading: "requested", page_size: 0},
         "comments.*": {events: ["share_comment.*"], loading: "requested", page_size: 0},
     };
@@ -26,7 +26,7 @@ function window(rows = [WAITING, OPEN, SECOND], tunnel = "https://cart.tunler.ex
     held.read = vi.fn(() => {throw new Error("Shares must read through its keys");});
     held.readKeys = async ({only = [], state = {}}) => {
         held.keyReads.push({only, state});
-        const names = only.length ? only : ["shares", "tunnel"];
+        const names = only.length ? only : ["shares"];
         return {ok: true, value: {declared, keys: Object.fromEntries(names.map((name) => [name, answers[name]]))}};
     };
     held.run = async (line) => (held.lines.push(line), {ok: true, value: {link: "/viewer/share/abc", expires_at: null}});
@@ -61,7 +61,7 @@ test("the links are read again when a link or comment changes, never on a timer"
     const follows = [];
     held.follow = (patterns, heard) => follows.push({patterns, heard});
     await mounted(ShareRows, held);
-    expect(follows[0].patterns).toEqual(["share_link.*", "share_comment.*", "tunnel.*"]);
+    expect(follows[0].patterns).toEqual(["share_link.*", "share_comment.*"]);
     expect(timer).not.toHaveBeenCalled();
     expect(held.keyReads).toEqual([{only: [], state: {}}]);
     await follows[0].heard({event: "share_link.update"});

@@ -32,8 +32,9 @@ async function run(line) {
     return answer;
 }
 
-function address(answer) {
-    const tunnel = window.props.tunnel.data.value;
+async function address(answer) {
+    await window.reload("tunnel");
+    const tunnel = window.props.tunnel.failure.value ? null : window.props.tunnel.data.value;
     const start = tunnel?.address || globalThis.location.origin;
     return {...answer.value, address: `${start}${answer.value.link}`, outside: Boolean(tunnel?.address)};
 }
@@ -50,14 +51,14 @@ if (target.value) previewOpens();
 async function make() {
     const answer = await run(["share", "make", target.value.trim(), "--ends", ends.value, ...(password.value ? [`--password=${password.value}`] : []), ...(comments.value ? ["--comments"] : [])]);
     if (!answer.ok) return;
-    made.value = address(answer);
+    made.value = await address(answer);
     password.value = "";
     opens.value = null;
 }
 
 async function accept(row) {
     const answer = await run(["share", "accept", String(row.id)]);
-    if (answer.ok) made.value = address(answer);
+    if (answer.ok) made.value = await address(answer);
 }
 
 async function stopEvery() {

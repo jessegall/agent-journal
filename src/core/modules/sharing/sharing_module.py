@@ -52,6 +52,6 @@ class SharingModule(Module):
     windows = [WindowDeclaration("sharing.shares", "Shares", "shares.js", WindowLoading.COMPONENT, skeleton=SHARING_SHARES_SKELETON, search=WindowSearch(ShareSearcher, "Search the links"), group="project", icon=WindowIcon.SHARE,
                                  reads=["share list", "share comments", "share opens", "tunnel status"], runs=["share make", "share revoke", "share accept", "share deny"], events=["share_link.*", "share_comment.*"],
                                  keys=[WindowKey("shares", "share list", events=["share_link.*", "share_comment.*"]),
-                                       WindowKey("tunnel", "tunnel status", events=["tunnel.*"]),
+                                       WindowKey("tunnel", "tunnel status", loading=KeyLoading.REQUESTED),
                                        WindowKey("opens", "share opens", arguments=["target"], loading=KeyLoading.REQUESTED),
                                        WindowKey("comments.*", "share comments {id}", events=["share_comment.*"], loading=KeyLoading.REQUESTED)])]
