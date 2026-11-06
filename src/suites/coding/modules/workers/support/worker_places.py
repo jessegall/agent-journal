@@ -48,7 +48,9 @@ class WorkerPlaces:
         kept = self.kept_workers()
         if self.kept_limit() != NO_LIMIT and len(kept) >= self.kept_limit():
             names = ", ".join(f"agent:{worker.id}" for worker in kept[:KEPT_NAMES_SHOWN])
-            raise Refusal(f"{self.kept_limit()} workers are kept: {names}", 'journal agent retire <n> --reason "<why>"')
+            idle = next((worker for worker in kept if worker.ended_at is not None), None)
+            way_out = "all of them run: wait for a report" if idle is None else f'journal agent retire {idle.id} --reason "<why>"'
+            raise Refusal(f"{self.kept_limit()} workers are kept: {names}", way_out)
 
     def run_limit(self) -> int:
         return self.limits.of(CodingAgentRole.WORKER).run

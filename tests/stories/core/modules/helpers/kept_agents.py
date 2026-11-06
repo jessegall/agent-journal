@@ -229,3 +229,13 @@ def test_same_reviewer_same_plan_is_refused(new_story, monkeypatch):
     launcher.server.close()
     story.home.socket("launcher").unlink()
 
+
+def test_refusals_fit_and_a_kept_limit_with_all_running_says_wait(new_story):
+    story = new_story(fixture=StartedHelper)
+    story.expect_success('setting set journal.core.helpers.helper-profile-limits \'["journal-researcher:4:1"]\' --project', actor=story.user)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    outcome = story.run("helper start journal-researcher --brief 'Read src/other.py' --environment main", actor=story.agent)
+    launcher.server.close()
+    story.home.socket("launcher").unlink()
+    story.expect_rows("all of them run" in outcome.output_text, max(len(line) for line in outcome.output_text.splitlines()) <= 120)
+

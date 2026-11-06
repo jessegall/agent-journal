@@ -58,7 +58,9 @@ class HelperLimits:
         kept = tuple(self.helpers(profile).matching(IsNull("retired_at")).all_rows())
         limit = self.limits.of(AgentRole.HELPER, profile).kept
         if limit != NO_LIMIT and len(kept) >= limit:
-            raise Refusal(f"{limit} of {profile} are kept", f'journal agent retire {kept[0].id} --reason "<why>"')
+            idle = next((helper for helper in kept if helper.ended_at is not None), None)
+            way_out = "all of them run: wait for a report" if idle is None else f'journal agent retire {idle.id} --reason "<why>"'
+            raise Refusal(f"{limit} of {profile} are kept", way_out)
 
     def helpers(self, profile: str) -> Query[Agent]:
         return self.queries.query(Agent).filter(role=AgentRole.HELPER, profile=profile)
