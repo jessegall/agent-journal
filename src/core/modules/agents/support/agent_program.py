@@ -5,8 +5,7 @@ from core.modules.agents.support.launcher_link import LauncherLink
 
 
 class AgentProgram:
-    """Stops an agent's program: through the launcher that runs it, which stops its children too, or else under the
-    pid its row keeps, only while that pid still runs that program. Says whether anything could be asked to stop it."""
+    """Stop an agent's program through its launcher or recorded process."""
 
     def __init__(self, providers: Providers, launcher: LauncherLink) -> None:
         self.providers, self.launcher = providers, launcher

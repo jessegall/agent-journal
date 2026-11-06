@@ -17,8 +17,8 @@ def test_a_second_test_round_of_the_same_task_gets_its_own_mark(new_story, monke
     story.expect_success('task edit 1 --brief "- Cart\n- Tax"', actor=story.agent)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", "TOTAL = 2\n")
-    story.expect_success('proof make 1 "cart.py:1" --test "pytest tests/cart.py"', actor=worker)
-    story.expect_success('proof make 2 "tax.py:1, read by hand"', actor=worker)
+    story.expect_success('proof make 1 --task 1 "cart.py:1" --test "pytest tests/cart.py"', actor=worker)
+    story.expect_success('proof make 2 --task 1 "tax.py:1, read by hand"', actor=worker)
     story.expect_success("worker deliver", actor=worker)
     story.run_listeners()
     ended(story, started[0], 0)
@@ -27,7 +27,7 @@ def test_a_second_test_round_of_the_same_task_gets_its_own_mark(new_story, monke
 
     story.expect_success(f'worker send {worker.id} "Add the tax test"', actor=story.agent)
     repository.changed(worker.id, "tax.py", "TAX = 1\n")
-    story.expect_success('proof make 2 "tax.py:1" --test "pytest tests/tax.py"', actor=worker)
+    story.expect_success('proof make 2 --task 1 "tax.py:1" --test "pytest tests/tax.py"', actor=worker)
     story.expect_success("worker deliver", actor=worker)
     story.run_listeners()
 

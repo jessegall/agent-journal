@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from core.base.database.reported_findings import ReportedFindings
 from core.base.journal_home import JournalHome
-from core.base.provider.written_rows import WrittenRows
+from core.base.provider.transcript_entries import TranscriptEntries
 from core.base.timestamp import Timestamp
 from server.code_version import CodeVersion
 from server.hook.hook_database import HookDatabase
@@ -32,4 +32,4 @@ class ServerContext:
     reported_findings: ReportedFindings
     hook_limit_seconds: float = HOOK_LIMIT_SECONDS
     agent_hook_limit_seconds: float = AGENT_HOOK_LIMIT_SECONDS
-    written_rows: WrittenRows = field(default_factory=WrittenRows)
+    transcript_entries: TranscriptEntries = field(default_factory=TranscriptEntries)

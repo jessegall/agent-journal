@@ -29,13 +29,13 @@ class MessageQuery(Query[Message]):
         return self.kept.read(self.table.name, self.filter(creator_id=creator_id, type=MessageType.AGENT).newest().first,
                               "creator_id = ? AND type = ?", [creator_id, MessageType.AGENT], name="messages.latest_agent_message")
 
-    def latest_reply(self, creator_id: int, since: Timestamp, until: Timestamp) -> Message | None:
-        return self.agent_messages().filter(creator_id=creator_id).matching(HasValue("parent_id")).matching(Minimum("created_at", since.text)).matching(Maximum("created_at", until.text)).newest().first()
+    def latest_reply(self, creator_id: int, start_at: Timestamp, end_at: Timestamp) -> Message | None:
+        return self.agent_messages().filter(creator_id=creator_id).matching(HasValue("parent_id")).matching(Minimum("created_at", start_at.text)).matching(Maximum("created_at", end_at.text)).newest().first()
 
-    def has_text_since(self, creator_id: int, text: str, since: Timestamp) -> bool:
-        return self.filter(creator_id=creator_id, text=text).matching(Minimum("created_at", since.text)).exists()
+    def has_text_after(self, creator_id: int, text: str, cutoff_at: Timestamp) -> bool:
+        return self.filter(creator_id=creator_id, text=text).matching(Minimum("created_at", cutoff_at.text)).exists()
 
-    def told_at(self, agent_id: int, delivered_at: Timestamp) -> Self:
+    def delivered_at(self, agent_id: int, delivered_at: Timestamp) -> Self:
         return self.unread(agent_id).matching(Equal("delivered_at", delivered_at.text))
 
     def remember(self, message: Message) -> None:

@@ -3,30 +3,30 @@ from datetime import timedelta
 
 import pytest
 
-from core.base.provider.written_rows import WrittenRows
+from core.base.provider.transcript_entries import TranscriptEntries
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.server.support.server_client import server_story
 
-LOST_TEXT = "Loading the nudge records takes 10.5 seconds, so I am reading the query code now."
+AGENT_TEXT = "Loading the nudge records takes 10.5 seconds, so I am reading the query code now."
 TOOL_FINISHED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
-SETTLED = timedelta(seconds=30)
+HOOK_DELAY = timedelta(seconds=30)
 
 
 def agent_row(story, text: str, age: timedelta = timedelta()) -> dict[str, object]:
-    return {"type": "assistant", "timestamp": written_at(story, age), "message": {"role": "assistant", "content": [{"type": "text", "text": text}]}}
+    return {"type": "assistant", "timestamp": entry_timestamp(story, age), "message": {"role": "assistant", "content": [{"type": "text", "text": text}]}}
 
 
-def typed_row(story, text: str, **fields: object) -> dict[str, object]:
-    return {"type": "user", "promptSource": "typed", "timestamp": written_at(story, timedelta()), "message": {"role": "user", "content": text}, **fields}
+def prompt_row(story, text: str, **fields: object) -> dict[str, object]:
+    return {"type": "user", "promptSource": "typed", "timestamp": entry_timestamp(story, timedelta()), "message": {"role": "user", "content": text}, **fields}
 
 
 def codex_row(story, role: str, text: str) -> dict[str, object]:
     block = {"type": "output_text" if role == "assistant" else "input_text", "text": text}
-    return {"type": "response_item", "timestamp": written_at(story, timedelta()), "payload": {"type": "message", "role": role, "content": [block]}}
+    return {"type": "response_item", "timestamp": entry_timestamp(story, timedelta()), "payload": {"type": "message", "role": role, "content": [block]}}
 
 
-def written_at(story, age: timedelta) -> str:
+def entry_timestamp(story, age: timedelta) -> str:
     return (story.clock.timestamp().value - age).isoformat()
 
 
@@ -37,8 +37,8 @@ def transcript(tmp_path, *rows: dict[str, object]) -> str:
     return str(path)
 
 
-def later_hook(story, path: str, sample=None) -> None:
-    story.advance(SETTLED)
+def run_hook(story, path: str, sample=None) -> None:
+    story.advance(HOOK_DELAY)
     story.hook("s-1", (sample or HookSamples.prompt("go on")).with_raw({"transcript_path": path}))
 
 
@@ -47,8 +47,8 @@ def chat(story) -> str:
 
 
 def expect_chat_count(story, text: str, expected: int) -> None:
-    shown = chat(story)
-    assert shown.count(text) == expected, shown
+    output = chat(story)
+    story.expect_rows(output.count(text) == expected)
 
 
 @pytest.fixture
@@ -57,132 +57,132 @@ def builder(new_story):
 
 
 @pytest.fixture
-def replied(builder):
+def reply_story(builder):
     builder.run('message send "are you there" --environment main', actor=builder.user)
     builder.hook("s-1", HookSamples.prompt("go on"))
-    builder.advance(SETTLED)
+    builder.advance(HOOK_DELAY)
     builder.run('message reply 1 "yes"', actor=builder.agent)
-    builder.advance(SETTLED)
+    builder.advance(HOOK_DELAY)
     return builder
 
 
 @pytest.fixture
-def served(builder):
+def server(builder):
     builder.run('message send "are you there" --environment main', actor=builder.user)
     with server_story(builder) as story:
         yield story
 
 
-def test_text_whose_display_hook_went_unchecked_reaches_the_chat_at_a_later_hook(builder, tmp_path):
-    path = transcript(tmp_path, agent_row(builder, LOST_TEXT))
-    later_hook(builder, path)
-    expect_chat_count(builder, LOST_TEXT, 1)
+def test_text_whose_display_hook_went_unchecked_reaches_the_chat_at_a_run_hook(builder, tmp_path):
+    path = transcript(tmp_path, agent_row(builder, AGENT_TEXT))
+    run_hook(builder, path)
+    expect_chat_count(builder, AGENT_TEXT, 1)
 
 
 def test_text_the_display_hook_recorded_is_not_recorded_again(builder, tmp_path):
-    builder.hook("s-1", HookSamples.message_display(LOST_TEXT))
-    later_hook(builder, transcript(tmp_path, agent_row(builder, LOST_TEXT, SETTLED)))
-    expect_chat_count(builder, LOST_TEXT, 1)
+    builder.hook("s-1", HookSamples.message_display(AGENT_TEXT))
+    run_hook(builder, transcript(tmp_path, agent_row(builder, AGENT_TEXT, HOOK_DELAY)))
+    expect_chat_count(builder, AGENT_TEXT, 1)
 
 
 def test_a_few_words_the_display_hook_kept_out_of_the_chat_stay_out(builder, tmp_path):
     builder.hook("s-1", HookSamples.prompt("[journal] output 3 ended: finished"))
     builder.hook("s-1", HookSamples.message_display("The stories are running."))
-    later_hook(builder, transcript(tmp_path, agent_row(builder, "The stories are running.")), TOOL_FINISHED)
+    run_hook(builder, transcript(tmp_path, agent_row(builder, "The stories are running.")), TOOL_FINISHED)
     expect_chat_count(builder, "The stories are running.", 0)
 
 
 def test_text_just_written_waits_for_its_own_display_hook(builder, tmp_path):
-    path = transcript(tmp_path, agent_row(builder, LOST_TEXT))
+    path = transcript(tmp_path, agent_row(builder, AGENT_TEXT))
     builder.hook("s-1", HookSamples.prompt("go on").with_raw({"transcript_path": path}))
-    expect_chat_count(builder, LOST_TEXT, 0)
-    builder.hook("s-1", HookSamples.message_display(LOST_TEXT))
-    later_hook(builder, path, TOOL_FINISHED)
-    expect_chat_count(builder, LOST_TEXT, 1)
+    expect_chat_count(builder, AGENT_TEXT, 0)
+    builder.hook("s-1", HookSamples.message_display(AGENT_TEXT))
+    run_hook(builder, path, TOOL_FINISHED)
+    expect_chat_count(builder, AGENT_TEXT, 1)
 
 
 def test_a_restarted_server_that_reads_the_file_again_records_nothing_twice(builder, tmp_path):
-    path = transcript(tmp_path, agent_row(builder, LOST_TEXT))
-    later_hook(builder, path)
-    builder.container.bind(WrittenRows, WrittenRows())
-    later_hook(builder, path, TOOL_FINISHED)
-    expect_chat_count(builder, LOST_TEXT, 1)
+    path = transcript(tmp_path, agent_row(builder, AGENT_TEXT))
+    run_hook(builder, path)
+    builder.container.bind(TranscriptEntries, TranscriptEntries())
+    run_hook(builder, path, TOOL_FINISHED)
+    expect_chat_count(builder, AGENT_TEXT, 1)
 
 
 def test_the_same_words_written_again_later_are_a_new_text(builder, tmp_path):
-    path = transcript(tmp_path, agent_row(builder, LOST_TEXT))
-    later_hook(builder, path)
+    path = transcript(tmp_path, agent_row(builder, AGENT_TEXT))
+    run_hook(builder, path)
     builder.advance(timedelta(minutes=5))
-    later_hook(builder, transcript(tmp_path, agent_row(builder, LOST_TEXT)), TOOL_FINISHED)
-    expect_chat_count(builder, LOST_TEXT, 2)
+    run_hook(builder, transcript(tmp_path, agent_row(builder, AGENT_TEXT)), TOOL_FINISHED)
+    expect_chat_count(builder, AGENT_TEXT, 2)
 
 
 def test_text_written_before_the_agent_started_is_not_recorded(builder, tmp_path):
-    later_hook(builder, transcript(tmp_path, agent_row(builder, LOST_TEXT, timedelta(days=2))))
-    expect_chat_count(builder, LOST_TEXT, 0)
+    run_hook(builder, transcript(tmp_path, agent_row(builder, AGENT_TEXT, timedelta(days=2))))
+    expect_chat_count(builder, AGENT_TEXT, 0)
 
 
 def test_codex_text_whose_hook_went_unchecked_reaches_the_chat(builder, tmp_path):
-    later_hook(builder, transcript(tmp_path, codex_row(builder, "assistant", LOST_TEXT)), HookSamples.prompt("go on").with_fields(program="codex"))
-    expect_chat_count(builder, LOST_TEXT, 1)
+    run_hook(builder, transcript(tmp_path, codex_row(builder, "assistant", AGENT_TEXT)), HookSamples.prompt("go on").with_fields(program="codex"))
+    expect_chat_count(builder, AGENT_TEXT, 1)
 
 
 def test_an_idle_agents_lost_text_reaches_the_chat_at_a_tick(builder, tmp_path, monkeypatch):
     monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path))
     folder = tmp_path / "projects" / "shop"
     folder.mkdir(parents=True)
-    (folder / "s-1.jsonl").write_text(json.dumps(agent_row(builder, LOST_TEXT)) + "\n")
-    builder.advance(SETTLED)
+    (folder / "s-1.jsonl").write_text(json.dumps(agent_row(builder, AGENT_TEXT)) + "\n")
+    builder.advance(HOOK_DELAY)
     builder.tick("s-1")
-    expect_chat_count(builder, LOST_TEXT, 1)
+    expect_chat_count(builder, AGENT_TEXT, 1)
 
 
-def test_text_after_a_reply_shows_once_a_tool_follows_it(replied):
-    replied.hook("s-1", HookSamples.message_display(LOST_TEXT))
-    expect_chat_count(replied, LOST_TEXT, 0)
-    replied.hook("s-1", TOOL_FINISHED)
-    replied.hook("s-1", TOOL_FINISHED)
-    expect_chat_count(replied, LOST_TEXT, 1)
+def test_text_after_a_reply_shows_once_a_tool_follows_it(reply_story):
+    reply_story.hook("s-1", HookSamples.message_display(AGENT_TEXT))
+    expect_chat_count(reply_story, AGENT_TEXT, 0)
+    reply_story.hook("s-1", TOOL_FINISHED)
+    reply_story.hook("s-1", TOOL_FINISHED)
+    expect_chat_count(reply_story, AGENT_TEXT, 1)
 
 
-def test_a_second_text_after_a_reply_is_still_held_until_its_tool(replied):
-    replied.hook("s-1", HookSamples.message_display("First part."))
-    replied.hook("s-1", TOOL_FINISHED)
-    replied.hook("s-1", HookSamples.message_display("All of it is in."))
-    expect_chat_count(replied, "First part.", 1)
-    expect_chat_count(replied, "All of it is in.", 0)
+def test_a_second_text_after_a_reply_is_still_held_until_its_tool(reply_story):
+    reply_story.hook("s-1", HookSamples.message_display("First part."))
+    reply_story.hook("s-1", TOOL_FINISHED)
+    reply_story.hook("s-1", HookSamples.message_display("All of it is in."))
+    expect_chat_count(reply_story, "First part.", 1)
+    expect_chat_count(reply_story, "All of it is in.", 0)
 
 
-def test_a_closing_line_after_a_reply_stays_out_of_the_chat(replied):
-    replied.hook("s-1", HookSamples.message_display("I told you where it stands."))
-    replied.hook("s-1", HookSamples.stop())
-    expect_chat_count(replied, "I told you where it stands.", 0)
+def test_a_closing_line_after_a_reply_stays_out_of_the_chat(reply_story):
+    reply_story.hook("s-1", HookSamples.message_display("I told you where it stands."))
+    reply_story.hook("s-1", HookSamples.stop())
+    expect_chat_count(reply_story, "I told you where it stands.", 0)
 
 
-def test_lost_text_after_a_reply_shows_when_a_tool_came_after_it(replied, tmp_path):
-    later_hook(replied, transcript(tmp_path, agent_row(replied, LOST_TEXT)), TOOL_FINISHED)
-    expect_chat_count(replied, LOST_TEXT, 1)
+def test_lost_text_after_a_reply_shows_when_a_tool_came_after_it(reply_story, tmp_path):
+    run_hook(reply_story, transcript(tmp_path, agent_row(reply_story, AGENT_TEXT)), TOOL_FINISHED)
+    expect_chat_count(reply_story, AGENT_TEXT, 1)
 
 
-def test_a_lost_closing_line_after_a_reply_stays_out_of_the_chat(replied, tmp_path):
-    later_hook(replied, transcript(tmp_path, agent_row(replied, "I told you where it stands.")))
-    expect_chat_count(replied, "I told you where it stands.", 0)
+def test_a_lost_closing_line_after_a_reply_stays_out_of_the_chat(reply_story, tmp_path):
+    run_hook(reply_story, transcript(tmp_path, agent_row(reply_story, "I told you where it stands.")))
+    expect_chat_count(reply_story, "I told you where it stands.", 0)
 
 
-def test_a_new_message_line_comes_at_the_next_hook_after_one_went_through_unchecked(served):
-    served.expect_locked_hook_answer(hook_body("unchecked-tool"), "the journal let this through unchecked")
-    served.expect_hook_answer("/hook", hook_body("next-tool"), 200, "new message 1")
+def test_a_new_message_line_comes_at_the_next_hook_after_one_went_through_unchecked(server):
+    server.expect_locked_hook_answer(hook_body("unchecked-tool"), "the journal let this through unchecked")
+    server.expect_hook_answer("/hook", hook_body("next-tool"), 200, "new message 1")
 
 
-def test_a_new_message_line_whose_hook_left_before_the_answer_comes_again_at_the_next_hook(served):
-    served.send_hook_and_leave(hook_body("left-tool"))
-    served.expect_hook_line_soon("new message 1", "next-tool")
+def test_a_new_message_line_whose_hook_left_before_the_answer_comes_again_at_the_next_hook(server):
+    server.send_hook_and_leave(hook_body("left-tool"))
+    server.expect_hook_line_soon("new message 1", "next-tool")
 
 
-def test_an_answer_that_arrived_delivers_the_message_once(served):
-    served.expect_hook_answer("/hook", hook_body("first-tool"), 200, "new message 1")
-    served.expect_hook_answer("/hook", hook_body("second-tool"), 200, '"refusal": ""')
-    served.story.expect_text("message show 1", "delivered_at: 2", actor=served.story.user)
+def test_an_answer_that_arrived_delivers_the_message_once(server):
+    server.expect_hook_answer("/hook", hook_body("first-tool"), 200, "new message 1")
+    server.expect_hook_answer("/hook", hook_body("second-tool"), 200, '"refusal": ""')
+    server.story.expect_text("message show 1", "delivered_at: 2", actor=server.story.user)
 
 
 def hook_body(firing: str) -> dict[str, object]:

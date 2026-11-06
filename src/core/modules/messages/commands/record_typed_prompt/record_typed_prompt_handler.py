@@ -3,7 +3,7 @@ from core.base.command.handler import Handler
 from core.base.repository.repository import Repository
 from core.modules.messages.commands.record_typed_prompt.record_typed_prompt import RecordTypedPrompt
 from core.modules.messages.models.enums.message_type import MessageType
-from core.modules.messages.models.message import TYPED_PROMPT_KEY, Message
+from core.modules.messages.models.message import PROMPT_MESSAGE_KEY, Message
 
 
 class RecordTypedPromptHandler(Handler[RecordTypedPrompt, Message]):
@@ -17,4 +17,4 @@ class RecordTypedPromptHandler(Handler[RecordTypedPrompt, Message]):
 
     def handle(self, command: RecordTypedPrompt, context: Context) -> Message:
         return self.repository.save(Message(session_agent_id=context.actor.id, creator_id=context.actor.id, type=MessageType.USER, text=command.text,
-                                            read_at=context.timestamp, delivered_at=context.timestamp, peer_key=TYPED_PROMPT_KEY), context)
+                                            read_at=context.timestamp, delivered_at=context.timestamp, peer_key=PROMPT_MESSAGE_KEY), context)

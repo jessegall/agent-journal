@@ -18,10 +18,10 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.support.story_checks import expect_absent_value, expect_answers, expect_value_with
 
-PROOF = 'proof make 1 "cart.py:1, the cart story" --test "pytest tests/cart.py"'
-PIPED_PROOF = 'proof make 1 "cart.py:1, the cart story" --test "pytest tests/cart.py | tail -3"'
-REDIRECTED_PROOF = 'proof make 1 "cart.py:1, the cart story" --test "pytest tests/cart.py > out.txt"'
-TAILED_PROOF = 'proof make 1 "cart.py:1, the cart story" --test "journal pytest-run tests/cart.py --tail 5"'
+PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "pytest tests/cart.py"'
+PIPED_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "pytest tests/cart.py | tail -3"'
+REDIRECTED_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "pytest tests/cart.py > out.txt"'
+TAILED_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "journal pytest-run tests/cart.py --tail 5"'
 
 
 def recording_launch(monkeypatch) -> list[int]:
@@ -120,7 +120,7 @@ def mixed_proof_story(new_story, monkeypatch):
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=worker)
-    story.expect_success('proof make 2 "cart.py:1, looked at it"', actor=worker)
+    story.expect_success('proof make 2 --task 1 "cart.py:1, looked at it"', actor=worker)
     story.expect_success("worker deliver", actor=worker)
     story.run_listeners()
     return story, repository, worker, started
@@ -151,7 +151,7 @@ def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(new_story, m
     repository = repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
-    story.expect_success('proof make 1 "cart.py:1, looked at it"', actor=worker)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, looked at it"', actor=worker)
     story.expect_success("worker deliver", actor=worker)
     story.run_listeners()
     expect_absent_value(started)
@@ -182,7 +182,7 @@ def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(new_story, m
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("base.txt", "rebased\n", "Base change")
-    story.expect_success('proof make 1 "cart.py:1, the cart story" --test "python3 -c \'from pathlib import Path; assert Path(\\\"base.txt\\\").exists()\'"', actor=worker)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story" --test "python3 -c \'from pathlib import Path; assert Path(\\\"base.txt\\\").exists()\'"', actor=worker)
     story.expect_success("worker deliver", actor=worker)
     story.run_listeners()
     run_test_process(story, started[0])
@@ -264,7 +264,7 @@ def test_picked_tests_run_when_the_proof_has_no_test_command(new_story, monkeypa
     story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 -m pytest" --environment main', actor=story.agent)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
-    story.expect_success('proof make 1 "cart.py:1, checked the cart"', actor=worker)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, checked the cart"', actor=worker)
     story.expect_success("worker deliver", actor=worker)
     story.run_listeners()
     story.expect_rows(len(started) == 1)

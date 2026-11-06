@@ -53,9 +53,9 @@ PLAN_REVIEW_COMMANDS = (
 WORKER_COMMANDS = (
     "\n\nFor your assigned task use journal task overview <n>, journal task show <n>, journal task inspect <n> "
     "and journal task log <n> \"<what changed or what you found>\". Read its points with journal proof points "
-    "--agent <your agent number>. Record each with journal proof make <point> \"<file:line and evidence>\" "
+    "--agent <your agent number>. Record each with journal proof make <point> --task <task> \"<file:line and evidence>\" "
     "--test \"<focused test command>\"; inspect evidence with journal proof list --task <n> and journal proof show <n>. "
-    "Correct an unchecked proof with journal proof make again for the same point; checked proofs cannot be changed. "
+    "Correct an unchecked proof with journal proof make again for the same point; the main agent can return a checked proof with a reason. "
     "Use journal worker next after proving the task; when its tests are queued, stop until the journal sends "
     "a failure or the next task. After the last task use journal worker deliver. "
     "Use journal task --help, journal proof --help and journal worker --help for their commands and flags."

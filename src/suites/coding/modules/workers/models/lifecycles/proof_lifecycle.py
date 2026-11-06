@@ -12,5 +12,5 @@ class ProofLifecycle(Lifecycle):
     queue = Move("queue", [ProofState.SHOWN], ProofState.QUEUED)
     run = Move("run", [ProofState.QUEUED], ProofState.RUNNING)
     check = Move("check", [ProofState.SHOWN, ProofState.RUNNING], ProofState.CHECKED)
-    short = Move("short", [ProofState.SHOWN, ProofState.RUNNING], ProofState.SHORT)
+    short = Move("short", [ProofState.SHOWN, ProofState.RUNNING, ProofState.CHECKED], ProofState.SHORT)
     revise = Move("revise", [ProofState.SHORT], ProofState.SHOWN)

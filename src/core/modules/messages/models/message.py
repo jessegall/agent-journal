@@ -5,7 +5,7 @@ from core.base.timestamp import Timestamp
 from core.modules.messages.models.enums.message_type import MessageType
 
 TITLE_CHARACTERS = 60
-TYPED_PROMPT_KEY = "typed-prompt"
+PROMPT_MESSAGE_KEY = "typed-prompt"
 
 
 @dataclass(frozen=True, kw_only=True)

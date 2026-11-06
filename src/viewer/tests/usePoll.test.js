@@ -1,6 +1,7 @@
 import {afterEach, beforeEach, describe, expect, test, vi} from "vitest";
 import {createApp, h} from "vue";
 import {usePoll} from "../kit/usePoll.js";
+import {tabVisibility} from "./tabVisibility.js";
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => {
@@ -116,16 +117,12 @@ test("each poll uses the current interval returned by its window", async () => {
     expect(vi.getTimerCount()).toBe(0);
 });
 
-let hidden = false;
-function showTab(isHidden) {
-    hidden = isHidden;
-    document.dispatchEvent(new Event("visibilitychange"));
-}
+const tab = tabVisibility();
+const showTab = tab.show;
 
 describe("a hidden tab", () => {
     beforeEach(() => {
-        hidden = false;
-        Object.defineProperty(document, "hidden", {configurable: true, get: () => hidden});
+        tab.reset();
     });
     afterEach(() => delete document.hidden);
 

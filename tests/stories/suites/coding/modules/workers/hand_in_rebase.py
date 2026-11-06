@@ -96,7 +96,7 @@ def test_a_proof_runs_on_the_rebased_code(new_story, monkeypatch):
     launches = recording_launch(monkeypatch)
     repository = repository_environment(story)
     worker = worker_on_a_moved_base(story, repository)
-    story.expect_success('proof make 1 "cart.py:1, the cart total story" --test "pytest tests/cart.py"', actor=worker)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story" --test "pytest tests/cart.py"', actor=worker)
     story.expect_success(DELIVERY, actor=worker)
     story.run_listeners()
     story.expect_rows(len(launches) == 1)
