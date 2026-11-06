@@ -7,6 +7,7 @@ from core.base.type_guards import is_mapping
 from core.base.database.database import Database
 from core.base.database.reported_findings import ReportedFindings
 from core.base.database.request_watch import RequestWatch
+from core.base.log_level import LogLevel
 from core.base.container import Container
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.old_hook_runner_error import OldHookRunnerError
@@ -107,7 +108,7 @@ class HookEndpoint:
                 call = container.get(Queries).query(HookCall).find(reply.hook_call_id)
                 container.get(Bus).run(ResetMessageDeliveries(call.id), Actor.core(), environment_id=call.environment_id)
         except HookDatabaseBusyError as error:
-            self.context.files.log_line(f"the deliveries of hook call {reply.hook_call_id} stay as they are: {error}")
+            self.context.files.log_line(f"the deliveries of hook call {reply.hook_call_id} stay as they are: {error}", LogLevel.WARNING)
 
     def routed_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, started_at: float, limit_seconds: float, queued_ms: float) -> HookReply:
         try:
@@ -134,7 +135,7 @@ class HookEndpoint:
                 name = str(agent.id) if agent is not None else ""
                 container.get(HookRequestLog).record(program, headers, data, (perf_counter() - started_at) * 1000, outcome, queued_ms, role, name)
             except sqlite3.Error as error:
-                self.context.files.log_line(f"request recording failed: {error}")
+                self.context.files.log_line(f"request recording failed: {error}", LogLevel.WARNING)
 
     def prepared_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, container: Container, deadline: float) -> HookReply:
         event = self.event(data, program, headers, container.get(Providers))
@@ -166,7 +167,7 @@ class HookEndpoint:
         return event
 
     def failure(self, data: object, error: Exception) -> HookReply:
-        self.context.files.log_line("".join(traceback.format_exception(error)))
+        self.context.files.log_line("".join(traceback.format_exception(error)), LogLevel.ERROR)
         if is_stop_body(data):
             return HookReply(refusal=f"the journal failed on this stop and holds it: {type(error).__name__}: {error}")
         if requires_check(data):

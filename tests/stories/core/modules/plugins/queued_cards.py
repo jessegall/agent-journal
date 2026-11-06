@@ -200,7 +200,7 @@ def test_a_hook_can_read_while_the_card_tick_takes_a_file_from_its_listing(new_s
         thread.join(10)
         story.expect_rows(not thread.is_alive())
     story.run_listeners()
-    story.expect_rows(claimed.is_set(), not failures, "FileNotFoundError" not in story.error_log_text())
+    story.expect_rows(claimed.is_set(), not failures, "FileNotFoundError" not in story.system_log_text())
     story.expect_text("chat-mark list --environment 1", "Queue was judged", actor=story.user)
 
 

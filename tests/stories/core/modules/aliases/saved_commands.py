@@ -53,7 +53,7 @@ def expect_read_flag(hook: AliasHook, line: str, expanded: str, read_flag: str) 
 
 
 def expect_saved_names(story: Story, names: list[str]) -> None:
-    assert story.home.saved_command_file.exists(), story.error_log_text()
+    assert story.home.saved_command_file.exists(), story.system_log_text()
     assert sorted(json.loads(story.home.saved_command_file.read_text())) == names
 
 

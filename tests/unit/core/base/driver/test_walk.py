@@ -21,6 +21,7 @@ from core.base.driver.open_row import OpenRow
 from core.base.driver.overlay import Overlay
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.error_log import ErrorLog
+from core.base.system_log_writer import SystemLogWriter
 from core.base.guard.guard_switches import GuardSwitches
 from core.base.journal_home import JournalHome
 from core.base.dotted_path.dotted_path import DottedPath
@@ -136,7 +137,7 @@ def rule(name: str, rule_class: type[DriverRule], position: int, owner: str, exe
 def outcomes(tmp_path, rules: Sequence[DriverRuleEntry], overlays: Sequence[type[Overlay]] = (), off: Sequence[str] = (), history=None) -> list[tuple[str, str, str]]:
     entries = tuple(OverlayEntry(f"samples.{overlay.__name__}", DottedPath.class_path(overlay), position, ["*"]) for position, overlay in enumerate(overlays, 1))
     registry = empty_registry().with_overlays(entries).with_rules(tuple(rules))
-    walker = DriverRules(registry, Container(), Switches(off), Layers(registry, Container()), history or RegainedHistory(), ErrorLog(JournalHome(tmp_path), ExceptionSink()), EssentialAllowances(), empty_database_scopes(), RefusalSkips())
+    walker = DriverRules(registry, Container(), Switches(off), Layers(registry, Container()), history or RegainedHistory(), ErrorLog(SystemLogWriter(JournalHome(tmp_path)), ExceptionSink()), EssentialAllowances(), empty_database_scopes(), RefusalSkips(), SystemLogWriter(JournalHome(tmp_path)))
     event = HookEvent(1, "claude", "stop", "s1", "f1", 1, "agent", "main", None, None, {})
     answers = walker.ask(AgentHook(event, 3, 1, "main", DRIVER, at(30)))
     return [(record.name, record.layer, record.outcome) for record in answers.rules]
@@ -171,7 +172,7 @@ def test_the_first_refusal_ends_the_walk(tmp_path):
 def test_a_rule_that_raises_is_recorded_and_the_walk_goes_on(tmp_path):
     rules = [rule("d.broken", Raises, 1, DRIVER), rule("d.second", AddsLine, 2, DRIVER)]
     assert outcomes(tmp_path, rules) == [("d.broken", "", "raised"), ("d.second", "", "lines")]
-    assert "the rule failed" in JournalHome(tmp_path).error_log.read_text()
+    assert "the rule failed" in JournalHome(tmp_path).system_log.read_text()
 
 
 def test_an_ordinary_rule_that_lets_the_hook_through_at_once_is_recorded_as_raised_and_the_walk_goes_on(tmp_path):

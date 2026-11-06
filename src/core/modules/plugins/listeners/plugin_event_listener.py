@@ -7,7 +7,8 @@ from core.base.change.changed import Changed
 from core.base.change.event_log import EventLog
 from core.base.command.bus import Bus
 from core.base.command.context import Context
-from core.base.error_log import ErrorLog
+from core.base.log_level import LogLevel
+from core.base.system_log_writer import SystemLogWriter
 from core.base.listener.save_listener import SaveListener
 from core.base.model.event_form import EventForm
 from core.base.model.model import Model
@@ -28,8 +29,8 @@ class PluginEventListener(SaveListener[Changed[Model]]):
 
     name = "plugins.event-listener"
 
-    def __init__(self, subscriptions: PluginSubscriptions, bus: Bus, log: EventLog, tables: Tables, errors: ErrorLog, registry: Registry, scripts: PluginEventScripts, lines: PluginAnswerLines) -> None:
-        self.subscriptions, self.bus, self.log, self.tables, self.errors, self.registry, self.scripts, self.lines = subscriptions, bus, log, tables, errors, registry, scripts, lines
+    def __init__(self, subscriptions: PluginSubscriptions, bus: Bus, log: EventLog, tables: Tables, system_log: SystemLogWriter, registry: Registry, scripts: PluginEventScripts, lines: PluginAnswerLines) -> None:
+        self.subscriptions, self.bus, self.log, self.tables, self.system_log, self.registry, self.scripts, self.lines = subscriptions, bus, log, tables, system_log, registry, scripts, lines
 
     def handle(self, event: Changed[Model], context: Context) -> None:
         if isinstance(context.command, FAULT_WRITES):
@@ -40,7 +41,7 @@ class PluginEventListener(SaveListener[Changed[Model]]):
                 self.apply_listen_answer(answered, change, context)
             self.save_deliveries(change, context)
         except PLUGIN_CODE_FAULTS as error:
-            self.errors.noted(f"plugin scripts of {change.event} were not handled: {type(error).__name__}: {error}")
+            self.system_log.write(LogLevel.ERROR, f"plugin scripts of {change.event} were not handled: {type(error).__name__}: {error}")
 
     def apply_listen_answer(self, answered: PluginEventAnswer, change: Change[Model], context: Context) -> None:
         key = self.registry.event_key(change.event)

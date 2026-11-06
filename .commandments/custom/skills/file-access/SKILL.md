@@ -24,6 +24,9 @@ a write allows the next read of that path. Symlink paths count as their target.
 
 - **file-reads**: a native file read bypasses FileAccess and is outside the named streaming exceptions.
 - **file-writes**: a native file write bypasses FileAccess. There are no write exceptions.
+- **log-outside-system-log-writer**: a `logging.getLogger` call or an append to a log file. Write a line of the system
+  log with `SystemLogWriter.write`, which gives it its time, level and source for the System logs page. The one
+  exception is `successor_start.py`, which hands the file to a new server's process as its output.
 
 ## Read exceptions
 

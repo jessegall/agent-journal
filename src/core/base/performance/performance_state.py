@@ -15,7 +15,7 @@ class PerformanceState:
     def __init__(self, home: JournalHome) -> None:
         self.home = home
         self.restart = ServerRestartState(home)
-        self.tests = home.costly_hooks_log.parent / TESTS_RUNNING_FILE
+        self.tests = home.system_log.parent / TESTS_RUNNING_FILE
         self.starting = home.folder / "performance-starting"
         self.reloading = home.folder / "performance-reloading"
         self.boot_events: dict[FileVersion, int] = {}

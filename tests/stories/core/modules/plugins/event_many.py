@@ -69,7 +69,7 @@ def test_s33_a_command_on_thirty_rows_stops_asking_after_twenty_rounds_and_still
     story = event_plugin_story(new_story, {"event": NOTE_CREATED, "guard": "see.sh"}, modules=[NOTES])
     story.container.get(Bus).run(ManyNotes(NOTE_COUNT), story.user)
     notes = list(story.container.get(Queries).query(EventNote).all_rows())
-    story.expect_rows(len(notes) == NOTE_COUNT, len(script_calls(story, "see.sh")) == ROUND_LIMIT, "were skipped" in story.error_log_text())
+    story.expect_rows(len(notes) == NOTE_COUNT, len(script_calls(story, "see.sh")) == ROUND_LIMIT, "were skipped" in story.system_log_text())
 
 
 def test_s34_a_merge_runs_no_guard_script_and_runs_its_commit_script(new_story):
@@ -80,7 +80,7 @@ def test_s34_a_merge_runs_no_guard_script_and_runs_its_commit_script(new_story):
     original_commit = repository.tip(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     repository.expect_merge_commits_after(ENVIRONMENT_BRANCH, original_commit, 1)
-    story.expect_rows(not script_calls(story, "refuse.sh"), "were skipped" in story.error_log_text(), "runs only once" in story.error_log_text())
+    story.expect_rows(not script_calls(story, "refuse.sh"), "were skipped" in story.system_log_text(), "runs only once" in story.system_log_text())
     story.run_listeners()
     story.expect_rows(len(script_calls(story, "see.sh")) == 1)
 

@@ -10,7 +10,7 @@ from tests.stories.core.base.driver.support.fixtures import LeadStarted
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.modules.chat.support.mark_samples import EXCEPTION_SAMPLE, marks_text
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.support.story_checks import expect_count_marks, expect_error_log_with, expect_value
+from tests.stories.support.story_checks import expect_count_marks, expect_system_log_with, expect_value
 
 STAMP = "2026-01-01T00:00:00+00:00"
 OLD_TABLE_STATEMENTS = (
@@ -58,8 +58,8 @@ def test_a_failing_command_shows_one_exception_mark_and_the_file_keeps_the_trace
     story.run("chat-mark fail", environment_id=1)
     story.run_listeners()
     expect_count_marks(story, "RuntimeError: the sample command broke", 1)
-    expect_error_log_with(story, "the sample command broke")
-    expect_error_log_with(story, "Traceback")
+    expect_system_log_with(story, "the sample command broke")
+    expect_system_log_with(story, "Traceback")
     story.expect_text("journal-exception list", "RuntimeError")
 
 
@@ -80,7 +80,7 @@ def test_a_failing_hook_rule_shows_one_exception_mark_and_the_file_keeps_the_tra
     story.hook("s-1", HookSamples.stop())
     story.run_listeners()
     expect_count_marks(story, "samples.failing-rule", 1)
-    expect_error_log_with(story, "the sample rule failed")
+    expect_system_log_with(story, "the sample rule failed")
 
 
 def test_a_database_that_holds_faults_upgrades_to_exceptions_with_its_marks_events_and_cursor(new_story):

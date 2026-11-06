@@ -7,7 +7,8 @@ from pathlib import Path
 
 from core.base.database.database import Database
 from core.base.database.registry_table import RegistryTable
-from server.server_files import SERVER_LOG_LIMIT_BYTES, ServerFiles
+from core.base.system_log_writer import LOG_LIMIT_BYTES
+from server.server_files import ServerFiles
 from tests.stories.core.support.fixtures import ThreeTasks
 from tests.stories.server.support.code_folders import SampleCodeFolders
 from tests.stories.server.support.server_client import server_story
@@ -97,12 +98,12 @@ def test_a_server_that_starts_past_the_log_limit_leaves_a_small_log_and_one_old_
     log = ServerFiles(home).log
     log.parent.mkdir(parents=True, exist_ok=True)
     old_log = log.with_name("server.log.1")
-    for size in (SERVER_LOG_LIMIT_BYTES + 1, SERVER_LOG_LIMIT_BYTES + 2):
+    for size in (LOG_LIMIT_BYTES + 1, LOG_LIMIT_BYTES + 2):
         log.write_text("x" * size)
         with ServerProcess(home, logged=True) as server:
             server.expect_health()
         expect_st_size_stat(old_log, size)
-        expect_st_size_stat_less(log, SERVER_LOG_LIMIT_BYTES // 100)
+        expect_st_size_stat_less(log, LOG_LIMIT_BYTES // 100)
         expect_changed_with(log, "listening on")
         expect_absent_exists_with_log(log, "server.log.2")
 

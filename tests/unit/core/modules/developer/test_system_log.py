@@ -1,6 +1,8 @@
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
+from core.base.log_level import LogLevel
+from core.base.log_source import LogSource
 from core.modules.developer.support.log_file_lines import CHUNK_BYTES, LogFileLines
 from core.modules.developer.support.log_filter import LogFilter
 from core.modules.developer.support.system_log import SystemLog
@@ -36,8 +38,15 @@ def test_an_older_page_reaches_the_rotated_file_and_the_first_does_not(tmp_path)
     assert third.rows[0].text.endswith("older 19")
 
 
-def test_a_line_with_no_time_takes_the_time_of_the_stamped_line_above_it(tmp_path):
-    text = "2026-11-06T10:00:00+00:00 journal failed\nTraceback line\n"
+def test_a_written_line_shows_its_own_level_source_and_message(tmp_path):
+    text = "2026-11-06T10:00:00+00:00 error journal the journal failed\n"
+    row = SystemLog(home_with(tmp_path, text)).page(LogFilter((), ()), 1, 10).rows[0]
+    assert (row.source, row.level, row.text) == (LogSource.JOURNAL, LogLevel.ERROR, "the journal failed")
+
+
+def test_raw_output_is_a_server_warning_at_the_time_of_the_line_above_it(tmp_path):
+    text = "2026-11-06T10:00:00+00:00 info server started\nTraceback line\n"
     rows = SystemLog(home_with(tmp_path, text)).page(LogFilter((), ()), 1, 10).rows
-    assert [row.text for row in rows] == ["Traceback line", "2026-11-06T10:00:00+00:00 journal failed"]
+    assert [row.text for row in rows] == ["Traceback line", "started"]
+    assert (rows[0].source, rows[0].level) == (LogSource.SERVER, LogLevel.WARNING)
     assert rows[0].recorded_at == rows[1].recorded_at

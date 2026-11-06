@@ -9,7 +9,7 @@ from core.base.ticker.tick_interval import TickInterval
 from server.ticker import Ticker
 from tests.stories.core.support.fixtures import UserJoined
 from core.testing.expect_row import expect_row
-from tests.stories.support.story_checks import expect_answers, expect_error_log_with, expect_value, expect_wait_arrived
+from tests.stories.support.story_checks import expect_answers, expect_system_log_with, expect_value, expect_wait_arrived
 
 JOIN_SECONDS = 5.0
 
@@ -153,8 +153,8 @@ def test_a_handler_that_fails_is_logged_and_the_others_still_run(new_story):
     ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=1), broken, "broken"), TickHandler(TickInterval(seconds=1), after, "after"))
     tick_at(ticker, clock, 1)
     expect_runs_after(after, 1)
-    expect_error_log_with(story, "ValueError: the copy broke")
-    expect_error_log_with(story, "journal broken")
+    expect_system_log_with(story, "ValueError: the copy broke")
+    expect_system_log_with(story, "journal broken")
     tick_at(ticker, clock, 2)
     expect_row(after, runs=2)
 

@@ -19,6 +19,8 @@ from core.base.driver.rule_answers import RuleAnswers
 from core.base.driver.rule_outcome import RuleOutcome
 from core.base.driver.walk import Walk
 from core.base.error_log import ErrorLog
+from core.base.log_level import LogLevel
+from core.base.system_log_writer import SystemLogWriter
 from core.base.guard.guard_switches import GuardSwitches
 from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.registry import Registry
@@ -34,7 +36,8 @@ class DriverRules:
     rule that raises is recorded and passed by."""
 
     def __init__(self, registry: Registry, container: Container, switches: GuardSwitches, layers: Layers, history: HookHistory, errors: ErrorLog,
-                 allowances: EssentialAllowances, scopes: Scopes, skips: RefusalSkips) -> None:
+                 allowances: EssentialAllowances, scopes: Scopes, skips: RefusalSkips, system_log: SystemLogWriter) -> None:
+        self.system_log = system_log
         self.registry, self.container, self.switches, self.layers, self.history, self.errors = registry, container, switches, layers, history, errors
         self.allowances, self.scopes, self.skips = allowances, scopes, skips
 
@@ -114,7 +117,7 @@ class DriverRules:
         outcome = self.rule_outcome(entry, hook)
         elapsed = perf_counter() - started_at
         if elapsed >= SLOW_RULE_SECONDS:
-            self.errors.noted(f"rule {entry.name} took {elapsed * 1000:.0f} ms on a {hook.hook_name} hook")
+            self.system_log.write(LogLevel.INFORMATION, f"rule {entry.name} took {elapsed * 1000:.0f} ms on a {hook.hook_name} hook")
         return outcome
 
     def rule_outcome(self, entry: DriverRuleEntry, hook: AgentHook) -> RuleOutcome:

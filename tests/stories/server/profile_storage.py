@@ -252,7 +252,7 @@ def test_a_legacy_registered_name_becomes_only_a_change_file(profile_story):
     expect_value("Read the files." in FileAccess.shared().read(profile_path(story, "module-reader")), False)
 
 
-def test_a_read_only_profile_folder_leaves_copy_undone_and_start_continues(profile_story, monkeypatch, caplog):
+def test_a_read_only_profile_folder_leaves_copy_undone_and_start_continues(profile_story, monkeypatch):
     story = profile_story
     save_profile_file(story, "critic", "---\nname: critic\ndescription: Reads\n---\nRead.\n", ".claude/agents")
     save_file = FileAccess.write
@@ -263,7 +263,7 @@ def test_a_read_only_profile_folder_leaves_copy_undone_and_start_continues(profi
     monkeypatch.setattr(FileAccess, "write", refuse_profile_write)
     boot(story)
     expect_value(profile_path(story).exists(), False)
-    expect_value(sum("profile" in record.message and "read-only" in record.message for record in caplog.records), 1)
+    expect_value(story.system_log_text().count("warning journal Profiles left unchanged: the profile folder is read-only"), 1)
     story.expect_success("profile list")
 
 

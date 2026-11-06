@@ -41,4 +41,4 @@ def test_a_commit_listener_that_fails_three_times_is_skipped_and_the_cancel_stan
     for line_number in range(3):
         story.run(f'task log 1 "checked {line_number}"')
     story.expect_success(lines.TASK_DETAILS, "state: cancelled")
-    story.expect_rows(story.error_log_text().count("listener samples.failing-worker-notice") == 3 * 2)
+    story.expect_rows(story.system_log_text().count("listener samples.failing-worker-notice") == 3 * 2)

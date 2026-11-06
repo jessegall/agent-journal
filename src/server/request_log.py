@@ -1,4 +1,3 @@
-import logging
 import sqlite3
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
@@ -10,6 +9,9 @@ from core.base.database.database import Database
 from core.base.database.hook_requests_table import HookRequestsTable
 from core.base.journal_container import synced_database_container
 from core.base.journal_home import JournalHome
+from core.base.log_level import LogLevel
+from core.base.log_source import LogSource
+from core.base.system_log_writer import SystemLogWriter
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING, HOOK_REQUEST_LOG_SIZE_SETTING
@@ -24,6 +26,7 @@ class RequestLog:
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home
+        self.system_log = SystemLogWriter(home)
         self.epoch = str(uuid4())
         self.lock = RLock()
         self.recording_ms = 0.0
@@ -86,7 +89,7 @@ class RequestLog:
         except sqlite3.Error as error:
             with self.lock:
                 self.counts["receipt_dropped"] += len(receipts)
-            logging.getLogger(__name__).warning("read receipt recording failed: %s", error)
+            self.system_log.write(LogLevel.WARNING, f"read receipt recording failed: {error}", LogSource.SERVER)
         finally:
             with self.lock:
                 self.recording_ms += (perf_counter() - started_at) * 1000
@@ -111,7 +114,7 @@ class RequestLog:
         except sqlite3.Error as error:
             with self.lock:
                 self.counts["dropped"] += 1
-            logging.getLogger(__name__).warning("request recording failed: %s", error)
+            self.system_log.write(LogLevel.WARNING, f"request recording failed: {error}", LogSource.SERVER)
         finally:
             with self.lock:
                 self.recording_ms += (perf_counter() - started_at) * 1000

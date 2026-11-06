@@ -1,4 +1,5 @@
-from core.base.error_log import ErrorLog
+from core.base.log_level import LogLevel
+from core.base.system_log_writer import SystemLogWriter
 from core.base.file_access import FileAccess
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingOn
 from tests.stories.server.support.browser_story import expect_browser
@@ -9,8 +10,8 @@ def test_system_logs_page_in_a_real_browser(new_story):
     story = new_story(fixture=HookRecordingOn)
     story.expect_success("setting set journal.core.viewer.tour-completed true --project")
     with server_story(story) as server:
-        path = story.home.error_log.parent / "server.log"
+        path = story.home.system_log
         path.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(path, "".join(f"2026-01-01T10:00:00+00:00 INFO browser server line {number}\n" for number in range(75)))
-        story.container.get(ErrorLog).noted("browser journal note")
+        FileAccess.shared().write(path, "".join(f"2026-01-01T10:00:00+00:00 info server browser server line {number}\n" for number in range(75)))
+        story.container.get(SystemLogWriter).write(LogLevel.INFORMATION, "browser journal note")
         expect_browser(server, "systemLogs.browser.mjs", [])

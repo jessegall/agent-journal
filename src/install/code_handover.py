@@ -6,6 +6,7 @@ from core.base.code_versions import CodeVersions
 from core.base.journal_home import JournalHome
 from core.base.refusal import Refusal
 from core.base.unix_connection import UnixConnection
+from core.base.log_level import LogLevel
 from install.update_steps import FAILED, FINISHED, HANDOVER, PROOF, SERVING, UpdateSteps
 from server.server_files import ServerFiles
 from server.successor_start import PROOF_LIMIT_SECONDS
@@ -54,7 +55,7 @@ class CodeHandover:
             self.steps.record(PROOF)
             self.request_takeover(tag, running_pid)
         except Exception as error:
-            self.files.log_line(f"code version {tag} handover failed: {type(error).__name__}: {error}")
+            self.files.log_line(f"code version {tag} handover failed: {type(error).__name__}: {error}", LogLevel.ERROR)
             self.steps.record(FAILED, error.text if isinstance(error, Refusal) else str(error))
             return
         self.steps.record(HANDOVER if running_pid else FINISHED, tag)

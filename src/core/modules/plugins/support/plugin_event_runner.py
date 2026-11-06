@@ -1,7 +1,8 @@
 from collections.abc import Callable, Mapping
 
 from core.base.clock import Clock
-from core.base.error_log import ErrorLog
+from core.base.log_level import LogLevel
+from core.base.system_log_writer import SystemLogWriter
 from core.base.plugin_script_processes import PluginScriptProcesses
 from core.base.timestamp import Timestamp
 from core.base.command.bus import Bus
@@ -37,8 +38,8 @@ FAILING_RETRY_SECONDS = 300
 class PluginEventRunner:
     """Runs plugin guard and listen scripts and records failures and skipped runs."""
 
-    def __init__(self, queries: Queries, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, clock: Clock, bus: Bus, actors: ModuleActors, scripts: PluginScriptProcesses, errors: ErrorLog) -> None:
-        self.queries, self.folders, self.program, self.settings, self.clock, self.bus, self.actors, self.scripts, self.errors = queries, folders, program, settings, clock, bus, actors, scripts, errors
+    def __init__(self, queries: Queries, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, clock: Clock, bus: Bus, actors: ModuleActors, scripts: PluginScriptProcesses, system_log: SystemLogWriter) -> None:
+        self.queries, self.folders, self.program, self.settings, self.clock, self.bus, self.actors, self.scripts, self.system_log = queries, folders, program, settings, clock, bus, actors, scripts, system_log
 
     def answer(self, subscription: PluginSubscription, form: EventForm, key: str, data: Mapping[str, object], environment_id: int | None, agent_id: int | None, wait_callback: Callable[[], None]) -> PluginEventAnswer | None:
         plugin = self.queries.query(Plugin).filter(id=subscription.plugin_id).first()
@@ -83,7 +84,7 @@ class PluginEventRunner:
         return True
 
     def record_skip(self, plugin: Plugin, key: str, form: EventForm, reason: str, checked_at: Timestamp) -> bool:
-        self.errors.noted(f"{form.value} script of {plugin.name} at {key} was skipped: {reason}")
+        self.system_log.write(LogLevel.WARNING, f"{form.value} script of {plugin.name} at {key} was skipped: {reason}")
         self.scripts.skipped(plugin.name, key, form, reason, checked_at)
         return False
 

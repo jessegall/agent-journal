@@ -8,6 +8,7 @@ from pathlib import Path
 
 from core.base.code_versions import CodeVersions
 from core.base.journal_home import JournalHome
+from core.base.log_level import LogLevel
 from server.handover_descriptors import READY_BYTE, HandoverDescriptors
 from server.server_files import ServerFiles
 
@@ -37,7 +38,7 @@ class SuccessorStart:
             os.close(self.exit_writer)
             process.kill()
             process.wait(KILLED_WAIT_SECONDS)
-            self.files.log_line(f"code version {tag} failed its proof; this server keeps serving")
+            self.files.log_line(f"code version {tag} failed its proof; this server keeps serving", LogLevel.WARNING)
         return ready
 
     def started(self, version: Path, descriptors: HandoverDescriptors) -> subprocess.Popen[bytes]:

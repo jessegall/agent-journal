@@ -13,7 +13,7 @@ class PerformanceTools:
     def __init__(self, finder: ModuleFinder, container: Container, home: JournalHome) -> None:
         self.registered = {tool for module in finder.modules() for tool in module.performance_tools}
         self.container = container
-        self.marker = home.costly_hooks_log.parent / TESTS_RUNNING_FILE
+        self.marker = home.system_log.parent / TESTS_RUNNING_FILE
         self.state = container.get(PerformanceState)
         self.costs = container.get(PerformanceCosts)
 
