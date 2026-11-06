@@ -2,6 +2,7 @@ from core.modules.reminders.migrations.m002_open_reminder_index import OpenRemin
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
@@ -33,4 +34,5 @@ class RemindersModule(Module):
     nudges = REMINDER_NUDGES
     driver_rules = [DueReminderRule]
     windows = [WindowDeclaration("reminders.reminders", "Reminders", "reminders.js", WindowLoading.COMPONENT, skeleton=REMINDERS_REMINDERS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.RULE,
-                                 reads=["reminder list"], runs=["reminder make", "reminder delete"], events=["reminder.*"])]
+                                 reads=["reminder list"], keys=[WindowKey("reminders", "reminder list", events=["reminder.*"])],
+                                 runs=["reminder make", "reminder delete"], events=["reminder.*"])]

@@ -1,8 +1,8 @@
 <script setup>
 import {computed, reactive} from "vue";
-import {Btn, RowList, WindowRoom, added, removed, useRows} from "@journal/window-kit";
+import {Btn, RowList, WindowRoom, added, removed, useWindow} from "@journal/window-kit";
 
-const {rows, failure, loaded, act, actionFailure} = useRows("reminder list", ["reminder.*"]);
+const {rows, failure, loaded, act, actionFailure} = useWindow().props.reminders;
 const draft = reactive({text: "", at: "", minutes: "", once: false});
 const canMake = computed(() => draft.text.trim() && (draft.at || Number(draft.minutes)));
 
