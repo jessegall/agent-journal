@@ -1,6 +1,7 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.modules.agents.support.agent_type_limits import AgentTypeLimits, TypeLimits
+from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, resumable_session, the_helper
@@ -118,3 +119,22 @@ def test_launches_in_flight_count(new_story, monkeypatch):
     story.expect_refusal(f'helper send {helper.id} "And another"', "1 of journal-researcher run", actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()
+
+
+def test_a_start_with_an_idle_helper_is_refused_with_its_send_line(new_story, monkeypatch):
+    story = new_story(fixture=EndedHelper)
+    helper = the_helper(story)
+    resumable_session(story, helper, monkeypatch)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.expect_refusal('helper start journal-researcher --brief "Read src/till.py" --environment main', f'helper {helper.id} is idle: journal helper send {helper.id} "<job>"', actor=story.agent)
+    launcher.server.close()
+    story.home.socket("launcher").unlink()
+
+
+def test_an_idle_helper_on_another_model_or_with_its_session_gone_is_not_offered(new_story, monkeypatch):
+    story = new_story(fixture=EndedHelper)
+    helper = the_helper(story)
+    kept = story.container.get(KeptHelpers)
+    story.expect_rows(kept.idle("journal-researcher", "", "") == ())
+    resumable_session(story, helper, monkeypatch)
+    story.expect_rows(kept.idle("journal-researcher", "", "")[0].id == helper.id, kept.idle("journal-researcher", "", "another-model") == ())
