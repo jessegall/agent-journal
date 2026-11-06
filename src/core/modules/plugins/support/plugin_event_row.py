@@ -6,7 +6,7 @@ from core.modules.plugins.support.plugin_event_state import PluginEventState
 @dataclass(frozen=True)
 class PluginEventRow:
     """One line of what a plugin listens to: the key and form it names, its script, how it stands, what a renamed key
-    is called now, and when its script started if it is running."""
+    is called now, when its script started if it is running, and the journal's limit on it, if any."""
 
     id: str
     plugin: str
@@ -16,3 +16,4 @@ class PluginEventRow:
     state: PluginEventState
     current_key: str = ""
     started_at: str = ""
+    limit_ms: int = 0

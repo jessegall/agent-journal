@@ -19,9 +19,10 @@ const WRONG_WORDS = {
     "form not offered": ["Wrong form", () => "This event takes only After a change."],
     renamed: ["Renamed", (row) => `This event is now called ${row.current_key}.`],
 };
+const scriptText = (row) => (row.limit_ms ? `${row.script}. Runs under the journal limit of ${row.limit_ms} ms.` : row.script);
 const eventLabel = (row) => (row.started_at ? "Running" : WRONG_WORDS[row.state]?.[0] ?? FORM_WORDS[row.form] ?? "");
 const minutesRunning = (row) => Math.max(1, Math.round((Date.now() - Date.parse(row.started_at)) / 60000));
-const eventText = (row) => (row.started_at ? `for ${minutesRunning(row)} minutes. Turn the plugin off to stop it.` : WRONG_WORDS[row.state]?.[1](row) ?? row.script);
+const eventText = (row) => (row.started_at ? `for ${minutesRunning(row)} minutes. Turn the plugin off to stop it.` : WRONG_WORDS[row.state]?.[1](row) ?? scriptText(row));
 
 function pick(event) {
     menu.value = false;

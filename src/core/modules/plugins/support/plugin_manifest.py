@@ -3,13 +3,14 @@ from core.base.file_access import FileAccess
 from core.base.file_version import FileVersion
 import json
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from functools import lru_cache
 
 from core.base.refusal import Refusal
 from core.base.type_guards import is_list, is_mapping
 from core.modules.plugins.support.manifest_listener import ManifestListener
+from core.modules.plugins.support.plugin_moment import PluginMoment
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.manifest_alias import ManifestAlias
 from core.modules.plugins.support.manifest_dashboard import ManifestDashboard
@@ -56,6 +57,7 @@ class PluginManifest:
     description: str = ""
     project_reads: tuple[str, ...] = ()
     listeners: tuple[ManifestListener, ...] = ()
+    moments: tuple[PluginMoment, ...] = ()
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -194,6 +196,18 @@ class PluginManifest:
     def window_ms(self, event: str, ceiling_ms: int) -> int:
         limits = [window.window_ms for window in self.event_windows if window.event == event and window.window_ms > 0]
         return min(limits[0], ceiling_ms) if limits else ceiling_ms
+
+    def with_moments(self, keys: Mapping[str, str]) -> "PluginManifest":
+        moments = tuple(PluginMoment(keys[listener.event], listener.event, form, listener.inside_script(form)) for listener in self.listeners if listener.event in keys
+                        for form in (EventForm.GUARD, EventForm.COMMIT) if listener.inside_script(form))
+        if not moments:
+            return self
+        names = tuple(dict.fromkeys((*self.event_names, *(moment.event for moment in moments))))
+        windows = tuple(EventWindow(moment.event, 0) for moment in moments if moment.form is EventForm.GUARD and moment.event not in self.window_names())
+        return replace(self, event_names=names, event_windows=(*self.event_windows, *windows), moments=moments)
+
+    def moment(self, event: str, form: EventForm) -> PluginMoment | None:
+        return next((moment for moment in self.moments if moment.event == event and moment.form is form), None)
 
     def script_for_key(self, key: str, form: EventForm) -> str:
         return next((listener.inside_script(form) for listener in self.listeners if listener.event == key and listener.script(form)), "")

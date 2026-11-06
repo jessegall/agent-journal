@@ -4,6 +4,7 @@ from pathlib import Path
 from core.base.agent_checkouts import AgentCheckouts
 from core.base.agent_role import AgentRole
 from core.base.checkout_file import CheckoutFile
+from core.base.model.event_form import EventForm
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -34,4 +35,6 @@ class DeliverFileEditHandler(Handler[DeliverFileEdit, None]):
         file = CheckoutFile.located(self.checkouts.file_checkout(command.agent_id, file_path), file_path)
         data = json.dumps({"path": command.path, "type": "edit", OLD_TYPE_KEY: "edit", "lines": [dict(row) for row in command.lines], "cwd": command.folder, "file": file.values()})
         for runnable in receivers:
-            self.bus.dispatch(DeliverPluginEvent(runnable.plugin.id, command.agent_id, FILE_EDITED, data), context)
+            manifest = runnable.manifest
+            moment = manifest.moment(FILE_EDITED, EventForm.COMMIT) or manifest.moment(FILE_EDITED, EventForm.GUARD)
+            self.bus.dispatch(DeliverPluginEvent(runnable.plugin.id, command.agent_id, moment.key if moment else FILE_EDITED, data, moment.script if moment else ""), context)

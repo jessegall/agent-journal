@@ -24,5 +24,9 @@ class EventKeyEntry:
         return cls(f"{module.removeprefix(MODULE_NAME_PREFIX)}.{subject}.{CHANGE_WORDS.get(change, change)}", event, module, forms)
 
     @classmethod
+    def moment(cls, module: str, name: str) -> "EventKeyEntry":
+        return cls(f"{module.removeprefix(MODULE_NAME_PREFIX)}.{name}", name, module, (EventForm.GUARD, EventForm.COMMIT))
+
+    @classmethod
     def restored(cls, entry: Mapping[str, object]) -> "EventKeyEntry":
         return cls(str(entry["key"]), str(entry["event"]), str(entry["module"]), tuple(EventForm(str(form)) for form in entry["forms"]))

@@ -68,7 +68,8 @@ class ModuleCheck:
     def event_keys(self, modules: Sequence[type[Module]]) -> tuple[EventKeyEntry, ...]:
         book = modules_book(modules)
         entries = [EventKeyEntry.built(module.name, event, forms) for module in modules for event, forms in self.module_events(module, book).items() if forms]
-        return (*(EventKeyEntry.built(SYSTEM_EVENTS_MODULE, event, COMMIT_FORM) for event in SYSTEM_EVENTS), *entries)
+        moments = [EventKeyEntry.moment(module.name, name) for module in modules for name in module.plugin_moments]
+        return (*(EventKeyEntry.built(SYSTEM_EVENTS_MODULE, event, COMMIT_FORM) for event in SYSTEM_EVENTS), *entries, *moments)
 
     def check(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> None:
         problems = (self.duplicate_names(modules, rules) + self.lifecycle_problems(modules) + self.event_problems(modules) + self.duplicate_event_keys(modules) + self.duplicate_handlers(modules)

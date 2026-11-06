@@ -9,6 +9,9 @@ from core.modules.plugins.support.manifest_listener import ManifestListener
 from core.modules.plugins.support.plugin_event_row import PluginEventRow
 from core.modules.plugins.support.plugin_event_state import PluginEventState
 from core.modules.plugins.support.plugin_manifest import PluginManifest
+from core.modules.plugins.support.plugin_moment import CEILING_SETTING
+from core.modules.plugins.support.plugins_module_name import MODULE_NAME
+from core.modules.settings.bindings.support.setting_values import SettingValues
 
 READS_FORM = "reads"
 
@@ -17,8 +20,8 @@ class PluginEventRows:
     """What a plugin listens to and every wrong entry, worked out when it is read and never stored, so an upgrade of
     the journal that removes a key shows at once."""
 
-    def __init__(self, registry: Registry, scripts: RunningScripts, home: JournalHome) -> None:
-        self.registry, self.scripts, self.home = registry, scripts, home
+    def __init__(self, registry: Registry, scripts: RunningScripts, home: JournalHome, setting_values: SettingValues) -> None:
+        self.registry, self.scripts, self.home, self.setting_values = registry, scripts, home, setting_values
 
     def rows(self, manifest: PluginManifest, folder: Path) -> tuple[PluginEventRow, ...]:
         rows: list[PluginEventRow] = []
@@ -55,8 +58,10 @@ class PluginEventRows:
             state = PluginEventState.RENAMED
         else:
             state = PluginEventState.LISTENS
-        return self.row(manifest, listener.event, form.value, script, state, entry.key if state is PluginEventState.RENAMED and entry else "", started_at)
+        is_held_by_hook = form is EventForm.GUARD and entry is not None and entry.module == MODULE_NAME and entry.event in self.registry.plugin_moments
+        limit_ms = int(self.setting_values.number(CEILING_SETTING)) if is_held_by_hook else 0
+        return self.row(manifest, listener.event, form.value, script, state, entry.key if state is PluginEventState.RENAMED and entry else "", started_at, limit_ms)
 
     @staticmethod
-    def row(manifest: PluginManifest, key: str, form: str, script: str, state: PluginEventState, current_key: str = "", started_at: str = "") -> PluginEventRow:
-        return PluginEventRow(f"{manifest.name}:{key}:{form}:{script}", manifest.name, key, form, script, state, current_key, started_at)
+    def row(manifest: PluginManifest, key: str, form: str, script: str, state: PluginEventState, current_key: str = "", started_at: str = "", limit_ms: int = 0) -> PluginEventRow:
+        return PluginEventRow(f"{manifest.name}:{key}:{form}:{script}", manifest.name, key, form, script, state, current_key, started_at, limit_ms)
