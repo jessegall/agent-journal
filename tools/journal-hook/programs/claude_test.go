@@ -58,3 +58,18 @@ func TestEachClaudeToolHasItsCategoryAndFiles(t *testing.T) {
 	}
 }
 
+func TestANativeSkillCallNamesTheSkillsFile(t *testing.T) {
+	cases := map[string]string{
+		`{"hook_event_name":"PreToolUse","session_id":"s","tool_name":"Skill","tool_input":{"skill":"journal-tasks"}}`:         ".claude/skills/journal-tasks/SKILL.md",
+		`{"hook_event_name":"PreToolUse","session_id":"s","tool_name":"Skill","tool_input":{"skill":"plugin:commandments-x"}}`: ".claude/skills/commandments-x/SKILL.md",
+	}
+	for body, path := range cases {
+		prepared, _, err := Prepared("claude", []byte(body), testContext)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if prepared.Tool.Category != "read" || len(prepared.Tool.Files) != 1 || prepared.Tool.Files[0] != path {
+			t.Fatalf("%s: %+v", body, prepared.Tool)
+		}
+	}
+}

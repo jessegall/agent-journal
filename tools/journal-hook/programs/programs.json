@@ -65,6 +65,7 @@
         "MultiEdit": "edit",
         "NotebookEdit": "edit",
         "Read": "read",
+        "Skill": "read",
         "Task": "agent",
         "ToolSearch": "search",
         "Write": "write"
