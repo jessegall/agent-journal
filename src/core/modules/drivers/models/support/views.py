@@ -15,3 +15,10 @@ NUDGE_TOTALS_SELECT = (
 def tool_use_counts_select(start_count: int) -> str:
     sums = ", ".join("coalesce(sum(created_at > ?), 0)" for _ in range(start_count))
     return f"SELECT {sums} FROM hook_calls WHERE session_agent_id = ? AND hook = ? AND created_at > ?"
+
+ENVIRONMENT_MENU_ROWS_SELECT = (
+    "SELECT environments.id, environments.name, environments.folder, environments.branch,"
+    " coalesce((SELECT json_extract(settings.value, '$') FROM settings WHERE settings.environment_id = environments.id AND settings.key = 'journal.core.drivers.suite'),"
+    " (SELECT json_extract(settings.value, '$') FROM settings WHERE settings.environment_id IS NULL AND settings.key = 'journal.core.drivers.suite'), '') AS suite_setting,"
+    " EXISTS (SELECT 1 FROM agents WHERE agents.environment_id = environments.id AND agents.role = 'main' AND agents.ended_at IS NULL) AS main_running FROM environments"
+)

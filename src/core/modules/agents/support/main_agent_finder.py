@@ -18,6 +18,10 @@ class MainAgentFinder:
         return tuple(queries.query(Agent).filter(role=AgentRole.MAIN).matching(IsNull("ended_at")).all_rows())
 
     @staticmethod
+    def sessions(queries: Queries, program: str) -> tuple[Agent, ...]:
+        return tuple(queries.query(Agent).filter(role=AgentRole.MAIN, program=program).newest().all_rows())
+
+    @staticmethod
     def newest(queries: Queries) -> Agent | None:
         return next(iter(MainAgentFinder.rows(queries)), None)
 
