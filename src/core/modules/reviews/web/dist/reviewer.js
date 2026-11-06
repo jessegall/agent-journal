@@ -1,60 +1,62 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-aac3b0a596ec")) { const style = document.createElement("style"); style.id = "window-styles-aac3b0a596ec"; style.textContent = ".reviewer[data-v-8132956e]{height:100%;overflow-y:auto}.queue[data-v-8132956e]{margin:0;padding:8px 14px;color:var(--text-3);font-size:12px}.review[data-v-8132956e]{padding:12px 14px}.review-title[data-v-8132956e]{margin:0 0 8px;color:var(--text);font-size:12px;font-weight:600}.steps[data-v-8132956e]{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}.step[data-v-8132956e]{display:flex;align-items:baseline;gap:8px;color:var(--text-2);font-size:12px;line-height:1.5}.dot[data-v-8132956e]{flex:none;width:8px;height:8px;border-radius:50%;background:var(--text-3)}.dot[data-outcome=passed][data-v-8132956e]{background:var(--green, #3aa676)}.dot[data-outcome=failed][data-v-8132956e]{background:var(--red, #d4574b)}.text[data-v-8132956e]{flex:1;white-space:pre-wrap}time[data-v-8132956e]{flex:none;color:var(--text-3);font-size:11px}.list[data-v-4cde3cc9]{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}.head[data-v-4cde3cc9]{display:flex;gap:8px;align-items:baseline}.state[data-v-4cde3cc9]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { ref as w, openBlock as t, createBlock as p, unref as o, withCtx as m, createElementVNode as s, createTextVNode as y, createCommentVNode as h, createVNode as f, createElementBlock as r, Fragment as k, renderList as x, toDisplayString as i, h as g } from "vue";
+if (!document.getElementById("window-styles-23c94743533d")) { const style = document.createElement("style"); style.id = "window-styles-23c94743533d"; style.textContent = ".reviewer[data-v-be2043ac]{height:100%;overflow-y:auto}.queue[data-v-be2043ac]{margin:0;padding:8px 14px;color:var(--text-3);font-size:12px}.review[data-v-be2043ac]{padding:12px 14px}.review-title[data-v-be2043ac]{margin:0 0 8px;color:var(--text);font-size:12px;font-weight:600}.steps[data-v-be2043ac]{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}.step[data-v-be2043ac]{display:flex;align-items:baseline;gap:8px;color:var(--text-2);font-size:12px;line-height:1.5}.dot[data-v-be2043ac]{flex:none;width:8px;height:8px;border-radius:50%;background:var(--text-3)}.dot[data-outcome=passed][data-v-be2043ac]{background:var(--green, #3aa676)}.dot[data-outcome=failed][data-v-be2043ac]{background:var(--red, #d4574b)}.text[data-v-be2043ac]{flex:1;white-space:pre-wrap}time[data-v-be2043ac]{flex:none;color:var(--text-3);font-size:11px}.list[data-v-03962f28]{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}.head[data-v-03962f28]{display:flex;gap:8px;align-items:baseline}.state[data-v-03962f28]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { computed as p, openBlock as t, createBlock as m, unref as o, withCtx as v, createElementVNode as s, createTextVNode as y, createCommentVNode as w, createVNode as h, createElementBlock as r, Fragment as f, renderList as k, toDisplayString as l, h as g } from "vue";
 import { useWindow as N, useListTools as q, WindowRoom as R, EmptyState as S, ListTools as T, TimeAgo as V } from "@journal/window-kit";
-import { _ as B } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const E = { class: "reviewer" }, L = { class: "review-title" }, C = { class: "steps" }, W = ["data-outcome"], b = { class: "text" }, A = {
+import { _ as b } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+const B = { class: "reviewer" }, E = { class: "review-title" }, L = { class: "steps" }, C = ["data-outcome"], W = { class: "text" }, A = {
   key: 1,
   class: "queue"
 }, D = {
   __name: "ReviewerSteps",
   setup(I) {
-    const u = N(), n = w([]), a = w(0), d = q(n, { title: (e) => e.title });
-    async function _() {
-      const e = await u.read("review board");
-      n.value = e.ok ? e.value.reviews : [], a.value = e.ok ? e.value.queued : 0;
-    }
-    return u.follow(["review.*", "review_step.*", "reviewer.*"], _), _(), (e, v) => (t(), p(o(R), null, {
-      default: m(() => [
-        s("div", E, [
-          n.value.length ? h("", !0) : (t(), p(o(S), {
+    const x = N(), { data: c } = x.props.board, u = p(() => {
+      var e;
+      return ((e = c.value) == null ? void 0 : e.reviews) ?? [];
+    }), n = p(() => {
+      var e;
+      return ((e = c.value) == null ? void 0 : e.queued) ?? 0;
+    }), d = q(u, { title: (e) => e.title });
+    return (e, _) => (t(), m(o(R), null, {
+      default: v(() => [
+        s("div", B, [
+          u.value.length ? w("", !0) : (t(), m(o(S), {
             key: 0,
             title: "No review yet"
           }, {
-            default: m(() => [...v[0] || (v[0] = [
+            default: v(() => [..._[0] || (_[0] = [
               y("Reviews appear here with test results, requirement checks and the reviewer’s report.", -1)
             ])]),
             _: 1
           })),
-          f(o(T), { tools: o(d) }, null, 8, ["tools"]),
-          (t(!0), r(k, null, x(o(d).shown.value, (c) => (t(), r("section", {
-            key: c.id,
+          h(o(T), { tools: o(d) }, null, 8, ["tools"]),
+          (t(!0), r(f, null, k(o(d).shown.value, (i) => (t(), r("section", {
+            key: i.id,
             class: "review"
           }, [
-            s("h3", L, i(c.title), 1),
-            s("ol", C, [
-              (t(!0), r(k, null, x(c.steps, (l) => (t(), r("li", {
-                key: l.id,
+            s("h3", E, l(i.title), 1),
+            s("ol", L, [
+              (t(!0), r(f, null, k(i.steps, (a) => (t(), r("li", {
+                key: a.id,
                 class: "step"
               }, [
                 s("span", {
                   class: "dot",
-                  "data-outcome": l.outcome
-                }, null, 8, W),
-                s("span", b, i(l.text), 1),
-                f(o(V), {
-                  at: l.created_at
+                  "data-outcome": a.outcome
+                }, null, 8, C),
+                s("span", W, l(a.text), 1),
+                h(o(V), {
+                  at: a.created_at
                 }, null, 8, ["at"])
               ]))), 128))
             ])
           ]))), 128)),
-          a.value ? (t(), r("p", A, i(a.value) + " " + i(a.value === 1 ? "review" : "reviews") + " waiting", 1)) : h("", !0)
+          n.value ? (t(), r("p", A, l(n.value) + " " + l(n.value === 1 ? "review" : "reviews") + " waiting", 1)) : w("", !0)
         ])
       ]),
       _: 1
     }));
   }
-}, F = /* @__PURE__ */ B(D, [["__scopeId", "data-v-8132956e"]]), H = { render: () => g(F) };
+}, F = /* @__PURE__ */ b(D, [["__scopeId", "data-v-be2043ac"]]), H = { render: () => g(F) };
 export {
   H as default
 };

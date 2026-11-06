@@ -17,6 +17,7 @@ import TemplateCards from "../../core/modules/templates/web/src/TemplateCards.vu
 import CheckCards from "../../suites/coding/modules/checks/web/src/CheckCards.vue";
 import DumpRows from "../../core/modules/dumps/web/src/DumpRows.vue";
 import ReviewerSteps from "../../core/modules/reviews/web/src/ReviewerSteps.vue";
+import {reviewerWindowContext} from "./support/reviewerWindowContext.js";
 import SkillCatalogue from "../../core/modules/skills/web/src/SkillCatalogue.vue";
 
 const ROWS = [{id: 3, title: "Zebra", open: true}, {id: 2, title: "Apple pie", open: false}, {id: 1, title: "Mango", open: true}];
@@ -81,6 +82,7 @@ test.each([
         [TemplateCards, templateWindowContext],
         [PhoneRows, phoneWindowContext],
         [Outputs, commandsWindowContext],
+        [ReviewerSteps, reviewerWindowContext],
         [ShareRows, (answers) => context(answers, null, {shares: {line: "share list", events: ["share_link.*", "share_comment.*"]}})],
     ]);
     const element = await mounted(component, (contexts.get(component) ?? context)(answers));
