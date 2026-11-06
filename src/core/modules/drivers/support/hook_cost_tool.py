@@ -26,7 +26,7 @@ class HookCostTool(PerformanceTool):
         if points.total < HOOK_LIMIT_POINTS:
             return f"hook {event.event.value} {points.total} points ({points.line()})"
         line = f"hook {event.event.value} {points.total} points ({points.line()}), over the {HOOK_LIMIT_POINTS} a hook may cost"
-        read_lines = [f"    {rows} rows: {sql}" for sql, rows in points.statements.most_common(STATEMENTS_LOGGED)]
-        write_lines = [f"    {count} writes: {sql}" for sql, count in points.update_statements.most_common(STATEMENTS_LOGGED)]
-        self.system_log.write(LogLevel.WARNING, "\n".join((line, *read_lines, *write_lines)))
+        statement_lines = [f"    {rows} rows: {sql}" for sql, rows in points.statements.most_common(STATEMENTS_LOGGED)]
+        update_lines = [f"    {count} writes: {sql}" for sql, count in points.update_statements.most_common(STATEMENTS_LOGGED)]
+        self.system_log.write(LogLevel.WARNING, "\n".join((line, *statement_lines, *update_lines)))
         return line

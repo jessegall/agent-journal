@@ -10,7 +10,7 @@ from core.modules.developer.support.log_line import LogLine
 
 CHUNK_BYTES = 256 * 1024
 STAMPED_LINE = re.compile(r"^(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?(?:Z|[+-]\d\d:\d\d)) (.*)$")
-WRITTEN_MESSAGE = re.compile(rf"^({'|'.join(LogLevel)}) ({'|'.join(LogSource)}) (.*)$")
+LOG_LINE_FIELDS = re.compile(rf"^({'|'.join(LogLevel)}) ({'|'.join(LogSource)}) (.*)$")
 
 
 class LogFileLines:
@@ -65,10 +65,10 @@ class LogFileLines:
             return None
 
     def stamped_line(self, position: int, text: str, recorded_at: str, message: str) -> LogLine:
-        written = WRITTEN_MESSAGE.match(message)
-        if written is None:
+        match = LOG_LINE_FIELDS.match(message)
+        if match is None:
             return self.output_line(position, text, recorded_at)
-        return LogLine(f"{self.path.name}@{position}", recorded_at, LogSource(written[2]), LogLevel(written[1]), written[3])
+        return LogLine(f"{self.path.name}@{position}", recorded_at, LogSource(match[2]), LogLevel(match[1]), match[3])
 
     def output_line(self, position: int, text: str, recorded_at: str) -> LogLine:
         return LogLine(f"{self.path.name}@{position}", recorded_at, LogSource.SERVER, LogLevel.WARNING, text)

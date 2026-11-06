@@ -5,22 +5,48 @@
         "select": "call",
         "where": [
             {
-                "name": "enabled_plugins"
+                "any": [
+                    {
+                        "all": [
+                            {
+                                "name": "enabled_plugins"
+                            },
+                            {
+                                "not": {
+                                    "fileMatches": "(^|/)src/core/modules/plugins/support/runnable_plugins\\.py$"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "name": "run"
+                            },
+                            {
+                                "of": "receiver",
+                                "typeLike": "*PluginProgram"
+                            },
+                            {
+                                "not": {
+                                    "fileMatches": "(^|/)src/core/modules/plugins/support/plugin_run\\.py$"
+                                }
+                            }
+                        ]
+                    }
+                ]
             }
         ],
         "reject": [
             {
                 "testCode": true
-            },
-            {
-                "fileMatches": "(^|/)src/core/modules/plugins/support/runnable_plugins\\.py$"
             }
         ]
     },
     "sin": {
         "name": "enabled-plugins-outside-runnable-plugins",
-        "description": "The enabled plugins are listed outside RunnablePlugins, so a plugin whose upgrade is under way or whose files changed is treated as runnable by this caller and not by another.",
-        "rule": "Ask RunnablePlugins.running, or RunnablePlugins.enabled when the caller handles a changed plugin itself.",
+        "description": "The enabled plugins are listed outside RunnablePlugins, or a plugin's program is run outside PluginRun, so a plugin whose upgrade is under way or whose files changed runs for this caller and not for another, and its fault or clean run goes unrecorded.",
+        "rule": "Ask RunnablePlugins.running or RunnablePlugins.check, and run the program through PluginRun.",
         "skill": "python/fix-at-the-source"
     }
 }

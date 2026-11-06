@@ -10,9 +10,9 @@ MOST_BYTES_READ = 32 * 1024 * 1024
 
 
 class SystemLog:
-    """Reads the system log, newest first. It reads the file from its end only as far as the page asks, reaches the
-    rotated file only for an older page, and stops at a limit of bytes, so one read of the page never parses the
-    whole log. The total is what it has seen, plus one when more may follow."""
+    """Reads the system log, newest first. It reads the file from its end only as far as the page asks,
+    reaches the rotated file only for an older page, and stops at a limit of bytes, so one read of the page
+    never parses the whole log. The total is what it has seen, plus one when more may follow."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home

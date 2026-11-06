@@ -45,7 +45,7 @@ usePoll(load, () => !paused.value, READ_RATES.systemLogs);
             <div class="scroll">
                 <table>
                     <thead><tr><template v-for="column in ['Time (UTC)', 'Source', 'Level', 'Message']" :key="column"><th>{{ column }}</th></template></tr></thead>
-                    <tbody><template v-for="line in listing.rows" :key="line.id"><tr data-log-line :data-level="line.level"><td><time :datetime="line.recorded_at" title="Raw output of the server has no time of its own: it shows the time of the line before it, or the file's modified time.">{{ line.recorded_at }}</time></td><td>{{ line.source }}</td><td>{{ line.level }}</td><td class="message">{{ line.text }}</td></tr></template></tbody>
+                    <tbody><template v-for="line in listing.rows" :key="line.id"><tr data-log-line :data-level="line.level"><td><time :datetime="line.recorded_at" title="Lines without a time use the preceding line's time, or the file's modified time.">{{ line.recorded_at }}</time></td><td>{{ line.source }}</td><td>{{ line.level }}</td><td class="message">{{ line.text }}</td></tr></template></tbody>
                 </table>
                 <template v-if="!listing.rows.length && !failure"><p class="empty">No log lines found.</p></template>
             </div>

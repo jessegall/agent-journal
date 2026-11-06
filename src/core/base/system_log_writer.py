@@ -31,8 +31,7 @@ class SystemLogWriter:
         inode = self.path.stat().st_ino if self.path.exists() else None
         if not RotatedFile(self.path, limit_bytes).rotate():
             return
-        descriptor = os.open(self.path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, LOG_FILE_MODE)
-        for output in OUTPUT_DESCRIPTORS:
-            if os.fstat(output).st_ino == inode:
-                os.dup2(descriptor, output)
-        os.close(descriptor)
+        with FileAccess.shared().descriptor_writer(self.path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, LOG_FILE_MODE) as descriptor:
+            for output in OUTPUT_DESCRIPTORS:
+                if os.fstat(output).st_ino == inode:
+                    os.dup2(descriptor, output)
