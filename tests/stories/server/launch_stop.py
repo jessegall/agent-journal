@@ -14,6 +14,7 @@ from tests.stories.server.support.server_client import ServerStory, server_story
 pytestmark = pytest.mark.skipif(shutil.which("go") is None, reason="the Go client needs go to build")
 
 ENVIRONMENT = "launched"
+SUITE = "samples"
 
 
 class LaunchedEnvironment:
@@ -24,10 +25,11 @@ class LaunchedEnvironment:
         self.folder.mkdir()
         self.programs = stand_in_programs(tmp_path / "programs")
         server.story.run(f"environment make {ENVIRONMENT} {self.folder}")
-        server.story.run(f"suite choose samples --environment {ENVIRONMENT}")
+        server.story.run(f"suite choose {SUITE} --environment {ENVIRONMENT}")
+        self.suite_number = server.story.run("suite list").output_text.split().index(SUITE) + 1
 
     def launch(self) -> LaunchTerminal:
-        return LaunchTerminal(self.server.story.home, self.binary, self.programs, self.folder)
+        return LaunchTerminal(self.server.story.home, self.binary, self.programs, self.folder, self.suite_number)
 
     def open_main_ids(self) -> list[int]:
         rows = json.loads(self.server.story.run(f"agent list --environment {ENVIRONMENT} --oldest --limit 1000 --json").output_text)["rows"]

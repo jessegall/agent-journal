@@ -41,25 +41,28 @@ def test_a_worker_resumed_under_its_own_session_as_launch_name_is_reopened_and_i
     story.expect_rows("launch name t-1" not in story.error_log_text())
 
 
-def test_a_launch_that_resumes_an_ended_session_reopens_that_agent_and_ends_the_launch_row(started_main_agent):
-    story, old = started_main_agent
-    story.run(f"agent end {old.id}")
-    placeholder_id = story.new_row_id("agent start main-3 claude main --environment main")
-    resumed = hook_agent(story, story.hook("s-1", HookSamples.session_start().with_fields(launch="main-3")))
+def test_a_launch_that_resumes_an_ended_session_reopens_that_agent_and_ends_the_launch_row(resumed_main):
+    story, old, resumed, launch_row_id = resumed_main
     story.expect_rows(resumed.id == old.id)
     story.expect_text(f"agent show {old.id}", "session: s-1")
-    story.expect_text(f"agent show {placeholder_id}", "ended_at")
+    story.expect_text(f"agent show {launch_row_id}", "ended_at")
 
 
-def test_a_resumed_main_is_stopped_through_the_launcher_under_the_row_its_launch_started(started_main_agent):
-    story, old = started_main_agent
-    story.run(f"agent end {old.id}")
-    launch_row_id = story.new_row_id("agent start main-3 claude main --environment main")
-    hook_agent(story, story.hook("s-1", HookSamples.session_start().with_fields(launch="main-3")))
+def test_a_resumed_main_is_stopped_through_the_launcher_under_the_row_its_launch_started(resumed_main):
+    story, old, _, launch_row_id = resumed_main
     launcher = FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n")
     story.expect_success(f"agent stop {old.id}", f"stopped agent {old.id}")
     story.expect_rows(launcher.requests == [{"agent_id": launch_row_id, "stop": True}])
     story.expect_text(f"agent show {old.id}", "ended_at:")
+
+
+@pytest.fixture
+def resumed_main(started_main_agent):
+    story, old = started_main_agent
+    story.run(f"agent end {old.id}")
+    launch_row_id = story.new_row_id("agent start main-3 claude main --environment main")
+    resumed = hook_agent(story, story.hook("s-1", HookSamples.session_start().with_fields(launch="main-3")))
+    return story, old, resumed, launch_row_id
 
 
 @pytest.fixture

@@ -21,6 +21,7 @@ ENTER = b"\r"
 PROGRAM_LINE = "the stand-in program runs"
 STAND_IN_PROGRAM = f'#!/bin/sh\necho "{PROGRAM_LINE}"\nexec sleep 120\n'
 OPENS_NOTHING = "#!/bin/sh\nexit 0\n"
+SUITE_QUESTION = "Which suite?"
 ENVIRONMENT_QUESTION = "Which environment?"
 RUNNING_QUESTION = "A main agent is running in this environment"
 CONVERSATION_QUESTION = "Which conversation?"
@@ -82,12 +83,18 @@ class LaunchTerminal:
         self.wait_for(question)
         os.write(self.controller, ENTER)
 
+    def pick_suite(self) -> None:
+        self.wait_for(SUITE_QUESTION)
+        os.write(self.controller, str(self.suite_number).encode() + ENTER)
+
     def expect_program_after_the_menu(self) -> None:
+        self.pick_suite()
         for question in (ENVIRONMENT_QUESTION, CONVERSATION_QUESTION, PROMPT_QUESTION):
             self.press_enter_on(question)
         self.wait_for(PROGRAM_LINE)
 
     def expect_program_after_stopping_the_running_main(self) -> None:
+        self.pick_suite()
         for question in (ENVIRONMENT_QUESTION, RUNNING_QUESTION, CONVERSATION_QUESTION, PROMPT_QUESTION):
             self.press_enter_on(question)
         self.wait_for(PROGRAM_LINE)
