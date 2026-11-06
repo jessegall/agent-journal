@@ -19,6 +19,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK, WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
+from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
 
@@ -32,9 +33,9 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
     command = RecordWorkerTest
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MainAgentLine, tasks: TaskQuery, advance: WorkerTaskAdvance, nudger: Nudger, rows: EventRows) -> None:
+    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MainAgentLine, tasks: TaskQuery, advance: WorkerTaskAdvance, nudger: Nudger, rows: EventRows, phases: WorkerPhases) -> None:
         self.queries, self.repository, self.main_agent_line, self.tasks, self.advance, self.nudger = queries, repository, main_agent_line, tasks, advance, nudger
-        self.rows = rows
+        self.rows, self.phases = rows, phases
 
     def handle(self, command: RecordWorkerTest, context: Context) -> None:
         proof = self.rows.required(Proof, command.proof_id)
@@ -70,9 +71,11 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         self.main_agent_line.send(WORKER_TESTS_PASSED.nudge(worker=worktree.session_agent_id).text, LINE_SOURCE, context)
 
     def complete_tested(self, proofs: tuple[Proof, ...], context: Context) -> None:
-        for task_id in sorted({row.task_id for row in proofs if row.test_command}):
+        for task_id in sorted({row.task_id for row in proofs}):
             task = self.rows.required(Task, task_id)
-            if task.state is TaskState.TESTING and all(row.state is ProofState.CHECKED for row in proofs if row.task_id == task_id):
+            task_proofs = [row for row in proofs if row.task_id == task_id]
+            is_closable = self.phases.phase(task) is not None or any(row.test_command for row in task_proofs)
+            if is_closable and task.state is TaskState.TESTING and all(row.state is ProofState.CHECKED for row in task_proofs):
                 self.repository.save_change(task, task.close(context.timestamp, context.actor, "its tests passed"), context)
 
     def start_next(self, worktree: Worktree, context: Context) -> None:

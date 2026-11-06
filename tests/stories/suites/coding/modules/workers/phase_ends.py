@@ -100,15 +100,16 @@ def test_a_worker_cannot_make_a_proof_at_the_point_of_a_phases_own_test(new_stor
 
 def test_the_last_task_of_a_phase_queues_the_tests_of_all_its_tasks_and_the_worker_stops(tests_named):
     tests_named.story.expect_text("worker next", "queued", actor=tests_named.worker)
-    expect_task_states(tests_named, "testing", 1, 2, 3)
     tests_named.story.expect_text("proof show 1", "state: running", actor=tests_named.story.agent)
     tests_named.story.expect_text("proof show 2", "state: checked", actor=tests_named.story.agent)
     tests_named.story.expect_text("proof show 3", "state: queued", actor=tests_named.story.agent)
+    expect_task_states(tests_named, "testing", 1, 2, 3)
     assert len(tests_named.started) == 1, tests_named.started
 
 
 def test_worker_deliver_at_the_end_of_a_phase_is_a_hand_in_too(phase_only_with_tests):
     phase_only_with_tests.story.expect_text("worker deliver", "queued", actor=phase_only_with_tests.worker)
+    phase_only_with_tests.story.expect_text("proof show 2", "state: checked", actor=phase_only_with_tests.story.agent)
     expect_task_states(phase_only_with_tests, "testing", 1, 2, 3)
     assert len(phase_only_with_tests.started) == 1, phase_only_with_tests.started
 

@@ -7,11 +7,13 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
+from core.modules.plans.models.phase import Phase
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
+from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test_handler import RecordWorkerTestHandler
 from suites.coding.modules.workers.commands.start_next_worker_task.start_next_worker_task import StartNextWorkerTask
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
@@ -28,14 +30,14 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
     """Commits the worker's current task, moves it to testing and queues its proofs' tests; the next task
     delegated to it starts now when there are no tests, else once they pass. A task in testing with no test
     going has them queued again, or lets the worker go on. Inside a phase of a started plan the next task
-    starts at once and nothing is queued."""
+    starts at once and nothing is queued; with the next task outside the phase, the whole phase is handed in."""
 
     command = StartNextWorkerTask
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, tasks: TaskQuery, task_commit: WorkerTaskCommit, proof_queue: WorkerProofQueue, repository: Repository, bus: Bus, queries: Queries, phases: WorkerPhases) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, tasks: TaskQuery, task_commit: WorkerTaskCommit, proof_queue: WorkerProofQueue, repository: Repository, bus: Bus, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler) -> None:
         self.rows, self.worktrees, self.tasks, self.task_commit, self.proof_queue, self.repository, self.bus = rows, worktrees, tasks, task_commit, proof_queue, repository, bus
-        self.queries, self.phases = queries, phases
+        self.queries, self.phases, self.results = queries, phases, results
 
     def prepare(self, command: StartNextWorkerTask, actor: Actor) -> None:
         worktree = self.worktrees.worker_worktree(actor.id)
@@ -69,10 +71,21 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
         tested = self.repository.save_change(task, task.moved(TaskLifecycle.test), context)
         if self.phases.continues(tested, following):
             return self.start_following(worktree, following, context)
+        phase = self.phases.phase(tested)
+        if phase is not None:
+            return self.hand_in_phase(worktree, tested, phase, context)
         if self.proof_queue.queue(worktree, context):
             return tested
         self.close_checked(tested, context)
         return self.start_following(worktree, following, context)
+
+    def hand_in_phase(self, worktree: Worktree, task: Task, phase: Phase, context: Context) -> Task:
+        for started in tuple(self.tasks.holder(context.actor.id).started().all_rows()):
+            self.repository.save_change(started, started.moved(TaskLifecycle.test), context)
+        if self.proof_queue.queue_phase(worktree, task, phase, context):
+            return task
+        self.results.finish(worktree, context)
+        return self.rows.required(Task, self.rows.required(Worktree, worktree.id).task_id)
 
     def start_following(self, worktree: Worktree, following: Task, context: Context) -> Task:
         started = self.bus.dispatch(StartTask(following.id), context)
