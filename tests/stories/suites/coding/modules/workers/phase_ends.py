@@ -1,6 +1,16 @@
 import pytest
 
+from core.base.actor import Actor
+from core.base.command.context import Context
+from core.base.database.database import Database
+from core.base.query.queries import Queries
+from core.modules.messages.commands.read_message.read_message import ReadMessage
+from core.modules.plans.models.phase import Phase
+from core.modules.tasks.models.task import Task
 from core.testing.expect_reply import expect_reply_refusal
+from suites.coding.modules.workers.models.affected_test import AffectedTest
+from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.phase_steps import OTHER_TEST_LINE, PHASE_DISPATCH, TEST_LINE, dispatched_story_worker, planned_story, worker_on_plan
@@ -60,6 +70,32 @@ def two_workers(new_story, monkeypatch):
     story = planned_story(new_story)
     first = dispatched_story_worker(story, "worker dispatch --model sonnet 1", monkeypatch)
     return first, first.another_worker("worker dispatch --model sonnet 2 3")
+
+
+def test_queue_phase_checks_the_proofs_with_no_test_adds_the_phases_own_test_once_and_queues_the_rest(new_story, monkeypatch):
+    worker = worker_on_plan(new_story, monkeypatch, build_test=PHASE_TEST)
+    story = worker.story
+    story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --project', actor=story.agent)
+    story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 run_tests.py" --project', actor=story.agent)
+    worker.prove_and_move_on(TEST_LINE)
+    worker.change_and_prove()
+    queue = story.container.get(WorkerProofQueue)
+    worktree = story.container.get(WorktreeQuery).worker_worktree(worker.worker.id)
+    context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
+    for expected_count in (3, 1):
+        with story.container.get(Database).transaction():
+            assert queue.queue_phase(worktree, story.row(Task, 2), story.row(Phase, 1), context) == expected_count
+    story.expect_text("proof show 1", "state: queued", actor=story.agent)
+    story.expect_text("proof show 2", "state: checked", actor=story.agent)
+    story.expect_text("proof show 3", "point: 0", "state: queued", f"test_command: {PHASE_TEST}", "Build", actor=story.agent)
+    story.expect_refusal("proof show 4", "no proof 4", actor=story.agent)
+    assert story.container.get(Queries).query(AffectedTest).filter(worktree_id=worktree.id).exists()
+    story.expect_success(f"worker-worktree points --agent {worker.worker.id}", actor=story.agent)
+
+
+def test_a_worker_cannot_make_a_proof_at_the_point_of_a_phases_own_test(new_story, monkeypatch):
+    worker = worker_on_plan(new_story, monkeypatch)
+    worker.story.expect_refusal('proof make 0 --task 1 "cart.py:1, the phase"', "start at 1", actor=worker.worker)
 
 
 def test_the_last_task_of_a_phase_queues_the_tests_of_all_its_tasks_and_the_worker_stops(tests_named):
