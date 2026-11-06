@@ -8,7 +8,7 @@ const props = defineProps({field: {type: Object, required: true}, value: {type: 
 const emit = defineEmits(["pick"]);
 const templates = ref([]);
 const failure = ref("");
-const options = computed(() => templates.value.map((row) => ({key: String(row.id), label: row.module ? `${row.title} · ${row.module}` : row.title})));
+const options = computed(() => templates.value.map((row) => ({key: String(row.id), label: row.title, note: row.module})));
 const picked = computed(() => templates.value.find((row) => String(row.id) === props.value));
 
 async function load() {

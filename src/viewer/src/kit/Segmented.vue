@@ -22,6 +22,9 @@ const id = useId();
                     <span class="segmented-dot" />
                 </template>
                 {{ o.label }}
+                <template v-if="o.note">
+                    <small class="segmented-note">{{ o.note }}</small>
+                </template>
                 <template v-if="o.count !== undefined">
                     <em class="segmented-count">{{ o.count }}</em>
                 </template>
@@ -72,6 +75,12 @@ const id = useId();
     border-radius: 50%;
     background: var(--accent);
     vertical-align: middle;
+}
+
+.segmented-note {
+    margin-left: 5px;
+    color: var(--text-4);
+    font-size: 10.5px;
 }
 
 .segmented-count {
