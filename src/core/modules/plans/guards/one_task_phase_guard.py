@@ -10,7 +10,7 @@ from core.modules.tasks.models.enums.task_state import TaskState
 
 
 class OneTaskPhaseGuard(Guard[Moved[Plan]]):
-    """Refuses to make a plan ready while a phase has one task, unless the skip gives the reason one is enough."""
+    """Refuses a plan's move to ready while a phase has one task, unless the guard is passed with a reason."""
 
     name = "plans.one-task-phase"
     moves = tuple([PlanLifecycle.ready])
