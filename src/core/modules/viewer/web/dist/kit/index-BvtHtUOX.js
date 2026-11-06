@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-import { openBlock as c, createElementBlock as h, normalizeStyle as ge, unref as j, renderSlot as ue, createElementVNode as v, normalizeClass as Z, Fragment as G, renderList as te, defineComponent as ni, Comment as ai, h as Gn, cloneVNode as si, createBlock as U, withCtx as P, createVNode as D, toDisplayString as k, createCommentVNode as A, inject as Ae, useAttrs as Kn, computed as B, ref as R, resolveDynamicComponent as _t, mergeProps as Ke, createTextVNode as Q, watch as me, onUnmounted as Le, onMounted as Ie, Teleport as us, useId as ds, resolveDirective as oi, withDirectives as tt, reactive as Yn, shallowRef as Ge, nextTick as ht, Transition as Dt, withModifiers as xe, TransitionGroup as Xo, shallowReactive as li, onBeforeUnmount as mt, isRef as Fs, onScopeDispose as fs, resolveComponent as ri, useModel as Pa, getCurrentInstance as ii, mergeModels as qa, getCurrentScope as Qo, provide as ci, onErrorCaptured as ui, toHandlers as di, createSlots as fi, vShow as el, useSlots as hi, withKeys as Xt, vModelText as Fa, defineAsyncComponent as mi } from "vue";
+import { openBlock as c, createElementBlock as h, normalizeStyle as ge, unref as j, renderSlot as ue, createElementVNode as v, normalizeClass as Z, Fragment as G, renderList as te, defineComponent as ni, Comment as ai, h as Gn, cloneVNode as si, createBlock as U, withCtx as P, createVNode as D, toDisplayString as k, createCommentVNode as A, inject as Ae, useAttrs as Kn, computed as B, ref as R, resolveDynamicComponent as _t, mergeProps as Ke, createTextVNode as ee, watch as me, onUnmounted as Le, onMounted as Ie, Teleport as us, useId as ds, resolveDirective as oi, withDirectives as tt, reactive as Yn, shallowRef as Ge, nextTick as ht, Transition as Dt, withModifiers as xe, TransitionGroup as Xo, shallowReactive as li, onBeforeUnmount as mt, isRef as Fs, onScopeDispose as fs, resolveComponent as ri, useModel as Pa, getCurrentInstance as ii, mergeModels as qa, getCurrentScope as Qo, provide as ci, onErrorCaptured as ui, toHandlers as di, createSlots as fi, vShow as el, useSlots as hi, withKeys as Xt, vModelText as Fa, defineAsyncComponent as mi } from "vue";
 function tl(e, t = performance.now()) {
   return { "--shimmer-ms": `${e}ms`, animationDelay: `${-(t % e)}ms` };
 }
@@ -506,7 +506,7 @@ const qi = ["stroke-width", "innerHTML"], ye = {
         onClick: n[0] || (n[0] = (a) => t.$emit("more"))
       }, {
         default: P(() => [
-          Q(k(e.loading ? "Loading" : e.label), 1)
+          ee(k(e.loading ? "Loading" : e.label), 1)
         ]),
         _: 1
       }, 8, ["disabled"])) : A("", !0)
@@ -578,7 +578,7 @@ const qi = ["stroke-width", "innerHTML"], ye = {
           "data-link-kind": "",
           "data-kind": w.kind
         }, [
-          Q(k(p(w.kind)) + " ", 1),
+          ee(k(p(w.kind)) + " ", 1),
           v("span", Yi, k(w.items.length) + k(o.value ? "+" : ""), 1)
         ], 8, Ki),
         (c(!0), h(G, null, te(w.shown, (I) => (c(), h("button", Ke({
@@ -667,7 +667,7 @@ const Ot = 8, cc = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
     }
     const $ = B(() => {
       if (!i.value) return l.value;
-      const g = i.value, E = y(g), T = p(E, g), { w: N, h: J } = r.value, ee = a.align === "auto" ? g.left + g.right > E.left + E.right : a.align === "right", re = oc(ee ? g.right - N : g.left, E.left + Ot, Math.max(E.left + Ot, E.right - N - Ot)), fe = J > T.below && T.above > T.below ? { bottom: `${window.innerHeight - g.top + a.gap}px`, maxHeight: m(a.maxHeight, T.above) } : { top: `${g.bottom + a.gap}px`, maxHeight: m(a.maxHeight, T.below) };
+      const g = i.value, E = y(g), T = p(E, g), { w: N, h: J } = r.value, Q = a.align === "auto" ? g.left + g.right > E.left + E.right : a.align === "right", re = oc(Q ? g.right - N : g.left, E.left + Ot, Math.max(E.left + Ot, E.right - N - Ot)), fe = J > T.below && T.above > T.below ? { bottom: `${window.innerHeight - g.top + a.gap}px`, maxHeight: m(a.maxHeight, T.above) } : { top: `${g.bottom + a.gap}px`, maxHeight: m(a.maxHeight, T.below) };
       return { ...l.value, ...fe, left: `${re}px`, maxWidth: m(a.maxWidth, T.across) };
     }), M = n, O = () => [...s.value.querySelectorAll("button:not(:disabled)")];
     function F(g) {
@@ -795,7 +795,7 @@ const Ot = 8, cc = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
           onClick: (i) => n("pick", r.key)
         }, [
           r.dot ? (c(), h("span", mc)) : A("", !0),
-          Q(" " + k(r.label) + " ", 1),
+          ee(" " + k(r.label) + " ", 1),
           r.note ? (c(), h("small", pc, k(r.note), 1)) : A("", !0),
           r.count !== void 0 ? (c(), h("em", gc, k(r.count), 1)) : A("", !0)
         ], 10, hc)), [
@@ -1377,14 +1377,14 @@ function gu({ window: e, environment: t, agent: n, visible: a, permissions: s, e
         b.value = !0, _();
       });
     }, hu);
-  }, g = (J, ee) => (w += 1, it(e, J, t, C.signal, ee).finally(() => {
+  }, g = (J, Q) => (w += 1, it(e, J, t, C.signal, Q).finally(() => {
     w -= 1, x();
-  })), E = (J, ee) => (x(), L.then(() => C.signal.aborted ? nt : it(e, J, t, C.signal, ee))), T = ({ only: J = [], state: ee = {} } = {}) => (w += 1, yu(() => tu(e, t, J, ee, C.signal), C.signal).finally(() => {
+  })), E = (J, Q) => (x(), L.then(() => C.signal.aborted ? nt : it(e, J, t, C.signal, Q))), T = ({ only: J = [], state: Q = {} } = {}) => (w += 1, yu(() => tu(e, t, J, Q, C.signal), C.signal).finally(() => {
     w -= 1, x();
-  })), N = (J, { unbatched: ee = !1, deferred: re = !1 } = {}) => {
+  })), N = (J, { unbatched: Q = !1, deferred: re = !1 } = {}) => {
     const ie = W.get(J);
     if (ie && performance.now() - ie.at < fu) return ie.answer;
-    const fe = re && !b.value ? E(J, ee) : g(J, ee);
+    const fe = re && !b.value ? E(J, Q) : g(J, Q);
     return W.set(J, { answer: fe, at: performance.now() }), fe;
   };
   return {
@@ -1410,21 +1410,21 @@ function gu({ window: e, environment: t, agent: n, visible: a, permissions: s, e
     cancel: () => C.abort(),
     signal: C.signal,
     subscriptions: l,
-    follow: (J, ee) => l.follow(e, J.filter((re) => o.some((ie) => ms(ie, re))), (re) => {
-      W.clear(), ee(re);
+    follow: (J, Q) => l.follow(e, J.filter((re) => o.some((ie) => ms(ie, re))), (re) => {
+      W.clear(), Q(re);
     }, a),
     open: r,
     face: document.documentElement.classList.contains("phone") ? "phone" : "person",
     option: (J) => B(() => {
-      var ee;
-      return i.value[J] ?? ((ee = u.find((re) => re.key === J)) == null ? void 0 : ee.default);
+      var Q;
+      return i.value[J] ?? ((Q = u.find((re) => re.key === J)) == null ? void 0 : Q.default);
     }),
-    setting: async (J, ee) => {
+    setting: async (J, Q) => {
       const re = await N(`window setting ${e} ${J}`);
-      return re.ok ? re.value.value : ee;
+      return re.ok ? re.value.value : Q;
     },
     setOption: f,
-    keep: (J, ee) => it(e, ["window", "save-setting", e, J, JSON.stringify(ee)], t, C.signal)
+    keep: (J, Q) => it(e, ["window", "save-setting", e, J, JSON.stringify(Q)], t, C.signal)
   };
 }
 function yl(e) {
@@ -1980,7 +1980,7 @@ const Pt = (e) => Qn[e], El = new Map(_l.flatMap((e) => [e, e.replace(/s$/, ""),
                 onClick: f[0] || (f[0] = (p) => a("close"))
               }, {
                 default: P(() => [...f[2] || (f[2] = [
-                  Q("Cancel", -1)
+                  ee("Cancel", -1)
                 ])]),
                 _: 1
               }),
@@ -1993,7 +1993,7 @@ const Pt = (e) => Qn[e], El = new Map(_l.flatMap((e) => [e, e.replace(/s$/, ""),
                 onClick: u
               }, {
                 default: P(() => [...f[3] || (f[3] = [
-                  Q("Send", -1)
+                  ee("Send", -1)
                 ])]),
                 _: 1
               }, 8, ["disabled", "busy"])
@@ -2080,7 +2080,7 @@ const Pt = (e) => Qn[e], El = new Map(_l.flatMap((e) => [e, e.replace(/s$/, ""),
           onClick: r
         }, {
           default: P(() => [...$[2] || ($[2] = [
-            Q("Try again", -1)
+            ee("Try again", -1)
           ])]),
           _: 1
         })
@@ -2105,13 +2105,13 @@ const Pt = (e) => Qn[e], El = new Map(_l.flatMap((e) => [e, e.replace(/s$/, ""),
                 onClick: (W) => (O(), p({ ...M, ...F, menu: [] }))
               }, {
                 default: P(() => [
-                  Q(k(F.label), 1)
+                  ee(k(F.label), 1)
                 ]),
                 _: 2
               }, 1032, ["description", "onClick"]))), 128))
             ]),
             default: P(() => [
-              Q(k(M.label) + " ", 1)
+              ee(k(M.label) + " ", 1)
             ]),
             _: 2
           }, 1032, ["variant", "disabled", "menu-label", "title", "data-button", "onMain"])) : (c(), U(de, {
@@ -2126,7 +2126,7 @@ const Pt = (e) => Qn[e], El = new Map(_l.flatMap((e) => [e, e.replace(/s$/, ""),
             onClick: (O) => p(M)
           }, {
             default: P(() => [
-              Q(k(M.label), 1)
+              ee(k(M.label), 1)
             ]),
             _: 2
           }, 1032, ["variant", "bordered", "icon", "disabled", "title", "data-button", "onClick"]))
@@ -2361,7 +2361,7 @@ const _d = { class: "inspector-part" }, Ed = { class: "inspector-part-title" }, 
       "data-searching": e.searching ? "" : void 0
     }, {
       default: P(() => [
-        Q(k(e.searching ? "Try other words, or clear the search." : e.hint), 1)
+        ee(k(e.searching ? "Try other words, or clear the search." : e.hint), 1)
       ]),
       _: 1
     }, 8, ["title", "data-searching"])) : (c(), h(G, { key: 3 }, [
@@ -3367,7 +3367,7 @@ const Nh = ["innerHTML"], Dh = ["innerHTML"], jh = {
         title: "This dashboard does not fit the format"
       }, {
         default: P(() => [
-          Q(k(e.document.broken), 1)
+          ee(k(e.document.broken), 1)
         ]),
         _: 1
       })) : e.document.missing ? (c(), U(Qt, {
@@ -3375,7 +3375,7 @@ const Nh = ["innerHTML"], Dh = ["innerHTML"], jh = {
         title: "Nothing to show yet"
       }, {
         default: P(() => [
-          Q(k(e.document.missing), 1)
+          ee(k(e.document.missing), 1)
         ]),
         _: 1
       })) : i.value ? (c(), h(G, { key: 2 }, [
@@ -3640,7 +3640,7 @@ const uo = (e, t) => e.x < t.x + t.width && t.x < e.x + e.width && e.y < t.y + t
             onClick: M[0] || (M[0] = (O) => f(o.step))
           }, {
             default: P(() => [...M[5] || (M[5] = [
-              Q("Zoom in", -1)
+              ee("Zoom in", -1)
             ])]),
             _: 1
           }),
@@ -3649,7 +3649,7 @@ const uo = (e, t) => e.x < t.x + t.width && t.x < e.x + e.width && e.y < t.y + t
             onClick: M[1] || (M[1] = (O) => f(1 / o.step))
           }, {
             default: P(() => [...M[6] || (M[6] = [
-              Q("Zoom out", -1)
+              ee("Zoom out", -1)
             ])]),
             _: 1
           }),
@@ -3658,7 +3658,7 @@ const uo = (e, t) => e.x < t.x + t.width && t.x < e.x + e.width && e.y < t.y + t
             onClick: u
           }, {
             default: P(() => [...M[7] || (M[7] = [
-              Q("Fit the whole chart", -1)
+              ee("Fit the whole chart", -1)
             ])]),
             _: 1
           })
@@ -3940,7 +3940,7 @@ const Jm = { class: "growing-card-top" }, Zm = ["aria-expanded"], Xm = { class: 
               key: 0,
               name: "cross"
             })) : i.value ? (c(), h(G, { key: 1 }, [
-              Q(k(i.value), 1)
+              ee(k(i.value), 1)
             ], 64)) : (c(), U(ye, {
               key: 2,
               name: e.icon,
@@ -4016,7 +4016,7 @@ const Jm = { class: "growing-card-top" }, Zm = ["aria-expanded"], Xm = { class: 
       }),
       e.links.length ? (c(), h("span", s1, [
         v("span", o1, [
-          p[1] || (p[1] = Q("Linked: ", -1)),
+          p[1] || (p[1] = ee("Linked: ", -1)),
           (c(!0), h(G, null, te(e.links, (y) => (c(), h("button", {
             key: `${y.endpoint.model}:${y.endpoint.id}`,
             type: "button",
@@ -4025,12 +4025,12 @@ const Jm = { class: "growing-card-top" }, Zm = ["aria-expanded"], Xm = { class: 
             title: y.endpoint.title,
             onClick: ($) => f(y)
           }, [
-            Q(k(y.endpoint.model.replaceAll("_", " ")) + " " + k(y.endpoint.id), 1),
+            ee(k(y.endpoint.model.replaceAll("_", " ")) + " " + k(y.endpoint.id), 1),
             d(y) ? (c(), h(G, { key: 0 }, [
-              Q(" (" + k(d(y)) + ")", 1)
+              ee(" (" + k(d(y)) + ")", 1)
             ], 64)) : A("", !0),
             u(y) ? (c(), h(G, { key: 1 }, [
-              Q(" (unavailable)")
+              ee(" (unavailable)")
             ], 64)) : A("", !0)
           ], 8, l1))), 128))
         ])
@@ -4043,7 +4043,7 @@ const Jm = { class: "growing-card-top" }, Zm = ["aria-expanded"], Xm = { class: 
           "aria-expanded": l.value,
           onClick: i
         }, [
-          Q(k(s.value) + " linked " + k(o.value) + " ", 1),
+          ee(k(s.value) + " linked " + k(o.value) + " ", 1),
           D($t, { open: l.value }, null, 8, ["open"])
         ], 8, i1)
       ])) : A("", !0),
@@ -4331,7 +4331,7 @@ const L1 = ["data-incoming", "data-ref"], N1 = ["data-figure-mark", "data-figure
       ve ? ve.scrollIntoView({ block: "center", behavior: "smooth" }) : qe(`messages:${n.message.parent_id}`);
     }
     C1(o, () => `${n.message.text} ${n.quote}`);
-    const W = /\.(png|jpe?g|gif|webp|svg|bmp)$/i, C = (ve) => `/api/files/message/${n.message.id}/${encodeURIComponent(ve)}`, b = B(() => JSON.parse(n.message.captions || "{}")), S = B(() => (n.message.files ?? []).map((ve) => ({ name: ve, address: C(ve), isImage: W.test(ve), title: b.value[ve] || ve }))), w = B(() => ar(new Date(n.message.created_at).getTime() / 1e3 || n.message.created_at)), I = Ae(Te, null), { links: _, total: L, more: x, loading: g, failure: E, sentTo: T, sentMore: N, sentLoading: J, sentFailure: ee, loadMore: re, loadSent: ie } = B1(I, () => l.value && !n.message.local ? n.message.id : null, o), fe = R(!1), Ce = B(() => T1(n.message.reactions));
+    const W = /\.(png|jpe?g|gif|webp|svg|bmp)$/i, C = (ve) => `/api/files/message/${n.message.id}/${encodeURIComponent(ve)}`, b = B(() => JSON.parse(n.message.captions || "{}")), S = B(() => (n.message.files ?? []).map((ve) => ({ name: ve, address: C(ve), isImage: W.test(ve), title: b.value[ve] || ve }))), w = B(() => ar(new Date(n.message.created_at).getTime() / 1e3 || n.message.created_at)), I = Ae(Te, null), { links: _, total: L, more: x, loading: g, failure: E, sentTo: T, sentMore: N, sentLoading: J, sentFailure: Q, loadMore: re, loadSent: ie } = B1(I, () => l.value && !n.message.local ? n.message.id : null, o), fe = R(!1), Ce = B(() => T1(n.message.reactions));
     function Fe(ve) {
       fe.value = !1, a("react", n.message, ve);
     }
@@ -4492,7 +4492,7 @@ const L1 = ["data-incoming", "data-ref"], N1 = ["data-figure-mark", "data-figure
           "data-reaction": ae.emoji,
           onClick: (Ye) => a("react", e.message, ae.emoji)
         }, [
-          Q(k(ae.emoji) + " ", 1),
+          ee(k(ae.emoji) + " ", 1),
           ae.count > 1 ? (c(), h("span", V1, k(ae.count), 1)) : A("", !0)
         ], 10, z1))), 128))
       ])) : A("", !0),
@@ -4534,16 +4534,16 @@ const L1 = ["data-incoming", "data-ref"], N1 = ["data-figure-mark", "data-figure
           title: `Open worker ${ae.id}`,
           onClick: xe((Ye) => ae.open_ref && j(qe)(ae.open_ref), ["stop"])
         }, [
-          Q("Also sent to worker " + k(ae.id), 1),
+          ee("Also sent to worker " + k(ae.id), 1),
           ae.unavailable ? (c(), h(G, { key: 0 }, [
-            Q(" (unavailable)")
+            ee(" (unavailable)")
           ], 64)) : A("", !0)
         ], 8, X1))), 128))
       ])) : A("", !0),
       D(Jn, {
         more: j(N),
         loading: j(J),
-        failure: j(ee),
+        failure: j(Q),
         label: "More recipients",
         onMore: j(ie)
       }, null, 8, ["more", "loading", "failure", "onMore"]),
@@ -5203,7 +5203,7 @@ const eg = ["title", "data-figure-mark", "data-folded", "data-open"], tg = {
       return ie ? fe ? `ran ${mo(fe - ie, !0)}` : mo(I.value - ie, !0) : _.value;
     }), x = ["bad", "danger", "warn"], g = B(() => x.includes(C.value) || t.mark.asks ? "attention" : w.value && (t.mark.active || t.mark.figure || t.mark.counting || t.mark.began_at || t.mark.started && !t.mark.ended) ? "process" : "event"), E = ["bad", "danger"], T = B(() => E.includes(C.value)), N = B(() => g.value === "process" ? "running" : T.value ? "cross" : C.value === "stopped" ? "stopped" : C.value === "good" ? "tick" : ""), J = B(
       () => !!(t.mark.figure || L.value || t.mark.docked || t.mark.stopping || N.value || t.mark.settled || t.mark.news)
-    ), ee = B(() => [t.mark.title, t.mark.time ? ar(t.mark.time) : ""].filter(Boolean).join(" · ")), re = B(() => ({
+    ), Q = B(() => [t.mark.title, t.mark.time ? ar(t.mark.time) : ""].filter(Boolean).join(" · ")), re = B(() => ({
       ...b.value ? { "--mark": b.value } : {},
       ...t.mark.depth ? { "--depth": t.mark.depth } : {}
     }));
@@ -5228,7 +5228,7 @@ const eg = ["title", "data-figure-mark", "data-folded", "data-open"], tg = {
         }
       ],
       style: re.value,
-      title: ee.value,
+      title: Q.value,
       "data-figure-mark": e.mark.key,
       "data-folded": j($) ? "" : null,
       "data-open": r.value && e.open ? "" : null,
@@ -5430,7 +5430,7 @@ const Cg = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\
       class: "output-lines",
       onScroll: u
     }, [
-      Q(k(j(Og)(e.lines.join(`
+      ee(k(j(Og)(e.lines.join(`
 `)) || e.empty), 1),
       j(o) ? (c(), h("button", {
         key: 0,
@@ -5491,7 +5491,7 @@ const Lg = {
           onClick: u[0] || (u[0] = (d) => o.value = !0)
         }, {
           default: P(() => [...u[1] || (u[1] = [
-            Q("Close the window", -1)
+            ee("Close the window", -1)
           ])]),
           _: 1
         })
@@ -5535,7 +5535,7 @@ const Hg = {
           onClick: s[0] || (s[0] = (o) => n("answer", !0))
         }, {
           default: P(() => [...s[2] || (s[2] = [
-            Q("Allow", -1)
+            ee("Allow", -1)
           ])]),
           _: 1
         }),
@@ -5543,7 +5543,7 @@ const Hg = {
           onClick: s[1] || (s[1] = (o) => n("answer", !1))
         }, {
           default: P(() => [...s[3] || (s[3] = [
-            Q("Not now", -1)
+            ee("Not now", -1)
           ])]),
           _: 1
         })
@@ -5561,13 +5561,13 @@ const Hg = {
       title: e.name
     }, {
       default: P(() => [
-        Q(k(e.reason) + " ", 1),
+        ee(k(e.reason) + " ", 1),
         e.retry ? (c(), U(de, {
           key: 0,
           onClick: s[0] || (s[0] = (o) => n("retry"))
         }, {
           default: P(() => [...s[2] || (s[2] = [
-            Q("Retry", -1)
+            ee("Retry", -1)
           ])]),
           _: 1
         })) : A("", !0),
@@ -5576,7 +5576,7 @@ const Hg = {
           onClick: s[1] || (s[1] = (o) => n("remove"))
         }, {
           default: P(() => [...s[3] || (s[3] = [
-            Q("Remove tab", -1)
+            ee("Remove tab", -1)
           ])]),
           _: 1
         })) : A("", !0)
@@ -6279,7 +6279,7 @@ const tv = ["title"], nv = {
                     "aria-label": T.label,
                     title: T.label,
                     "data-dock-action": T.action,
-                    onClick: (ee) => F(T)
+                    onClick: (Q) => F(T)
                   }, {
                     default: P(() => [
                       D(ye, {
@@ -6299,7 +6299,7 @@ const tv = ["title"], nv = {
               "data-dock-age": ""
             }, [
               (E = s.value) != null && E.leaves_after_seconds ? A("", !0) : (c(), h(G, { key: 0 }, [
-                Q(k(l.value), 1)
+                ee(k(l.value), 1)
               ], 64))
             ], 512)
           ];
@@ -6333,7 +6333,7 @@ const tv = ["title"], nv = {
               onClick: w[0] || (w[0] = (T) => n("fold"))
             }, {
               default: P(() => [
-                Q(k(s.value.folds) + " ", 1),
+                ee(k(s.value.folds) + " ", 1),
                 D($t, {
                   open: !e.folded
                 }, null, 8, ["open"])
@@ -6365,7 +6365,7 @@ const tv = ["title"], nv = {
                 onClick: (N) => F(T)
               }, {
                 default: P(() => [
-                  Q(k(T.label), 1)
+                  ee(k(T.label), 1)
                 ]),
                 _: 2
               }, 1032, ["variant", "bordered", "data-dock-action", "onClick"]))), 128)),
@@ -6377,7 +6377,7 @@ const tv = ["title"], nv = {
                 onClick: w[2] || (w[2] = (T) => n("undock", b.value))
               }, {
                 default: P(() => [...w[4] || (w[4] = [
-                  Q("Close", -1)
+                  ee("Close", -1)
                 ])]),
                 _: 1
               }, 8, ["title"])
@@ -6584,16 +6584,16 @@ const $v = {
             small: "",
             bordered: "",
             "data-dock-all": "",
+            "aria-label": M.value ? "Open all" : "Collapse all",
             onClick: F
           }, {
             default: P(() => [
-              Q(k(M.value ? "Open all" : "Collapse all"), 1),
               D($t, {
                 open: !M.value
               }, null, 8, ["open"])
             ]),
             _: 1
-          })
+          }, 8, ["aria-label"])
         ])) : A("", !0),
         (c(!0), h(G, null, te(m.value, (N) => (c(), U(Eo, {
           key: N.id,
@@ -6619,7 +6619,7 @@ const $v = {
             onClick: I
           }, {
             default: P(() => [
-              T[1] || (T[1] = Q(" Runs ", -1)),
+              T[1] || (T[1] = ee(" Runs ", -1)),
               D($t, { open: "" })
             ]),
             _: 1
@@ -6667,7 +6667,7 @@ const $v = {
               onClick: T[0] || (T[0] = (N) => o.value = !0)
             }, {
               default: P(() => [
-                T[2] || (T[2] = Q(" Runs ", -1)),
+                T[2] || (T[2] = ee(" Runs ", -1)),
                 D($t)
               ]),
               _: 1
@@ -6679,7 +6679,7 @@ const $v = {
       _: 1
     }, 8, ["duration"]));
   }
-}, Z5 = /* @__PURE__ */ Y(Ev, [["__scopeId", "data-v-ea618218"]]), xt = { notice: 0.42, gap: 8, shuffles: 3, seconds: 2.4, frames: 48, fps: 20, lift: 0.12 }, Tn = (e) => Math.min(Math.max(e, 0), 1), Av = (e) => {
+}, Z5 = /* @__PURE__ */ Y(Ev, [["__scopeId", "data-v-d078676b"]]), xt = { notice: 0.42, gap: 8, shuffles: 3, seconds: 2.4, frames: 48, fps: 20, lift: 0.12 }, Tn = (e) => Math.min(Math.max(e, 0), 1), Av = (e) => {
   const t = Tn(e);
   return t * t * (3 - 2 * t);
 }, gt = (e, t, n) => Av((e - t) / (n - t));
@@ -8304,7 +8304,7 @@ const vw = { class: "cards-page" }, yw = { class: "cards-bar" }, bw = { class: "
               name: "plus",
               size: 12
             }),
-            Q(" New " + k(e.noun), 1)
+            ee(" New " + k(e.noun), 1)
           ]),
           _: 1
         }, 16)
@@ -8326,7 +8326,7 @@ const vw = { class: "cards-page" }, yw = { class: "cards-bar" }, bw = { class: "
               name: e.icon,
               class: "card-icon"
             }, null, 8, ["name"]),
-            Q(" " + k(e.head(o)), 1),
+            ee(" " + k(e.head(o)), 1),
             D(la, {
               class: "card-age",
               at: o.created_at
@@ -8386,7 +8386,7 @@ const Aw = {
             D(ye, {
               name: s.value ? "up" : "down"
             }, null, 8, ["name"]),
-            p[0] || (p[0] = Q(" Newest ", -1))
+            p[0] || (p[0] = ee(" Newest ", -1))
           ], 512), [
             [el, l.value]
           ])
@@ -8437,7 +8437,7 @@ const Aw = {
           "data-tab": y.key,
           onClick: (O) => a("choose", y)
         }, [
-          Q(k(y.label) + " ", 1),
+          ee(k(y.label) + " ", 1),
           i(y) ? (c(), h("span", Iw, k(e.answer[y.count_field]), 1)) : A("", !0)
         ], 10, Rw);
       }), 128)),
@@ -8589,7 +8589,7 @@ const is = /* @__PURE__ */ Y(jw, [["render", qw], ["__scopeId", "data-v-aa955b3e
               onClick: W[2] || (W[2] = (b) => f.value = f.value.slice(0, -1))
             }, {
               default: P(() => [
-                Q("‹ " + k(f.value[f.value.length - 1].title), 1)
+                ee("‹ " + k(f.value[f.value.length - 1].title), 1)
               ]),
               _: 1
             })) : A("", !0),
@@ -8600,7 +8600,7 @@ const is = /* @__PURE__ */ Y(jw, [["render", qw], ["__scopeId", "data-v-aa955b3e
               onClick: (S) => $(b)
             }, {
               default: P(() => [
-                Q(k(b.title) + k(b.next.length ? " ›" : ""), 1)
+                ee(k(b.title) + k(b.next.length ? " ›" : ""), 1)
               ]),
               _: 2
             }, 1032, ["description", "data-search-entry", "onClick"]))), 128)),
@@ -8636,7 +8636,7 @@ const is = /* @__PURE__ */ Y(jw, [["render", qw], ["__scopeId", "data-v-aa955b3e
       menu: P(() => [
         D(is, null, {
           default: P(() => [...l[2] || (l[2] = [
-            Q("Order", -1)
+            ee("Order", -1)
           ])]),
           _: 1
         }),
@@ -8647,14 +8647,14 @@ const is = /* @__PURE__ */ Y(jw, [["render", qw], ["__scopeId", "data-v-aa955b3e
           onClick: (i) => e.tools.order.value = r.key
         }, {
           default: P(() => [
-            Q(k(r.label), 1)
+            ee(k(r.label), 1)
           ]),
           _: 2
         }, 1032, ["checked", "data-list-order", "onClick"])), 64)),
         e.tools.hasStates ? (c(), h(G, { key: 0 }, [
           D(is, null, {
             default: P(() => [...l[3] || (l[3] = [
-              Q("Show", -1)
+              ee("Show", -1)
             ])]),
             _: 1
           }),
@@ -8665,7 +8665,7 @@ const is = /* @__PURE__ */ Y(jw, [["render", qw], ["__scopeId", "data-v-aa955b3e
             onClick: (i) => e.tools.state.value = r.key
           }, {
             default: P(() => [
-              Q(k(r.label), 1)
+              ee(k(r.label), 1)
             ]),
             _: 2
           }, 1032, ["checked", "data-list-state", "onClick"])), 64))
@@ -9145,7 +9145,7 @@ const ak = ["title"], sk = {
             onClick: y[0] || (y[0] = (M) => d(r.value))
           }, {
             default: P(() => [
-              Q(k(r.value.label), 1)
+              ee(k(r.value.label), 1)
             ]),
             _: 1
           }, 8, ["variant", "bordered", "class"]),
@@ -9155,7 +9155,7 @@ const ak = ["title"], sk = {
             onClick: y[1] || (y[1] = (M) => r.value = null)
           }, {
             default: P(() => [...y[7] || (y[7] = [
-              Q("Back", -1)
+              ee("Back", -1)
             ])]),
             _: 1
           })
@@ -9192,7 +9192,7 @@ const ak = ["title"], sk = {
             disabled: !i.value.trim()
           }, {
             default: P(() => [
-              Q(k(r.value.label), 1)
+              ee(k(r.value.label), 1)
             ]),
             _: 1
           }, 8, ["disabled"]),
@@ -9202,7 +9202,7 @@ const ak = ["title"], sk = {
             onClick: y[6] || (y[6] = (M) => r.value = null)
           }, {
             default: P(() => [...y[8] || (y[8] = [
-              Q("Back", -1)
+              ee("Back", -1)
             ])]),
             _: 1
           })
@@ -9218,7 +9218,7 @@ const ak = ["title"], sk = {
             onClick: (O) => f(M)
           }, {
             default: P(() => [
-              Q(k(M.label), 1)
+              ee(k(M.label), 1)
             ]),
             _: 2
           }, 1032, ["small", "bordered", "icon", "variant", "class", "data-move", "onClick"]))), 128))
@@ -9578,10 +9578,10 @@ const ak = ["title"], sk = {
             D(ei, {
               status: j(Vn)(e.task.state)
             }, null, 8, ["status"]),
-            Q(" " + k(a(e.task.state)), 1)
+            ee(" " + k(a(e.task.state)), 1)
           ]),
           v("span", y2, [
-            o[3] || (o[3] = Q(" since ", -1)),
+            o[3] || (o[3] = ee(" since ", -1)),
             D(la, {
               at: j(Gl)(e.task)
             }, null, 8, ["at"])
@@ -9668,7 +9668,7 @@ const ak = ["title"], sk = {
           onClick: d[0] || (d[0] = (f) => i(a.value))
         }, {
           default: P(() => [...d[3] || (d[3] = [
-            Q("Try again", -1)
+            ee("Try again", -1)
           ])]),
           _: 1
         })
@@ -9695,7 +9695,7 @@ const ak = ["title"], sk = {
             onClick: d[1] || (d[1] = (f) => i(a.value - 1))
           }, {
             default: P(() => [...d[4] || (d[4] = [
-              Q("Newer", -1)
+              ee("Newer", -1)
             ])]),
             _: 1
           }, 8, ["disabled"]),
@@ -9708,7 +9708,7 @@ const ak = ["title"], sk = {
             onClick: d[2] || (d[2] = (f) => i(a.value + 1))
           }, {
             default: P(() => [...d[5] || (d[5] = [
-              Q("Older", -1)
+              ee("Older", -1)
             ])]),
             _: 1
           }, 8, ["disabled"])
@@ -9842,7 +9842,7 @@ const V2 = ["placeholder"], G2 = { class: "actions" }, K2 = { class: "error" }, 
             onClick: m
           }, {
             default: P(() => [...$[3] || ($[3] = [
-              Q("Cancel", -1)
+              ee("Cancel", -1)
             ])]),
             _: 1
           }),
@@ -9854,7 +9854,7 @@ const V2 = ["placeholder"], G2 = { class: "actions" }, K2 = { class: "error" }, 
             onClick: p
           }, {
             default: P(() => [...$[4] || ($[4] = [
-              Q("Send", -1)
+              ee("Send", -1)
             ])]),
             _: 1
           }, 8, ["busy", "disabled"])
@@ -10075,7 +10075,7 @@ const n5 = { class: "top" }, a5 = {
         }, null, 8, ["id", "row", "read"]),
         v("header", l5, [
           v("div", r5, [
-            Q(" Task " + k(o.value.id) + " · updated ", 1),
+            ee(" Task " + k(o.value.id) + " · updated ", 1),
             D(la, {
               at: j(Gl)(o.value)
             }, null, 8, ["at"])
@@ -10152,7 +10152,7 @@ const n5 = { class: "top" }, a5 = {
         default: P(() => [
           D(is, null, {
             default: P(() => [
-              Q("Change the status of task " + k(e.id), 1)
+              ee("Change the status of task " + k(e.id), 1)
             ]),
             _: 1
           }),
@@ -10161,7 +10161,7 @@ const n5 = { class: "top" }, a5 = {
             onClick: (w) => F(S)
           }, {
             default: P(() => [
-              Q(k(S.label), 1)
+              ee(k(S.label), 1)
             ]),
             _: 2
           }, 1032, ["onClick"]))), 128))
@@ -10187,8 +10187,8 @@ function h5() {
                 V[K][X] = null;
             }
             return V;
-          })(g), ee(0, 0), ee(g - 7, 0), ee(0, g - 7), fe(), ie(), Fe(H, z), _ >= 7 && Ce(H), E == null && (E = ae(_, L, T)), ve(E, z);
-        }, ee = function(H, z) {
+          })(g), Q(0, 0), Q(g - 7, 0), Q(0, g - 7), fe(), ie(), Fe(H, z), _ >= 7 && Ce(H), E == null && (E = ae(_, L, T)), ve(E, z);
+        }, Q = function(H, z) {
           for (var q = -1; q <= 7; q += 1)
             if (!(H + q <= -1 || g <= H + q))
               for (var V = -1; V <= 7; V += 1)
@@ -10442,8 +10442,8 @@ function h5() {
           }, x = 0, g = {}; ; ) {
             var E = _.read();
             if (E == -1) break;
-            var T = L(), N = L(), J = L(), ee = String.fromCharCode(E << 8 | T), re = N << 8 | J;
-            g[ee] = re, x += 1;
+            var T = L(), N = L(), J = L(), Q = String.fromCharCode(E << 8 | T), re = N << 8 | J;
+            g[Q] = re, x += 1;
           }
           if (x != S)
             throw x + " != " + S;
@@ -10624,10 +10624,10 @@ function h5() {
         }, _.getLostPoint = function(x) {
           for (var g = x.getModuleCount(), E = 0, T = 0; T < g; T += 1)
             for (var N = 0; N < g; N += 1) {
-              for (var J = 0, ee = x.isDark(T, N), re = -1; re <= 1; re += 1)
+              for (var J = 0, Q = x.isDark(T, N), re = -1; re <= 1; re += 1)
                 if (!(T + re < 0 || g <= T + re))
                   for (var ie = -1; ie <= 1; ie += 1)
-                    N + ie < 0 || g <= N + ie || re == 0 && ie == 0 || ee == x.isDark(T + re, N + ie) && (J += 1);
+                    N + ie < 0 || g <= N + ie || re == 0 && ie == 0 || Q == x.isDark(T + re, N + ie) && (J += 1);
               J > 5 && (E += 3 + J - 5);
             }
           for (var T = 0; T < g - 1; T += 1)
@@ -10924,8 +10924,8 @@ function h5() {
           if (typeof x > "u")
             throw "bad rs block @ typeNumber:" + _ + "/errorCorrectionLevel:" + L;
           for (var g = x.length / 3, E = [], T = 0; T < g; T += 1)
-            for (var N = x[T * 3 + 0], J = x[T * 3 + 1], ee = x[T * 3 + 2], re = 0; re < N; re += 1)
-              E.push(S(J, ee));
+            for (var N = x[T * 3 + 0], J = x[T * 3 + 1], Q = x[T * 3 + 2], re = 0; re < N; re += 1)
+              E.push(S(J, Q));
           return E;
         }, w;
       })(), f = function() {
@@ -11137,45 +11137,45 @@ function h5() {
           T.writeString("GIF87a"), T.writeShort(w), T.writeShort(I), T.writeByte(128), T.writeByte(0), T.writeByte(0), T.writeByte(0), T.writeByte(0), T.writeByte(0), T.writeByte(255), T.writeByte(255), T.writeByte(255), T.writeString(","), T.writeShort(0), T.writeShort(0), T.writeShort(w), T.writeShort(I), T.writeByte(0);
           var N = 2, J = g(N);
           T.writeByte(N);
-          for (var ee = 0; J.length - ee > 255; )
-            T.writeByte(255), T.writeBytes(J, ee, 255), ee += 255;
-          T.writeByte(J.length - ee), T.writeBytes(J, ee, J.length - ee), T.writeByte(0), T.writeString(";");
+          for (var Q = 0; J.length - Q > 255; )
+            T.writeByte(255), T.writeBytes(J, Q, 255), Q += 255;
+          T.writeByte(J.length - Q), T.writeBytes(J, Q, J.length - Q), T.writeByte(0), T.writeString(";");
         };
         var x = function(T) {
-          var N = T, J = 0, ee = 0, re = {};
+          var N = T, J = 0, Q = 0, re = {};
           return re.write = function(ie, fe) {
             if (ie >>> fe)
               throw "length over";
             for (; J + fe >= 8; )
-              N.writeByte(255 & (ie << J | ee)), fe -= 8 - J, ie >>>= 8 - J, ee = 0, J = 0;
-            ee = ie << J | ee, J = J + fe;
+              N.writeByte(255 & (ie << J | Q)), fe -= 8 - J, ie >>>= 8 - J, Q = 0, J = 0;
+            Q = ie << J | Q, J = J + fe;
           }, re.flush = function() {
-            J > 0 && N.writeByte(ee);
+            J > 0 && N.writeByte(Q);
           }, re;
         }, g = function(T) {
-          for (var N = 1 << T, J = (1 << T) + 1, ee = T + 1, re = E(), ie = 0; ie < N; ie += 1)
+          for (var N = 1 << T, J = (1 << T) + 1, Q = T + 1, re = E(), ie = 0; ie < N; ie += 1)
             re.add(String.fromCharCode(ie));
           re.add(String.fromCharCode(N)), re.add(String.fromCharCode(J));
           var fe = M(), Ce = x(fe);
-          Ce.write(N, ee);
+          Ce.write(N, Q);
           var Fe = 0, ve = String.fromCharCode(_[Fe]);
           for (Fe += 1; Fe < _.length; ) {
             var he = String.fromCharCode(_[Fe]);
-            Fe += 1, re.contains(ve + he) ? ve = ve + he : (Ce.write(re.indexOf(ve), ee), re.size() < 4095 && (re.size() == 1 << ee && (ee += 1), re.add(ve + he)), ve = he);
+            Fe += 1, re.contains(ve + he) ? ve = ve + he : (Ce.write(re.indexOf(ve), Q), re.size() < 4095 && (re.size() == 1 << Q && (Q += 1), re.add(ve + he)), ve = he);
           }
-          return Ce.write(re.indexOf(ve), ee), Ce.write(J, ee), Ce.flush(), fe.toByteArray();
+          return Ce.write(re.indexOf(ve), Q), Ce.write(J, Q), Ce.flush(), fe.toByteArray();
         }, E = function() {
           var T = {}, N = 0, J = {};
-          return J.add = function(ee) {
-            if (J.contains(ee))
-              throw "dup key:" + ee;
-            T[ee] = N, N += 1;
+          return J.add = function(Q) {
+            if (J.contains(Q))
+              throw "dup key:" + Q;
+            T[Q] = N, N += 1;
           }, J.size = function() {
             return N;
-          }, J.indexOf = function(ee) {
-            return T[ee];
-          }, J.contains = function(ee) {
-            return typeof T[ee] < "u";
+          }, J.indexOf = function(Q) {
+            return T[Q];
+          }, J.contains = function(Q) {
+            return typeof T[Q] < "u";
           }, J;
         };
         return L;
@@ -11272,7 +11272,7 @@ function Q$(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const e8 = mi(() => import("./VoiceFigure-BSpgI2Do.js").then((e) => e.V)), t8 = "1.2.0", n8 = "3.5";
+const e8 = mi(() => import("./VoiceFigure-CqgRLNk2.js").then((e) => e.V)), t8 = "1.2.0", n8 = "3.5";
 export {
   bd as $,
   _e as A,
