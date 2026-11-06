@@ -1323,7 +1323,10 @@ const ba = ["disabled", "title"], wa = ["title"], Ma = { class: "gauge usage" },
     }), I = me(), F = b(() => it(l.row.process_started_at || l.row.created_at, k.value)), E = /* @__PURE__ */ new Set(["open", "started", "testing"]), T = b(() => !!l.row.ended_at && l.row.role !== "main" && f.value.some((e) => E.has(e.state))), H = b(() => {
       var e;
       return l.row.retired_at || l.row.state === "retired" ? "retired" : l.waitReason || T.value ? "waiting" : l.row.state === "running" && ((e = l.facts) == null ? void 0 : e.state) || l.row.state;
-    }), q = b(() => l.waitReason ? `Waiting: ${l.waitReason}` : H.value === "blocked" ? "Blocked" : T.value ? "Stopped with work left" : ""), D = b(() => {
+    }), q = b(() => {
+      var e;
+      return l.waitReason ? `Waiting: ${l.waitReason}` : H.value === "blocked" ? (e = l.facts) != null && e.blocked_reason ? `Blocked: ${l.facts.blocked_reason}` : "Blocked" : T.value ? "Stopped with work left" : "";
+    }), D = b(() => {
       var e;
       return ((e = l.progress) == null ? void 0 : e.completed_count) ?? f.value.filter((a) => a.state === "completed").length;
     }), N = b(() => {
@@ -1476,7 +1479,7 @@ const ba = ["disabled", "title"], wa = ["title"], Ma = { class: "gauge usage" },
       ], 42, Ea);
     };
   }
-}, sn = /* @__PURE__ */ G(ln, [["__scopeId", "data-v-d993970c"]]), on = {
+}, sn = /* @__PURE__ */ G(ln, [["__scopeId", "data-v-eb1b0927"]]), on = {
   class: "agent-limits",
   "data-agent-limits": ""
 }, rn = ["aria-expanded"], un = { key: 0 }, dn = { key: 1 }, cn = { class: "limits-panel" }, gn = { class: "limits-head" }, vn = ["data-agent-limit-type", "data-agent-limit-profile"], pn = { class: "count" }, hn = { class: "bar" }, mn = { class: "count" }, fn = { class: "bar" }, kn = ["data-agent-limit-type"], yn = { class: "limit-field" }, bn = { class: "limit-field" }, wn = {
