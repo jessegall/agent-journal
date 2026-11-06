@@ -40,11 +40,11 @@ def stand_in_programs(folder: Path) -> Path:
 
 class LaunchTerminal:
     """`journal launch claude` through the real client in a pseudo terminal of its own: it reads what the
-    launch draws and presses Enter on each question, as a person takes the defaults. Whatever still runs is
-    killed when the story ends."""
+    launch draws, jumps to the suite by its number and presses Enter on each question, as a person takes the
+    defaults. Whatever still runs is killed when the story ends."""
 
-    def __init__(self, home: JournalHome, binary: Path, programs: Path, folder: Path) -> None:
-        self.screen, self.read_up_to = bytearray(), 0
+    def __init__(self, home: JournalHome, binary: Path, programs: Path, folder: Path, suite_number: int) -> None:
+        self.screen, self.read_up_to, self.suite_number = bytearray(), 0, suite_number
         self.controller, terminal = pty.openpty()
         fcntl.ioctl(terminal, termios.TIOCSWINSZ, WINDOW_SIZE)
         environment = GoBuild.environment(JOURNAL_HOME=str(home.folder), JOURNAL_SOURCE=str(ROOT / "src"))
