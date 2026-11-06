@@ -88,7 +88,7 @@ class RuleAnswers:
 
     @property
     def commands(self) -> list[tuple[str, Command[object]]]:
-        return [(rule.name, command) for rule in self.answered if rule.answer is not None for command in rule.answer.commands]
+        return [(rule.name, command) for rule in self.answered if rule.answer is not None for command in (*rule.answer.commands, *(rule.answer.commands_if_allowed if not self.refusal else ()))]
 
     @property
     def terminal(self) -> str:

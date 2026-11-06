@@ -1,10 +1,16 @@
 import pytest
 
 from core.base.driver.command_category import CommandCategory
+from core.base.actor import Actor
+from core.base.command.bus import Bus
+from core.base.driver.block_until import BlockUntil
+from core.base.driver.conditions.ran_command import RanCommand
+from core.base.driver.nudge import Nudge
+from core.base.driver.nudge_type import NudgeType
 from core.testing.expect_reply import expect_reply_allowed, expect_reply_refusal
 from core.testing.shell_part import ShellPart
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker
-from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_ALIAS, TEST_LINE, RunRequest, asking_main, worker_on_plan
+from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_ALIAS, TEST_LINE, RunRequest, asking_main, shell_test_part, worker_on_plan
 
 WHY = "the rounding only shows in a real run"
 SECOND_REASON = "the totals only show in a real run"
@@ -194,3 +200,14 @@ def test_a_request_asked_through_the_saved_command_is_allowed_for_pytest_and_pyt
     alias_saved.story.expect_success(ALLOW, actor=alias_saved.story.agent)
     expect_reply_allowed(alias_saved.run_test(f"python3 -m {TEST_LINE}"))
     expect_requests(alias_saved, RunRequest(1, f"journal {TEST_ALIAS}", WHY, "used"))
+
+
+def test_a_line_refused_by_another_rule_does_not_use_up_an_allowed_run(allowed):
+    hold = "read the task first"
+    allowed.story.container.get(Bus).run(BlockUntil(allowed.worker.id, Nudge("workers.hold", NudgeType.REFUSAL, hold), RanCommand("journal overview")), Actor.core())
+    expect_reply_refusal(allowed.run_test(), hold)
+    expect_requests(allowed, RunRequest(1, TEST_LINE, WHY, "allowed"))
+    allowed.run_line("journal overview", ShellPart("journal", CommandCategory.JOURNAL, ["overview"], subcommand="overview"))
+    expect_reply_allowed(allowed.run_test())
+    expect_requests(allowed, RunRequest(1, TEST_LINE, WHY, "used"))
+    expect_reply_refusal(allowed.run_test(), FLAG)
