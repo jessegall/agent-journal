@@ -98,7 +98,7 @@ function release(item) {
 <template>
     <TransitionGroup tag="div" name="dock" :duration="DOCK_ARRIVAL_MS" class="dock-stack">
         <div v-if="docked.length > 1" key="dock-all" class="dock-all">
-            <Btn small bordered data-dock-all @click="changeAll">{{ anyCollapsed ? "Open all" : "Collapse all" }}<FoldSign :open="!anyCollapsed" /></Btn>
+            <Btn small bordered data-dock-all :aria-label="anyCollapsed ? 'Open all' : 'Collapse all'" @click="changeAll"><FoldSign :open="!anyCollapsed" /></Btn>
         </div>
         <template v-for="item in rows" :key="item.id">
             <DockWrapper
@@ -167,7 +167,7 @@ function release(item) {
     justify-content: flex-end;
     align-items: center;
     min-height: 28px;
-    padding: 0 14px;
+    padding: 0 4px;
     background: var(--raised);
 }
 
