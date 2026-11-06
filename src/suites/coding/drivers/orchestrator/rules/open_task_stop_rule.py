@@ -5,6 +5,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.queries.task_query import TaskQuery
+from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
@@ -15,12 +16,13 @@ class OpenTaskStopRule(DriverRule):
     name = "coding.orchestrator-open-tasks-at-stop"
     hook = HookEventName.STOP
 
-    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, settings: SettingValues) -> None:
+    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, settings: SettingValues, places: WorkerPlaces) -> None:
+        self.places = places
         self.tasks, self.worktrees, self.settings = tasks, worktrees, settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         open_worktrees = self.worktrees.open_worktrees()
-        if len(open_worktrees) >= self.settings.number(WORKER_RUN_LIMIT):
+        if not self.places.has_free_place():
             return RuleAnswer.allowed("all worker places are occupied")
         waiting = self.tasks.delegation_candidates([worktree.session_agent_id for worktree in open_worktrees])
         open_ids = [str(task.id) for task in waiting.oldest().page().rows]
