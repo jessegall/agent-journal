@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, MenuItem, MenuLabel, SearchBar, Skeleton, TimeAgo, peekRef, useWindow, wordLabel} from "@journal/window-kit";
+import {Btn, MenuItem, MenuLabel, SearchBar, Skeleton, TextArea, TimeAgo, peekRef, useWindow, wordLabel} from "@journal/window-kit";
 import MemoryEmpty from "./MemoryEmpty.vue";
 import MemoryGroup from "./MemoryGroup.vue";
 import MemoryRow from "./MemoryRow.vue";
@@ -121,7 +121,7 @@ async function make() {
         </SearchBar>
         <template v-if="making">
             <form class="make" data-memory-form @submit.prevent="make">
-                <textarea v-model="text" rows="2" placeholder="What should be remembered?" aria-label="What should be remembered?" />
+                <TextArea class="make-text" rows="2" :value="text" placeholder="What should be remembered?" aria-label="What should be remembered?" @input="text = $event.target.value" />
                 <div class="make-foot">
                     <span>A new memory goes to the main agent.</span>
                     <Btn small bordered @click="making = false">Cancel</Btn>
@@ -227,17 +227,8 @@ async function make() {
     background: var(--bg-2);
 }
 
-.make textarea {
-    width: 100%;
-    padding: 7px 9px;
-    border: 1px solid var(--border-2);
-    border-radius: 7px;
-    outline: 0;
-    background: var(--bg);
-    color: var(--text);
-    font: inherit;
-    font-size: 12.5px;
-    resize: vertical;
+.make-text {
+    min-height: 0;
 }
 
 .make-foot {
