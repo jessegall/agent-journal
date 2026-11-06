@@ -106,6 +106,47 @@ async function visibilityCase(context, address, code, caseName) {
     return {before, during, held, after};
 }
 
+async function raceCase(context, address, code) {
+    const page = await controlledPage(context, address, code, false);
+    await page.evaluate(() => readFixture.app.unmount());
+    let release;
+    const held = new Promise((resolve) => { release = resolve; });
+    let intercepted;
+    const seen = new Promise((resolve) => { intercepted = resolve; });
+    await page.route(/\/api\/lines?$/, async (route) => {
+        if (route.request().postDataJSON().line?.[1] !== "feed") return route.continue();
+        const response = await route.fetch();
+        intercepted();
+        await held;
+        await route.fulfill({response});
+    }, {times: 1});
+    const before = await page.evaluate(() => readFixture.transport.sentCounts("messages.chat"));
+    await page.evaluate(() => {
+        readFixture.first = readFixture.lineResult("messages.chat", "message feed --limit 5", "main", undefined, true);
+    });
+    await page.clock.runFor(100);
+    await seen;
+    await page.evaluate(() => {
+        readFixture.joined = readFixture.lineResult("messages.chat", "message feed --limit 5", "main", undefined, true);
+    });
+    const written = await page.evaluate(() => readFixture.lineResult("messages.chat", ["message", "send", "Action during a held read"], "main"));
+    assert.equal(written.ok, true);
+    await page.evaluate(() => {
+        readFixture.transport.readsOutdated();
+        readFixture.trailing = readFixture.lineResult("messages.chat", "message feed --limit 5", "main", undefined, true);
+    });
+    release();
+    await page.clock.runFor(200);
+    const answers = await page.evaluate(() => Promise.all([readFixture.first, readFixture.joined, readFixture.trailing]));
+    assert.deepEqual(answers[0], answers[1]);
+    assert.ok(answers[2].value.rows.some((row) => row.text === "Action during a held read"));
+    const after = await page.evaluate(() => readFixture.transport.sentCounts("messages.chat"));
+    assert.equal(after["message feed"] - before["message feed"], 2);
+    assert.equal(after["message send"] - (before["message send"] ?? 0), 1);
+    await page.close();
+    return {before, after, joinedAnswerEqual: true, trailingContainsAction: true};
+}
+
 async function scheduleCase(context, address, workload) {
     const page = await context.newPage();
     await page.goto(address);
@@ -161,7 +202,8 @@ export async function runViewerReadWorkload(address, workload, caseName = "sched
                 request_id: response.headers()["x-journal-request-id"] ?? null});
         });
         const result = caseName === "schedule" ? await scheduleCase(context, address, workload)
-            : await visibilityCase(context, address, await fixtureCode(), caseName);
+            : caseName === "action-event-race" ? await raceCase(context, address, await fixtureCode())
+                : await visibilityCase(context, address, await fixtureCode(), caseName);
         return {workload, caseName, result, network: records};
     } finally {
         await browser.close();

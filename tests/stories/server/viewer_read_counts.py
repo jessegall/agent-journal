@@ -138,6 +138,9 @@ class ReadMeasurement:
     def report(self) -> dict[str, object]:
         value = asdict(self)
         del value["answers"]
+        value["points"] = {"rows": self.points.rows, "writes": self.points.writes, "bytes": self.points.bytes,
+                           "tables": dict(self.points.tables), "statements": dict(self.points.statements),
+                           "update_statements": dict(self.points.update_statements)}
         value["database_points"] = self.points.total
         value["file_bytes_kind"] = "logical bytes through FileAccess, including cache hits"
         value["overhead_scope"] = "callbacks and query-plan collection; developer logging remains enabled"
@@ -219,10 +222,10 @@ class WorkloadServer:
 
 
 @contextmanager
-def workload_server(new_story):
+def workload_server(new_story, *, listen: bool = False):
     story = new_story(fixture=ViewerReadDataset)
     build_workload_outputs_and_docks(story)
-    with server_story(story, listener_thread_started=False) as server:
+    with server_story(story, listener_thread_started=listen) as server:
         yield WorkloadServer(server)
 
 
@@ -256,7 +259,7 @@ def validate_sample(evidence: dict[str, object]) -> None:
 
 
 def run_workload_browser(new_story, tmp_path: Path, case: str = "schedule") -> dict[str, object]:
-    with workload_server(new_story) as sample:
+    with workload_server(new_story, listen=True) as sample:
         manifest = tmp_path / "viewer-workload.json"
         result_file = tmp_path / f"viewer-{case}.json"
         FileAccess.shared().write(manifest, json.dumps(sample.workload.manifest()))
@@ -332,6 +335,17 @@ def test_small_page_does_not_load_the_large_message_backing_set(new_story):
         assert small.payload_bytes < large.payload_bytes
 
 
+def test_output_bytes_and_small_pages_use_the_fixed_large_file(new_story):
+    with workload_server(new_story) as sample:
+        small = sample.read((ReadLine("processes.output", ("output", "page", "4", "--limit", "5")),))
+        large = sample.read((ReadLine("processes.output", ("output", "page", "4", "--limit", "1024")),))
+        assert small.answers[0]["value"]["total"] == 65536
+        assert len(small.answers[0]["value"]["lines"]) == 5
+        assert len(large.answers[0]["value"]["lines"]) == 1024
+        assert small.file_bytes < large.file_bytes
+        assert small.payload_bytes < large.payload_bytes
+
+
 @pytest.mark.parametrize("missing", ["attribution", "retention", "losses", "funnel"])
 def test_baseline_rejects_missing_attribution_retention_losses_or_funnel(missing):
     evidence = complete_sample_evidence()
@@ -340,6 +354,25 @@ def test_baseline_rejects_missing_attribution_retention_losses_or_funnel(missing
         validate_sample(evidence)
 
 
-@pytest.mark.parametrize("case", ["hidden-pane", "hidden-tab", "initially-hidden", "failure-return"])
+@pytest.mark.parametrize("section,key,value", [
+    ("losses", "dropped", 1), ("losses", "recorded", 1), ("retention", "retained", 1),
+    ("funnel", "logical_commands", 3), ("attribution", "http_requests", None)])
+def test_baseline_rejects_loss_eviction_disagreement_and_unattributed_http(section, key, value):
+    evidence = complete_sample_evidence()
+    evidence[section][key] = value
+    with pytest.raises(IncompleteViewerSample):
+        validate_sample(evidence)
+
+
+def test_complete_attribution_and_funnel_agreement_is_accepted():
+    validate_sample(complete_sample_evidence())
+
+
+@pytest.mark.parametrize("case", ["hidden-pane", "hidden-tab", "initially-hidden", "failure-return", "action-event-race"])
 def test_browser_visibility_failure_recovery_and_return(new_story, tmp_path, case):
     run_workload_browser(new_story, tmp_path, case)
+
+
+def test_canonical_visible_and_hidden_schedule(new_story, tmp_path):
+    result = run_workload_browser(new_story, tmp_path)
+    assert result["result"]["elapsedMs"] >= 90000
