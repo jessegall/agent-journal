@@ -67,37 +67,37 @@ def test_a_line_of_four_parts_reaches_the_service_as_four_events_and_starts_no_p
 def test_a_line_of_four_parts_reads_the_agent_and_its_skills_as_a_line_of_one_part_does_and_writes_the_settings_once(new_story, monkeypatch):
     story = served_story(new_story)
     try:
-        calls = counted_calls(monkeypatch)
+        call_counts = counted_calls(monkeypatch)
         story.expect_hook_refusal("s-1", HookSamples.shell("rm -rf build", REMOVAL_PART), "[plugin served] the service says no")
-        one_part = dict(calls)
-        calls.update(settings=0, agent=0, skills=0)
+        one_part_counts = dict(call_counts)
+        call_counts.update(settings=0, agent=0, skills=0)
         story.expect_hook_refusal("s-1", four_parts(REMOVAL_PART), "[plugin served] the service says no")
-        asked = [json.loads(line) for line in (story.home.folder / "plugin-data" / "served" / "asked").read_text().splitlines()]
-        story.expect_rows([line["data"]["position"] for line in asked[-4:]] == [0, 1, 2, 3], one_part["skills"] == 1, calls["agent"] == one_part["agent"], calls["skills"] == 1, one_part["settings"] + calls["settings"] <= 1)
+        served_events = [json.loads(line) for line in (story.home.folder / "plugin-data" / "served" / "asked").read_text().splitlines()]
+        story.expect_rows([line["data"]["position"] for line in served_events[-4:]] == [0, 1, 2, 3], one_part_counts["skills"] == 1, call_counts["agent"] == one_part_counts["agent"], call_counts["skills"] == 1, one_part_counts["settings"] + call_counts["settings"] <= 1)
     finally:
         story.processes.close()
 
 
 def counted_calls(monkeypatch) -> dict[str, int]:
-    calls = {"settings": 0, "agent": 0, "skills": 0}
+    call_counts = {"settings": 0, "agent": 0, "skills": 0}
     write, find, names = FileAccess.write, AgentRows.find, LoadedSkills.names
 
     def counted_write(self, file, *arguments, **options):
-        calls["settings"] += 1 if Path(file).name == SETTINGS_FILE else 0
+        call_counts["settings"] += 1 if Path(file).name == SETTINGS_FILE else 0
         return write(self, file, *arguments, **options)
 
     def counted_find(self, agent_id):
-        calls["agent"] += 1
+        call_counts["agent"] += 1
         return find(self, agent_id)
 
     def counted_names(self, agent_id):
-        calls["skills"] += 1
+        call_counts["skills"] += 1
         return names(self, agent_id)
 
     monkeypatch.setattr(FileAccess, "write", counted_write)
     monkeypatch.setattr(AgentRows, "find", counted_find)
     monkeypatch.setattr(LoadedSkills, "names", counted_names)
-    return calls
+    return call_counts
 
 
 def test_a_line_of_four_parts_starts_no_program_while_the_service_is_closed(new_story, monkeypatch):

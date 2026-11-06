@@ -99,7 +99,7 @@ class PluginRule(DriverRule):
         if plugin.id not in values:
             values[plugin.id] = self.settings.values(plugin, manifest)
         guard = manifest.declared_event(event.name, EventForm.GUARD)
-        call = PluginCall(manifest, PluginEvent(guard.key, event.data) if guard else event, hook.event.environment, hook.timestamp, values[plugin.id], hook.agent_id, form=EventForm.GUARD, script=guard.script if guard else "", held=True, facts=facts.value)
+        call = PluginCall(manifest, PluginEvent(guard.key, event.data) if guard else event, hook.event.environment, hook.timestamp, values[plugin.id], hook.agent_id, form=EventForm.GUARD, script=guard.script if guard else "", hook_waits=True, facts=facts.value)
         try:
             answer = self.program.run(call, manifest.window_ms(event.name, self.setting_values.number(CEILING_SETTING)))
         except PluginLateError:
