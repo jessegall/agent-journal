@@ -1,6 +1,7 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.modules.agents.support.agent_type_limits import AgentTypeLimits, TypeLimits
+from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, the_helper
 
@@ -16,6 +17,13 @@ class EndedHelper(StoryFixture):
         helper = the_helper(story)
         story.expect_success(f"agent edit {helper.id} --pid 4242", actor=story.user)
         story.expect_success(f"agent stop {helper.id}", actor=story.agent)
+
+
+def expect_start_refused(story, reason: str) -> None:
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.expect_refusal('helper start journal-researcher --fresh --brief "Read src/till.py" --environment main', reason, actor=story.agent)
+    launcher.server.close()
+    story.home.socket("launcher").unlink()
 
 
 def test_a_helper_stays_idle_when_its_process_stops(new_story):
@@ -84,3 +92,17 @@ def test_a_person_sets_the_limits_of_a_profile_and_a_number_in_a_profile_file_is
     story.expect_success('setting set journal.core.helpers.helper-profile-limits \'["journal-researcher:1:2"]\' --project', actor=story.user)
     story.expect_rows(story.container.get(AgentTypeLimits).of("helper", "journal-researcher") == TypeLimits(1, 2))
     story.expect_rows(story.container.get(AgentTypeLimits).of("helper", "journal-planner") == TypeLimits(4, 8))
+
+
+def test_at_the_run_limit_a_start_of_that_profile_is_refused_and_another_profile_starts(new_story):
+    story = new_story(fixture=StartedHelper)
+    story.expect_success('setting set journal.core.helpers.helper-profile-limits \'["journal-researcher:1:8"]\' --project', actor=story.user)
+    expect_start_refused(story, "1 of journal-researcher run")
+    story.expect_rows(story.container.get(AgentTypeLimits).of("helper", "journal-debugger") == TypeLimits(4, 8))
+
+
+def test_at_the_kept_maximum_a_new_start_is_refused_with_a_retire_line(new_story):
+    story = new_story(fixture=EndedHelper)
+    helper = the_helper(story)
+    story.expect_success('setting set journal.core.helpers.helper-profile-limits \'["journal-researcher:4:1"]\' --project', actor=story.user)
+    expect_start_refused(story, f"journal agent retire {helper.id}")
