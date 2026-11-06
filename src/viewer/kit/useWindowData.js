@@ -9,6 +9,7 @@ const TIMER_TICK_MS = 1000;
 const REQUESTED = "requested";
 const AFTER_WINDOW = "after_window";
 const DEFAULT_PAGE_SIZE = 50;
+const ID_KEY_SUFFIX = ".*";
 const namesOf = (only) => (typeof only === "string" ? [only] : (Array.isArray(only) ? only : (only?.only ?? [])));
 
 // a window's props, as its module declares them: the first read asks for what is on screen, reload asks for the props it names, and
@@ -33,7 +34,7 @@ export function useWindowData(context) {
         return (held[name] = {...list, data, readAt: 0});
     }
     const props = new Proxy({}, {get: (_, name) => (typeof name !== "string" || name.startsWith("__v") ? undefined : (held[name] ?? propOf(name)))});
-    const isOnScreen = (name) => declared[name].loading !== REQUESTED && (!declared[name].tab || declared[name].tab === state.tab);
+    const isOnScreen = (name) => (declared[name].loading !== REQUESTED || name.endsWith(ID_KEY_SUFFIX)) && (!declared[name].tab || declared[name].tab === state.tab);
 
     // the reads of a page of a prop asked for at the same moment go in one request
     function readKey(name, flags = {}) {
@@ -97,12 +98,15 @@ export function useWindowData(context) {
         }, RELOAD_JOIN_MS);
     }
 
+    // a key with ids, such as rounds.*, reloads the ids that were read
+    const loadedNames = (name) => (name.endsWith(ID_KEY_SUFFIX) ? Object.keys(held).filter((heldName) => heldName.startsWith(name.slice(0, -1)) && held[heldName].readAt) : [name]);
+
     function heard(event) {
         const names = Object.keys(declared).filter((name) => event.event === REFRESH_EVENT || declared[name].events.some((pattern) => matches(pattern, event.event)));
         names.filter((name) => declared[name].page_size).forEach((name) => props[name].heard(event));
         const ownNames = names.filter((name) => !declared[name].page_size);
         ownNames.filter((name) => !isOnScreen(name)).forEach((name) => (props[name].readAt = 0));
-        reloadSoon(ownNames.filter(isOnScreen));
+        reloadSoon(ownNames.filter(isOnScreen).flatMap(loadedNames));
     }
 
     function follow(listed) {

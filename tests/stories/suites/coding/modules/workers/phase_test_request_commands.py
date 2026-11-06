@@ -1,3 +1,6 @@
+from core.base.query.queries import Queries
+from core.modules.agents.models.agent import Agent
+from core.modules.drivers.conditions.agent_family import AgentFamily
 import pytest
 
 from core.base.command.bus import Bus
@@ -61,10 +64,21 @@ def test_allow_test_is_refused_for_a_request_already_used(requested):
     requested.story.expect_text("task inspect 1 --json", "ran request 1", actor=requested.story.agent)
 
 
-def test_the_main_agent_of_the_environment_allows_a_request_of_a_worker_whose_parent_is_a_main_agent_that_ended(requested):
+@pytest.fixture
+def requested_of_ended_main(requested):
     story = requested.story
     launcher = story.new_row_id("agent start s-launcher claude main --environment main")
     story.expect_success(f"agent end {launcher}", actor=story.user)
     story.run_listeners()
     story.expect_text(f"agent show {requested.worker.id}", f"parent_id: {launcher}", actor=story.user)
-    story.expect_success(ALLOW, actor=story.agent)
+    return requested
+
+
+def test_the_main_agent_of_the_environment_allows_a_request_of_a_worker_whose_parent_is_a_main_agent_that_ended(requested_of_ended_main):
+    requested_of_ended_main.story.expect_success(ALLOW, actor=requested_of_ended_main.story.agent)
+
+
+def test_the_family_of_a_main_agent_holds_a_worker_whose_parent_is_a_main_agent_that_ended(requested_of_ended_main):
+    story = requested_of_ended_main.story
+    family = story.container.get(Queries).query(Agent).matching(AgentFamily(story.agent.id)).all_rows()
+    story.expect_rows(requested_of_ended_main.worker.id in {agent.id for agent in family})
