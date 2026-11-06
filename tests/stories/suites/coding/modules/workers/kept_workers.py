@@ -166,3 +166,12 @@ def test_a_dispatch_with_an_idle_worker_is_refused_with_its_send_line_and_fresh_
     worktree = story.container.get(WorktreeQuery).worker_worktree(new_worker.id)
     story.expect_rows(worktree.new_agent_reason == "Another model of thinking")
 
+
+
+def test_a_worker_whose_task_was_cancelled_can_be_released(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    story.expect_success('task cancel 1 --reason "Not needed"', actor=story.user)
+    story.expect_success(f'worker release {worker.id} "Its task was cancelled"', actor=story.agent)
+    story.expect_rows(story.container.get(WorktreeQuery).worker_worktree(worker.id) is None)
