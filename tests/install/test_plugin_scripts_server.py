@@ -43,9 +43,9 @@ def own_journal_line(journal, client: Path, *line: str) -> str:
     return f"""{journal_line(journal, client, *line)} > /dev/null\necho $? >> "$JOURNAL_PLUGIN_DATA/own-write\""""
 
 
-def own_write(journal) -> list[str]:
-    written = plugin_data(journal, "own-write")
-    return written.read_text().split() if written.is_file() else []
+def own_exit_codes(journal) -> list[str]:
+    exit_code_file = plugin_data(journal, "own-write")
+    return exit_code_file.read_text().split() if exit_code_file.is_file() else []
 
 
 def start_with_plugin(journal, client: Path, entry: dict[str, str], script: str, *extra_entries: dict[str, str], scripts: dict[str, str] | None = None) -> None:
@@ -108,7 +108,7 @@ def agent_run_line(journal, client: Path, command: str) -> str:
 def test_s29_a_script_that_writes_through_the_journal_does_not_wait_or_start_itself(journal, client):
     start_with_plugin(journal, client, {"event": TASK_CREATED, "listen": "script.sh"}, own_journal_line(journal, client, "task", "log", "1", "seen"))
     expect_line(journal, client, *SECOND_JOB_LINE)
-    assert len(script_calls(journal, "script.sh")) == 1 and own_write(journal) == ["0"], (script_calls(journal, "script.sh"), own_write(journal))
+    assert len(script_calls(journal, "script.sh")) == 1 and own_exit_codes(journal) == ["0"], (script_calls(journal, "script.sh"), own_exit_codes(journal))
     assert "seen" in expect_line(journal, client, "task", "overview", "1")
     assert expect_line(journal, client, "task", "list").count(SECOND_JOB_TITLE) == 1
 
@@ -238,4 +238,4 @@ def test_s76_the_caller_goes_away_while_a_guard_runs_and_nothing_is_written(jour
     while page.card() and any(row["started_at"] for row in page.card()):
         assert time.monotonic() < deadline, "the script outlived its caller"
         time.sleep(READ_SLICE_SECONDS)
-    assert row_counts(journal)[0] == before[0]
+    assert row_counts(journal)[0] == initial_counts[0]

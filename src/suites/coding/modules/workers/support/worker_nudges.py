@@ -27,7 +27,7 @@ WORKER_LOG_DUE = NudgeDeclaration("workers.worker_log_due", NudgeType.STEERING, 
 
 WORKER_TESTS_PASSED = NudgeDeclaration("workers.tests_passed", NudgeType.STEERING, 'the tests of worker:{worker} all pass: journal worker merge {worker}', turn_limited=False)
 WORKER_TESTS_FAILED = NudgeDeclaration("workers.tests_failed", NudgeType.STEERING, 'your tests failed: journal output read {outputs} --summary. Fix them, then journal worker next or deliver', turn_limited=False)
-WORKER_PHASE_TESTS_FAILED = NudgeDeclaration("workers.phase_tests_failed", NudgeType.STEERING, 'the tests of phase {phase} failed: {failures}. You may run tests yourself now, with no flag. Fix them, then journal worker next or deliver', turn_limited=False, path_fields=["failures"])
+WORKER_PHASE_TESTS_FAILED = NudgeDeclaration("workers.phase_tests_failed", NudgeType.STEERING, 'tests of phase {phase} failed: {failures}. Run tests freely now; fix them, then journal worker next or deliver', turn_limited=False, path_fields=["failures"])
 WORKER_TEST_REQUESTED = NudgeDeclaration("workers.test_requested", NudgeType.STEERING, 'worker:{worker} asks to run this once for task:{task}: {command}. Why: {reason}. journal worker allow-test {request}', turn_limited=False, wakes_agent=True, path_fields=["command", "reason"])
 WORKER_TEST_ALLOWED = NudgeDeclaration("workers.test_allowed", NudgeType.STEERING, 'request {request} is allowed: run this once, without the flag: {command}', turn_limited=False, wakes_agent=True, path_fields=["command"])
 TEST_REQUEST_FORWARDED = NudgeDeclaration("workers.test_request_sent", NudgeType.SAFETY_REFUSAL, 'your request went to your main agent: go on working, you hear when it is allowed', turn_limited=False)

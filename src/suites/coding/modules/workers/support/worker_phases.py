@@ -30,13 +30,13 @@ class WorkerPhases:
         phase = self.phase(task)
         return phase is not None and following is not None and self.phase(following) == phase
 
-    def failure_out(self, worktree: Worktree) -> bool:
+    def has_open_failure(self, worktree: Worktree) -> bool:
         if self.proofs.worktree_proofs(worktree.id).filter(state=ProofState.SHORT).exists():
             return True
         first_answer = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).newest().first()
         return first_answer is not None and first_answer.state is AffectedTestState.FAILED
 
-    def is_working_through_phase(self, worktree: Worktree) -> bool:
+    def has_phase_flow(self, worktree: Worktree) -> bool:
         task = self.queries.query(Task).find(worktree.task_id)
         return task.state is TaskState.STARTED and self.phase(task) is not None
 
@@ -55,4 +55,4 @@ class WorkerPhases:
         if task.state not in WAITING_TASK_STATES:
             return None
         phase = self.phase(task)
-        return None if phase is None or self.failure_out(worktree) else phase
+        return None if phase is None or self.has_open_failure(worktree) else phase

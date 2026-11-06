@@ -94,5 +94,5 @@ test("hidden contents fade in once shown and hide at once, with no fade out", ()
 });
 
 test("the helpers dropdown keeps one width", () => {
-    expect(SOURCE).toMatch(/\.dropdown\[data-dropdown="agents\.helpers"\] \{\s*width: min\(360px, calc\(100vw - 16px\)\);/);
+    expect(SOURCE).toMatch(/\.dropdown\[data-dropdown="agents\.helpers"\] \{\s*width: min\(460px, calc\(100vw - 16px\)\);/);
 });

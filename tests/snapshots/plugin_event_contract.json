@@ -2157,6 +2157,7 @@
       "goal",
       "plan_id",
       "position",
+      "test_command",
       "title"
     ]
   },
@@ -2172,6 +2173,7 @@
       "goal",
       "plan_id",
       "position",
+      "test_command",
       "title"
     ]
   },
@@ -2187,6 +2189,7 @@
       "goal",
       "plan_id",
       "position",
+      "test_command",
       "title"
     ]
   },
@@ -5984,6 +5987,76 @@
       "creator_id",
       "notice_at",
       "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_request.allow": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "reason",
+      "state",
+      "task_id",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_request.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "reason",
+      "state",
+      "task_id",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_request.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "reason",
+      "state",
+      "task_id",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_request.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "reason",
+      "state",
+      "task_id",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_request.use": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "reason",
+      "state",
+      "task_id",
+      "worker_id"
     ]
   },
   "suites.coding.workers.worker_worktree.abandon": {

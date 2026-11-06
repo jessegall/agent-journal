@@ -68,7 +68,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | Refusal]):
             lines.append(f"--page {value.assignments.number + 1} for the next page")
         data: dict[str, object] = {"worker_id": value.worker_id, "current_task": output.values(value.current_task),
                                    "tests": self.page_json(value.tests, output), "assignments": self.page_json(value.assignments, output),
-                                   **({"phase": value.phase.listed()} if value.phase is not None else {})}
+                                   "phase": value.phase.listed() if value.phase is not None else None}
         output.write("\n".join(lines), data)
 
     def page_json(self, page: Page[Proof] | Page[Task], output: Output) -> WorkerStatusPageJson:

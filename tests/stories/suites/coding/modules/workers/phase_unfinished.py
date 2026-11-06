@@ -95,4 +95,4 @@ def test_a_release_in_the_middle_of_a_phase_keeps_the_branch(moved_on):
 
 def test_after_a_release_the_plan_can_be_handed_to_another_worker(moved_on):
     moved_on.story.expect_success(f'worker release {moved_on.worker.id} "another will take it"', actor=moved_on.story.agent)
-    moved_on.story.expect_rows(moved_on.another_worker(PLAN_DISPATCH).current_task() == 1)
+    moved_on.story.expect_rows(moved_on.added_worker(PLAN_DISPATCH).current_task() == 1)

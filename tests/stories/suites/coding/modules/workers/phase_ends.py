@@ -11,6 +11,7 @@ from core.testing.expect_reply import expect_reply_refusal
 from suites.coding.modules.workers.models.affected_test import AffectedTest
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
+from tests.stories.support.story_checks import expect_value
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, PHASE_DISPATCH, TEST_LINE, dispatched_story_worker, planned_story, worker_on_plan
@@ -69,7 +70,7 @@ def delivered_phase(single_phase_tests):
 def two_workers(new_story, monkeypatch):
     story = planned_story(new_story)
     first = dispatched_story_worker(story, "worker dispatch --model sonnet 1", monkeypatch)
-    return first, first.another_worker("worker dispatch --model sonnet 2 3")
+    return first, first.added_worker("worker dispatch --model sonnet 2 3")
 
 
 def test_queue_phase_checks_the_proofs_with_no_test_adds_the_phases_own_test_once_and_queues_the_rest(new_story, monkeypatch):
@@ -128,7 +129,7 @@ def test_the_phases_own_test_runs_at_its_end_as_a_proof_of_the_last_task(new_sto
     worker = at_last_task_of_the_phase(worker_on_plan(new_story, monkeypatch, build_test=PHASE_TEST))
     worker.story.expect_text("worker next", "queued", actor=worker.worker)
     worker.story.expect_text("proof list --task 3", PHASE_TEST, actor=worker.story.agent)
-    assert [process.line for process in worker.started_processes()] == [PHASE_TEST]
+    expect_value([process.line for process in worker.started_processes()] == [PHASE_TEST], True)
 
 
 def test_the_selected_tests_run_at_the_end_of_a_phase_after_the_proofs(declared_tests):
@@ -180,7 +181,7 @@ def test_two_workers_in_one_phase_each_reach_its_end_at_their_own_last_task(two_
 def test_two_workers_each_run_the_phases_own_test_in_their_own_worktree(new_story, monkeypatch):
     story = planned_story(new_story, build_test=PHASE_TEST)
     first = dispatched_story_worker(story, "worker dispatch --model sonnet 1", monkeypatch)
-    second = first.another_worker("worker dispatch --model sonnet 2")
+    second = first.added_worker("worker dispatch --model sonnet 2")
     first.prove()
     first.story.expect_success("worker deliver", actor=first.worker)
     second.prove()

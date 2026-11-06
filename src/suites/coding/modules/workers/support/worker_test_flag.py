@@ -2,11 +2,11 @@ import shlex
 from dataclasses import dataclass
 from pathlib import Path
 
+from core.modules.processes.support.background_commands import JOURNAL
 from core.base.driver.part import Part
 
 FLAG = "--ask-main"
 FLAG_WITH_VALUE = f"{FLAG}="
-JOURNAL = "journal"
 JOURNAL_READ_FLAGS = ("--tail", "--head", "--cut")
 
 
@@ -32,14 +32,14 @@ class WorkerTestFlag:
                 next(arguments, "")
             else:
                 kept.append(word)
-        return cls(is_flagged, reason.strip(), shlex.join([cls.written_program(part), *kept]))
+        return cls(is_flagged, reason.strip(), shlex.join([cls.program_text(part), *kept]))
 
     @staticmethod
     def reason_after_flag(word: str, kept: list[str]) -> tuple[str, list[str]]:
         return ("", [*kept, word]) if word.startswith("-") else (word, kept)
 
     @staticmethod
-    def written_program(part: Part) -> str:
+    def program_text(part: Part) -> str:
         try:
             return next((word for word in shlex.split(part.text) if Path(word).name == part.program), part.program)
         except ValueError:

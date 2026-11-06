@@ -25,7 +25,7 @@ class DeliveredWorkStopRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         for worktree in self.delivered.main_worktrees(hook.agent_id):
-            if self.phases.is_working_through_phase(worktree):
+            if self.phases.has_phase_flow(worktree):
                 continue
             untested = [proof.id for proof in self.proofs.delivered_proofs(worktree.id).filter(test_command="").oldest().all_rows()]
             if untested:
