@@ -8,6 +8,7 @@ from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.support.dependency_waits import DependencyWaits
 from suites.coding.modules.workers.commands.record_worktree_release.record_worktree_release import RecordWorktreeRelease
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
@@ -25,20 +26,25 @@ class RecordWorktreeReleaseHandler(Handler[RecordWorktreeRelease, Worktree]):
     command = RecordWorktreeRelease
     runs_once = True
 
-    def __init__(self, queries: Queries, repository: Repository, rows: EventRows) -> None:
-        self.queries, self.repository, self.rows = queries, repository, rows
+    def __init__(self, queries: Queries, repository: Repository, rows: EventRows, waits: DependencyWaits) -> None:
+        self.queries, self.repository, self.rows, self.waits = queries, repository, rows, waits
 
     def handle(self, command: RecordWorktreeRelease, context: Context) -> Worktree:
         worktree = self.rows.required(Worktree, command.worktree_id)
         abandoned = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.abandon), context)
         task = self.rows.required(Task, worktree.task_id)
+        changed_ids: list[int] = []
         if task.delegated_to == worktree.session_agent_id and task.state in ASSIGNED_STATES:
             self.release_task(task, command.reason, context)
+            changed_ids.append(task.id)
         for assigned_task in tuple(self.queries.query(Task).filter(delegated_to=worktree.session_agent_id).matching(Among("state", ASSIGNED_STATES)).all_rows()):
             if not self.has_all_proofs_checked(assigned_task, worktree):
                 self.release_task(assigned_task, command.reason, context)
+                changed_ids.append(assigned_task.id)
         for delegated in tuple(self.queries.query(Task).filter(delegated_to=worktree.session_agent_id).matching(Among("state", WAITING_STATES)).all_rows()):
             self.repository.update(delegated, context, delegated_to=None)
+            changed_ids.append(delegated.id)
+        self.waits.update_tasks(changed_ids, context)
         return abandoned
 
     def release_task(self, task: Task, reason: str, context: Context) -> None:
