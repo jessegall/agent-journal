@@ -52,11 +52,11 @@ class RequestLog:
     def status(self) -> dict[str, object]:
         with self.connected() as container:
             settings = container.get(SettingValues).project
-            retained = container.get(HookRequestsTable).retained_count()
+            stored_count = container.get(HookRequestsTable).retained_count()
             enabled = settings.flag(HOOK_REQUEST_LOG_SETTING)
             limit = settings.number(HOOK_REQUEST_LOG_SIZE_SETTING)
         with self.lock:
-            return {**self.counts, "epoch": self.epoch, "enabled": enabled, "retained": retained, "retention_limit": limit,
+            return {**self.counts, "epoch": self.epoch, "enabled": enabled, "retained": stored_count, "retention_limit": limit,
                     "recording_ms": self.recording_ms}
 
     def record_viewer(self, record: ViewerRequestRecord) -> None:

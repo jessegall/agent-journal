@@ -5,6 +5,7 @@ import pytest
 
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingOn
 from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.support.story_checks import expect_value
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 
@@ -42,23 +43,23 @@ def test_single_and_batch_requests_name_http_commands_windows_and_environments(a
         line(command_id="read-2"), line("tasks.tasks", "elsewhere", "task list", "read-3")]})
     rows = records(server, cookie)
     attributed = [row["body"]["attribution"] for row in rows]
-    assert len(attributed) == 3
-    assert len({row["request_id"] for row in attributed}) == 2
-    assert {row["window"] for row in attributed} == {"agents.agents", "tasks.tasks"}
-    assert {row["environment"] for row in attributed} == {"main", "elsewhere"}
-    assert {row["child_index"] for row in attributed} == {0, 1}
-    assert sum(row["http_duration_ms"] is not None for row in attributed) == 2
-    assert all(row["command_duration_ms"] >= 0 for row in attributed)
-    assert all(row["received_at"] for row in attributed)
+    expect_value(len(attributed), 3)
+    expect_value(len({row["request_id"] for row in attributed}), 2)
+    expect_value({row["window"] for row in attributed}, {"agents.agents", "tasks.tasks"})
+    expect_value({row["environment"] for row in attributed}, {"main", "elsewhere"})
+    expect_value({row["child_index"] for row in attributed}, {0, 1})
+    expect_value(sum(row["http_duration_ms"] is not None for row in attributed), 2)
+    expect_value(all(row["command_duration_ms"] >= 0 for row in attributed), True)
+    expect_value(all(row["received_at"] for row in attributed), True)
     for name in ("database_points", "database_rows", "database_bytes"):
-        assert all(row[name] >= 0 for row in attributed)
-        assert any(row[name] > 0 for row in attributed)
-    assert single_headers["X-Journal-Request-Id"] != batch_headers["X-Journal-Request-Id"]
+        expect_value(all(row[name] >= 0 for row in attributed), True)
+        expect_value(any(row[name] > 0 for row in attributed), True)
+    expect_value(single_headers["X-Journal-Request-Id"] != batch_headers["X-Journal-Request-Id"], True)
     _, status = request(server, cookie, "/api/request-log-status")
-    assert status["attempted"] == status["recorded"] == 3
-    assert status["dropped"] == 0
-    assert status["http_requests"] == 2
-    assert status["retained"] == 3
+    expect_value(status["attempted"] == status["recorded"] == 3, True)
+    expect_value(status["dropped"], 0)
+    expect_value(status["http_requests"], 2)
+    expect_value(status["retained"], 3)
 
 
 def test_late_join_receipts_complete_the_original_rows_and_name_trailing_reads(attributed_server):
@@ -69,13 +70,13 @@ def test_late_join_receipts_complete_the_original_rows_and_name_trailing_reads(a
         {"client_id": "browser-1", "command_id": "read-1", "joined_callers": 2},
         {"client_id": "browser-1", "command_id": "read-2", "joined_callers": 0}]})
     attributed = [row["body"]["attribution"] for row in records(server, cookie)]
-    assert len(attributed) == 2
-    assert all(row["complete"] for row in attributed)
-    assert sum(row["joined_callers"] for row in attributed) == 2
-    assert sum(bool(row["trailing_of"]) for row in attributed) == 1
+    expect_value(len(attributed), 2)
+    expect_value(all(row["complete"] for row in attributed), True)
+    expect_value(sum(row["joined_callers"] for row in attributed), 2)
+    expect_value(sum(bool(row["trailing_of"]) for row in attributed), 1)
     _, status = request(server, cookie, "/api/request-log-status")
-    assert status["receipt_attempted"] == status["receipt_recorded"] == 2
-    assert status["receipt_dropped"] == 0
+    expect_value(status["receipt_attempted"] == status["receipt_recorded"] == 2, True)
+    expect_value(status["receipt_dropped"], 0)
 
 
 def test_contention_is_counted_as_a_drop_without_waiting_or_retrying(attributed_server):
@@ -85,10 +86,10 @@ def test_contention_is_counted_as_a_drop_without_waiting_or_retrying(attributed_
         request(server, cookie, "/api/line", line())
         writer.rollback()
     _, status = request(server, cookie, "/api/request-log-status")
-    assert status["attempted"] == 1
-    assert status["recorded"] == 0
-    assert status["dropped"] == 1
-    assert records(server, cookie) == []
+    expect_value(status["attempted"], 1)
+    expect_value(status["recorded"], 0)
+    expect_value(status["dropped"], 1)
+    expect_value(records(server, cookie), [])
 
 
 def test_retention_loss_and_receipts_for_evicted_rows_are_visible(attributed_server):
@@ -99,10 +100,10 @@ def test_retention_loss_and_receipts_for_evicted_rows_are_visible(attributed_ser
     request(server, cookie, "/api/read-receipts", {"receipts": [
         {"client_id": "browser-1", "command_id": "read-0", "joined_callers": 1}]})
     _, status = request(server, cookie, "/api/request-log-status")
-    assert status["recorded"] == 3
-    assert status["retained"] == 1
-    assert status["receipt_dropped"] == 1
-    assert status["retention_limit"] == 1
+    expect_value(status["recorded"], 3)
+    expect_value(status["retained"], 1)
+    expect_value(status["receipt_dropped"], 1)
+    expect_value(status["retention_limit"], 1)
 
 
 def test_logging_off_keeps_no_rows_or_receipt_writes(attributed_server):
@@ -110,10 +111,10 @@ def test_logging_off_keeps_no_rows_or_receipt_writes(attributed_server):
     server.story.expect_success("setting set journal.core.developer.tools.hooks.request-log false --project", actor=server.story.user)
     request(server, cookie, "/api/line", line())
     _, status = request(server, cookie, "/api/request-log-status")
-    assert status["enabled"] is False
-    assert status["recorded"] == status["dropped"] == 0
-    assert status["disabled"] == 1
-    assert records(server, cookie) == []
+    expect_value(status["enabled"], False)
+    expect_value(status["recorded"] == status["dropped"] == 0, True)
+    expect_value(status["disabled"], 1)
+    expect_value(records(server, cookie), [])
 
 
 def test_legacy_line_requests_and_historical_rows_still_display(attributed_server):
@@ -121,10 +122,10 @@ def test_legacy_line_requests_and_historical_rows_still_display(attributed_serve
     server.story.container.get(HookRequestLog).record("", {}, {"event": "Legacy event"}, 2.5, HookAnswer.ALLOWED, role="viewer")
     request(server, cookie, "/api/line", {"window": "agents.agents", "line": ["agent", "list"], "environment": "main"})
     row = records(server, cookie)[0]
-    assert row["event"] == "agent list"
-    assert row["body"]["attribution"]["complete"] is True
-    assert row["duration_ms"] >= 0
+    expect_value(row["event"], "agent list")
+    expect_value(row["body"]["attribution"]["complete"], True)
+    expect_value(row["duration_ms"] >= 0, True)
     historical = records(server, cookie)[1]
-    assert historical["event"] == "Legacy event"
-    assert historical["body"] == {"event": "Legacy event"}
-    assert historical["duration_ms"] == 2.5
+    expect_value(historical["event"], "Legacy event")
+    expect_value(historical["body"], {"event": "Legacy event"})
+    expect_value(historical["duration_ms"], 2.5)

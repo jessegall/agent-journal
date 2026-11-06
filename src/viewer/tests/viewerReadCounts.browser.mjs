@@ -7,6 +7,7 @@ import {build} from "esbuild";
 import {chromium} from "playwright-core";
 
 const viewerFolder = fileURLToPath(new URL("..", import.meta.url));
+const POLL_MS = 2000;
 const pause = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 const isCommand = (request) => /\/api\/lines?$/.test(new URL(request.url()).pathname);
 
@@ -54,7 +55,7 @@ async function controlledPage(context, address, code, initiallyHidden) {
     await page.evaluate(() => readFixture.transport.isRead(["message", "feed"]));
     await page.clock.install();
     await page.clock.pauseAt(new Date());
-    await page.evaluate((hidden) => {
+    await page.evaluate(({hidden, pollMilliseconds}) => {
         const fixture = globalThis.readFixture;
         fixture.hidden = hidden;
         fixture.visible = true;
@@ -71,11 +72,11 @@ async function controlledPage(context, address, code, initiallyHidden) {
         };
         fixture.window.follow(["message.*"], () => { fixture.eventCalls += 1; fixture.load(); });
         fixture.app = fixture.createApp({setup() {
-            fixture.usePoll(fixture.load, () => true, 2000);
+            fixture.usePoll(fixture.load, () => true, pollMilliseconds);
             return () => fixture.h("div", "Controlled viewer reads");
         }});
         fixture.app.mount("#fixture");
-    }, initiallyHidden);
+    }, {hidden: initiallyHidden, pollMilliseconds: POLL_MS});
     await page.clock.runFor(100);
     await until(page, () => readFixture.results.length === 1);
     return page;
@@ -83,7 +84,7 @@ async function controlledPage(context, address, code, initiallyHidden) {
 
 async function advancePoll(page) {
     const previous = await page.evaluate(() => readFixture.results.length);
-    await page.clock.fastForward(2100);
+    await page.clock.fastForward(POLL_MS);
     const hidden = await page.evaluate(() => readFixture.hidden);
     if (!hidden) await until(page, (before) => readFixture.results.length > before, previous);
 }
@@ -101,7 +102,7 @@ async function funnelEvidence(page, baseline = null) {
         closed_at: new Date().toISOString(), start_status: baseline.start_status};
 }
 
-async function visibilityCase(context, address, code, caseName) {
+async function visibilityCase(context, address, code, caseName, workload) {
     const page = await controlledPage(context, address, code, caseName === "initially-hidden");
     const before = await page.evaluate(() => readFixture.transport.sentCounts("messages.chat"));
     if (caseName === "hidden-pane") await page.evaluate(() => { readFixture.visible = false; });
@@ -115,7 +116,7 @@ async function visibilityCase(context, address, code, caseName) {
         assert.equal(await page.evaluate(() => readFixture.results.at(-1).ok), false);
         await page.unroute(/\/api\/lines?$/);
     }
-    for (let step = 0; step < 15; step++) await advancePoll(page);
+    for (let step = 0; step < workload.hidden_seconds * 1000 / POLL_MS; step++) await advancePoll(page);
     const during = await page.evaluate(() => readFixture.transport.sentCounts("messages.chat"));
     await page.evaluate(() => readFixture.subscriptions.dispatch({event: "message.changed", environment: "main"}));
     const held = await page.evaluate(() => readFixture.subscriptions.held.size);
@@ -138,7 +139,7 @@ async function visibilityCase(context, address, code, caseName) {
         eventCalls: readFixture.eventCalls, successfulReturn: readFixture.results.at(-1).ok}));
     const funnel = await funnelEvidence(page);
     await page.close();
-    return {before, during, held, after, funnel};
+    return {before, during, held, after, funnel, hidden_ms: workload.hidden_seconds * 1000, clock: "browser virtual timers"};
 }
 
 async function raceCase(context, address, code) {
@@ -244,7 +245,7 @@ export async function runViewerReadWorkload(address, workload, caseName = "sched
         });
         const result = caseName === "schedule" ? await scheduleCase(context, address, workload, await fixtureCode())
             : caseName === "action-event-race" ? await raceCase(context, address, await fixtureCode())
-                : await visibilityCase(context, address, await fixtureCode(), caseName);
+                : await visibilityCase(context, address, await fixtureCode(), caseName, workload);
         return {workload, caseName, result, network: records};
     } finally {
         await browser.close();

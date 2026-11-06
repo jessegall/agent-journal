@@ -73,19 +73,19 @@ class LineRoute:
             container.get(Database).close()
 
     def timed_answer(self, container: Container, request: ViewerLineRequest, person_id: int, shared: SharedRow | None) -> TimedLineAnswer:
-        before = container.get(Database).tally.points()
+        initial_values = container.get(Database).tally.points()
         started_at = perf_counter()
         try:
             if not container.get(WindowLines).parsed(request.window, request.line).is_read:
                 return self.timed_single_answer(request.window, request.line, person_id, request.environment, shared)
         except UsageError as error:
             return TimedLineAnswer(LineAnswer(USAGE_CODE, error=str(error)), (perf_counter() - started_at) * 1000,
-                                   container.get(Database).tally.points().minus(before))
+                                   container.get(Database).tally.points().minus(initial_values))
         except ShareRefusal as refusal:
             return TimedLineAnswer(LineAnswer(REFUSED_CODE, error=refusal.reason), (perf_counter() - started_at) * 1000,
-                                   container.get(Database).tally.points().minus(before))
+                                   container.get(Database).tally.points().minus(initial_values))
         answer = self.batch_answer(container, request, person_id, shared)
-        return TimedLineAnswer(answer, (perf_counter() - started_at) * 1000, container.get(Database).tally.points().minus(before))
+        return TimedLineAnswer(answer, (perf_counter() - started_at) * 1000, container.get(Database).tally.points().minus(initial_values))
 
     def batch_answer(self, container: Container, request: ViewerLineRequest, person_id: int, shared: SharedRow | None) -> LineAnswer:
         try:

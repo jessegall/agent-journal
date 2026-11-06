@@ -1,4 +1,5 @@
 import json
+from collections.abc import Sequence
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
@@ -20,6 +21,7 @@ from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import ended_run, moved_run, started_run
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.support.story_checks import expect_greater, expect_value
 
 
 @dataclass(frozen=True)
@@ -38,8 +40,19 @@ class WorkloadEvent:
 
 
 @dataclass(frozen=True)
+class ViewerBackingRows:
+    main_messages: int
+    unrelated_messages: int
+    tasks: int
+    memories: int
+    questions: int
+    documents: int
+
+
+@dataclass(frozen=True)
 class ViewerWorkload:
     identifier: str
+    backing: ViewerBackingRows
     displayed_rows: int
     loaded_ranges: tuple[tuple[int, int], ...]
     docks: tuple[tuple[str, str, int], ...]
@@ -65,8 +78,9 @@ class ViewerWorkload:
 
 def viewer_workload() -> ViewerWorkload:
     return ViewerWorkload(
-        "viewer-post-funnel-v1", 50, ((51, 75), (76, 100)),
-        tuple((kind, model, number) for kind, model in (
+        "viewer-post-funnel-v1", ViewerBackingRows(main_messages=100, unrelated_messages=15, tasks=100,
+                                                  memories=2, questions=2, documents=2), 50, ((51, 75), (76, 100)),
+        tuple((dock_type, model, number) for dock_type, model in (
             ("tasks.task", "task"), ("memories.memory", "memory"), ("questions.question", "question"),
             ("documents.doc", "doc"), ("processes.output", "process")) for number in (1, 2)),
         ("running", "background", "finished", "failed", "running"), (0, 0, 4096, 65536, 1024), 60, 30,
@@ -89,16 +103,20 @@ class ViewerReadDataset(StoryFixture):
     parent = UserJoined
 
     def steps(self, story):
+        backing = viewer_workload().backing
         story.expect_success("environment make elsewhere /work/elsewhere")
         story.expect_success("setting set journal.core.viewer.tour-completed true --project", actor=story.user)
-        for number in range(1, 101):
+        for number in range(1, backing.main_messages + 1):
             story.expect_success(f'message send "Displayed message {number:03d}" --environment main', actor=story.user)
+        for number in range(1, backing.tasks + 1):
             story.expect_success(f'task make "Backing task {number:03d}" --environment main', actor=story.user)
-        for number in range(15):
+        for number in range(backing.unrelated_messages):
             story.expect_success(f'message send "Unrelated message {number:02d}" --environment elsewhere', actor=story.user)
-        for number in (1, 2):
+        for number in range(1, backing.memories + 1):
             story.expect_success(f'memory make "Memory {number}" --weight 5 --environment main', actor=story.user)
+        for number in range(1, backing.questions + 1):
             story.expect_success(f'question ask "Question {number}?" --environment main', actor=story.agent)
+        for number in range(1, backing.documents + 1):
             story.expect_success(f'doc make "Document {number}" --abstract "Workload document" --body "Fixed body" --environment main', actor=story.user)
 
 
@@ -112,8 +130,8 @@ def build_workload_outputs_and_docks(story) -> None:
     current = json.loads(story.run("dock-item main --environment main --json", actor=story.user).output_text)
     for dock in current["rows"]:
         story.expect_success(f'dock remove {dock["id"]} --environment main', actor=story.user)
-    for kind, model, number in viewer_workload().docks:
-        dock_id = story.new_row_id(f"dock add {kind} {model} {number} --environment main", actor=story.user)
+    for dock_type, model, number in viewer_workload().docks:
+        dock_id = story.new_row_id(f"dock add {dock_type} {model} {number} --environment main", actor=story.user)
         story.expect_success(f"dock keep {dock_id} --environment main", actor=story.user)
 
 
@@ -147,6 +165,15 @@ class ReadMeasurement:
         return value
 
 
+@dataclass(frozen=True)
+class PageReadComparison:
+    small: ReadMeasurement
+    large: ReadMeasurement
+
+    def report(self) -> dict[str, object]:
+        return {"small": self.small.report(), "large": self.large.report()}
+
+
 class WorkloadServer:
     def __init__(self, server, prior_settings: dict[str, object]):
         self.server = server
@@ -157,6 +184,16 @@ class WorkloadServer:
     def manifest(self) -> dict[str, object]:
         return {**self.workload.manifest(), "settings_before": self.prior_settings,
                 "restore_method": "restore child values through setting set, then restore the tools group; discard the story journal"}
+
+    def message_page_comparison(self) -> PageReadComparison:
+        return PageReadComparison(
+            self.read([ReadLine("messages.chat", ("message", "feed", "--limit", "5"))]),
+            self.read([ReadLine("messages.chat", ("message", "feed", "--limit", str(self.workload.backing.main_messages)))]))
+
+    def output_page_comparison(self) -> PageReadComparison:
+        return PageReadComparison(
+            self.read([ReadLine("processes.output", ("output", "page", "4", "--limit", "5"))]),
+            self.read([ReadLine("processes.output", ("output", "page", "4", "--limit", "1024"))]))
 
     def action(self, line: tuple[str, ...], environment: str = "main") -> object:
         status, _, text = viewer_answer(self.server.viewer_port(), "/api/line", self.cookie, "",
@@ -203,7 +240,7 @@ class WorkloadServer:
         return {**evidence, "epoch": status["epoch"], "retention_limit": status["retention_limit"],
                 "recording_ms": status["recording_ms"], "settings": self.workload.settings}
 
-    def read(self, lines: tuple[ReadLine, ...]) -> ReadMeasurement:
+    def read(self, lines: Sequence[ReadLine]) -> ReadMeasurement:
         databases = []
         statements = []
         plans = []
@@ -263,35 +300,35 @@ class WorkloadServer:
                                            {"lines": [asdict(line) for line in lines]})
         duration_ms = (perf_counter() - started_at) * 1000
         assert status == 200, text
-        tally = PointTally()
+        point_counts = PointTally()
         for database in databases:
-            tally.add(database.tally.points())
+            point_counts.add(database.tally.points())
         return ReadMeasurement(tuple(json.loads(text)["answers"]), len(databases), len(text.encode()),
-                               sum(file_sizes), tally.points(), len(statements), tuple(plans), duration_ms, sum(overhead) * 1000)
+                               sum(file_sizes), point_counts.points(), len(statements), tuple(plans), duration_ms, sum(overhead) * 1000)
 
 
 @contextmanager
 def workload_server(new_story, *, listen: bool = False):
     story = new_story(fixture=ViewerReadDataset)
     tools_key = "journal.core.developer.tools"
-    before = {tools_key: json.loads(story.run(f"setting show {tools_key} --json", actor=story.user).output_text)}
+    initial_values = {tools_key: json.loads(story.run(f"setting show {tools_key} --json", actor=story.user).output_text)}
     story.expect_success(f"setting switch {tools_key} on --project", actor=story.user)
     for key, value in viewer_workload().settings.items():
         if key == tools_key:
             continue
-        before[key] = json.loads(story.run(f"setting show {key} --json", actor=story.user).output_text)
+        initial_values[key] = json.loads(story.run(f"setting show {key} --json", actor=story.user).output_text)
         story.expect_success(f"setting set {key} {json.dumps(value)} --project", actor=story.user)
     story.advance(datetime.now(timezone.utc) - story.clock.timestamp().value)
     build_workload_outputs_and_docks(story)
     try:
         with server_story(story, listener_thread_started=listen) as server:
-            yield WorkloadServer(server, before)
+            yield WorkloadServer(server, initial_values)
     finally:
-        for key, setting in before.items():
+        for key, setting in initial_values.items():
             if key == tools_key:
                 continue
             story.expect_success(f'setting set {key} {json.dumps(setting["value"])} --project', actor=story.user)
-        state = "on" if before[tools_key]["value"] else "off"
+        state = "on" if initial_values[tools_key]["value"] else "off"
         story.expect_success(f"setting switch {tools_key} {state} --project", actor=story.user)
 
 
@@ -343,136 +380,138 @@ def validate_sample(evidence: dict[str, object]) -> None:
         raise IncompleteViewerSample.for_reason("the attributed log and funnel counters disagree")
 
 
-def validate_workload_result(result: dict[str, object]) -> None:
-    if not result["sample_complete"]:
-        raise IncompleteViewerSample.for_reason(result["incomplete_reason"])
-    validate_sample(result["counter_agreement"])
+def validate_workload_sample(sample_data: dict[str, object]) -> None:
+    if not sample_data["sample_complete"]:
+        raise IncompleteViewerSample.for_reason(sample_data["incomplete_reason"])
+    validate_sample(sample_data["counter_agreement"])
 
 
 def run_workload_browser(sample: WorkloadServer, tmp_path: Path, case: str = "schedule") -> dict[str, object]:
-        measured = sample.read(sample.workload.reads).report()
-        manifest = tmp_path / "viewer-workload.json"
-        result_file = tmp_path / f"viewer-{case}.json"
-        FileAccess.shared().write(manifest, json.dumps(sample.manifest()))
-        address = f"http://127.0.0.1:{sample.server.viewer_port()}/?key={sample.server.viewer_key('Ada')}&environment=main"
-        script = Path(__file__).resolve().parents[3] / "src/viewer/tests/viewerReadCounts.browser.mjs"
-        completed = subprocess.run(["node", str(script), address, str(manifest), str(result_file), case],
-                                   cwd=script.parent.parent, env=os.environ, capture_output=True, text=True, timeout=180)
-        assert completed.returncode == 0, completed.stdout + completed.stderr
-        result = json.loads(FileAccess.shared().read(result_file))
-        result["server_reads"] = measured
-        assert result["workload"]["identifier"] == sample.workload.identifier
-        assert result["workload"]["build"] == json.loads(FileAccess.shared().read(manifest))["build"]
-        try:
-            result["counter_agreement"] = sample.attributed_evidence(result["result"]["funnel"])
-            result["sample_complete"] = True
-        except IncompleteViewerSample as error:
-            result["sample_complete"] = False
-            result["incomplete_reason"] = str(error)
-        status, _, text = viewer_answer(sample.server.viewer_port(), "/api/request-log-status", sample.cookie, "")
-        assert status == 200, text
-        result["log_status"] = json.loads(text)
-        FileAccess.shared().write(result_file, json.dumps(result))
-        print(json.dumps({"identifier": result["workload"]["identifier"], "build": result["workload"]["build"],
-                          "dataset": result["workload"]["dataset"], "case": case,
-                          "sample_complete": result["sample_complete"], "log_status": result["log_status"],
-                          "funnel": result["result"]["funnel"]["counts"], "server_reads": measured,
-                          "artifact": str(result_file)}, sort_keys=True))
-        return result
+    measured = sample.read(sample.workload.reads).report()
+    comparisons = {"messages": sample.message_page_comparison().report(), "output": sample.output_page_comparison().report()}
+    manifest = tmp_path / "viewer-workload.json"
+    measurement_file = tmp_path / f"viewer-{case}.json"
+    FileAccess.shared().write(manifest, json.dumps(sample.manifest()))
+    address = f"http://127.0.0.1:{sample.server.viewer_port()}/?key={sample.server.viewer_key('Ada')}&environment=main"
+    script = Path(__file__).resolve().parents[3] / "src/viewer/tests/viewerReadCounts.browser.mjs"
+    completed = subprocess.run(["node", str(script), address, str(manifest), str(measurement_file), case],
+                               cwd=script.parent.parent, env=os.environ, capture_output=True, text=True, timeout=180)
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    sample_data = json.loads(FileAccess.shared().read(measurement_file))
+    sample_data["server_reads"] = measured
+    sample_data["page_comparisons"] = comparisons
+    assert sample_data["workload"]["identifier"] == sample.workload.identifier
+    assert sample_data["workload"]["build"] == json.loads(FileAccess.shared().read(manifest))["build"]
+    try:
+        sample_data["counter_agreement"] = sample.attributed_evidence(sample_data["result"]["funnel"])
+        sample_data["sample_complete"] = True
+    except IncompleteViewerSample as error:
+        sample_data["sample_complete"] = False
+        sample_data["incomplete_reason"] = str(error)
+    status, _, text = viewer_answer(sample.server.viewer_port(), "/api/request-log-status", sample.cookie, "")
+    assert status == 200, text
+    sample_data["log_status"] = json.loads(text)
+    FileAccess.shared().write(measurement_file, json.dumps(sample_data))
+    print(json.dumps({"identifier": sample_data["workload"]["identifier"], "build": sample_data["workload"]["build"],
+                      "dataset": sample_data["workload"]["dataset"], "case": case,
+                      "sample_complete": sample_data["sample_complete"], "log_status": sample_data["log_status"],
+                      "funnel": sample_data["result"]["funnel"]["counts"], "server_reads": measured,
+                      "artifact": str(measurement_file)}, sort_keys=True))
+    return sample_data
 
 
 def run_canonical_viewer_workload(new_story, output_folder: Path) -> tuple[dict[str, object], ...]:
     output_folder.mkdir(parents=True, exist_ok=True)
-    results = []
+    case_samples = []
     for case in ("schedule", "hidden-pane", "hidden-tab", "initially-hidden", "failure-return", "action-event-race"):
         with workload_server(new_story, listen=True) as sample:
-            results.append(run_workload_browser(sample, output_folder, case))
-    return tuple(results)
+            case_samples.append(run_workload_browser(sample, output_folder, case))
+    return tuple(case_samples)
 
 
 def test_workload_pins_dataset_pages_docks_settings_and_schedule():
     workload = viewer_workload()
-    assert workload.identifier == "viewer-post-funnel-v1"
-    assert workload.displayed_rows == 50
-    assert len(workload.docks) == 10
-    assert len(workload.events) == 30
-    assert sum(event.relevant for event in workload.events) == 15
-    assert workload.visible_seconds == 60
-    assert workload.hidden_seconds == 30
-    assert workload.loaded_ranges == ((51, 75), (76, 100))
-    assert workload.settings["journal.core.developer.tools.repeated-work"] is True
+    expect_value(workload.identifier, "viewer-post-funnel-v1")
+    expect_value(workload.displayed_rows, 50)
+    expect_value(len(workload.docks), 10)
+    expect_value(len(workload.events), 30)
+    expect_value(sum(event.relevant for event in workload.events), 15)
+    expect_value(workload.visible_seconds, 60)
+    expect_value(workload.hidden_seconds, 30)
+    expect_value(workload.loaded_ranges, ((51, 75), (76, 100)))
+    expect_value(workload.settings["journal.core.developer.tools.repeated-work"], True)
 
 
 def test_workload_records_and_restores_prior_setting_values(new_story):
     with workload_server(new_story) as sample:
         previous = sample.prior_settings
         story = sample.server.story
-        assert previous["journal.core.developer.tools"]["value"] is False
-        assert previous["journal.core.developer.tools.hooks.request-log-size"]["value"] == 50
-        assert sample.manifest()["settings_before"] == previous
+        expect_value(previous["journal.core.developer.tools"]["value"], False)
+        expect_value(previous["journal.core.developer.tools.hooks.request-log-size"]["value"], 50)
+        expect_value(sample.manifest()["settings_before"], previous)
     restored = json.loads(story.run("setting show journal.core.developer.tools --json", actor=story.user).output_text)
-    assert restored["value"] is False
+    expect_value(restored["value"], False)
     story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)
     for key, value in previous.items():
         if key == "journal.core.developer.tools":
             continue
         restored = json.loads(story.run(f"setting show {key} --json", actor=story.user).output_text)
-        assert restored["value"] == value["value"]
+        expect_value(restored["value"], value["value"])
     story.expect_success("setting switch journal.core.developer.tools off --project", actor=story.user)
 
 
 def test_real_batch_counters_include_payload_points_statements_and_plans(read_sample):
     measured = read_sample.read(read_sample.workload.reads)
-    assert all(answer["code"] == 0 for answer in measured.answers), [answer["error"] for answer in measured.answers if answer["code"]]
-    assert measured.connections == 1
-    assert measured.payload_bytes > 0
-    assert measured.points.rows > 0
-    assert measured.points.bytes > 0
-    assert measured.statement_count >= len(measured.points.statements)
-    assert any("SELECT" in plan.sql.upper() for plan in measured.plans)
-    assert all(plan.steps for plan in measured.plans)
+    expect_value(all(answer["code"] == 0 for answer in measured.answers), True)
+    expect_value(measured.connections, 1)
+    expect_greater(measured.payload_bytes, 0)
+    expect_greater(measured.points.rows, 0)
+    expect_greater(measured.points.bytes, 0)
+    expect_value(measured.statement_count >= len(measured.points.statements), True)
+    expect_value(any("SELECT" in plan.sql.upper() for plan in measured.plans), True)
+    expect_value(all(plan.steps for plan in measured.plans), True)
     print(json.dumps(measured.report(), sort_keys=True))
 
 
 def test_fixture_creates_ten_mixed_docks_and_fifty_loaded_messages(read_sample):
-    docks = read_sample.read((ReadLine("messages.chat", ("dock-item", "main")),)).answers[0]["value"]["rows"]
+    docks = read_sample.read([ReadLine("messages.chat", ("dock-item", "main"))]).answers[0]["value"]["rows"]
     active = [dock for dock in docks if dock["state"] == "docked"]
-    assert len(active) == 10
-    assert len({dock["type"] for dock in active}) == 5
+    expect_value(len(active), 10)
+    expect_value(len({dock["type"] for dock in active}), 5)
     rows = read_sample.loaded_messages()
-    assert len(rows) == 50
-    assert {row["id"] for row in rows} == set(range(51, 101))
+    expect_value(len(rows), 50)
+    expect_value({row["id"] for row in rows}, set(range(51, 101)))
 
 
 def test_older_loaded_rows_refresh_after_delete_and_an_action_event_race(read_sample):
-    before = read_sample.loaded_messages()
-    assert 60 in {row["id"] for row in before}
+    initial_values = read_sample.loaded_messages()
+    expect_value(60 in {row["id"] for row in initial_values}, True)
     read_sample.action(("message", "delete", "60"))
     created = read_sample.action(("message", "send", "An action racing the refresh"))
     after = read_sample.loaded_messages()
-    assert 60 not in {row["id"] for row in after}
-    assert created["id"] not in {row["id"] for row in after}
-    assert {row["id"] for row in after} == set(range(51, 101)) - {60}
+    expect_value(60 not in {row["id"] for row in after}, True)
+    expect_value(created["id"] not in {row["id"] for row in after}, True)
+    expect_value({row["id"] for row in after}, set(range(51, 101)) - {60})
 
 
 def test_small_page_does_not_load_the_large_message_backing_set(read_sample):
-    small = read_sample.read((ReadLine("messages.chat", ("message", "feed", "--limit", "5")),))
-    large = read_sample.read((ReadLine("messages.chat", ("message", "feed", "--limit", "100")),))
-    assert len(small.answers[0]["value"]["rows"]) == 5
-    assert len(large.answers[0]["value"]["rows"]) == 100
-    assert small.points.rows < large.points.rows
-    assert small.points.bytes < large.points.bytes
-    assert small.payload_bytes < large.payload_bytes
+    comparison = read_sample.message_page_comparison()
+    small, large = comparison.small, comparison.large
+    expect_value(len(small.answers[0]["value"]["rows"]), 5)
+    expect_value(len(large.answers[0]["value"]["rows"]), 100)
+    expect_greater(large.points.rows, small.points.rows)
+    expect_greater(large.points.bytes, small.points.bytes)
+    expect_greater(large.payload_bytes, small.payload_bytes)
 
 
 def test_output_bytes_and_small_pages_use_the_fixed_large_file(read_sample):
-    small = read_sample.read((ReadLine("processes.output", ("output", "page", "4", "--limit", "5")),))
-    large = read_sample.read((ReadLine("processes.output", ("output", "page", "4", "--limit", "1024")),))
-    assert small.answers[0]["value"]["total"] == 65536
-    assert len(small.answers[0]["value"]["lines"]) == 5
-    assert len(large.answers[0]["value"]["lines"]) == 1024
-    assert small.file_bytes < large.file_bytes
-    assert small.payload_bytes < large.payload_bytes
+    comparison = read_sample.output_page_comparison()
+    small, large = comparison.small, comparison.large
+    expect_value(small.answers[0]["value"]["total"], 65536)
+    expect_value(len(small.answers[0]["value"]["lines"]), 5)
+    expect_value(len(large.answers[0]["value"]["lines"]), 1024)
+    expect_greater(large.file_bytes, small.file_bytes)
+    expect_greater(large.payload_bytes, small.payload_bytes)
 
 
 @pytest.mark.parametrize("missing", ["attribution", "retention", "losses", "funnel"])
@@ -499,17 +538,17 @@ def test_complete_attribution_and_funnel_agreement_is_accepted():
 
 @pytest.mark.parametrize("case", ["hidden-pane", "hidden-tab", "initially-hidden", "failure-return", "action-event-race"])
 def test_browser_visibility_failure_recovery_and_return(browser_sample, tmp_path, case):
-    result = run_workload_browser(browser_sample, tmp_path, case)
+    sample_data = run_workload_browser(browser_sample, tmp_path, case)
     if case != "failure-return":
-        validate_workload_result(result)
+        validate_workload_sample(sample_data)
 
 
 def test_canonical_visible_and_hidden_schedule(browser_sample, tmp_path):
-    result = run_workload_browser(browser_sample, tmp_path)
-    assert result["result"]["elapsedMs"] >= 90000
-    if result["sample_complete"]:
-        validate_workload_result(result)
+    sample_data = run_workload_browser(browser_sample, tmp_path)
+    expect_value(sample_data["result"]["elapsedMs"] >= 90000, True)
+    if sample_data["sample_complete"]:
+        validate_workload_sample(sample_data)
         return
-    assert result["log_status"]["dropped"] or result["log_status"]["receipt_dropped"]
+    expect_value(bool(sample_data["log_status"]["dropped"] or sample_data["log_status"]["receipt_dropped"]), True)
     with pytest.raises(IncompleteViewerSample):
-        validate_workload_result(result)
+        validate_workload_sample(sample_data)
