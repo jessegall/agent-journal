@@ -25,10 +25,11 @@ class RuleAnswer:
     refusal_priority: int = 0
     dropped_lines: int = 0
     terminal: str = ""
+    reason: str = ""
 
     @classmethod
-    def allowed(cls) -> "RuleAnswer":
-        return cls()
+    def allowed(cls, reason: str = "") -> "RuleAnswer":
+        return cls(reason=reason)
 
     @classmethod
     def with_nudges(cls, *nudges: Nudge) -> "RuleAnswer":

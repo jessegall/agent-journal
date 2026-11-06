@@ -22,8 +22,10 @@ class TaskStopRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         current = self.current_tasks.current(hook.agent_id)
-        if current is None or self.runs.is_watching(hook.agent_id):
-            return RuleAnswer.allowed()
+        if current is None:
+            return RuleAnswer.allowed("the agent has no task in hand")
+        if self.runs.is_watching(hook.agent_id):
+            return RuleAnswer.allowed("the agent is watching a running command")
         started_tasks = self.current_tasks.started_tasks(hook.agent_id)
         if len(started_tasks) > 1:
             return RuleAnswer.refused(STOP_TASKS.nudge(tasks=", ".join(f"task:{task.id}" for task in started_tasks)))

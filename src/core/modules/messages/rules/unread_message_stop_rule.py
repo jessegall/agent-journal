@@ -25,4 +25,4 @@ class UnreadMessageStopRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         unread = self.messages.unread(hook.agent_id).oldest().first()
-        return RuleAnswer.refused(UNREAD_MESSAGE_STOP.nudge(message=unread.id)) if unread is not None else RuleAnswer.allowed()
+        return RuleAnswer.refused(UNREAD_MESSAGE_STOP.nudge(message=unread.id)) if unread is not None else RuleAnswer.allowed("the agent has no unread user message")

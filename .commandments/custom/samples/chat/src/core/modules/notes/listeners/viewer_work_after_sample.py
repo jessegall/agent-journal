@@ -23,4 +23,4 @@ class NoteMarkAfterListener(CommitListener):
         self.bus = bus
 
     def handle(self, event: LoggedEvent) -> None:
-        self.bus.run(ShowMark(1, NoteMarkType.NOTE, NoteMarkVariant.MADE, "made:1", "Note made"), Actor.core(), environment_id=event.environment_id)
+        self.bus.run(ShowMark(NoteMarkType.NOTE, NoteMarkVariant.MADE, "made:1", "Note made"), Actor.core(), environment_id=event.environment_id)

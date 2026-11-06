@@ -2,6 +2,9 @@ from dataclasses import replace
 from time import perf_counter
 
 from core.base.container import Container
+from core.base.driver.rule_call import RuleCall
+from core.base.driver.rule_record import RuleRecord
+from core.base.driver.stop_check import StopCheck
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.essential_allowances import EssentialAllowances
@@ -42,9 +45,14 @@ class DriverRules:
         allowed = [entry for entry in patterned if entry.claims_essential and self.allowances.allowed(entry.name)]
         added = [entry for entry in patterned if entry not in allowed and (suite is None or suite.is_rule_included(entry.owner, entry.drivers, hook.driver))]
         walk = Walk([layer.row.ref for layer in active])
+        calls: list[RuleCall] = []
+        if hook.is_main_stop:
+            calls = [RuleCall(entry, hook) for entry in [*self.registry.essential_rules(hook.driver, hook.hook_name), *allowed]]
+            calls.extend(RuleCall(entry, replace(hook, layer=layer.row)) for layer in active for entry in self.registry.overlay_rules(layer.overlay.name, hook.hook_name))
+            calls.extend(RuleCall(entry, hook) for entry in added)
         for entry in [*self.registry.essential_rules(hook.driver, hook.hook_name), *allowed]:
             if self.switches.enabled(entry.name) and walk.record(entry, "", self.outcome(entry, hook)):
-                return walk.answers()
+                return self.complete_checks(walk, hook, calls)
         for layer in active:
             layer_hook = replace(hook, layer=layer.row)
             for entry in self.registry.overlay_rules(layer.overlay.name, hook.hook_name):
@@ -53,7 +61,7 @@ class DriverRules:
                 if walk.is_silenced:
                     walk.record_silenced(entry, layer.row.ref)
                 elif walk.record(entry, layer.row.ref, self.outcome(entry, layer_hook)):
-                    return walk.answers()
+                    return self.complete_checks(walk, hook, calls)
             walk.leave_layer(layer, layer.overlay.path.checked_class(Overlay))
         for entry in added:
             if not self.switches.enabled(entry.name):
@@ -61,8 +69,35 @@ class DriverRules:
             if walk.silences(entry.path.checked_class(DriverRule)):
                 walk.record_silenced(entry, "")
             elif walk.record(entry, "", self.outcome(entry, hook)):
-                return walk.answers()
-        return walk.answers()
+                return self.complete_checks(walk, hook, calls)
+        return self.complete_checks(walk, hook, calls)
+
+    def complete_checks(self, walk: Walk, hook: AgentHook, calls: list[RuleCall]) -> RuleAnswers:
+        answers = walk.answers()
+        if not hook.is_main_stop:
+            return answers
+        recorded = {(record.name, record.layer): record for record in answers.rules}
+        checks: list[StopCheck] = []
+        for call in calls:
+            entry, layer = call.entry, call.hook.layer_ref
+            record = recorded.get((entry.name, layer))
+            if record is not None:
+                checks.append(record.stop_check)
+                continue
+            if not self.switches.enabled(entry.name):
+                checks.append(StopCheck(entry.name, "disabled", "the rule is switched off", False,
+                                        layer if layer else None))
+                continue
+            outcome = self.outcome(entry, call.hook)
+            checks.append(RuleRecord(entry.name, layer, outcome.outcome, outcome.answer, applied=False, reason=outcome.line).stop_check)
+        active_names = {call.entry.owner for call in calls if call.hook.layer is not None}
+        suite = self.registry.suite(hook.suite)
+        for overlay in self.registry.driver_overlays(hook.driver):
+            if overlay.name in active_names or (suite is not None and not suite.is_overlay_included(overlay.name)):
+                continue
+            checks.extend(StopCheck(entry.name, "allowed", f"no active {overlay.name} layer", False)
+                          for entry in self.registry.overlay_rules(overlay.name, hook.hook_name) if entry.hook == HookEventName.STOP)
+        return replace(answers, stop_checks=tuple(checks))
 
     def skippable(self, answer: RuleAnswer, entry: DriverRuleEntry, hook: AgentHook) -> RuleAnswer:
         if not answer.refusal or answer.is_safety_refusal:

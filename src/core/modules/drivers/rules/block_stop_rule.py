@@ -31,5 +31,5 @@ class BlockStopRule(DriverRule):
         waiting = [block for block in blocks if block not in finished]
         closing = [CloseAgentBlock(block.id) for block in finished]
         if not waiting:
-            return RuleAnswer.allowed().running(*closing)
+            return RuleAnswer.allowed("no unfinished stop block holds the agent").running(*closing)
         return RuleAnswer.refused(Nudge(waiting[0].nudge_key, NudgeType.REFUSAL, waiting[0].nudge_text)).running(*closing)

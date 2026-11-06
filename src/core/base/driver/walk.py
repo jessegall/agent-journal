@@ -22,7 +22,7 @@ class Walk:
         self.delays_lines = False
 
     def record(self, entry: DriverRuleEntry, layer: str, outcome: RuleOutcome) -> bool:
-        self.rules.append(RuleRecord(entry.name, layer, outcome.outcome, outcome.answer, entry.history))
+        self.rules.append(RuleRecord(entry.name, layer, outcome.outcome, outcome.answer, entry.history, reason=outcome.line))
         self.has_ended_layer = self.has_ended_layer or (outcome.answer is not None and outcome.answer.ends_layer)
         return outcome.answer is not None and outcome.answer.last and outcome.outcome != RAISED
 

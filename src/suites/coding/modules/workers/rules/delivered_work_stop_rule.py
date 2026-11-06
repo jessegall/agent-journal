@@ -35,4 +35,4 @@ class DeliveredWorkStopRule(DriverRule):
             proofs = [proof.id for proof in self.proofs.delivered_proofs(worktree.id).oldest().all_rows()]
             if proofs and (refused_at is None or worktree.updated_at is None or refused_at < worktree.updated_at):
                 return RuleAnswer.refused(PROOF_CHECK.nudge(worker=worktree.session_agent_id, task=worktree.task_id, proofs=', '.join(map(str, proofs))))
-        return RuleAnswer.allowed()
+        return RuleAnswer.allowed("no delivered proof needs a check at this stop")
