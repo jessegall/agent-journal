@@ -16,6 +16,12 @@ class WorkerTaskSources(AssignedWorkSources):
     def __init__(self, worktrees: WorktreeQuery, queries: Queries, kept: KeptRows) -> None:
         self.worktrees, self.queries, self.kept = worktrees, queries, kept
 
+    def for_task(self, task_id: int, context: Context | Caller) -> WorkSourceSnapshot | None:
+        worktree = self.worktrees.worker_worktree(context.actor.id)
+        if worktree is None or worktree.task_id != task_id or worktree.state is not WorktreeState.CUT:
+            return None
+        return self.current(context)
+
     def current(self, context: Context | Caller) -> WorkSourceSnapshot | None:
         worktree = self.worktrees.worker_worktree(context.actor.id)
         if worktree is None:

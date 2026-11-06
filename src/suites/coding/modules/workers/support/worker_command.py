@@ -19,8 +19,7 @@ WORK_STEPS = "Prove each point with journal proof make, then journal worker next
 
 
 class WorkerCommand:
-    """The command line that starts a worker's program on its task, or resumes it on a new job, as its
-    provider writes it."""
+    """Builds fresh and resumed worker launch commands through their providers."""
 
     def __init__(self, providers: Providers, servers: ServerConfigs, libraries: LibraryFolders, helpers: HelperCommand, profiles: ProfileFiles, types: AgentTypeBook) -> None:
         self.providers, self.servers, self.libraries, self.helpers = providers, servers, libraries, helpers
@@ -34,13 +33,14 @@ class WorkerCommand:
         profile = self.profiles.effective(worker.profile or self.types.find(worker.role).default_profile)
         brief = (f"You are worker {worker.id}.\n{profile.body}\n\nYour task is {task.id}, {task.title}.\n{task.brief}\n"
                  f"Load these skills before your first write:\n{reads}\n"
-                 f"Run journal overview, then journal task show {task.id}. Load the architectural skills required by the files you change in {skills}.\n"
+                 f"Run journal overview, then journal task overview {worktree.task_id} before changing project files. Load the architectural skills required by the files you change in {skills}.\n"
                  f"Run only tests of the code you change, never the whole test suite.\n"
                  f"Decide what you can yourself. A question goes in your report to the main agent, never to the user.\n{WORK_STEPS}")
         return self.launched(worker, worktree, environment, SessionStart(worker.session), brief)
 
     def resumed(self, worker: Agent, worktree: Worktree, environment: Environment, job: str) -> LaunchCommand:
-        return self.launched(worker, worktree, environment, ResumedSession(worker.session), f"{job}\n{WORK_STEPS}")
+        return self.launched(worker, worktree, environment, ResumedSession(worker.session),
+                             f"{job}\nRead journal task overview {worktree.task_id} before changing project files.\n{WORK_STEPS}")
 
     def launched(self, worker: Agent, worktree: Worktree, environment: Environment, session: SessionStart, brief: str) -> LaunchCommand:
         if not worker.program_model.strip():

@@ -8,3 +8,6 @@ class AssignedWorkSources:
 
     def current(self, context: Context | Caller) -> WorkSourceSnapshot | None:
         return None
+
+    def for_task(self, task_id: int, context: Context | Caller) -> WorkSourceSnapshot | None:
+        return None

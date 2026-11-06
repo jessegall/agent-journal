@@ -22,7 +22,8 @@ from core.modules.documents.models.report import Report
 from core.modules.documents.support.work_context_message import WorkContextMessage, WorkContextReference, WorkContextAttachment
 from core.modules.documents.support.work_context_page import WorkContextPage, WorkContextRequest, WorkContextText, WorkContextAttachmentPage, WorkContextFile, WorkContextFileContent
 from core.modules.documents.support.work_context_order import WorkContextOrder
-from core.modules.messages.models.enums.message_type import MessageType
+from core.modules.messages.models.enums.message_type import MessageType, PERSON_MESSAGE_TYPES
+from core.modules.messages.support.assigned_work_sources import AssignedWorkSources
 from core.modules.messages.models.message import Message
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.support.work_sources import WorkSources
@@ -45,9 +46,10 @@ class WorkContextReader:
     """Reads one bounded conversation through existing resource links and message threads."""
 
     def __init__(self, queries: Queries, messages: MessageQuery, comments: RowComments,
-                 plans: TaskPlans, sources: WorkSources, files: MessageFiles) -> None:
+                 plans: TaskPlans, sources: WorkSources, files: MessageFiles, assignments: AssignedWorkSources) -> None:
         self.queries, self.messages, self.comments, self.plans, self.sources = queries, messages, comments, plans, sources
         self.files = files
+        self.assignments = assignments
 
     def overview(self, task: Task, caller: Caller) -> WorkContextPage:
         result = self.read(task, caller, WorkContextRequest(order=WorkContextOrder.NEWEST))
@@ -61,12 +63,19 @@ class WorkContextReader:
         source = self.sources.for_work(caller)
         excluded = (source.message_id,) if source is not None and source.unavailable and source.message_id is not None else ()
         visible = self.visible(row.environment_id, excluded)
+        assigned = self.assignments.for_task(row.id, caller) if isinstance(row, Task) and caller.actor.type is ActorType.AGENT else None
+        assignment_queries = ()
+        if assigned is not None and assigned.environment_id == row.environment_id and not assigned.unavailable and assigned.message_id is not None:
+            assignment_queries = (visible.filter(id=assigned.message_id).matching(Among("type", PERSON_MESSAGE_TYPES)),)
         source_queries = tuple(visible.matching(SubqueryMatch("id", self.source_links(root).select.column("source_id"))) for root in rows)
+        source_queries = (*assignment_queries, *source_queries)
         source_selects = tuple(query.scoped(query.select).column("id") for query in source_queries)
         comment_selects = tuple(self.comments.query(root).matching(SubqueryMatch("id", visible.scoped(visible.select).column("id"))).select.column("id")
                                 for root in rows)
         seeds = WorkContextSeeds((*source_selects, *comment_selects))
-        primary = visible.matching(SubqueryMatch("id", WorkContextSeeds(source_selects))).with_text_segment(0, CONTEXT_CHARACTERS).ordered("created_at", "id").first()
+        primary = assignment_queries[0].with_text_segment(0, CONTEXT_CHARACTERS).first() if assignment_queries else None
+        if primary is None:
+            primary = visible.matching(SubqueryMatch("id", WorkContextSeeds(source_selects))).with_text_segment(0, CONTEXT_CHARACTERS).ordered("created_at", "id").first()
         if primary is None:
             primary = visible.matching(SubqueryMatch("id", seeds)).with_text_segment(0, CONTEXT_CHARACTERS).ordered("created_at", "id").first()
         anchor = self.anchor(row, caller, primary)
