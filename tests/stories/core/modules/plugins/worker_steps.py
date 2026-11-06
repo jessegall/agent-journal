@@ -1,3 +1,5 @@
+from core.modules.plugins.support.plugin_folders import PluginFolders
+from core.testing.hook_samples import HookSamples
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from tests.stories.core.modules.plugins.support.worker_step_samples import step_plugin_folder
@@ -67,4 +69,22 @@ def test_a_plugin_that_fails_at_a_delivery_is_on_record_and_says_the_step_was_no
     story, worker = delivered_with_file(new_story, "broken.py")
     story.expect_text("plugin list --json", "at worker_delivering", actor=story.agent)
     story.expect_text(f"agent-line list --agent {story.agent.id}", "[plugin steps] could not judge this step", actor=story.agent)
+
+
+def test_a_hook_during_an_upgrade_leaves_the_plugin_switched_on(new_story):
+    story = step_plugin_story(new_story, "worker_delivering")
+    folders = story.container.get(PluginFolders)
+    folders.upgrade_mark("steps").touch()
+    manifest = folders.code("steps") / "journal-plugin.json"
+    manifest.write_text(manifest.read_text() + "\n")
+    story.hook("s-1", HookSamples.prompt("go on"))
+    story.expect_text("plugin list", "steps", " on ")
+
+
+def test_a_plugin_whose_files_changed_is_switched_off_and_the_chat_says_so(new_story):
+    story = step_plugin_story(new_story, "worker_delivering")
+    manifest = story.container.get(PluginFolders).code("steps") / "journal-plugin.json"
+    manifest.write_text(manifest.read_text() + "\n")
+    story.hook("s-1", HookSamples.prompt("go on"))
+    story.expect_text("message list --environment main", "The plugin steps is switched off", actor=story.user)
 

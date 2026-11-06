@@ -1,3 +1,8 @@
+from dataclasses import replace
+
+from core.base.actor import Actor
+from core.base.command.bus import Bus
+from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
@@ -8,14 +13,18 @@ from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
 
 
 class SwitchOffChangedPluginHandler(Handler[SwitchOffChangedPlugin, Plugin]):
-    """Saves the plugin switched off, its digest kept, so it stays off until the person switches it on."""
+    """Saves the plugin switched off, its digest kept, so it stays off until the person switches it on, and says
+    so in the chat."""
 
     command = SwitchOffChangedPlugin
 
-    def __init__(self, queries: Queries, skill_files: PluginSkillFiles, repository: Repository) -> None:
-        self.queries, self.skill_files, self.repository = queries, skill_files, repository
+    def __init__(self, queries: Queries, skill_files: PluginSkillFiles, repository: Repository, bus: Bus) -> None:
+        self.queries, self.skill_files, self.repository, self.bus = queries, skill_files, repository, bus
 
     def handle(self, command: SwitchOffChangedPlugin, context: Context) -> Plugin:
         plugin = self.queries.query(Plugin).find(command.plugin_id)
         self.skill_files.remove(plugin.name)
-        return self.repository.save(plugin.changed(enabled=False), context)
+        saved = self.repository.save(plugin.changed(enabled=False), context)
+        self.bus.dispatch(SendMessage(f"The plugin {plugin.name} is switched off: its files changed since it was installed. Switch it on once you have read the change."),
+                          replace(context, actor=Actor.core()))
+        return saved

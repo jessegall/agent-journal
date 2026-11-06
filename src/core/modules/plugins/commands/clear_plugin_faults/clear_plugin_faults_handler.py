@@ -15,4 +15,4 @@ class ClearPluginFaultsHandler(Handler[ClearPluginFaults, Plugin]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: ClearPluginFaults, context: Context) -> Plugin:
-        return self.repository.save(self.queries.query(Plugin).find(command.plugin_id).changed(fault_count=0, failing=False), context)
+        return self.repository.save(self.queries.query(Plugin).find(command.plugin_id).changed(fault_count=0, failing=False, last_fault=""), context)

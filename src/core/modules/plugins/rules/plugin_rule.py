@@ -55,6 +55,8 @@ class PluginRule(DriverRule):
         events = PluginEventNames().events(hook)
         values: dict[int, dict[str, object]] = {}
         for plugin in self.plugins.enabled_plugins():
+            if self.folders.is_upgrading(plugin.name):
+                continue
             manifest = PluginManifest.read(self.folders.code(plugin.name))
             if PluginDigest.digest(self.folders.code(plugin.name), manifest) != plugin.files_digest:
                 lines.append(f"[plugin {plugin.name}] switched off: its files changed since it was installed; the user switches it on again once they read the change")

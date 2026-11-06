@@ -42,6 +42,7 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
         if not command.confirmed:
             return
         self.steps.check_requirements(manifest, source)
+        self.folders.upgrade_mark(plugin.name).touch()
         code = self.folders.code(plugin.name)
         new_code, old_code = code.with_name(code.name + NEW_SUFFIX), code.with_name(code.name + OLD_SUFFIX)
         shutil.rmtree(new_code, ignore_errors=True)
@@ -70,6 +71,7 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
         self.skill_files.publish(code, manifest)
         self.readers.publish(code, manifest.name, context)
         self.repository.save(plugin.changed(release=manifest.version, files_digest=PluginDigest.digest(code, manifest)), context)
+        self.folders.upgrade_mark(plugin.name).unlink(missing_ok=True)
         return PluginUpgrade(plugin.name, plugin.release, manifest.version, [], True)
 
     @staticmethod
