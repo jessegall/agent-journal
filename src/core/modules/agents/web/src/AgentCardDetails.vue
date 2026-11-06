@@ -24,9 +24,10 @@ const cardTabs = computed(() => {
     if (retired.value) return context.tabs.filter((item) => ["reports", "transcript"].includes(item.key));
     return isReader.value ? context.tabs.filter((item) => ["reports", "transcript", "terminal"].includes(item.key)) : context.tabs;
 });
-const tab = ref(cardTabs.value[0]);
+const firstTab = () => isReader.value || retired.value ? cardTabs.value.find((item) => item.key === "transcript") : cardTabs.value[0];
+const tab = ref(firstTab());
 watch(cardTabs, (tabs) => { if (!tabs.some((item) => item.key === tab.value?.key)) tab.value = tabs[0]; });
-watch(() => props.open, (open) => { if (open) tab.value = cardTabs.value[0]; });
+watch(() => props.open, (open) => { if (open) tab.value = firstTab(); });
 const components = Object.fromEntries(context.tabs.filter((tab) => tab.component).map((tab) => [tab.key, defineAsyncComponent(() => loadWindowComponent(tab.component))]));
 const instructionOpen = ref(false);
 const runningCommand = ref("");

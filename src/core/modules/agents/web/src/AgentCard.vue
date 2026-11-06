@@ -60,19 +60,16 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
             <template v-else>
                 <span class="agent-time" data-agent-motion>{{ runTime }}</span>
             </template>
-            <template v-if="open && facts?.last_activity"><span class="agent-last-heard" data-agent-last-heard>Last heard: <TimeAgo :at="facts.last_activity" /></span></template>
             </span>
         </span>
         <span class="agent-line">
             <span class="agent-identity" data-agent-identity data-agent-motion>{{ open && row.role === 'worker' ? `worker ${row.id}` : open ? '' : identity }}</span>
-            <template v-if="open"><span class="agent-session" data-agent-session>Session: {{ row.session }}</span></template>
-            <template v-if="open && totalCount && !job">
-                <span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span>
-            </template>
+            <template v-if="open && facts?.last_activity"><span class="agent-last-heard" data-agent-last-heard>Last heard: <TimeAgo :at="facts.last_activity" /></span></template>
         </span>
         <template v-if="open"><InformationBar :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: []}" card>
             <template v-if="row.role === 'helper' && !row.ended_at"><Btn variant="ghost" small data-helper-stop @click.stop="context.run(['helper', 'stop', String(row.id)])">Stop</Btn></template>
         </InformationBar></template>
+        <template v-if="open && totalCount && !job"><span class="agent-line"><span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span></span></template>
         <template v-if="open && planTask">
             <span class="agent-line agent-work-start"><button type="button" class="agent-plan" data-agent-plan :data-peek="`plans:${planTask.plan_id}`" @click.stop="peekRef(`plans:${planTask.plan_id}`)">Plan {{ planTask.plan_id }}: {{ planTask.plan_title }}</button></span>
         </template>
@@ -227,7 +224,7 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
 .agent-card { gap: 2px; padding: 9px 14px; }
 .agent-head { gap: 6px; }
 .agent-times { display: flex; flex-direction: column; align-items: flex-end; flex: none; margin-left: auto; }
-.agent-last-heard { color: var(--text-4); font-size: 10px; white-space: nowrap; }
+.agent-last-heard { margin-left: auto; color: var(--text-4); font-size: 10px; white-space: nowrap; }
 .agent-dot { margin-right: 3px; }
 .agent-name { flex: 0 1 auto; }
 .agent-head { flex-wrap: wrap; }

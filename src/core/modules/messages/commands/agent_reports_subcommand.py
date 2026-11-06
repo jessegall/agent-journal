@@ -26,5 +26,5 @@ class AgentReportsSubcommand(ReadSubcommand[tuple[Message, ...]]):
 
     def write_output(self, value: object, output: Output) -> None:
         if is_tuple(value):
-            rows = [message.json() for message in value if isinstance(message, Message)]
+            rows = [output.values(message) for message in value if isinstance(message, Message)]
             output.write("\n".join(str(row["id"]) for row in rows) or "no reports", {"rows": rows})

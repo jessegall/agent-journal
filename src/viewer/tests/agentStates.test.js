@@ -20,7 +20,7 @@ test("an older idle agent keeps the details returned on its page", async () => {
     expect(card.querySelector("[data-agent-report]")).toBeNull();
     card.click();
     await settle();
-    expect(card.querySelector("[data-agent-report]").textContent).toContain("The cart rounds twice.");
+    expect(card.querySelector("[data-agent-report]")).toBeNull();
     expect(card.querySelector("[data-agent-last-heard]")).not.toBeNull();
     expect(card.querySelector("[data-agent-resume-reason]").textContent).toContain("cannot resume");
 });
@@ -34,14 +34,6 @@ test("retired agents show their reason and the upgrade count", async () => {
     await settle();
     expect(element.querySelector("[data-agent-retirement-reason]").textContent).toContain("Its question is answered");
     expect(element.querySelector("[data-agents-upgrade]").textContent).toBe("Retired during the upgrade: 12");
-});
-
-test("live usage facts update a card while its page still holds earlier facts", async () => {
-    const helper = {...AGENTS[1], facts: {tasks: [], job_returned: "Earlier report"}};
-    const element = await mounted(Agents, context({"agent cards --options": agentFilterOptions, "agent cards": page([helper]), "usage agents --closed": page([{id: helper.id, tasks: [], job_returned: "Latest report"}])}));
-    cardOf(element, helper.id).click();
-    await settle();
-    expect(cardOf(element, helper.id).querySelector("[data-agent-report]").textContent).toContain("Latest report");
 });
 
 test("the server supplies the agent tabs and the chosen state is sent back", async () => {
