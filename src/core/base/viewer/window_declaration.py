@@ -59,6 +59,7 @@ class WindowDeclaration:
     links: Mapping[str, str] = field(default_factory=dict[str, str])
     slots: Sequence[str] = ()
     request_priority: WindowPriority = WindowPriority.NORMAL
+    unqueued: bool = False
 
     def problems(self, module_name: str, web_folder: Path, provided: RegistryLines) -> list[str]:
         problems = DeclarationNames.prefix_problems(f"the window {self.name}", self.name, module_name)

@@ -257,5 +257,22 @@ def test_a_mixed_batch_does_not_hold_the_queue_inspection(recording_server):
     with server.context.hook_database.used(QueuePriority.AGENT_HOOK, 1):
         started_at = perf_counter()
         status, _, body = viewer_answer(server.viewer_port(), "/api/lines", cookie, "", {"lines": [queue, task]})
-        server.story.expect_rows(status == 400 and "read the request queue separately" in body)
+        server.story.expect_rows(status == 400 and "read inspection pages separately" in body)
         server.story.expect_rows(perf_counter() - started_at < 0.5)
+
+
+@pytest.mark.parametrize("command,window", [("request-queue", "developer.hook-requests"), ("hook-requests", "developer.hook-requests"), ("system-logs", "developer.system-logs")])
+def test_inspection_reads_alone_and_in_a_batch_skip_hooks_and_the_request_log(recording_server, command, window):
+    server = recording_server
+    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+    request = {"line": ["developer", command], "environment": "main", "window": window}
+    server.context.hook_database.queue.viewer_wait_limit_seconds = 5
+    with ThreadPoolExecutor(1) as pool:
+        with server.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, 1):
+            single = pool.submit(server.viewer_line_value, cookie, request)
+            single.result(timeout=3)
+            batch = pool.submit(viewer_answer, server.viewer_port(), "/api/lines", cookie, "", {"lines": [request, request]})
+            status, _, body = batch.result(timeout=3)
+            assert status == 200
+            assert all(answer["code"] == 0 for answer in json.loads(body)["answers"])
+    assert not server.story.container.get(HookRequestLog).read()

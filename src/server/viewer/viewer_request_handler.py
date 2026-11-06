@@ -75,7 +75,6 @@ SKILLS_ROUTE = "/api/skills"
 MODULES_ROUTE = "/modules/"
 FRAME_POLICY = ("sandbox allow-scripts; default-src 'none'; script-src {listener}; style-src {listener} 'unsafe-inline'; img-src {listener} data:;"
                 " connect-src 'none'; form-action 'none'")
-UNQUEUED_LINES = (("developer", "request-queue"), ("developer", "hook-requests"))
 
 
 class ViewerRequestHandler(BaseHTTPRequestHandler):
@@ -242,7 +241,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         received_at, request_id = datetime.now(timezone.utc).isoformat(), str(uuid4())
         started_at = perf_counter()
         try:
-            turn = nullcontext() if tuple(request.line[:2]) in UNQUEUED_LINES else viewer.routes.queue.viewer_turn(" ".join(request.line), request.window, viewer.routes.priorities.priority(request.window))
+            turn = nullcontext() if viewer.routes.priorities.is_unqueued(request.line) else viewer.routes.queue.viewer_turn(" ".join(request.line), request.window, viewer.routes.priorities.priority(request.window))
             with turn:
                 queued_ms = (perf_counter() - started_at) * 1000
                 timed = viewer.routes.line_route.timed_single_answer(request.window, request.line, viewer.login.person_id(token), request.environment, session.shared)
@@ -294,10 +293,10 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         session, person_id = viewer.login.session(token), viewer.login.person_id(token)
         received_at, request_id = datetime.now(timezone.utc).isoformat(), str(uuid4())
         started_at = perf_counter()
-        inspections = [(index, line) for index, line in enumerate(request.lines) if line.line[:2] == ["developer", "request-queue"]]
-        command_lines = [(index, line) for index, line in enumerate(request.lines) if line.line[:2] != ["developer", "request-queue"]]
+        inspections = [(index, line) for index, line in enumerate(request.lines) if viewer.routes.priorities.is_unqueued(line.line)]
+        command_lines = [(index, line) for index, line in enumerate(request.lines) if not viewer.routes.priorities.is_unqueued(line.line)]
         if inspections and command_lines:
-            self.answer(400, {"error": "read the request queue separately from other lines"})
+            self.answer(400, {"error": "read inspection pages separately from other lines"})
             return
         answers: dict[int, LineAnswer] = {}
         for index, line in inspections:

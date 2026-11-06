@@ -17,6 +17,7 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 from server.request_log_entry import RequestLogEntry
 from server.viewer.read_attribution import ReadAttribution
 from server.viewer.viewer_request_record import ViewerRequestRecord
+from server.viewer.window_priorities import WindowPriorities
 
 
 class RequestLog:
@@ -24,6 +25,7 @@ class RequestLog:
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home
+        self.priorities = WindowPriorities(home)
         self.epoch = str(uuid4())
         self.lock = RLock()
         self.recording_ms = 0.0
@@ -95,7 +97,7 @@ class RequestLog:
         self.save(RequestLogEntry(line, role, duration_ms, queued_ms, code, {"event": " ".join(line)}))
 
     def save(self, entry: RequestLogEntry) -> None:
-        if entry.role == "viewer" and entry.line[:2] in (["developer", "hook-requests"], ["developer", "request-queue"]):
+        if self.priorities.is_unqueued(entry.line):
             return
         started_at = perf_counter()
         with self.lock:
