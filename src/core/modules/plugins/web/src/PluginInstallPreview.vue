@@ -4,7 +4,7 @@ import {Btn, Dialog} from "@journal/window-kit";
 defineProps({preview: {type: Object, required: true}});
 const emit = defineEmits(["close", "install"]);
 const WRONG_KEY = "wrong key";
-const CATEGORIES = {requires: "Checks", setup: "Sets up", installed: "Asks", program: "On events", service: "Keeps running", alias: "Command", reads: "Reads from the project", guard: "Before a change", listen: "During a change", commit: "After a change"};
+const CATEGORIES = {files: "Part of what it runs", requires: "Checks", setup: "Sets up", installed: "Asks", program: "On events", service: "Keeps running", alias: "Command", reads: "Reads from the project", guard: "Before a change", listen: "During a change", commit: "After a change"};
 </script>
 
 <template>

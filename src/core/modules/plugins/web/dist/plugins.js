@@ -1,6 +1,6 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-9904e1611c58")) { const style = document.createElement("style"); style.id = "window-styles-9904e1611c58"; style.textContent = ".plugin[data-v-06bc353e]{position:relative;display:flex;flex-direction:column;gap:12px;padding:18px 18px 14px;border:1px solid var(--border-2);border-radius:14px;background:var(--raised);transition:border-color .2s,opacity .2s}.plugin[data-v-06bc353e]:hover{border-color:var(--border-3)}.plugin.off[data-v-06bc353e]>:not(.head),.plugin.off .names[data-v-06bc353e],.plugin.off .mark[data-v-06bc353e]{opacity:.55}.head[data-v-06bc353e]{display:flex;align-items:center;gap:12px}.mark[data-v-06bc353e]{flex:none;display:grid;place-items:center;width:40px;height:40px;border:1px solid var(--border-2);border-radius:11px;background:var(--bg-2);color:var(--text-2);font-size:14px;font-weight:600;letter-spacing:.02em}.names[data-v-06bc353e]{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.title[data-v-06bc353e]{overflow:hidden;color:var(--text);font-size:14.5px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}.version[data-v-06bc353e]{color:var(--text-3);font-size:11.5px;font-variant-numeric:tabular-nums}.description[data-v-06bc353e]{margin:0;color:var(--text-2);font-size:13px;line-height:1.55}.source[data-v-06bc353e]{display:flex;align-items:center;gap:6px;min-width:0;margin:0;color:var(--text-3);font-family:var(--mono);font-size:11.5px}.source-text[data-v-06bc353e]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.runs[data-v-06bc353e]{display:flex;flex-direction:column;gap:2px;padding-top:10px;border-top:1px solid var(--border)}.label[data-v-06bc353e]{margin-bottom:4px;color:var(--text-4);font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}.fault[data-v-06bc353e]{margin:0;color:var(--danger);font-size:12.5px;line-height:1.5;overflow-wrap:anywhere}.fault.quiet[data-v-06bc353e]{color:var(--text-3)}.run[data-v-06bc353e]{display:flex;align-items:center;gap:9px;padding:3px 0}.run-name[data-v-06bc353e]{color:var(--text);font-size:12.5px;font-weight:500}.run-state[data-v-06bc353e]{flex:1;color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums}.acts[data-v-06bc353e]{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:auto;padding-top:12px;border-top:1px solid var(--border)}.more[data-v-06bc353e]{margin-left:auto;color:var(--text-2)}.danger[data-v-06bc353e]{color:var(--danger)}.plugin-guide h3[data-v-8f1251af]{margin:0 0 8px;color:var(--text-3);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}.plugin-guide p[data-v-8f1251af],.plugin-guide li[data-v-8f1251af],.plugin-guide dd[data-v-8f1251af]{margin:0 0 12px;color:var(--text-2);font-size:12.5px}.plugin-guide dt[data-v-8f1251af]{font-size:12.5px;font-weight:500}.plugin-guide pre[data-v-8f1251af]{margin:0 0 16px;padding:10px;border-radius:6px;background:var(--hover);font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.preview-from[data-v-4858968c],.preview-lead[data-v-4858968c]{margin:0 0 10px;color:var(--text-2);font-size:12.5px}.preview-row[data-v-4858968c]{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:5px 0;border-top:1px solid var(--border)}.preview-category[data-v-4858968c]{flex:0 0 90px;color:var(--text-3);font-size:12px}.preview-command[data-v-4858968c]{flex-basis:100%;font-size:12px;overflow-wrap:anywhere}.ask[data-v-68367524]{display:flex;flex-direction:column;gap:8px}.ask-lead[data-v-68367524]{margin:0 0 4px;color:var(--text-3);font-size:12.5px}.wish[data-v-68367524]{padding:7px 9px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px;resize:vertical}.wish[data-v-68367524]:focus{outline:none;border-color:var(--accent)}.plugin-output-time[data-v-a992a588]{margin:10px 0 2px;color:var(--text-3);font-size:11px}.plugin-output[data-v-a992a588]{margin:0;font-size:13px;white-space:pre-wrap}.plugin-note[data-v-a992a588]{margin:0;color:var(--text-3);font-size:12px}.remove-lead[data-v-6ddf3c50]{margin:0 0 8px;color:var(--text-3);font-size:12.5px}.plugin-setting[data-v-68e8eacc]{padding:10px 12px;border-bottom:1px solid var(--border);transition:opacity .15s}.plugin-setting.dim[data-v-68e8eacc]{opacity:.5}.plugin-setting-flag[data-v-68e8eacc]{display:flex;gap:12px;align-items:center;justify-content:space-between}.plugin-setting-names[data-v-68e8eacc]{display:flex;flex-direction:column;gap:2px;min-width:0}.plugin-setting-title[data-v-68e8eacc]{color:var(--text);font-size:13px;font-weight:500}.plugin-setting-help[data-v-68e8eacc]{margin:0;color:var(--text-3);font-size:12px;line-height:1.45}.plugin-setting-children[data-v-68e8eacc]{padding-left:22px}.plugin-settings[data-v-83826936]{display:flex;flex-direction:column;gap:14px}.plugin-settings-head[data-v-83826936]{display:flex;gap:10px;align-items:center}.plugin-settings-version[data-v-83826936]{padding:1px 7px;border-radius:6px;background:var(--chip);color:var(--text-2);font-size:11.5px}.plugin-settings-on[data-v-83826936]{display:inline-flex;gap:8px;align-items:center;margin-left:auto;color:var(--text-3);font-size:12.5px}.plugin-settings-line[data-v-83826936]{margin:0;color:var(--text-2);font-size:13px;line-height:1.5}.plugin-settings-group[data-v-83826936]{border:1px solid var(--border);border-radius:10px;overflow:hidden}.plugin-settings-all[data-v-83826936]{display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border)}.plugin-output[data-v-476bfd4a]{margin:0 0 6px;font-size:13px;white-space:pre-wrap}.plugin-note[data-v-476bfd4a]{margin:0;color:var(--text-3);font-size:12px}.plugins[data-v-904a083a]{display:flex;flex-direction:column;height:100%;overflow:auto}.bar[data-v-904a083a]{display:flex;flex:none;align-items:center;gap:10px;padding:8px 14px 8px 22px;border-bottom:1px solid var(--border)}.install[data-v-904a083a]{flex:1 1 360px;max-width:640px}.body[data-v-904a083a]{display:flex;flex-direction:column;gap:16px;width:100%;max-width:1180px;padding:22px 24px 40px;box-sizing:border-box}.lead[data-v-904a083a]{max-width:640px;margin:0;color:var(--text-3);font-size:12.5px;line-height:1.55}.asked[data-v-904a083a]{margin:0;color:var(--accent-text);font-size:12.5px}.none[data-v-904a083a]{margin:0;color:var(--text-3);font-size:12.5px}.none strong[data-v-904a083a]{display:block;margin-bottom:4px;color:var(--text-2);font-size:14px;font-weight:500}.cards[data-v-904a083a]{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}.plugin-note[data-v-904a083a]{margin:0;color:var(--text-3);font-size:12px}.plugin-fault[data-v-904a083a]{margin:0;color:var(--danger);font-size:12px}.make[data-v-904a083a]{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:160px;padding:10px 12px;border:1px dashed var(--border-2);border-radius:14px;background:none;color:var(--text-3);font:inherit;font-size:13px;cursor:pointer;transition:border-color .15s,color .15s,background .15s}.make[data-v-904a083a]:hover{border-color:var(--accent);background:var(--hover);color:var(--text)}.make-mark[data-v-904a083a]{display:grid;place-items:center;width:36px;height:36px;margin-bottom:8px;border:1px solid var(--border-2);border-radius:50%;transition:border-color .2s,color .2s}.make:hover .make-mark[data-v-904a083a]{border-color:var(--accent);color:var(--accent-text)}.make-title[data-v-904a083a]{color:var(--text-2);font-weight:500}.make-text[data-v-904a083a]{max-width:240px;color:var(--text-4);font-size:12px;line-height:1.45;text-align:center}@media(max-width:640px){.install[data-v-904a083a]{flex-basis:100%;max-width:none}.body[data-v-904a083a]{padding:16px 16px 32px}.cards[data-v-904a083a]{grid-template-columns:1fr}}\n"; document.head.appendChild(style); }
-import { ref as P, computed as E, openBlock as s, createElementBlock as p, normalizeClass as ve, createElementVNode as e, toDisplayString as c, createVNode as b, unref as l, createCommentVNode as C, Fragment as T, renderList as I, renderSlot as Pe, withCtx as f, createTextVNode as k, createBlock as S, withModifiers as X, useModel as ue, withDirectives as Ie, vModelText as Oe, mergeModels as xe, useId as Ne, resolveComponent as De, reactive as Le } from "vue";
+if (!document.getElementById("window-styles-2900ebed9ee5")) { const style = document.createElement("style"); style.id = "window-styles-2900ebed9ee5"; style.textContent = ".plugin[data-v-06bc353e]{position:relative;display:flex;flex-direction:column;gap:12px;padding:18px 18px 14px;border:1px solid var(--border-2);border-radius:14px;background:var(--raised);transition:border-color .2s,opacity .2s}.plugin[data-v-06bc353e]:hover{border-color:var(--border-3)}.plugin.off[data-v-06bc353e]>:not(.head),.plugin.off .names[data-v-06bc353e],.plugin.off .mark[data-v-06bc353e]{opacity:.55}.head[data-v-06bc353e]{display:flex;align-items:center;gap:12px}.mark[data-v-06bc353e]{flex:none;display:grid;place-items:center;width:40px;height:40px;border:1px solid var(--border-2);border-radius:11px;background:var(--bg-2);color:var(--text-2);font-size:14px;font-weight:600;letter-spacing:.02em}.names[data-v-06bc353e]{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.title[data-v-06bc353e]{overflow:hidden;color:var(--text);font-size:14.5px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}.version[data-v-06bc353e]{color:var(--text-3);font-size:11.5px;font-variant-numeric:tabular-nums}.description[data-v-06bc353e]{margin:0;color:var(--text-2);font-size:13px;line-height:1.55}.source[data-v-06bc353e]{display:flex;align-items:center;gap:6px;min-width:0;margin:0;color:var(--text-3);font-family:var(--mono);font-size:11.5px}.source-text[data-v-06bc353e]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.runs[data-v-06bc353e]{display:flex;flex-direction:column;gap:2px;padding-top:10px;border-top:1px solid var(--border)}.label[data-v-06bc353e]{margin-bottom:4px;color:var(--text-4);font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}.fault[data-v-06bc353e]{margin:0;color:var(--danger);font-size:12.5px;line-height:1.5;overflow-wrap:anywhere}.fault.quiet[data-v-06bc353e]{color:var(--text-3)}.run[data-v-06bc353e]{display:flex;align-items:center;gap:9px;padding:3px 0}.run-name[data-v-06bc353e]{color:var(--text);font-size:12.5px;font-weight:500}.run-state[data-v-06bc353e]{flex:1;color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums}.acts[data-v-06bc353e]{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:auto;padding-top:12px;border-top:1px solid var(--border)}.more[data-v-06bc353e]{margin-left:auto;color:var(--text-2)}.danger[data-v-06bc353e]{color:var(--danger)}.plugin-guide h3[data-v-41d9f9eb]{margin:0 0 8px;color:var(--text-3);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}.plugin-guide p[data-v-41d9f9eb],.plugin-guide li[data-v-41d9f9eb],.plugin-guide dd[data-v-41d9f9eb]{margin:0 0 12px;color:var(--text-2);font-size:12.5px}.plugin-guide dt[data-v-41d9f9eb]{font-size:12.5px;font-weight:500}.plugin-guide pre[data-v-41d9f9eb]{margin:0 0 16px;padding:10px;border-radius:6px;background:var(--hover);font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.preview-from[data-v-608d5244],.preview-lead[data-v-608d5244]{margin:0 0 10px;color:var(--text-2);font-size:12.5px}.preview-row[data-v-608d5244]{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:5px 0;border-top:1px solid var(--border)}.preview-category[data-v-608d5244]{flex:0 0 90px;color:var(--text-3);font-size:12px}.preview-command[data-v-608d5244]{flex-basis:100%;font-size:12px;overflow-wrap:anywhere}.ask[data-v-68367524]{display:flex;flex-direction:column;gap:8px}.ask-lead[data-v-68367524]{margin:0 0 4px;color:var(--text-3);font-size:12.5px}.wish[data-v-68367524]{padding:7px 9px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px;resize:vertical}.wish[data-v-68367524]:focus{outline:none;border-color:var(--accent)}.plugin-output-time[data-v-a992a588]{margin:10px 0 2px;color:var(--text-3);font-size:11px}.plugin-output[data-v-a992a588]{margin:0;font-size:13px;white-space:pre-wrap}.plugin-note[data-v-a992a588]{margin:0;color:var(--text-3);font-size:12px}.remove-lead[data-v-6ddf3c50]{margin:0 0 8px;color:var(--text-3);font-size:12.5px}.plugin-setting[data-v-68e8eacc]{padding:10px 12px;border-bottom:1px solid var(--border);transition:opacity .15s}.plugin-setting.dim[data-v-68e8eacc]{opacity:.5}.plugin-setting-flag[data-v-68e8eacc]{display:flex;gap:12px;align-items:center;justify-content:space-between}.plugin-setting-names[data-v-68e8eacc]{display:flex;flex-direction:column;gap:2px;min-width:0}.plugin-setting-title[data-v-68e8eacc]{color:var(--text);font-size:13px;font-weight:500}.plugin-setting-help[data-v-68e8eacc]{margin:0;color:var(--text-3);font-size:12px;line-height:1.45}.plugin-setting-children[data-v-68e8eacc]{padding-left:22px}.plugin-settings[data-v-83826936]{display:flex;flex-direction:column;gap:14px}.plugin-settings-head[data-v-83826936]{display:flex;gap:10px;align-items:center}.plugin-settings-version[data-v-83826936]{padding:1px 7px;border-radius:6px;background:var(--chip);color:var(--text-2);font-size:11.5px}.plugin-settings-on[data-v-83826936]{display:inline-flex;gap:8px;align-items:center;margin-left:auto;color:var(--text-3);font-size:12.5px}.plugin-settings-line[data-v-83826936]{margin:0;color:var(--text-2);font-size:13px;line-height:1.5}.plugin-settings-group[data-v-83826936]{border:1px solid var(--border);border-radius:10px;overflow:hidden}.plugin-settings-all[data-v-83826936]{display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border)}.plugin-output[data-v-476bfd4a]{margin:0 0 6px;font-size:13px;white-space:pre-wrap}.plugin-note[data-v-476bfd4a]{margin:0;color:var(--text-3);font-size:12px}.plugins[data-v-904a083a]{display:flex;flex-direction:column;height:100%;overflow:auto}.bar[data-v-904a083a]{display:flex;flex:none;align-items:center;gap:10px;padding:8px 14px 8px 22px;border-bottom:1px solid var(--border)}.install[data-v-904a083a]{flex:1 1 360px;max-width:640px}.body[data-v-904a083a]{display:flex;flex-direction:column;gap:16px;width:100%;max-width:1180px;padding:22px 24px 40px;box-sizing:border-box}.lead[data-v-904a083a]{max-width:640px;margin:0;color:var(--text-3);font-size:12.5px;line-height:1.55}.asked[data-v-904a083a]{margin:0;color:var(--accent-text);font-size:12.5px}.none[data-v-904a083a]{margin:0;color:var(--text-3);font-size:12.5px}.none strong[data-v-904a083a]{display:block;margin-bottom:4px;color:var(--text-2);font-size:14px;font-weight:500}.cards[data-v-904a083a]{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}.plugin-note[data-v-904a083a]{margin:0;color:var(--text-3);font-size:12px}.plugin-fault[data-v-904a083a]{margin:0;color:var(--danger);font-size:12px}.make[data-v-904a083a]{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:160px;padding:10px 12px;border:1px dashed var(--border-2);border-radius:14px;background:none;color:var(--text-3);font:inherit;font-size:13px;cursor:pointer;transition:border-color .15s,color .15s,background .15s}.make[data-v-904a083a]:hover{border-color:var(--accent);background:var(--hover);color:var(--text)}.make-mark[data-v-904a083a]{display:grid;place-items:center;width:36px;height:36px;margin-bottom:8px;border:1px solid var(--border-2);border-radius:50%;transition:border-color .2s,color .2s}.make:hover .make-mark[data-v-904a083a]{border-color:var(--accent);color:var(--accent-text)}.make-title[data-v-904a083a]{color:var(--text-2);font-weight:500}.make-text[data-v-904a083a]{max-width:240px;color:var(--text-4);font-size:12px;line-height:1.45;text-align:center}@media(max-width:640px){.install[data-v-904a083a]{flex-basis:100%;max-width:none}.body[data-v-904a083a]{padding:16px 16px 32px}.cards[data-v-904a083a]{grid-template-columns:1fr}}\n"; document.head.appendChild(style); }
+import { ref as P, computed as E, openBlock as s, createElementBlock as p, normalizeClass as ve, createElementVNode as e, toDisplayString as c, createVNode as b, unref as l, createCommentVNode as C, Fragment as T, renderList as O, renderSlot as Pe, withCtx as f, createTextVNode as k, createBlock as S, withModifiers as X, useModel as ue, withDirectives as Oe, vModelText as Ie, mergeModels as xe, useId as Ne, resolveComponent as De, reactive as Le } from "vue";
 import { Switch as se, Icon as ne, Btn as R, MenuPanel as Ee, MenuItem as de, Dialog as D, TextInput as le, FormField as Ue, SwitchCase as We, TextArea as Me, Segmented as qe, FoldGroup as Ge, useWindow as Ve, useRows as K, usePoll as ge, useReadLine as Be, Skeleton as Fe, Dashboard as Je, runChanged as _e } from "@journal/window-kit";
 function Ke(t, v, i) {
   const m = new URL(t);
@@ -49,9 +49,9 @@ const N = (t, v) => {
     }, w = ($) => $.limit_ms ? `${$.script}. Runs under the journal limit of ${$.limit_ms} ms.` : $.script, x = ($) => {
       var g;
       return $.started_at ? "Running" : ((g = y[$.state]) == null ? void 0 : g[0]) ?? o[$.form] ?? "";
-    }, O = ($) => Math.max(1, Math.round((Date.now() - Date.parse($.started_at)) / 6e4)), V = ($) => {
+    }, I = ($) => Math.max(1, Math.round((Date.now() - Date.parse($.started_at)) / 6e4)), V = ($) => {
       var g;
-      return $.started_at ? `for ${O($)} minutes. Turn the plugin off to stop it.` : ((g = y[$.state]) == null ? void 0 : g[1]($)) ?? w($);
+      return $.started_at ? `for ${I($)} minutes. Turn the plugin off to stop it.` : ((g = y[$.state]) == null ? void 0 : g[1]($)) ?? w($);
     };
     function H($) {
       u.value = !1, m($);
@@ -86,7 +86,7 @@ const N = (t, v) => {
       ], 8, st),
       t.services.length ? (s(), p("div", at, [
         g[9] || (g[9] = e("span", { class: "label" }, "Runs", -1)),
-        (s(!0), p(T, null, I(t.services, (j) => (s(), p("span", {
+        (s(!0), p(T, null, O(t.services, (j) => (s(), p("span", {
           key: j.id,
           class: "run",
           "data-plugin-service": j.id
@@ -97,7 +97,7 @@ const N = (t, v) => {
       ])) : C("", !0),
       t.events.length ? (s(), p("div", ut, [
         g[10] || (g[10] = e("span", { class: "label" }, "Listens to", -1)),
-        (s(!0), p(T, null, I(t.events, (j) => (s(), p("span", {
+        (s(!0), p(T, null, O(t.events, (j) => (s(), p("span", {
           key: j.id,
           class: "run",
           "data-plugin-event": j.state
@@ -251,6 +251,7 @@ const N = (t, v) => {
       ["listen: listen", "During a change. The script sees the item before it is saved, its answered commands are saved with the change, and a journal command it runs itself is saved at once and stays. An id it reads may still change, and only commit promises the change happened."],
       ["listen: commit", "After a change. The script runs after the change is saved and cannot stop it."],
       ["waiting", "A guard or listen script holds no lock, but whoever made the change waits for it. Turn the plugin off to stop a script that never ends."],
+      ["files", "Other files of the plugin, by relative path, that count as what it runs: changing one switches it off until you read the change. A folder counts every file in it, and a big folder costs time at every step of an agent."],
       ["settings", "A JSON file listing its settings, each with a key, title and type."],
       ["requires", "Programs that must be installed, each with a check command and a hint."],
       ["setup", "Commands run once, in order, when it installs."],
@@ -297,7 +298,7 @@ const N = (t, v) => {
           e("pre", null, c(yt)),
           o[3] || (o[3] = e("h3", null, "Keys", -1)),
           e("dl", null, [
-            (s(), p(T, null, I(m, ([y, w]) => (s(), p(T, { key: y }, [
+            (s(), p(T, null, O(m, ([y, w]) => (s(), p(T, { key: y }, [
               e("dt", null, c(y), 1),
               e("dd", null, c(w), 1)
             ], 64))), 64))
@@ -313,10 +314,10 @@ const N = (t, v) => {
           ], -1)),
           e("pre", null, c(wt)),
           e("ul", null, [
-            (s(), p(T, null, I(a, (y) => e("li", { key: y }, c(y), 1)), 64))
+            (s(), p(T, null, O(a, (y) => e("li", { key: y }, c(y), 1)), 64))
           ]),
           e("dl", null, [
-            (s(), p(T, null, I(u, ([y, w]) => (s(), p(T, { key: y }, [
+            (s(), p(T, null, O(u, ([y, w]) => (s(), p(T, { key: y }, [
               e("dt", null, c(y), 1),
               e("dd", null, c(w), 1)
             ], 64))), 64))
@@ -328,7 +329,7 @@ const N = (t, v) => {
             k(".")
           ], -1)),
           e("dl", null, [
-            (s(), p(T, null, I(d, ([y, w]) => (s(), p(T, { key: y }, [
+            (s(), p(T, null, O(d, ([y, w]) => (s(), p(T, { key: y }, [
               e("dt", null, [
                 e("code", null, c(y), 1)
               ]),
@@ -362,15 +363,15 @@ const N = (t, v) => {
       _: 1
     }));
   }
-}, bt = /* @__PURE__ */ N($t, [["__scopeId", "data-v-8f1251af"]]), Ct = { "data-plugin-preview": "" }, jt = { class: "preview-from" }, St = {
+}, bt = /* @__PURE__ */ N($t, [["__scopeId", "data-v-41d9f9eb"]]), Ct = { "data-plugin-preview": "" }, jt = { class: "preview-from" }, St = {
   key: 0,
   class: "preview-lead"
-}, At = ["data-preview-category"], Tt = { class: "preview-category" }, Rt = { class: "preview-label" }, Pt = { class: "preview-command" }, pe = "wrong key", It = {
+}, At = ["data-preview-category"], Tt = { class: "preview-category" }, Rt = { class: "preview-label" }, Pt = { class: "preview-command" }, pe = "wrong key", Ot = {
   __name: "PluginInstallPreview",
   props: { preview: { type: Object, required: !0 } },
   emits: ["close", "install"],
   setup(t, { emit: v }) {
-    const i = v, m = { requires: "Checks", setup: "Sets up", installed: "Asks", program: "On events", service: "Keeps running", alias: "Command", reads: "Reads from the project", guard: "Before a change", listen: "During a change", commit: "After a change" };
+    const i = v, m = { files: "Part of what it runs", requires: "Checks", setup: "Sets up", installed: "Asks", program: "On events", service: "Keeps running", alias: "Command", reads: "Reads from the project", guard: "Before a change", listen: "During a change", commit: "After a change" };
     return (a, u) => (s(), S(l(D), {
       title: t.preview.title,
       onClose: u[2] || (u[2] = (d) => i("close"))
@@ -400,7 +401,7 @@ const N = (t, v) => {
           e("p", jt, "Version " + c(t.preview.version) + " from " + c(t.preview.source), 1),
           u[3] || (u[3] = e("p", { class: "preview-lead" }, "It runs as you, with your files and your network. This is everything it runs:", -1)),
           t.preview.rows.length ? C("", !0) : (s(), p("p", St, "It runs nothing.")),
-          (s(!0), p(T, null, I(t.preview.rows, (d) => (s(), p("div", {
+          (s(!0), p(T, null, O(t.preview.rows, (d) => (s(), p("div", {
             key: `${d.category} ${d.label}`,
             class: "preview-row",
             "data-preview-category": d.category
@@ -414,7 +415,7 @@ const N = (t, v) => {
       _: 1
     }, 8, ["title"]));
   }
-}, Ot = /* @__PURE__ */ N(It, [["__scopeId", "data-v-4858968c"]]), xt = {
+}, It = /* @__PURE__ */ N(Ot, [["__scopeId", "data-v-608d5244"]]), xt = {
   __name: "PluginMakeDialog",
   props: {
     repository: { type: String, default: "" },
@@ -466,14 +467,14 @@ const N = (t, v) => {
             placeholder: "A GitHub repository to build it in (optional)",
             "aria-label": "GitHub repository"
           }, null, 8, ["modelValue"]),
-          Ie(e("textarea", {
+          Oe(e("textarea", {
             "onUpdate:modelValue": d[1] || (d[1] = (A) => m.value = A),
             class: "wish",
             rows: "4",
             placeholder: "What should the plugin do?",
             "aria-label": "What should the plugin do?"
           }, null, 512), [
-            [Oe, m.value]
+            [Ie, m.value]
           ])
         ], 32)
       ]),
@@ -518,7 +519,7 @@ const N = (t, v) => {
           e("div", Dt, [
             (A = t.record.services) != null && A.length ? (s(), p("p", Lt, "Keeps running: " + c(t.record.services.map((o) => o.name).join(", ")), 1)) : C("", !0),
             t.record.outputs.length ? C("", !0) : (s(), p("p", Et, "No activity yet.")),
-            (s(!0), p(T, null, I(t.record.outputs, (o) => (s(), p(T, {
+            (s(!0), p(T, null, O(t.record.outputs, (o) => (s(), p(T, {
               key: o.id
             }, [
               e("p", Ut, c(a(o.created_at)), 1),
@@ -644,7 +645,7 @@ const Ft = ["data-plugin-setting"], Jt = {
                     id: l(a),
                     rows: "4",
                     value: u.value,
-                    onChange: w[0] || (w[0] = (O) => o(O.target.value))
+                    onChange: w[0] || (w[0] = (I) => o(I.target.value))
                   }, null, 8, ["id", "value"])
                 ]),
                 secret: f(() => [
@@ -655,7 +656,7 @@ const Ft = ["data-plugin-setting"], Jt = {
                     id: l(a),
                     type: t.setting.type === "number" ? "number" : "text",
                     value: u.value,
-                    onChange: w[1] || (w[1] = (O) => o(O.target.value))
+                    onChange: w[1] || (w[1] = (I) => o(I.target.value))
                   }, null, 8, ["id", "type", "value"])
                 ]),
                 _: 1
@@ -665,9 +666,9 @@ const Ft = ["data-plugin-setting"], Jt = {
           }, 8, ["label", "for", "help"]))
         ], 10, Ft),
         d.value.length ? (s(), p("div", Yt, [
-          (s(!0), p(T, null, I(d.value, (O) => (s(), S(x, {
-            key: O.key,
-            setting: O,
+          (s(!0), p(T, null, O(d.value, (I) => (s(), S(x, {
+            key: I.key,
+            setting: I,
             settings: t.settings,
             dim: t.dim || t.setting.type === "flag" && !l(Q)(t.setting),
             onConfigure: w[2] || (w[2] = (...V) => m("configure", ...V))
@@ -714,7 +715,7 @@ const Ft = ["data-plugin-setting"], Jt = {
           ]),
           t.description ? (s(), p("p", sn, c(t.description), 1)) : C("", !0),
           t.settings.length ? C("", !0) : (s(), p("p", ln, "This plugin has no settings")),
-          (s(!0), p(T, null, I(a.value, (w) => (s(), S(l(Ge), {
+          (s(!0), p(T, null, O(a.value, (w) => (s(), S(l(Ge), {
             key: w.name,
             class: "plugin-settings-group",
             bar: "",
@@ -749,11 +750,11 @@ const Ft = ["data-plugin-setting"], Jt = {
                   _: 1
                 }, 8, ["onClick"])
               ])) : C("", !0),
-              (s(!0), p(T, null, I(w.settings, (x) => (s(), S(Qt, {
+              (s(!0), p(T, null, O(w.settings, (x) => (s(), S(Qt, {
                 key: x.key,
                 setting: x,
                 settings: t.settings,
-                onConfigure: y[1] || (y[1] = (...O) => m("configure", ...O))
+                onConfigure: y[1] || (y[1] = (...I) => m("configure", ...I))
               }, null, 8, ["setting", "settings"]))), 128))
             ]),
             _: 2
@@ -800,7 +801,7 @@ const Ft = ["data-plugin-setting"], Jt = {
         e("div", un, [
           e("p", dn, c(t.upgrade.installed) + " to " + c(t.upgrade.version) + ". Services that run keep the old code until the journal restarts.", 1),
           t.upgrade.changes.length ? C("", !0) : (s(), p("p", gn, "It runs the same commands as the version you have.")),
-          (s(!0), p(T, null, I(t.upgrade.changes, (u) => (s(), p("p", {
+          (s(!0), p(T, null, O(t.upgrade.changes, (u) => (s(), p("p", {
             key: u,
             class: "plugin-output",
             "data-plugin-upgrade-change": ""
@@ -843,7 +844,7 @@ const Ft = ["data-plugin-setting"], Jt = {
     const v = Ve(), { rows: i, failure: m, loaded: a, load: u } = K("plugin list", ["plugin.*"]), { rows: d } = K("plugin dashboards", ["plugin.*"]), A = (r) => d.value.find((n) => n.plugin === r.name), { rows: o } = K("plugin descriptions", ["plugin.*"]), y = (r) => {
       var n;
       return ((n = o.value.find((h) => h.plugin === r.name)) == null ? void 0 : n.description) ?? "";
-    }, { rows: w, load: x } = K("plugin services", ["plugin.*"]), O = (r) => w.value.filter((n) => n.plugin === r.name);
+    }, { rows: w, load: x } = K("plugin services", ["plugin.*"]), I = (r) => w.value.filter((n) => n.plugin === r.name);
     ge(x, () => !0, ce);
     const { rows: V, load: H } = K("plugin events", ["plugin.*"]), $ = (r) => V.value.filter((n) => n.plugin === r.name);
     ge(H, () => !0, ce);
@@ -947,11 +948,11 @@ const Ft = ["data-plugin-setting"], Jt = {
           shape: "cards"
         })),
         e("div", bn, [
-          (s(!0), p(T, null, I(l(i), (h) => (s(), S(ft, {
+          (s(!0), p(T, null, O(l(i), (h) => (s(), S(ft, {
             key: h.id,
             plugin: h,
             description: y(h),
-            services: O(h),
+            services: I(h),
             events: $(h),
             board: A(h),
             onToggle: (G) => ie(h),
@@ -1027,7 +1028,7 @@ const Ft = ["data-plugin-setting"], Jt = {
         record: l(te),
         onClose: n[8] || (n[8] = (h) => te.value = null)
       }, null, 8, ["record"])) : C("", !0),
-      M.value ? (s(), S(Ot, {
+      M.value ? (s(), S(It, {
         key: 4,
         preview: M.value,
         onClose: n[9] || (n[9] = (h) => M.value = null),

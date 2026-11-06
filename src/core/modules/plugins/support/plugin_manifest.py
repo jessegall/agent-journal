@@ -62,6 +62,7 @@ class PluginManifest:
     listeners: tuple[ManifestListener, ...] = ()
     moments: tuple[PluginMoment, ...] = ()
     protocol: int = LINE_VERSION
+    listed_files: tuple[str, ...] = ()
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -77,14 +78,14 @@ class PluginManifest:
         listeners = cls.read_listeners(fields["listen"], folder) if "listen" in fields else ()
         return cls(str(fields["name"]), str(fields["title"]), str(fields["version"]), program,
                    tuple(str(name) for name in names) if is_list(names) else (), tuple(cls.event_window(entry) for entry in windows) if is_list(windows) else (),
-                   cls.read_settings(folder, settings_file), tuple(dict.fromkeys(file for file in (MANIFEST_FILE, program, settings_file, *(listener.inside_script(form) for listener in listeners for form in EventForm)) if file)),
+                   cls.read_settings(folder, settings_file), tuple(dict.fromkeys(file for file in (MANIFEST_FILE, program, settings_file, *(listener.inside_script(form) for listener in listeners for form in EventForm), *cls.extra_files(fields, folder)) if file)),
                    cls.read_card_tones(fields["cards"] if "cards" in fields else None), str(fields["skills"]) if "skills" in fields else "",
                    cls.read_services(fields["services"] if "services" in fields else None), cls.read_requirements(fields["requires"] if "requires" in fields else None),
                    cls.read_setup_steps(fields["setup"] if "setup" in fields else None), str(fields["installed"]) if "installed" in fields else "",
                    cls.read_health(fields["health"] if "health" in fields else None), cls.read_reaches(fields["reaches"] if "reaches" in fields else None),
                    cls.read_aliases(fields["aliases"] if "aliases" in fields else None), cls.read_dashboard(fields["dashboard"] if "dashboard" in fields else None),
                    str(fields["description"]) if "description" in fields else "",
-                   tuple(str(entry) for entry in project_reads) if is_list(project_reads) else (), listeners, (), cls.read_protocol(fields))
+                   tuple(str(entry) for entry in project_reads) if is_list(project_reads) else (), listeners, (), cls.read_protocol(fields), cls.read_listed_files(fields))
 
     @classmethod
     def loaded_fields(cls, path: Path, version: FileVersion) -> Mapping[str, object]:
@@ -152,6 +153,25 @@ class PluginManifest:
     def read_card_tones(cards: object) -> dict[str, str]:
         entries = [entry for entry in cards if is_mapping(entry) and PluginAnswer.entry_type(entry)] if is_list(cards) else []
         return {PluginAnswer.entry_type(entry): str(entry["tone"]) if "tone" in entry else "" for entry in entries}
+
+    @staticmethod
+    def read_listed_files(fields: Mapping[str, object]) -> tuple[str, ...]:
+        listed: object = fields["files"] if "files" in fields else None
+        return tuple(str(entry) for entry in listed) if is_list(listed) else ()
+
+    @classmethod
+    def extra_files(cls, fields: Mapping[str, object], folder: Path) -> tuple[str, ...]:
+        return tuple(name for entry in cls.read_listed_files(fields) if ManifestListener.stays_inside(entry, folder) for name in cls.walked_files(folder, entry))
+
+    @staticmethod
+    def walked_files(folder: Path, entry: str) -> tuple[str, ...]:
+        path = folder / entry
+        if not path.is_dir():
+            return tuple([entry])
+        return tuple(sorted(str(found.relative_to(folder)) for found in path.rglob("*") if found.is_file()))
+
+    def wrong_files(self, folder: Path) -> tuple[str, ...]:
+        return tuple(entry for entry in self.listed_files if not ManifestListener.stays_inside(entry, folder))
 
     @staticmethod
     def read_protocol(fields: Mapping[str, object]) -> int:
@@ -233,6 +253,7 @@ class PluginManifest:
     def run_rows(self) -> list[Mapping[str, str]]:
         entries = [("requires", requirement.name, requirement.check) for requirement in self.requirements]
         entries += [("setup", step.name, step.line) for step in self.setup_steps]
+        entries += [("files", entry, entry) for entry in self.listed_files]
         if self.installed_command:
             entries.append(("installed", "Asked for its settings", self.installed_command))
         if self.program:

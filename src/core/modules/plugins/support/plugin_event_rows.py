@@ -14,6 +14,7 @@ from core.modules.plugins.support.plugins_module_name import MODULE_NAME
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
 READS_FORM = "reads"
+FILES_FORM = "files"
 
 
 class PluginEventRows:
@@ -35,6 +36,7 @@ class PluginEventRows:
                 first_entries.add((listener.event, form.value))
                 rows.append(self.form_row(manifest, folder, listener, form, is_second))
         rows += [self.row(manifest, name, "", manifest.program, PluginEventState.WRONG_KEY) for name in manifest.event_names if name not in self.registry.plugin_moments]
+        rows += [self.row(manifest, entry, FILES_FORM, entry, PluginEventState.WRONG_SCRIPT) for entry in manifest.wrong_files(folder)]
         readable = set(manifest.project_folders(self.home.project_folder))
         rows += [self.row(manifest, entry, READS_FORM, entry, PluginEventState.WRONG_PROJECT_READ) for entry in manifest.project_reads if not self.opens(entry, readable)]
         return tuple(rows)

@@ -47,7 +47,7 @@ def test_s89_event_keys_shows_a_plain_line_for_a_key(new_story):
 
 
 def test_s90_a_listed_extra_file_counts_in_the_digest_and_changing_it_switches_the_plugin_off(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "see.sh"}, files=["hooks/lib.py"], hooks_file=True)
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "see.sh"}, scripts={"hooks/lib.py": ""}, files=["hooks/lib.py"])
     folder = story.container.get(PluginFolders).code("events")
     (folder / "hooks" / "lib.py").write_text("changed = True\n")
     story.expect_success(SECOND_JOB, actor=story.agent)

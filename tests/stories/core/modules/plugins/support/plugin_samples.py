@@ -48,6 +48,7 @@ def event_plugin_folder(parent: Path, listen_entries: object, scripts: Mapping[s
     (folder / "journal-plugin.json").write_text(json.dumps({"name": name, "title": name.capitalize(), "version": version, "protocol": 1, "listen": listen_entries, **manifest}))
     for script, body in scripts.items():
         path = folder / script
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(f'#!/bin/sh\nline=$(cat)\nprintf "%s\\n" "$line" >> "$JOURNAL_PLUGIN_DATA/{script}.called"\n{body}\n')
         path.chmod(0o755)
     return folder
