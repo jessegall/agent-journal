@@ -59,23 +59,46 @@ test("a line a window writes holds its button too, though it leaves after the cl
     expect(button.dataset.busy).toBeUndefined();
 });
 
-test("a read a click asks holds its button too, until it is answered", async () => {
+const later = () => new Promise((resolve) => setTimeout(resolve, 150));
+
+// the server's list of reads has come, so a line is known to read
+async function knowingReads() {
     vi.stubGlobal("fetch", asksReadLines);
+    await transport.isRead(["memory", "list"]);
+}
+
+test("a read a click asks shows the spinner only after a short wait, and gives the button back when answered", async () => {
+    await knowingReads();
     const button = drawnButton(() => lineResult("memories.memories", ["memory", "list"], "main"));
     button.click();
+    expect(button.dataset.busy).toBeUndefined();
+    await later();
     expect(button.dataset.busy).toBe("1");
-    await settle();
-    await settle();
-    expect(button.dataset.busy).toBe("1");
+    expect(button.disabled).toBe(true);
     reply(200, {code: 0, value: {rows: []}});
     await settle();
     expect(button.dataset.busy).toBeUndefined();
     expect(button.disabled).toBe(false);
 });
 
-test("a GET a click asks holds its button until it is answered", async () => {
+test("a read answered before the wait never shows the spinner", async () => {
+    await knowingReads();
+    const button = drawnButton(() => lineResult("memories.memories", ["memory", "list"], "main"));
+    button.click();
+    await settle();
+    await settle();
+    await settle();
+    reply(200, {code: 0, value: {rows: []}});
+    await later();
+    expect(button.dataset.busy).toBeUndefined();
+    expect(button.disabled).toBe(false);
+});
+
+test("a GET a click asks is a read: the spinner after the wait, until it is answered", async () => {
     const button = drawnButton(() => transport.request("GET", "/api/anything"));
     button.click();
+    expect(button.dataset.busy).toBeUndefined();
+    await later();
     expect(button.dataset.busy).toBe("1");
     reply(200, {});
     await settle();

@@ -137,7 +137,7 @@ async function readAnswer(body, signal, unbatched) {
 
 // a line of a window, read or write, whichever way it was asked: the server's knowledge of its command decides, and only a read is joined
 export function lineResult(window, line, environment, signal = undefined, unbatched = false) {
-    return transport.held(() => askedLine(window, line, environment, signal, unbatched));
+    return transport.held(() => askedLine(window, line, environment, signal, unbatched), transport.knownRead(Array.isArray(line) ? line : lineWords(line)));
 }
 
 async function askedLine(window, line, environment, signal, unbatched) {
