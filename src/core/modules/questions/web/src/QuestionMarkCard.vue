@@ -1,20 +1,16 @@
 <script setup>
-import {ref} from "vue";
+import {computed, watch} from "vue";
 import {WindowRoom, useWindow} from "@journal/window-kit";
 import QuestionCard from "./QuestionCard.vue";
 
 // a question in the chat: the card itself, read from the row its mark points at
 const context = useWindow();
 const mark = context.option("row");
-const row = ref(null);
+const key = computed(() => `question.${mark.value.target_id}`);
+const row = computed(() => context.props[key.value].data.value);
 
-async function load() {
-    const answer = await context.read(`question show ${mark.value.target_id}`);
-    if (answer.ok) row.value = answer.value;
-}
-
-context.follow(["question.*"], load);
-load();
+const load = () => context.reload(key.value);
+watch(key, load, {immediate: true});
 </script>
 
 <template>

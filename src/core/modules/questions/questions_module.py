@@ -25,6 +25,8 @@ from core.modules.questions.listeners.question_open_mark_listener import Questio
 from core.modules.questions.listeners.question_closed_mark_listener import QuestionClosedMarkListener
 from core.modules.questions.listeners.question_edited_mark_listener import QuestionEditedMarkListener
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
+from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_search import WindowSearch
 from core.modules.questions.support.question_searcher import QuestionSearcher
 from core.base.viewer.window_place import WindowPlace
@@ -64,7 +66,8 @@ class QuestionsModule(Module):
                                  reads=["question list", "question show"], runs=["question answer", "question close", "message send"], events=["question.*"],
                                  search=WindowSearch(QuestionSearcher, "Search the questions")),
                WindowDeclaration("questions.question", "Question", "question-card.js", WindowLoading.COMPONENT, skeleton=QUESTIONS_QUESTION_SKELETON, place=WindowPlace.DROPDOWN, icon=WindowIcon.QUESTION,
-                                 reads=["question show"], runs=["question answer", "question close", "message send"], events=["question.*"]),
+                                 reads=["question show"], keys=[WindowKey("question.*", "question show {id}", events=["question.*"], loading=KeyLoading.REQUESTED)],
+                                 runs=["question answer", "question close", "message send"], events=["question.*"]),
                WindowDeclaration("questions.waiting", "Waiting", "waiting.js", WindowLoading.COMPONENT, skeleton=QUESTIONS_WAITING_SKELETON, icon=WindowIcon.HALT,
                                  reads=["wait waiting"], events=["wait.*"])]
     seeders = [QuestionsSeeder]
