@@ -171,6 +171,10 @@ def test_two_workers_in_one_phase_each_reach_its_end_at_their_own_last_task(two_
     second.story.expect_success("worker next", actor=second.worker)
     assert second.current_task() == 3
     assert len(first.started) == 1, first.started
+    first.end_test(first.started[0])
+    expect_task_states(first, "completed", 1)
+    expect_task_states(first, "testing", 2)
+    expect_task_states(first, "started", 3)
 
 
 def test_two_workers_each_run_the_phases_own_test_in_their_own_worktree(new_story, monkeypatch):
