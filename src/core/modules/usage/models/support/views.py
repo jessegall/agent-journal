@@ -1,5 +1,5 @@
 AGENT_CARDS_SELECT = (
-    "SELECT agents.id, agents.environment_id, agents.session, agents.role, agents.access, agents.program, agents.program_model, agents.profile, agents.given_name, agents.paused_at, agents.ended_at,"
+    "SELECT agents.id, agents.environment_id, agents.session, agents.role, agents.access, agents.program, agents.program_model, agents.profile, agents.given_name, agents.paused_at, agents.ended_at, agents.retired_at, agents.retirement_reason,"
     " (SELECT tasks.id FROM tasks WHERE tasks.holder_id = agents.id AND tasks.state = 'started' ORDER BY tasks.id DESC LIMIT 1) AS started_task_id,"
     " coalesce((SELECT tasks.title FROM tasks WHERE tasks.holder_id = agents.id AND tasks.state = 'started' ORDER BY tasks.id DESC LIMIT 1), '') AS started_task_title,"
     " (SELECT json_group_array(json_object('id', listed.id, 'title', listed.title, 'state', listed.state,"
@@ -16,7 +16,9 @@ AGENT_CARDS_SELECT = (
     " coalesce(dispatch.program_model, '') AS job_model, coalesce(dispatch.profile, '') AS job_profile,"
     " coalesce(dispatch.description, '') AS job_description, coalesce(dispatch.instruction, '') AS job_instruction,"
     " coalesce(current_job.description, '') AS helper_job_description, coalesce(current_job.brief, '') AS helper_job_brief,"
-    " coalesce((SELECT latest.returned FROM helper_jobs AS latest WHERE latest.helper_id = agents.id ORDER BY latest.id DESC LIMIT 1), '') AS job_returned"
+    " coalesce((SELECT messages.text FROM messages WHERE messages.session_agent_id = agents.id AND messages.creator_id = agents.id"
+    " AND messages.type = 'agent' AND messages.is_chat_visible = 0 ORDER BY messages.id DESC LIMIT 1),"
+    " (SELECT latest.returned FROM helper_jobs AS latest WHERE latest.helper_id = agents.id ORDER BY latest.id DESC LIMIT 1), '') AS job_returned"
     " FROM agents"
     " LEFT JOIN helper_jobs AS dispatch ON dispatch.id = (SELECT min(helper_jobs.id) FROM helper_jobs WHERE helper_jobs.helper_id = agents.id)"
     " LEFT JOIN helper_jobs AS current_job ON current_job.id = (SELECT id FROM helper_jobs WHERE helper_id = agents.id ORDER BY ended_at IS NULL DESC, id DESC LIMIT 1)"

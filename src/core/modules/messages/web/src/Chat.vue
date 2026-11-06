@@ -3,9 +3,12 @@ import {computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch}
 import {useComposerHeight} from "./composerHeight.js";
 import DumpForm from "./DumpForm.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
-import {READ_RATES, coalesced, Btn, DockStack, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, openInChat, patched, removed, shownMarks, usePins, useRows, withDayLines} from "@journal/window-kit";
+import {READ_RATES, coalesced, Btn, DockStack, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, openInChat, patched, removed, shownMarks, usePins, useKeyRows, useWindowData, withDayLines} from "@journal/window-kit";
 
-const {rows: messages, failure, loaded, load, loadLatest, older, act, context} = useRows("message feed --limit 50", ["message.*"], {incremental: true});
+const PAGE_ROWS = 50;
+
+const windowData = useWindowData({state: () => ({"messages.limit": PAGE_ROWS, "marks.limit": PAGE_ROWS})});
+const {rows: messages, failure, loaded, load, loadLatest, older, act, context} = useKeyRows(windowData, "messages", {pageSize: PAGE_ROWS, incremental: true});
 context.markMotion = ref(false);
 async function readMarkMotion() {
     const answer = await context.read("setting show journal.core.developer.tools.mark-motion");
@@ -13,10 +16,10 @@ async function readMarkMotion() {
 }
 context.follow(["setting.*"], readMarkMotion);
 readMarkMotion();
-const {rows: allMarks, older: olderMarks, loadLatest: latestMarks} = useRows("chat-mark main --limit 50", ["chat_mark.*"], {incremental: true});
-const {rows: docked} = useRows("dock-item main", ["dock_item.*"]);
+const {rows: allMarks, older: olderMarks, loadLatest: latestMarks} = useKeyRows(windowData, "marks", {pageSize: PAGE_ROWS, incremental: true});
+const {rows: docked} = useKeyRows(windowData, "docks");
 const dockedRows = computed(() => new Set(docked.value.filter((item) => item.state === "docked").map((item) => `${item.target_model}:${item.target_id}`)));
-const {rows: pins, act: runOnPin} = useRows("pin list", ["pin.*"]);
+const {rows: pins, act: runOnPin} = useKeyRows(windowData, "pins");
 const openQuestion = ref(0);
 const releaseQuestions = openInChat("question", (id) => {
     openQuestion.value = id;

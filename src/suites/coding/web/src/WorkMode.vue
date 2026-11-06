@@ -2,10 +2,8 @@
 import {onUnmounted, ref} from "vue";
 import {Icon, Segmented, Switch, WindowRoom, useOutside, useWindow} from "@journal/window-kit";
 
-// the coding suite's part of the top bar, as version 4's status bar drew it: the auto switch, the two work modes and the settings behind them
 const AUTO_MODE = "journal.suites.coding.auto-mode";
 const DISPATCHES = "journal.suites.coding.workers.builder-dispatches-workers";
-const WORKER_RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit";
 const MODES = [
     {key: "coding.builder", label: "Builder", tip: {title: "Builder", line: "The agent writes code and assigns work to workers when useful."}},
     {key: "coding.orchestrator", label: "Orchestrator", tip: {title: "Orchestrator", line: "The agent plans, hands the work to workers, then reviews and merges it; it writes code itself only where no worker can."}},
@@ -14,7 +12,6 @@ const context = useWindow();
 const mode = ref(MODES[0].key);
 const auto = ref(true);
 const dispatches = ref(true);
-const limit = ref(2);
 const open = ref(false);
 const root = ref(null);
 useOutside(root, () => (open.value = false));
@@ -31,7 +28,6 @@ async function load() {
     if (driver) mode.value = driver.key;
     auto.value = (await settingValue(AUTO_MODE)) !== false;
     dispatches.value = (await settingValue(DISPATCHES)) !== false;
-    limit.value = Number((await settingValue(WORKER_RUN_LIMIT)) ?? 2);
 }
 
 async function run(words) {
@@ -70,12 +66,7 @@ async function toggleDispatches() {
     if (await setSetting(DISPATCHES, !dispatches.value)) dispatches.value = !dispatches.value;
 }
 
-async function changeLimit(event) {
-    const value = Number(event.target.value);
-    if (await setSetting(WORKER_RUN_LIMIT, value)) limit.value = value;
-}
 
-// the limit and the switches show what is in force for this environment now, so a change made anywhere, or since the last read, shows
 context.follow(["setting.*"], load);
 
 async function toggleMenu() {
@@ -112,10 +103,7 @@ load();
                         <span>Builder sends workers</span>
                         <Switch :on="dispatches" @change="toggleDispatches" />
                     </label>
-                    <label class="agentset-row">
-                        <span>Worker limit</span>
-                        <input class="agentset-number" type="number" min="0" :value="limit" @change="changeLimit" />
-                    </label>
+                    <button type="button" class="agentset-limits" data-open-agent-limits @click="context.open('agents.agents'), open = false">Agent running and kept limits</button>
                     <template v-if="failure">
                         <p class="agentset-failure" role="alert">{{ failure }}</p>
                     </template>
@@ -178,15 +166,7 @@ load();
     font-size: 12.5px;
 }
 
-.agentset-number {
-    width: 56px;
-    padding: 3px 6px;
-    border: 1px solid var(--border-2);
-    border-radius: 5px;
-    background: var(--bg);
-    color: var(--text);
-    font: inherit;
-}
+.agentset-limits { padding: 0; border: 0; background: none; color: var(--accent-text); font: inherit; font-size: 12.5px; text-align: left; cursor: pointer; }
 
 .agentset-failure {
     margin: 0;

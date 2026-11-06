@@ -42,7 +42,7 @@ def test_a_window_with_no_data_only_header_gets_the_keys_on_screen_and_what_it_d
     server, cookie = chat
     story = server.story
     status, answer = window_data(server, cookie)
-    story.expect_rows(status == 200, set(answer["keys"]) == {"messages", "marks", "docks", "pins", "main_agent"},
+    story.expect_rows(status == 200, set(answer["keys"]) == {"messages", "marks", "docks", "pins"},
                       answer["keys"]["messages"]["code"] == 0, answer["keys"]["messages"]["value"]["rows"][0]["text"] == "Hello",
                       answer["declared"]["messages"]["events"] == ["message.*"])
 

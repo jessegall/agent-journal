@@ -16,6 +16,9 @@ class AgentFolders:
     def has_folder(self, agent: Agent) -> bool:
         return True
 
+    def resume_folder(self, agent: Agent) -> Path:
+        return self.folder(agent)
+
     def folder(self, agent: Agent) -> Path:
         if agent.parent_id is None:
             return Path(self.environments.find(agent.environment_id).folder)

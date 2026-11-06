@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from collections.abc import Mapping
 
 from core.base.agent_role import AgentRole
 from core.base.timestamp import Timestamp
@@ -18,6 +19,8 @@ class AgentListingState:
     given_name: str
     paused_at: Timestamp | None
     ended_at: Timestamp | None
+    retired_at: Timestamp | None
+    retirement_reason: str
     started_task_id: int | None
     started_task_title: str
     tasks: str
@@ -35,3 +38,7 @@ class AgentListingState:
     updated_at: Timestamp
     process_started_at: Timestamp | None
     state: AgentListState
+    resume_reason: str | None
+    facts: Mapping[str, object]
+    job_command: tuple[str, ...]
+    job_task_flag: str

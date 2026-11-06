@@ -126,8 +126,7 @@ class MessagesModule(Module):
                                  keys=[WindowKey("messages", "message feed", events=["message.*"], arguments=["limit", "before-id", "after-id"]),
                                        WindowKey("marks", "chat-mark main", events=["chat_mark.*"], arguments=["limit", "before-id", "after-id"]),
                                        WindowKey("docks", "dock-item main", events=["dock_item.*"]),
-                                       WindowKey("pins", "pin list", events=["pin.*"]),
-                                       WindowKey("main_agent", "agent main")],
+                                       WindowKey("pins", "pin list", events=["pin.*"])],
                                  options=[ChoiceOption("figure", "Figure", [("voice", "The voice I chose"), ("none", "None"), ("butler", "Butler"), ("homie", "Homie"), ("coach", "Coach"), ("colleague", "Colleague"), ("squire", "Squire")], "voice"),
                                           ToggleOption("floors", "Show floors")])]
     marks = MESSAGE_MARKS

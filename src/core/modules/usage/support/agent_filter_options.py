@@ -5,3 +5,4 @@ from dataclasses import dataclass
 class AgentFilterOptions:
     roles: tuple[str, ...]
     profiles: tuple[tuple[str, str], ...]
+    upgrade_retired: int = 0

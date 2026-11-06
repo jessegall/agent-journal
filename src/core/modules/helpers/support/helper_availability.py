@@ -1,35 +1,39 @@
 import shutil
 
-from core.base.agent_role import AgentRole
+from core.base.caller.caller import Caller
 from core.base.provider.providers import Providers
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
-from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.launcher_link import LauncherLink
-from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from core.modules.helpers.support.helper_settings import HELPER_RUN_LIMIT
+from core.base.refusal import Refusal
+from core.modules.helpers.support.helper_limits import HelperLimits
+from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.helpers.support.helper_start_state import HelperStartState
-from core.modules.settings.bindings.support.setting_values import SettingValues
-
-MISSING_LAUNCHER_TEXT = "Start the agent with journal launch to run helpers."
-MISSING_MAIN_AGENT_TEXT = "Start a main agent first: a helper reports to it."
-LIMIT_REACHED_TEXT = "All {limit} helpers are running: wait for one to finish, or stop one."
+from core.modules.helpers.support.kept_helpers import KeptHelpers
+from core.modules.profiles.support.profile_files import ProfileFiles
 
 
 class HelperAvailability:
-    """Says whether a helper can start from the window, in words a person reads, and on which programs."""
+    """Reads the command's helper limits and reusable sessions for the profile selected in the form."""
 
-    def __init__(self, launcher: LauncherLink, queries: Queries, settings: SettingValues, providers: Providers) -> None:
-        self.launcher, self.queries, self.settings, self.providers = launcher, queries, settings, providers
+    def __init__(self, limits: HelperLimits, providers: Providers, profiles: ProfileFiles, kept: KeptHelpers, programs: HelperPrograms) -> None:
+        self.limits, self.providers, self.profiles, self.kept, self.programs = limits, providers, profiles, kept, programs
 
-    def state(self) -> HelperStartState:
-        return HelperStartState(self.refusal_reason(), tuple(provider.name for provider in self.providers.all() if shutil.which(provider.executable)))
-
-    def refusal_reason(self) -> str:
-        if not self.launcher.is_running:
-            return MISSING_LAUNCHER_TEXT
-        if MainAgentFinder.newest(self.queries) is None:
-            return MISSING_MAIN_AGENT_TEXT
-        limit = self.settings.number(HELPER_RUN_LIMIT)
-        running = self.queries.query(Agent).filter(role=AgentRole.HELPER).matching(IsNull("ended_at")).count()
-        return LIMIT_REACHED_TEXT.format(limit=limit) if running >= limit else ""
+    def state(self, caller: Caller, profile: str | None, program: str) -> HelperStartState:
+        programs = tuple(provider.name for provider in self.providers.all() if shutil.which(provider.executable))
+        try:
+            self.limits.checked_launcher()
+            parent = self.limits.checked_parent(caller)
+            if profile is None:
+                return HelperStartState("", programs, can_start_fresh=True)
+            chosen = self.profiles.effective(profile)
+            selected_program = program or chosen.program or parent.program
+            self.programs.installed(selected_program)
+            model = self.limits.checked_model(selected_program, self.providers.provider(selected_program).profile_model(chosen))
+            self.limits.checked_running(profile)
+            idle = self.kept.idle(profile, selected_program, model)
+            try:
+                self.limits.checked_kept(profile)
+            except Refusal as refusal:
+                return HelperStartState(refusal.text, programs, idle, False, refusal.text)
+            reason = self.kept.idle_refusal(idle).text if idle and not chosen.independent else ""
+            return HelperStartState(reason, programs, idle, True)
+        except Refusal as refusal:
+            return HelperStartState(refusal.text, programs)

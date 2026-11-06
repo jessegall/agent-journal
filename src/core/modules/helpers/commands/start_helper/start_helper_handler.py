@@ -12,7 +12,6 @@ from core.base.agent_type_book import AgentTypeBook
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
-from core.modules.agents.support.launcher_link import LauncherLink
 from core.base.profile.agent_profile import AgentProfile
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_reuse import HelperReuse
@@ -36,10 +35,10 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
 
     command = StartHelper
 
-    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, launcher: LauncherLink, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers, sources: WorkSources, sandbox: ShellSandbox, kept: KeptHelpers) -> None:
+    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers, sources: WorkSources, sandbox: ShellSandbox, kept: KeptHelpers) -> None:
         self.kept = kept
         self.sandbox = sandbox
-        self.profiles, self.types, self.limits, self.launcher, self.bus, self.repository, self.reuse = profiles, types, limits, launcher, bus, repository, reuse
+        self.profiles, self.types, self.limits, self.bus, self.repository, self.reuse = profiles, types, limits, bus, repository, reuse
         self.programs, self.folders, self.providers = programs, folders, providers
         self.sources = sources
 
@@ -53,8 +52,7 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
         agent_type = self.types.find(profile.agent_type)
         if agent_type.start_line:
             raise Refusal(f"{profile.name} is a {agent_type.label}: use {agent_type.start_line}")
-        if not self.launcher.is_running:
-            raise Refusal("a helper needs the launcher, which is not running", "keep your work and start the journal with journal launch")
+        self.limits.checked_launcher()
         parent = self.limits.checked_parent(context)
         self.limits.checked_new_place(profile.name)
         reuses_helpers = not command.new_agent_reason.strip() and not profile.independent
@@ -79,8 +77,7 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
     def check_idle(self, profile: AgentProfile, program: str, model: str) -> None:
         idle_helpers = self.kept.idle(profile.name, program, model)
         if idle_helpers:
-            next_helpers = f" (also {', '.join(str(helper.id) for helper in idle_helpers[1:3])})" if idle_helpers[1:] else ""
-            raise Refusal(f'helper {idle_helpers[0].id} is idle: journal helper send {idle_helpers[0].id} "<job>"{next_helpers}', 'or --fresh "<why>"')
+            raise self.kept.idle_refusal(idle_helpers)
 
     def check_reuse(self, parent: Agent, profile: AgentProfile, brief: str) -> None:
         job = self.reuse.known_job(parent.id, profile.name, brief)

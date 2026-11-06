@@ -1,7 +1,8 @@
 from core.base.database.migration import Migration
+from core.modules.agents.models.agent import UPGRADE_RETIREMENT_REASON
 
 KEPT = 8
-REASON = "Over the kept limit at the upgrade to kept agents"
+REASON = UPGRADE_RETIREMENT_REASON
 
 
 class SettleOldWorkersMigration(Migration):

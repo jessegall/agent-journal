@@ -15,8 +15,7 @@ try {
     await page.waitForFunction(() => document.querySelectorAll(".history [data-message]").length >= 100);
     const reads = [];
     page.on("request", (request) => {
-        if (request.method() !== "POST" || !request.url().endsWith("/api/lines")) return;
-        reads.push(...request.postDataJSON().lines);
+        if (request.url().includes("/api/window?")) reads.push(request.headers()["x-journal-data-only"]);
     });
     await page.evaluate(() => {
         Object.defineProperty(document, "hidden", {configurable: true, value: true});
@@ -36,7 +35,7 @@ try {
         return history.querySelectorAll("[data-message]").length === 50 && history.textContent.includes("Backlog message 121") && history.scrollHeight - history.scrollTop - history.clientHeight < 2;
     });
     assert.equal(await history.locator('[data-row][style*="opacity"], [data-row][style*="display: none"]').count(), 0);
-    assert.ok(reads.some((request) => JSON.stringify(request.line) === '["message","feed","--limit","50"]'), JSON.stringify(reads));
+    assert.ok(reads.includes("messages"), JSON.stringify(reads));
     await page.screenshot({path: capture, fullPage: true});
     assert.deepEqual(errors, []);
 } finally {
