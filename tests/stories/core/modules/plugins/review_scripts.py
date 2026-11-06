@@ -184,3 +184,29 @@ def test_s78_a_pid_taken_by_another_program_is_left_alone(new_story):
     finally:
         other.kill()
         other.wait()
+
+
+def test_s78_a_removal_stops_a_running_script_at_once(event_page):
+    story = event_page.story
+    install_event_plugin(story)
+    processes = sleeping_scripts(story, 1)
+    try:
+        event_page.line("plugin", "remove", "events")
+        story.expect_rows(processes[0].wait(timeout=WAIT_SECONDS) != 0)
+    finally:
+        story.container.get(RunningScripts).finish(processes[0])
+        processes[0].kill()
+        processes[0].wait()
+
+
+def test_s78_a_switch_off_stops_a_running_script_at_once(event_page):
+    story = event_page.story
+    install_event_plugin(story)
+    processes = sleeping_scripts(story, 1)
+    try:
+        event_page.switch_off()
+        story.expect_rows(processes[0].wait(timeout=WAIT_SECONDS) != 0)
+    finally:
+        story.container.get(RunningScripts).finish(processes[0])
+        processes[0].kill()
+        processes[0].wait()

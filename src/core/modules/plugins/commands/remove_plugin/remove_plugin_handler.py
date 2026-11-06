@@ -1,5 +1,7 @@
 import shutil
 
+from core.base.actor import Actor
+from core.base.running_scripts import RunningScripts
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.repository.repository import Repository
@@ -17,8 +19,11 @@ class RemovePluginHandler(Handler[RemovePlugin, str]):
     command = RemovePlugin
     runs_once = True
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_files: PluginSkillFiles, repository: Repository, readers: PluginReaders) -> None:
-        self.plugins, self.folders, self.skill_files, self.repository, self.readers = plugins, folders, skill_files, repository, readers
+    def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_files: PluginSkillFiles, repository: Repository, readers: PluginReaders, scripts: RunningScripts) -> None:
+        self.plugins, self.folders, self.skill_files, self.repository, self.readers, self.scripts = plugins, folders, skill_files, repository, readers, scripts
+
+    def prepare(self, command: RemovePlugin, actor: Actor) -> None:
+        self.scripts.stop(command.name)
 
     def handle(self, command: RemovePlugin, context: Context) -> str:
         plugin = self.plugins.find_name(command.name)
