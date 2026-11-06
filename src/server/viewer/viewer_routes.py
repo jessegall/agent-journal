@@ -3,6 +3,7 @@ from core.base.journal_home import JournalHome
 from server.listener_thread import ListenerThread
 from server.viewer.buttons_route import ButtonsRoute
 from server.viewer.chat_declarations_route import ChatDeclarationsRoute
+from server.hook.server_queue import ServerQueue
 from server.viewer.event_stream import EventStream
 from server.viewer.file_route import FileRoute
 from server.viewer.line_route import LineRoute
@@ -23,7 +24,8 @@ class ViewerRoutes:
     skills, the files the chat carries, the session the cookie opened, a share link's opening,
     what waits on the person, and whether the server is restarting."""
 
-    def __init__(self, home: JournalHome, listener_thread: ListenerThread, login: ViewerLogin, reported: ReportedFindings) -> None:
+    def __init__(self, home: JournalHome, listener_thread: ListenerThread, login: ViewerLogin, reported: ReportedFindings, queue: ServerQueue) -> None:
+        self.queue = queue
         self.line_route, self.event_stream = LineRoute(home, listener_thread, reported), EventStream(home)
         self.module_files, self.windows_route = ModuleFiles(home), WindowsRoute(home)
         self.buttons_route = ButtonsRoute(home)

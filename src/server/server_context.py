@@ -10,6 +10,7 @@ from server.server_tunnel import ServerTunnel
 from server.viewer.viewer_listener import ViewerListener
 
 HOOK_LIMIT_SECONDS = 3.5
+AGENT_HOOK_LIMIT_SECONDS = 45.0
 
 
 @dataclass(frozen=True)
@@ -29,3 +30,4 @@ class ServerContext:
     tunnel: ServerTunnel
     reported_findings: ReportedFindings
     hook_limit_seconds: float = HOOK_LIMIT_SECONDS
+    agent_hook_limit_seconds: float = AGENT_HOOK_LIMIT_SECONDS
