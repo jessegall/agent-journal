@@ -66,7 +66,7 @@ def ended_worker(running_worker):
 
 
 @pytest.fixture
-def worker_ended_before_listeners(running_worker):
+def ended_worker(running_worker):
     """The same worker after a tick noticed its program ended, with the listeners of that end still to run."""
     running_worker.use_processes()
     running_worker.tick(MAIN_SESSION)
@@ -86,16 +86,16 @@ def test_a_worker_resumed_before_the_stop_of_its_end_keeps_its_new_program(runni
     story.expect_text(f"agent show {story.worker.id}", f"pid: {RESUMED_PID}")
 
 
-def test_a_launch_that_holds_the_session_keeps_the_stop_of_the_end_away(worker_ended_before_listeners):
-    story = worker_ended_before_listeners
+def test_a_launch_that_holds_the_session_keeps_the_stop_of_the_end_away(ended_worker):
+    story = ended_worker
     launcher = start_launcher(story, b"stopped\n", request_count=2)
     with story.container.get(AgentLaunchGuard).lock(story.row(Agent, story.worker.id).session):
         story.run_listeners()
     story.expect_rows(launcher.requests == [])
 
 
-def test_a_resume_the_launcher_refuses_leaves_the_stop_of_the_end_to_land(worker_ended_before_listeners):
-    story = worker_ended_before_listeners
+def test_a_resume_the_launcher_refuses_leaves_the_stop_of_the_end_to_land(ended_worker):
+    story = ended_worker
     path = story.home.socket(LAUNCHER_SOCKET)
     path.unlink(missing_ok=True)
     launcher = FakeLauncher(path, request_count=3, answers=(b"running\n", b"running\n", b"stopped\n"))

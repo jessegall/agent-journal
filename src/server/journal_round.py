@@ -13,9 +13,10 @@ from server.hook.queue_request import QueueRequest
 
 
 class JournalRound:
-    """One round of a server thread on a journal: a fresh container, synced unless the round says otherwise, the
-    thread's work run on it, its database closed; an error is reported under the thread's name. The queue inspector
-    lists a running round, and a round takes no turn: no hook or CLI line waits behind one, and it waits behind none."""
+    """One round of a server thread on a journal: a fresh container, synced unless the round says
+    otherwise, the thread's work run on it, its database closed; an error is reported under the thread's
+    name. The queue inspector lists a running round, and a round takes no turn: no hook or CLI line
+    waits behind one, and it waits behind none."""
 
     def __init__(self, home: JournalHome, name: str, work: RoundWork, container: Callable[[JournalHome], Container] = synced_container, queue: ServerQueue | None = None) -> None:
         self.home, self.name, self.work, self.container = home, name, work, container

@@ -15,9 +15,9 @@ PRIMARY_ERROR_CODE_MASK = 0xFF
 
 
 class HookDeliveryRetries:
-    """Keeps lost hook answers on disk until their message deliveries have been reset. A retry never fails the hook
-    that runs it: a busy database leaves the file for the next hook, and a file that cannot be retried is logged
-    once and removed."""
+    """Keeps lost hook answers on disk until their message deliveries have been reset. A retry never
+    fails the hook that runs it: a busy database leaves the file for the next hook, and a file that
+    cannot be retried is logged once and removed."""
 
     def __init__(self, home: JournalHome) -> None:
         self.folder = home.folder / "runtime" / "lost-hook-answers"

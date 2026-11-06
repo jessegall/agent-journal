@@ -220,10 +220,10 @@ def lost_answers_folder(story) -> Path:
 
 @pytest.mark.parametrize("file_name", ["999999", "not-a-number"])
 def test_a_lost_answer_file_that_cannot_be_retried_is_logged_and_removed_and_the_hook_is_answered(server, file_name):
-    folder = lost_answers_folder(server.story)
-    (folder / file_name).touch()
+    answers_folder = lost_answers_folder(server.story)
+    (answers_folder / file_name).touch()
     server.expect_hook_answer("/hook", hook_body(f"after-{file_name}"), 200, "new message 1")
-    server.story.expect_rows(not list(folder.iterdir()), f"lost hook answer {file_name} cannot be retried and is removed" in server.story.error_log_text())
+    server.story.expect_rows(not list(answers_folder.iterdir()), f"lost hook answer {file_name} cannot be retried and is removed" in server.story.error_log_text())
 
 
 def test_a_retry_that_finds_the_database_busy_fails_nothing_and_keeps_its_file(builder):
@@ -235,10 +235,10 @@ def test_a_retry_that_finds_the_database_busy_fails_nothing_and_keeps_its_file(b
         writer.execute("BEGIN IMMEDIATE")
         retries.retry(builder.container)
         writer.rollback()
-    folder = lost_answers_folder(builder)
-    builder.expect_rows(list(folder.iterdir()), "will retry at the next hook" in builder.error_log_text())
+    answers_folder = lost_answers_folder(builder)
+    builder.expect_rows(list(answers_folder.iterdir()), "will retry at the next hook" in builder.error_log_text())
     retries.retry(builder.container)
-    builder.expect_rows(not list(folder.iterdir()))
+    builder.expect_rows(not list(answers_folder.iterdir()))
 
 
 def test_a_hook_returns_its_connection_with_the_default_busy_timeout(server):

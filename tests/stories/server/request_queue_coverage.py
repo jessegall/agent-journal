@@ -19,7 +19,7 @@ LONG_WAIT_LIMIT_SECONDS = 30
 ROUND_START_LIMIT_SECONDS = 10
 
 
-class HeldRound(RoundWork):
+class BlockedRound(RoundWork):
     """Stands in for a slow plugin script or program stop: its round runs until the story releases it."""
 
     def __init__(self) -> None:
@@ -123,7 +123,7 @@ def test_a_slow_round_is_listed_in_the_inspector_and_a_cli_line_is_not_queued_be
     server = recording_server
     queue = server.context.hook_database.queue
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-    work = HeldRound()
+    work = BlockedRound()
     with ThreadPoolExecutor(1) as pool:
         running = pool.submit(JournalRound(server.story.home, "plugin listener thread", work, queue=queue).run)
         try:
@@ -142,7 +142,7 @@ def test_a_tick_round_does_not_wait_behind_a_running_hook(recording_server):
     server = recording_server
     queue = server.context.hook_database.queue
     queue.cli_wait_limit_seconds = LONG_WAIT_LIMIT_SECONDS
-    work = HeldRound()
+    work = BlockedRound()
     work.release.set()
     with server.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, 1):
         started_at = perf_counter()
