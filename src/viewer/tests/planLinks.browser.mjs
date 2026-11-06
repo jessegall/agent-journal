@@ -27,13 +27,14 @@ try {
         await page.waitForFunction((was) => !document.querySelector("[data-page-more]") || [...document.querySelectorAll("[data-link-kind]")].map((node) => node.textContent).join("|") !== was, before, {timeout: 5000});
     }
     const kinds = (await section.locator("[data-link-kind]").allInnerTexts()).map((text) => text.replace(/\s+/g, " ").trim());
-    assert.deepEqual(kinds, ["task 70", "message 30"]);
+    assert.deepEqual(kinds, ["Task 70", "Message 30"]);
     const height = (await section.boundingBox()).height;
     assert.ok(height <= 280, `the linked section stays compact, it is ${height}px`);
     assert.ok(await section.locator("[data-plan-link]").count() <= 6, "only a few rows per kind show at first");
+    await page.screenshot({path: capture});
     await section.locator("[data-link-show-more]").first().click();
     assert.ok((await section.boundingBox()).height <= 280, "the section keeps its height cap after Show more");
-    await page.screenshot({path: capture});
+    await page.screenshot({path: capture.replace(".png", "-expanded.png")});
     assert.deepEqual(errors, []);
 } finally {
     await browser.close();
