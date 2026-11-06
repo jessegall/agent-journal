@@ -7,7 +7,7 @@ from core.base.container import Container
 from core.base.database.database import Database
 from core.base.deadline import Deadline
 from core.base.timing import Timing
-from core.testing.repeated_work import OPEN_REQUEST, RepeatedWork
+from core.base.database.repeated_work import OPEN_REQUEST, RepeatedWork
 
 
 class StoryLineRun(LineRun):

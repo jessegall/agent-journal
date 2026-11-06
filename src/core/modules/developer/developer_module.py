@@ -16,7 +16,9 @@ from core.modules.developer.commands.record_mark_motion.record_mark_motion_handl
 from core.modules.developer.commands.record_mark_motion.record_mark_motion_subcommand import RecordMarkMotionSubcommand
 from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_handler import ResetHookNumbersHandler
 from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_subcommand import ResetHookNumbersSubcommand
+from core.base.database.request_watch import RequestWatch
 from core.base.module.module import Module
+from core.modules.developer.support.reporting_request_watch import ReportingRequestWatch
 from core.modules.developer.support.developer_settings import DEVELOPER_SETTINGS, TOOLS_SETTING, HOOK_DURATIONS_SETTING, HOOK_REQUEST_LOG_SETTING
 from core.modules.developer.support.skeletons import DEVELOPER_NUMBERS_SKELETON, DEVELOPER_HOOK_REQUESTS_SKELETON
 from core.modules.developer.models.hook_request import HookRequest
@@ -37,7 +39,7 @@ class DeveloperModule(Module):
     handlers = [ResetHookNumbersHandler, RecordMarkMotionHandler, SendExceptionLineHandler]
     listeners = [ExceptionLineListener]
     nudges = DEVELOPER_NUDGES
-    bindings = {RouteCostTool: DeveloperRouteCostTool}
+    bindings = {RouteCostTool: DeveloperRouteCostTool, RequestWatch: ReportingRequestWatch}
     performance_tools = [SlowTickTool, ReaderTimeTool, RouteCostTool]
     subcommands = [HookNumbersSubcommand, HookRequestsSubcommand, ResetHookNumbersSubcommand, RecordMarkMotionSubcommand, MarkMotionsSubcommand]
     windows = [WindowDeclaration("developer.numbers", "Numbers", "numbers.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_NUMBERS_SKELETON, place=WindowPlace.PAGE, group="developer", required_settings=[TOOLS_SETTING, HOOK_DURATIONS_SETTING], icon=WindowIcon.FITNESS, reads=["developer numbers"], runs=["developer reset-numbers"]),

@@ -2,7 +2,7 @@ from core.base.container import Container
 from core.base.database.database import Database
 from core.base.journal_home import JournalHome
 from core.testing.story_line_run import StoryLineRun
-from core.testing.repeated_work import RepeatedWork
+from core.base.database.repeated_work import RepeatedWork
 from server.listener_thread import ListenerThread
 from server.listener_wake import ListenerWake
 from server.viewer.line_answer import LineAnswer

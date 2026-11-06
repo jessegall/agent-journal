@@ -39,7 +39,7 @@ from core.testing.story_helper_programs import StoryHelperPrograms
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.modules.skills.support.main_agent_skills import MainAgentSkills
 from core.modules.plugins.support.login_path import LoginPath
-from core.testing.repeated_work import RepeatedWork
+from core.base.database.repeated_work import RepeatedWork
 from core.testing.story_login_path import StoryLoginPath
 from core.testing.story_main_agent_skills import StoryMainAgentSkills
 from core.testing.story_overview_first import StoryOverviewFirst

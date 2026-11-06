@@ -5,6 +5,8 @@ from collections.abc import Mapping
 
 from core.base.type_guards import is_mapping
 from core.base.database.database import Database
+from core.base.database.reported_findings import ReportedFindings
+from core.base.database.request_watch import RequestWatch
 from core.base.container import Container
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.old_hook_runner_error import OldHookRunnerError
@@ -65,10 +67,12 @@ class HookEndpoint:
         except StaleRegistryError as error:
             return self.unchecked(data, error)
         container.bind(Timing, self.timing)
+        container.bind(ReportedFindings, self.context.reported_findings)
         self.timing.stamp("hook_synced")
         outcome = HookAnswer.REFUSED
         try:
-            reply = self.prepared_answer(data, program, headers, database, container)
+            with container.get(RequestWatch).watching(["hook", program]):
+                reply = self.prepared_answer(data, program, headers, database, container)
             outcome = HookAnswer.REFUSED if reply.refusal else HookAnswer.ALLOWED
             return reply
         finally:
