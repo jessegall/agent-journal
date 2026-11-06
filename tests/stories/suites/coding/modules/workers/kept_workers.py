@@ -13,6 +13,8 @@ from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from core.base.journal_home import LAUNCHER_SOCKET
 from core.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.refusal import Refusal
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
@@ -227,4 +229,29 @@ def test_a_send_while_tests_run_is_refused_and_nothing_moves(new_story, monkeypa
     monkeypatch.setattr(WorkerProofQueue, "tests_pending", lambda queue, worktree: True)
     story.expect_refusal(f"worker send {worker.id} --task {task_id}", "are running", actor=story.agent)
     story.expect_text(f"task show {task_id}", "state: open", actor=story.agent)
+
+
+def test_a_nearly_full_worker_is_not_offered(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    worker = merged_kept_worker(story, repository_environment(story))
+    monkeypatch.setattr(ClaudeCodeProvider, "session_resumes_here", lambda provider, folder, session: True)
+    monkeypatch.setattr(ClaudeCodeProvider, "context_percent", lambda provider, home, session: 80)
+    stopped(story, worker)
+    task_id = story.new_row_id('task make "A second task"', actor=story.agent)
+    dispatched_worker(story, f"worker dispatch --model sonnet {task_id}")
+
+
+def test_an_approved_plan_does_not_hold_a_stop_when_no_new_worker_can_start(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    story.expect_success("setting set journal.suites.coding.workers.worker-kept-limit 1 --environment main", actor=story.user)
+    dispatched_worker(story)
+    plan_id = story.new_row_id('plan make "A plan" --brief "A goal"', actor=story.agent)
+    phase_id = story.new_row_id(f'phase make --plan {plan_id} "One" --goal "It is done"', actor=story.agent)
+    story.expect_success(f'task make "First" --phase {phase_id}', actor=story.agent)
+    story.expect_success(f'task make "Second" --phase {phase_id}', actor=story.agent)
+    story.expect_success(f"plan ready {plan_id}", actor=story.agent)
+    person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.expect_success(f"plan approve {plan_id} --environment main", actor=person)
+    story.expect_hook_allowed("s-1", HookSamples.sample("stop"))
 

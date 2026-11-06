@@ -5,7 +5,7 @@ from core.base.provider.providers import Providers
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
-from core.modules.agents.models.agent import Agent
+from core.modules.agents.models.agent import AGENTS_TABLE, Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.drivers.models.helper_job import HelperJob
 
@@ -21,11 +21,17 @@ class KeptHelpers:
         self.queries, self.providers, self.folders, self.kept_rows, self.home = queries, providers, folders, kept_rows, home
 
     def with_open_jobs(self, profile: str) -> set[int | None]:
-        return self.kept_rows.read("helper_jobs", lambda: {job.helper_id for job in self.queries.query(HelperJob).filter(profile=profile).matching(IsNull("ended_at")).all_rows()},
+        return self.kept_rows.scoped_read("helper_jobs", lambda: {job.helper_id for job in self.queries.query(HelperJob).filter(profile=profile).matching(IsNull("ended_at")).all_rows()},
                                    "profile = ? AND ended_at IS NULL", [profile], name="helpers.with_open_jobs")
 
+    def kept(self, profile: str) -> tuple[Agent, ...]:
+        return self.kept_rows.scoped_read(AGENTS_TABLE, lambda: self.kept_rows_of(profile), "role = ? AND profile = ? AND retired_at IS NULL", [AgentRole.HELPER, profile], name="helpers.kept")
+
+    def kept_rows_of(self, profile: str) -> tuple[Agent, ...]:
+        return tuple(self.queries.query(Agent).filter(role=AgentRole.HELPER, profile=profile).matching(IsNull("retired_at")).newest().all_rows())
+
     def idle(self, profile: str, program: str, model: str) -> tuple[Agent, ...]:
-        kept = self.queries.query(Agent).filter(role=AgentRole.HELPER, profile=profile).matching(IsNull("retired_at")).newest().all_rows()
+        kept = self.kept(profile)
         open_jobs = self.with_open_jobs(profile)
         return tuple(helper for helper in kept if self.is_available(helper, open_jobs, program, model))
 

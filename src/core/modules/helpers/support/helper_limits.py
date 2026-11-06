@@ -9,7 +9,7 @@ from core.base.query.query import Query
 from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.agents.support.agent_type_limits import NO_LIMIT, AgentTypeLimits
+from core.modules.agents.support.agent_type_limits import NO_LIMIT, AgentTypeLimits, TypeLimits
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.helpers.support.allowed_models import AllowedModels
@@ -51,11 +51,10 @@ class HelperLimits:
             raise Refusal("a helper needs the launcher, which is not running", "keep your work and start the journal with journal launch")
 
     def checked_running(self, profile: str) -> None:
-        open_jobs = self.kept.with_open_jobs(profile)
-        running = tuple(helper for helper in self.helpers(profile).all_rows() if helper.ended_at is None or helper.id in open_jobs)
+        running_ids = {helper.id for helper in self.helpers(profile).matching(IsNull("ended_at")).all_rows()} | (self.kept.with_open_jobs(profile) - {None})
         limit = self.limits.of(AgentRole.HELPER, profile).run
-        if len(running) >= limit:
-            names = ", ".join(f"agent:{helper.id}" for helper in running)[:RUNNING_NAMES_CHARACTERS]
+        if len(running_ids) >= limit:
+            names = ", ".join(f"agent:{helper_id}" for helper_id in sorted(running_ids))[:RUNNING_NAMES_CHARACTERS]
             raise Refusal(f"{limit} of {profile} run: {names}", self.next_step_text())
 
     def checked_new_place(self, profile: str) -> None:
@@ -63,12 +62,9 @@ class HelperLimits:
         self.checked_kept(profile)
 
     def checked_kept(self, profile: str) -> None:
-        helpers = tuple(self.helpers(profile).matching(IsNull("retired_at")).all_rows())
         limit = self.limits.of(AgentRole.HELPER, profile).kept
-        if limit != NO_LIMIT and len(helpers) >= limit:
-            stopped = next((helper for helper in helpers if helper.ended_at is not None), None)
-            next_step = "all of them run: wait for a report" if stopped is None else f'journal agent retire {stopped.id} --reason "<why>"'
-            raise Refusal(f"{limit} of {profile} exist, which is the limit", next_step)
+        if limit != NO_LIMIT and self.helpers(profile).matching(IsNull("retired_at")).count() >= limit:
+            raise Refusal(f"{limit} of {profile} exist, which is the limit", TypeLimits.next_step_at_limit(self.kept.kept(profile)))
 
     def helpers(self, profile: str) -> Query[Agent]:
         return self.queries.query(Agent).filter(role=AgentRole.HELPER, profile=profile)

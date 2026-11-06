@@ -56,7 +56,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
             options = self.queries.query(AgentFilterOptionsView).first()
             if options is None:
                 return AgentFilterOptions((), ())
-            upgrade_retired = self.queries.query(Agent).matching(EndedAgents(self.activity)).filter(retirement_reason=UPGRADE_RETIREMENT_REASON).count()
+            upgrade_retired = self.queries.query(Agent).matching(EndedAgents()).filter(retirement_reason=UPGRADE_RETIREMENT_REASON).count()
             return AgentFilterOptions(tuple(sorted(role for role in json.loads(options.roles) if role != AgentRole.MAIN)), tuple((name, titles.get(name, name)) for name in sorted(profile for profile in json.loads(options.profiles) if profile)), upgrade_retired)
         rows = self.queries.query(AgentListing)
         if not arguments.include_main and (not arguments.role or AgentRole.MAIN not in arguments.role):
@@ -71,7 +71,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
             case AgentListState.IDLE:
                 rows = rows.matching(AvailableAgents(self.activity))
             case AgentListState.RETIRED:
-                rows = rows.matching(EndedAgents(self.activity))
+                rows = rows.matching(EndedAgents())
             case _:
                 pass
         if arguments.search.strip():
@@ -93,7 +93,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
             return "This helper ran as a program subagent and cannot resume."
         if not self.folders.has_folder(agent):
             return "The folder this agent worked in is gone."
-        if not self.providers.provider(agent.program).session_resumes_here(self.folders.folder(agent), agent.session):
+        if not self.providers.provider(agent.program).session_resumes_here(self.folders.resume_folder(agent), agent.session):
             return "The saved session is gone; this agent cannot resume."
         return None
 

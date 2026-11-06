@@ -316,9 +316,6 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         started_at = perf_counter()
         inspections = [(index, line) for index, line in enumerate(request.lines) if viewer.routes.priorities.is_unqueued(line.line)]
         command_lines = [(index, line) for index, line in enumerate(request.lines) if not viewer.routes.priorities.is_unqueued(line.line)]
-        if inspections and command_lines:
-            self.answer(400, {"error": "read inspection pages separately from other lines"})
-            return
         answers: dict[int, LineAnswer] = {}
         records: list[ViewerRequestRecord] = []
         for index, line in inspections:

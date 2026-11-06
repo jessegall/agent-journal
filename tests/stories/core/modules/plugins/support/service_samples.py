@@ -43,7 +43,7 @@ while True:
     connection.close()
 """
 PROGRAM = "#!/bin/sh\ncat > /dev/null\n"
-MANIFEST = {"name": "served", "title": "Served", "version": "1.0.0", "protocol": 1, "program": "run.sh", "hears": ["command_starting"],
+MANIFEST = {"name": "served", "title": "Served", "version": "1.0.0", "protocol": 1, "program": "run.sh", "hears": ["command_starting", "file_edited"],
             "holds": [{"event": "command_starting", "window_ms": 5000}],
             "services": [{"name": "answers", "command": ["serve.py"], "answers": True, "restart": "always"}],
             "health": {"socket_env": "SAMPLE_HEALTH_SOCKET", "request": "{\"health\": 1}", "answer": "{\"health\": \"up\", \"service\": \"<the service's own name>\"}"}}
