@@ -6,7 +6,7 @@ class RoundReport:
     """A report about a plan filed during one of its review rounds, and who filed it."""
 
     id: int
-    filed_by: str
+    author: str
 
     def json(self) -> dict[str, object]:
-        return {"id": self.id, "filed_by": self.filed_by}
+        return {"id": self.id, "filed_by": self.author}

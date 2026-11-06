@@ -9,9 +9,9 @@ from core.base.viewer.window_place import WindowPlace
 MODULE_FILE = "tests.stories.core.modules.viewer.support.section_modules"
 UNKNOWN_SLOT = f"{MODULE_FILE}:UnknownSlotModule"
 UNDEPENDED_SLOT = f"{MODULE_FILE}:UndependedSlotModule"
-NO_SLOT = f"{MODULE_FILE}:NoSlotModule"
+SLOTLESS_MODULE = f"{MODULE_FILE}:NoSlotModule"
 PANE_WITH_SLOTS = f"{MODULE_FILE}:PaneWithSlotsModule"
-SUITE_NAMES_A_SECTION = f"{MODULE_FILE}:SuiteNamesASectionModule"
+SECTION_SUITE_MODULE = f"{MODULE_FILE}:SuiteNamesASectionModule"
 BUTTON_ON_AN_INSPECTOR_SLOT = f"{MODULE_FILE}:ButtonOnAnInspectorSlotModule"
 GOOD_SECTION = f"{MODULE_FILE}:GoodSectionModule"
 

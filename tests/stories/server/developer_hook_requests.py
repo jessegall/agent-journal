@@ -135,11 +135,11 @@ def test_request_filters_apply_on_the_viewer_route(recording_server):
     def read(*flags):
         return server.viewer_line_value(cookie, {"line": ["developer", "hook-requests", *flags], "environment": "main", "window": "developer.hook-requests"})["rows"]
 
-    assert [row["event"] for row in read()] == ["agent list", "task list", "stop"]
-    assert [row["event"] for row in read("--family", "process bookkeeping")] == ["process part-start"]
-    assert [row["event"] for row in read("--kind", "viewer", "--family", "task")] == ["task list"]
-    assert [row["event"] for row in read("--sender", "Main agent")] == ["stop"]
-    assert read("--kind", "viewer", "--sender", "Main agent") == []
+    server.story.expect_rows([row["event"] for row in read()] == ["agent list", "task list", "stop"])
+    server.story.expect_rows([row["event"] for row in read("--family", "process bookkeeping")] == ["process part-start"])
+    server.story.expect_rows([row["event"] for row in read("--kind", "viewer", "--family", "task")] == ["task list"])
+    server.story.expect_rows([row["event"] for row in read("--sender", "Main agent")] == ["stop"])
+    server.story.expect_rows(read("--kind", "viewer", "--sender", "Main agent") == [])
 
 
 def test_a_hook_shows_the_time_it_waited_for_another(recording_server):
