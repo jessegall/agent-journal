@@ -15,3 +15,5 @@ class AgentLimitCounts:
     kept_setting: str
     profile_specific: bool
     profiles: tuple[AgentProfileLimitCounts, ...]
+    run_source: str
+    kept_source: str

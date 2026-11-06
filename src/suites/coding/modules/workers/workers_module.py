@@ -89,6 +89,7 @@ from suites.coding.modules.workers.bindings.worker_queue_run_workers import Work
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_tab import WindowTab
 from core.base.viewer.window_extension import WindowExtension
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_source import WindowSource
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
@@ -228,6 +229,8 @@ class WorkersModule(Module):
     templates = WORKER_TEMPLATES
     window_extensions = [*(WindowExtension(name, reads=["proof list", "worker waits", "worker progress"], runs=["worker send"],
                                           events=["proof.*", "worker_worktree.*"],
+                                          keys=[WindowKey("waits", "worker waits", events=["agent.*", "task.*", "proof.*", "worker_worktree.*"]),
+                                                WindowKey("progress", "worker progress", events=["task.*", "worker_worktree.*"])],
                                           sources=[WindowSource("waits", "worker waits", ["agent.*", "task.*", "proof.*", "worker_worktree.*"]),
                                                    WindowSource("progress", "worker progress", ["task.*", "worker_worktree.*"]),
                                                    WindowSource("queue", "proof list --limit 50", ["proof.*"])]) for name in ("agents.agents", "agents.helpers")),

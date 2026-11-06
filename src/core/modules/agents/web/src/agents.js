@@ -8,4 +8,4 @@ const TEXTS = {
     all: {title: "No agents yet", hint: "Agents and helpers started by the main agent appear here."},
 };
 
-export default {render: () => h(AgentRows, {line: "agent cards", empty: "No agents yet", texts: TEXTS})};
+export default {render: () => h(AgentRows, {empty: "No agents yet", texts: TEXTS})};

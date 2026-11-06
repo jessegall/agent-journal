@@ -2,7 +2,7 @@ import {h, reactive} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import AgentActions from "../../core/modules/agents/web/src/AgentActions.vue";
 import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
-import {context, mounted, page, pickButton, settle, typeInto} from "./support/windowContext.js";
+import {context, mounted, page, pickButton, settle, typeInto} from "./support/agentWindowContext.js";
 
 const helper = {id: 42, role: "helper", state: "idle", ended_at: "2026-11-01T10:00:00Z", job_command: ["helper", "send"], job_task_flag: "", resume_reason: null};
 afterEach(() => { document.body.innerHTML = ""; });

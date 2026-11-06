@@ -19,7 +19,6 @@ const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(s
 const context = useWindow();
 const {rows: reports} = context.props.reports;
 context.state["reports.agent"] = String(props.row.id);
-context.reload("reports");
 const isReader = computed(() => props.row.access === "read-only");
 const retired = computed(() => Boolean(props.row.retired_at) || props.row.state === "retired");
 const cardTabs = computed(() => {
@@ -28,19 +27,20 @@ const cardTabs = computed(() => {
 });
 const firstTab = () => isReader.value || retired.value ? cardTabs.value.find((item) => item.key === "transcript") : cardTabs.value[0];
 const tab = ref(firstTab());
+watch(tab, (value) => { context.state.tab = value?.key ?? ""; }, {immediate: true});
+onUnmounted(() => { context.state.tab = ""; });
 watch(cardTabs, (tabs) => { if (!tabs.some((item) => item.key === tab.value?.key)) tab.value = tabs[0]; });
 watch(() => props.open, (open) => { if (open) tab.value = firstTab(); });
 const components = Object.fromEntries(context.tabs.filter((tab) => tab.component).map((tab) => [tab.key, defineAsyncComponent(() => loadWindowComponent(tab.component))]));
 const instructionOpen = ref(false);
-const runningCommand = ref("");
-const noCommandNote = ref("");
+const {data: tool} = context.props.tool;
+const runningCommand = computed(() => tool.value?.tool ?? "");
+const noCommandNote = computed(() => tool.value?.note ?? "");
 const showsCommand = computed(() => props.row.role !== "main" && (!props.row.ended_at || props.stoppedWithWork || props.waitReason));
 async function readCommand() {
     if (!props.open || !showsCommand.value) return;
-    const answer = await context.read(`usage tool --agent ${props.row.id}`, {deferred: true});
-    if (!props.open) return;
-    runningCommand.value = answer.ok ? answer.value.tool : "";
-    noCommandNote.value = answer.ok ? answer.value.note : "";
+    context.state["tool.agent"] = String(props.row.id);
+    await context.reload("tool");
 }
 const stopFollowing = context.follow(["hook_call.*", "process_part.*"], coalesced(readCommand, READ_RATES.agentCommand));
 onUnmounted(() => stopFollowing?.());
@@ -85,7 +85,7 @@ watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true
                                 <p class="agent-label" data-agent-no-job>No job recorded</p>
                             </template>
                             </template>
-                            <TranscriptRows :line="`agent transcript ${row.id}`" padding="0" />
+                            <TranscriptRows :name="`transcript.${row.id}`" padding="0" />
                         </template>
                         <template v-for="(component, key) in components" :key="key" #[key]>
                             <component :is="component" :agent="row.id" />

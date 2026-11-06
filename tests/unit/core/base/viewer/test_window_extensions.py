@@ -5,13 +5,15 @@ from core.base.viewer.window_extension import WindowExtension
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_source import WindowSource
 from core.base.viewer.window_tab import WindowTab
+from core.base.viewer.window_key import WindowKey
 
 
 class NotesModule(Module):
     name = "notes"
     window_extensions = [WindowExtension("agents.agents", reads=["note list"], events=["note.*"],
                                          tabs=[WindowTab("notes", "Notes", "note list", component="/modules/notes/agent-notes.js")],
-                                         sources=[WindowSource("progress", "note list", ["note.*"])], links={"notes": "notes.board"})]
+                                         sources=[WindowSource("progress", "note list", ["note.*"])], links={"notes": "notes.board"},
+                                         keys=[WindowKey("notes", "note list", events=["note.*"])])]
 
 
 def test_an_installed_module_supplies_window_behavior_without_changing_the_owner():
@@ -23,6 +25,8 @@ def test_an_installed_module_supplies_window_behavior_without_changing_the_owner
     assert extended.sources[0].listed() == {"key": "progress", "read": "note list", "events": ["note.*"]}
     assert extended.tabs[0].component == "/modules/notes/agent-notes.js"
     assert extended.links == {"notes": "notes.board"}
+    assert extended.keys == (WindowKey("notes", "note list", events=["note.*"]),)
+    assert original.keys == ()
 
 
 def test_an_unextended_window_keeps_only_its_own_declarations():

@@ -1,18 +1,21 @@
 <script setup>
 import {computed, ref} from "vue";
-import {AutoScrollPane, Btn, RowList, WindowRoom, useRows} from "@journal/window-kit";
+import {AutoScrollPane, Btn, RowList, WindowRoom, useWindow} from "@journal/window-kit";
 
 // the conversation oldest first with its newest row at the foot, where the pane opens and stays as rows arrive; scrolling up stops that and
 // shows Newest; each row says who wrote it, lined up with the card's tabs, its words, and at its end when
-const props = defineProps({line: {type: String, required: true}, agent: {type: Number, default: null}, padding: {type: String, default: "8px 22px 8px 27px"}, helper: Boolean});
-const {rows, failure, loaded, context} = useRows(props.line, ["hook_call.*"]);
+const props = defineProps({name: {type: String, required: true}, agent: {type: Number, default: null}, padding: {type: String, default: "8px 22px 8px 27px"}, helper: Boolean});
+const window = useWindow();
+const {rows, failure, loaded} = window.props[props.name];
+window.reload(props.name);
+window.follow(["hook_call.*"], () => window.reload(props.name));
 const message = ref("");
 const sending = ref(false);
 const sendFailure = ref("");
 async function send() {
     if (props.agent === null || !message.value.trim() || sending.value) return;
     sending.value = true;
-    const answer = await context.run(props.helper ? ["helper", "send", String(props.agent), message.value] : ["message", "send", message.value, "--target-agent", String(props.agent)]);
+    const answer = await window.run(props.helper ? ["helper", "send", String(props.agent), message.value] : ["message", "send", message.value, "--target-agent", String(props.agent)]);
     sendFailure.value = answer.ok ? "" : answer.error;
     if (answer.ok) message.value = "";
     sending.value = false;

@@ -13,6 +13,7 @@ from core.modules.usage.support.agent_type_limits import AgentTypeLimits
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.usage.support.agent_limit_counts import AgentLimitCounts
 from core.modules.usage.support.agent_profile_limit_counts import AgentProfileLimitCounts
+from core.modules.settings.support.setting_reader import SettingReader
 
 
 class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
@@ -22,8 +23,9 @@ class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
     name = "limits"
     environment_refusal = "agent limits are shown for one environment"
 
-    def __init__(self, queries: Queries, registry: Registry, limits: AgentTypeLimits, profiles: ProfileFiles) -> None:
+    def __init__(self, queries: Queries, registry: Registry, limits: AgentTypeLimits, profiles: ProfileFiles, settings: SettingReader) -> None:
         self.queries, self.registry, self.limits, self.profiles = queries, registry, limits, profiles
+        self.settings = settings
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[AgentLimitCounts, ...]:
         kept = tuple(self.queries.query(Agent).matching(IsNull("retired_at")).all_rows())
@@ -40,7 +42,8 @@ class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
                 profile_limits = self.limits.read(entry, profile)
                 profiles.append(AgentProfileLimitCounts(profile, titles.get(profile, profile), sum(agent.ended_at is None for agent in matching), len(matching), profile_limits.run, profile_limits.kept))
             counts.append(AgentLimitCounts(entry.key, entry.label, sum(agent.ended_at is None for agent in agents), len(agents), limits.run, limits.kept,
-                                          entry.run_limit_key, entry.kept_limit_key, bool(entry.profile_limits_key), tuple(profiles)))
+                                          entry.run_limit_key, entry.kept_limit_key, bool(entry.profile_limits_key), tuple(profiles),
+                                          self.settings.current(entry.run_limit_key).source, self.settings.current(entry.kept_limit_key).source))
         return tuple(counts)
 
     def write_output(self, value: object, output: Output) -> None:
