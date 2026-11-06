@@ -7,7 +7,7 @@ import {context, mounted, page, pickButton, settle} from "./support/windowContex
 import RowList from "../kit/RowList.vue";
 import {useListTools} from "../kit/useListTools.js";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
-import MemoryRows from "../../core/modules/memories/web/src/MemoryRows.vue";
+import MemoriesPage from "../../core/modules/memories/web/src/MemoriesPage.vue";
 import {default as helpers} from "../../core/modules/agents/web/src/helpers.js";
 
 let app;
@@ -112,16 +112,17 @@ test("a window with no texts declared says its one empty line on every tab", asy
     expect(words()[0]).toBe("No agents yet");
 });
 
-test("the memories window says it is empty, and once words are typed that nothing matches", async () => {
-    const element = await mounted(MemoryRows, context({"memory list": page([]), "memory context": page([])}));
+test("the memories window says it is empty, and once words are typed that no memory matches", async () => {
+    const element = await mounted(MemoriesPage, context({"environment list": page([]), "memory list": page([]), "memory agents": page([])}));
     document.body.append(element);
     host = element;
-    expect(words()).toEqual(["No memories yet", "Memories you or the agent save appear here."]);
+    expect(element.querySelector("[data-memory-empty]").textContent).toContain("No memories yet");
+    expect(element.querySelector("[data-memory-empty]").textContent).toContain("Memories you or the agent save appear here.");
     const box = element.querySelector("[data-search-input]");
     box.value = "cart";
     box.dispatchEvent(new Event("input", {bubbles: true}));
     await settle();
-    expect(words()[0]).toBe("Nothing matches");
+    expect(element.querySelector("[data-memory-empty]").textContent).toContain("No memory here matches");
 });
 
 // every list of every window declares what brings rows there, so none can say only that it is empty

@@ -162,6 +162,50 @@ test("a row names a creator who is a person by the person's name", async () => {
     expect(lines.some((line) => line[0] === "agent")).toBe(false);
 });
 
+test("a memory says who it belongs to by name, the main agent when no agent does, and links its task", async () => {
+    await opened("#?open=memory:4", answering({"memory show 4": {ok: true, value: {...MEMORY, agent_id: null, task_id: 6700}}}));
+    const fields = shown().querySelector("[data-resource-fields]").textContent;
+    expect(fields).toContain("Belongs to");
+    expect(fields).toContain("Main agent");
+    expect(shown().querySelector("[data-resource-link]").textContent).toBe("Task 6700");
+    app.unmount();
+    app = null;
+    await opened("#?open=memory:4", answering({
+        "memory show 4": {ok: true, value: {...MEMORY, agent_id: 412}},
+        "agent show 412": {ok: true, value: {id: 412, role: "worker", given_name: ""}},
+    }));
+    expect(shown().querySelector("[data-resource-fields]").textContent).toContain("Worker 412");
+    expect(shown().querySelector("[data-resource-link]")).toBeNull();
+});
+
+test("an old agent with no given name is named by its role and number", async () => {
+    await opened("#?open=memory:4", answering({
+        "memory show 4": {ok: true, value: MEMORY},
+        "actor show 78": {ok: true, value: {id: 78, type: "agent", name: "session-9"}},
+        "agent show 78": {ok: true, value: {id: 78, role: "worker", profile: "journal-worker", given_name: ""}},
+    }));
+    expect(shown().querySelector("[data-resource-fields]").textContent).toContain("Worker 78");
+});
+
+test("a memory can be removed with a reason and a removed one restored", async () => {
+    const lines = [];
+    await opened("#?open=memory:4", answering({"memory show 4": {ok: true, value: MEMORY}}, lines));
+    shown().querySelector(`[data-move="remove"]`).click();
+    await later();
+    const ask = shown().querySelector("[data-resource-ask]");
+    ask.querySelector("input").value = "stale";
+    ask.querySelector("input").dispatchEvent(new Event("input"));
+    await later();
+    ask.dispatchEvent(new Event("submit", {cancelable: true}));
+    await later();
+    expect(lines).toContainEqual(["memory", "remove", "4", "--reason", "stale"]);
+    app.unmount();
+    app = null;
+    await opened("#?open=memory:4", answering({"memory show 4": {ok: true, value: {...MEMORY, state: "removed"}}}, lines));
+    shown().querySelector(`[data-move="restore"]`).click();
+    await later();
+    expect(lines).toContainEqual(["memory", "restore", "4"]);
+});
 
 test("the browser's back and forward walk the rows opened", async () => {
     await opened("#?open=plans:5", answering(PLAN));

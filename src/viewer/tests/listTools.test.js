@@ -12,7 +12,6 @@ import TemplateCards from "../../core/modules/templates/web/src/TemplateCards.vu
 import CheckCards from "../../suites/coding/modules/checks/web/src/CheckCards.vue";
 import DumpRows from "../../core/modules/dumps/web/src/DumpRows.vue";
 import ReviewerSteps from "../../core/modules/reviews/web/src/ReviewerSteps.vue";
-import MemoryRows from "../../core/modules/memories/web/src/MemoryRows.vue";
 import SkillCatalogue from "../../core/modules/skills/web/src/SkillCatalogue.vue";
 
 const ROWS = [{id: 3, title: "Zebra", open: true}, {id: 2, title: "Apple pie", open: false}, {id: 1, title: "Mango", open: true}];
@@ -72,7 +71,6 @@ test.each([
     ["the checks", CheckCards, {"check list": page([])}],
     ["the dumps", DumpRows, {"dump board": {ok: true, value: {dumps: [], total: 0}}}],
     ["the reviews", ReviewerSteps, {"review board": {ok: true, value: {reviews: [], queued: 0}}}],
-    ["the memories", MemoryRows, {"memory list": page([])}],
 ])("the list of %s has the bar", async (_, component, answers) => {
     const element = await mounted(component, context(answers));
     expect(element.querySelector("[data-list-tools]")).not.toBeNull();
@@ -89,23 +87,5 @@ test("the skills catalogue searches its skills", async () => {
     search.dispatchEvent(new Event("input"));
     await nextTick();
     expect([...element.querySelectorAll(".skill-name")].map((name) => name.textContent)).toEqual(["cart"]);
-});
-
-test("a new memory is written from its window, and a memory opens the panel", async () => {
-    const window_ = {...context({"memory list": page([{id: 4, text: "Totals are in cents", weight: 5, state: "active"}])}), lines: []};
-    window_.run = async (line) => (window_.lines.push(line), {ok: true});
-    const element = await mounted(MemoryRows, window_);
-    element.querySelector("[data-memory-new]").click();
-    await settle();
-    const form = element.querySelector("[data-memory-form]");
-    const box = form.querySelector("textarea");
-    box.value = "Ship on Friday";
-    box.dispatchEvent(new Event("input"));
-    await settle();
-    form.dispatchEvent(new Event("submit", {cancelable: true}));
-    await settle();
-    expect(window_.lines).toEqual([["memory", "make", "Ship on Friday"]]);
-    element.querySelector('[data-memory="4"]').click();
-    expect(location.href).toContain("memories:4");
 });
 
