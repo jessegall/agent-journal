@@ -10,6 +10,9 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.modules.plugins.commands.support.plugin_health_check import PluginHealthCheck
 from core.modules.plugins.commands.support.plugin_service_round import PluginServiceRound
+from core.modules.plugins.support.plugin_digest import PluginDigest
+from core.modules.plugins.support.plugin_folders import PluginFolders
+from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_services import PluginServices
 from core.modules.plugins.support.service_processes import ServiceProcesses
 from tests.stories.core.modules.plugins.hooks import REMOVAL_SAMPLE
@@ -65,7 +68,10 @@ def test_a_service_is_started_again_once_the_files_of_its_plugin_changed(new_sto
         first = story.processes.running[("served", "answers")]
         story.services.follow(story.processes)
         story.expect_rows(story.processes.running[("served", "answers")].pid == first.pid)
-        story.container.get(Database).update(Statement("UPDATE plugins SET files_digest = 'upgraded', version = version + 1 WHERE name = 'served'"))
+        code = story.container.get(PluginFolders).code("served")
+        (code / "journal-plugin.json").write_text((code / "journal-plugin.json").read_text() + "\n")
+        upgraded = PluginDigest.digest(code, PluginManifest.read(code))
+        story.container.get(Database).update(Statement("UPDATE plugins SET files_digest = ?, version = version + 1 WHERE name = 'served'", [upgraded]))
         story.services.follow(story.processes)
         second = story.processes.running[("served", "answers")]
         story.expect_rows(second.pid != first.pid, second.running(), not first.running())
