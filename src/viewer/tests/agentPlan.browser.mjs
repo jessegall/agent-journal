@@ -6,7 +6,7 @@ const browser = await chromium.launch({executablePath: process.env.CHROMIUM_PATH
 try {
     const page = await browser.newPage({viewport: {width: 1000, height: 900}, reducedMotion: "reduce"});
     await page.goto(`${address}&windows=agents.agents`);
-    const plan = page.locator(`[data-agent-open="${agent}"] [data-agent-plan]`);
+    const plan = page.locator(`[data-window="agents.agents"] [data-agent-open="${agent}"] [data-agent-plan]`);
     await plan.waitFor();
     assert.match(await plan.textContent(), /Plan 1: Release work/);
     await page.screenshot({path: capture, animations: "disabled"});
