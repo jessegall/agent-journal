@@ -6,7 +6,7 @@ from core.base.driver.tool_type import ToolType
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.core.modules.helpers.helper_jobs import StartedHelper
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.core.modules.helpers.helper_reports import reported
 
 
@@ -72,6 +72,20 @@ def test_a_helper_report_pins_a_design_only_once_even_after_it_is_closed(new_sto
     story.expect_success("pin close 1", actor=story.user)
     story.hook("s-1", HookSamples.message_display(f"Design: {address}/"))
     story.expect_absent("pin list --environment main", address, actor=story.user)
+
+
+def test_a_helper_tool_output_pins_a_pull_request(new_story):
+    story = new_story(fixture=StartedHelper)
+    address = "https://github.com/shop/cart/pull/23"
+    story.hook(helper_agent(story).session, shell_call("gh pr create", address))
+    story.expect_text("pin list --environment main", "Pull request 23", address, actor=story.user)
+
+
+def test_the_main_agents_text_pins_a_design(new_story):
+    story = new_story(fixture=UserJoined)
+    address = "https://claude.ai/design/cart/payment-page"
+    story.hook("s-1", HookSamples.message_display(f"The design: {address}"))
+    story.expect_text("pin list --environment main", "Design: payment page", address, actor=story.user)
 
 
 def test_a_link_in_a_message_the_agent_sends_is_offered(new_story):
