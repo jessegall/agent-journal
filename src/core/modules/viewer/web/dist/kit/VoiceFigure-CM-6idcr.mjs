@@ -1,6 +1,6 @@
 /* @code-commandments-generated */
 import { reactive as Yr, computed as _, openBlock as b, createElementBlock as k, normalizeStyle as ae, Fragment as R, renderList as H, mergeProps as Co, ref as P, watch as ba, createElementVNode as A, normalizeClass as Bl, toDisplayString as Ma, unref as j, createCommentVNode as q, useId as Vr, createBlock as ne, inject as Xr, onMounted as Zr, onUnmounted as Jr, withDirectives as Qr, withModifiers as ei, createVNode as Do, Transition as Po, withCtx as qo, vShow as ti } from "vue";
-import { l as ni, A as X, p as ai, a as oi, f as li, s as si, b as ri, t as Tl, B as ii, c as Ll, d as pt, e as ui, r as oe, g as ci, h as Bt, i as di, w as zl, j as je, k as fi, m as Dt, o as mn, n as Pt, R as Rl, q as pn, u as Tt, v as pi, x as Il, y as te, z as hi, C as Cl, D as It, E as mi, F as gi, G as yi, H as Dl, L as Pl, I as ql, J as me, K as xa, M as Ze, N as vi, P as bi, _ as Ge, O as wa, Q as jo, S as xi, T as wi, U as de, V as Sa, W as ki, X as $i, Y as _i, Z as Mi, $ as Nt, a0 as Si, a1 as Ai, a2 as Oi, a3 as Ei, a4 as Ni, a5 as St, a6 as Fi, a7 as Bi, a8 as Ti, a9 as Li, aa as zi, ab as Ri, ac as Ii, ad as Ci, ae as Go, af as Uo, ag as Ho, ah as Wo, ai as Di, aj as Pi, ak as qi, al as ji, am as Gi, an as Ui, ao as Hi, ap as Wi, aq as Ki, ar as Yi, as as Vi, at as Xi, au as Zi, av as Ji, aw as rn, ax as sa, ay as Qi, az as eu, aA as tu, aB as Ko, aC as nu, aD as au, aE as ou, aF as lu, aG as su, aH as ra, aI as ru, aJ as iu, aK as Yo, aL as Vo, aM as Xo, aN as uu, aO as cu, aP as du, aQ as fu, aR as pu, aS as At, aT as hu, aU as mu, aV as gu, aW as yu, aX as vu, aY as Ye, aZ as Z, a_ as Zo, a$ as Jo, b0 as bu, b1 as xu, b2 as wu, b3 as ku, b4 as $u, b5 as _u, b6 as Mu, b7 as dt, b8 as ft, b9 as Su, ba as Qo, bb as ia, bc as el, bd as Ot, be as Au, bf as Ou, bg as Eu, bh as tl, bi as Nu, bj as Fu, bk as Bu, bl as nl, bm as Tu, bn as Lu, bo as zu, bp as al, bq as Ru, br as Iu, bs as Cu, bt as Du, bu as Pu, bv as ol, bw as qu, bx as ju, by as Gu, bz as Uu, bA as Hu, bB as Wu, bC as ll, bD as Ku, bE as Yu, bF as Vu, bG as Xu, bH as Zu, bI as Ju, bJ as Qu, bK as ec, bL as ua, bM as tc, bN as nc, bO as ac, bP as oc, bQ as lc, bR as sc, bS as rc, bT as ic, bU as uc, bV as cc, bW as dc, bX as sl, bY as fc, bZ as pc, b_ as hc, b$ as mc, c0 as gc, c1 as yc, c2 as vc, c3 as bc, c4 as xc, c5 as wc, c6 as kc } from "./index-DWPljMYF.js";
+import { l as ni, A as X, p as ai, a as oi, f as li, s as si, b as ri, t as Tl, B as ii, c as Ll, d as pt, e as ui, r as oe, g as ci, h as Bt, i as di, w as zl, j as je, k as fi, m as Dt, o as mn, n as Pt, R as Rl, q as pn, u as Tt, v as pi, x as Il, y as te, z as hi, C as Cl, D as It, E as mi, F as gi, G as yi, H as Dl, L as Pl, I as ql, J as me, K as xa, M as Ze, N as vi, P as bi, _ as Ge, O as wa, Q as jo, S as xi, T as wi, U as de, V as Sa, W as ki, X as $i, Y as _i, Z as Mi, $ as Nt, a0 as Si, a1 as Ai, a2 as Oi, a3 as Ei, a4 as Ni, a5 as St, a6 as Fi, a7 as Bi, a8 as Ti, a9 as Li, aa as zi, ab as Ri, ac as Ii, ad as Ci, ae as Go, af as Uo, ag as Ho, ah as Wo, ai as Di, aj as Pi, ak as qi, al as ji, am as Gi, an as Ui, ao as Hi, ap as Wi, aq as Ki, ar as Yi, as as Vi, at as Xi, au as Zi, av as Ji, aw as rn, ax as sa, ay as Qi, az as eu, aA as tu, aB as Ko, aC as nu, aD as au, aE as ou, aF as lu, aG as su, aH as ra, aI as ru, aJ as iu, aK as Yo, aL as Vo, aM as Xo, aN as uu, aO as cu, aP as du, aQ as fu, aR as pu, aS as At, aT as hu, aU as mu, aV as gu, aW as yu, aX as vu, aY as Ye, aZ as Z, a_ as Zo, a$ as Jo, b0 as bu, b1 as xu, b2 as wu, b3 as ku, b4 as $u, b5 as _u, b6 as Mu, b7 as dt, b8 as ft, b9 as Su, ba as Qo, bb as ia, bc as el, bd as Ot, be as Au, bf as Ou, bg as Eu, bh as tl, bi as Nu, bj as Fu, bk as Bu, bl as nl, bm as Tu, bn as Lu, bo as zu, bp as al, bq as Ru, br as Iu, bs as Cu, bt as Du, bu as Pu, bv as ol, bw as qu, bx as ju, by as Gu, bz as Uu, bA as Hu, bB as Wu, bC as ll, bD as Ku, bE as Yu, bF as Vu, bG as Xu, bH as Zu, bI as Ju, bJ as Qu, bK as ec, bL as ua, bM as tc, bN as nc, bO as ac, bP as oc, bQ as lc, bR as sc, bS as rc, bT as ic, bU as uc, bV as cc, bW as dc, bX as sl, bY as fc, bZ as pc, b_ as hc, b$ as mc, c0 as gc, c1 as yc, c2 as vc, c3 as bc, c4 as xc, c5 as wc, c6 as kc } from "./index-CHnc5r9O.mjs";
 const jl = { height: 5.4, middle: 2.4 };
 function jh(e, t, a, r) {
   if (!e) return { facing: t, speed: 0, settled: !0 };
@@ -154,7 +154,7 @@ async function rl(e, t) {
   return a;
 }
 async function Jc(e) {
-  const [{ figureOf: t }, a] = await Promise.all([import("./figure-DjwDZqKI.js"), Zc(e)]);
+  const [{ figureOf: t }, a] = await Promise.all([import("./figure-5JSizMku.mjs"), Zc(e)]);
   return t(a, e, $a.figureDecoderUrl());
 }
 const Qc = { most: 2.5 }, Je = ({ size: e, below: t }) => (1 - t - ii.top) * e, Kl = (e) => Qc.most * Je(e), ed = { share: 0.5 }, td = (e, t) => e >= ed.share * t;
@@ -407,7 +407,7 @@ const Rd = (e, t, a, r) => !(a != null && a.seated) || r >= a.until || e.posture
       ], 8, Pd))
     ], 4));
   }
-}, jd = /* @__PURE__ */ Ge(qd, [["__scopeId", "data-v-1674d262"]]), et = { hopMs: 220, perPixel: 0.7, arc: 0.3, gone: [1e3, 5e3], chute: 1.1 };
+}, jd = /* @__PURE__ */ Ge(qd, [["__scopeId", "data-v-aeeaced6"]]), et = { hopMs: 220, perPixel: 0.7, arc: 0.3, gone: [1e3, 5e3], chute: 1.1 };
 function Gd(e, t, a) {
   const r = [...t, { x: (t.at(-1) ?? e).x, y: a }];
   return r.map((s, i) => {
@@ -583,7 +583,7 @@ const vl = (e) => ge.every[0] + e() * (ge.every[1] - ge.every[0]), Zd = ["data-f
       ]))), 128))
     ], 4));
   }
-}, ef = /* @__PURE__ */ Ge(Qd, [["__scopeId", "data-v-191db8a4"]]), W = { ink: "#272936", paper: "#f6f1e3", red: "#d9413b", wood: "#8a5a2b", gold: "#e8b84a", light: "#fff3a8", silver: "#c3c7d1", smoke: "#e9e7e1" }, tf = ["transform"], nf = ["fill"], af = ["fill"], of = ["fill"], lf = {
+}, ef = /* @__PURE__ */ Ge(Qd, [["__scopeId", "data-v-0d0e5a5a"]]), W = { ink: "#272936", paper: "#f6f1e3", red: "#d9413b", wood: "#8a5a2b", gold: "#e8b84a", light: "#fff3a8", silver: "#c3c7d1", smoke: "#e9e7e1" }, tf = ["transform"], nf = ["fill"], af = ["fill"], of = ["fill"], lf = {
   __name: "AskSign",
   props: {
     u: { type: Number, required: !0 },
@@ -624,7 +624,7 @@ const vl = (e) => ge.every[0] + e() * (ge.every[1] - ge.every[0]), Zd = ["data-f
       }, "?", 8, of)
     ], 8, tf)) : q("", !0);
   }
-}, sf = /* @__PURE__ */ Ge(lf, [["__scopeId", "data-v-e8e687f5"]]), rf = ["x1", "y1", "x2", "y2", "stroke"], uf = { id: "figure-act-ball" }, cf = ["cx", "cy", "r"], df = ["cx", "cy", "r"], ff = { "clip-path": "url(#figure-act-ball)" }, pf = ["x", "y", "width", "height", "fill"], hf = ["cx", "cy", "r", "stroke"], mf = ["cx", "cy", "fill"], gf = {
+}, sf = /* @__PURE__ */ Ge(lf, [["__scopeId", "data-v-e5e5aab3"]]), rf = ["x1", "y1", "x2", "y2", "stroke"], uf = { id: "figure-act-ball" }, cf = ["cx", "cy", "r"], df = ["cx", "cy", "r"], ff = { "clip-path": "url(#figure-act-ball)" }, pf = ["x", "y", "width", "height", "fill"], hf = ["cx", "cy", "r", "stroke"], mf = ["cx", "cy", "fill"], gf = {
   __name: "DiscoBall",
   props: {
     u: { type: Number, required: !0 },
@@ -1181,7 +1181,7 @@ const vl = (e) => ge.every[0] + e() * (ge.every[1] - ge.every[0]), Zd = ["data-f
       }, Ma(u.word), 9, mp))), 128))
     ], 8, ip)) : q("", !0);
   }
-}, yp = /* @__PURE__ */ Ge(gp, [["__scopeId", "data-v-862ece97"]]), vp = ["transform"], bp = ["href", "x", "y", "width", "height"], xp = ["id"], wp = ["x", "y", "width", "height"], kp = ["clip-path", "data-act-surface"], $p = ["x", "y", "width", "height", "rx", "opacity"], _p = ["cx", "cy", "r", "opacity"], Mp = ["cx", "cy", "rx", "ry", "opacity"], Sp = ["cx", "cy", "r"], Ap = ["opacity"], Op = ["x", "y", "width", "height"], Ep = ["cx", "cy", "r"], Np = ["cx", "cy", "r"], Fp = ["cx", "cy", "r"], Et = "#9bd34a", pa = "#5f8f24", Bp = {
+}, yp = /* @__PURE__ */ Ge(gp, [["__scopeId", "data-v-1c3873d3"]]), vp = ["transform"], bp = ["href", "x", "y", "width", "height"], xp = ["id"], wp = ["x", "y", "width", "height"], kp = ["clip-path", "data-act-surface"], $p = ["x", "y", "width", "height", "rx", "opacity"], _p = ["cx", "cy", "r", "opacity"], Mp = ["cx", "cy", "rx", "ry", "opacity"], Sp = ["cx", "cy", "r"], Ap = ["opacity"], Op = ["x", "y", "width", "height"], Ep = ["cx", "cy", "r"], Np = ["cx", "cy", "r"], Fp = ["cx", "cy", "r"], Et = "#9bd34a", pa = "#5f8f24", Bp = {
   __name: "WallBugs",
   props: {
     u: { type: Number, required: !0 },
@@ -1317,7 +1317,7 @@ const vl = (e) => ge.every[0] + e() * (ge.every[1] - ge.every[0]), Zd = ["data-f
       ], 8, Ap))), 128))
     ], 64));
   }
-}, Tp = /* @__PURE__ */ Ge(Bp, [["__scopeId", "data-v-8d04cf83"]]), Lp = ["width", "height", "viewBox", "data-act"], zp = ["stroke"], Rp = {
+}, Tp = /* @__PURE__ */ Ge(Bp, [["__scopeId", "data-v-611352e0"]]), Lp = ["width", "height", "viewBox", "data-act"], zp = ["stroke"], Rp = {
   __name: "FigureAct",
   props: {
     name: { type: String, required: !0 },
@@ -1439,7 +1439,7 @@ const vl = (e) => ge.every[0] + e() * (ge.every[1] - ge.every[0]), Zd = ["data-f
       ], 8, zp)
     ], 8, Lp));
   }
-}, Ip = /* @__PURE__ */ Ge(Rp, [["__scopeId", "data-v-4755d5ba"]]), Cp = 1440 * 60;
+}, Ip = /* @__PURE__ */ Ge(Rp, [["__scopeId", "data-v-a7a28b8e"]]), Cp = 1440 * 60;
 class bl extends Map {
   constructor(t, a) {
     super(), this.key = t;
@@ -1495,7 +1495,7 @@ const Dp = ["width"], Pp = ["href", "x", "y", "width", "height", "opacity", "tra
       ], 8, Dp))
     ], 4));
   }
-}, Gp = /* @__PURE__ */ Ge(jp, [["__scopeId", "data-v-6050b099"]]), ha = { waits: [3, 10], seconds: [3, 5], rests: [60, 150] }, fn = Object.freeze({ picture: null, until: 0, next: 0 }), ma = ([e, t], a) => e + (t - e) * a();
+}, Gp = /* @__PURE__ */ Ge(jp, [["__scopeId", "data-v-a000b309"]]), ha = { waits: [3, 10], seconds: [3, 5], rests: [60, 150] }, fn = Object.freeze({ picture: null, until: 0, next: 0 }), ma = ([e, t], a) => e + (t - e) * a();
 function Up(e, t, a, r) {
   return e.picture ? a < e.until && t.includes(e.picture) ? e : { ...fn, next: a + ma(ha.rests, r) } : t.length ? e.next ? a < e.next ? e : { picture: t[0], until: a + ma(ha.seconds, r), next: 0 } : { ...fn, next: a + ma(ha.waits, r) } : e.next > a ? e : fn;
 }
@@ -2421,9 +2421,9 @@ const Sl = { user: "user", comment: "user", agent: "agent" }, Nh = (e) => e.filt
     async function Ao(n) {
       if (T && (o.airborne = yl(gl(o.airborne, S), { x: 0, y: 0 }, performance.now())), Xn(), O = null, x = null, !!n)
         try {
-          const [l, d] = await Promise.all([Jc(n), import("./figure-DjwDZqKI.js")]);
+          const [l, d] = await Promise.all([Jc(n), import("./figure-5JSizMku.mjs")]);
           if (n !== p.value || !u.value) return;
-          const { FigurePlayer: g } = await import("./player-BL2fXhhU.js");
+          const { FigurePlayer: g } = await import("./player-6QKVHMe-.mjs");
           F = d.CLIPS.filter((v) => !v.voices || v.voices.includes(n)), Da = [...l.stance.free], Ht = d.blowsLandAt(l.stance) * S, _n = { frames: d.WORK.blowFrames, lands: d.WORK.lands }, ta = { depth: d.LOOK_REACH * S, above: d.eyesAboveOf(l) * S, tip: d.HEAD_TIP }, xo = d.headPivotOf(l), Go(Oe.value, Ba), Uo(Oe.value, Ta), Ho(Oe.value, za), Q.value = d.GROUND, u.value.width = u.value.height = Math.round(S * (window.devicePixelRatio || 1)), x = new g(l, u.value), Lr(), zr(), Rr(), oa(), o.here = s.here, o.arriving = o.here, ht(), be(), ee();
         } catch (l) {
           m.value = String(l.message ?? l);
@@ -2630,7 +2630,7 @@ const Sl = { user: "user", comment: "user", agent: "agent" }, Nh = (e) => e.filt
       ], 64);
     };
   }
-}, Dh = /* @__PURE__ */ Ge(Ch, [["__scopeId", "data-v-3608e06e"]]), Uh = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, Dh = /* @__PURE__ */ Ge(Ch, [["__scopeId", "data-v-844682ef"]]), Uh = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: Dh
 }, Symbol.toStringTag, { value: "Module" }));

@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, onUnmounted, ref, watch} from "vue";
-import {Btn, EmptyState, MenuItem, MenuLabel, RowList, SearchBar, Segmented, useDeclaredRows, useRows, useWindow} from "@journal/window-kit";
+import {Btn, EmptyState, MenuItem, MenuLabel, RowList, SearchBar, Segmented, toggleFilter, useDeclaredRows, useRows, useWindow} from "@journal/window-kit";
 import AgentCard from "./AgentCard.vue";
 
 const SHOWS = [
@@ -24,10 +24,7 @@ const filters = ref(savedFilters);
 const filterOptions = ref({roles: [], profiles: []});
 const programs = ref([]);
 const filterCount = computed(() => filters.value.roles.length + filters.value.profiles.length + filters.value.programs.length);
-const toggleFilter = (group, value) => {
-    const values = filters.value[group];
-    filters.value = {...filters.value, [group]: values.includes(value) ? values.filter((item) => item !== value) : [...values, value]};
-};
+const updateFilter = (group, value) => { filters.value = toggleFilter(filters.value, group, value); };
 const clearFilters = () => { filters.value = {roles: [], profiles: [], programs: []}; };
 const label = (value) => value.slice(0, 1).toUpperCase() + value.slice(1);
 watch(filters, (value) => localStorage.setItem(FILTER_KEY, JSON.stringify(value)));
@@ -149,26 +146,26 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
         <SearchBar v-model="words" placeholder="Search agents" :menu-count="filterCount" data-agents-search>
                 <template #menu>
                     <MenuLabel>Type</MenuLabel>
-                    <MenuItem v-for="role in filterOptions.roles" :key="role" role="menuitemcheckbox" :aria-checked="filters.roles.includes(role)" :checked="filters.roles.includes(role)" :data-filter-role="role" @click="toggleFilter('roles', role)">{{ label(role) }}</MenuItem>
-                    <MenuLabel v-if="filterOptions.profiles.length">Profile</MenuLabel>
-                    <MenuItem v-for="profile in filterOptions.profiles" :key="profile.name" role="menuitemcheckbox" :aria-checked="filters.profiles.includes(profile.name)" :checked="filters.profiles.includes(profile.name)" :data-filter-profile="profile.name" @click="toggleFilter('profiles', profile.name)">{{ profile.title }}</MenuItem>
+                    <template v-for="role in filterOptions.roles" :key="role"><MenuItem role="menuitemcheckbox" :aria-checked="filters.roles.includes(role)" :checked="filters.roles.includes(role)" :data-filter-role="role" @click="updateFilter('roles', role)">{{ label(role) }}</MenuItem></template>
+                    <template v-if="filterOptions.profiles.length"><MenuLabel>Profile</MenuLabel></template>
+                    <template v-for="profile in filterOptions.profiles" :key="profile.name"><MenuItem role="menuitemcheckbox" :aria-checked="filters.profiles.includes(profile.name)" :checked="filters.profiles.includes(profile.name)" :data-filter-profile="profile.name" @click="updateFilter('profiles', profile.name)">{{ profile.title }}</MenuItem></template>
                     <MenuLabel>Program</MenuLabel>
-                    <MenuItem v-for="program in programs" :key="program.name" role="menuitemcheckbox" :aria-checked="filters.programs.includes(program.name)" :checked="filters.programs.includes(program.name)" :data-filter-program="program.name" @click="toggleFilter('programs', program.name)">{{ program.title }}</MenuItem>
-                    <MenuItem v-if="filterCount" data-filter-clear @click="clearFilters">Clear filters</MenuItem>
+                    <template v-for="program in programs" :key="program.name"><MenuItem role="menuitemcheckbox" :aria-checked="filters.programs.includes(program.name)" :checked="filters.programs.includes(program.name)" :data-filter-program="program.name" @click="updateFilter('programs', program.name)">{{ program.title }}</MenuItem></template>
+                    <template v-if="filterCount"><MenuItem data-filter-clear @click="clearFilters">Clear filters</MenuItem></template>
                 </template>
                 <Segmented :options="SHOWS" :value="show" @pick="show = $event" />
         </SearchBar>
         <div ref="list" :class="['agents-view', {'agents-view-open': openRow}]">
-        <EmptyState v-if="loaded && !failure && !visible.length && filterCount" title="No agents match the filters" data-filter-empty>
+        <template v-if="loaded && !failure && !visible.length && filterCount"><EmptyState title="No agents match the filters" data-filter-empty>
             <Btn small data-empty-clear @click="clearFilters">Clear filters</Btn>
-        </EmptyState>
-        <RowList v-else :rows="visible" :failure="failure" :loaded="loaded" :more="!openRow && more" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
+        </EmptyState></template>
+        <template v-else><RowList :rows="visible" :failure="failure" :loaded="loaded" :more="!openRow && more" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
             <template #default="{row}">
                 <div class="agent-row" :data-agent-row="row.id">
                     <AgentCard :row="row" :facts="factsOf(row)" :progress="progressOf(row)" :wait-reason="waitReasonOf(row)" :open="row.id === openId" @toggle="toggle(row)" />
                 </div>
             </template>
-        </RowList>
+        </RowList></template>
         </div>
         <template v-if="openRow && heldBack">
             <button type="button" class="agents-held" data-agents-held @click="close">{{ heldBack }} more</button>

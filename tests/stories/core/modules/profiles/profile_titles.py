@@ -12,10 +12,10 @@ def test_a_person_saves_and_reads_a_profile_title_through_the_viewer(new_story):
             return server.viewer_line_value(cookie, {"window": window, "environment": "main", "line": list(parts)})
         line("profile", "save", "critic", "--title", "Critic", "--description", "Reads", "--body", "Read.")
         rows = line("profile", "list")["rows"]
-        assert next(row for row in rows if row["name"] == "critic")["title"] == "Critic"
+        story.expect_rows(next(row for row in rows if row["name"] == "critic")["title"] == "Critic")
         line("profile", "save", "critic", "--title", "Reviewer", "--description", "Reads", "--body", "Read.")
         rows = line("profile", "list")["rows"]
-        assert next(row for row in rows if row["name"] == "critic")["title"] == "Reviewer"
+        story.expect_rows(next(row for row in rows if row["name"] == "critic")["title"] == "Reviewer")
 
 
 def test_agent_facts_and_filter_options_show_profile_titles_through_the_viewer(new_story):
@@ -29,9 +29,9 @@ def test_agent_facts_and_filter_options_show_profile_titles_through_the_viewer(n
         def line(*parts):
             return server.viewer_line_value(cookie, {"window": "agents.agents", "environment": "main", "line": list(parts)})
         facts = line("usage", "agents", "--closed")["rows"]
-        assert next(row for row in facts if row["profile"] == "journal-researcher")["profile_title"] == "Researcher"
+        story.expect_rows(next(row for row in facts if row["profile"] == "journal-researcher")["profile_title"] == "Researcher")
         options = line("agent", "cards", "--options")
-        assert {"name": "journal-researcher", "title": "Researcher"} in options["profiles"]
+        story.expect_rows({"name": "journal-researcher", "title": "Researcher"} in options["profiles"])
 
 
 def test_agents_window_picture(new_story):
