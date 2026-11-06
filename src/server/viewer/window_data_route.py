@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 
 from core.base.viewer.window_key import WindowKey
 from server.viewer.line_route import LineRoute
@@ -28,10 +28,17 @@ class WindowDataRoute:
         if not request.requested_keys:
             return tuple(key for key in declared_keys if key.shown_on(request.tab))
         keys_by_name = {key.name: key for key in declared_keys}
-        missing_names = [name for name in request.requested_keys if name not in keys_by_name]
-        if missing_names:
-            raise ViewerRequestError(f"{request.window} has no data {', '.join(missing_names)}")
-        return tuple(keys_by_name[name] for name in request.requested_keys)
+        return tuple(self.key_named(name, keys_by_name, request.window) for name in request.requested_keys)
+
+    @staticmethod
+    def key_named(name: str, keys_by_name: Mapping[str, WindowKey], window: str) -> WindowKey:
+        if name in keys_by_name:
+            return keys_by_name[name]
+        for key in keys_by_name.values():
+            id_key = key.of_id(name)
+            if id_key is not None:
+                return id_key
+        raise ViewerRequestError(f"{window} has no data {name}")
 
     def answer(self, request: WindowDataRequest, person_id: int) -> WindowDataAnswer:
         keys = self.keys(request)
