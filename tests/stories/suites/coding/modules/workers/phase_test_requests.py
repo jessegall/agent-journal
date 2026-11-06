@@ -176,3 +176,21 @@ def test_an_allowed_saved_run_with_no_read_flag_is_refused_and_keeps_its_permiss
     expect_requests(allowed, RunRequest(1, TEST_LINE, WHY, "allowed"))
     allowed.run_saved_test()
     expect_requests(allowed, RunRequest(1, TEST_LINE, WHY, "used"))
+
+
+def test_an_allowed_request_runs_once_as_pytest_as_python_dash_m_and_as_its_saved_command(alias_saved):
+    module_form = f"python3 -m {TEST_LINE}"
+    alias_form = (f"journal {TEST_ALIAS} --tail 20", ShellPart("journal", CommandCategory.JOURNAL, [TEST_ALIAS, "--tail", "20"]))
+    runs = (lambda: alias_saved.run_test(TEST_LINE), lambda: alias_saved.run_test(module_form), lambda: alias_saved.run_line(*alias_form))
+    for number, run in enumerate(runs, 1):
+        alias_saved.run_test(asking_main(TEST_LINE, WHY))
+        alias_saved.story.expect_success(f"worker allow-test {number}", actor=alias_saved.story.agent)
+        expect_reply_allowed(run())
+    expect_requests(alias_saved, *(RunRequest(number, TEST_LINE, WHY, "used") for number in (1, 2, 3)))
+
+
+def test_a_request_asked_through_the_saved_command_is_allowed_for_pytest_and_python_dash_m(alias_saved):
+    alias_saved.run_line(f'journal {TEST_ALIAS} {FLAG} "{WHY}"', ShellPart("journal", CommandCategory.JOURNAL, [TEST_ALIAS, FLAG, WHY]))
+    alias_saved.story.expect_success(ALLOW, actor=alias_saved.story.agent)
+    expect_reply_allowed(alias_saved.run_test(f"python3 -m {TEST_LINE}"))
+    expect_requests(alias_saved, RunRequest(1, f"journal {TEST_ALIAS}", WHY, "used"))

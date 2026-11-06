@@ -2,6 +2,7 @@ from core.base.driver.command_category import CommandCategory
 from core.base.listener.event_rows import EventRows
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.reader import Reader
+from core.modules.processes.support.count_command import CountCommand
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.run_visibility import RunVisibility
 from core.modules.processes.support.progress_listing_command import ProgressListingCommand
@@ -24,5 +25,5 @@ class ProgressListing:
         for part in parts:
             if part.category is not CommandCategory.TEST_RUN or output.reader_position not in (0, part.position):
                 continue
-            return ProgressListingCommand(reader.count_command.replace("{part}", part.command or part.text), part.position, reader.count_pattern)
+            return ProgressListingCommand(CountCommand.filled(reader.count_command, part.command or part.text), part.position, reader.count_pattern)
         return None
