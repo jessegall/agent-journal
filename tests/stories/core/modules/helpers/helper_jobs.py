@@ -59,7 +59,7 @@ class EndedHelper(StoryFixture):
 def test_a_send_to_a_running_helper_adds_to_its_open_job(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_agent(story)
-    story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
+    story.expect_success(f'helper send {helper.id} "{JOB}" --steer', actor=story.agent)
     jobs = jobs_of(story, helper)
     story.expect_rows(len(jobs) == 1, JOB in jobs[0].brief)
     story.expect_text(f"agent-line list --agent {helper.id}", JOB)
@@ -80,7 +80,7 @@ def test_a_long_job_arrives_whole(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_agent(story)
     job = "y" * 6000
-    story.expect_success(f'helper send {helper.id} "{job}"', actor=story.agent)
+    story.expect_success(f'helper send {helper.id} "{job}" --steer', actor=story.agent)
     story.expect_rows(job in jobs_of(story, helper)[0].brief)
 
 
@@ -142,7 +142,7 @@ def test_a_job_on_other_files_starts_a_new_helper(new_story):
 def test_a_send_says_which_helper_takes_the_job(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_agent(story)
-    story.expect_success(f'helper send {helper.id} "{JOB}"', f"helper {helper.id} takes the job", actor=story.agent)
+    story.expect_success(f'helper send {helper.id} "{JOB}" --steer', f"helper {helper.id} takes the job", actor=story.agent)
 
 
 def test_a_helper_that_ran_as_a_program_subagent_is_refused_a_new_job(new_story):

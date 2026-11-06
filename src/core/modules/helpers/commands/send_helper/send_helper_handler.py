@@ -1,3 +1,4 @@
+from core.base.actor_type import ActorType
 from core.base.provider.providers import Providers
 from core.base.command.context import Context
 from dataclasses import replace
@@ -38,15 +39,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
         source_context = replace(context, environment_id=helper.environment_id)
         source = self.sources.source_copy(source_context)
         if helper.ended_at is None:
-            with self.scopes.opened(context.actor.id, context.environment_id, [ActorScope]):
-                line = self.nudger.send_text(helper.id, command.job, HELPER_JOB_SOURCE, context, wakes_agent=True)
-            if self.continues(last_job, source):
-                self.repository.save(last_job.changed(brief=f"{last_job.brief}\n\n{command.job}"), context)
-                return helper.id
-            next_job = last_job.next_job(helper.session, command.job, command.job[:SHORT_JOB_CHARACTERS], context.actor.id)
-            self.repository.save(next_job.changed(source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, source_line_id=line.id), context)
-            self.sources.use_copy(source, source_context)
-            return helper.id
+            return self.send_to_running(helper, last_job, source, source_context, command, context)
         if last_job.ended_at is None:
             with self.scopes.opened(context.actor.id, context.environment_id, [ActorScope]):
                 self.nudger.send_text(helper.id, command.job, HELPER_JOB_SOURCE, context, wakes_agent=True)
@@ -61,9 +54,18 @@ class SendHelperHandler(Handler[SendHelper, int]):
         self.sources.use_copy(source, source_context)
         return helper.id
 
-    @staticmethod
-    def continues(job: HelperJob, source: WorkSourceCopy) -> bool:
-        return job.ended_at is None and job.source_message_id == source.message_id and job.source_unavailable == source.unavailable
+    def send_to_running(self, helper: Agent, last_job: HelperJob, source: WorkSourceCopy, source_context: Context, command: SendHelper, context: Context) -> int:
+        if last_job.ended_at is None and not command.steer and context.actor.type is ActorType.AGENT:
+            raise Refusal(f"helper {helper.id} is busy with a job", f'wait for its report, or journal helper send {helper.id} --steer "<text>" adds to that job')
+        with self.scopes.opened(context.actor.id, context.environment_id, [ActorScope]):
+            line = self.nudger.send_text(helper.id, command.job, HELPER_JOB_SOURCE, context, wakes_agent=True)
+        if last_job.ended_at is None:
+            self.repository.save(last_job.changed(brief=f"{last_job.brief}\n\n{command.job}"), context)
+            return helper.id
+        next_job = last_job.next_job(helper.session, command.job, command.job[:SHORT_JOB_CHARACTERS], context.actor.id)
+        self.repository.save(next_job.changed(source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, source_line_id=line.id), context)
+        self.sources.use_copy(source, source_context)
+        return helper.id
 
     def check_resume(self, helper: Agent) -> None:
         if not helper.profile:

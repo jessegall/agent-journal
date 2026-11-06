@@ -9,3 +9,4 @@ class SendHelper(Command[int]):
 
     helper_id: int
     job: str
+    steer: bool = False

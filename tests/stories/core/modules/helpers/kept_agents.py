@@ -203,3 +203,12 @@ def test_a_new_main_takes_over_an_idle_helper_and_gets_its_report(new_story, mon
     launcher.server.close()
     story.home.socket("launcher").unlink()
 
+
+def test_steering_or_new_job(new_story):
+    story = new_story(fixture=StartedHelper)
+    helper = helper_agent(story)
+    story.expect_refusal(f'helper send {helper.id} "Unrelated work"', f"helper {helper.id} is busy", actor=story.agent)
+    story.expect_success(f'helper send {helper.id} "Also read the tax" --steer', actor=story.agent)
+    jobs = tuple(story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).all_rows())
+    story.expect_rows(len(jobs) == 1, "Also read the tax" in jobs[0].brief)
+
