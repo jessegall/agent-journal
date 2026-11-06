@@ -59,3 +59,12 @@ def test_allow_test_is_refused_for_a_request_already_used(requested):
     requested.story.container.get(Bus).run(UseWorkerTest(1), requested.worker, environment_id=1)
     requested.story.expect_refusal(ALLOW, "already used", actor=requested.story.agent)
     requested.story.expect_text("task inspect 1 --json", "ran request 1", actor=requested.story.agent)
+
+
+def test_the_main_agent_of_the_environment_allows_a_request_of_a_worker_whose_parent_is_a_main_agent_that_ended(requested):
+    story = requested.story
+    launcher = story.new_row_id("agent start s-launcher claude main --environment main")
+    story.expect_success(f"agent end {launcher}", actor=story.user)
+    story.run_listeners()
+    story.expect_text(f"agent show {requested.worker.id}", f"parent_id: {launcher}", actor=story.user)
+    story.expect_success(ALLOW, actor=story.agent)

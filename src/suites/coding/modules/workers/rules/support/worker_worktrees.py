@@ -8,15 +8,17 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 
 class WorkerWorktrees:
-    """The worktrees a main agent's workers have out, and those of them delivered."""
+    """The worktrees the workers of a main agent's environment have out, and those of them delivered: every main agent
+    of an environment counts as one."""
 
     def __init__(self, queries: Queries, worktrees: WorktreeQuery, kept: KeptRows) -> None:
         self.queries, self.worktrees = queries, worktrees
         self.kept = kept
 
     def main_worktrees(self, main_id: int) -> list[Worktree]:
-        workers = self.kept.read("agents", lambda: tuple(self.queries.query(Agent).filter(parent_id=main_id, role=AgentRole.WORKER).all_rows()),
-                                 "parent_id = ? AND role = ?", [main_id, AgentRole.WORKER], name="workers.main_workers")
+        environment_id = self.queries.query(Agent).find(main_id).environment_id
+        workers = self.kept.read("agents", lambda: tuple(self.queries.query(Agent).filter(environment_id=environment_id, role=AgentRole.WORKER).all_rows()),
+                                 "environment_id = ? AND role = ?", [environment_id, AgentRole.WORKER], name="workers.main_workers")
         if not workers:
             return []
         worker_ids = {worker.id for worker in workers}
