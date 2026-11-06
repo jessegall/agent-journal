@@ -26,4 +26,4 @@ class HookRequestsSubcommand(ReadSubcommand[tuple[HookRequest, ...]]):
     def write_output(self, value: object, output: Output) -> None:
         if is_tuple(value):
             rows = [row for row in value if isinstance(row, HookRequest)]
-            output.write("\n".join(f"{row.number}  {row.received_at}  {row.program}" for row in rows) or "nothing recorded yet", {"rows": [row.json() for row in rows]})
+            output.write("\n".join(f"{row.number}  {row.received_at}  {row.sender}  {row.queued_ms:.0f} ms  {row.duration_ms:.0f} ms  {row.event}" for row in rows) or "nothing recorded yet", {"rows": [row.json() for row in rows]})

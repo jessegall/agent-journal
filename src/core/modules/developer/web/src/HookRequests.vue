@@ -1,10 +1,12 @@
 <script setup>
 import {computed, ref} from "vue";
 import {WindowRoom, highlight, usePoll, useReadLine} from "@journal/window-kit";
+import RequestQueueInspector from "./RequestQueueInspector.vue";
 
 const {value: requests, failure, load} = useReadLine(() => "developer hook-requests");
 const rows = computed(() => requests.value?.rows ?? []);
 const openedNumber = ref(0);
+const queueOpen = ref(false);
 const opened = computed(() => rows.value.find((row) => row.id === openedNumber.value));
 const shown = (value) => highlight(JSON.stringify(value, null, 2), "json").join("\n");
 const isRefused = (row) => row.outcome === "refused";
@@ -18,11 +20,14 @@ usePoll(load, () => true);
     <WindowRoom padding="0">
         <div class="requests" data-hook-requests>
             <section class="list" aria-label="Recorded requests">
+                <button type="button" class="queue-button" data-request-queue-open @click="queueOpen = true">Request queue</button>
                 <div class="columns">
                     <span data-hook-column>Event</span>
                     <span data-hook-column>Tool</span>
                     <span class="parts" data-hook-column>Parts</span>
                     <span data-hook-column>Time</span>
+                    <span data-hook-column>Sender</span>
+                    <span data-hook-column>Queued</span>
                     <span data-hook-column>Duration</span>
                 </div>
                 <div class="list-scroll" data-hook-request-list>
@@ -41,6 +46,8 @@ usePoll(load, () => true);
                             <span class="tool">{{ row.tool || '—' }}</span>
                             <span class="parts" data-hook-parts>{{ row.part_count || '' }}</span>
                             <time :datetime="row.received_at">{{ row.time }}</time>
+                            <span>{{ row.sender }}</span>
+                            <span class="queued">{{ Math.round(row.queued_ms) }} ms</span>
                             <span class="duration">{{ durationOf(row) }}</span>
                         </button>
                     </template>
@@ -52,7 +59,7 @@ usePoll(load, () => true);
                     <div data-hook-request-detail>
                         <div class="detail-head">
                             <h2>{{ opened.event }}</h2>
-                            <span :class="{slow: isSlow(opened), refused: isRefused(opened)}">{{ opened.outcome }} · {{ durationOf(opened) }}</span>
+                            <span :class="{slow: isSlow(opened), refused: isRefused(opened)}">{{ opened.sender }} · queued {{ Math.round(opened.queued_ms) }} ms · {{ opened.outcome }} · {{ durationOf(opened) }}</span>
                         </div>
                         <h3 class="heading">Headers</h3>
                         <pre data-hook-request-headers v-html="shown(opened.headers)" />
@@ -64,12 +71,17 @@ usePoll(load, () => true);
                     <p class="note message">Select a request to see its headers and body.</p>
                 </template>
             </section>
+            <div v-if="queueOpen" class="queue-veil" @click.self="queueOpen = false"><RequestQueueInspector @close="queueOpen = false" /></div>
         </div>
     </WindowRoom>
 </template>
 
 <style scoped>
+.queue-button { align-self: flex-end; margin: 8px 12px; }
+.queue-veil { position: absolute; inset: 0; display: flex; justify-content: flex-end; background: #0005; z-index: 3; }
+.queue-veil > * { width: min(560px, 100%); box-shadow: 0 0 24px #0003; }
 .requests {
+    position: relative;
     display: grid;
     grid-template-columns: minmax(360px, 46%) 1px minmax(0, 1fr);
     height: 100%;
@@ -94,10 +106,10 @@ usePoll(load, () => true);
 .columns,
 .row {
     display: grid;
-    grid-template-columns: minmax(105px, 1.4fr) minmax(52px, 0.7fr) 64px 96px 72px;
+    grid-template-columns: minmax(80px, 1.4fr) minmax(40px, 0.7fr) 32px 88px minmax(72px, 1fr) 55px 60px;
     align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
+    gap: 5px;
+    padding: 10px 10px;
     font-size: 12px;
 }
 
@@ -109,12 +121,13 @@ usePoll(load, () => true);
 
 .columns > :last-child,
 .duration,
+.queued,
 .parts {
     text-align: right;
 }
 
 .parts {
-    padding-right: 28px;
+    padding-right: 4px;
     color: var(--text-3);
     font-variant-numeric: tabular-nums;
 }
@@ -160,7 +173,8 @@ usePoll(load, () => true);
 }
 
 time,
-.duration {
+.duration,
+.queued {
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
 }
@@ -231,7 +245,11 @@ pre {
 }
 
 @media (max-width: 760px) {
-    .requests {
+    .queue-button { align-self: flex-end; margin: 8px 12px; }
+.queue-veil { position: absolute; inset: 0; display: flex; justify-content: flex-end; background: #0005; z-index: 3; }
+.queue-veil > * { width: min(560px, 100%); box-shadow: 0 0 24px #0003; }
+.requests {
+    position: relative;
         grid-template-columns: minmax(0, 1fr);
         grid-template-rows: minmax(140px, 45%) 1px minmax(0, 1fr);
     }

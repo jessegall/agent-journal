@@ -79,3 +79,15 @@ func CountWait(folder string, line string, values ...ListingOptions) string {
 	return fmt.Sprintf("if ! %s --count-listing %s %s %d %d %s; then printf '125' > %s || :; fi\n",
 		quoted(options.Program), quoted(folder), quoted(options.Shell), options.LimitSeconds, options.KillGraceMilliseconds, quoted(line), counted)
 }
+
+// ProgressCount runs a listing after a short delay without holding the test run.
+func ProgressCount(folder string, line string, position int, pattern string, values ...ListingOptions) string {
+	if line == "" {
+		return ""
+	}
+	options := listingOptions(values)
+	progress := filepath.Join(folder, "progress-count")
+	return fmt.Sprintf("( sleep 3; if [ ! -e %s ] && [ ! -e %s ] && [ ! -e %s ] && [ ! -e %s ] && ! %s --has-progress-count %s %s && [ ! -e %s ] && [ ! -e %s ] && [ ! -e %s ] && mkdir %s; then %s --count-listing %s %s %d %d %s; fi ) </dev/null >/dev/null 2>&1 &\n",
+		quoted(filepath.Join(folder, "count-known")), quoted(filepath.Join(folder, "counted")), quoted(filepath.Join(folder, "end")), quoted(filepath.Join(folder, fmt.Sprintf("%d.status", position))), quoted(options.Program), quoted(filepath.Join(folder, fmt.Sprintf("%d.out", position))), quoted(pattern), quoted(filepath.Join(folder, "count-known")), quoted(filepath.Join(folder, "end")), quoted(filepath.Join(folder, fmt.Sprintf("%d.status", position))), quoted(progress),
+		quoted(options.Program), quoted(progress), quoted(options.Shell), options.LimitSeconds, options.KillGraceMilliseconds, quoted(line))
+}

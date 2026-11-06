@@ -16,3 +16,4 @@ class ReaderAdvance:
     steps_passed: int = 0
     steps_failed: int = 0
     test_count: int = 0
+    progress_count_seen: bool = False

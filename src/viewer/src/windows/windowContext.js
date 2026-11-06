@@ -32,11 +32,11 @@ export function windowContext({window, environment, agent, visible, permissions,
             if (reading === 0) afterSkeletonMinimum(startedAt, () => (answered.value = true));
         }, QUIET_AFTER_READS_MS);
     };
-    const read = (line) => {
+    const read = (line, {unbatched = false} = {}) => {
         const last = recent.get(line);
         if (last && performance.now() - last.at < READ_COALESCE_MS) return last.answer;
         reading += 1;
-        const answer = lineRead(window, line, environment, requests.signal).finally(() => {
+        const answer = lineRead(window, line, environment, requests.signal, unbatched).finally(() => {
             reading -= 1;
             settle();
         });
@@ -96,9 +96,9 @@ const UNREACHABLE = "The journal did not answer, so this may or may not have gon
 
 // a request cancelled by its signal answers CANCELLED, whether it was cut off or its answer came after, so a window that has
 // gone never draws the answer
-export async function lineResult(window, line, environment, signal = undefined) {
+export async function lineResult(window, line, environment, signal = undefined, unbatched = false) {
     try {
-        const answer = await lineBatch.add({window, line: Array.isArray(line) ? line : lineWords(line), environment}, signal);
+        const answer = await lineBatch.add({window, line: Array.isArray(line) ? line : lineWords(line), environment}, signal, unbatched);
         if (signal?.aborted) return CANCELLED;
         return answer.code === 0 ? {ok: true, value: answer.value} : {ok: false, failure: FAILURES[answer.code] || "fault", error: refusalWords(answer.error)};
     } catch (error) {
@@ -108,11 +108,11 @@ export async function lineResult(window, line, environment, signal = undefined) 
 }
 
 // a read the server could not answer waits for the server to come back and asks again, so a window never draws the restart as a failure
-async function lineRead(window, line, environment, signal) {
-    const answer = await lineResult(window, line, environment, signal);
+async function lineRead(window, line, environment, signal, unbatched = false) {
+    const answer = await lineResult(window, line, environment, signal, unbatched);
     if (answer.failure !== "unreachable" || !covered()) return answer;
     await serverBack();
-    return signal.aborted ? CANCELLED : lineRead(window, line, environment, signal);
+    return signal.aborted ? CANCELLED : lineRead(window, line, environment, signal, unbatched);
 }
 
 // a file the person attached, sent to the journal to wait for the message that names it: answers {ok, value: its pending name}

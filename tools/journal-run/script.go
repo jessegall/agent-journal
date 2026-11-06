@@ -13,10 +13,17 @@ __journal_status() {
 }
 `
 
+type ProgressListing struct {
+	Line     string
+	Position int
+	Pattern  string
+	Options  ListingOptions
+}
+
 // Script is the shell script that runs the parts of a line one after another, each part's output in its own file and
 // its status written when it ends. The runner only follows the files, so a run that moves to the background goes on
 // without it. The output files are opened for appending, so the runner can cut them while they grow.
-func Script(parts []Part, folder string) string {
+func Script(parts []Part, folder string, listings ...ProgressListing) string {
 	var script strings.Builder
 	script.WriteString(scriptSetup)
 	for index, part := range parts {
@@ -27,6 +34,11 @@ func Script(parts []Part, folder string) string {
 			indent = "  "
 		}
 		fmt.Fprintf(&script, "%s: > %s\n", indent, partFile("started"))
+		for _, listing := range listings {
+			if listing.Position == part.Position {
+				script.WriteString(ProgressCount(folder, listing.Line, part.Position, listing.Pattern, listing.Options))
+			}
+		}
 		fmt.Fprintf(&script, "%s__journal_status\n", indent)
 		writeRun(&script, part, indent, grouped("{", part.Text, "}"), fmt.Sprintf(">> %s 2>&1", partFile(outputSuffix)))
 		fmt.Fprintf(&script, "%sprintf '%%s' \"$__journal_code\" > %s\n", indent, partFile("status"))

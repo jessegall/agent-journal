@@ -12,6 +12,7 @@ from core.modules.processes.commands.end_process_part.end_process_part import En
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.reader_run import ReaderRun
 from core.modules.processes.support.reader_step import ReaderStep
+from core.modules.processes.ticks.output_reading import OutputReading
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
@@ -197,3 +198,24 @@ def test_a_tick_reads_new_output_with_no_open_transactions(new_story, monkeypatc
     tick(story)
     story.expect_rows(open_transactions == [False])
 
+
+
+@pytest.mark.parametrize("output,listing,status,count,progress", [
+    (".F", "tests/cart.py: 4\n", 0, 4, 50),
+    (".", "listing failed\n", 1, 0, 0),
+    ("collected 4 items\n.", "", -1, 4, 25),
+])
+def test_a_test_run_uses_its_own_count_or_a_background_listing(new_story, output, listing, status, count, progress):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = start_process(story, "pytest -n 2 -q tests/cart.py", category=CommandCategory.TEST_RUN)
+    append(story, process.id, output)
+    OutputReading().read(story.container)
+    folder = story.container.get(OutputFolder)
+    if status >= 0:
+        folder.write_progress_count(process.id, listing, status)
+        OutputReading().read(story.container)
+    else:
+        story.expect_rows(folder.has_progress_count(process.id))
+    story.expect_text(f"output show {process.id}", f"test_count: {count}", f"progress: {progress}", actor=story.agent)
+    if status > 0:
+        story.expect_text(f"process show {process.id}", "state: running", actor=story.agent)

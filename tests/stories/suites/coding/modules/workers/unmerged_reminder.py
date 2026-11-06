@@ -32,6 +32,7 @@ def test_a_worker_whose_delivered_work_is_merged_is_not_named_again(new_story):
     story.tick(MAIN_SESSION)
     story.expect_rows(story.run(main_lines).output_text.count(reminder) == 1)
     repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     story.advance(REMINDER_INTERVAL)
     story.tick(MAIN_SESSION)

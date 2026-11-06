@@ -24,6 +24,8 @@ class HookRequest(ViewModel):
     headers_json: str
     body_json: str
     duration_ms: float
+    queued_ms: float
+    sender: str
     outcome: HookAnswer
     event: str
     tool: str
