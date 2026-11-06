@@ -192,9 +192,19 @@ def test_shipped_instructions_teach_source_lifetime_and_context(linked_trail):
     path = linked_trail.story.home.project_folder / ".agents" / "skills" / "journal-messages" / "SKILL.md"
     text = FileAccess.shared().read(path)
     feature("work-from" in text and "clear-work-source" in text and "work-source" in text, "published message instructions omit persistent source commands")
+    for skill in ("journal-tasks", "journal-plans", "journal-helpers", "journal-workers"):
+        published = FileAccess.shared().read(path.parent.parent / skill / "SKILL.md")
+        feature("context" in published, f"published {skill} omits context instructions")
+    for command in ("message work-from", "message work-source", "message clear-work-source", "link remove", "task context", "plan context"):
+        linked_trail.command(f"{command} --help")
     linked_trail.requested_command("message work-from 2")
+    before = linked_trail.source_rows(linked_trail.story.agent.id)
     linked_trail.context()
+    linked_trail.context("plan")
+    linked_trail.requested_command("message work-source")
+    feature(before == linked_trail.source_rows(linked_trail.story.agent.id), "instruction examples replaced the source")
     linked_trail.requested_command("message clear-work-source")
+    linked_trail.requested_command("message work-source")
 
 
 @pending(6893)

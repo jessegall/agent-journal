@@ -50,6 +50,15 @@ never starts is retired after the idle time.
 
 ## As the worker
 
+- Before changing project files, read `journal task overview <current task>`. A fresh dispatch, queued task,
+  rework, resumed launch or compaction requires the current task's overview, not a previous task's read.
+  Use `journal task context <n>` for more conversation and follow the returned page, text-offset and ancestry
+  commands. Preserve any `--newest` flag. Context reads never replace your source selection.
+- Your source is the authorized snapshot for the current task/job, not the parent's later selection. The
+  overview includes plan comments and references; quoted bodies and captions remain source material.
+  Read an assigned attachment with the returned `--message M --attachment "name"` context command.
+  This opens only a file on an authorized context message, without general access to the parent's chat.
+
 - `journal worker report "<what the task needs>"` sends your main agent a message number to read while you keep
   working. Use it for a report or a request that does not require stopping.
 

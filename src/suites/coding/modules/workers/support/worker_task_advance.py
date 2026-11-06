@@ -21,7 +21,7 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_NEXT_TASK
 class WorkerTaskAdvance:
     """Starts a worker's next task on its worktree and tells the worker which one it is and how to read it."""
 
-    def __init__(self, bus: Bus, repository: Repository, blocks: TaskBriefBlocks) -> None:
+    def __init__(self, bus: Bus, repository: Repository, nudger: Nudger, blocks: TaskBriefBlocks) -> None:
         self.bus, self.repository, self.nudger = bus, repository, nudger
         self.blocks = blocks
 
