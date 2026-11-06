@@ -111,8 +111,10 @@ readCommand();
         <template v-if="open">
             <div class="agent-more" data-agent-more @click.stop>
                 <template v-if="usage">
-                    <span class="agent-usage" data-agent-card-usage>{{ usage }}</span>
-                    <template v-if="isRunningHelper"><Btn variant="ghost" small data-helper-stop @click="stopHelper">Stop</Btn></template>
+                    <div class="agent-usage-band">
+                        <span class="agent-usage" data-agent-card-usage>{{ usage }}</span>
+                        <template v-if="isRunningHelper"><Btn variant="ghost" small data-helper-stop @click="stopHelper">Stop</Btn></template>
+                    </div>
                 </template>
                 <template v-if="showsCommand"><AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" /></template>
                 <template v-if="endedReason"><p class="agent-ended-reason" data-agent-ended-reason>{{ endedReason }}</p></template>
@@ -446,9 +448,10 @@ readCommand();
 .agent-card.open .agent-dot { display: none; }
 .agent-card.open .agent-line { padding: 0 14px 7px 41px; border-bottom: 1px solid var(--border-inner); background: var(--side); }
 .agent-card.open .agent-work-start { margin-top: 0; padding: 7px 14px; background: none; }
-.agent-card.open .agent-command { max-width: 100%; overflow: hidden; padding: 6px 40% 6px 14px; border-bottom: 1px solid var(--border-inner); }
+.agent-card.open .agent-command { width: 100%; max-width: 100%; overflow: hidden; padding: 6px 40% 6px 14px; border-bottom: 1px solid var(--border-inner); }
 .agent-card.open .agent-more { order: 2; gap: 0; min-width: 0; max-width: 100%; padding: 0; }
-.agent-usage { display: block; padding: 6px 14px; border-bottom: 1px solid var(--border-inner); }
+.agent-usage-band { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 14px; border-bottom: 1px solid var(--border-inner); }
+.agent-usage { display: block; min-width: 0; }
 .agent-card.open .agent-tab-body { gap: 0; margin: 0; }
 .agent-card.open .agent-tab-body[data-agent-tab-body="tasks"] { padding: 0; }
 .agent-card.open .agent-tab-body :deep(.row-list-row) { padding: 8px 14px; border-bottom: 1px solid var(--border-inner); }

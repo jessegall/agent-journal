@@ -5669,7 +5669,7 @@ const Tg = ["title"], Bg = {
             (O = s.value) != null && O.folds ? (c(), z(ue, {
               key: 0,
               small: "",
-              bordered: "",
+              class: "dock-fold",
               "data-dock-fold": "",
               "aria-expanded": !e.folded,
               onClick: A[0] || (A[0] = (L) => n("fold"))
@@ -5746,7 +5746,7 @@ const Tg = ["title"], Bg = {
       }, 8, ["label", "type", "folded", "body", "data-figure-closing"]);
     };
   }
-}, Xs = /* @__PURE__ */ K(Pg, [["__scopeId", "data-v-8ac4a6d0"]]), jg = ["title", "aria-label"], qg = { class: "run-chip-in" }, Fg = {
+}, Xs = /* @__PURE__ */ K(Pg, [["__scopeId", "data-v-071afe04"]]), jg = ["title", "aria-label"], qg = { class: "run-chip-in" }, Fg = {
   key: 0,
   class: "run-chip-ring"
 }, Wg = { class: "run-chip-name" }, Hg = { class: "run-chip-bar" }, Ug = "processes.output", zg = 5e3, Vg = {
@@ -10316,7 +10316,7 @@ const Lk = /* @__PURE__ */ Bk(Rk), Nk = ["width", "height", "viewBox"], Dk = ["w
       ce(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, px = /* @__PURE__ */ K(qk, [["__scopeId", "data-v-47e67f04"]]), gx = Ll(() => import("./VoiceFigure-BdUPs7r-.js").then((e) => e.V)), vx = "1.1.0", yx = "3.5";
+}, px = /* @__PURE__ */ K(qk, [["__scopeId", "data-v-47e67f04"]]), gx = Ll(() => import("./VoiceFigure-DH11xkNV.js").then((e) => e.V)), vx = "1.1.0", yx = "3.5";
 export {
   dy as $,
   xe as A,

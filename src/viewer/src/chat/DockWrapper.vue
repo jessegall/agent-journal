@@ -137,7 +137,7 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
                 <template v-if="item.kept"><span class="dock-kept">Kept</span></template>
             </span>
             <template v-if="declaration?.folds">
-                <Btn small bordered data-dock-fold :aria-expanded="!folded" @click="emit('fold')">
+                <Btn small class="dock-fold" data-dock-fold :aria-expanded="!folded" @click="emit('fold')">
                     {{ declaration.folds }}
                     <FoldSign :open="!folded" />
                 </Btn>
@@ -239,7 +239,6 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
     gap: 10px;
     min-width: 0;
     min-height: 24px;
-    margin-right: auto;
     padding-right: 6px;
     color: var(--text-3);
     font-size: 12px;
@@ -286,6 +285,14 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
     justify-content: flex-end;
     gap: 6px;
     max-width: 100%;
+    margin-left: auto;
+}
+
+.dock-fold.btn,
+.dock-fold.btn:hover {
+    padding: 0;
+    border: 0;
+    background: none;
 }
 .dock-acts :deep(.button-slot) {
     display: contents;

@@ -61,6 +61,8 @@ test("each plan state has its pill and Phases before Open and Close", async () =
     for (const badge of ["Planned", "Started", "Paused", "Done", "Cancelled"]) {
         const host = await draw({badge, folds: "Phases"});
         expect(host.querySelector(".chat-dock-foot .dock-badge").textContent).toBe(badge);
+        expect(host.querySelector("[data-dock-fold]").classList.contains("bordered")).toBe(false);
+        expect(host.querySelector("[data-dock-acts], .dock-acts").previousElementSibling).toBe(host.querySelector("[data-dock-fold]"));
         expect(host.querySelector("[data-dock-fold]").textContent).toContain("Phases");
         expect(host.querySelector("[data-dock-fold]").getAttribute("aria-expanded")).toBe("false");
     }
