@@ -1,6 +1,6 @@
 <script setup>
-import {computed, ref} from "vue";
-import {READ_RATES, DocumentRead, Dialog, Btn, Icon, Skeleton, TextInput, runChanged, usePoll, useReadLine, useRows, useWindow} from "@journal/window-kit";
+import {computed, ref, watch} from "vue";
+import {READ_RATES, Dashboard, Dialog, Btn, Icon, Skeleton, TextInput, runChanged, usePoll, useWindow} from "@journal/window-kit";
 import {fileAddress} from "./fileAddress.js";
 import PluginCard from "./PluginCard.vue";
 import PluginGuide from "./PluginGuide.vue";
@@ -14,17 +14,15 @@ import PluginUpgradeDialog from "./PluginUpgradeDialog.vue";
 // the plugins of this project as version 4's page drew them: a bar to install one from a source, a line on what installing means, a card for each plugin with its
 // switch, settings and removing it, with or without its data, and a card to ask the agent to make one; the services read again while the page is open
 const context = useWindow();
-const {rows, failure, loaded, load} = useRows("plugin list", ["plugin.*"]);
-const {rows: boards} = useRows("plugin dashboards", ["plugin.*"]);
+const {rows, failure, loaded, load} = context.props.plugins;
+const {rows: boards} = context.props.dashboards;
 const boardOf = (row) => boards.value.find((board) => board.plugin === row.name);
-const {rows: descriptions} = useRows("plugin descriptions", ["plugin.*"]);
+const {rows: descriptions} = context.props.descriptions;
 const descriptionOf = (row) => descriptions.value.find((each) => each.plugin === row.name)?.description ?? "";
-const {rows: services, load: loadServices} = useRows("plugin services", ["plugin.*"]);
+const {rows: services} = context.props.services;
 const servicesOf = (row) => services.value.filter((service) => service.plugin === row.name);
-usePoll(loadServices, () => true, READ_RATES.services);
-const {rows: events, load: loadEvents} = useRows("plugin events", ["plugin.*"]);
+const {rows: events} = context.props.events;
 const eventsOf = (row) => events.value.filter((event) => event.plugin === row.name);
-usePoll(loadEvents, () => true, READ_RATES.services);
 const refusal = ref("");
 const source = ref("");
 const making = ref(false);
@@ -52,9 +50,11 @@ const guide = ref(false);
 // an install shows everything the plugin would run first, and goes ahead only from there
 async function showPreview() {
     if (!source.value.trim()) return;
-    const answer = await context.read(["plugin", "preview", source.value.trim()]);
-    refusal.value = answer.ok ? "" : answer.error;
-    preview.value = answer.ok ? answer.value : null;
+    const key = `preview.${source.value.trim()}`;
+    await context.reload(key);
+    const prop = context.props[key];
+    refusal.value = prop.failure.value;
+    preview.value = prop.failure.value ? null : prop.data.value;
 }
 
 async function install() {
@@ -66,8 +66,10 @@ async function install() {
 const latest = ref({});
 
 async function checkLatest(row) {
-    const answer = await context.read(["plugin", "latest", row.name]);
-    latest.value = {...latest.value, [row.name]: answer.ok ? answer.value : {line: answer.error, is_newer: false}};
+    const key = `latest.${row.name}`;
+    await context.reload(key);
+    const prop = context.props[key];
+    latest.value = {...latest.value, [row.name]: prop.failure.value ? {line: prop.failure.value, is_newer: false} : prop.data.value};
 }
 
 const upgrade = ref(null);
@@ -92,8 +94,16 @@ const board = ref(null);
 
 function showBoard(row) {
     const {title, events} = boardOf(row);
-    board.value = {title, events, line: ["plugin", "dashboard", row.name]};
+    board.value = {title, events, key: `dashboard.${row.name}`};
 }
+
+watch(board, (shown, previous, onCleanup) => {
+    if (!shown) return;
+    context.reload(shown.key);
+    const stop = context.follow(shown.events, () => context.reload(shown.key));
+    if (stop) onCleanup(stop);
+});
+usePoll(() => context.reload(board.value.key), () => context.visible.value && board.value !== null, READ_RATES.documentWithNoEvents);
 
 async function askTheAgent() {
     const words = [wish.value.trim(), repository.value.trim() && `Build it in ${repository.value.trim()}.`].filter(Boolean).join(" ");
@@ -114,17 +124,27 @@ async function remove(purge) {
 }
 
 async function showSettings(row) {
-    const answer = await context.read(["plugin", "settings", row.name]);
-    refusal.value = answer.ok ? "" : answer.error;
-    settingsOf.value = answer.ok ? row.name : "";
-    settings.value = answer.ok ? answer.value.settings : [];
+    const key = `settings.${row.name}`;
+    await context.reload(key);
+    const prop = context.props[key];
+    refusal.value = prop.failure.value;
+    settingsOf.value = prop.failure.value ? "" : row.name;
+    settings.value = prop.failure.value ? [] : prop.data.value.settings;
 }
 
 async function configure(setting, value) {
     if (await run(["plugin", "configure", settingsOf.value, setting.key, value])) await showSettings(openedPlugin.value);
 }
 
-const {value: record, failure: recordFailure, load: showRecord} = useReadLine((row) => `plugin record ${row.name}`);
+const record = ref(null);
+const recordFailure = ref("");
+async function showRecord(row) {
+    const key = `record.${row.name}`;
+    await context.reload(key);
+    const prop = context.props[key];
+    recordFailure.value = prop.failure.value;
+    record.value = prop.failure.value ? null : prop.data.value;
+}
 </script>
 
 <template>
@@ -202,7 +222,8 @@ const {value: record, failure: recordFailure, load: showRecord} = useReadLine((r
         </template>
         <template v-if="board">
             <Dialog :title="board.title" @close="board = null">
-                <DocumentRead :line="board.line" :events="board.events" @file="openFile" />
+                <template v-if="context.props[board.key].failure.value"><p class="plugin-fault">{{ context.props[board.key].failure.value }}</p></template>
+                <template v-else-if="context.props[board.key].data.value"><Dashboard :document="context.props[board.key].data.value" @file="openFile" /></template>
             </Dialog>
         </template>
     </section>
