@@ -8,7 +8,7 @@ from core.modules.messages.models.message import Message
 
 @dataclass(frozen=True)
 class CommentText(Command[Message]):
-    """Writes a chat message linked to a model row, with an optional selection for a document or report."""
+    """Writes a comment linked to a model row, with an optional selection for a document or report."""
 
     text_model: type[Model]
     row_id: int
@@ -16,3 +16,4 @@ class CommentText(Command[Message]):
     quote: str = ""
     position: int | None = None
     selection_type: CommentSelectionType = CommentSelectionType.TEXT
+    is_chat_visible: bool = True
