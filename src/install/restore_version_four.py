@@ -10,7 +10,7 @@ from install.code_replacement import CodeReplacement
 from install.hook_switch import HookSwitch
 from install.upgrade_outcome import UpgradeOutcome
 from install.version_four_backup import DATABASE, VersionFourBackup
-from install.version_four_files import CODE_FOLDER, SHELL_ENTRY, VersionFourFiles
+from install.version_four_files import CODE_FOLDER, READERS_FOLDER, SHELL_ENTRY, VersionFourFiles
 
 INTEGRITY_PASS = "ok"
 SIDE_FILES = ("-wal", "-shm")
@@ -52,6 +52,9 @@ class RestoreVersionFour:
         retired = VersionFourFiles(self.home.folder).retired / CODE_FOLDER
         if retired.is_dir() and not (self.home.folder / CODE_FOLDER).exists():
             shutil.copytree(retired, self.home.folder / CODE_FOLDER)
+        readers = VersionFourFiles(self.home.folder).retired / READERS_FOLDER
+        if readers.is_dir() and not (self.home.folder / READERS_FOLDER).exists():
+            shutil.copytree(readers, self.home.folder / READERS_FOLDER)
         entry = VersionFourFiles(self.home.folder).retired / SHELL_ENTRY
         if entry.is_file():
             shutil.copy2(entry, self.home.folder / SHELL_ENTRY)
