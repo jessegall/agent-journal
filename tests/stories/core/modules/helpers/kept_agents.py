@@ -4,6 +4,8 @@ from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from core.base.shell_sandbox import ShellSandbox
 from core.testing.story_shell_sandbox import StoryShellSandbox
+from core.modules.helpers.support.helper_programs import HelperPrograms
+from core.testing.story_helper_programs import StoryHelperPrograms
 import pytest
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
@@ -39,6 +41,8 @@ def helper_form_server(new_story, monkeypatch):
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
     monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     launcher = FakeLauncher(story.home.socket("launcher"))
     try:
         with server_story(story, listener_thread_started=False) as server:
