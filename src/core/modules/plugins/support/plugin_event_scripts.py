@@ -49,7 +49,9 @@ class PluginEventScripts:
             return cast(Sequence[PluginEventAnswer], turn.answers)
         if runs.closed:
             self.errors.noted(f"{form.value} scripts of {change.event} were skipped: {runs.closed_reason}")
-            self.running.note_skip(change.event, runs.closed_reason)
+            key = self.registry.event_key(change.event)
+            for subscription in subscriptions:
+                self.running.skipped(subscription.plugin, key, form, runs.closed_reason, context.timestamp)
             return ()
         raise runs.rollback(PluginEventWork(self.runner, self.errors, self.caller, form, self.registry.event_key(change.event), subscriptions, PluginPayload.of(change, form, self.log, None),
                                             PluginPayload.environment_id(change), self.agent_id(context), turn))

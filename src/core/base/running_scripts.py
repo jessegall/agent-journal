@@ -13,6 +13,7 @@ from core.base.file_access import FileAccess
 from core.base.leftover_process import LeftoverProcess
 from core.base.model.event_form import EventForm
 from core.base.running_script import RunningScript
+from core.base.script_skip import ScriptSkip
 from core.base.script_stop import ScriptStop
 from core.base.timestamp import Timestamp
 
@@ -34,7 +35,7 @@ class RunningScripts:
         self.services: dict[int, str] = {}
         self.stop_reasons: dict[int, ScriptStop] = {}
         self.sent_lines: dict[str, deque[str]] = {}
-        self.skips: dict[str, str] = {}
+        self.skips: dict[tuple[str, str, EventForm], ScriptSkip] = {}
 
     @classmethod
     @cache
@@ -77,13 +78,13 @@ class RunningScripts:
         with self.lock:
             return tuple(self.sent_lines.get(plugin, ()))
 
-    def note_skip(self, log_name: str, reason: str) -> None:
+    def skipped(self, plugin: str, key: str, form: EventForm, reason: str, at: Timestamp) -> None:
         with self.lock:
-            self.skips[log_name] = reason
+            self.skips[(plugin, key, form)] = ScriptSkip(reason, at)
 
-    def newest_skip(self, log_name: str) -> str:
+    def newest_skip(self, plugin: str, key: str, form: EventForm) -> ScriptSkip | None:
         with self.lock:
-            return self.skips.get(log_name, "")
+            return self.skips.get((plugin, key, form))
 
     def plugin_names(self) -> frozenset[str]:
         with self.lock:

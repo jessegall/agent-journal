@@ -1,4 +1,5 @@
 import os
+from dataclasses import replace
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
@@ -62,7 +63,9 @@ class PluginEventRows:
             state = PluginEventState.LISTENS
         is_held_by_hook = form is EventForm.GUARD and entry is not None and entry.module == MODULE_NAME and entry.event in self.registry.plugin_moments
         limit_ms = int(self.setting_values.number(CEILING_SETTING)) if is_held_by_hook else 0
-        return self.row(manifest, listener.event, form.value, script, state, entry.key if state is PluginEventState.RENAMED and entry else "", started_at, limit_ms)
+        skip = self.scripts.newest_skip(manifest.name, listener.event, form)
+        row = self.row(manifest, listener.event, form.value, script, state, entry.key if state is PluginEventState.RENAMED and entry else "", started_at, limit_ms)
+        return replace(row, last_skipped_at=skip.skipped_at.text, skip_reason=skip.reason) if skip else row
 
     @staticmethod
     def row(manifest: PluginManifest, key: str, form: str, script: str, state: PluginEventState, current_key: str = "", started_at: str = "", limit_ms: int = 0) -> PluginEventRow:

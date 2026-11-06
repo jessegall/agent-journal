@@ -6,9 +6,9 @@ from core.base.command.outside_turn import OutsideTurn
 from core.base.command.outside_work import OutsideWork
 
 OUTSIDE_LIMIT_ROUNDS = 20
-RUNS_ONCE_REASON = "runs only once"
-NO_REQUEST_REASON = "only a request in a server runs them"
-ROUND_LIMIT_REASON = f"it reached {OUTSIDE_LIMIT_ROUNDS} rounds"
+RUNS_ONCE_REASON = "this command runs only once"
+NO_REQUEST_REASON = "this ran on a server thread"
+ROUND_LIMIT_REASON = f"this command already asked {OUTSIDE_LIMIT_ROUNDS} times"
 
 
 class OutsideRuns:

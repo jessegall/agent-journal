@@ -22,7 +22,8 @@ const WRONG_WORDS = {
 };
 const scriptText = (row) => (row.limit_ms ? `${row.script}. Runs under the journal limit of ${row.limit_ms} ms.` : row.script);
 const eventLabel = (row) => (row.started_at ? "Running" : WRONG_WORDS[row.state]?.[0] ?? FORM_WORDS[row.form] ?? "");
-const minutesRunning = (row) => Math.max(1, Math.round((Date.now() - Date.parse(row.started_at)) / 60000));
+const minutesSince = (moment) => Math.max(1, Math.round((Date.now() - Date.parse(moment)) / 60000));
+const minutesRunning = (row) => minutesSince(row.started_at);
 const eventText = (row) => (row.started_at ? `for ${minutesRunning(row)} minutes. Turn the plugin off to stop it.` : WRONG_WORDS[row.state]?.[1](row) ?? scriptText(row));
 
 function pick(event) {
@@ -73,6 +74,9 @@ function pick(event) {
                         <span class="run-state">{{ eventLabel(row) }}</span>
                         <span class="run-name">{{ row.key }}</span>
                         <span class="run-state">{{ eventText(row) }}</span>
+                    </span>
+                    <span v-if="row.skip_reason" class="run" data-plugin-skip>
+                        <span class="run-state">Skipped {{ row.key }} {{ minutesSince(row.last_skipped_at) }} minutes ago: {{ row.skip_reason }}</span>
                     </span>
                 </template>
             </div>
