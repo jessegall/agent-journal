@@ -15,6 +15,8 @@ from core.modules.agents.commands.agent_environments.agent_environments_subcomma
 from core.modules.agents.commands.agent_main.agent_main_subcommand import AgentMainSubcommand
 from core.modules.agents.commands.launch_agent.launch_agent_subcommand import LaunchAgentSubcommand
 from core.modules.agents.commands.agent_programs.agent_programs_subcommand import AgentProgramsSubcommand
+from core.modules.agents.guards.retired_delete_guard import RetiredDeleteGuard
+from core.modules.agents.guards.retired_row_guard import RetiredRowGuard
 from core.modules.agents.commands.retire_agent.retire_agent_handler import RetireAgentHandler
 from core.modules.agents.commands.retire_agent.retire_agent_subcommand import RetireAgentSubcommand
 from core.modules.agents.commands.stop_agent.stop_agent_subcommand import StopAgentSubcommand
@@ -91,6 +93,7 @@ class AgentsModule(Module):
     moves = [AgentsMove]
     migrations = [AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
     nudges = [*LAUNCH_FAILURE_NUDGES, *REPORT_NUDGES]
+    guards = [RetiredRowGuard, RetiredDeleteGuard]
     handlers = [RetireAgentHandler, EndReplacedMainHandler, RecordAgentLaunchFailureHandler, RecordAgentProcessHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
     subcommands = [RetireAgentSubcommand, RunningMainAgentsSubcommand, MainSessionsSubcommand, ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand]
     bindings = {CallerResolver: AgentCallerResolver, AgentCheckouts: AgentProjectCheckouts}

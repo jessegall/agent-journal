@@ -1,5 +1,6 @@
 from core.base.actor import Actor
 from core.base.command.bus import Bus
+from core.base.refusal import Refusal
 from core.base.provider.launch_command import LaunchCommand
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.launcher_link import ANSWER_BYTES, LauncherLink
@@ -23,6 +24,8 @@ class AgentLauncher:
         self.link, self.bus, self.sessions = link, bus, sessions
 
     def hand(self, agent: Agent, environment: Environment, command: LaunchCommand) -> LaunchAnswer:
+        if agent.retired_at is not None:
+            raise Refusal(f"agent {agent.id} is retired, for good", "start a new agent")
         with self.sessions.lock(agent.session) as available:
             if not available:
                 return LaunchAnswer.RUNNING

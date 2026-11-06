@@ -47,3 +47,14 @@ def test_retire_permissions(new_story):
     story.expect_refusal(f"agent retire {story.agent.id} {REASON}", "main agent is not retired", actor=story.agent)
     story.expect_refusal(f"agent retire {helper.id} {REASON}", "answers to", actor=Actor(helper.id, ActorType.AGENT))
     story.expect_success(f"agent retire {helper.id} {REASON}", actor=story.user)
+
+
+def test_retired_row_stays_retired(new_story):
+    story = new_story(fixture=EndedHelper)
+    helper = the_helper(story)
+    story.expect_refusal(f'agent edit {helper.id} --retirement-reason "Old"', "does not change a retirement", actor=story.user)
+    story.expect_success(f"agent retire {helper.id} {REASON}", actor=story.agent)
+    story.expect_refusal(f'agent edit {helper.id} --retirement-reason ""', "does not change a retirement", actor=story.user)
+    story.expect_refusal(f"agent delete {helper.id}", "record stays", actor=story.user)
+    story.expect_refusal(f'helper send {helper.id} "One more job"', "retired, for good", actor=story.agent)
+    story.expect_rows(the_helper(story).retired_at is not None)
