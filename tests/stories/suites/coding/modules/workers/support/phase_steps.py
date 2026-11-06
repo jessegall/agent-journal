@@ -20,7 +20,9 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import G
 from tests.stories.suites.coding.modules.workers.test_queue import ended, recording_launch
 
 PLAN_DISPATCH = "worker dispatch --model sonnet --plan 1"
+OUTSIDE_DISPATCH = "worker dispatch --model sonnet 1 2"
 TEST_LINE = "pytest tests/cart.py"
+OTHER_TEST_LINE = "pytest tests/totals.py"
 TEST_ALIAS = "cart-test"
 
 
@@ -52,8 +54,18 @@ def shell_test_part(line: str) -> ShellPart:
 
 
 @dataclass(frozen=True)
-class WorkerOnPlan:
-    """A worker dispatched on the whole of plan 1, its repository and the test processes it started."""
+class RunRequest:
+    """A row of journal worker-test-request list, with the fields the stories compare."""
+
+    id: int
+    command: str
+    reason: str
+    state: str
+
+
+@dataclass(frozen=True)
+class StoryWorker:
+    """A worker dispatched in a story, its repository and the test processes it started."""
 
     story: Story
     repository: GitRepository
@@ -62,8 +74,11 @@ class WorkerOnPlan:
     started: list[int]
     lines_before_work: int
 
+    def run_line(self, line: str, *parts: ShellPart) -> HookReply:
+        return self.story.hook(self.session, HookSamples.shell(line, *parts))
+
     def run_test(self, line: str = TEST_LINE) -> HookReply:
-        return self.story.hook(self.session, HookSamples.shell(line, shell_test_part(line)))
+        return self.run_line(line, *(shell_test_part(text) for text in line.split(" && ")))
 
     def save_test_alias(self, line: str = TEST_LINE) -> None:
         self.story.expect_success(f'alias add {TEST_ALIAS} "{line}" --category "test run"', actor=self.story.agent)
@@ -88,18 +103,39 @@ class WorkerOnPlan:
         ended(self.story, process_id, code)
 
     def main_agent_lines(self) -> tuple[str, ...]:
-        return lines_of_main_agent(self.story)[self.lines_before_work:]
+        return lines_of_agent(self.story, self.story.agent)[self.lines_before_work:]
+
+    def worker_lines(self) -> tuple[str, ...]:
+        return lines_of_agent(self.story, self.worker)
+
+    def run_requests(self) -> tuple[RunRequest, ...]:
+        outcome = self.story.run("worker-test-request list --json", actor=self.story.agent)
+        assert outcome.code == 0, outcome.output_text
+        rows = sorted(json.loads(outcome.output_text)["rows"], key=lambda row: row["id"])
+        return tuple(RunRequest(row["id"], row["command"], row["reason"], row["state"]) for row in rows)
 
 
-def lines_of_main_agent(story: Story) -> tuple[str, ...]:
+def lines_of_agent(story: Story, agent: Actor) -> tuple[str, ...]:
     story.run_listeners()
-    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows()
+    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=agent.id).all_rows()
     return tuple(line.text for line in lines)
 
 
-def worker_on_plan(new_story, monkeypatch) -> WorkerOnPlan:
-    story = install_runner(planned_story(new_story))
+def dispatched_story_worker(story: Story, dispatch: str, monkeypatch) -> StoryWorker:
+    install_runner(story)
     started = recording_launch(monkeypatch)
-    worker = dispatched_worker(story, PLAN_DISPATCH)
+    worker = dispatched_worker(story, dispatch)
     repository = GitRepository(repository_folder(story))
-    return WorkerOnPlan(story, repository, worker, worker_session(story, worker), started, len(lines_of_main_agent(story)))
+    return StoryWorker(story, repository, worker, worker_session(story, worker), started, len(lines_of_agent(story, story.agent)))
+
+
+def worker_on_plan(new_story, monkeypatch) -> StoryWorker:
+    return dispatched_story_worker(planned_story(new_story), PLAN_DISPATCH, monkeypatch)
+
+
+def worker_outside_plan(new_story, monkeypatch) -> StoryWorker:
+    """A worker holding task 1 with task 2 queued, neither of them in a plan."""
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    story.run('task make "Tax" --brief "The tax"', actor=story.agent)
+    return dispatched_story_worker(story, OUTSIDE_DISPATCH, monkeypatch)
