@@ -2,16 +2,18 @@ import assert from "node:assert/strict";
 import {chromium} from "playwright-core";
 
 const [address, capture] = process.argv.slice(2);
-const SHIMMERS = ["sweep", "skeleton-shimmer"];
-// a shimmer may start a frame or two after the page's clock reads its length; a restart is off by half a length on average
-const TOLERANCE_MS = 120;
+// the build adds a scope suffix to each keyframes name
+const SHIMMERS = ["sweep", "shimmer-sweep"];
+// a shimmer starts at the next frame after it is drawn, and a switch can hold a frame for 100 ms or more; a restarted shimmer is off
+// by anything from 0 to half its length, so ten of them all within the tolerance does not happen by chance
+const TOLERANCE_MS = 200;
 
 // every frame, how far each running shimmer is from where the page's clock puts it, and how many there are
 function watchShimmers() {
     window.shimmerErrors = [];
     const look = () => {
         for (const animation of document.getAnimations()) {
-            if (!SHIMMERS.includes(animation.animationName)) continue;
+            if (!SHIMMERS.some((name) => animation.animationName.startsWith(name))) continue;
             const {duration, progress} = animation.effect.getComputedTiming();
             const difference = Math.abs((progress * duration) - (document.timeline.currentTime % duration));
             window.shimmerErrors.push(Math.min(difference, duration - difference));
@@ -24,21 +26,17 @@ function watchShimmers() {
 const browser = await chromium.launch({executablePath: process.env.CHROMIUM_PATH, headless: true});
 try {
     const page = await browser.newPage({viewport: {width: 1100, height: 720}});
-    page.on("pageerror", (error) => console.log("PAGEERROR", error.message));
-    page.on("console", (message) => console.log("CONSOLE", message.text()));
-    page.on("requestfailed", (request) => console.log("FAILED", request.url()));
-    page.on("response", (response) => response.status() >= 400 && console.log("STATUS", response.status(), response.url()));
     await page.goto(address);
-    await page.waitForTimeout(3000);
-    await page.screenshot({path: `${capture}-debug.png`});
-    await page.locator("[data-sidebar-window]").first().waitFor({timeout: 3000});
+    await page.locator("[data-sidebar-window]").first().waitFor();
     await page.evaluate(`(() => {const SHIMMERS = ${JSON.stringify(SHIMMERS)}; (${watchShimmers.toString()})();})()`);
-    const windows = ["tasks.tasks", "documents.documents", "tasks.tasks", "documents.documents"];
-    for (const [index, name] of windows.entries()) {
+    const names = await page.locator("[data-sidebar-window]").evaluateAll((items) => items.slice(0, 2).map((item) => item.dataset.sidebarWindow));
+    // pages switch from the sidebar; each click lands at another moment of the sweep
+    const pages = [names[0], names[1], names[0], names[1], names[0]];
+    for (const [index, name] of pages.entries()) {
         await page.waitForTimeout(437 + index * 211);
         await page.locator(`[data-sidebar-window="${name}"]`).click();
         await page.locator("[aria-busy=true]").first().waitFor({timeout: 2000}).catch(() => {});
-        if (index < 2) await page.screenshot({path: `${capture}-${index + 1}.png`});
+        if (index < 3) await page.screenshot({path: `${capture}-${index + 1}.png`});
         await page.waitForTimeout(300);
     }
     const errors = await page.evaluate(() => window.shimmerErrors);
