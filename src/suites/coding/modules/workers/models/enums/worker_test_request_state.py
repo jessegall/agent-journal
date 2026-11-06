@@ -7,3 +7,6 @@ class WorkerTestRequestState(StrEnum):
     ASKED = "asked"
     ALLOWED = "allowed"
     USED = "used"
+
+
+OPEN_REQUEST_STATES = (WorkerTestRequestState.ASKED, WorkerTestRequestState.ALLOWED)

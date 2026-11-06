@@ -127,12 +127,12 @@ def test_allowing_a_used_request_is_refused_and_says_so(allowed):
 
 
 def test_with_no_answer_the_worker_goes_on_and_the_request_stays_on_the_task_log(asked):
-    asked.story.expect_text("task inspect 1", TEST_LINE, WHY, actor=asked.story.agent)
+    asked.story.expect_text("task inspect 1 --json", TEST_LINE, WHY, actor=asked.story.agent)
     asked.change_and_prove()
     asked.story.expect_success("worker next", actor=asked.worker)
     assert asked.current_task() == 2
     expect_requests(asked, ASKED)
-    asked.story.expect_text("task inspect 1", TEST_LINE, WHY, actor=asked.story.agent)
+    asked.story.expect_text("task inspect 1 --json", TEST_LINE, WHY, actor=asked.story.agent)
 
 
 def test_a_person_is_never_asked_about_a_request(asked):
@@ -143,4 +143,4 @@ def test_a_person_is_never_asked_about_a_request(asked):
 
 def test_each_step_of_a_request_is_on_the_task_log(allowed):
     expect_reply_allowed(allowed.run_test())
-    allowed.story.expect_text("task inspect 1", TEST_LINE, WHY, "allowed the run of request 1", "ran request 1", actor=allowed.story.agent)
+    allowed.story.expect_text("task inspect 1 --json", TEST_LINE, WHY, "allowed the run of request 1", "ran request 1", actor=allowed.story.agent)
