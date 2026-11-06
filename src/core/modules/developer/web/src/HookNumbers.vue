@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, WindowRoom, usePoll, useReadLine, useWindow} from "@journal/window-kit";
+import {READ_RATES, Btn, WindowRoom, usePoll, useReadLine, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
 const costliestFirst = ref(false);
@@ -18,7 +18,7 @@ async function reset() {
     load();
 }
 
-usePoll(load, () => true);
+usePoll(load, () => true, READ_RATES.numbers);
 </script>
 
 <template>

@@ -1,5 +1,5 @@
 import {computed, onUnmounted, ref} from "vue";
-import {useWindow} from "@journal/window-kit";
+import {READ_RATES, coalesced, useWindow} from "@journal/window-kit";
 
 export function useSkillsPage() {
     const context = useWindow();
@@ -85,7 +85,7 @@ export function useSkillsPage() {
     const followHistory = () => open(new URLSearchParams(location.search).get("skill") || "", false);
     window.addEventListener("popstate", followHistory);
     onUnmounted(() => window.removeEventListener("popstate", followHistory));
-    context.follow(["agent.*", "agent_skill.*", "setting.*", "trigger.*"], load);
+    context.follow(["agent.*", "agent_skill.*", "setting.*", "trigger.*"], coalesced(load, READ_RATES.openPanel));
     load();
     if (marked.value) context.read(`agent-skill show ${marked.value.skillId}`).then((answer) => answer.ok ? open(answer.value.skill, false) : (openFailure.value = answer.error));
     else followHistory();

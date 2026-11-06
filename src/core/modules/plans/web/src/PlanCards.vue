@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, Icon, InnerTabs, Skeleton, TabBody, WindowRoom, afterSkeletonMinimum, peekRef, stateLabel, stateLook, useWindow} from "@journal/window-kit";
+import {READ_RATES, coalesced, Btn, Icon, InnerTabs, Skeleton, TabBody, WindowRoom, afterSkeletonMinimum, peekRef, stateLabel, stateLook, useWindow} from "@journal/window-kit";
 import PlanAgents from "./PlanAgents.vue";
 
 // plans as version 4 drew them: a card for each, the task count with a bar, the phase it is in, and tabs for the open and the closed; one read brings a tab's cards and both counts
@@ -41,7 +41,7 @@ const choose = (chosen) => {
 const shown = computed(() => board.value.plans);
 const total = computed(() => board.value[tab.value?.count_field]);
 const share = (row, count) => (row.task_count ? Math.round((count / row.task_count) * 100) : 0);
-context.follow(["plan.*", "phase.*", "task.*"], load);
+context.follow(["plan.*", "phase.*", "task.*"], coalesced(load, READ_RATES.planCard));
 load();
 </script>
 

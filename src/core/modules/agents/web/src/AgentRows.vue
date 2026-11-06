@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, onUnmounted, ref, watch} from "vue";
-import {Btn, EmptyState, MenuItem, MenuLabel, RowList, SearchBar, Segmented, toggleFilter, useDeclaredRows, useRows, useWindow} from "@journal/window-kit";
+import {READ_RATES, coalesced, Btn, EmptyState, MenuItem, MenuLabel, RowList, SearchBar, Segmented, toggleFilter, useDeclaredRows, useRows, useWindow} from "@journal/window-kit";
 import AgentCard from "./AgentCard.vue";
 
 const SHOWS = [
@@ -66,7 +66,7 @@ watch([show, words, filters], () => {
     limit.value = 25;
     load();
 });
-context.follow(["agent.*", "task.*", ...context.sources.flatMap((source) => source.events)], load);
+context.follow(["agent.*", "task.*", ...context.sources.flatMap((source) => source.events)], coalesced(load, READ_RATES.pageOfAgents));
 load();
 const factsOf = (row) => facts.value.find((fact) => fact.id === row.id) ?? null;
 const shown = rows;

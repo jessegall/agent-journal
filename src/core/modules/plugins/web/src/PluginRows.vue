@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Dashboard, Dialog, Btn, Icon, Skeleton, TextInput, runChanged, usePoll, useReadLine, useRows, useWindow} from "@journal/window-kit";
+import {READ_RATES, Dashboard, Dialog, Btn, Icon, Skeleton, TextInput, runChanged, usePoll, useReadLine, useRows, useWindow} from "@journal/window-kit";
 import {fileAddress} from "./fileAddress.js";
 import PluginCard from "./PluginCard.vue";
 import PluginGuide from "./PluginGuide.vue";
@@ -13,7 +13,6 @@ import PluginUpgradeDialog from "./PluginUpgradeDialog.vue";
 
 // the plugins of this project as version 4's page drew them: a bar to install one from a source, a line on what installing means, a card for each plugin with its
 // switch, settings and removing it, with or without its data, and a card to ask the agent to make one; the services read again while the page is open
-const SERVICE_POLL_MILLISECONDS = 5000;
 const context = useWindow();
 const {rows, failure, loaded, load} = useRows("plugin list", ["plugin.*"]);
 const {rows: boards} = useRows("plugin dashboards", ["plugin.*"]);
@@ -22,10 +21,10 @@ const {rows: descriptions} = useRows("plugin descriptions", ["plugin.*"]);
 const descriptionOf = (row) => descriptions.value.find((each) => each.plugin === row.name)?.description ?? "";
 const {rows: services, load: loadServices} = useRows("plugin services", ["plugin.*"]);
 const servicesOf = (row) => services.value.filter((service) => service.plugin === row.name);
-usePoll(loadServices, () => true, SERVICE_POLL_MILLISECONDS);
+usePoll(loadServices, () => true, READ_RATES.services);
 const {rows: events, load: loadEvents} = useRows("plugin events", ["plugin.*"]);
 const eventsOf = (row) => events.value.filter((event) => event.plugin === row.name);
-usePoll(loadEvents, () => true, SERVICE_POLL_MILLISECONDS);
+usePoll(loadEvents, () => true, READ_RATES.services);
 const refusal = ref("");
 const source = ref("");
 const making = ref(false);

@@ -1,13 +1,12 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
-import {Btn, Segmented, SwitchCase, TimeAgo, WindowRoom, usePoll, useReadLine, useRunLine, useWindow} from "@journal/window-kit";
+import {READ_RATES, Btn, Segmented, SwitchCase, TimeAgo, WindowRoom, usePoll, useReadLine, useRunLine, useWindow} from "@journal/window-kit";
 import LibraryBrowse from "./LibraryBrowse.vue";
 import LibraryConnect from "./LibraryConnect.vue";
 import LibraryCopies from "./LibraryCopies.vue";
 import LibraryPeople from "./LibraryPeople.vue";
 
 const ROLE_WORDS = {admin: "Admin", edit: "Edit", read: "Read-only"};
-const POLL_MILLISECONDS = 5000;
 
 // the page of the team's shared server: the connect form until this journal is connected, then the header, the library and the items that follow it
 const context = useWindow();
@@ -31,7 +30,7 @@ async function load() {
 
 const {refusal, run} = useRunLine(load);
 
-usePoll(load, () => true, POLL_MILLISECONDS);
+usePoll(load, () => true, READ_RATES.libraryCopies);
 onMounted(() => context.follow(["library_copy.*"], load));
 </script>
 
