@@ -14,10 +14,10 @@ HEAD = "HEAD"
 
 
 class WorkerCheckouts(AgentProjectCheckouts):
-    """A worker works in the newest worktree it was given, also once that is removed; an agent it started takes the
-    checkout of its parent; any other agent works in the project. A file belongs to the worktree with the longest root
-    that holds it, whoever wrote it, since a project folder holds every worktree. Git is asked in the project folder,
-    whose store every worktree shares and which stays when a worktree is removed."""
+    """A worker works in the newest worktree it was given, also once that is removed; an agent it started takes
+    the checkout of its parent; any other agent works in the project. A file belongs to the worktree with the
+    longest root that contains it, whoever wrote it, since a project folder contains every worktree. Git is
+    asked in the project folder, whose store every worktree shares and which stays when a worktree is removed."""
 
     def __init__(self, queries: Queries, worktrees: WorktreeQuery, git: WorktreeGit) -> None:
         super().__init__(queries)
@@ -30,13 +30,12 @@ class WorkerCheckouts(AgentProjectCheckouts):
             return self.worktree_checkout(worktree, agent)
         return self.checkout(agent.parent_id) if agent.parent_id is not None else super().checkout(agent_id)
 
-    def checkout_holding_file_placeholder(self, agent_id: int, path: Path) -> Checkout:
-        agent = self.queries.query(Agent).find(agent_id)
+    def file_checkout(self, agent_id: int, path: Path) -> Checkout:
         real = path.parent.resolve() / path.name
-        holding = [worktree for worktree in self.worktrees.filter(environment_id=agent.environment_id).all_rows() if real.is_relative_to(Path(worktree.folder).resolve())]
-        if not holding:
+        containing = [worktree for worktree in self.worktrees.all_worktrees() if real.is_relative_to(Path(worktree.folder).resolve())]
+        if not containing:
             return self.checkout(agent_id)
-        return self.worktree_checkout(max(holding, key=lambda worktree: len(Path(worktree.folder).resolve().parts)), agent)
+        return self.worktree_checkout(max(containing, key=lambda worktree: len(Path(worktree.folder).resolve().parts)), self.queries.query(Agent).find(agent_id))
 
     def file_state(self, checkout: Checkout, relative: str) -> FileState:
         base = checkout.base_commit or HEAD
@@ -44,8 +43,8 @@ class WorkerCheckouts(AgentProjectCheckouts):
         state = super().file_state(checkout, relative)
         if not self.git.has_commit(folder, base):
             return state
-        in_base = self.git.commit_contains(folder, base, relative)
-        return FileState(state.status if state.status is FileStatus.DELETED or in_base else FileStatus.ADDED, in_base)
+        base_contains = self.git.commit_contains(folder, base, relative)
+        return FileState(state.status if state.status is FileStatus.DELETED or base_contains else FileStatus.ADDED, base_contains)
 
     def worktree_checkout(self, worktree: Worktree, agent: Agent) -> Checkout:
         folder = Path(worktree.folder)
