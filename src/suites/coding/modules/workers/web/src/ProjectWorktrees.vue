@@ -1,9 +1,10 @@
 <script setup>
 import {ref} from "vue";
-import {Btn, RowList, WindowRoom, removed, useRows} from "@journal/window-kit";
+import {Btn, RowList, WindowRoom, removed, useWindow} from "@journal/window-kit";
 
 // the worktrees of this repository and who holds each; removing one asks first, shows it gone at once, keeps its branch and says why when it is refused
-const {rows, failure, loaded, act} = useRows("project-worktree list", []);
+const window = useWindow();
+const {rows, failure, loaded, act} = window.props.worktrees;
 const asking = ref("");
 const refusal = ref({});
 

@@ -264,4 +264,4 @@ class WorkersModule(Module):
                WindowDeclaration("workers.models", "Worker models", "models.js", WindowLoading.COMPONENT, skeleton=WORKERS_MODELS_SKELETON, group="project", icon=WindowIcon.MENU, reads=["worker models", "setting show"],
                                  runs=["setting set"], events=["setting.*"], keys=[WindowKey("models", "worker models", events=["setting.*"])]),
                WindowDeclaration("workers.worktrees", "Worktrees", "worktrees.js", WindowLoading.COMPONENT, skeleton=WORKERS_WORKTREES_SKELETON, group="project", icon=WindowIcon.BRANCH, reads=["project-worktree list"],
-                                 runs=["project-worktree remove"])]
+                                 runs=["project-worktree remove"], keys=[WindowKey("worktrees", "project-worktree list")])]

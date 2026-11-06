@@ -4,6 +4,7 @@ import ProjectWorktrees from "../../suites/coding/modules/workers/web/src/Projec
 import {context, mounted, page, settle} from "./support/windowContext.js";
 
 const MODEL_KEYS = {models: {line: "worker models", events: ["setting.*"]}};
+const WORKTREE_KEYS = {worktrees: {line: "project-worktree list"}};
 const running = (answers, keys) => {
     const window = {...context(answers, null, keys), lines: []};
     window.run = async (line) => (window.lines.push(line), {ok: true});
@@ -41,7 +42,7 @@ const TREES = [
 ];
 
 test("the worktrees window names each holder and offers removal only of a worktree nobody holds, asking first", async () => {
-    const window = running({"project-worktree list": page(TREES)});
+    const window = running({"project-worktree list": page(TREES)}, WORKTREE_KEYS);
     const element = await mounted(ProjectWorktrees, window);
     expect(element.textContent).toContain("Main checkout");
     expect(element.textContent).toContain("Worker 7");
