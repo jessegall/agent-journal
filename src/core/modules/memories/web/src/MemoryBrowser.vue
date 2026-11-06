@@ -14,7 +14,7 @@ const who = ref(MAIN);
 const picking = ref(false);
 const agent = ref(null);
 const counts = useCounts(props.environment);
-const CHOICE_NAMES = {[MAIN]: "Main agent", [OTHERS]: "Other agents", [EVERYONE]: "Every agent"};
+const CHOICE_NAMES = {[MAIN]: "Main agent", [OTHERS]: "Workers and helpers", [EVERYONE]: "Every agent"};
 const chosenName = computed(() => (isAgent(who.value) ? agent.value?.name ?? "" : CHOICE_NAMES[who.value]));
 const chosenCount = computed(() => (isAgent(who.value) ? "" : counts[who.value]));
 
