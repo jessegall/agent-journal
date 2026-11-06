@@ -47,6 +47,7 @@ def database(tmp_path):
     (Statement("SELECT * FROM affected_tests WHERE state = ? ORDER BY id LIMIT 25", ["queued"]), "affected_tests_state"),
     (Statement("SELECT * FROM checks WHERE hidden = ? AND removed_at IS NULL ORDER BY id", [0]), "checks_open_hidden"),
     (Statement("SELECT * FROM outputs WHERE reader_id = ?", [1]), "outputs_reader"),
+    (Statement("SELECT * FROM outputs WHERE creator_id = ? ORDER BY id DESC LIMIT 15", [1]), "outputs_creator"),
     (Statement("SELECT * FROM reader_requests WHERE reader_id = ?", [1]), "reader_requests_reader"),
     (Statement("SELECT * FROM plugin_outputs WHERE plugin_id = ? ORDER BY id DESC LIMIT 50", [1]), "plugin_outputs_plugin"),
     (Statement("SELECT * FROM share_comments WHERE share_link_id = ? ORDER BY id", [1]), "share_comments_link"),
