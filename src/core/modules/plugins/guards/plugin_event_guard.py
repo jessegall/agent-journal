@@ -8,9 +8,7 @@ from core.modules.plugins.support.plugin_event_scripts import GUARD_NAME, Plugin
 
 
 class PluginEventGuard(Guard[Changed[Model]]):
-    """A change passes the guard scripts of the plugins on its key: a script that refuses stops it, and what an
-    allowing script tells or shows rolls back with the change. It is skipped for one plugin at a time, by name, and
-    the bare name passes nothing."""
+    """Checks a change against plugin guard scripts."""
 
     name = GUARD_NAME
     runs_last = True

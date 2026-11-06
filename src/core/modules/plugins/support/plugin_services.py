@@ -7,7 +7,7 @@ from pathlib import Path
 from core.base.child_process import ChildProcess
 from core.base.clock import Clock
 from core.base.leftover_process import LeftoverProcess
-from core.base.running_scripts import RunningScripts
+from core.base.running_scripts import PluginScriptProcesses
 from core.modules.plugins.models.enums.service_restart import ServiceRestart
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.modules.plugins.support.service_fault import ServiceFault
@@ -38,7 +38,7 @@ class PluginServices:
     before its new one starts."""
 
     def __init__(self, runnable: RunnablePlugins, folders: PluginFolders, program: PluginProgram, sockets: PluginSocketPaths, setting_values: SettingValues,
-                 clock: Clock, scripts: RunningScripts) -> None:
+                 clock: Clock, scripts: PluginScriptProcesses) -> None:
         self.runnable, self.folders, self.program, self.sockets, self.setting_values, self.clock, self.scripts = runnable, folders, program, sockets, setting_values, clock, scripts
 
     def follow(self, processes: ServiceProcesses) -> list[ServiceFault]:

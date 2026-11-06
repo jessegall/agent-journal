@@ -5,8 +5,7 @@ from core.modules.plugins.support.plugin_event_state import PluginEventState
 
 @dataclass(frozen=True)
 class PluginEventRow:
-    """One line of what a plugin listens to: the key and form it names, its script, how it stands, what a renamed key
-    is called now, when its script started if it is running, the journal's limit on it, if any, and when its script was last left out, and why."""
+    """A plugin subscription and its current status."""
 
     id: str
     plugin: str

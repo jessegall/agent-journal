@@ -17,11 +17,7 @@ from core.modules.drivers.support.suite_choice import SuiteChoice
 
 
 class StopAgentHandler(Handler[StopAgent, Agent]):
-    """Takes the agent's delegated tasks away from it, so nothing starts it again, then stops the program under
-    the pid the agent's row keeps, only while that pid still runs that program, or through the launcher that runs
-    it, before the transaction opens since the stopped program's own hooks need the journal; then ends the session
-    unless those hooks did. A main agent no process and no launcher answers for still ends, so its row never
-    holds its environment; any other agent is refused and keeps its tasks."""
+    """Stops an agent's program, releases its tasks and ends its session."""
 
     command = StopAgent
 

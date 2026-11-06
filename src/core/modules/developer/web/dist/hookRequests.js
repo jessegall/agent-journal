@@ -1,9 +1,9 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-ab972d30b520")) { const style = document.createElement("style"); style.id = "window-styles-ab972d30b520"; style.textContent = ".band[data-v-1758914f]{display:flex;align-items:center;gap:7px;height:28px;margin:0;padding:0 14px;background:var(--side);border-bottom:1px solid var(--border);color:var(--text-2);font-size:11.5px;font-weight:500;letter-spacing:.03em}.band svg[data-v-1758914f]{color:var(--text-3)}.band span[data-v-1758914f]{margin-left:auto;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.inspector[data-v-e93ab8e0]{display:flex;flex-direction:column;min-height:0;height:100%;background:var(--bg)}header[data-v-e93ab8e0]{display:flex;align-items:center;gap:8px;padding:14px;border-bottom:1px solid var(--border)}header h1[data-v-e93ab8e0]{flex:1;margin:0;font-size:14px}.limits[data-v-e93ab8e0],.empty[data-v-e93ab8e0]{margin:0;padding:14px;color:var(--text-3);font-size:12px}.entry[data-v-e93ab8e0]{display:grid;grid-template-columns:110px minmax(0,1fr) 70px;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px}.entry strong[data-v-e93ab8e0]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.entry span[data-v-e93ab8e0]:last-child{text-align:right;font-variant-numeric:tabular-nums}.detail-head[data-v-3da1c12c]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-3da1c12c]{margin:0;color:var(--text);font-size:14px}.slow[data-v-3da1c12c]{color:#c58b35}.refused[data-v-3da1c12c]{color:#d76b6b}.heading[data-v-3da1c12c]{margin:0 0 8px;font-size:12px}pre[data-v-3da1c12c]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}.note[data-v-3da1c12c]{margin:0;color:var(--text-3);font-size:12px}.message[data-v-3da1c12c]{padding:16px;line-height:1.6}.toolbar[data-v-4993b236]{display:flex;justify-content:space-between;padding:8px 12px}.queue-veil[data-v-4993b236]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-4993b236]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-4993b236]{position:relative;display:grid;grid-template-columns:minmax(360px,46%) 1px minmax(0,1fr);height:100%;min-height:0;overflow:hidden}.list[data-v-4993b236]{display:flex;flex-direction:column;min-height:0;min-width:0}.list-scroll[data-v-4993b236]{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}.columns[data-v-4993b236],.row[data-v-4993b236]{display:grid;grid-template-columns:minmax(80px,1.4fr) minmax(40px,.7fr) 32px 88px minmax(72px,1fr) 55px 60px;align-items:center;gap:5px;padding:10px;font-size:12px}.columns[data-v-4993b236]{flex:none;border-bottom:1px solid var(--border);color:var(--text-3)}.columns[data-v-4993b236]>:last-child,.duration[data-v-4993b236],.queued[data-v-4993b236],.parts[data-v-4993b236]{text-align:right}.parts[data-v-4993b236]{padding-right:12px;color:var(--text-3);font-variant-numeric:tabular-nums}.sender[data-v-4993b236]{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.sender[data-v-4993b236]:hover{color:var(--accent);text-decoration:underline}.day[data-v-4993b236]{display:flex;justify-content:space-between;padding:9px 16px;border-bottom:1px solid var(--border);background:var(--side);color:var(--text-3);font-size:11px}.row[data-v-4993b236]{width:100%;border:0;border-bottom:1px solid var(--border);background:none;color:inherit;font-family:inherit;text-align:left;cursor:pointer}.row[data-v-4993b236]:hover,.row.open[data-v-4993b236]{background:var(--surface-2, var(--border))}.event[data-v-4993b236]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.tool[data-v-4993b236]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-3)}time[data-v-4993b236],.duration[data-v-4993b236],.queued[data-v-4993b236]{font-variant-numeric:tabular-nums;white-space:nowrap}.slow .duration[data-v-4993b236],.detail-head .slow[data-v-4993b236]{color:#c58b35}.refused .event[data-v-4993b236],.refused .duration[data-v-4993b236],.detail-head .refused[data-v-4993b236]{color:#d76b6b}.note[data-v-4993b236]{margin:0;color:var(--text-3);font-size:12px}.detail[data-v-4993b236]{padding:20px;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain}.divider[data-v-4993b236]{background:var(--border)}.message[data-v-4993b236]{padding:16px;line-height:1.6}.detail-head[data-v-4993b236]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-4993b236]{margin:0;color:var(--text);font-size:14px}.heading[data-v-4993b236]{margin:0 0 8px;font-size:12px}pre[data-v-4993b236]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}@media(max-width:760px){.queue-button[data-v-4993b236]{align-self:flex-end;margin:8px 12px}.queue-veil[data-v-4993b236]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-4993b236]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-4993b236]{position:relative;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(140px,45%) 1px minmax(0,1fr)}}.request-rows[data-v-4993b236]{display:contents}.request-row-move[data-v-4993b236]{transition:transform .32s cubic-bezier(.2,.9,.25,1)}.request-row-enter-active[data-v-4993b236]{transition:opacity .2s ease-out}.request-row-enter-from[data-v-4993b236]{opacity:0}.request-row-leave-active[data-v-4993b236]{display:none}@media(prefers-reduced-motion:reduce){.request-row-move[data-v-4993b236],.request-row-enter-active[data-v-4993b236]{transition:none}}.numbers-tools[data-v-9a9e885e]{display:flex;gap:8px;margin-bottom:10px}.numbers-note[data-v-9a9e885e]{margin:0;color:var(--text-3);font-size:12.5px}.numbers-table[data-v-9a9e885e]{width:100%;border-collapse:collapse;font-size:12.5px}.numbers-table th[data-v-9a9e885e],.numbers-table td[data-v-9a9e885e]{padding:4px 8px;border-bottom:1px solid var(--border);text-align:left}.numbers-table th[data-v-9a9e885e]{color:var(--text-3);font-weight:500}\n"; document.head.appendChild(style); }
-import { openBlock as l, createElementBlock as s, normalizeStyle as X, createVNode as v, renderSlot as Y, toDisplayString as n, createCommentVNode as f, ref as g, createElementVNode as t, unref as p, Fragment as _, withCtx as M, createTextVNode as x, renderList as V, normalizeClass as F, computed as A, watch as j, createBlock as C, TransitionGroup as ee, withKeys as te, withModifiers as B } from "vue";
-import { useWindow as Q, usePoll as D, Icon as ae, CloseButton as ne, highlight as le, WindowRoom as re, MenuPanel as se, MenuLabel as I, MenuItem as S, peekRef as oe, toggleFilter as de } from "@journal/window-kit";
+if (!document.getElementById("window-styles-72218317dab1")) { const style = document.createElement("style"); style.id = "window-styles-72218317dab1"; style.textContent = ".band[data-v-1758914f]{display:flex;align-items:center;gap:7px;height:28px;margin:0;padding:0 14px;background:var(--side);border-bottom:1px solid var(--border);color:var(--text-2);font-size:11.5px;font-weight:500;letter-spacing:.03em}.band svg[data-v-1758914f]{color:var(--text-3)}.band span[data-v-1758914f]{margin-left:auto;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.inspector[data-v-15282424]{display:flex;flex-direction:column;min-height:0;height:100%;background:var(--bg)}header[data-v-15282424]{display:flex;align-items:center;gap:8px;padding:14px;border-bottom:1px solid var(--border)}header h1[data-v-15282424]{flex:1;margin:0;font-size:14px}.limits[data-v-15282424],.empty[data-v-15282424]{margin:0;padding:14px;color:var(--text-3);font-size:12px}.entry[data-v-15282424]{display:grid;grid-template-columns:110px minmax(0,1fr) 70px;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px}.entry strong[data-v-15282424]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.entry span[data-v-15282424]:last-child{text-align:right;font-variant-numeric:tabular-nums}.detail-head[data-v-3da1c12c]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-3da1c12c]{margin:0;color:var(--text);font-size:14px}.slow[data-v-3da1c12c]{color:#c58b35}.refused[data-v-3da1c12c]{color:#d76b6b}.heading[data-v-3da1c12c]{margin:0 0 8px;font-size:12px}pre[data-v-3da1c12c]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}.note[data-v-3da1c12c]{margin:0;color:var(--text-3);font-size:12px}.message[data-v-3da1c12c]{padding:16px;line-height:1.6}.toolbar[data-v-4993b236]{display:flex;justify-content:space-between;padding:8px 12px}.queue-veil[data-v-4993b236]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-4993b236]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-4993b236]{position:relative;display:grid;grid-template-columns:minmax(360px,46%) 1px minmax(0,1fr);height:100%;min-height:0;overflow:hidden}.list[data-v-4993b236]{display:flex;flex-direction:column;min-height:0;min-width:0}.list-scroll[data-v-4993b236]{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}.columns[data-v-4993b236],.row[data-v-4993b236]{display:grid;grid-template-columns:minmax(80px,1.4fr) minmax(40px,.7fr) 32px 88px minmax(72px,1fr) 55px 60px;align-items:center;gap:5px;padding:10px;font-size:12px}.columns[data-v-4993b236]{flex:none;border-bottom:1px solid var(--border);color:var(--text-3)}.columns[data-v-4993b236]>:last-child,.duration[data-v-4993b236],.queued[data-v-4993b236],.parts[data-v-4993b236]{text-align:right}.parts[data-v-4993b236]{padding-right:12px;color:var(--text-3);font-variant-numeric:tabular-nums}.sender[data-v-4993b236]{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.sender[data-v-4993b236]:hover{color:var(--accent);text-decoration:underline}.day[data-v-4993b236]{display:flex;justify-content:space-between;padding:9px 16px;border-bottom:1px solid var(--border);background:var(--side);color:var(--text-3);font-size:11px}.row[data-v-4993b236]{width:100%;border:0;border-bottom:1px solid var(--border);background:none;color:inherit;font-family:inherit;text-align:left;cursor:pointer}.row[data-v-4993b236]:hover,.row.open[data-v-4993b236]{background:var(--surface-2, var(--border))}.event[data-v-4993b236]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.tool[data-v-4993b236]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-3)}time[data-v-4993b236],.duration[data-v-4993b236],.queued[data-v-4993b236]{font-variant-numeric:tabular-nums;white-space:nowrap}.slow .duration[data-v-4993b236],.detail-head .slow[data-v-4993b236]{color:#c58b35}.refused .event[data-v-4993b236],.refused .duration[data-v-4993b236],.detail-head .refused[data-v-4993b236]{color:#d76b6b}.note[data-v-4993b236]{margin:0;color:var(--text-3);font-size:12px}.detail[data-v-4993b236]{padding:20px;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain}.divider[data-v-4993b236]{background:var(--border)}.message[data-v-4993b236]{padding:16px;line-height:1.6}.detail-head[data-v-4993b236]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-4993b236]{margin:0;color:var(--text);font-size:14px}.heading[data-v-4993b236]{margin:0 0 8px;font-size:12px}pre[data-v-4993b236]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}@media(max-width:760px){.queue-button[data-v-4993b236]{align-self:flex-end;margin:8px 12px}.queue-veil[data-v-4993b236]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-4993b236]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-4993b236]{position:relative;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(140px,45%) 1px minmax(0,1fr)}}.request-rows[data-v-4993b236]{display:contents}.request-row-move[data-v-4993b236]{transition:transform .32s cubic-bezier(.2,.9,.25,1)}.request-row-enter-active[data-v-4993b236]{transition:opacity .2s ease-out}.request-row-enter-from[data-v-4993b236]{opacity:0}.request-row-leave-active[data-v-4993b236]{display:none}@media(prefers-reduced-motion:reduce){.request-row-move[data-v-4993b236],.request-row-enter-active[data-v-4993b236]{transition:none}}.numbers-tools[data-v-9a9e885e]{display:flex;gap:8px;margin-bottom:10px}.numbers-note[data-v-9a9e885e]{margin:0;color:var(--text-3);font-size:12.5px}.numbers-table[data-v-9a9e885e]{width:100%;border-collapse:collapse;font-size:12.5px}.numbers-table th[data-v-9a9e885e],.numbers-table td[data-v-9a9e885e]{padding:4px 8px;border-bottom:1px solid var(--border);text-align:left}.numbers-table th[data-v-9a9e885e]{color:var(--text-3);font-weight:500}\n"; document.head.appendChild(style); }
+import { openBlock as n, createElementBlock as l, normalizeStyle as X, createVNode as k, renderSlot as Y, toDisplayString as r, createCommentVNode as m, ref as f, createElementVNode as t, unref as v, Fragment as q, withCtx as y, createTextVNode as u, renderList as V, normalizeClass as F, computed as A, watch as j, createBlock as C, TransitionGroup as ee, withKeys as te, withModifiers as B } from "vue";
+import { useWindow as Q, usePoll as D, Icon as ae, CloseButton as re, highlight as ne, WindowRoom as le, MenuPanel as se, MenuLabel as I, MenuItem as S, peekRef as oe, toggleFilter as ie } from "@journal/window-kit";
 import { _ as R } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const ie = ["stroke-width", "innerHTML"], he = {
+const de = ["stroke-width", "innerHTML"], he = {
   __name: "Icon",
   props: {
     name: { type: String, default: "dot" },
@@ -12,7 +12,7 @@ const ie = ["stroke-width", "innerHTML"], he = {
     bold: Boolean
   },
   setup(o) {
-    const c = o, q = { right: 0, down: 90, left: 180, up: 270 }, i = {
+    const p = o, _ = { right: 0, down: 90, left: 180, up: 270 }, d = {
       mail: "inbox",
       circle: "todos",
       play: "work",
@@ -36,7 +36,7 @@ const ie = ["stroke-width", "innerHTML"], he = {
       send: "arrow",
       more: "dots",
       chevron: "arrow"
-    }, r = {
+    }, s = {
       phone: '<rect x="4.5" y="1.5" width="7" height="13" rx="1.6"/><path d="M7 12.2h2"/>',
       key: '<circle cx="5.5" cy="10.5" r="2.8"/><path d="M7.5 8.5 13 3M10.8 5.2l1.7 1.7M9.2 6.8l1.2 1.2"/>',
       terminal: '<path d="M2 3.5h12v9H2zM4.8 6.4 6.9 8l-2.1 1.6M8.4 10h3"/>',
@@ -144,11 +144,11 @@ const ie = ["stroke-width", "innerHTML"], he = {
       family: '<rect x="6" y="1.8" width="4" height="3.4" rx="1"/><rect x="1.8" y="10.8" width="4" height="3.4" rx="1"/><rect x="10.2" y="10.8" width="4" height="3.4" rx="1"/><path d="M8 5.2v2.6M3.8 10.8V9.4q0-1.6 1.6-1.6h5.2q1.6 0 1.6 1.6v1.4"/>',
       loop: '<path d="M12.6 6.2A4.9 4.9 0 0 0 3.4 6M3.4 9.8a4.9 4.9 0 0 0 9.2.2"/><path d="M12.8 3v3.3H9.5M3.2 13V9.7h3.3"/>'
     };
-    return (h, y) => (l(), s("svg", {
+    return (h, x) => (n(), l("svg", {
       class: "ico",
       style: X({
         ...o.size ? { "--icon-size": `${o.size}px` } : {},
-        ...c.facing === "right" ? {} : { transform: `rotate(${q[c.facing]}deg)` }
+        ...p.facing === "right" ? {} : { transform: `rotate(${_[p.facing]}deg)` }
       }),
       viewBox: "0 0 16 16",
       fill: "none",
@@ -157,20 +157,20 @@ const ie = ["stroke-width", "innerHTML"], he = {
       "stroke-linecap": "round",
       "stroke-linejoin": "round",
       "aria-hidden": "true",
-      innerHTML: r[i[o.name] || o.name] || r.dot
-    }, null, 12, ie));
+      innerHTML: s[d[o.name] || o.name] || s.dot
+    }, null, 12, de));
   }
 }, ce = { class: "band" }, ue = { key: 0 }, pe = {
   __name: "ProcessQueueBand",
   props: { icon: { type: String, required: !0 }, count: { type: Number, default: null } },
   setup(o) {
-    return (c, q) => (l(), s("h2", ce, [
-      v(he, {
+    return (p, _) => (n(), l("h2", ce, [
+      k(he, {
         name: o.icon,
         size: 12
       }, null, 8, ["name"]),
-      Y(c.$slots, "default", {}, void 0, !0),
-      o.count !== null ? (l(), s("span", ue, n(o.count), 1)) : f("", !0)
+      Y(p.$slots, "default", {}, void 0, !0),
+      o.count !== null ? (n(), l("span", ue, r(o.count), 1)) : m("", !0)
     ]));
   }
 }, Z = /* @__PURE__ */ R(pe, [["__scopeId", "data-v-1758914f"]]), Me = {
@@ -190,70 +190,80 @@ const ie = ["stroke-width", "innerHTML"], he = {
 }, xe = {
   __name: "RequestQueueInspector",
   emits: ["close"],
-  setup(o, { emit: c }) {
-    const q = c, i = Q(), r = g(null), h = g("");
-    async function y() {
-      const k = await i.read("developer request-queue", { unbatched: !0 });
-      h.value = k.ok ? "" : k.error, k.ok && (r.value = k.value);
+  setup(o, { emit: p }) {
+    const _ = p, d = Q(), s = f(null), h = f("");
+    async function x() {
+      const g = await d.read("developer request-queue", { unbatched: !0 });
+      h.value = g.ok ? "" : g.error, g.ok && (s.value = g.value);
     }
-    D(y, () => !0);
-    const H = (k) => `${Math.round(k.waited_ms)} ms`;
-    return (k, u) => (l(), s("aside", Me, [
+    D(x, () => !0);
+    const H = (g) => `${Math.round(g.waited_ms)} ms`;
+    return (g, M) => (n(), l("aside", Me, [
       t("header", null, [
-        v(p(ae), {
+        k(v(ae), {
           name: "terminal",
           size: 13
         }),
-        u[1] || (u[1] = t("h1", null, "Request queue", -1)),
-        v(p(ne), {
+        M[1] || (M[1] = t("h1", null, "Request queue", -1)),
+        k(v(re), {
           title: "Close the request queue",
-          onClick: u[0] || (u[0] = (m) => q("close"))
+          onClick: M[0] || (M[0] = (c) => _("close"))
         })
       ]),
-      h.value ? (l(), s("p", ve, n(h.value), 1)) : r.value ? (l(), s(_, { key: 1 }, [
-        t("div", ye, "Hooks at once: " + n(r.value.hook_limit) + " · Main agent wait: " + n(r.value.main_hook_seconds) + " s · Other agent wait: " + n(r.value.agent_hook_seconds) + " s · Viewer wait: " + n(r.value.viewer_wait_seconds) + " s", 1),
-        v(Z, {
+      h.value ? (n(), l("p", ve, r(h.value), 1)) : s.value ? (n(), l(q, { key: 1 }, [
+        t("div", ye, "Hooks at once: " + r(s.value.hook_limit) + " · Main agent wait: " + r(s.value.main_hook_seconds) + " s · Other agent wait: " + r(s.value.agent_hook_seconds) + " s · Viewer wait: " + r(s.value.viewer_wait_seconds) + " s", 1),
+        k(Z, {
           icon: "start",
-          count: r.value.running.length
+          count: s.value.running.length
         }, {
-          default: M(() => [...u[2] || (u[2] = [
-            x("Running", -1)
+          default: y(() => [...M[2] || (M[2] = [
+            u("Running", -1)
           ])]),
           _: 1
         }, 8, ["count"]),
-        r.value.running.length ? f("", !0) : (l(), s("p", ke, "Nothing is running.")),
-        (l(!0), s(_, null, V(r.value.running, (m, w) => (l(), s("div", {
+        s.value.running.length ? m("", !0) : (n(), l("p", ke, "Nothing is running.")),
+        (n(!0), l(q, null, V(s.value.running, (c, w) => (n(), l("div", {
           key: `running-${w}`,
           class: "entry",
           "data-request-queue-running": ""
         }, [
-          t("span", null, n(m.sender), 1),
-          t("strong", null, n(m.event), 1),
-          t("span", null, n(H(m)), 1)
+          t("span", null, [
+            u(r(c.sender), 1),
+            c.priority ? (n(), l(q, { key: 0 }, [
+              u(" · " + r(c.priority), 1)
+            ], 64)) : m("", !0)
+          ]),
+          t("strong", null, r(c.event), 1),
+          t("span", null, r(H(c)), 1)
         ]))), 128)),
-        v(Z, {
+        k(Z, {
           icon: "clock",
-          count: r.value.waiting.length
+          count: s.value.waiting.length
         }, {
-          default: M(() => [...u[3] || (u[3] = [
-            x("Waiting", -1)
+          default: y(() => [...M[3] || (M[3] = [
+            u("Waiting", -1)
           ])]),
           _: 1
         }, 8, ["count"]),
-        r.value.waiting.length ? f("", !0) : (l(), s("p", me, "Nothing is waiting.")),
-        (l(!0), s(_, null, V(r.value.waiting, (m, w) => (l(), s("div", {
+        s.value.waiting.length ? m("", !0) : (n(), l("p", me, "Nothing is waiting.")),
+        (n(!0), l(q, null, V(s.value.waiting, (c, w) => (n(), l("div", {
           key: `waiting-${w}`,
           class: "entry",
           "data-request-queue-waiting": ""
         }, [
-          t("span", null, n(m.sender), 1),
-          t("strong", null, n(m.event), 1),
-          t("span", null, n(H(m)), 1)
+          t("span", null, [
+            u(r(c.sender), 1),
+            c.priority ? (n(), l(q, { key: 0 }, [
+              u(" · " + r(c.priority), 1)
+            ], 64)) : m("", !0)
+          ]),
+          t("strong", null, r(c.event), 1),
+          t("span", null, r(H(c)), 1)
         ]))), 128))
-      ], 64)) : f("", !0)
+      ], 64)) : m("", !0)
     ]));
   }
-}, ge = /* @__PURE__ */ R(xe, [["__scopeId", "data-v-e93ab8e0"]]), fe = {
+}, ge = /* @__PURE__ */ R(xe, [["__scopeId", "data-v-15282424"]]), fe = {
   key: 0,
   "data-hook-request-detail": ""
 }, qe = { class: "detail-head" }, _e = ["innerHTML"], we = ["innerHTML"], be = {
@@ -263,26 +273,26 @@ const ie = ["stroke-width", "innerHTML"], he = {
   __name: "RequestDetails",
   props: { request: { type: Object, default: null } },
   setup(o) {
-    const c = (h) => le(JSON.stringify(h, null, 2), "json").join(`
-`), q = (h) => h.outcome === "refused", i = (h) => !q(h) && h.duration_ms >= 500, r = (h) => `${Math.round(h.duration_ms)} ms`;
-    return (h, y) => o.request ? (l(), s("div", fe, [
+    const p = (h) => ne(JSON.stringify(h, null, 2), "json").join(`
+`), _ = (h) => h.outcome === "refused", d = (h) => !_(h) && h.duration_ms >= 500, s = (h) => `${Math.round(h.duration_ms)} ms`;
+    return (h, x) => o.request ? (n(), l("div", fe, [
       t("div", qe, [
-        t("h2", null, n(o.request.event), 1),
+        t("h2", null, r(o.request.event), 1),
         t("span", {
-          class: F({ slow: i(o.request), refused: q(o.request) })
-        }, n(o.request.sender) + " · queued " + n(Math.round(o.request.queued_ms)) + " ms · " + n(o.request.outcome) + " · " + n(r(o.request)), 3)
+          class: F({ slow: d(o.request), refused: _(o.request) })
+        }, r(o.request.sender) + " · queued " + r(Math.round(o.request.queued_ms)) + " ms · " + r(o.request.outcome) + " · " + r(s(o.request)), 3)
       ]),
-      y[0] || (y[0] = t("h3", { class: "heading" }, "Headers", -1)),
+      x[0] || (x[0] = t("h3", { class: "heading" }, "Headers", -1)),
       t("pre", {
         "data-hook-request-headers": "",
-        innerHTML: c(o.request.headers)
+        innerHTML: p(o.request.headers)
       }, null, 8, _e),
-      y[1] || (y[1] = t("h3", { class: "heading" }, "Body", -1)),
+      x[1] || (x[1] = t("h3", { class: "heading" }, "Body", -1)),
       t("pre", {
         "data-hook-request-body": "",
-        innerHTML: c(o.request.body)
+        innerHTML: p(o.request.body)
       }, null, 8, we)
-    ])) : (l(), s("p", be, "Select a request to see its headers and body."));
+    ])) : (n(), l("p", be, "Select a request to see its headers and body."));
   }
 }, $e = /* @__PURE__ */ R(Ve, [["__scopeId", "data-v-3da1c12c"]]), Ce = {
   class: "requests",
@@ -317,42 +327,42 @@ const ie = ["stroke-width", "innerHTML"], he = {
 }, P = "journal.hook-requests.filters", Je = {
   __name: "HookRequests",
   setup(o) {
-    const c = () => ({ kind: [], family: [], sender: [] });
-    function q() {
+    const p = () => ({ kind: [], family: [], sender: [] });
+    function _() {
       try {
-        return { ...c(), ...JSON.parse(localStorage.getItem(P) || "{}") };
+        return { ...p(), ...JSON.parse(localStorage.getItem(P) || "{}") };
       } catch {
-        return c();
+        return p();
       }
     }
-    const i = g(q()), r = g(!1), h = g({ family: ["process bookkeeping"], sender: [] }), y = A(() => Object.values(i.value).reduce((d, a) => d + a.length, 0)), H = Q(), k = g(null), u = g("");
-    let m = 0;
+    const d = f(_()), s = f(!1), h = f({ family: ["process bookkeeping"], sender: [] }), x = A(() => Object.values(d.value).reduce((i, a) => i + a.length, 0)), H = Q(), g = f(null), M = f("");
+    let c = 0;
     async function w() {
-      const d = ++m, a = ["developer hook-requests", ...Object.entries(i.value).flatMap(([b, U]) => U.map((G) => `--${b} ${JSON.stringify(G)}`))].join(" "), e = await H.read(a, { unbatched: !0 });
-      r.value || d !== m || (u.value = e.ok ? "" : e.error, e.ok && (k.value = e.value));
+      const i = ++c, a = ["developer hook-requests", ...Object.entries(d.value).flatMap(([b, U]) => U.map((G) => `--${b} ${JSON.stringify(G)}`))].join(" "), e = await H.read(a, { unbatched: !0 });
+      s.value || i !== c || (M.value = e.ok ? "" : e.error, e.ok && (g.value = e.value));
     }
     const N = A(() => {
-      var d;
-      return ((d = k.value) == null ? void 0 : d.rows) ?? [];
+      var i;
+      return ((i = g.value) == null ? void 0 : i.rows) ?? [];
     });
-    j(k, (d) => {
-      h.value.family = [.../* @__PURE__ */ new Set(["process bookkeeping", ...d.families || [], ...i.value.family])].sort(), h.value.sender = [.../* @__PURE__ */ new Set([...d.senders || [], ...i.value.sender])].sort();
-    }), j(i, (d) => {
+    j(g, (i) => {
+      h.value.family = [.../* @__PURE__ */ new Set(["process bookkeeping", ...i.families || [], ...d.value.family])].sort(), h.value.sender = [.../* @__PURE__ */ new Set([...i.senders || [], ...d.value.sender])].sort();
+    }), j(d, (i) => {
       try {
-        localStorage.setItem(P, JSON.stringify(d));
+        localStorage.setItem(P, JSON.stringify(i));
       } catch {
       }
-      r.value || w();
+      s.value || w();
     });
-    function T(d, a) {
-      i.value = de(i.value, d, a);
+    function T(i, a) {
+      d.value = ie(d.value, i, a);
     }
-    const z = g(null), $ = g(0), L = g(!1), E = A(() => N.value.find((d) => d.id === $.value)), O = (d) => d.outcome === "refused", J = (d) => !O(d) && d.duration_ms >= 500, K = (d) => `${Math.round(d.duration_ms)} ms`;
+    const z = f(null), $ = f(0), L = f(!1), E = A(() => N.value.find((i) => i.id === $.value)), O = (i) => i.outcome === "refused", J = (i) => !O(i) && i.duration_ms >= 500, K = (i) => `${Math.round(i.duration_ms)} ms`;
     function W() {
-      r.value = !r.value, r.value || w();
+      s.value = !s.value, s.value || w();
     }
-    return D(w, () => !r.value), (d, a) => (l(), C(p(re), { padding: "0" }, {
-      default: M(() => [
+    return D(w, () => !s.value), (i, a) => (n(), C(v(le), { padding: "0" }, {
+      default: y(() => [
         t("div", Ce, [
           t("section", He, [
             t("div", ze, [
@@ -361,21 +371,21 @@ const ie = ["stroke-width", "innerHTML"], he = {
                 "data-filter-open": "",
                 onClick: a[0] || (a[0] = (e) => z.value = e.currentTarget)
               }, [
-                a[6] || (a[6] = x("Filters", -1)),
-                y.value ? (l(), s("span", Le, " (" + n(y.value) + ")", 1)) : f("", !0)
+                a[6] || (a[6] = u("Filters", -1)),
+                x.value ? (n(), l("span", Le, " (" + r(x.value) + ")", 1)) : m("", !0)
               ]),
               t("button", {
                 type: "button",
                 "data-feed-pause": "",
-                "aria-pressed": r.value,
+                "aria-pressed": s.value,
                 onClick: W
-              }, n(r.value ? "Resume" : "Pause"), 9, Se),
+              }, r(s.value ? "Resume" : "Pause"), 9, Se),
               t("button", {
                 type: "button",
                 "data-request-queue-open": "",
                 onClick: a[1] || (a[1] = (e) => L.value = !0)
               }, "Request queue"),
-              z.value ? (l(), C(p(se), {
+              z.value ? (n(), C(v(se), {
                 key: 0,
                 anchor: z.value,
                 align: "start",
@@ -383,76 +393,76 @@ const ie = ["stroke-width", "innerHTML"], he = {
                 "max-width": 320,
                 onClose: a[3] || (a[3] = (e) => z.value = null)
               }, {
-                default: M(() => [
-                  v(p(I), null, {
-                    default: M(() => [...a[7] || (a[7] = [
-                      x("Type", -1)
+                default: y(() => [
+                  k(v(I), null, {
+                    default: y(() => [...a[7] || (a[7] = [
+                      u("Type", -1)
                     ])]),
                     _: 1
                   }),
-                  (l(), s(_, null, V(["hook", "viewer", "command line"], (e) => v(p(S), {
+                  (n(), l(q, null, V(["hook", "viewer", "command line"], (e) => k(v(S), {
                     key: e,
                     "data-filter-kind": e,
                     role: "menuitemcheckbox",
-                    checked: i.value.kind.includes(e),
-                    "aria-checked": i.value.kind.includes(e),
+                    checked: d.value.kind.includes(e),
+                    "aria-checked": d.value.kind.includes(e),
                     onClick: (b) => T("kind", e)
                   }, {
-                    default: M(() => [
-                      x(n(e), 1)
+                    default: y(() => [
+                      u(r(e), 1)
                     ]),
                     _: 2
                   }, 1032, ["data-filter-kind", "checked", "aria-checked", "onClick"])), 64)),
-                  v(p(I), null, {
-                    default: M(() => [...a[8] || (a[8] = [
-                      x("Event or command", -1)
+                  k(v(I), null, {
+                    default: y(() => [...a[8] || (a[8] = [
+                      u("Event or command", -1)
                     ])]),
                     _: 1
                   }),
-                  (l(!0), s(_, null, V(h.value.family, (e) => (l(), C(p(S), {
+                  (n(!0), l(q, null, V(h.value.family, (e) => (n(), C(v(S), {
                     key: e,
                     "data-filter-family": e,
                     role: "menuitemcheckbox",
-                    checked: i.value.family.includes(e),
-                    "aria-checked": i.value.family.includes(e),
+                    checked: d.value.family.includes(e),
+                    "aria-checked": d.value.family.includes(e),
                     onClick: (b) => T("family", e)
                   }, {
-                    default: M(() => [
-                      x(n(e), 1)
+                    default: y(() => [
+                      u(r(e), 1)
                     ]),
                     _: 2
                   }, 1032, ["data-filter-family", "checked", "aria-checked", "onClick"]))), 128)),
-                  v(p(I), null, {
-                    default: M(() => [...a[9] || (a[9] = [
-                      x("Sender", -1)
+                  k(v(I), null, {
+                    default: y(() => [...a[9] || (a[9] = [
+                      u("Sender", -1)
                     ])]),
                     _: 1
                   }),
-                  (l(!0), s(_, null, V(h.value.sender, (e) => (l(), C(p(S), {
+                  (n(!0), l(q, null, V(h.value.sender, (e) => (n(), C(v(S), {
                     key: e,
                     role: "menuitemcheckbox",
-                    checked: i.value.sender.includes(e),
-                    "aria-checked": i.value.sender.includes(e),
+                    checked: d.value.sender.includes(e),
+                    "aria-checked": d.value.sender.includes(e),
                     onClick: (b) => T("sender", e)
                   }, {
-                    default: M(() => [
-                      x(n(e), 1)
+                    default: y(() => [
+                      u(r(e), 1)
                     ]),
                     _: 2
                   }, 1032, ["checked", "aria-checked", "onClick"]))), 128)),
-                  y.value ? (l(), C(p(S), {
+                  x.value ? (n(), C(v(S), {
                     key: 0,
                     "data-filter-clear": "",
-                    onClick: a[2] || (a[2] = (e) => i.value = c())
+                    onClick: a[2] || (a[2] = (e) => d.value = p())
                   }, {
-                    default: M(() => [...a[10] || (a[10] = [
-                      x("Clear filters", -1)
+                    default: y(() => [...a[10] || (a[10] = [
+                      u("Clear filters", -1)
                     ])]),
                     _: 1
-                  })) : f("", !0)
+                  })) : m("", !0)
                 ]),
                 _: 1
-              }, 8, ["anchor"])) : f("", !0)
+              }, 8, ["anchor"])) : m("", !0)
             ]),
             a[12] || (a[12] = t("div", { class: "columns" }, [
               t("span", { "data-hook-column": "" }, "Event"),
@@ -467,20 +477,20 @@ const ie = ["stroke-width", "innerHTML"], he = {
               t("span", { "data-hook-column": "" }, "Duration")
             ], -1)),
             t("div", Re, [
-              u.value ? (l(), s("p", Ne, n(u.value), 1)) : N.value.length ? f("", !0) : (l(), s("p", Te, "Nothing recorded yet. Record agent calls in the developer settings turns the log on.")),
-              v(ee, {
+              M.value ? (n(), l("p", Ne, r(M.value), 1)) : N.value.length ? m("", !0) : (n(), l("p", Te, "Nothing recorded yet. Record agent calls in the developer settings turns the log on.")),
+              k(ee, {
                 name: "request-row",
                 tag: "div",
                 class: "request-rows"
               }, {
-                default: M(() => [
-                  (l(!0), s(_, null, V(N.value, (e) => (l(), s(_, {
+                default: y(() => [
+                  (n(!0), l(q, null, V(N.value, (e) => (n(), l(q, {
                     key: e.id
                   }, [
-                    e.day_start ? (l(), s("div", Ae, [
-                      x(n(e.day), 1),
+                    e.day_start ? (n(), l("div", Ae, [
+                      u(r(e.day), 1),
                       a[11] || (a[11] = t("span", null, "UTC", -1))
-                    ])) : f("", !0),
+                    ])) : m("", !0),
                     t("div", {
                       role: "button",
                       tabindex: "0",
@@ -491,21 +501,21 @@ const ie = ["stroke-width", "innerHTML"], he = {
                       onClick: (b) => $.value = e.id,
                       onKeydown: te((b) => $.value = e.id, ["enter"])
                     }, [
-                      t("span", Oe, n(e.event), 1),
-                      t("span", je, n(e.tool || "—"), 1),
-                      t("span", Be, n(e.part_count || ""), 1),
+                      t("span", Oe, r(e.event), 1),
+                      t("span", je, r(e.tool || "—"), 1),
+                      t("span", Be, r(e.part_count || ""), 1),
                       t("time", {
                         datetime: e.received_at
-                      }, n(e.time), 9, Ze),
-                      e.agent_id ? (l(), s("button", {
+                      }, r(e.time), 9, Ze),
+                      e.agent_id ? (n(), l("button", {
                         key: 0,
                         type: "button",
                         class: "sender",
                         "data-peek": `agents:${e.agent_id}`,
-                        onClick: B((b) => p(oe)(`agents:${e.agent_id}`), ["stop"])
-                      }, n(e.sender), 9, Pe)) : (l(), s("span", Fe, n(e.sender), 1)),
-                      t("span", Qe, n(Math.round(e.queued_ms)) + " ms", 1),
-                      t("span", De, n(K(e)), 1)
+                        onClick: B((b) => v(oe)(`agents:${e.agent_id}`), ["stop"])
+                      }, r(e.sender), 9, Pe)) : (n(), l("span", Fe, r(e.sender), 1)),
+                      t("span", Qe, r(Math.round(e.queued_ms)) + " ms", 1),
+                      t("span", De, r(K(e)), 1)
                     ], 42, Ie)
                   ], 64))), 128))
                 ]),
@@ -520,17 +530,17 @@ const ie = ["stroke-width", "innerHTML"], he = {
             "aria-orientation": "vertical"
           }, null, -1)),
           t("section", Ee, [
-            v($e, { request: E.value }, null, 8, ["request"])
+            k($e, { request: E.value }, null, 8, ["request"])
           ]),
-          L.value ? (l(), s("div", {
+          L.value ? (n(), l("div", {
             key: 0,
             class: "queue-veil",
             onClick: a[5] || (a[5] = B((e) => L.value = !1, ["self"]))
           }, [
-            v(ge, {
+            k(ge, {
               onClose: a[4] || (a[4] = (e) => L.value = !1)
             })
-          ])) : f("", !0)
+          ])) : m("", !0)
         ])
       ]),
       _: 1

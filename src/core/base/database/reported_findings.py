@@ -12,10 +12,10 @@ class ReportedFindings:
         self.lock = Lock()
 
     def unreported(self, findings: list[RepeatedFinding]) -> list[RepeatedFinding]:
-        findings_by_key: dict[str, RepeatedFinding] = {}
+        keyed_findings: dict[str, RepeatedFinding] = {}
         for finding in findings:
-            findings_by_key.setdefault(finding.key, finding)
+            keyed_findings.setdefault(finding.key, finding)
         with self.lock:
-            new_findings = [finding for key, finding in findings_by_key.items() if key not in self.keys]
-            self.keys.update(finding.key for finding in new_findings)
-        return new_findings
+            unreported_findings = [finding for key, finding in keyed_findings.items() if key not in self.keys]
+            self.keys.update(finding.key for finding in unreported_findings)
+        return unreported_findings

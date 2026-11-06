@@ -6,9 +6,7 @@ from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 
 
 class PluginProjectReads(ProjectReads):
-    """The folders the plugins that may run declare, leaving out a wrong entry and a plugin whose files changed, so
-    a changed manifest opens nothing a person has not read. The journal's own folder is never declared: it holds the
-    database and every worktree."""
+    """The project folders declared by plugins whose files have not changed."""
 
     def __init__(self, runnable: RunnablePlugins, home: JournalHome) -> None:
         self.runnable, self.home = runnable, home

@@ -119,15 +119,15 @@ def different_program_launcher(story) -> None:
 
 
 @pytest.fixture(params=[no_launcher, stale_launcher_socket, different_program_launcher])
-def stopped_main(new_story, request):
+def stopped_main_agent(new_story, request):
     story = new_story(fixture=UserJoined)
     request.param(story)
     story.expect_success(f"agent stop {story.agent.id}", f"stopped agent {story.agent.id}", actor=story.user)
     return story
 
 
-def test_a_main_with_no_process_and_no_launcher_that_answers_ends_when_stopped(stopped_main):
-    stopped_main.expect_text(f"agent show {stopped_main.agent.id}", "ended_at:", actor=stopped_main.user)
+def test_a_main_with_no_process_and_no_launcher_that_answers_ends_when_stopped(stopped_main_agent):
+    stopped_main_agent.expect_text(f"agent show {stopped_main_agent.agent.id}", "ended_at:", actor=stopped_main_agent.user)
 
 
 def test_stopping_an_ended_agent_is_refused(new_story):

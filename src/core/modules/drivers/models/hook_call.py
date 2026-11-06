@@ -95,9 +95,5 @@ class HookCall(EnvironmentScoped, Model):
         return self.metadata.module_part(DRIVERS_MODULE).get("compaction_start") is True
 
     @property
-    def is_interrupted(self) -> bool:
-        return bool(self.metadata.module_part(DRIVERS_MODULE).get("interrupted"))
-
-    @property
     def is_session_start(self) -> bool:
         return self.hook == HookEventName.SESSION_START

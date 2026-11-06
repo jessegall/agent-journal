@@ -3,7 +3,7 @@ from core.base.model.tables import Tables
 from core.modules.tasks.models.task import Task
 
 
-class TaskEditSubcommand(EditSubcommand):
+class EditTaskSubcommand(EditSubcommand):
     """Edits the fields of a task."""
 
     cli_name = "task"

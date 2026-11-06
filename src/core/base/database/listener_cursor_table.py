@@ -47,8 +47,8 @@ class ListenerCursorTable:
     def has_unhandled_events(self) -> bool:
         return bool(self.database.rows(UNHANDLED_EVENTS)[0][0])
 
-    def has_pending_events(self, event_id: int, left_out: Sequence[str]) -> bool:
-        return bool(self.database.rows(Statement(PENDING_EVENTS.format(listeners=", ".join("?" for _ in left_out)), [event_id, *left_out]))[0][0])
+    def has_pending_events(self, event_id: int, excluded_listeners: Sequence[str]) -> bool:
+        return bool(self.database.rows(Statement(PENDING_EVENTS.format(listeners=", ".join("?" for _ in excluded_listeners)), [event_id, *excluded_listeners]))[0][0])
 
     def failure_count(self, listener: str, event_id: int) -> int:
         return self.database.rows(Statement(FAILURE_COUNT.sql, (listener, event_id)))[0][0]

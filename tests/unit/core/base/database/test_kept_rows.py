@@ -143,11 +143,11 @@ def test_a_write_transaction_reuses_reads_until_another_write(database):
 
 def test_a_write_by_another_connection_is_read_after_a_rollback_that_wrote_nothing(database, tmp_path):
     kept = KeptRows(database)
-    assert kept.read("notes", lambda: texts(database), name="notes.texts") == ("Saved",)
+    assert kept.read("notes", lambda: texts(database), name="notes.texts") == tuple(["Saved"])
     with pytest.raises(RollbackRequested):
         with database.transaction():
             raise RollbackRequested()
     script = Database.opened(JournalHome(tmp_path))
     script.update(Statement("UPDATE notes SET version = 2, text = 'Written by the script' WHERE id = 1"))
     script.close()
-    assert kept.read("notes", lambda: texts(database), name="notes.texts") == ("Written by the script",)
+    assert kept.read("notes", lambda: texts(database), name="notes.texts") == tuple(["Written by the script"])

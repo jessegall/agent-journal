@@ -20,10 +20,7 @@ FINISHED, ABANDONED, ENDED = "finished", "abandoned", "ended"
 
 
 class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
-    """Moves the agent's top sequence run and reports the step below it when it ends.
-
-    A step or sequence advances after its checks pass; abandoning needs none.
-    """
+    """Moves an agent's sequence run and reports the next step."""
 
     command = MoveSequenceRun
 

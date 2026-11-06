@@ -15,9 +15,7 @@ LINE_SEPARATOR = "--"
 
 
 class RunPluginCommandSubcommand(Subcommand[RunPluginCommand, PluginCommandRun]):
-    """`journal plugin run [--agent <n>] [--read-only] -- <command>`: runs a command at the root of the checkout of an
-    agent, with that agent's sandbox, and gives back its output and exit code. An agent may not call it, even naming
-    itself: a line in the run has no session, so it would resolve as the person whose login runs the journal."""
+    """Runs a command in an agent's checkout and returns its output and exit code."""
 
     cli_name = "plugin"
     name = "run"
@@ -34,10 +32,10 @@ class RunPluginCommandSubcommand(Subcommand[RunPluginCommand, PluginCommandRun])
     def command(self, arguments: Namespace, caller: Caller) -> RunPluginCommand:
         if self.access.is_limited(caller):
             raise Refusal("an agent may not use journal plugin run", "run the command in your own shell")
-        words = arguments.line[1:] if arguments.line[:1] == [LINE_SEPARATOR] else arguments.line
-        if not words:
+        command_args = arguments.line[1:] if arguments.line[:1] == [LINE_SEPARATOR] else arguments.line
+        if not command_args:
             raise UsageError("name the command to run after --")
-        return RunPluginCommand(self.access.agent_id(arguments.agent, caller), shlex.join(words), arguments.read_only, caller.plugin_script)
+        return RunPluginCommand(self.access.agent_id(arguments.agent, caller), shlex.join(command_args), arguments.read_only, caller.plugin_script)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PluginCommandRun):

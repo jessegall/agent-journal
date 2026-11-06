@@ -10,7 +10,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import C
 WORKTREE_CUT = "suites.coding.workers.worker_worktree.cut"
 WORKTREE_DELIVER = "suites.coding.workers.worker_worktree.deliver"
 WORKTREE_MERGE = "suites.coding.workers.worker_worktree.merge"
-WORKTREE_REMOVE = "suites.coding.workers.worker_worktree.remove"
+WORKTREE_REMOVAL_EVENT = "suites.coding.workers.worker_worktree.remove"
 WORKTREE_CREATED = "suites.coding.workers.worker_worktree.created"
 RULES = ".commandments/rules.md"
 RULES_TEXT = "the rules\n"
@@ -20,16 +20,16 @@ HIDE_COMMANDMENTS = f"""{READ_FOLDER}
 cd "$folder" || exit 4
 '{shutil.which("git")}' ls-files .commandments | xargs '{shutil.which("git")}' update-index --skip-worktree --
 rm -rf .commandments"""
-LIFT_MARK = f"""{READ_FOLDER}
+RESTORE_RULES_SCRIPT = f"""{READ_FOLDER}
 cd "$folder" || exit 4
 '{shutil.which("git")}' ls-files .commandments | xargs '{shutil.which("git")}' update-index --no-skip-worktree --
 '{shutil.which("git")}' checkout -- .commandments"""
-FOLDER_THERE = f"""{READ_FOLDER}
+CHECK_FOLDER_SCRIPT = f"""{READ_FOLDER}
 if [ -d "$folder" ]; then touch "$JOURNAL_PLUGIN_DATA/folder-was-there"; fi"""
 
 
-def story_with_hidden_rules(new_story, *more_entries, **more_scripts):
-    story = event_plugin_story(new_story, {"event": WORKTREE_CUT, "commit": "hide.sh"}, *more_entries, scripts={"hide.sh": HIDE_COMMANDMENTS, **more_scripts}, fixture=EventWorkerStarted)
+def story_with_hidden_rules(new_story, *extra_entries, **extra_scripts):
+    story = event_plugin_story(new_story, {"event": WORKTREE_CUT, "commit": "hide.sh"}, *extra_entries, scripts={"hide.sh": HIDE_COMMANDMENTS, **extra_scripts}, fixture=EventWorkerStarted)
     story.repository = repository_environment(story)
     story.repository.checkout(ENVIRONMENT_BRANCH)
     (story.repository.folder / ".commandments").mkdir()
@@ -47,7 +47,7 @@ def hiding_story(new_story):
 
 @pytest.fixture
 def lifting_story(new_story):
-    story = story_with_hidden_rules(new_story, {"event": WORKTREE_DELIVER, "commit": "lift.sh"}, **{"lift.sh": LIFT_MARK})
+    story = story_with_hidden_rules(new_story, {"event": WORKTREE_DELIVER, "commit": "lift.sh"}, **{"lift.sh": RESTORE_RULES_SCRIPT})
     hand_in(story)
     story.run_listeners()
     return story
@@ -121,17 +121,17 @@ def test_a_plugin_hears_one_event_for_a_merge_with_its_commits_and_none_for_a_re
     story.run_listeners()
     story.expect_rows(outcome.code != 0, not script_calls(story, "see.sh"))
     hand_in(story)
-    before = story.repository.tip(ENVIRONMENT_BRANCH)
+    original_commit = story.repository.tip(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge {story.worker.id}", actor=story.agent)
     story.run_listeners()
     calls = script_calls(story, "see.sh")
     story.expect_rows(len(calls) == 1)
     row = data_row(calls[0])
-    story.expect_rows(row["commit_before_merge"] == before, row["commit_after_merge"] == story.repository.tip(ENVIRONMENT_BRANCH), row["session_agent_id"] == story.worker.id, bool(row["merged_task_ids"]))
+    story.expect_rows(row["commit_before_merge"] == original_commit, row["commit_after_merge"] == story.repository.tip(ENVIRONMENT_BRANCH), row["session_agent_id"] == story.worker.id, bool(row["merged_task_ids"]))
 
 
 def removal_story(new_story):
-    story = event_plugin_story(new_story, {"event": WORKTREE_REMOVE, "commit": "see.sh"}, fixture=EventWorkerStarted)
+    story = event_plugin_story(new_story, {"event": WORKTREE_REMOVAL_EVENT, "commit": "see.sh"}, fixture=EventWorkerStarted)
     story.repository = repository_environment(story)
     story.worker = dispatched_worker(story, DISPATCH)
     return story
@@ -162,7 +162,7 @@ def test_s37_a_guard_on_a_new_worktree_refuses_and_nothing_stays(new_story):
 
 
 def test_s38_the_commit_payload_on_cut_holds_the_folder_and_branch_and_the_folder_is_there(new_story):
-    story = event_plugin_story(new_story, {"event": WORKTREE_CUT, "commit": "folder.sh"}, scripts={"folder.sh": FOLDER_THERE}, fixture=EventWorkerStarted)
+    story = event_plugin_story(new_story, {"event": WORKTREE_CUT, "commit": "folder.sh"}, scripts={"folder.sh": CHECK_FOLDER_SCRIPT}, fixture=EventWorkerStarted)
     repository = repository_environment(story)
     worker = dispatched_worker(story, DISPATCH)
     story.run_listeners()

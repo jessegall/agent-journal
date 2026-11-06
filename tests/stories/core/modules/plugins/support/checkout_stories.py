@@ -20,29 +20,25 @@ WORKER_DELIVERING = "worker_delivering"
 LISTENS_FOR_FILES = {"program": "see.sh", "hears": [FILE_EDITED, WORKER_DELIVERING], "holds": [{"event": WORKER_DELIVERING, "window_ms": 5000}], "reaches": {FILE_EDITED: ["workers", "helpers"]}}
 
 
-def project_with_order(story: Story, folder: Path, named: Path | None = None) -> GitRepository:
-    """A real repository whose environment branch holds src/order.py, set as the folder of the environment under the
-    path given, which may be a link."""
+def project_with_order(story: Story, folder: Path, environment_path: Path | None = None) -> GitRepository:
     repository = GitRepository.sample(folder)
     repository.checkout(ENVIRONMENT_BRANCH)
     (folder / "src").mkdir()
     repository.committed(ORDER, ORDER_TEXT, "The order")
     repository.checkout(CHECKOUT_BRANCH)
-    story.expect_success(f"environment edit 1 --folder {shlex.quote(str(named or folder))} --branch {ENVIRONMENT_BRANCH}")
+    story.expect_success(f"environment edit 1 --folder {shlex.quote(str(environment_path or folder))} --branch {ENVIRONMENT_BRANCH}")
     return repository
 
 
-def checkout_story(new_story, *entries: object, project: str = "project", linked: bool = False, dispatch: str = DISPATCH, before_dispatch=None, **manifest: object) -> Story:
-    """A worker in a real worktree with a plugin that hears its files, and story.repository, story.worker,
-    story.worker_session and story.worktree set. With linked the environment names the project through a link."""
+def checkout_story(new_story, *entries: object, project: str = "project", linked: bool = False, dispatch: str = DISPATCH, setup_repository=None, **manifest: object) -> Story:
     story = install_runner(event_plugin_story(new_story, *entries, fixture=EventWorkerStarted, **{**LISTENS_FOR_FILES, **manifest}))
     parent = story.home.folder.parent
     link = parent / "linked-project" if linked else None
     story.repository = project_with_order(story, parent / project, link)
     if link is not None:
         link.symlink_to(story.repository.folder, target_is_directory=True)
-    if before_dispatch is not None:
-        before_dispatch(story)
+    if setup_repository is not None:
+        setup_repository(story)
     story.worker = dispatched_worker(story, dispatch)
     story.worker_session = worker_session(story, story.worker)
     story.worktree = story.repository.worktree_folder(story.worker.id)

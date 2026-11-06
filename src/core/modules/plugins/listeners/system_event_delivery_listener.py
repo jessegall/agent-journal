@@ -22,8 +22,7 @@ from core.modules.settings.support.managed_hook_scanned import ManagedHookScanne
 
 
 class SystemEventDeliveryListener(CommitListener[JournalBooting | RegistrySynced | UpgradeMoved | UpgradeFinished | ManagedHookChanged | ManagedHookScanned | ManagedHookRestored]):
-    """Saves a delivery for each commit script on a system or file event, which passes no save listener. It has no row,
-    so the line holds what the log holds."""
+    """Saves plugin deliveries for system and file events."""
 
     name = "plugins.system-event-delivery"
 

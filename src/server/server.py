@@ -34,7 +34,7 @@ from server.server_tunnel import ServerTunnel
 from server.hook.hook_database import HookDatabase
 from server.journal_round import JournalRound
 from server.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
-from core.base.running_scripts import RunningScripts
+from core.base.running_scripts import PluginScriptProcesses
 from server.ordinary_listener_work import OrdinaryListenerWork
 from server.plugin_listener_work import PluginListenerWork
 from server.urgent_listener_work import UrgentListenerWork
@@ -153,7 +153,7 @@ def main(argv: list[str]) -> int:
         threads = (ticker_thread, listener_thread, urgent_thread, plugin_thread)
         for thread in threads:
             thread.signal_stop()
-        RunningScripts.shared(home).stop_all()
+        PluginScriptProcesses.shared(home).stop_all()
         server.drain(ANSWER_LIMIT_SECONDS)
         plugin_services.close()
         tunnel.close()

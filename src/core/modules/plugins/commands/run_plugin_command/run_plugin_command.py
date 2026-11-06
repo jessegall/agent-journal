@@ -10,5 +10,5 @@ class RunPluginCommand(Command[PluginCommandRun]):
 
     agent_id: int
     line: str
-    read_only: bool
+    is_readonly: bool
     plugin: str

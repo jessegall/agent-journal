@@ -36,7 +36,7 @@ def test_every_row_is_kept_and_the_index_is_there(tmp_path):
     delivery = connection.execute("SELECT id, plugin_id, environment_id, session_agent_id, event, script, event_id FROM plugin_deliveries").fetchall()
     assert delivery == [(7, 1, 2, 3, "file_edited", "", None)]
     assert connection.execute("SELECT id, environment_id, session_agent_id FROM plugin_outputs").fetchall() == [(8, 2, 3)]
-    assert connection.execute("SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'plugin_outputs_plugin'").fetchall() == [("plugin_outputs_plugin",)]
+    assert connection.execute("SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'plugin_outputs_plugin'").fetchall() == [tuple(["plugin_outputs_plugin"])]
 
 
 def test_a_row_may_have_no_agent_and_no_environment(tmp_path):

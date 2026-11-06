@@ -10,7 +10,7 @@ from functools import lru_cache
 from core.base.refusal import Refusal
 from core.base.type_guards import is_list, is_mapping
 from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX, ManifestListener
-from core.modules.plugins.support.plugin_moment import PluginMoment
+from core.modules.plugins.support.plugin_named_event import PluginNamedEvent
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.manifest_alias import ManifestAlias
 from core.modules.plugins.support.manifest_dashboard import ManifestDashboard
@@ -60,7 +60,7 @@ class PluginManifest:
     description: str = ""
     project_reads: tuple[str, ...] = ()
     listeners: tuple[ManifestListener, ...] = ()
-    moments: tuple[PluginMoment, ...] = ()
+    named_events: tuple[PluginNamedEvent, ...] = ()
     protocol: int = LINE_VERSION
     listed_files: tuple[str, ...] = ()
 
@@ -78,7 +78,7 @@ class PluginManifest:
         listeners = cls.read_listeners(fields["listen"], folder) if "listen" in fields else ()
         return cls(str(fields["name"]), str(fields["title"]), str(fields["version"]), program,
                    tuple(str(name) for name in names) if is_list(names) else (), tuple(cls.event_window(entry) for entry in windows) if is_list(windows) else (),
-                   cls.read_settings(folder, settings_file), tuple(dict.fromkeys(file for file in (MANIFEST_FILE, program, settings_file, *(listener.inside_script(form) for listener in listeners for form in EventForm), *cls.extra_files(fields, folder)) if file and not file.startswith(SERVICE_PREFIX))),
+                   cls.read_settings(folder, settings_file), tuple(dict.fromkeys(file for file in (MANIFEST_FILE, program, settings_file, *(listener.allowed_script(form) for listener in listeners for form in EventForm), *cls.extra_files(fields, folder)) if file and not file.startswith(SERVICE_PREFIX))),
                    cls.read_card_tones(fields["cards"] if "cards" in fields else None), str(fields["skills"]) if "skills" in fields else "",
                    cls.read_services(fields["services"] if "services" in fields else None), cls.read_requirements(fields["requires"] if "requires" in fields else None),
                    cls.read_setup_steps(fields["setup"] if "setup" in fields else None), str(fields["installed"]) if "installed" in fields else "",
@@ -161,17 +161,17 @@ class PluginManifest:
 
     @classmethod
     def extra_files(cls, fields: Mapping[str, object], folder: Path) -> tuple[str, ...]:
-        return tuple(name for entry in cls.read_listed_files(fields) if ManifestListener.stays_inside(entry, folder) for name in cls.walked_files(folder, entry))
+        return tuple(name for entry in cls.read_listed_files(fields) if ManifestListener.is_contained_path(entry, folder) for name in cls.walked_files(folder, entry))
 
     @staticmethod
     def walked_files(folder: Path, entry: str) -> tuple[str, ...]:
         path = folder / entry
         if not path.is_dir():
             return tuple([entry])
-        return tuple(sorted(str(found.relative_to(folder)) for found in path.rglob("*") if found.is_file()))
+        return tuple(sorted(str(file.relative_to(folder)) for file in path.rglob("*") if file.is_file()))
 
     def wrong_files(self, folder: Path) -> tuple[str, ...]:
-        return tuple(entry for entry in self.listed_files if not ManifestListener.stays_inside(entry, folder))
+        return tuple(entry for entry in self.listed_files if not ManifestListener.is_contained_path(entry, folder))
 
     @staticmethod
     def read_protocol(fields: Mapping[str, object]) -> int:
@@ -230,20 +230,20 @@ class PluginManifest:
         limits = [window.window_ms for window in self.event_windows if window.event == event and window.window_ms > 0]
         return min(limits[0], ceiling_ms) if limits else ceiling_ms
 
-    def with_moments(self, keys: Mapping[str, str]) -> "PluginManifest":
-        moments = tuple(PluginMoment(keys[listener.event], listener.event, form, listener.inside_script(form)) for listener in self.listeners if listener.event in keys
-                        for form in (EventForm.GUARD, EventForm.COMMIT) if listener.inside_script(form))
-        if not moments:
+    def with_named_events(self, keys: Mapping[str, str]) -> "PluginManifest":
+        named_events = tuple(PluginNamedEvent(keys[listener.event], listener.event, form, listener.allowed_script(form)) for listener in self.listeners if listener.event in keys
+                        for form in (EventForm.GUARD, EventForm.COMMIT) if listener.allowed_script(form))
+        if not named_events:
             return self
-        names = tuple(dict.fromkeys((*self.event_names, *(moment.event for moment in moments))))
-        windows = tuple(EventWindow(moment.event, 0) for moment in moments if moment.form is EventForm.GUARD and moment.event not in self.window_names())
-        return replace(self, event_names=names, event_windows=(*self.event_windows, *windows), moments=moments)
+        names = tuple(dict.fromkeys((*self.event_names, *(named_event.event for named_event in named_events))))
+        windows = tuple(EventWindow(named_event.event, 0) for named_event in named_events if named_event.form is EventForm.GUARD and named_event.event not in self.window_names())
+        return replace(self, event_names=names, event_windows=(*self.event_windows, *windows), named_events=named_events)
 
-    def moment(self, event: str, form: EventForm) -> PluginMoment | None:
-        return next((moment for moment in self.moments if moment.event == event and moment.form is form), None)
+    def named_event(self, event: str, form: EventForm) -> PluginNamedEvent | None:
+        return next((named_event for named_event in self.named_events if named_event.event == event and named_event.form is form), None)
 
-    def script_for_key(self, key: str, form: EventForm) -> str:
-        return next((listener.inside_script(form) for listener in self.listeners if listener.event == key and listener.script(form)), "")
+    def script(self, key: str, form: EventForm) -> str:
+        return next((listener.allowed_script(form) for listener in self.listeners if listener.event == key and listener.script(form)), "")
 
     def answers_as(self, script: str) -> bool:
         name = script.removeprefix(SERVICE_PREFIX)

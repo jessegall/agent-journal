@@ -17,7 +17,7 @@ def test_worker_and_helper_cards_show_their_own_terminal(new_story, tmp_path):
     story.expect_hook_allowed('terminal-helper', HookSamples.shell('ls helper-files', ShellPart('ls', CommandCategory.READ, ['helper-files'])))
     rows = json.loads(story.run("usage agents --environment main --json", actor=story.user).output_text)["rows"]
     facts = {row["id"]: row["last_activity"] for row in rows}
-    assert facts[worker] and facts[helper]
+    story.expect_rows(bool(facts[worker]), bool(facts[helper]))
     with server_story(story) as server:
         expect_browser(server, 'agentTerminal.browser.mjs', [str(worker), str(helper), str(tmp_path / 'agent-terminal')])
     print(f'Agent terminal screenshots: {tmp_path}')

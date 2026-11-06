@@ -7,7 +7,7 @@ class PluginEventState(StrEnum):
     LISTENS = "listens"
     WRONG_KEY = "wrong key"
     RENAMED = "renamed"
-    FORM_NOT_OFFERED = "form not offered"
+    UNSUPPORTED_FORM = "form not offered"
     WRONG_SCRIPT = "wrong script"
     WRONG_PROJECT_READ = "wrong project read"
     NEEDS_NEWER_JOURNAL = "needs a newer journal"

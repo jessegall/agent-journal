@@ -61,9 +61,7 @@ class StatusFiles:
 
     @staticmethod
     def reported(path: Path) -> SessionStatus:
-        if not path.is_file():
-            return SessionStatus()
         try:
             return SessionStatus.reported(json.loads(FileAccess.shared().read(path) or "{}"))
-        except json.JSONDecodeError:
+        except (FileNotFoundError, json.JSONDecodeError):
             return SessionStatus()

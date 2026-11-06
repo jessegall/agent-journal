@@ -2,7 +2,7 @@ from collections.abc import Callable, Mapping
 
 from core.base.clock import Clock
 from core.base.error_log import ErrorLog
-from core.base.running_scripts import RunningScripts
+from core.base.running_scripts import PluginScriptProcesses
 from core.base.timestamp import Timestamp
 from core.base.command.bus import Bus
 from core.base.command.server_stopping_error import ServerStoppingError
@@ -35,59 +35,56 @@ FAILING_RETRY_SECONDS = 300
 
 
 class PluginEventRunner:
-    """Runs one plugin's guard or listen script with no time limit and no lock held. A plugin that was switched off
-    meanwhile or is being upgraded is left out, one whose files changed is switched off, and a fault is recorded on
-    the plugin, so the change goes on. A plugin with too many scripts running is left out, and so is a failing one,
-    except for one try every few minutes, or nothing could ever clear its mark."""
+    """Runs plugin guard and listen scripts and records failures and skipped runs."""
 
-    def __init__(self, queries: Queries, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, clock: Clock, bus: Bus, actors: ModuleActors, scripts: RunningScripts, errors: ErrorLog) -> None:
+    def __init__(self, queries: Queries, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, clock: Clock, bus: Bus, actors: ModuleActors, scripts: PluginScriptProcesses, errors: ErrorLog) -> None:
         self.queries, self.folders, self.program, self.settings, self.clock, self.bus, self.actors, self.scripts, self.errors = queries, folders, program, settings, clock, bus, actors, scripts, errors
 
-    def answer(self, subscription: PluginSubscription, form: EventForm, key: str, data: Mapping[str, object], environment_id: int | None, agent_id: int | None, on_wait: Callable[[], None]) -> PluginEventAnswer | None:
+    def answer(self, subscription: PluginSubscription, form: EventForm, key: str, data: Mapping[str, object], environment_id: int | None, agent_id: int | None, wait_callback: Callable[[], None]) -> PluginEventAnswer | None:
         plugin = self.queries.query(Plugin).filter(id=subscription.plugin_id).first()
         if plugin is None or not plugin.enabled:
             return None
         if not self.may_try(plugin, key, form):
             return None
-        where = f"at {key} ({form.value})"
+        location = f"at {key} ({form.value})"
         try:
             manifest = PluginManifest.read(self.folders.code(plugin.name))
         except Refusal as refusal:
-            self.record(RecordPluginFault(plugin.id, f"{refusal.reason} {where}"))
+            self.record(RecordPluginFault(plugin.id, f"{refusal.reason} {location}"))
             return None
         if not self.may_run(plugin, manifest):
             return None
         environment = self.queries.query(Environment).find(environment_id).name if environment_id is not None else ""
         call = PluginCall(manifest, PluginEvent(key, data), environment, self.clock.timestamp(), self.settings.values(plugin, manifest), agent_id, form=form, script=subscription.script)
         try:
-            answer = self.program.run(call, None, on_wait)
+            answer = self.program.run(call, None, wait_callback)
         except PluginStoppedError as stopped:
             if stopped.stop is ScriptStop.SERVER:
-                raise ServerStoppingError.before(plugin.name, key) from stopped
-            self.record(RecordPluginFault.of(plugin.id, stopped, where))
+                raise ServerStoppingError.plugin_wait(plugin.name, key) from stopped
+            self.record(RecordPluginFault.from_error(plugin.id, stopped, location))
             return None
         except PluginFaultError as fault:
-            self.record(RecordPluginFault.of(plugin.id, fault, where))
+            self.record(RecordPluginFault.from_error(plugin.id, fault, location))
             return None
         if plugin.fault_count:
             self.record(ClearPluginFaults(plugin.id))
         return PluginEventAnswer(plugin.name, plugin.id, answer, subscription.allows_skip)
 
     def may_try(self, plugin: Plugin, key: str, form: EventForm) -> bool:
-        now = self.clock.timestamp()
+        checked_at = self.clock.timestamp()
         if len(self.scripts.running(plugin.name)) >= MOST_RUNNING_SCRIPTS:
-            return self.left_out(plugin, key, form, f"this plugin already runs {MOST_RUNNING_SCRIPTS} scripts", now)
+            return self.record_skip(plugin, key, form, f"this plugin already runs {MOST_RUNNING_SCRIPTS} scripts", checked_at)
         if not plugin.failing:
             return True
-        last_try = self.scripts.failing_try(plugin.name) or plugin.update_timestamp()
-        if last_try.elapsed_seconds(now) < FAILING_RETRY_SECONDS:
-            return self.left_out(plugin, key, form, "this plugin is failing, so it is tried once every 5 minutes", now)
-        self.scripts.keep_failing_try(plugin.name, now)
+        last_tried_at = self.scripts.failing_try(plugin.name) or plugin.update_timestamp()
+        if last_tried_at.elapsed_seconds(checked_at) < FAILING_RETRY_SECONDS:
+            return self.record_skip(plugin, key, form, "this plugin is failing, so it is tried once every 5 minutes", checked_at)
+        self.scripts.keep_failing_try(plugin.name, checked_at)
         return True
 
-    def left_out(self, plugin: Plugin, key: str, form: EventForm, reason: str, now: Timestamp) -> bool:
+    def record_skip(self, plugin: Plugin, key: str, form: EventForm, reason: str, checked_at: Timestamp) -> bool:
         self.errors.noted(f"{form.value} script of {plugin.name} at {key} was skipped: {reason}")
-        self.scripts.skipped(plugin.name, key, form, reason, now)
+        self.scripts.skipped(plugin.name, key, form, reason, checked_at)
         return False
 
     def may_run(self, plugin: Plugin, manifest: PluginManifest, cause_id: int | None = None) -> bool:

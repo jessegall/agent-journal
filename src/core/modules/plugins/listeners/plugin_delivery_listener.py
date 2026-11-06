@@ -43,10 +43,7 @@ COMMIT_SUFFIX = " (commit)"
 
 
 class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
-    """Runs a plugin's program for an event it listens to, without holding the event, once the hook has
-    committed, and puts the line it tells in its queue, which reaches the agent at its next hook. It asks how
-    a file stands here and not when the delivery is saved, since this runs with no lock and the answer may run
-    git. A delivery that a server stop interrupted stays unhandled, so the next start runs it."""
+    """Runs committed plugin deliveries; deliveries interrupted by a server stop remain pending."""
 
     name = "plugins.delivery"
     run_order = PLUGIN_RUN_ORDER
@@ -64,7 +61,9 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         except Refusal as refusal:
             self.record(logged, delivery, RecordPluginFault(delivery.plugin_id, f"{refusal.reason} at {delivery.event}"))
             return
-        if manifest.needs_newer_journal or (delivery.script and not self.may_run_script(plugin, manifest, delivery, logged)):
+        if manifest.needs_newer_journal:
+            return
+        if delivery.script and not self.may_run_script(plugin, manifest, delivery, logged):
             return
         environment = self.queries.query(Environment).find(delivery.environment_id).name if delivery.environment_id is not None else ""
         data: object = json.loads(delivery.data)
@@ -77,7 +76,7 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
             answer = self.program.run(call, self.policy.commit_limit_ms if delivery.script else DELIVERY_LIMIT_MS)
         except PluginStoppedError as stopped:
             if stopped.stop is ScriptStop.SERVER:
-                raise ServerStoppingError.before(plugin.name, delivery.event) from None
+                raise ServerStoppingError.plugin_wait(plugin.name, delivery.event) from stopped
             self.record_fault(logged, delivery, stopped)
             return
         except PluginFaultError as fault:
@@ -97,7 +96,7 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         return self.runner.may_try(plugin, delivery.event, EventForm.COMMIT) and self.runner.may_run(plugin, manifest, logged.id)
 
     def record_fault(self, logged: LoggedEvent, delivery: PluginDelivery, fault: PluginFaultError) -> None:
-        self.record(logged, delivery, RecordPluginFault.of(delivery.plugin_id, fault, f"at {delivery.event}{COMMIT_SUFFIX if delivery.script else ''}"))
+        self.record(logged, delivery, RecordPluginFault.from_error(delivery.plugin_id, fault, f"at {delivery.event}{COMMIT_SUFFIX if delivery.script else ''}"))
 
     def delivery_checkout(self, delivery: PluginDelivery, event_data: Mapping[str, object]) -> Checkout | None:
         file = event_data.get(FILE_FIELD)

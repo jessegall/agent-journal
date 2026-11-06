@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
-from core.base.running_scripts import RunningScripts
+from core.base.running_scripts import PluginScriptProcesses
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plugins.models.plugin import Plugin
@@ -17,13 +17,12 @@ SHOWN_OUTPUT_COUNT = 50
 
 
 class PluginRecordSubcommand(ReadSubcommand[PluginRecord]):
-    """`journal plugin record <name> [--inputs]`: what a plugin did, its newest outputs oldest first and its last fault,
-    or with --inputs the last lines it was sent."""
+    """Reads a plugin's recent outputs, last fault or input lines."""
 
     cli_name = "plugin"
     name = "record"
 
-    def __init__(self, queries: Queries, folders: PluginFolders, scripts: RunningScripts) -> None:
+    def __init__(self, queries: Queries, folders: PluginFolders, scripts: PluginScriptProcesses) -> None:
         self.queries, self.folders, self.scripts = queries, folders, scripts
 
     def arguments(self, parser: ArgumentParser) -> None:

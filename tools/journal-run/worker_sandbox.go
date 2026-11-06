@@ -52,9 +52,9 @@ func declaredFolders(declared []string, main, home string) []string {
 	var folders []string
 	for _, folder := range declared {
 		resolved, err := filepath.EvalSymlinks(folder)
-		inside := resolved != main && strings.HasPrefix(resolved, main+string(filepath.Separator))
-		inHome := resolved == home || strings.HasPrefix(resolved, home+string(filepath.Separator))
-		if err == nil && inside && !inHome {
+		isProjectFolder := resolved != main && strings.HasPrefix(resolved, main+string(filepath.Separator))
+		isJournalFolder := resolved == home || strings.HasPrefix(resolved, home+string(filepath.Separator))
+		if err == nil && isProjectFolder && !isJournalFolder {
 			folders = append(folders, resolved)
 		}
 	}
@@ -72,12 +72,12 @@ func excludedSymlinkTargets(worktree string) []string {
 	if !filepath.IsAbs(gitFolder) {
 		gitFolder = filepath.Join(worktree, gitFolder)
 	}
-	excluded, err := os.ReadFile(filepath.Join(gitFolder, worktreeExcludeFile))
+	excludeData, err := os.ReadFile(filepath.Join(gitFolder, worktreeExcludeFile))
 	if err != nil {
 		return nil
 	}
 	var targets []string
-	for _, line := range strings.Split(string(excluded), "\n") {
+	for _, line := range strings.Split(string(excludeData), "\n") {
 		path := filepath.Join(worktree, strings.TrimPrefix(strings.TrimSpace(line), "/"))
 		info, err := os.Lstat(path)
 		if err != nil || info.Mode()&os.ModeSymlink == 0 {

@@ -4,7 +4,7 @@ from core.base.model.event_form import EventForm
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
-from core.base.running_scripts import RunningScripts
+from core.base.running_scripts import PluginScriptProcesses
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.environments.models.environment import Environment
 from core.modules.plugins.models.plugin import Plugin
@@ -22,10 +22,9 @@ TRY_LIMIT_MS = 60_000
 
 
 class PluginTry:
-    """Runs a plugin's script for a key by hand, with the line of the newest real event of that key, or an empty row if
-    there is none, and gives back what happened. It applies nothing and records no fault."""
+    """Runs a plugin script with a recent event without applying its answer or recording faults."""
 
-    def __init__(self, queries: Queries, registry: Registry, folders: PluginFolders, log: EventLog, program: PluginProgram, settings: PluginSettings, clock: Clock, scripts: RunningScripts) -> None:
+    def __init__(self, queries: Queries, registry: Registry, folders: PluginFolders, log: EventLog, program: PluginProgram, settings: PluginSettings, clock: Clock, scripts: PluginScriptProcesses) -> None:
         self.queries, self.registry, self.folders, self.log, self.program, self.settings, self.clock, self.scripts = queries, registry, folders, log, program, settings, clock, scripts
 
     def run(self, name: str, key: str, agent_id: int | None, environment_id: int | None) -> PluginTryRun:
@@ -36,11 +35,11 @@ class PluginTry:
         if not event:
             raise Refusal(f"no event has the key {key}", "journal event keys lists them")
         manifest = PluginManifest.read(self.folders.code(plugin.name))
-        form = next((form for form in EventForm if manifest.script_for_key(key, form)), None)
+        form = next((form for form in EventForm if manifest.script(key, form)), None)
         if form is None:
             raise Refusal(f"{name} has no script on {key}", f"journal plugin events {name} lists what it listens to")
         environment = self.queries.query(Environment).find(environment_id).name if environment_id is not None else ""
-        call = PluginCall(manifest, PluginEvent(key, self.data(event, form)), environment, self.clock.timestamp(), self.settings.values(plugin, manifest), agent_id, form=form, script=manifest.script_for_key(key, form))
+        call = PluginCall(manifest, PluginEvent(key, self.data(event, form)), environment, self.clock.timestamp(), self.settings.values(plugin, manifest), agent_id, form=form, script=manifest.script(key, form))
         line, skipped = self.program.line(call, TRY_LIMIT_MS), self.scripts.newest_skip(plugin.name, key, form)
         skip = skipped.reason if skipped else ""
         try:
@@ -49,7 +48,7 @@ class PluginTry:
             return PluginTryRun(line, "", str(fault), skip)
 
     def data(self, event: str, form: EventForm) -> dict[str, object]:
-        logged = self.log.newest_named(event)
+        logged = self.log.latest_event(event)
         if logged is None:
             return {"form": form.value, "final": form is EventForm.COMMIT, "log_name": event, "event_id": None, "row": {}, "old_row": {}, "changed": {}}
         actor_type = self.queries.query(ActorRecord).find(logged.actor_id).type.value

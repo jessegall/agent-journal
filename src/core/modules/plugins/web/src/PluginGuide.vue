@@ -114,7 +114,7 @@ const CALLS = [
             <p>One line of JSON on its input. An event about a file has a <code>file</code> in its data, and the list of changes at a hand-in holds one for each name.</p>
             <pre>{{ EVENT_LINE }}</pre>
             <ul>
-                <li v-for="rule in PATH_RULES" :key="rule">{{ rule }}</li>
+                <template v-for="rule in PATH_RULES" :key="rule"><li>{{ rule }}</li></template>
             </ul>
             <dl>
                 <template v-for="[field, text] in FILE_FIELDS" :key="field">
@@ -123,7 +123,7 @@ const CALLS = [
                 </template>
             </dl>
             <h3>Asking the journal about a checkout</h3>
-            <p>A plugin may name any agent, and so may you. An agent names only itself, reads the checkout it works in, and in the project only the folders in <code>project_reads</code>.</p>
+            <p>Plugins and people can name any agent. An agent can name only its own checkout and read project folders listed in <code>project_reads</code>.</p>
             <dl>
                 <template v-for="[call, text] in CALLS" :key="call">
                     <dt><code>{{ call }}</code></dt>

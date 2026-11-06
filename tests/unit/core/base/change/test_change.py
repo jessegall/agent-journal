@@ -20,9 +20,9 @@ STORED = Item(id=4, version=1, title="Dune")
 
 def test_a_typed_event_gives_back_the_change_it_came_from():
     moved = STORED.moved(ItemLifecycle.pause)
-    assert Change.of(Created(STORED), CONTEXT).event == "item.create"
-    assert Change.of(Moved(moved, STORED, ItemLifecycle.pause), CONTEXT).event == "item.pause"
-    assert Change.of(Deleted(STORED), CONTEXT) == Change(STORED, None, CONTEXT)
+    assert Change.from_event(Created(STORED), CONTEXT).event == "item.create"
+    assert Change.from_event(Moved(moved, STORED, ItemLifecycle.pause), CONTEXT).event == "item.pause"
+    assert Change.from_event(Deleted(STORED), CONTEXT) == Change(STORED, None, CONTEXT)
 
 
 def test_a_new_row_is_a_create():

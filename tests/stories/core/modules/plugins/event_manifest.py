@@ -13,7 +13,7 @@ from core.testing.hook_samples import HookSamples
 from server.booting_work import BootingWork
 from tests.stories.core.modules.plugins.hooks import REMOVAL_SAMPLE
 from tests.stories.core.modules.processes.support.process_samples import install_runner
-from tests.stories.core.modules.plugins.support.event_modules import FORMER_NOTE_CREATED, NOTE_CREATED, NOTES, NOTES_GONE
+from tests.stories.core.modules.plugins.support.event_modules import FORMER_NOTE_CREATED, NOTE_CREATED, NOTES, REMOVED_NOTES_MODULE
 from tests.stories.core.modules.plugins.support.event_stories import (
     EVENT_SCRIPTS, PIN_CREATED, PIN_LINE, SECOND_JOB, TASK_CREATED, event_folder, event_page, event_plugin_story, expect_listed, install_event_plugin, plugin_data, plugin_page, plugin_row, script_calls)
 from tests.stories.core.modules.plugins.support.plugin_samples import sample_plugin_folder
@@ -26,9 +26,9 @@ ALL_FORMS = {"guard": "refuse.sh", "listen": "pin.sh", "commit": "see.sh"}
 WRONG_ENTRIES = [[{"guard": "see.sh"}], [42], [{"event": 42, "guard": "see.sh"}]]
 
 
-def expect_no_script_ran(story, *scripts: str) -> None:
-    ran = {script: script_calls(story, script) for script in scripts if script_calls(story, script)}
-    assert not ran, f"these scripts ran: {ran}"
+def expect_no_script_calls(story, *scripts: str) -> None:
+    calls = {script: script_calls(story, script) for script in scripts if script_calls(story, script)}
+    story.expect_rows(not calls)
 
 
 def replace_module(story, old: str, new: str) -> None:
@@ -63,7 +63,7 @@ def test_s5_a_wrong_key_is_marked_installs_and_runs_nothing_while_the_rest_of_th
     story.expect_success("task delete 2", actor=story.agent)
     story.expect_success(PIN_LINE, actor=story.agent)
     story.run_listeners()
-    expect_no_script_ran(story, "see.sh")
+    expect_no_script_calls(story, "see.sh")
     story.expect_rows(len(script_calls(story, "right.sh")) == 1)
     story.expect_rows("No such event" in PREVIEW.read_text(), "Nothing reaches this script." in CARD.read_text())
 
@@ -124,7 +124,7 @@ def test_s9_an_old_name_in_hears_installs_and_the_card_shows_it_as_for_a_key(eve
 
 def test_s10_a_key_the_journal_stops_raising_stays_on_shows_on_the_card_and_other_keys_go_on(new_story):
     story = event_plugin_story(new_story, {"event": NOTE_CREATED, "commit": "see.sh"}, {"event": TASK_CREATED, "commit": "right.sh"}, modules=[NOTES])
-    replace_module(story, NOTES, NOTES_GONE)
+    replace_module(story, NOTES, REMOVED_NOTES_MODULE)
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.run_listeners()
     page = plugin_page(story)
@@ -148,18 +148,18 @@ def test_s12_an_upgrade_that_changes_what_it_listens_to_shows_new_and_no_longer_
     story = event_page.story
     install_event_plugin(story, {"event": TASK_CREATED, "guard": "refuse.sh"})
     event_folder(story, {"event": TASK_CREATED, "commit": "see.sh"}, version="1.1.0")
-    offer = event_page.upgrade_offer()
-    story.expect_rows(f"new commit {TASK_CREATED}: see.sh" in offer, f"no longer guard {TASK_CREATED}: refuse.sh" in offer)
+    upgrade_text = event_page.preview_upgrade()
+    story.expect_rows(f"new commit {TASK_CREATED}: see.sh" in upgrade_text, f"no longer guard {TASK_CREATED}: refuse.sh" in upgrade_text)
 
 
 def test_s12_a_new_script_file_changes_the_digest_and_an_upgrade_takes_the_new_digest(event_page):
     story = event_page.story
     install_event_plugin(story, {"event": TASK_CREATED, "commit": "see.sh"})
-    before = plugin_row(story).files_digest
+    original_digest = plugin_row(story).files_digest
     event_folder(story, {"event": TASK_CREATED, "commit": "see.sh"}, {"event": PIN_CREATED, "commit": "extra.sh"}, scripts={"extra.sh": ""}, version="1.1.0")
-    event_page.upgrade_offer()
+    event_page.preview_upgrade()
     event_page.upgrade()
-    story.expect_rows(plugin_row(story).files_digest != before)
+    story.expect_rows(plugin_row(story).files_digest != original_digest)
     story.expect_success(PIN_LINE, actor=story.agent)
     story.run_listeners()
     event_page.expect_on()
