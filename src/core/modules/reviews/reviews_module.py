@@ -71,7 +71,8 @@ class ReviewsModule(Module):
     windows = [WindowDeclaration("reviews.reviewer", "Reviewer", "reviewer.js", WindowLoading.COMPONENT, skeleton=REVIEWS_REVIEWER_SKELETON, search=WindowSearch(ReviewStepSearcher, "Search the reviews"), icon=WindowIcon.REVIEW,
                                  reads=["review board", "review-step board", "reviewer list"],
                                  keys=[WindowKey("board", "review board", events=["review.*", "review_step.*", "reviewer.*"])], events=["review.*", "review_step.*", "reviewer.*"]),
-               WindowDeclaration("reviews.reviewers", "Reviewers", "reviewers.js", WindowLoading.COMPONENT, skeleton=REVIEWS_REVIEWERS_SKELETON, icon=WindowIcon.REVIEW, place=WindowPlace.DROPDOWN, reads=["agent list"], events=["agent.*"]),
+               WindowDeclaration("reviews.reviewers", "Reviewers", "reviewers.js", WindowLoading.COMPONENT, skeleton=REVIEWS_REVIEWERS_SKELETON, icon=WindowIcon.REVIEW, place=WindowPlace.DROPDOWN,
+                                 reads=["agent list"], keys=[WindowKey("reviewers", "agent list --role reviewer", events=["agent.*"])], events=["agent.*"]),
                WindowDeclaration("reviews.subject-reviews", "Reviews", "subject-reviews.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, slots=tuple(["inspector.plan"]), icon=WindowIcon.REVIEW,
                                  reads=["review list"], events=["review.*"], skeleton=tuple([SkeletonPart.line()]))]
     seeders = [ReviewsSeeder]
