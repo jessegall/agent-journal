@@ -29,7 +29,7 @@ class StartedHelper(StoryFixture):
         story.home.socket("launcher").unlink()
 
 
-def the_helper(story):
+def helper_agent(story):
     return next(story.container.get(Queries).query(Agent).filter(role="helper").all_rows())
 
 
@@ -52,13 +52,13 @@ class EndedHelper(StoryFixture):
     parent = StartedHelper
 
     def steps(self, story):
-        story.expect_success(f"agent end {the_helper(story).id}", actor=story.user)
+        story.expect_success(f"agent end {helper_agent(story).id}", actor=story.user)
         story.run_listeners()
 
 
 def test_a_send_to_a_running_helper_adds_to_its_open_job(new_story):
     story = new_story(fixture=StartedHelper)
-    helper = the_helper(story)
+    helper = helper_agent(story)
     story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     jobs = jobs_of(story, helper)
     story.expect_rows(len(jobs) == 1, JOB in jobs[0].brief)
@@ -67,9 +67,9 @@ def test_a_send_to_a_running_helper_adds_to_its_open_job(new_story):
 
 def test_a_send_to_an_ended_helper_opens_a_new_job_and_resumes_it(new_story, monkeypatch):
     story = new_story(fixture=EndedHelper)
-    helper = the_helper(story)
+    helper = helper_agent(story)
     launcher = FakeLauncher(story.home.socket("launcher"))
-    resumable_session(story, the_helper(story), monkeypatch)
+    resumable_session(story, helper_agent(story), monkeypatch)
     story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.thread.join(timeout=5)
@@ -78,7 +78,7 @@ def test_a_send_to_an_ended_helper_opens_a_new_job_and_resumes_it(new_story, mon
 
 def test_a_long_job_arrives_whole(new_story):
     story = new_story(fixture=StartedHelper)
-    helper = the_helper(story)
+    helper = helper_agent(story)
     job = "y" * 6000
     story.expect_success(f'helper send {helper.id} "{job}"', actor=story.agent)
     story.expect_rows(job in jobs_of(story, helper)[0].brief)
@@ -91,19 +91,19 @@ def test_a_send_refuses_an_agent_that_is_no_helper(new_story):
 
 def test_another_agent_may_not_send_to_a_helper_and_the_parent_is_named(new_story):
     story = new_story(fixture=StartedHelper)
-    helper = the_helper(story)
+    helper = helper_agent(story)
     second_worker = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
     story.expect_refusal(f'helper send {helper.id} "{JOB}"', f"agent:{story.agent.id}", actor=second_worker)
 
 
 def test_a_person_may_send_to_a_helper(new_story):
     story = new_story(fixture=StartedHelper)
-    story.expect_success(f'helper send {the_helper(story).id} "{JOB}"', actor=story.user)
+    story.expect_success(f'helper send {helper_agent(story).id} "{JOB}"', actor=story.user)
 
 
 def test_a_stop_ends_the_helper_and_its_job(new_story):
     story = new_story(fixture=StartedHelper)
-    helper = the_helper(story)
+    helper = helper_agent(story)
     story.expect_success(f"helper stop {helper.id}", actor=story.agent)
     story.run_listeners()
     job = jobs_of(story, helper)[0]
@@ -113,18 +113,18 @@ def test_a_stop_ends_the_helper_and_its_job(new_story):
 def test_another_agent_may_not_stop_a_helper(new_story):
     story = new_story(fixture=StartedHelper)
     second_worker = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
-    story.expect_refusal(f"helper stop {the_helper(story).id}", f"agent:{story.agent.id}", actor=second_worker)
+    story.expect_refusal(f"helper stop {helper_agent(story).id}", f"agent:{story.agent.id}", actor=second_worker)
 
 
 def test_a_helper_that_ends_closes_its_job(new_story):
     story = new_story(fixture=EndedHelper)
-    story.expect_rows(jobs_of(story, the_helper(story))[0].ended_at is not None)
+    story.expect_rows(jobs_of(story, helper_agent(story))[0].ended_at is not None)
 
 
 def test_a_job_naming_files_an_ended_helper_knows_goes_to_that_helper(new_story):
     story = new_story(fixture=EndedHelper)
     FakeLauncher(story.home.socket("launcher"))
-    story.expect_refusal(START, f"journal helper send {the_helper(story).id}", actor=story.agent)
+    story.expect_refusal(START, f"journal helper send {helper_agent(story).id}", actor=story.agent)
 
 
 def test_fresh_starts_a_new_helper_on_files_an_ended_one_knows(new_story):
@@ -141,12 +141,12 @@ def test_a_job_on_other_files_starts_a_new_helper(new_story):
 
 def test_a_send_says_which_helper_takes_the_job(new_story):
     story = new_story(fixture=StartedHelper)
-    helper = the_helper(story)
+    helper = helper_agent(story)
     story.expect_success(f'helper send {helper.id} "{JOB}"', f"helper {helper.id} takes the job", actor=story.agent)
 
 
 def test_a_helper_that_ran_as_a_program_subagent_is_refused_a_new_job(new_story):
     story = new_story(fixture=EndedHelper)
-    helper = the_helper(story)
+    helper = helper_agent(story)
     story.container.get(Database).connection.execute("UPDATE agents SET profile = '' WHERE id = ?", [helper.id])
     story.expect_refusal(f'helper send {helper.id} "{JOB}"', "start a new helper", actor=story.agent)

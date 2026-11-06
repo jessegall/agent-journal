@@ -5,7 +5,7 @@ from core.modules.messages.models.message_work_source import MessageWorkSource
 
 
 @dataclass(frozen=True)
-class SelectWorkSource(Command[MessageWorkSource]):
+class ChooseWorkSource(Command[MessageWorkSource]):
     """Explicitly selects an addressed person request."""
 
     message_id: int

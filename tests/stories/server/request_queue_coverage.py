@@ -21,17 +21,17 @@ def test_a_running_cli_line_is_listed_in_the_queue_inspector(recording_server, m
     entered, release = Event(), Event()
     answer = CliEndpoint.answer
 
-    def held(endpoint, request, stream):
+    def blocked_answer(endpoint, request, stream):
         entered.set()
-        assert release.wait(5)
+        server.story.expect_rows(release.wait(5))
         return answer(endpoint, request, stream)
 
-    monkeypatch.setattr(CliEndpoint, "answer", held)
+    monkeypatch.setattr(CliEndpoint, "answer", blocked_answer)
     with ThreadPoolExecutor(1) as pool:
         pending = pool.submit(server.expect_cli_exit, "task list", "/", 0, "")
         try:
-            assert entered.wait(3)
-            assert any(row["sender"] == "CLI" and row["event"] == "task list" for row in inspection(server, cookie)["running"])
+            server.story.expect_rows(entered.wait(3))
+            server.story.expect_rows(any(row["sender"] == "CLI" and row["event"] == "task list" for row in inspection(server, cookie)["running"]))
         finally:
             release.set()
         pending.result(timeout=3)
@@ -43,20 +43,20 @@ def test_a_running_viewer_get_is_listed_in_the_queue_inspector(recording_server,
     entered, release = Event(), Event()
     windows = WindowsRoute.windows
 
-    def held(route, environment):
+    def blocked_answer(route, environment):
         entered.set()
-        assert release.wait(5)
+        server.story.expect_rows(release.wait(5))
         return windows(route, environment)
 
-    monkeypatch.setattr(WindowsRoute, "windows", held)
+    monkeypatch.setattr(WindowsRoute, "windows", blocked_answer)
     with ThreadPoolExecutor(1) as pool:
         pending = pool.submit(viewer_answer, server.viewer_port(), "/api/windows?environment=main", cookie, "")
         try:
-            assert entered.wait(3)
-            assert any(row["sender"] == "Viewer" and row["event"] == "GET /api/windows?environment=main" for row in inspection(server, cookie)["running"])
+            server.story.expect_rows(entered.wait(3))
+            server.story.expect_rows(any(row["sender"] == "Viewer" and row["event"] == "GET /api/windows?environment=main" for row in inspection(server, cookie)["running"]))
         finally:
             release.set()
-        assert pending.result(timeout=3)[0] == 200
+        server.story.expect_rows(pending.result(timeout=3)[0] == 200)
 
 
 def test_a_main_agent_hook_goes_ahead_of_a_waiting_cli_line(recording_server, monkeypatch):
@@ -80,13 +80,13 @@ def test_a_main_agent_hook_goes_ahead_of_a_waiting_cli_line(recording_server, mo
         with server.context.hook_database.used(QueuePriority.AGENT_HOOK, 1):
             command = pool.submit(server.expect_cli_exit, "task list", "/", 0, "")
             with queue.changed:
-                assert queue.changed.wait_for(lambda: bool(queue.waiting_cli), timeout=2)
+                server.story.expect_rows(queue.changed.wait_for(lambda: bool(queue.waiting_cli), timeout=2))
             answer = pool.submit(server.expect_hook_answer, "/hook", body, 200, '"refusal":')
             with queue.changed:
-                assert queue.changed.wait_for(lambda: bool(queue.waiting_hooks), timeout=0.4)
+                server.story.expect_rows(queue.changed.wait_for(lambda: bool(queue.waiting_hooks), timeout=0.4))
         answer.result(timeout=3)
         command.result(timeout=3)
-    assert order == ["hook", "cli"]
+    server.story.expect_rows(order == ["hook", "cli"])
 
 
 def test_a_cli_line_runs_after_its_wait_limit_even_while_a_hook_is_held(recording_server):
@@ -97,4 +97,4 @@ def test_a_cli_line_runs_after_its_wait_limit_even_while_a_hook_is_held(recordin
             started_at = perf_counter()
             command = pool.submit(server.expect_cli_exit, "task list", "/", 0, "")
             command.result(timeout=2)
-            assert perf_counter() - started_at < 1
+            server.story.expect_rows(perf_counter() - started_at < 1)

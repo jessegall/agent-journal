@@ -3,11 +3,11 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
-from core.modules.messages.commands.select_work_source.select_work_source import SelectWorkSource
+from core.modules.messages.commands.choose_work_source.choose_work_source import ChooseWorkSource
 from core.modules.messages.models.message_work_source import MessageWorkSource
 
 
-class SelectWorkSourceSubcommand(Subcommand[SelectWorkSource, MessageWorkSource]):
+class ChooseWorkSourceSubcommand(Subcommand[ChooseWorkSource, MessageWorkSource]):
     """Explicitly switches the request used for later work."""
 
     cli_name = "message"
@@ -17,8 +17,8 @@ class SelectWorkSourceSubcommand(Subcommand[SelectWorkSource, MessageWorkSource]
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("message_id", type=int)
 
-    def command(self, arguments: Namespace, caller: Caller) -> SelectWorkSource:
-        return SelectWorkSource(arguments.message_id)
+    def command(self, arguments: Namespace, caller: Caller) -> ChooseWorkSource:
+        return ChooseWorkSource(arguments.message_id)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, MessageWorkSource):

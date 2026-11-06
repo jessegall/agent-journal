@@ -64,18 +64,18 @@ def test_a_disabled_hook_log_loads_no_agent_rows(recording_server, monkeypatch):
     record_hook = HookRequestLog.record_hook
 
     def record_counted(log, *args):
-        tally = log.queries.database.tally
-        started = tally.points()
-        result = record_hook(log, *args)
-        costs.append(tally.points().minus(started))
-        return result
+        points_counter = log.queries.database.tally
+        first_points = points_counter.points()
+        recorded = record_hook(log, *args)
+        costs.append(points_counter.points().minus(first_points))
+        return recorded
 
     monkeypatch.setattr(HookRequestLog, "record_hook", record_counted)
     sample = HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", firing="unrecorded")
     server.expect_hook_answer("/hook", dict(sample.body), 200, '"refusal":')
-    assert len(costs) == 1
-    assert costs[0].tables["agents"] == 0
-    assert not server.story.container.get(HookRequestLog).read()
+    server.story.expect_rows(len(costs) == 1)
+    server.story.expect_rows(costs[0].tables["agents"] == 0)
+    server.story.expect_rows(not server.story.container.get(HookRequestLog).read())
 
 
 def test_a_hook_request_counts_the_parts_of_its_command_chain(recording_server):
@@ -273,6 +273,6 @@ def test_inspection_reads_alone_and_in_a_batch_skip_hooks_and_the_request_log(re
             single.result(timeout=3)
             batch = pool.submit(viewer_answer, server.viewer_port(), "/api/lines", cookie, "", {"lines": [request, request]})
             status, _, body = batch.result(timeout=3)
-            assert status == 200
-            assert all(answer["code"] == 0 for answer in json.loads(body)["answers"])
-    assert not server.story.container.get(HookRequestLog).read()
+            server.story.expect_rows(status == 200)
+            server.story.expect_rows(all(answer["code"] == 0 for answer in json.loads(body)["answers"]))
+    server.story.expect_rows(not server.story.container.get(HookRequestLog).read())

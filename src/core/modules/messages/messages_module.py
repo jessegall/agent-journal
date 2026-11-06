@@ -91,12 +91,13 @@ from core.modules.messages.support.skeletons import MESSAGES_ATTACHMENTS_SKELETO
 from core.base.module.model_declaration import ALL_SUBCOMMANDS
 from core.modules.messages.models.message_work_source import MessageWorkSource
 from core.modules.messages.migrations.m018_message_work_sources import MessageWorkSourcesMigration
-from core.modules.messages.commands.select_work_source.select_work_source_handler import SelectWorkSourceHandler
-from core.modules.messages.commands.select_work_source.select_work_source_subcommand import SelectWorkSourceSubcommand
+from core.modules.messages.commands.choose_work_source.choose_work_source_handler import ChooseWorkSourceHandler
+from core.modules.messages.commands.choose_work_source.choose_work_source_subcommand import ChooseWorkSourceSubcommand
 from core.modules.messages.commands.clear_work_source.clear_work_source_handler import ClearWorkSourceHandler
 from core.modules.messages.commands.clear_work_source.clear_work_source_subcommand import ClearWorkSourceSubcommand
-from core.modules.messages.commands.read_message.mark_message_read_handler import MarkMessageReadHandler
+from core.modules.messages.commands.read_message.note_message_read_handler import NoteMessageReadHandler
 from core.modules.messages.listeners.deleted_work_source_listener import DeletedWorkSourceListener
+from core.modules.messages.listeners.deleted_agent_work_source_listener import DeletedAgentWorkSourceListener
 from core.modules.messages.commands.work_source.work_source_subcommand import WorkSourceSubcommand
 from core.modules.messages.migrations.m019_work_source_selections import WorkSourceSelectionsMigration
 
@@ -115,9 +116,9 @@ class MessagesModule(Module):
     views = [AttachedFile, ChatMessage, MainChatMark]
     migrations = [MainMessageTargetsMigration, MessageSessionMigration, MessageTargetMigration, VisibleMessageIndexMigration, MessageReplyIndexMigration, MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration, MessageVisibilityMigration, MessageTypeIndexesMigration, MessageWorkSourcesMigration, WorkSourceSelectionsMigration]
     guards = [OneReplyPerMessageGuard, QuestionMessageGuard]
-    handlers = [RecordTypedPromptHandler, ResetMessageDeliveriesHandler, RecordParentReportHandler, RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler, SelectWorkSourceHandler, ClearWorkSourceHandler, MarkMessageReadHandler]
+    handlers = [RecordTypedPromptHandler, ResetMessageDeliveriesHandler, RecordParentReportHandler, RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler, ChooseWorkSourceHandler, ClearWorkSourceHandler, NoteMessageReadHandler]
     driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, ToolMessageRule, TranscriptMessageRule, TypedPromptRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]
-    subcommands = [UnreadReportsSubcommand, AttachmentListSubcommand, CommentMessageSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand, SelectWorkSourceSubcommand, ClearWorkSourceSubcommand, WorkSourceSubcommand]
+    subcommands = [UnreadReportsSubcommand, AttachmentListSubcommand, CommentMessageSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand, ChooseWorkSourceSubcommand, ClearWorkSourceSubcommand, WorkSourceSubcommand]
     windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, skeleton=MESSAGES_ATTACHMENTS_SKELETON, group="project", icon=WindowIcon.FILE, reads=["attachment list"], search=WindowReadSearch("attachment list", "Search file names and their messages", ("name", "message_text"))),
                WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, request_priority=WindowPriority.FIRST, skeleton=MESSAGES_CHAT_SKELETON, icon=WindowIcon.SPEECH, reads=["question show", "link list", "task show", "message feed", "message show", "chat-mark main", "chat-mark show", "dock-item main", "pin list", "agent main", "usage tool", "hook-call feed", "output peek", "output page", "output list", "process-part list", "setting show"], runs=["message send", "message reply", "message comment", "message react", "message edit", "message delete", "link remove", "pin close", "agent type", "dump make", "dock remove", "dock keep", "dock unkeep", "developer record-mark-motion"],
                                  events=["message.*", "chat_mark.*", "dock_item.*", "pin.*", "hook_call.*", "process_part.*", "setting.*"],
@@ -128,5 +129,5 @@ class MessagesModule(Module):
                                keywords=("flowchart", "flow chart", "diagram")),
               SkillDeclaration("journal-messages", "Read and answer the user's messages and ask the user questions; read it before the first message command of a session.",
                                keywords=("message", "reply", "question"), commands=("message", "question"))]
-    listeners = [MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, AllowedStopListener, DeletedWorkSourceListener]
+    listeners = [MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, AllowedStopListener, DeletedWorkSourceListener, DeletedAgentWorkSourceListener]
     seeders = [MessagesSeeder]

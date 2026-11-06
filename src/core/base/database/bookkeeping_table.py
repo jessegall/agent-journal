@@ -37,7 +37,7 @@ class BookkeepingTable:
     def row_rows(self, row_table: str, row_id: int) -> list[sqlite3.Row]:
         return self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE row_table = ? AND row_id = ? ORDER BY id", (row_table, row_id)))
 
-    def newest_row_named(self, row_table: str, row_id: int, names: Sequence[str]) -> sqlite3.Row | None:
+    def latest_row(self, row_table: str, row_id: int, names: Sequence[str]) -> sqlite3.Row | None:
         marks = ", ".join("?" for _ in names)
         rows = self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE row_table = ? AND row_id = ? AND name IN ({marks}) ORDER BY id DESC LIMIT 1",
                                             (row_table, row_id, *names)))

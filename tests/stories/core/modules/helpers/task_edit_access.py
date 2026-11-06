@@ -1,12 +1,12 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, the_helper
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.core.modules.helpers.read_only_access import journal_line
 
 
 def test_a_helper_edits_its_own_task_and_not_another_agents_task(new_story):
     story = new_story(fixture=StartedHelper)
-    helper = the_helper(story)
+    helper = helper_agent(story)
     actor = Actor(helper.id, ActorType.AGENT)
     helper_task_id = story.new_row_id('task make "Helper task" --environment main', actor=actor)
     main_task_id = story.new_row_id('task make "Main task" --environment main', actor=story.agent)

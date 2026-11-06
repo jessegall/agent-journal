@@ -8,7 +8,7 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.plugins.support.event_stories import REFUSAL, SECOND_JOB, TASK_CREATED, event_page, event_plugin_story, install_event_plugin, logged_events
 from tests.stories.core.modules.plugins.event_manifest import replace_module
 from tests.stories.core.modules.plugins.support.event_modules import FORMER_NOTE_CREATED, NOTE_CREATED, NOTES, REMOVED_NOTES_MODULE
-from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, the_helper
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 
 AGENT_REFUSAL = "an agent may not use journal plugin run"
 RUN_LINE = "plugin run -- journal plan approve 1"
@@ -26,7 +26,7 @@ def test_s63_an_agent_is_refused_plugin_run(new_story):
 @pytest.mark.parametrize("line", ["journal plugin run -- true", "journal plugin try events core.tasks.task.created"])
 def test_s64_a_read_only_helper_cannot_start_a_script(new_story, line):
     story = new_story(fixture=StartedHelper)
-    helper = the_helper(story)
+    helper = helper_agent(story)
     sample = HookSamples.shell(line, ShellPart("journal", CommandCategory.JOURNAL, line.split()[1:]))
     story.expect_hook_refusal(helper.session, sample, OUTWARD)
 

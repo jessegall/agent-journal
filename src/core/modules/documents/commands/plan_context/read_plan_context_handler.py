@@ -4,7 +4,10 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.modules.documents.commands.plan_context.read_plan_context import ReadPlanContext
-from core.modules.documents.support.work_context_page import WorkContextPage, WorkContextText, WorkContextAttachmentPage, WorkContextFile
+from core.modules.documents.support.work_context_page import WorkContextPage
+from core.modules.documents.support.work_context_text import WorkContextText
+from core.modules.documents.support.work_context_attachment_page import WorkContextAttachmentPage
+from core.modules.documents.support.work_context_file import WorkContextFile
 from core.modules.documents.support.work_context_reader import WorkContextReader
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.plan_context_delivery import PlanContextDelivery

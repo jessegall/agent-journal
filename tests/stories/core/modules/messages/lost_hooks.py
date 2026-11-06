@@ -186,33 +186,33 @@ def test_a_new_message_line_whose_hook_left_before_the_answer_comes_again_at_the
 
 def test_a_lost_hook_answer_retries_its_messages_after_another_writer_releases_the_database(server, monkeypatch):
     reset_attempted = Event()
-    answer_lost = HookEndpoint.answer_lost
+    original_answer = HookEndpoint.answer_lost
 
     def answer_lost_while_busy(endpoint, reply):
         with sqlite3.connect(server.story.home.database) as writer:
             writer.execute("BEGIN IMMEDIATE")
             try:
-                answer_lost(endpoint, reply)
+                original_answer(endpoint, reply)
             finally:
                 writer.rollback()
                 reset_attempted.set()
 
     monkeypatch.setattr(HookEndpoint, "answer_lost", answer_lost_while_busy)
     server.send_hook_and_leave(hook_body("left-while-busy"))
-    assert reset_attempted.wait(10), "the lost hook answer never attempted to reset its deliveries"
+    server.story.expect_rows(reset_attempted.wait(10), detail="the lost hook answer never attempted to reset its deliveries")
     folder = server.story.home.folder / "runtime" / "lost-hook-answers"
-    assert list(folder.iterdir()), "the busy reset left no retry"
+    server.story.expect_rows(list(folder.iterdir()), detail="the busy reset left no retry")
     server.expect_hook_answer("/hook", hook_body("next-after-busy"), 200, "new message 1")
-    assert not list(folder.iterdir())
+    server.story.expect_rows(not list(folder.iterdir()))
     refusal, delivered_lines = server.hook_decision(hook_body("already-delivered"), {})
-    assert refusal == ""
-    assert "new message 1" not in str(delivered_lines)
+    server.story.expect_rows(refusal == "")
+    server.story.expect_rows("new message 1" not in str(delivered_lines))
 
 
 def test_a_hook_returns_its_connection_with_the_default_busy_timeout(server):
     server.expect_hook_answer("/hook", hook_body("timeout-restored"), 200, "new message 1")
     with server.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, 1) as database:
-        assert database.busy_timeout_seconds() == BUSY_TIMEOUT_SECONDS
+        server.story.expect_rows(database.busy_timeout_seconds() == BUSY_TIMEOUT_SECONDS)
 
 
 def test_an_answer_that_arrived_delivers_the_message_once(server):
