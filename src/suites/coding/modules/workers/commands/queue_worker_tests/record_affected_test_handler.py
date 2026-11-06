@@ -21,6 +21,7 @@ from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import W
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_FAILED
+from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 
 
 class RecordAffectedTestHandler(Handler[RecordAffectedTest, None]):
@@ -28,8 +29,8 @@ class RecordAffectedTestHandler(Handler[RecordAffectedTest, None]):
 
     command = RecordAffectedTest
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, output: OutputFolder, results: RecordWorkerTestHandler, nudger: Nudger) -> None:
-        self.queries, self.repository, self.bus, self.output, self.results, self.nudger = queries, repository, bus, output, results, nudger
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, output: OutputFolder, results: RecordWorkerTestHandler, nudger: Nudger, phases: WorkerPhases) -> None:
+        self.queries, self.repository, self.bus, self.output, self.results, self.nudger, self.phases = queries, repository, bus, output, results, nudger, phases
 
     def handle(self, command: RecordAffectedTest, context: Context) -> None:
         selected = self.queries.query(AffectedTest).find(command.test_id)
@@ -55,4 +56,8 @@ class RecordAffectedTestHandler(Handler[RecordAffectedTest, None]):
             self.repository.save_change(task, task.moved(TaskLifecycle.retest), context)
         if worktree.state is WorktreeState.DELIVERED:
             self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)
-        self.nudger.send(worktree.session_agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=str(process_id))
+        phase = self.phases.phase(task)
+        if phase is None:
+            self.nudger.send(worktree.session_agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=str(process_id))
+            return
+        self.results.send_phase_failures(worktree, phase, f"the selected tests: {selected.test_command}: journal output read {process_id} --summary", context)

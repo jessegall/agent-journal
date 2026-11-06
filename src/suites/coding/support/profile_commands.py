@@ -58,5 +58,7 @@ WORKER_COMMANDS = (
     "Correct an unchecked proof with journal proof make again for the same point; the main agent can return a checked proof with a reason. "
     "Use journal worker next after proving the task; when its tests are queued, stop until the journal sends "
     "a failure or the next task. After the last task use journal worker deliver. "
+    "On a task of a started plan nothing runs until the end of its phase, a test run you need is asked for with "
+    "--ask-main \"<why>\", and after a failure you may run tests yourself until you hand in again. "
     "Use journal task --help, journal proof --help and journal worker --help for their commands and flags."
 )

@@ -10,7 +10,8 @@ and then it is followed.
 
 - `journal plan make "<title>" --brief "<goal>"` drafts it; `journal plan edit <n>` changes it.
 - `journal phase make --plan <n> "<title>" --goal "<what is true when done>"` adds a phase; `--checkpoint` where the
-  user should look at before the plan goes on. `journal phase move <phase> --to <place>` reorders one.
+  user should look at before the plan goes on, and `--test "<command>"` for a test that runs at the phase's end.
+  `journal phase move <phase> --to <place>` reorders one.
 - `journal phase place <task> --phase <phase>` puts a task at the end of a phase.
 - `journal task make "<title>" --phase <phase>` makes a task at the end of that phase in one command. A missing phase
   or an ended plan refuses the command and leaves no new task.

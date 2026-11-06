@@ -11,3 +11,4 @@ class MakePhase(Command[Phase]):
     title: str
     goal: str = ""
     checkpoint: bool = False
+    test_command: str = ""

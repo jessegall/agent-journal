@@ -1,4 +1,5 @@
 import shlex
+from pathlib import Path
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
@@ -12,8 +13,12 @@ FIRST_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart total story"'
 DELIVERY = "worker deliver"
 
 
+def repository_folder(story: Story) -> Path:
+    return story.home.folder.parent / "project"
+
+
 def repository_environment(story: Story, branch: str = ENVIRONMENT_BRANCH) -> GitRepository:
-    repository = GitRepository.sample(story.home.folder.parent / "project")
+    repository = GitRepository.sample(repository_folder(story))
     branch_flag = f" --branch {branch}" if branch else ""
     story.expect_success(f"environment edit 1 --folder {shlex.quote(str(repository.folder))}{branch_flag}", f"folder: {repository.folder}")
     return repository

@@ -14,5 +14,6 @@ A plan is only as good as its tasks. Write it so a worker who knows nothing else
   reused, the stories to write first, the tests to run by name, and the proof that shows each point.
 - Point at code with an excerpt or `file:line`. Never put whole code in a task: the worker writes the code.
 - Order the phases so each one leaves the project working, and put a checkpoint where the user should look.
+- A phase runs without tests until its end, so keep phases small: a mistake early in a phase is found only there.
 
 The commands are in the skill journal-plans.
