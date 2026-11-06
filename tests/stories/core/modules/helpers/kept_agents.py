@@ -76,6 +76,18 @@ def test_session_gone_says_retire(new_story):
     story.expect_refusal(f'helper send {helper.id} "One more job"', f"journal agent retire {helper.id}", actor=story.agent)
 
 
+def test_session_gone_with_open_job_can_be_settled_and_retired(new_story):
+    story = new_story(fixture=StartedHelper)
+    helper = helper_agent(story)
+    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
+    story.expect_success(f"agent end {helper.id}", actor=story.user)
+    story.run_listeners()
+    story.expect_refusal(f'agent retire {helper.id} --reason "session gone"', f"journal helper stop {helper.id}", actor=story.user)
+    story.expect_success(f"helper stop {helper.id}", actor=story.user)
+    story.expect_success(f'agent retire {helper.id} --reason "session gone"', actor=story.user)
+    story.expect_text(f"agent show {helper.id}", "retirement_reason: session gone", actor=story.user)
+
+
 def test_old_callback_leaves_the_new_run(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_agent(story)
