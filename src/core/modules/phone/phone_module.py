@@ -7,6 +7,7 @@ from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from core.modules.phone.support.phone_searcher import PhoneSearcher
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.modules.phone.commands.pair_phone.pair_phone_handler import PairPhoneHandler
@@ -61,7 +62,8 @@ class PhoneModule(Module):
                 SettingValue("push-public-key", "Push public key", "The public half of the key pair, which a phone subscribes to notices with.", SettingType.TEXT,
                              secret=True, scope=SettingScope.PROJECT)]
     windows = [WindowDeclaration("phone.phones", "Phones", "phones.js", WindowLoading.COMPONENT, skeleton=PHONE_PHONES_SKELETON, search=WindowSearch(PhoneSearcher, "Search the phones"), group="project", icon=WindowIcon.PHONE,
-                                 reads=["phone list", "tunnel status"], runs=["phone pair", "phone unpair"], events=["phone.*"])]
+                                 keys=[WindowKey("phones", "phone list", events=["phone.*"]),
+                                       WindowKey("tunnel", "tunnel status")], runs=["phone pair", "phone unpair"], events=["phone.*"])]
     seeders = [PhoneSeeder]
     moves = [PhoneMove]
     tick_handlers = [TickHandler(TickInterval(seconds=60), PhoneNotices(), "phone notices", starts_immediately=True)]

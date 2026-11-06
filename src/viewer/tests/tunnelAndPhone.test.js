@@ -1,5 +1,6 @@
 import {expect, test} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
+import {phoneWindowContext} from "./support/phoneWindowContext.js";
 import TunnelWindow from "../../core/modules/tunnel/web/src/TunnelWindow.vue";
 import PhoneRows from "../../core/modules/phone/web/src/PhoneRows.vue";
 import TunlerAccount from "../../tunnels/tunler/web/src/TunlerAccount.vue";
@@ -15,7 +16,7 @@ test("the tunnel window says whether it is connected, its address, and why not",
 });
 
 test("pairing a phone shows its code and a QR code of its link", async () => {
-    const window = context({"phone list": page([])});
+    const window = phoneWindowContext({"phone list": page([])});
     window.run = async () => ({ok: true, value: {code: "123456", link: "https://shop.example/pair#code=123456"}});
     const element = await mounted(PhoneRows, window);
     element.querySelector("button").click();
@@ -25,10 +26,10 @@ test("pairing a phone shows its code and a QR code of its link", async () => {
 });
 
 test("the phone window says why a phone cannot reach the journal, and what a paired phone can do", async () => {
-    const element = await mounted(PhoneRows, context({"phone list": page([]), "tunnel status": {ok: true, value: {state: "disconnected", address: "", reason: "no tunnel service is chosen"}}}));
+    const element = await mounted(PhoneRows, phoneWindowContext({"phone list": page([]), "tunnel status": {ok: true, value: {state: "disconnected", address: "", reason: "no tunnel service is chosen"}}}));
     expect(element.querySelector("[data-phone-tunnel]").textContent).toContain("no tunnel service is chosen");
     expect(element.querySelector("[data-phone-abilities]").textContent).toContain("Answer questions");
-    const connected = await mounted(PhoneRows, context({"phone list": page([]), "tunnel status": {ok: true, value: {state: "connected", address: "shop.example", reason: ""}}}));
+    const connected = await mounted(PhoneRows, phoneWindowContext({"phone list": page([]), "tunnel status": {ok: true, value: {state: "connected", address: "shop.example", reason: ""}}}));
     expect(connected.querySelector("[data-phone-tunnel]")).toBeNull();
 });
 
