@@ -1,3 +1,4 @@
+import {dockBadgeOf} from "../src/domain/resourceNouns.js";
 import {createApp, h} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import DockWrapper from "../src/chat/DockWrapper.vue";
@@ -85,3 +86,10 @@ test("a kept run has flush controls before its duration and Kept on the bottom l
     expect(host.querySelector(".chat-dock-foot").textContent).toContain("Kept");
     expect(host.querySelector("[data-dock-fold]").textContent).toContain("Output");
 });
+
+test("a plan under review says so with a badge, and any other waiting card has none", () => {
+    expect(dockBadgeOf("", {state: "reviewing"})).toBe("Under review");
+    expect(dockBadgeOf("", {state: "ready"})).toBe("");
+    expect(dockBadgeOf("Started", {state: "started"})).toBe("Started");
+});
+

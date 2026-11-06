@@ -17,6 +17,11 @@ export const fieldsOf = (row, shownText = "") => Object.entries(row ?? {})
     .filter(([name, value]) => name !== "updated_at" || value !== row.created_at)
     .map(([name, value]) => ({name, label: fieldLabel(name), value, isTime: name.endsWith("_at")}));
 
+const STATE_BADGES = {reviewing: "Under review"};
+
+// the badge a docked row shows: the one its dock declares, or the one its state asks for
+export const dockBadgeOf = (declared, row) => declared || STATE_BADGES[row?.state] || "";
+
 const CANCEL = {word: "cancel", label: "Cancel", flag: "--reason", ask: "Why is it cancelled?"};
 
 const PLAN_MOVES = {

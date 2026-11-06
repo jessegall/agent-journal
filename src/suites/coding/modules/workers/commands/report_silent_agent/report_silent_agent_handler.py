@@ -6,7 +6,8 @@ from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.main_agent_line import MainAgentLine
-from suites.coding.modules.workers.commands.report_silent_agent.report_silent_agent import ReportSilentAgent, SILENT_AGENT_FAILED, SILENT_FAILURE_SOURCE
+from suites.coding.modules.workers.commands.report_silent_agent.report_silent_agent import ReportSilentAgent, SILENT_FAILURE_SOURCE
+from suites.coding.modules.workers.support.worker_nudges import SILENT_AGENT_FAILED
 
 
 class ReportSilentAgentHandler(Handler[ReportSilentAgent, None]):

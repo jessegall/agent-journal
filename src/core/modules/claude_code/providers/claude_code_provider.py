@@ -69,7 +69,7 @@ class ClaudeCodeProvider(Provider):
                        "NotebookEdit": ToolType.EDIT, "Write": ToolType.NEW_FILE, "Read": ToolType.READ, "Skill": ToolType.READ, "Grep": ToolType.SEARCH,
                        "Glob": ToolType.SEARCH, "ToolSearch": ToolType.SEARCH, "Agent": ToolType.AGENT, "Task": ToolType.AGENT,
                        "AskUserQuestion": ToolType.QUESTION}
-    safe_tools = ("WebFetch", "WebSearch", "TodoWrite")
+    safe_tools = ("WebFetch", "WebSearch", "Skill", "TodoWrite")
     matchers = {"PreToolUse": "tool_name", "PostToolUse": "tool_name", "PostToolUseFailure": "tool_name",
                 "SessionStart": "source", "SessionEnd": "reason", "PreCompact": "trigger"}
     hook_file = HookFile(Path(".claude/settings.local.json"), {})

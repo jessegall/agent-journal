@@ -162,7 +162,9 @@ defineExpose({card});
     visibility: hidden;
 }
 
-.chat-dock-card.waiting {
+.chat-dock-card.waiting .chat-dock-head {
+    height: 33px;
+    margin-top: 0;
     background: color-mix(in srgb, var(--tone-warn) 10%, var(--raised));
 }
 .chat-dock-card.waiting :deep(.dock-facts) {

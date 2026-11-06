@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import Self
 from datetime import timedelta
 
@@ -53,8 +54,8 @@ class ProcessQuery(Query[Process]):
         cutoff = Timestamp(present.value - timedelta(seconds=seconds))
         return self.matching(LongRunCandidate(cutoff.text))
 
-    def has_moved_run(self, text: str, seconds: int = 0) -> bool:
-        conditions: list[Condition] = [Equal("text", text)]
+    def has_moved_run(self, texts: Sequence[str], seconds: int = 0) -> bool:
+        conditions: list[Condition] = [Among("text", tuple(texts))]
         if seconds > 0:
             conditions.append(PartRunSeconds(seconds))
         return self.with_part(*conditions).moved().exists()

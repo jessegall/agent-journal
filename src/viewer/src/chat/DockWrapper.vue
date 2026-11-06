@@ -10,7 +10,7 @@ import MarkBody from "./MarkBody.vue";
 import {lineResult, WINDOW_CONTEXT} from "../windows/windowContext.js";
 import {useSharedNow} from "../composables/now.js";
 import {ago} from "../format/time.js";
-import {cliOf} from "../domain/resourceNouns.js";
+import {dockBadgeOf, cliOf} from "../domain/resourceNouns.js";
 import {dockDeclaration} from "../domain/dockRegistry.js";
 import {leaveSeconds} from "../domain/dockItems.js";
 import {dockLook} from "../domain/dockLook.js";
@@ -72,6 +72,7 @@ async function press(button) {
     failure.value = `Could not ${button.label.toLowerCase()}: ${answer.error}`;
 }
 const buttons = computed(() => look.value.actions.filter((button) => button.action !== "undock" && !pressed.value.has(button.label)));
+const badge = computed(() => dockBadgeOf(declaration.value?.badge, row.value));
 const undock = computed(() => look.value.buttons.find((button) => button.action === "undock"));
 </script>
 
@@ -127,8 +128,8 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
         </template>
         <template #foot>
             <span class="dock-facts">
-                <template v-if="declaration?.badge">
-                    <span :class="['dock-badge', item.type.split('.')[1]]" data-dock-badge>{{ declaration.badge }}</span>
+                <template v-if="badge">
+                    <span :class="['dock-badge', item.type.split('.')[1]]" data-dock-badge>{{ badge }}</span>
                 </template>
                 <template v-if="declaration?.word">
                     <span>{{ declaration.word }}</span>

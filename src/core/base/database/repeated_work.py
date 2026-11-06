@@ -27,6 +27,7 @@ SCAN_INDEX = re.compile(r"\bUSING INDEX (\w+)")
 BOUNDED_PAGE = re.compile(r"^SELECT \* FROM (\w+)(?: ORDER BY id (?:ASC|DESC))? LIMIT ([1-9]\d*|\?) OFFSET (\d+|\?)$", re.IGNORECASE)
 UNFILTERED_COUNT = re.compile(r"^SELECT count\(\*\) FROM \w+$", re.IGNORECASE)
 SMALL_TABLES = {
+    "listener_cursors": "One row per listener, read when a request wakes the listeners.",
     "settings": "Project and environment settings are small configuration sets kept on the connection.",
     "secret_settings": "Secret settings are a small configuration set kept on the connection.",
     "sequences": "Reusable instructions form a small catalogue indexed in memory after one read.",
