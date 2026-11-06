@@ -3,6 +3,7 @@ from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from core.modules.suggestions.support.suggestion_searcher import SuggestionSearcher
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.modules.suggestions.commands.answer_suggestion.answer_suggestion_handler import AnswerSuggestionHandler
@@ -30,7 +31,7 @@ class SuggestionsModule(Module):
     models = [ModelDeclaration(Suggestion, excluded_subcommands=["make", "edit", "list", "delete"])]
     moves = [SuggestionsMove]
     windows = [WindowDeclaration("suggestions.suggestions", "Suggestions", "suggestions.js", WindowLoading.COMPONENT, skeleton=SUGGESTIONS_SUGGESTIONS_SKELETON, search=WindowSearch(SuggestionSearcher, "Search the suggestions"), icon=WindowIcon.BULB, reads=["suggestion list"],
-                                 events=["suggestion.*"])]
+                                 events=["suggestion.*"], keys=[WindowKey("suggestions", "suggestion list", events=["suggestion.*"])])]
     migrations = [SuggestionsTableMigration, OpenSuggestionIndexMigration]
     handlers = [MakeSuggestionsHandler, AnswerSuggestionHandler]
     subcommands = [SuggestionListSubcommand, AnswerSuggestionSubcommand]

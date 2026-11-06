@@ -1,39 +1,39 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-865c90cabfe5")) { const style = document.createElement("style"); style.id = "window-styles-865c90cabfe5"; style.textContent = "button.title[data-v-e75669eb]{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.suggestion[data-v-e75669eb]{display:flex;flex:1;align-items:baseline;gap:10px;font-size:13px}.title[data-v-e75669eb]{flex:1}.answer[data-v-e75669eb]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { openBlock as _, createBlock as p, unref as e, withCtx as c, createVNode as u, createElementVNode as r, toDisplayString as d } from "vue";
-import { useRows as f, useListTools as w, WindowRoom as h, ListTools as m, RowList as v, peekRef as y } from "@journal/window-kit";
-const k = (a, i) => {
-  const n = a.__vccOpts || a;
-  for (const [l, t] of i)
-    n[l] = t;
-  return n;
-}, R = ["data-row"], x = ["data-suggestion-open", "onClick"], S = { class: "answer" }, b = {
+if (!document.getElementById("window-styles-e941bcbbf01f")) { const style = document.createElement("style"); style.id = "window-styles-e941bcbbf01f"; style.textContent = "button.title[data-v-e309bd1a]{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.suggestion[data-v-e309bd1a]{display:flex;flex:1;align-items:baseline;gap:10px;font-size:13px}.title[data-v-e309bd1a]{flex:1}.answer[data-v-e309bd1a]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { openBlock as _, createBlock as f, unref as e, withCtx as d, createVNode as u, createElementVNode as c, toDisplayString as g } from "vue";
+import { useWindow as w, useListTools as h, WindowRoom as m, ListTools as v, RowList as y, peekRef as k } from "@journal/window-kit";
+const x = (n, a) => {
+  const s = n.__vccOpts || n;
+  for (const [i, r] of a)
+    s[i] = r;
+  return s;
+}, R = ["data-row"], S = ["data-suggestion-open", "onClick"], b = { class: "answer" }, C = {
   __name: "SuggestionRows",
-  setup(a) {
-    const { rows: i, failure: n, loaded: l } = f("suggestion list", ["suggestion.*"]), t = w(i, { title: (s) => s.title }), g = (s) => s.answer ? `Answer: ${s.answer}` : "Answer: none yet";
-    return (s, C) => (_(), p(e(h), null, {
-      default: c(() => [
-        u(e(m), { tools: e(t) }, null, 8, ["tools"]),
-        u(e(v), {
-          rows: e(t).shown.value,
-          failure: e(n),
-          loaded: e(l),
+  setup(n) {
+    const a = w(), { rows: s, failure: i, loaded: r } = a.props.suggestions, l = h(s, { title: (t) => t.title }), p = (t) => t.answer ? `Answer: ${t.answer}` : "Answer: none yet";
+    return (t, L) => (_(), f(e(m), null, {
+      default: d(() => [
+        u(e(v), { tools: e(l) }, null, 8, ["tools"]),
+        u(e(y), {
+          rows: e(l).shown.value,
+          failure: e(i),
+          loaded: e(r),
           empty: "No suggestions yet",
           hint: "Suggestions appear here for you to accept or decline.",
-          searching: e(t).filtering.value
+          searching: e(l).filtering.value
         }, {
-          default: c(({ row: o }) => [
-            r("div", {
+          default: d(({ row: o }) => [
+            c("div", {
               class: "suggestion",
               "data-row": o.id
             }, [
-              r("button", {
+              c("button", {
                 type: "button",
                 class: "title",
                 "data-suggestion-open": o.id,
-                onClick: (L) => e(y)(`suggestions:${o.id}`)
-              }, d(o.title), 9, x),
-              r("span", S, d(g(o)), 1)
+                onClick: (N) => e(k)(`suggestions:${o.id}`)
+              }, g(o.title), 9, S),
+              c("span", b, g(p(o)), 1)
             ], 8, R)
           ]),
           _: 1
@@ -42,7 +42,7 @@ const k = (a, i) => {
       _: 1
     }));
   }
-}, $ = /* @__PURE__ */ k(b, [["__scopeId", "data-v-e75669eb"]]);
+}, A = /* @__PURE__ */ x(C, [["__scopeId", "data-v-e309bd1a"]]);
 export {
-  $ as default
+  A as default
 };
