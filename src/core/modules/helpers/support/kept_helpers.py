@@ -25,9 +25,9 @@ class KeptHelpers:
                                    "profile = ? AND ended_at IS NULL", [profile], name="helpers.with_open_jobs")
 
     def kept(self, profile: str) -> tuple[Agent, ...]:
-        return self.kept_rows.scoped_read(AGENTS_TABLE, lambda: self.kept_rows_of(profile), "role = ? AND profile = ? AND retired_at IS NULL", [AgentRole.HELPER, profile], name="helpers.kept")
+        return self.kept_rows.scoped_read(AGENTS_TABLE, lambda: self.query_kept(profile), "role = ? AND profile = ? AND retired_at IS NULL", [AgentRole.HELPER, profile], name="helpers.kept")
 
-    def kept_rows_of(self, profile: str) -> tuple[Agent, ...]:
+    def query_kept(self, profile: str) -> tuple[Agent, ...]:
         return tuple(self.queries.query(Agent).filter(role=AgentRole.HELPER, profile=profile).matching(IsNull("retired_at")).newest().all_rows())
 
     def idle(self, profile: str, program: str, model: str) -> tuple[Agent, ...]:
@@ -44,5 +44,5 @@ class KeptHelpers:
         return (provider.context_percent(self.home, helper.session) or 0) < FULL_SESSION_PERCENT
 
     def idle_refusal(self, helpers: tuple[Agent, ...]) -> Refusal:
-        others = f" (also {', '.join(str(helper.id) for helper in helpers[1:3])})" if helpers[1:] else ""
-        return Refusal(f'helper {helpers[0].id} is idle: journal helper send {helpers[0].id} "<job>"{others}', 'or --fresh "<why>"')
+        additional_helpers = f" (also {', '.join(str(helper.id) for helper in helpers[1:3])})" if helpers[1:] else ""
+        return Refusal(f'helper {helpers[0].id} is idle: journal helper send {helpers[0].id} "<job>"{additional_helpers}', 'or --fresh "<why>"')

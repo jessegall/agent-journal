@@ -10,7 +10,8 @@ from core.base.refusal import Refusal
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
-from core.modules.agents.support.agent_type_limits import NO_LIMIT, AgentTypeLimits, TypeLimits
+from core.modules.usage.support.agent_type_limits import UNLIMITED_AGENT_COUNT, AgentTypeLimits
+from core.modules.agents.support.type_limits import TypeLimits
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
@@ -40,23 +41,23 @@ class WorkerPlaces:
         return tuple(self.queries.query(Agent).filter(role=CodingAgentRole.WORKER).matching(IsNull("retired_at")).newest().all_rows())
 
     def kept_limit(self) -> int:
-        return self.limits.of(CodingAgentRole.WORKER).kept
+        return self.limits.lookup(CodingAgentRole.WORKER).kept
 
     def can_start_new(self) -> bool:
         workers = self.kept_workers()
-        all_kept_run = self.kept_limit() != NO_LIMIT and len(workers) >= self.kept_limit() and all(worker.ended_at is None for worker in workers)
+        all_kept_run = self.kept_limit() != UNLIMITED_AGENT_COUNT and len(workers) >= self.kept_limit() and all(worker.ended_at is None for worker in workers)
         return not all_kept_run and len(self.running()) < self.run_limit()
 
     def check_new_place(self) -> None:
         if len(self.running()) + self.resuming_count() >= self.run_limit():
             raise Refusal(f"{self.run_limit()} workers are running", "wait for one to report, or stop one")
         workers = self.kept_workers()
-        if self.kept_limit() != NO_LIMIT and len(workers) >= self.kept_limit():
+        if self.kept_limit() != UNLIMITED_AGENT_COUNT and len(workers) >= self.kept_limit():
             names = ", ".join(f"agent:{worker.id}" for worker in workers[:KEPT_NAMES_SHOWN])
-            raise Refusal(f"the limit of {self.kept_limit()} workers is reached: {names}", TypeLimits.next_step_at_limit(workers))
+            raise Refusal(f"the limit of {self.kept_limit()} workers is reached: {names}", TypeLimits.retirement_instruction(workers))
 
     def run_limit(self) -> int:
-        return self.limits.of(CodingAgentRole.WORKER).run
+        return self.limits.lookup(CodingAgentRole.WORKER).run
 
     def resuming_lines(self) -> tuple[AgentLine, ...]:
         cutoff_time = self.clock.timestamp().value - timedelta(seconds=JOB_DELIVERY_SECONDS)

@@ -1,6 +1,9 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, SwitchCase, TextArea, TextInput, useWindow} from "@journal/window-kit";
+import {Btn, SwitchCase, useWindow} from "@journal/window-kit";
+import AgentJobForm from "./AgentJobForm.vue";
+import AgentMessageForm from "./AgentMessageForm.vue";
+import AgentRetireForm from "./AgentRetireForm.vue";
 
 const props = defineProps({row: {type: Object, required: true}});
 const context = useWindow();
@@ -93,33 +96,13 @@ async function retire() {
             </div>
             <SwitchCase :value="mode">
                 <template #job>
-                    <form @submit.prevent="sendJob">
-                        <template v-if="row.job_task_flag">
-                            <label class="action-field">Task
-                                <select v-model="task" :disabled="pending || loading" data-agent-job-task>
-                                    <option value="">Choose an open task</option>
-                                    <template v-for="item in tasks" :key="item.id"><option :value="String(item.id)">{{ item.id }}: {{ item.title }}</option></template>
-                                </select>
-                            </label>
-                            <template v-if="moreTasks"><Btn small :disabled="pending || loading" data-agent-more-tasks @click="readTasks">More tasks</Btn></template>
-                            <template v-if="!loading && !tasks.length && !failure"><p>No open tasks.</p></template>
-                        </template>
-                        <template v-else><label class="action-field">Job<TextArea :value="text" :disabled="pending" data-agent-job-text @input="text = $event.target.value" /></label></template>
-                        <div class="action-buttons"><Btn type="submit" small :disabled="pending || !jobReady" data-agent-submit-job>Send the job</Btn><Btn small :disabled="pending" @click="choose('')">Cancel</Btn></div>
-                    </form>
+                    <AgentJobForm v-model:task="task" v-model:text="text" :row="row" :tasks="tasks" :pending="pending" :loading="loading" :more-tasks="moreTasks" :failure="failure" :job-ready="jobReady" @submit="sendJob" @more="readTasks" @cancel="choose('')" />
                 </template>
                 <template #message>
-                    <form @submit.prevent="sendMessage">
-                        <label class="action-field">Message<TextArea :value="text" :disabled="pending" data-agent-message-text @input="text = $event.target.value" /></label>
-                        <div class="action-buttons"><Btn type="submit" small :disabled="pending || !text.trim()" data-agent-submit-message>Send the message</Btn><Btn small :disabled="pending" @click="choose('')">Cancel</Btn></div>
-                    </form>
+                    <AgentMessageForm v-model:text="text" :pending="pending" @submit="sendMessage" @cancel="choose('')" />
                 </template>
                 <template #retire>
-                    <form data-agent-retire-confirm @submit.prevent="retire">
-                        <p>Retirement is permanent. This agent cannot be resumed.</p>
-                        <TextInput v-model="reason" label="Reason" :disabled="pending" data-agent-retire-reason />
-                        <div class="action-buttons"><Btn type="submit" small :disabled="pending || !reason.trim()" data-agent-confirm-retire>Retire permanently</Btn><Btn small :disabled="pending" @click="choose('')">Cancel</Btn></div>
-                    </form>
+                    <AgentRetireForm v-model:reason="reason" :pending="pending" @submit="retire" @cancel="choose('')" />
                 </template>
             </SwitchCase>
             <template v-if="failure"><p role="alert">{{ failure }}</p></template>
@@ -131,10 +114,6 @@ async function retire() {
 <style scoped>
 .agent-actions { display: flex; flex-direction: column; gap: 6px; margin: 5px 0 0 16px; font-size: 12px; }
 .action-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
-form, .action-field { display: flex; flex-direction: column; gap: 6px; }
-form { padding: 10px; border: 1px solid var(--border); border-radius: 7px; }
 p { margin: 0; color: var(--text-2); }
 [role="alert"] { color: var(--danger); }
-select { padding: 6px 9px; border: 1px solid var(--border-2); border-radius: 7px; background: var(--bg); color: var(--text); font: inherit; }
-:deep(.text-area) { min-height: 84px; }
 </style>
