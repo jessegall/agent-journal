@@ -24,5 +24,5 @@ class RunQueueHaltedRule(DriverRule):
         if self.halt.command_halted:
             return RuleAnswer.with_nudges(RUN_QUEUE_HALTED.nudge())
         if self.halt.is_update_waiting:
-            return RuleAnswer.with_nudges(UPDATE_WAITING.nudge(runs=", ".join(str(run) for run in self.halt.running_run_ids()) or "none"))
+            return RuleAnswer.with_nudges(UPDATE_WAITING.nudge(outputs=", ".join(f"output:{run}" for run in self.halt.running_run_ids()) or "none"))
         return RuleAnswer.allowed()

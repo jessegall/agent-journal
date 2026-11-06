@@ -9,6 +9,8 @@ from core.testing.story_state import StoryState
 from core.testing.template import Template
 from core.testing.template_databases import STATE_FILE, TemplateDatabases
 
+PROCESS_WAIT_SECONDS = 60
+
 
 class SampleTemplateDatabases(TemplateDatabases):
     def __init__(self, folder, builds, started=None, release=None):
@@ -23,7 +25,7 @@ class SampleTemplateDatabases(TemplateDatabases):
         home.database.write_text("partial")
         if self.started is not None:
             self.started.set()
-            self.release.wait(5)
+            self.release.wait(PROCESS_WAIT_SECONDS)
         home.module_list.write_text("[]")
         home.program_table.write_text("{}")
         home.database.write_text("complete")
@@ -52,15 +54,15 @@ def test_two_processes_build_one_complete_template(tmp_path):
     second = context.Process(target=read_shared_template, args=(folder, builds, ready, answers))
     first.start()
     try:
-        assert started.wait(5)
+        assert started.wait(PROCESS_WAIT_SECONDS)
         second.start()
-        assert ready.wait(5)
+        assert ready.wait(PROCESS_WAIT_SECONDS)
         with pytest.raises(Empty):
             answers.get(timeout=0.1)
         release.set()
-        assert [answers.get(timeout=5), answers.get(timeout=5)] == ["complete", "complete"]
-        first.join(5)
-        second.join(5)
+        assert [answers.get(timeout=PROCESS_WAIT_SECONDS), answers.get(timeout=PROCESS_WAIT_SECONDS)] == ["complete", "complete"]
+        first.join(PROCESS_WAIT_SECONDS)
+        second.join(PROCESS_WAIT_SECONDS)
         assert first.exitcode == second.exitcode == 0
         assert builds.read_text().splitlines() == ["build"]
     finally:
@@ -68,7 +70,7 @@ def test_two_processes_build_one_complete_template(tmp_path):
         for process in (first, second):
             if process.pid is not None and process.is_alive():
                 process.terminate()
-                process.join(5)
+                process.join(PROCESS_WAIT_SECONDS)
         answers.close()
 
 

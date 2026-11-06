@@ -4,6 +4,7 @@ import subprocess
 
 from core.base.database.database import Database
 from core.modules.processes.migrations.m054_vitest_listing_counts import VitestListingCountsMigration
+from core.modules.processes.migrations.m055_vitest_summary_counts import VitestSummaryCountsMigration
 from core.modules.processes.support.stock_reader import STOCK_READERS
 
 VITEST = next(reader for reader in STOCK_READERS if reader.name == "vitest")
@@ -25,3 +26,13 @@ def test_the_count_command_lists_without_a_reporter_and_the_count_reads_the_numb
     line = VITEST.count_command.replace("{part}", LISTING)
     listed = subprocess.run(["sh", "-c", line], capture_output=True, text=True, check=True).stdout
     assert re.search(VITEST.count, listed.strip()).group(1) == "3"
+
+
+def test_a_journal_that_ran_the_listing_migration_gets_the_summary_count_too():
+    connection = sqlite3.connect(":memory:", autocommit=True)
+    connection.execute("CREATE TABLE readers (name TEXT, creator_id INTEGER, count_pattern TEXT, count_command TEXT)")
+    connection.executemany("INSERT INTO readers VALUES (?, ?, '^([0-9]+)$', 'listing')", [("vitest", 1), ("vitest", 2)])
+    VitestSummaryCountsMigration().run(Database.configured(connection))
+    rows = [tuple(row) for row in connection.execute("SELECT count_pattern, count_command FROM readers ORDER BY creator_id").fetchall()]
+    assert rows == [(VITEST.count, VITEST.count_command), ("^([0-9]+)$", "listing")]
+    assert re.search(VITEST.count, "      Tests  1 failed | 2 passed (3)").group(2) == "3"
