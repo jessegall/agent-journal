@@ -21,6 +21,10 @@ try {
     assert.equal(new URL(page.url()).searchParams.get("skill"), "project-notes");
     await page.reload();
     await skills.locator("[data-skill-text]").waitFor();
+    const [file] = await Promise.all([page.waitForEvent("popup"), skills.getByRole("link", {name: "Open SKILL.md", exact: true}).click()]);
+    await file.waitForLoadState();
+    assert.match(await file.locator("body").innerText(), /Read before taking notes/);
+    await file.close();
     await skills.getByRole("switch", {name: "Require project-notes at the start", exact: true}).first().click();
     await skills.getByLabel("Which agents must read it").selectOption("main");
     await skills.getByText("The main agent reads it at the start and again after every compaction.", {exact: true}).waitFor();
@@ -41,6 +45,7 @@ try {
     await skills.getByRole("button", {name: "Pause this trigger", exact: true}).click();
     await skills.getByText("Paused", {exact: true}).waitFor();
     await skills.getByRole("button", {name: "Resume this trigger", exact: true}).click();
+    await skills.getByText("Paused", {exact: true}).waitFor({state: "detached"});
     await page.screenshot({path: `${captures}-light-triggers.png`, animations: "disabled"});
     await skills.getByRole("button", {name: "Skills", exact: true}).click();
     await page.screenshot({path: `${captures}-light.png`, animations: "disabled"});

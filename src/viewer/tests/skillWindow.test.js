@@ -1,4 +1,4 @@
-import {createApp, h, nextTick} from "vue";
+import {createApp, h, nextTick, ref} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
 import {context, page} from "./support/windowContext.js";
@@ -18,6 +18,7 @@ async function settled() {
 async function mounted(changes = {}) {
     const answers = {"agent main": {ok: true, value: {id: 7}}, "skill list": CATALOGUE, "skill requirements": SETTINGS, "trigger list": page([]), "agent-skill list": page([]), "skill show": TEXT, ...changes};
     const window = context(answers);
+    window.option = () => ref(undefined);
     const read = window.read;
     window.read = (line) => read(Array.isArray(line) ? line.join(" ") : line);
     window.run = vi.fn(async () => ({ok: true, value: {}}));
