@@ -3,11 +3,12 @@ import sys
 
 import pytest
 
-from tests.stories.core.modules.plugins.support.event_stories import REFUSAL, EventWorkerStarted, data_row, event_plugin_story, plugin_data, script_calls
+from tests.stories.core.modules.plugins.support.event_stories import REFUSAL, EventWorkerStarted, data_row, event_plugin_story, plugin_data, plugin_row, script_calls
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, DISPATCH, FIRST_PROOF, dispatched_worker, expect_clean_environment, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import CHECKOUT_BRANCH, ENVIRONMENT_BRANCH
 
 WORKTREE_CUT = "suites.coding.workers.worker_worktree.cut"
+WORKTREE_DELIVER = "suites.coding.workers.worker_worktree.deliver"
 WORKTREE_CREATED = "suites.coding.workers.worker_worktree.created"
 RULES = ".commandments/rules.md"
 RULES_TEXT = "the rules\n"
@@ -17,13 +18,16 @@ HIDE_COMMANDMENTS = f"""{READ_FOLDER}
 cd "$folder" || exit 4
 '{shutil.which("git")}' ls-files .commandments | xargs '{shutil.which("git")}' update-index --skip-worktree --
 rm -rf .commandments"""
+LIFT_MARK = f"""{READ_FOLDER}
+cd "$folder" || exit 4
+'{shutil.which("git")}' ls-files .commandments | xargs '{shutil.which("git")}' update-index --no-skip-worktree --
+'{shutil.which("git")}' checkout -- .commandments"""
 FOLDER_THERE = f"""{READ_FOLDER}
 if [ -d "$folder" ]; then touch "$JOURNAL_PLUGIN_DATA/folder-was-there"; fi"""
 
 
-@pytest.fixture
-def hiding_story(new_story):
-    story = event_plugin_story(new_story, {"event": WORKTREE_CUT, "commit": "hide.sh"}, scripts={"hide.sh": HIDE_COMMANDMENTS}, fixture=EventWorkerStarted)
+def story_with_hidden_rules(new_story, *more_entries, **more_scripts):
+    story = event_plugin_story(new_story, {"event": WORKTREE_CUT, "commit": "hide.sh"}, *more_entries, scripts={"hide.sh": HIDE_COMMANDMENTS, **more_scripts}, fixture=EventWorkerStarted)
     story.repository = repository_environment(story)
     story.repository.checkout(ENVIRONMENT_BRANCH)
     (story.repository.folder / ".commandments").mkdir()
@@ -34,31 +38,75 @@ def hiding_story(new_story):
     return story
 
 
-def hand_in(story, worker) -> None:
-    story.repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
-    story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
-    story.expect_success(DELIVERY, actor=worker)
+@pytest.fixture
+def hiding_story(new_story):
+    return story_with_hidden_rules(new_story)
+
+
+@pytest.fixture
+def lifting_story(new_story):
+    story = story_with_hidden_rules(new_story, {"event": WORKTREE_DELIVER, "commit": "lift.sh"}, **{"lift.sh": LIFT_MARK})
+    hand_in(story)
+    story.run_listeners()
+    return story
+
+
+def hand_in(story) -> None:
+    story.repository.changed(story.worker.id, "cart.py", "TOTAL = 1\n")
+    story.expect_success(FIRST_PROOF, "point: 1", actor=story.worker)
+    story.expect_success(DELIVERY, actor=story.worker)
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
 
 
-def test_s36_a_plugin_hides_a_tracked_folder_from_a_worktree_and_the_branch_keeps_it_whole(hiding_story):
+def worktree_state(story) -> tuple[str, str, bool]:
+    folder = story.repository.worktree_folder(story.worker.id)
+    marks = story.repository.git("ls-files", "-v", ".commandments", folder=folder).stdout
+    return marks, story.repository.git("status", "--porcelain", folder=folder).stdout, (folder / ".commandments").exists()
+
+
+@pytest.fixture
+def delivered_story(hiding_story):
+    hand_in(hiding_story)
+    return hiding_story
+
+
+@pytest.fixture
+def delivered_after_the_branch_moved(hiding_story):
+    hiding_story.repository.checkout(ENVIRONMENT_BRANCH)
+    hiding_story.repository.committed(RULES, CHANGED_RULES_TEXT, "The rules change")
+    hand_in(hiding_story)
+    return hiding_story
+
+
+def test_s36_a_plugin_hides_a_tracked_folder_from_a_worktree(hiding_story):
     story, repository, worker = hiding_story, hiding_story.repository, hiding_story.worker
     story.expect_rows(len(script_calls(story, "hide.sh")) == 1, not (repository.worktree_folder(worker.id) / ".commandments").exists())
     repository.expect_clean(worker.id)
-    hand_in(story, worker)
+
+
+def test_s36_the_branch_keeps_a_hidden_folder_whole_after_the_merge(delivered_story):
+    story, repository, worker = delivered_story, delivered_story.repository, delivered_story.worker
+    story.expect_rows(worktree_state(story) == (f"S {RULES}\n", "", False))
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, RULES, RULES_TEXT)
+    repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 1\n")
 
 
-def test_s36_the_branch_changes_the_hidden_folder_during_the_work_and_the_delivery_rebases(hiding_story):
-    story, repository, worker = hiding_story, hiding_story.repository, hiding_story.worker
-    story.expect_rows(len(script_calls(story, "hide.sh")) == 1)
-    repository.checkout(ENVIRONMENT_BRANCH)
-    repository.committed(RULES, CHANGED_RULES_TEXT, "The rules change")
-    hand_in(story, worker)
+def test_s36_the_branch_changes_the_hidden_folder_during_the_work_and_the_delivery_rebases(delivered_after_the_branch_moved):
+    story, repository, worker = delivered_after_the_branch_moved, delivered_after_the_branch_moved.repository, delivered_after_the_branch_moved.worker
+    story.expect_rows(worktree_state(story) == (f"S {RULES}\n", "", True))
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, RULES, CHANGED_RULES_TEXT)
+    repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 1\n")
+
+
+def test_s36_a_commit_script_on_the_delivery_lifts_the_mark_and_restores_the_folder(lifting_story):
+    story, repository, worker = lifting_story, lifting_story.repository, lifting_story.worker
+    story.expect_rows(worktree_state(story) == (f"H {RULES}\n", "", True), plugin_row(story).fault_count == 0)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    repository.expect_file(ENVIRONMENT_BRANCH, RULES, RULES_TEXT)
 
 
 def test_s37_a_guard_on_a_new_worktree_refuses_and_nothing_stays(new_story):
