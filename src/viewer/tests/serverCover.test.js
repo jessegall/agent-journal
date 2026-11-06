@@ -50,6 +50,23 @@ test("a server that answers and goes away again keeps one unbroken cover", async
     expect(covered()).toBe(false);
 });
 
+test("a slow question gets none beside it, from the cover or a broken stream, and the wait starts when it answers", async () => {
+    const slow = Promise.withResolvers();
+    const asked = vi.fn(() => slow.promise);
+    vi.stubGlobal("fetch", asked);
+    serverGone();
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(asked).toHaveBeenCalledTimes(1);
+    checkServer();
+    await vi.advanceTimersByTimeAsync(20000);
+    expect(asked).toHaveBeenCalledTimes(1);
+    slow.resolve({ok: true, json: async () => ({restarting: true, updating: false})});
+    await vi.advanceTimersByTimeAsync(1999);
+    expect(asked).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(asked).toHaveBeenCalledTimes(2);
+});
+
 test("the server saying a restart is marked keeps the cover up", async () => {
     serverGone();
     vi.stubGlobal("fetch", answers({restarting: true, updating: false}));

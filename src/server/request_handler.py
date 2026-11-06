@@ -175,7 +175,12 @@ class RequestHandler(BaseHTTPRequestHandler):
         except (HookEventError, UnknownProgramError, json.JSONDecodeError) as error:
             self.answer_json(400, {"error": str(error)})
             return
-        self.answer_json(200, reply.json())
+        try:
+            self.answer_json(200, reply.json())
+        except OSError as error:
+            if client_disconnected(error):
+                endpoint.answer_lost(reply)
+            raise
 
     def answer_cli(self, request: CliRequest) -> None:
         self.status = 200

@@ -3,51 +3,24 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.queries import Queries
-from core.modules.drivers.models.hook_call import HookCall
 from core.modules.messages.commands.send_message.send_message import SendMessage
-from core.modules.messages.queries.message_query import MessageQuery
-
-JOURNAL_LINE = "[journal] "
-USER_ACTION_PREFIXES = ("[journal] new message", "[journal] question:", "[journal] the user")
-MESSAGE_COUNT_TEXT = " new messages"
-SHORT_CHARACTERS = 240
+from core.modules.messages.support.agent_text_filter import AgentTextFilter
 
 
 class AgentTextRule(DriverRule):
-    """Each finished text block the agent writes in a turn becomes a chat message of the agent, unless it
-    already replied by command in this turn, or the turn only answered a journal line with few words and
-    no write; a line that says the user acted, by a message or a question, is answered as the user is."""
+    """Each finished text block the agent writes in a turn becomes a chat message of the agent, unless the
+    filter keeps it out; a text held for following a reply is shown by TextBeforeToolRule once a tool comes."""
 
     name = "messages.agent-text"
     hook = HookEventName.MESSAGE_DISPLAY
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, queries: Queries, messages: MessageQuery) -> None:
-        self.queries, self.messages = queries, messages
+    def __init__(self, texts: AgentTextFilter) -> None:
+        self.texts = texts
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        raw = hook.event.raw
-        text = raw.get("delta")
-        if raw.get("final") is not True or not isinstance(text, str) or not text.strip():
+        text = hook.event.displayed_text
+        if not text or self.texts.follows_reply(hook.agent_id, hook.timestamp) or self.texts.is_acknowledgement(hook.agent_id, text, hook.timestamp):
             return RuleAnswer.allowed()
-        latest_prompt = self.queries.query(HookCall).filter(session_agent_id=hook.agent_id, hook=HookEventName.PROMPT.value).newest().first()
-        if latest_prompt is not None and (self.has_reply(hook.agent_id, latest_prompt) or self.is_acknowledgement(text.strip(), latest_prompt)):
-            return RuleAnswer.allowed()
-        return RuleAnswer.allowed().running(SendMessage(text.strip()))
-
-    def has_reply(self, agent_id: int, prompt: HookCall) -> bool:
-        newest = self.messages.latest_agent_message(agent_id)
-        if newest is None or newest.parent_id is None or newest.creation_timestamp().value < prompt.creation_timestamp().value:
-            return False
-        return not self.messages.has_person_message_past(newest.id)
-
-    def is_acknowledgement(self, text: str, prompt: HookCall) -> bool:
-        if len(text) > SHORT_CHARACTERS or "?" in text or not prompt.summary.startswith(JOURNAL_LINE) or self.is_user_action(prompt.summary):
-            return False
-        file_call = self.queries.query(HookCall).filter(session_agent_id=prompt.session_agent_id, writes_files=True).newest().first()
-        return file_call is None or file_call.id < prompt.id
-
-    def is_user_action(self, prompt_text: str) -> bool:
-        return prompt_text.startswith(USER_ACTION_PREFIXES) or MESSAGE_COUNT_TEXT in prompt_text
+        return RuleAnswer.allowed().running(SendMessage(text))

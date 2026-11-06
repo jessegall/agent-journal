@@ -1,9 +1,14 @@
+from core.base.query.conditions.equal import Equal
 from core.base.query.conditions.greater import Greater
+from core.base.query.conditions.has_value import HasValue
+from core.base.query.conditions.maximum import Maximum
+from core.base.query.conditions.minimum import Minimum
 from typing import Self
 
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.model.tables import Tables
+from core.base.timestamp import Timestamp
 from core.base.query.query import Query
 from core.modules.messages.models.message import Message
 from core.modules.messages.models.enums.message_type import MessageType
@@ -24,6 +29,15 @@ class MessageQuery(Query[Message]):
         return self.kept.read(self.table.name, self.filter(creator_id=creator_id, type=MessageType.AGENT).newest().first,
                               "creator_id = ? AND type = ?", [creator_id, MessageType.AGENT], name="messages.latest_agent_message")
 
+    def latest_reply(self, creator_id: int, since: Timestamp, until: Timestamp) -> Message | None:
+        return self.agent_messages().filter(creator_id=creator_id).matching(HasValue("parent_id")).matching(Minimum("created_at", since.text)).matching(Maximum("created_at", until.text)).newest().first()
+
+    def has_text_since(self, creator_id: int, text: str, since: Timestamp) -> bool:
+        return self.filter(creator_id=creator_id, text=text).matching(Minimum("created_at", since.text)).exists()
+
+    def told_at(self, agent_id: int, delivered_at: Timestamp) -> Self:
+        return self.unread(agent_id).matching(Equal("delivered_at", delivered_at.text))
+
     def remember(self, message: Message) -> None:
         if message.type is not MessageType.AGENT:
             return
@@ -40,7 +54,8 @@ class MessageQuery(Query[Message]):
         return self.matching(MessageTarget(agent_id))
 
     def has_person_message_past(self, message_id: int) -> bool:
-        return self.matching(Among("type", PERSON_MESSAGE_TYPES)).matching(Greater("id", message_id)).exists()
+        return self.kept.read_newest(self.table.name, self.matching(Among("type", PERSON_MESSAGE_TYPES)).matching(Greater("id", message_id)).exists,
+                                     f"type IN ({', '.join('?' for _ in PERSON_MESSAGE_TYPES)}) AND id > ?", [*PERSON_MESSAGE_TYPES, message_id], name="messages.person_message_past")
 
     def unread(self, agent_id: int) -> Self:
         return self.addressed(agent_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at"))

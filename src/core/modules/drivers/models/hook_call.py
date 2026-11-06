@@ -13,6 +13,8 @@ from core.modules.drivers.models.enums.hook_answer import HookAnswer
 COMPACTION = "compact"
 SESSION_START = "session_start"
 PROMPT = "prompt"
+SUMMARY_CHARACTERS = 200
+DISPLAYED_TEXT = "displayed"
 STOP_ALLOWED = "stop_allowed"
 STOP_REFUSED = "stop_refused"
 HOOK_CHANGE_NAMES = {HookEventName.COMPACT: COMPACTION, HookEventName.SESSION_START: SESSION_START, HookEventName.PROMPT: PROMPT}
@@ -45,6 +47,10 @@ class HookCall(EnvironmentScoped, Model):
     lines: str = ""
     updated_input: str = "{}"
 
+    @staticmethod
+    def summary_of(text: str) -> str:
+        return text.split("\n", 1)[0][:SUMMARY_CHARACTERS]
+
     def change_name(self, old_row: "HookCall | None") -> str | None:
         if old_row is not None:
             return None
@@ -63,6 +69,10 @@ class HookCall(EnvironmentScoped, Model):
     @property
     def terminal(self) -> str:
         return self.driver_text("terminal")
+
+    @property
+    def displayed_text(self) -> str:
+        return self.driver_text(DISPLAYED_TEXT)
 
     @property
     def folder(self) -> str:

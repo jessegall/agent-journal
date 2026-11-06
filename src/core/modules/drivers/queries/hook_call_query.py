@@ -8,6 +8,8 @@ from core.base.timestamp import Timestamp
 from core.base.driver.hook_event_name import HookEventName
 from core.base.model.tables import Tables
 from core.base.query.conditions.among import Among
+from core.base.query.conditions.greater import Greater
+from core.base.query.conditions.maximum import Maximum
 from core.base.query.conditions.minimum import Minimum
 from core.base.query.conditions.equal import Equal
 from core.base.query.query import Query
@@ -18,6 +20,7 @@ from core.base.module.driver_entries import DRIVERS_MODULE
 
 STOPS_READ = 20
 TURN_HOOKS = (HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE, HookEventName.STOP)
+TOOL_HOOKS = (HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE)
 IDLE_LIMIT_SECONDS = 30
 IDLE_HOOKS = (HookEventName.SESSION_START, HookEventName.STOP)
 COMPACTION_LIMIT_SECONDS = 600
@@ -42,9 +45,30 @@ class HookCallQuery(Query[HookCall]):
         stop = self.agent(agent_id).filter(hook=HookEventName.STOP).newest().first()
         return stop is not None and stop.answer == HookAnswer.REFUSED
 
-    def is_idle(self, agent_id: int, checked_at: Timestamp) -> bool:
-        call = self.kept.read_newest(self.table.name, self.agent(agent_id).matching(Among("hook", TURN_HOOKS)).newest().first,
+    def latest_turn_call(self, agent_id: int) -> HookCall | None:
+        return self.kept.read_newest(self.table.name, self.agent(agent_id).matching(Among("hook", TURN_HOOKS)).newest().first,
                                      "session_agent_id = ? AND hook IN (?, ?, ?, ?, ?, ?)", [agent_id, *TURN_HOOKS], name="drivers.latest_turn")
+
+    def displayed_since_last_turn(self, agent_id: int) -> Sequence[HookCall]:
+        latest = self.latest_turn_call(agent_id)
+        return self.agent(agent_id).filter(hook=HookEventName.MESSAGE_DISPLAY).matching(Greater("id", latest.id if latest is not None else 0)).oldest().all_rows()
+
+    def prompt_before(self, agent_id: int, at: Timestamp) -> HookCall | None:
+        return self.kept.read_newest(self.table.name, self.agent(agent_id).filter(hook=HookEventName.PROMPT).matching(Maximum("created_at", at.text)).newest().first,
+                                     "session_agent_id = ? AND hook = ? AND created_at <= ?", [agent_id, HookEventName.PROMPT, at.text], name="drivers.prompt_before")
+
+    def latest_write_call(self, agent_id: int) -> HookCall | None:
+        return self.kept.read_newest(self.table.name, self.agent(agent_id).filter(writes_files=True).newest().first,
+                                     "session_agent_id = ? AND writes_files = 1", [agent_id], name="drivers.latest_write")
+
+    def has_call_since(self, agent_id: int, hook: HookEventName, summary: str, since: Timestamp) -> bool:
+        return self.agent(agent_id).filter(hook=hook, summary=summary).matching(Minimum("created_at", since.text)).exists()
+
+    def has_tool_hook_after(self, agent_id: int, at: Timestamp) -> bool:
+        return self.agent(agent_id).matching(Among("hook", TOOL_HOOKS)).matching(Greater("created_at", at.text)).exists()
+
+    def is_idle(self, agent_id: int, checked_at: Timestamp) -> bool:
+        call = self.latest_turn_call(agent_id)
         if call is None:
             return False
         is_silent = call.creation_timestamp().elapsed_seconds(checked_at) >= IDLE_LIMIT_SECONDS

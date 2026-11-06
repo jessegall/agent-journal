@@ -16,7 +16,7 @@ from core.base.provider.hook_trust import HookTrust
 from core.base.provider.launch import Launch
 from core.base.provider.launch_command import LaunchCommand
 from core.base.provider.model_tier import ModelTier
-from core.base.provider.transcript_author import TRANSCRIPT_AUTHORS, TranscriptAuthor
+from core.base.provider.transcript_author import AGENT_AUTHOR, TRANSCRIPT_AUTHORS, USER_AUTHOR, TranscriptAuthor
 from core.base.provider.program_hooks import ProgramHooks
 from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.program_model import ProgramModel
@@ -36,6 +36,8 @@ from core.modules.claude_code.providers.support.claude_peer_notes import ClaudeP
 from core.modules.claude_code.providers.support.claude_trust import ClaudeTrust
 
 CONFIG_VARIABLE = "CLAUDE_CONFIG_DIR"
+SYNTHETIC_MODEL = "<synthetic>"
+PROMPT_SOURCE = "promptSource"
 TEMPORARY_FILES_FOLDER = Path("/tmp")
 
 
@@ -86,7 +88,6 @@ class ClaudeCodeProvider(Provider):
     def __init__(self, folders: ProgramFolders, keys: ServerKeys) -> None:
         super().__init__(folders)
         self.keys = keys
-        self.peer_readers: dict[Path, ClaudePeerNotes] = {}
 
     def session_command(self, launch: Launch) -> LaunchCommand:
         skip = ["--dangerously-skip-permissions"] if launch.skip_prompts else []
@@ -135,6 +136,15 @@ class ClaudeCodeProvider(Provider):
         text = "\n".join(self.message_texts(message.get("content")))
         return TranscriptAuthor.row(position, author, text, fields.get("timestamp")) if text.strip() else None
 
+    def is_own_writing(self, line: str, row: TranscriptRow) -> bool:
+        fields: object = json.loads(line)
+        if not is_mapping(fields) or fields.get("isMeta") or fields.get("isSidechain"):
+            return False
+        message = fields.get("message")
+        if row.author == AGENT_AUTHOR:
+            return is_mapping(message) and message.get("model") != SYNTHETIC_MODEL
+        return row.author == USER_AUTHOR and PROMPT_SOURCE in fields
+
     @staticmethod
     def message_texts(content: object) -> list[str]:
         if isinstance(content, str):
@@ -172,8 +182,8 @@ class ClaudeCodeProvider(Provider):
     def line_sent(self, line: SessionLine) -> bool:
         return ClaudeInbox(self.folders.folder(CONFIG_VARIABLE, ".claude") / "sessions").line_sent(line)
 
-    def peer_notes(self, path: Path) -> Sequence[PeerNote]:
-        return self.peer_readers.setdefault(path, ClaudePeerNotes(path)).notes()
+    def peer_note(self, line: str) -> Sequence[PeerNote]:
+        return ClaudePeerNotes.note(line)
 
     def state_file(self) -> Path:
         return self.folders.folder(CONFIG_VARIABLE, "") / ".claude.json"
