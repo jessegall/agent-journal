@@ -96,7 +96,7 @@ test("a name found in the column and the kind of agent are sent to the server", 
     const window_ = answered();
     const element = await mounted(MemoriesPage, window_);
     await settle();
-    typeInto(element.querySelector("[data-agent-find]"), "worker 646");
+    typeInto(element.querySelector("[data-agent-find] input"), "worker 646");
     await settle();
     expect(readsWith(window_, 'memory agents --environment main --name "worker 646" --working').length).toBeGreaterThan(0);
     await pickButton(element, "Workers", "[data-agent-roles] button");
@@ -109,7 +109,7 @@ test("an agent with no match for the name says so", async () => {
     const window_ = answered({"memory agents --environment main --name nobody": page([])});
     const element = await mounted(MemoriesPage, window_);
     await settle();
-    typeInto(element.querySelector("[data-agent-find]"), "nobody");
+    typeInto(element.querySelector("[data-agent-find] input"), "nobody");
     await settle();
     expect(element.querySelector("[data-no-agent-match]").textContent).toContain("No agent matches");
 });
@@ -159,7 +159,7 @@ test("a search, an order and the removed memories are asked of the server", asyn
     const element = await mounted(MemoriesPage, window_);
     await settle();
     document.body.append(element);
-    typeInto(element.querySelector("[data-search-input]"), "cents");
+    typeInto(element.querySelector("[data-memory-pane] [data-search-input]"), "cents");
     await settle();
     expect(readsWith(window_, "memory list --main-agent --environment main --state active --search cents --order newest --limit 20")).toHaveLength(1);
     element.querySelector("[data-search-menu]").click();
@@ -185,13 +185,13 @@ test("a search that finds nothing offers to search every agent", async () => {
     const window_ = answered({"memory list --main-agent --environment main --state active --search deploy": page([])});
     const element = await mounted(MemoriesPage, window_);
     await settle();
-    typeInto(element.querySelector("[data-search-input]"), "deploy");
+    typeInto(element.querySelector("[data-memory-pane] [data-search-input]"), "deploy");
     await settle();
     expect(element.querySelector("[data-memory-empty]").dataset.kind).toBe("search");
     element.querySelector("[data-memory-everyone]").click();
     await settle();
     expect(element.querySelector("[data-pane-title]").textContent.trim()).toBe("Every agent");
-    expect(element.querySelector("[data-search-input]").value).toBe("deploy");
+    expect(element.querySelector("[data-memory-pane] [data-search-input]").value).toBe("deploy");
 });
 
 test("a main agent with no memories points at the memories of the workers and helpers", async () => {

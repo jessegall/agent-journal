@@ -59,7 +59,7 @@ function describedOwner(who) {
     return {name: agent.name, facts: `${wordLabel(agent.role)}, ${agent.ended_at ? "ended" : "working now"}`};
 }
 
-const CHOICE_TITLES = {[MAIN]: "Main agent", [OTHERS]: "Other agents", [EVERYONE]: "Every agent"};
+const CHOICE_TITLES = {[MAIN]: "Main agent", [OTHERS]: "Workers and helpers", [EVERYONE]: "Every agent"};
 const title = computed(() => (isAgent(props.who) ? props.agent?.name ?? "" : CHOICE_TITLES[props.who]));
 const total = computed(() => props.counts[props.who]);
 const memoriesWord = (count) => `${count} active ${count === 1 ? "memory" : "memories"}`;
