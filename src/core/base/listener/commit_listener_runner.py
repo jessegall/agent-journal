@@ -11,6 +11,7 @@ from core.base.error_log import ErrorLog
 from core.base.log_level import LogLevel
 from core.base.system_log_writer import SystemLogWriter
 from core.base.exception_sink import ExceptionSink
+from core.base.listener.round_yield import RoundYield
 from core.base.listener.commit_listener import CommitListener
 from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.registry.listener_entry import ListenerEntry
@@ -36,8 +37,8 @@ class CommitListenerRunner:
     """Runs commit listeners with at most once delivery across a server stop; reported failures are retried."""
 
     def __init__(self, registry: Registry, log: EventLog, container: Container, errors: ErrorLog, cursors: ListenerCursorTable,
-                 exceptions: ExceptionSink, scopes: Scopes, system_log: SystemLogWriter) -> None:
-        self.system_log = system_log
+                 exceptions: ExceptionSink, scopes: Scopes, system_log: SystemLogWriter, turns: RoundYield) -> None:
+        self.system_log, self.turns = system_log, turns
         self.registry, self.log, self.container, self.errors, self.cursors, self.exceptions, self.scopes = registry, log, container, errors, cursors, exceptions, scopes
         self.positions: dict[str, int] = {}
         self.positions_stale = False
@@ -142,6 +143,7 @@ class CommitListenerRunner:
             if not self.cursors.claimed(entry.name, position, event.id):
                 self.positions_stale = True
                 return progress
+            self.turns.give_way()
             if not self.handle_event(entry, event):
                 self.cursors.claimed(entry.name, event.id, position)
                 return progress

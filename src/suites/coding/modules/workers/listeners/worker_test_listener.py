@@ -1,3 +1,6 @@
+from core.base.driver.command_category import CommandCategory
+from suites.coding.modules.workers.commands.record_own_test_failure.record_own_test_failure import RecordOwnTestFailure
+from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from core.base.actor import Actor
 from core.base.change.logged_event import LoggedEvent
 from core.base.change.created import Created
@@ -32,9 +35,9 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Moved[Process] | Created[
     name = "workers.tests"
     moves = [ProofLifecycle.queue, ProofLifecycle.run, ProcessLifecycle.finish, ProcessLifecycle.fail, ProcessLifecycle.stop, ProcessLifecycle.orphan]
 
-    def __init__(self, bus: Bus, queries: Queries, launch: WorkerTestLaunch, rows: EventRows, proofs: ProofQuery) -> None:
+    def __init__(self, bus: Bus, queries: Queries, launch: WorkerTestLaunch, rows: EventRows, proofs: ProofQuery, worktrees: WorktreeQuery) -> None:
         self.bus, self.queries, self.launch = bus, queries, launch
-        self.rows, self.proofs = rows, proofs
+        self.rows, self.proofs, self.worktrees = rows, proofs, worktrees
 
     def handle(self, event: Moved[Proof] | Moved[Process] | Created[AffectedTest] | Updated[AffectedTest], logged: LoggedEvent) -> None:
         if logged.event == QUEUED_EVENT:
@@ -72,7 +75,14 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Moved[Process] | Created[
             passed = process.state is ProcessState.FINISHED and process.exit_code == 0
             self.bus.run(RecordWorkerTest(proofs[0].id, passed, f"failed: journal output read of process {process.id}"), Actor.core(), cause_id=logged.id)
             self.start_next(logged)
+        elif process.category is CommandCategory.TEST_RUN and (process.state is not ProcessState.FINISHED or process.exit_code != 0):
+            self.record_own_failure(process, logged)
         first_answer = self.queries.query(AffectedTest).filter(process_id=process.id).matching(Among("state", (AffectedTestState.PICKING, AffectedTestState.TESTING))).first()
         if first_answer is not None:
             passed = process.state is ProcessState.FINISHED and process.exit_code == 0
             self.bus.run(RecordAffectedTest(first_answer.id, process.id, passed), Actor.core(), cause_id=logged.id)
+
+    def record_own_failure(self, process: Process, logged: LoggedEvent) -> None:
+        worktree = self.worktrees.worker_worktree(process.session_agent_id)
+        if worktree is not None:
+            self.bus.run(RecordOwnTestFailure(process.session_agent_id, worktree.task_id, process.line), Actor.core(), cause_id=logged.id)

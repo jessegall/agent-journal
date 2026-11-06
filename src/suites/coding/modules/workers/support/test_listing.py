@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from core.modules.processes.models.reader import Reader
+from core.modules.processes.support.count_command import CountCommand
 
 LISTING_MARK = "JOURNAL_COUNT_PART_"
 
@@ -15,7 +16,7 @@ class TestListing:
 
     @property
     def line(self) -> str:
-        return f"(printf '\\n{LISTING_MARK}{self.position}\\n'; {self.reader.count_command.replace('{part}', self.command)})"
+        return f"(printf '\\n{LISTING_MARK}{self.position}\\n'; {CountCommand.filled(self.reader.count_command, self.command)})"
 
     def output_text(self, text: str) -> str:
         marker = f"{LISTING_MARK}{self.position}\n"

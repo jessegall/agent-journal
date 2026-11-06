@@ -31,6 +31,6 @@ class StoppedWorkerRunRule(DriverRule):
 
     def is_running_after_stop(self, worker: Agent, hook: AgentHook) -> bool:
         ended_at = worker.ended_at
-        if worker.parent_id != hook.agent_id or worker.role != AgentRole.WORKER or ended_at is None:
+        if worker.environment_id != hook.environment_id or worker.role != AgentRole.WORKER or ended_at is None:
             return False
         return ended_at.elapsed_seconds(hook.timestamp) > STOPPED_LIMIT_SECONDS and bool(self.unfinished.rows(worker.id))

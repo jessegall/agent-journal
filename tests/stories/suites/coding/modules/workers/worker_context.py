@@ -49,7 +49,7 @@ def advance(scenario: WorkerTrail, worker: Actor) -> None:
     worktree = scenario.story.container.get(WorktreeQuery).worker_worktree(worker.id)
     assert worktree is not None
     scenario.story.expect_success(f'proof make 1 "cart.py:1, assignment completed" --task {worktree.task_id}', actor=worker)
-    scenario.story.expect_success("worker next", actor=worker)
+    scenario.story.expect_success("worker next --differences none", actor=worker)
 
 
 def test_dispatch_uses_task_overview_context(worker_scenario):
@@ -231,7 +231,7 @@ def test_rework_requires_current_overview_before_writes(assigned_worker):
     scenario.story.expect_success("task overview 1", actor=worker)
     scenario.repository.changed(worker.id, "cart.py", "TOTAL = 2\n")
     scenario.story.expect_success('proof make 1 "cart.py:1, assignment completed" --task 1', actor=worker)
-    scenario.story.expect_success("worker deliver", actor=worker)
+    scenario.story.expect_success("worker deliver --differences none", actor=worker)
     scenario.command(f'worker send {worker.id} "Recheck the cart assignment"')
     session = worker_session(scenario.story, worker)
     scenario.story.hook(session, HookSamples.tool_use("Read", ToolType.READ, [], None))

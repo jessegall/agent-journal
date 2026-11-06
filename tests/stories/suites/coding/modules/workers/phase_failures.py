@@ -21,7 +21,7 @@ def expect_task_state(worker, task_id: int, state: str) -> None:
 
 @pytest.fixture
 def handed_in(new_story, monkeypatch):
-    return handed_in_with_tests(worker_on_plan(new_story, monkeypatch, PHASE_DISPATCH), "worker deliver")
+    return handed_in_with_tests(worker_on_plan(new_story, monkeypatch, PHASE_DISPATCH), "worker deliver --differences none")
 
 
 @pytest.fixture
@@ -44,7 +44,7 @@ def two_failed(handed_in):
 
 @pytest.fixture
 def plan_failed(new_story, monkeypatch):
-    worker = handed_in_with_tests(worker_on_plan(new_story, monkeypatch), "worker next")
+    worker = handed_in_with_tests(worker_on_plan(new_story, monkeypatch), "worker next --differences none")
     worker.end_tests(1, 0)
     return worker
 
@@ -54,7 +54,7 @@ def selected_tests_handed_in(new_story, monkeypatch):
     worker = worker_on_plan(new_story, monkeypatch, PHASE_DISPATCH)
     worker.story.run('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main', actor=worker.story.agent)
     worker.story.run('setting set journal.suites.coding.workers.project-test-command "python3 -m pytest -q" --environment main', actor=worker.story.agent)
-    return handed_in_with_tests(worker, "worker deliver")
+    return handed_in_with_tests(worker, "worker deliver --differences none")
 
 
 def test_the_worker_gets_every_failure_in_one_line_once_all_tests_have_ended(handed_in):
@@ -88,26 +88,26 @@ def test_the_flag_after_a_failure_is_refused_with_no_need_to_ask(two_failed):
 
 
 def test_after_the_next_hand_in_a_plain_test_run_is_refused_again(first_failed):
-    first_failed.story.expect_success("worker deliver", actor=first_failed.worker)
+    first_failed.story.expect_success("worker deliver --differences none", actor=first_failed.worker)
     expect_reply_refusal(first_failed.run_test(), FLAG)
 
 
 def test_the_second_hand_in_runs_only_what_failed_and_what_passed_stays_checked(first_failed):
     first_failed.repository.changed(first_failed.worker.id, "cart.py", "TOTAL = 4\n")
-    first_failed.story.expect_success("worker deliver", actor=first_failed.worker)
+    first_failed.story.expect_success("worker deliver --differences none", actor=first_failed.worker)
     first_failed.story.expect_text("proof show 1", "state: running", actor=first_failed.story.agent)
     first_failed.story.expect_text("proof show 3", "state: checked", actor=first_failed.story.agent)
     first_failed.story.expect_rows(len(first_failed.started) == 3 and first_failed.started_processes()[2].line == TEST_LINE)
 
 
 def test_several_failed_tasks_all_go_to_testing_at_the_next_hand_in(two_failed):
-    two_failed.story.expect_success("worker deliver", actor=two_failed.worker)
+    two_failed.story.expect_success("worker deliver --differences none", actor=two_failed.worker)
     expect_task_state(two_failed, 1, "testing")
     expect_task_state(two_failed, 3, "testing")
 
 
 def test_worker_next_is_the_hand_in_after_a_failure_when_the_next_task_is_in_another_phase(plan_failed):
-    plan_failed.story.expect_text("worker next", "queued", actor=plan_failed.worker)
+    plan_failed.story.expect_text("worker next --differences none", "queued", actor=plan_failed.worker)
     plan_failed.story.expect_rows(plan_failed.started_processes()[-1].line == TEST_LINE)
     plan_failed.end_test(plan_failed.started[-1])
     plan_failed.story.expect_rows(plan_failed.current_task() == 4)

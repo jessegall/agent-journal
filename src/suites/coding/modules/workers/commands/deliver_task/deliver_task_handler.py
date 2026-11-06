@@ -10,6 +10,7 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from suites.coding.modules.workers.commands.deliver_task.deliver_task import DeliverTask
+from suites.coding.modules.workers.support.hand_in_differences import HandInDifferences
 from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test_handler import RecordWorkerTestHandler
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
@@ -27,9 +28,9 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
     command = DeliverTask
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, tasks: TaskQuery, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, tasks: TaskQuery, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler, differences: HandInDifferences) -> None:
         self.rows, self.worktrees, self.proof_queue, self.repository, self.task_commit, self.tasks = rows, worktrees, proof_queue, repository, task_commit, tasks
-        self.queries, self.phases, self.results = queries, phases, results
+        self.queries, self.phases, self.results, self.differences = queries, phases, results, differences
 
     def prepare(self, command: DeliverTask, actor: Actor) -> None:
         worktree = self.worktrees.worker_worktree(actor.id)
@@ -42,6 +43,7 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
 
     def handle(self, command: DeliverTask, context: Context) -> Task:
         committed = self.worktrees.worker_worktree(context.actor.id)
+        self.differences.record(committed.task_id, command.differences, context)
         for started in tuple(self.tasks.holder(context.actor.id).started().all_rows()):
             self.repository.save_change(started, started.moved(TaskLifecycle.test), context)
         delivered = self.repository.save_change(committed, committed.moved(WorktreeLifecycle.deliver, logs_read_at=None), context)

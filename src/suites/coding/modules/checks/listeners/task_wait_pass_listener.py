@@ -25,4 +25,4 @@ class TaskWaitPassListener(SaveListener[Updated[Check]]):
             return
         wait = self.queries.query(TaskWait).find(check.task_wait_id)
         if wait.ended_at is None:
-            self.waits.resolved(wait, context)
+            self.waits.resolved([wait], context)

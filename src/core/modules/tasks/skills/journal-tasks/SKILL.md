@@ -27,6 +27,8 @@ A task is one unit of work: open, started, then completed or cancelled. Declare 
   whole brief, so read it first.
 - Log with `journal task log <n> "<where it stands>"` after each step that matters. Writes wait once too many have gone
   by with nothing logged.
+- Add `--important` to a log line when the work differs from what the task asked, something was left out, or you could
+  not work something out. The main agent must answer those lines before the work is merged.
 - Work that is written but not yet tested moves to testing with `journal task test <n>` before you start the next task;
   that is where the user sees it, and a batch of them is tested together.
 - Finish with `journal task close <n> --outcome "<what was done, what was not>"`, or

@@ -36,7 +36,11 @@ stays kept on the same agent number and session until retired.
   them first. Reporting, delivering, merging and stopping a process do not by themselves retire the agent.
 - Read each proof with `journal proof list --task <n>`, check it with `journal proof check <n>` or send it back with
   `journal proof short <n> "<what is missing>"`.
-- Read each completed task and its log with `journal worker logs <worker>` after the latest hand-in.
+- Read each completed task with `journal worker logs <worker>` after the latest hand-in: a task's outcome, its important
+  lines whole and its other lines by their first words. `--task <n>` prints one task whole; open one that looks wrong.
+- An important line is one the worker marked, a difference it stated at its hand-in, or one the journal wrote when a task
+  failed its hand-ins or a test failed over and over in the worker's own runs. A merge with such lines needs your
+  answer: `journal worker merge <worker> --read-important "<what you make of them>"`.
 - Take the work in with `journal worker merge <worker>` once every point is checked; nothing else adds a worker's work.
   It first merges the branch into the worktree. When only built files under `web/dist` clash it keeps the branch's:
   rebuild after it. A clash in source goes back to the worker with conflict markers to settle.
@@ -91,6 +95,8 @@ never starts is retired after the idle time.
 - Prove each one with `journal proof make <point> --task <task> "<file:line, and the test>" --test "<command>"`: the journal runs that
   test command in your worktree. A proof with no test waits for the main agent's check.
 - Correct your own unchecked proof with `journal proof edit <proof> --task <task> "<text>" --test "<command>"`, or with `journal proof make` again for the same point. The main agent can return a checked proof with `journal proof short <proof> "<reason>"`.
+- At each hand-in, say what you did differently from the task or left out: `journal worker next --differences "<what>"`,
+  or `--differences none`; the same goes for `journal worker deliver`.
 - `journal worker next` hands your task over for testing: the plugins judge your changes, a refusal says what to put
   right; the journal commits and runs its proofs' tests in turn. Stop then: a failure or your next task comes back to you.
 - `journal worker deliver` hands in all your tasks together, refused while one is queued. The journal then runs your

@@ -37,7 +37,7 @@ def queued_story(new_story, monkeypatch):
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=worker)
-    story.expect_success("worker deliver", actor=worker)
+    story.expect_success("worker deliver --differences none", actor=worker)
     story.run_listeners()
     return story, repository, worker, started
 
@@ -88,7 +88,7 @@ def test_a_failed_test_goes_back_to_the_worker_and_its_next_delivery_runs_it_aga
     story.expect_text(f"agent-line list --agent {worker.id}", f"your tests failed: journal output read {started[0]} --summary")
     story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
     repository.changed(worker.id, "cart.py", "TOTAL = 4\n")
-    story.expect_success("worker deliver", actor=worker)
+    story.expect_success("worker deliver --differences none", actor=worker)
     story.run_listeners()
     expect_answers(started, 2)
     story.expect_text("proof show 1", "state: running", actor=story.agent)
@@ -103,7 +103,7 @@ def test_an_orphaned_proof_returns_to_the_worker_and_runs_again_at_delivery(new_
     story.expect_text("proof show 1", "state: short", actor=story.agent)
     story.expect_text("task show 1", "state: started", actor=story.agent)
     story.expect_text(f"agent-line list --agent {worker.id}", f"your tests failed: journal output read {orphaned_process_id} --summary")
-    story.expect_success("worker deliver", actor=worker)
+    story.expect_success("worker deliver --differences none", actor=worker)
     story.run_listeners()
     expect_answers(started, 2)
     story.expect_rows(started[1] != orphaned_process_id)
@@ -121,7 +121,7 @@ def mixed_proof_story(new_story, monkeypatch):
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=worker)
     story.expect_success('proof make 2 --task 1 "cart.py:1, looked at it"', actor=worker)
-    story.expect_success("worker deliver", actor=worker)
+    story.expect_success("worker deliver --differences none", actor=worker)
     story.run_listeners()
     return story, repository, worker, started
 
@@ -152,7 +152,7 @@ def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(new_story, m
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart.py:1, looked at it"', actor=worker)
-    story.expect_success("worker deliver", actor=worker)
+    story.expect_success("worker deliver --differences none", actor=worker)
     story.run_listeners()
     expect_absent_value(started)
     story.expect_text("proof show 1", "state: shown", actor=story.agent)
@@ -183,7 +183,7 @@ def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(new_story, m
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("base.txt", "rebased\n", "Base change")
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story" --test "python3 -c \'from pathlib import Path; assert Path(\\\"base.txt\\\").exists()\'"', actor=worker)
-    story.expect_success("worker deliver", actor=worker)
+    story.expect_success("worker deliver --differences none", actor=worker)
     story.run_listeners()
     run_test_process(story, started[0])
     picker = story.container.get(Queries).query(Process).find(started[1])
@@ -212,7 +212,7 @@ def affected_test_story(new_story, monkeypatch):
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=worker)
-    story.expect_success("worker deliver", actor=worker)
+    story.expect_success("worker deliver --differences none", actor=worker)
     story.run_listeners()
     ended(story, started[0], 0)
     return story, repository, worker, started
@@ -240,7 +240,7 @@ def test_a_failed_picker_runs_again_at_the_next_hand_in(new_story, monkeypatch):
     story, repository, worker, started = affected_test_story(new_story, monkeypatch)
     ended(story, started[1], 1)
     repository.changed(worker.id, "cart.py", "TOTAL = 4\n")
-    story.expect_success("worker deliver", actor=worker)
+    story.expect_success("worker deliver --differences none", actor=worker)
     story.run_listeners()
     story.expect_rows(len(started) == 3)
     story.container.get(OutputFolder).write_output(started[2], 1, "tests/other.py\n")
@@ -265,7 +265,7 @@ def test_picked_tests_run_when_the_proof_has_no_test_command(new_story, monkeypa
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart.py:1, checked the cart"', actor=worker)
-    story.expect_success("worker deliver", actor=worker)
+    story.expect_success("worker deliver --differences none", actor=worker)
     story.run_listeners()
     story.expect_rows(len(started) == 1)
     story.container.get(OutputFolder).write_output(started[0], 1, "tests/cart.py\n")
@@ -284,7 +284,7 @@ def test_a_single_setting_does_not_run_the_picker(new_story, monkeypatch, settin
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=worker)
-    story.expect_success("worker deliver", actor=worker)
+    story.expect_success("worker deliver --differences none", actor=worker)
     story.run_listeners()
     ended(story, started[0], 0)
     story.expect_rows(len(started) == 1)
@@ -294,3 +294,19 @@ def test_a_single_setting_does_not_run_the_picker(new_story, monkeypatch, settin
 def expect_cwd_options(options, expected) -> None:
     actual = options['cwd']
     assert actual == expected, actual
+
+
+def test_three_failed_hand_ins_of_a_task_give_the_main_agent_a_line_the_worker_never_sees(new_story, monkeypatch):
+    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    for attempt in range(2):
+        ended(story, started[attempt], 1)
+        repository.changed(worker.id, "cart.py", f"TOTAL = {attempt + 10}\n")
+        story.expect_success("worker deliver --differences none", actor=worker)
+        story.run_listeners()
+    ended(story, started[2], 1)
+    assert "failed 3 hand-ins" not in story.run("task overview 1", actor=worker).output_text
+    repository.changed(worker.id, "cart.py", "TOTAL = 9\n")
+    story.expect_success("worker deliver --differences none", actor=worker)
+    story.run_listeners()
+    ended(story, started[3], 0)
+    story.expect_text(f"worker logs {worker.id}", "! failed 3 hand-ins", actor=story.agent)

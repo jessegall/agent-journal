@@ -63,3 +63,13 @@ def expect_split_login_path(story, text, expected) -> None:
 def expect_login_path_range(login_path, number, expected) -> None:
     actual = [login_path.value() for _ in range(number)]
     assert actual == expected, actual
+
+
+def test_a_round_that_reads_the_shell_for_each_event_and_starts_plugins_reads_the_file_once(new_story, monkeypatch):
+    story = new_story()
+    counted_shells(monkeypatch, "/from/the/shell")
+    login_path = LoginPath(story.home)
+    with story.repeated_work.request():
+        for _ in range(3):
+            login_path.read_shell()
+            expect_login_path(login_path, "/from/the/shell")

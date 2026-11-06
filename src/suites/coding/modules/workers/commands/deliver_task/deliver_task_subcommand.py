@@ -9,6 +9,7 @@ from suites.coding.modules.workers.commands.support.worker_step_check import DEL
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.deliver_task.deliver_task import DeliverTask
+from suites.coding.modules.workers.support.hand_in_differences import add_differences_argument, required_differences
 
 
 class DeliverTaskSubcommand(Subcommand[DeliverTask, Task]):
@@ -20,16 +21,17 @@ class DeliverTaskSubcommand(Subcommand[DeliverTask, Task]):
     outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
-        return None
+        add_differences_argument(parser)
 
     def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, phases: WorkerPhases) -> None:
         self.worktrees, self.step_check, self.phases = worktrees, step_check, phases
 
     def command(self, arguments: Namespace, caller: Caller) -> DeliverTask:
+        differences = required_differences(arguments)
         worktree = self.worktrees.worker_worktree(caller.actor.id)
         if worktree is not None:
             self.step_check.check(worktree, DELIVERY_EVENTS, "put it right in your worktree, then journal worker deliver again")
-        return DeliverTask()
+        return DeliverTask(differences)
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, Task):

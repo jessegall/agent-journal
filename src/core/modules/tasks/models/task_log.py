@@ -14,3 +14,4 @@ class TaskLog(Model):
     task_id: int
     creator_id: int
     line: str
+    important: bool = False

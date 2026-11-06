@@ -20,6 +20,7 @@ class MergeWorkerSubcommand(Subcommand[MergeWorker, MergeOutcome]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("worker_id", type=int)
+        parser.add_argument("--read-important", default="", help="what you make of the worker's important log lines")
 
     def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck) -> None:
         self.worktrees, self.step_check = worktrees, step_check
@@ -28,7 +29,7 @@ class MergeWorkerSubcommand(Subcommand[MergeWorker, MergeOutcome]):
         worktree = self.worktrees.worker_worktree(arguments.worker_id)
         if worktree is not None:
             self.step_check.check(worktree, MERGE_EVENTS, "the worker puts it right: journal worker send it the reason, then merge again")
-        return MergeWorker(arguments.worker_id)
+        return MergeWorker(arguments.worker_id, arguments.read_important)
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, MergeOutcome):

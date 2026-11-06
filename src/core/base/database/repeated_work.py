@@ -21,8 +21,10 @@ from core.base.database.repeated_finding import RepeatedFinding
 READ_LIMIT_REPEATS = 1
 READ_TEXT_LIMIT_REPEATS = 10
 COMMAND_LIMIT_REPEATS = 3
-CALLER_FRAMES = 14
-SHOWN_CALLS = 2
+CALLER_FRAMES = 40
+SHOWN_CALLS = 3
+ACCESS_LAYERS = ("core/base/database/", "core/base/query/", "core/base/repository/", "core/base/file_access.py", "<")
+TEST_FOLDER = "../tests/"
 SOURCE_ROOT = Path(__file__).resolve().parents[3]
 PLACEHOLDER_LIST = re.compile(r"\?(?:\s*,\s*\?)+")
 COMMAND_AUDIT_EVENT = "subprocess.Popen"
@@ -199,7 +201,8 @@ class RepeatedWork(PointTally):
     @staticmethod
     def stack_calls() -> list[str]:
         frames = [frame for frame in traceback.extract_stack(limit=CALLER_FRAMES) if not frame.filename.endswith(WATCH_FILES)]
-        return [f"{os.path.relpath(frame.filename, SOURCE_ROOT)}:{frame.lineno} {frame.name}" for frame in frames]
+        calls = [(os.path.relpath(frame.filename, SOURCE_ROOT), frame.lineno, frame.name) for frame in frames]
+        return [f"{path}:{line} {name}" for path, line, name in calls if not path.startswith(ACCESS_LAYERS) and (not path.startswith("..") or path.startswith(TEST_FOLDER))]
 
     @classmethod
     def shown_calls(cls) -> str:

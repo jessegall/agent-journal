@@ -7,3 +7,4 @@ from core.modules.tasks.models.task_log import TaskLog
 class MakeTaskLog(MakeCommand[TaskLog]):
     task_id: int
     line: str
+    important: bool = False

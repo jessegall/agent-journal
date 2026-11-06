@@ -159,7 +159,7 @@ def test_delivering_with_conflict_markers_left_is_refused_and_puts_none_on_the_b
     repository.committed("cart.py", "TOTAL = 2\n", "Another total")
     base_tip = repository.tip(ENVIRONMENT_BRANCH)
     story.expect_text(f"worker merge {worker.id}", "clashed on cart.py", actor=story.agent)
-    story.expect_refusal("worker deliver", "conflict markers remain in cart.py", actor=worker)
+    story.expect_refusal("worker deliver --differences none", "conflict markers remain in cart.py", actor=worker)
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
 
 
@@ -170,7 +170,7 @@ def test_a_clash_only_on_built_files_merges_with_a_fresh_build(new_story):
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     repository.changed(worker.id, BUILT_FILE, "built by the worker\n")
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
-    story.expect_success("worker deliver", actor=worker)
+    story.expect_success("worker deliver --differences none", actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
     repository.committed(BUILT_FILE, "built on the branch\n", "Another build")
     story.expect_success(f"worker logs {worker.id}", actor=story.agent)
@@ -188,7 +188,7 @@ def test_a_worker_settles_a_clash_and_its_next_merge_goes_through(new_story):
     repository.committed("cart.py", "TOTAL = 2\n", "Another total")
     story.expect_text(f"worker merge {worker.id}", "clashed on cart.py", actor=story.agent)
     (repository.worktree_folder(worker.id) / "cart.py").write_text("TOTAL = 3\n")
-    story.expect_success("worker deliver", actor=worker)
+    story.expect_success("worker deliver --differences none", actor=worker)
     story.expect_success("worker-worktree show 1", "state: delivered")
     story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)

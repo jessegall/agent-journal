@@ -39,3 +39,12 @@ def test_deleting_a_task_removes_its_dependencies_first(new_story):
     story.run(lines.THIRD_TASK_DEPENDENCY)
     story.expect_text(lines.TASK_DELETION, "task:1")
     story.expect_success("task-dependency list", "nothing found")
+
+
+def test_a_task_cancelled_with_many_waiting_on_it_opens_them_without_a_read_each(new_story):
+    story = three_tasks(new_story)
+    for number in range(4, 18):
+        story.run(f'task make "Waiting {number}" --environment main')
+        story.run(f"task depend {number} --on 1")
+    story.run("task cancel 1 --reason \"Not needed\"", actor=story.agent)
+    story.expect_text("task show 17", "state: open")

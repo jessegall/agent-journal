@@ -15,6 +15,7 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test_handler import RecordWorkerTestHandler
 from suites.coding.modules.workers.commands.start_next_worker_task.start_next_worker_task import StartNextWorkerTask
+from suites.coding.modules.workers.support.hand_in_differences import HandInDifferences
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.proof import Proof
@@ -35,9 +36,9 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
     command = StartNextWorkerTask
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, tasks: TaskQuery, task_commit: WorkerTaskCommit, proof_queue: WorkerProofQueue, repository: Repository, bus: Bus, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, tasks: TaskQuery, task_commit: WorkerTaskCommit, proof_queue: WorkerProofQueue, repository: Repository, bus: Bus, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler, differences: HandInDifferences) -> None:
         self.rows, self.worktrees, self.tasks, self.task_commit, self.proof_queue, self.repository, self.bus = rows, worktrees, tasks, task_commit, proof_queue, repository, bus
-        self.queries, self.phases, self.results = queries, phases, results
+        self.queries, self.phases, self.results, self.differences = queries, phases, results, differences
 
     def prepare(self, command: StartNextWorkerTask, actor: Actor) -> None:
         worktree = self.worktrees.worker_worktree(actor.id)
@@ -52,6 +53,8 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
         if worktree is None or worktree.state is not WorktreeState.CUT:
             raise Refusal("only a worker with a started task moves to its next", "journal worker-worktree list shows the worktrees")
         task = self.rows.required(Task, worktree.task_id)
+        if task.state is TaskState.STARTED:
+            self.differences.record(task.id, command.differences, context)
         if task.state is TaskState.TESTING:
             if self.proof_queue.tests_pending(worktree):
                 raise Refusal(f"the tests of task {task.id} are running: your next task comes when they pass")

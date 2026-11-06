@@ -139,7 +139,7 @@ def test_a_stopped_worker_keeps_its_task_in_testing_and_loses_the_one_queued_whi
     worker = dispatched_worker(story, f"{DISPATCH} 2")
     repository.changed(worker.id, "cart.py", "TOTAL = 2\n")
     story.expect_success('proof make 1 --task 1 "cart.py:1, its story" --test "pytest tests/cart.py"', actor=worker)
-    story.expect_success("worker next", actor=worker)
+    story.expect_success("worker next --differences none", actor=worker)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.expect_success(f"agent stop {worker.id}", actor=user)

@@ -30,7 +30,7 @@ def test_a_worker_that_took_a_queued_task_while_its_tests_ran_stays_on_it_and_th
     story.expect_success('task make "Print the receipt" --brief "Print the receipt" --environment main', actor=story.agent)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2 3", actor=story.agent), ActorType.AGENT)
     proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
-    story.expect_success("worker next", actor=worker)
+    story.expect_success("worker next --differences none", actor=worker)
     story.run_listeners()
     story.expect_success("task start 3", actor=worker)
     ended(story, started[0], 0)
@@ -47,7 +47,7 @@ def test_a_worker_moves_on_to_a_queued_task_that_depends_on_the_one_it_hands_ove
     story.expect_success("task depend 2 --on 1", actor=story.agent)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
     proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
-    story.expect_text("worker next", "the tests of task 1 are queued", actor=worker)
+    story.expect_text("worker next --differences none", "the tests of task 1 are queued", actor=worker)
     story.run_listeners()
     ended(story, started[0], 0)
     expect_states(story, task1="completed", task2="started")
@@ -60,7 +60,7 @@ def test_a_proof_with_no_test_leaves_a_task_to_close_when_its_tests_pass(new_sto
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
     proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
     story.expect_success('proof make 1 --task 1 "read by hand, no test to run"', actor=worker)
-    story.expect_success("worker deliver", actor=worker)
+    story.expect_success("worker deliver --differences none", actor=worker)
     story.run_listeners()
     ended(story, started[0], 0)
     expect_states(story, task1="completed")
@@ -72,7 +72,7 @@ def test_a_proof_test_whose_end_the_server_missed_still_completes_its_task(new_s
     repository = repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
     proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
-    story.expect_success("worker deliver", actor=worker)
+    story.expect_success("worker deliver --differences none", actor=worker)
     story.run_listeners()
     ended_program = subprocess.Popen(["true"])
     ended_program.wait()
@@ -98,12 +98,12 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
 
     # the first task: delivering is refused while tasks are queued; next commits it and queues its test
     proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
-    story.expect_refusal("worker deliver", "task 2 is still in your queue", actor=worker)
-    story.expect_text("worker next", "the tests of task 1 are queued", actor=worker)
+    story.expect_refusal("worker deliver --differences none", "task 2 is still in your queue", actor=worker)
+    story.expect_text("worker next --differences none", "the tests of task 1 are queued", actor=worker)
     story.run_listeners()
     expect_states(story, task1="testing", task2="open", task3="open")
     expect_absent_marks_text(story, "handed in")
-    story.expect_refusal("worker next", "the tests of task 1 are running", actor=worker)
+    story.expect_refusal("worker next --differences none", "the tests of task 1 are running", actor=worker)
 
     # its test fails: the task goes back to the worker with a mark in the chat, and the next task waits
     ended(story, started[0], 1)
@@ -113,7 +113,7 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
 
     # the worker fixes it: next again, and this time its test passes, which starts the second task with its brief
     repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
-    story.expect_text("worker next", "the tests of task 1 are queued", actor=worker)
+    story.expect_text("worker next --differences none", "the tests of task 1 are queued", actor=worker)
     story.run_listeners()
     ended(story, started[1], 0)
     expect_states(story, task1="completed", task2="started", task3="open")
@@ -121,7 +121,7 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
 
     # the second task
     proved(story, repository, worker, "tax.py", "TAX = 1\n", 2)
-    story.expect_success("worker next", actor=worker)
+    story.expect_success("worker next --differences none", actor=worker)
     story.run_listeners()
     ended(story, started[2], 0)
     expect_states(story, task1="completed", task2="completed", task3="started")
@@ -129,8 +129,8 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
 
     # the last task: there is no next, and the one delivery hands all three in and runs its test
     proved(story, repository, worker, "receipt.py", "RECEIPT = 1\n", 3)
-    story.expect_refusal("worker next", "task 3 is your last", actor=worker)
-    story.expect_success("worker deliver", actor=worker)
+    story.expect_refusal("worker next --differences none", "task 3 is your last", actor=worker)
+    story.expect_success("worker deliver --differences none", actor=worker)
     story.run_listeners()
     expect_states(story, task1="completed", task2="completed", task3="testing")
     expect_marks_text(story, "handed in task 1, task 2, task 3")

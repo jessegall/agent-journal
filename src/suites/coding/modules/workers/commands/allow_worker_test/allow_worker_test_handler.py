@@ -8,6 +8,7 @@ from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.tasks.commands.make_task_log.make_task_log import MakeTaskLog
 from suites.coding.modules.workers.commands.allow_worker_test.allow_worker_test import AllowWorkerTest
@@ -19,7 +20,7 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_TEST_ALLO
 
 
 class AllowWorkerTestHandler(Handler[AllowWorkerTest, WorkerTestRequest]):
-    """Allows a request that was asked, for the worker's main agent or a person only, logs it on the task and
+    """Allows a request that was asked, for the main agent of the worker's environment or a person only, logs it on the task and
     tells the worker."""
 
     command = AllowWorkerTest
@@ -40,5 +41,8 @@ class AllowWorkerTestHandler(Handler[AllowWorkerTest, WorkerTestRequest]):
 
     def verify_allowed(self, request: WorkerTestRequest, actor: Actor) -> None:
         worker = self.queries.query(Agent).find(request.worker_id)
-        if actor.type is not ActorType.USER and actor.id != worker.parent_id:
+        if actor.type is ActorType.USER or actor.id == worker.parent_id:
+            return
+        caller = self.queries.query(Agent).find(actor.id)
+        if caller.role != AgentRole.MAIN or caller.environment_id != worker.environment_id:
             raise Refusal(f"only the main agent of worker {request.worker_id} or a person allows request {request.id}")

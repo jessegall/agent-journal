@@ -112,7 +112,7 @@ class StoryWorker:
 
     def prove_and_move_on(self, test_line: str = "") -> LineOutcome:
         self.prove(test_line)
-        return self.story.run("worker next", actor=self.worker)
+        return self.story.run("worker next --differences none", actor=self.worker)
 
     def end_test(self, process_id: int, code: int = 0) -> None:
         ended(self.story, process_id, code)

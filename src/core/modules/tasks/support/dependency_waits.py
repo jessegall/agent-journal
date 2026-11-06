@@ -28,17 +28,19 @@ class DependencyWaits:
         if self.queries.query(OpenDependency).filter(task_id=task_id, dependency_id=dependency_id).exists():
             self.block_dependent(self.queries.query(Task).find(task_id), dependency_id, context)
         else:
-            self.end_wait(task_id, dependency_id, context)
+            self.waits.resolved(self.pending_waits(task_id, dependency_id), context)
 
     def update_tasks(self, task_ids: Sequence[int], context: Context) -> None:
         pairs = [pair for pair in self.pairs() if pair.task_id in task_ids or pair.dependency_id in task_ids]
         open_ids = {row.id for row in self.queries.query(OpenDependency).matching(Among("id", tuple(pair.id for pair in pairs))).all_rows()}
         tasks = {task.id: task for task in self.queries.query(Task).matching(Among("id", tuple({pair.task_id for pair in pairs}))).all_rows()}
+        ended: list[TaskWait] = []
         for pair in pairs:
             if pair.id in open_ids:
                 tasks[pair.task_id] = self.block_dependent(tasks[pair.task_id], pair.dependency_id, context)
             else:
-                self.end_wait(pair.task_id, pair.dependency_id, context)
+                ended.extend(self.pending_waits(pair.task_id, pair.dependency_id))
+        self.waits.resolved(ended, context)
 
     def block_dependent(self, task: Task, dependency_id: int, context: Context) -> Task:
         target = f"tasks:{dependency_id}"
@@ -49,8 +51,6 @@ class DependencyWaits:
             return task
         return self.repository.save_change(task, task.moved(TaskLifecycle.block, reason=f"waits on task {dependency_id}"), context)
 
-    def end_wait(self, task_id: int, dependency_id: int, context: Context) -> None:
+    def pending_waits(self, task_id: int, dependency_id: int) -> tuple[TaskWait, ...]:
         target = f"tasks:{dependency_id}"
-        wait = next((wait for wait in self.waits.pending_task(task_id) if wait.target == target), None)
-        if wait is not None:
-            self.waits.resolved(wait, context)
+        return tuple(wait for wait in self.waits.pending_task(task_id) if wait.target == target)
