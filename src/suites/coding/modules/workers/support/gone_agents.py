@@ -5,13 +5,12 @@ from core.modules.agents.models.agent import Agent
 
 
 class GoneAgents:
-    """Which of the given agents had a recorded process that no longer runs; an agent with none recorded is not
-    among them, since nothing says it is gone."""
+    """Find agents whose recorded processes are not running."""
 
     def __init__(self, processes: ProcessTable) -> None:
         self.processes = processes
 
-    def of(self, agents: Iterable[Agent]) -> list[Agent]:
+    def find(self, agents: Iterable[Agent]) -> list[Agent]:
         recorded = [agent for agent in agents if agent.pid is not None and agent.process_started_at is not None]
         if not recorded:
             return []

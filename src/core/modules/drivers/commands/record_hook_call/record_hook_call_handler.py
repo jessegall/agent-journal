@@ -65,13 +65,16 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         handed_lines = DeliveredLines.chosen(command.event, answers, tuple(waiting))
         moves = OneMovePerRow.split(answers.commands)
         tool = command.event.tool
+        metadata = {**answers.metadata(), "foreign": [asdict(run) for run in command.event.foreign], "folder": str(command.event.raw.get("cwd", "")), "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start, "interrupted": command.event.is_interrupt, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}
+        if command.event.displayed_text:
+            metadata[DISPLAYED_TEXT] = command.event.displayed_text
         call = self.repository.save(HookCall(session_agent_id=agent.id, creator_id=context.actor.id, hook=command.event.event,
                                              firing=command.event.firing, tool=tool.name if tool is not None else "", summary=self.summary(command),
                                              writes_files=tool is not None and tool.is_writing_files(), lines_added=tool.lines_added if tool is not None else 0,
                                              lines_removed=tool.lines_removed if tool is not None else 0, suite=suite.name if suite is not None else "",
                                              driver=hook.driver, answer=HookAnswer.REFUSED if answers.refusal else HookAnswer.ALLOWED, refusal=answers.refusal,
                                              lines="\n".join([*answers.lines, *handed_lines.texts]), updated_input=json.dumps(dict(answers.updated_input)),
-                                             metadata=Metadata({DRIVERS_MODULE: {**answers.metadata(), "foreign": [asdict(run) for run in command.event.foreign], "folder": str(command.event.raw.get("cwd", "")), "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start, "interrupted": command.event.is_interrupt, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)], **({DISPLAYED_TEXT: command.event.displayed_text} if command.event.displayed_text else {})}})), context)
+                                             metadata=Metadata({DRIVERS_MODULE: metadata})), context)
         self.nudges.write(agent.id, answers, context)
         self.required_commands.open(agent.id, answers.delivered_nudges, context)
         self.timing.stamp("call_saved")
@@ -112,4 +115,4 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             return ProjectPaths.relative_line(tool.shell.display_text, str(command.event.raw.get("cwd", "")))[:SUMMARY_CHARACTERS] if command.event.raw.get("cwd") else tool.shell.display_text[:SUMMARY_CHARACTERS]
         if tool is not None and tool.files:
             return tool.files[0][:SUMMARY_CHARACTERS]
-        return HookCall.summary_of(command.event.prompt or command.event.displayed_text)
+        return HookCall.summarize(command.event.prompt or command.event.displayed_text)

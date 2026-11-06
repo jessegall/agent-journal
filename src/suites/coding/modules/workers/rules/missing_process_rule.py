@@ -21,9 +21,9 @@ class MissingProcessRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN, AgentRole.WORKER]
 
-    def __init__(self, queries: Queries, gone: GoneAgents, types: AgentTypeBook) -> None:
-        self.queries, self.gone, self.types = queries, gone, types
+    def __init__(self, queries: Queries, missing_agents: GoneAgents, types: AgentTypeBook) -> None:
+        self.queries, self.missing_agents, self.types = queries, missing_agents, types
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         agents = self.queries.query(Agent).matching(Among("role", self.types.derived_types("helper"))).matching(IsNull("ended_at")).all_rows()
-        return RuleAnswer.allowed().running(*(EndGoneWorker(agent.id) for agent in self.gone.of(agents)))
+        return RuleAnswer.allowed().running(*(EndGoneWorker(agent.id) for agent in self.missing_agents.find(agents)))

@@ -3,19 +3,16 @@ import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import RunChip from "../src/chat/RunChip.vue";
 import MarkBody from "../src/chat/MarkBody.vue";
 import {WINDOW_CONTEXT, lineResult} from "../src/windows/windowContext.js";
+import {tabVisibility} from "./tabVisibility.js";
 
 vi.mock("../src/windows/windowContext.js", async (original) => ({...(await original()), lineResult: vi.fn(async () => ({ok: true, value: {state: "running", progress: 40, title: "Tests"}}))}));
 
-let hidden = false;
-const showTab = (isHidden) => {
-    hidden = isHidden;
-    document.dispatchEvent(new Event("visibilitychange"));
-};
+const tab = tabVisibility();
+const showTab = tab.show;
 
 beforeEach(() => {
     vi.useFakeTimers();
-    hidden = false;
-    Object.defineProperty(document, "hidden", {configurable: true, get: () => hidden});
+    tab.reset();
     lineResult.mockClear();
 });
 afterEach(() => {

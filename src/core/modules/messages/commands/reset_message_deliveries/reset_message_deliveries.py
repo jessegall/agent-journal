@@ -5,7 +5,7 @@ from core.modules.messages.models.message import Message
 
 
 @dataclass(frozen=True)
-class ReturnMessageDeliveries(Command[tuple[Message, ...]]):
+class ResetMessageDeliveries(Command[tuple[Message, ...]]):
     """Counts the unread messages a hook's answer told of as not delivered, since that answer never reached the
     agent."""
 

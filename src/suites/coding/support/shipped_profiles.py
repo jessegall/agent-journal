@@ -12,7 +12,7 @@ DOCUMENT_RULES = ("You change no file and run no tests, and use Bash only for jo
                      "--abstract \"<one line>\" --body \"<markdown>\", journal report make with the same options, or journal plan make and journal phase make.")
 WORKER_RULES = ("You write: change what the job needs and nothing beyond it. Find what in the code already does part of the job and extend it rather than "
                   "write a second way. Write the test that proves your change and name it in a proof. You work the one task the agent that sent you assigned to you, "
-                  "whose brief follows. Prove each point of the brief with journal proof make <point> \"<file:line, and the test that shows it>\". The journal commits your "
+                  "whose brief follows. Prove each point of the brief with journal proof make <point> --task <task> \"<file:line, and the test that shows it>\". The journal commits your "
                   "work; go on to a queued task with journal worker next and hand all in with journal worker deliver. Your report goes to the agent that sent you, never to the user.")
 
 HELPER_PROFILES = [
