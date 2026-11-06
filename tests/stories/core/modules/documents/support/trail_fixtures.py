@@ -32,7 +32,22 @@ def pending(task: int):
     return pytest.mark.xfail(strict=True, raises=MissingTrailBehaviour, reason=f"plan 1093 task {task}")
 
 
+def read_source_rows(queries: Queries, registry: Registry, agent_id: int):
+    registered = (entry.model.loaded() for entry in registry.models.values())
+    models = [model for model in registered if model.model_name == "message_work_source"]
+    if not models:
+        return ()
+    rows = tuple(queries.query(models[0]).filter(agent_id=agent_id, environment_id=1).all_rows())
+    assert len(rows) <= 1, "more than one source row for an agent and environment"
+    return rows
+
+
+def read_source_ids(queries: Queries, registry: Registry, agent_id: int):
+    return tuple(row.message_id for row in read_source_rows(queries, registry, agent_id) if row.message_id is not None)
+
+
 def viewer_answer(story: Story, window: str, words: list[str], environment: str = "main"):
+    story.steps.append(f"viewer {window} {environment}: {json.dumps(words)}")
     listeners = ListenerThread(story.run_listeners, pytest.fail)
     route = StoryLineRoute(story.home, listeners, ReportedFindings())
     return route.run_line(story.container, window, words, story.user.id, environment, None)
@@ -119,16 +134,10 @@ class Trail:
         self.requested_command(f"message work-from {number}")
 
     def source_rows(self, agent_id: int):
-        registered = (entry.model.loaded() for entry in self.story.container.get(Registry).models.values())
-        models = [model for model in registered if model.model_name == "message_work_source"]
-        if not models:
-            return ()
-        rows = tuple(self.story.container.get(Queries).query(models[0]).filter(agent_id=agent_id, environment_id=1).all_rows())
-        assert len(rows) <= 1, "more than one source row for an agent and environment"
-        return rows
+        return read_source_rows(self.story.container.get(Queries), self.story.container.get(Registry), agent_id)
 
     def source_ids(self, agent_id: int):
-        return tuple(row.message_id for row in self.source_rows(agent_id) if row.message_id is not None)
+        return read_source_ids(self.story.container.get(Queries), self.story.container.get(Registry), agent_id)
 
     def expect_source(self, number: int) -> None:
         actual = self.source_ids(self.story.agent.id)

@@ -6,6 +6,10 @@ from core.base.change.event_log import EventLog
 from core.base.database.repeated_calls_error import RepeatedCallsError
 from core.base.query.query import Query
 from core.base.listener.commit_listener_runner import CommitListenerRunner
+from core.base.command.bus import Bus
+from core.base.module.module_actors import ModuleActors
+from core.modules.documents.commands.record_mentions.record_mentions import RecordMentions
+from core.modules.documents.support.row_ref import RowRef
 from tests.stories.core.modules.library.support.copy_stories import new_item, shared_server
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.suites.coding.modules.workers.worker_context import assigned_worker, worker_trail
@@ -56,6 +60,8 @@ def test_deleted_sources_are_not_relinked_by_deferred_events(trail):
         trail.command('task make "Will be deleted" --brief "doc 1" --environment main')
         trail.command("task delete 2")
     trail.story.run_listeners()
+    actor = trail.story.container.get(ModuleActors).actor("journal.core.documents")
+    trail.story.container.get(Bus).run(RecordMentions(RowRef("task", 2), "doc 1"), actor, environment_id=1)
     feature(trail.links("task:2") == [], "deferred save recreated deleted source links")
 
 
@@ -149,9 +155,11 @@ def test_delegated_comment_and_review_link_side_effects_remain(assigned_worker):
     comment = trail.comment("viewer.shell", "task", 1, "Review the cart totals")
     rows = trail.links(f'message:{comment["id"]}')
     assert any(row["link_type"] == "sent_to" and row["target_model"] == "agent" and row["target_id"] == worker.id for row in rows)
-    template_id = trail.story.new_row_id('template make "Read the plan" --brief "Find mistakes" --applies-to plan --purpose critique', actor=trail.story.agent)
+    trail.command('template make "Read the plan" --brief "Find mistakes" --applies-to plan --purpose critique')
+    templates = trail.person("templates.templates", "template", "list")["rows"]
+    template_id = next(row["id"] for row in templates if row["title"] == "Read the plan")
     trail.command("plan ready 1")
-    trail.person("messages.chat", "template", "send", str(template_id), "--on=plan:1", "--set=agents=2", "--set=size=a normal read")
+    trail.person("messages.chat", "template", "send", str(template_id), "--on=plan:1", "--set=agents=2 agents", "--set=size=a normal read")
     trail.command('report make "Plan review" --abstract "Reviewed" --body "Looks correct" --about plan:1')
     trail.story.run_listeners()
     assert "state: ready" in trail.command("plan show 1").output_text

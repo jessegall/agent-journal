@@ -1,4 +1,5 @@
 import json
+import shlex
 import pytest
 from datetime import timedelta
 
@@ -58,8 +59,10 @@ def test_new_start_episode_delivers_new_context(trail):
 
 
 @pending(6851)
-def test_plan_context_excludes_other_environments(trail):
-    trail.story.expect_success("environment make side")
+def test_plan_context_excludes_other_environments(trail, tmp_path):
+    folder = tmp_path / "side"
+    folder.mkdir()
+    trail.story.expect_success(f"environment make side {shlex.quote(str(folder))}")
     trail.story.expect_success("agent start side-main claude main --environment side")
     answer = viewer_answer(trail.story, "messages.chat", ["message", "send", "Private side request"], environment="side")
     assert answer.code == 0, answer.error

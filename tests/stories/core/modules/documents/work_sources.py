@@ -10,9 +10,10 @@ from core.testing.hook_samples import HookSamples
 from core.base.driver.command_category import CommandCategory
 from core.testing.shell_part import ShellPart
 from core.base.repository.repository import Repository
+from core.base.registry.registry import Registry
 from core.modules.tasks.models.task import Task
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
-from tests.stories.core.modules.documents.support.trail_fixtures import Trail, feature, pending, selected_trail as trail, trail as unselected_trail, viewer_answer
+from tests.stories.core.modules.documents.support.trail_fixtures import Trail, feature, pending, read_source_ids, selected_trail as trail, trail as unselected_trail, viewer_answer
 from tests.stories.server.support.go_build import GoBuild
 from tests.stories.server.support.client_binary import ROOT
 from tests.stories.server.support.server_client import server_story
@@ -50,10 +51,12 @@ def test_a_selected_source_survives_more_than_two_minutes(trail):
     trail.expect_link("message:2", "task:2", "about")
 
 
+@pytest.mark.parametrize("field,text", [("brief", "Apply precise rounding"), ("title", "Rounded cart"), ("outcome", "An explicit revised outcome")])
 @pending(6886)
-def test_direct_text_edits_keep_about_and_edited(trail):
-    trail.command('task edit 1 --brief "Apply precise rounding"')
-    trail.command('task edit 1 --title "Rounded cart"')
+def test_direct_text_edits_keep_about_and_edited(trail, field, text):
+    command = f"task edit 1 --{field} {shlex.quote(text)}"
+    trail.command(command)
+    trail.command(command)
     trail.expect_link("message:2", "task:1", "about")
     trail.expect_link("message:2", "task:1", "edited")
 
@@ -152,10 +155,11 @@ def test_single_read_and_make_on_one_shell_line_uses_source(source_server):
     environment = GoBuild.environment(JOURNAL_HOME=str(trail.story.home.folder), JOURNAL_SOURCE=str(ROOT / "src"), JOURNAL_AGENT_SESSION="s-1", JOURNAL_ENV="main")
     selected_at_creation = []
     save = Repository.save
+    registry = trail.story.container.get(Registry)
 
     def record_task_source(repository, model, context):
         if isinstance(model, Task):
-            selected_at_creation.append(trail.source_ids(context.actor.id))
+            selected_at_creation.append(read_source_ids(repository.queries, registry, context.actor.id))
         return save(repository, model, context)
 
     with patch.object(Repository, "save", record_task_source):
@@ -218,13 +222,30 @@ def test_reply_explicitly_switches_the_active_request(trail):
 
 @pytest.mark.parametrize("environment,session", [("main", "other-main"), ("side", "side-main")], ids=["another-addressee", "another-environment"])
 @pending(6847)
-def test_unauthorized_source_does_not_replace_the_active_request(trail, environment, session):
+def test_unauthorized_source_does_not_replace_the_active_request(trail, environment, session, tmp_path):
     if environment != "main":
-        trail.story.expect_success(f"environment make {environment}")
+        folder = tmp_path / environment
+        folder.mkdir()
+        trail.story.expect_success(f"environment make {environment} {shlex.quote(str(folder))}")
     target = trail.story.new_row_id(f"agent start {session} claude main --environment {environment}")
     answer = viewer_answer(trail.story, "messages.chat", ["message", "send", "Another agent's private request", "--target-agent", str(target)], environment)
     assert answer.code == 0, answer.error
     result = trail.story.run(f'message work-from {answer.value["id"]}', actor=trail.story.agent)
     feature(result.code == 1, result.output_text)
     trail.make_task()
+    trail.expect_source(2)
+
+
+def test_reading_an_agent_message_does_not_select_a_person_request(unselected_trail):
+    trail = unselected_trail
+    trail.command('message send "Agent progress only"')
+    trail.select(3)
+    assert trail.source_ids(trail.story.agent.id) == ()
+
+
+@pending(6847)
+def test_work_from_rejects_a_non_person_message(trail):
+    trail.command('message send "Agent progress only"')
+    result = trail.story.run("message work-from 3", actor=trail.story.agent)
+    feature(result.code == 1, result.output_text)
     trail.expect_source(2)
