@@ -38,7 +38,7 @@ class TargetedSession(StoryFixture):
         story.run("task overview 1", actor=story.worker)
         story.hook(story.worker_session, HookSamples.prompt("Work"))
         story.hook("h-1", HookSamples.prompt("Read"))
-        story.hook("s-1", HookSamples.prompt("Coordinate"))
+        story.hook("s-1", HookSamples.prompt("[journal] coordinate"))
 
     def expect(self, story):
         agents = story.container.get(Queries).query(Agent)

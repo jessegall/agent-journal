@@ -4,8 +4,6 @@ from datetime import timedelta
 import pytest
 
 from core.base.provider.written_rows import WrittenRows
-from core.base.query.queries import Queries
-from core.modules.drivers.models.hook_call import HookCall
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.server.support.server_client import server_story
@@ -51,10 +49,6 @@ def chat(story) -> str:
 def expect_chat_count(story, text: str, expected: int) -> None:
     shown = chat(story)
     assert shown.count(text) == expected, shown
-
-
-def prompt_summaries(story) -> list[str]:
-    return [call.summary for call in story.container.get(Queries).query(HookCall).filter(hook="prompt").oldest().all_rows()]
 
 
 @pytest.fixture
@@ -195,32 +189,8 @@ def hook_body(firing: str) -> dict[str, object]:
     return dict(TOOL_FINISHED.with_fields(session="s-1", environment="main", firing=firing, role="main").body)
 
 
-def test_a_typed_prompt_whose_hook_went_unchecked_reaches_the_journal(builder, tmp_path):
-    later_hook(builder, transcript(tmp_path, typed_row(builder, "please look at the cart")), TOOL_FINISHED)
-    assert prompt_summaries(builder) == ["please look at the cart"]
-
-
-def test_a_typed_prompt_whose_hook_went_through_is_not_recorded_again(builder, tmp_path):
+def test_a_prompt_typed_in_the_terminal_shows_in_the_chat_as_the_users_message(builder):
     builder.hook("s-1", HookSamples.prompt("please look at the cart"))
-    later_hook(builder, transcript(tmp_path, typed_row(builder, "please look at the cart")), TOOL_FINISHED)
-    assert prompt_summaries(builder) == ["please look at the cart"]
+    builder.expect_text("message show 1", "type: user", "text: please look at the cart", actor=builder.user)
 
 
-def test_a_lost_prompt_is_recorded_once_over_later_hooks(builder, tmp_path):
-    path = transcript(tmp_path, typed_row(builder, "please look at the cart"))
-    later_hook(builder, path, TOOL_FINISHED)
-    builder.container.bind(WrittenRows, WrittenRows())
-    later_hook(builder, path, TOOL_FINISHED)
-    assert prompt_summaries(builder) == ["please look at the cart"]
-
-
-def test_a_line_of_the_journal_or_of_the_program_is_no_typed_prompt(builder, tmp_path):
-    rows = [typed_row(builder, "[journal] output 3 ended"), typed_row(builder, "Skill /journal loaded", isMeta=True),
-            {"type": "user", "timestamp": written_at(builder, timedelta()), "message": {"role": "user", "content": "<command-name>/compact</command-name>"}}]
-    later_hook(builder, transcript(tmp_path, *rows), TOOL_FINISHED)
-    assert prompt_summaries(builder) == []
-
-
-def test_a_codex_prompt_whose_hook_went_unchecked_reaches_the_journal(builder, tmp_path):
-    later_hook(builder, transcript(tmp_path, codex_row(builder, "user", "please look at the cart")), TOOL_FINISHED.with_fields(program="codex"))
-    assert prompt_summaries(builder) == ["please look at the cart"]

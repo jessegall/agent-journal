@@ -19,6 +19,7 @@ from core.modules.drivers.commands.record_lost_prompt.record_lost_prompt import 
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.environments.models.environment import Environment
+from core.modules.messages.commands.record_typed_prompt.record_typed_prompt import RecordTypedPrompt
 from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.messages.support.agent_text_filter import AgentTextFilter
 
@@ -30,7 +31,7 @@ LONGEST_LOOK_BACK = timedelta(hours=1)
 class TranscriptCatchUpRule(DriverRule):
     """What the main agent wrote or a person typed reaches the journal even when its own hook did not: at a later
     hook or tick, a text in the session file with no display hook or message of its own, unless the filter would
-    have kept it out, becomes a message, and a typed prompt with no prompt hook gets its hook call. A row waits
+    have kept it out, becomes a message, and a typed prompt with no prompt hook gets its hook call and its message. A row waits
     until its own hook had time to come, and nothing from before the agent started or over an hour old is read."""
 
     name = "messages.transcript-catch-up"
@@ -61,7 +62,7 @@ class TranscriptCatchUpRule(DriverRule):
         since = Timestamp(row.written_at.value - HOOK_BEFORE_ROW)
         if row.is_prompt:
             has_hook = self.hook_calls.has_call_since(hook.agent_id, HookEventName.PROMPT, HookCall.summary_of(row.text), since)
-            return [] if has_hook else [RecordLostPrompt(row.text)]
+            return [] if has_hook else [RecordLostPrompt(row.text), RecordTypedPrompt(row.text.strip())]
         text = row.text.strip()
         if self.texts.is_displayed(hook.agent_id, text, since) or self.is_kept_out(hook, text, row.written_at):
             return []

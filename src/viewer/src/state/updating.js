@@ -19,7 +19,7 @@ let lateTimer = 0;
 let waiting = [];
 
 // what the server says of itself; one that cannot be reached is still on its way back
-async function stateOfServer() {
+async function askedStateOfServer() {
     try {
         const answer = await transport.serverState();
         return {reachable: true, ...(answer.ok ? await answer.json() : {restarting: false, updating: false})};
@@ -28,8 +28,12 @@ async function stateOfServer() {
     }
 }
 
+// one question at a time: whoever asks while one is in flight takes its answer
+let flyingState = null;
+const stateOfServer = () => (flyingState ??= askedStateOfServer().finally(() => (flyingState = null)));
+
 function arrived() {
-    clearInterval(asking);
+    clearTimeout(asking);
     clearTimeout(lateTimer);
     asking = 0;
     Object.assign(updating, {starting: false, external: false, late: false, offline: false});
@@ -37,15 +41,9 @@ function arrived() {
     reloadIfNewBuild();
 }
 
-// one question at a time, so a server that takes the question and never answers does not pile them up
-let isAsking = false;
-
 async function askServer() {
     updating.offline = !navigator.onLine;
-    if (isAsking) return;
-    isAsking = true;
     const state = await stateOfServer();
-    isAsking = false;
     updating.external = state.updating;
     const isSteady = !state.restarting && !state.updating && state.reachable;
     steadyAnswers = isSteady ? steadyAnswers + 1 : 0;
@@ -55,12 +53,20 @@ async function askServer() {
     if (!reloads || fieldBusy()) arrived();
 }
 
+// the next wait starts only once the last question has answered
+function askAfterWait() {
+    asking = setTimeout(async () => {
+        await askServer();
+        if (updating.starting) askAfterWait();
+    }, ASK_EVERY_MS);
+}
+
 // the server did not answer: the cover goes up and the server is asked until it answers again
 export function serverGone() {
     if (updating.starting) return;
     updating.starting = true;
     updating.offline = !navigator.onLine;
-    asking = setInterval(askServer, ASK_EVERY_MS);
+    askAfterWait();
     lateTimer = setTimeout(() => (updating.late = true), LATE_AFTER_MS);
 }
 

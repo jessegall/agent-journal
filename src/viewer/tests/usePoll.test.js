@@ -45,6 +45,43 @@ test("closing a window during a later read leaves no poll after the read answers
     expect(load).toHaveBeenCalledTimes(2);
 });
 
+test("a slow read gets no second read beside it, and the wait starts when it answers", async () => {
+    const read = Promise.withResolvers();
+    const load = vi.fn().mockResolvedValueOnce(undefined).mockImplementationOnce(() => read.promise).mockResolvedValue(undefined);
+    const app = pollingWindow(load);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(load).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(60000);
+    expect(load).toHaveBeenCalledTimes(2);
+    expect(vi.getTimerCount()).toBe(0);
+    read.resolve();
+    await vi.advanceTimersByTimeAsync(1999);
+    expect(load).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(load).toHaveBeenCalledTimes(3);
+    app.unmount();
+});
+
+test("a read that fails polls again at the next interval and every one after it", async () => {
+    const load = vi.fn().mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error("the server failed")).mockResolvedValue(undefined);
+    const app = pollingWindow(load);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(load).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(load).toHaveBeenCalledTimes(3);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(load).toHaveBeenCalledTimes(4);
+    app.unmount();
+});
+
+test("a first read that fails still starts the poll", async () => {
+    const load = vi.fn().mockRejectedValueOnce(new Error("the server failed")).mockResolvedValue(undefined);
+    const app = pollingWindow(load);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(load).toHaveBeenCalledTimes(2);
+    app.unmount();
+});
+
 test("a mounted window reads every two seconds only while running and stops when closed", async () => {
     const load = vi.fn().mockResolvedValue(undefined);
     let running = true;
@@ -121,6 +158,33 @@ describe("a hidden tab", () => {
         expect(load).toHaveBeenCalledTimes(2);
         await vi.advanceTimersByTimeAsync(1);
         expect(load).toHaveBeenCalledTimes(3);
+    });
+
+    test("a read that fails when the tab is shown again polls again", async () => {
+        const load = vi.fn().mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error("the server failed")).mockResolvedValue(undefined);
+        const app = pollingWindow(load);
+        await vi.advanceTimersByTimeAsync(0);
+        showTab(true);
+        showTab(false);
+        await vi.advanceTimersByTimeAsync(2000);
+        expect(load).toHaveBeenCalledTimes(3);
+        app.unmount();
+    });
+
+    test("shown again while a read is in flight, it sends no second read", async () => {
+        const read = Promise.withResolvers();
+        const load = vi.fn().mockResolvedValueOnce(undefined).mockImplementationOnce(() => read.promise).mockResolvedValue(undefined);
+        const app = pollingWindow(load);
+        await vi.advanceTimersByTimeAsync(2000);
+        expect(load).toHaveBeenCalledTimes(2);
+        showTab(true);
+        showTab(false);
+        await vi.advanceTimersByTimeAsync(5000);
+        expect(load).toHaveBeenCalledTimes(2);
+        read.resolve();
+        await vi.advanceTimersByTimeAsync(2000);
+        expect(load).toHaveBeenCalledTimes(3);
+        app.unmount();
     });
 
     test("a window that is closed while hidden reads nothing when the tab is shown", async () => {

@@ -1,13 +1,29 @@
 // a read asked for by events: it runs at once when the last run is older than `gap` milliseconds, and else once when the gap has passed, however many asked meanwhile
+// while a read is in flight none starts beside it: one asked meanwhile runs after it has answered or failed
 export function coalesced(read, gap) {
     let last = 0;
     let timer = null;
+    let flying = false;
+    let again = false;
+    const answered = () => {
+        flying = false;
+        if (!again) return;
+        again = false;
+        ask();
+    };
     const run = () => {
         timer = null;
         last = Date.now();
-        return read();
+        const answer = read();
+        if (!(answer instanceof Promise)) return;
+        flying = true;
+        answer.catch(() => {}).finally(answered);
     };
     const ask = () => {
+        if (flying) {
+            again = true;
+            return;
+        }
         if (timer) return;
         const wait = gap - (Date.now() - last);
         if (wait <= 0) run();
@@ -16,6 +32,7 @@ export function coalesced(read, gap) {
     ask.cancel = () => {
         clearTimeout(timer);
         timer = null;
+        again = false;
     };
     return ask;
 }

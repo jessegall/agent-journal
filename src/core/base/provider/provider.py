@@ -134,7 +134,7 @@ class Provider(ABC):
     def line_sent(self, line: SessionLine) -> bool:
         return False
 
-    def peer_notes(self, path: Path) -> Sequence[PeerNote]:
+    def peer_note(self, line: str) -> Sequence[PeerNote]:
         return ()
 
     def context_percent(self, home: JournalHome, session: str) -> int | None:

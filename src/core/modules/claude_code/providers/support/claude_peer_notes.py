@@ -1,10 +1,7 @@
 import json
 import re
-from collections.abc import Sequence
-from pathlib import Path
 
 from core.base.provider.peer_note import PeerNote
-from core.base.provider.transcript_growth import TranscriptGrowth
 from core.base.type_guards import is_mapping
 from core.modules.claude_code.providers.support.claude_inbox import ENVELOPE
 
@@ -17,14 +14,7 @@ SENDER_ADDRESS = re.compile(r'\bfrom="([^"]*)"')
 
 
 class ClaudePeerNotes:
-    """The messages other sessions sent, read from what a Claude Code transcript gained, where each is queued
-    as one row."""
-
-    def __init__(self, path: Path) -> None:
-        self.growth = TranscriptGrowth(path)
-
-    def notes(self) -> Sequence[PeerNote]:
-        return [note for line in self.growth.new_lines() for note in self.note(line)]
+    """A message another session sent, read from the one row of a Claude Code transcript that queued it."""
 
     @staticmethod
     def note(line: str) -> list[PeerNote]:
