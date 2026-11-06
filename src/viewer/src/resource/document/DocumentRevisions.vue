@@ -25,7 +25,9 @@ async function restore() {
 
 <template>
     <div class="document-tab" data-document-revisions>
-        <Btn v-if="editing" small bordered data-close-revision @click="emit('close-revision')">Close the open revision</Btn>
+        <template v-if="editing">
+            <Btn small bordered data-close-revision @click="emit('close-revision')">Close the open revision</Btn>
+        </template>
         <template v-if="revisions.length">
             <template v-for="row in revisions" :key="row.number">
                 <Btn variant="text" :data-text-revision="row.number" @click="open(row)">Revision {{ row.number }}: {{ row.change }} · {{ row.author_name }} · <time :datetime="row.created_at">{{ row.created_at.slice(0, 16).replace("T", " ") }}</time></Btn>
