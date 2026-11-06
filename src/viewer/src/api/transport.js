@@ -220,9 +220,14 @@ class Transport {
         });
     }
 
+    // a read whose failure says nothing about the server, so it puts no cover up
+    quietRead(url, init = {}) {
+        return this.whenFree(() => this.out(url, init, [{window: SHELL_WINDOW, line: url, kind: READ}], WAIT_MS));
+    }
+
     // a file's bytes, which are not JSON, at an address that names its environment itself
     async bytes(url) {
-        const res = await this.whenFree(() => this.out(url, {headers: VIEWER}, [{window: SHELL_WINDOW, line: url, kind: READ}], WAIT_MS));
+        const res = await this.quietRead(url, {headers: VIEWER});
         if (!res.ok) throw failure(res.status, `The file could not be read: ${res.status} ${res.statusText}`);
         return res.arrayBuffer();
     }

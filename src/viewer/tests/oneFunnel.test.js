@@ -5,7 +5,7 @@ import {expect, test} from "vitest";
 const ROOT = resolve(__dirname, "../..");
 const SOURCES = ["viewer/src", "viewer/kit", "core/modules", "suites"];
 const FUNNEL = "viewer/src/api/transport.js";
-const CALL = /\bfetch\(|new EventSource|XMLHttpRequest/;
+const CALL = /\bfetch\(|new EventSource|new WebSocket|XMLHttpRequest|sendBeacon/;
 const SKIPPED = new Set(["node_modules", "dist", "tests"]);
 
 function sources(folder) {

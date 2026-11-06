@@ -39,7 +39,7 @@ export class JoinedRead {
         const run = joining ? this.flying : (this.following ??= waitingRun());
         run.askers += 1;
         const answer = this.answerFor(run, signal);
-        if (!joining) this.ask();
+        if (this.following === run) this.ask();
         return answer;
     }
 

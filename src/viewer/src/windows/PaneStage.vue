@@ -1,6 +1,7 @@
 <script setup>
 import {computed, onMounted, onUnmounted, provide, ref, watch, watchEffect} from "vue";
 import {INSPECTOR_HOST, OPEN_VIEW, PANE_PAGE} from "./windowContext.js";
+import {moveToPage} from "../shownPage.js";
 import LayoutPicker from "../agents/LayoutPicker.vue";
 import {useLayoutPresets} from "./layoutPresets.js";
 import Btn from "../kit/Btn.vue";
@@ -157,7 +158,7 @@ async function readUsage() {
 }
 // a page opens at its own address and a window in a pane
 const pageAddress = (name) => `?environment=${encodeURIComponent(props.environment)}&page=${encodeURIComponent(name)}`;
-const goTo = (name) => (props.catalogue.window(name)?.place === "page" ? location.assign(pageAddress(name)) : openView(name));
+const goTo = (name) => (props.catalogue.window(name)?.place === "page" ? moveToPage(pageAddress(name)) : openView(name));
 provide(OPEN_VIEW, goTo);
 provide(PANE_PAGE, props.page);
 provide(RESOURCE_SUBSCRIPTIONS, props.subscriptions);

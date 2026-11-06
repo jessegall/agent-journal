@@ -279,11 +279,10 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if command_lines:
             with viewer.routes.queue.viewer_turn("; ".join(" ".join(line.line) for _, line in command_lines)):
                 queued_ms = (perf_counter() - started_at) * 1000
-                command_answers = viewer.routes.line_route.answers(ViewerLinesRequest([line for _, line in command_lines]), person_id, session.shared)
-            duration_ms = (perf_counter() - started_at) * 1000
-            for (index, line), answer in zip(command_lines, command_answers, strict=True):
-                answers[index] = answer
-                RequestLog(viewer.routes.line_route.line_run.home).record(line.line, "viewer", duration_ms, queued_ms, answer.code)
+                command_answers = viewer.routes.line_route.timed_answers(ViewerLinesRequest([line for _, line in command_lines]), person_id, session.shared)
+            for (index, line), timed in zip(command_lines, command_answers, strict=True):
+                answers[index] = timed.answer
+                RequestLog(viewer.routes.line_route.line_run.home).record(line.line, "viewer", timed.duration_ms, queued_ms, timed.answer.code)
         self.answer(200, {"answers": [asdict(answers[index]) for index in range(len(request.lines))]})
 
     def answer_share_comments(self, viewer: ViewerServer, session: ViewerSession, body: bytes | None) -> None:

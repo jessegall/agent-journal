@@ -1,5 +1,6 @@
 import io
 import json
+from time import perf_counter
 
 from core.base.database.request_watch import RequestWatch
 from core.base.request_queue import RequestQueue
@@ -26,6 +27,7 @@ from server.viewer.line_answer import LineAnswer
 from server.viewer.share_refusal import ShareRefusal
 from server.viewer.share_scope import ShareScope
 from server.viewer.shared_row import SharedRow
+from server.viewer.timed_line_answer import TimedLineAnswer
 from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.viewer_lines_request import ViewerLinesRequest
 
@@ -50,16 +52,24 @@ class LineRoute:
             container.get(Database).close()
 
     def answers(self, request: ViewerLinesRequest, person_id: int, shared: SharedRow | None = None) -> list[LineAnswer]:
+        return [timed.answer for timed in self.timed_answers(request, person_id, shared)]
+
+    def timed_answers(self, request: ViewerLinesRequest, person_id: int, shared: SharedRow | None = None) -> list[TimedLineAnswer]:
         if not request.lines:
             return []
         try:
             container = self.line_run.synced(None, None)
         except StaleRegistryError as error:
-            return [LineAnswer(USAGE_CODE, error=str(error)) for _ in request.lines]
+            return [TimedLineAnswer(LineAnswer(USAGE_CODE, error=str(error)), 0.0) for _ in request.lines]
         try:
-            return [self.batch_answer(container, line, person_id, shared) for line in request.lines]
+            return [self.timed_answer(container, line, person_id, shared) for line in request.lines]
         finally:
             container.get(Database).close()
+
+    def timed_answer(self, container: Container, request: ViewerLineRequest, person_id: int, shared: SharedRow | None) -> TimedLineAnswer:
+        started_at = perf_counter()
+        answer = self.batch_answer(container, request, person_id, shared)
+        return TimedLineAnswer(answer, (perf_counter() - started_at) * 1000)
 
     def batch_answer(self, container: Container, request: ViewerLineRequest, person_id: int, shared: SharedRow | None) -> LineAnswer:
         try:

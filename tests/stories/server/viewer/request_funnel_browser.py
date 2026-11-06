@@ -21,3 +21,12 @@ def run_browser_script(new_story, tmp_path: Path, script: str) -> None:
 @pytest.mark.parametrize("script", ["eventStreamShared.browser.mjs", "readsJoined.browser.mjs", "sendAtOnce.browser.mjs"])
 def test_the_viewer_requests_under_load(new_story, tmp_path, script):
     run_browser_script(new_story, tmp_path, script)
+
+
+def test_the_request_log_page_opens_without_a_reload(new_story, tmp_path):
+    story = story_with_peer_message(new_story, tmp_path)
+    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)
+    story.expect_success("setting set journal.core.developer.tools.hooks.request-log true --project", actor=story.user)
+    with server_story(story) as server:
+        expect_browser(server, "requestLogPage.browser.mjs", [])

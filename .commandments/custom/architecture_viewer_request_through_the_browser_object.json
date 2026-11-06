@@ -1,0 +1,50 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": [
+        "typescript",
+        "vue"
+    ],
+    "find": {
+        "select": "member-access",
+        "where": [
+            {
+                "nameIn": [
+                    "fetch",
+                    "EventSource",
+                    "WebSocket",
+                    "XMLHttpRequest",
+                    "sendBeacon"
+                ]
+            },
+            {
+                "of": "receiver",
+                "nameIn": [
+                    "window",
+                    "globalThis",
+                    "self",
+                    "navigator"
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/viewer/src/api/transport\\.js$"
+            },
+            {
+                "fileMatches": "(^|/)src/viewer/public/voices/figures/draco/"
+            },
+            {
+                "fileMatches": "(^|/)tools/phone-worker/"
+            }
+        ]
+    },
+    "sin": {
+        "name": "request-outside-the-funnel",
+        "description": "A viewer file makes its own request, so it leaves no record of what its window has in flight, joins no read and takes no turn among the reads.",
+        "rule": "Every request of the viewer leaves through src/viewer/src/api/transport.js; a window reads and runs through its window context.",
+        "skill": "viewer-request-funnel"
+    }
+}
