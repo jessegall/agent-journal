@@ -1,4 +1,9 @@
 from core.base.skill.skill_declaration import SkillDeclaration
+from core.base.module.model_declaration import ALL_SUBCOMMANDS
+from core.modules.plans.migrations.m008_plan_context_reads import PlanContextReadsMigration
+from core.modules.plans.models.plan_context_read import PlanContextRead
+from core.modules.plans.support.block_conditions.plan_context_read import PlanContextRead as PlanContextReadCondition
+from core.modules.plans.rules.plan_context_rule import PlanContextRule
 from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclaration, ButtonMenuItem, TextField
 from core.modules.plans.commands.block_plan.block_plan import BlockPlan
 from core.modules.plans.commands.approve_plan.approve_plan import ApprovePlan
@@ -76,12 +81,12 @@ class PlansModule(Module):
 
     name = "journal.core.plans"
     requires_core = ">=5,<6"
-    block_conditions = [PlanApproved, PlanFinished]
+    block_conditions = [PlanApproved, PlanFinished, PlanContextReadCondition]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking", "journal.core.drivers", "journal.core.messages"]
     skills = [SkillDeclaration("journal-plans", "Build and follow a plan of ordered tasks; read it before the first plan command of a session, or when the user asks for a plan or a roadmap", keywords=("plan", "plans", "roadmap", "phases"), commands=("plan", "phase")),
               SkillDeclaration("journal-planning", "How thorough a plan is: real steps in each phase, one task per step, and a brief an agent can carry out alone; read it before you make a plan or a phase", keywords=("plan", "phases"), commands=("plan make", "phase make"))]
-    models = [ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"])]
-    migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration]
+    models = [ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]), ModelDeclaration(PlanContextRead, excluded_subcommands=ALL_SUBCOMMANDS)]
+    migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration]
     handlers = [MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler, ApprovePlanHandler]
     moves = [PlansMove]
     subcommands = [CommentPlanSubcommand, PlanCommentsSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
@@ -92,7 +97,7 @@ class PlansModule(Module):
                  FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener]
     marks = PLAN_MARKS
     nudges = PLAN_NUDGES
-    driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule]
+    driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule, PlanContextRule]
     docks = PLAN_DOCKS
     buttons = [ButtonDeclaration("plans.approve", ("dock.plans.waiting", "row.plan"), "Approve", "plan approve {row_id}",
                                  icon="check", primary=True, condition=ButtonCondition("state", tuple(["ready"])),

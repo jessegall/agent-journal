@@ -13,15 +13,11 @@ from core.modules.plans.models.plan import Plan
 from core.modules.tasks.models.task import Task
 
 
-class WorkContextSubcommand(ReadSubcommand[WorkContextPage | WorkContextText | WorkContextAttachmentPage | WorkContextFile]):
-    """Reads a resource's conversation without selecting any message as the active request."""
+class WorkContextArguments:
+    """Parses and renders the shared task and plan context commands."""
 
-    model: type[Task | Plan]
     name = "context"
     help = "Read bounded conversation pages; continue with --message/--text-offset or --ancestor-cursor without selecting a request."
-
-    def __init__(self, queries: Queries, reader: WorkContextReader) -> None:
-        self.queries, self.reader = queries, reader
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("row_id", type=int)
@@ -35,15 +31,28 @@ class WorkContextSubcommand(ReadSubcommand[WorkContextPage | WorkContextText | W
         attachments.add_argument("--attachment")
         attachments.add_argument("--attachment-page", type=int)
 
-    def read(self, arguments: Namespace, caller: Caller) -> WorkContextPage | WorkContextText | WorkContextAttachmentPage | WorkContextFile:
+    def request(self, arguments: Namespace) -> WorkContextRequest:
         if not 0 < arguments.row_id <= 9223372036854775807:
             raise Refusal("name a positive context resource number")
-        row = self.queries.query(self.model).find(arguments.row_id)
-        return self.reader.read(row, caller, WorkContextRequest(arguments.page, arguments.page_size, arguments.message,
-                                                               arguments.text_offset, arguments.ancestor_cursor,
-                                                               arguments.attachment, arguments.attachment_page,
-                                                               WorkContextOrder.NEWEST if arguments.newest else WorkContextOrder.OLDEST))
+        return WorkContextRequest(arguments.page, arguments.page_size, arguments.message,
+                                  arguments.text_offset, arguments.ancestor_cursor,
+                                  arguments.attachment, arguments.attachment_page,
+                                  WorkContextOrder.NEWEST if arguments.newest else WorkContextOrder.OLDEST)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, (WorkContextPage, WorkContextText, WorkContextAttachmentPage, WorkContextFile)):
             output.write("\n".join(value.lines()), asdict(value))
+
+
+class WorkContextSubcommand(WorkContextArguments, ReadSubcommand[WorkContextPage | WorkContextText | WorkContextAttachmentPage | WorkContextFile]):
+    """Reads a resource's conversation without selecting any message as the active request."""
+
+    model: type[Task | Plan]
+
+    def __init__(self, queries: Queries, reader: WorkContextReader) -> None:
+        self.queries, self.reader = queries, reader
+
+    def read(self, arguments: Namespace, caller: Caller) -> WorkContextPage | WorkContextText | WorkContextAttachmentPage | WorkContextFile:
+        request = self.request(arguments)
+        row = self.queries.query(self.model).find(arguments.row_id)
+        return self.reader.read(row, caller, request)
