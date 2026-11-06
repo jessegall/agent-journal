@@ -65,3 +65,23 @@ test("scrolled to the top, the terminal reads an older page and adds its lines a
     expect(after[0]).toBe("$call 104");
     expect(after.at(-1)).toBe("$call 700");
 });
+
+test("opening a command reads one output page and closing it hides the output", async () => {
+    const window = context({}, 7);
+    window.read = async (line) => feed(line);
+    window.readKey = vi.fn(async () => ({ok: true, value: {lines: ["a result"], first_byte: 0, last_byte: 8, total: 8, cut_bytes: 0}}));
+    window.option = () => ({value: "commands"});
+    const element = await mounted(Terminal, window);
+    const command = element.querySelector("[data-terminal-command] .terminal-text");
+    expect(window.readKey).not.toHaveBeenCalled();
+    command.click();
+    await settle();
+    expect(command.classList.contains("open")).toBe(true);
+    expect(element.querySelector("[data-terminal-output]").textContent).toContain("a result");
+    expect(window.readKey).toHaveBeenCalledExactlyOnceWith("terminal-output.304", {});
+    command.click();
+    await settle();
+    expect(command.classList.contains("open")).toBe(false);
+    expect(element.querySelector("[data-terminal-output]")).toBeNull();
+    expect(window.readKey).toHaveBeenCalledTimes(1);
+});

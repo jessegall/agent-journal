@@ -1,5 +1,6 @@
 from core.base.shell_sandbox import ShellSandbox
 from core.modules.processes.support.stock_reader import STOCK_READERS
+from core.modules.processes.support.output_folder import OutputFolder
 from datetime import timedelta
 
 from core.base.command.bus import Bus
@@ -15,6 +16,7 @@ from tests.stories.core.modules.processes.support.process_samples import expect_
 from tests.stories.core.support.coding_fixtures import BuilderStarted, HelperUnderBuilder
 from core.testing.expect_reply import expect_reply_allowed
 from tests.stories.support.story_checks import expect_lines_reply_line, expect_refusal_hook_rule, expect_updated_input_hook, expect_updated_input_reply
+from tests.stories.core.modules.documents.support.trail_fixtures import viewer
 
 PYTEST_COUNT_PATTERN = next(reader.count for reader in STOCK_READERS if reader.name == "pytest")
 SERVER = HookSamples.shell("node serve.js", ShellPart("node", CommandCategory.PROCESS, ["serve.js"]))
@@ -29,6 +31,14 @@ def test_a_shell_hook_of_the_builder_is_answered_with_the_runner_line_and_a_proc
     expect_updated_input_reply(reply, {"command": runner_line(story, 1, "node serve.js")})
     story.expect_success("process show 1", "line: node serve.js", "state: running", "limit_seconds: 15", f"session_agent_id: {story.agent.id}")
     story.expect_text(f"hook-call show {reply.hook_call_id}", "processes.runner-rewrite: rewritten")
+
+
+def test_the_agent_terminal_reads_the_call_output_through_the_viewer(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    reply = story.hook("s-1", SERVER)
+    story.container.get(OutputFolder).write_output(1, 1, "server started\n")
+    page = viewer(story, "agents.agents", ["output", "hook-page", str(reply.hook_call_id)])
+    story.expect_rows(page["lines"] == ["server started"])
 
 
 def test_a_journal_only_line_has_limit_0(new_story):

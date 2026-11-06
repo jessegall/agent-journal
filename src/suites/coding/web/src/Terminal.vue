@@ -1,6 +1,7 @@
 <script setup>
 import {computed, nextTick, ref, watch} from "vue";
 import {AutoScrollPane, EmptyState, Skeleton, useRows, useWindow} from "@journal/window-kit";
+import TerminalOutput from "./TerminalOutput.vue";
 
 // Commands are listed oldest first and open to their full text; a line typed here goes to the agent's terminal.
 const COMMAND_TOOLS = new Set(["Bash", "Monitor", "shell", "exec_command"]);
@@ -103,6 +104,7 @@ function focusInput(event) {
                             <span class="terminal-state" data-terminal-refused>refused</span>
                         </template>
                     </div>
+                    <template v-if="opened.has(row.id)"><TerminalOutput :call="row.id" /></template>
                 </template>
             </AutoScrollPane>
         </template>
