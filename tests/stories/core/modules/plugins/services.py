@@ -51,8 +51,8 @@ def test_a_line_of_four_parts_reaches_the_service_as_four_events_and_starts_no_p
     try:
         starts = start_counter(monkeypatch, "run.sh")
         story.expect_hook_refusal("s-1", four_parts(REMOVAL_PART), "[plugin served] the service says no")
-        asked = (story.home.folder / "plugin-data" / "served" / "asked").read_text().splitlines()
-        story.expect_rows(len(asked) == 4, starts == [])
+        served_lines = (story.home.folder / "plugin-data" / "served" / "asked").read_text().splitlines()
+        story.expect_rows(len(served_lines) == 4, starts == [])
     finally:
         story.processes.close()
 

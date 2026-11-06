@@ -22,9 +22,9 @@ KEPT_NAMES_SHOWN = 5
 
 
 class WorkerPlaces:
-    """How many workers run against the run limit. A run place is a process that has not ended; a new worker and a
-    resume also count a resume handed over in the last two minutes that has not bound yet. Delivered work with its
-    process stopped takes no run place."""
+    """How many workers run against the run limit. A run place is a process that has not ended; a new worker and
+    a resume also count a resume handed over in the last two minutes that has not bound yet. Delivered work with
+    its process stopped takes no run place."""
 
     def __init__(self, queries: Queries, limits: AgentTypeLimits, kept: KeptRows, clock: Clock, scopes: Scopes) -> None:
         self.queries, self.limits, self.kept, self.clock, self.scopes = queries, limits, kept, clock, scopes
@@ -45,19 +45,18 @@ class WorkerPlaces:
         return self.limits.of(CodingAgentRole.WORKER).kept
 
     def all_kept_run(self) -> bool:
-        kept = self.kept_workers()
-        return self.kept_limit() != NO_LIMIT and len(kept) >= self.kept_limit() and all(worker.ended_at is None for worker in kept)
+        workers = self.kept_workers()
+        return self.kept_limit() != NO_LIMIT and len(workers) >= self.kept_limit() and all(worker.ended_at is None for worker in workers)
 
     def check_new_place(self) -> None:
-        running = self.running()
-        if len(running) + self.resuming_count() >= self.run_limit():
+        if len(self.running()) + self.resuming_count() >= self.run_limit():
             raise Refusal(f"{self.run_limit()} workers are running", "wait for one to report, or stop one")
-        kept = self.kept_workers()
-        if self.kept_limit() != NO_LIMIT and len(kept) >= self.kept_limit():
-            names = ", ".join(f"agent:{worker.id}" for worker in kept[:KEPT_NAMES_SHOWN])
-            idle = next((worker for worker in kept if worker.ended_at is not None), None)
-            way_out = "all of them run: wait for a report" if idle is None else f'journal agent retire {idle.id} --reason "<why>"'
-            raise Refusal(f"{self.kept_limit()} workers are kept: {names}", way_out)
+        workers = self.kept_workers()
+        if self.kept_limit() != NO_LIMIT and len(workers) >= self.kept_limit():
+            names = ", ".join(f"agent:{worker.id}" for worker in workers[:KEPT_NAMES_SHOWN])
+            stopped = next((worker for worker in workers if worker.ended_at is not None), None)
+            next_step = "all of them run: wait for a report" if stopped is None else f'journal agent retire {stopped.id} --reason "<why>"'
+            raise Refusal(f"the limit of {self.kept_limit()} workers is reached: {names}", next_step)
 
     def run_limit(self) -> int:
         return self.limits.of(CodingAgentRole.WORKER).run
@@ -66,9 +65,9 @@ class WorkerPlaces:
         cutoff_time = self.clock.timestamp().value - timedelta(seconds=JOB_DELIVERY_SECONDS)
         cutoff_at = Timestamp(cutoff_time.replace(second=0, microsecond=0)).text
         with self.scopes.opened(self.scopes.actor_id, self.scopes.environment_id, [ActorScope]):
-            return self.kept.read(AGENT_LINES_TABLE, lambda: self.entered_since(cutoff_at), "state = ? AND updated_at > ?", [AgentLineState.ENTERED, cutoff_at], name="workers.resuming_lines")
+            return self.kept.read(AGENT_LINES_TABLE, lambda: self.entered_lines(cutoff_at), "state = ? AND updated_at > ?", [AgentLineState.ENTERED, cutoff_at], name="workers.resuming_lines")
 
-    def entered_since(self, cutoff_at: str) -> tuple[AgentLine, ...]:
+    def entered_lines(self, cutoff_at: str) -> tuple[AgentLine, ...]:
         return tuple(self.queries.query(AgentLine).filter(state=AgentLineState.ENTERED).matching(Greater("updated_at", cutoff_at)).all_rows())
 
     def resuming_count(self) -> int:

@@ -13,8 +13,8 @@ FULL_SESSION_PERCENT = 80
 
 class KeptHelpers:
     """Reads the idle helpers of a profile that can take a new job: not retired, process ended, no open job, on
-    the program and model asked for, with a session that resumes in its folder and is not nearly full. The newest
-    comes first."""
+    the program and model asked for, with a session that resumes in its folder and is not nearly full. The
+    newest comes first."""
 
     def __init__(self, queries: Queries, providers: Providers, folders: AgentFolders, kept_rows: KeptRows, home: JournalHome) -> None:
         self.queries, self.providers, self.folders, self.kept_rows, self.home = queries, providers, folders, kept_rows, home

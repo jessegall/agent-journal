@@ -55,12 +55,12 @@ class HelperLimits:
 
     def checked_new_place(self, profile: str) -> None:
         self.checked_running(profile)
-        kept = tuple(self.helpers(profile).matching(IsNull("retired_at")).all_rows())
+        helpers = tuple(self.helpers(profile).matching(IsNull("retired_at")).all_rows())
         limit = self.limits.of(AgentRole.HELPER, profile).kept
-        if limit != NO_LIMIT and len(kept) >= limit:
-            idle = next((helper for helper in kept if helper.ended_at is not None), None)
-            way_out = "all of them run: wait for a report" if idle is None else f'journal agent retire {idle.id} --reason "<why>"'
-            raise Refusal(f"{limit} of {profile} are kept", way_out)
+        if limit != NO_LIMIT and len(helpers) >= limit:
+            stopped = next((helper for helper in helpers if helper.ended_at is not None), None)
+            next_step = "all of them run: wait for a report" if stopped is None else f'journal agent retire {stopped.id} --reason "<why>"'
+            raise Refusal(f"{limit} of {profile} exist, which is the limit", next_step)
 
     def helpers(self, profile: str) -> Query[Agent]:
         return self.queries.query(Agent).filter(role=AgentRole.HELPER, profile=profile)

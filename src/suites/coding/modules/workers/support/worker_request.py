@@ -4,7 +4,7 @@ from core.modules.agents.models.agent import Agent
 
 
 @dataclass(frozen=True)
-class WorkerAsked:
+class WorkerRequest:
     """The profile, program and model a dispatch asks of its worker."""
 
     profile: str

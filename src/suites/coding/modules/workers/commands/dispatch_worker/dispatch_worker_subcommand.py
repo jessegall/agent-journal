@@ -34,7 +34,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         parser.add_argument("--program", default="", help="the agent program the worker runs; the dispatching agent's own when not named")
         parser.add_argument("--model", default="", help="the model the worker runs on, else the profile's: journal worker models lists them")
         parser.add_argument("--profile", default="", help="the worker profile it starts from, else journal-worker")
-        parser.add_argument("--fresh", default="", metavar="REASON", help="start a new worker though a kept one could take the task, and why")
+        parser.add_argument("--fresh", default="", metavar="REASON", help="start a new worker though a stopped one could take the task, and why")
         parser.add_argument("--name", default="", help="the worker's name on its card")
 
     def command(self, arguments: Namespace, caller: Caller) -> DispatchWorker:

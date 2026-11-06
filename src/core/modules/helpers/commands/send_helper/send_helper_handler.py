@@ -42,14 +42,14 @@ class SendHelperHandler(Handler[SendHelper, int]):
         source_context = replace(context, environment_id=helper.environment_id)
         source = self.sources.source_copy(source_context)
         if helper.ended_at is None:
-            return self.send_to_running(helper, last_job, source, source_context, command, context)
+            return self.running_helper_job(helper, last_job, source, source_context, command, context)
         if last_job.ended_at is None:
             with self.scopes.opened(context.actor.id, context.environment_id, [ActorScope]):
                 self.nudger.send_text(helper.id, command.job, HELPER_JOB_SOURCE, context, wakes_agent=True)
             self.repository.save(last_job.changed(brief=f"{last_job.brief}\n\n{command.job}"), context)
             return helper.id
         self.check_resume(helper)
-        parent_id = self.reach.taking_over(helper, context.actor) or last_job.session_agent_id
+        parent_id = self.reach.new_parent(helper, context.actor) or last_job.session_agent_id
         if parent_id != helper.parent_id:
             self.repository.save(helper.changed(parent_id=parent_id), context)
         next_job = last_job.next_job(helper.session, command.job, command.job[:SHORT_JOB_CHARACTERS], context.actor.id)
@@ -57,7 +57,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
         self.sources.use_copy(source, source_context)
         return helper.id
 
-    def send_to_running(self, helper: Agent, last_job: HelperJob, source: WorkSourceCopy, source_context: Context, command: SendHelper, context: Context) -> int:
+    def running_helper_job(self, helper: Agent, last_job: HelperJob, source: WorkSourceCopy, source_context: Context, command: SendHelper, context: Context) -> int:
         if last_job.ended_at is None and not command.steer and context.actor.type is ActorType.AGENT:
             raise Refusal(f"helper {helper.id} is busy with a job", f'wait for its report, or journal helper send {helper.id} --steer "<text>" adds to that job')
         with self.scopes.opened(context.actor.id, context.environment_id, [ActorScope]):

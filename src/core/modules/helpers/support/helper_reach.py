@@ -22,7 +22,7 @@ class HelperReach:
             raise Refusal(f"helper {helper.id} answers to agent:{helper.parent_id}", "only its parent, the main agent or a person sends to it or stops it")
         return helper
 
-    def taking_over(self, helper: Agent, actor: Actor) -> int | None:
+    def new_parent(self, helper: Agent, actor: Actor) -> int | None:
         if actor.type is not ActorType.AGENT or actor.id == helper.parent_id:
             return None
         sender = self.agents.find(actor.id)

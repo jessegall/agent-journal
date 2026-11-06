@@ -19,7 +19,7 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
 from suites.coding.modules.workers.support.available_workers import AvailableWorkers
-from suites.coding.modules.workers.support.worker_asked import WorkerAsked
+from suites.coding.modules.workers.support.worker_request import WorkerRequest
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from suites.coding.modules.workers.support.worker_task_copies import WorkerTaskCopies
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
@@ -73,7 +73,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         self.check_model(program, model)
         self.programs.installed(program)
         if not command.new_agent_reason.strip():
-            self.check_idle(environment.folder, WorkerAsked(profile.name, program, model), tasks)
+            self.check_idle(environment.folder, WorkerRequest(profile.name, program, model), tasks)
         start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
         source = self.sources.source_copy(replace(context, environment_id=task.environment_id))
         task_sources = self.copies.copies(tasks, source)
@@ -89,8 +89,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             raise
         return WorkerLaunch(opened.worker, worktree, self.worker_command.command(opened.worker, worktree, environment, task))
 
-    def check_idle(self, folder: str, asked: WorkerAsked, tasks: list[Task]) -> None:
-        idle = self.available_workers.first(folder, asked)
+    def check_idle(self, folder: str, request: WorkerRequest, tasks: list[Task]) -> None:
+        idle = self.available_workers.first(folder, request)
         if idle is not None:
             task_ids = " ".join(str(task.id) for task in tasks)
             raise Refusal(f"worker {idle.id} is idle: journal worker send {idle.id} --task {task_ids}", 'or --fresh "<why>"')

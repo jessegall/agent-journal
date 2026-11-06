@@ -32,11 +32,11 @@ STOP_LIMIT_SECONDS = 1
 
 
 class PluginProgram:
-    """Runs a plugin's program for one event, as version 4 did: in its folder and a process group of its
+    """Runs a plugin's program for one event, in its folder and a process group of its
     own, the line on its input, a clean environment naming its folders and settings, and a time limit
     past which it is stopped; a late run, an error code or an answer that is not JSON is raised as the
-    plugin's fault. A plugin whose answering service has its socket open is asked there instead; a held event whose service is
-    closed is late at once, since a program started now would answer past its window, and the program answers
+    plugin's fault. A plugin whose answering service has its socket open is asked there instead; a held event whose
+    service is closed is late at once, since a program started now would answer past its window, and the program answers
     only for an event that names no service."""
 
     def __init__(self, home: JournalHome, folders: PluginFolders, sockets: PluginSocketPaths, skills: LoadedSkills, checkouts: AgentCheckouts, scripts: PluginScriptProcesses, agents: AgentRows) -> None:

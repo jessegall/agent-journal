@@ -14,13 +14,18 @@ from core.modules.drivers.support.nudger import Nudger
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.modules.tasks.models.task import Task
+from core.modules.environments.support.environment_rows import EnvironmentRows
+from suites.coding.modules.workers.commands.cancel_worker_opening.cancel_worker_opening import CancelWorkerOpening
 from suites.coding.modules.workers.commands.end_gone_worker.end_gone_worker import EndGoneWorker
+from suites.coding.modules.workers.commands.open_kept_worktree.open_kept_worktree import OpenKeptWorktree
+from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
+from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_cut import RecordWorktreeCut
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.gone_agents import GoneAgents
-from suites.coding.modules.workers.commands.send_worker.kept_worker_tasks import KeptWorkerTasks
+from suites.coding.modules.workers.support.kept_worker_tasks import KeptWorkerTasks
 from suites.coding.modules.workers.support.worker_recipient import WorkerRecipient
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -37,10 +42,10 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
     runs_once = True
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows) -> None:
         self.rows, self.worktrees, self.repository, self.git, self.nudger = rows, worktrees, repository, git, nudger
         self.advance, self.bus, self.missing_agents = advance, bus, missing_agents
-        self.sources, self.task_sources, self.kept_tasks = sources, task_sources, kept_tasks
+        self.sources, self.task_sources, self.kept_tasks, self.environments = sources, task_sources, kept_tasks, environments
         self.conflicts: tuple[str, ...] = ()
         self.is_gone = False
 
@@ -51,7 +56,9 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         if not command.job and not command.task_ids:
             raise Refusal("a send needs a job or a task", f'journal worker send {worker.id} "<job>", or --task <task>')
         if command.task_ids:
-            self.kept_tasks.prepare(worker, command, actor)
+            tasks = self.kept_tasks.checked_cut(worker, command.task_ids)
+            if tasks:
+                self.cut(worker, tasks, command, actor)
         self.is_gone = worker.ended_at is None and bool(self.missing_agents.find([worker]))
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
@@ -60,6 +67,20 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         if not self.git.conflict_files(worktree):
             self.git.commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.session_agent_id}")
         self.conflicts = tuple(self.git.sync(worktree))
+
+    def cut(self, worker: Agent, tasks: tuple[Task, ...], command: SendWorker, actor: Actor) -> None:
+        environment = self.environments.find(worker.environment_id)
+        opened = self.bus.run(OpenKeptWorktree(worker.id, tasks[0].id), actor, environment_id=worker.environment_id)
+        try:
+            base_commit = self.git.tip(environment.folder, environment.branch)
+            self.git.cut(environment.folder, opened)
+            self.bus.run(PrepareWorktree(opened.folder, environment.folder, environment.name, command.library_links, command.library_copies), actor,
+                         environment_id=worker.environment_id)
+            self.bus.run(RecordWorktreeCut(opened.id, base_commit, tuple(task.id for task in tasks)), actor, environment_id=worker.environment_id)
+        except Exception:
+            self.git.remove(environment.folder, opened)
+            self.bus.run(CancelWorkerOpening(opened.id), actor, environment_id=worker.environment_id)
+            raise
 
     def handle(self, command: SendWorker, context: Context) -> AgentLine:
         worktree = self.worktrees.worker_worktree(command.worker_id)
@@ -73,7 +94,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         if self.is_gone:
             self.bus.dispatch(EndGoneWorker(command.worker_id), context)
         if command.task_ids:
-            return self.kept_tasks.handed(worker, worktree, command, context)
+            return self.kept_tasks.handed(worker, worktree, command.task_ids, command.job, context)
         if worktree.state is WorktreeState.DELIVERED:
             self.advance.restart_task(worktree, self.rows.required(Task, worktree.task_id), context)
             self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)

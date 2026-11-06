@@ -1,21 +1,21 @@
 from core.base.provider.providers import Providers
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.worker_asked import WorkerAsked
+from suites.coding.modules.workers.support.worker_request import WorkerRequest
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
 class AvailableWorkers:
     """Reads the kept workers that can take a new task: process ended, on the profile, program and model asked
-    for, with no open worktree, no unmerged branch, and a session that resumes in the worker's folder. The newest
-    comes first. A worker with delivered work waits for its merge, so it is not offered."""
+    for, with no open worktree, no unmerged branch, and a session that resumes in the worker's folder. The
+    newest comes first. A worker with delivered work waits for its merge, so it is not offered."""
 
     def __init__(self, places: WorkerPlaces, worktrees: WorktreeQuery, git: WorktreeGit, providers: Providers) -> None:
         self.places, self.worktrees, self.git, self.providers = places, worktrees, git, providers
 
-    def first(self, folder: str, asked: WorkerAsked) -> Agent | None:
-        matching = (worker for worker in self.places.kept_workers() if worker.ended_at is not None and asked.matches(worker))
+    def first(self, folder: str, request: WorkerRequest) -> Agent | None:
+        matching = (worker for worker in self.places.kept_workers() if worker.ended_at is not None and request.matches(worker))
         return next((worker for worker in matching if self.is_available(folder, worker)), None)
 
     def is_available(self, folder: str, worker: Agent) -> bool:
