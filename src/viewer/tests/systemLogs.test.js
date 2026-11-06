@@ -1,4 +1,5 @@
-import {expect, test} from "vitest";
+import {expect, test, vi} from "vitest";
+import {READ_RATES} from "../src/composables/readRates.js";
 import {context, mounted, settle} from "./support/windowContext.js";
 import SystemLogs from "../../core/modules/developer/web/src/SystemLogs.vue";
 
@@ -50,4 +51,16 @@ test("pause freezes log lines and filters until resume, and reports read failure
     await settle();
     expect(element.querySelector('[role="alert"]').textContent).toBe("could not read logs");
     expect(element.querySelector("[data-log-line]").textContent).toContain("server started");
+});
+
+test("the page reads again at its chosen rate", async () => {
+    const delays = [];
+    const real = globalThis.setTimeout;
+    const spy = vi.spyOn(globalThis, "setTimeout").mockImplementation((callback, delay, ...rest) => {
+        delays.push(delay);
+        return real(callback, delay, ...rest);
+    });
+    await mounted(SystemLogs, context({"developer system-logs": listing()}));
+    expect(delays).toContain(READ_RATES.systemLogs);
+    spy.mockRestore();
 });
