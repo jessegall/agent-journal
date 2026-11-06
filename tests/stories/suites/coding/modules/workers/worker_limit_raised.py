@@ -4,7 +4,7 @@ from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.testing.story_fixture import StoryFixture
-from suites.coding.modules.workers.support.worker_settings import WORKER_LIMIT
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask
 
 LISTING = HookSamples.shell("ls build", ShellPart("ls", CommandCategory.SEARCH, ["build"])).with_fields(event="post_tool_use")
@@ -22,7 +22,7 @@ def limit_lines(story) -> list[str]:
 
 
 def set_limit(story, limit: int, scope: str = "--environment main") -> None:
-    story.expect_success(f"setting set {WORKER_LIMIT} {limit} {scope}", actor=story.user)
+    story.expect_success(f"setting set {WORKER_RUN_LIMIT} {limit} {scope}", actor=story.user)
 
 
 class LimitRaised(StoryFixture):
@@ -35,7 +35,7 @@ class LimitRaised(StoryFixture):
         set_limit(story, 4)
 
     def expect(self, story) -> None:
-        story.expect_text(f"setting show {WORKER_LIMIT} --environment main", "4")
+        story.expect_text(f"setting show {WORKER_RUN_LIMIT} --environment main", "4")
 
 
 def test_raising_the_worker_limit_tells_the_main_agent_the_limit_the_workers_out_and_the_open_tasks_not_delegated(new_story):

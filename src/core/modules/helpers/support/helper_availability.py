@@ -7,7 +7,7 @@ from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from core.modules.helpers.support.helper_settings import HELPER_LIMIT
+from core.modules.helpers.support.helper_settings import HELPER_RUN_LIMIT
 from core.modules.helpers.support.helper_start_state import HelperStartState
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
@@ -30,6 +30,6 @@ class HelperAvailability:
             return MISSING_LAUNCHER_TEXT
         if MainAgentFinder.newest(self.queries) is None:
             return MISSING_MAIN_AGENT_TEXT
-        limit = self.settings.number(HELPER_LIMIT)
+        limit = self.settings.number(HELPER_RUN_LIMIT)
         running = self.queries.query(Agent).filter(role=AgentRole.HELPER).matching(IsNull("ended_at")).count()
         return LIMIT_REACHED_TEXT.format(limit=limit) if running >= limit else ""

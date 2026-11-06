@@ -47,7 +47,7 @@ def test_a_refused_stop_keeps_later_checks_without_applying_their_commands(stop_
 @pytest.mark.parametrize("places,answer", [(0, "allowed"), (1, "refused")])
 def test_an_approved_plan_waiting_to_start_checks_worker_capacity(new_story, places, answer):
     story = new_story(fixture=OrchestratorWithReadyPlanTask)
-    story.expect_success(f"setting set journal.suites.coding.workers.worker-limit {places} --environment main")
+    story.expect_success(f"setting set journal.suites.coding.workers.worker-run-limit {places} --environment main")
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         server.viewer_line_value(cookie, {"line": ["plan", "approve", "1"], "environment": "main", "window": "messages.chat"})

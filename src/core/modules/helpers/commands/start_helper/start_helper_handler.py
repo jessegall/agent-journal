@@ -46,7 +46,7 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
         if not self.launcher.is_running:
             raise Refusal("a helper needs the launcher, which is not running", "keep your work and start the journal with journal launch")
         parent = self.limits.checked_parent(context)
-        self.limits.checked_slot(parent.environment_id)
+        self.limits.checked_new_place(profile.name)
         if not command.new_helper and not profile.independent:
             self.check_reuse(parent, profile, command.brief)
         program = command.program or profile.program or parent.program

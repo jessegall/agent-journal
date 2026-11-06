@@ -37,7 +37,7 @@ def test_an_orchestrator_with_nothing_open_stops(new_story):
 
 def test_an_orchestrator_at_the_worker_limit_may_stop(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
-    story.run("setting make journal.suites.coding.workers.worker-limit 0")
+    story.run("setting make journal.suites.coding.workers.worker-run-limit 0")
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 

@@ -21,7 +21,7 @@ The coding suite drives the main agent in one of two modes. Your first line of a
 - You plan, give every task to a worker and check what comes back. You start no task yourself: `journal task start` is
   refused, and the task stays open for a worker.
 - A stop is refused while tasks of your environment are open, and names them. At the worker limit
-  (`coding.workers.worker-limit`, 2 by default) you can send no more, so you may stop until a worker ends.
+  (`coding.workers.worker-run-limit`, 2 by default) you can send no more, so you may stop until a worker ends.
 - Send related tasks to the worker that knows them: see journal-workers.
 
 ## Changing mode

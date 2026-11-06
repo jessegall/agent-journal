@@ -52,7 +52,7 @@ def test_a_declared_key_moves_once_per_scope_with_its_value_and_a_second_one_for
 def test_a_version_4_key_with_a_version_5_counterpart_moves_under_the_full_key(new_story):
     story = upgraded_story(new_story)
     shown = story.run("setting list")
-    shown.expect_text("journal.suites.coding.workers.worker-limit  3")
+    shown.expect_text("journal.suites.coding.workers.worker-run-limit  3")
     shown.expect_text("journal.suites.coding.workers.builder-dispatches-workers  false")
 
 

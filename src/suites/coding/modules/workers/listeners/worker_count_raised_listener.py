@@ -16,7 +16,7 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_nudges import WORKER_LIMIT_RAISED
-from suites.coding.modules.workers.support.worker_settings import DEFAULT_WORKER_COUNT, WORKER_LIMIT
+from suites.coding.modules.workers.support.worker_settings import DEFAULT_WORKER_COUNT, WORKER_RUN_LIMIT
 from core.base.change.changed import Changed
 from core.base.change.deleted import Deleted
 from core.base.command.context import Context
@@ -36,7 +36,7 @@ class WorkerCountRaisedListener(SaveListener[Changed[Setting]]):
         if isinstance(event, Deleted):
             return
         setting = event.row
-        if setting.key != WORKER_LIMIT:
+        if setting.key != WORKER_RUN_LIMIT:
             return
         limit = int(json.loads(setting.value))
         if limit <= self.previous_limit(event.old_row, setting):
@@ -51,7 +51,7 @@ class WorkerCountRaisedListener(SaveListener[Changed[Setting]]):
             return int(json.loads(old.value))
         if setting.environment_id is None:
             return DEFAULT_WORKER_COUNT
-        return self.settings.project.number(WORKER_LIMIT)
+        return self.settings.project.number(WORKER_RUN_LIMIT)
 
     def main_agents(self, setting: Setting) -> tuple[Agent, ...]:
         return tuple(agent for agent in MainAgentFinder.all_running(self.queries) if setting.environment_id in (None, agent.environment_id))

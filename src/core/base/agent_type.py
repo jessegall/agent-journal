@@ -16,3 +16,6 @@ class AgentType:
     default_profile: str = ""
     start_line: str = ""
     roster: type[AgentRoster] | None = None
+    run_limit_key: str = ""
+    kept_limit_key: str = ""
+    profile_limits_key: str = ""

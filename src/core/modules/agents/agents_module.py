@@ -86,7 +86,7 @@ class AgentsModule(Module):
     """Adds agents, one per session of an agent program, each an actor with the same number."""
 
     name = "journal.core.agents"
-    agent_types = [AgentType("main", "Main agent", access=Access.WRITING), AgentType("helper", "Helper"), AgentType("reviewer", "Reviewer")]
+    agent_types = [AgentType("main", "Main agent", access=Access.WRITING), AgentType("helper", "Helper", run_limit_key="journal.core.helpers.helper-run-limit", kept_limit_key="journal.core.helpers.helper-kept-limit", profile_limits_key="journal.core.helpers.helper-profile-limits"), AgentType("reviewer", "Reviewer")]
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [ModelDeclaration(Agent, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"])]

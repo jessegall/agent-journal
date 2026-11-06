@@ -6,7 +6,8 @@ DISPATCHES_WORKERS_SETTING = f"{MODULE_KEY}.builder-dispatches-workers"
 LIBRARY_LINKS = f"{MODULE_KEY}.library-links"
 LIBRARY_COPIES = f"{MODULE_KEY}.library-copies"
 WORKTREE_COMMANDS = f"{MODULE_KEY}.worktree-commands"
-WORKER_LIMIT = f"{MODULE_KEY}.worker-limit"
+WORKER_RUN_LIMIT = f"{MODULE_KEY}.worker-run-limit"
+WORKER_KEPT_LIMIT = f"{MODULE_KEY}.worker-kept-limit"
 DEFAULT_WORKER_COUNT = 2
 SILENT_AGENT_MINUTES = f"{MODULE_KEY}.silent-agent-minutes"
 INACTIVE_HELPER_MINUTES = f"{MODULE_KEY}.quiet-helper-minutes"
@@ -21,7 +22,8 @@ WORKER_SETTINGS = [
     SettingValue("project-test-command", "Project test command", "Run selected test arguments. Set the affected tests command too.", SettingType.TEXT, default=""),
     SettingValue("worker-run-most-tests", "Test limit per worker command", "A worker command running more tests than this is refused or stopped. 0 means no limit. Journal runs do not count.", SettingType.NUMBER, default=25, person_set=True),
     SettingValue("builder-dispatches-workers", "Builder sends workers", "Whether the builder may send workers.", SettingType.FLAG, default=True, person_set=True),
-    SettingValue("worker-limit", "Worker limit", "Maximum active workers per environment.", SettingType.NUMBER, default=DEFAULT_WORKER_COUNT, person_set=True),
+    SettingValue("worker-run-limit", "Workers running", "Workers that run at once in an environment. At 0 none run.", SettingType.NUMBER, default=DEFAULT_WORKER_COUNT, person_set=True),
+    SettingValue("worker-kept-limit", "Workers kept", "Workers kept, running or idle, until retired. At 0 there is no limit.", SettingType.NUMBER, default=8, person_set=True),
     SettingValue("worker-idle-hours", "Worker idle hours", "Hours without tool use before an unfinished worker's process stops. Its task and working folder stay.", SettingType.NUMBER, default=6),
     SettingValue("worker-batch-size", "Worker batch size", "Recommended tasks per worker assignment. The main agent is prompted to add more when fewer are assigned.", SettingType.NUMBER, default=3),
     SettingValue("quiet-helper-minutes", "Quiet helper minutes", "Minutes without tool use before the main agent is prompted to check a worker or helper.", SettingType.NUMBER, default=5),

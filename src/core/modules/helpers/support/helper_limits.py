@@ -4,16 +4,18 @@ from core.base.command.context import Context
 from core.base.provider.providers import Providers
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
+from core.base.query.query import Query
 from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.agents.support.agent_type_limits import NO_LIMIT, AgentTypeLimits
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.helpers.support.allowed_models import AllowedModels
-from core.modules.helpers.support.helper_settings import HELPER_LIMIT
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
+RUNNING_NAMES_CHARACTERS = 60
 TERMINAL_LIMIT_TEXT = "stop now: each report wakes you, then start again"
 NEXT_HOOK_LIMIT_TEXT = "keep working and read journal overview: each report arrives at your next hook"
 
@@ -21,7 +23,8 @@ NEXT_HOOK_LIMIT_TEXT = "keep working and read journal overview: each report arri
 class HelperLimits:
     """Who may start a helper, on which model, and how many run in an environment at one time."""
 
-    def __init__(self, queries: Queries, settings: SettingValues, suites: SuiteChoice, models: AllowedModels, providers: Providers, agents: AgentRows, launcher: LauncherLink) -> None:
+    def __init__(self, queries: Queries, settings: SettingValues, suites: SuiteChoice, models: AllowedModels, providers: Providers, agents: AgentRows, launcher: LauncherLink, limits: AgentTypeLimits) -> None:
+        self.limits = limits
         self.launcher = launcher
         self.queries, self.settings, self.suites, self.models, self.providers, self.agents = queries, settings, suites, models, providers, agents
 
@@ -40,12 +43,22 @@ class HelperLimits:
             raise Refusal("a helper starts no helper", "say in your report what should be done next")
         return agent
 
-    def checked_slot(self, environment_id: int) -> None:
-        running = tuple(self.queries.query(Agent).filter(role=AgentRole.HELPER).matching(IsNull("ended_at")).all_rows())
-        limit = self.settings.number(HELPER_LIMIT)
+    def checked_running(self, profile: str) -> None:
+        running = tuple(self.helpers(profile).matching(IsNull("ended_at")).all_rows())
+        limit = self.limits.of(AgentRole.HELPER, profile).run
         if len(running) >= limit:
-            names = ", ".join(f"agent:{helper.id}" for helper in running)
-            raise Refusal(f"{limit} helpers run here: {names}", self.next_step_text())
+            names = ", ".join(f"agent:{helper.id}" for helper in running)[:RUNNING_NAMES_CHARACTERS]
+            raise Refusal(f"{limit} of {profile} run: {names}", self.next_step_text())
+
+    def checked_new_place(self, profile: str) -> None:
+        self.checked_running(profile)
+        kept = tuple(self.helpers(profile).matching(IsNull("retired_at")).all_rows())
+        limit = self.limits.of(AgentRole.HELPER, profile).kept
+        if limit != NO_LIMIT and len(kept) >= limit:
+            raise Refusal(f"{limit} of {profile} are kept", f'journal agent retire {kept[0].id} --reason "<why>"')
+
+    def helpers(self, profile: str) -> Query[Agent]:
+        return self.queries.query(Agent).filter(role=AgentRole.HELPER, profile=profile)
 
     def checked_model(self, program: str, model: str) -> str:
         if not model:

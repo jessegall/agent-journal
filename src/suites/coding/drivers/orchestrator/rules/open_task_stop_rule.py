@@ -6,7 +6,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.worker_settings import WORKER_LIMIT
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
 
 class OpenTaskStopRule(DriverRule):
@@ -20,7 +20,7 @@ class OpenTaskStopRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         open_worktrees = self.worktrees.open_worktrees()
-        if len(open_worktrees) >= self.settings.number(WORKER_LIMIT):
+        if len(open_worktrees) >= self.settings.number(WORKER_RUN_LIMIT):
             return RuleAnswer.allowed("all worker places are occupied")
         waiting = self.tasks.delegation_candidates([worktree.session_agent_id for worktree in open_worktrees])
         open_ids = [str(task.id) for task in waiting.oldest().page().rows]

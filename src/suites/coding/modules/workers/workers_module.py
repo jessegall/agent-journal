@@ -1,5 +1,6 @@
 from suites.coding.modules.workers.rules.approved_plan_stop_rule import ApprovedPlanStopRule
 from suites.coding.modules.workers.support.worker_nudges import APPROVED_PLAN_WAIT
+from suites.coding.modules.workers.migrations.m024_worker_limit_keys import WorkerLimitKeysMigration
 from suites.coding.modules.workers.migrations.m019_worker_logs_read import WorkerLogsReadMigration
 from suites.coding.modules.workers.commands.read_worker_logs.read_worker_logs_handler import ReadWorkerLogsHandler
 from suites.coding.modules.workers.commands.read_worker_logs.read_worker_logs_subcommand import ReadWorkerLogsSubcommand
@@ -193,6 +194,7 @@ from suites.coding.modules.workers.commands.worker_models.worker_models_subcomma
 from suites.coding.modules.workers.commands.project_worktree_list.project_worktree_list_subcommand import ProjectWorktreeListSubcommand
 from suites.coding.modules.workers.commands.remove_project_worktree.remove_project_worktree_handler import RemoveProjectWorktreeHandler
 from suites.coding.modules.workers.commands.remove_project_worktree.remove_project_worktree_subcommand import RemoveProjectWorktreeSubcommand
+from suites.coding.modules.workers.support.worker_settings import WORKER_KEPT_LIMIT, WORKER_RUN_LIMIT
 from suites.coding.modules.workers.support.skeletons import WORKERS_POINTS_SKELETON, WORKERS_TODOS_SKELETON, WORKERS_WORKERS_SKELETON, WORKERS_MODELS_SKELETON, WORKERS_WORKTREES_SKELETON
 
 
@@ -214,7 +216,7 @@ class WorkersModule(Module):
     name = "journal.suites.coding.workers"
     profiles = WORKER_PROFILES
     agent_types = [AgentType("worker", "Worker", extends="helper", access=Access.WRITING, separate_folder=True,
-                             default_profile="journal-worker", start_line="journal worker dispatch", roster=WorkerRoster)]
+                             default_profile="journal-worker", start_line="journal worker dispatch", roster=WorkerRoster, run_limit_key=WORKER_RUN_LIMIT, kept_limit_key=WORKER_KEPT_LIMIT)]
     parent_suite = "coding"
     templates = WORKER_TEMPLATES
     window_extensions = [*(WindowExtension(name, reads=["proof list", "worker waits", "worker progress"],
@@ -234,7 +236,7 @@ class WorkersModule(Module):
               ModelDeclaration(Proof, query=ProofQuery, excluded_subcommands=["make", "edit", "delete", "revise", "queue", "run"]),
               ModelDeclaration(WorkerTestRequest, excluded_subcommands=["make", "edit", "delete", "allow", "use"]),
               ModelDeclaration(TodoItem, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(WorkerTaskSource, excluded_subcommands=ALL_SUBCOMMANDS)]
-    migrations = [WorkerTaskSourcesMigration, WorkerTestRequestsMigration, ProofPhaseTestPointMigration, WorktreeMergeCommitsMigration, WorkerLogsReadMigration, StartsHelpersKeyMigration, WorkerSessionMigration, AllowedModelsKeyMigration, WorkerQueueReadIndexesMigration, WorkerReadIndexesMigration, AffectedTestsMigration, ProcessOwnerMigration, ProofProcessWorkMigration, WorkerRefusalsMigration, WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration, WorkerTestSettingMigration, ReportVisibilityMigration, AliasAccessMigration, OpenWorktreeIndexMigration]
+    migrations = [WorkerLimitKeysMigration, WorkerTaskSourcesMigration, WorkerTestRequestsMigration, ProofPhaseTestPointMigration, WorktreeMergeCommitsMigration, WorkerLogsReadMigration, StartsHelpersKeyMigration, WorkerSessionMigration, AllowedModelsKeyMigration, WorkerQueueReadIndexesMigration, WorkerReadIndexesMigration, AffectedTestsMigration, ProcessOwnerMigration, ProofProcessWorkMigration, WorkerRefusalsMigration, WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration, WorkerTestSettingMigration, ReportVisibilityMigration, AliasAccessMigration, OpenWorktreeIndexMigration]
     views = [WorkerPoints, WorkerWait, WorkerProgress]
     moves = [WorkersMove, AliasPermissionsMove]
     handlers = [AskWorkerTestHandler, AllowWorkerTestHandler, UseWorkerTestHandler, RestoreWorkerTestsHandler, ReadWorkerLogsHandler, QueueStalledTestsHandler, SendSilentAgentLinesHandler, ReportSilentAgentHandler, RecordAffectedTestHandler, EndGoneWorkerHandler, RecordWorkerRefusalHandler, ClearWorkerRefusalsHandler, StartWorkerTestsHandler, RecordWorkerTestHandler, SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, RecordWorktreeBaseHandler, RecordWorktreeMergeHandler, RecordWorktreeRemovalHandler, OpenWorkerWorktreeHandler, RecordWorktreeCutHandler, CancelWorkerOpeningHandler, StartNextWorkerTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler, RemoveOrphanWorktreesHandler]
