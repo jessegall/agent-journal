@@ -8,13 +8,15 @@ import {settle} from "./support/windowContext.js";
 afterEach(() => (document.body.innerHTML = ""));
 
 const SOURCE = () => ({noun: "doc", id: 4, title: "Cart"});
+const unbuilt = import.meta.env.MODE === "trail-red" ? test : test.fails;
 
-function mountedComments(answer) {
+function mountedComments(answer, readPage = null) {
     const ran = [];
     const rows = [{id: 1, text: "On doc 4, Cart: use cents"}];
     const read = async (line) => {
         ran.push(line.join(" "));
         if (line[1] === "comment") return answer(line);
+        if (readPage) return readPage(line);
         return {ok: true, value: {rows: [...rows]}};
     };
     let comments;
@@ -25,7 +27,8 @@ function mountedComments(answer) {
             comments = useTextComments(SOURCE, read);
             return () => h("div", [
                 h(QuickCommentBar, {send: comments.send, count: comments.comments.value.length, onShow: () => (comments.open.value = !comments.open.value)}),
-                comments.open.value ? h(CommentSide, {comments: comments.comments.value, words: comments.words}) : null,
+                comments.open.value ? h(CommentSide, {comments: comments.comments.value, words: comments.words,
+                    more: Boolean(comments.nextPage?.value), loading: comments.loading?.value, failure: comments.failure?.value, onMore: comments.loadMore}) : null,
             ]);
         },
     }).mount(element);
@@ -74,4 +77,31 @@ test("a refused comment comes off the sidebar and its words stay in the box", as
     expect([...element.querySelectorAll("[data-comment]")].map((row) => row.textContent)).toEqual(["use cents"]);
     expect(element.querySelector("textarea").value).toBe("Looks right");
     expect(element.querySelector(".error").textContent).toBe("no");
+});
+
+unbuilt("task 6894: comment pages keep selection details and each comment once", async () => {
+    const first = {id: 1, text: "On doc 4, Cart: first", body: "First body", quote: "cents", revision: 2};
+    const second = {id: 2, text: "Second body", body: "Second body"};
+    const {element, ran, comments} = mountedComments(() => ({ok: true}), (line) => {
+        const next = line[line.indexOf("--page") + 1] === "2";
+        return {ok: true, value: {rows: next ? [first, second] : [first], total: 2, next_page: next ? null : 2}};
+    });
+    await settle();
+    comments().open.value = true;
+    await settle();
+    expect(element.querySelector("blockquote").textContent).toBe("cents");
+    expect(element.textContent).toContain("Revision 2");
+    element.querySelector("[data-page-more]").click();
+    await settle();
+    expect([...element.querySelectorAll("[data-comment]")].map((node) => node.textContent)).toEqual(["First body", "Second body"]);
+    expect(ran.some((line) => line.includes("--page 2 --page-size"))).toBe(true);
+});
+
+unbuilt("task 6894: comment read failures remain visible", async () => {
+    const {element, comments} = mountedComments(() => ({ok: true}), () => ({ok: false, error: "Comments could not be read"}));
+    await settle();
+    comments().open.value = true;
+    await settle();
+    expect(element.querySelector("[role=alert]")?.textContent).toContain("Comments could not be read");
+    expect(element.textContent).not.toContain("No comments yet");
 });

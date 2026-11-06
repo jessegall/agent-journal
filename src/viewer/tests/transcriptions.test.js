@@ -10,7 +10,7 @@ function page({sources = []} = {}) {
     window.read = async (line) => {
         const words = Array.isArray(line) ? line.join(" ") : line;
         if (words.startsWith("transcription sources")) return {ok: true, value: {rows: sources}};
-        if (words.startsWith("link list")) return {ok: true, value: {rows: [{id: 1, target_model: "doc", target_id: 3}]}};
+        if (words.startsWith("link list")) return {ok: true, value: {rows: [], counterparts: [{endpoint: {model: "doc", id: 3, title: "doc 3", exists: true, unavailable: false, open_ref: "docs:3"}, relations: ["about"], link_ids: [1]}], total: 1}};
         return {ok: true, value: {rows: [MEETING]}};
     };
     window.run = async (line) => (ran.push(line), {ok: true, value: {}});

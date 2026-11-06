@@ -2,6 +2,7 @@ import {afterEach, expect, test} from "vitest";
 import MessageCard from "../kit/MessageCard.vue";
 import PlanLinks from "../src/resource/PlanLinks.vue";
 import DocumentInspector from "../src/resource/document/DocumentInspector.vue";
+import TranscriptionRows from "../../core/modules/transcriptions/web/src/TranscriptionRows.vue";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 
 const REQUEST = {id: 1, type: "user", text: "Fix the cart totals", created_at: "2026-11-01T10:00:00Z"};
@@ -66,19 +67,17 @@ unbuilt("task 6895: a receipt uses returned titles without one task read per chi
     expect(element.textContent).toContain("Cart totals");
 });
 
-function planRead(rows, requests) {
+const linkedItem = (model, id, relations, openRef, title = `${model} ${id}`) => ({endpoint: {model, id, title, exists: true, unavailable: false, open_ref: openRef}, relations, link_ids: [id]});
+
+function planRead(counterparts, requests) {
     return async (line) => {
         requests.push(line);
-        const flag = line.includes("--source") ? "source" : "target";
-        return page(rows.filter((row) => row[`${flag}_model`] === "plan"));
+        return {ok: true, value: {rows: [], counterparts, total: counterparts.length, page: 1, page_size: 10, next_page: null}};
     };
 }
 
 unbuilt("task 6894: both directions keep all relation labels on one counterpart", async () => {
-    const rows = [
-        {...EDGE, source_model: "plan", source_id: 1, link_type: "mentions"},
-        {...EDGE, id: 2, source_model: "task", source_id: 4, target_model: "plan", target_id: 1, link_type: "about"},
-    ];
+    const rows = [linkedItem("task", 4, ["mentions", "about"], "tasks:4")];
     const element = await mounted(PlanLinks, context({}), {id: 1, read: planRead(rows, [])});
     expect(element.querySelectorAll("[data-plan-link]")).toHaveLength(1);
     expect(element.textContent).toContain("mentions");
@@ -86,7 +85,8 @@ unbuilt("task 6894: both directions keep all relation labels on one counterpart"
 });
 
 unbuilt("task 6894: missing endpoints stay visible but cannot open", async () => {
-    const element = await mounted(PlanLinks, context({}), {id: 1, read: planRead([{...EDGE, source_model: "plan", source_id: 1, target_exists: false}], [])});
+    const missing = {endpoint: {model: "task", id: 4, title: "Task 4 unavailable", exists: false, unavailable: true, open_ref: null}, relations: ["about"], link_ids: [1]};
+    const element = await mounted(PlanLinks, context({}), {id: 1, read: planRead([missing], [])});
     expect(element.textContent.toLowerCase()).toContain("unavailable");
     expect(element.querySelector("[data-plan-link]")?.disabled).toBe(true);
 });
@@ -96,7 +96,7 @@ unbuilt.each([
     ["phase", "plans", 1],
 ])("task 6894: %s opens its parent", async (model, table, id) => {
     const opened = [];
-    const rows = [{...EDGE, source_model: "plan", source_id: 1, target_model: model, target_id: 12, target_open_ref: `${table}:${id}`}];
+    const rows = [linkedItem(model, 12, ["mentions"], `${table}:${id}`, "Audit totals")];
     const element = await mounted(PlanLinks, context({}), {id: 1, read: planRead(rows, []), onOpen: (value) => opened.push(value)});
     element.querySelector("[data-plan-link]").click();
     await settle();
@@ -113,7 +113,7 @@ test("a migrated comment keeps a native button for its original target", async (
 
 async function documentRequests() {
     const requests = [];
-    await mounted(DocumentInspector, context({}), {
+    const element = await mounted(DocumentInspector, context({}), {
         table: "docs", id: 4,
         read: async (line) => {
             requests.push(line);
@@ -121,12 +121,14 @@ async function documentRequests() {
             return page([]);
         },
     });
+    element.querySelector('[data-document-tab="links"]').click();
+    await settle();
     return requests;
 }
 
 unbuilt("task 6894: the document inspector reads incoming as well as outgoing relations", async () => {
     const requests = await documentRequests();
-    expect(requests.some((line) => line[0] === "link" && line.includes("--target") && line.includes("doc:4"))).toBe(true);
+    expect(requests.some((line) => line[0] === "link" && line.includes("--row") && line.includes("doc:4") && line.includes("--group-counterparts"))).toBe(true);
 });
 
 unbuilt("task 6894: the document inspector bounds every relation read", async () => {
@@ -139,6 +141,47 @@ unbuilt("task 6894: the document inspector bounds every relation read", async ()
 unbuilt("task 6894: document comments use their own bounded read", async () => {
     const requests = await documentRequests();
     expect(requests.some((line) => line[1] === "comments" && line.includes("--page") && line.includes("--page-size"))).toBe(true);
+});
+
+unbuilt("task 6894: counterpart pages append once and preserve every label", async () => {
+    const requests = [];
+    const read = async (line) => {
+        requests.push(line);
+        const second = line[line.indexOf("--page") + 1] === "2";
+        const counterparts = second ? [linkedItem("task", 15, ["about", "edited"], "tasks:15")] : Array.from({length: 10}, (_, at) => linkedItem("task", at + 5, ["about"], `tasks:${at + 5}`));
+        return {ok: true, value: {rows: [], counterparts, total: 11, page: second ? 2 : 1, page_size: 10, next_page: second ? null : 2}};
+    };
+    const element = await mounted(PlanLinks, context({}), {id: 1, read});
+    expect(element.querySelectorAll("[data-plan-link]")).toHaveLength(10);
+    element.querySelector("[data-page-more]").click();
+    await settle();
+    expect(element.querySelectorAll("[data-plan-link]")).toHaveLength(11);
+    expect(element.textContent).toContain("edited");
+    expect(requests.at(-1)).toContain("--group-counterparts");
+    expect(requests.at(-1)[requests.at(-1).indexOf("--page") + 1]).toBe("2");
+});
+
+unbuilt("task 6894: a relation failure remains visible", async () => {
+    const element = await mounted(PlanLinks, context({}), {id: 1, read: async () => ({ok: false, error: "Linked items could not be read"})});
+    expect(element.querySelector("[role=alert]")?.textContent).toContain("Linked items could not be read");
+});
+
+unbuilt("task 6894: transcription links request bounded counterpart pages", async () => {
+    const windowContext = context({});
+    const requests = [];
+    windowContext.read = async (line) => {
+        const words = Array.isArray(line) ? line : line.split(" ");
+        requests.push(words);
+        if (words[0] === "link") return {ok: true, value: {rows: [], counterparts: [linkedItem("doc", 3, ["about"], "docs:3")], total: 1}};
+        return page(words[1] === "sources" ? [] : [{id: 4, title: "Meeting", text: "Use cents", created_at: "2026-11-01"}]);
+    };
+    const element = await mounted(TranscriptionRows, windowContext);
+    element.querySelector("[data-transcription='4']").click();
+    await settle();
+    expect(element.querySelector("[data-transcription-link]").textContent).toContain("doc 3");
+    const links = requests.filter((words) => words[0] === "link");
+    expect(links.length).toBeGreaterThan(0);
+    expect(links.every((words) => words.includes("--page") && words.includes("--page-size") && words.includes("--group-counterparts"))).toBe(true);
 });
 
 unbuilt("task 6895: receipt relation filters and page bounds are sent to the server", async () => {

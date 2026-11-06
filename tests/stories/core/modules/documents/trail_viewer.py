@@ -91,6 +91,19 @@ def test_counterpart_pages_keep_all_relation_types_once(linked_trail):
 
 
 @pending(6852)
+def test_counterpart_priority_survives_page_boundaries(linked_trail):
+    trail = linked_trail
+    trail.command('task edit 1 --brief "The design is doc:1"')
+    trail.story.run_listeners()
+    words = ["link", "list", "--row", "task:1", "--group-counterparts", "--first-counterpart", "doc:1", "--page-size", "1"]
+    first = requested_read(trail, "viewer.shell", words)
+    feature(first["counterparts"][0]["endpoint"]["model"] == "doc", str(first))
+    rest = [requested_read(trail, "viewer.shell", [*words, "--page", str(number)]) for number in range(2, first["total"] + 1)]
+    keys = [(entry["endpoint"]["model"], entry["endpoint"]["id"]) for page in [first, *rest] for entry in page["counterparts"]]
+    feature(len(keys) == len(set(keys)) == first["total"], str(keys))
+
+
+@pending(6852)
 def test_log_and_phase_endpoint_metadata_names_parent(trail):
     trail.command('task log 1 "Audit totals doc:1"')
     trail.command('phase make --plan 1 "Audit phase doc:1" --goal "Review totals"')

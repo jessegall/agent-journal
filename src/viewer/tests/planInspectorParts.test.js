@@ -56,8 +56,11 @@ test("the inspector tags a task a worker holds and switches to the timeline", as
 
 test("the links to a plan list the design document first and open a row as its table and number", async () => {
     const opened = [];
-    const incoming = [{source_model: "report", source_id: 4, source_title: "Review", link_type: "about"}, {source_model: "doc", source_id: 9, source_title: "Rebuild design", link_type: "about"}];
-    const read = async (line) => ({ok: true, value: {rows: line[2] === "--target" ? incoming : []}});
+    const counterparts = [
+        {endpoint: {model: "report", id: 4, title: "Review", exists: true, unavailable: false, open_ref: "reports:4"}, relations: ["about"], link_ids: [1]},
+        {endpoint: {model: "doc", id: 9, title: "Rebuild design", exists: true, unavailable: false, open_ref: "docs:9"}, relations: ["about"], link_ids: [2]},
+    ];
+    const read = async () => ({ok: true, value: {rows: [], counterparts, total: 2}});
     const element = await drawn(PlanLinks, null, {read, documentId: 9, onOpen: (row) => opened.push(row)});
     const rows = element.querySelectorAll("[data-plan-link]");
     expect(rows.length).toBe(2);
