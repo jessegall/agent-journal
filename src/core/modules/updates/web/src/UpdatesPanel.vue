@@ -7,6 +7,7 @@ const releases = window.props.releases;
 const {failure: checkFailure} = window.props.standing;
 const standing = computed(() => checkFailure.value ? null : window.props.standing.data.value);
 const installing = ref(false);
+const installFailure = ref("");
 const installationRequested = ref(false);
 const installed = computed(() => installationRequested.value && standing.value?.is_current && standing.value?.installation?.step === "finished");
 const notes = ref([]);
@@ -28,10 +29,11 @@ async function check() {
 
 async function install() {
     installing.value = true;
-    const result = await releases.act(["update", "install"]);
+    const result = await window.run(["update", "install"]);
+    installFailure.value = result.ok ? "" : result.error;
     installing.value = false;
+    await window.reload({only: result.ok ? ["releases", "standing"] : ["releases"]});
     if (!result.ok) return;
-    await check();
     installationRequested.value = true;
 }
 
@@ -55,8 +57,8 @@ const reload = () => globalThis.location.reload();
                 <Btn small variant="primary" data-update-reload @click="reload">Reload</Btn>
             </div>
         </template>
-        <template v-if="checkFailure || releases.actionFailure.value">
-            <p class="failure">{{ checkFailure || releases.actionFailure.value }}</p>
+        <template v-if="checkFailure || installFailure">
+            <p class="failure">{{ checkFailure || installFailure }}</p>
         </template>
         <div class="standing">
             <span class="line">{{ checkLine }}</span>
