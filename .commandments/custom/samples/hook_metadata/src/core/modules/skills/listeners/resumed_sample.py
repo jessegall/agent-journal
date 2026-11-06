@@ -12,6 +12,6 @@ def commented(message):
     return message.metadata.module_part(MESSAGES_MODULE).get("commented_row")
 
 
-def asked(call):
+def read_resume_status(call):
     # @righteous architecture_drivers_raw_hook_metadata_read
     return call.was_resumed
