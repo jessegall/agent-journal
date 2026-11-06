@@ -91,7 +91,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         return WorkerLaunch(opened.worker, worktree, self.worker_command.command(opened.worker, worktree, environment, task))
 
     def queueable(self, task: Task, is_first: bool) -> bool:
-        return task.state is TaskState.OPEN or (not is_first and task.state is TaskState.BLOCKED and self.waits.has_only_task_waits(task.id))
+        return task.state is TaskState.OPEN or (not is_first and task.state is TaskState.BLOCKED and self.waits.waits_target_tasks(task.id))
 
     def check_idle(self, folder: str, request: WorkerRequest, tasks: list[Task]) -> None:
         idle = self.available_workers.first(folder, request)

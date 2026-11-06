@@ -28,7 +28,7 @@ class UnstartedWorkerRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         activities = self.activities.read(hook)
-        workers = [activities[worktree.session_agent_id] for worktree in self.worktrees.main_worktrees(hook.agent_id) if worktree.state is WorktreeState.CUT]
+        workers = [activities[worktree.session_agent_id] for worktree in self.worktrees.main_worktrees() if worktree.state is WorktreeState.CUT]
         return RuleAnswer.with_nudges(*(WORKER_UNSTARTED.nudge(worker=worker.id, seconds=START_SECONDS) for worker in workers if self.is_unstarted(worker, hook)))
 
     def is_unstarted(self, worker: AgentActivity, hook: AgentHook) -> bool:

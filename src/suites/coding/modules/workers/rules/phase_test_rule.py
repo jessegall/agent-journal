@@ -62,8 +62,8 @@ class PhaseTestRule(DriverRule):
         return self.commands.part_command(part, shell).category is CommandCategory.TEST_RUN and not ASKING_FLAGS.intersection(part.arguments)
 
     def part_answer(self, flag: WorkerTestFlag, saved_refusal: Nudge | None, worker_id: int, task_id: int, phase: Phase, open_requests: Sequence[WorkerTestRequest]) -> RuleAnswer:
-        wanted = self.identity.of(flag.command)
-        request = next((row for row in open_requests if self.identity.of(row.command) == wanted), None)
+        wanted = self.identity.key(flag.command)
+        request = next((row for row in open_requests if self.identity.key(row.command) == wanted), None)
         is_allowed = request is not None and request.state is WorkerTestRequestState.ALLOWED
         if saved_refusal is not None and (flag.is_flagged or is_allowed):
             return RuleAnswer.refused(saved_refusal)
