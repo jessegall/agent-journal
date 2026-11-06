@@ -1,3 +1,5 @@
+import os
+
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.timestamp import Timestamp
@@ -28,6 +30,21 @@ def test_the_process_queue_runs_live_in_the_viewer_with_saved_controls_and_inlin
     story.expect_text("queue list --json --environment 1", '"waiting_count": 1', '"line": "make package"')
     with server_story(story) as server:
         expect_browser(server, "processQueue.browser.mjs", ["/tmp/journal-worker-464-process-queue.png"])
+
+
+def test_the_process_queue_says_in_the_viewer_that_an_update_waits_and_the_commands_keep_their_order(new_story):
+    story = install_runner(new_story(fixture=BuilderWithUser))
+    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    story.expect_success("setting set journal.core.processes.readers-forced false --environment main", actor=story.user)
+    story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
+    story.agent = Actor(story.new_row_id("agent start browser-worker claude worker --environment main"), ActorType.AGENT)
+    running = start_process(story, "make package", category=CommandCategory.BUILD)
+    waiting = start_process(story, "make checks", category=CommandCategory.TEST_RUN)
+    for process in (running, waiting):
+        story.container.get(OutputFolder).beat(process.id, Timestamp(datetime.now(timezone.utc)))
+    story.home.run_lock.write_text(str(os.getpid()))
+    with server_story(story) as server:
+        expect_browser(server, "processQueueUpdate.browser.mjs", ["/tmp/journal-worker-636-process-queue-update.png"])
 
 
 def test_the_queue_reads_output_from_the_end_and_loads_earlier_pages(new_story):

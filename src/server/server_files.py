@@ -7,7 +7,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import IO
 from core.base.journal_home import SERVER_SOCKET, JournalHome
+from core.base.file_access import FileAccess
 from core.base.rotated_file import RotatedFile
+from core.base.server_restart_state import ServerRestartState
 from server.server_files_error import ServerFilesError
 
 
@@ -33,7 +35,7 @@ class ServerFiles:
         self.pid_file = home.folder / "server.pid"
         self.log = home.folder / "runtime" / "server.log"
         self.maintenance = home.folder / "maintenance"
-        self.run_lock = home.folder / "run-lock"
+        self.run_lock = home.run_lock
         self.restart_mark = home.restart_mark
         self.start_mark = home.folder / "server-starting"
         self.tunnel_pid_file = home.folder / "tunnel.pid"
@@ -135,6 +137,13 @@ class ServerFiles:
 
     def clear_run_lock(self) -> None:
         self.run_lock.unlink(missing_ok=True)
+
+    def clear_dead_run_lock(self) -> None:
+        if not self.run_lock.is_file():
+            return
+        text = FileAccess.shared().read(self.run_lock).strip()
+        if not (text.isdigit() and ServerRestartState.is_running(int(text))):
+            self.clear_run_lock()
 
     def release_lock(self) -> None:
         if self.lock_file is not None:

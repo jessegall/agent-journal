@@ -139,6 +139,7 @@ def main(argv: list[str]) -> int:
     ticker_thread.start()
     viewer.start()
     files.clear_restart()
+    files.clear_dead_run_lock()
     try:
         server.serve_requests()
         server.drain(DRAIN_LIMIT_SECONDS)

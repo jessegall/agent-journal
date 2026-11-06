@@ -5,7 +5,9 @@ import time
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
+from core.modules.processes.support.run_queue_halt import RunQueueHalt
 from install.run_drain import RunDrain
+from server.server_files import ServerFiles
 
 
 def going_run(home: Path, name: str, pid: int) -> Path:
@@ -52,3 +54,28 @@ def test_past_the_limit_the_change_goes_ahead(tmp_path):
     started = time.monotonic()
     RunDrain(JournalHome(tmp_path), limit_seconds=0.05, poll_seconds=0.01).wait()
     assert time.monotonic() - started < 5
+
+
+def test_the_run_queue_is_held_while_a_change_waits_for_a_going_run_and_free_after_it(tmp_path):
+    home = JournalHome(tmp_path)
+    run = going_run(tmp_path, "7", os.getpid())
+    waiter = threading.Thread(target=RunDrain(home, limit_seconds=10, poll_seconds=0.01).wait)
+    waiter.start()
+    time.sleep(0.1)
+    assert RunQueueHalt(home).kind == "update" and RunQueueHalt(home).running_run_ids() == (7,)
+    (run / "end").write_text("0")
+    waiter.join(timeout=5)
+    ServerFiles(home).clear_run_lock()
+    assert not RunQueueHalt(home).is_halted
+
+
+def test_a_lock_a_dead_change_left_is_cleared_at_boot_and_one_of_a_live_change_stays(tmp_path):
+    ended_process = subprocess.Popen(["true"])
+    ended_process.wait()
+    files = ServerFiles(JournalHome(tmp_path))
+    (tmp_path / "run-lock").write_text(str(ended_process.pid))
+    files.clear_dead_run_lock()
+    assert not (tmp_path / "run-lock").exists()
+    (tmp_path / "run-lock").write_text(str(os.getpid()))
+    files.clear_dead_run_lock()
+    assert (tmp_path / "run-lock").exists()
