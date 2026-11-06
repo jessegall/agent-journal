@@ -60,11 +60,18 @@ test("the inspector tags a task a worker holds and switches to the timeline", as
 test("the links to a plan list the design document first and open a row as its table and number", async () => {
     const opened = [];
     const counterparts = [
-        {endpoint: {model: "report", id: 4, title: "Review", exists: true, unavailable: false, open_ref: "reports:4"}, relations: ["about"], link_ids: [1]},
         {endpoint: {model: "doc", id: 9, title: "Rebuild design", exists: true, unavailable: false, open_ref: "docs:9"}, relations: ["about"], link_ids: [2]},
+        {endpoint: {model: "report", id: 4, title: "Review", exists: true, unavailable: false, open_ref: "reports:4"}, relations: ["about"], link_ids: [1]},
     ];
-    const read = async () => ({ok: true, value: {rows: [], counterparts, total: 2}});
+    const reads = [];
+    const read = async (line) => (reads.push(line), {ok: true, value: {rows: [], counterparts, total: 2}});
     const element = await drawn(PlanLinks, null, {read, documentId: 9, onOpen: (row) => opened.push(row)});
+    expect(element.querySelector("[data-plan-links] .fold-head").getAttribute("aria-expanded")).toBe("false");
+    expect(element.querySelector("[data-plan-link]")).toBeNull();
+    expect(reads[0]).toContain("--outside-plan");
+    expect(reads[0]).toContain("1");
+    element.querySelector("[data-plan-links] .fold-head").click();
+    await settle();
     const rows = element.querySelectorAll("[data-plan-link]");
     expect(rows.length).toBe(2);
     expect(rows[0].textContent).toContain("Design document 9");

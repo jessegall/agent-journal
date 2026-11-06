@@ -2,6 +2,7 @@ from argparse import ArgumentParser, Namespace
 from dataclasses import asdict
 
 from core.base.caller.caller import Caller
+from core.base.database.link_kind_counts import LinkKindCounts
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.query.query import Query
@@ -13,6 +14,8 @@ from core.modules.documents.conditions.first_link_counterpart import FirstLinkCo
 from core.modules.documents.conditions.link_counterparts import LinkCounterparts
 from core.modules.documents.conditions.link_scope import LinkScope
 from core.modules.documents.conditions.link_side import LinkSide
+from core.modules.documents.conditions.link_kind import LinkKind
+from core.modules.documents.conditions.outside_plan import OutsidePlan
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
 from core.modules.documents.support.link_endpoint_reader import LinkEndpointReader
@@ -42,6 +45,8 @@ class LinkListSubcommand(ReadSubcommand[LinkPage]):
         parser.add_argument("--type", type=LinkType, choices=tuple(LinkType), action="append", default=[])
         parser.add_argument("--group-counterparts", action="store_true")
         parser.add_argument("--first-counterpart")
+        parser.add_argument("--outside-plan", action="store_true")
+        parser.add_argument("--kind")
 
     def read(self, arguments: Namespace, caller: Caller) -> LinkPage:
         size = min(arguments.page_size, 50)
@@ -49,11 +54,21 @@ class LinkListSubcommand(ReadSubcommand[LinkPage]):
             raise Refusal("use a positive link page and page size within the supported range")
         side = next(side for side in LinkSide if getattr(arguments, side.value))
         reference = self.row_refs.parsed(getattr(arguments, side.value))
+        if arguments.outside_plan and reference.model != "plan":
+            raise Refusal("--outside-plan requires a plan")
         scope = LinkScope(reference, side)
         query = self.queries.query(Link).matching(scope)
         types = tuple(dict.fromkeys(arguments.type))
         if types:
             query = query.matching(Among("link_type", types))
+        if arguments.outside_plan:
+            query = query.matching(OutsidePlan(reference))
+        kinds = LinkKindCounts(query.database).read(query.scoped(query.select), reference.model, reference.row_id)
+        if arguments.kind:
+            model = self.row_refs.model(arguments.kind)
+            if model is None:
+                raise Refusal(f"unknown link kind: {arguments.kind}")
+            query = query.matching(LinkKind(reference, model.model_name))
         counterparts = ()
         if arguments.group_counterparts:
             page = self.counterpart_page(query.matching(FirstLinkCounterpart(query.select, reference)), reference, arguments, size)
@@ -76,7 +91,11 @@ class LinkListSubcommand(ReadSubcommand[LinkPage]):
             command += " --group-counterparts"
         if arguments.first_counterpart:
             command += f" --first-counterpart {arguments.first_counterpart}"
-        return LinkPage(rows, groups, arguments.page, size, page.total, None if page.is_last else command)
+        if arguments.outside_plan:
+            command += " --outside-plan"
+        if arguments.kind:
+            command += f" --kind {model.model_name}"
+        return LinkPage(rows, groups, arguments.page, size, page.total, None if page.is_last else command, kinds)
 
     def counterpart_page(self, query: Query[Link], reference: RowRef, arguments: Namespace, size: int) -> Page[Link]:
         if not arguments.first_counterpart:
@@ -103,4 +122,5 @@ class LinkListSubcommand(ReadSubcommand[LinkPage]):
             lines.append(value.next_command)
         output.write("\n".join(lines), {"rows": rows, "counterparts": [asdict(counterpart) for counterpart in value.counterparts],
                      "page": value.page, "page_size": value.page_size, "total": value.total, "has_more": value.next_command is not None,
-                     "next_page": value.page + 1 if value.next_command is not None else None, "next_command": value.next_command})
+                     "next_page": value.page + 1 if value.next_command is not None else None, "next_command": value.next_command,
+                     "kinds": value.kinds})
