@@ -55,14 +55,14 @@ class MessagesMove(VersionFourMove):
     # A version 4 reaction is its own row, tied to its message by a link.
     def move_reactions(self, source: VersionFourSource, rows: RowInsert, map: MoveMap, creators: CreatorResolver) -> None:
         reactions = {row["id"]: row for row in source.rows(REACTIONS)}
-        faces: dict[int, list[dict[str, object]]] = {}
+        emoji: dict[int, list[dict[str, object]]] = {}
         for link in source.rows(LINKS):
             is_reaction = link["link_type"] == REACTS_LINK and link["source"].startswith(REACTION_PREFIX) and link["target"].startswith(MESSAGE_PREFIX)
             reaction = reactions.get(int(link["source"].removeprefix(REACTION_PREFIX))) if is_reaction else None
             message_id = map.new_id(TABLE, int(link["target"].removeprefix(MESSAGE_PREFIX))) if is_reaction else None
             if reaction is not None and message_id is not None:
-                faces.setdefault(message_id, []).append({"emoji": reaction["emoji"], "actor_id": creators.actor_id(reaction["creator"]), "actor_type": reaction["author"]})
-        for message_id, message_reactions in faces.items():
+                emoji.setdefault(message_id, []).append({"emoji": reaction["emoji"], "actor_id": creators.actor_id(reaction["creator"]), "actor_type": reaction["author"]})
+        for message_id, message_reactions in emoji.items():
             rows.set_value(TABLE, message_id, "reactions", json.dumps(message_reactions))
 
     def card_type(self, data: str | None) -> str:

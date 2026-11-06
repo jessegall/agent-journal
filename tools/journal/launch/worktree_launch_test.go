@@ -47,10 +47,10 @@ func TestABareWorktreeMakesUpATwoWordNameNoFolderBranchTipOrEnvironmentHolds(t *
 }
 
 func TestAWorktreeLaunchNeverSharesAnEnvironmentALiveSessionHoldsAndTakesTheNextNumber(t *testing.T) {
-	if name := UnheldName("cart", []string{"cart", "cart-2"}); name != "cart-3" {
+	if name := UnusedName("cart", []string{"cart", "cart-2"}); name != "cart-3" {
 		t.Fatalf("a launch while cart and cart-2 are working took %q, not cart-3", name)
 	}
-	if name := UnheldName("cart", []string{"till"}); name != "cart" {
+	if name := UnusedName("cart", []string{"till"}); name != "cart" {
 		t.Fatalf("a launch while cart is free took %q", name)
 	}
 }

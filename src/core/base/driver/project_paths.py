@@ -5,8 +5,8 @@ LONG_PATH = re.compile(r"""(?<![\w.~/:-])(?:[\w.~-]*/){3,}([^\s/'"]+)""")
 
 class ProjectPaths:
     """A shell line written relative to the folder it runs in: a cd into that folder goes, and a
-    path inside it loses the folder's own part, so a mark names the command and not where the
-    project lives; a path outside it stays. A line to read at a glance keeps only a long path's file name."""
+    path inside it loses the folder part, so a mark names the command and not where the
+    project is; a path outside it stays. A line to read quickly keeps only a long path's file name."""
 
     @staticmethod
     def short_paths(line: str) -> str:

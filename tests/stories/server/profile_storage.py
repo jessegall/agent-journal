@@ -132,7 +132,7 @@ def test_a_registered_profiles_type_follows_its_module(changed_profile):
 
 def test_a_withdrawn_profile_keeps_the_change_and_refuses_start(changed_profile):
     story = changed_profile
-    change_version(story, "ProfileWithdrawn")
+    change_version(story, "ProfileRemoved")
     expect_value("Its module no longer offers this profile" in profile_row(story, "module-reader")["problem"], True)
     expect_value(profile_path(story, "module-reader").is_file(), True)
     with pytest.raises(Refusal, match="Its module no longer offers") as refused:
@@ -144,7 +144,7 @@ def test_a_missing_type_keeps_the_file_and_does_not_stop_sync(profile_story):
     story = profile_story
     change_version(story, "ProfileCustomType")
     profile_line(story, [*SAVE, "--type", "clerk"])
-    change_version(story, "ProfileWithdrawn")
+    change_version(story, "ProfileRemoved")
     expect_value("Type: gone" in profile_row(story, "critic")["problem"], True)
     with pytest.raises(Refusal, match="clerk"):
         story.container.get(ProfileFiles).effective("critic")

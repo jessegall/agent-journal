@@ -7,7 +7,7 @@ from core.base.upgrade.source_row import SourceRow
 
 
 class VersionFourSource:
-    """A version 4 database opened read-only: its rows, its table names and the folder it lies in, and never a
+    """A version 4 database opened read-only: its rows, its table names and the folder it is in, and never a
     write."""
 
     def __init__(self, path: Path) -> None:

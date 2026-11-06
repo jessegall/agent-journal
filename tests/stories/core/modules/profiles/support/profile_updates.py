@@ -27,7 +27,7 @@ class ProfileWorkerVersion(ProfileVersionOne):
     profiles = [replace(BASE_PROFILE, agent_type="worker")]
 
 
-class ProfileWithdrawn(ProfileVersionOne):
+class ProfileRemoved(ProfileVersionOne):
     profiles = []
 
 

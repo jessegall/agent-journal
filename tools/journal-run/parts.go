@@ -30,7 +30,7 @@ func Parts(line string) []Part {
 		return []Part{{Text: line, Position: 1}}
 	}
 	var parts []Part
-	var firsts []int
+	var starts []int
 	first, bodyEnd, hasFallback := -1, 0, false
 	for index := range commands {
 		command := &commands[index]
@@ -47,17 +47,17 @@ func Parts(line string) []Part {
 		}
 		if command.JoinedBy == "&" || hasFallback {
 			for len(parts) > 0 && parts[len(parts)-1].JoinedBy == "&&" {
-				first = firsts[len(firsts)-1]
-				parts, firsts = parts[:len(parts)-1], firsts[:len(firsts)-1]
+				first = starts[len(starts)-1]
+				parts, starts = parts[:len(parts)-1], starts[:len(starts)-1]
 			}
 		}
-		parts, firsts = append(parts, partOf(commands, first, index, bodyEnd)), append(firsts, first)
+		parts, starts = append(parts, partOf(commands, first, index, bodyEnd)), append(starts, first)
 		first = -1
 	}
 	if first >= 0 {
 		for hasFallback && len(parts) > 0 && parts[len(parts)-1].JoinedBy == "&&" {
-			first = firsts[len(firsts)-1]
-			parts, firsts = parts[:len(parts)-1], firsts[:len(firsts)-1]
+			first = starts[len(starts)-1]
+			parts, starts = parts[:len(parts)-1], starts[:len(starts)-1]
 		}
 		parts = append(parts, partOf(commands, first, len(commands)-1, bodyEnd))
 	}

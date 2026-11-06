@@ -18,7 +18,7 @@ class PluginCardReading:
     def __call__(self, container: Container) -> bool:
         queries, bus = container.get(Queries), container.get(Bus)
         outputs_added = 0
-        for plugin in container.get(PluginQuery).enabled_ones():
+        for plugin in container.get(PluginQuery).enabled_plugins():
             queue = PluginQueue(container.get(PluginFolders).data(plugin.name))
             with closing(queue.claim_cards()) as claims:
                 for claim in claims:

@@ -8,7 +8,7 @@ from core.modules.triggers.models.trigger import Trigger
 
 
 class PauseTriggerSubcommand(Subcommand[PauseTrigger, Trigger]):
-    """`journal trigger pause <n> [--off]`: the trigger rests until it is let go on."""
+    """`journal trigger pause <n> [--off]`: the trigger is paused until it is let go on."""
 
     cli_name = "trigger"
     name = "pause"

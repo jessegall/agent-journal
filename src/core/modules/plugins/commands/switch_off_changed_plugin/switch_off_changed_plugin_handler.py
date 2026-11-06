@@ -17,5 +17,5 @@ class SwitchOffChangedPluginHandler(Handler[SwitchOffChangedPlugin, Plugin]):
 
     def handle(self, command: SwitchOffChangedPlugin, context: Context) -> Plugin:
         plugin = self.queries.query(Plugin).find(command.plugin_id)
-        self.skill_files.withdraw(plugin.name)
+        self.skill_files.remove(plugin.name)
         return self.repository.save(plugin.changed(enabled=False), context)

@@ -10,7 +10,7 @@ class ReaderJudgement:
     output_id: int | None = None
 
     @property
-    def is_proper(self) -> bool:
+    def is_valid(self) -> bool:
         return not self.missing and not self.missed
 
     @property

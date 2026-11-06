@@ -38,7 +38,7 @@ class ReaderRequestCompleteListener(SaveListener[Changed[Reader]]):
         self.rows.save(reader)
         for request in self.requests.open_rows():
             scope = ReaderSampleScope(request.creator_id, request.command)
-            if not ReaderSelection.reads_command(reader, request.command, request.category) or not self.judge.judged_command(reader, request.category, scope).is_proper:
+            if not ReaderSelection.reads_command(reader, request.command, request.category) or not self.judge.judged_command(reader, request.category, scope).is_valid:
                 continue
             completed = self.repository.update(request, context, reader_id=reader.id, completed_at=self.clock.timestamp())
             self.requests.remove_completed(completed)

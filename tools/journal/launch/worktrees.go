@@ -68,8 +68,8 @@ func (worktrees Worktrees) UnusedName(environments []string) string {
 	}
 }
 
-// UnheldName is the name, or name-2, name-3 and so on, so a launch never shares an environment a working session holds.
-func UnheldName(name string, working []string) string {
+// UnusedName is the name, or name-2, name-3 and so on, so a launch never shares an environment a working session holds.
+func UnusedName(name string, working []string) string {
 	candidate := name
 	for number := 2; indexOf(working, candidate) >= 0; number++ {
 		candidate = fmt.Sprintf("%s-%d", name, number)

@@ -93,7 +93,7 @@ func TestTheRequestCarriesItsTimingAndAResendAfterNewerCodeAddsGoResent(t *testi
 	}
 }
 
-func TestAHomeIsFoundFromTheBinarysOwnFolder(t *testing.T) {
+func TestAHomeIsFoundFromTheFolderOfTheBinary(t *testing.T) {
 	if home := HomeOfBinary("/work/shop/.journal/bin/journal"); home != "/work/shop/.journal" {
 		t.Errorf("a binary in .journal/bin gave %q", home)
 	}

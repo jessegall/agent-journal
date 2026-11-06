@@ -37,7 +37,7 @@ BUILT = ["make", "edit", "delete"]
 
 
 class DumpsModule(Module):
-    """Adds dumps: notes and files the user pours in, which the agent makes rows from, item by item."""
+    """Adds dumps: notes and files the user adds, which the agent makes rows from, item by item."""
 
     name = "journal.core.dumps"
     requires_core = ">=5,<6"

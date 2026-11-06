@@ -5,7 +5,7 @@ from core.base.library.library_share import Fields
 
 @dataclass(frozen=True)
 class CheckColumns:
-    """The columns of a check that travel to the library and back: its title, command, brief and interval."""
+    """The columns of a check that are sent to the library and back: its title, command, brief and interval."""
 
     title: str
     command: str

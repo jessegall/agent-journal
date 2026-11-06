@@ -15,7 +15,7 @@ EMPTY_TRIGGERS = "[]"
 
 
 class SequenceTriggerRule(DriverRule):
-    """A prompt or a finished tool call that meets a sequence's trigger starts that sequence for the main
+    """A prompt or a finished tool call that matches a sequence's trigger starts that sequence for the main
     agent, unless one is running."""
 
     name = "sequences.triggers"

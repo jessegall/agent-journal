@@ -20,6 +20,6 @@ class PluginReaders:
             if not self.readers.with_name(reader_file.name).exists():
                 self.repository.save(reader_file.reader(context.actor.id, plugin_name), context)
 
-    def withdraw(self, plugin_name: str, context: Context) -> None:
+    def remove(self, plugin_name: str, context: Context) -> None:
         for reader in tuple(self.readers.filter(plugin_name=plugin_name).all_rows()):
             self.repository.delete(reader, context)

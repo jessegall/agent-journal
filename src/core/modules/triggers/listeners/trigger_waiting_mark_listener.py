@@ -8,8 +8,8 @@ from core.base.change.changed import Changed
 
 
 class TriggerWaitingMarkListener(MarkListener[Changed[Trigger]]):
-    """A trigger an agent made shows in the chat with its Enable button until the user enables it, whichever agent
-    made it, since only the user can."""
+    """A trigger an agent made shows in the chat with its Enable button until the user enables it, no matter which
+    agent made it, since only the user can."""
 
     name = "triggers.waiting-mark"
     module_name = "journal.core.triggers"

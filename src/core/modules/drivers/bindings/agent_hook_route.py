@@ -91,13 +91,13 @@ class AgentHookRoute(HookRoute):
         if not environments:
             return None
         if role == AgentRole.MAIN:
-            self.end_running_mains(environments[0].id)
+            self.end_running_main_agents(environments[0].id)
         return self.bus.run(StartAgent(event.session, event.program, role, parent_id), Actor.core(), environment_id=environments[0].id)
 
-    def end_running_mains(self, environment_id: int) -> None:
+    def end_running_main_agents(self, environment_id: int) -> None:
         with self.bus.scopes.read_scope((), None, environment_id):
-            mains = MainAgentFinder.all_running(self.queries)
-        for main in mains:
+            main_agents = MainAgentFinder.all_running(self.queries)
+        for main in main_agents:
             try:
                 self.bus.run(StopAgent(main.id), Actor.core(), environment_id=environment_id)
             except Refusal:

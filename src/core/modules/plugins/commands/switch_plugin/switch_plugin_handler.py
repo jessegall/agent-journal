@@ -23,7 +23,7 @@ class SwitchPluginHandler(Handler[SwitchPlugin, Plugin]):
         plugin = self.plugins.find_name(command.name)
         folder = self.folders.code(plugin.name)
         if not command.enabled:
-            self.skill_files.withdraw(plugin.name)
+            self.skill_files.remove(plugin.name)
             return self.repository.save(plugin.changed(enabled=False), context)
         manifest = PluginManifest.read(folder)
         self.skill_files.publish(folder, manifest)

@@ -70,13 +70,13 @@ from core.modules.documents.support.skeletons import DOCUMENTS_DOCUMENTS_SKELETO
 
 
 class DocumentsModule(Module):
-    """Adds documents, which the project keeps knowing, reports of what was checked at one time, a document's
-    revisions, and links between rows."""
+    """Adds documents, which keep lasting information about the project, reports of what was checked at one
+    time, a document's revisions, and links between rows."""
 
     name = "journal.core.documents"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.messages", "journal.core.tasks", "journal.core.plans", "journal.core.docking", "journal.core.agents", "journal.core.drivers", "journal.core.processes", "journal.core.chat"]
-    skills = [SkillDeclaration("journal-documents", "Write lasting knowledge as documents and what was checked as reports; read it before the first doc or report command of a session", keywords=("document", "documents", "report"), commands=("doc", "report"))]
+    skills = [SkillDeclaration("journal-documents", "Write lasting information as documents and what was checked as reports; read it before the first doc or report command of a session", keywords=("document", "documents", "report"), commands=("doc", "report"))]
     settings = [SettingValue("revision-minutes", "Revision minutes", "Combine edits by the same person into one revision within this many minutes.", SettingType.NUMBER,
                              default=30, scope=SettingScope.PROJECT)]
     models = [ModelDeclaration(Doc, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Report, excluded_subcommands=ALL_SUBCOMMANDS),

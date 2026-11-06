@@ -14,7 +14,7 @@ START_LIMIT_SECONDS = 10
 
 
 class HookSwitch:
-    """Backs up project hook files and switches their journal entries during upgrades and restores."""
+    """Copies project hook files to a backup and switches their journal entries during upgrades and restores."""
 
     def __init__(self, root: Path) -> None:
         self.root = root

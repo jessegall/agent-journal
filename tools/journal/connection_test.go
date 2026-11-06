@@ -161,7 +161,7 @@ func TestAMaintenanceMarkOfAProcessThatIsGoneIsIgnored(t *testing.T) {
 	}
 }
 
-func TestSourceFolderIsTheInstalledCodeInsideTheJournalWhenItHoldsTheServer(t *testing.T) {
+func TestSourceFolderIsTheInstalledCodeInsideTheJournalWhenItRunsTheServer(t *testing.T) {
 	project := shortHome(t)
 	home := filepath.Join(project, ".journal")
 	server := filepath.Join(home, "src", "server")
@@ -176,7 +176,7 @@ func TestSourceFolderIsTheInstalledCodeInsideTheJournalWhenItHoldsTheServer(t *t
 	}
 }
 
-func TestSourceFolderIsTheRepositorysSrcWhenTheJournalHoldsNoServer(t *testing.T) {
+func TestSourceFolderIsTheRepositorysSrcWhenTheJournalRunsNoServer(t *testing.T) {
 	project := shortHome(t)
 	home := filepath.Join(project, ".journal")
 	if err := os.MkdirAll(filepath.Join(home, "src", "journal"), 0o755); err != nil {

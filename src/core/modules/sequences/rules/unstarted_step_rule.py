@@ -7,7 +7,7 @@ from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.support.sequence_step_started import SequenceStepStarted
 
 
-class UntakenStepRule(DriverRule):
+class UnstartedStepRule(DriverRule):
     """An agent whose sequence step is not taken up yet is blocked until it runs journal sequence follow.
     """
 

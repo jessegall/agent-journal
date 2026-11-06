@@ -6,7 +6,7 @@ from core.modules.documents.support.doc_revisions import DocRevisions
 
 
 class DocLibraryShare(LibraryShare[Doc]):
-    """A document travels as its title, abstract and text. Whether it is closed stays with each journal, and a
+    """A document is sent as its title, abstract and text. Whether it is closed stays with each journal, and a
     closed document goes on following. A version from the server always opens a revision of its own, so the
     text it replaces can be read again."""
 

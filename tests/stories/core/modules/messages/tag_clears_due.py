@@ -31,7 +31,7 @@ def start_story_with_image_block(new_story):
     return story, message
 
 
-def expect_tag_settles(story, message, line, *parts):
+def expect_tag_clears(story, message, line, *parts):
     story.expect_hook_allowed("s-1", HookSamples.shell(line, *parts))
     story.expect_success(f'message tag {message.id} "cart.png" "The cart total is wrong"', actor=story.agent)
     story.expect_rows(MessageCaptions.decoded(story.row(Message, message.id))["cart.png"] == "The cart total is wrong")
@@ -43,4 +43,4 @@ def expect_tag_settles(story, message, line, *parts):
 def test_a_tag_in_a_shell_chain_during_memory_weighing_clears_its_due_mark(new_story):
     story, message = start_story_with_image_block(new_story)
     line = f'cat notes && journal message tag {message.id} "cart.png" "The cart total is wrong"'
-    expect_tag_settles(story, message, line, ShellPart("cat", CommandCategory.READ, ["notes"]), ShellPart("journal", CommandCategory.JOURNAL, ["message", "tag", str(message.id), "cart.png", "The cart total is wrong"]))
+    expect_tag_clears(story, message, line, ShellPart("cat", CommandCategory.READ, ["notes"]), ShellPart("journal", CommandCategory.JOURNAL, ["message", "tag", str(message.id), "cart.png", "The cart total is wrong"]))

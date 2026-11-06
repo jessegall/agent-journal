@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class BlockGracesMigration(Migration):
+class BlockGracePeriodsMigration(Migration):
     """A block may hold only after a grace and be skipped, so a required command is a block and its own table goes."""
 
     number = 14

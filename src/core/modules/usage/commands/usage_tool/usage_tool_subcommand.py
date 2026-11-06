@@ -44,10 +44,10 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
     def read(self, arguments: Namespace, caller: Caller) -> ToolFacts:
         if arguments.agent is not None:
             return self.agent_tool(arguments.agent, ())
-        mains = MainAgentFinder.rows(self.queries)
-        if not mains:
+        main_agents = MainAgentFinder.rows(self.queries)
+        if not main_agents:
             return ToolFacts()
-        return self.agent_tool(mains[0].id, self.open_question_lines(mains[0].id))
+        return self.agent_tool(main_agents[0].id, self.open_question_lines(main_agents[0].id))
 
     def agent_tool(self, agent_id: int, question_lines: Sequence[str]) -> ToolFacts:
         calls = self.queries.query(HookCall).filter(session_agent_id=agent_id).matching(Among("hook", TURN_HOOKS)).newest().limited(1)
@@ -77,7 +77,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         return kept[0].title if kept and kept[0].title else process.line
 
     def open_question_lines(self, agent_id: int) -> list[str]:
-        open_questions = self.questions.agent(agent_id).open_ones().oldest().page(1, SHOWN_RUNS)
+        open_questions = self.questions.agent(agent_id).open_questions().oldest().page(1, SHOWN_RUNS)
         if open_questions.total > 1:
             return [f"your answers to {open_questions.total} questions"]
         return [f"your answer to question {question.id}" for question in open_questions.rows]

@@ -15,7 +15,7 @@ NEW_FILE = "new"
 
 
 class RecordFileEditHandler(Handler[RecordFileEdit, FileEdit]):
-    """Saves the file edit of the agent's diff, its path named from the environment's folder when it lies
+    """Saves the file edit of the agent's diff, its path named from the environment's folder when it is
     inside."""
 
     command = RecordFileEdit

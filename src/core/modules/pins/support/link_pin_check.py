@@ -24,7 +24,7 @@ BANG_COMMAND = re.compile(r"(?:^|`|\b(?:run|type|enter|try)\s+)!\s?([^\s`][^`\n]
 
 
 class LinkPinCheck:
-    """The lines a text earns: words that claim a pin no pin in the last minute backs are pointed out, else
+    """The lines a text gets: words that claim a pin no pin in the last minute exists for are named, else
     the first link no open pin has is offered, each link on its own count, and a ! command the agent asks the
     user to run is asked to become a button. The link of a closed pin is offered again."""
 
@@ -32,7 +32,7 @@ class LinkPinCheck:
         self.queries, self.clock = queries, clock
 
     def nudges(self, agent_text: str, tool_output: str = "") -> list[Nudge]:
-        if self.claims_unmade_pin(agent_text):
+        if self.claims_missing_pin(agent_text):
             return [UNPINNED_CLAIM.nudge()]
         unpinned = self.first_unpinned(f"{agent_text}\n{tool_output}")
         nudges = [self.keyed(LINK_PIN_REQUEST.nudge(url=unpinned), unpinned)] if unpinned is not None else []
@@ -58,7 +58,7 @@ class LinkPinCheck:
         pins = self.queries.query(Pin).matching(IsNull("closed_at"))
         return next((url for url in links if not pins.matching(Among("link", (url.rstrip("/"), f"{url.rstrip('/')}/"))).exists()), None)
 
-    def claims_unmade_pin(self, text: str) -> bool:
+    def claims_missing_pin(self, text: str) -> bool:
         if not PIN_CLAIM.search(text):
             return False
         window_start = Timestamp(self.clock.timestamp().value - timedelta(seconds=CLAIM_WINDOW_SECONDS)).text

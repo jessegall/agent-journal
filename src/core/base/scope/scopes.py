@@ -13,7 +13,7 @@ from core.base.database.database import Database
 from core.base.model.agent_scoped import AgentScoped
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
-from core.base.model.session_owned import SessionOwned
+from core.base.model.session_bound import SessionBound
 from core.base.model.session_private import SessionPrivate
 from core.base.model.table import indefinite_article
 from core.base.refusal import Refusal
@@ -60,7 +60,7 @@ class Scopes:
         raise Refusal(f"{indefinite_article(model.cli_name)} {model.cli_name} needs an environment", "name it with --environment")
 
     def with_session(self, model: M, actor_id: int) -> M:
-        if isinstance(model, SessionOwned) and model.session_agent_id is None:
+        if isinstance(model, SessionBound) and model.session_agent_id is None:
             return replace(model, session_agent_id=actor_id)
         if isinstance(model, SessionPrivate) and model.session_agent_id != actor_id:
             return replace(model, state=model.hidden_state)

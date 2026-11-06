@@ -9,8 +9,8 @@ class AddressForm(StrEnum):
     NONE = "none"
     CUSTOM = "its own words"
 
-    def called(self, title: str, name: str, owned: str | None = None) -> str:
-        parts = {AddressForm.TITLE_NAME: [title, name], AddressForm.NAME: [name], AddressForm.NONE: [], AddressForm.CUSTOM: [owned]}[self]
+    def called(self, title: str, name: str, custom: str | None = None) -> str:
+        parts = {AddressForm.TITLE_NAME: [title, name], AddressForm.NAME: [name], AddressForm.NONE: [], AddressForm.CUSTOM: [custom]}[self]
         return " ".join(part for part in parts if part)
 
     def instruction(self, called: str) -> str:

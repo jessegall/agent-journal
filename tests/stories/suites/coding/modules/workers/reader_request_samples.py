@@ -51,7 +51,7 @@ def test_a_worker_saves_against_its_sample_and_leaves_a_foreign_request_open(rea
     second = Actor(story.new_row_id("agent start s-other claude worker --environment main"), ActorType.AGENT)
     process = story.container.get(Bus).run(StartProcess.single_part(second.id, "custom-build run", "/work/main", CommandCategory.BUILD, 30), second, environment_id=1)
     end_run(story, process, "compiling\n" * 8 + "finished elsewhere\n")
-    story.expect_success('reader add owned-build --commands "custom-build*" --title Building --lines done --summary done', actor=reader_worker(story))
+    story.expect_success('reader add local-build --commands "custom-build*" --title Building --lines done --summary done', actor=reader_worker(story))
     requests = story.container.get(ReaderRequestQuery)
     story.expect_rows(not requests.has_active_requests(reader_worker(story).id, story.clock.timestamp()),
                       requests.has_active_requests(second.id, story.clock.timestamp()))

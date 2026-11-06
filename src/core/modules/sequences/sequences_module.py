@@ -38,7 +38,7 @@ from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.shares.sequence_library_share import SequenceLibraryShare
 from core.modules.sequences.rules.sequence_trigger_rule import SequenceTriggerRule
 from core.modules.sequences.rules.step_guard_rule import StepGuardRule
-from core.modules.sequences.rules.untaken_step_rule import UntakenStepRule
+from core.modules.sequences.rules.unstarted_step_rule import UnstartedStepRule
 from core.modules.sequences.seeders.sequences_seeder import SequencesSeeder
 from core.modules.sequences.upgrade.sequences_move import SequencesMove
 from core.modules.sequences.support.sequence_marks import SEQUENCE_MARKS
@@ -70,7 +70,7 @@ class SequencesModule(Module):
     views = [SequenceRunRow]
     listeners = [SequenceEventIndexListener, SequenceRowTriggerListener, SequenceEndListener, StandardSequencesListener, SequenceStartedMarkListener]
     marks = SEQUENCE_MARKS
-    driver_rules = [UntakenStepRule, StepGuardRule, SequenceTriggerRule]
+    driver_rules = [UnstartedStepRule, StepGuardRule, SequenceTriggerRule]
     seeders = [SequencesSeeder]
     windows = [WindowDeclaration("sequences.sequences", "Sequences", "sequences.js", WindowLoading.COMPONENT, skeleton=SEQUENCES_SEQUENCES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.SEQUENCE,
                                  reads=["sequence list", "sequence show", "sequence-run list"], runs=["sequence make", "sequence edit", "sequence delete"], events=["sequence.*", "sequence_run.*"])]

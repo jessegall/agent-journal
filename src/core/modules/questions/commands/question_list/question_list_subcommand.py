@@ -24,7 +24,7 @@ class QuestionListSubcommand(ReadSubcommand[Page[Question]]):
         parser.add_argument("--row")
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[Question]:
-        query = self.questions if arguments.all else self.questions.open_ones()
+        query = self.questions if arguments.all else self.questions.open_questions()
         if arguments.row:
             row = self.refs.parsed(arguments.row)
             query = query.filter(row_model=row.model, row_id=row.row_id)

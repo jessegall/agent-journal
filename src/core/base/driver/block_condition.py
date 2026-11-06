@@ -5,7 +5,7 @@ from core.base.driver.block_check import BlockCheck
 
 
 class BlockCondition:
-    """What ends a block on an agent. A block outlives its process, so a condition is a class stored by its
+    """What ends a block on an agent. A block stays after its process ends, so a condition is a class stored by its
     name and a text, given as one value or a list of them; each module registers the conditions it offers.
     A condition per subject holds one block for each subject, where others share one block per line."""
 

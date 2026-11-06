@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class LibraryItem:
-    """One version of an item on the shared server: its share, number, version, the fields that travel, who made
+    """One version of an item on the shared server: its share, number, version, the fields that are sent, who made
     it and who changed it last."""
 
     share: str

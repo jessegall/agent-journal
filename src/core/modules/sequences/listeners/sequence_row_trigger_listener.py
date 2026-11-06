@@ -16,7 +16,7 @@ from core.base.model.model import Model
 
 
 class SequenceRowTriggerListener(CommitListener[Touched[Model]]):
-    """Starts a sequence for the triggering agent or the environment's idle main agent when a row event meets a
+    """Starts a sequence for the triggering agent or the environment's idle main agent when a row event matches a
     row trigger whose link source, if it names one, has a link to the row."""
 
     name = "sequences.row-trigger"

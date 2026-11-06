@@ -44,10 +44,10 @@ class AgentTextRule(DriverRule):
         return not self.messages.has_person_message_past(newest.id)
 
     def is_acknowledgement(self, text: str, prompt: HookCall) -> bool:
-        if len(text) > SHORT_CHARACTERS or "?" in text or not prompt.summary.startswith(JOURNAL_LINE) or self.is_user_act(prompt.summary):
+        if len(text) > SHORT_CHARACTERS or "?" in text or not prompt.summary.startswith(JOURNAL_LINE) or self.is_user_action(prompt.summary):
             return False
         calls = self.queries.query(HookCall).filter(session_agent_id=prompt.session_agent_id, writes_files=True).newest().limited(1)
         return not calls or calls[0].id < prompt.id
 
-    def is_user_act(self, prompt_text: str) -> bool:
+    def is_user_action(self, prompt_text: str) -> bool:
         return prompt_text.startswith(USER_ACTION_PREFIXES) or MESSAGE_COUNT_TEXT in prompt_text

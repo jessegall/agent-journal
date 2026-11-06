@@ -48,7 +48,7 @@ class DocumentsMove(VersionFourMove):
             report.count(REVISIONS, map.transfer(REVISIONS, revision["id"], REVISIONS, partial(self.insert_revision, rows, revision, doc_id,
                                                                                                 creators.actor_id(revision["creator"]), context)))
         kept_links: set[tuple[RowRef, RowRef, str]] = set()
-        for link in [link for link in source.links(*LINK_TYPES) if self.touches_text(link)]:
+        for link in [link for link in source.links(*LINK_TYPES) if self.changes_text(link)]:
             link_source, link_target = self.moved_end(map, link["source"]), self.moved_end(map, link["target"])
             if link_source is None or link_target is None:
                 report.drop("links to a row that did not move", 1)
@@ -76,7 +76,7 @@ class DocumentsMove(VersionFourMove):
                                        "updated_at": row["updated_at"] or created})
 
     @staticmethod
-    def touches_text(link: sqlite3.Row) -> bool:
+    def changes_text(link: sqlite3.Row) -> bool:
         return any(VersionFourRef.parsed(link[end]).table in TEXT_TABLES for end in ("source", "target"))
 
     @staticmethod

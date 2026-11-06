@@ -12,8 +12,8 @@ from core.base.registry.state_addition_entry import StateAdditionEntry
 
 class StateRetirement:
     """Moves the rows of a state no installed module registers any more to the state its module named,
-    comparing the registry saved by the last sync with the modules installed now, so a module that vanished is
-    covered like one that was removed."""
+    comparing the registry saved by the last sync with the modules installed now, so a module that was deleted is
+    handled like one that was removed."""
 
     def __init__(self, database: Database, tables: Tables, registry_table: RegistryTable) -> None:
         self.database, self.tables, self.registry_table = database, tables, registry_table

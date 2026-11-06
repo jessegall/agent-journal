@@ -6,7 +6,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.queries.process_query import ProcessQuery
-from suites.coding.modules.workers.support.worker_nudges import WORKER_RUN_OUTLASTS
+from suites.coding.modules.workers.support.worker_nudges import WORKER_RUN_RUNS_AFTER_STOP
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
 
 STOPPED_LIMIT_SECONDS = 1800
@@ -27,9 +27,9 @@ class StoppedWorkerRunRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         runs = list(self.processes.running().oldest().all_rows())
         workers = {worker.id: worker for worker in self.queries.query(Agent).find_many([run.session_agent_id for run in runs])}
-        return RuleAnswer.with_nudges(*(WORKER_RUN_OUTLASTS.nudge(worker=run.session_agent_id, output=run.id) for run in runs if self.is_outlasting(workers[run.session_agent_id], hook)))
+        return RuleAnswer.with_nudges(*(WORKER_RUN_RUNS_AFTER_STOP.nudge(worker=run.session_agent_id, output=run.id) for run in runs if self.is_running_after_stop(workers[run.session_agent_id], hook)))
 
-    def is_outlasting(self, worker: Agent, hook: AgentHook) -> bool:
+    def is_running_after_stop(self, worker: Agent, hook: AgentHook) -> bool:
         ended_at = worker.ended_at
         if worker.parent_id != hook.agent_id or worker.role != AgentRole.WORKER or ended_at is None:
             return False

@@ -24,5 +24,5 @@ class VoiceChangeListener(SaveListener[Changed[Setting]]):
         setting = event.row
         if isinstance(event, Deleted) or setting.key not in VOICE_KEYS:
             return
-        for agent in self.agents.running_mains():
+        for agent in self.agents.running_main_agents():
             self.lines.deliver(agent.id, VOICE_CHANGED, context)
