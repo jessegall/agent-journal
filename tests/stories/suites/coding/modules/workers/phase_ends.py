@@ -1,0 +1,149 @@
+import pytest
+
+from core.testing.expect_reply import expect_reply_refusal
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE
+from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from tests.stories.suites.coding.modules.workers.support.phase_steps import OTHER_TEST_LINE, PHASE_DISPATCH, TEST_LINE, dispatched_story_worker, planned_story, worker_on_plan
+
+FLAG = "--ask-main"
+PHASE_TEST = "pytest tests/phase.py"
+
+
+def at_last_task_of_the_phase(worker, first_test: str = "", last_test: str = ""):
+    worker.prove_and_move_on(first_test)
+    worker.prove_and_move_on()
+    worker.prove(last_test)
+    return worker
+
+
+def expect_task_states(worker, state: str, *task_ids: int) -> None:
+    for task_id in task_ids:
+        worker.story.expect_text(f"task show {task_id}", f"state: {state}", actor=worker.story.agent)
+
+
+@pytest.fixture
+def tests_named(new_story, monkeypatch):
+    return at_last_task_of_the_phase(worker_on_plan(new_story, monkeypatch), TEST_LINE, OTHER_TEST_LINE)
+
+
+@pytest.fixture
+def phase_passed(tests_named):
+    tests_named.story.run("worker next", actor=tests_named.worker)
+    tests_named.end_all_tests()
+    return tests_named
+
+
+@pytest.fixture
+def no_tests_named(new_story, monkeypatch):
+    return at_last_task_of_the_phase(worker_on_plan(new_story, monkeypatch))
+
+
+@pytest.fixture
+def phase_only_with_tests(new_story, monkeypatch):
+    return at_last_task_of_the_phase(worker_on_plan(new_story, monkeypatch, PHASE_DISPATCH), TEST_LINE, OTHER_TEST_LINE)
+
+
+@pytest.fixture
+def phase_only_no_tests(new_story, monkeypatch):
+    return at_last_task_of_the_phase(worker_on_plan(new_story, monkeypatch, PHASE_DISPATCH))
+
+
+@pytest.fixture
+def delivered_phase(phase_only_with_tests):
+    phase_only_with_tests.story.run("worker deliver", actor=phase_only_with_tests.worker)
+    phase_only_with_tests.end_all_tests()
+    return phase_only_with_tests
+
+
+@pytest.fixture
+def two_workers(new_story, monkeypatch):
+    story = planned_story(new_story)
+    first = dispatched_story_worker(story, "worker dispatch --model sonnet 1", monkeypatch)
+    return first, first.another_worker("worker dispatch --model sonnet 2 3")
+
+
+def test_the_last_task_of_a_phase_queues_the_tests_of_all_its_tasks_and_the_worker_stops(tests_named):
+    tests_named.story.expect_text("worker next", "queued", actor=tests_named.worker)
+    expect_task_states(tests_named, "testing", 1, 2, 3)
+    tests_named.story.expect_text("proof show 1", "state: running", actor=tests_named.story.agent)
+    tests_named.story.expect_text("proof show 2", "state: checked", actor=tests_named.story.agent)
+    tests_named.story.expect_text("proof show 3", "state: queued", actor=tests_named.story.agent)
+    assert len(tests_named.started) == 1, tests_named.started
+
+
+def test_worker_deliver_at_the_end_of_a_phase_is_a_hand_in_too(phase_only_with_tests):
+    phase_only_with_tests.story.expect_text("worker deliver", "queued", actor=phase_only_with_tests.worker)
+    expect_task_states(phase_only_with_tests, "testing", 1, 2, 3)
+    assert len(phase_only_with_tests.started) == 1, phase_only_with_tests.started
+
+
+def test_the_tasks_of_a_phase_close_and_the_next_phases_task_starts_once_its_tests_pass(phase_passed):
+    expect_task_states(phase_passed, "completed", 1, 2, 3)
+    assert len(phase_passed.started) == 2, phase_passed.started
+    assert phase_passed.current_task() == 4
+
+
+def test_the_next_phase_starts_held_back_again(phase_passed):
+    expect_reply_refusal(phase_passed.run_test(), FLAG)
+
+
+def test_the_phases_own_test_runs_at_its_end_as_a_proof_of_the_last_task(new_story, monkeypatch):
+    worker = at_last_task_of_the_phase(worker_on_plan(new_story, monkeypatch, build_test=PHASE_TEST))
+    worker.story.expect_text("worker next", "queued", actor=worker.worker)
+    worker.story.expect_text("proof list --task 3", PHASE_TEST, actor=worker.story.agent)
+    assert [process.line for process in worker.started_processes()] == [PHASE_TEST]
+
+
+def test_the_selected_tests_run_at_the_end_of_a_phase_after_the_proofs(tests_named):
+    tests_named.story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main', actor=tests_named.story.agent)
+    tests_named.story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 run_tests.py" --environment main', actor=tests_named.story.agent)
+    tests_named.story.expect_text("worker next", "queued", actor=tests_named.worker)
+    tests_named.end_test(tests_named.started[0])
+    tests_named.end_test(tests_named.started[1])
+    assert "pick.py" in tests_named.started_processes()[2].line
+
+
+def test_with_no_test_at_all_the_tasks_close_at_once_and_the_next_task_starts(no_tests_named):
+    no_tests_named.story.expect_success("worker next", actor=no_tests_named.worker)
+    expect_task_states(no_tests_named, "completed", 1, 2, 3)
+    assert no_tests_named.started == [], no_tests_named.started
+    assert no_tests_named.current_task() == 4
+
+
+def test_with_no_test_and_no_next_task_the_tasks_close_and_the_main_agent_hears(phase_only_no_tests):
+    phase_only_no_tests.story.expect_success("worker deliver", actor=phase_only_no_tests.worker)
+    expect_task_states(phase_only_no_tests, "completed", 1, 2, 3)
+    assert any(f"worker merge {phase_only_no_tests.worker.id}" in line for line in phase_only_no_tests.main_agent_lines())
+
+
+def test_a_delivered_phase_that_passes_gives_the_main_agent_one_line_and_the_merge_needs_no_check(delivered_phase):
+    lines = delivered_phase.main_agent_lines()
+    assert len(lines) == 1 and f"worker merge {delivered_phase.worker.id}" in lines[0], lines
+    delivered_phase.repository.checkout(ENVIRONMENT_BRANCH)
+    delivered_phase.story.expect_success(f"worker logs {delivered_phase.worker.id}", actor=delivered_phase.story.agent)
+    delivered_phase.story.expect_success(f"worker merge {delivered_phase.worker.id}", actor=delivered_phase.story.agent)
+    delivered_phase.repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
+
+
+def test_two_workers_in_one_phase_each_reach_its_end_at_their_own_last_task(two_workers):
+    first, second = two_workers
+    first.change_and_prove(TEST_LINE)
+    first.story.expect_text("worker deliver", "queued", actor=first.worker)
+    assert len(first.started) == 1, first.started
+    second.change_and_prove(OTHER_TEST_LINE)
+    second.story.expect_success("worker next", actor=second.worker)
+    assert second.current_task() == 3
+    assert len(first.started) == 1, first.started
+
+
+def test_two_workers_each_run_the_phases_own_test_in_their_own_worktree(new_story, monkeypatch):
+    story = planned_story(new_story, build_test=PHASE_TEST)
+    first = dispatched_story_worker(story, "worker dispatch --model sonnet 1", monkeypatch)
+    second = first.another_worker("worker dispatch --model sonnet 2")
+    first.prove()
+    first.story.expect_success("worker deliver", actor=first.worker)
+    second.prove()
+    second.story.expect_success("worker deliver", actor=second.worker)
+    first.end_all_tests()
+    folders = {process.folder for process in first.started_processes() if process.line == PHASE_TEST}
+    assert folders == {str(first.repository.worktree_folder(first.worker.id)), str(second.repository.worktree_folder(second.worker.id))}, folders

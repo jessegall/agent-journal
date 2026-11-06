@@ -1,6 +1,6 @@
 import json
 import shlex
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from core.base.actor import Actor
 from core.base.driver.command_category import CommandCategory
@@ -8,7 +8,9 @@ from core.base.driver.hook_reply import HookReply
 from core.base.driver.tool_type import ToolType
 from core.base.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.processes.models.process import Process
 from core.testing.hook_samples import HookSamples
+from core.testing.line_outcome import LineOutcome
 from core.testing.shell_part import ShellPart
 from core.testing.story import Story
 from tests.stories.core.modules.processes.support.process_samples import install_runner
@@ -20,19 +22,21 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import G
 from tests.stories.suites.coding.modules.workers.test_queue import ended, recording_launch
 
 PLAN_DISPATCH = "worker dispatch --model sonnet --plan 1"
+PHASE_DISPATCH = "worker dispatch --model sonnet --plan 1 --phase 1"
 OUTSIDE_DISPATCH = "worker dispatch --model sonnet 1 2"
 TEST_LINE = "pytest tests/cart.py"
 OTHER_TEST_LINE = "pytest tests/totals.py"
 TEST_ALIAS = "cart-test"
 
 
-def planned_story(new_story, approve: bool = True):
+def planned_story(new_story, approve: bool = True, build_test: str = ""):
     """Plan 1 with phase Build holding the open tasks 1 (Fix the cart), 2 and 3, and phase Ship holding task 4."""
     story = new_story(fixture=OrchestratorWithOpenTask)
     UserJoined().steps(story)
     repository_environment(story)
     story.run('plan make "Rebuild the cart" --environment main')
-    story.run('phase make --plan 1 "Build"')
+    test_flag = f' --test "{build_test}"' if build_test else ""
+    story.expect_success(f'phase make --plan 1 "Build"{test_flag}')
     story.run('phase make --plan 1 "Ship"')
     story.run("phase place 1 --phase 1")
     for title, phase in (("Tax", 1), ("Totals", 1), ("Release", 2)):
@@ -94,13 +98,33 @@ class StoryWorker:
         return json.loads(self.story.run("worker status --json", actor=self.worker).output_text)["current_task"]["id"]
 
     def change_and_prove(self, test_line: str = "", point: int = 1) -> None:
+        outcome = self.prove(test_line, point)
+        assert outcome.code == 0, outcome.output_text
+
+    def prove(self, test_line: str = "", point: int = 1) -> LineOutcome:
         self.repository.changed(self.worker.id, "cart.py", CART_CHANGE)
         test_flag = f' --test "{test_line}"' if test_line else ""
-        proof = f'proof make {point} --task {self.current_task()} "cart.py:1, the cart total"{test_flag}'
-        self.story.expect_success(proof, f"point: {point}", actor=self.worker)
+        return self.story.run(f'proof make {point} --task {self.current_task()} "cart.py:1, the cart total"{test_flag}', actor=self.worker)
+
+    def prove_and_move_on(self, test_line: str = "") -> LineOutcome:
+        self.prove(test_line)
+        return self.story.run("worker next", actor=self.worker)
 
     def end_test(self, process_id: int, code: int = 0) -> None:
         ended(self.story, process_id, code)
+
+    def end_all_tests(self) -> None:
+        ended_count = 0
+        while ended_count < len(self.started):
+            self.end_test(self.started[ended_count])
+            ended_count += 1
+
+    def started_processes(self) -> tuple[Process, ...]:
+        return tuple(self.story.row(Process, process_id) for process_id in self.started)
+
+    def another_worker(self, dispatch: str) -> "StoryWorker":
+        worker = dispatched_worker(self.story, dispatch)
+        return replace(self, worker=worker, session=worker_session(self.story, worker))
 
     def main_agent_lines(self) -> tuple[str, ...]:
         return lines_of_agent(self.story, self.story.agent)[self.lines_before_work:]
@@ -129,8 +153,8 @@ def dispatched_story_worker(story: Story, dispatch: str, monkeypatch) -> StoryWo
     return StoryWorker(story, repository, worker, worker_session(story, worker), started, len(lines_of_agent(story, story.agent)))
 
 
-def worker_on_plan(new_story, monkeypatch) -> StoryWorker:
-    return dispatched_story_worker(planned_story(new_story), PLAN_DISPATCH, monkeypatch)
+def worker_on_plan(new_story, monkeypatch, dispatch: str = PLAN_DISPATCH, build_test: str = "") -> StoryWorker:
+    return dispatched_story_worker(planned_story(new_story, build_test=build_test), dispatch, monkeypatch)
 
 
 def worker_outside_plan(new_story, monkeypatch) -> StoryWorker:
