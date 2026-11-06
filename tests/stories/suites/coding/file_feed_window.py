@@ -3,7 +3,7 @@ import json
 import pytest
 
 from core.base.file_access import FileAccess
-from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
@@ -12,7 +12,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import r
 
 @pytest.fixture
 def file_feed_server(new_story):
-    story = new_story(fixture=BuilderStarted)
+    story = new_story(fixture=BuilderWithUser)
     repository = repository_environment(story)
     file = repository.folder / "cart.py"
     FileAccess.shared().write(file, "TOTAL = 1\n")

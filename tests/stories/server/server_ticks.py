@@ -28,15 +28,35 @@ def test_the_handlers_the_modules_declare_start_at_their_own_pace(new_story):
     expect_phone_notices_intervals(intervals, (60, True))
 
 
-def test_a_slow_tick_says_so_in_the_chat_when_the_developer_option_is_on(new_story):
+def test_a_slow_tick_shows_a_warning_mark_and_tells_the_main_agent_when_the_developer_options_are_on(new_story):
     story = new_story(fixture=BuilderWithUser)
     tools = story.container.get(PerformanceTools)
     tools.run(SlowTickTool, 51)
-    story.expect_no_text("message list --environment main", "over its limit")
+    story.run_listeners()
+    story.expect_no_text("chat-mark main --environment main --json", "over its limit")
     story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)
     story.expect_success("setting set journal.core.developer.tools.slow-clock-ticks true --project", actor=story.user)
     tools.run(SlowTickTool, 51)
-    story.expect_text("message list --environment main", "A tick of the journal's clock cost 51 points")
+    story.run_listeners()
+    story.expect_text("chat-mark main --environment main --json", "A tick of the journal's clock cost 51 points", "tick costly")
+    story.expect_no_text("message list --environment main", "over its limit")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "the journal failed in clock tick", "cost 51 points")
+
+
+def test_a_slow_tick_shows_no_mark_with_its_option_off_and_no_line_with_errors_to_the_agent_off(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    tools = story.container.get(PerformanceTools)
+    story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)
+    story.expect_success("setting set journal.core.developer.tools.slow-clock-ticks false --project", actor=story.user)
+    tools.run(SlowTickTool, 52)
+    story.run_listeners()
+    story.expect_no_text("chat-mark main --environment main --json", "52 points")
+    story.expect_success("setting set journal.core.developer.tools.slow-clock-ticks true --project", actor=story.user)
+    story.expect_success("setting set journal.core.developer.tools.exception-lines false --project", actor=story.user)
+    tools.run(SlowTickTool, 53)
+    story.run_listeners()
+    story.expect_text("chat-mark main --environment main --json", "53 points")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", "53 points")
 
 
 def expect_phone_notices_intervals(intervals, expected) -> None:

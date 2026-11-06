@@ -12,11 +12,12 @@ from core.base.driver.nudge_type import NudgeType
 @dataclass(frozen=True)
 class RuleAnswer:
     """What one driver rule says about a hook: nothing, nudges, a refusal or a new input for the tool, with
-    the commands the journal runs for it."""
+    the commands the journal runs for it, and the commands it runs only when no rule refused the hook."""
 
     refusal: str = ""
     nudges: Sequence[Nudge] = ()
     commands: Sequence[Command[object]] = ()
+    commands_if_allowed: Sequence[Command[object]] = ()
     last: bool = False
     ends_layer: bool = False
     updated_input: Mapping[str, object] = field(default_factory=dict[str, object])
@@ -59,6 +60,9 @@ class RuleAnswer:
 
     def running(self, *commands: Command[object]) -> "RuleAnswer":
         return replace(self, commands=[*self.commands, *commands])
+
+    def running_if_allowed(self, *commands: Command[object]) -> "RuleAnswer":
+        return replace(self, commands_if_allowed=[*self.commands_if_allowed, *commands])
 
     def rewriting_after_commands(self, build: Callable[[Sequence[object]], Mapping[str, object]]) -> "RuleAnswer":
         return replace(self, input_after_commands=build)

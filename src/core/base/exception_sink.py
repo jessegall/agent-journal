@@ -1,3 +1,6 @@
+CLOCK_TICK_SOURCE = "clock tick"
+
+
 class ExceptionSink:
     """Where an exception goes besides the error log file; this one keeps nothing, and a module that shows
     exceptions replaces it."""

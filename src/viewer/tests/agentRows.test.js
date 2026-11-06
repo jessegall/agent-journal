@@ -534,3 +534,16 @@ test("a worker with nothing started takes the first task queued for it as its jo
     const element = await mounted({render: () => h(AgentCard, {row: worker, facts: {job_enabled: true, task_id: null, task_title: "", tasks: [{id: 2, title: "Print the receipt", state: "open"}]}})}, context(lines));
     expect(element.querySelector("[data-agent-job]").textContent).toBe("Print the receipt");
 });
+
+
+test("a card says Blocked with its reason when the facts name one, and nothing when the agent is only held for a moment", async () => {
+    const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null, state: "running"};
+    const lines = {"usage tool --agent 4": {ok: true, value: {tool: "", note: ""}}};
+    const shown = async (facts) => mounted({render: () => h(AgentCard, {row: worker, facts: {job_enabled: true, tasks: [], ...facts}})}, context(lines));
+    const stuck = await shown({state: "blocked", blocked_reason: "its task is blocked"});
+    expect(stuck.querySelector(".agent-dot").dataset.state).toBe("blocked");
+    expect(stuck.querySelector(".agent-work-status").textContent).toBe("Blocked: its task is blocked");
+    const held = await shown({state: ""});
+    expect(held.querySelector(".agent-dot").dataset.state).toBe("running");
+    expect(held.querySelector(".agent-work-status")).toBeNull();
+});
