@@ -136,13 +136,12 @@ def test_s10_a_key_the_journal_stops_raising_stays_on_shows_on_the_card_and_othe
 
 def test_s11_a_renamed_key_keeps_being_heard_and_the_card_shows_what_it_is_called_now(new_story):
     story = event_plugin_story(new_story, {"event": FORMER_NOTE_CREATED, "commit": "see.sh"}, modules=[NOTES])
+    expect_listed(plugin_page(story).card(), key=FORMER_NOTE_CREATED, form="commit", state="renamed", current_key=NOTE_CREATED)
     story.expect_success('event-note make "A note"', actor=story.user)
     story.run_listeners()
     calls = script_calls(story, "see.sh")
     story.expect_rows(len(calls) == 1)
     story.expect_rows(calls[0]["event"] == NOTE_CREATED)
-    page = plugin_page(story)
-    expect_listed(page.card(), key=FORMER_NOTE_CREATED, form="commit", state="renamed", current_key=NOTE_CREATED)
 
 
 def test_s12_an_upgrade_that_changes_what_it_listens_to_shows_new_and_no_longer_lines(event_page):

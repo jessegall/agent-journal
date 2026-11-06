@@ -112,7 +112,7 @@ def test_s25_a_script_that_never_ends_shows_on_the_card_and_switching_off_stops_
     running = subprocess.Popen([str(client), *SECOND_JOB_LINE], env=journal.environment(), cwd=journal.home.folder.parent, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     try:
         assert "started" in wait_for_line(started, running)
-        assert any(row["form"] == "guard" and row["running_since"] for row in page.card()), page.card()
+        assert any(row["form"] == "guard" and row["started_at"] for row in page.card()), page.card()
         page.switch_off()
         stdout, stderr = running.communicate(timeout=TIMEOUT_SECONDS)
     finally:

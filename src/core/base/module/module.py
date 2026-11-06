@@ -65,6 +65,7 @@ class Module:
     listeners: ClassVar[list[ListenerClass]] = []
     file_events: ClassVar[list[str]] = []
     former_event_keys: ClassVar[dict[str, str]] = {}
+    plugin_moments: ClassVar[list[str]] = []
     removal: ClassVar[type[Migration] | None] = None
     bindings: ClassVar[dict[type, type]] = {}
     suites: ClassVar[list[type[Suite]]] = []
