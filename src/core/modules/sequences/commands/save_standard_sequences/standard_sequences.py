@@ -55,7 +55,7 @@ PLAN_REVIEW_APPLYING = Sequence(
     steps=(
         f"Wait for the reviewers: {PLAIN_WRITING}Read what each reviewer finds as it comes back, noting every finding with the phase it belongs in; you may work on other files meanwhile",
         "Put the findings into the plan: Put each finding into the plan: a new task with `journal task make` placed with `journal phase place <task> --phase <phase>`, or a wider brief with `journal task edit <n> --brief \"<brief>\"`. File edits wait until this step is done",
-        "Ready the plan: Compile the findings into one report with `journal report make \"<title>\" --abstract \"<what it found>\" --file <path>`. Then `journal plan ready <plan n>`, and tell the user in one or two plain lines what the reviews found, with the report's reference like report 3",
+        "Ready the plan: Compile the findings into one report with `journal report make \"<title>\" --abstract \"<what it found>\" --file <path>`. Then `journal plan reviewed <plan n>`, and tell the user in one or two plain lines what the reviews found, with the report's reference like report 3",
     ),
 )
 INSTRUCTION_FILES_CHECK = Sequence(

@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"testing"
 )
 
@@ -169,5 +170,35 @@ func TestWorkerReadLimit(t *testing.T) {
 		if err := reads(path); err != nil {
 			t.Fatalf("a worker could not read %s: %v", path, err)
 		}
+	}
+}
+
+func TestWorkerReadLimitOpensALibraryLinkedLowerInTheWorktree(t *testing.T) {
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	main, worktree := filepath.Join(root, "main"), filepath.Join(root, "worktree")
+	library, gitFolder := filepath.Join(main, "src", "viewer", "node_modules"), filepath.Join(root, "worktree-git")
+	for _, folder := range []string{library, filepath.Join(main, ".journal"), filepath.Join(worktree, "src", "viewer"), gitFolder} {
+		if err := os.MkdirAll(folder, 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.Symlink(library, filepath.Join(worktree, "src", "viewer", "node_modules")); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(worktree, ".git"), []byte("gitdir: "+gitFolder+"\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(gitFolder, worktreeExcludeFile), []byte("/src/viewer/node_modules\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	limit, err := workerReadLimit(worktree, filepath.Join(main, ".journal"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Contains(limit.Readable, library) {
+		t.Fatalf("the library is not readable: %v", limit.Readable)
 	}
 }

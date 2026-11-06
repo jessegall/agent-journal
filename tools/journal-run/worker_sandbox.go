@@ -15,6 +15,9 @@ type readLimit struct {
 
 // workerReadLimit denies the main checkout, which holds the worktree, and keeps what a worker's programs run from:
 // the worktree, the shared git store, the rules the judge reads, the journal's programs and linked libraries.
+// The file in a worktree's git folder where the journal lists what it placed there, named in worktree_git.py.
+const worktreeExcludeFile = "journal-exclude"
+
 func workerReadLimit(worktree, journalHome string) (readLimit, error) {
 	resolved, err := filepath.EvalSymlinks(worktree)
 	if err != nil {
@@ -40,7 +43,36 @@ func workerReadLimit(worktree, journalHome string) (readLimit, error) {
 			readable = append(readable, target)
 		}
 	}
-	return readLimit{Denied: main, Readable: readable}, nil
+	return readLimit{Denied: main, Readable: append(readable, excludedLinkTargets(resolved)...)}, nil
+}
+
+// excludedLinkTargets are the folders that library links lower in the worktree point at: the journal lists every
+// linked library in the worktree's own exclude file, as /src/viewer/node_modules.
+func excludedLinkTargets(worktree string) []string {
+	link, err := os.ReadFile(filepath.Join(worktree, ".git"))
+	if err != nil {
+		return nil
+	}
+	gitFolder := strings.TrimSpace(strings.TrimPrefix(string(link), "gitdir:"))
+	if !filepath.IsAbs(gitFolder) {
+		gitFolder = filepath.Join(worktree, gitFolder)
+	}
+	excluded, err := os.ReadFile(filepath.Join(gitFolder, worktreeExcludeFile))
+	if err != nil {
+		return nil
+	}
+	var targets []string
+	for _, line := range strings.Split(string(excluded), "\n") {
+		path := filepath.Join(worktree, strings.TrimPrefix(strings.TrimSpace(line), "/"))
+		info, err := os.Lstat(path)
+		if err != nil || info.Mode()&os.ModeSymlink == 0 {
+			continue
+		}
+		if target, err := filepath.EvalSymlinks(path); err == nil {
+			targets = append(targets, target)
+		}
+	}
+	return targets
 }
 
 func workerFolders(worktree, journalHome string) ([]string, error) {

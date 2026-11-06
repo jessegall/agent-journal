@@ -350,7 +350,7 @@ function followScroll() {
     if (atTop.value && scroller.value) pageOlder();
     if (!scroller.value) return;
     const {scrollTop, scrollHeight, clientHeight} = scroller.value;
-    atFoot = scrollHeight - scrollTop - clientHeight < FOOT_PIXELS;
+    atFoot = scrollHeight - scrollTop - clientHeight < FOOT_PIXELS || (atFoot && scrollTop >= lastTop);
     awayFromFoot.value = !atFoot;
     if (atFoot) arrived.value = 0;
     const opening = dockOpening({top: scrollTop, before: lastTop, height: scrollHeight, shown: clientHeight});
