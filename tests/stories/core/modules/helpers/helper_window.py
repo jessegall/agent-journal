@@ -1,6 +1,6 @@
 from core.base.database.database import Database
 from core.base.viewer.person_lines import PERSON_LINES
-from core.modules.helpers.support.helper_settings import HELPER_LIMIT
+from core.modules.helpers.support.helper_settings import HELPER_RUN_LIMIT
 from core.testing.fake_launcher import FakeLauncher
 from core.modules.viewer.migrations.m003_helpers_window_key import HelpersWindowKeyMigration
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, StartedHelper, the_helper
@@ -68,7 +68,7 @@ def test_a_start_with_no_main_agent_says_what_to_do(new_story):
 def test_a_start_at_the_limit_says_so(new_story):
     story = new_story(fixture=StartedHelper)
     launcher = FakeLauncher(story.home.socket("launcher"))
-    story.run(f"setting set {HELPER_LIMIT} 1 --project", actor=story.user)
+    story.run(f"setting set {HELPER_RUN_LIMIT} 1 --project", actor=story.user)
     story.expect_text("helper availability --environment main", "All 1 helpers are running", actor=story.user)
     launcher.server.close()
 

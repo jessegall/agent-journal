@@ -10,7 +10,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.helpers.support.allowed_models import AllowedModels
-from core.modules.helpers.support.helper_settings import HELPER_LIMIT
+from core.modules.helpers.support.helper_settings import HELPER_RUN_LIMIT
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
@@ -42,7 +42,7 @@ class HelperLimits:
 
     def checked_slot(self, environment_id: int) -> None:
         running = tuple(self.queries.query(Agent).filter(role=AgentRole.HELPER).matching(IsNull("ended_at")).all_rows())
-        limit = self.settings.number(HELPER_LIMIT)
+        limit = self.settings.number(HELPER_RUN_LIMIT)
         if len(running) >= limit:
             names = ", ".join(f"agent:{helper.id}" for helper in running)
             raise Refusal(f"{limit} helpers run here: {names}", self.next_step_text())

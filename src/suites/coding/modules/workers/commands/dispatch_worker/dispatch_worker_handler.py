@@ -29,7 +29,7 @@ from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_
 from suites.coding.modules.workers.commands.cancel_worker_opening.cancel_worker_opening import CancelWorkerOpening
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
-from suites.coding.modules.workers.support.worker_settings import WORKER_LIMIT
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
 class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     """Starts a worker: its agent row, a worktree cut from the environment's branch, its first task and the
@@ -56,9 +56,9 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             if listed.state is not TaskState.OPEN:
                 raise Refusal(f"task {listed.id} is {listed.state.value}", "a worker is dispatched to an open task")
         environment = self.environments.find(task.environment_id)
-        worker_limit = self.settings.number(WORKER_LIMIT)
+        worker_limit = self.settings.number(WORKER_RUN_LIMIT)
         if len(self.worktrees.open_worktrees()) >= worker_limit:
-            raise Refusal(f"{worker_limit} workers are out already", "merge or release one first, or raise journal.suites.coding.workers.worker-limit")
+            raise Refusal(f"{worker_limit} workers are out already", "merge or release one first")
         caller = self.rows.find(Agent, context.actor.id)
         program = command.program or (caller.program if caller is not None else "")
         if not program:

@@ -8,7 +8,7 @@ from core.modules.plans.queries.plan_query import PlanQuery
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_nudges import APPROVED_PLAN_WAIT
-from suites.coding.modules.workers.support.worker_settings import WORKER_LIMIT
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
 
 class ApprovedPlanStopRule(DriverRule):
@@ -24,7 +24,7 @@ class ApprovedPlanStopRule(DriverRule):
         self.plans, self.worktrees, self.settings = plans, worktrees, settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if len(self.worktrees.open_worktrees()) >= self.settings.number(WORKER_LIMIT):
+        if len(self.worktrees.open_worktrees()) >= self.settings.number(WORKER_RUN_LIMIT):
             return RuleAnswer.allowed("all worker places are occupied")
         plan = self.plans.filter(state=PlanState.APPROVED).oldest().first()
         if plan is None:

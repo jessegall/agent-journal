@@ -43,7 +43,7 @@ test("the two modes show as version 4's segmented buttons, the current one on, a
 });
 
 test("the settings open under the caret, and a change sets the setting", async () => {
-    const {element, runs} = await mount({values: {"journal.suites.coding.workers.worker-limit": 3}});
+    const {element, runs} = await mount({values: {"journal.suites.coding.workers.worker-run-limit": 3}});
     expect(element.querySelector("[data-work-menu]")).toBeNull();
     element.querySelector("[data-work-settings]").click();
     await settled();
@@ -52,11 +52,11 @@ test("the settings open under the caret, and a change sets the setting", async (
     limit.value = "4";
     limit.dispatchEvent(new Event("change"));
     await settled();
-    expect(runs).toEqual(["setting set journal.suites.coding.workers.worker-limit 4 --environment main"]);
+    expect(runs).toEqual(["setting set journal.suites.coding.workers.worker-run-limit 4 --environment main"]);
 });
 
 test("the limit is read for this environment each time the settings open", async () => {
-    const values = {"journal.suites.coding.workers.worker-limit": 4};
+    const values = {"journal.suites.coding.workers.worker-run-limit": 4};
     const {element, context} = await mount({values});
     const reads = [];
     const read = context.read;
@@ -64,21 +64,21 @@ test("the limit is read for this environment each time the settings open", async
         reads.push(line);
         return read(line);
     };
-    values["journal.suites.coding.workers.worker-limit"] = 6;
+    values["journal.suites.coding.workers.worker-run-limit"] = 6;
     element.querySelector("[data-work-settings]").click();
     await settled();
-    expect(reads).toContain("setting show journal.suites.coding.workers.worker-limit --environment main");
+    expect(reads).toContain("setting show journal.suites.coding.workers.worker-run-limit --environment main");
     expect(element.querySelector("[data-work-menu] input").value).toBe("6");
 });
 
 test("a setting event reads the limit again", async () => {
-    const values = {"journal.suites.coding.workers.worker-limit": 4};
+    const values = {"journal.suites.coding.workers.worker-run-limit": 4};
     const followed = [];
     const {element} = await mount({values, follow: (patterns, handler) => followed.push({patterns, handler})});
     element.querySelector("[data-work-settings]").click();
     await settled();
     expect(element.querySelector("[data-work-menu] input").value).toBe("4");
-    values["journal.suites.coding.workers.worker-limit"] = 6;
+    values["journal.suites.coding.workers.worker-run-limit"] = 6;
     followed.find((one) => one.patterns.includes("setting.*")).handler({event: "setting.update"});
     await settled();
     expect(element.querySelector("[data-work-menu] input").value).toBe("6");

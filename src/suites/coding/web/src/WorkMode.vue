@@ -5,7 +5,7 @@ import {Icon, Segmented, Switch, WindowRoom, useOutside, useWindow} from "@journ
 // the coding suite's part of the top bar, as version 4's status bar drew it: the auto switch, the two work modes and the settings behind them
 const AUTO_MODE = "journal.suites.coding.auto-mode";
 const DISPATCHES = "journal.suites.coding.workers.builder-dispatches-workers";
-const WORKER_LIMIT = "journal.suites.coding.workers.worker-limit";
+const WORKER_RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit";
 const MODES = [
     {key: "coding.builder", label: "Builder", tip: {title: "Builder", line: "The agent writes code and assigns work to workers when useful."}},
     {key: "coding.orchestrator", label: "Orchestrator", tip: {title: "Orchestrator", line: "The agent plans, hands the work to workers, then reviews and merges it; it writes code itself only where no worker can."}},
@@ -31,7 +31,7 @@ async function load() {
     if (driver) mode.value = driver.key;
     auto.value = (await settingValue(AUTO_MODE)) !== false;
     dispatches.value = (await settingValue(DISPATCHES)) !== false;
-    limit.value = Number((await settingValue(WORKER_LIMIT)) ?? 2);
+    limit.value = Number((await settingValue(WORKER_RUN_LIMIT)) ?? 2);
 }
 
 async function run(words) {
@@ -72,7 +72,7 @@ async function toggleDispatches() {
 
 async function changeLimit(event) {
     const value = Number(event.target.value);
-    if (await setSetting(WORKER_LIMIT, value)) limit.value = value;
+    if (await setSetting(WORKER_RUN_LIMIT, value)) limit.value = value;
 }
 
 // the limit and the switches show what is in force for this environment now, so a change made anywhere, or since the last read, shows

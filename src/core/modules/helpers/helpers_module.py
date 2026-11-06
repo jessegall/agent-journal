@@ -1,3 +1,4 @@
+from core.modules.helpers.migrations.m001_helper_limit_key import HelperLimitKeyMigration
 from core.base.module.module import Module
 from core.modules.helpers.commands.end_helper_job.end_helper_job_handler import EndHelperJobHandler
 from core.modules.helpers.commands.send_helper.send_helper_handler import SendHelperHandler
@@ -34,6 +35,7 @@ class HelpersModule(Module):
     seed_reason = "it keeps no rows of its own yet"
     move_reason = "version 4 had no helpers"
     requires_core = ">=5,<6"
+    migrations = [HelperLimitKeyMigration]
     dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers"]
     settings = HELPER_SETTINGS
     handlers = [StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler]

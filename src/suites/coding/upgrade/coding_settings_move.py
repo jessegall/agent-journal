@@ -3,7 +3,7 @@ import json
 from core.modules.settings.upgrade.settings_move import FEATURE_FLAG_REASON, SettingsMove
 
 RENAMED = {
-    "workers.most_out": "journal.suites.coding.workers.worker-limit",
+    "workers.most_out": "journal.suites.coding.workers.worker-run-limit",
     "workers.builder_may_dispatch": "journal.suites.coding.workers.builder-dispatches-workers",
     "workers.command_kinds": "journal.suites.coding.worker-command-types",
 }
