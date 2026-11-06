@@ -1,6 +1,7 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
+from core.testing.helper_expectation import HelperExpectation
 from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
@@ -57,16 +58,13 @@ class OrchestratorWithOpenTask(StoryFixture):
         story.expect_text(lines.CURRENT_SUITE, "main: coding.orchestrator")
 
 
-class HelperUnderBuilder(StoryFixture):
+class HelperUnderBuilder(HelperExpectation, StoryFixture):
     """The builder's session s-1 has a helper with session sub-1 under it: story.helper."""
 
     parent = BuilderStarted
 
     def steps(self, story: Story) -> None:
         story.helper = Actor(story.new_row_id(f"agent start sub-1 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
-
-    def expect(self, story: Story) -> None:
-        story.expect_success(f"agent show {story.helper.id}", "role: helper", f"parent_id: {story.agent.id}")
 
 
 class BuilderWithStartedTask(StoryFixture):

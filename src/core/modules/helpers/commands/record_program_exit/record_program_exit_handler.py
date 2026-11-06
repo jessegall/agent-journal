@@ -7,7 +7,7 @@ from core.base.command.handler import Handler
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
-from core.modules.agents.commands.record_parent_report.record_parent_report import RecordParentReport
+from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.drivers.models.agent_line import AgentLine
@@ -20,9 +20,9 @@ from core.modules.helpers.support.helper_job_source import HELPER_JOB_SOURCE
 
 
 class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
-    """Ends the row of an agent whose program exited, so a program that fires no last hook still ends; an open
-    job ends through a report, with what the transcript holds or why the program ended. It reads the terminal log
-    and the transcript outside any transaction."""
+    """Ends the row of an agent whose program exited, so a program that fires no last hook still ends; an
+    open job ends through a report, with what the transcript holds or why the program ended. It reads the
+    terminal log and the transcript outside any transaction."""
 
     command = RecordProgramExit
     transactional = False

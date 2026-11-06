@@ -3,7 +3,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.agents.commands.record_parent_report.record_parent_report import RecordParentReport
+from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.report_nudges import REPORT_FIELD
 from core.modules.tasks.queries.task_query import TaskQuery

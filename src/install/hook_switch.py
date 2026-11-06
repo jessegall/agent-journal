@@ -67,5 +67,5 @@ class HookSwitch:
         except (OSError, subprocess.TimeoutExpired):
             return False
 
-    def settings(self, path: Path) -> dict[object, object]:
+    def settings(self, path: Path) -> dict[str, object]:
         return ProgramHooks.read(path)

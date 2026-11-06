@@ -17,10 +17,10 @@ ENDED_KEPT_SECONDS = 30 * 24 * 3600
 class StatusFiles:
     """The status files the hook program keeps of each session's status line, read for usage: one session's
     report, and the plan's windows. The windows belong to the account: they come from the newest file of an
-    open session that names them; with no session open, from plan.json, where one that ended left what it named,
-    so a session under a new account never shows the old account's figure. The file
-    of a session that ended moves to a folder of its own for 30 days, so its card keeps its cost and the scan
-    of open sessions does not read it."""
+    open session that names them; with no session open, from plan.json, where one that ended left what it
+    named, so a session under a new account never shows the old account's figure. The file of a session that
+    ended moves to a folder of its own for 30 days, so its card keeps its cost and the scan of open sessions
+    does not read it."""
 
     def __init__(self, home: JournalHome) -> None:
         self.folder = home.status_folder

@@ -12,7 +12,7 @@ from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, installed_s
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
-GIT_FETCH_SAMPLE = HookSamples.shell("git fetch", ShellPart("git", CommandCategory.VERSION_CONTROL, ["fetch"]))
+GIT_REMOTE_SAMPLE = HookSamples.shell("git fetch", ShellPart("git", CommandCategory.VERSION_CONTROL, ["fetch"]))
 UPLOAD_SAMPLE = HookSamples.shell("git push", ShellPart("git", CommandCategory.VERSION_CONTROL, ["push"]))
 
 
@@ -42,18 +42,18 @@ def mark_rules_loaded(story, digest):
 def test_a_plugin_is_told_the_skills_the_agent_has_loaded(new_story):
     story = installed_story(new_story)
     mark_rules_loaded(story, skill_digest(story, "sample-rules"))
-    story.expect_hook_allowed("s-1", GIT_FETCH_SAMPLE, "[plugin sample] the rules are loaded")
+    story.expect_hook_allowed("s-1", GIT_REMOTE_SAMPLE, "[plugin sample] the rules are loaded")
 
 
 def test_a_skill_the_agent_has_not_loaded_is_not_listed(new_story):
     story = installed_story(new_story)
-    story.expect_hook_allowed("s-1", GIT_FETCH_SAMPLE, "[plugin sample] the rules are not loaded")
+    story.expect_hook_allowed("s-1", GIT_REMOTE_SAMPLE, "[plugin sample] the rules are not loaded")
 
 
 def test_a_skill_read_in_an_older_text_is_not_listed(new_story):
     story = installed_story(new_story)
     mark_rules_loaded(story, "an-older-text")
-    story.expect_hook_allowed("s-1", GIT_FETCH_SAMPLE, "[plugin sample] the rules are not loaded")
+    story.expect_hook_allowed("s-1", GIT_REMOTE_SAMPLE, "[plugin sample] the rules are not loaded")
 
 
 def test_a_switched_off_plugin_takes_its_skills_away(new_story):

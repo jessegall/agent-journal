@@ -3,8 +3,8 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 
 from core.modules.sequences.models.sequence import Sequence
-from core.modules.sequences.support.sequence_trigger import ROW_TRIGGER
-from core.modules.sequences.support.sequence_triggers import SequenceTriggers
+from core.modules.sequences.models.support.sequence_trigger import ROW_TRIGGER
+from core.modules.sequences.models.support.sequence_triggers import SequenceTriggers
 from core.modules.sequences.support.triggered_sequence import TriggeredSequence
 
 

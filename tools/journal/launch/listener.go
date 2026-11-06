@@ -214,13 +214,13 @@ func forwarded(connection net.Conn, request WorkerRequest, previous string) {
 	if previous == "" {
 		return
 	}
-	earlier, err := net.DialTimeout("unix", previous, socketDialLimit)
+	previousConnection, err := net.DialTimeout("unix", previous, socketDialLimit)
 	if err != nil {
 		return
 	}
-	defer earlier.Close()
-	if json.NewEncoder(earlier).Encode(request) == nil {
-		_, _ = io.Copy(connection, earlier)
+	defer previousConnection.Close()
+	if json.NewEncoder(previousConnection).Encode(request) == nil {
+		_, _ = io.Copy(connection, previousConnection)
 	}
 }
 

@@ -6,7 +6,7 @@ from core.base.database.nesting_error import NestingError
 from core.base.database.point_tally import PointTally
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
-from core.base.scope.row_owner import RowOwner
+from core.base.row_owner import RowOwner
 
 if TYPE_CHECKING:
     from core.base.database.kept_rows import KeptRows

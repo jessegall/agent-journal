@@ -55,8 +55,8 @@ func OpenTerminalLog(path string) (*TerminalLog, error) {
 		return nil, err
 	}
 	log := &TerminalLog{path: path, file: file, lineCount: len(lines)}
-	if info, statErr := file.Stat(); statErr == nil {
-		log.size = int(info.Size())
+	if stat, statErr := file.Stat(); statErr == nil {
+		log.size = int(stat.Size())
 	}
 	if len(lines) > 0 {
 		log.number, _ = strconv.Atoi(strings.SplitN(lines[len(lines)-1], "\t", 2)[0])

@@ -17,7 +17,7 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.session_rows import SessionRows
 from core.base.page import Page
 from core.base.query.select import Select
-from core.base.scope.row_owner import RowOwner
+from core.base.row_owner import RowOwner
 from core.base.query.unknown_column_error import UnknownColumnError
 
 

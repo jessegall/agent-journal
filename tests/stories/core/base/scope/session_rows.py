@@ -24,7 +24,7 @@ class StartedTaskMark(StoryFixture):
         story.expect_text("chat-mark list", "Task 1")
 
 
-def asked_main_question(story):
+def open_main_question(story):
     story.run(f'question ask "{MAIN_QUESTION}" --options a b', actor=story.agent)
 
 
@@ -34,13 +34,13 @@ def main_hook_call(story):
 
 def test_a_new_main_session_reads_the_question_of_the_session_before_it(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
-    asked_main_question(story)
+    open_main_question(story)
     story.expect_text("question list", MAIN_QUESTION, actor=started_agent(story, "s-2", "main"))
 
 
 def test_a_worker_reads_no_question_of_the_main_agent(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
-    asked_main_question(story)
+    open_main_question(story)
     story.expect_no_text("question list", MAIN_QUESTION, actor=agent_of(story, "s-9"))
 
 
@@ -81,7 +81,7 @@ def test_a_new_main_session_reads_the_chat_marks_of_the_session_before_it(new_st
 
 def test_a_person_reads_the_rows_of_every_agent(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
-    asked_main_question(story)
+    open_main_question(story)
     story.expect_text("question list --environment main", MAIN_QUESTION, actor=story.user)
 
 

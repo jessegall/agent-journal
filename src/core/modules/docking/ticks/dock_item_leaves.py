@@ -18,7 +18,7 @@ class DockItemLeaves:
             return False
         actor = container.get(ModuleActors).actor(MODULE_NAME)
         bus, queries = container.get(Bus), container.get(Queries)
+        docks = {dock.id: dock for dock in queries.query(Dock).find_many(list({item.dock_id for item in items}))}
         for item in items:
-            environment_id = queries.query(Dock).find(item.dock_id).environment_id
-            bus.run(RemoveDockItem(item.id), actor, environment_id=environment_id)
+            bus.run(RemoveDockItem(item.id), actor, environment_id=docks[item.dock_id].environment_id)
         return True

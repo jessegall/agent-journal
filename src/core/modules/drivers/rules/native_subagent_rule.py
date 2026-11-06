@@ -11,9 +11,9 @@ COLLABORATION_PREFIX = "collaboration"
 
 
 class NativeSubagentRule(DeniedToolsRule):
-    """A program's own subagent tool runs a child no rule sees, so it is refused on every program and under every
-    overlay, with the line that starts a helper instead, and so is any tool such a child calls; with no launcher
-    running the agent keeps the work."""
+    """A program's own subagent tool runs a child no rule sees, so it is refused on every program and under
+    every overlay, with the line that starts a helper instead, and so is any tool such a child calls; with
+    no launcher running the agent keeps the work."""
 
     name = "drivers.native-subagent"
     drivers = ["*"]

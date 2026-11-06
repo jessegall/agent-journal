@@ -26,9 +26,10 @@ ENDED = "ended"
 
 class MessagesMove(VersionFourMove):
     """Carries what the user and the agents wrote in version 4 with its number, type, text, environment,
-    reading moment, the message it answers and the agent that wrote it. Version 4 also kept chat cards, marks,
-    reports and notices as messages with a card type in their data: they are not messages, they are dropped and
-    counted by card type, since version 5 makes its chat marks from events. Reactions go onto their message."""
+    reading moment, the message it answers and the agent that wrote it. Version 4 also kept chat cards,
+    marks, reports and notices as messages with a card type in their data: they are not messages, they are
+    dropped and counted by card type, since version 5 makes its chat marks from events. Reactions go onto
+    their message."""
 
     name = "messages"
     reads = ["messages", "reactions"]

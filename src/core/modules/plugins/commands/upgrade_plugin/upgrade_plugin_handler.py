@@ -3,6 +3,7 @@ import shutil
 from core.base.actor import Actor
 from core.base.command.context import Context
 from core.base.command.handler import Handler
+from core.base.file_access import FileAccess
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.plugins.commands.upgrade_plugin.upgrade_plugin import UpgradePlugin
@@ -42,7 +43,7 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
         if not command.confirmed:
             return
         self.steps.check_requirements(manifest, source)
-        self.folders.upgrade_mark(plugin.name).touch()
+        FileAccess.shared().update_timestamp(self.folders.upgrade_mark(plugin.name))
         code = self.folders.code(plugin.name)
         new_code, old_code = code.with_name(code.name + NEW_SUFFIX), code.with_name(code.name + OLD_SUFFIX)
         shutil.rmtree(new_code, ignore_errors=True)

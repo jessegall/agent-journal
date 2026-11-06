@@ -13,9 +13,9 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
 class WorkerTaskCommit:
-    """Commits a worker's worktree for its current task on the latest of its base branch, once each point of the
-    task's brief has a proof; a clash stops the hand-in with the conflict markers in the worktree. It runs before
-    the hand-in's transaction opens, so git's wait holds no write lock."""
+    """Commits a worker's worktree for its current task on the latest of its base branch, once each point of
+    the task's brief has a proof; a clash stops the hand-in with the conflict markers in the worktree. It
+    runs before the hand-in's transaction opens, so git's wait holds no write lock."""
 
     def __init__(self, proofs: ProofQuery, git: WorktreeGit, queries: Queries, bus: Bus) -> None:
         self.proofs, self.git, self.queries, self.bus = proofs, git, queries, bus

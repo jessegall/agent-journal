@@ -10,6 +10,7 @@ from core.modules.messages.migrations.m010_message_hook_indexes import MessageHo
 from core.modules.messages.migrations.m011_message_visibility import MessageVisibilityMigration
 from core.modules.messages.migrations.m014_message_target import MessageTargetMigration
 from core.modules.messages.rules.reply_note_rule import ReplyNoteRule
+from core.modules.messages.commands.record_parent_report.record_parent_report_handler import RecordParentReportHandler
 from core.modules.messages.commands.record_peer_message.record_peer_message_handler import RecordPeerMessageHandler
 from core.modules.messages.migrations.m008_message_peer import MessagePeerMigration
 from core.modules.messages.rules.peer_message_rule import PeerMessageRule
@@ -97,7 +98,7 @@ class MessagesModule(Module):
     views = [AttachedFile, ChatMessage, MainChatMark]
     migrations = [MainMessageTargetsMigration, MessageSessionMigration, MessageTargetMigration, VisibleMessageIndexMigration, MessageReplyIndexMigration, MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration, MessageVisibilityMigration, MessageTypeIndexesMigration]
     guards = [OneReplyPerMessageGuard, QuestionMessageGuard]
-    handlers = [RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler]
+    handlers = [RecordParentReportHandler, RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler]
     driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]
     subcommands = [UnreadReportsSubcommand, AttachmentListSubcommand, CommentMessageSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand]
     windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, skeleton=MESSAGES_ATTACHMENTS_SKELETON, group="project", icon=WindowIcon.FILE, reads=["attachment list"], search=WindowReadSearch("attachment list", "Search file names and their messages", ("name", "message_text"))),

@@ -29,17 +29,17 @@ class HookEvent:
     hook_timestamp_ms: int
     actor: str
     environment: str
-    child_agent: str
     tool: Tool | None
     prompt: str | None
     raw: Mapping[object, object]
     accepts_lines: bool = False
     launch: str = ""
     foreign: tuple[ForeignRun, ...] = ()
+    child_agent: str = ""
 
     @classmethod
     def tick(cls, program: str, session: str, firing: str, hook_timestamp_ms: int, actor: str, environment: str) -> "HookEvent":
-        return cls(HOOK_EVENT_VERSION, program, HookEventName.TICK, session, firing, hook_timestamp_ms, actor, environment, "", None, None, {})
+        return cls(HOOK_EVENT_VERSION, program, HookEventName.TICK, session, firing, hook_timestamp_ms, actor, environment, None, None, {})
 
     @classmethod
     def parsed(cls, data: object) -> "HookEvent":
@@ -59,9 +59,9 @@ class HookEvent:
         if any("answer" not in run for run in mappings(fields["foreign"], "a foreign hook run")):
             raise OldHookRunnerError.detected()
         return cls(HOOK_EVENT_VERSION, text(fields, "program"), HookEventName(event), text(fields, "session"), text(fields, "firing"),
-                   number(fields, "fired_at_ms"), text(fields, "actor"), text(fields, "environment"), str(fields.get("child_agent", "")),
+                   number(fields, "fired_at_ms"), text(fields, "actor"), text(fields, "environment"),
                    Tool.parsed(tool) if tool is not None else None, prompt, mapping(fields.get("raw", {}), "raw"), accepts_lines,
-                   text(fields, "launch"), ForeignRun.parsed_many(fields["foreign"]))
+                   text(fields, "launch"), ForeignRun.parsed_many(fields["foreign"]), str(fields.get("child_agent", "")))
 
     @property
     def is_resume(self) -> bool:

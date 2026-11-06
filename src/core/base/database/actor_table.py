@@ -4,7 +4,7 @@ from core.base.agent_role import AgentRole
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.database.statement import Statement
-from core.base.scope.row_owner import MAIN_AGENT, RowOwner
+from core.base.row_owner import MAIN_AGENT, RowOwner
 
 CORE_ACTOR = Statement("INSERT OR IGNORE INTO actors (id, type, name, created_at, updated_at) VALUES (?, ?, 'core', ?, ?)")
 MODULE_ACTOR = Statement("INSERT OR IGNORE INTO actors (creator_id, type, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")

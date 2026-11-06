@@ -237,7 +237,7 @@ def test_the_viewer_s_feed_stays_in_the_environment_of_the_line(new_story):
 
 
 def row_classes(base):
-    return [found for child in base.__subclasses__() for found in (child, *row_classes(child))]
+    return [subclass for child in base.__subclasses__() for subclass in (child, *row_classes(child))]
 
 
 def test_every_model_with_an_environment_declares_the_scope_or_is_a_stated_exception(new_story):

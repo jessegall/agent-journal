@@ -13,7 +13,7 @@ from core.modules.sequences.commands.support.step_line import StepLine
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.sequence_run import SequenceRun
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
-from core.modules.sequences.support.sequence_guards import SequenceGuards
+from core.modules.sequences.models.support.sequence_guards import SequenceGuards
 
 START, FOLLOW, NEXT, ABANDON, END = "start", "follow", "next", "abandon", "end"
 FINISHED, ABANDONED, ENDED = "finished", "abandoned", "ended"

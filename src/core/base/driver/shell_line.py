@@ -131,5 +131,8 @@ class ShellLine:
     def has_part_running(self, command: str) -> bool:
         return any(part.text.strip("() ") == command or part.text.strip("() ").startswith(f"{command} ") for part in self.parts)
 
+    def includes_text_from(self, fragments: Sequence[str]) -> bool:
+        return any(fragment in self._source_line for fragment in fragments)
+
     def has_part_matching(self, pattern: str) -> bool:
         return any(re.search(pattern, part.text) for part in self.parts)

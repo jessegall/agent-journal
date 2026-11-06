@@ -6,7 +6,7 @@ from core.base.driver.open_row import OpenRow
 from core.base.timestamp import Timestamp
 
 TIMESTAMP = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
-EVENT = HookEvent(1, "claude", "stop", "s1", "f1", 1, "agent", "main", "", None, None, {})
+EVENT = HookEvent(1, "claude", "stop", "s1", "f1", 1, "agent", "main", None, None, {})
 
 
 def test_a_hook_names_its_event_and_the_layer_it_is_asked_for():

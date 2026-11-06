@@ -1,6 +1,6 @@
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.sequence_run import SequenceRun
-from core.modules.sequences.support.sequence_guards import SequenceGuards
+from core.modules.sequences.models.support.sequence_guards import SequenceGuards
 
 FOLLOW_HINT = "run `journal sequence follow`, then `journal sequence next` when done"
 NEXT_HINT = "run `journal sequence next` when done"

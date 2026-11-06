@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.database.statement import Statement
-from core.base.scope.row_owner import RowOwner
+from core.base.row_owner import RowOwner
 
 
 @dataclass(frozen=True)

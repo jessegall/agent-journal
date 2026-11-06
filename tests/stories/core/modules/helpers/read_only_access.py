@@ -51,7 +51,7 @@ def shell(line, *parts, redirects=()):
     return HookSamples.shell(line, *parts, redirects=redirects)
 
 
-def line_of_no_commands():
+def line_without_commands():
     sample = shell("cat a", ShellPart("cat", CommandCategory.READ, ["a"]))
     sample.body["tool"]["shell"]["parts"] = []
     return sample
@@ -97,7 +97,7 @@ def test_a_read_only_helper_never_edits_a_file(new_story, helper_fixture, name, 
     shell("python3 tool.py", part("python3", CommandCategory.PROCESS, "tool.py")),
     shell("python3 -c 'print(1)'", part("python3", CommandCategory.PROCESS, "-c", "print(1)")),
     shell("frobnicate", part("frobnicate", CommandCategory.UNKNOWN)),
-    line_of_no_commands(),
+    line_without_commands(),
     shell("pytest -q", part("pytest", CommandCategory.TEST_RUN, "-q")),
     shell("make all", part("make", CommandCategory.BUILD, "all")),
     shell("curl example.com", part("curl", CommandCategory.NETWORK, "example.com")),

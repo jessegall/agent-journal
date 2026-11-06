@@ -19,7 +19,7 @@ from core.base.model.table import indefinite_article
 from core.base.refusal import Refusal
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.environment_scope import EnvironmentScope
-from core.base.scope.row_owner import RowOwner
+from core.base.row_owner import RowOwner
 from core.base.scope.scope import Scope
 from core.base.scope.scope_opening import ScopeOpening
 
