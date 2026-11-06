@@ -27,10 +27,11 @@ class NudgeLog:
         if not lines:
             return frozenset()
         turn_start = self.turn_start(agent_id)
-        return frozenset((nudge.key, nudge.text) for nudge in lines if self.is_skipped(agent_id, nudge, turn_start, timestamp))
+        records = self.records.agent_rows(agent_id)
+        return frozenset((nudge.key, nudge.text) for nudge in lines if self.is_skipped(agent_id, nudge, turn_start, timestamp, records))
 
-    def is_skipped(self, agent_id: int, nudge: Nudge, turn_start: Timestamp | None, timestamp: Timestamp) -> bool:
-        delivered_at = self.record(agent_id, nudge).last_delivered_at
+    def is_skipped(self, agent_id: int, nudge: Nudge, turn_start: Timestamp | None, timestamp: Timestamp, records: list[NudgeRecord]) -> bool:
+        delivered_at = self.record(agent_id, nudge, records).last_delivered_at
         if delivered_at is None:
             return False
         if nudge.interval and not nudge.interval.has_passed(self.spans, agent_id, delivered_at, timestamp):
@@ -41,14 +42,19 @@ class NudgeLog:
         prompt = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.PROMPT).newest().first()
         return prompt.created_at if prompt is not None else None
 
-    def record(self, agent_id: int, nudge: Nudge) -> NudgeRecord:
-        record = self.records.newest_row(agent_id, nudge.key) if nudge.interval else self.records.newest_text_row(agent_id, nudge.key, nudge.text)
+    def record(self, agent_id: int, nudge: Nudge, records: list[NudgeRecord]) -> NudgeRecord:
+        record = next((row for row in records if row.key == nudge.key and (nudge.interval or row.text == nudge.text)), None)
         return record if record is not None else NudgeRecord(session_agent_id=agent_id, creator_id=0, key=nudge.key, text=nudge.text)
 
     def write(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
-        for nudge in (*answers.delivered_nudges, *answers.refusal_nudges):
-            current = self.record(agent_id, nudge)
+        nudges = (*answers.delivered_nudges, *answers.refusal_nudges)
+        if not nudges:
+            return
+        records = list(self.records.agent_rows(agent_id))
+        for nudge in nudges:
+            current = self.record(agent_id, nudge, records)
             if nudge.interval and current.text != nudge.text:
-                current = self.records.newest_text_row(agent_id, nudge.key, nudge.text) or current
-            self.repository.save_change(current if current.is_saved else None,
+                current = next((row for row in records if row.key == nudge.key and row.text == nudge.text), current)
+            saved = self.repository.save_change(current if current.is_saved else None,
                                         replace(current, creator_id=context.actor.id, text=nudge.text, delivery_count=current.delivery_count + 1, last_delivered_at=context.timestamp), context)
+            records = [saved, *(row for row in records if row.id != saved.id)]
