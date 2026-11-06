@@ -7,6 +7,7 @@ import CloseButton from "../../kit/CloseButton.vue";
 import Icon from "../../kit/Icon.vue";
 import Skeleton from "../../kit/Skeleton.vue";
 import {useResourceEvents} from "../resourceEvents.js";
+import InspectorSections from "../../windows/InspectorSections.vue";
 import RowMoves from "../RowMoves.vue";
 import {agentState, agentTitle, detailRows, finishedWords, givenName, identityParts, rowsOf, stripCells, totalOf} from "./agentView.js";
 import AgentBrief from "./AgentBrief.vue";
@@ -78,6 +79,7 @@ onMounted(load);
                 <AgentBrief :label="row.access === 'read-only' ? 'Instruction' : 'Brief'" :text="facts?.instruction ?? ''" :points="points" />
                 <AgentRecent :moves="inspection.recent" />
                 <AgentFolds :id="id" :read="read" :counts="counts" :loads="loads" :details="detailRows(row, inspection)" />
+                <InspectorSections slot-name="inspector.agent" :row="row" />
             </template>
             <template v-else><Skeleton /></template>
         </div>

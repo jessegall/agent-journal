@@ -14,6 +14,7 @@ export {steppedItem} from "../src/domain/steppedItem.js";
 export {loadStates, stateLabel, stateLook, stateOpenMoves} from "../src/domain/states.js";
 export {wordLabel} from "../src/domain/labels.js";
 export {default as CloseButton} from "../src/kit/CloseButton.vue";
+export {default as InspectorPart} from "./InspectorPart.vue";
 export {default as RowList} from "./RowList.vue";
 export {default as AgentRowList} from "./AgentRowList.vue";
 export {default as Dashboard} from "../src/kit/Dashboard.vue";
@@ -75,7 +76,7 @@ export {OPEN_VIEW, WINDOW_CONTEXT, useWindow} from "./windowContextKey.js";
 export {loadWindowComponent} from "./loadWindowComponent.js";
 
 // the kit's own version: a breaking change to the window context, or a new Vue minor version, is a new major version
-export const KIT_VERSION = "1.1.0";
+export const KIT_VERSION = "1.2.0";
 export const KIT_VUE = "3.5";
 export {withDayLines} from "../src/domain/dayLines.js";
 export {arrivalQueue, arriveAtOnce, depart} from "../src/chat/arrival.js";

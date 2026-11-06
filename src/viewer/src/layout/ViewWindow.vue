@@ -1,5 +1,6 @@
 <script setup>
-import {onMounted, onUnmounted, ref, watchEffect} from "vue";
+import {onMounted, onUnmounted, provide, ref, watchEffect} from "vue";
+import {INSPECTOR_HOST} from "../windows/windowContext.js";
 import Breadcrumb from "../shell/Breadcrumb.vue";
 import SidebarPages from "../shell/SidebarPages.vue";
 import Btn from "../kit/Btn.vue";
@@ -24,6 +25,7 @@ const props = defineProps({
 });
 
 const {catalogue, subscriptions, shellLine, prompts, stop, face} = startWindows(props);
+provide(INSPECTOR_HOST, {catalogue, subscriptions, environment: props.environment, prompts, shellRead: shellLine});
 const {dock} = useViewTab(props.float);
 // the page shown: a click on another page in the sidebar changes only this, so the sidebar, the breadcrumb, the panel, the event stream and the
 // catalogue stay as they are and the window of the page alone is drawn anew; the address and the back button follow it

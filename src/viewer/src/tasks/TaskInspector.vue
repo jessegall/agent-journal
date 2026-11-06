@@ -1,5 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
+import InspectorSections from "../windows/InspectorSections.vue";
 import Btn from "../kit/Btn.vue";
 import BackButton from "../kit/BackButton.vue";
 import Icon from "../kit/Icon.vue";
@@ -143,6 +144,7 @@ defineExpose({openStatus});
                             @priority="setPriority"
                             @select="emit('select', $event)"
                         />
+                        <InspectorSections slot-name="inspector.task" :row="task" />
                     </template>
                     <template #comments>
                         <CommentSide below :comments="textComments.comments.value" :words="textComments.words" @close="tab = 'details'" />

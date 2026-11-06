@@ -7,6 +7,7 @@ export default windowBuild({
     entries: {
         "reviewer": here("./src/reviewer.js"),
         reviewers: here("./src/reviewers.js"),
+        "subject-reviews": here("./src/subject-reviews.js"),
     },
     outDir: here("./dist"),
 });

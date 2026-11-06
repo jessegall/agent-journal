@@ -10,12 +10,11 @@ and then it is followed.
 
 - `journal plan make "<title>" --brief "<goal>"` drafts it; `journal plan edit <n>` changes it.
 - `journal phase make --plan <n> "<title>" --goal "<what is true when done>"` adds a phase; `--checkpoint` where the
-  user should review before the plan goes on. `journal phase move <phase> --to <place>` reorders one.
+  user should look at before the plan goes on. `journal phase move <phase> --to <place>` reorders one.
 - `journal phase place <task> --phase <phase>` puts a task at the end of a phase.
 - `journal task make "<title>" --phase <phase>` makes a task at the end of that phase in one command. A missing phase
   or an ended plan refuses the command and leaves no new task.
-- How thorough a plan is, is in the skill journal-planning; working a critique into a plan is in the skill
-  journal-plan-review-applying. Both are read before `plan make`, `phase make` and `plan reviewed`.
+- How thorough a plan is, is in the skill journal-planning, read before `plan make` and `phase make`.
 - `journal plan ready <n>` when every phase has its tasks. A phase with one task is refused until you give the reason one
   task is enough: `--skip-guard plans.one-task-phase --skip-reason "<why>"`. Only the user approves; `journal plan start <n>`
   begins it.

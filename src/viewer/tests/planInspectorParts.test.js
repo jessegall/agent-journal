@@ -2,7 +2,6 @@ import {createApp, h, nextTick} from "vue";
 import {afterEach, expect, test} from "vitest";
 import PlanInspector from "../src/resource/PlanInspector.vue";
 import PlanLinks from "../src/resource/PlanLinks.vue";
-import PlanReviews from "../src/resource/PlanReviews.vue";
 import PlanTimeline from "../src/resource/PlanTimeline.vue";
 import {settle} from "./support/windowContext.js";
 
@@ -35,18 +34,6 @@ test("the timeline shows each moment with its word, opens the task, and says wha
 test("a plan with no moments says so, and a refused read says why", async () => {
     expect((await drawn(PlanTimeline, {ok: true, value: {events: []}})).textContent).toContain("Nothing has happened");
     expect((await drawn(PlanTimeline, {ok: false, error: "no such plan"})).textContent).toContain("no such plan");
-});
-
-test("review rounds show the plan's reviews only, with their reports", async () => {
-    const rows = [{id: 1, subject_model: "plan", state: "reported", report: "Phase two is too large"}, {id: 2, subject_model: "task", state: "queued", report: ""}];
-    const element = await drawn(PlanReviews, {ok: true, value: {rows}});
-    expect(element.querySelectorAll("[data-plan-review]").length).toBe(1);
-    expect(element.textContent).toContain("Round 1");
-    expect(element.textContent).toContain("Phase two is too large");
-});
-
-test("a plan with no reviews shows no rounds", async () => {
-    expect((await drawn(PlanReviews, {ok: true, value: {rows: []}})).querySelector("[data-plan-reviews]")).toBeNull();
 });
 
 test("the inspector tags a task a worker holds and switches to the timeline", async () => {

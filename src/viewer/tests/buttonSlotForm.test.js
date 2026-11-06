@@ -64,11 +64,11 @@ async function slot(buttons, props = {}) {
     return drawn(ButtonSlot, {name: "row.plan", row: ROW, environment: "main", ...props});
 }
 
-test("the kit exports standalone slots, forms and split buttons at version 1.1.0", () => {
+test("the kit exports standalone slots, forms and split buttons at version 1.2.0", () => {
     expect(KitSlot).toBe(ButtonSlot);
     expect(KitForm).toBe(ButtonForm);
     expect(SplitButton).toBeTruthy();
-    expect(KIT_VERSION).toBe("1.1.0");
+    expect(KIT_VERSION).toBe("1.2.0");
 });
 
 test("the journal's buttons come first, with declaration order preserved in each group", async () => {

@@ -2,6 +2,7 @@ from collections.abc import Sequence
 
 from core.base.bookkeeping.bookkeeping_subcommands import BOOKKEEPING_SUBCOMMANDS
 from core.base.subcommand.default_lines import COMMAND_SUBCOMMANDS, READ_SUBCOMMANDS
+from core.base.module.inspector_slots import InspectorSlots
 from core.base.module.module import Module
 from core.base.module.module_finder import ModuleFinder
 from core.base.module.module_states import modules_book
@@ -14,6 +15,7 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.viewer.person_lines import PERSON_LINES
 from core.base.viewer.viewer_kit import VIEWER_KIT
 from core.base.viewer.registry_lines import RegistryLines
+from core.base.viewer.window_place import WindowPlace
 from core.base.module.window_extensions import WindowExtensions
 from core.base.module.button_command_check import ButtonCommandCheck
 
@@ -38,6 +40,7 @@ class WindowCheck:
         extensions = WindowExtensions(modules)
         owners = {window.name: module.name for module in modules for window in module.windows}
         shipped = {module.name for module in self.finder.default_modules()}
+        inspector_slots = InspectorSlots(modules)
         for module in modules:
             for extension in module.window_extensions:
                 if extension.window not in owners:
@@ -50,7 +53,14 @@ class WindowCheck:
                     problems += [f"{module.name} adds {line} to {extension.window}, which the journal ships" for line in extension.runs]
             for window in map(extensions.extend, module.windows):
                 problems += window.problems(module.name, module.web_folder(), provided)
-        return (*problems, *self.button_problems(modules, shipped))
+                problems += inspector_slots.problems(module, window.name, window.slots)
+        return (*problems, *self.suite_section_problems(modules), *self.button_problems(modules, shipped))
+
+    @staticmethod
+    def suite_section_problems(modules: Sequence[type[Module]]) -> list[str]:
+        sections = {window.name for module in modules for window in module.windows if window.place is WindowPlace.SECTION}
+        return [f"suite {suite.name} names the section {name}, which an inspector draws and no pane offers"
+                for module in modules for suite in module.suites for name in suite.windows if name in sections]
 
     def button_problems(self, modules: Sequence[type[Module]], shipped: set[str]) -> list[str]:
         buttons = self.mark_dock_lines(modules, shipped)

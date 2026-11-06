@@ -9,6 +9,7 @@ import Skeleton from "../kit/Skeleton.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import QuickCommentBar from "../kit/QuickCommentBar.vue";
 import {useTextComments} from "../composables/textComments.js";
+import {useResourceEvents} from "./resourceEvents.js";
 import RowMoves from "./RowMoves.vue";
 import CommentSide from "./CommentSide.vue";
 import PlanDetails from "./PlanDetails.vue";
@@ -40,6 +41,7 @@ watch(() => props.id, () => {
     tab.value = "details";
     load();
 }, {immediate: true});
+useResourceEvents(["plan.*"], load);
 async function sendComment(text) {
     await textComments.send(text);
     tab.value = "comments";
