@@ -17,6 +17,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.support.access_nudges import ENDED_AGENT, UNKNOWN_AGENT
+from core.modules.drivers.support.hook_rule_answers import HookRuleAnswers
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
 from core.modules.drivers.support.hook_durations import HookDurations
 from core.modules.environments.models.environment import Environment
@@ -30,7 +31,8 @@ class AgentHookRoute(HookRoute):
     program whose agent has ended and asks the launcher to stop it, and lets through, without a
     record, a hook from an unknown agent when the event does not require an agent check."""
 
-    def __init__(self, bus: Bus, queries: Queries, errors: ErrorLog, durations: HookDurations, settings: SettingValues, agents: AgentRows, launcher: LauncherLink) -> None:
+    def __init__(self, bus: Bus, queries: Queries, errors: ErrorLog, durations: HookDurations, settings: SettingValues, agents: AgentRows, launcher: LauncherLink, rule_answers: HookRuleAnswers) -> None:
+        self.rule_answers = rule_answers
         self.bus, self.queries, self.errors, self.durations, self.settings = bus, queries, errors, durations, settings
         self.agents, self.launcher = agents, launcher
 
@@ -46,7 +48,10 @@ class AgentHookRoute(HookRoute):
         agent = self.agent(event)
         if agent is None:
             return self.ended_agent_reply(event)
-        reply = self.bus.run(RecordHookCall(event, agent.id), Actor(agent.id, ActorType.AGENT), environment_id=agent.environment_id)
+        actor = Actor(agent.id, ActorType.AGENT)
+        with self.bus.scopes.command_scope((), actor, agent.environment_id):
+            answers = self.rule_answers.asked(event, agent)
+        reply = self.bus.run(RecordHookCall(event, agent.id, answers), actor, environment_id=agent.environment_id)
         with self.bus.scopes.read_scope((), None, agent.environment_id):
             measured = self.durations.measured(event, reply.labelled_lines or [*reply.lines, reply.refusal])
         return replace(reply, terminal="\n".join(line for line in (reply.terminal, measured) if line))

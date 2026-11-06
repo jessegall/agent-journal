@@ -25,9 +25,9 @@ class PrivateCorpusRule(DriverRule):
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is None:
             return RuleAnswer.allowed()
-        names_corpus = any(CORPUS_FOLDER in redirect for redirect in shell.redirects) or any(self.names_corpus(part) for part in shell.parts)
+        names_corpus = any(CORPUS_FOLDER in redirect for redirect in shell.redirects) or any(self.has_private_corpus(part) for part in shell.parts)
         return RuleAnswer.refused(PRIVATE_CORPUS.nudge()) if names_corpus else RuleAnswer.allowed()
 
     @staticmethod
-    def names_corpus(part: Part) -> bool:
+    def has_private_corpus(part: Part) -> bool:
         return CORPUS_FOLDER in part.text and not (SANDBOXED_TEST.match(part.text.strip()) or SANDBOXED_TEST_ALIAS.match(part.text.strip()))

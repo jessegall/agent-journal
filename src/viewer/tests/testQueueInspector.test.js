@@ -42,6 +42,7 @@ const SNAPSHOT = {
     waiting_count: 2,
     halted: false,
     halt_reason: "",
+    halt_kind: "",
     running: [RUN],
     waiting: [
         {
@@ -252,6 +253,17 @@ test("a held empty queue shows the reason and empty messages", async () => {
     expect(document.body.querySelector('[data-queue-empty="waiting"]').textContent).toBe("Nothing waits. A command that starts now gets a place at once.");
     expect(document.body.textContent).toContain("Process queue");
     expect(document.body.textContent).not.toContain("Test queue");
+});
+
+test("a queue held by an update says the update waits for the running commands and the others keep their order", async () => {
+    await panel(async () => ({
+        ok: true,
+        value: {...SNAPSHOT, halted: true, halt_kind: "update", halt_reason: "An update waits for the running commands to end"},
+    }));
+    const note = document.body.querySelector("[data-queue-update-waits]").textContent;
+    expect(note).toContain("An update waits for the running commands to end.");
+    expect(note).toContain("gets its place once the update is done");
+    expect(document.body.querySelector("[data-queue-held]")).toBeNull();
 });
 
 test("a failed queue read shows its error", async () => {

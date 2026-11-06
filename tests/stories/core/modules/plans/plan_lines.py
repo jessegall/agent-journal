@@ -12,6 +12,7 @@ from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from core.testing.expect_reply import expect_absent_reply_line
 from tests.stories.support.story_checks import expect_lines_3, expect_value_with, expect_value_without_line
+from tests.stories.core.support.plan_steps import ready_plan
 
 
 def task_end(task_id):
@@ -33,7 +34,8 @@ class CartPlan(StoryFixture):
         for title, phase in (('Cart', 1), ('Release', 2)):
             task_id = story.new_row_id(f'task make "{title}" --brief "{title} well" --environment main')
             story.run(f'phase place {task_id} --phase {phase}')
-        for move in ('ready', 'approve', 'start'):
+        ready_plan(story, actor=story.user)
+        for move in ('approve', 'start'):
             story.run(f'plan {move} 1 --environment main', actor=story.user)
 
 
@@ -145,7 +147,7 @@ class ReadyCartPlan(StoryFixture):
         story.run('phase make --plan 1 "Build"')
         story.run('task make "Cart" --environment main')
         story.run('phase place 1 --phase 1')
-        story.run('plan ready 1')
+        ready_plan(story)
         story.hook('s-1', VIEW_LINE)
 
 

@@ -1,3 +1,4 @@
+import {setupTabVisibility, showTab} from "./support/tabVisibility.js";
 import {afterEach, beforeEach, describe, expect, test, vi} from "vitest";
 import {createApp, h} from "vue";
 import {usePoll} from "../kit/usePoll.js";
@@ -79,16 +80,9 @@ test("each poll uses the current interval returned by its window", async () => {
     expect(vi.getTimerCount()).toBe(0);
 });
 
-let hidden = false;
-function showTab(isHidden) {
-    hidden = isHidden;
-    document.dispatchEvent(new Event("visibilitychange"));
-}
-
 describe("a hidden tab", () => {
     beforeEach(() => {
-        hidden = false;
-        Object.defineProperty(document, "hidden", {configurable: true, get: () => hidden});
+        setupTabVisibility();
     });
     afterEach(() => delete document.hidden);
 

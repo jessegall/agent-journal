@@ -2,7 +2,7 @@
 import {computed, ref} from "vue";
 import {RowList, WindowRoom, patched, useRows} from "@journal/window-kit";
 
-const ALLOWED_MODELS = "journal.suites.coding.workers.allowed-models";
+const ALLOWED_MODELS = "journal.core.helpers.allowed-models";
 
 // each program's models, ticked when a worker may run on them; a program keeps at least one
 const {rows, failure, loaded, act} = useRows("worker models", ["setting.*"]);
@@ -21,7 +21,7 @@ async function toggle(row) {
 <template>
     <WindowRoom>
         <div class="worker-models">
-            <p class="worker-models-note">Listed from the cheapest to the strongest. A worker runs on the general model when it is ticked, otherwise on the ticked model nearest to it.</p>
+            <p class="worker-models-note">Listed from the cheapest to the strongest. A worker runs on the model its profile names when that model is ticked. A model that is not ticked is refused, and you name another with --model.</p>
             <template v-if="refusal">
                 <p class="worker-models-refusal" role="alert">{{ refusal }}</p>
             </template>

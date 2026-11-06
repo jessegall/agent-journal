@@ -21,7 +21,7 @@ from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
 WRITES = [CommandEffect.WRITES_FILES]
 EDIT_TOOLS = [("Edit", ToolType.EDIT), ("Write", ToolType.NEW_FILE), ("NotebookEdit", ToolType.EDIT), ("apply_patch", ToolType.EDIT), ("Monitor", ToolType.MONITOR)]
-SAFE_TOOLS = {StartedHelper: ["WebFetch", "WebSearch", "Skill"]}
+SAFE_TOOLS = {StartedHelper: ["WebFetch", "WebSearch"]}
 
 
 class StartedCodexHelper(StoryFixture):
@@ -66,10 +66,10 @@ def tool(name, category=ToolType.UNCATEGORISED):
 
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
-@pytest.mark.parametrize("sample", [tool("Read", ToolType.READ), tool("Grep", ToolType.SEARCH), tool("Glob", ToolType.SEARCH), shell("grep cart a", part("grep", CommandCategory.SEARCH, "cart", "a")),
+@pytest.mark.parametrize("sample", [tool("Read", ToolType.READ), tool("Skill", ToolType.READ), tool("Grep", ToolType.SEARCH), tool("Glob", ToolType.SEARCH), shell("grep cart a", part("grep", CommandCategory.SEARCH, "cart", "a")),
                                     shell("cat a", part("cat", CommandCategory.READ, "a")), shell("ls", part("ls", CommandCategory.READ)),
                                     shell('journal report make "x"', part("journal", CommandCategory.JOURNAL, "report", "make", "x"))],
-                         ids=["read", "grep", "glob", "shell grep", "cat", "ls", "journal report"])
+                         ids=["read", "skill", "grep", "glob", "shell grep", "cat", "ls", "journal report"])
 def test_a_read_only_helper_reads_and_searches(new_story, helper_fixture, sample):
     story, session = helper_story(new_story, helper_fixture)
     expect_reply_allowed(story.hook(session, sample))

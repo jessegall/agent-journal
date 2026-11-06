@@ -69,6 +69,10 @@ class JournalHome:
         return self.folder / "server-restarting"
 
     @property
+    def run_lock(self) -> Path:
+        return self.folder / "run-lock"
+
+    @property
     def run_queue_halt_file(self) -> Path:
         return self.folder / "run-queue-halted"
 
