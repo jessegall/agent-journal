@@ -8,6 +8,7 @@ from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.provider.peer_note import PeerNote
 from core.base.provider.providers import Providers
+from core.base.provider.written_rows import WrittenRows
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.modules.messages.commands.record_peer_message.record_peer_message import RecordPeerMessage
@@ -29,13 +30,13 @@ class PeerMessageRule(DriverRule):
     overlay_proof = True
     is_notice = True
 
-    def __init__(self, queries: Queries, providers: Providers) -> None:
-        self.queries, self.providers = queries, providers
+    def __init__(self, queries: Queries, providers: Providers, written: WrittenRows) -> None:
+        self.queries, self.providers, self.written = queries, providers, written
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         provider = self.providers.provider(hook.event.program)
         path = provider.transcript_path(hook.event)
-        commands = [RecordPeerMessage(hook.agent_id, note.sender, note.text, note.key) for note in self.new_notes(hook.agent_id, provider.peer_notes(path))] if path is not None else []
+        commands = [RecordPeerMessage(hook.agent_id, note.sender, note.text, note.key) for note in self.new_notes(hook.agent_id, self.written.peer_notes(provider, path))] if path is not None else []
         if self.is_agent_message(hook):
             tool_input = hook.event.tool_input()
             commands.append(RecordPeerMessage(hook.agent_id, f"{tool_input.get('to', '')}", f"{tool_input.get('message', '')}", f"{hook.event.firing}", True))

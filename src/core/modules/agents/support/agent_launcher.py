@@ -5,6 +5,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.launcher_link import ANSWER_BYTES, LauncherLink
 from core.modules.environments.models.environment import Environment
 from core.modules.agents.commands.record_agent_launch_failure.record_agent_launch_failure import RecordAgentLaunchFailure
+from core.modules.agents.commands.record_agent_process.record_agent_process import RecordAgentProcess
 from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
 from core.modules.agents.support.agent_session_state import AgentSessionState
 from core.modules.agents.support.launch_answer import LaunchAnswer
@@ -20,8 +21,9 @@ class AgentLauncher:
     agent whose program still runs is not started again, and its line waits for its next hook or for the
     program to end. The agent's session goes along as its launch name, so a program that picks its own
     session, as Codex does, is bound to this row by its first hook, and its role goes along for the hook to
-    read without the server. A launcher older than this journal answers
-    nothing, which counts as started; no launcher at all counts as failed."""
+    read without the server. A launcher that starts the program returns its process number, so a tick can see
+    when the program is gone without a hook. An older launcher may return no number and still count as started;
+    no launcher at all counts as failed."""
 
     def __init__(self, link: LauncherLink, bus: Bus, sessions: AgentLaunchGuard) -> None:
         self.link, self.bus, self.sessions = link, bus, sessions
@@ -43,4 +45,12 @@ class AgentLauncher:
         if answer in (None, FAILED_ANSWER):
             self.bus.run(RecordAgentLaunchFailure(agent.id), Actor.core(), environment_id=environment.id)
             return LaunchAnswer.FAILED
+        pid = self.started_pid(answer)
+        if pid is not None or agent.pid is not None:
+            self.bus.run(RecordAgentProcess(agent.id, pid), Actor.core(), environment_id=environment.id)
         return LaunchAnswer.STARTED
+
+    @staticmethod
+    def started_pid(answer: bytes) -> int | None:
+        words = answer.split()
+        return int(words[1]) if len(words) == 2 and words[1].isdigit() else None

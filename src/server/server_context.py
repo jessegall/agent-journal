@@ -1,6 +1,7 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from core.base.database.reported_findings import ReportedFindings
 from core.base.journal_home import JournalHome
+from core.base.provider.written_rows import WrittenRows
 from core.base.timestamp import Timestamp
 from server.code_version import CodeVersion
 from server.hook.hook_database import HookDatabase
@@ -17,8 +18,8 @@ AGENT_HOOK_LIMIT_SECONDS = 45.0
 class ServerContext:
     """What every request of one server shares: the journal's folder, the code the server started with, its
     files, when it started, its listener thread, the database connection its hooks share, the viewer's
-    listener, the findings of repeated work it has reported (the viewer's lines share them), and how long a hook
-    waits for another writer."""
+    listener, the findings of repeated work it has reported (the viewer's lines share them), how long a hook
+    waits for another writer, and how far its hooks have read each session file."""
 
     home: JournalHome
     code_version: CodeVersion
@@ -31,3 +32,4 @@ class ServerContext:
     reported_findings: ReportedFindings
     hook_limit_seconds: float = HOOK_LIMIT_SECONDS
     agent_hook_limit_seconds: float = AGENT_HOOK_LIMIT_SECONDS
+    written_rows: WrittenRows = field(default_factory=WrittenRows)

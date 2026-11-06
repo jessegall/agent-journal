@@ -12,7 +12,11 @@ from core.base.driver.hook_event import HookEvent
 from core.base.driver.old_hook_runner_error import OldHookRunnerError
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute
+from core.base.actor import Actor
+from core.base.command.bus import Bus
 from core.base.provider.providers import Providers
+from core.base.provider.written_rows import WrittenRows
+from core.base.query.queries import Queries
 from core.base.journal_container import synced_database_container
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
@@ -23,6 +27,8 @@ from core.base.module.performance_tools import PerformanceTools
 from core.base.performance.route_cost_tool import RouteCostTool
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from core.modules.drivers.models.hook_call import HookCall
+from core.modules.messages.commands.return_message_deliveries.return_message_deliveries import ReturnMessageDeliveries
 from server.hook.raw_hook_body import RawHookBody, is_raw_body
 from server.hook.hook_headers import HookHeaders
 from server.hook.hook_database_busy_error import HookDatabaseBusyError
@@ -65,7 +71,8 @@ class HookEndpoint:
     a wait past the limit or a fault outside the rules lets the hook through with one line, except a
     stop, which is refused, since a stop the journal cannot check may leave work open, and a tool of
     a worker or helper, which never runs unchecked; a fault goes to the server log. The request log
-    takes no time from other hooks: a record that has to wait is dropped."""
+    takes no time from other hooks: a record that has to wait is dropped. A hook whose client left before
+    its answer was written gives back the messages that answer told of, for the next hook to tell."""
 
     def __init__(self, timing: Timing, context: ServerContext) -> None:
         self.timing, self.context = timing, context
@@ -84,6 +91,17 @@ class HookEndpoint:
             self.timing.stamp("hook_answered")
             self.context.listener_thread.wake()
 
+    def answer_lost(self, reply: HookReply) -> None:
+        if reply.hook_call_id is None:
+            return
+        try:
+            with self.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, self.context.hook_limit_seconds) as database:
+                container = synced_database_container(self.context.home, database)
+                call = container.get(Queries).query(HookCall).find(reply.hook_call_id)
+                container.get(Bus).run(ReturnMessageDeliveries(call.id), Actor.core(), environment_id=call.environment_id)
+        except HookDatabaseBusyError as error:
+            self.context.files.log_line(f"the deliveries of hook call {reply.hook_call_id} stay as they are: {error}")
+
     def routed_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, started_at: float, limit_seconds: float) -> HookReply:
         try:
             container = synced_database_container(self.context.home, database)
@@ -92,6 +110,7 @@ class HookEndpoint:
             return self.unchecked(data, error)
         container.bind(Timing, self.timing)
         container.bind(ReportedFindings, self.context.reported_findings)
+        container.bind(WrittenRows, self.context.written_rows)
         self.timing.stamp("hook_synced")
         outcome = HookAnswer.REFUSED
         try:
