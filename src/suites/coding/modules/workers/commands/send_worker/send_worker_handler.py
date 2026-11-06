@@ -25,22 +25,20 @@ from suites.coding.modules.workers.support.worker_task_advance import WorkerTask
 
 
 class SendWorkerHandler(Handler[SendWorker, AgentLine]):
-    """Gives a worker that still has its worktree its next job as a line, on the latest of its base branch; a
-    delivered worker's task goes back in hand, and a worker whose process is gone is ended, so the job starts it
-    again. Git and the process table are read before the transaction, so no hook waits on them."""
+    """Send a job to a worker and prepare its worktree."""
 
     command = SendWorker
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, gone: GoneAgents) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents) -> None:
         self.rows, self.worktrees, self.repository, self.git, self.nudger = rows, worktrees, repository, git, nudger
-        self.advance, self.bus, self.gone = advance, bus, gone
+        self.advance, self.bus, self.missing_agents = advance, bus, missing_agents
         self.conflicts: tuple[str, ...] = ()
         self.is_gone = False
 
     def prepare(self, command: SendWorker, actor: Actor) -> None:
         worker = self.rows.required(Agent, command.worker_id)
-        self.is_gone = worker.ended_at is None and bool(self.gone.of([worker]))
+        self.is_gone = worker.ended_at is None and bool(self.missing_agents.find([worker]))
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
             return

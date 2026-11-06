@@ -1,13 +1,18 @@
 from core.base.command.context import Context
+from core.base.agent_role import AgentRole
+from core.base.actor_type import ActorType
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
+from core.base.refusal import Refusal
 from core.base.scope.actor_scope import ActorScope
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.tasks.models.task import Task
+from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from suites.coding.modules.workers.commands.short_proof.short_proof import ShortProof
 from suites.coding.modules.workers.models.proof import Proof
+from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
@@ -26,7 +31,13 @@ class ShortProofHandler(Handler[ShortProof, Proof]):
         self.queries, self.repository, self.nudger = queries, repository, nudger
 
     def handle(self, command: ShortProof, context: Context) -> Proof:
-        proof = self.repository.save(self.queries.query(Proof).find(command.row_id).moved(ProofLifecycle.short, shortfall=command.shortfall), context)
+        proof = self.queries.query(Proof).find(command.row_id)
+        if proof.state is ProofState.CHECKED:
+            if context.actor.type is not ActorType.AGENT or self.queries.query(Agent).find(context.actor.id).role != AgentRole.MAIN:
+                raise Refusal("only the main agent can return a checked proof", "ask the main agent to send it back with a reason")
+            if not command.shortfall.strip():
+                raise Refusal("returning a checked proof needs a reason", "say what is wrong with the proof")
+        proof = self.repository.save(proof.moved(ProofLifecycle.short, shortfall=command.shortfall), context)
         worktree = self.queries.query(Worktree).find(proof.worktree_id)
         if worktree.state is WorktreeState.DELIVERED:
             self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)

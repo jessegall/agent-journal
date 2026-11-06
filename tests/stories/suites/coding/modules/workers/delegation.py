@@ -36,7 +36,7 @@ def last_message_id(story) -> int:
 def test_a_workers_moves_show_as_marks_in_the_chat(new_story):
     story, repository, worker = delegated_story(new_story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
-    story.run('proof make 1 "cart.py:1, the cart total story"', actor=worker)
+    story.run('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
     story.run("worker next", actor=worker)
     story.run_listeners()
     expect_marks_text(story, f"Worker {worker.id} started task 1")
@@ -168,7 +168,7 @@ def test_a_workers_last_task_goes_back_with_the_worker(new_story):
 def test_a_workers_last_task_can_be_taken_back_after_other_work_is_finished(new_story):
     story, repository, worker = delegated_story(new_story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
-    story.expect_success('proof make 1 "cart.py:1, the cart total story"', actor=worker)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
     story.expect_success("worker next", actor=worker)
     story.expect_success(f"task assign 2 --to {story.agent.id}", actor=story.agent)
     story.expect_text("task show 2", "state: open", actor=story.agent)
@@ -195,7 +195,7 @@ def test_a_comment_on_a_task_with_no_worker_tells_no_worker_and_links_none(new_s
 def test_a_worker_delivers_nothing_while_a_task_is_queued(new_story):
     story, repository, worker = delegated_story(new_story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
-    story.expect_success('proof make 1 "cart.py:1, the cart total story"', actor=worker)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
     story.expect_refusal("worker deliver", "task 2 is still in your queue", actor=worker)
     story.expect_text("task show 1", "state: started", actor=story.agent)
 
@@ -203,7 +203,7 @@ def test_a_worker_delivers_nothing_while_a_task_is_queued(new_story):
 def test_moving_to_the_next_task_hands_nothing_in_and_the_last_task_has_no_next(new_story):
     story, repository, worker = delegated_story(new_story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
-    story.expect_success('proof make 1 "cart.py:1, the cart total story"', actor=worker)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
     story.expect_success("worker next", actor=worker)
     story.run_listeners()
     expect_absent_marks_text(story, "handed in")
@@ -245,7 +245,7 @@ def test_several_tasks_go_to_one_worker_and_only_the_first_starts(new_story):
 def test_delivering_starts_the_next_delegated_task_in_the_same_worktree(new_story):
     story, repository, worker = delegated_story(new_story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
-    story.expect_success('proof make 1 "cart.py:1, the cart total story"', actor=worker)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
     story.expect_text("worker next", "your next task, task 2: Second job", "Do the second job", actor=worker)
     story.expect_text("task show 1", "state: testing", actor=story.agent)
     story.expect_text("task show 2", "state: started", f"holder_id: {worker.id}", actor=story.agent)
@@ -255,10 +255,10 @@ def test_delivering_starts_the_next_delegated_task_in_the_same_worktree(new_stor
 def test_the_last_delivery_delivers_the_worktree_and_the_merge_closes_every_task(new_story):
     story, repository, worker = delegated_story(new_story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
-    story.expect_success('proof make 1 "cart.py:1, the cart total story"', actor=worker)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
     story.run("worker next", actor=worker)
     repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
-    story.expect_success('proof make 1 "cart.py:1, the second story"', actor=worker)
+    story.expect_success('proof make 1 --task 2 "cart.py:1, the second story"', actor=worker)
     story.run("worker deliver", actor=worker)
     story.expect_text("worker-worktree show 1", "state: delivered", actor=story.agent)
     story.expect_text("task show 1", "state: testing", actor=story.agent)

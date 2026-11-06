@@ -22,7 +22,7 @@ WORKER_RETIRED = NudgeDeclaration("workers.worker_retired", NudgeType.STEERING, 
 
 WORKER_JUDGE_SCOPE = NudgeDeclaration("workers.judge_scope", NudgeType.REFUSAL, 'a worker judges only its own changes: journal sins --changes or journal sins --branch', turn_limited=False)
 WORKER_FILE = NudgeDeclaration("workers.file_is_the_workers", NudgeType.REFUSAL, "that file is in worker {worker}'s worktree: journal worker send {worker} \"<job>\", or wait for its delivery", turn_limited=False)
-WORKER_LOG_DUE = NudgeDeclaration("workers.worker_log_due", NudgeType.STEERING, 'you logged nothing for {minutes} min: log where you stand with journal proof make <point> "<proof>"', interval=Interval(Seconds(1800)), turn_limited=False)
+WORKER_LOG_DUE = NudgeDeclaration("workers.worker_log_due", NudgeType.STEERING, 'you logged nothing for {minutes} min: log where you stand with journal proof make <point> --task <task> "<proof>"', interval=Interval(Seconds(1800)), turn_limited=False)
 
 WORKER_TESTS_PASSED = NudgeDeclaration("workers.tests_passed", NudgeType.STEERING, 'the tests of worker:{worker} all pass: journal worker merge {worker}', turn_limited=False)
 WORKER_TESTS_FAILED = NudgeDeclaration("workers.tests_failed", NudgeType.STEERING, 'your tests failed: journal output read {outputs} --summary. Fix them, then journal worker next or deliver', turn_limited=False)

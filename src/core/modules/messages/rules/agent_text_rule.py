@@ -9,7 +9,7 @@ from core.modules.messages.support.agent_text_filter import AgentTextFilter
 
 class AgentTextRule(DriverRule):
     """Each finished text block the agent writes in a turn becomes a chat message of the agent, unless the
-    filter keeps it out; a text held for following a reply is shown by TextBeforeToolRule once a tool comes."""
+    filter keeps it out; a text held for following a reply is shown by ToolMessageRule once a tool comes."""
 
     name = "messages.agent-text"
     hook = HookEventName.MESSAGE_DISPLAY
@@ -21,6 +21,6 @@ class AgentTextRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         text = hook.event.displayed_text
-        if not text or self.texts.follows_reply(hook.agent_id, hook.timestamp) or self.texts.is_acknowledgement(hook.agent_id, text, hook.timestamp):
+        if not text or self.texts.has_recent_reply(hook.agent_id, hook.timestamp) or self.texts.is_acknowledgement(hook.agent_id, text, hook.timestamp):
             return RuleAnswer.allowed()
         return RuleAnswer.allowed().running(SendMessage(text))

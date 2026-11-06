@@ -24,7 +24,7 @@ class WorkerTaskCommit:
         proved = {proof.point for proof in self.proofs.worktree_proofs(worktree.id).all_rows() if proof.task_id == task.id}
         unproved = [str(point) for point in range(1, brief_point_count(task.brief) + 1) if point not in proved]
         if unproved:
-            raise Refusal(f"point {', '.join(unproved)} has no proof", f"journal proof make {unproved[0]} \"<file:line, and the test that shows it>\"")
+            raise Refusal(f"point {', '.join(unproved)} has no proof", f"journal proof make {unproved[0]} --task {task.id} \"<file:line, and the test that shows it>\"")
         base_commit = self.git.tip(worktree.folder, worktree.base_branch)
         conflicts = self.git.rebased_commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.session_agent_id}")
         if conflicts:

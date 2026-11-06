@@ -10,7 +10,7 @@ from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.support.agent_text_filter import AgentTextFilter
 
 
-class TextBeforeToolRule(DriverRule):
+class ToolMessageRule(DriverRule):
     """A text written after a reply by command and followed by a tool is no closing line, so it reaches the chat
     when the tool's hook comes; one with no tool after it ended the turn and stays out."""
 
@@ -27,11 +27,11 @@ class TextBeforeToolRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if hook.event.tool is None:
             return RuleAnswer.allowed()
-        calls = self.hook_calls.displayed_since_last_turn(hook.agent_id)
-        return RuleAnswer.allowed().running(*(SendMessage(call.displayed_text) for call in calls if self.is_held(hook, call)))
+        calls = self.hook_calls.display_calls_after_turn(hook.agent_id)
+        return RuleAnswer.allowed().running(*(SendMessage(call.displayed_text) for call in calls if self.should_send(hook, call)))
 
-    def is_held(self, hook: AgentHook, call: HookCall) -> bool:
+    def should_send(self, hook: AgentHook, call: HookCall) -> bool:
         text, displayed_at = call.displayed_text, call.creation_timestamp()
-        if not text or not self.texts.follows_reply(hook.agent_id, hook.timestamp) or self.texts.is_acknowledgement(hook.agent_id, text, displayed_at):
+        if not text or not self.texts.has_recent_reply(hook.agent_id, hook.timestamp) or self.texts.is_acknowledgement(hook.agent_id, text, displayed_at):
             return False
-        return not self.messages.has_text_since(hook.agent_id, text, displayed_at)
+        return not self.messages.has_text_after(hook.agent_id, text, displayed_at)
