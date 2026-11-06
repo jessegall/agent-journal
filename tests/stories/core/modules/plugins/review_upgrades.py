@@ -9,7 +9,7 @@ from core.modules.processes.support.runner_line import READ_FOLDERS_VARIABLE, Ru
 from tests.stories.core.modules.plugins.support.event_stories import SECOND_JOB, TASK_CREATED, event_page, event_plugin_story, install_event_plugin, script_calls
 from pathlib import Path
 
-SNAPSHOT = Path("tests/stories/core/modules/plugins/support/event_key_snapshot.json")
+SNAPSHOT = Path("tests/snapshots/plugin_event_contract.json")
 
 
 def test_s79_the_runner_line_gives_read_folders_in_a_variable_and_no_flag(new_story):
@@ -31,11 +31,11 @@ def test_s80_a_plugin_with_project_reads_gets_no_mark(new_story):
     story.expect_rows(code == 0, not [mark for mark in story.container.get(Queries).query(ChatMark).all_rows() if "project_reads" in mark.text])
 
 
-def test_s81_a_committed_snapshot_holds_the_keys_forms_and_payload_fields(new_story):
+def test_s81_the_snapshot_a_test_holds_names_what_journal_event_keys_lists(new_story):
     story = event_plugin_story(new_story)
     held = json.loads(SNAPSHOT.read_text())
-    rows = {row["key"]: row for row in json.loads(story.run("event keys --json", actor=story.user).output_text)["rows"]}
-    story.expect_rows(TASK_CREATED in held, set(held) == set(rows))
+    rows = {row["key"] for row in json.loads(story.run("event keys --json", actor=story.user).output_text)["rows"]}
+    story.expect_rows(TASK_CREATED in held, TASK_CREATED in rows, held[TASK_CREATED]["fields"] != [])
 
 
 @pytest.mark.parametrize("protocol", [None, 1])

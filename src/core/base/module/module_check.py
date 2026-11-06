@@ -56,7 +56,8 @@ class ModuleCheck:
         book = modules_book(modules)
         return tuple(event for module in modules for event in self.module_events(module, book))
 
-    def module_events(self, module: type[Module], book: StateBook) -> dict[str, tuple[EventForm, ...]]:
+    @staticmethod
+    def module_events(module: type[Module], book: StateBook) -> dict[str, tuple[EventForm, ...]]:
         events = dict.fromkeys(module.file_events, COMMIT_FORM)
         for declaration in module.models:
             model = declaration.model
@@ -65,9 +66,10 @@ class ModuleCheck:
             events.update({f"{model.model_name}.{change}": () if change == METADATA else model.event_forms for change in (*STANDARD_CHANGES, *moves, *model.change_names)})
         return events
 
-    def event_keys(self, modules: Sequence[type[Module]]) -> tuple[EventKeyEntry, ...]:
+    @classmethod
+    def event_keys(cls, modules: Sequence[type[Module]]) -> tuple[EventKeyEntry, ...]:
         book = modules_book(modules)
-        entries = [EventKeyEntry.built(module.name, event, forms) for module in modules for event, forms in self.module_events(module, book).items() if forms]
+        entries = [EventKeyEntry.built(module.name, event, forms) for module in modules for event, forms in cls.module_events(module, book).items() if forms]
         moments = [EventKeyEntry.moment(module.name, name) for module in modules for name in module.plugin_moments]
         return (*(EventKeyEntry.system(SYSTEM_EVENTS_MODULE, event, COMMIT_FORM) for event in SYSTEM_EVENTS), *entries, *moments)
 
