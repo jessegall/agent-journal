@@ -83,6 +83,7 @@ def test_skill_show_prints_the_text_and_digest_of_one_skill(new_story):
     story = new_story(GOOD, fixture=MainEnvironment)
     story.expect_success("skill show journal-notes", "Write a note for every decision.")
     story.expect_text("skill show journal-notes", "digest: ")
+    story.expect_text("skill show --folder journal-notes", "Write a note for every decision.", "digest: ")
 
 
 def test_skill_show_of_a_skill_no_module_declares_is_refused(new_story):

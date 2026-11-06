@@ -9,6 +9,8 @@ from core.modules.skills.support.skill_nudges import SKILL_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
+from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
@@ -66,5 +68,13 @@ class SkillsModule(Module):
     marks = SKILL_MARKS
     driver_rules = [SkillReadFirstRule, UnreadSkillStopRule, CommandSkillRule]
     windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, skeleton=SKILLS_SKILLS_SKELETON, group="project", place=WindowPlace.PAGE, icon=WindowIcon.SKILL, search=WindowReadSearch("skill list", "Find a skill", ("folder", "description")),
-                                 reads=["agent main", "agent-skill list", "agent-skill show", "skill list", "skill show", "skill requirements", "setting show", "trigger list", "trigger try"], runs=["skill set-required", "skill require", "agent-skill reset", "trigger make", "trigger edit", "trigger pause", "trigger enable", "trigger strike"], events=["agent_skill.*", "agent.*", "setting.*", "trigger.*"])]
+                                 reads=["agent main", "agent-skill list", "agent-skill show", "skill list", "skill show", "skill requirements", "setting show", "trigger list", "trigger try"], runs=["skill set-required", "skill require", "agent-skill reset", "trigger make", "trigger edit", "trigger pause", "trigger enable", "trigger strike"], events=["agent_skill.*", "agent.*", "setting.*", "trigger.*"],
+                                 keys=[WindowKey("catalogue", "skill list", events=["setting.*"]),
+                                       WindowKey("requirements", "skill requirements", events=["setting.*"]),
+                                       WindowKey("main-agent", "agent main", events=["agent.*"]),
+                                       WindowKey("loaded", "agent-skill list --limit 1000", arguments=["agent"], events=["agent_skill.*"], loading=KeyLoading.REQUESTED),
+                                       WindowKey("triggers", "trigger list --skill", events=["trigger.*"]),
+                                       WindowKey("text", "skill show", arguments=["folder"], loading=KeyLoading.REQUESTED),
+                                       WindowKey("agent-skill.*", "agent-skill show {id}", loading=KeyLoading.REQUESTED),
+                                       WindowKey("trial", "trigger try", arguments=["phrases", "sentence", "match-mode"], loading=KeyLoading.REQUESTED)])]
     seeders = [SkillsSeeder]

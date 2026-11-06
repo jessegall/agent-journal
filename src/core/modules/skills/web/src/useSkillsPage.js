@@ -1,24 +1,25 @@
-import {computed, onUnmounted, ref} from "vue";
+import {computed, onUnmounted, ref, watch} from "vue";
 import {READ_RATES, coalesced, useWindow} from "@journal/window-kit";
 
 export function useSkillsPage() {
-    const context = useWindow();
-    const catalogue = ref([]);
-    const loaded = ref([]);
-    const triggers = ref([]);
-    const requirements = ref({session_start: [], after_compaction: [], main_agent: [], environment_overrides: false});
-    const mainAgent = ref(null);
-    const answered = ref(false);
-    const failure = ref("");
+    const window = useWindow();
+    const {rows: catalogue} = window.props.catalogue;
+    const {rows: loaded} = window.props.loaded;
+    const {rows: triggers} = window.props.triggers;
+    const requirements = computed(() => window.props.requirements.data.value ?? {session_start: [], after_compaction: [], main_agent: [], environment_overrides: false});
+    const mainAgent = computed(() => window.props["main-agent"].data.value?.id ?? null);
+    const answered = computed(() => window.props.catalogue.loaded.value && window.props.requirements.loaded.value && window.props.triggers.loaded.value);
+    const commandFailure = ref("");
+    const failure = computed(() => commandFailure.value || ["catalogue", "requirements", "triggers", "loaded"].map((name) => window.props[name].failure.value).find(Boolean) || "");
     const busy = ref([]);
     const opened = ref("");
     const text = ref(null);
     const openFailure = ref("");
-    const tab = ref("skills");
+    window.state.tab = "skills";
+    const tab = computed({get: () => window.state.tab, set: (value) => (window.state.tab = value)});
     const draft = ref(null);
-    const marked = context.option("row");
+    const marked = window.option("row");
     let opening = 0;
-    let loading = 0;
     const skills = computed(() => catalogue.value.map((skill) => {
         const held = loaded.value.find((row) => row.skill === skill.folder);
         return {...skill, required: requirements.value.session_start.includes(skill.folder) || requirements.value.main_agent.includes(skill.folder),
@@ -30,19 +31,15 @@ export function useSkillsPage() {
     const selectedTriggers = computed(() => triggers.value.filter((trigger) => trigger.skill === opened.value));
 
     async function load() {
-        const request = ++loading;
-        const [main, entries, settings, rules] = await Promise.all([context.read("agent main"), context.read("skill list"), context.read("skill requirements"), context.read("trigger list --skill")]);
-        if (request !== loading) return;
-        mainAgent.value = main.ok ? main.value.id : null;
-        const read = mainAgent.value ? await context.read(`agent-skill list --agent ${mainAgent.value} --limit 1000`) : null;
-        if (request !== loading) return;
-        catalogue.value = entries.ok ? entries.value.rows : [];
-        loaded.value = read?.ok ? read.value.rows : [];
-        triggers.value = rules.ok ? rules.value.rows : [];
-        if (settings.ok) requirements.value = settings.value;
-        failure.value = [entries, settings, rules, read].find((answer) => answer && !answer.ok)?.error || "";
-        answered.value = true;
+        await window.reload({only: ["main-agent", "catalogue", "requirements", "triggers", ...(mainAgent.value ? ["loaded"] : [])]});
     }
+
+    watch(mainAgent, async (agent) => {
+        loaded.value = [];
+        if (!agent) return;
+        window.state["loaded.agent"] = String(agent);
+        await window.reload("loaded");
+    });
 
     async function open(folder, address = true) {
         opened.value = folder;
@@ -56,15 +53,16 @@ export function useSkillsPage() {
         }
         const request = ++opening;
         if (!folder) return;
-        const answer = await context.read(["skill", "show", folder]);
+        window.state["text.folder"] = folder;
+        const answer = await window.readKey("text");
         if (request !== opening) return;
         text.value = answer.ok ? answer.value : null;
         openFailure.value = answer.ok ? "" : answer.failure === "refused" ? `The skill ${folder} is no longer available.` : answer.error;
     }
 
     async function run(line) {
-        const answer = await context.run(line);
-        failure.value = answer.ok ? "" : answer.error;
+        const answer = await window.run(line);
+        commandFailure.value = answer.ok ? "" : answer.error;
         if (answer.ok) await load();
         return answer.ok;
     }
@@ -83,11 +81,10 @@ export function useSkillsPage() {
     }
 
     const followHistory = () => open(new URLSearchParams(location.search).get("skill") || "", false);
-    window.addEventListener("popstate", followHistory);
-    onUnmounted(() => window.removeEventListener("popstate", followHistory));
-    context.follow(["agent.*", "agent_skill.*", "setting.*", "trigger.*"], coalesced(load, READ_RATES.openPanel));
-    load();
-    if (marked.value) context.read(`agent-skill show ${marked.value.skillId}`).then((answer) => answer.ok ? open(answer.value.skill, false) : (openFailure.value = answer.error));
+    globalThis.addEventListener("popstate", followHistory);
+    onUnmounted(() => globalThis.removeEventListener("popstate", followHistory));
+    window.follow(["agent_skill.*"], coalesced(() => {if (mainAgent.value) window.reload("loaded");}, READ_RATES.openPanel));
+    if (marked.value) window.readKey(`agent-skill.${marked.value.skillId}`).then((answer) => answer.ok ? open(answer.value.skill, false) : (openFailure.value = answer.error));
     else followHistory();
-    return {context, skills, selected, selectedTriggers, triggers, requirements, mainAgent, answered, failure, busy, opened, text, openFailure, tab, draft, marked, load, open, run, requireSkill, readNow};
+    return {window, skills, selected, selectedTriggers, triggers, requirements, mainAgent, answered, failure, busy, opened, text, openFailure, tab, draft, marked, load, open, run, requireSkill, readNow};
 }
