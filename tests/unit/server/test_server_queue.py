@@ -72,7 +72,7 @@ def test_a_viewer_request_waits_for_a_running_hook():
     queue, order = ServerQueue(viewer_wait_limit_seconds=WAIT_SECONDS), []
 
     def viewer_request() -> None:
-        queue.wait_for_hooks()
+        queue.let_hooks_finish()
         order.append("viewer")
     with queue.hook_turn(QueuePriority.AGENT_HOOK, WAIT_SECONDS):
         thread = threading.Thread(target=viewer_request)
@@ -86,12 +86,12 @@ def test_a_viewer_request_waits_for_a_running_hook():
 def test_a_viewer_request_goes_on_after_its_wait_limit():
     queue = ServerQueue(viewer_wait_limit_seconds=0.01)
     with queue.hook_turn(QueuePriority.AGENT_HOOK, WAIT_SECONDS):
-        queue.wait_for_hooks()
+        queue.let_hooks_finish()
         assert queue.running_hooks == 1
 
 
 def test_a_viewer_request_does_not_wait_when_no_hook_runs():
     queue = ServerQueue(viewer_wait_limit_seconds=WAIT_SECONDS)
     started_at = time.monotonic()
-    queue.wait_for_hooks()
+    queue.let_hooks_finish()
     assert time.monotonic() - started_at < 1

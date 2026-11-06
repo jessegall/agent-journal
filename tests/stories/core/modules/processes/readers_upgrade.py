@@ -46,7 +46,7 @@ def test_stock_readers_get_their_count_and_a_project_reader_is_left_as_it_was(ne
     expect_row(rows["pytest"], count_command="{part} --collect-only -q")
     expect_changed_count_pattern_pytest(rows, "old-pytest")
     expect_row(rows["vitest"], commands="custom-vitest*")
-    expect_count_pattern_vitest_with(rows, "(?:test|spec)")
+    expect_count_pattern_vitest_with(rows, "([0-9]+)")
     expect_changed_count_command_vitest(rows, "old-list")
     expect_output_2(story, f"reader show {project_id} --json", previous)
 

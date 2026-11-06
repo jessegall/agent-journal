@@ -37,5 +37,7 @@ class UnreadMessageWriteRule(DriverRule):
         remaining_calls = UNREAD_TOOL_USES - self.hook_calls.tool_call_count(hook.agent_id, first_delivered_at)
         if remaining_calls <= 0:
             return RuleAnswer.blocked(hook, UNREAD_REFUSAL.nudge(count=delivered.count()), MessagesRead([message.id for message in delivered.all_rows()]))
+        if remaining_calls > COUNTDOWN_CALL_COUNT:
+            return RuleAnswer.allowed()
         message_numbers = ", ".join(str(message.id) for message in delivered.page(1, LISTED_MESSAGES).rows)
-        return RuleAnswer.with_nudges(UNREAD_COUNTDOWN.nudge(remaining_calls, messages=message_numbers)) if remaining_calls <= COUNTDOWN_CALL_COUNT else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(UNREAD_COUNTDOWN.nudge(remaining_calls, messages=message_numbers))
