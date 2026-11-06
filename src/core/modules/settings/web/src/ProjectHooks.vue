@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import { Btn, WindowRoom, runChanged, useReadLine, useWindow } from "@journal/window-kit";
+import {READ_RATES, coalesced, Btn, WindowRoom, runChanged, useReadLine, useWindow} from "@journal/window-kit";
 import HookDetails from "./HookDetails.vue";
 import HookGroup from "./HookGroup.vue";
 import ManagedHookRow from "./ManagedHookRow.vue";
@@ -56,7 +56,7 @@ async function restore() {
   restored.value = reply.ok;
 }
 
-context.follow(["managed-hook.*", "hook_call.*"], load);
+context.follow(["managed-hook.*", "hook_call.*"], coalesced(load, READ_RATES.projectHooks));
 onMounted(load);
 </script>
 

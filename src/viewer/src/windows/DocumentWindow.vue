@@ -1,4 +1,6 @@
 <script setup>
+import {coalesced} from "../composables/coalesced.js";
+import {READ_RATES} from "../composables/readRates.js";
 import {ref} from "vue";
 import Dashboard from "../kit/Dashboard.vue";
 import {useWindow} from "./windowContext.js";
@@ -11,7 +13,7 @@ async function load() {
     answer.value = await context.read(props.line);
 }
 
-context.follow(["*.*"], load);
+context.follow(["*.*"], coalesced(load, READ_RATES.openPanel));
 load();
 </script>
 

@@ -95,7 +95,7 @@ const wideKept = rememberedRef("full-screen", false);
 shell.wide = wideKept.value;
 watch(() => shell.wide, (wide) => (wideKept.value = wide));
 const SIDEBAR_FROM_WIDTH = 1100;
-const ACTIVITY_SECONDS = 4;
+const ACTIVITY_SECONDS = 5;
 const sideHidden = rememberedRef("shell.side-hidden", false);
 const sideMini = rememberedRef("shell.side-mini", false);
 // the sidebar button goes from the whole sidebar to its icons, then to none, then back
@@ -183,7 +183,6 @@ async function readBars() {
     if (answer?.ok) facts.value = answer.value;
 }
 const askBars = coalesced(readBars, EVENT_READ_GAP_MS);
-const askUsage = coalesced(readUsage, EVENT_READ_GAP_MS);
 function readEventFacts() {
     if (!props.shellRead) return;
     readPhones();
@@ -226,13 +225,11 @@ onMounted(() => {
     props.subscriptions.follow("stage:environments", ["agent.*"], readActiveEnvironments);
     readEventFacts();
     props.subscriptions.follow("stage:bars", ["task.*", "agent.*", "question.*", "scheduled_job.*", "process.*"], askBars);
-    props.subscriptions.follow("stage:usage", ["agent.*"], askUsage);
     props.subscriptions.follow("stage:phones", ["phone.*"], readPhones);
     if (linkedRef()) openRef(linkedRef());
 });
 onUnmounted(() => {
     askBars.cancel();
-    askUsage.cancel();
     window.removeEventListener("resize", measure);
     navigator.serviceWorker?.removeEventListener("message", heardWorker);
 });
