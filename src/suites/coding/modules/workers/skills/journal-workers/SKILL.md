@@ -10,10 +10,14 @@ A helper only reads. A worker writes, in a worktree of its own, on one task whos
 ## As the one who sends
 
 - `journal worker dispatch <task> [<task> ...] --model <model>` starts a worker on the tasks; `--profile` is a checked worker profile, journal-worker by default, whose text the worker starts from, and `--model` falls back to that profile's model (`--name` shows on its card), which it takes one by one with no report in
-  between; the journal runs the tests of each before the next starts and tells you when the last passes. `--library-link <folder>` links a folder such as
+  between; outside a plan the journal runs the tests of each before the next starts and tells you when the last passes. `--library-link <folder>` links a folder such as
   `.venv` into its worktree and `--library-copy <folder>` copies it. `--program <program>` names the agent program.
 - `journal worker dispatch --plan <plan> [--phase <phase>] --model <model>` hands a worker the open tasks of an approved or
   started plan, or of one phase of it, in the plan's order. The plan then shows as delegated, with each task's agent named.
+- On a started plan the tests of a phase run at its end, and you hear nothing until then. A proof with no test on a
+  phase needs no check from you; you can still read it and send it back. When a worker asks to run one test, you get
+  one line with the command and the reason: `journal worker allow-test <request>` lets it run that command once. To
+  decline, do nothing: the worker goes on and the request stays on the task's log.
 - Give a worker many tasks at once: a large batch runs long and bothers you less than many small dispatches.
 - `journal worker models` lists each program's models from the cheapest to the strongest.
 - A worker that reported takes its next job with `journal worker send <n> "<job>"`, with its memory of the last. Send
@@ -59,6 +63,15 @@ never starts is retired after the idle time.
   right; the journal commits and runs its proofs' tests in turn. Stop then: a failure or your next task comes back to you.
 - `journal worker deliver` hands in all your tasks together, refused while one is queued. The journal then runs your
   tests in turn; those that fail come back to you to fix and deliver again.
+- On a task of a started plan you work through the phase with nothing run:
+  - Inside a phase `journal worker next` commits your task and gives you the next one at once. A proof may have no test.
+  - A test run is refused. If you really need one, run it again with `--ask-main "<why>"`: the run does not happen, the
+    request goes to your main agent, and you go on working. When it is allowed you are told, and that exact command
+    runs once, without the flag.
+  - At the end of the phase, `journal worker next` when your next task is in another phase, or `journal worker deliver`
+    after your last, runs the tests of all your tasks of the phase and the phase's own test. Stop then.
+  - When tests fail, you get every failure in one line, on the first failed task. You may run tests yourself with no
+    flag until you hand in again, which runs only what failed.
 - A run that moves to the background is watched for you, so you need no Monitor: go on working and hear of its end on your
   next tool call, or stop and be started again when it ends.
 - Git is not yours to run: the journal commits your work.
