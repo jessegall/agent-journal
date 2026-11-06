@@ -2071,7 +2071,7 @@
      "label": "checking git"
     },
     "rev-parse": {
-     "kind": "version control",
+     "kind": "read",
      "effects": [
       "reads_files"
      ],
@@ -2193,49 +2193,75 @@
      ]
     },
     "shortlog": {
-     "kind": "version control",
+     "kind": "read",
      "effects": [
       "reads_files"
      ]
     },
     "describe": {
-     "kind": "version control",
+     "kind": "read",
      "effects": [
       "reads_files"
      ]
     },
     "cat-file": {
-     "kind": "version control",
+     "kind": "read",
      "effects": [
       "reads_files"
      ]
     },
     "ls-tree": {
-     "kind": "version control",
+     "kind": "read",
      "effects": [
       "reads_files"
      ]
     },
     "merge-base": {
-     "kind": "version control",
+     "kind": "read",
      "effects": [
       "reads_files"
      ]
     },
     "show-ref": {
-     "kind": "version control",
+     "kind": "read",
      "effects": [
       "reads_files"
      ]
     },
     "for-each-ref": {
-     "kind": "version control",
+     "kind": "read",
      "effects": [
       "reads_files"
      ]
     },
     "reflog": {
-     "kind": "version control",
+     "kind": "read",
+     "effects": [
+      "reads_files"
+     ],
+     "subcommands": {
+      "expire": {
+       "kind": "version control",
+       "effects": [
+        "changes_version_control"
+       ]
+      },
+      "delete": {
+       "kind": "version control",
+       "effects": [
+        "changes_version_control"
+       ]
+      }
+     }
+    },
+    "ls-files": {
+     "kind": "read",
+     "effects": [
+      "reads_files"
+     ]
+    },
+    "name-rev": {
+     "kind": "read",
      "effects": [
       "reads_files"
      ]

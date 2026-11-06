@@ -12,6 +12,7 @@ from core.modules.environments.models.environment import Environment
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.models.process_queue_row import ProcessQueueRow
 from core.modules.processes.models.enums.queue_section import QueueSection
+from core.modules.processes.support.active_queue_runs import ActiveQueueRuns
 from core.modules.processes.support.process_queue_page import ProcessQueuePage
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.queue_inspector_json import QueueInspectorJson
@@ -30,8 +31,8 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
     name = "list"
     environment_refusal = "the process queue needs an environment"
 
-    def __init__(self, queries: Queries, settings: ProcessSettings, halt: RunQueueHalt, suites: SuiteChoice, catalogue: SettingCatalogue, values: SettingValues) -> None:
-        self.queries, self.settings, self.halt = queries, settings, halt
+    def __init__(self, queries: Queries, settings: ProcessSettings, halt: RunQueueHalt, suites: SuiteChoice, catalogue: SettingCatalogue, values: SettingValues, queue_runs: ActiveQueueRuns) -> None:
+        self.queries, self.settings, self.halt, self.queue_runs = queries, settings, halt, queue_runs
         self.suites, self.catalogue, self.values = suites, catalogue, values
 
     def suite_limits(self) -> list[dict[str, object]]:
@@ -60,7 +61,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
             "used_slots": sum(bool(row["uses_slot"]) for row in running), "waiting_count": len(waiting),
             "halted": self.halt.is_halted, "halt_reason": self.halt.reason, "halt_kind": self.halt.kind,
             "running": running, "waiting": waiting, "recent": recent, "recent_total": query.filter(section=QueueSection.RECENT).count()}
-        queue_runs = tuple(row for row in active if row.is_queue_run)
+        queue_runs = tuple(self.queue_runs.query().oldest().all_rows())
         number, size = max(1, arguments.page), min(MAX_PAGE_SIZE, max(1, arguments.limit))
         return ProcessQueuePage(Page(queue_runs[(number - 1) * size:number * size], number, size, len(queue_runs)), inspector)
 
