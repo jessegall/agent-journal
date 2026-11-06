@@ -1,4 +1,5 @@
 import {expect, test} from "vitest";
+import {outputWindowContext} from "./support/outputWindowContext.js";
 import Output from "../../core/modules/processes/web/src/Output.vue";
 import Outputs from "../../core/modules/processes/web/src/Outputs.vue";
 import {context, mounted, page, settle} from "./support/windowContext.js";
@@ -7,7 +8,7 @@ const run = (id, line, state, extra = {}) => ({id, line, state, exit_code: null,
 
 // a window context that keeps the lines it ran and the functions that follow events
 function recording(answers, options = {}) {
-    const windowContext = context(answers);
+    const windowContext = "output" in options ? outputWindowContext(answers, options.output) : context(answers);
     windowContext.runs = [];
     windowContext.heard = [];
     windowContext.run = async (line) => {

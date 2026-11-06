@@ -2,6 +2,7 @@ import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 import AgentFileEdits from "../../suites/coding/web/src/AgentFileEdits.vue";
 import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue";
+import {outputWindowContext} from "./support/outputWindowContext.js";
 import Output from "../../core/modules/processes/web/src/Output.vue";
 
 const FOOT = 1000;
@@ -47,7 +48,7 @@ const newest = (element) => element.querySelector("[data-scroll-newest]");
 test("the output window opens at the foot and follows a new line", async () => {
     const run = {id: 3, line: "make", state: "finished"};
     const held = {lines: ["one"]};
-    const window = context({"process feed --limit 1": page([run]), "process feed --id 3": page([run]), "output peek 3 --summary": {ok: true, get value() {return {lines: held.lines};}}});
+    const window = outputWindowContext({"process feed --limit 1": page([run]), "process feed --id 3": page([run]), "output peek 3 --summary": {ok: true, get value() {return {lines: held.lines};}}});
     window.follow = (patterns, heard) => (held.heard = heard);
     const element = await mounted(Output, window);
     const pane = paneOf(element);

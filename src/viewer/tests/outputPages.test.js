@@ -1,6 +1,7 @@
 import {expect, test} from "vitest";
 import {useOutputPages} from "../src/composables/outputPages.js";
 import MarkBody from "../src/chat/MarkBody.vue";
+import {outputWindowContext} from "./support/outputWindowContext.js";
 import Output from "../../core/modules/processes/web/src/Output.vue";
 import {context, mounted, settle} from "./support/windowContext.js";
 
@@ -80,11 +81,11 @@ test("a chat mark opens on the newest page, never the whole output", async () =>
 });
 
 test("the output window reads pages for the whole output, and its reader lines by summary", async () => {
-    const window = context({
+    const window = outputWindowContext({
         "process feed --id 3": {ok: true, value: {rows: [{id: 3, state: "finished", line: "make"}]}},
         "output peek 3 --summary": {ok: true, value: {lines: ["read"]}},
         "output page 3": page(["newest"], 900, 1000),
-    });
+    }, 3);
     window.setting = async () => 3;
     const element = await mounted(Output, window);
     await settle();

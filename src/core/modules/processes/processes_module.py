@@ -52,6 +52,8 @@ from core.base.viewer.auto_scroll import AutoScroll
 from core.base.viewer.window_search import WindowSearch
 from core.modules.processes.support.process_searcher import ProcessSearcher
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
+from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.modules.processes.upgrade.processes_move import ProcessesMove
@@ -229,5 +231,11 @@ class ProcessesModule(Module):
     bindings = {WatchedRuns: MonitoredRuns}
     docks = PROCESS_DOCKS
     windows = [WindowDeclaration("processes.outputs", "Commands", "outputs.js", WindowLoading.COMPONENT, skeleton=PROCESSES_OUTPUTS_SKELETON, search=WindowSearch(ProcessSearcher, "Search the commands"), icon=WindowIcon.TERMINAL, reads=WINDOW_READS, runs=WINDOW_RUNS, events=WINDOW_EVENTS),
-               WindowDeclaration("processes.output", "Output", "output.js", WindowLoading.COMPONENT, skeleton=PROCESSES_OUTPUT_SKELETON, icon=WindowIcon.TERMINAL, auto_scroll=AutoScroll.BOTTOM, reads=WINDOW_READS, runs=WINDOW_RUNS, events=WINDOW_EVENTS)]
+               WindowDeclaration("processes.output", "Output", "output.js", WindowLoading.COMPONENT, skeleton=PROCESSES_OUTPUT_SKELETON, icon=WindowIcon.TERMINAL, auto_scroll=AutoScroll.BOTTOM, reads=[*WINDOW_READS, "window setting"],
+                                 keys=[WindowKey("selection", "window setting processes.output output", loading=KeyLoading.REQUESTED),
+                                       WindowKey("latest", "process feed --limit 1", arguments=["session-agent-id"], loading=KeyLoading.REQUESTED),
+                                       WindowKey("run.*", "process feed --id {id}", loading=KeyLoading.REQUESTED),
+                                       WindowKey("summary.*", "output peek {id} --summary", loading=KeyLoading.REQUESTED),
+                                       WindowKey("output.*", "output page {id}", arguments=["after", "before"], loading=KeyLoading.REQUESTED)],
+                                 runs=WINDOW_RUNS, events=WINDOW_EVENTS)]
     seeders = [ProcessesSeeder]

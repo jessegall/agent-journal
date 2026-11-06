@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {AutoScrollPane, EmptyState, OutputLines, WindowRoom, useOutputPages, usePoll, useWindow} from "@journal/window-kit";
+import {AutoScrollPane, EmptyState, OutputLines, WindowRoom, readOutputProp, useOutputPages, usePoll, useWindow} from "@journal/window-kit";
 import RunButtons from "./RunButtons.vue";
 
 const context = useWindow();
@@ -8,25 +8,31 @@ const outputId = ref(Number(new URLSearchParams(location.search).get("output")) 
 const run = ref(null);
 const lines = ref([]);
 const isWhole = ref(false);
-const pages = useOutputPages((words) => context.read(words.join(" ")), () => outputId.value);
+const pages = useOutputPages(readOutputProp(context), () => outputId.value);
 
 const isRunning = () => run.value !== null && (run.value.state === "running" || run.value.state === "background");
 
 async function load() {
-    outputId.value = outputId.value || (await context.setting("output", 0));
     if (!outputId.value) {
-        const listed = await context.read(context.agent == null ? "process feed --limit 1" : `process feed --limit 1 --session-agent-id ${context.agent}`);
-        outputId.value = listed.ok && listed.value.rows.length ? listed.value.rows[0].id : 0;
+        await context.reload("selection");
+        outputId.value = context.props.selection.data.value?.value || 0;
+    }
+    if (!outputId.value) {
+        if (context.agent != null) context.state["latest.session-agent-id"] = context.agent;
+        await context.reload("latest");
+        outputId.value = context.props.latest.rows.value[0]?.id || 0;
     }
     if (!outputId.value) return;
-    const shown = await context.read(`process feed --id ${outputId.value}`);
-    run.value = shown.ok && shown.value.rows.length ? shown.value.rows[0] : null;
+    const runKey = `run.${outputId.value}`;
+    const summaryKey = `summary.${outputId.value}`;
+    await context.reload(isWhole.value ? runKey : [runKey, summaryKey]);
+    run.value = context.props[runKey].rows.value[0] ?? null;
     if (isWhole.value) {
         await pages.follow();
         return;
     }
-    const text = await context.read(`output peek ${outputId.value} --summary`);
-    lines.value = text.ok ? text.value.lines : [text.error];
+    const text = context.props[summaryKey];
+    lines.value = text.failure.value ? [text.failure.value] : text.data.value.lines;
 }
 
 async function toggle() {
@@ -35,7 +41,7 @@ async function toggle() {
 }
 
 context.follow(["process.*", "output.*"], load);
-usePoll(load, isRunning);
+usePoll(load, () => context.visible.value && isRunning());
 </script>
 
 <template>
