@@ -28,6 +28,30 @@ test("a cancelled ask does not run", () => {
     expect(read).toHaveBeenCalledTimes(1);
 });
 
+test("an ask during a slow read waits for its answer and then reads once", async () => {
+    const slow = Promise.withResolvers();
+    const read = vi.fn().mockImplementationOnce(() => slow.promise).mockResolvedValue(undefined);
+    const ask = coalesced(read, 2000);
+    ask();
+    vi.advanceTimersByTime(5000);
+    ask();
+    ask();
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(read).toHaveBeenCalledTimes(1);
+    slow.resolve();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(read).toHaveBeenCalledTimes(2);
+});
+
+test("a read that fails breaks nothing: the next ask reads again", async () => {
+    const read = vi.fn().mockRejectedValueOnce(new Error("the server failed")).mockResolvedValue(undefined);
+    const ask = coalesced(read, 0);
+    ask();
+    await vi.advanceTimersByTimeAsync(0);
+    ask();
+    expect(read).toHaveBeenCalledTimes(2);
+});
+
 test("two windows asking usage at once share one read, and a later ask reads again", async () => {
     let answered = () => {};
     const read = vi.fn(() => new Promise((resolve) => (answered = resolve)));

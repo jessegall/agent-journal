@@ -77,6 +77,17 @@ func (inputs *TerminalInputs) IsOpen(agentID int) bool {
 	return inputs.starting[agentID] || inputs.writers[agentID] != nil || inputs.programs[agentID] != nil
 }
 
+// ProgramPid is the process number of the agent's running program, and 0 when it has none.
+func (inputs *TerminalInputs) ProgramPid(agentID int) int {
+	inputs.mutex.Lock()
+	defer inputs.mutex.Unlock()
+	program, ok := inputs.programs[agentID]
+	if !ok || program.Process == nil {
+		return 0
+	}
+	return program.Process.Pid
+}
+
 // Close ends the agent's input once its program has ended.
 func (inputs *TerminalInputs) Close(agentID int) {
 	inputs.mutex.Lock()
