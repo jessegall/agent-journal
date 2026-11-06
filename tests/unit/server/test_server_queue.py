@@ -4,6 +4,7 @@ import time
 import pytest
 
 from server.hook.hook_database_busy_error import HookDatabaseBusyError
+from core.base.viewer.window_priority import WindowPriority
 from server.hook.queue_priority import QueuePriority
 from server.hook.server_queue import ServerQueue
 
@@ -152,3 +153,66 @@ def test_no_more_hooks_run_than_the_count():
     assert not second_in.is_set()
     release.set()
     first.join(), second.join()
+
+
+def viewer_thread(queue: ServerQueue, window: str, priority: WindowPriority, order: list[str]) -> threading.Thread:
+    def run() -> None:
+        with queue.viewer_turn("task list", window, priority):
+            order.append(window)
+    thread = threading.Thread(target=run)
+    thread.start()
+    return thread
+
+
+def wait_for_waiting_viewers(queue: ServerQueue, count: int) -> None:
+    deadline = time.monotonic() + WAIT_SECONDS
+    while len(queue.waiting_viewers) < count and time.monotonic() < deadline:
+        time.sleep(0.005)
+    assert len(queue.waiting_viewers) == count
+
+
+def test_a_first_window_does_not_wait_for_a_running_hook():
+    queue, order = ServerQueue(viewer_wait_limit_seconds=WAIT_SECONDS), []
+    with queue.hook_turn(QueuePriority.AGENT_HOOK, WAIT_SECONDS):
+        viewer_thread(queue, "messages.chat", WindowPriority.FIRST, order).join(WAIT_SECONDS)
+        assert order == ["messages.chat"]
+
+
+def test_a_normal_window_waits_behind_a_running_hook():
+    queue, order = ServerQueue(viewer_wait_limit_seconds=WAIT_SECONDS), []
+    with queue.hook_turn(QueuePriority.AGENT_HOOK, WAIT_SECONDS):
+        thread = viewer_thread(queue, "tasks.tasks", WindowPriority.NORMAL, order)
+        wait_for_waiting_viewers(queue, 1)
+        assert order == []
+    thread.join(WAIT_SECONDS)
+    assert order == ["tasks.tasks"]
+
+
+def test_among_equal_windows_the_one_that_sent_fewer_goes_first():
+    queue, order = ServerQueue(viewer_wait_limit_seconds=WAIT_SECONDS), []
+    viewer_thread(queue, "agents.agents", WindowPriority.NORMAL, []).join(WAIT_SECONDS)
+    viewer_thread(queue, "agents.agents", WindowPriority.NORMAL, []).join(WAIT_SECONDS)
+    with queue.hook_turn(QueuePriority.AGENT_HOOK, WAIT_SECONDS):
+        busy = viewer_thread(queue, "agents.agents", WindowPriority.NORMAL, order)
+        wait_for_waiting_viewers(queue, 1)
+        quiet = viewer_thread(queue, "plans.plans", WindowPriority.NORMAL, order)
+        wait_for_waiting_viewers(queue, 2)
+    busy.join(WAIT_SECONDS), quiet.join(WAIT_SECONDS)
+    assert order == ["plans.plans", "agents.agents"]
+
+
+def test_a_normal_window_goes_through_after_its_wait_limit():
+    queue, order = ServerQueue(viewer_wait_limit_seconds=0.01), []
+    with queue.hook_turn(QueuePriority.AGENT_HOOK, WAIT_SECONDS):
+        viewer_thread(queue, "tasks.tasks", WindowPriority.NORMAL, order).join(WAIT_SECONDS)
+        assert order == ["tasks.tasks"]
+
+
+def test_no_more_viewer_requests_run_than_the_limit_unless_their_wait_is_over():
+    queue, order = ServerQueue(viewer_wait_limit_seconds=WAIT_SECONDS, running_viewers_count=1), []
+    with queue.viewer_turn("task list", "tasks.tasks", WindowPriority.NORMAL):
+        thread = viewer_thread(queue, "plans.plans", WindowPriority.NORMAL, order)
+        wait_for_waiting_viewers(queue, 1)
+        assert order == []
+    thread.join(WAIT_SECONDS)
+    assert order == ["plans.plans"]
