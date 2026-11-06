@@ -31,7 +31,7 @@ class ExplicitEditedRequest(StoryFixture):
 
 
 def test_answer_without_message_records_one_authorized_source(trail):
-    trail.command('question ask "Which rounding rule?" --options "Up" "Nearest" --recommend "Nearest"')
+    trail.command('question ask "Which rounding rule?" --context "A story asks this so its card and answer can be checked." --options "Up" "Nearest" --recommend "Nearest"')
     trail.person("questions.questions", "question", "answer", "1", "--answer", "Nearest")
     question = json.loads(trail.command("question show 1 --json").output_text)
     feature(question["message_id"] is not None, "a real viewer answer has no canonical message")
@@ -47,7 +47,7 @@ def test_answer_without_message_records_one_authorized_source(trail):
 
 
 def test_answered_question_exposes_its_answer_source(trail):
-    trail.command('question ask "Which tax?" --options "Local" "Export"')
+    trail.command('question ask "Which tax?" --context "A story asks this so its card and answer can be checked." --options "Local" "Export"')
     trail.person("questions.questions", "question", "answer", "1", "--answer", "Local")
     source = json.loads(trail.command("question show 1 --json").output_text)["message_id"]
     lines = "\n".join(trail.story.hook("s-1", HookSamples.prompt("go on")).lines)
@@ -57,7 +57,7 @@ def test_answered_question_exposes_its_answer_source(trail):
 
 def test_answer_notification_does_not_replace_active_request(trail):
     trail.select()
-    trail.command('question ask "Keep discount?" --options "Yes" "No"')
+    trail.command('question ask "Keep discount?" --context "A story asks this so its card and answer can be checked." --options "Yes" "No"')
     trail.person("questions.questions", "question", "answer", "1", "--answer", "Yes")
     trail.tick()
     trail.make_task()
@@ -98,7 +98,7 @@ def test_context_reads_the_latest_explicitly_selected_request_text(new_story):
 
 
 def test_viewer_answer_is_authored_and_addressed_to_the_asking_agent(trail):
-    trail.command('question ask "Which date?" --options "Monday" "Tuesday"')
+    trail.command('question ask "Which date?" --context "A story asks this so its card and answer can be checked." --options "Monday" "Tuesday"')
     trail.person("questions.questions", "question", "answer", "1", "--answer", "Tuesday")
     question = json.loads(trail.command("question show 1 --json").output_text)
     assert question["message_id"] is not None
@@ -113,7 +113,7 @@ def test_viewer_answer_is_authored_and_addressed_to_the_asking_agent(trail):
 
 def test_answer_only_becomes_source_after_explicit_selection(trail):
     trail.select()
-    trail.command('question ask "Which currency?" --options "EUR" "USD"')
+    trail.command('question ask "Which currency?" --context "A story asks this so its card and answer can be checked." --options "EUR" "USD"')
     trail.person("questions.questions", "question", "answer", "1", "--answer", "EUR")
     source = json.loads(trail.command("question show 1 --json").output_text)["message_id"]
     assert source is not None
@@ -127,7 +127,7 @@ def test_answer_only_becomes_source_after_explicit_selection(trail):
 
 
 def test_answer_can_reuse_its_existing_person_message(trail):
-    trail.command('question ask "Which rounding?" --options "Up" "Nearest"')
+    trail.command('question ask "Which rounding?" --context "A story asks this so its card and answer can be checked." --options "Up" "Nearest"')
     supplied = trail.person("messages.chat", "message", "send", "Nearest", "--target-agent", str(trail.story.agent.id))
     before = trail.person("messages.chat", "message", "feed")["rows"]
     trail.person("questions.questions", "question", "answer", "1", "--answer", "Nearest", "--message-id", str(supplied["id"]))
@@ -146,7 +146,7 @@ def test_update_notification_names_the_explicit_selection_command(trail):
 
 @pytest.mark.parametrize("invalid", ["agent-message", "other-recipient", "other-author"])
 def test_person_answer_refuses_a_source_with_wrong_author_or_addressee(trail, invalid):
-    trail.command('question ask "Which answer source?" --options "A" "B"')
+    trail.command('question ask "Which answer source?" --context "A story asks this so its card and answer can be checked." --options "A" "B"')
     if invalid == "agent-message":
         supplied = json.loads(trail.command('message send "A" --json').output_text)
     elif invalid == "other-recipient":
@@ -166,8 +166,8 @@ def test_person_answer_refuses_a_source_with_wrong_author_or_addressee(trail, in
 
 
 def test_multiple_answer_notices_keep_selection_commands_valid(trail):
-    trail.command('question ask "Which start?" --options "Early" "Late"')
-    trail.command('question ask "Which finish?" --options "Early" "Late"')
+    trail.command('question ask "Which start?" --context "A story asks this so its card and answer can be checked." --options "Early" "Late"')
+    trail.command('question ask "Which finish?" --context "A story asks this so its card and answer can be checked." --options "Early" "Late"')
     trail.person("questions.questions", "question", "answer", "1", "--answer", "Early")
     trail.person("questions.questions", "question", "answer", "2", "--answer", "Late")
     sources = [json.loads(trail.command(f"question show {number} --json").output_text)["message_id"] for number in (1, 2)]

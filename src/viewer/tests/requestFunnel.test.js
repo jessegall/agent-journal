@@ -262,12 +262,10 @@ test("a batch holding a read of a window taken down is cut to what others still 
     const leaving = new AbortController();
     const gone = lineResult("a.b", ["usage", "tool"], "main", leaving.signal);
     const kept = [lineResult("c.d", ["usage", "tool"], "main"), lineResult("c.d", ["plan", "outline", "1"], "main")];
-    await settled();
-    expect(server.routes).toEqual(["/api/lines"]);
+    await vi.waitFor(() => expect(server.routes).toEqual(["/api/lines"]));
     leaving.abort();
     expect((await gone).failure).toBe("cancelled");
-    await settled();
-    expect(server.routes).toEqual(["/api/lines", "/api/lines"]);
+    await vi.waitFor(() => expect(server.routes).toEqual(["/api/lines", "/api/lines"]));
     expect(server.lines.slice(3)).toEqual(["usage tool", "plan outline 1"]);
     await server.answer();
     expect((await Promise.all(kept)).map((answer) => answer.value)).toEqual(["usage tool", "plan outline 1"]);
