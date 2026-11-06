@@ -5,6 +5,7 @@ from core.base.access import Access
 
 class ProfileFields(TypedDict, total=False):
     name: str
+    title: str
     description: str
     body: str
     agent_type: str

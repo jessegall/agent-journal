@@ -16,7 +16,9 @@ const props = defineProps({row: {type: Object, required: true}, facts: {type: Ob
 const emit = defineEmits(["toggle"]);
 const now = useNow();
 const title = computed(() => {
-    const name = props.facts?.profile || FALLBACK_TITLES[props.row.role] || props.row.role;
+    if (props.facts?.profile_title) return props.facts.profile_title;
+    if (props.facts?.profile) return props.facts.profile;
+    const name = FALLBACK_TITLES[props.row.role] || props.row.role;
     return name.slice(0, 1).toUpperCase() + name.slice(1);
 });
 const tasks = computed(() => props.facts?.tasks ?? []);
@@ -214,22 +216,15 @@ readCommand();
 
 .agent-title {
     flex: none;
-    max-width: 60%;
-    overflow: hidden;
     font-size: 13px;
     font-weight: 500;
-    white-space: nowrap;
-    text-overflow: ellipsis;
 }
 
 .agent-name {
     flex: 1;
     min-width: 0;
-    overflow: hidden;
     color: var(--text-3);
     font-size: 12px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
 }
 
 .agent-time,
@@ -437,6 +432,7 @@ readCommand();
 .agent-last-heard { color: var(--text-4); font-size: 10px; white-space: nowrap; }
 .agent-dot { margin-right: 3px; }
 .agent-name { flex: 0 1 auto; }
+.agent-head { flex-wrap: wrap; }
 .agent-chevron { position: static; flex: none; margin-left: -2px; color: var(--text-4); opacity: 1; }
 .agent-card:hover .agent-chevron { color: var(--text-2); }
 .agent-line, .agent-command { padding-left: 16px; }

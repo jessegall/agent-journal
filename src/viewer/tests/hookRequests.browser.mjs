@@ -19,6 +19,12 @@ try {
         await page.screenshot({path: "/tmp/journal-hook-requests-461-failure.png"});
         throw error;
     }
+    await page.locator('[data-feed-pause]').click();
+    await page.screenshot({path: '/tmp/pictures-request-filter/paused.png'});
+    await page.locator('[data-filter-open]').click();
+    await page.screenshot({path: '/tmp/pictures-request-filter/filters.png'});
+    await page.keyboard.press('Escape');
+    await page.locator('[data-feed-pause]').click();
     await page.locator("[data-request-queue-open]").click();
     await page.locator("[data-request-queue]").waitFor();
     await page.getByText("Nothing is waiting.").waitFor();
@@ -26,6 +32,7 @@ try {
     await page.getByRole("button", {name: "Close the request queue"}).click();
     assert.deepEqual(await page.locator("[data-hook-column]").allTextContents(), ["Event", "Tool", "Parts", "Time", "Sender", "Queued", "Duration"]);
     assert.equal(await page.locator('[data-hook-request="70"] [data-hook-parts]').textContent(), "3");
+    assert.equal(await page.locator('[data-hook-request="70"] [data-hook-parts]').evaluate((cell) => getComputedStyle(cell).paddingRight), "12px");
     assert.equal(await page.locator('[data-hook-request="69"] [data-hook-parts]').textContent(), "");
     assert.match(await page.locator('[data-fold="developer"]').textContent(), /Developer/);
     assert.equal(await page.locator('[data-sidebar-window="developer.hook-requests"]').count(), 1);

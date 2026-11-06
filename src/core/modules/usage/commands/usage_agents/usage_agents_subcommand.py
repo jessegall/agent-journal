@@ -11,6 +11,8 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.modules.profiles.support.profile_files import ProfileFiles
+from core.base.profile.agent_profile import AgentProfile
 from core.modules.usage.models.agent_card import AgentCard
 from core.modules.usage.support.agent_facts import AgentFacts
 from core.modules.usage.support.agent_facts_list import AgentFactsList
@@ -29,8 +31,8 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     name = "agents"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice) -> None:
-        self.queries, self.files, self.providers, self.home, self.suites = queries, files, providers, home, suites
+    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles) -> None:
+        self.queries, self.files, self.providers, self.home, self.suites, self.profiles = queries, files, providers, home, suites, profiles
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--closed", action="store_true", help="also the agents that ended most recently")
@@ -40,13 +42,14 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         running = tuple(cards.matching(IsNull("ended_at")).oldest().all_rows())
         ended = tuple(cards.matching(Greater("ended_at", "")).newest().page(1, CLOSED_AGENTS_SHOWN).rows) if arguments.closed else ()
         job_roles = self.suites.agent_policy().job_roles
-        return AgentFactsList(tuple(self.facts(card, job_roles) for card in (*running, *ended)))
+        titles = {profile.name: profile.display_title for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
+        return AgentFactsList(tuple(self.facts(card, job_roles, titles) for card in (*running, *ended)))
 
-    def facts(self, card: AgentCard, job_roles: Collection[str]) -> AgentFacts:
+    def facts(self, card: AgentCard, job_roles: Collection[str], titles: dict[str, str]) -> AgentFacts:
         status = self.files.status(card.session)
         return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.job_model, status.context_percent, status.cost_dollars, card.started_task_id, card.started_task_title,
                           tuple(json.loads(card.tasks)), self.waiting_state(card), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
-                          card.job_instruction, status.effort or self.session_effort(card), card.role in job_roles, card.job_returned, card.last_activity, self.helper_job(card))
+                          card.job_instruction, status.effort or self.session_effort(card), card.role in job_roles, card.job_returned, card.last_activity, self.helper_job(card), titles.get(card.profile or card.job_profile, card.profile or card.job_profile))
 
     @staticmethod
     def helper_job(card: AgentCard) -> str:

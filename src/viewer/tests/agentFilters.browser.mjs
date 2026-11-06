@@ -12,6 +12,7 @@ try {
     await page.locator('[data-filter-role="worker"]').click();
     await page.locator('[data-filter-program="codex"]').click();
     await page.waitForFunction(() => document.querySelector("[data-menu-count]")?.textContent === "2");
+    await page.waitForFunction(() => document.querySelectorAll('[data-window="agents.agents"] [data-agent-open]').length === 1);
     assert.equal(await window.locator('[data-agent-open]').count(), 1);
     for (const colorScheme of ["light", "dark"]) {
         await page.emulateMedia({colorScheme});

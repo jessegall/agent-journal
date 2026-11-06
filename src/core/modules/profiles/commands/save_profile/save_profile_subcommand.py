@@ -25,7 +25,7 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("profile_name")
-        for name in ("type", "model", "codex-model", "program", "mcp-tools"):
+        for name in ("title", "type", "model", "codex-model", "program", "mcp-tools"):
             parser.add_argument(f"--{name}")
         parser.add_argument("--description", default="")
         parser.add_argument("--body", default="")
@@ -39,7 +39,7 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
                 raise Refusal(profile.problem, "fix the file or use journal profile reset")
         else:
             profile = AgentProfile(arguments.profile_name, description=arguments.description, body=arguments.body)
-        fields = {name: value for name, value in vars(arguments).items() if name in ("description", "model", "codex_model", "body", "program", "access", "independent") and value is not None}
+        fields = {name: value for name, value in vars(arguments).items() if name in ("title", "description", "model", "codex_model", "body", "program", "access", "independent") and value is not None}
         if arguments.type is not None:
             fields["agent_type"] = arguments.type
         if arguments.mcp_tools is not None:

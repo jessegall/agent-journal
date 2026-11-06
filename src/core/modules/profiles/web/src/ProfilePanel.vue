@@ -8,7 +8,7 @@ const emit = defineEmits(["close", "save", "reset"]);
 const WRITING = "writing";
 const PROGRAMS = [{key: "", label: "The parent's program"}, {key: "claude", label: "Claude Code"}, {key: "codex", label: "Codex"}];
 const choices = computed(() => props.types.map((type) => ({key: type.key, label: type.label})));
-const FIELDS = ["description", "agent_type", "access", "program", "independent", "mcp_tools", "model", "codex_model", "body"];
+const FIELDS = ["title", "description", "agent_type", "access", "program", "independent", "mcp_tools", "model", "codex_model", "body"];
 
 const draft = ref({});
 watch(
@@ -37,13 +37,17 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
 </script>
 
 <template>
-    <SidePanel :title="profile.name || 'New profile'" :abstract="profile.name ? used : 'Instructions, type and model for an agent'" @close="emit('close')">
+    <SidePanel :title="profile.title || profile.name || 'New profile'" :abstract="profile.name ? used : 'Instructions, type and model for an agent'" @close="emit('close')">
         <div class="profile-panel" data-profile-panel>
+            <small v-if="profile.title">{{ profile.name }}</small>
             <template v-if="!profile.name">
                 <FormField label="Name" for="profile-name" help="Letters, digits and dashes; the agent starts it by this name.">
                     <TextInput id="profile-name" :value="draft.name" placeholder="critic" @input="draft.name = $event.target.value.trim()" />
                 </FormField>
             </template>
+            <FormField label="Title" for="profile-title">
+                <TextInput id="profile-title" :value="draft.title" @input="draft.title = $event.target.value" />
+            </FormField>
             <FormField label="When it is used" for="profile-description" help="The agent reads this to decide when to start it.">
                 <TextArea id="profile-description" rows="3" :value="draft.description" @input="draft.description = $event.target.value" />
             </FormField>
