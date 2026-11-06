@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_log import TaskLog
+from suites.coding.modules.workers.models.proof import Proof
 
 NOTE_PREVIEW_COUNT = 8
 
@@ -15,6 +16,7 @@ class WorkerReview:
     tasks: tuple[Task, ...]
     logs: tuple[TaskLog, ...]
     flagged: Mapping[int, tuple[str, ...]]
+    proofs: tuple[Proof, ...]
 
     def task_logs(self, task: Task) -> tuple[TaskLog, ...]:
         return tuple(log for log in self.logs if log.task_id == task.id)

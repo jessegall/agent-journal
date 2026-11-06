@@ -46,7 +46,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
             raise Refusal(f"worker {command.worker_id} has delivered nothing to merge", "journal worker-worktree list shows the worktrees")
         environment = self.environments.find(worktree.environment_id)
         self.check(worktree, environment)
-        review = self.log_lines.review(worktree.session_agent_id)
+        review = self.log_lines.review(worktree)
         self.checks.check_important_lines(worktree, review, command.important_answer)
         self.keep_answer(worktree, review, command.important_answer, context)
         task = self.rows.required(Task, worktree.task_id)

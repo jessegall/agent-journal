@@ -102,7 +102,7 @@ def test_a_key_with_an_id_fills_its_line_and_needs_a_number(chat):
 
 def test_a_key_with_named_ids_takes_a_name_and_never_a_flag(chat):
     server, _ = chat
-    key = WindowKey("plugin.*", "plugin show {id}", named_ids=True)
+    key = WindowKey("plugin.*", "plugin show {id}", name_ids=True)
     server.story.expect_rows(key.with_id("plugin.tidy-worktrees").read == "plugin show tidy-worktrees", key.with_id("plugin.--help") is None,
                              WindowKey("run.*", "process card {id}").with_id("run.name") is None)
     source_key = WindowKey("plugin-preview", "plugin preview {source}")

@@ -36,9 +36,12 @@ class ReaderFile:
         return {field: line.removeprefix(prefix) for line in lines for prefix, field in SETTING_NAMES.items() if line.startswith(prefix)}
 
     @staticmethod
+    def paths(folder: Path) -> list[Path]:
+        return sorted(path for path in folder.glob("*") if path.suffix in (PATTERN_SUFFIX, SCRIPT_SUFFIX)) if folder.is_dir() else []
+
+    @staticmethod
     def found(folder: Path) -> list["ReaderFile"]:
-        paths = sorted(path for path in folder.glob("*") if path.suffix in (PATTERN_SUFFIX, SCRIPT_SUFFIX)) if folder.is_dir() else []
-        return [ReaderFile.parsed(path) for path in paths]
+        return [ReaderFile.parsed(path) for path in ReaderFile.paths(folder)]
 
     def reader(self, creator_id: int, plugin_name: str) -> Reader:
         return Reader(creator_id=creator_id, name=self.name, type=self.type, lines_pattern=self.lines_pattern, script=self.script, plugin_name=plugin_name,

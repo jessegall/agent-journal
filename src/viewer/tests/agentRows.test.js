@@ -412,7 +412,8 @@ test("a worker's card shows its completed tasks per hour", async () => {
     cardOf(element, 4).click();
     await settle();
     expect(element.querySelector("[data-agent-pace]").textContent.trim()).toBe("1 per hour");
-    expect(element.querySelector("[data-agent-tasks]").parentElement.querySelector("[data-agent-pace]")).toBeNull();
+    expect(element.querySelector("[data-agent-tasks]").previousElementSibling).toBe(element.querySelector("[data-agent-pace]"));
+    expect(parseFloat(getComputedStyle(element.querySelector("[data-agent-command]")).paddingLeft)).toBe(0);
 });
 
 test("worker totals and pace use its current worktree instead of session history", async () => {
@@ -427,6 +428,7 @@ test("worker totals and pace use its current worktree instead of session history
     await settle();
     expect(cardOf(element, 4).querySelector("[data-agent-tasks]").textContent.trim()).toBe("1 of 2 tasks");
     expect(cardOf(element, 4).querySelector("[data-agent-pace]").textContent.trim()).toBe("1 per hour");
+    expect(cardOf(element, 4).querySelector("[data-agent-tasks]").previousElementSibling).toBe(cardOf(element, 4).querySelector("[data-agent-pace]"));
 });
 
 test("a worker's opened card shows its context and cost", async () => {

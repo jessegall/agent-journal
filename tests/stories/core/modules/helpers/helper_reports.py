@@ -10,6 +10,7 @@ from core.modules.messages.models.message import Message
 from core.modules.drivers.ticks.end_silent_helpers_tick import EndSilentHelpersTick
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
+from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import resumable_session, EndedHelper, JOB, StartedHelper, jobs_of, helper_agent
 from core.modules.helpers.support.helper_settings import HELPER_MAX_COST
 from core.modules.helpers.ticks.helper_limits_tick import HelperLimitsTick
@@ -27,6 +28,18 @@ def stop_with_report(text):
     return stop.with_raw({**stop.body["raw"], "last_assistant_message": text})
 
 
+class ReportedHelper(StoryFixture):
+    parent = StartedHelper
+
+    def steps(self, story):
+        story.hook(helper_agent(story).session, stop_with_report("The total is wrong."))
+        story.run_listeners()
+
+
+class ReportedCodexHelper(ReportedHelper):
+    parent = StartedCodexHelper
+
+
 def reported(new_story, helper_fixture, text):
     story = new_story(fixture=helper_fixture)
     story.hook(helper_agent(story).session, stop_with_report(text))
@@ -39,7 +52,7 @@ def helper_report(story):
 
 
 def test_the_agent_card_reads_reports_through_the_viewer(new_story):
-    story = reported(new_story, StartedHelper, "The total is wrong.")
+    story = new_story(fixture=ReportedHelper)
     report = helper_report(story)
     story.expect_success(f"message read {report.id}", actor=story.agent)
     answer = viewer(story, "agents.agents", ["message", "agent-reports", "--agent", str(helper_agent(story).id)])
@@ -64,9 +77,9 @@ def test_a_helper_that_says_nothing_still_reports(new_story, helper_fixture):
     story.expect_text(LINES.format(agent=story.agent.id), EMPTY_REPORT_TEXT)
 
 
-@pytest.mark.parametrize("helper_fixture", PROGRAMS)
+@pytest.mark.parametrize("helper_fixture", [ReportedHelper, ReportedCodexHelper])
 def test_a_report_ends_the_job_and_stays_out_of_the_chat(new_story, helper_fixture):
-    story = reported(new_story, helper_fixture, "The total is wrong.")
+    story = new_story(fixture=helper_fixture)
     message, job = helper_report(story), jobs_of(story, helper_agent(story))[0]
     story.expect_rows(message.is_chat_visible is False, job.report_message_id == message.id, job.returned == "The total is wrong.", job.ended_at is not None)
     story.expect_text("chat-mark list --environment 1", f"Agent {helper_agent(story).id} reported back")

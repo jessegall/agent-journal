@@ -21,7 +21,7 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.merge_outcome import MergeOutcome
-from suites.coding.modules.workers.support.merger_nudges import MERGER_JOB, MERGER_MERGED, MERGER_PASSED, MERGER_PROFILE, MERGER_SOURCE, NOTHING_TO_MERGE
+from suites.coding.modules.workers.support.merger_nudges import MERGER_JOB, MERGER_MERGED, MERGER_PASSED, MERGER_PROFILE, MERGER_SOURCE, NO_WORKER_WAITING
 from suites.coding.modules.workers.support.worker_log_lines import WorkerLogLines
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_PASSED
 
@@ -77,18 +77,17 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
 
     command = ReadNextMerge
 
-    def __init__(self, agents: AgentRows, queries: Queries, worktrees: WorktreeQuery, log_lines: WorkerLogLines, repository: Repository) -> None:
-        self.agents, self.queries, self.worktrees, self.log_lines, self.repository = agents, queries, worktrees, log_lines, repository
+    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, log_lines: WorkerLogLines, repository: Repository) -> None:
+        self.agents, self.worktrees, self.log_lines, self.repository = agents, worktrees, log_lines, repository
 
     def handle(self, command: ReadNextMerge, context: Context) -> str:
         checked_merger(self.agents, context)
         worktree = next((row for row in self.worktrees.open_worktrees() if row.state is WorktreeState.DELIVERED and row.tests_passed_at is not None), None)
         if worktree is None:
-            return NOTHING_TO_MERGE
+            return NO_WORKER_WAITING
         worker_id = worktree.session_agent_id
-        review = self.log_lines.review(worker_id)
-        proofs = tuple(self.queries.query(Proof).filter(worktree_id=worktree.id).all_rows())
-        sections = [self.task_section(task, review.summary(task), [proof for proof in proofs if proof.task_id == task.id]) for task in review.tasks]
+        review = self.log_lines.review(worktree)
+        sections = [self.task_section(task, review.summary(task), [proof for proof in review.proofs if proof.task_id == task.id]) for task in review.tasks]
         self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.review_logs, logs_read_at=context.timestamp), context)
         important = "important lines: pass this worker to the main agent\n" if review.has_important_lines() else ""
         return f"worker {worker_id}\n{important}\n" + "\n\n".join(sections)

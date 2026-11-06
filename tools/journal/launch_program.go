@@ -61,10 +61,11 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 		return ErrorCode
 	}
 	defer log.Close()
-	labels := launch.BandLabels{Start: "agent-journal", Middle: filepath.Base(request.Root) + " · " + choice.Environment, End: "viewer link unavailable"}
+	labels := launch.BandLabels{Project: filepath.Base(request.Root), Environment: choice.Environment, Address: "viewer link unavailable"}
 	if link, err := journal.Run("viewer"); err == nil {
-		labels.End = strings.TrimSpace(link)
-		if line := launch.OpenViewer(labels.End, launch.StartDetached); line != "" {
+		link = strings.TrimSpace(link)
+		labels.Address = launch.DisplayAddress(link)
+		if line := launch.OpenViewer(link, launch.StartDetached); line != "" {
 			fmt.Fprintln(stderr, line)
 		}
 	} else {
@@ -99,7 +100,7 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 		if launch.ShowsBand() {
 			return launch.RunBelowBand(launch.NewBand(stdout, labels), command, input, programLog, track)
 		}
-		fmt.Fprintln(stdout, launch.HeaderBar(choice.Environment, agentID, labels.End))
+		fmt.Fprintln(stdout, launch.HeaderBar(choice.Environment, agentID, labels.Address))
 		return launch.RunInTerminal(command, input, stdout, programLog, track)
 	})
 	restoreProgram()

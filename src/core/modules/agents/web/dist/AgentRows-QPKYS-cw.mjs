@@ -1,18 +1,18 @@
 /* @code-commandments-generated */
-import { openBlock as a, createElementBlock as i, withModifiers as Y, unref as u, createTextVNode as m, toDisplayString as g, createVNode as b, createBlock as _, withCtx as S, Fragment as E, renderList as J, createElementVNode as c, createCommentVNode as f, ref as V, computed as k, watch as te, onUnmounted as ce, defineAsyncComponent as We, createSlots as qe, resolveDynamicComponent as Fe, normalizeStyle as se, normalizeClass as X, renderSlot as ge, onMounted as Ve, Teleport as _e, mergeProps as De, toRef as Pe, withKeys as Te, withDirectives as Ue, vShow as Ke, nextTick as Re } from "vue";
-import { peekRef as pe, Icon as be, RunningCommand as Je, FoldGroup as ze, TaskStatusIcon as Ze, Btn as ae, TextArea as Ge, TextInput as Ce, useWindow as ve, SwitchCase as Le, loadWindowComponent as Ye, coalesced as Qe, READ_RATES as Xe, InnerTabs as et, TabBody as tt, EmptyState as Se, useNow as at, age as nt, perHour as lt, TimeAgo as xe, SearchBar as st, Segmented as ot, MenuLabel as $e, MenuItem as ke, RowList as it, toggleFilter as rt } from "@journal/window-kit";
-import { _ as G, T as dt } from "./TranscriptRows-B2AEawo4.js";
-const ut = {
+import { openBlock as a, createElementBlock as i, withModifiers as Y, unref as u, createTextVNode as m, toDisplayString as g, createVNode as y, createBlock as W, withCtx as S, Fragment as E, renderList as J, createElementVNode as c, createCommentVNode as f, ref as V, computed as k, watch as te, onUnmounted as ce, defineAsyncComponent as We, createSlots as qe, resolveDynamicComponent as Fe, normalizeStyle as se, normalizeClass as X, renderSlot as ge, onMounted as ze, Teleport as De, mergeProps as Pe, toRef as Ue, withKeys as Te, withDirectives as Ke, vShow as Je, nextTick as Re } from "vue";
+import { peekRef as pe, Icon as be, RunningCommand as Ze, FoldGroup as Le, TaskStatusIcon as Ge, Btn as ae, TextArea as Ye, TextInput as Ce, useWindow as ve, SwitchCase as Be, loadWindowComponent as Qe, coalesced as Xe, READ_RATES as et, InnerTabs as tt, TabBody as at, EmptyState as Se, useNow as nt, age as lt, perHour as st, TimeAgo as xe, SearchBar as ot, Segmented as it, MenuLabel as $e, MenuItem as ke, RowList as rt, toggleFilter as dt } from "@journal/window-kit";
+import { _ as Z, T as ut } from "./TranscriptRows-CJMSUWzM.mjs";
+const ct = {
   class: "agent-command",
   "data-agent-command": ""
-}, ct = {
+}, gt = {
   key: 1,
   "data-agent-stopped": ""
-}, gt = {
+}, pt = {
   __name: "AgentCommand",
   props: { waitReason: { type: String, required: !0 }, stopped: Boolean, command: { type: String, required: !0 }, note: { type: String, required: !0 } },
   setup(e) {
-    return (r, s) => (a(), i("span", ut, [
+    return (r, s) => (a(), i("span", ct, [
       e.waitReason ? (a(), i("button", {
         key: 0,
         type: "button",
@@ -22,24 +22,24 @@ const ut = {
         onClick: s[0] || (s[0] = Y((n) => u(pe)("test_queue:0"), ["stop"]))
       }, [
         m("Waiting: " + g(e.waitReason) + " ", 1),
-        b(u(be), {
+        y(u(be), {
           name: "arrow",
           size: 11
         })
-      ])) : e.stopped ? (a(), i("span", ct, "Waiting")) : (a(), _(u(Je), {
+      ])) : e.stopped ? (a(), i("span", gt, "Waiting")) : (a(), W(u(Ze), {
         key: 2,
         text: e.command,
         idle: e.note || "thinking"
       }, null, 8, ["text", "idle"]))
     ]));
   }
-}, pt = /* @__PURE__ */ G(gt, [["__scopeId", "data-v-1b371fb5"]]), vt = ["data-agent-delegated", "onClick"], ht = { class: "agent-task-number" }, mt = { class: "agent-task-title" }, ft = ["title"], kt = {
+}, vt = /* @__PURE__ */ Z(pt, [["__scopeId", "data-v-bb905922"]]), ht = ["data-agent-delegated", "onClick"], mt = { class: "agent-task-number" }, ft = { class: "agent-task-title" }, kt = ["title"], yt = {
   __name: "AgentTaskGroup",
   props: { section: { type: Object, required: !0 }, open: Boolean },
   emits: ["toggle"],
   setup(e, { emit: r }) {
     const s = r;
-    return (n, v) => (a(), _(u(ze), {
+    return (n, v) => (a(), W(u(Le), {
       label: e.section.label,
       count: e.section.tasks.length,
       open: e.open,
@@ -54,26 +54,26 @@ const ut = {
           "data-agent-delegated": w.id,
           onClick: ($) => u(pe)(`tasks:${w.id}`)
         }, [
-          b(u(Ze), {
+          y(u(Ge), {
             status: w.state
           }, null, 8, ["status"]),
-          c("span", ht, g(w.id), 1),
-          c("span", mt, g(w.title), 1),
+          c("span", mt, g(w.id), 1),
+          c("span", ft, g(w.title), 1),
           w.plan_id ? (a(), i("span", {
             key: 0,
             class: "agent-task-plan",
             "data-agent-task-plan": "",
             title: `Plan ${w.plan_id}: ${w.plan_title}`
-          }, "Plan " + g(w.plan_id) + ": " + g(w.plan_title), 9, ft)) : f("", !0)
-        ], 8, vt))), 128))
+          }, "Plan " + g(w.plan_id) + ": " + g(w.plan_title), 9, kt)) : f("", !0)
+        ], 8, ht))), 128))
       ]),
       _: 1
     }, 8, ["label", "count", "open", "data-agent-section"]));
   }
-}, yt = /* @__PURE__ */ G(kt, [["__scopeId", "data-v-238ff959"]]), bt = { class: "action-field" }, wt = ["value", "disabled"], Mt = ["value"], xt = { key: 1 }, $t = {
+}, bt = /* @__PURE__ */ Z(yt, [["__scopeId", "data-v-acc154a9"]]), wt = { class: "action-field" }, Mt = ["value", "disabled"], xt = ["value"], $t = { key: 1 }, Ct = {
   key: 1,
   class: "action-field"
-}, Ct = { class: "action-buttons" }, St = {
+}, St = { class: "action-buttons" }, jt = {
   __name: "AgentJobForm",
   props: { row: Object, task: String, tasks: Array, text: String, pending: Boolean, loading: Boolean, moreTasks: Boolean, failure: String, jobReady: Boolean },
   emits: ["submit", "cancel", "more", "update:task", "update:text"],
@@ -82,7 +82,7 @@ const ut = {
       onSubmit: s[4] || (s[4] = Y((n) => r.$emit("submit"), ["prevent"]))
     }, [
       e.row.job_task_flag ? (a(), i(E, { key: 0 }, [
-        c("label", bt, [
+        c("label", wt, [
           s[6] || (s[6] = m("Task ", -1)),
           c("select", {
             value: e.task,
@@ -94,10 +94,10 @@ const ut = {
             (a(!0), i(E, null, J(e.tasks, (n) => (a(), i("option", {
               key: n.id,
               value: String(n.id)
-            }, g(n.id) + ": " + g(n.title), 9, Mt))), 128))
-          ], 40, wt)
+            }, g(n.id) + ": " + g(n.title), 9, xt))), 128))
+          ], 40, Mt)
         ]),
-        e.moreTasks ? (a(), _(u(ae), {
+        e.moreTasks ? (a(), W(u(ae), {
           key: 0,
           small: "",
           disabled: e.pending || e.loading,
@@ -109,18 +109,18 @@ const ut = {
           ])]),
           _: 1
         }, 8, ["disabled"])) : f("", !0),
-        !e.loading && !e.tasks.length && !e.failure ? (a(), i("p", xt, "No open tasks.")) : f("", !0)
-      ], 64)) : (a(), i("label", $t, [
+        !e.loading && !e.tasks.length && !e.failure ? (a(), i("p", $t, "No open tasks.")) : f("", !0)
+      ], 64)) : (a(), i("label", Ct, [
         s[8] || (s[8] = m("Job", -1)),
-        b(u(Ge), {
+        y(u(Ye), {
           value: e.text,
           disabled: e.pending,
           "data-agent-job-text": "",
           onInput: s[2] || (s[2] = (n) => r.$emit("update:text", n.target.value))
         }, null, 8, ["value", "disabled"])
       ])),
-      c("div", Ct, [
-        b(u(ae), {
+      c("div", St, [
+        y(u(ae), {
           type: "submit",
           small: "",
           disabled: e.pending || !e.jobReady,
@@ -131,7 +131,7 @@ const ut = {
           ])]),
           _: 1
         }, 8, ["disabled"]),
-        b(u(ae), {
+        y(u(ae), {
           small: "",
           disabled: e.pending,
           onClick: s[3] || (s[3] = (n) => r.$emit("cancel"))
@@ -144,7 +144,7 @@ const ut = {
       ])
     ], 32));
   }
-}, jt = /* @__PURE__ */ G(St, [["__scopeId", "data-v-adde4158"]]), At = { class: "action-buttons" }, Tt = {
+}, At = /* @__PURE__ */ Z(jt, [["__scopeId", "data-v-356a2712"]]), Tt = { class: "action-buttons" }, Rt = {
   __name: "AgentRetireForm",
   props: { reason: String, pending: Boolean },
   emits: ["submit", "cancel", "update:reason"],
@@ -154,15 +154,15 @@ const ut = {
       onSubmit: s[2] || (s[2] = Y((n) => r.$emit("submit"), ["prevent"]))
     }, [
       s[5] || (s[5] = c("p", null, "Retirement is permanent. This agent cannot be resumed.", -1)),
-      b(u(Ce), {
+      y(u(Ce), {
         "model-value": e.reason,
         label: "Reason",
         disabled: e.pending,
         "data-agent-retire-reason": "",
         "onUpdate:modelValue": s[0] || (s[0] = (n) => r.$emit("update:reason", n))
       }, null, 8, ["model-value", "disabled"]),
-      c("div", At, [
-        b(u(ae), {
+      c("div", Tt, [
+        y(u(ae), {
           type: "submit",
           small: "",
           disabled: e.pending || !e.reason.trim(),
@@ -173,7 +173,7 @@ const ut = {
           ])]),
           _: 1
         }, 8, ["disabled"]),
-        b(u(ae), {
+        y(u(ae), {
           small: "",
           disabled: e.pending,
           onClick: s[1] || (s[1] = (n) => r.$emit("cancel"))
@@ -186,20 +186,20 @@ const ut = {
       ])
     ], 32));
   }
-}, Rt = /* @__PURE__ */ G(Tt, [["__scopeId", "data-v-23a905c0"]]), Ot = { class: "action-buttons" }, Vt = {
+}, Ot = /* @__PURE__ */ Z(Rt, [["__scopeId", "data-v-bbe4e841"]]), Vt = { class: "action-buttons" }, zt = {
   key: 0,
   role: "alert"
-}, zt = {
+}, Lt = {
   key: 1,
   role: "status"
-}, Lt = {
+}, Bt = {
   __name: "AgentActions",
   props: { row: { type: Object, required: !0 } },
   setup(e) {
-    const r = e, s = ve(), n = V(""), v = V(""), w = V(""), $ = V(""), x = V([]), C = V(0), A = V(!1), N = V(!1), L = V(!1), T = V(""), q = V(""), R = k(() => !!r.row.retired_at || r.row.state === "retired"), B = k(() => !R.value && !!r.row.ended_at), H = k(() => {
+    const r = e, s = ve(), n = V(""), v = V(""), w = V(""), $ = V(""), x = V([]), C = V(0), A = V(!1), N = V(!1), L = V(!1), T = V(""), q = V(""), R = k(() => !!r.row.retired_at || r.row.state === "retired"), H = k(() => !R.value && !!r.row.ended_at), B = k(() => {
       var d;
-      return B.value && ((d = r.row.job_command) == null ? void 0 : d.length) && !r.row.resume_reason;
-    }), I = k(() => H.value && !N.value && (r.row.job_task_flag ? x.value.some((d) => String(d.id) === $.value) : !!v.value.trim()));
+      return H.value && ((d = r.row.job_command) == null ? void 0 : d.length) && !r.row.resume_reason;
+    }), I = k(() => B.value && !N.value && (r.row.job_task_flag ? x.value.some((d) => String(d.id) === $.value) : !!v.value.trim()));
     function D(d) {
       n.value = d, v.value = "", w.value = "", $.value = "", T.value = "", q.value = "";
     }
@@ -229,13 +229,13 @@ const ut = {
         }
       }
     }
-    async function y() {
+    async function b() {
       if (!I.value) return;
       const d = r.row.job_task_flag ? [r.row.job_task_flag, $.value] : [v.value.trim()];
       await h([...r.row.job_command, String(r.row.id), ...d], "Job sent.");
     }
     async function l() {
-      !B.value || n.value !== "retire" || !w.value.trim() || await h(["agent", "retire", String(r.row.id), "--reason", w.value.trim()], "Agent retired permanently.");
+      !H.value || n.value !== "retire" || !w.value.trim() || await h(["agent", "retire", String(r.row.id), "--reason", w.value.trim()], "Agent retired permanently.");
     }
     return (d, t) => {
       var o;
@@ -248,13 +248,13 @@ const ut = {
         onKeydown: t[7] || (t[7] = Y(() => {
         }, ["stop"]))
       }, [
-        c("div", Ot, [
-          B.value ? (a(), i(E, { key: 0 }, [
-            (o = e.row.job_command) != null && o.length ? (a(), _(u(ae), {
+        c("div", Vt, [
+          H.value ? (a(), i(E, { key: 0 }, [
+            (o = e.row.job_command) != null && o.length ? (a(), W(u(ae), {
               key: 0,
               small: "",
               "data-agent-send-job": "",
-              disabled: L.value || N.value || !H.value,
+              disabled: L.value || N.value || !B.value,
               onClick: P
             }, {
               default: S(() => [...t[8] || (t[8] = [
@@ -262,7 +262,7 @@ const ut = {
               ])]),
               _: 1
             }, 8, ["disabled"])) : f("", !0),
-            e.row.role !== "main" ? (a(), _(u(ae), {
+            e.row.role !== "main" ? (a(), W(u(ae), {
               key: 1,
               small: "",
               "data-agent-retire": "",
@@ -276,9 +276,9 @@ const ut = {
             }, 8, ["disabled"])) : f("", !0)
           ], 64)) : f("", !0)
         ]),
-        b(u(Le), { value: n.value }, {
+        y(u(Be), { value: n.value }, {
           job: S(() => [
-            b(jt, {
+            y(At, {
               task: $.value,
               "onUpdate:task": t[1] || (t[1] = (O) => $.value = O),
               text: v.value,
@@ -290,13 +290,13 @@ const ut = {
               "more-tasks": A.value,
               failure: T.value,
               "job-ready": I.value,
-              onSubmit: y,
+              onSubmit: b,
               onMore: U,
               onCancel: t[3] || (t[3] = (O) => D(""))
             }, null, 8, ["task", "text", "row", "tasks", "pending", "loading", "more-tasks", "failure", "job-ready"])
           ]),
           retire: S(() => [
-            b(Rt, {
+            y(Ot, {
               reason: w.value,
               "onUpdate:reason": t[4] || (t[4] = (O) => w.value = O),
               pending: L.value,
@@ -306,35 +306,30 @@ const ut = {
           ]),
           _: 1
         }, 8, ["value"]),
-        T.value ? (a(), i("p", Vt, g(T.value), 1)) : f("", !0),
-        q.value ? (a(), i("p", zt, g(q.value), 1)) : f("", !0)
+        T.value ? (a(), i("p", zt, g(T.value), 1)) : f("", !0),
+        q.value ? (a(), i("p", Lt, g(q.value), 1)) : f("", !0)
       ], 32));
     };
   }
-}, Ht = /* @__PURE__ */ G(Lt, [["__scopeId", "data-v-b901f1a1"]]), Bt = {
+}, Ht = /* @__PURE__ */ Z(Bt, [["__scopeId", "data-v-a17d1322"]]), It = {
   key: 0,
   class: "agent-summary",
   "data-agent-retirement-reason": ""
-}, It = {
+}, Et = {
   key: 1,
   class: "agent-summary",
   "data-agent-resume-reason": ""
-}, Et = {
-  key: 2,
-  class: "agent-pace",
-  "data-agent-pace": "",
-  "data-agent-motion": ""
 }, Nt = {
-  key: 4,
+  key: 3,
   class: "agent-ended-reason",
   "data-agent-ended-reason": ""
-}, Wt = ["data-peek", "onClick"], qt = {
+}, _t = ["data-peek", "onClick"], Wt = {
   class: "agent-instruction",
   "data-agent-instruction": ""
-}, Ft = {
+}, qt = {
   key: 0,
   class: "agent-helper-brief"
-}, _t = {
+}, Ft = {
   class: "agent-instruction",
   "data-agent-instruction": ""
 }, Dt = {
@@ -343,37 +338,37 @@ const ut = {
   "data-agent-no-job": ""
 }, Pt = "It ended without a report", Ut = {
   __name: "AgentCardDetails",
-  props: { row: { type: Object, required: !0 }, facts: { type: Object, default: null }, progress: { type: Object, default: null }, waitReason: { type: String, default: "" }, tasks: { type: Array, required: !0 }, stoppedWithWork: Boolean, open: Boolean, totalCount: Number, tasksPerHour: String },
+  props: { row: { type: Object, required: !0 }, facts: { type: Object, default: null }, progress: { type: Object, default: null }, waitReason: { type: String, default: "" }, tasks: { type: Array, required: !0 }, stoppedWithWork: Boolean, open: Boolean },
   setup(e) {
     const r = e, s = ["started", "blocked", "open", "completed"], n = k(() => {
       var t, o;
       return r.row.ended_at && ((o = (t = r.facts) == null ? void 0 : t.job_returned) != null && o.startsWith(Pt)) ? r.facts.job_returned : "";
     }), v = k(() => r.tasks.length ? s.map((t) => ({ state: t, label: t.slice(0, 1).toUpperCase() + t.slice(1), tasks: r.tasks.filter((o) => o.state === t || t === "started" && o.state === "testing" || t === "completed" && o.state === "cancelled") })) : []), w = /* @__PURE__ */ new Set(["completed"]), $ = V({}), x = (t) => !($.value[t] ?? w.has(t)), C = (t) => $.value = { ...$.value, [t]: x(t) }, A = ve(), { rows: N } = A.props.reports;
     A.state["reports.agent"] = String(r.row.id);
-    const L = k(() => r.row.access === "read-only"), T = k(() => !!r.row.retired_at || r.row.state === "retired"), q = ["tasks", "transcript", "terminal", "file-feed", "reports"], R = k(() => (T.value ? A.tabs.filter((o) => ["reports", "transcript"].includes(o.key)) : L.value ? A.tabs.filter((o) => ["reports", "transcript", "terminal"].includes(o.key)) : [...A.tabs]).sort((o, O) => (q.indexOf(o.key) < 0 ? q.length : q.indexOf(o.key)) - (q.indexOf(O.key) < 0 ? q.length : q.indexOf(O.key)))), B = () => L.value || T.value ? R.value.find((t) => t.key === "transcript") : R.value[0], H = V(B());
-    te(H, (t) => {
+    const L = k(() => r.row.access === "read-only"), T = k(() => !!r.row.retired_at || r.row.state === "retired"), q = ["tasks", "transcript", "terminal", "file-feed", "reports"], R = k(() => (T.value ? A.tabs.filter((o) => ["reports", "transcript"].includes(o.key)) : L.value ? A.tabs.filter((o) => ["reports", "transcript", "terminal"].includes(o.key)) : [...A.tabs]).sort((o, O) => (q.indexOf(o.key) < 0 ? q.length : q.indexOf(o.key)) - (q.indexOf(O.key) < 0 ? q.length : q.indexOf(O.key)))), H = () => L.value || T.value ? R.value.find((t) => t.key === "transcript") : R.value[0], B = V(H());
+    te(B, (t) => {
       A.state.tab = (t == null ? void 0 : t.key) ?? "";
     }, { immediate: !0 }), ce(() => {
       A.state.tab = "";
     }), te(R, (t) => {
       t.some((o) => {
         var O;
-        return o.key === ((O = H.value) == null ? void 0 : O.key);
-      }) || (H.value = t[0]);
+        return o.key === ((O = B.value) == null ? void 0 : O.key);
+      }) || (B.value = t[0]);
     }), te(() => r.open, (t) => {
-      t && (H.value = B());
+      t && (B.value = H());
     });
-    const I = Object.fromEntries(A.tabs.filter((t) => t.component).map((t) => [t.key, We(() => Ye(t.component))])), D = V(!1), { data: P } = A.props.tool, U = k(() => {
+    const I = Object.fromEntries(A.tabs.filter((t) => t.component).map((t) => [t.key, We(() => Qe(t.component))])), D = V(!1), { data: P } = A.props.tool, U = k(() => {
       var t;
       return ((t = P.value) == null ? void 0 : t.tool) ?? "";
     }), h = k(() => {
       var t;
       return ((t = P.value) == null ? void 0 : t.note) ?? "";
-    }), y = k(() => r.row.role !== "main" && (!r.row.ended_at || r.stoppedWithWork || r.waitReason));
+    }), b = k(() => r.row.role !== "main" && (!r.row.ended_at || r.stoppedWithWork || r.waitReason));
     async function l() {
-      !r.open || !y.value || (A.state["tool.agent"] = String(r.row.id), await A.reload("tool"));
+      !r.open || !b.value || (A.state["tool.agent"] = String(r.row.id), await A.reload("tool"));
     }
-    const d = A.follow(["hook_call.*", "process_part.*"], Qe(l, Xe.agentCommand));
+    const d = A.follow(["hook_call.*", "process_part.*"], Xe(l, et.agentCommand));
     return ce(() => d == null ? void 0 : d()), te(() => r.open, (t) => {
       t && l();
     }, { immediate: !0 }), (t, o) => {
@@ -384,12 +379,11 @@ const ut = {
         onClick: o[2] || (o[2] = Y(() => {
         }, ["stop"]))
       }, [
-        e.row.retirement_reason ? (a(), i("p", Bt, "Retirement reason: " + g(e.row.retirement_reason), 1)) : f("", !0),
-        e.row.resume_reason ? (a(), i("p", It, g(e.row.resume_reason), 1)) : f("", !0),
-        b(Ht, { row: e.row }, null, 8, ["row"]),
-        e.totalCount && e.tasksPerHour ? (a(), i("span", Et, g(e.tasksPerHour), 1)) : f("", !0),
-        y.value ? (a(), _(pt, {
-          key: 3,
+        e.row.retirement_reason ? (a(), i("p", It, "Retirement reason: " + g(e.row.retirement_reason), 1)) : f("", !0),
+        e.row.resume_reason ? (a(), i("p", Et, g(e.row.resume_reason), 1)) : f("", !0),
+        y(Ht, { row: e.row }, null, 8, ["row"]),
+        b.value ? (a(), W(vt, {
+          key: 2,
           class: "agent-command",
           "wait-reason": e.waitReason,
           stopped: e.stoppedWithWork,
@@ -397,26 +391,26 @@ const ut = {
           note: h.value
         }, null, 8, ["wait-reason", "stopped", "command", "note"])) : f("", !0),
         n.value ? (a(), i("p", Nt, g(n.value), 1)) : f("", !0),
-        b(u(et), {
+        y(u(tt), {
           class: "agent-tabs",
           tabs: R.value,
-          active: H.value,
+          active: B.value,
           answer: { tasks: e.tasks.length, reports: u(N).length },
-          onChoose: o[0] || (o[0] = (p) => H.value = p)
+          onChoose: o[0] || (o[0] = (p) => B.value = p)
         }, null, 8, ["tabs", "active", "answer"]),
-        b(u(tt), {
+        y(u(at), {
           class: "agent-tab-body",
-          tab: H.value,
-          "data-agent-tab-body": (O = H.value) == null ? void 0 : O.key
+          tab: B.value,
+          "data-agent-tab-body": (O = B.value) == null ? void 0 : O.key
         }, {
           default: S(() => {
             var p;
             return [
-              b(u(Le), {
-                value: (p = H.value) == null ? void 0 : p.key
+              y(u(Be), {
+                value: (p = B.value) == null ? void 0 : p.key
               }, qe({
                 reports: S(() => [
-                  u(N).length ? f("", !0) : (a(), _(u(Se), {
+                  u(N).length ? f("", !0) : (a(), W(u(Se), {
                     key: 0,
                     title: "No reports"
                   }, {
@@ -431,12 +425,12 @@ const ut = {
                     class: "agent-report",
                     "data-peek": `messages:${M.id}`,
                     onClick: (z) => u(pe)(`messages:${M.id}`)
-                  }, g(M.text), 9, Wt))), 128))
+                  }, g(M.text), 9, _t))), 128))
                 ]),
                 tasks: S(() => {
                   var M;
                   return [
-                    e.tasks.length ? f("", !0) : (a(), _(u(Se), {
+                    e.tasks.length ? f("", !0) : (a(), W(u(Se), {
                       key: 0,
                       title: "No tasks"
                     }, {
@@ -445,7 +439,7 @@ const ut = {
                       ])]),
                       _: 1
                     })),
-                    (a(!0), i(E, null, J(v.value, (z) => (a(), _(yt, {
+                    (a(!0), i(E, null, J(v.value, (z) => (a(), W(bt, {
                       key: z.state,
                       section: z,
                       open: x(z.state),
@@ -453,7 +447,7 @@ const ut = {
                     }, null, 8, ["section", "open", "onToggle"]))), 128)),
                     (M = e.facts) != null && M.instruction ? (a(), i(E, { key: 1 }, [
                       o[5] || (o[5] = c("p", { class: "agent-label" }, "Instruction", -1)),
-                      c("div", qt, g(e.facts.instruction), 1)
+                      c("div", Wt, g(e.facts.instruction), 1)
                     ], 64)) : f("", !0)
                   ];
                 }),
@@ -461,21 +455,21 @@ const ut = {
                   var M;
                   return [
                     L.value ? (a(), i(E, { key: 0 }, [
-                      (M = e.facts) != null && M.instruction ? (a(), i("div", Ft, [
-                        b(u(ze), {
+                      (M = e.facts) != null && M.instruction ? (a(), i("div", qt, [
+                        y(u(Le), {
                           label: "Instruction",
                           open: D.value,
                           "data-agent-section": "instruction",
                           onToggle: o[1] || (o[1] = (z) => D.value = !D.value)
                         }, {
                           default: S(() => [
-                            c("div", _t, g(e.facts.instruction), 1)
+                            c("div", Ft, g(e.facts.instruction), 1)
                           ]),
                           _: 1
                         }, 8, ["open"])
                       ])) : e.facts && e.row.ended_at ? (a(), i("p", Dt, "No job recorded")) : f("", !0)
                     ], 64)) : f("", !0),
-                    b(dt, {
+                    y(ut, {
                       name: `transcript.${e.row.id}`,
                       padding: "0"
                     }, null, 8, ["name"])
@@ -486,7 +480,7 @@ const ut = {
                 J(u(I), (M, z) => ({
                   name: z,
                   fn: S(() => [
-                    (a(), _(Fe(M), {
+                    (a(), W(Fe(M), {
                       agent: e.row.id
                     }, null, 8, ["agent"]))
                   ])
@@ -499,7 +493,26 @@ const ut = {
       ]);
     };
   }
-}, Kt = /* @__PURE__ */ G(Ut, [["__scopeId", "data-v-c2369bac"]]), Jt = ["stroke-width", "innerHTML"], Z = {
+}, Kt = /* @__PURE__ */ Z(Ut, [["__scopeId", "data-v-d97d311b"]]), Jt = {
+  class: "agent-count",
+  "data-agent-motion": ""
+}, Zt = {
+  key: 0,
+  class: "agent-pace",
+  "data-agent-pace": ""
+}, Gt = {
+  class: "agent-tasks",
+  "data-agent-tasks": ""
+}, Yt = {
+  __name: "AgentTaskCount",
+  props: { count: { type: String, required: !0 }, rate: { type: String, required: !0 } },
+  setup(e) {
+    return (r, s) => (a(), i("span", Jt, [
+      e.rate ? (a(), i("span", Zt, g(e.rate), 1)) : f("", !0),
+      c("span", Gt, g(e.count), 1)
+    ]));
+  }
+}, Oe = /* @__PURE__ */ Z(Yt, [["__scopeId", "data-v-c4df37a4"]]), Qt = ["stroke-width", "innerHTML"], G = {
   __name: "Icon",
   props: {
     name: { type: String, default: "dot" },
@@ -654,16 +667,16 @@ const ut = {
       "stroke-linejoin": "round",
       "aria-hidden": "true",
       innerHTML: v[n[e.name] || e.name] || v.dot
-    }, null, 12, Jt));
+    }, null, 12, Qt));
   }
-}, Zt = {
+}, Xt = {
   key: 0,
   class: "menu-item-check",
   "aria-hidden": "true"
-}, Gt = {
+}, ea = {
   key: 1,
   class: "menu-item-text"
-}, Yt = {
+}, ta = {
   __name: "MenuItem",
   props: { on: Boolean, danger: Boolean, checked: { type: Boolean, default: null }, description: { type: String, default: "" } },
   setup(e) {
@@ -671,8 +684,8 @@ const ut = {
       type: "button",
       class: X(["menu-item", { on: e.on, danger: e.danger, described: e.description }])
     }, [
-      e.checked !== null ? (a(), i("span", Zt, g(e.checked ? "✓" : ""), 1)) : f("", !0),
-      e.description ? (a(), i("span", Gt, [
+      e.checked !== null ? (a(), i("span", Xt, g(e.checked ? "✓" : ""), 1)) : f("", !0),
+      e.description ? (a(), i("span", ea, [
         c("span", null, [
           ge(r.$slots, "default", {}, void 0, !0)
         ]),
@@ -680,45 +693,45 @@ const ut = {
       ])) : ge(r.$slots, "default", {}, void 0, !0, 2)
     ], 2));
   }
-}, de = /* @__PURE__ */ G(Yt, [["__scopeId", "data-v-fec99974"]]), Qt = {}, Xt = { class: "menu-label" };
-function ea(e, r) {
-  return a(), i("span", Xt, [
+}, de = /* @__PURE__ */ Z(ta, [["__scopeId", "data-v-9c67fe37"]]), aa = {}, na = { class: "menu-label" };
+function la(e, r) {
+  return a(), i("span", na, [
     ge(e.$slots, "default", {}, void 0, !0)
   ]);
 }
-const ue = /* @__PURE__ */ G(Qt, [["render", ea], ["__scopeId", "data-v-aa955b3e"]]), ta = {
+const ue = /* @__PURE__ */ Z(aa, [["render", la], ["__scopeId", "data-v-71c11156"]]), sa = {
   class: "skills-menu",
   "data-agent-skills-menu": ""
-}, aa = {
+}, oa = {
   key: 0,
   class: "skills-none"
-}, na = {
+}, ia = {
   __name: "AgentSkillsMenu",
   props: { skills: { type: Array, required: !0 } },
   emits: ["browse"],
   setup(e, { emit: r }) {
     const s = e, n = r, v = k(() => s.skills.filter(($) => $.state === "loaded")), w = k(() => s.skills.filter(($) => $.state !== "loaded"));
-    return ($, x) => (a(), i("div", ta, [
-      b(ue, null, {
+    return ($, x) => (a(), i("div", sa, [
+      y(ue, null, {
         default: S(() => [...x[1] || (x[1] = [
           m("Read in this conversation", -1)
         ])]),
         _: 1
       }),
-      v.value.length ? f("", !0) : (a(), i("p", aa, "None yet. Compacting the conversation empties this list.")),
+      v.value.length ? f("", !0) : (a(), i("p", oa, "None yet. Compacting the conversation empties this list.")),
       (a(!0), i(E, null, J(v.value, (C) => (a(), i("p", {
         key: C.id,
         class: "skill-line",
         "data-agent-skill-read": ""
       }, [
-        b(Z, {
+        y(G, {
           name: "book",
           size: 12
         }),
         m(g(C.skill), 1)
       ]))), 128)),
       w.value.length ? (a(), i(E, { key: 1 }, [
-        b(ue, null, {
+        y(ue, null, {
           default: S(() => [...x[2] || (x[2] = [
             m("Still to read", -1)
           ])]),
@@ -729,14 +742,14 @@ const ue = /* @__PURE__ */ G(Qt, [["render", ea], ["__scopeId", "data-v-aa955b3e
           class: "skill-line waiting",
           "data-agent-skill-waiting": ""
         }, [
-          b(Z, {
+          y(G, {
             name: "book",
             size: 12
           }),
           m(g(C.skill), 1)
         ]))), 128))
       ], 64)) : f("", !0),
-      b(de, {
+      y(de, {
         "data-agent-skills-browse": "",
         onClick: x[0] || (x[0] = (C) => n("browse"))
       }, {
@@ -747,20 +760,20 @@ const ue = /* @__PURE__ */ G(Qt, [["render", ea], ["__scopeId", "data-v-aa955b3e
       })
     ]));
   }
-}, la = /* @__PURE__ */ G(na, [["__scopeId", "data-v-be514d47"]]), sa = (e, r, s) => Math.max(r, Math.min(s, e)), He = /* @__PURE__ */ new WeakMap(), oa = (e, r) => He.set(e, r);
-function ia(e, r) {
+}, ra = /* @__PURE__ */ Z(ia, [["__scopeId", "data-v-27140adf"]]), da = (e, r, s) => Math.max(r, Math.min(s, e)), He = /* @__PURE__ */ new WeakMap(), ua = (e, r) => He.set(e, r);
+function ca(e, r) {
   for (let s = r; s; s = He.get(s) ?? s.parentElement) if (s === e) return !0;
   return !1;
 }
-function ra(e, r) {
+function ga(e, r) {
   const s = (n) => {
     var w, $;
     const v = ((w = e.value) == null ? void 0 : w.element) || (($ = e.value) == null ? void 0 : $.$el) || e.value;
-    v && !ia(v, n.target) && r(n);
+    v && !ca(v, n.target) && r(n);
   };
   window.addEventListener("click", s), ce(() => window.removeEventListener("click", s));
 }
-const re = 8, da = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
+const re = 8, pa = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
   __name: "MenuPanel",
   props: {
     anchor: { type: Object, default: null },
@@ -799,53 +812,53 @@ const re = 8, da = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       const M = L(n.anchor), z = q(M, p);
       return x.value.w <= z.across && x.value.h <= Math.max(z.below, z.above) ? M : A();
     }
-    const B = k(() => {
+    const H = k(() => {
       if (!C.value) return $.value;
-      const p = C.value, M = R(p), z = q(M, p), { w: Q, h: he } = x.value, oe = n.align === "auto" ? p.left + p.right > M.left + M.right : n.align === "right", ne = sa(oe ? p.right - Q : p.left, M.left + re, Math.max(M.left + re, M.right - Q - re)), Me = he > z.below && z.above > z.below ? { bottom: `${window.innerHeight - p.top + n.gap}px`, maxHeight: T(n.maxHeight, z.above) } : { top: `${p.bottom + n.gap}px`, maxHeight: T(n.maxHeight, z.below) };
+      const p = C.value, M = R(p), z = q(M, p), { w: Q, h: he } = x.value, oe = n.align === "auto" ? p.left + p.right > M.left + M.right : n.align === "right", ne = da(oe ? p.right - Q : p.left, M.left + re, Math.max(M.left + re, M.right - Q - re)), Me = he > z.below && z.above > z.below ? { bottom: `${window.innerHeight - p.top + n.gap}px`, maxHeight: T(n.maxHeight, z.above) } : { top: `${p.bottom + n.gap}px`, maxHeight: T(n.maxHeight, z.below) };
       return { ...$.value, ...Me, left: `${ne}px`, maxWidth: T(n.maxWidth, z.across) };
-    }), H = s, I = () => [...v.value.querySelectorAll("button:not(:disabled)")];
+    }), B = s, I = () => [...v.value.querySelectorAll("button:not(:disabled)")];
     function D(p) {
       const M = I(), z = M.indexOf(document.activeElement);
       M[(z + p + M.length) % M.length].focus();
     }
-    const P = { ArrowDown: () => D(1), ArrowUp: () => D(-1), Escape: () => H("close") }, U = (p) => P[p.key] && (p.preventDefault(), P[p.key]()), h = () => v.value && (x.value = { w: v.value.offsetWidth, h: v.value.scrollHeight });
-    let y = 0;
+    const P = { ArrowDown: () => D(1), ArrowUp: () => D(-1), Escape: () => B("close") }, U = (p) => P[p.key] && (p.preventDefault(), P[p.key]()), h = () => v.value && (x.value = { w: v.value.offsetWidth, h: v.value.scrollHeight });
+    let b = 0;
     const l = new ResizeObserver(() => {
-      cancelAnimationFrame(y), y = requestAnimationFrame(h);
+      cancelAnimationFrame(b), b = requestAnimationFrame(h);
     });
-    ra(v, (p) => n.anchor && !n.anchor.contains(p.target) && H("close"));
+    ga(v, (p) => n.anchor && !n.anchor.contains(p.target) && B("close"));
     const d = (p, M) => ["top", "left", "right", "bottom"].some((z) => Math.abs(p[z] - M[z]) > 1), t = (p) => p.bottom < 0 || p.top > window.innerHeight;
     let o = 0;
     function O() {
       if (n.anchor) {
         const p = n.anchor.getBoundingClientRect();
-        if (!n.anchor.isConnected || t(p)) return H("close");
+        if (!n.anchor.isConnected || t(p)) return B("close");
         d(p, C.value) && (C.value = p);
       }
       o = requestAnimationFrame(O);
     }
-    return Ve(() => {
-      n.anchor && v.value && oa(v.value, n.anchor), h(), v.value && l.observe(v.value), !n.plain && I()[0] && I()[0].focus(), O();
+    return ze(() => {
+      n.anchor && v.value && ua(v.value, n.anchor), h(), v.value && l.observe(v.value), !n.plain && I()[0] && I()[0].focus(), O();
     }), ce(() => {
-      l.disconnect(), cancelAnimationFrame(o), cancelAnimationFrame(y);
-    }), r({ element: v }), (p, M) => (a(), _(_e, {
+      l.disconnect(), cancelAnimationFrame(o), cancelAnimationFrame(b);
+    }), r({ element: v }), (p, M) => (a(), W(De, {
       to: "body",
       disabled: !e.anchor
     }, [
-      c("div", De({
+      c("div", Pe({
         ref_key: "panel",
         ref: v
       }, p.$attrs, {
         class: ["menu-panel", { anchored: e.anchor }],
-        style: B.value,
+        style: H.value,
         onKeydown: U
       }), [
         ge(p.$slots, "default", {}, void 0, !0)
       ], 16)
     ], 8, ["disabled"]));
   }
-}), ua = /* @__PURE__ */ G(da, [["__scopeId", "data-v-3d203970"]]);
-async function ca(e, r, s) {
+}), va = /* @__PURE__ */ Z(pa, [["__scopeId", "data-v-7f046e0d"]]);
+async function ha(e, r, s) {
   if (!e) return s(r);
   const { target: n, fields: v } = e, w = Object.fromEntries(Object.keys(v).map((C) => [C, n[C]])), $ = () => Object.assign(n, w);
   Object.assign(n, v);
@@ -857,52 +870,52 @@ async function ca(e, r, s) {
     x || $();
   }
 }
-function ga(e, r, s) {
+function ma(e, r, s) {
   const n = V([]), v = V([]), w = V({}), $ = V(""), x = V(!1), C = k(() => !!e.value && !e.value.ended_at), A = k(() => C.value && !!e.value.paused_at);
   async function N() {
     if (C.value) {
-      const H = await r(["agent", "controls", String(e.value.id)]);
-      n.value = H.ok ? H.value.groups : [];
+      const B = await r(["agent", "controls", String(e.value.id)]);
+      n.value = B.ok ? B.value.groups : [];
       return;
     }
-    const B = await r(["agent", "programs"]);
-    v.value = B.ok ? B.value.rows : [];
+    const H = await r(["agent", "programs"]);
+    v.value = H.ok ? H.value.rows : [];
   }
-  async function L(B, H = null) {
+  async function L(H, B = null) {
     $.value = "";
-    const I = await ca(H, B, r);
+    const I = await ha(B, H, r);
     return $.value = I.ok ? "" : I.error, s(), I;
   }
-  const T = (B, H) => L(["agent", "control", String(e.value.id), B, H.value], { target: w, fields: { value: { ...w.value, [B]: H.label } } }), q = () => (x.value = !1, L(["agent", "stop", String(e.value.id)], { target: e.value, fields: { ended_at: (/* @__PURE__ */ new Date()).toISOString() } })), R = (B) => L(["agent", "launch", B.name]);
-  return Ve(N), te(C, N), { groups: n, programs: v, chosen: w, failure: $, asking: x, running: C, paused: A, choose: T, stop: q, start: R };
+  const T = (H, B) => L(["agent", "control", String(e.value.id), H, B.value], { target: w, fields: { value: { ...w.value, [H]: B.label } } }), q = () => (x.value = !1, L(["agent", "stop", String(e.value.id)], { target: e.value, fields: { ended_at: (/* @__PURE__ */ new Date()).toISOString() } })), R = (H) => L(["agent", "launch", H.name]);
+  return ze(N), te(C, N), { groups: n, programs: v, chosen: w, failure: $, asking: x, running: C, paused: A, choose: T, stop: q, start: R };
 }
-const Be = { claude: "Claude Code", codex: "Codex" };
-Object.entries(Be).map(([e, r]) => ({ key: e, label: r }));
-function pa(e, r = "agent") {
-  return Be[e] || r;
+const Ie = { claude: "Claude Code", codex: "Codex" };
+Object.entries(Ie).map(([e, r]) => ({ key: e, label: r }));
+function fa(e, r = "agent") {
+  return Ie[e] || r;
 }
-function va(e) {
+function ka(e) {
   if (!e) return "Not compacted yet";
   const r = new Date(e.started_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "medium" });
   return e.start_percent === null ? `Last compacted ${r}` : e.end_percent === null ? `Last compacted ${r}, from ${e.start_percent}%` : `Last compacted ${r}, from ${e.start_percent}% to ${e.end_percent}%, ${e.start_percent - e.end_percent}% taken off`;
 }
-const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" }, ka = ["disabled", "title"], ya = { class: "gauge" }, ba = ["disabled", "title"], wa = ["disabled"], Ma = ["disabled"], xa = {
+const ya = ["disabled", "title"], ba = ["title"], wa = { class: "gauge usage" }, Ma = ["disabled", "title"], xa = { class: "gauge" }, $a = ["disabled", "title"], Ca = ["disabled"], Sa = ["disabled"], ja = {
   key: 5,
   class: "fact",
   "data-fact": "uptime",
   title: "How long this session has run"
-}, $a = {
+}, Aa = {
   key: 6,
   class: "fact",
   "data-fact": "branch",
   title: "Current branch"
-}, Ca = ["title"], Sa = {
+}, Ta = ["title"], Ra = {
   class: "context-meter",
   "data-context-menu-meter": ""
-}, ja = { class: "gauge" }, Aa = { class: "context-used" }, Ta = {
+}, Oa = { class: "gauge" }, Va = { class: "context-used" }, za = {
   class: "context-compaction",
   "data-context-menu-compaction": ""
-}, Ra = 75, Oa = {
+}, La = 75, Ba = {
   __name: "InformationBar",
   props: {
     agent: { type: Object, default: null },
@@ -917,7 +930,7 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
   },
   emits: ["open", "changed"],
   setup(e, { emit: r }) {
-    const s = e, n = r, v = ga(Pe(s, "agent"), s.run ?? (async () => ({ ok: !1, error: "nothing to ask" })), () => n("changed")), w = V(null), $ = V(""), x = k(() => v.groups.value.find((l) => l.key === $.value));
+    const s = e, n = r, v = ma(Ue(s, "agent"), s.run ?? (async () => ({ ok: !1, error: "nothing to ask" })), () => n("changed")), w = V(null), $ = V(""), x = k(() => v.groups.value.find((l) => l.key === $.value));
     function C(l, d) {
       w.value = l.currentTarget, $.value = d;
     }
@@ -936,10 +949,10 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
       var l;
       return (l = s.agent) == null ? void 0 : l.id;
     }, T, { immediate: !0 });
-    const R = (l) => v.groups.value.some((d) => d.key === l), B = k(() => {
+    const R = (l) => v.groups.value.some((d) => d.key === l), H = k(() => {
       var l;
       return v.chosen.value.model ?? ((l = I.value) == null ? void 0 : l.model) ?? "";
-    }), H = k(() => {
+    }), B = k(() => {
       var l;
       return v.chosen.value.effort ?? ((l = I.value) == null ? void 0 : l.effort) ?? "";
     });
@@ -959,7 +972,7 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
     }), h = k(() => {
       var l;
       return (l = I.value) != null && l.cost_dollars ? `$${I.value.cost_dollars.toFixed(2)}` : "";
-    }), y = k(() => {
+    }), b = k(() => {
       var t;
       const l = (t = s.agent) != null && t.process_started_at ? new Date(s.agent.process_started_at).getTime() : 0;
       if (!l) return "";
@@ -979,12 +992,12 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
           title: `Session ${e.agent.session}: stop it`,
           onClick: d[0] || (d[0] = (t) => C(t, "agent"))
         }, [
-          b(Z, {
+          y(G, {
             name: "agents",
             size: 12
           }),
-          m(" " + g(u(pa)(e.agent.program)), 1)
-        ], 8, ha),
+          m(" " + g(u(fa)(e.agent.program)), 1)
+        ], 8, ya),
         P.value !== null ? (a(), i("button", {
           key: 0,
           type: "button",
@@ -993,18 +1006,18 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
           title: `${P.value}% of the plan's ${D.value.title} allowance used`,
           onClick: d[1] || (d[1] = (t) => n("open", "usage", t.currentTarget))
         }, [
-          b(Z, {
+          y(G, {
             name: "clock",
             size: 12
           }),
           d[14] || (d[14] = m()),
-          c("span", fa, [
+          c("span", wa, [
             c("span", {
               style: se({ width: `${P.value}%` })
             }, null, 4)
           ]),
           m(" " + g(P.value) + "% ", 1)
-        ], 8, ma)) : f("", !0),
+        ], 8, ba)) : f("", !0),
         U.value !== null ? (a(), i("button", {
           key: 1,
           type: "button",
@@ -1014,34 +1027,34 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
           title: `Context ${U.value}% full: clear or compact it`,
           onClick: d[2] || (d[2] = (t) => R("context") ? C(t, "context") : n("open", "context", t.currentTarget))
         }, [
-          b(Z, {
+          y(G, {
             name: "gauge",
             size: 12
           }),
           d[15] || (d[15] = m()),
-          c("span", ya, [
+          c("span", xa, [
             c("span", {
               style: se({ width: `${U.value}%` })
             }, null, 4)
           ]),
           m(" " + g(U.value) + "% ", 1)
-        ], 8, ka)) : f("", !0),
-        B.value ? (a(), i("button", {
+        ], 8, Ma)) : f("", !0),
+        H.value ? (a(), i("button", {
           key: 2,
           type: "button",
           class: "fact",
           disabled: e.card,
           "data-fact": "model",
-          title: `${B.value}: change the model`,
+          title: `${H.value}: change the model`,
           onClick: d[3] || (d[3] = (t) => R("model") ? C(t, "model") : null)
         }, [
-          b(Z, {
+          y(G, {
             name: "model",
             size: 12
           }),
-          m(" " + g(B.value), 1)
-        ], 8, ba)) : f("", !0),
-        R("effort") || e.card && H.value ? (a(), i("button", {
+          m(" " + g(H.value), 1)
+        ], 8, $a)) : f("", !0),
+        R("effort") || e.card && B.value ? (a(), i("button", {
           key: 3,
           type: "button",
           class: "fact",
@@ -1050,12 +1063,12 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
           title: "Reasoning effort: change it",
           onClick: d[4] || (d[4] = (t) => C(t, "effort"))
         }, [
-          b(Z, {
+          y(G, {
             name: "bolt",
             size: 12
           }),
-          m(" " + g(H.value), 1)
-        ], 8, wa)) : f("", !0),
+          m(" " + g(B.value), 1)
+        ], 8, Ca)) : f("", !0),
         h.value ? (a(), i("button", {
           key: 4,
           type: "button",
@@ -1064,16 +1077,16 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
           "data-fact": "cost",
           title: "The predicted API price of this session: open its breakdown",
           onClick: d[5] || (d[5] = (t) => n("open", "cost", t.currentTarget))
-        }, g(h.value), 9, Ma)) : f("", !0),
-        y.value ? (a(), i("span", xa, [
-          b(Z, {
+        }, g(h.value), 9, Sa)) : f("", !0),
+        b.value ? (a(), i("span", ja, [
+          y(G, {
             name: "reminders",
             size: 12
           }),
-          m(" " + g(y.value), 1)
+          m(" " + g(b.value), 1)
         ])) : f("", !0),
-        e.branch ? (a(), i("span", $a, [
-          b(Z, {
+        e.branch ? (a(), i("span", Aa, [
+          y(G, {
             name: "branch",
             size: 12
           }),
@@ -1087,7 +1100,7 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
           title: "Jobs the agent scheduled for itself",
           onClick: d[6] || (d[6] = (t) => n("open", "jobs", t.currentTarget))
         }, [
-          b(Z, {
+          y(G, {
             name: "clock",
             size: 12
           }),
@@ -1101,7 +1114,7 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
           title: "View skills read by this agent",
           onClick: q
         }, [
-          b(Z, {
+          y(G, {
             name: "book",
             size: 12
           }),
@@ -1110,12 +1123,12 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
         e.fitness ? (a(), i(E, { key: 9 }, [
           c("button", {
             type: "button",
-            class: X(["fact", "fitness-fact", { low: e.fitness.is_measured && e.fitness.score < Ra }]),
+            class: X(["fact", "fitness-fact", { low: e.fitness.is_measured && e.fitness.score < La }]),
             "data-fact": "fitness",
             title: "View the agent’s performance measures",
             onClick: d[7] || (d[7] = (t) => n("open", "fitness", t.currentTarget))
           }, [
-            b(Z, {
+            y(G, {
               name: "heart",
               size: 12
             }),
@@ -1128,7 +1141,7 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
             title: "Compare incoming messages with agent replies",
             onClick: d[8] || (d[8] = (t) => n("open", "load", t.currentTarget))
           }, [
-            b(Z, {
+            y(G, {
               name: "weight",
               size: 12
             }),
@@ -1142,7 +1155,7 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
         "data-agent-start": "",
         onClick: d[9] || (d[9] = (t) => C(t, "start"))
       }, [
-        b(Z, {
+        y(G, {
           name: "agents",
           size: 12
         }),
@@ -1155,9 +1168,9 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
         role: "alert",
         "data-agent-failure": "",
         title: u(v).failure.value
-      }, g(u(v).failure.value), 9, Ca)) : f("", !0),
+      }, g(u(v).failure.value), 9, Ta)) : f("", !0),
       ge(l.$slots, "default", {}, void 0, !0),
-      w.value ? (a(), _(ua, {
+      w.value ? (a(), W(va, {
         key: 3,
         anchor: w.value,
         "min-width": 190,
@@ -1168,13 +1181,13 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
           return [
             $.value === "agent" ? (a(), i(E, { key: 0 }, [
               u(v).asking.value ? (a(), i(E, { key: 0 }, [
-                b(ue, { "data-agent-stop-ask": "" }, {
+                y(ue, { "data-agent-stop-ask": "" }, {
                   default: S(() => [...d[17] || (d[17] = [
                     m("Stop the agent? It stops what it is doing.", -1)
                   ])]),
                   _: 1
                 }),
-                b(de, {
+                y(de, {
                   "data-agent-stop-confirm": "",
                   onClick: d[10] || (d[10] = (o) => (A(), u(v).stop()))
                 }, {
@@ -1183,7 +1196,7 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
                   ])]),
                   _: 1
                 }),
-                b(de, {
+                y(de, {
                   onClick: d[11] || (d[11] = (o) => u(v).asking.value = !1)
                 }, {
                   default: S(() => [...d[19] || (d[19] = [
@@ -1191,7 +1204,7 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
                   ])]),
                   _: 1
                 })
-              ], 64)) : (a(), _(de, {
+              ], 64)) : (a(), W(de, {
                 key: 1,
                 "data-agent-stop": "",
                 onClick: d[12] || (d[12] = (o) => u(v).asking.value = !0)
@@ -1202,13 +1215,13 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
                 _: 1
               }))
             ], 64)) : $.value === "start" ? (a(), i(E, { key: 1 }, [
-              b(ue, null, {
+              y(ue, null, {
                 default: S(() => [...d[21] || (d[21] = [
                   m("Start an agent", -1)
                 ])]),
                 _: 1
               }),
-              (a(!0), i(E, null, J(u(v).programs.value, (o) => (a(), _(de, {
+              (a(!0), i(E, null, J(u(v).programs.value, (o) => (a(), W(de, {
                 key: o.name,
                 "data-agent-program": o.name,
                 onClick: (O) => (A(), u(v).start(o))
@@ -1218,29 +1231,29 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
                 ]),
                 _: 2
               }, 1032, ["data-agent-program", "onClick"]))), 128))
-            ], 64)) : $.value === "skills" ? (a(), _(la, {
+            ], 64)) : $.value === "skills" ? (a(), W(ra, {
               key: 2,
               skills: N.value,
               onBrowse: d[13] || (d[13] = (o) => (A(), n("open", "skills", null)))
             }, null, 8, ["skills"])) : x.value ? (a(), i(E, { key: 3 }, [
-              b(ue, null, {
+              y(ue, null, {
                 default: S(() => [
                   m(g(x.value.label), 1)
                 ]),
                 _: 1
               }),
               $.value === "context" ? (a(), i(E, { key: 0 }, [
-                c("div", Sa, [
-                  c("span", ja, [
+                c("div", Ra, [
+                  c("span", Oa, [
                     c("span", {
                       style: se({ width: `${U.value}%` })
                     }, null, 4)
                   ]),
-                  c("span", Aa, g(U.value) + "%", 1)
+                  c("span", Va, g(U.value) + "%", 1)
                 ]),
-                c("p", Ta, g(u(va)(((t = I.value) == null ? void 0 : t.last_compaction) ?? null)), 1)
+                c("p", za, g(u(ka)(((t = I.value) == null ? void 0 : t.last_compaction) ?? null)), 1)
               ], 64)) : f("", !0),
-              (a(!0), i(E, null, J(x.value.choices, (o) => (a(), _(de, {
+              (a(!0), i(E, null, J(x.value.choices, (o) => (a(), W(de, {
                 key: o.value,
                 "data-agent-choice": o.value,
                 onClick: (O) => (u(v).choose(x.value.key, o), A())
@@ -1257,55 +1270,46 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
       }, 8, ["anchor"])) : f("", !0)
     ], 2));
   }
-}, Va = /* @__PURE__ */ G(Oa, [["__scopeId", "data-v-58c7f8ed"]]), za = ["data-agent-open", "aria-expanded", "role", "tabindex"], La = { class: "agent-head" }, Ha = ["data-state"], Ba = {
+}, Ha = /* @__PURE__ */ Z(Ba, [["__scopeId", "data-v-d5933ce4"]]), Ia = ["data-agent-open", "aria-expanded", "role", "tabindex"], Ea = { class: "agent-head" }, Na = ["data-state"], _a = {
   class: "agent-title",
   "data-agent-title": "",
   "data-agent-motion": ""
-}, Ia = {
+}, Wa = {
   class: "agent-name",
   "data-agent-name": "",
   "data-agent-motion": ""
-}, Ea = { class: "agent-times" }, Na = {
+}, qa = { class: "agent-times" }, Fa = {
   key: 0,
   class: "agent-time",
   "data-agent-motion": ""
-}, Wa = {
+}, Da = {
   key: 1,
   class: "agent-time",
   "data-agent-motion": ""
-}, qa = {
+}, Pa = {
   key: 2,
   class: "agent-time",
   "data-agent-motion": ""
-}, Fa = { class: "agent-line" }, _a = {
+}, Ua = { class: "agent-line" }, Ka = {
   class: "agent-identity",
   "data-agent-identity": "",
   "data-agent-motion": ""
-}, Da = {
+}, Ja = {
   key: 0,
   class: "agent-last-heard",
   "data-agent-last-heard": ""
-}, Pa = {
+}, Za = {
   key: 1,
   class: "agent-line"
-}, Ua = {
-  class: "agent-tasks",
-  "data-agent-tasks": "",
-  "data-agent-motion": ""
-}, Ka = {
+}, Ga = {
   key: 2,
   class: "agent-line agent-work-start"
-}, Ja = ["data-peek"], Za = ["title"], Ga = ["data-peek"], Ya = ["data-agent-waiting", "data-agent-stopped"], Qa = {
-  key: 1,
-  class: "agent-tasks",
-  "data-agent-tasks": "",
-  "data-agent-motion": ""
-}, Xa = {
+}, Ya = ["data-peek"], Qa = ["title"], Xa = ["data-peek"], en = ["data-agent-waiting", "data-agent-stopped"], tn = {
   __name: "AgentCard",
   props: { row: { type: Object, required: !0 }, facts: { type: Object, default: null }, progress: { type: Object, default: null }, waitReason: { type: String, default: "" }, open: Boolean },
   emits: ["toggle"],
   setup(e, { emit: r }) {
-    const s = { helper: "Helper", reviewer: "Reviewer" }, n = e, v = r, w = at(), $ = k(() => {
+    const s = { helper: "Helper", reviewer: "Reviewer" }, n = e, v = r, w = nt(), $ = k(() => {
       var o, O;
       if ((o = n.facts) != null && o.profile_title) return n.facts.profile_title;
       if ((O = n.facts) != null && O.profile) return n.facts.profile;
@@ -1329,7 +1333,7 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
     }), T = k(() => n.row.role === "main" ? "" : `${n.row.role} ${n.row.id}`), q = k(() => {
       var t, o;
       return [n.row.program, (t = n.facts) == null ? void 0 : t.model, (o = n.facts) == null ? void 0 : o.effort, T.value].filter(Boolean).join(" · ");
-    }), R = ve(), B = k(() => nt(n.row.process_started_at || n.row.created_at, w.value)), H = /* @__PURE__ */ new Set(["open", "started", "testing"]), I = k(() => !!n.row.ended_at && n.row.role !== "main" && x.value.some((t) => H.has(t.state))), D = k(() => {
+    }), R = ve(), H = k(() => lt(n.row.process_started_at || n.row.created_at, w.value)), B = /* @__PURE__ */ new Set(["open", "started", "testing"]), I = k(() => !!n.row.ended_at && n.row.role !== "main" && x.value.some((t) => B.has(t.state))), D = k(() => {
       var t;
       return n.row.retired_at || n.row.state === "retired" ? "retired" : n.waitReason || I.value ? "waiting" : n.row.state === "running" && ((t = n.facts) == null ? void 0 : t.state) || n.row.state;
     }), P = k(() => {
@@ -1341,9 +1345,9 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
     }), h = k(() => {
       var t;
       return ((t = n.progress) == null ? void 0 : t.task_count) ?? x.value.length;
-    }), y = k(() => `${U.value} of ${h.value} ${h.value === 1 ? "task" : "tasks"}`), l = k(() => {
+    }), b = k(() => `${U.value} of ${h.value} ${h.value === 1 ? "task" : "tasks"}`), l = k(() => {
       var o;
-      const t = lt(U.value, ((o = n.progress) == null ? void 0 : o.started_at) || n.row.created_at, n.progress ? n.progress.finished_at : n.row.ended_at, w.value);
+      const t = st(U.value, ((o = n.progress) == null ? void 0 : o.started_at) || n.row.created_at, n.progress ? n.progress.finished_at : n.row.ended_at, w.value);
       return n.row.role !== "main" && t ? `${t} per hour` : "";
     }), d = k(() => !!n.row.retired_at || n.row.state === "retired");
     return (t, o) => {
@@ -1360,7 +1364,7 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
           o[6] || (o[6] = Te(Y((z) => !e.open && v("toggle"), ["self", "prevent"]), ["space"]))
         ]
       }, [
-        c("span", La, [
+        c("span", Ea, [
           e.open ? (a(), i("button", {
             key: 0,
             type: "button",
@@ -1369,7 +1373,7 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
             "aria-label": "Back to the list",
             onClick: o[0] || (o[0] = Y((z) => v("toggle"), ["stop"]))
           }, [
-            b(u(be), {
+            y(u(be), {
               name: "chevronRight",
               facing: "left",
               size: 14
@@ -1379,39 +1383,39 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
             class: "agent-dot",
             "data-state": D.value,
             "data-agent-motion": ""
-          }, null, 8, Ha),
-          c("span", Ba, g($.value), 1),
-          c("span", Ia, g(((O = e.facts) == null ? void 0 : O.given_name) || e.row.id), 1),
-          e.open ? f("", !0) : (a(), _(u(be), {
+          }, null, 8, Na),
+          c("span", _a, g($.value), 1),
+          c("span", Wa, g(((O = e.facts) == null ? void 0 : O.given_name) || e.row.id), 1),
+          e.open ? f("", !0) : (a(), W(u(be), {
             key: 1,
             class: "agent-chevron",
             name: "chevronRight",
             size: 12
           })),
-          c("span", Ea, [
-            d.value ? (a(), i("span", Na, [
+          c("span", qa, [
+            d.value ? (a(), i("span", Fa, [
               o[7] || (o[7] = m("Retired, ", -1)),
-              b(u(xe), {
+              y(u(xe), {
                 at: e.row.retired_at
               }, null, 8, ["at"])
-            ])) : e.row.ended_at ? (a(), i("span", Wa, [
+            ])) : e.row.ended_at ? (a(), i("span", Da, [
               o[8] || (o[8] = m("Idle, ", -1)),
-              b(u(xe), {
+              y(u(xe), {
                 at: e.row.ended_at
               }, null, 8, ["at"])
-            ])) : (a(), i("span", qa, g(B.value), 1))
+            ])) : (a(), i("span", Pa, g(H.value), 1))
           ])
         ]),
-        c("span", Fa, [
-          c("span", _a, g(e.open ? T.value : q.value), 1),
-          e.open && ((p = e.facts) != null && p.last_activity) ? (a(), i("span", Da, [
+        c("span", Ua, [
+          c("span", Ka, g(e.open ? T.value : q.value), 1),
+          e.open && ((p = e.facts) != null && p.last_activity) ? (a(), i("span", Ja, [
             o[9] || (o[9] = m("Last heard: ", -1)),
-            b(u(xe), {
+            y(u(xe), {
               at: e.facts.last_activity
             }, null, 8, ["at"])
           ])) : f("", !0)
         ]),
-        e.open ? (a(), _(Va, {
+        e.open ? (a(), W(Ha, {
           key: 0,
           agent: e.row,
           branch: (M = e.progress) == null ? void 0 : M.branch,
@@ -1419,7 +1423,7 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
           card: ""
         }, {
           default: S(() => [
-            e.row.role === "helper" && !e.row.ended_at ? (a(), _(u(ae), {
+            e.row.role === "helper" && !e.row.ended_at ? (a(), W(u(ae), {
               key: 0,
               variant: "ghost",
               small: "",
@@ -1434,17 +1438,20 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
           ]),
           _: 1
         }, 8, ["agent", "branch", "usage"])) : f("", !0),
-        e.open && h.value && !N.value ? (a(), i("span", Pa, [
-          c("span", Ua, g(y.value), 1)
+        e.open && h.value && !N.value ? (a(), i("span", Za, [
+          y(Oe, {
+            count: b.value,
+            rate: l.value
+          }, null, 8, ["count", "rate"])
         ])) : f("", !0),
-        e.open && A.value ? (a(), i("span", Ka, [
+        e.open && A.value ? (a(), i("span", Ga, [
           c("button", {
             type: "button",
             class: "agent-plan",
             "data-agent-plan": "",
             "data-peek": `plans:${A.value.plan_id}`,
             onClick: o[2] || (o[2] = Y((z) => u(pe)(`plans:${A.value.plan_id}`), ["stop"]))
-          }, "Plan " + g(A.value.plan_id) + ": " + g(A.value.plan_title), 9, Ja)
+          }, "Plan " + g(A.value.plan_id) + ": " + g(A.value.plan_title), 9, Ya)
         ])) : f("", !0),
         N.value || !e.open && P.value ? (a(), i("span", {
           key: 3,
@@ -1461,19 +1468,23 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
               class: "agent-job-link",
               "data-peek": L.value,
               onClick: o[3] || (o[3] = Y((z) => u(pe)(L.value), ["stop"]))
-            }, g(N.value), 9, Ga)) : (a(), i(E, { key: 1 }, [
+            }, g(N.value), 9, Xa)) : (a(), i(E, { key: 1 }, [
               m(g(N.value), 1)
             ], 64))
-          ], 8, Za),
+          ], 8, Qa),
           !e.open && P.value ? (a(), i("span", {
             key: 0,
             class: "agent-work-status",
             "data-agent-waiting": e.waitReason ? "" : null,
             "data-agent-stopped": I.value && !e.waitReason ? "" : null
-          }, g(P.value), 9, Ya)) : f("", !0),
-          e.open && h.value ? (a(), i("span", Qa, g(y.value), 1)) : f("", !0)
+          }, g(P.value), 9, en)) : f("", !0),
+          e.open && h.value ? (a(), W(Oe, {
+            key: 1,
+            count: b.value,
+            rate: l.value
+          }, null, 8, ["count", "rate"])) : f("", !0)
         ], 2)) : f("", !0),
-        e.open ? (a(), _(Kt, {
+        e.open ? (a(), W(Kt, {
           key: 4,
           row: e.row,
           facts: e.facts,
@@ -1481,33 +1492,31 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
           "wait-reason": e.waitReason,
           tasks: x.value,
           "stopped-with-work": I.value,
-          open: e.open,
-          "total-count": h.value,
-          "tasks-per-hour": l.value
-        }, null, 8, ["row", "facts", "progress", "wait-reason", "tasks", "stopped-with-work", "open", "total-count", "tasks-per-hour"])) : f("", !0)
-      ], 42, za);
+          open: e.open
+        }, null, 8, ["row", "facts", "progress", "wait-reason", "tasks", "stopped-with-work", "open"])) : f("", !0)
+      ], 42, Ia);
     };
   }
-}, en = /* @__PURE__ */ G(Xa, [["__scopeId", "data-v-433090c3"]]), tn = {
+}, an = /* @__PURE__ */ Z(tn, [["__scopeId", "data-v-27a8febe"]]), nn = {
   class: "agent-limits",
   "data-agent-limits": ""
-}, an = ["aria-expanded"], nn = { key: 0 }, ln = { key: 1 }, sn = { class: "limits-panel" }, on = { class: "limits-head" }, rn = ["data-agent-limit-type", "data-agent-limit-profile"], dn = { class: "count" }, un = { class: "bar" }, cn = { class: "count" }, gn = { class: "bar" }, pn = ["data-agent-limit-type"], vn = { class: "limit-field" }, hn = { class: "limit-field" }, mn = {
+}, ln = ["aria-expanded"], sn = { key: 0 }, on = { key: 1 }, rn = { class: "limits-panel" }, dn = { class: "limits-head" }, un = ["data-agent-limit-type", "data-agent-limit-profile"], cn = { class: "count" }, gn = { class: "bar" }, pn = { class: "count" }, vn = { class: "bar" }, hn = ["data-agent-limit-type"], mn = { class: "limit-field" }, fn = { class: "limit-field" }, kn = {
   key: 1,
   role: "alert"
-}, fn = {
+}, yn = {
   key: 2,
   role: "status"
-}, kn = {
+}, bn = {
   __name: "AgentLimits",
   setup(e) {
-    const r = ve(), { rows: s, failure: n } = r.props.limits, v = V(!1), w = V(!1), $ = V(!1), x = V(""), C = V(""), A = (h) => h === 0 ? "no limit" : String(h), N = (h, y) => y === 0 ? 0 : h > y ? 2 : h === y ? 1 : 0, L = k(() => s.value.flatMap((h) => h.per_profile && h.profiles.length ? h.profiles.map((y) => ({ ...y, label: y.title, type: h.key, key: `${h.key}:${y.profile}` })) : [h])), T = (h) => Math.max(N(h.running, h.run_limit), N(h.kept, h.kept_limit)), q = k(() => L.value.filter((h) => T(h)).sort((h, y) => T(y) - T(h))), R = k(() => s.value.reduce((h, y) => h + y.running, 0)), B = k(() => s.value.reduce((h, y) => h + y.kept, 0)), H = (h) => {
-      const y = [h.run_limit ? h.running - h.run_limit : -1, h.kept_limit ? h.kept - h.kept_limit : -1], l = Math.max(...y);
+    const r = ve(), { rows: s, failure: n } = r.props.limits, v = V(!1), w = V(!1), $ = V(!1), x = V(""), C = V(""), A = (h) => h === 0 ? "no limit" : String(h), N = (h, b) => b === 0 ? 0 : h > b ? 2 : h === b ? 1 : 0, L = k(() => s.value.flatMap((h) => h.per_profile && h.profiles.length ? h.profiles.map((b) => ({ ...b, label: b.title, type: h.key, key: `${h.key}:${b.profile}` })) : [h])), T = (h) => Math.max(N(h.running, h.run_limit), N(h.kept, h.kept_limit)), q = k(() => L.value.filter((h) => T(h)).sort((h, b) => T(b) - T(h))), R = k(() => s.value.reduce((h, b) => h + b.running, 0)), H = k(() => s.value.reduce((h, b) => h + b.kept, 0)), B = (h) => {
+      const b = [h.run_limit ? h.running - h.run_limit : -1, h.kept_limit ? h.kept - h.kept_limit : -1], l = Math.max(...b);
       return l > 0 ? `Over by ${l}` : l === 0 ? "At limit" : "Within limits";
-    }, I = (h, y) => y ? `${Math.min(h / Math.max(h, y) * 100, 100)}%` : "0%", D = (h, y) => y && h > y ? `${(h - y) / h * 100}%` : "0%";
+    }, I = (h, b) => b ? `${Math.min(h / Math.max(h, b) * 100, 100)}%` : "0%", D = (h, b) => b && h > b ? `${(h - b) / h * 100}%` : "0%";
     function P() {
       w.value = !w.value;
     }
-    async function U(h, y, l, d) {
+    async function U(h, b, l, d) {
       if ($.value || r.readOnly) return;
       const t = Number(d.target.value);
       if (!Number.isInteger(t) || t < 0 || !d.target.value.trim()) {
@@ -1516,7 +1525,7 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
       }
       $.value = !0, C.value = "";
       try {
-        const o = await r.run(["setting", "set", y, String(t), "--environment", r.environment]);
+        const o = await r.run(["setting", "set", b, String(t), "--environment", r.environment]);
         if (x.value = o.ok ? "" : o.error, !o.ok) {
           d.target.value = String(l);
           return;
@@ -1526,13 +1535,13 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
         $.value = !1;
       }
     }
-    return (h, y) => (a(), i("section", tn, [
+    return (h, b) => (a(), i("section", nn, [
       u(s).length ? (a(), i(E, { key: 0 }, [
         c("button", {
           class: "summary",
           type: "button",
           "aria-expanded": v.value,
-          onClick: y[0] || (y[0] = (l) => v.value = !v.value)
+          onClick: b[0] || (b[0] = (l) => v.value = !v.value)
         }, [
           q.value.length ? (a(), i(E, { key: 0 }, [
             (a(!0), i(E, null, J(q.value.slice(0, 2), (l) => (a(), i("span", {
@@ -1542,19 +1551,19 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
               c("span", {
                 class: X(["mark", { over: T(l) === 2 }])
               }, null, 2),
-              m(g(l.label) + ": " + g(H(l)), 1)
+              m(g(l.label) + ": " + g(B(l)), 1)
             ]))), 128)),
-            q.value.length > 2 ? (a(), i("span", nn, g(q.value.length - 2) + " more", 1)) : f("", !0)
-          ], 64)) : (a(), i("span", ln, "All within limits, " + g(R.value) + " running, " + g(B.value) + " kept", 1)),
-          b(u(be), {
+            q.value.length > 2 ? (a(), i("span", sn, g(q.value.length - 2) + " more", 1)) : f("", !0)
+          ], 64)) : (a(), i("span", on, "All within limits, " + g(R.value) + " running, " + g(H.value) + " kept", 1)),
+          y(u(be), {
             name: "caret",
             size: 12
           })
-        ], 8, an),
-        Ue(c("div", sn, [
-          c("div", on, [
-            y[1] || (y[1] = c("strong", null, "Agent limits", -1)),
-            b(u(ae), {
+        ], 8, ln),
+        Ke(c("div", rn, [
+          c("div", dn, [
+            b[1] || (b[1] = c("strong", null, "Agent limits", -1)),
+            y(u(ae), {
               small: "",
               disabled: $.value || u(r).readOnly,
               "data-agent-limits-edit": "",
@@ -1573,14 +1582,14 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
               "data-agent-limit-type": l.key
             }, [
               c("strong", null, g(l.label), 1),
-              c("label", vn, [
+              c("label", mn, [
                 c("span", null, [
-                  y[3] || (y[3] = m("Running", -1)),
+                  b[3] || (b[3] = m("Running", -1)),
                   l.per_profile ? (a(), i(E, { key: 0 }, [
                     m(" per profile")
                   ], 64)) : f("", !0)
                 ]),
-                b(u(Ce), {
+                y(u(Ce), {
                   type: "number",
                   min: "0",
                   value: String(l.run_limit),
@@ -1590,14 +1599,14 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
                 }, null, 8, ["value", "disabled", "data-agent-run-limit", "onChange"]),
                 c("small", null, g(l.run_source), 1)
               ]),
-              c("label", hn, [
+              c("label", fn, [
                 c("span", null, [
-                  y[4] || (y[4] = m("Kept", -1)),
+                  b[4] || (b[4] = m("Kept", -1)),
                   l.per_profile ? (a(), i(E, { key: 0 }, [
                     m(" per profile")
                   ], 64)) : f("", !0)
                 ]),
-                b(u(Ce), {
+                y(u(Ce), {
                   type: "number",
                   min: "0",
                   value: String(l.kept_limit),
@@ -1607,10 +1616,10 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
                 }, null, 8, ["value", "disabled", "data-agent-kept-limit", "onChange"]),
                 c("small", null, g(l.kept_source), 1)
               ])
-            ], 8, pn))), 128)),
+            ], 8, hn))), 128)),
             c("p", null, "Running 0 starts no agents. Kept 0 means no limit. Changes apply to " + g(u(r).environment) + ".", 1)
           ], 64)) : (a(), i(E, { key: 0 }, [
-            y[2] || (y[2] = c("div", { class: "table-head" }, [
+            b[2] || (b[2] = c("div", { class: "table-head" }, [
               c("span", null, "Agent"),
               c("span", null, "Running"),
               c("span", null, "Kept"),
@@ -1623,9 +1632,9 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
               "data-agent-limit-profile": l.profile
             }, [
               c("strong", null, g(l.label), 1),
-              c("div", dn, [
+              c("div", cn, [
                 c("span", null, g(l.run_limit ? `${l.running} of ${l.run_limit}` : `${l.running} · none may start`), 1),
-                c("div", un, [
+                c("div", gn, [
                   c("span", {
                     style: se({ width: I(l.running, l.run_limit) })
                   }, null, 4),
@@ -1634,9 +1643,9 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
                   }, null, 4)
                 ])
               ]),
-              c("div", cn, [
+              c("div", pn, [
                 c("span", null, g(l.kept) + " of " + g(A(l.kept_limit)), 1),
-                c("div", gn, [
+                c("div", vn, [
                   c("span", {
                     style: se({ width: I(l.kept, l.kept_limit) })
                   }, null, 4),
@@ -1647,36 +1656,36 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
               ]),
               c("span", {
                 class: X(["status", { warning: T(l) === 1, danger: T(l) === 2 }])
-              }, g(H(l)), 3)
-            ], 8, rn))), 128))
+              }, g(B(l)), 3)
+            ], 8, un))), 128))
           ], 64))
         ], 512), [
-          [Ke, v.value]
+          [Je, v.value]
         ])
       ], 64)) : f("", !0),
-      x.value || u(n) ? (a(), i("p", mn, g(x.value || u(n)), 1)) : f("", !0),
-      C.value ? (a(), i("p", fn, g(C.value), 1)) : f("", !0)
+      x.value || u(n) ? (a(), i("p", kn, g(x.value || u(n)), 1)) : f("", !0),
+      C.value ? (a(), i("p", yn, g(C.value), 1)) : f("", !0)
     ]));
   }
-}, yn = /* @__PURE__ */ G(kn, [["__scopeId", "data-v-6f5b1989"]]), bn = {
+}, wn = /* @__PURE__ */ Z(bn, [["__scopeId", "data-v-7ce06af0"]]), Mn = {
   key: 0,
   class: "agents-upgrade",
   "data-agents-upgrade": ""
-}, wn = ["data-agent-row"], Oe = "journal.agents.filters", ye = "cubic-bezier(0.2, 0.9, 0.25, 1)", Mn = {
+}, xn = ["data-agent-row"], Ve = "journal.agents.filters", ye = "cubic-bezier(0.2, 0.9, 0.25, 1)", $n = {
   __name: "AgentRows",
   props: { empty: { type: String, required: !0 }, texts: { type: Object, default: () => ({}) } },
   setup(e) {
-    const r = e, s = ve(), { rows: n } = s.props.waits, { rows: v } = s.props.progress, { rows: w, failure: $, loaded: x, more: C } = s.props.agents, A = (W) => v.value.find((F) => F.agent_id === W.id) ?? null, N = (W) => {
+    const r = e, s = ve(), { rows: n } = s.props.waits, { rows: v } = s.props.progress, { rows: w, failure: $, loaded: x, more: C } = s.props.agents, A = (_) => v.value.find((F) => F.agent_id === _.id) ?? null, N = (_) => {
       var F;
-      return ((F = n.value.find((j) => j.agent_id === W.id)) == null ? void 0 : F.reason) ?? "";
-    }, L = V("running"), T = V(""), q = JSON.parse(localStorage.getItem(Oe) || '{"roles":[],"profiles":[],"programs":[]}'), R = V(q), B = k(() => s.props.filters.data.value ?? { roles: [], profiles: [], states: [], upgrade_retired: 0 }), { rows: H } = s.props.programs, I = k(() => R.value.roles.length + R.value.profiles.length + R.value.programs.length), D = (W, F) => {
-      R.value = rt(R.value, W, F);
+      return ((F = n.value.find((j) => j.agent_id === _.id)) == null ? void 0 : F.reason) ?? "";
+    }, L = V("running"), T = V(""), q = JSON.parse(localStorage.getItem(Ve) || '{"roles":[],"profiles":[],"programs":[]}'), R = V(q), H = k(() => s.props.filters.data.value ?? { roles: [], profiles: [], states: [], upgrade_retired: 0 }), { rows: B } = s.props.programs, I = k(() => R.value.roles.length + R.value.profiles.length + R.value.programs.length), D = (_, F) => {
+      R.value = dt(R.value, _, F);
     }, P = () => {
       R.value = { roles: [], profiles: [], programs: [] };
-    }, U = (W) => W.slice(0, 1).toUpperCase() + W.slice(1);
-    te(R, (W) => localStorage.setItem(Oe, JSON.stringify(W)));
+    }, U = (_) => _.slice(0, 1).toUpperCase() + _.slice(1);
+    te(R, (_) => localStorage.setItem(Ve, JSON.stringify(_)));
     const h = V(25);
-    function y() {
+    function b() {
       Object.assign(s.state, {
         "agents.show": L.value,
         "agents.search": T.value,
@@ -1687,27 +1696,27 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
       });
     }
     async function l() {
-      return h.value += 25, y(), await s.reload("agents"), !0;
+      return h.value += 25, b(), await s.reload("agents"), !0;
     }
     te([L, T, R], () => {
-      h.value = 25, y(), s.reload("agents");
-    }), y();
-    const d = (W) => W.facts ?? null, t = w, o = k(() => !!T.value.trim() || I.value > 0), O = k(() => r.texts[L.value] ?? { title: r.empty, hint: "" }), p = V(null), M = V(null), z = V(null), Q = k(() => t.value.find((W) => W.id === p.value) ?? null), he = k(() => Q.value ? [Q.value] : t.value), oe = () => globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      h.value = 25, b(), s.reload("agents");
+    }), b();
+    const d = (_) => _.facts ?? null, t = w, o = k(() => !!T.value.trim() || I.value > 0), O = k(() => r.texts[L.value] ?? { title: r.empty, hint: "" }), p = V(null), M = V(null), z = V(null), Q = k(() => t.value.find((_) => _.id === p.value) ?? null), he = k(() => Q.value ? [Q.value] : t.value), oe = () => globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let ne = !1, we = 0;
-    async function Me(W) {
+    async function Me(_) {
       if (ne) return;
       ne = !0, we = z.value.scrollTop;
-      const F = M.value.querySelector(`[data-agent-open="${W.id}"]`);
+      const F = M.value.querySelector(`[data-agent-open="${_.id}"]`);
       if (!oe()) {
         const le = [...M.value.querySelectorAll(".agent-row")].filter((ee) => !ee.contains(F));
         await Promise.all(le.map((ee) => ee.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, fill: "forwards" }).finished));
       }
       const j = [...F.querySelectorAll(".agent-head, .agent-line")], K = [...j, ...F.querySelectorAll("[data-agent-motion]")], me = K.map((le) => le.getBoundingClientRect());
-      if (p.value = W.id, await Re(), !oe()) {
+      if (p.value = _.id, await Re(), !oe()) {
         const le = K.map((ee) => ee.getBoundingClientRect());
         K.forEach((ee, fe) => {
-          const ie = j.indexOf(ee.parentElement), Ee = me[fe].left - le[fe].left - (ie < 0 ? 0 : me[ie].left - le[ie].left), Ne = me[fe].top - le[fe].top - (ie < 0 ? 0 : me[ie].top - le[ie].top);
-          ee.animate([{ transform: `translate(${Ee}px, ${Ne}px)` }, { transform: "none" }], { duration: 280, easing: ye });
+          const ie = j.indexOf(ee.parentElement), Ne = me[fe].left - le[fe].left - (ie < 0 ? 0 : me[ie].left - le[ie].left), _e = me[fe].top - le[fe].top - (ie < 0 ? 0 : me[ie].top - le[ie].top);
+          ee.animate([{ transform: `translate(${Ne}px, ${_e}px)` }, { transform: "none" }], { duration: 280, easing: ye });
         }), M.value.querySelectorAll(".agent-usage, .agent-more > .agent-command, .agent-tabs, .agent-tab-body").forEach((ee) => {
           ee.animate([{ opacity: 0, transform: "translateY(6px)" }, { opacity: 1, transform: "none" }], { duration: 240, delay: 60, easing: ye, fill: "backwards" });
         });
@@ -1717,25 +1726,25 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
     async function je() {
       if (ne || !Q.value) return;
       ne = !0;
-      const W = M.value.querySelector(`[data-agent-open="${p.value}"]`), F = [...W.children], j = oe() ? [] : F.map((K) => K.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: "forwards" }));
-      await Promise.all(j.map((K) => K.finished)), p.value = null, await Re(), z.value.scrollTop = we, j.forEach((K) => K.cancel()), oe() || (W.animate([{ transform: "translateY(-12px)" }, { transform: "none" }], { duration: 280, easing: ye }), M.value.querySelectorAll(".agent-row").forEach((K) => {
-        K.contains(W) || K.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: ye });
+      const _ = M.value.querySelector(`[data-agent-open="${p.value}"]`), F = [..._.children], j = oe() ? [] : F.map((K) => K.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: "forwards" }));
+      await Promise.all(j.map((K) => K.finished)), p.value = null, await Re(), z.value.scrollTop = we, j.forEach((K) => K.cancel()), oe() || (_.animate([{ transform: "translateY(-12px)" }, { transform: "none" }], { duration: 280, easing: ye }), M.value.querySelectorAll(".agent-row").forEach((K) => {
+        K.contains(_) || K.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: ye });
       })), ne = !1;
     }
-    const Ie = (W) => p.value === W.id ? je() : Me(W);
-    te(T, (W) => W.trim() && (p.value = null)), te(L, () => {
+    const Ee = (_) => p.value === _.id ? je() : Me(_);
+    te(T, (_) => _.trim() && (p.value = null)), te(L, () => {
       p.value = null;
     });
-    const Ae = (W) => {
-      W.key === "Escape" && je();
+    const Ae = (_) => {
+      _.key === "Escape" && je();
     };
-    return globalThis.addEventListener("keydown", Ae), ce(() => globalThis.removeEventListener("keydown", Ae)), (W, F) => (a(), i("div", {
+    return globalThis.addEventListener("keydown", Ae), ce(() => globalThis.removeEventListener("keydown", Ae)), (_, F) => (a(), i("div", {
       ref_key: "agents",
       ref: M,
       class: X(["agents", { focused: Q.value }])
     }, [
-      b(yn),
-      b(u(st), {
+      y(wn),
+      y(u(ot), {
         modelValue: T.value,
         "onUpdate:modelValue": F[1] || (F[1] = (j) => T.value = j),
         placeholder: "Search agents",
@@ -1743,13 +1752,13 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
         "data-agents-search": ""
       }, {
         menu: S(() => [
-          b(u($e), null, {
+          y(u($e), null, {
             default: S(() => [...F[2] || (F[2] = [
               m("Type", -1)
             ])]),
             _: 1
           }),
-          (a(!0), i(E, null, J(B.value.roles, (j) => (a(), _(u(ke), {
+          (a(!0), i(E, null, J(H.value.roles, (j) => (a(), W(u(ke), {
             key: j,
             role: "menuitemcheckbox",
             "aria-checked": R.value.roles.includes(j),
@@ -1762,13 +1771,13 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
             ]),
             _: 2
           }, 1032, ["aria-checked", "checked", "data-filter-role", "onClick"]))), 128)),
-          B.value.profiles.length ? (a(), _(u($e), { key: 0 }, {
+          H.value.profiles.length ? (a(), W(u($e), { key: 0 }, {
             default: S(() => [...F[3] || (F[3] = [
               m("Profile", -1)
             ])]),
             _: 1
           })) : f("", !0),
-          (a(!0), i(E, null, J(B.value.profiles, (j) => (a(), _(u(ke), {
+          (a(!0), i(E, null, J(H.value.profiles, (j) => (a(), W(u(ke), {
             key: j.name,
             role: "menuitemcheckbox",
             "aria-checked": R.value.profiles.includes(j.name),
@@ -1781,13 +1790,13 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
             ]),
             _: 2
           }, 1032, ["aria-checked", "checked", "data-filter-profile", "onClick"]))), 128)),
-          b(u($e), null, {
+          y(u($e), null, {
             default: S(() => [...F[4] || (F[4] = [
               m("Program", -1)
             ])]),
             _: 1
           }),
-          (a(!0), i(E, null, J(u(H), (j) => (a(), _(u(ke), {
+          (a(!0), i(E, null, J(u(B), (j) => (a(), W(u(ke), {
             key: j.name,
             role: "menuitemcheckbox",
             "aria-checked": R.value.programs.includes(j.name),
@@ -1800,7 +1809,7 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
             ]),
             _: 2
           }, 1032, ["aria-checked", "checked", "data-filter-program", "onClick"]))), 128)),
-          I.value ? (a(), _(u(ke), {
+          I.value ? (a(), W(u(ke), {
             key: 1,
             "data-filter-clear": "",
             onClick: P
@@ -1812,27 +1821,27 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
           })) : f("", !0)
         ]),
         default: S(() => [
-          b(u(ot), {
-            options: B.value.states,
+          y(u(it), {
+            options: H.value.states,
             value: L.value,
             onPick: F[0] || (F[0] = (j) => L.value = j)
           }, null, 8, ["options", "value"])
         ]),
         _: 1
       }, 8, ["modelValue", "menu-count"]),
-      L.value === "retired" && B.value.upgrade_retired ? (a(), i("p", bn, "Retired during the upgrade: " + g(B.value.upgrade_retired), 1)) : f("", !0),
+      L.value === "retired" && H.value.upgrade_retired ? (a(), i("p", Mn, "Retired during the upgrade: " + g(H.value.upgrade_retired), 1)) : f("", !0),
       c("div", {
         ref_key: "list",
         ref: z,
         class: X(["agents-view", { "agents-view-open": Q.value }])
       }, [
-        u(x) && !u($) && !he.value.length && I.value ? (a(), _(u(Se), {
+        u(x) && !u($) && !he.value.length && I.value ? (a(), W(u(Se), {
           key: 0,
           title: "No agents match the filters",
           "data-filter-empty": ""
         }, {
           default: S(() => [
-            b(u(ae), {
+            y(u(ae), {
               small: "",
               "data-empty-clear": "",
               onClick: P
@@ -1844,7 +1853,7 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
             })
           ]),
           _: 1
-        })) : (a(), _(u(it), {
+        })) : (a(), W(u(rt), {
           key: 1,
           rows: he.value,
           failure: u($),
@@ -1860,22 +1869,22 @@ const ha = ["disabled", "title"], ma = ["title"], fa = { class: "gauge usage" },
               class: "agent-row",
               "data-agent-row": j.id
             }, [
-              b(en, {
+              y(an, {
                 row: j,
                 facts: d(j),
                 progress: A(j),
                 "wait-reason": N(j),
                 open: j.id === p.value,
-                onToggle: (K) => Ie(j)
+                onToggle: (K) => Ee(j)
               }, null, 8, ["row", "facts", "progress", "wait-reason", "open", "onToggle"])
-            ], 8, wn)
+            ], 8, xn)
           ]),
           _: 1
         }, 8, ["rows", "failure", "loaded", "more", "empty", "hint", "searching"]))
       ], 2)
     ], 2));
   }
-}, Sn = /* @__PURE__ */ G(Mn, [["__scopeId", "data-v-c93c8a31"]]);
+}, An = /* @__PURE__ */ Z($n, [["__scopeId", "data-v-9c5841db"]]);
 export {
-  Sn as A
+  An as A
 };

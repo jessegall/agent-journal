@@ -2,6 +2,7 @@
 import {computed} from "vue";
 import {age, perHour, Btn, Icon, TimeAgo, peekRef, useNow, useWindow} from "@journal/window-kit";
 import AgentCardDetails from "./AgentCardDetails.vue";
+import AgentTaskCount from "./AgentTaskCount.vue";
 import InformationBar from "../../../../../viewer/src/shell/InformationBar.vue";
 
 const FALLBACK_TITLES = {helper: "Helper", reviewer: "Reviewer"};
@@ -70,7 +71,7 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
         <template v-if="open"><InformationBar :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: []}" card>
             <template v-if="row.role === 'helper' && !row.ended_at"><Btn variant="ghost" small data-helper-stop @click.stop="context.run(['helper', 'stop', String(row.id)])">Stop</Btn></template>
         </InformationBar></template>
-        <template v-if="open && totalCount && !job"><span class="agent-line"><span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span></span></template>
+        <template v-if="open && totalCount && !job"><span class="agent-line"><AgentTaskCount :count="taskCount" :rate="tasksPerHour" /></span></template>
         <template v-if="open && planTask">
             <span class="agent-line agent-work-start"><button type="button" class="agent-plan" data-agent-plan :data-peek="`plans:${planTask.plan_id}`" @click.stop="peekRef(`plans:${planTask.plan_id}`)">Plan {{ planTask.plan_id }}: {{ planTask.plan_title }}</button></span>
         </template>
@@ -79,11 +80,11 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
                 <span class="agent-job" data-agent-job :title="job"><template v-if="open && jobRef"><button type="button" class="agent-job-link" :data-peek="jobRef" @click.stop="peekRef(jobRef)">{{ job }}</button></template><template v-else>{{ job }}</template></span>
                 <template v-if="!open && workStatus"><span class="agent-work-status" :data-agent-waiting="waitReason ? '' : null" :data-agent-stopped="stoppedWithWork && !waitReason ? '' : null">{{ workStatus }}</span></template>
                 <template v-if="open && totalCount">
-                    <span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span>
+                    <AgentTaskCount :count="taskCount" :rate="tasksPerHour" />
                 </template>
             </span>
         </template>
-        <template v-if="open"><AgentCardDetails :row="row" :facts="facts" :progress="progress" :wait-reason="waitReason" :tasks="tasks" :stopped-with-work="stoppedWithWork" :open="open" :total-count="totalCount" :tasks-per-hour="tasksPerHour" /></template>
+        <template v-if="open"><AgentCardDetails :row="row" :facts="facts" :progress="progress" :wait-reason="waitReason" :tasks="tasks" :stopped-with-work="stoppedWithWork" :open="open" /></template>
     </div>
 </template>
 
@@ -202,12 +203,6 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-}
-
-.agent-tasks {
-    flex: none;
-    color: var(--text-2);
-    font-size: 12px;
 }
 
 

@@ -13,21 +13,23 @@ from core.base.upgrade.move_report import MoveReport
 from core.base.upgrade.state_walk import StateWalk
 from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.upgrade.version_four_source import VersionFourSource
-from core.modules.processes.upgrade.reader_files_move import ReaderFilesMove
+from core.modules.processes.support.reader_file import ReaderFile
 from core.modules.processes.models.enums.output_state import OutputState
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.lifecycles.output_lifecycle import OutputLifecycle
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
 
 TABLE = "command_outputs"
+READERS_FOLDER = "readers"
+READER_FILES = "reader files (removed from the project, kept in the backup)"
 SHELL = "sh"
 
 
 class ProcessesMove(VersionFourMove):
     """Carries version 4's command outputs as processes with the output each kept, under the number they had,
     run by the agent whose session ran them and ended as they ended; an output whose folder is gone is pruned.
-    The readers' reports and suggestions of version 4 are dropped and counted, and the readers it kept as
-    files become version 5 readers."""
+    Version 4's readers are not carried over, since version 5's are different: its readers' reports and
+    suggestions and its reader files are counted and left in the backup."""
 
     name = "processes"
     reads = [TABLE]
@@ -46,7 +48,7 @@ class ProcessesMove(VersionFourMove):
             report.count("processes", map.transfer(TABLE, row["id"], "processes", insert))
         for table in self.drops:
             report.drop(table, source.count(table))
-        ReaderFilesMove().move(source.folder, rows, report, context)
+        report.drop(READER_FILES, len(ReaderFile.paths(source.folder / READERS_FOLDER)))
         return report
 
     def insert(self, rows: RowInsert, row: sqlite3.Row, agent_id: int, creator_id: int, environment_id: int | None, context: MoveContext) -> int:
