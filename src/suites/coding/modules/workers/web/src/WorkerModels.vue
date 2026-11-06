@@ -1,11 +1,12 @@
 <script setup>
 import {computed, ref} from "vue";
-import {RowList, WindowRoom, patched, useRows} from "@journal/window-kit";
+import {RowList, WindowRoom, patched, useWindow} from "@journal/window-kit";
 
 const ALLOWED_MODELS = "journal.core.helpers.allowed-models";
 
 // each program's models, ticked when a worker may run on them; a program keeps at least one
-const {rows, failure, loaded, act} = useRows("worker models", ["setting.*"]);
+const window = useWindow();
+const {rows, failure, loaded, act} = window.props.models;
 const refusal = ref("");
 const isLast = (row) => row.allowed && rows.value.filter((other) => other.program === row.program && other.allowed).length === 1;
 const programStart = computed(() => new Set(rows.value.filter((row, index) => rows.value[index - 1]?.program !== row.program).map((row) => row.id)));

@@ -1,14 +1,13 @@
 <script setup>
 import {computed} from "vue";
-import {WindowRoom, usePoll, useUsage} from "@journal/window-kit";
+import {WindowRoom, useWindow} from "@journal/window-kit";
 
 // the main agent's context window as version 4's context menu drew it: a meter of how full it is, and when it was last compacted
-const REFRESH_MILLISECONDS = 30000;
-const {value: usage, load} = useUsage();
+const window = useWindow();
+const {data: usage} = window.props.usage;
 const main = computed(() => usage.value?.agents?.find((agent) => agent.role === "main") ?? null);
 const compacted = computed(() => (main.value?.last_compacted_at ? new Date(main.value.last_compacted_at).toLocaleString() : "Not yet"));
 
-usePoll(load, () => true, REFRESH_MILLISECONDS);
 </script>
 
 <template>

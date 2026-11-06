@@ -1,10 +1,10 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, ListTools, RowList, TimeAgo, WindowRoom, ResourceLinks, peekRef, useListTools, useRows, useWindow} from "@journal/window-kit";
+import {Btn, ListTools, RowList, TimeAgo, WindowRoom, ResourceLinks, peekRef, useListTools, useWindow} from "@journal/window-kit";
 
-const context = useWindow();
-const {rows, failure, loaded, act, actionFailure} = useRows("transcription list", ["transcription.*"]);
-const sources = useRows("transcription sources", []);
+const window = useWindow();
+const {rows, failure, loaded, act, actionFailure} = window.props.transcriptions;
+const sources = window.props.sources;
 const tools = useListTools(rows, {title: (row) => `${row.title} ${row.text}`});
 const drafting = ref(false);
 const draft = ref({title: "", text: ""});
@@ -28,6 +28,15 @@ function open(row) {
 }
 
 const openLinked = (target) => peekRef(`${target.table}:${target.id}`);
+
+function readLinks(line) {
+    const flags = {};
+    for (const name of ["page", "page-size", "kind"]) {
+        const index = line.indexOf(`--${name}`);
+        if (index >= 0) flags[name] = line[index + 1];
+    }
+    return window.readKey(`links.${opened.value.id}`, flags);
+}
 
 async function save() {
     const result = await act(["transcription", "edit", String(opened.value.id), "--text", openedText.value]);
@@ -81,7 +90,7 @@ async function fetchFrom(server) {
                         <Btn small @click="opened = null">Close</Btn>
                     </div>
                     <h3 class="note">Linked items</h3>
-                    <ResourceLinks model="transcription" :id="opened.id" :read="context.read" link-attribute="data-transcription-link" empty="Nothing yet" @open="openLinked" />
+                    <ResourceLinks model="transcription" :id="opened.id" :read="readLinks" link-attribute="data-transcription-link" empty="Nothing yet" @open="openLinked" />
                 </section>
             </template>
         </div>

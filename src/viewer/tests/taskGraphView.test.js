@@ -1,6 +1,7 @@
 import {afterEach, expect, test} from "vitest";
 import {h} from "vue";
-import {context, mounted, settle} from "./support/windowContext.js";
+import {mounted, settle} from "./support/windowContext.js";
+import {taskWindowContext as context} from "./support/taskWindowContext.js";
 import TaskGraphView from "../../core/modules/tasks/web/src/TaskGraphView.vue";
 import {NODE, taskGraphLayout} from "../../core/modules/tasks/web/src/taskGraphLayout.js";
 

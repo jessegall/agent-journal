@@ -1,6 +1,7 @@
 import {expect, test} from "vitest";
 import TemplateCards from "../../core/modules/templates/web/src/TemplateCards.vue";
-import {context, mounted, page} from "./support/windowContext.js";
+import {mounted, page} from "./support/windowContext.js";
+import {templateWindowContext as context} from "./support/templateWindowContext.js";
 
 test("cards distinguish a module's template from a person's template with the same title", async () => {
     const template = {title: "Security review", brief: "Check access", targets: ["plan"], purpose: "critique", parts: [], commands: []};

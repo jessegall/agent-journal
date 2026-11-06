@@ -1,4 +1,4 @@
-from argparse import ArgumentParser, Namespace
+from argparse import SUPPRESS, ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.refusal import Refusal
@@ -14,8 +14,10 @@ class TryTriggerSubcommand(ReadSubcommand[TriggerTrial]):
     name = "try"
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("phrases")
-        parser.add_argument("sentence")
+        for name in ("phrases", "sentence"):
+            argument = parser.add_mutually_exclusive_group(required=True)
+            argument.add_argument(name, nargs="?", default=SUPPRESS)
+            argument.add_argument(f"--{name}", dest=name, default=SUPPRESS)
         parser.add_argument("--match-mode", type=TriggerMatch, choices=list(TriggerMatch), default=TriggerMatch.WORD)
 
     def read(self, arguments: Namespace, caller: Caller) -> TriggerTrial:

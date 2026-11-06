@@ -13,4 +13,14 @@ export const looks = {
     placeholder: "Type the value",
     // @righteous naming_plain_viewer_script_text
     hint: "Add credentials",
+    // @sin naming_plain_viewer_script_text
+    line: "We dispatch rows",
+};
+
+export const windowKeys = {
+    "links.*": {
+        // @righteous naming_plain_viewer_script_text
+        line: "link list --row transcription:{id} --group-counterparts",
+        loading: "requested",
+    },
 };

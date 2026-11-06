@@ -1,21 +1,11 @@
 <script setup>
-import {ref} from "vue";
+import {computed} from "vue";
 import {RowList, WindowRoom, useWindow} from "@journal/window-kit";
 
-const context = useWindow();
-const points = ref([]);
-const failure = ref("");
-const loaded = ref(false);
-
-async function load() {
-    const answer = await context.read(`worker-worktree points --agent ${context.agent}`);
-    failure.value = answer.ok ? "" : answer.error;
-    points.value = answer.ok ? answer.value.points : [];
-    loaded.value = true;
-}
-
-context.follow(["proof.*", "worker_worktree.*"], load);
-load();
+const window = useWindow();
+window.state["points.agent"] = String(window.agent);
+const {data, failure, loaded} = window.props.points;
+const points = computed(() => data.value?.points ?? []);
 </script>
 
 <template>

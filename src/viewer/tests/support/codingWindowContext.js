@@ -3,8 +3,9 @@ import {context as baseContext} from "./agentWindowContext.js";
 export {mounted, page, pickButton, settle, settleTransition} from "./windowContext.js";
 
 export function context(answers, agent = null) {
+    const base = baseContext(answers, agent);
     return {
-        ...baseContext(answers, agent),
+        ...base,
         sources: [
             {key: "waits", read: "worker waits", events: ["agent.*", "task.*", "proof.*", "worker_worktree.*"]},
             {key: "progress", read: "worker progress", events: ["task.*", "worker_worktree.*"]},

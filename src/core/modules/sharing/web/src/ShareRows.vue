@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, ListTools, RowList, Segmented, Switch, WindowRoom, useListTools, useRows, useWindow} from "@journal/window-kit";
+import {Btn, ListTools, RowList, Segmented, Switch, WindowRoom, useListTools, useWindow} from "@journal/window-kit";
 
 const ENDS = [
     {key: "1d", label: "1 day"},
@@ -9,13 +9,12 @@ const ENDS = [
     {key: "never", label: "Never"},
 ];
 
-// the links of this project: a new one with what it opens, the ones an agent asks for, and the open ones with their views and comments
-const context = useWindow();
-const {rows, failure, loaded, load} = useRows("share list", ["share_link.*", "share_comment.*"]);
+const window = useWindow();
+const {rows, failure, loaded} = window.props.shares;
 const waiting = computed(() => rows.value.filter((row) => row.state === "waiting"));
 const active = computed(() => rows.value.filter((row) => row.state === "active"));
 const tools = useListTools(active, {title: (row) => `${row.row_model} ${row.row_id}`});
-const target = ref(new URLSearchParams(window.location.search).get("share") ?? "");
+const target = ref(new URLSearchParams(globalThis.location.search).get("share") ?? "");
 const ends = ref("7d");
 const password = ref("");
 const comments = ref(false);
@@ -27,23 +26,24 @@ const stoppingAll = ref(false);
 const when = (row) => (row.expires_at ? `ends ${row.expires_at}` : "never ends");
 
 async function run(line) {
-    const answer = await context.run(line);
+    const answer = await window.run(line);
     refusal.value = answer.ok ? "" : answer.error;
-    if (answer.ok) load();
+    if (answer.ok) window.reload("shares");
     return answer;
 }
 
-// the full address uses the tunnel when one is connected, so it works outside this computer
 async function address(answer) {
-    const tunnel = await context.read(["tunnel", "status"]);
-    const start = tunnel.ok && tunnel.value.address ? tunnel.value.address : window.location.origin;
-    return {...answer.value, address: `${start}${answer.value.link}`, outside: Boolean(tunnel.ok && tunnel.value.address)};
+    await window.reload("tunnel");
+    const tunnel = window.props.tunnel.failure.value ? null : window.props.tunnel.data.value;
+    const start = tunnel?.address || globalThis.location.origin;
+    return {...answer.value, address: `${start}${answer.value.link}`, outside: Boolean(tunnel?.address)};
 }
 
 async function previewOpens() {
-    const answer = await context.read(["share", "opens", target.value.trim()]);
-    refusal.value = answer.ok ? "" : answer.error;
-    opens.value = answer.ok ? answer.value.rows : null;
+    window.state["opens.target"] = target.value.trim();
+    await window.reload("opens");
+    refusal.value = window.props.opens.failure.value;
+    opens.value = refusal.value ? null : window.props.opens.rows.value;
 }
 
 if (target.value) previewOpens();
@@ -71,9 +71,10 @@ async function toggleComments(row) {
         const {[row.id]: _, ...others} = commentRows.value;
         return void (commentRows.value = others);
     }
-    const answer = await context.read(["share", "comments", String(row.id)]);
-    refusal.value = answer.ok ? "" : answer.error;
-    if (answer.ok) commentRows.value = {...commentRows.value, [row.id]: answer.value.rows};
+    const name = `comments.${row.id}`;
+    await window.reload(name);
+    refusal.value = window.props[name].failure.value;
+    if (!refusal.value) commentRows.value = {...commentRows.value, [row.id]: window.props[name].rows.value};
 }
 </script>
 

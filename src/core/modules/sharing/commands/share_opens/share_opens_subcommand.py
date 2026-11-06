@@ -1,4 +1,4 @@
-from argparse import ArgumentParser, Namespace
+from argparse import SUPPRESS, ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
@@ -20,7 +20,9 @@ class ShareOpensSubcommand(ReadSubcommand[RowList]):
         self.targets, self.included = targets, included
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("target")
+        target = parser.add_mutually_exclusive_group(required=True)
+        target.add_argument("target", nargs="?", default=SUPPRESS)
+        target.add_argument("--target", dest="target", default=SUPPRESS)
 
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
         shared = self.targets.row(arguments.target)

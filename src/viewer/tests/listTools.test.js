@@ -1,6 +1,8 @@
 import {ref} from "vue";
 import {expect, test, vi} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
+import {suggestionWindowContext} from "./support/suggestionWindowContext.js";
+import {templateWindowContext} from "./support/templateWindowContext.js";
 import {useListTools} from "../kit/useListTools.js";
 import SuggestionRows from "../../core/modules/suggestions/web/src/SuggestionRows.vue";
 import QuestionRows from "../../core/modules/questions/web/src/QuestionRows.vue";
@@ -36,7 +38,7 @@ test("a list with states keeps open or closed rows", () => {
 });
 
 test("a window's search narrows what it draws", async () => {
-    const element = await mounted(SuggestionRows, context({"suggestion list": page([{id: 1, title: "Cart", answer: ""}, {id: 2, title: "Shop", answer: ""}])}));
+    const element = await mounted(SuggestionRows, suggestionWindowContext({"suggestion list": page([{id: 1, title: "Cart", answer: ""}, {id: 2, title: "Shop", answer: ""}])}));
     const input = element.querySelector("[data-search-input]");
     input.value = "shop";
     input.dispatchEvent(new Event("input"));
@@ -52,7 +54,7 @@ test("a list with states offers Open, Closed and All, another does not", async (
     });
     const menuOf = async (component, answers) => {
         document.body.innerHTML = "";
-        const element = await mounted(component, context(answers));
+        const element = await mounted(component, component === SuggestionRows ? suggestionWindowContext(answers) : context(answers));
         document.body.append(element);
         element.querySelector("[data-search-menu]").click();
         await settle();
@@ -72,7 +74,11 @@ test.each([
     ["the dumps", DumpRows, {"dump board": {ok: true, value: {dumps: [], total: 0}}}],
     ["the reviews", ReviewerSteps, {"review board": {ok: true, value: {reviews: [], queued: 0}}}],
 ])("the list of %s has the bar", async (_, component, answers) => {
-    const element = await mounted(component, context(answers));
+    const contexts = new Map([
+        [TemplateCards, templateWindowContext],
+        [ShareRows, (answers) => context(answers, null, {shares: {line: "share list", events: ["share_link.*", "share_comment.*"]}})],
+    ]);
+    const element = await mounted(component, (contexts.get(component) ?? context)(answers));
     expect(element.querySelector("[data-list-tools]")).not.toBeNull();
 });
 

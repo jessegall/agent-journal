@@ -4,6 +4,8 @@ from core.base.viewer.window_search import WindowSearch
 from core.modules.transcriptions.support.transcription_searcher import TranscriptionSearcher
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
+from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
@@ -38,4 +40,7 @@ class TranscriptionsModule(Module):
     listeners = [TranscriptionTaskListener]
     seeders = [TranscriptionsSeeder]
     windows = [WindowDeclaration("transcriptions.transcriptions", "Transcriptions", "transcriptions.js", WindowLoading.COMPONENT, skeleton=TRANSCRIPTIONS_TRANSCRIPTIONS_SKELETON, search=WindowSearch(TranscriptionSearcher, "Search the transcriptions"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILED,
-                                 reads=["transcription list", "transcription sources", "link list"], runs=["transcription make", "transcription edit", "transcription fetch"], events=["transcription.*", "link.*"])]
+                                 reads=["transcription list", "transcription sources", "link list"], runs=["transcription make", "transcription edit", "transcription fetch"], events=["transcription.*", "link.*"],
+                                 keys=[WindowKey("transcriptions", "transcription list", events=["transcription.*"]),
+                                       WindowKey("sources", "transcription sources"),
+                                       WindowKey("links.*", "link list --row transcription:{id} --group-counterparts", arguments=["page", "page-size", "kind"], loading=KeyLoading.REQUESTED)])]

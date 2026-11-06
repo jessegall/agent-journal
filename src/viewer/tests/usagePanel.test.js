@@ -1,6 +1,7 @@
 import {expect, test} from "vitest";
 import UsagePanel from "../../core/modules/usage/web/src/UsagePanel.vue";
-import {context, mounted} from "./support/windowContext.js";
+import {mounted} from "./support/windowContext.js";
+import {usageWindowContext as context} from "./support/usageWindowContext.js";
 
 const WINDOW = {title: "7 days", used_percent: 17, reset_epoch_seconds: 1794085200};
 
