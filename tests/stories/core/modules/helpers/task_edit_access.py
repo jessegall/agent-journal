@@ -1,0 +1,15 @@
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, the_helper
+from tests.stories.core.modules.helpers.read_only_access import journal_line
+
+
+def test_a_helper_edits_its_own_task_and_not_another_agents_task(new_story):
+    story = new_story(fixture=StartedHelper)
+    helper = the_helper(story)
+    actor = Actor(helper.id, ActorType.AGENT)
+    own = story.new_row_id('task make "Helper task" --environment main', actor=actor)
+    other = story.new_row_id('task make "Main task" --environment main', actor=story.agent)
+    story.expect_hook_allowed(helper.session, journal_line('task', 'edit', str(own), '--title', 'Corrected'))
+    story.expect_success(f'task edit {own} --title Corrected', 'title: Corrected', actor=actor)
+    story.expect_refusal(f'task edit {other} --title Changed', 'created', actor=actor)

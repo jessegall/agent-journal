@@ -107,6 +107,29 @@ print(answer.stdout, end='')
 			recorded = true
 		}
 	}
+	for index, shell := range []string{"/bin/bash", "/bin/zsh"} {
+		if _, err := os.Stat(shell); os.IsNotExist(err) {
+			continue
+		}
+		body := strings.Repeat("report text\n", 2000)
+		line := quoted(journal) + " report make Findings --body - <<'END'\n" + body + "END\n"
+		runner := exec.Command(program, "--process", fmt.Sprint(10+index), "--limit", "0", "--read-only-shell", "--", line)
+		runner.Env = append(os.Environ(), "JOURNAL_HOME="+folder, "SHELL="+shell, "TMPPREFIX=/not-writable/zsh")
+		output, err := runner.CombinedOutput()
+		if err != nil || !strings.Contains(string(output), "journal works") {
+			t.Fatalf("%s here document: %v: %s", shell, err, output)
+		}
+		found := false
+		for len(reports) > 0 {
+			arguments := <-reports
+			if len(arguments) == 5 && arguments[0] == "report" && arguments[4] == body {
+				found = true
+			}
+		}
+		if !found {
+			t.Fatalf("%s did not send the report body", shell)
+		}
+	}
 	if !recorded {
 		t.Fatal("runner did not record its sandbox level")
 	}
