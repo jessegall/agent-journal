@@ -7,7 +7,6 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.database.database import Database
 from core.base.driver.agent_hook import AgentHook
-from core.base.driver.driver_rules import DriverRules
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.project_paths import ProjectPaths
@@ -33,37 +32,32 @@ from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.drivers.support.suite_choice import SuiteChoice
-from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.base.module.driver_entries import DRIVERS_MODULE
 
 
 SUMMARY_CHARACTERS = 200
 
 class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
-    """Answers one hook in one transaction: asks every rule first, keeps their history and the hook call,
+    """Keeps the answers of a hook's rules in one transaction: their history and the hook call,
     gives the agent its waiting lines, and runs each command the rules returned alone, so a refused one rolls
     back by itself; a tick's lines wait for the agent's next hook."""
 
     command = RecordHookCall
 
-    def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository, rules: DriverRules, choice: SuiteChoice,
-                 history: RuleHistoryWriter, timing: Timing, settings: SettingValues, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows) -> None:
+    def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository, choice: SuiteChoice,
+                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows) -> None:
         self.required_commands = required_commands
         self.agents = agents
         self.nudges, self.nudger = nudges, nudger
         self.bus, self.database, self.queries, self.repository = bus, database, queries, repository
-        self.rules, self.choice, self.history, self.timing, self.settings, self.providers = rules, choice, history, timing, settings, providers
+        self.choice, self.history, self.timing, self.providers = choice, history, timing, providers
 
     def handle(self, command: RecordHookCall, context: Context) -> HookReply:
         agent = self.agents.find(command.agent_id)
         suite, driver = self.choice.suite(), self.choice.driver(agent.role)
         hook = AgentHook(command.event, agent.id, agent.environment_id, agent.role, driver.name if driver is not None else "", context.timestamp,
                          suite=suite.name if suite is not None else "", access=agent.access)
-        self.timing.stamp("hook_built")
-        with self.settings.keep_rows():
-            answers = self.rules.ask(hook)
-        answers = replace(answers, skipped_lines=self.nudges.skipped_lines(agent.id, answers, context.timestamp))
-        self.timing.stamp("rules_asked")
+        answers = command.answers
         self.history.record(agent.id, answers, context)
         self.timing.stamp("history_recorded")
         if command.event.event == HookEventName.TICK and not (answers.refusal or answers.lines or answers.commands):
