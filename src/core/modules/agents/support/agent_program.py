@@ -33,7 +33,6 @@ class AgentProgram:
             if commands[child]:
                 LeftoverProcess.stop(child, commands[child])
         LeftoverProcess.stop(pid, program)
-        commands[pid] = program
         deadline = time.monotonic() + STOP_WAIT_SECONDS
         while self.running(commands) and time.monotonic() < deadline:
             time.sleep(STOP_POLL_SECONDS)
