@@ -1,0 +1,114 @@
+<script setup>
+import {computed, defineAsyncComponent, onUnmounted, ref, watch} from "vue";
+import {READ_RATES, coalesced, Btn, EmptyState, FoldGroup, InnerTabs, loadWindowComponent, SwitchCase, TabBody, useWindow} from "@journal/window-kit";
+import InformationBar from "../../../../../viewer/src/shell/InformationBar.vue";
+import AgentCommand from "./AgentCommand.vue";
+import AgentTaskGroup from "./AgentTaskGroup.vue";
+import TranscriptRows from "./TranscriptRows.vue";
+import AgentActions from "./AgentActions.vue";
+
+const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, tasks: {type: Array, required: true}, stoppedWithWork: Boolean, open: Boolean, totalCount: Number, tasksPerHour: String});
+const TASK_STATES = ["started", "blocked", "open", "completed"];
+const ENDED_WITHOUT_REPORT = "It ended without a report";
+const report = computed(() => props.facts?.job_returned || props.row.job_returned || "");
+const endedReason = computed(() => (props.row.ended_at && props.facts?.job_returned?.startsWith(ENDED_WITHOUT_REPORT) ? props.facts.job_returned : ""));
+const sections = computed(() => props.tasks.length ? TASK_STATES.map((state) => ({state, label: state.slice(0, 1).toUpperCase() + state.slice(1), tasks: props.tasks.filter((task) => task.state === state || (state === "started" && task.state === "testing") || (state === "completed" && task.state === "cancelled"))})) : []);
+const FOLDED_STATES = new Set(["completed"]);
+const folded = ref({});
+const sectionOpen = (state) => !(folded.value[state] ?? FOLDED_STATES.has(state));
+const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(state)});
+// a running helper's card names the command it runs, as the foot of the chat does for the main agent, or says plainly that it ran none
+const context = useWindow();
+const isReader = computed(() => props.row.access === "read-only");
+const retired = computed(() => Boolean(props.row.retired_at) || props.row.state === "retired");
+const cardTabs = computed(() => {
+    if (retired.value) return context.tabs.filter((item) => item.key === "transcript");
+    return isReader.value ? context.tabs.filter((item) => ["transcript", "terminal"].includes(item.key)) : context.tabs;
+});
+const tab = ref(cardTabs.value[0]);
+watch(cardTabs, (tabs) => { if (!tabs.some((item) => item.key === tab.value?.key)) tab.value = tabs[0]; });
+watch(() => props.open, (open) => { if (open) tab.value = cardTabs.value[0]; });
+const components = Object.fromEntries(context.tabs.filter((tab) => tab.component).map((tab) => [tab.key, defineAsyncComponent(() => loadWindowComponent(tab.component))]));
+const isRunningHelper = computed(() => props.row.role === "helper" && !props.row.ended_at);
+const stopHelper = () => context.run(["helper", "stop", String(props.row.id)]);
+const instructionOpen = ref(false);
+const runningCommand = ref("");
+const noCommandNote = ref("");
+const showsCommand = computed(() => props.row.role !== "main" && (!props.row.ended_at || props.stoppedWithWork || props.waitReason));
+async function readCommand() {
+    if (!props.open || !showsCommand.value) return;
+    const answer = await context.read(`usage tool --agent ${props.row.id}`, {deferred: true});
+    if (!props.open) return;
+    runningCommand.value = answer.ok ? answer.value.tool : "";
+    noCommandNote.value = answer.ok ? answer.value.note : "";
+}
+const stopFollowing = context.follow(["hook_call.*", "process_part.*"], coalesced(readCommand, READ_RATES.agentCommand));
+onUnmounted(() => stopFollowing?.());
+watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true});
+</script>
+
+<template>
+    <div class="agent-more" data-agent-more @click.stop>
+        <template v-if="report"><p class="agent-summary" data-agent-report>Last report: {{ report }}</p></template>
+        <template v-if="row.retirement_reason"><p class="agent-summary" data-agent-retirement-reason>Retirement reason: {{ row.retirement_reason }}</p></template>
+        <template v-if="row.resume_reason"><p class="agent-summary" data-agent-resume-reason>{{ row.resume_reason }}</p></template>
+        <AgentActions :row="row" />
+        <template v-if="totalCount && tasksPerHour"><span class="agent-pace" data-agent-pace data-agent-motion>{{ tasksPerHour }}</span></template>
+                <InformationBar :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: []}" card>
+                    <template v-if="isRunningHelper"><Btn variant="ghost" small data-helper-stop @click="stopHelper">Stop</Btn></template>
+                </InformationBar>
+                <template v-if="showsCommand"><AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" /></template>
+                <template v-if="endedReason"><p class="agent-ended-reason" data-agent-ended-reason>{{ endedReason }}</p></template>
+                <InnerTabs class="agent-tabs" :tabs="cardTabs" :active="tab" :answer="{tasks: tasks.length}" @choose="tab = $event" />
+                <TabBody class="agent-tab-body" :tab="tab" :data-agent-tab-body="tab?.key">
+                    <SwitchCase :value="tab?.key">
+                        <template #tasks>
+                            <template v-if="!tasks.length"><EmptyState title="No tasks">No tasks have been assigned to this agent.</EmptyState></template>
+                            <template v-for="section in sections" :key="section.state">
+                                <AgentTaskGroup :section="section" :open="sectionOpen(section.state)" @toggle="fold(section.state)" />
+                            </template>
+                            <template v-if="facts?.instruction">
+                                <p class="agent-label">Instruction</p>
+                                <div class="agent-instruction" data-agent-instruction>{{ facts.instruction }}</div>
+                            </template>
+                        </template>
+                        <template #transcript>
+                            <template v-if="isReader">
+                            <template v-if="facts?.instruction">
+                                <div class="agent-helper-brief">
+                                    <FoldGroup label="Instruction" :open="instructionOpen" data-agent-section="instruction" @toggle="instructionOpen = !instructionOpen">
+                                        <div class="agent-instruction" data-agent-instruction>{{ facts.instruction }}</div>
+                                    </FoldGroup>
+                                </div>
+                            </template>
+                            <template v-else-if="facts && row.ended_at">
+                                <p class="agent-label" data-agent-no-job>No job recorded</p>
+                            </template>
+                            </template>
+                            <TranscriptRows :line="`agent transcript ${row.id}`" padding="0" />
+                        </template>
+                        <template v-for="(component, key) in components" :key="key" #[key]>
+                            <component :is="component" :agent="row.id" />
+                        </template>
+                    </SwitchCase>
+                </TabBody>
+    </div>
+</template>
+
+<style scoped>
+.agent-more { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; max-width: 100%; cursor: default; }
+.agent-summary { margin: 8px 14px; color: var(--text-2); font-size: 12px; white-space: pre-wrap; }
+.agent-pace { align-self: flex-end; color: var(--text-4); font-size: 10.5px; }
+.agent-ended-reason { margin: 4px 0; color: var(--danger, var(--text)); }
+.agent-command { width: 100%; max-width: 100%; overflow: hidden; padding: 6px 40% 6px 14px; border-bottom: 1px solid var(--border-inner); }
+.agent-tab-body { position: relative; display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; overflow-x: hidden; overflow-y: auto; contain: inline-size; }
+.agent-tab-body:not([data-agent-tab-body="tasks"]) > :deep(*) { flex: 1; min-height: 0; }
+.agent-tab-body :deep(.row-list-row) { padding: 8px 14px; border-bottom: 1px solid var(--border-inner); }
+.agent-tab-body[data-agent-tab-body="transcript"] :deep(.row-list-row) { gap: 8px; }
+.agent-tab-body[data-agent-tab-body="transcript"] :deep(.author) { min-width: 54px; font-size: 11.5px; letter-spacing: .03em; }
+.agent-tab-body[data-agent-tab-body="file-feed"] :deep(.row-list-row) { padding: 0; }
+.agent-helper-brief { flex: none; }
+.agent-label { margin: 12px 14px 0; color: var(--text-3); font-size: 12px; }
+.agent-instruction { flex: 1; min-height: 0; margin: 12px 14px 16px; padding: 0 0 0 10px; overflow-y: auto; border-left: 2px solid var(--border-2); color: var(--text-2); font-size: 12.5px; line-height: 1.55; white-space: pre-wrap; }
+.agent-helper-brief .agent-instruction { max-height: 240px; }
+</style>

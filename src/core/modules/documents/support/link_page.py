@@ -14,4 +14,4 @@ class LinkPage:
     page_size: int
     total: int
     next_command: str | None
-    kinds: dict[str, int]
+    target_counts: dict[str, int]

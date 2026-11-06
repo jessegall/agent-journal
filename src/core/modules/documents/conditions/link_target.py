@@ -5,7 +5,7 @@ from core.modules.documents.references.row_ref import RowRef
 
 
 @dataclass(frozen=True)
-class LinkKind:
+class LinkTarget:
     """Matches the model of the other end of a link."""
 
     reference: RowRef

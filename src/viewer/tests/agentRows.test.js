@@ -32,7 +32,7 @@ const AGENTS = [
 
 const FACTS = [
     {id: 2, model: "opus", context_percent: 62, cost_dollars: 1.2, task_id: 7, task_title: "Fix the cart", tasks: [], state: "", profile: "", given_name: "", instruction: ""},
-    {id: 3, model: "sonnet", context_percent: null, cost_dollars: 0, task_id: null, task_title: "", tasks: [], state: "blocked", profile: "journal-researcher", profile_title: "Researcher", given_name: "Madame Curie", instruction: "Read the cart\nand report"},
+    {id: 3, model: "sonnet", effort: "high", context_percent: null, cost_dollars: 0, task_id: null, task_title: "", tasks: [], state: "blocked", profile: "journal-researcher", profile_title: "Researcher", given_name: "Madame Curie", instruction: "Read the cart\nand report"},
 ];
 // the pane menu's option as the window declares it
 const DEFAULT_OPTIONS = {order: "number"};
@@ -98,11 +98,37 @@ test("a closed card shows the profile, name and status without open-card details
     const card = cardOf(element, 3);
     expect(card.querySelector("[data-agent-title]").textContent).toBe("Researcher");
     expect(card.querySelector("[data-agent-name]").textContent).toBe("Madame Curie");
-    expect(card.querySelector("[data-agent-identity]")).toBeNull();
+    expect(card.querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high");
+    expect(card.querySelector("[data-agent-identity]").parentElement.previousElementSibling.classList.contains("agent-head")).toBe(true);
     expect(card.querySelector(".agent-dot").dataset.state).toBe("blocked");
     expect(card.textContent).not.toContain("Running");
     expect(card.querySelector("[data-agent-instruction]")).toBeNull();
-    expect(card.title).toBe("claude · sonnet · helper");
+    expect(card.title).toBe("claude · sonnet · high");
+    card.click();
+    await settle();
+    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high");
+});
+
+test("closed cards use the shared agent facts read for their identity", async () => {
+    const held = window(FACTS);
+    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, held);
+    expect(cardOf(element, 2).querySelector("[data-agent-identity]").textContent).toBe("claude · opus");
+    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high");
+    expect(held.reads.filter((line) => line.startsWith("usage agents --closed"))).toHaveLength(1);
+    expect(held.reads.filter((line) => line.startsWith("usage tool --agent"))).toHaveLength(0);
+});
+
+test("the identity sits between the name and job and stays the same when opened", async () => {
+    const row = {id: 4, session: "s-worker", program: "codex", role: "worker", ended_at: null};
+    const facts = {model: "gpt-6.1-sol", effort: "high", given_name: "Mary Shelley", job_enabled: true, task_title: "Window converter", tasks: []};
+    const element = await mounted({render: () => h(AgentCard, {row, facts})}, context({}));
+    const card = element.querySelector("[data-agent-open]");
+    const identity = card.querySelector("[data-agent-identity]");
+    expect(identity.textContent).toBe("codex · gpt-6.1-sol · high");
+    expect(identity.parentElement.previousElementSibling.classList.contains("agent-head")).toBe(true);
+    expect(identity.parentElement.nextElementSibling.querySelector("[data-agent-job]").textContent).toBe("Window converter");
+    const opened = await mounted({render: () => h(AgentCard, {row, facts, open: true})}, context({}));
+    expect(opened.querySelector("[data-agent-identity]").textContent).toBe(identity.textContent);
 });
 
 test("a click opens the card on its instruction with no usage line or Inspect button of its own, and a second closes it", async () => {
@@ -436,8 +462,8 @@ const listed = (element) => [...element.querySelectorAll("[data-agent-open]")].m
 
 // message 101517: an open card's instruction stopped at 240px with empty room under it
 test("an open card's instruction has no fixed height and takes the room of its body", () => {
-    const card = readFileSync(resolve(__dirname, "../../core/modules/agents/web/src/AgentCard.vue"), "utf8");
-    expect(card).toMatch(/\.agent-card\.open \.agent-instruction \{[^}]*flex: 1;[^}]*max-height: none;/);
+    const details = readFileSync(resolve(__dirname, "../../core/modules/agents/web/src/AgentCardDetails.vue"), "utf8");
+    expect(details).toMatch(/\.agent-instruction \{[^}]*flex: 1;[^}]*overflow-y: auto;/);
 });
 
 // message 101362: nothing is ever hidden, even for a pane that saved a switch off in an older version
@@ -468,7 +494,7 @@ test("a worker's card shows the task it works on as its job and no queued count,
     const tasks = [{id: 1, title: "Add the tax", state: "started"}, {id: 2, title: "Print the receipt", state: "open"}, {id: 3, title: "Ship it", state: "open"}];
     const element = await mounted({render: () => h(AgentCard, {row: worker, facts: {job_enabled: true, task_id: 1, task_title: "Add the tax", tasks}})}, context(lines));
     expect(element.querySelector("[data-agent-job]").textContent).toBe("Add the tax");
-    expect(element.querySelector("[data-agent-identity]")).toBeNull();
+    expect(element.querySelector("[data-agent-identity]").textContent).toBe("claude");
     expect(element.querySelector("[data-agent-job]").parentElement.querySelector("[data-agent-tasks]")).toBeNull();
     expect(element.textContent).not.toContain("Queued");
     const main = {id: 1, session: "s-main", program: "claude", role: "main", ended_at: null};
