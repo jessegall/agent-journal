@@ -61,7 +61,7 @@ class ServerQueue(RequestQueue):
             self.waiting_cli[number] = request
             self.changed.notify_all()
         try:
-            self.take_cli_turn(number)
+            self.claim_cli_turn(number)
             with self.changed:
                 del self.waiting_cli[number]
                 self.running_cli += 1
@@ -77,7 +77,7 @@ class ServerQueue(RequestQueue):
                 self.waiting_cli.pop(number, None)
                 self.changed.notify_all()
 
-    def take_cli_turn(self, number: int) -> None:
+    def claim_cli_turn(self, number: int) -> None:
         deadline = monotonic() + self.cli_wait_limit_seconds
         with self.changed:
             while self.running_owners or self.waiting_hooks or self.running_cli or number != min(self.waiting_cli):
@@ -138,7 +138,7 @@ class ServerQueue(RequestQueue):
             self.changed.notify_all()
         try:
             if priority is not WindowPriority.FIRST:
-                self.take_viewer_turn(number)
+                self.claim_viewer_turn(number)
             with self.changed:
                 del self.waiting_viewers[number]
                 self.running_requests[number] = request.entry()
@@ -156,7 +156,7 @@ class ServerQueue(RequestQueue):
                 self.viewer_windows.pop(number, None)
                 self.changed.notify_all()
 
-    def take_viewer_turn(self, number: int) -> None:
+    def claim_viewer_turn(self, number: int) -> None:
         deadline = monotonic() + self.viewer_wait_limit_seconds
         with self.changed:
             while not self.is_next_viewer(number):
@@ -171,13 +171,13 @@ class ServerQueue(RequestQueue):
         return number == min(self.waiting_viewers, key=lambda waiting: (len(self.sent_at[self.viewer_windows[waiting]]), waiting))
 
     def note_sent(self, window: str) -> None:
-        now = monotonic()
-        self.sent_at[window] = [*(sent for sent in self.sent_at.get(window, ()) if now - sent < RECENT_REQUESTS_SECONDS), now]
+        current_time = monotonic()
+        self.sent_at[window] = [*(earlier for earlier in self.sent_at.get(window, ()) if current_time - earlier < RECENT_REQUESTS_SECONDS), current_time]
 
     def let_hooks_finish(self) -> None:
-        self.wait_until_idle(self.viewer_wait_limit_seconds)
+        self.wait_idle(self.viewer_wait_limit_seconds)
 
-    def wait_until_idle(self, limit_seconds: float) -> None:
+    def wait_idle(self, limit_seconds: float) -> None:
         deadline = monotonic() + limit_seconds
         with self.changed:
             while self.running_owners or self.waiting_hooks:

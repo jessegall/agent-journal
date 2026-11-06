@@ -30,6 +30,6 @@ class HookDatabase:
                 self.free_databases.append(database)
 
     def close(self) -> None:
-        self.queue.wait_until_idle(CLOSE_WAIT_SECONDS)
+        self.queue.wait_idle(CLOSE_WAIT_SECONDS)
         for database in self.databases:
             database.close()

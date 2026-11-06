@@ -8,7 +8,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.conditions.among import Among
 from core.modules.messages.queries.message_query import MessageQuery
-from core.modules.messages.commands.read_message.mark_message_read import MarkMessageRead
+from core.modules.messages.commands.read_message.note_message_read import NoteMessageRead
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_captions import MessageCaptions
 
@@ -38,7 +38,7 @@ class MessageReadRule(DriverRule):
             unread = [message for message in all_unread if message.delivered_at is not None]
         images = [nudge for message in unread for nudge in self.image_nudges(message)]
         nudges = [MESSAGE_NOTE.nudge(), REPLY_COMMAND.nudge(), *images] if unread else []
-        return RuleAnswer.with_nudges(*nudges).running(*(MarkMessageRead(message.id) for message in unread))
+        return RuleAnswer.with_nudges(*nudges).running(*(NoteMessageRead(message.id) for message in unread))
 
     def image_nudges(self, message: Message) -> list[Nudge]:
         captions = MessageCaptions.decoded(message)

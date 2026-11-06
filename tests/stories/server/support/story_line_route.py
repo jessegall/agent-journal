@@ -16,9 +16,9 @@ from server.viewer.shared_row import SharedRow
 class StoryLineRoute(LineRoute):
     """Checks repeated work around each viewer line on its selected container."""
 
-    def __init__(self, home: JournalHome, listener_thread: ListenerThread, reported: ReportedFindings, on_completed: Callable[[Container, list[str]], None] = ignore_completed) -> None:
-        super().__init__(home, listener_thread, reported, on_completed=on_completed)
-        self.line_run = StoryLineRun(home, listener_runner=ListenerWake(listener_thread), reported=reported, on_completed=on_completed)
+    def __init__(self, home: JournalHome, listener_thread: ListenerThread, reported: ReportedFindings, completion_callback: Callable[[Container, list[str]], None] = ignore_completed) -> None:
+        super().__init__(home, listener_thread, reported, completion_callback=completion_callback)
+        self.line_run = StoryLineRun(home, listener_runner=ListenerWake(listener_thread), reported=reported, completion_callback=completion_callback)
 
     def run_line(self, container: Container, window: str, argv: list[str], person_id: int, environment: str, shared: SharedRow | None) -> LineAnswer:
         work = container.get(Database).tally

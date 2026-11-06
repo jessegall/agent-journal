@@ -15,4 +15,4 @@ class QuestionLinksMove(VersionFourMove):
     id_modules = ["journal.core.actors", "journal.core.agents", "journal.core.messages", "journal.core.documents", "journal.core.tasks", "journal.core.plans"]
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
-        return LinkRows(target, map, context).move(link for link in source.rows("links") if LinkRows.touches_question(link))
+        return LinkRows(target, map, context).move(link for link in source.rows("links") if LinkRows.has_question_end(link))

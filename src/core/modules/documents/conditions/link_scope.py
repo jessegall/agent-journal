@@ -1,17 +1,9 @@
 from dataclasses import dataclass
-from enum import StrEnum
 
 from core.base.database.statement import Statement
 from core.modules.documents.models.link import Link
 from core.modules.documents.support.row_ref import RowRef
-
-
-class LinkSide(StrEnum):
-    """The requested end of a relation read."""
-
-    SOURCE = "source"
-    TARGET = "target"
-    BOTH = "row"
+from core.modules.documents.conditions.link_side import LinkSide
 
 
 @dataclass(frozen=True)
@@ -22,7 +14,7 @@ class LinkScope:
     side: LinkSide
 
     def statement(self) -> Statement:
-        if self.side is not LinkSide.BOTH:
+        if self.side is not LinkSide.ROW:
             return Statement(f"{self.side}_model = ? AND {self.side}_id = ?", (self.reference.model, self.reference.row_id))
         return Statement("((source_model = ? AND source_id = ?) OR (target_model = ? AND target_id = ?))",
                          (self.reference.model, self.reference.row_id, self.reference.model, self.reference.row_id))

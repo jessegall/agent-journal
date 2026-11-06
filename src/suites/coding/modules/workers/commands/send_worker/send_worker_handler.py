@@ -63,7 +63,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         worker = self.rows.required(Agent, command.worker_id)
         resumed = worker.ended_at is not None or self.is_gone or worktree.state is WorktreeState.DELIVERED
         source_context = replace(context, environment_id=worktree.environment_id)
-        source = self.sources.snapshot(source_context)
+        source = self.sources.source_copy(source_context)
         previous = self.task_sources.current(replace(context, actor=Actor(command.worker_id, ActorType.AGENT)))
         if self.is_gone:
             self.bus.dispatch(EndGoneWorker(command.worker_id), context)
@@ -74,10 +74,10 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         self.repository.save(Message(creator_id=context.actor.id, type=MessageType.PEER, text=command.job, read_at=context.timestamp, delivered_at=context.timestamp,
                                      recipient=WorkerRecipient.text(command.worker_id)), context)
         line = self.nudger.send_text(command.worker_id, job, WORKER_JOB_SOURCE, context)
-        if resumed or previous is None or previous.message_id != source.message_id or previous.unavailable != source.unavailable:
+        if resumed or source.differs_from(previous):
             self.repository.save(WorkerTaskSource(creator_id=context.actor.id, worktree_id=worktree.id, task_id=worktree.task_id,
                                                   environment_id=worktree.environment_id, source_message_id=source.message_id,
                                                   source_version=source.version, source_unavailable=source.unavailable, source_line_id=line.id,
                                                   started_at=context.timestamp if resumed else None), context)
-            self.sources.use_snapshot(source, source_context)
+            self.sources.use_copy(source, source_context)
         return line

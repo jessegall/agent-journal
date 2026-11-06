@@ -17,8 +17,6 @@ class DeletedRowLinkListener(DeletionListener[Changed[Model]]):
 
     def handle(self, event: Changed[Model], context: Context) -> None:
         row = event.row
-        if isinstance(row, Link):
-            return
         outgoing = self.queries.query(Link).filter(source_model=row.model_name, source_id=row.id).all_rows()
         incoming = self.queries.query(Link).filter(target_model=row.model_name, target_id=row.id).all_rows()
         touching = {link.id: link for link in (*outgoing, *incoming)}

@@ -1,16 +1,8 @@
-from collections.abc import Mapping, Sequence
 from typing import Protocol, runtime_checkable
 
 from core.base.caller.caller import Caller
 from core.modules.tasks.models.task import Task
-
-
-class TaskConversation(Protocol):
-    """The bounded conversation supplied with a task overview."""
-
-    def lines(self) -> Sequence[str]: ...
-
-    def json(self) -> Mapping[str, object]: ...
+from core.modules.tasks.support.task_conversation import TaskConversation
 
 
 @runtime_checkable

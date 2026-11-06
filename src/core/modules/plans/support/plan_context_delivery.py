@@ -15,7 +15,7 @@ class PlanContextDelivery:
         self.kept = kept
 
     def start_event(self, plan: Plan) -> int | None:
-        event = self.kept.read_newest("plans", lambda: self.events.newest_row_named("plans", plan.id, ("plan.start", "plan.unblock")),
+        event = self.kept.read_newest("plans", lambda: self.events.latest_row("plans", plan.id, ("plan.start", "plan.unblock")),
                                       "id = ?", [plan.id], name="plans.context-start")
         return event.id if event is not None else None
 
@@ -28,4 +28,4 @@ class PlanContextDelivery:
         event_id = self.start_event(plan)
         if event_id is not None and not self.has_read(plan.id, event_id, context.actor.id):
             self.repository.save(PlanContextRead(plan_id=plan.id, start_event_id=event_id, session_agent_id=context.actor.id,
-                                                creator_id=context.actor.id, environment_id=plan.environment_id), context)
+                                                creator_id=context.actor.id), context)
