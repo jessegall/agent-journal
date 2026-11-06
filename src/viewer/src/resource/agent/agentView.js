@@ -17,13 +17,13 @@ const capital = (word) => word.slice(0, 1).toUpperCase() + word.slice(1);
 // the title band says the role and the number once; the main agent has no number to say
 export const agentTitle = (row) => (row.role === MAIN_ROLE ? MAIN_TITLE : `${capital(row.role)} ${row.id}`);
 
-export const givenName = (row, facts) => facts?.given_name || capital(facts?.profile || row.role);
+export const givenName = (row, facts) => facts?.given_name || facts?.profile_title || facts?.profile || capital(row.role);
 
 // what its dot shows: it ended, it waits for something, or it runs
 export const agentState = (row, facts) => (row.ended_at ? "ended" : row.paused_at || WAITING_STATES.has(facts?.state) ? "waiting" : "running");
 
 // the profile, the program, the model and the effort, as far as they are known
-export const identityParts = (row, facts) => [facts?.profile && capital(facts.profile), row.program, facts?.model, facts?.effort && `${facts.effort} effort`].filter(Boolean);
+export const identityParts = (row, facts) => [facts?.profile && (facts.profile_title || facts.profile), row.program, facts?.model, facts?.effort && `${facts.effort} effort`].filter(Boolean);
 
 const completedCount = (facts) => (facts?.tasks ?? []).filter((task) => task.state === "completed").length;
 

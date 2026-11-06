@@ -28,6 +28,11 @@ class AgentProfile:
     notes: tuple[str, ...] = ()
     uses: int = 0
     last_used: int = 0
+    title: str = ""
+
+    @property
+    def display_title(self) -> str:
+        return self.title or self.name
 
     @property
     def is_builtin(self) -> bool:

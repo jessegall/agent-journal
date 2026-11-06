@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-import { openBlock as a, createElementBlock as s, normalizeStyle as ze, normalizeClass as ne, toDisplayString as v, createCommentVNode as M, createElementVNode as A, renderSlot as Me, computed as g, createVNode as x, withCtx as S, createTextVNode as k, Fragment as E, renderList as le, onUnmounted as Se, ref as V, onMounted as Be, createBlock as R, Teleport as Ke, mergeProps as Ue, watch as pe, toRef as Ze, unref as m, withModifiers as he, defineAsyncComponent as Je, withKeys as He, createSlots as _e, resolveDynamicComponent as Ge, nextTick as Ae } from "vue";
+import { openBlock as a, createElementBlock as s, normalizeStyle as ze, normalizeClass as ne, toDisplayString as v, createCommentVNode as M, createElementVNode as A, renderSlot as Me, computed as g, createVNode as x, withCtx as S, createTextVNode as k, Fragment as E, renderList as le, onUnmounted as Se, ref as V, onMounted as Be, createBlock as R, Teleport as Ke, mergeProps as Ue, watch as pe, toRef as Ze, unref as m, withModifiers as he, defineAsyncComponent as _e, withKeys as He, createSlots as Je, resolveDynamicComponent as Ge, nextTick as Ae } from "vue";
 import { peekRef as Ce, Icon as Ve, RunningCommand as Ye, FoldGroup as Ie, TaskStatusIcon as Qe, useNow as Xe, age as et, perHour as tt, useWindow as Ee, loadWindowComponent as at, TimeAgo as Re, Btn as Ne, InnerTabs as nt, TabBody as lt, SwitchCase as ot, EmptyState as qe, useRows as st, useDeclaredRows as Le, SearchBar as rt, Segmented as it, MenuLabel as Te, MenuItem as xe, RowList as ct } from "@journal/window-kit";
 import { _ as ce, T as dt } from "./TranscriptRows-ByPSYos4.js";
 const ut = ["stroke-width", "innerHTML"], K = {
@@ -291,7 +291,7 @@ const ye = 8, St = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       const $ = r.closest(".pane, .float-window");
       return $ ? N($.getBoundingClientRect()) : B();
     }, q = (r, $) => `${Math.max(0, r ? Math.min(r, $) : $)}px`;
-    function ee(r, $) {
+    function te(r, $) {
       return {
         below: r.bottom - $.bottom - c.gap - ye,
         above: $.top - r.top - c.gap - ye,
@@ -299,38 +299,38 @@ const ye = 8, St = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       };
     }
     function F(r) {
-      const $ = C(c.anchor), j = ee($, r);
+      const $ = C(c.anchor), j = te($, r);
       return H.value.w <= j.across && H.value.h <= Math.max(j.below, j.above) ? $ : B();
     }
     const O = g(() => {
       if (!p.value) return z.value;
-      const r = p.value, $ = F(r), j = ee($, r), { w: Z, h: Y } = H.value, J = c.align === "auto" ? r.left + r.right > $.left + $.right : c.align === "right", ue = bt(J ? r.right - Z : r.left, $.left + ye, Math.max($.left + ye, $.right - Z - ye)), oe = Y > j.below && j.above > j.below ? { bottom: `${window.innerHeight - r.top + c.gap}px`, maxHeight: q(c.maxHeight, j.above) } : { top: `${r.bottom + c.gap}px`, maxHeight: q(c.maxHeight, j.below) };
+      const r = p.value, $ = F(r), j = te($, r), { w: Z, h: Q } = H.value, _ = c.align === "auto" ? r.left + r.right > $.left + $.right : c.align === "right", ue = bt(_ ? r.right - Z : r.left, $.left + ye, Math.max($.left + ye, $.right - Z - ye)), oe = Q > j.below && j.above > j.below ? { bottom: `${window.innerHeight - r.top + c.gap}px`, maxHeight: q(c.maxHeight, j.above) } : { top: `${r.bottom + c.gap}px`, maxHeight: q(c.maxHeight, j.below) };
       return { ...z.value, ...oe, left: `${ue}px`, maxWidth: q(c.maxWidth, j.across) };
     }), I = d, L = () => [...t.value.querySelectorAll("button:not(:disabled)")];
     function P(r) {
       const $ = L(), j = $.indexOf(document.activeElement);
       $[(j + r + $.length) % $.length].focus();
     }
-    const U = { ArrowDown: () => P(1), ArrowUp: () => P(-1), Escape: () => I("close") }, W = (r) => U[r.key] && (r.preventDefault(), U[r.key]()), _ = () => t.value && (H.value = { w: t.value.offsetWidth, h: t.value.scrollHeight });
+    const U = { ArrowDown: () => P(1), ArrowUp: () => P(-1), Escape: () => I("close") }, W = (r) => U[r.key] && (r.preventDefault(), U[r.key]()), G = () => t.value && (H.value = { w: t.value.offsetWidth, h: t.value.scrollHeight });
     let D = 0;
     const h = new ResizeObserver(() => {
-      cancelAnimationFrame(D), D = requestAnimationFrame(_);
+      cancelAnimationFrame(D), D = requestAnimationFrame(G);
     });
     Ct(t, (r) => c.anchor && !c.anchor.contains(r.target) && I("close"));
     const l = (r, $) => ["top", "left", "right", "bottom"].some((j) => Math.abs(r[j] - $[j]) > 1), u = (r) => r.bottom < 0 || r.top > window.innerHeight;
-    let G = 0;
+    let Y = 0;
     function ge() {
       if (c.anchor) {
         const r = c.anchor.getBoundingClientRect();
         if (!c.anchor.isConnected || u(r)) return I("close");
         l(r, p.value) && (p.value = r);
       }
-      G = requestAnimationFrame(ge);
+      Y = requestAnimationFrame(ge);
     }
     return Be(() => {
-      c.anchor && t.value && xt(t.value, c.anchor), _(), t.value && h.observe(t.value), !c.plain && L()[0] && L()[0].focus(), ge();
+      c.anchor && t.value && xt(t.value, c.anchor), G(), t.value && h.observe(t.value), !c.plain && L()[0] && L()[0].focus(), ge();
     }), Se(() => {
-      h.disconnect(), cancelAnimationFrame(G), cancelAnimationFrame(D);
+      h.disconnect(), cancelAnimationFrame(Y), cancelAnimationFrame(D);
     }), b({ element: t }), (r, $) => (a(), R(Ke, {
       to: "body",
       disabled: !e.anchor
@@ -376,8 +376,8 @@ function Vt(e, b, d) {
     const L = await zt(I, O, b);
     return z.value = L.ok ? "" : L.error, d(), L;
   }
-  const q = (O, I) => C(["agent", "control", String(e.value.id), O, I.value], { target: f, fields: { value: { ...f.value, [O]: I.label } } }), ee = () => (H.value = !1, C(["agent", "stop", String(e.value.id)], { target: e.value, fields: { ended_at: (/* @__PURE__ */ new Date()).toISOString() } })), F = (O) => C(["agent", "launch", O.name]);
-  return Be(N), pe(p, N), { groups: c, programs: t, chosen: f, failure: z, asking: H, running: p, paused: B, choose: q, stop: ee, start: F };
+  const q = (O, I) => C(["agent", "control", String(e.value.id), O, I.value], { target: f, fields: { value: { ...f.value, [O]: I.label } } }), te = () => (H.value = !1, C(["agent", "stop", String(e.value.id)], { target: e.value, fields: { ended_at: (/* @__PURE__ */ new Date()).toISOString() } })), F = (O) => C(["agent", "launch", O.name]);
+  return Be(N), pe(p, N), { groups: c, programs: t, chosen: f, failure: z, asking: H, running: p, paused: B, choose: q, stop: te, start: F };
 }
 const Fe = { claude: "Claude Code", codex: "Codex" };
 Object.entries(Fe).map(([e, b]) => ({ key: e, label: b }));
@@ -421,7 +421,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
       const h = d.agent && d.run ? await d.run(["agent-skill", "list", "--agent", String(d.agent.id)]) : null;
       N.value = h != null && h.ok ? h.value.rows ?? [] : [];
     }
-    function ee(h) {
+    function te(h) {
       p(h, "skills"), q();
     }
     pe(() => {
@@ -448,7 +448,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
     }), U = g(() => P.value ? Math.max(0, Math.min(100, Math.round(P.value.used_percent))) : null), W = g(() => {
       var h;
       return ((h = L.value) == null ? void 0 : h.context_percent) == null ? null : Math.round(L.value.context_percent);
-    }), _ = g(() => {
+    }), G = g(() => {
       var h;
       return (h = L.value) != null && h.cost_dollars ? `$${L.value.cost_dollars.toFixed(2)}` : "";
     }), D = g(() => {
@@ -548,7 +548,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
           }),
           k(" " + v(I.value), 1)
         ], 8, It)) : M("", !0),
-        _.value ? (a(), s("button", {
+        G.value ? (a(), s("button", {
           key: 4,
           type: "button",
           class: "fact",
@@ -556,7 +556,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
           "data-fact": "cost",
           title: "The predicted API price of this session: open its breakdown",
           onClick: l[5] || (l[5] = (u) => c("open", "cost", u.currentTarget))
-        }, v(_.value), 9, Et)) : M("", !0),
+        }, v(G.value), 9, Et)) : M("", !0),
         D.value ? (a(), s("span", Nt, [
           x(K, {
             name: "reminders",
@@ -591,7 +591,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
           class: "fact",
           "data-fact": "skills",
           title: "View skills read by this agent",
-          onClick: ee
+          onClick: te
         }, [
           x(K, {
             name: "book",
@@ -701,7 +701,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
             (a(!0), s(E, null, le(m(t).programs.value, (u) => (a(), R(ke, {
               key: u.name,
               "data-agent-program": u.name,
-              onClick: (G) => (B(), m(t).start(u))
+              onClick: (Y) => (B(), m(t).start(u))
             }, {
               default: S(() => [
                 k(v(u.title), 1)
@@ -722,7 +722,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
             (a(!0), s(E, null, le(H.value.choices, (u) => (a(), R(ke, {
               key: u.value,
               "data-agent-choice": u.value,
-              onClick: (G) => (m(t).choose(H.value.key, u), B())
+              onClick: (Y) => (m(t).choose(H.value.key, u), B())
             }, {
               default: S(() => [
                 k(v(u.label), 1)
@@ -766,7 +766,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
       }, null, 8, ["text", "idle"]))
     ]));
   }
-}, Oe = /* @__PURE__ */ ce(Zt, [["__scopeId", "data-v-1b371fb5"]]), Jt = ["data-agent-delegated", "onClick"], _t = { class: "agent-task-number" }, Gt = { class: "agent-task-title" }, Yt = ["title"], Qt = {
+}, Oe = /* @__PURE__ */ ce(Zt, [["__scopeId", "data-v-1b371fb5"]]), _t = ["data-agent-delegated", "onClick"], Jt = { class: "agent-task-number" }, Gt = { class: "agent-task-title" }, Yt = ["title"], Qt = {
   __name: "AgentTaskGroup",
   props: { section: { type: Object, required: !0 }, open: Boolean },
   emits: ["toggle"],
@@ -790,7 +790,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
           x(m(Qe), {
             status: f.state
           }, null, 8, ["status"]),
-          A("span", _t, v(f.id), 1),
+          A("span", Jt, v(f.id), 1),
           A("span", Gt, v(f.title), 1),
           f.plan_id ? (a(), s("span", {
             key: 0,
@@ -798,7 +798,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
             "data-agent-task-plan": "",
             title: `Plan ${f.plan_id}: ${f.plan_title}`
           }, "Plan " + v(f.plan_id) + ": " + v(f.plan_title), 9, Yt)) : M("", !0)
-        ], 8, Jt))), 128))
+        ], 8, _t))), 128))
       ]),
       _: 1
     }, 8, ["label", "count", "open", "data-agent-section"]));
@@ -864,25 +864,27 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
   emits: ["toggle"],
   setup(e, { emit: b }) {
     const d = { helper: "Helper", reviewer: "Reviewer" }, c = ["started", "blocked", "open", "completed"], t = e, f = b, z = Xe(), H = g(() => {
-      var i;
-      const n = ((i = t.facts) == null ? void 0 : i.profile) || d[t.row.role] || t.row.role;
+      var i, J;
+      if ((i = t.facts) != null && i.profile_title) return t.facts.profile_title;
+      if ((J = t.facts) != null && J.profile) return t.facts.profile;
+      const n = d[t.row.role] || t.row.role;
       return n.slice(0, 1).toUpperCase() + n.slice(1);
     }), p = g(() => {
       var n;
       return ((n = t.facts) == null ? void 0 : n.tasks) ?? [];
     }), B = g(() => p.value.filter((n) => n.state === "open")), N = g(() => {
       const n = p.value.find((i) => {
-        var te;
-        return i.id === ((te = t.facts) == null ? void 0 : te.task_id);
+        var J;
+        return i.id === ((J = t.facts) == null ? void 0 : J.task_id);
       });
       return n != null && n.plan_id ? n : B.value.find((i) => i.plan_id);
     }), C = g(() => {
-      var n, i, te, de;
-      return t.row.role === "helper" ? ((n = t.facts) == null ? void 0 : n.helper_job) || "" : (i = t.facts) != null && i.job_enabled && (((te = t.facts) == null ? void 0 : te.task_title) || ((de = B.value[0]) == null ? void 0 : de.title)) || "";
+      var n, i, J, de;
+      return t.row.role === "helper" ? ((n = t.facts) == null ? void 0 : n.helper_job) || "" : (i = t.facts) != null && i.job_enabled && (((J = t.facts) == null ? void 0 : J.task_title) || ((de = B.value[0]) == null ? void 0 : de.title)) || "";
     }), q = g(() => {
       const n = C.value.match(/\b(plan|doc)(?::|\s+)(\d+)\b/i);
       return n ? `${n[1].toLowerCase() === "plan" ? "plans" : "docs"}:${n[2]}` : "";
-    }), ee = g(() => {
+    }), te = g(() => {
       var n, i;
       return [t.row.program, (n = t.facts) == null ? void 0 : n.model, (i = t.facts) == null ? void 0 : i.effort, t.row.role === "main" ? "" : t.progress ? `${t.row.role} ${t.row.id}` : t.row.role, t.row.access === "read-only" ? "Access: Read-only" : ""].filter(Boolean).join(" · ");
     }), F = g(() => {
@@ -897,15 +899,15 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
     }), W = g(() => {
       var n;
       return ((n = t.progress) == null ? void 0 : n.task_count) ?? p.value.length;
-    }), _ = g(() => `${U.value} of ${W.value} ${W.value === 1 ? "task" : "tasks"}`), D = g(() => {
+    }), G = g(() => `${U.value} of ${W.value} ${W.value === 1 ? "task" : "tasks"}`), D = g(() => {
       var i;
       const n = tt(U.value, ((i = t.progress) == null ? void 0 : i.started_at) || t.row.created_at, t.progress ? t.progress.finished_at : t.row.ended_at, z.value);
       return t.row.role !== "main" && n ? `${n} per hour` : "";
-    }), h = g(() => p.value.length ? c.map((n) => ({ state: n, label: n.slice(0, 1).toUpperCase() + n.slice(1), tasks: p.value.filter((i) => i.state === n || n === "started" && i.state === "testing" || n === "completed" && i.state === "cancelled") })) : []), l = /* @__PURE__ */ new Set(["completed"]), u = V({}), G = (n) => !(u.value[n] ?? l.has(n)), ge = (n) => u.value = { ...u.value, [n]: G(n) }, r = Ee(), $ = g(() => t.row.access === "read-only"), j = g(() => $.value ? r.tabs.filter((n) => ["transcript", "terminal"].includes(n.key)) : r.tabs), Z = V(j.value[0]);
+    }), h = g(() => p.value.length ? c.map((n) => ({ state: n, label: n.slice(0, 1).toUpperCase() + n.slice(1), tasks: p.value.filter((i) => i.state === n || n === "started" && i.state === "testing" || n === "completed" && i.state === "cancelled") })) : []), l = /* @__PURE__ */ new Set(["completed"]), u = V({}), Y = (n) => !(u.value[n] ?? l.has(n)), ge = (n) => u.value = { ...u.value, [n]: Y(n) }, r = Ee(), $ = g(() => t.row.access === "read-only"), j = g(() => $.value ? r.tabs.filter((n) => ["transcript", "terminal"].includes(n.key)) : r.tabs), Z = V(j.value[0]);
     pe(() => t.open, (n) => {
       n && (Z.value = j.value[0]);
     });
-    const Y = Object.fromEntries(r.tabs.filter((n) => n.component).map((n) => [n.key, Je(() => at(n.component))])), J = g(() => t.row.role === "helper" && !t.row.ended_at), ue = () => r.run(["helper", "stop", String(t.row.id)]), Q = V(!1), oe = V(""), ve = V(""), se = g(() => t.row.role !== "main" && (!t.row.ended_at || L.value || t.waitReason));
+    const Q = Object.fromEntries(r.tabs.filter((n) => n.component).map((n) => [n.key, _e(() => at(n.component))])), _ = g(() => t.row.role === "helper" && !t.row.ended_at), ue = () => r.run(["helper", "stop", String(t.row.id)]), X = V(!1), oe = V(""), ve = V(""), se = g(() => t.row.role !== "main" && (!t.row.ended_at || L.value || t.waitReason));
     async function re() {
       if (!se.value) return;
       const n = await r.read(`usage tool --agent ${t.row.id}`);
@@ -913,7 +915,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
     }
     const fe = r.follow(["hook_call.*", "process_part.*"], re);
     return Se(() => fe == null ? void 0 : fe()), re(), (n, i) => {
-      var te, de, y, w;
+      var J, de, y, w;
       return a(), s("div", {
         class: ne(["agent-card", { open: e.open }]),
         "data-agent-open": e.row.id,
@@ -948,7 +950,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
             "data-agent-motion": ""
           }, null, 8, aa),
           A("span", na, v(H.value), 1),
-          A("span", la, v(((te = e.facts) == null ? void 0 : te.given_name) || e.row.id), 1),
+          A("span", la, v(((J = e.facts) == null ? void 0 : J.given_name) || e.row.id), 1),
           e.open ? M("", !0) : (a(), R(m(Ve), {
             key: 1,
             class: "agent-chevron",
@@ -971,8 +973,8 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
           ])
         ]),
         A("span", ia, [
-          A("span", ca, v(ee.value), 1),
-          W.value && !C.value ? (a(), s("span", da, v(_.value), 1)) : M("", !0)
+          A("span", ca, v(te.value), 1),
+          W.value && !C.value ? (a(), s("span", da, v(G.value), 1)) : M("", !0)
         ]),
         N.value ? (a(), s("span", ua, [
           A("button", {
@@ -1002,7 +1004,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
               k(v(C.value), 1)
             ], 64))
           ], 8, pa),
-          W.value ? (a(), s("span", va, v(_.value), 1)) : M("", !0)
+          W.value ? (a(), s("span", va, v(G.value), 1)) : M("", !0)
         ], 2)) : M("", !0),
         !e.open && (se.value || W.value && D.value) ? (a(), s("span", {
           key: 2,
@@ -1033,7 +1035,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
             card: ""
           }, {
             default: S(() => [
-              J.value ? (a(), R(m(Ne), {
+              _.value ? (a(), R(m(Ne), {
                 key: 0,
                 variant: "ghost",
                 small: "",
@@ -1074,7 +1076,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
               return [
                 x(m(ot), {
                   value: (o = Z.value) == null ? void 0 : o.key
-                }, _e({
+                }, Je({
                   tasks: S(() => {
                     var T;
                     return [
@@ -1087,11 +1089,11 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
                         ])]),
                         _: 1
                       })),
-                      (a(!0), s(E, null, le(h.value, (X) => (a(), R(Xt, {
-                        key: X.state,
-                        section: X,
-                        open: G(X.state),
-                        onToggle: (ie) => ge(X.state)
+                      (a(!0), s(E, null, le(h.value, (ee) => (a(), R(Xt, {
+                        key: ee.state,
+                        section: ee,
+                        open: Y(ee.state),
+                        onToggle: (ie) => ge(ee.state)
                       }, null, 8, ["section", "open", "onToggle"]))), 128)),
                       (T = e.facts) != null && T.instruction ? (a(), s(E, { key: 1 }, [
                         i[12] || (i[12] = A("p", { class: "agent-label" }, "Instruction", -1)),
@@ -1106,9 +1108,9 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
                         (T = e.facts) != null && T.instruction ? (a(), s("div", ka, [
                           x(m(Ie), {
                             label: "Instruction",
-                            open: Q.value,
+                            open: X.value,
                             "data-agent-section": "instruction",
-                            onToggle: i[4] || (i[4] = (X) => Q.value = !Q.value)
+                            onToggle: i[4] || (i[4] = (ee) => X.value = !X.value)
                           }, {
                             default: S(() => [
                               A("div", wa, v(e.facts.instruction), 1)
@@ -1119,16 +1121,16 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
                       ], 64)) : M("", !0),
                       x(dt, {
                         line: `agent transcript ${e.row.id}`,
-                        agent: $.value ? J.value ? e.row.id : null : e.row.id,
-                        helper: $.value && J.value,
+                        agent: $.value ? _.value ? e.row.id : null : e.row.id,
+                        helper: $.value && _.value,
                         padding: "0"
                       }, null, 8, ["line", "agent", "helper"])
                     ];
                   }),
                   _: 2
                 }, [
-                  le(m(Y), (T, X) => ({
-                    name: X,
+                  le(m(Q), (T, ee) => ({
+                    name: ee,
                     fn: S(() => [
                       (a(), R(Ge(T), {
                         agent: e.row.id
@@ -1144,7 +1146,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
       ], 42, ea);
     };
   }
-}, $a = /* @__PURE__ */ ce(xa, [["__scopeId", "data-v-f1aa472b"]]), Ca = ["data-agent-row"], je = "journal.agents.filters", $e = "cubic-bezier(0.2, 0.9, 0.25, 1)", Sa = {
+}, $a = /* @__PURE__ */ ce(xa, [["__scopeId", "data-v-4047767e"]]), Ca = ["data-agent-row"], je = "journal.agents.filters", $e = "cubic-bezier(0.2, 0.9, 0.25, 1)", Sa = {
   __name: "AgentRows",
   props: { line: { type: String, required: !0 }, empty: { type: String, required: !0 }, texts: { type: Object, default: () => ({}) } },
   setup(e) {
@@ -1156,7 +1158,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
     ], d = e, { rows: c } = st("usage agents --closed", ["agent.*", "task.*", "hook_call.*", "helper_job.*"]), { rows: t } = Le("waits"), { rows: f } = Le("progress"), z = (y) => f.value.find((w) => w.agent_id === y.id) ?? null, H = (y) => {
       var w;
       return ((w = t.value.find((o) => o.agent_id === y.id)) == null ? void 0 : w.reason) ?? "";
-    }, p = V("running"), B = V(""), N = JSON.parse(localStorage.getItem(je) || '{"roles":[],"profiles":[],"programs":[]}'), C = V(N), q = V({ roles: [], profiles: [] }), ee = V([]), F = g(() => C.value.roles.length + C.value.profiles.length + C.value.programs.length), O = (y, w) => {
+    }, p = V("running"), B = V(""), N = JSON.parse(localStorage.getItem(je) || '{"roles":[],"profiles":[],"programs":[]}'), C = V(N), q = V({ roles: [], profiles: [] }), te = V([]), F = g(() => C.value.roles.length + C.value.profiles.length + C.value.programs.length), O = (y, w) => {
       const o = C.value[y];
       C.value = { ...C.value, [y]: o.includes(w) ? o.filter((T) => T !== w) : [...o, w] };
     }, I = () => {
@@ -1166,66 +1168,66 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
     const P = Ee();
     async function U() {
       const [y, w] = await Promise.all([P.read("agent cards --options"), P.read("agent programs")]);
-      y.ok && (q.value = y.value), w.ok && (ee.value = w.value.rows);
+      y.ok && (q.value = y.value), w.ok && (te.value = w.value.rows);
     }
     P.follow(["agent.*"], U), U();
-    const W = V([]), _ = V(""), D = V(!1), h = V(!1), l = V(25);
+    const W = V([]), G = V(""), D = V(!1), h = V(!1), l = V(25);
     let u = 0;
-    async function G() {
+    async function Y() {
       const y = ++u, w = [
         ...C.value.roles.map((T) => `--role ${JSON.stringify(T)}`),
         ...C.value.profiles.map((T) => `--profile ${JSON.stringify(T)}`),
         ...C.value.programs.map((T) => `--program ${JSON.stringify(T)}`)
       ].join(" "), o = await P.read(`${d.line} --show ${p.value} --search ${JSON.stringify(B.value)} --limit ${l.value} ${w}`);
-      y === u && (W.value = o.ok ? o.value.rows : [], _.value = o.ok ? "" : o.error, h.value = o.ok && o.value.page * o.value.size < o.value.total, D.value = !0);
+      y === u && (W.value = o.ok ? o.value.rows : [], G.value = o.ok ? "" : o.error, h.value = o.ok && o.value.page * o.value.size < o.value.total, D.value = !0);
     }
     async function ge() {
-      return l.value += 25, await G(), !0;
+      return l.value += 25, await Y(), !0;
     }
     pe([p, B, C], () => {
-      l.value = 25, G();
-    }), P.follow(["agent.*", "task.*", ...P.sources.flatMap((y) => y.events)], G), G();
-    const r = (y) => c.value.find((w) => w.id === y.id) ?? null, $ = W, j = g(() => !!B.value.trim() || F.value > 0), Z = g(() => d.texts[p.value] ?? { title: d.empty, hint: "" }), Y = V(null), J = V(null), ue = V(null), Q = g(() => $.value.find((y) => y.id === Y.value) ?? null), oe = g(() => Q.value ? [Q.value] : $.value), ve = g(() => $.value.length - oe.value.length), se = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      l.value = 25, Y();
+    }), P.follow(["agent.*", "task.*", ...P.sources.flatMap((y) => y.events)], Y), Y();
+    const r = (y) => c.value.find((w) => w.id === y.id) ?? null, $ = W, j = g(() => !!B.value.trim() || F.value > 0), Z = g(() => d.texts[p.value] ?? { title: d.empty, hint: "" }), Q = V(null), _ = V(null), ue = V(null), X = g(() => $.value.find((y) => y.id === Q.value) ?? null), oe = g(() => X.value ? [X.value] : $.value), ve = g(() => $.value.length - oe.value.length), se = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let re = !1, fe = 0;
     async function n(y) {
       if (re) return;
       re = !0, fe = ue.value.scrollTop;
-      const w = J.value.querySelector(`[data-agent-open="${y.id}"]`);
+      const w = _.value.querySelector(`[data-agent-open="${y.id}"]`);
       if (!se()) {
-        const ie = [...J.value.querySelectorAll(".agent-row")].filter((ae) => !ae.contains(w));
+        const ie = [..._.value.querySelectorAll(".agent-row")].filter((ae) => !ae.contains(w));
         await Promise.all(ie.map((ae) => ae.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, fill: "forwards" }).finished));
       }
-      const o = [...w.querySelectorAll(".agent-head, .agent-line")], T = [...o, ...w.querySelectorAll("[data-agent-motion]")], X = T.map((ie) => ie.getBoundingClientRect());
-      if (Y.value = y.id, await Ae(), !se()) {
+      const o = [...w.querySelectorAll(".agent-head, .agent-line")], T = [...o, ...w.querySelectorAll("[data-agent-motion]")], ee = T.map((ie) => ie.getBoundingClientRect());
+      if (Q.value = y.id, await Ae(), !se()) {
         const ie = T.map((ae) => ae.getBoundingClientRect());
         T.forEach((ae, be) => {
-          const me = o.indexOf(ae.parentElement), Pe = X[be].left - ie[be].left - (me < 0 ? 0 : X[me].left - ie[me].left), De = X[be].top - ie[be].top - (me < 0 ? 0 : X[me].top - ie[me].top);
+          const me = o.indexOf(ae.parentElement), Pe = ee[be].left - ie[be].left - (me < 0 ? 0 : ee[me].left - ie[me].left), De = ee[be].top - ie[be].top - (me < 0 ? 0 : ee[me].top - ie[me].top);
           ae.animate([{ transform: `translate(${Pe}px, ${De}px)` }, { transform: "none" }], { duration: 280, easing: $e });
-        }), J.value.querySelectorAll(".agent-usage, .agent-more > .agent-command, .agent-tabs, .agent-tab-body, .agents-held").forEach((ae) => {
+        }), _.value.querySelectorAll(".agent-usage, .agent-more > .agent-command, .agent-tabs, .agent-tab-body, .agents-held").forEach((ae) => {
           ae.animate([{ opacity: 0, transform: "translateY(6px)" }, { opacity: 1, transform: "none" }], { duration: 240, delay: 60, easing: $e, fill: "backwards" });
         });
       }
       re = !1;
     }
     async function i() {
-      if (re || !Q.value) return;
+      if (re || !X.value) return;
       re = !0;
-      const y = J.value.querySelector(`[data-agent-open="${Y.value}"]`), w = [...y.children, ...J.value.querySelectorAll(".agents-held")], o = se() ? [] : w.map((T) => T.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: "forwards" }));
-      await Promise.all(o.map((T) => T.finished)), Y.value = null, await Ae(), ue.value.scrollTop = fe, o.forEach((T) => T.cancel()), se() || (y.animate([{ transform: "translateY(-12px)" }, { transform: "none" }], { duration: 280, easing: $e }), J.value.querySelectorAll(".agent-row").forEach((T) => {
+      const y = _.value.querySelector(`[data-agent-open="${Q.value}"]`), w = [...y.children, ..._.value.querySelectorAll(".agents-held")], o = se() ? [] : w.map((T) => T.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: "forwards" }));
+      await Promise.all(o.map((T) => T.finished)), Q.value = null, await Ae(), ue.value.scrollTop = fe, o.forEach((T) => T.cancel()), se() || (y.animate([{ transform: "translateY(-12px)" }, { transform: "none" }], { duration: 280, easing: $e }), _.value.querySelectorAll(".agent-row").forEach((T) => {
         T.contains(y) || T.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: $e });
       })), re = !1;
     }
-    const te = (y) => Y.value === y.id ? i() : n(y);
-    pe(B, (y) => y.trim() && (Y.value = null)), pe(p, () => {
-      Y.value = null;
+    const J = (y) => Q.value === y.id ? i() : n(y);
+    pe(B, (y) => y.trim() && (Q.value = null)), pe(p, () => {
+      Q.value = null;
     });
     const de = (y) => {
       y.key === "Escape" && i();
     };
     return window.addEventListener("keydown", de), Se(() => window.removeEventListener("keydown", de)), (y, w) => (a(), s("div", {
       ref_key: "agents",
-      ref: J,
-      class: ne(["agents", { focused: Q.value }])
+      ref: _,
+      class: ne(["agents", { focused: X.value }])
     }, [
       x(m(rt), {
         modelValue: B.value,
@@ -1261,15 +1263,15 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
             _: 1
           })) : M("", !0),
           (a(!0), s(E, null, le(q.value.profiles, (o) => (a(), R(m(xe), {
-            key: o,
+            key: o.name,
             role: "menuitemcheckbox",
-            "aria-checked": C.value.profiles.includes(o),
-            checked: C.value.profiles.includes(o),
-            "data-filter-profile": o,
-            onClick: (T) => O("profiles", o)
+            "aria-checked": C.value.profiles.includes(o.name),
+            checked: C.value.profiles.includes(o.name),
+            "data-filter-profile": o.name,
+            onClick: (T) => O("profiles", o.name)
           }, {
             default: S(() => [
-              k(v(o), 1)
+              k(v(o.title), 1)
             ]),
             _: 2
           }, 1032, ["aria-checked", "checked", "data-filter-profile", "onClick"]))), 128)),
@@ -1279,7 +1281,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
             ])]),
             _: 1
           }),
-          (a(!0), s(E, null, le(ee.value, (o) => (a(), R(m(xe), {
+          (a(!0), s(E, null, le(te.value, (o) => (a(), R(m(xe), {
             key: o.name,
             role: "menuitemcheckbox",
             "aria-checked": C.value.programs.includes(o.name),
@@ -1315,9 +1317,9 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
       A("div", {
         ref_key: "list",
         ref: ue,
-        class: ne(["agents-view", { "agents-view-open": Q.value }])
+        class: ne(["agents-view", { "agents-view-open": X.value }])
       }, [
-        D.value && !_.value && !oe.value.length && F.value ? (a(), R(m(qe), {
+        D.value && !G.value && !oe.value.length && F.value ? (a(), R(m(qe), {
           key: 0,
           title: "No agents match the filters",
           "data-filter-empty": ""
@@ -1338,9 +1340,9 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
         })) : (a(), R(m(ct), {
           key: 1,
           rows: oe.value,
-          failure: _.value,
+          failure: G.value,
           loaded: D.value,
-          more: !Q.value && h.value,
+          more: !X.value && h.value,
           older: ge,
           empty: Z.value.title,
           hint: Z.value.hint,
@@ -1356,15 +1358,15 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
                 facts: r(o),
                 progress: z(o),
                 "wait-reason": H(o),
-                open: o.id === Y.value,
-                onToggle: (T) => te(o)
+                open: o.id === Q.value,
+                onToggle: (T) => J(o)
               }, null, 8, ["row", "facts", "progress", "wait-reason", "open", "onToggle"])
             ], 8, Ca)
           ]),
           _: 1
         }, 8, ["rows", "failure", "loaded", "more", "empty", "hint", "searching"]))
       ], 2),
-      Q.value && ve.value ? (a(), s("button", {
+      X.value && ve.value ? (a(), s("button", {
         key: 0,
         type: "button",
         class: "agents-held",
@@ -1373,7 +1375,7 @@ const At = ["disabled", "title"], Rt = ["title"], Lt = { class: "gauge usage" },
       }, v(ve.value) + " more", 1)) : M("", !0)
     ], 2));
   }
-}, Ha = /* @__PURE__ */ ce(Sa, [["__scopeId", "data-v-96523613"]]);
+}, Ha = /* @__PURE__ */ ce(Sa, [["__scopeId", "data-v-381b637b"]]);
 export {
   Ha as A
 };

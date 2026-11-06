@@ -1,6 +1,8 @@
 from argparse import ArgumentParser, Namespace
 import json
 
+from core.base.profile.agent_profile import AgentProfile
+from core.modules.profiles.support.profile_files import ProfileFiles
 from core.base.agent_role import AgentRole
 from core.base.caller.caller import Caller
 from core.base.page import Page, is_page
@@ -28,8 +30,8 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
     name = "cards"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, activity: AgentActivity) -> None:
-        self.queries, self.activity = queries, activity
+    def __init__(self, queries: Queries, activity: AgentActivity, profiles: ProfileFiles) -> None:
+        self.queries, self.activity, self.profiles = queries, activity, profiles
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--options", action="store_true")
@@ -47,7 +49,8 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
             options = self.queries.query(AgentFilterOptionsView).first()
             if options is None:
                 return AgentFilterOptions((), ())
-            return AgentFilterOptions(tuple(sorted(json.loads(options.roles))), tuple(sorted(profile for profile in json.loads(options.profiles) if profile)))
+            titles = {profile.name: profile.display_title for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
+            return AgentFilterOptions(tuple(sorted(json.loads(options.roles))), tuple((name, titles.get(name, name)) for name in sorted(profile for profile in json.loads(options.profiles) if profile)))
         rows = self.queries.query(AgentListing)
         if not arguments.include_main and (not arguments.role or AgentRole.MAIN not in arguments.role):
             rows = rows.matching(Equal("role", AgentRole.MAIN, negated=True))
@@ -78,4 +81,4 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         if is_page(value):
             output.page(value)
         if isinstance(value, AgentFilterOptions):
-            output.write("agent filter options", {"roles": value.roles, "profiles": value.profiles})
+            output.write("agent filter options", {"roles": value.roles, "profiles": [{"name": name, "title": title} for name, title in value.profiles]})
