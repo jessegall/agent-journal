@@ -84,6 +84,7 @@ from core.modules.documents.migrations.m007_link_corrections import LinkCorrecti
 from core.modules.documents.commands.remove_link.remove_link_handler import RemoveLinkHandler
 from core.modules.documents.commands.remove_link.remove_link_subcommand import RemoveLinkSubcommand
 from core.modules.documents.listeners.link_correction_reset_listener import LinkCorrectionResetListener
+from core.modules.tasks.commands.task_context.task_context_subcommand import TaskContextSubcommand
 
 
 class DocumentsModule(Module):
@@ -114,4 +115,4 @@ class DocumentsModule(Module):
     bindings = {RowLinks: StoredRowLinks}
     subcommands = [OpenDocSubcommand, CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,
                    DocRevisionsSubcommand, DocRevisionSubcommand, ReportMakeSubcommand, ReportEditSubcommand, ReportShowSubcommand, ReportListSubcommand,
-                   ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand, DocInspectSubcommand, ReportInspectSubcommand, RemoveLinkSubcommand]
+                   ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand, DocInspectSubcommand, ReportInspectSubcommand, RemoveLinkSubcommand, TaskContextSubcommand]

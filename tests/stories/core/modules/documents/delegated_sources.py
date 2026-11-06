@@ -1,6 +1,7 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 import pytest
+import json
 
 from core.testing.story_fixture import StoryFixture
 from core.testing.hook_samples import HookSamples
@@ -94,3 +95,21 @@ def test_deleted_helper_source_is_not_a_new_message_reusing_its_number(new_story
     trail.story.hook(the_helper(trail.story).session, HookSamples.tool_use("Read", ToolType.READ, [], None))
     helper_plan(trail, helper_id, "Output from the new assignment")
     trail.expect_link(f'message:{replacement["id"]}', "plan:3", "about")
+
+
+def test_helper_context_cannot_read_a_replacement_for_its_deleted_source(new_story):
+    trail = Trail(new_story(fixture=PlannerStarted))
+    helper_id = the_helper(trail.story).id
+    trail.story.expect_success('task make "Helper context" --environment main', actor=Actor(helper_id, ActorType.AGENT))
+    trail.person("messages.chat", "message", "delete", "2")
+    replacement = trail.person("messages.chat", "message", "send", "A private replacement request")
+    assert replacement["id"] == 2
+    trail.switch(2)
+    trail.command('task edit 2 --brief "A new request now links to this task"')
+    answer = trail.story.run("task context 2 --json", actor=Actor(helper_id, ActorType.AGENT))
+    assert answer.code == 0, answer.output_text
+    page = json.loads(answer.output_text)
+    assert "A private replacement request" not in answer.output_text
+    assert any(row["model"] == "message" and row["id"] == 2 and row["unavailable"] for row in page["references"])
+    refused = trail.story.run("task context 2 --message 2 --text-offset 0 --json", actor=Actor(helper_id, ActorType.AGENT))
+    assert refused.code == 1 and "A private replacement request" not in refused.output_text

@@ -16,6 +16,7 @@ from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.is_null import IsNull
 from core.modules.messages.conditions.message_target import MessageTarget
+from core.modules.messages.conditions.message_text_segment import MessageTextSegment
 
 
 class MessageQuery(Query[Message]):
@@ -46,6 +47,9 @@ class MessageQuery(Query[Message]):
 
     def replies(self, message_id: int) -> Self:
         return self.filter(parent_id=message_id)
+
+    def with_text_segment(self, offset: int, size: int) -> Self:
+        return self.with_select(self.select.column(MessageTextSegment(offset, size).columns(self.table.columns)))
 
     def agent_messages(self) -> Self:
         return self.filter(type=MessageType.AGENT)

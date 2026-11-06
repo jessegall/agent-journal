@@ -6,7 +6,7 @@ from core.base.actor_type import ActorType
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
 
-from tests.stories.core.modules.documents.support.trail_fixtures import feature, pending, trail, viewer_answer, Trail, TrailReady
+from tests.stories.core.modules.documents.support.trail_fixtures import feature, trail, viewer_answer, Trail, TrailReady
 
 
 class EditedActiveRequest(StoryFixture):
@@ -87,13 +87,11 @@ def test_explicit_selection_uses_latest_edited_request(new_story):
     assert "Newest correction" in trail.command("message show 1").output_text
 
 
-@pending(6849)
 def test_context_reads_the_latest_active_request_text(new_story):
     trail = Trail(new_story(fixture=EditedActiveRequest))
     feature("round once" in json.dumps(trail.context(number=2)), "context used stale source text")
 
 
-@pending(6849)
 def test_context_reads_the_latest_explicitly_selected_request_text(new_story):
     trail = Trail(new_story(fixture=ExplicitEditedRequest))
     feature("Newest correction" in json.dumps(trail.context(number=2)), "selected request retained stale text")

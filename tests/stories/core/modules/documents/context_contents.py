@@ -56,7 +56,6 @@ def test_plan_comments_and_report_references_are_present(linked_trail):
     feature("Private long report body" not in text, "context inlined an entire related report")
 
 
-@pending(6849)
 def test_context_cycles_and_missing_ends_do_not_loop(linked_trail):
     linked_trail.command("message edit 1 --parent-id 2")
     linked_trail.person("viewer.shell", "task", "comment", "1", "See message 999")
