@@ -134,3 +134,13 @@ test("a window reads through its props: a list's rows, and a reload of what it n
     await Promise.all([window.reload("list"), window.reload({only: ["other"]}), vi.advanceTimersByTimeAsync(0)]);
     expect(asked).toEqual([[], ["list", "other"]]);
 });
+
+test("two reads of one key with other flags go in two requests, and each gets its own answer", async () => {
+    const {asked, data} = mounted({answer: (request) => ({ok: true, value: {declared: DECLARED, keys: {rows: {ok: true, value: request.state["rows.after"]}}}})});
+    await settled();
+    asked.length = 0;
+    const answers = Promise.all([data.readKey("rows", {after: 1}), data.readKey("rows", {after: 2}), data.readKey("rows", {after: 1})]);
+    await vi.advanceTimersByTimeAsync(5);
+    expect((await answers).map((answer) => answer.value)).toEqual([1, 2, 1]);
+    expect(asked).toHaveLength(2);
+});

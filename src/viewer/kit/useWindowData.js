@@ -43,8 +43,17 @@ export function useWindowData(context) {
         });
     }
 
+    // the same key with other flags, such as two pages of it, cannot share a request, so it goes in the next
     async function sendAsked() {
-        const sending = asked.splice(0);
+        const flagsByName = new Map();
+        const sending = asked.splice(0).filter((entry) => {
+            const flags = JSON.stringify(entry.flags);
+            if (!flagsByName.has(entry.name)) flagsByName.set(entry.name, flags);
+            if (flagsByName.get(entry.name) === flags) return true;
+            asked.push(entry);
+            return false;
+        });
+        if (asked.length) setTimeout(sendAsked);
         const flagState = Object.fromEntries(sending.flatMap(({name, flags}) => Object.entries(flags).map(([flag, value]) => [`${name}.${flag}`, value])));
         const answer = await context.readKeys({only: [...new Set(sending.map(({name}) => name))], state: {...state, ...flagState}});
         sending.forEach(({name, resolve}) => resolve(answer.ok ? answer.value.keys[name] : answer));
