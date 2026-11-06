@@ -16,6 +16,8 @@ from core.base.refusal import Refusal
 from core.base.running_scripts import RunningScripts
 from core.modules.agents.models.agent import Agent
 from core.modules.plugins.support.plugin_command_run import PluginCommandRun
+from core.modules.processes.models.process import Process
+from core.modules.processes.commands.stop_process.stop_process import StopProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.support.foreground_run import ForegroundRun
 from core.modules.processes.support.runner_binary import RunnerBinary
@@ -48,8 +50,11 @@ class PluginCommandRunner:
         self.scripts.start(running, plugin, RUN_KEY, EventForm.COMMIT, context.timestamp)
         try:
             output, _ = running.communicate()
+            stopped = self.scripts.stop_reason(running) is not None
         finally:
             self.scripts.finish(running)
+        if stopped and self.queries.query(Process).find(process.id).ended_at is None:
+            self.bus.run(StopProcess(process.id), context.actor)
         return PluginCommandRun(process.id, running.returncode, output)
 
     def foreground_run(self, checkout: Checkout, read_only: bool) -> ForegroundRun:

@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 from types import SimpleNamespace
 
+from tests.stories.server.support.go_build import GoBuild
 from tests.install.support import TIMEOUT_SECONDS
 from tests.stories.core.modules.plugins.support.event_stories import EVENT_SCRIPTS, REFUSAL, SECOND_JOB_TITLE, TASK_CREATED, WINDOW, PluginPage, plugin_data, script_calls
 from tests.stories.core.modules.plugins.support.plugin_samples import event_plugin_folder
@@ -70,6 +71,13 @@ def wait_for_line(pipe: Path, running: subprocess.Popen[str] | None = None, limi
     raise AssertionError("the script never started")
 
 
+def expect_process_ended(pid: int) -> None:
+    deadline = time.monotonic() + STARTED_LIMIT_SECONDS
+    while process_exists(pid):
+        assert time.monotonic() < deadline, f"process {pid} is still running"
+        time.sleep(READ_SLICE_SECONDS)
+
+
 def process_exists(pid: int) -> bool:
     try:
         os.kill(pid, 0)
@@ -85,6 +93,8 @@ def viewer_page(journal) -> PluginPage:
 
 
 def started_agent(journal, client: Path) -> None:
+    (journal.home.folder / "bin").mkdir(exist_ok=True)
+    GoBuild.built("journal-run", journal.home.folder / "bin" / "journal-run")
     details = expect_line(journal, client, "agent", "start", "s-1", "claude", "main", "--environment", "main", "--json")
     (journal.home.folder.parent / "agent-id").write_text(str(json.loads(details.splitlines()[0])["id"]))
 
@@ -156,11 +166,7 @@ def test_s17_a_commit_script_that_never_ends_holds_up_no_listener_and_a_server_s
         assert time.monotonic() < deadline, "the journal's own listeners waited on the script"
         time.sleep(READ_SLICE_SECONDS)
     journal.stop_with(client)
-    pid = int(script_pid.read_text())
-    deadline = time.monotonic() + STARTED_LIMIT_SECONDS
-    while process_exists(pid):
-        assert time.monotonic() < deadline, "the script outlived the server"
-        time.sleep(READ_SLICE_SECONDS)
+    expect_process_ended(int(script_pid.read_text()))
 
 
 def test_s58_a_journal_line_inside_plugin_run_stays_marked_as_the_plugin(journal, client):
@@ -177,18 +183,16 @@ def test_s58_a_journal_line_inside_plugin_run_stays_marked_as_the_plugin(journal
 
 
 def test_s58_switching_the_plugin_off_stops_its_run(journal, client):
-    started, finished, never_written = (journal.home.folder.parent / name for name in ("started", "finished", "never-written"))
-    for pipe in (started, finished, never_written):
+    started, never_written, run_pid = (journal.home.folder.parent / name for name in ("started", "never-written", "run-pid"))
+    for pipe in (started, never_written):
         os.mkfifo(pipe)
-    hung = f"echo started > {started}; read answer < {never_written}"
-    script = f'{agent_run_line(journal, client, hung)}\necho finished > \'{finished}\''
-    start_with_plugin(journal, client, {"event": "core.pins.pin.created", "commit": "script.sh"}, script)
+    start_with_plugin(journal, client, {"event": "core.pins.pin.created", "commit": "script.sh"}, agent_run_line(journal, client, f"echo $$ > {run_pid}; echo started > {started}; read answer < {never_written}"))
     started_agent(journal, client)
     expect_line(journal, client, "actor", "make", "user", "Ada")
     expect_line(journal, client, "pin", "make", "Notes", "--link", "https://example.org/notes", "--environment", "main")
     assert "started" in wait_for_line(started)
     viewer_page(journal).switch_off()
-    assert "finished" in wait_for_line(finished)
+    expect_process_ended(int(run_pid.read_text()))
 
 
 def row_counts(journal) -> tuple[int, int]:
