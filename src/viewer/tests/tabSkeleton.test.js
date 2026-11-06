@@ -3,6 +3,7 @@ import {resolve} from "node:path";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {h, nextTick} from "vue";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
+import {context as agentContext} from "./support/agentWindowContext.js";
 import PlanCards from "../../core/modules/plans/web/src/PlanCards.vue";
 import WorkerDropdown from "../../suites/coding/modules/workers/web/src/WorkerDropdown.vue";
 import {context, mounted, page} from "./support/codingWindowContext.js";
@@ -63,7 +64,7 @@ test("an open agent card shows a skeleton for the minimum when another tab is ch
     const options = {working: true, waiting: true, idle: true, stopped: true, environment: true, worker: true, helper: true, order: "number", every: false};
     const agents = [{id: 4, session: "s-two", program: "claude", role: "worker", ended_at: null}];
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, {
-        ...context({"agent list": page(agents), "agent running": page(agents), "usage agents --closed": page([]), "agent transcript 4": page([{id: 1, author: "user", text: "Read the cart"}])}),
+        ...agentContext({"agent cards": page(agents), "agent transcript 4": page([{id: 1, author: "user", text: "Read the cart"}])}),
         tabs,
         option: (key) => ({value: options[key]}),
     });

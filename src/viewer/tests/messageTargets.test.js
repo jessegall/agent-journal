@@ -2,6 +2,7 @@ import {expect, test} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 import Chat from "../../core/modules/messages/web/src/Chat.vue";
 import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue";
+import {context as agentContext} from "./support/agentWindowContext.js";
 
 test("main chat sends with no target and reads nothing for it: the server takes the main agent", async () => {
     const sent = [];
@@ -19,8 +20,8 @@ test("main chat sends with no target and reads nothing for it: the server takes 
 
 test("an agent conversation sends its own agent as the message target", async () => {
     const sent = [];
-    const window = {...context({"agent transcript": page([])}), run: async (line) => { sent.push(line); return {ok: true, value: {}}; }};
-    const element = await mounted(TranscriptRows, window, {line: "agent transcript 73", agent: 73});
+    const window = {...agentContext({"agent transcript": page([])}), run: async (line) => { sent.push(line); return {ok: true, value: {}}; }};
+    const element = await mounted(TranscriptRows, window, {name: "transcript.73", agent: 73});
     const box = element.querySelector("textarea");
     expect(box).not.toBeNull();
     box.value = "Continue that task";

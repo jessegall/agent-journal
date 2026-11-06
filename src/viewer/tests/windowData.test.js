@@ -63,6 +63,18 @@ test("a tab switch asks only for the key of that tab, and not again", async () =
     expect(asked).toHaveLength(2);
 });
 
+test("switching tabs never requests an id key declaration as a literal name", async () => {
+    const declared = {...DECLARED, "run.*": {tab: null, events: [], reload_seconds: 0, loading: "first"}};
+    const {asked, tab, data} = mounted({answer: (request) => ({ok: true, value: {declared,
+        keys: Object.fromEntries((request.only.length ? request.only : ["rows", "open", "usage"]).map((name) => [name, {ok: true, value: name}]))}})});
+    await settled();
+    tab.value = "closed";
+    await settled();
+    expect(asked[1].only).toEqual(["closed"]);
+    await Promise.all([data.reload("run.12"), vi.advanceTimersByTimeAsync(0)]);
+    expect(asked[2].only).toEqual(["run.12"]);
+});
+
 test("an event reloads only its key, and a burst is one request", async () => {
     const {asked, followed} = mounted({});
     await settled();

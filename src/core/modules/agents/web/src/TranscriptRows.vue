@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, onUnmounted, ref} from "vue";
 import {AutoScrollPane, Btn, RowList, WindowRoom, useWindow} from "@journal/window-kit";
 
 // the conversation oldest first with its newest row at the foot, where the pane opens and stays as rows arrive; scrolling up stops that and
@@ -8,7 +8,8 @@ const props = defineProps({name: {type: String, required: true}, agent: {type: N
 const window = useWindow();
 const {rows, failure, loaded} = window.props[props.name];
 window.reload(props.name);
-window.follow(["hook_call.*"], () => window.reload(props.name));
+const stopFollowing = window.follow(["hook_call.*"], () => window.reload(props.name));
+onUnmounted(() => stopFollowing?.());
 const message = ref("");
 const sending = ref(false);
 const sendFailure = ref("");

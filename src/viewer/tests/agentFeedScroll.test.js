@@ -1,5 +1,6 @@
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
+import {context as agentContext} from "./support/agentWindowContext.js";
 import AgentFileEdits from "../../suites/coding/web/src/AgentFileEdits.vue";
 import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue";
 import Output from "../../core/modules/processes/web/src/Output.vue";
@@ -31,8 +32,14 @@ afterEach(() => {
 // a window whose rows the test changes, and the call a followed event makes
 function feed(line, rows) {
     const held = {rows};
-    const window = context({[line]: {get ok() {return true;}, get value() {return {rows: held.rows, page: 1, size: 50, total: held.rows.length};}}});
-    window.follow = (patterns, heard) => (held.heard = heard);
+    const window = (line.startsWith("agent transcript") ? agentContext : context)({[line]: {get ok() {return true;}, get value() {return {rows: held.rows, page: 1, size: 50, total: held.rows.length};}}});
+    const follows = [];
+    window.follow = (patterns, heard) => {
+        const follow = {patterns, heard};
+        follows.push(follow);
+        return () => follows.splice(follows.indexOf(follow), 1);
+    };
+    held.heard = (event) => Promise.all(follows.filter(({patterns}) => patterns.some((pattern) => pattern.split(".")[0] === event.event.split(".")[0])).map(({heard}) => heard(event)));
     return {window, held};
 }
 
@@ -63,7 +70,7 @@ test("the output window opens at the foot and follows a new line", async () => {
 
 test("the transcript tab says who wrote each row and when", async () => {
     const {window} = feed("agent transcript 7", [row(1, {author: "journal", row_type: "user"}), row(2)]);
-    const element = await mounted(TranscriptRows, window, {line: "agent transcript 7"});
+    const element = await mounted(TranscriptRows, window, {name: "transcript.7"});
     expect([...element.querySelectorAll("[data-author]")].map((author) => author.dataset.author)).toEqual(["journal", "worker"]);
     expect([...element.querySelectorAll("[data-row-time]")].map((time) => time.getAttribute("datetime"))).toEqual(["2026-11-03T05:00:01.000Z", "2026-11-03T05:00:02.000Z"]);
     expect([...element.querySelectorAll("[data-row-time]")].every((time) => time.textContent.trim() !== "")).toBe(true);
@@ -71,7 +78,7 @@ test("the transcript tab says who wrote each row and when", async () => {
 
 test("the transcript tab opens at the foot and follows a new row", async () => {
     const {window, held} = feed("agent transcript 7", [row(1), row(2)]);
-    const element = await mounted(TranscriptRows, window, {line: "agent transcript 7"});
+    const element = await mounted(TranscriptRows, window, {name: "transcript.7"});
     const pane = paneOf(element);
     expect(pane.scrollTop).toBe(FOOT);
     pane.scrollTop = 0;
@@ -88,7 +95,7 @@ test("the transcript tab opens at the foot and follows a new row", async () => {
 
 test("scrolling up in the transcript tab stops following and shows Newest, and a new row leaves the place", async () => {
     const {window, held} = feed("agent transcript 7", [row(1), row(2)]);
-    const element = await mounted(TranscriptRows, window, {line: "agent transcript 7"});
+    const element = await mounted(TranscriptRows, window, {name: "transcript.7"});
     const pane = paneOf(element);
     expect(newest(element).style.display).toBe("none");
     await scrolledTo(pane, 200);

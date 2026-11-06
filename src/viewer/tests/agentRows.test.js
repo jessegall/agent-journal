@@ -107,7 +107,7 @@ test("a closed card shows the profile, name and status without open-card details
     const card = cardOf(element, 3);
     expect(card.querySelector("[data-agent-title]").textContent).toBe("Researcher");
     expect(card.querySelector("[data-agent-name]").textContent).toBe("Madame Curie");
-    expect(card.querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high");
+    expect(card.querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high · helper 3");
     expect(card.querySelector("[data-agent-identity]").parentElement.previousElementSibling.classList.contains("agent-head")).toBe(true);
     expect(card.querySelector(".agent-dot").dataset.state).toBe("blocked");
     expect(card.textContent).not.toContain("Running");
@@ -115,14 +115,14 @@ test("a closed card shows the profile, name and status without open-card details
     expect(card.title).toBe("");
     card.click();
     await settle();
-    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("");
+    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("helper 3");
 });
 
 test("closed cards use the shared agent facts read for their identity", async () => {
     const held = window(FACTS);
     const element = await mounted({render: () => h(AgentRows, {line: "agent cards", empty: "No agents yet"})}, held);
     expect(cardOf(element, 2).querySelector("[data-agent-identity]").textContent).toBe("claude · opus");
-    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high");
+    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high · helper 3");
     expect(held.reads.filter((line) => line.startsWith("usage agents --closed"))).toHaveLength(0);
     expect(held.reads.filter((line) => line.startsWith("usage tool --agent"))).toHaveLength(0);
 });
@@ -150,9 +150,10 @@ test("reports tab lists messages in order and offers their message links", async
     expect(element.querySelector("[data-agent-report]")).toBeNull();
     expect(element.querySelector("[data-agent-send-message]")).toBeNull();
     const tab = element.querySelector("[data-tab=reports]");
-    expect(tab.textContent).toContain("2");
+    expect(held.reads.some((line) => line.startsWith("message agent-reports"))).toBe(false);
     tab.click();
     await settle();
+    expect(tab.textContent).toContain("2");
     expect([...element.querySelectorAll("[data-agent-tab-body] [data-peek]")].map((item) => [item.dataset.peek, item.textContent])).toEqual([["messages:9", "Latest report"], ["messages:4", "Earlier report"]]);
 });
 
@@ -323,7 +324,7 @@ test("an agent's card shows its effort beside its model", async () => {
     const worker = {id: 4, session: "s-worker", program: "codex", role: "worker", ended_at: null};
     const lines = {"usage tool --agent 4": {ok: true, value: {tool: "", note: ""}}};
     const element = await mounted({render: () => h(AgentCard, {row: worker, facts: {model: "gpt-6.1-sol", effort: "medium"}})}, context(lines));
-    expect(element.querySelector("[data-agent-open]").title).toContain("gpt-6.1-sol · medium");
+    expect(element.querySelector("[data-agent-identity]").textContent).toContain("gpt-6.1-sol · medium");
 });
 
 test("a worker that stopped with tasks left shows under Running as waiting, not closed", async () => {

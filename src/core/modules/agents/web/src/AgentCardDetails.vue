@@ -60,7 +60,7 @@ watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true
                     <SwitchCase :value="tab?.key">
                         <template #reports>
                             <template v-if="!reports.length"><EmptyState title="No reports">This agent has not sent any reports.</EmptyState></template>
-                            <button v-for="report in reports" :key="report.id" type="button" class="agent-report" :data-peek="`messages:${report.id}`" @click="peekRef(`messages:${report.id}`)">{{ report.text }}</button>
+                            <template v-for="report in reports" :key="report.id"><button type="button" class="agent-report" :data-peek="`messages:${report.id}`" @click="peekRef(`messages:${report.id}`)">{{ report.text }}</button></template>
                         </template>
                         <template #tasks>
                             <template v-if="!tasks.length"><EmptyState title="No tasks">No tasks have been assigned to this agent.</EmptyState></template>

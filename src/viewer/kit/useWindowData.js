@@ -33,7 +33,7 @@ export function useWindowData(context) {
         return (held[name] = {...list, data, readAt: 0});
     }
     const props = new Proxy({}, {get: (_, name) => (typeof name !== "string" || name.startsWith("__v") ? undefined : (held[name] ?? propOf(name)))});
-    const isOnScreen = (name) => declared[name].loading !== REQUESTED && (!declared[name].tab || declared[name].tab === state.tab);
+    const isOnScreen = (name) => !name.endsWith(".*") && declared[name].loading !== REQUESTED && (!declared[name].tab || declared[name].tab === state.tab);
 
     // the reads of a page of a prop asked for at the same moment go in one request
     function readKey(name, flags = {}) {
