@@ -21,12 +21,8 @@ class WorkerUnfinishedTasks:
         worktree = self.worktrees.worker_worktree(worker_id)
         if not started and (queued is None or (worktree is not None and self.proofs.tests_waiting(worktree.id))):
             return ()
-        moved_past = self.moved_past_in_phase(worker_id) if started else ()
+        moved_past = self.phases.moved_past(worker_id) if started else ()
         return (*moved_past, *started, *self.tasks.queued_tasks(worker_id))
-
-    def moved_past_in_phase(self, worker_id: int) -> tuple[Task, ...]:
-        testing = self.tasks.filter(delegated_to=worker_id, state=TaskState.TESTING).oldest().all_rows()
-        return tuple(task for task in testing if self.phases.phase(task) is not None)
 
     def last_progress_text(self, worker_id: int) -> str:
         tasks = self.tasks.filter(delegated_to=worker_id).all_rows()

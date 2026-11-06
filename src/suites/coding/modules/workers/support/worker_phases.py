@@ -40,6 +40,10 @@ class WorkerPhases:
         task = self.queries.query(Task).find(worktree.task_id)
         return task.state is TaskState.STARTED and self.phase(task) is not None
 
+    def moved_past(self, worker_id: int) -> tuple[Task, ...]:
+        testing = self.queries.query(Task).filter(delegated_to=worker_id, state=TaskState.TESTING).oldest().all_rows()
+        return tuple(task for task in testing if self.phase(task) is not None)
+
     def holds_back(self, worker_id: int) -> bool:
         worktree = self.worktrees.worker_worktree(worker_id)
         if worktree is None:

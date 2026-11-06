@@ -66,7 +66,7 @@ def test_after_its_limit_a_worker_that_ended_names_its_tasks_those_in_testing_in
 
 
 def test_worker_status_shows_the_phase_and_what_waits_for_its_end(moved_on):
-    moved_on.story.expect_text(f"worker status {moved_on.worker.id}", "phase 1", "1 of its tasks wait", actor=moved_on.story.agent)
+    moved_on.story.expect_text(f"worker status {moved_on.worker.id}", "Current phase: phase 1 (Build)", "Tasks waiting for its end: 1", actor=moved_on.story.agent)
 
 
 def test_a_release_in_the_middle_of_a_phase_leaves_its_unfinished_tasks_open_and_not_delegated(moved_on):
