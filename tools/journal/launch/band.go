@@ -47,11 +47,6 @@ func DisplayAddress(link string) string {
 	return address.String()
 }
 
-// HeaderBar is the line printed above the program when the screen is not a terminal that can hold the band.
-func HeaderBar(environment string, agentID int, address string) string {
-	return fmt.Sprintf("agent-journal · %s · agent %d · %s", environment, agentID, address)
-}
-
 // Band is the one line always at the bottom of the person's terminal, as long as its words and no longer. The program
 // has the rows above it as a scroll region that starts at the top row, so what scrolls off the top stays in the
 // terminal's scrollback, and a screen clear it prints never wipes the line for long.
