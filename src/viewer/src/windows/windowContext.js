@@ -29,20 +29,36 @@ export function windowContext({window, environment, agent, visible, permissions,
     const startedAt = performance.now();
     let reading = 0;
     let quiet = 0;
+    let markLoaded = () => {};
+    // resolved once the window has answered, or has ended, which is when a deferred read may go: an ended window's signal cancels it before it leaves
+    const loaded = new Promise((resolve) => (markLoaded = resolve));
+    requests.signal.addEventListener("abort", markLoaded, {once: true});
     const settle = () => {
         clearTimeout(quiet);
         quiet = setTimeout(() => {
-            if (reading === 0) afterSkeletonMinimum(startedAt, () => (answered.value = true));
+            if (reading !== 0) return;
+            afterSkeletonMinimum(startedAt, () => {
+                answered.value = true;
+                markLoaded();
+            });
         }, QUIET_AFTER_READS_MS);
     };
-    const read = (line, {unbatched = false} = {}) => {
-        const last = recent.get(line);
-        if (last && performance.now() - last.at < READ_COALESCE_MS) return last.answer;
+    const readNow = (line, unbatched) => {
         reading += 1;
-        const answer = lineResult(window, line, environment, requests.signal, unbatched).finally(() => {
+        return lineResult(window, line, environment, requests.signal, unbatched).finally(() => {
             reading -= 1;
             settle();
         });
+    };
+    // a deferred read is not counted among the reads the window waits for, and leaves once the window has loaded
+    const readAfterLoad = (line, unbatched) => {
+        settle();
+        return loaded.then(() => (requests.signal.aborted ? CANCELLED : lineResult(window, line, environment, requests.signal, unbatched)));
+    };
+    const read = (line, {unbatched = false, deferred = false} = {}) => {
+        const last = recent.get(line);
+        if (last && performance.now() - last.at < READ_COALESCE_MS) return last.answer;
+        const answer = deferred && !answered.value ? readAfterLoad(line, unbatched) : readNow(line, unbatched);
         recent.set(line, {answer, at: performance.now()});
         return answer;
     };

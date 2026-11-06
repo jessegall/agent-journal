@@ -83,7 +83,7 @@ watch(figureVoice, (chosen) => {
 }, {immediate: true});
 async function readTool() {
     heardAt.value = Date.now() / 1000;
-    const answer = await context.read("usage tool");
+    const answer = await context.read("usage tool", {deferred: true});
     runningTool.value = answer.ok ? answer.value.tool : "";
     waitingFor.value = answer.ok ? answer.value.wait_target : "";
     thinking.value = answer.ok ? Boolean(answer.value.thinking) : false;

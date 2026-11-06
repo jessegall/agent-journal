@@ -65,7 +65,7 @@ const noCommandNote = ref("");
 const showsCommand = computed(() => props.row.role !== "main" && (!props.row.ended_at || stoppedWithWork.value || props.waitReason));
 async function readCommand() {
     if (!showsCommand.value) return;
-    const answer = await context.read(`usage tool --agent ${props.row.id}`);
+    const answer = await context.read(`usage tool --agent ${props.row.id}`, {deferred: true});
     runningCommand.value = answer.ok ? answer.value.tool : "";
     noCommandNote.value = answer.ok ? answer.value.note : "";
 }
