@@ -92,6 +92,7 @@ func limitIn(root, eventName string) time.Duration {
 
 // agentHookWait is how long a hook of a worker or helper waits in the journal's queue for its answer: it is never
 // let through unchecked, so it waits rather than being refused, and stays below the 60 seconds a program gives a hook.
+// The server allows 45 seconds, leaving five seconds to send its answer before this client gives up at 50.
 const agentHookWait = 50 * time.Second
 
 // limitOf is limitIn for the role that sends the hook: a worker's or helper's hook waits in the queue.

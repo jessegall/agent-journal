@@ -104,6 +104,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             with self.database.savepoint(type(rule_command).__name__):
                 return "", self.bus.dispatch(rule_command, context.nested(rule_command))
         except Refusal as refusal:
+            if refusal.is_completed:
+                return "", None
             return f"the journal could not run {type(rule_command).__name__}: {refusal}", None
 
     def updated_input(self, answers: RuleAnswers, outcomes: list[tuple[str, str, object]]) -> Mapping[str, object]:

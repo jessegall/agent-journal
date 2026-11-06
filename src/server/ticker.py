@@ -8,6 +8,7 @@ from core.base.module.module_finder import ModuleFinder
 from core.base.ticker.tick_handler import TickHandler
 from server.journal_round import JournalRound
 from server.tick_handler_work import TickHandlerWork
+from server.hook.server_queue import ServerQueue
 
 
 class Ticker:
@@ -16,8 +17,9 @@ class Ticker:
     handler is logged under its name and stops nothing. The handlers are the modules' declared ones and those
     registered."""
 
-    def __init__(self, home: JournalHome, handlers: Sequence[TickHandler], wake_listeners: Callable[[], None], seconds: Callable[[], float] = time.monotonic) -> None:
+    def __init__(self, home: JournalHome, handlers: Sequence[TickHandler], wake_listeners: Callable[[], None], seconds: Callable[[], float] = time.monotonic, queue: ServerQueue | None = None) -> None:
         self.home, self.wake_listeners, self.seconds = home, wake_listeners, seconds
+        self.queue = queue
         self.handlers: list[TickHandler] = []
         self.began_at = seconds()
         self.started_at: dict[str, float] = {}
@@ -55,7 +57,7 @@ class Ticker:
         thread.start()
 
     def run(self, handler: TickHandler) -> None:
-        journal_round = JournalRound(self.home, handler.label, TickHandlerWork(handler, self.wake_listeners))
+        journal_round = JournalRound(self.home, handler.label, TickHandlerWork(handler, self.wake_listeners), queue=self.queue)
         try:
             journal_round.run()
         except Exception as error:

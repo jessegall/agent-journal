@@ -1,5 +1,6 @@
 from core.base.database.database import Database
 from core.base.database.statement import Statement
+from collections.abc import Sequence
 
 
 class HookRequestsTable:
@@ -12,8 +13,12 @@ class HookRequestsTable:
         return [(str(row[0]), str(row[1])) for row in self.database.rows(Statement("SELECT DISTINCT family, sender FROM hook_request_rows"))]
 
     def record(self, payload: str, size: int) -> None:
+        self.record_many([payload], size)
+
+    def record_many(self, payloads: Sequence[str], size: int) -> None:
         with self.database.transaction():
-            self.database.insert(Statement("INSERT INTO hook_requests (payload) VALUES (?)", [payload]))
+            for payload in payloads:
+                self.database.insert(Statement("INSERT INTO hook_requests (payload) VALUES (?)", [payload]))
             self.database.update(Statement(
                 "DELETE FROM hook_requests WHERE id NOT IN (SELECT id FROM hook_requests ORDER BY id DESC LIMIT ?)",
                 [size],
