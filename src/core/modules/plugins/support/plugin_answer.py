@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from core.base.type_guards import is_list, is_mapping
 from core.modules.plugins.support.plugin_card import PluginCard
 
+OLD_TYPE_KEY = "kind"
+
 
 @dataclass(frozen=True)
 class PluginAnswer:
@@ -37,13 +39,17 @@ class PluginAnswer:
                    tuple(str(line) for line in commands) if is_list(commands) else (), last_line,
                    tuple(str(name) for name in skills) if is_list(skills) else (), cls.text(fields, "judged_ms"))
 
+    @classmethod
+    def entry_type(cls, entry: Mapping[object, object]) -> str:
+        return cls.text(entry, "type") or cls.text(entry, OLD_TYPE_KEY)
+
     @staticmethod
     def text(fields: Mapping[object, object], key: str) -> str:
         return str(fields[key]) if key in fields else ""
 
     @classmethod
     def card(cls, entry: Mapping[object, object]) -> PluginCard:
-        return PluginCard(cls.text(entry, "key"), cls.text(entry, "kind"), cls.text(entry, "label"), cls.text(entry, "tone"), cls.text(entry, "detail"))
+        return PluginCard(cls.text(entry, "key"), cls.entry_type(entry), cls.text(entry, "label"), cls.text(entry, "tone"), cls.text(entry, "detail"))
 
     def duration_text(self) -> str:
         return f"{int(self.judged_ms) / 1000:.1f} s" if self.judged_ms else ""
