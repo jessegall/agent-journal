@@ -35,7 +35,7 @@ const graph = ref(null);
 const failure = ref("");
 const refusal = ref("");
 const menu = ref(null);
-const footer = ref(null);
+const actions = ref(null);
 const tab = ref("details");
 const TABS = [
     {key: "details", label: "Details"},
@@ -97,10 +97,10 @@ async function setPriority(priority) {
 
 function pick(move) {
     menu.value = null;
-    footer.value.press(move);
+    actions.value.press(move);
 }
 
-const openStatus = (element) => footer.value?.moves.length && (menu.value = element);
+const openStatus = (element) => actions.value?.moves.length && (menu.value = element);
 defineExpose({openStatus});
 </script>
 
@@ -127,7 +127,7 @@ defineExpose({openStatus});
             <div class="body"><Skeleton /></div>
         </template>
         <template v-else>
-            <RowMoves ref="footer" noun="task" :id="id" :row="task" :read="read" @done="load" />
+            <RowMoves ref="actions" noun="task" :id="id" :row="task" :read="read" @done="load" />
             <header class="summary">
                 <div class="stamp">
                     Task {{ task.id }} · updated
@@ -164,7 +164,7 @@ defineExpose({openStatus});
         <template v-if="menu">
             <MenuPanel :anchor="menu" :min-width="220" :max-width="300" @close="menu = null">
                 <MenuLabel>Change the status of task {{ id }}</MenuLabel>
-                <template v-for="move in footer.moves" :key="move.word">
+                <template v-for="move in actions.moves" :key="move.word">
                     <MenuItem @click="pick(move)">{{ move.label }}</MenuItem>
                 </template>
             </MenuPanel>

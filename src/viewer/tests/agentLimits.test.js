@@ -7,7 +7,7 @@ const worker = {key: "worker", label: "Worker", running: 1, kept: 3, run_limit: 
 async function limits({rows = [structuredClone(worker)], refusal = "", readOnly = false} = {}) {
     const followed = [];
     const held = {...context({}), readOnly, follow: (patterns, handler) => followed.push({patterns, handler})};
-    held.read = async (line) => line === "agent limits" ? {ok: true, value: {rows: structuredClone(rows)}} : {ok: true, value: {source: "environment main"}};
+    held.read = vi.fn(async (line) => line === "agent limits" ? {ok: true, value: {rows: structuredClone(rows)}} : {ok: true, value: {source: "environment main"}});
     held.run = vi.fn(async (command) => {
         if (refusal) return {ok: false, error: refusal};
         for (const row of rows) {
@@ -28,26 +28,36 @@ async function change(element, selector, value) {
 
 test("agent limits show running and kept counts with the values in force", async () => {
     const {element} = await limits({rows: [{...worker, run_limit: 0, kept_limit: 0}]});
-    expect(element.textContent).toContain("Running: 1 of 0");
-    expect(element.textContent).toContain("Kept: 3 of no limit");
+    expect(element.querySelector(".summary").textContent).toContain("All within limits, 1 running, 3 kept");
+    expect(element.querySelector(".summary").getAttribute("aria-expanded")).toBe("false");
+    element.querySelector(".summary").click();
+    await settle();
+    expect(element.querySelector(".limit-row").textContent).toContain("1 · none may start");
+    expect(element.querySelector(".limit-row").textContent).toContain("3 of no limit");
 });
 
 test("helper profile limits show each effective override beside its counts", async () => {
     const {element} = await limits({rows: [{...worker, key: "helper", label: "Helper", per_profile: true, run_limit: 4, profiles: [{profile: "reader", title: "Reader", running: 1, kept: 2, run_limit: 3, kept_limit: 5}]}]});
-    expect(element.textContent).toContain("Limits per profile: running 4, kept 8.");
-    expect(element.querySelector("[data-agent-limit-profile]").textContent).toBe("Reader: running 1 of 3 · kept 2 of 5");
+    element.querySelector(".summary").click();
+    await settle();
+    expect(element.querySelector("[data-agent-limit-profile]").textContent).toContain("Reader1 of 32 of 5Within limits");
 });
 
 test("a person changes both limits for this environment through the settings command", async () => {
     const {element, held} = await limits();
+    expect(held.read.mock.calls.map(([line]) => line)).toEqual(["agent limits"]);
+    element.querySelector(".summary").click();
+    await settle();
     await pickButton(element, "Edit limits");
+    expect(held.read.mock.calls.map(([line]) => line)).toEqual(["agent limits", "setting show sample.run", "setting show sample.kept"]);
     await change(element, "[data-agent-run-limit]", "3");
     await change(element, "[data-agent-kept-limit]", "9");
     expect(held.run.mock.calls.map(([command]) => command)).toEqual([
         ["setting", "set", "sample.run", "3", "--environment", "main"],
         ["setting", "set", "sample.kept", "9", "--environment", "main"],
     ]);
-    expect(element.textContent).toContain("Running: 1 of 3 · Kept: 3 of 9");
+    expect(element.querySelector("[data-agent-run-limit]").value).toBe("3");
+    expect(element.querySelector("[data-agent-kept-limit]").value).toBe("9");
     expect(element.textContent).toContain("environment main");
 });
 
@@ -76,5 +86,20 @@ test("setting and agent events refresh counts and effective limits", async () =>
     rows[0].kept = 4;
     await followed.find((item) => item.patterns.includes("setting.*") && item.patterns.includes("agent.*")).handler();
     await settle();
-    expect(element.textContent).toContain("Running: 1 of 6 · Kept: 4 of 8");
+    expect(element.querySelector(".limit-row").textContent).toContain("1 of 64 of 8Within limits");
+});
+
+test("the summary puts over-limit entries before entries at a limit and counts the rest", async () => {
+    const {element} = await limits({rows: [
+        {...worker, key: "at", label: "At", running: 2},
+        {...worker, key: "over", label: "Over", kept: 10},
+        {...worker, key: "another", label: "Another", running: 2},
+    ]});
+    const summary = element.querySelector(".summary");
+    expect(summary.textContent).toContain("Over: Over by 2");
+    expect(summary.textContent.indexOf("Over:")).toBeLessThan(summary.textContent.indexOf("At:"));
+    expect(summary.textContent).toContain("1 more");
+    element.querySelector(".summary").click();
+    await settle();
+    expect(element.querySelectorAll('[data-agent-limit-type="over"] .bar i')[1].style.width).toBe("20%");
 });

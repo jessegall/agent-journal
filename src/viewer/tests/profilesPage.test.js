@@ -77,6 +77,9 @@ test("a profile opens in a panel at the side with its fields and a model picker 
     await open("journal-researcher");
     expect(document.querySelector("[data-side-panel]")).not.toBeNull();
     expect(document.querySelector('[role="dialog"] h2').textContent).toBe("journal-researcher");
+    const actions = document.querySelector('[role="dialog"] > [data-inspector-actions]');
+    expect(actions.previousElementSibling.matches("header.head")).toBe(true);
+    expect(actions.querySelector("[data-profile-save]")).not.toBeNull();
     expect(panel().querySelector("#profile-description").value).toBe(RESEARCHER.description);
     expect(panel().querySelector("#profile-tools")).toBeNull();
     expect(panel().querySelector("#profile-body").value).toBe("You research.");

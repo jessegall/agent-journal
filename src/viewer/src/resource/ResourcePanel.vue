@@ -4,6 +4,7 @@ import {opening, peek, route, unpeek} from "../route.js";
 import {render} from "../text/index.js";
 import Skeleton from "../kit/Skeleton.vue";
 import ButtonSlot from "../kit/ButtonSlot.vue";
+import InspectorActions from "../kit/InspectorActions.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import TaskInspector from "../tasks/TaskInspector.vue";
 import AgentInspector from "./agent/AgentInspector.vue";
@@ -170,10 +171,10 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                     ×
                                 </button>
                             </header>
-                            <RowMoves :noun="noun" :id="opened.id" :row="row" :read="read" @done="load" />
-                            <div class="row-buttons">
+                            <InspectorActions>
+                                <RowMoves inline :noun="noun" :id="opened.id" :row="row" :read="read" @done="load" />
                                 <ButtonSlot :name="`row.${noun}`" :row="{...row, id: opened.id, noun}" :environment="environment" :read-only="readOnly" @done="load" />
-                            </div>
+                            </InspectorActions>
                             <div class="body">
                                 <template v-if="failure">
                                     <p class="failure" role="alert" data-resource-failure>{{ failure }}</p>
@@ -343,10 +344,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     flex: 1;
     overflow-y: auto;
     padding: 16px 16px 28px;
-}
-
-.row-buttons:has(button) {
-    padding: 10px 16px;
 }
 
 .text {

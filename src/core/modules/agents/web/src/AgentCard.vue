@@ -39,7 +39,8 @@ const endedReason = computed(() => (props.row.ended_at && props.facts?.job_retur
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
 const stoppedWithWork = computed(() => Boolean(props.row.ended_at) && props.row.role !== "main" && tasks.value.some((task) => UNFINISHED_STATES.has(task.state)));
-const dotState = computed(() => (props.waitReason || stoppedWithWork.value ? "waiting" : props.row.state === "running" ? props.facts?.state || props.row.state : props.row.state));
+const dotState = computed(() => (props.row.retired_at || props.row.state === "retired" ? "retired" : props.waitReason || stoppedWithWork.value ? "waiting" : props.row.state === "running" ? props.facts?.state || props.row.state : props.row.state));
+const workStatus = computed(() => props.waitReason ? `Waiting: ${props.waitReason}` : dotState.value === "blocked" ? "Blocked" : stoppedWithWork.value ? "Stopped with work left" : "");
 const completedCount = computed(() => props.progress?.completed_count ?? tasks.value.filter((task) => task.state === "completed").length);
 const totalCount = computed(() => props.progress?.task_count ?? tasks.value.length);
 const taskCount = computed(() => `${completedCount.value} of ${totalCount.value} ${totalCount.value === 1 ? "task" : "tasks"}`);
@@ -71,18 +72,19 @@ const runningCommand = ref("");
 const noCommandNote = ref("");
 const showsCommand = computed(() => props.row.role !== "main" && (!props.row.ended_at || stoppedWithWork.value || props.waitReason));
 async function readCommand() {
-    if (!showsCommand.value) return;
+    if (!props.open || !showsCommand.value) return;
     const answer = await context.read(`usage tool --agent ${props.row.id}`, {deferred: true});
+    if (!props.open) return;
     runningCommand.value = answer.ok ? answer.value.tool : "";
     noCommandNote.value = answer.ok ? answer.value.note : "";
 }
 const stopFollowing = context.follow(["hook_call.*", "process_part.*"], coalesced(readCommand, READ_RATES.agentCommand));
 onUnmounted(() => stopFollowing?.());
-readCommand();
+watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true});
 </script>
 
 <template>
-    <div :class="['agent-card', {open}]" :data-agent-open="row.id" :aria-expanded="open" :role="open ? undefined : 'button'" :tabindex="open ? undefined : 0" :title="row.session" @click="!open && emit('toggle')" @keydown.enter.self.prevent="!open && emit('toggle')" @keydown.space.self.prevent="!open && emit('toggle')">
+    <div :class="['agent-card', {open}]" :data-agent-open="row.id" :aria-expanded="open" :role="open ? undefined : 'button'" :tabindex="open ? undefined : 0" :title="identity" @click="!open && emit('toggle')" @keydown.enter.self.prevent="!open && emit('toggle')" @keydown.space.self.prevent="!open && emit('toggle')">
         <span class="agent-head">
             <template v-if="open"><button type="button" class="agent-back" title="Back to the list" aria-label="Back to the list" @click.stop="emit('toggle')"><Icon name="chevronRight" facing="left" :size="14" /></button></template>
             <span class="agent-dot" :data-state="dotState" data-agent-motion />
@@ -90,47 +92,43 @@ readCommand();
             <span class="agent-name" data-agent-name data-agent-motion>{{ facts?.given_name || row.id }}</span>
             <template v-if="!open"><Icon class="agent-chevron" name="chevronRight" :size="12" /></template>
             <span class="agent-times">
-            <template v-if="row.ended_at && !stoppedWithWork">
-                <TimeAgo class="agent-time" :at="row.ended_at" data-agent-motion />
+            <template v-if="retired">
+                <span class="agent-time" data-agent-motion>Retired, <TimeAgo :at="row.retired_at" /></span>
+            </template>
+            <template v-else-if="row.ended_at">
+                <span class="agent-time" data-agent-motion>Idle, <TimeAgo :at="row.ended_at" /></span>
             </template>
             <template v-else>
                 <span class="agent-time" data-agent-motion>{{ runTime }}</span>
             </template>
-            <template v-if="facts?.last_activity"><span class="agent-last-heard" data-agent-last-heard>Last heard: <TimeAgo :at="facts.last_activity" /></span></template>
+            <template v-if="open && facts?.last_activity"><span class="agent-last-heard" data-agent-last-heard>Last heard: <TimeAgo :at="facts.last_activity" /></span></template>
             </span>
         </span>
-        <span class="agent-line">
+        <template v-if="open"><span class="agent-line">
             <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
+            <span class="agent-session" data-agent-session>Session: {{ row.session }}</span>
             <template v-if="totalCount && !job">
                 <span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span>
             </template>
-        </span>
-        <template v-if="planTask">
+        </span></template>
+        <template v-if="open && planTask">
             <span class="agent-line agent-work-start"><button type="button" class="agent-plan" data-agent-plan :data-peek="`plans:${planTask.plan_id}`" @click.stop="peekRef(`plans:${planTask.plan_id}`)">Plan {{ planTask.plan_id }}: {{ planTask.plan_title }}</button></span>
         </template>
-        <template v-if="job">
+        <template v-if="job || (!open && workStatus)">
             <span :class="['agent-line', {'agent-work-start': !planTask}]">
-                <span class="agent-job" data-agent-job :title="job"><template v-if="jobRef"><button type="button" class="agent-job-link" :data-peek="jobRef" @click.stop="peekRef(jobRef)">{{ job }}</button></template><template v-else>{{ job }}</template></span>
-                <template v-if="totalCount">
+                <span class="agent-job" data-agent-job :title="job"><template v-if="open && jobRef"><button type="button" class="agent-job-link" :data-peek="jobRef" @click.stop="peekRef(jobRef)">{{ job }}</button></template><template v-else>{{ job }}</template></span>
+                <template v-if="!open && workStatus"><span class="agent-work-status" :data-agent-waiting="waitReason ? '' : null" :data-agent-stopped="stoppedWithWork && !waitReason ? '' : null">{{ workStatus }}</span></template>
+                <template v-if="open && totalCount">
                     <span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span>
                 </template>
             </span>
         </template>
-        <template v-if="report"><p class="agent-summary" data-agent-report><span>Last report: </span>{{ report }}</p></template>
-        <template v-if="row.retirement_reason"><p class="agent-summary" data-agent-retirement-reason>Retirement reason: {{ row.retirement_reason }}</p></template>
-        <template v-if="row.resume_reason"><p class="agent-summary" data-agent-resume-reason>{{ row.resume_reason }}</p></template>
-        <AgentActions :row="row" />
-        <template v-if="!open && (showsCommand || (totalCount && tasksPerHour))">
-            <span :class="['agent-foot', {'agent-work-start': !job && !planTask}]" data-agent-foot>
-                <template v-if="showsCommand">
-                    <AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" />
-                </template>
-                <template v-if="totalCount && tasksPerHour">
-                    <span class="agent-pace" data-agent-pace data-agent-motion>{{ tasksPerHour }}</span>
-                </template>
-            </span>
-        </template>
         <template v-if="open">
+            <template v-if="report"><p class="agent-summary" data-agent-report><span>Last report: </span>{{ report }}</p></template>
+            <template v-if="row.retirement_reason"><p class="agent-summary" data-agent-retirement-reason>Retirement reason: {{ row.retirement_reason }}</p></template>
+            <template v-if="row.resume_reason"><p class="agent-summary" data-agent-resume-reason>{{ row.resume_reason }}</p></template>
+            <AgentActions :row="row" />
+            <template v-if="totalCount && tasksPerHour"><span class="agent-pace" data-agent-pace data-agent-motion>{{ tasksPerHour }}</span></template>
             <div class="agent-more" data-agent-more @click.stop>
                 <InformationBar :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: []}" card>
                     <template v-if="isRunningHelper"><Btn variant="ghost" small data-helper-stop @click="stopHelper">Stop</Btn></template>
@@ -218,6 +216,9 @@ readCommand();
 .agent-dot[data-state="idle"], .agent-dot[data-state="retired"] {
     background: var(--text-3);
 }
+.agent-dot[data-state="retired"] { background: transparent; border: 1px solid var(--text-3); }
+.agent-work-status { flex: 0 1 auto; overflow: hidden; color: var(--text-3); font-size: 11.5px; text-overflow: ellipsis; white-space: nowrap; }
+.agent-session { flex: none; color: var(--text-3); font-size: 11px; }
 
 .agent-dot[data-state="waiting"] {
     background: var(--paused);
