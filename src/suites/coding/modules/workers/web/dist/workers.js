@@ -1,68 +1,70 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-1f71a4068992")) { const style = document.createElement("style"); style.id = "window-styles-1f71a4068992"; style.textContent = ".worker-models[data-v-703d4f39]{display:flex;flex-direction:column;gap:8px}.worker-models-note[data-v-703d4f39]{margin:0;color:var(--text-3);font-size:12px}.worker-models-refusal[data-v-703d4f39]{margin:0;color:var(--danger);font-size:12.5px}.worker-model[data-v-703d4f39]{display:flex;flex:1;gap:14px;align-items:center;padding:4px 0}.worker-model-program[data-v-703d4f39]{flex:0 0 120px;color:var(--text-2);font-size:12px;font-weight:600}.worker-model-name[data-v-703d4f39]{display:flex;gap:8px;align-items:center}.number[data-v-470549ee]{color:var(--text-3);font-size:12px}.main[data-v-470549ee]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-470549ee]{color:var(--text-3);font-size:12px}.main[data-v-7b462dac]{flex:1}.note[data-v-7b462dac]{color:var(--text-3);font-size:12px}.worker-moment[data-v-4889fbf7]{display:flex;gap:10px;justify-content:space-between;width:100%;padding:6px 0;border:0;background:none;color:var(--text-2);font:inherit;font-size:13px;text-align:left;cursor:pointer}.worker-moment time[data-v-4889fbf7]{flex:none;color:var(--text-3);font-size:12px}.worker-tab-body[data-v-4596a516]{padding:14px 16px}.worktree[data-v-ca173274]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.worktree-names[data-v-ca173274]{flex:1;min-width:0}.worktree-holder[data-v-ca173274]{font-weight:500}.worktree-folder[data-v-ca173274]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.worktree-refusal[data-v-ca173274]{margin:2px 0 0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
-import { openBlock as u, createBlock as m, unref as e, withCtx as n, createElementVNode as _, toDisplayString as h, createVNode as r, ref as v } from "vue";
-import { useRows as p, RowList as b, peekRef as y, TimeAgo as g, useWindow as x, WindowRoom as R, InnerTabs as W, TabBody as C, SwitchCase as N, AgentRowList as $ } from "@journal/window-kit";
+if (!document.getElementById("window-styles-c1ef6a3e59fa")) { const style = document.createElement("style"); style.id = "window-styles-c1ef6a3e59fa"; style.textContent = ".worker-models[data-v-703d4f39]{display:flex;flex-direction:column;gap:8px}.worker-models-note[data-v-703d4f39]{margin:0;color:var(--text-3);font-size:12px}.worker-models-refusal[data-v-703d4f39]{margin:0;color:var(--danger);font-size:12.5px}.worker-model[data-v-703d4f39]{display:flex;flex:1;gap:14px;align-items:center;padding:4px 0}.worker-model-program[data-v-703d4f39]{flex:0 0 120px;color:var(--text-2);font-size:12px;font-weight:600}.worker-model-name[data-v-703d4f39]{display:flex;gap:8px;align-items:center}.number[data-v-470549ee]{color:var(--text-3);font-size:12px}.main[data-v-470549ee]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-470549ee]{color:var(--text-3);font-size:12px}.main[data-v-7b462dac]{flex:1}.note[data-v-7b462dac]{color:var(--text-3);font-size:12px}.worker-moment[data-v-b883c89e]{display:flex;gap:10px;justify-content:space-between;width:100%;padding:6px 0;border:0;background:none;color:var(--text-2);font:inherit;font-size:13px;text-align:left;cursor:pointer}.worker-moment time[data-v-b883c89e]{flex:none;color:var(--text-3);font-size:12px}.worker-tab-body[data-v-2e45450f]{padding:14px 16px}.worktree[data-v-ca173274]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.worktree-names[data-v-ca173274]{flex:1;min-width:0}.worktree-holder[data-v-ca173274]{font-weight:500}.worktree-folder[data-v-ca173274]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.worktree-refusal[data-v-ca173274]{margin:2px 0 0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
+import { openBlock as p, createBlock as m, unref as e, withCtx as n, createElementVNode as u, toDisplayString as b, createVNode as a, computed as h } from "vue";
+import { useWindow as w, RowList as v, peekRef as y, TimeAgo as g, WindowRoom as x, InnerTabs as W, TabBody as R, SwitchCase as C, AgentRowList as N } from "@journal/window-kit";
 import { _ as k } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const B = ["onClick"], D = { class: "worker-moment-text" }, I = {
+const $ = ["onClick"], B = { class: "worker-moment-text" }, D = {
   __name: "WorkerRecent",
-  setup(w) {
-    const { rows: s, failure: o, loaded: l, older: d, more: c } = p("chat-mark main --type workers.worker", ["chat_mark.*"], { incremental: !0 });
-    return (i, f) => (u(), m(e(b), {
-      rows: e(s),
-      failure: e(o),
-      loaded: e(l),
-      older: e(d),
-      more: e(c),
+  setup(f) {
+    const o = w(), { rows: r, failure: l, loaded: c, older: i, more: d } = o.props.recent;
+    return (s, _) => (p(), m(e(v), {
+      rows: e(r),
+      failure: e(l),
+      loaded: e(c),
+      older: e(i),
+      more: e(d),
       empty: "No worker has done anything noteworthy yet",
       hint: "Worker activity appears here as work starts and finishes."
     }, {
       default: n(({ row: t }) => [
-        _("button", {
+        u("button", {
           type: "button",
           class: "worker-moment",
           "data-worker-moment": "",
-          onClick: (a) => e(y)(`${t.target_model}:${t.target_id}`)
+          onClick: (A) => e(y)(`${t.target_model}:${t.target_id}`)
         }, [
-          _("span", D, h(t.text), 1),
-          r(e(g), {
+          u("span", B, b(t.text), 1),
+          a(e(g), {
             at: t.created_at
           }, null, 8, ["at"])
-        ], 8, B)
+        ], 8, $)
       ]),
       _: 1
     }, 8, ["rows", "failure", "loaded", "older", "more"]));
   }
-}, T = /* @__PURE__ */ k(I, [["__scopeId", "data-v-4889fbf7"]]), A = {
+}, I = /* @__PURE__ */ k(D, [["__scopeId", "data-v-b883c89e"]]), T = {
   __name: "WorkerDropdown",
-  setup(w) {
-    var i;
-    const s = x(), o = v((i = s.tabs) == null ? void 0 : i[0]), { rows: l, failure: d, loaded: c } = p("agent list --role worker", ["agent.*"]);
-    return (f, t) => (u(), m(e(R), { padding: "0" }, {
+  setup(f) {
+    var d;
+    const o = w();
+    o.state.tab = ((d = o.tabs[0]) == null ? void 0 : d.key) ?? "workers";
+    const r = h({ get: () => o.tabs.find((s) => s.key === o.state.tab), set: (s) => o.state.tab = s.key }), { rows: l, failure: c, loaded: i } = o.props.workers;
+    return (s, _) => (p(), m(e(x), { padding: "0" }, {
       default: n(() => [
-        r(e(W), {
-          active: o.value,
-          onChoose: t[0] || (t[0] = (a) => o.value = a)
+        a(e(W), {
+          active: r.value,
+          onChoose: _[0] || (_[0] = (t) => r.value = t)
         }, null, 8, ["active"]),
-        r(e(C), {
+        a(e(R), {
           class: "worker-tab-body",
-          tab: o.value
+          tab: r.value
         }, {
           default: n(() => {
-            var a;
+            var t;
             return [
-              r(e(N), {
-                value: (a = o.value) == null ? void 0 : a.key
+              a(e(C), {
+                value: (t = r.value) == null ? void 0 : t.key
               }, {
                 workers: n(() => [
-                  r(e($), {
+                  a(e(N), {
                     rows: e(l),
-                    failure: e(d),
-                    loaded: e(c),
+                    failure: e(c),
+                    loaded: e(i),
                     none: "No workers have been sent from here"
                   }, null, 8, ["rows", "failure", "loaded"])
                 ]),
                 recent: n(() => [
-                  r(T)
+                  a(I)
                 ]),
                 _: 1
               }, 8, ["value"])
@@ -74,7 +76,7 @@ const B = ["onClick"], D = { class: "worker-moment-text" }, I = {
       _: 1
     }));
   }
-}, E = /* @__PURE__ */ k(A, [["__scopeId", "data-v-4596a516"]]);
+}, E = /* @__PURE__ */ k(T, [["__scopeId", "data-v-2e45450f"]]);
 export {
   E as default
 };

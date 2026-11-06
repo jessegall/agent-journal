@@ -5,6 +5,7 @@ import {h, nextTick} from "vue";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
 import PlanCards from "../../core/modules/plans/web/src/PlanCards.vue";
 import WorkerDropdown from "../../suites/coding/modules/workers/web/src/WorkerDropdown.vue";
+import {workersWindowContext} from "./support/workersWindowContext.js";
 import {context, mounted, page} from "./support/codingWindowContext.js";
 
 vi.stubGlobal("matchMedia", () => ({matches: true}));
@@ -53,7 +54,7 @@ test("the plans window shows a skeleton for the minimum when another tab is chos
 
 test("the workers dropdown shows a skeleton for the minimum when another tab is chosen", async () => {
     const tabs = [{key: "workers", label: "Workers", read: "agent list --role worker"}, {key: "recent", label: "Recent activity", read: "chat-mark main --type workers.worker"}];
-    const element = await mounted(WorkerDropdown, {...context({"agent list --role worker": page([]), "chat-mark main --type workers.worker": page([])}), tabs});
+    const element = await mounted(WorkerDropdown, {...workersWindowContext({"agent list --role worker": page([]), "chat-mark main --type workers.worker": page([])}), tabs});
     await wait(MINIMUM_MS * 2);
     await expectMinimumOnSwitch(element, "recent", "[data-tab-content]");
 });
