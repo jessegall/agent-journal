@@ -16,6 +16,7 @@ from core.base.profile.agent_profile import AgentProfile
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_reuse import HelperReuse
 from core.modules.helpers.support.kept_helpers import KeptHelpers
+from core.modules.helpers.commands.start_helper.helper_started import HelperStarted
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.support.helper_programs import HelperPrograms
@@ -30,8 +31,10 @@ SHORT_BRIEF_CHARACTERS = 200
 INDEPENDENT_REASON = "An independent profile starts a new helper for its own view."
 
 
-class StartHelperHandler(Handler[StartHelper, Agent]):
-    """Starts a helper of a profile as a process the journal owns, in the folder of the agent that asked."""
+class StartHelperHandler(Handler[StartHelper, HelperStarted]):
+    """Starts a helper of a profile as a process the journal owns, in the folder of the agent that asked. A profile
+    that prefers its program only if possible starts on another program, with that program's model, when the
+    preferred one cannot start, and the start says so."""
 
     command = StartHelper
 
@@ -45,7 +48,7 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
     def prepare(self, command: StartHelper, actor: Actor) -> None:
         self.sandbox.check()
 
-    def handle(self, command: StartHelper, context: Context) -> Agent:
+    def handle(self, command: StartHelper, context: Context) -> HelperStarted:
         if len(command.brief) > BRIEF_LIMIT_CHARACTERS:
             raise Refusal(f"a brief is at most {BRIEF_LIMIT_CHARACTERS} characters", "put the text in journal doc make and name the document in the brief")
         profile = self.profiles.effective(command.profile)
@@ -58,9 +61,7 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
         reuses_helpers = not command.new_agent_reason.strip() and not profile.independent
         if reuses_helpers:
             self.check_reuse(parent, profile, command.brief)
-        program = command.program or profile.program or parent.program
-        model = self.limits.checked_model(program, command.program_model or self.providers.provider(program).profile_model(profile))
-        self.programs.checked(program, self.folders.folder(parent))
+        program, model, note = self.startable_program(command, profile, parent)
         if reuses_helpers:
             self.check_idle(profile, program, model)
         start = StartAgent(str(uuid4()), program, agent_type.key, parent.id, program_model=model, profile=profile.name, given_name=command.given_name, access=profile.access or agent_type.access)
@@ -72,7 +73,26 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
                                        source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp), context)
         self.sources.use_copy(source, source_context)
         self.bus.dispatch(CountProfileUse(profile.name), context)
-        return helper
+        return HelperStarted(helper, note)
+
+    def startable_program(self, command: StartHelper, profile: AgentProfile, parent: Agent) -> tuple[str, str, str]:
+        preferred = command.program or profile.program or parent.program
+        try:
+            return preferred, self.checked_start(preferred, command.program_model, profile, parent), ""
+        except Refusal as refusal:
+            if not (profile.program_if_possible and profile.program and not command.program):
+                raise
+            for other in (provider.name for provider in self.providers.all() if provider.name != preferred):
+                try:
+                    return other, self.checked_start(other, "", profile, parent), f"{profile.program} could not start ({refusal.text}), so it runs on {other}"
+                except Refusal:
+                    continue
+            raise refusal from None
+
+    def checked_start(self, program: str, program_model: str, profile: AgentProfile, parent: Agent) -> str:
+        model = self.limits.checked_model(program, program_model or self.providers.provider(program).profile_model(profile))
+        self.programs.checked(program, self.folders.folder(parent))
+        return model
 
     def check_idle(self, profile: AgentProfile, program: str, model: str) -> None:
         idle_helpers = self.kept.idle(profile.name, program, model)

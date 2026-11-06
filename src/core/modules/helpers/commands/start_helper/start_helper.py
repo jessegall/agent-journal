@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
-from core.modules.agents.models.agent import Agent
+from core.modules.helpers.commands.start_helper.helper_started import HelperStarted
 
 
 @dataclass(frozen=True)
-class StartHelper(Command[Agent]):
+class StartHelper(Command[HelperStarted]):
     """Starts a helper of a profile on a job."""
 
     profile: str
