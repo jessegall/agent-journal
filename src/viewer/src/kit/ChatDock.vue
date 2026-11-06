@@ -184,8 +184,19 @@ defineExpose({card});
     margin: 3px 0 6px;
     border-block: 1px solid var(--border-inner);
 }
-.chat-dock.collapsed .chat-dock-body,
-.chat-dock.collapsed .chat-dock-foot,
+.chat-dock.collapsed .chat-dock-body {
+    grid-template-rows: 0fr;
+    margin: 0;
+    border-block: 0;
+    opacity: 0;
+}
+.chat-dock.collapsed .chat-dock-foot {
+    max-height: 0;
+    min-height: 0;
+    margin-bottom: 0;
+    overflow: hidden;
+    opacity: 0;
+}
 .chat-dock.collapsed :deep(.dock-failure) { display: none; }
 .chat-dock.collapsed .chat-dock-head { margin-top: 0; }
 
@@ -196,8 +207,14 @@ defineExpose({card});
     justify-content: flex-end;
     gap: 4px 6px;
     min-height: 24px;
+    max-height: 72px;
     margin-bottom: 7px;
     padding: 0 14px 0 36px;
+    transition:
+        max-height 320ms var(--ease),
+        min-height 320ms var(--ease),
+        margin-bottom 320ms var(--ease),
+        opacity 220ms var(--ease);
 }
 @container (max-width: 480px) {
     .chat-dock-foot :deep(.btn) {

@@ -49,7 +49,7 @@ async function reset(profile) {
 async function save(profile, fields) {
     notice.value = "";
     const name = profile.name || fields.name;
-    const result = await act(["profile", "save", name, "--title", fields.title, "--description", fields.description, "--type", fields.agent_type, "--access", fields.access, "--program", fields.program, "--model", fields.model, "--codex-model", fields.codex_model, "--mcp-tools", fields.mcp_tools, fields.independent ? "--independent" : "--no-independent", "--body", fields.body]);
+    const result = await act(["profile", "save", name, ...(fields.title ? ["--title", fields.title] : []), "--description", fields.description, "--type", fields.agent_type, "--access", fields.access, "--program", fields.program, "--model", fields.model, "--codex-model", fields.codex_model, "--mcp-tools", fields.mcp_tools, fields.independent ? "--independent" : "--no-independent", "--body", fields.body]);
     if (!result.ok) return;
     making.value = false;
     opened.value = name;
