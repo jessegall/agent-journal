@@ -153,6 +153,7 @@ from suites.coding.modules.workers.commands.worker_waits.worker_waits_subcommand
 from suites.coding.modules.workers.commands.worker_points.worker_points_subcommand import WorkerPointsSubcommand
 from suites.coding.modules.workers.commands.worker_points.proof_points_subcommand import ProofPointsSubcommand
 from suites.coding.modules.workers.models.proof import Proof
+from suites.coding.modules.workers.models.worker_test_request import WorkerTestRequest
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.commands.short_proof.short_proof_subcommand import ShortProofSubcommand
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -163,6 +164,7 @@ from suites.coding.modules.workers.migrations.m017_starts_helpers_key import Sta
 from suites.coding.modules.workers.migrations.m018_open_worktree_index import OpenWorktreeIndexMigration
 from suites.coding.modules.workers.migrations.m020_worktree_merge_commits import WorktreeMergeCommitsMigration
 from suites.coding.modules.workers.migrations.m021_proof_phase_test_point import ProofPhaseTestPointMigration
+from suites.coding.modules.workers.migrations.m022_worker_test_requests import WorkerTestRequestsMigration
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.agents.support.agent_stops import AgentStops
 from suites.coding.modules.workers.support.worker_agent_stops import WorkerAgentStops
@@ -216,8 +218,9 @@ class WorkersModule(Module):
     skills = [SkillDeclaration("journal-workers", "Send a worker to write a bounded job, check its proofs and merge its work; read it before dispatching one", keywords=("worker", "workers", "worktree"), commands=("worker", "proof"))]
     models = [ModelDeclaration(AffectedTest, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(WorkerRefusalCount), ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
               ModelDeclaration(Proof, query=ProofQuery, excluded_subcommands=["make", "edit", "delete", "revise", "queue", "run"]),
+              ModelDeclaration(WorkerTestRequest, excluded_subcommands=["make", "edit", "delete", "allow", "use"]),
               ModelDeclaration(TodoItem, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [ProofPhaseTestPointMigration, WorktreeMergeCommitsMigration, WorkerLogsReadMigration, StartsHelpersKeyMigration, WorkerSessionMigration, AllowedModelsKeyMigration, WorkerQueueReadIndexesMigration, WorkerReadIndexesMigration, AffectedTestsMigration, ProcessOwnerMigration, ProofProcessWorkMigration, WorkerRefusalsMigration, WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration, WorkerTestSettingMigration, ReportVisibilityMigration, AliasAccessMigration, OpenWorktreeIndexMigration]
+    migrations = [WorkerTestRequestsMigration, ProofPhaseTestPointMigration, WorktreeMergeCommitsMigration, WorkerLogsReadMigration, StartsHelpersKeyMigration, WorkerSessionMigration, AllowedModelsKeyMigration, WorkerQueueReadIndexesMigration, WorkerReadIndexesMigration, AffectedTestsMigration, ProcessOwnerMigration, ProofProcessWorkMigration, WorkerRefusalsMigration, WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration, WorkerTestSettingMigration, ReportVisibilityMigration, AliasAccessMigration, OpenWorktreeIndexMigration]
     views = [WorkerPoints, WorkerWait, WorkerProgress]
     moves = [WorkersMove, AliasPermissionsMove]
     handlers = [ReadWorkerLogsHandler, QueueStalledTestsHandler, SendSilentAgentLinesHandler, ReportSilentAgentHandler, RecordAffectedTestHandler, EndGoneWorkerHandler, RecordWorkerRefusalHandler, ClearWorkerRefusalsHandler, StartWorkerTestsHandler, RecordWorkerTestHandler, SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, RecordWorktreeBaseHandler, RecordWorktreeMergeHandler, RecordWorktreeRemovalHandler, OpenWorkerWorktreeHandler, RecordWorktreeCutHandler, CancelWorkerOpeningHandler, StartNextWorkerTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler, RemoveOrphanWorktreesHandler]
