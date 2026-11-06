@@ -16,6 +16,7 @@ import CommentCard from "./CommentCard.vue";
 import CommentComposer from "./CommentComposer.vue";
 import DocumentSidebar from "./DocumentSidebar.vue";
 import DocumentEditDialog from "./DocumentEditDialog.vue";
+import InspectorSections from "../../windows/InspectorSections.vue";
 import DocumentLinks from "./DocumentLinks.vue";
 import DocumentRevisions from "./DocumentRevisions.vue";
 import DocumentText from "./DocumentText.vue";
@@ -193,6 +194,7 @@ watch(notesMode, () => {
                         <dt>Created</dt><dd><TimeAgo :at="row.created_at" /></dd>
                         <dt>Updated</dt><dd><TimeAgo :at="row.updated_at" /></dd>
                     </dl>
+                    <InspectorSections :slot-name="`inspector.${noun}`" :row="row" />
                 </DocumentText>
                 <template v-if="!narrow">
                     <DocumentSidebar v-model:mode="notesMode" :comments="comments" :questions="questions" :hot="hot" :lost="lost" :failure="questionFailure" :read="read" @show="showInText" @changed="load" />

@@ -23,7 +23,10 @@ class AgentFacts:
     effort: str = ""
     job_enabled: bool = False
     job_returned: str = ""
+    last_activity: str = ""
+    helper_job: str = ""
+    profile_title: str = ""
 
     def json(self) -> Mapping[str, object]:
         return {"id": self.agent_id, "model": self.model, "effort": self.effort, "context_percent": self.context_percent, "cost_dollars": self.cost_dollars, "task_id": self.task_id, "task_title": self.task_title,
-                "job_enabled": self.job_enabled, "tasks": list(self.tasks), "state": self.state, "profile": self.profile, "given_name": self.given_name, "instruction": self.instruction, "job_returned": self.job_returned}
+                "job_enabled": self.job_enabled, "tasks": list(self.tasks), "state": self.state, "profile": self.profile, "profile_title": self.profile_title, "given_name": self.given_name, "instruction": self.instruction, "job_returned": self.job_returned, "last_activity": self.last_activity, "helper_job": self.helper_job}

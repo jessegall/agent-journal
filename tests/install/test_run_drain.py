@@ -62,7 +62,7 @@ def test_the_run_queue_is_held_while_a_change_waits_for_a_going_run_and_free_aft
     waiter = threading.Thread(target=RunDrain(home, limit_seconds=10, poll_seconds=0.01).wait)
     waiter.start()
     time.sleep(0.1)
-    assert RunQueueHalt(home).kind == "update" and RunQueueHalt(home).running_run_ids() == (7,)
+    assert RunQueueHalt(home).halt_type == "update" and RunQueueHalt(home).running_run_ids() == (7,)
     (run / "end").write_text("0")
     waiter.join(timeout=5)
     ServerFiles(home).clear_run_lock()

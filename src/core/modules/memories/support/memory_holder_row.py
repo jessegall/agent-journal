@@ -7,7 +7,7 @@ from core.modules.memories.models.memory_holder import MemoryHolder
 
 @dataclass(frozen=True)
 class MemoryHolderRow:
-    """What `journal memory agents` prints for an agent that holds memories: its name, its role, when it started and ended, and its counts."""
+    """The details and memory counts shown for an agent."""
 
     agent_id: int
     environment_id: int
@@ -19,6 +19,6 @@ class MemoryHolderRow:
     removed_memories: int
 
     @classmethod
-    def named(cls, holder: MemoryHolder, types: AgentTypeBook) -> "MemoryHolderRow":
+    def built(cls, holder: MemoryHolder, types: AgentTypeBook) -> "MemoryHolderRow":
         name = holder.given_name or f"{types.label(holder.role)} {holder.agent_id}"
         return cls(holder.agent_id, holder.environment_id, holder.role, name, holder.started_at, holder.ended_at, holder.active_memories, holder.removed_memories)

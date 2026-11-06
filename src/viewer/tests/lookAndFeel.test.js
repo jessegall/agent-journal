@@ -177,20 +177,21 @@ test("docked cards fold when the chat is scrolled up, open at its foot, and a ha
     const history = element.querySelector(".history");
     Object.defineProperty(history, "scrollHeight", {value: 1000, configurable: true});
     Object.defineProperty(history, "clientHeight", {value: 300, configurable: true});
-    const scrollTo = async (top) => {
+    const scrollTo = async (top, delay = 260) => {
         history.scrollTop = top;
         history.dispatchEvent(new Event("scroll"));
-        await new Promise((resolve) => setTimeout(resolve, 260));
+        await new Promise((resolve) => setTimeout(resolve, delay));
         await settled();
     };
     const folded = () => element.querySelector(".chat-dock-body")?.classList.contains("folded");
-    expect(folded()).toBe(false);
+    const collapsed = () => element.querySelector(".chat-dock")?.classList.contains("collapsed");
+    expect(collapsed()).toBe(false);
     await scrollTo(700);
-    expect(folded()).toBe(false);
-    await scrollTo(300);
-    expect(folded()).toBe(true);
+    expect(collapsed()).toBe(false);
+    await scrollTo(300, 3100);
+    expect(collapsed()).toBe(true);
     await scrollTo(700);
-    expect(folded()).toBe(false);
+    expect(collapsed()).toBe(false);
     element.querySelector("[data-dock-fold]").click();
     await settled();
     expect(folded()).toBe(true);

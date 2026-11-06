@@ -29,7 +29,7 @@ class AgentHookRoute(HookRoute):
     launch name it was started under, saving the real session on it, starts the main agent at its
     session's first hook, gives back the stored answer of a hook sent twice, refuses the tools of a
     program whose agent has ended and asks the launcher to stop it, and lets through, without a
-    record, a hook from an agent it does not know, unless a worker or helper sent it for a tool."""
+    record, a hook from an unknown agent when the event does not require an agent check."""
 
     def __init__(self, bus: Bus, queries: Queries, errors: ErrorLog, durations: HookDurations, settings: SettingValues, agents: AgentRows, launcher: LauncherLink, rule_answers: HookRuleAnswers) -> None:
         self.rule_answers = rule_answers

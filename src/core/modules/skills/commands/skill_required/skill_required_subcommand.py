@@ -1,6 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
+from core.base.query.queries import Queries
+from core.modules.agents.models.agent import Agent
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_tuple
@@ -16,8 +18,8 @@ class SkillRequiredSubcommand(ReadSubcommand[tuple[str, ...]]):
     cli_name = "skill"
     name = "required"
 
-    def __init__(self, unread_skills: UnreadSkills, files: SkillFiles) -> None:
-        self.unread_skills, self.files = unread_skills, files
+    def __init__(self, unread_skills: UnreadSkills, files: SkillFiles, queries: Queries) -> None:
+        self.unread_skills, self.files, self.queries = unread_skills, files, queries
 
     def arguments(self, parser: ArgumentParser) -> None:
         return None
@@ -26,7 +28,8 @@ class SkillRequiredSubcommand(ReadSubcommand[tuple[str, ...]]):
         agent_id = caller.read_actor_id
         if agent_id is None:
             return ()
-        return tuple(f"{name}: {path}" for name, path in self.files.readable_paths(self.unread_skills.names(agent_id)).items())
+        agent = self.queries.query(Agent).find(agent_id)
+        return tuple(self.files.agent_instruction(name, agent) for name in self.unread_skills.names(agent_id))
 
     def write_output(self, value: object, output: Output) -> None:
         lines = [str(line) for line in value] if is_tuple(value) else []

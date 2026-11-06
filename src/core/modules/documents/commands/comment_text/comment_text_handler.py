@@ -19,8 +19,7 @@ QUOTE_LIMIT_CHARACTERS = 200
 
 
 class CommentTextHandler(Handler[CommentText, Message]):
-    """Sends the comment as a chat message naming the row and the selection, so the agent reads it, links the
-    message to the row, and for a document or a report keeps the words and the selection apart."""
+    """Sends a comment to the agent, links it to the row and keeps any text selection separately."""
 
     command = CommentText
 
@@ -34,7 +33,7 @@ class CommentTextHandler(Handler[CommentText, Message]):
             raise Refusal("give the comment's text")
         text_row = self.rows.required(command.text_model, command.row_id)
         quoted = f'"{command.quote[:QUOTE_LIMIT_CHARACTERS]}": ' if command.quote else ""
-        message = self.bus.dispatch(SendMessage(f"{quoted}{body}", commented_row=(text_row.model_name, text_row.id)), context)
+        message = self.bus.dispatch(SendMessage(f"{quoted}{body}", commented_row=(text_row.model_name, text_row.id), is_chat_visible=command.is_chat_visible), context)
         self.links.save(Link(creator_id=context.actor.id, source_model=message.model_name, source_id=message.id, target_model=text_row.model_name, target_id=text_row.id,
                                   link_type=LinkType.COMMENT), context)
         if isinstance(text_row, TextRow):

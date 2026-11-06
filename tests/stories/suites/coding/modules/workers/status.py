@@ -70,3 +70,9 @@ def test_status_refuses_an_unbounded_page(worker_batch):
     story, _, worker = worker_batch
     story.expect_text("worker status --limit 101", "a limit from 1 to 100", actor=worker)
     story.expect_text("worker status --page 0", "a positive page", actor=worker)
+
+
+def test_worker_status_names_the_programs_skill_loading_method(worker_batch):
+    story, _, worker = worker_batch
+    story.expect_success(f"skill require {worker.id} journal-tasks")
+    story.expect_text("worker status", "load this first with the Skill tool: journal-tasks", actor=worker)

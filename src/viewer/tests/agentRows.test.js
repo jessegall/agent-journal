@@ -13,7 +13,7 @@ import {age, ago} from "../src/format/time.js";
 
 vi.stubGlobal("matchMedia", () => ({matches: true}));
 
-vi.mock("../kit/loadWindowComponent.js", () => ({loadWindowComponent: () => import("../../suites/coding/web/src/agent-file-edits.js")}));
+vi.mock("../kit/loadWindowComponent.js", () => ({loadWindowComponent: (path) => path.endsWith("terminal.js") ? import("../../suites/coding/web/src/terminal.js") : import("../../suites/coding/web/src/agent-file-edits.js")}));
 
 vi.stubGlobal("ResizeObserver", class {
     observe() {}
@@ -31,7 +31,7 @@ const AGENTS = [
 
 const FACTS = [
     {id: 2, model: "opus", context_percent: 62, cost_dollars: 1.2, task_id: 7, task_title: "Fix the cart", tasks: [], state: "", profile: "", given_name: "", instruction: ""},
-    {id: 3, model: "sonnet", context_percent: null, cost_dollars: 0, task_id: null, task_title: "", tasks: [], state: "blocked", profile: "journal-researcher", given_name: "Madame Curie", instruction: "Read the cart\nand report"},
+    {id: 3, model: "sonnet", context_percent: null, cost_dollars: 0, task_id: null, task_title: "", tasks: [], state: "blocked", profile: "journal-researcher", profile_title: "Researcher", given_name: "Madame Curie", instruction: "Read the cart\nand report"},
 ];
 // the pane menu's option as the window declares it
 const DEFAULT_OPTIONS = {order: "number"};
@@ -39,6 +39,7 @@ const TABS = [
     {key: "tasks", label: "Tasks", read: "usage agents", count_field: "tasks"},
     {key: "transcript", label: "Transcript", read: "agent transcript", count_field: ""},
     {key: "file-feed", label: "File feed", read: "file-edit list", count_field: "", component: "/modules/journal.suites.coding/agent-file-edits.js"},
+    {key: "terminal", label: "Terminal", read: "hook-call feed", count_field: "", component: "/modules/journal.suites.coding/terminal.js"},
 ];
 const EDIT = {id: 5, path: "src/cart.py", edit_type: "edit", added: 1, removed: 0, created_at: "2026-11-01T10:00:00Z", rows: JSON.stringify([{line_type: "add", line: 4, text: "total = 0"}])};
 const answers = {
@@ -92,7 +93,7 @@ test("an idle helper's card opens its report", async () => {
 test("a card is two lines: the profile, name and time, then the provider, model and type, with no task or instruction", async () => {
     const element = await drawn();
     const card = cardOf(element, 3);
-    expect(card.querySelector("[data-agent-title]").textContent).toBe("Journal-researcher");
+    expect(card.querySelector("[data-agent-title]").textContent).toBe("Researcher");
     expect(card.querySelector("[data-agent-name]").textContent).toBe("Madame Curie");
     expect(card.querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · helper");
     expect(card.querySelector(".agent-dot").dataset.state).toBe("blocked");
@@ -116,7 +117,7 @@ test("a click opens the card on its instruction with no usage line or Inspect bu
     expect(cardOf(element, 3).querySelector("[data-agent-instruction]")).toBeNull();
 });
 
-test("an opened card has the tabs Tasks, Transcript and File feed, each read only when chosen", async () => {
+test("an opened card has task, transcript, file and terminal tabs", async () => {
     const reads = [];
     const held = window(FACTS, {}, WORKERS);
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, {...held, reads, read: (line) => (reads.push(line), held.read(line))});
@@ -125,7 +126,7 @@ test("an opened card has the tabs Tasks, Transcript and File feed, each read onl
     card.click();
     await settle();
     card = cardOf(element, 3);
-    expect([...card.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["tasks", "transcript", "file-feed"]);
+    expect([...card.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["tasks", "transcript", "file-feed", "terminal"]);
     expect(card.querySelector("[data-tab=tasks]").classList.contains("on")).toBe(true);
     expect(reads).not.toContain("agent transcript 3");
     card.querySelector("[data-tab=transcript]").click();
@@ -202,9 +203,14 @@ test("a worker with a started task does not say it waits for its tests", async (
     expect(cardOf(element, 2).querySelector("[data-agent-identity]").textContent).not.toContain("Waiting: tests");
 });
 
-test("a profile's name shows with a capital letter", async () => {
+test("a profile title is shown on its agent card", async () => {
+    const element = await drawn([{...FACTS[0], profile: "journal-worker", profile_title: "Worker"}]);
+    expect(cardOf(element, 2).querySelector("[data-agent-title]").textContent).toBe("Worker");
+});
+
+test("a profile without a title shows its name", async () => {
     const element = await drawn([{...FACTS[0], profile: "auditor"}]);
-    expect(cardOf(element, 2).querySelector("[data-agent-title]").textContent).toBe("Auditor");
+    expect(cardOf(element, 2).querySelector("[data-agent-title]").textContent).toBe("auditor");
 });
 
 test("a running worker's card names the command it runs", async () => {
@@ -227,22 +233,22 @@ test("an agent that has just ended reads just now, never now ago", async () => {
     expect(element.querySelector(".agent-time").textContent).toBe("just now");
 });
 
-test("an open helper's card has no tabs: its instruction folded above its transcript", async () => {
+test("an open helper has transcript and terminal tabs with its instruction folded", async () => {
     const helper = {id: 6, session: "s-1", program: "claude", role: "helper", access: "read-only", ended_at: null};
     const lines = {"usage tool --agent 6": {ok: true, value: {tool: "", note: ""}}, "agent transcript 6": page([])};
-    const element = await mounted({render: () => h(AgentCard, {row: helper, facts: {instruction: "Read the cart"}, open: true})}, context(lines));
-    expect(element.querySelector("[data-inner-tabs]")).toBeNull();
-    expect(element.querySelector("[data-agent-only-transcript]")).not.toBeNull();
+    const element = await mounted({render: () => h(AgentCard, {row: helper, facts: {instruction: "Read the cart"}, open: true})}, {...context(lines), tabs: TABS});
+    expect([...element.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["transcript", "terminal"]);
+    expect(element.querySelector('[data-agent-tab-body="transcript"]')).not.toBeNull();
     expect(element.querySelector("[data-agent-section='instruction']").textContent).toContain("Instruction");
     expect(element.querySelector("[data-agent-instruction]")).toBeNull();
 });
 
-test("an ended helper with no job says none was kept from version 4, and draws", async () => {
+test("an ended helper without a job says none is recorded", async () => {
     const helper = {id: 6, session: "s-1", program: "claude", role: "helper", access: "read-only", ended_at: "2026-11-02T10:00:00Z"};
     const lines = {"agent transcript 6": page([])};
-    const element = await mounted({render: () => h(AgentCard, {row: helper, facts: {instruction: ""}, open: true})}, context(lines));
-    expect(element.querySelector("[data-agent-no-job]").textContent).toBe("No job kept from version 4");
-    expect(element.querySelector("[data-agent-only-transcript]")).not.toBeNull();
+    const element = await mounted({render: () => h(AgentCard, {row: helper, facts: {instruction: ""}, open: true})}, {...context(lines), tabs: TABS});
+    expect(element.querySelector("[data-agent-no-job]").textContent).toBe("No job recorded");
+    expect(element.querySelector('[data-agent-tab-body="transcript"]')).not.toBeNull();
 });
 
 test("an open worker's card keeps its tabs", async () => {
@@ -363,8 +369,9 @@ test("a worker's opened card shows its context and cost", async () => {
     document.body.append(element);
     cardOf(element, 4).click();
     await settle();
-    expect(cardOf(element, 4).querySelector("[data-agent-card-usage]").textContent.trim()).toBe("Context: 20% · $1.50");
-    expect(cardOf(element, 4).querySelector("[data-agent-card-usage]").closest(".agent-usage-band")).not.toBeNull();
+    const band = cardOf(element, 4).querySelector("[data-information-bar]");
+    expect(band.querySelector('[data-fact="context"]').textContent).toContain("20%");
+    expect(band.querySelector('[data-fact="cost"]').textContent).toContain("$1.50");
 });
 
 test("the running list has no show more button", async () => {
@@ -436,7 +443,7 @@ test.each([["agents", Agents], ["helpers", Helpers]])("the %s window keeps the s
     window.option = () => ({value: "state"});
     const element = await mounted(component, window);
     expect(listed(element)).toEqual([5, 6, 7]);
-    expect(window.reads.filter((line) => line.startsWith("agent cards"))).toHaveLength(1);
+    expect(window.reads.filter((line) => line.startsWith("agent cards") && line !== "agent cards --options")).toHaveLength(1);
     expect(window.reads).not.toContain("agent running");
 });
 

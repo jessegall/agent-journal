@@ -21,8 +21,7 @@ FOLLOWED_PLAN_STATES = ("approved", "started")
 
 
 class TaskQuery(Query[Task]):
-    """Reads tasks, with the filters the tasks module and its guards use by name. Tasks waiting for a worker leave out
-    those a listed or running worker holds and those in a plan not approved or started, which no worker may start."""
+    """Reads tasks with named filters, including tasks available to delegate under approved plans."""
 
     def __init__(self, database: Database, tables: Tables, kept: KeptRows) -> None:
         super().__init__(database, tables, Task)
@@ -76,14 +75,14 @@ class TaskQuery(Query[Task]):
     def open_tasks(self) -> Self:
         return self.filter(state=TaskState.OPEN)
 
-    def waiting_for_a_worker(self, worker_ids: Sequence[int]) -> Self:
-        running_worker = SubqueryMatch("delegated_to", Select("agents").matching(IsNull("ended_at")).column("id"))
-        kept_by_running = Select("tasks").matching(running_worker).column("id")
-        kept_by_listed = Select("tasks").matching(Among("delegated_to", worker_ids)).column("id")
-        return (self.open_tasks().matching(SubqueryMatch("id", kept_by_running, negated=True)).matching(SubqueryMatch("id", kept_by_listed, negated=True))
-                .matching(self.not_in_plan_awaiting_approval()))
+    def available_for_delegation(self, excluded_agent_ids: Sequence[int]) -> Self:
+        active_delegates = SubqueryMatch("delegated_to", Select("agents").matching(IsNull("ended_at")).column("id"))
+        active_task_ids = Select("tasks").matching(active_delegates).column("id")
+        excluded_task_ids = Select("tasks").matching(Among("delegated_to", excluded_agent_ids)).column("id")
+        return (self.open_tasks().matching(SubqueryMatch("id", active_task_ids, negated=True)).matching(SubqueryMatch("id", excluded_task_ids, negated=True))
+                .matching(self.outside_unapproved_plans()))
 
-    def not_in_plan_awaiting_approval(self) -> Condition:
+    def outside_unapproved_plans(self) -> Condition:
         unapproved_plans = Select("plans").matching(Among("state", FOLLOWED_PLAN_STATES, negated=True)).column("id")
         unapproved_phases = Select("phases").matching(SubqueryMatch("plan_id", unapproved_plans)).column("id")
         return SubqueryMatch("id", Select("phase_tasks").matching(SubqueryMatch("phase_id", unapproved_phases)).column("task_id"), negated=True)

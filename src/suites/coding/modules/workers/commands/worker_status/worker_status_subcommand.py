@@ -8,6 +8,7 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.modules.agents.models.agent import Agent
 from core.modules.skills.support.skill_files import SkillFiles
 from core.modules.skills.support.unread_skills import UnreadSkills
 from core.modules.tasks.models.enums.task_state import TaskState
@@ -44,7 +45,8 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | Refusal]):
             return Refusal(f"agent {worker_id} has no worker worktree")
         tests = self.proofs.worktree_proofs(worktree.id).matching(Among("state", TEST_WAITING_STATES)).oldest().page(arguments.page, arguments.limit)
         assignments = self.queries.query(Task).filter(delegated_to=worker_id).matching(Among("state", (TaskState.OPEN, TaskState.BLOCKED))).oldest().page(arguments.page, arguments.limit)
-        skills = tuple(f"{name}: {self.files.readable(name)}" for name in self.unread_skills.names(worker_id))
+        worker = self.queries.query(Agent).find(worker_id)
+        skills = tuple(self.files.agent_instruction(name, worker) for name in self.unread_skills.names(worker_id))
         return WorkerStatus(worker_id, self.queries.query(Task).find(worktree.task_id), tests, assignments, skills)
 
     def write_output(self, value: object, output: Output) -> None:

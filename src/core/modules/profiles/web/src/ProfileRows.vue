@@ -4,7 +4,7 @@ import {ago, Btn, EmptyState, ListRow, SearchBar, matchesSearch, useRows} from "
 import HelperStartForm from "./HelperStartForm.vue";
 import ProfilePanel from "./ProfilePanel.vue";
 
-const NEW_PROFILE = {name: "", description: "", agent_type: "helper", access: "read-only", program: "", independent: false, mcp_tools: [], changed: [], notes: [], problem: "", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: false, uses: 0};
+const NEW_PROFILE = {name: "", title: "", description: "", agent_type: "helper", access: "read-only", program: "", independent: false, mcp_tools: [], changed: [], notes: [], problem: "", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: false, uses: 0};
 const ACCESS_WORDS = {"read-only": "Read-only", writing: "Writing"};
 
 const {rows, listing, failure, loaded, act, actionFailure, context} = useRows("profile list", []);
@@ -49,7 +49,7 @@ async function reset(profile) {
 async function save(profile, fields) {
     notice.value = "";
     const name = profile.name || fields.name;
-    const result = await act(["profile", "save", name, "--description", fields.description, "--type", fields.agent_type, "--access", fields.access, "--program", fields.program, "--model", fields.model, "--codex-model", fields.codex_model, "--mcp-tools", fields.mcp_tools, fields.independent ? "--independent" : "--no-independent", "--body", fields.body]);
+    const result = await act(["profile", "save", name, ...(fields.title ? ["--title", fields.title] : []), "--description", fields.description, "--type", fields.agent_type, "--access", fields.access, "--program", fields.program, "--model", fields.model, "--codex-model", fields.codex_model, "--mcp-tools", fields.mcp_tools, fields.independent ? "--independent" : "--no-independent", "--body", fields.body]);
     if (!result.ok) return;
     making.value = false;
     opened.value = name;
@@ -84,9 +84,10 @@ async function save(profile, fields) {
             <div class="rows">
                 <template v-for="profile in matching" :key="profile.name">
                     <Btn variant="text" fill class="profile-open" :aria-label="`Open ${profile.name}`" :data-profile="profile.name" @click="open(profile)">
-                        <ListRow :title="profile.name" :text="profile.description">
+                        <ListRow :title="profile.title || profile.name" :text="profile.description">
                             <template #end>
                                 <span class="profile-meta">
+                                    <span v-if="profile.title" class="profile-model">{{ profile.name }}</span>
                                     <span class="profile-model">{{ rowLine(profile) }}</span>
                                     <template v-for="warning in warnings(profile)" :key="warning">
                                         <span class="profile-warning" data-profile-warning>{{ warning }}</span>

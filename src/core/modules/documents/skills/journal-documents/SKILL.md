@@ -14,6 +14,7 @@ their own numbers, so write the type with the number: doc 12, report 3.
   viewer and dock in the chat. Name the number in your report rather than handing the text back.
 - A long text goes through standard input, so no word in it reads as a command, and a read-only agent files it this way:
   `journal report make "<title>" --body - <<'EOF'`, the text, then a line `EOF`. Keep the quotes around `'EOF'`.
+  On macOS, a read-only shell running `/bin/bash` cannot use a here document: use zsh or pass the text to `--body`.
 - `journal doc show <n>` gives its outline; ask for a section, its bullets, a search or the whole with the flags
   `journal doc show --help` lists. Read narrowly.
 - Run `journal doc open <n>` before editing an existing document. Every edit belongs to that author's revision

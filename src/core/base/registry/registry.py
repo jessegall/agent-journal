@@ -76,6 +76,7 @@ class Registry:
     templates: tuple[TemplateEntry, ...] = ()
     buttons: tuple[ButtonEntry, ...] = ()
     button_slots: tuple[str, ...] = ()
+    inspector_slots: tuple[str, ...] = ()
     state_additions: tuple[StateAdditionEntry, ...] = ()
     agent_types: tuple[AgentTypeEntry, ...] = ()
     profiles: tuple[ProfileEntry, ...] = ()
@@ -142,7 +143,7 @@ class Registry:
             windows=tuple(WindowEntry(window["name"], window["module"], window["title"], window["entry"], window["loading"], LEGACY_PLACES.get(str(window["place"]), str(window["place"])), tuple(window["roles"]),
                                       tuple(window["reads"]), tuple(window["runs"]), tuple(window["events"]), window["shipped"], window["unavailable_reason"],
                                       window.get("icon", WindowIcon.WINDOW.value), window.get("float_width", DEFAULT_FLOAT_SIZE.width),
-                                      window.get("float_height", DEFAULT_FLOAT_SIZE.height), tuple(window.get("options", [])), window.get("count", ""), tuple(window.get("shared_reads", [])), window.get("group", ""), window.get("auto_scroll", ""), tuple(window.get("tabs", [])), dict(window.get("search", {})), window.get("shows", LEGACY_SHOWS.get(window["place"], "environment")), tuple(window.get("skeleton", [])), tuple(window.get("required_settings", [])), tuple(window.get("sources", [])), dict(window.get("links", {})))
+                                      window.get("float_height", DEFAULT_FLOAT_SIZE.height), tuple(window.get("options", [])), window.get("count", ""), tuple(window.get("shared_reads", [])), window.get("group", ""), window.get("auto_scroll", ""), tuple(window.get("tabs", [])), dict(window.get("search", {})), window.get("shows", LEGACY_SHOWS.get(window["place"], "environment")), tuple(window.get("skeleton", [])), tuple(window.get("required_settings", [])), tuple(window.get("sources", [])), dict(window.get("links", {})), tuple(window.get("slots", [])))
                           for window in entries.get("windows", [])),
             marks=tuple(MarkEntry.restored(mark) for mark in entries.get("marks", [])),
             nudges=tuple(NudgeEntry.restored(nudge) for nudge in entries.get("nudges", [])),
@@ -153,6 +154,7 @@ class Registry:
             agent_types=tuple(AgentTypeEntry.restored(entry) for entry in entries.get("agent_types", [])),
             profiles=tuple(ProfileEntry.restored(entry) for entry in entries.get("profiles", [])),
             button_slots=tuple(entries.get("button_slots", [])),
+            inspector_slots=tuple(entries.get("inspector_slots", [])),
             events=tuple(entries.get("events", [])),
             providers=tuple(ProviderEntry(provider["name"], DottedPath(provider["path"]), provider["module"], provider["title"]) for provider in entries.get("providers", [])),
             settings=tuple(SettingEntry.restored(setting) for setting in entries.get("settings", [])),
@@ -192,7 +194,7 @@ class Registry:
             "windows": [{"name": window.name, "module": window.module, "title": window.title, "entry": window.entry, "loading": window.loading,
                          "place": window.place, "shows": window.shows, "roles": list(window.roles), "reads": list(window.reads), "runs": list(window.runs), "events": list(window.events),
                          "shipped": window.shipped, "unavailable_reason": window.unavailable_reason, "icon": window.icon,
-                         "float_width": window.float_width, "float_height": window.float_height, "options": [dict(option) for option in window.options], "count": window.count, "shared_reads": list(window.shared_reads), "group": window.group, "auto_scroll": window.auto_scroll, "tabs": [dict(tab) for tab in window.tabs], "search": dict(window.search), "skeleton": [dict(part) for part in window.skeleton], "required_settings": list(window.required_settings), "sources": [dict(source) for source in window.sources], "links": dict(window.links)} for window in self.windows],
+                         "float_width": window.float_width, "float_height": window.float_height, "options": [dict(option) for option in window.options], "count": window.count, "shared_reads": list(window.shared_reads), "group": window.group, "auto_scroll": window.auto_scroll, "tabs": [dict(tab) for tab in window.tabs], "search": dict(window.search), "skeleton": [dict(part) for part in window.skeleton], "required_settings": list(window.required_settings), "sources": [dict(source) for source in window.sources], "links": dict(window.links), "slots": list(window.slots)} for window in self.windows],
             "marks": [asdict(mark) for mark in self.marks],
             "nudges": [asdict(nudge) for nudge in self.nudges],
             "docks": [asdict(dock) for dock in self.docks],
@@ -202,6 +204,7 @@ class Registry:
             "agent_types": [asdict(entry) for entry in self.agent_types],
             "profiles": [asdict(entry) for entry in self.profiles],
             "button_slots": list(self.button_slots),
+            "inspector_slots": list(self.inspector_slots),
             "providers": [{"name": provider.name, "path": provider.path.text, "module": provider.module, "title": provider.title} for provider in self.providers],
             "settings": [asdict(setting) for setting in self.settings],
             "shared_rows": {model: path.text for model, path in self.shared_rows.items()},

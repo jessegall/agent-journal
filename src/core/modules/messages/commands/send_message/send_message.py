@@ -14,3 +14,4 @@ class SendMessage(Command[Message]):
     files: tuple[str, ...] = ()
     commented_row: tuple[str, int] | None = None
     target_agent_id: int | None = None
+    is_chat_visible: bool = True

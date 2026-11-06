@@ -7,7 +7,7 @@ import {delegationWord} from "../domain/plans.js";
 import {stateLabel, stateLook} from "@journal/window-kit";
 import PlanLinks from "./PlanLinks.vue";
 import PlanPhases from "./PlanPhases.vue";
-import PlanReviews from "./PlanReviews.vue";
+import InspectorSections from "../windows/InspectorSections.vue";
 
 defineProps({plan: {type: Object, required: true}, environment: {type: String, required: true}, read: {type: Function, required: true}, readOnly: Boolean});
 const emit = defineEmits(["select", "open", "done"]);
@@ -53,7 +53,7 @@ const emit = defineEmits(["select", "open", "done"]);
             <h4>Phases</h4>
             <PlanPhases :phases="plan.phases" :current-phase="plan.current_phase" @select="emit('select', $event)" />
         </section>
-        <PlanReviews :id="plan.id" :read="read" />
+        <InspectorSections slot-name="inspector.plan" :row="plan" />
     </div>
 </template>
 

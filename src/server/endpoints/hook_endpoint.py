@@ -86,7 +86,7 @@ class HookEndpoint:
             limit_seconds = self.context.agent_hook_limit_seconds if priority is QueuePriority.AGENT_HOOK else self.context.hook_limit_seconds
             fields = data if is_mapping(data) else {}
             role = str(fields.get("role", "main"))
-            sender = "Helper" if role == "helper" else "Worker" if role == "worker" else "Main agent"
+            sender = {"helper": "Helper", "worker": "Worker"}.get(role, "Main agent")
             request = QueueRequest.started(sender, str(fields.get("event", fields.get("hook_event_name", "hook"))), str(fields.get("session", fields.get("session_id", ""))))
             with self.context.hook_database.used(priority, limit_seconds, hook_owner(data), request) as database:
                 self.timing.stamp("hook_locked")
@@ -131,7 +131,7 @@ class HookEndpoint:
                 session = str(data.get("session", data.get("session_id", ""))) if is_mapping(data) else ""
                 agent = container.get(AgentRows).session(session)
                 role = agent.role if agent is not None else "main"
-                name = agent.given_name if agent is not None else ""
+                name = str(agent.id) if agent is not None else ""
                 container.get(HookRequestLog).record(program, headers, data, (perf_counter() - started_at) * 1000, outcome, queued_ms, role, name)
             except sqlite3.Error as error:
                 self.context.files.log_line(f"request recording failed: {error}")

@@ -8,13 +8,14 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import TaskInspector from "../tasks/TaskInspector.vue";
 import AgentInspector from "./agent/AgentInspector.vue";
 import MemoryFacts from "./MemoryFacts.vue";
-import TimeAgo from "../../kit/TimeAgo.vue";
+import ResourceFields from "./ResourceFields.vue";
 import DocumentInspector from "./document/DocumentInspector.vue";
 import PlanInspector from "./PlanInspector.vue";
 import ProcessQueueInspector from "./ProcessQueueInspector.vue";
 import RowMoves from "./RowMoves.vue";
 import ResourceHeading from "./ResourceHeading.vue";
 import {cliOf, creatorNameOf, fieldsOf, headingOf, ownerNameOf, titleOf} from "../domain/resourceNouns.js";
+import InspectorSections from "../windows/InspectorSections.vue";
 import ModuleBody from "../windows/ModuleBody.vue";
 
 // the inspector: the row the address opens, over the page, as version 4's side panel drew it; each opened row stacks on the one before
@@ -100,6 +101,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                             </header>
                             <div class="body">
                                 <ModuleBody :declaration="{type: 'skills.skills', body_url: catalogue.window('skills.skills').entry_url, shipped: true}" :row="{skillId: opened.id}" :environment="environment" />
+                                <InspectorSections slot-name="inspector.agent-skill" :row="{id: opened.id}" />
                             </div>
                         </template>
                         <template #agent>
@@ -186,20 +188,8 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                     <template v-if="noun === 'memory'">
                                         <MemoryFacts :id="opened.id" :read="read" />
                                     </template>
-                                    <section class="section field-grid" data-resource-fields>
-                                        <template v-for="field in fields" :key="field.name">
-                                            <p class="field-name">{{ field.label }}</p>
-                                            <template v-if="field.isTime">
-                                                <TimeAgo class="field-value" :at="field.value" />
-                                            </template>
-                                            <template v-else-if="field.link">
-                                                <p class="field-value"><button type="button" class="field-link" data-resource-link @click="peek(field.link.table, field.link.id)">{{ field.value }}</button></p>
-                                            </template>
-                                            <template v-else>
-                                                <p class="field-value">{{ field.value }}</p>
-                                            </template>
-                                        </template>
-                                    </section>
+                                    <ResourceFields :fields="fields" @peek="peek($event.table, $event.id)" />
+                                    <InspectorSections :slot-name="`inspector.${noun}`" :row="{...row, id: opened.id}" />
                                 </template>
                             </div>
                         </template>
@@ -411,39 +401,6 @@ h3 {
 .line .note {
     flex: none;
     margin: 0;
-}
-
-.field-grid {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: 6px 16px;
-    align-items: baseline;
-}
-
-.field-name {
-    margin: 0;
-    color: var(--text-3);
-    font-size: 12px;
-}
-
-.field-value {
-    margin: 0;
-    font-size: 13px;
-    overflow-wrap: anywhere;
-}
-
-.field-link {
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--accent-text);
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-.field-link:hover {
-    color: var(--text);
 }
 
 .failure {

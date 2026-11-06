@@ -6,7 +6,7 @@ export const DOCK_ARRIVAL_MS = 700;
 import {onBeforeUnmount, onMounted, ref} from "vue";
 import {useMeasuredHeight} from "../composables/measuredHeight.js";
 
-defineProps({label: {type: String, default: ""}, folded: Boolean, body: Boolean, lifted: Boolean, type: {type: String, default: ""}});
+defineProps({label: {type: String, default: ""}, folded: Boolean, collapsed: Boolean, body: Boolean, lifted: Boolean, type: {type: String, default: ""}});
 const card = ref(null);
 const content = ref(null);
 const height = useMeasuredHeight(content);
@@ -19,7 +19,7 @@ defineExpose({card});
 </script>
 
 <template>
-    <div :class="['chat-dock', {lifted}]">
+    <div :class="['chat-dock', {lifted, collapsed}]">
         <div class="chat-dock-fold">
             <section ref="card" :class="['chat-dock-card', type]" :aria-label="label">
                 <slot name="edge" />
@@ -184,6 +184,22 @@ defineExpose({card});
     margin: 3px 0 6px;
     border-block: 1px solid var(--border-inner);
 }
+.chat-dock.collapsed .chat-dock-body {
+    grid-template-rows: 0fr;
+    margin: 0;
+    border-block: 0;
+    opacity: 0;
+}
+.chat-dock.collapsed .chat-dock-foot {
+    max-height: 0;
+    min-height: 0;
+    margin-bottom: 0;
+    overflow: hidden;
+    opacity: 0;
+}
+.chat-dock.collapsed :deep(.dock-failure) { display: none; }
+.chat-dock.collapsed .chat-dock-head { margin-top: 0; }
+
 .chat-dock-foot {
     display: flex;
     flex-wrap: wrap;
@@ -191,8 +207,14 @@ defineExpose({card});
     justify-content: flex-end;
     gap: 4px 6px;
     min-height: 24px;
+    max-height: 72px;
     margin-bottom: 7px;
     padding: 0 14px 0 36px;
+    transition:
+        max-height 320ms var(--ease),
+        min-height 320ms var(--ease),
+        margin-bottom 320ms var(--ease),
+        opacity 220ms var(--ease);
 }
 @container (max-width: 480px) {
     .chat-dock-foot :deep(.btn) {

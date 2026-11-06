@@ -26,6 +26,7 @@ const props = defineProps({
 const entry = computed(() => (props.bar ? props.catalogue.bar(props.name) : props.dropdown ? props.catalogue.dropdown(props.name) || props.catalogue.window(props.name) : props.catalogue.window(props.name)));
 const documentComponent = computed(() => entry.value && {render: () => h(DocumentWindow, {line: entry.value.line})});
 const access = ref(null);
+const untrusted = computed(() => entry.value?.loading === "component" && !entry.value.allowed && !access.value?.component_trusted);
 const trustReason = computed(
     () => `This window runs in the page with the viewer's rights. Trust its module's code with journal window trust ${entry.value.module} to show it.`,
 );
@@ -49,7 +50,7 @@ watch(
     () => entry.value?.entry_url || entry.value?.line,
     async () => {
         await loadAccess();
-        if (permissions.value.missing.length) ask();
+        if (permissions.value.missing.length && !untrusted.value) ask();
     },
     {immediate: true},
 );
@@ -62,11 +63,12 @@ watch(
     <template v-else-if="entry?.shows === 'one-agent' && agent === null">
         <EmptyState title="No agent is running here" data-window-no-agent />
     </template>
-    <template v-else-if="entry && entry.loading === 'component' && !entry.allowed && !access?.component_trusted">
+    <template v-else-if="untrusted">
         <WindowHost :name="name" :subscriptions="subscriptions" :environment="environment" :unavailable-reason="trustReason" />
     </template>
     <template v-else-if="entry && entry.loading === 'component'">
         <PageWindow
+            :key="permissions.missing.length"
             :entry="entry"
             :subscriptions="subscriptions"
             :environment="environment"

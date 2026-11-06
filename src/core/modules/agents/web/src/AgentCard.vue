@@ -1,12 +1,13 @@
 <script setup>
 import {computed, defineAsyncComponent, onUnmounted, ref, watch} from "vue";
-import {age, perHour, Btn, EmptyState, FoldGroup, Icon, InnerTabs, loadWindowComponent, SwitchCase, TabBody, TimeAgo, useNow, useWindow} from "@journal/window-kit";
+import {age, perHour, Btn, EmptyState, FoldGroup, Icon, InnerTabs, loadWindowComponent, SwitchCase, TabBody, TimeAgo, peekRef, useNow, useWindow} from "@journal/window-kit";
+import InformationBar from "../../../../../viewer/src/shell/InformationBar.vue";
 import AgentCommand from "./AgentCommand.vue";
 import AgentTaskGroup from "./AgentTaskGroup.vue";
 import TranscriptRows from "./TranscriptRows.vue";
 
 // one agent as a calm two lines: the profile and given name with its time, then the provider, model, type and task count; a click opens the card on
-// its number, usage, Inspect and three tabs: its tasks under the state names of the tasks window with its instruction, its transcript and the files it changed;
+// its number, usage, tasks, transcript, files and terminal;
 // whether the card is open is the window's to say (`open`), and a click asks it to flip that (`toggle`)
 const FALLBACK_TITLES = {helper: "Helper", reviewer: "Reviewer"};
 const TASK_STATES = ["started", "blocked", "open", "completed"];
@@ -15,24 +16,28 @@ const props = defineProps({row: {type: Object, required: true}, facts: {type: Ob
 const emit = defineEmits(["toggle"]);
 const now = useNow();
 const title = computed(() => {
-    const name = props.facts?.profile || FALLBACK_TITLES[props.row.role] || props.row.role;
+    if (props.facts?.profile_title) return props.facts.profile_title;
+    if (props.facts?.profile) return props.facts.profile;
+    const name = FALLBACK_TITLES[props.row.role] || props.row.role;
     return name.slice(0, 1).toUpperCase() + name.slice(1);
 });
 const tasks = computed(() => props.facts?.tasks ?? []);
 const queuedTasks = computed(() => tasks.value.filter((task) => task.state === "open"));
-const job = computed(() => (props.facts?.job_enabled ? props.facts?.task_title || queuedTasks.value[0]?.title || "" : ""));
+const planTask = computed(() => {
+    const current = tasks.value.find((task) => task.id === props.facts?.task_id);
+    return current?.plan_id ? current : queuedTasks.value.find((task) => task.plan_id);
+});
+const job = computed(() => props.row.role === "helper" ? props.facts?.helper_job || "" : (props.facts?.job_enabled ? props.facts?.task_title || queuedTasks.value[0]?.title || "" : ""));
+const jobRef = computed(() => {
+    const match = job.value.match(/\b(plan|doc)(?::|\s+)(\d+)\b/i);
+    return match ? `${match[1].toLowerCase() === "plan" ? "plans" : "docs"}:${match[2]}` : "";
+});
 const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, props.row.role === "main" ? "" : props.progress ? `${props.row.role} ${props.row.id}` : props.row.role, props.row.access === "read-only" ? "Access: Read-only" : ""].filter(Boolean).join(" · "));
 const endedReason = computed(() => (props.row.ended_at && props.facts?.job_returned?.startsWith(ENDED_WITHOUT_REPORT) ? props.facts.job_returned : ""));
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
 const stoppedWithWork = computed(() => Boolean(props.row.ended_at) && props.row.role !== "main" && tasks.value.some((task) => UNFINISHED_STATES.has(task.state)));
 const dotState = computed(() => (props.waitReason || stoppedWithWork.value ? "waiting" : props.row.state === "running" ? props.facts?.state || props.row.state : props.row.state));
-const usage = computed(() => {
-    const parts = [];
-    if (props.facts?.context_percent !== null && props.facts?.context_percent !== undefined) parts.push(`Context: ${props.facts.context_percent}%`);
-    if (props.facts?.cost_dollars) parts.push(`$${props.facts.cost_dollars.toFixed(2)}`);
-    return parts.join(" · ");
-});
 const completedCount = computed(() => props.progress?.completed_count ?? tasks.value.filter((task) => task.state === "completed").length);
 const totalCount = computed(() => props.progress?.task_count ?? tasks.value.length);
 const taskCount = computed(() => `${completedCount.value} of ${totalCount.value} ${totalCount.value === 1 ? "task" : "tasks"}`);
@@ -47,13 +52,13 @@ const sectionOpen = (state) => !(folded.value[state] ?? FOLDED_STATES.has(state)
 const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(state)});
 // a running helper's card names the command it runs, as the foot of the chat does for the main agent, or says plainly that it ran none
 const context = useWindow();
-const tab = ref(context.tabs[0]);
-watch(() => props.open, (open) => { if (open) tab.value = context.tabs[0]; });
+const isReader = computed(() => props.row.access === "read-only");
+const cardTabs = computed(() => isReader.value ? context.tabs.filter((item) => ["transcript", "terminal"].includes(item.key)) : context.tabs);
+const tab = ref(cardTabs.value[0]);
+watch(() => props.open, (open) => { if (open) tab.value = cardTabs.value[0]; });
 const components = Object.fromEntries(context.tabs.filter((tab) => tab.component).map((tab) => [tab.key, defineAsyncComponent(() => loadWindowComponent(tab.component))]));
-// a read-only helper has no tasks and writes no files, so its card holds its transcript under its folded instruction, with no tabs
 const isRunningHelper = computed(() => props.row.role === "helper" && !props.row.ended_at);
 const stopHelper = () => context.run(["helper", "stop", String(props.row.id)]);
-const isReader = computed(() => props.row.access === "read-only");
 const instructionOpen = ref(false);
 const runningCommand = ref("");
 const noCommandNote = ref("");
@@ -77,12 +82,15 @@ readCommand();
             <span class="agent-title" data-agent-title data-agent-motion>{{ title }}</span>
             <span class="agent-name" data-agent-name data-agent-motion>{{ facts?.given_name || row.id }}</span>
             <template v-if="!open"><Icon class="agent-chevron" name="chevronRight" :size="12" /></template>
+            <span class="agent-times">
             <template v-if="row.ended_at && !stoppedWithWork">
                 <TimeAgo class="agent-time" :at="row.ended_at" data-agent-motion />
             </template>
             <template v-else>
                 <span class="agent-time" data-agent-motion>{{ runTime }}</span>
             </template>
+            <span v-if="facts?.last_activity" class="agent-last-heard" data-agent-last-heard>Last heard: <TimeAgo :at="facts.last_activity" /></span>
+            </span>
         </span>
         <span class="agent-line">
             <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
@@ -90,16 +98,19 @@ readCommand();
                 <span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span>
             </template>
         </span>
+        <template v-if="planTask">
+            <span class="agent-line agent-work-start"><button type="button" class="agent-plan" data-agent-plan :data-peek="`plans:${planTask.plan_id}`" @click.stop="peekRef(`plans:${planTask.plan_id}`)">Plan {{ planTask.plan_id }}: {{ planTask.plan_title }}</button></span>
+        </template>
         <template v-if="job">
-            <span class="agent-line agent-work-start">
-                <span class="agent-job" data-agent-job :title="job">{{ job }}</span>
+            <span :class="['agent-line', {'agent-work-start': !planTask}]">
+                <span class="agent-job" data-agent-job :title="job"><button v-if="jobRef" type="button" class="agent-job-link" :data-peek="jobRef" @click.stop="peekRef(jobRef)">{{ job }}</button><template v-else>{{ job }}</template></span>
                 <template v-if="totalCount">
                     <span class="agent-tasks" data-agent-tasks data-agent-motion>{{ taskCount }}</span>
                 </template>
             </span>
         </template>
         <template v-if="!open && (showsCommand || (totalCount && tasksPerHour))">
-            <span :class="['agent-foot', {'agent-work-start': !job}]" data-agent-foot>
+            <span :class="['agent-foot', {'agent-work-start': !job && !planTask}]" data-agent-foot>
                 <template v-if="showsCommand">
                     <AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" />
                 </template>
@@ -110,31 +121,12 @@ readCommand();
         </template>
         <template v-if="open">
             <div class="agent-more" data-agent-more @click.stop>
-                <template v-if="usage">
-                    <div class="agent-usage-band">
-                        <span class="agent-usage" data-agent-card-usage>{{ usage }}</span>
-                        <template v-if="isRunningHelper"><Btn variant="ghost" small data-helper-stop @click="stopHelper">Stop</Btn></template>
-                    </div>
-                </template>
+                <InformationBar :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: []}" card>
+                    <template v-if="isRunningHelper"><Btn variant="ghost" small data-helper-stop @click="stopHelper">Stop</Btn></template>
+                </InformationBar>
                 <template v-if="showsCommand"><AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" /></template>
                 <template v-if="endedReason"><p class="agent-ended-reason" data-agent-ended-reason>{{ endedReason }}</p></template>
-                <template v-if="isReader">
-                    <div class="agent-tab-body" data-agent-tab-body="transcript" data-agent-only-transcript>
-                        <template v-if="facts?.instruction">
-                            <div class="agent-helper-brief">
-                                <FoldGroup label="Instruction" :open="instructionOpen" data-agent-section="instruction" @toggle="instructionOpen = !instructionOpen">
-                                    <div class="agent-instruction" data-agent-instruction>{{ facts.instruction }}</div>
-                                </FoldGroup>
-                            </div>
-                        </template>
-                        <template v-else-if="facts && row.ended_at">
-                            <p class="agent-label" data-agent-no-job>No job kept from version 4</p>
-                        </template>
-                        <TranscriptRows :line="`agent transcript ${row.id}`" :agent="isRunningHelper ? row.id : null" :helper="isRunningHelper" padding="0" />
-                    </div>
-                </template>
-                <template v-else>
-                <InnerTabs class="agent-tabs" :active="tab" :answer="{tasks: tasks.length}" @choose="tab = $event" />
+                <InnerTabs class="agent-tabs" :tabs="cardTabs" :active="tab" :answer="{tasks: tasks.length}" @choose="tab = $event" />
                 <TabBody class="agent-tab-body" :tab="tab" :data-agent-tab-body="tab?.key">
                     <SwitchCase :value="tab?.key">
                         <template #tasks>
@@ -148,14 +140,25 @@ readCommand();
                             </template>
                         </template>
                         <template #transcript>
-                            <TranscriptRows :line="`agent transcript ${row.id}`" :agent="row.id" padding="0" />
+                            <template v-if="isReader">
+                            <template v-if="facts?.instruction">
+                                <div class="agent-helper-brief">
+                                    <FoldGroup label="Instruction" :open="instructionOpen" data-agent-section="instruction" @toggle="instructionOpen = !instructionOpen">
+                                        <div class="agent-instruction" data-agent-instruction>{{ facts.instruction }}</div>
+                                    </FoldGroup>
+                                </div>
+                            </template>
+                            <template v-else-if="facts && row.ended_at">
+                                <p class="agent-label" data-agent-no-job>No job recorded</p>
+                            </template>
+                            </template>
+                            <TranscriptRows :line="`agent transcript ${row.id}`" :agent="isReader ? (isRunningHelper ? row.id : null) : row.id" :helper="isReader && isRunningHelper" padding="0" />
                         </template>
                         <template v-for="(component, key) in components" :key="key" #[key]>
                             <component :is="component" :agent="row.id" />
                         </template>
                     </SwitchCase>
                 </TabBody>
-                </template>
             </div>
         </template>
     </div>
@@ -213,22 +216,15 @@ readCommand();
 
 .agent-title {
     flex: none;
-    max-width: 60%;
-    overflow: hidden;
     font-size: 13px;
     font-weight: 500;
-    white-space: nowrap;
-    text-overflow: ellipsis;
 }
 
 .agent-name {
     flex: 1;
     min-width: 0;
-    overflow: hidden;
     color: var(--text-3);
     font-size: 12px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
 }
 
 .agent-time,
@@ -432,12 +428,17 @@ readCommand();
 
 .agent-card { gap: 2px; padding: 9px 14px; }
 .agent-head { gap: 6px; }
+.agent-times { display: flex; flex-direction: column; align-items: flex-end; flex: none; margin-left: auto; }
+.agent-last-heard { color: var(--text-4); font-size: 10px; white-space: nowrap; }
 .agent-dot { margin-right: 3px; }
 .agent-name { flex: 0 1 auto; }
+.agent-head { flex-wrap: wrap; }
 .agent-chevron { position: static; flex: none; margin-left: -2px; color: var(--text-4); opacity: 1; }
 .agent-card:hover .agent-chevron { color: var(--text-2); }
 .agent-line, .agent-command { padding-left: 16px; }
 .agent-command { font-size: 11px; }
+.agent-plan { min-width: 0; overflow: hidden; padding: 0; border: 0; background: none; color: var(--accent-text); font: inherit; font-size: 11.5px; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.agent-job-link { padding: 0; border: 0; background: none; color: var(--accent-text); font: inherit; text-align: left; cursor: pointer; }
 .agent-waiting { color: var(--accent-text); font-size: 11.5px; text-decoration: none; }
 .agent-waiting:hover { color: var(--accent-text); text-decoration: underline; }
 .agent-back { display: grid; place-items: center; flex: none; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--text-3); cursor: pointer; }

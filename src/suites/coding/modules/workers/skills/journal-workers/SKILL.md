@@ -64,6 +64,6 @@ never starts is retired after the idle time.
 - Git is not yours to run: the journal commits your work.
 - Use python3 for Python commands.
 - `journal skill write` publishes the declared skill files into the project's .claude/skills and .agents/skills;
-  it does not read a skill for you. Read the SKILL.md path with cat to load it.
+  it does not load a skill for you. Use the Skill tool on Claude Code or read the SKILL.md path on Codex.
 - `journal module sync` updates the module registry and applies pending schema migrations. These are maintenance
   commands: use them when the journal asks for a repair, rather than as a way to load a skill. Workers may run them.

@@ -20,6 +20,7 @@ def test_a_rename_clash_in_built_files_is_deleted_and_rebuilt(new_story):
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story"', actor=worker)
     story.expect_success("worker deliver", actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     expect_returncode_git_repository_3(repository, "mv", BUILT_FILE, branch_file, 0)
     repository.committed(branch_file, "const total = 3;\n" + "const total = 1;\n" * 29, "Rename the branch build")
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
@@ -55,6 +56,7 @@ def test_a_failed_or_empty_build_leaves_the_environment_branch_unchanged(new_sto
     story.expect_success('proof make 1 --task 1 "build.cjs:1, the build story"', actor=worker)
     story.expect_success("worker deliver", actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     story.expect_refusal(f"worker merge {worker.id}", reason, actor=story.agent)
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base)
 

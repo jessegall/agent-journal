@@ -1,6 +1,6 @@
 ---
 name: journal
-description: Find your way in the journal: what it is, its basic ideas and which skill to read for what; read at the start of every session, with the etiquette skill
+description: Find your way in the journal: what it is, its basic ideas and which skill to load for what; load at the start of every session, with the etiquette skill
 ---
 
 # The journal
@@ -24,7 +24,7 @@ When the journal holds you, its line says why and names the way out: reading and
 A refusal that does not apply can be passed once, after it met you, with a reason: `journal refusal skip <rule> --reason "<why>"`,
 or `--skip-guard <guard> --skip-reason "<why>"` on a command. Obey when you can: five skips in a row lose it. A safety refusal has no skip.
 After a compaction or a new start, run `journal overview` before anything else: until you do, nothing else passes but
-reading the skills it lists. `journal skill required` lists them on its own. Search before you say you do not know
+loading the skills it lists with the program’s native method. `journal skill required` lists them on its own. Search before you say you do not know
 or ask the user again: `journal search find "<words>"`.
 
 | Read | For | The journal asks for it |

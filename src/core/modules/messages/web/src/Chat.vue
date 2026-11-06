@@ -91,7 +91,7 @@ async function readTool() {
 }
 context.follow(["hook_call.*", "dock_item.*", "process_part.*"], readTool);
 readTool();
-const FOLD_AFTER_MS = 180;
+const FOLD_AFTER_MS = 500;
 const ECHO_SLACK_MS = 2000;
 const FOOT_PIXELS = 40;
 const chat = ref(null);
@@ -355,10 +355,11 @@ function followScroll() {
     if (atFoot) arrived.value = 0;
     const opening = dockOpening({top: scrollTop, before: lastTop, height: scrollHeight, shown: clientHeight});
     lastTop = scrollTop;
-    if (opening === null) return;
+    if (opening === null && !folding) return;
     clearTimeout(folding);
+    folding = 0;
     if (opening) docksOpen.value = true;
-    else folding = setTimeout(() => (docksOpen.value = false), FOLD_AFTER_MS);
+    else folding = setTimeout(() => { docksOpen.value = false; folding = 0; }, FOLD_AFTER_MS);
 }
 // the newest message and mark are at the foot: a chat that was at its foot stays there as rows land, one scrolled up is left where it is
 watch(() => messages.value[0]?.id, (newest, before) => {
@@ -472,7 +473,7 @@ async function runCommand(pin) {
         </template>
         <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" :idle="waitingFor ? `waiting for ${waitingFor}` : 'waiting'" /></p>
         <div data-figure-chat-foot class="chat-foot">
-            <DockStack :items="docked" :folded="short || !docksOpen" :data-figure-docked-bars="dockedRows.size ? '' : null" />
+            <DockStack :items="docked" :folded="short" :collapsed="!docksOpen" :data-figure-docked-bars="dockedRows.size ? '' : null" />
         </div>
         <template v-if="dumping">
             <DumpForm :run="context.run" @made="dumping = false" @close="dumping = false" />

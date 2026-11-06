@@ -4,11 +4,13 @@ const TYPES = ["reads", "runs"];
 const words = (text) => (text ? text.split(", ") : []);
 
 // the prompts a third-party window shows the person: its missing read lines first, then its missing commands, each
-// allowed only when the person agrees, through the shell's own window line
+// allowed only when the person agrees, through the shell's own window line; several windows that ask at once, such
+// as the sections of one inspector, are asked one after another
 export class AllowancePrompts {
     constructor(runShellLine) {
         this.runShellLine = runShellLine;
         this.current = shallowRef(null);
+        this.waiting = [];
     }
 
     async ask(title, access) {
@@ -23,14 +25,20 @@ export class AllowancePrompts {
 
     prompt(request) {
         return new Promise((resolve) => {
-            this.current.value = {...request, resolve};
+            this.waiting.push({...request, resolve});
+            this.showNext();
         });
+    }
+
+    showNext() {
+        if (!this.current.value) this.current.value = this.waiting.shift() ?? null;
     }
 
     answer(allowed) {
         const request = this.current.value;
         this.current.value = null;
         request.resolve(allowed);
+        this.showNext();
     }
 }
 

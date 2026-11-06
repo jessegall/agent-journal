@@ -35,7 +35,7 @@ class MessageQuery(Query[Message]):
     def has_text_after(self, creator_id: int, text: str, cutoff_at: Timestamp) -> bool:
         return self.filter(creator_id=creator_id, text=text).matching(Minimum("created_at", cutoff_at.text)).exists()
 
-    def delivered_at(self, agent_id: int, delivered_at: Timestamp) -> Self:
+    def delivered(self, agent_id: int, delivered_at: Timestamp) -> Self:
         return self.unread(agent_id).matching(Equal("delivered_at", delivered_at.text))
 
     def remember(self, message: Message) -> None:

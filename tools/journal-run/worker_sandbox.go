@@ -43,12 +43,12 @@ func workerReadLimit(worktree, journalHome string) (readLimit, error) {
 			readable = append(readable, target)
 		}
 	}
-	return readLimit{Denied: main, Readable: append(readable, excludedLinkTargets(resolved)...)}, nil
+	return readLimit{Denied: main, Readable: append(readable, excludedSymlinkTargets(resolved)...)}, nil
 }
 
-// excludedLinkTargets are the folders that library links lower in the worktree point at: the journal lists every
+// excludedSymlinkTargets are the folders that library links lower in the worktree point at: the journal lists every
 // linked library in the worktree's own exclude file, as /src/viewer/node_modules.
-func excludedLinkTargets(worktree string) []string {
+func excludedSymlinkTargets(worktree string) []string {
 	link, err := os.ReadFile(filepath.Join(worktree, ".git"))
 	if err != nil {
 		return nil

@@ -1,3 +1,5 @@
+from core.modules.tasks.support.task_wait_attempts import TaskWaitAttempts
+from suites.coding.modules.checks.support.task_wait_attempts import CheckTaskWaitAttempts
 from suites.coding.modules.checks.migrations.m008_open_check_hidden_index import OpenCheckHiddenIndexMigration
 from suites.coding.modules.checks.migrations.m007_check_task_wait_index import CheckTaskWaitIndexMigration
 from suites.coding.modules.checks.migrations.m006_open_check_result_index import OpenCheckResultIndexMigration
@@ -74,7 +76,7 @@ class ChecksModule(Module):
     handlers = [MakeCheckHandler, EditCheckHandler, RecordCheckRunHandler, RecordCheckProgressHandler, StartCheckHandler, StopCheckHandler, RemoveCheckHandler, ReportCheckHandler]
     subcommands = [CheckRunsSubcommand, MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StartCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand, CheckShowSubcommand]
     driver_rules = [FailedCheckRule, BrokenTaskWaitRule]
-    bindings = {PeriodicChecks: DueCheckRuns, StepChecks: PassedChecks}
+    bindings = {PeriodicChecks: DueCheckRuns, StepChecks: PassedChecks, TaskWaitAttempts: CheckTaskWaitAttempts}
     windows = [WindowDeclaration("checks.checks", "Checks", "checks.js", WindowLoading.COMPONENT, skeleton=CHECKS_CHECKS_SKELETON, search=WindowSearch(CheckSearcher, "Search the checks"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.CHECK,
                                  reads=["check list", "check runs"], runs=["check run", "check start"], events=["check.*"])]
     seeders = [ChecksSeeder]

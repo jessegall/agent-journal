@@ -24,8 +24,8 @@ from suites.coding.modules.workers.support.worker_task_commit import WorkerTaskC
 
 class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
     """Commits the worker's current task, moves it to testing and queues its proofs' tests; the next task
-    delegated to it starts now when there are no tests, else once they pass. A task in testing with no test going
-    has them queued again, or lets the worker go on."""
+    delegated to it starts now when there are no tests, else once they pass. A task in testing with no test
+    going has them queued again, or lets the worker go on."""
 
     command = StartNextWorkerTask
     disabled_scopes = [ActorScope]

@@ -93,3 +93,15 @@ def test_the_suite_selects_which_agent_cards_show_their_job(new_story, role, job
     rows = json.loads(story.run("usage agents --environment main --json", actor=story.user).output_text)["rows"]
     facts = next(row for row in rows if row["id"] == agent_id)
     story.expect_rows(facts["job_enabled"] is job_enabled)
+
+
+def test_agent_card_filters_combine_before_paging(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    worker = story.new_row_id("agent start filter-worker codex worker --environment main")
+    story.new_row_id("agent start filter-helper claude helper --environment main")
+    rows = json.loads(story.run("agent cards --environment main --show all --role worker --program codex --limit 1 --json", actor=story.user).output_text)
+    story.expect_rows([row["id"] for row in rows["rows"]] == [worker], rows["total"] == 1)
+    options = json.loads(story.run("agent cards --options --environment main --json", actor=story.user).output_text)
+    story.expect_rows("worker" in options["roles"], "helper" in options["roles"])
+    main = json.loads(story.run("agent cards --include-main --role main --show all --environment main --json", actor=story.user).output_text)
+    story.expect_rows(any(row["id"] == story.agent.id for row in main["rows"]))

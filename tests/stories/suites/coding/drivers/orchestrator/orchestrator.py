@@ -68,7 +68,7 @@ def test_tasks_a_released_worker_gave_back_hold_the_orchestrator_at_stop(new_sto
 
 
 class OrchestratorWithReadyPlanTask(StoryFixture):
-    """A person, Ada, beside the orchestrator, whose only open task is task 2, in the first phase of plan 1, which is ready."""
+    """An orchestrator with a person and one open task in a ready plan."""
 
     parent = OrchestratorWithOpenTask
 

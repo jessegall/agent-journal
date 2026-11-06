@@ -4,6 +4,7 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from core.modules.reviews.support.review_step_searcher import ReviewStepSearcher
+from core.base.viewer.skeleton_part import SkeletonPart
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
@@ -57,7 +58,7 @@ class ReviewsModule(Module):
     move_reason = "version 4 kept plan reviews in plan_reviews, which the plans module moves"
     requires_core = ">=5,<6"
     settings = REVIEW_SETTINGS
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings", "journal.core.chat"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings", "journal.core.chat", "journal.core.plans"]
     models = [ModelDeclaration(Review, query=ReviewQuery, commands=(AssignReview, AbandonReview)), ModelDeclaration(ReviewPoint), ModelDeclaration(ReviewStep, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(Reviewer, query=ReviewerQuery, commands=(StartReviewer, EndReviewer), excluded_subcommands=["make", "edit", "delete"])]
     migrations = [ReviewStateIndexMigration, ReviewerEnvironmentIndexMigration, ReviewsTablesMigration, ReviewersTableMigration, ReviewStepsTableMigration]
     views = [ReviewerRow]
@@ -68,5 +69,7 @@ class ReviewsModule(Module):
     marks = REVIEW_MARKS
     windows = [WindowDeclaration("reviews.reviewer", "Reviewer", "reviewer.js", WindowLoading.COMPONENT, skeleton=REVIEWS_REVIEWER_SKELETON, search=WindowSearch(ReviewStepSearcher, "Search the reviews"), icon=WindowIcon.REVIEW,
                                  reads=["review board", "review-step board", "reviewer list"], events=["review.*", "review_step.*", "reviewer.*"]),
-               WindowDeclaration("reviews.reviewers", "Reviewers", "reviewers.js", WindowLoading.COMPONENT, skeleton=REVIEWS_REVIEWERS_SKELETON, icon=WindowIcon.REVIEW, place=WindowPlace.DROPDOWN, reads=["agent list"], events=["agent.*"])]
+               WindowDeclaration("reviews.reviewers", "Reviewers", "reviewers.js", WindowLoading.COMPONENT, skeleton=REVIEWS_REVIEWERS_SKELETON, icon=WindowIcon.REVIEW, place=WindowPlace.DROPDOWN, reads=["agent list"], events=["agent.*"]),
+               WindowDeclaration("reviews.subject-reviews", "Reviews", "subject-reviews.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, slots=tuple(["inspector.plan"]), icon=WindowIcon.REVIEW,
+                                 reads=["review list"], events=["review.*"], skeleton=tuple([SkeletonPart.line()]))]
     seeders = [ReviewsSeeder]

@@ -11,8 +11,8 @@ import (
 
 func TestProgressCountRunsInBackgroundAndSkipsKnownCounts(t *testing.T) {
 	program := listingBinary(t)
-	success, failed, known, counted, native := t.TempDir(), t.TempDir(), t.TempDir(), t.TempDir(), t.TempDir()
-	if err := os.WriteFile(filepath.Join(known, "count-known"), []byte("1"), 0644); err != nil {
+	success, failed, recorded, counted, native := t.TempDir(), t.TempDir(), t.TempDir(), t.TempDir(), t.TempDir()
+	if err := os.WriteFile(filepath.Join(recorded, "count-known"), []byte("1"), 0644); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(counted, "counted"), []byte("0"), 0644); err != nil {
@@ -24,7 +24,7 @@ func TestProgressCountRunsInBackgroundAndSkipsKnownCounts(t *testing.T) {
 	for _, sample := range []struct{ folder, line string }{
 		{success, "printf 'tests/cart.py: 4\\n'"},
 		{failed, "exit 1"},
-		{known, "printf unexpected"},
+		{recorded, "printf unexpected"},
 		{counted, "printf unexpected"},
 		{native, "printf unexpected"},
 	} {
@@ -50,7 +50,7 @@ func TestProgressCountRunsInBackgroundAndSkipsKnownCounts(t *testing.T) {
 			t.Fatalf("status %q: %v", status, err)
 		}
 	}
-	for _, folder := range []string{known, counted, native} {
+	for _, folder := range []string{recorded, counted, native} {
 		if _, err := os.Stat(filepath.Join(folder, "progress-count")); !os.IsNotExist(err) {
 			t.Fatalf("unexpected listing in %s", folder)
 		}

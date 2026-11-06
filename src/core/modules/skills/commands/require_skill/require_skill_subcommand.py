@@ -1,7 +1,8 @@
 from argparse import ArgumentParser, Namespace
-import shlex
 
 from core.base.caller.caller import Caller
+from core.base.query.queries import Queries
+from core.modules.agents.models.agent import Agent
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.skills.commands.require_skill.require_skill import RequireSkill
 from core.modules.skills.models.agent_skill import AgentSkill
@@ -17,8 +18,8 @@ class RequireSkillSubcommand(Subcommand[RequireSkill, AgentSkill]):
     name = "require"
     outward = True
 
-    def __init__(self, files: SkillFiles) -> None:
-        self.files = files
+    def __init__(self, files: SkillFiles, queries: Queries) -> None:
+        self.files, self.queries = files, queries
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("agent_id", type=int)
@@ -30,5 +31,5 @@ class RequireSkillSubcommand(Subcommand[RequireSkill, AgentSkill]):
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, AgentSkill):
             return
-        text = f"loaded: {value.skill}" if value.state is AgentSkillState.LOADED else f"read: cat {shlex.quote(str(self.files.readable(value.skill)))}"
+        text = f"loaded: {value.skill}" if value.state is AgentSkillState.LOADED else self.files.agent_instruction(value.skill, self.queries.query(Agent).find(value.session_agent_id))
         output.write(text, output.values(value))

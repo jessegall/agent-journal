@@ -4,7 +4,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.tasks.support.task_nudges import WAIT_DESCRIPTION
+from core.modules.tasks.support.task_nudges import PLAIN_BLOCK, WAIT_DESCRIPTION
 
 
 WAIT_TERMS = re.compile(r"\b(wait(s|ing)?\s+(for|on|until)|blocked\s+(on|by|until))\b", re.I)
@@ -23,6 +23,9 @@ class WaitDescriptionRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         described = shell.parts_running_journal_command(*DESCRIBING_COMMANDS) if shell is not None else ()
+        if any(part.arguments[:2] == ("task", "block") and any(arg == "--reason" or arg.startswith("--reason=") for arg in part.arguments)
+               and not any(arg.split("=", 1)[0] in (*BLOCK_FLAGS, "--until-user") for arg in part.arguments) for part in described):
+            return RuleAnswer.with_nudges(PLAIN_BLOCK.nudge())
         if not any(WAIT_TERMS.search(part.text) and not set(BLOCK_FLAGS) & set(part.arguments) for part in described):
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(WAIT_DESCRIPTION.nudge())

@@ -35,7 +35,8 @@ from core.modules.drivers.commands.skip_refusal.skip_refusal_handler import Skip
 from core.modules.drivers.commands.skip_refusal.skip_refusal_subcommand import SkipRefusalSubcommand
 from core.modules.drivers.commands.use_refusal_skip.use_refusal_skip_handler import UseRefusalSkipHandler
 from core.modules.drivers.migrations.m029_refusal_skips import SkippedRefusalsTableMigration
-from core.modules.drivers.migrations.m030_helper_job_sources import HelperJobSourcesMigration
+from core.modules.drivers.migrations.m032_helper_job_sources import HelperJobSourcesMigration
+from core.modules.drivers.migrations.m030_hook_call_partial_indexes import HookCallPartialIndexesMigration
 from core.modules.drivers.models.refusal_skip import RefusalSkip
 from core.base.guard.change_filter import ChangeFilter
 from core.base.driver.hook_route import HookRoute
@@ -111,6 +112,7 @@ from core.modules.drivers.migrations.m009_agent_blocks import AgentBlocksMigrati
 from core.modules.drivers.migrations.m018_strict_blocks import StrictBlocksMigration
 from core.modules.drivers.migrations.m019_hook_change_names import HookChangeNamesMigration
 from core.modules.drivers.models.agent_block import AgentBlock
+from core.modules.drivers.migrations.m031_helper_job_created_index import HelperJobCreatedIndexMigration
 from core.modules.drivers.migrations.m027_helper_jobs_closed import HelperJobsClosedMigration
 from core.modules.drivers.rules.agent_block_rule import AgentBlockRule
 from core.modules.drivers.ticks.end_silent_helpers_tick import EndSilentHelpersTick
@@ -154,7 +156,7 @@ class DriversModule(Module):
     dependencies = ["journal.core.chat", "journal.core.developer", "journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
     models = [ModelDeclaration(RefusalSkip, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HelperJob, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentBlock, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(NudgeRecord, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine, ClaimAgentLine, ReleaseAgentLine, EnterAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
     views = [HookCallRow, NudgeTotal, AgentActivity, EnvironmentMenuRow]
-    migrations = [HelperJobSourcesMigration, HelperJobsClosedMigration, DriverSessionMigration, HelperJobHelperIndexMigration, HelperJobsMigration, AgentLineRepeatsMigration, NudgeTotalIndexMigration, AgentLineTextIndexMigration, BlockStopNameMigration, StrictBlocksMigration, HookChangeNamesMigration, StopBlocksMigration, DriversTablesMigration,HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration, NudgeRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration, SubagentDispatchesMigration, DispatchSubagentMigration, HookCallLineChangesMigration, HookCallTimeIndexesMigration, BlockGracePeriodsMigration, AgentLineStateIndexMigration, AgentLineWakesMigration, ReadIndexesMigration, SkippedRefusalsTableMigration]
+    migrations = [HelperJobSourcesMigration, HelperJobCreatedIndexMigration, HelperJobsClosedMigration, DriverSessionMigration, HelperJobHelperIndexMigration, HelperJobsMigration, AgentLineRepeatsMigration, NudgeTotalIndexMigration, AgentLineTextIndexMigration, BlockStopNameMigration, StrictBlocksMigration, HookChangeNamesMigration, StopBlocksMigration, DriversTablesMigration,HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration, NudgeRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration, SubagentDispatchesMigration, DispatchSubagentMigration, HookCallLineChangesMigration, HookCallTimeIndexesMigration, BlockGracePeriodsMigration, AgentLineStateIndexMigration, AgentLineWakesMigration, ReadIndexesMigration, SkippedRefusalsTableMigration, HookCallPartialIndexesMigration]
     handlers = [SkipRefusalHandler, UseRefusalSkipHandler, RestoreRefusalSkipHandler, SendJournalStartedLineHandler, PruneTempFoldersHandler, BlockUntilHandler, CloseAgentBlockHandler, EndSilentHelpersHandler, RecordBypassLineHandler, RecordMissingPromptHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
     subcommands = [EnvironmentMenuSubcommand, SkipRefusalSubcommand, RestoreRefusalSkipSubcommand, SkipAgentBlockSubcommand,PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]

@@ -67,6 +67,7 @@ SKILLS_ROUTE = "/api/skills"
 MODULES_ROUTE = "/modules/"
 FRAME_POLICY = ("sandbox allow-scripts; default-src 'none'; script-src {listener}; style-src {listener} 'unsafe-inline'; img-src {listener} data:;"
                 " connect-src 'none'; form-action 'none'")
+UNQUEUED_LINES = (("developer", "request-queue"), ("developer", "hook-requests"))
 
 
 class ViewerRequestHandler(BaseHTTPRequestHandler):
@@ -209,7 +210,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         session = viewer.login.session(token)
         started_at = perf_counter()
         try:
-            turn = nullcontext() if request.line[:2] == ["developer", "request-queue"] else viewer.routes.queue.viewer_turn(" ".join(request.line))
+            turn = nullcontext() if tuple(request.line[:2]) in UNQUEUED_LINES else viewer.routes.queue.viewer_turn(" ".join(request.line))
             with turn:
                 queued_ms = (perf_counter() - started_at) * 1000
                 answered = viewer.routes.line_route.answer(request.window, request.line, viewer.login.person_id(token), request.environment, session.shared)
@@ -258,19 +259,19 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         session, person_id = viewer.login.session(token), viewer.login.person_id(token)
         started_at = perf_counter()
         inspections = [(index, line) for index, line in enumerate(request.lines) if line.line[:2] == ["developer", "request-queue"]]
-        other_lines = [(index, line) for index, line in enumerate(request.lines) if line.line[:2] != ["developer", "request-queue"]]
-        if inspections and other_lines:
+        command_lines = [(index, line) for index, line in enumerate(request.lines) if line.line[:2] != ["developer", "request-queue"]]
+        if inspections and command_lines:
             self.answer(400, {"error": "read the request queue separately from other lines"})
             return
         answers: dict[int, LineAnswer] = {}
         for index, line in inspections:
             answers[index] = viewer.routes.line_route.answers(ViewerLinesRequest([line]), person_id, session.shared)[0]
-        if other_lines:
-            with viewer.routes.queue.viewer_turn("; ".join(" ".join(line.line) for _, line in other_lines)):
+        if command_lines:
+            with viewer.routes.queue.viewer_turn("; ".join(" ".join(line.line) for _, line in command_lines)):
                 queued_ms = (perf_counter() - started_at) * 1000
-                other_answers = viewer.routes.line_route.answers(ViewerLinesRequest([line for _, line in other_lines]), person_id, session.shared)
+                command_answers = viewer.routes.line_route.answers(ViewerLinesRequest([line for _, line in command_lines]), person_id, session.shared)
             duration_ms = (perf_counter() - started_at) * 1000
-            for (index, line), answer in zip(other_lines, other_answers, strict=True):
+            for (index, line), answer in zip(command_lines, command_answers, strict=True):
                 answers[index] = answer
                 RequestLog(viewer.routes.line_route.line_run.home).record(line.line, "viewer", duration_ms, queued_ms, answer.code)
         self.answer(200, {"answers": [asdict(answers[index]) for index in range(len(request.lines))]})

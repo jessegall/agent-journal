@@ -7,6 +7,7 @@ from core.modules.viewer.viewer_module import ViewerModule
 from core.modules import DEFAULT_MODULES
 from suites import DEFAULT_SUITES
 from core.base.module.window_extensions import WindowExtensions
+from core.base.viewer.window_place import WindowPlace
 from tests.stories.support.story_checks import expect_absent_value
 
 ROOT = Path(__file__).resolve().parents[5]
@@ -72,7 +73,7 @@ def test_the_coding_suite_offers_every_window_a_module_declares():
     for folder in module_folders():
         dotted = ".".join(folder.relative_to(ROOT / "src").parts)
         module_file = importlib.import_module(f"{dotted}.{folder.name}_module")
-        declared |= {window.name for name, value in vars(module_file).items() if name.endswith("Module") and getattr(value, "__module__", "") == module_file.__name__ for window in value.windows}
+        declared |= {window.name for name, value in vars(module_file).items() if name.endswith("Module") and getattr(value, "__module__", "") == module_file.__name__ for window in value.windows if window.place is not WindowPlace.SECTION}
     text = (ROOT / "src/suites/coding/coding_suite.py").read_text()
     missing = {name for name in declared if f'"{name}"' not in text} - INTERNAL_WINDOWS
     expect_absent_value(missing)

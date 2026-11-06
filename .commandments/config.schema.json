@@ -5739,7 +5739,7 @@
             "type": "object"
         },
         "exclude": {
-            "description": "Paths judge does not read at all, so nothing in them is reported on or rewritten. One rule may be let in anyway with a `judges` call under it in `configure`.",
+            "description": "Paths judge does not read at all, so nothing in them is reported on or rewritten. A path is read against the project; a pattern holding `*` or `?` matches as fnmatch does, and one opening with `**/` names that folder wherever it lies, at the top of the project included, so `**/dist` covers every module's own. One rule may be let in anyway with a `judges` call under it in `configure`.",
             "items": {
                 "type": "string"
             },

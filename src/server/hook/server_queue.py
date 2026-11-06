@@ -4,7 +4,9 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from time import monotonic
 
-from core.base.request_queue import RequestQueue, RequestQueueEntry, RequestQueueSnapshot
+from core.base.request_queue import RequestQueue
+from core.base.request_queue_entry import RequestQueueEntry
+from core.base.request_queue_status import RequestQueueStatus
 from server.hook.hook_database_busy_error import HookDatabaseBusyError
 from server.hook.queue_priority import QueuePriority
 from server.hook.queue_request import QueueRequest
@@ -35,7 +37,7 @@ class ServerQueue(RequestQueue):
     def hook_turn(self, priority: QueuePriority, wait_seconds: float, owner: str = "", request: QueueRequest | None = None) -> Generator[None]:
         request = request or QueueRequest.started("Main agent" if priority is QueuePriority.MAIN_AGENT_HOOK else "Worker", "hook")
         place = (priority, next(self.arrivals), owner)
-        self.take_hook_turn(place, wait_seconds, request)
+        self.start_hook(place, wait_seconds, request)
         try:
             yield
         finally:
@@ -44,7 +46,7 @@ class ServerQueue(RequestQueue):
                 del self.running_requests[place[1]]
                 self.changed.notify_all()
 
-    def take_hook_turn(self, place: tuple[QueuePriority, int, str], wait_seconds: float, request: QueueRequest) -> None:
+    def start_hook(self, place: tuple[QueuePriority, int, str], wait_seconds: float, request: QueueRequest) -> None:
         deadline = monotonic() + wait_seconds
         with self.changed:
             self.waiting_hooks.append(place)
@@ -101,10 +103,10 @@ class ServerQueue(RequestQueue):
                     return
                 self.changed.wait(remaining)
 
-    def snapshot(self) -> RequestQueueSnapshot:
+    def read(self) -> RequestQueueStatus:
         with self.changed:
             running = tuple(self.running_requests.values())
             ordered = sorted(self.waiting_hooks, key=lambda place: (place[2] in self.running_owners, place[0], place[1]))
             waiting = tuple(self.waiting_requests[number].entry() for _, number, _ in ordered)
             viewers = tuple(request.entry() for request in self.waiting_viewers.values())
-            return RequestQueueSnapshot(running, (*waiting, *viewers), self.running_hooks_count, self.viewer_wait_limit_seconds, self.main_hook_seconds, self.agent_hook_seconds)
+            return RequestQueueStatus(running, (*waiting, *viewers), self.running_hooks_count, self.viewer_wait_limit_seconds, self.main_hook_seconds, self.agent_hook_seconds)

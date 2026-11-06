@@ -20,8 +20,7 @@ NAME_COLUMNS = ("given_name", "role", "CAST(agent_id AS TEXT)")
 
 
 class MemoryAgentsSubcommand(ReadSubcommand[Page[MemoryHolderRow]]):
-    """`journal memory agents`: the agents that hold a memory, newest first, with how many each keeps and has removed; --working or
-    --ended, --agents, --role, --access and --name narrow them, and --environment picks one environment. Only a person reads it."""
+    """Lists agents that hold memories, with filters and counts."""
 
     cli_name = "memory"
     name = "agents"
@@ -55,4 +54,4 @@ class MemoryAgentsSubcommand(ReadSubcommand[Page[MemoryHolderRow]]):
         if arguments.name.split():
             query = query.matching(ContainsEvery(NAME_COLUMNS, arguments.name.split()))
         page = query.descending("agent_id").page(arguments.page, arguments.limit)
-        return Page(tuple(MemoryHolderRow.named(holder, self.types) for holder in page.rows), page.number, page.size, page.total)
+        return Page(tuple(MemoryHolderRow.built(holder, self.types) for holder in page.rows), page.number, page.size, page.total)

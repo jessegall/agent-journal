@@ -1,0 +1,23 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "vue",
+    "find": {
+        "select": "kind:Text",
+        "where": [
+            {
+                "textMatches": "(?i)\\b(?:version\\s*[-.]?\\s*(?:\\d+|one|two|three|four|five|six|seven|eight|nine|ten)|v\\s*\\d+)\\b"
+            }
+        ],
+        "reject": [
+            {
+                "file": "**/upgrade/**"
+            }
+        ]
+    },
+    "sin": {
+        "description": "Text shown in the viewer names a numbered version.",
+        "name": "viewer-version-text",
+        "rule": "Describe the current behaviour without referring to a numbered version, except in an upgrade path.",
+        "skill": "plain-viewer-text"
+    }
+}
