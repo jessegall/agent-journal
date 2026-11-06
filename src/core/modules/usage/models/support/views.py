@@ -26,3 +26,8 @@ AGENT_LISTING_SELECT = (
     "SELECT agent_cards.*, agents.parent_id, agents.created_at, agents.updated_at, agents.process_started_at"
     " FROM agent_cards JOIN agents ON agents.id = agent_cards.id"
 )
+
+AGENT_FILTER_OPTIONS_SELECT = (
+    "SELECT environment_id, json_group_array(DISTINCT role) AS roles,"
+    " json_group_array(DISTINCT profile) AS profiles FROM agents GROUP BY environment_id"
+)
