@@ -46,27 +46,31 @@ def launched(new_story, tmp_path):
         yield LaunchedEnvironment(server, tmp_path)
 
 
-def test_a_second_launch_in_an_environment_stops_the_first_and_starts_its_own_program(launched):
+@pytest.fixture
+def first_launch(launched):
     with launched.launch() as first:
         first.expect_program_after_the_menu()
         first_rows = launched.open_main_ids()
         launched.server.story.expect_rows(len(first_rows) == 1)
-        with launched.launch() as second:
-            second.expect_program_after_stopping_the_running_main()
-            first.expect_ended()
-            second.expect_running()
-            launched.expect_main_row_replaced(first_rows)
+        yield first, first_rows
 
 
-def test_a_launch_goes_on_over_a_killed_launcher_with_the_old_row_ended(launched):
-    with launched.launch() as first:
-        first.expect_program_after_the_menu()
-        first_rows = launched.open_main_ids()
-        first.kill_launcher()
-        with launched.launch() as second:
-            second.expect_program_after_stopping_the_running_main()
-            second.expect_running()
-            launched.expect_main_row_replaced(first_rows)
+def test_a_second_launch_in_an_environment_stops_the_first_and_starts_its_own_program(launched, first_launch):
+    first, first_rows = first_launch
+    with launched.launch() as second:
+        second.expect_program_after_stopping_the_running_main()
+        first.expect_ended()
+        second.expect_running()
+        launched.expect_main_row_replaced(first_rows)
+
+
+def test_a_launch_goes_on_over_a_killed_launcher_with_the_old_row_ended(launched, first_launch):
+    first, first_rows = first_launch
+    first.kill_launcher()
+    with launched.launch() as second:
+        second.expect_program_after_stopping_the_running_main()
+        second.expect_running()
+        launched.expect_main_row_replaced(first_rows)
 
 
 def test_the_viewer_stop_ends_a_launched_main_and_its_launch(launched):
