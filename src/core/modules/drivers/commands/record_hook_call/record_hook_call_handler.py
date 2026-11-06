@@ -29,13 +29,11 @@ from core.modules.drivers.commands.support.rule_history_writer import RuleHistor
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
-from core.modules.drivers.models.hook_call import HookCall
+from core.modules.drivers.models.hook_call import DISPLAYED_TEXT, SUMMARY_CHARACTERS, HookCall
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.module.driver_entries import DRIVERS_MODULE
 
-
-SUMMARY_CHARACTERS = 200
 
 class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     """Keeps the answers of a hook's rules in one transaction: their history and the hook call,
@@ -72,7 +70,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                                              lines_removed=tool.lines_removed if tool is not None else 0, suite=suite.name if suite is not None else "",
                                              driver=hook.driver, answer=HookAnswer.REFUSED if answers.refusal else HookAnswer.ALLOWED, refusal=answers.refusal,
                                              lines="\n".join([*answers.lines, *handed_lines.texts]), updated_input=json.dumps(dict(answers.updated_input)),
-                                             metadata=Metadata({DRIVERS_MODULE: {**answers.metadata(), "foreign": [asdict(run) for run in command.event.foreign], "folder": str(command.event.raw.get("cwd", "")), "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start, "interrupted": command.event.is_interrupt, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}})), context)
+                                             metadata=Metadata({DRIVERS_MODULE: {**answers.metadata(), "foreign": [asdict(run) for run in command.event.foreign], "folder": str(command.event.raw.get("cwd", "")), "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start, "interrupted": command.event.is_interrupt, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)], **({DISPLAYED_TEXT: command.event.displayed_text} if command.event.displayed_text else {})}})), context)
         self.nudges.write(agent.id, answers, context)
         self.required_commands.open(agent.id, answers.delivered_nudges, context)
         self.timing.stamp("call_saved")
@@ -113,4 +111,4 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             return ProjectPaths.relative_line(tool.shell.display_text, str(command.event.raw.get("cwd", "")))[:SUMMARY_CHARACTERS] if command.event.raw.get("cwd") else tool.shell.display_text[:SUMMARY_CHARACTERS]
         if tool is not None and tool.files:
             return tool.files[0][:SUMMARY_CHARACTERS]
-        return (command.event.prompt or "").split("\n", 1)[0][:SUMMARY_CHARACTERS]
+        return HookCall.summary_of(command.event.prompt or command.event.displayed_text)
