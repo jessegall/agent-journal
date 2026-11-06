@@ -23,7 +23,7 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
         <template v-if="agent">
             <strong data-agent-word>{{ word }}</strong>
             <template v-if="task">
-                <span class="agent-task" data-agent-task :title="task.title">Task {{ task.id }}: {{ task.title }}</span>
+                <button type="button" class="agent-task" data-agent-task :title="task.title" @click="peekRef(`tasks:${task.id}`)">Task {{ task.id }}: {{ task.title }}</button>
                 <template v-if="task.planId">
                     <span class="agent-plan" data-agent-plan>Plan {{ task.planId }}</span>
                 </template>
@@ -131,10 +131,18 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
 .agent-task {
     flex: 0 1 auto;
     min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
     overflow: hidden;
+    text-align: left;
     text-overflow: ellipsis;
     white-space: nowrap;
+    cursor: pointer;
 }
+.agent-task:hover { text-decoration: underline; }
 .agent-space {
     flex: 1;
 }
