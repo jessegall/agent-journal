@@ -9,11 +9,7 @@ try {
     page.on('pageerror', error => errors.push(error.message));
     page.on('console', message => {if (message.type() === 'error') errors.push(message.text());});
     page.on('response', response => {if (response.status() >= 400) errors.push(`${response.status()} ${response.url()}`);});
-    await page.goto(address);
-    await page.waitForFunction(() => document.querySelector('[data-add-window]'), null, {timeout: 10000}).catch(async error => {throw new Error(`${error.message}: ${errors.join('; ')} ${await page.locator('body').textContent()}`);});
-    await page.locator('[data-add-window]').first().click();
-    await page.locator('[data-reopen="documents.documents"]').click();
-    await page.locator('.library-row').filter({hasText: 'Notes'}).click();
+    await page.goto(`${address}#open=docs:1`);
     await page.locator('[data-document-tab="revisions"]').click();
     await page.locator('[data-text-revision="2"]').waitFor();
     assert.match(await page.locator('[data-text-revision="2"]').textContent(), /Revision 2:.*Lady Lovelace.*2026/);

@@ -19,8 +19,7 @@ def test_a_documents_revisions_move_with_their_numbers_through_their_revision_of
     story = upgraded_story(new_story)
     story.expect_text("doc revisions 1", "1", "written")
     rows = json.loads(story.run('doc revisions 1 --json').output_text)['rows']
-    assert rows[0]['author_id'] == rows[0]['creator_id']
-    assert rows[0]['body']
+    story.expect_rows(rows[0]['author_id'] == rows[0]['creator_id'], bool(rows[0]['body']))
 
 
 def test_a_report_moves_with_the_rows_it_is_about_and_a_document_keeps_its_mentions_and_comments(new_story):

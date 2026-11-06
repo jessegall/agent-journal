@@ -51,17 +51,16 @@ def test_two_edits_save_one_revision_by_the_agent(new_story):
     story.expect_success('doc edit 1 --body "Second"', actor=story.agent)
     story.expect_success('doc close 1', actor=story.agent)
     answer = story.run('doc revisions 1 --json')
-    assert answer.code == 0, answer.output_text
+    story.expect_rows(answer.code == 0)
     rows = json.loads(answer.output_text)['rows']
-    assert len(rows) == 2 and rows[-1]['body'] == 'Second'
-    assert rows[-1]['author_id'] == story.agent.id
-    assert rows[-1]['author_name'] == 'Lady Lovelace'
+    story.expect_rows(len(rows) == 2, rows[-1]['body'] == 'Second', rows[-1]['author_id'] == story.agent.id,
+                      rows[-1]['author_name'] == 'Lady Lovelace')
 
 
 def test_another_agent_cannot_open_the_document(new_story):
     story = new_story(fixture=DocumentOpen)
-    other = story.new_row_id('agent start s-2 claude main --environment main')
-    story.expect_refusal('doc open 1', f'agent {story.agent.id}', actor=Actor(other, ActorType.AGENT))
+    second_agent_id = story.new_row_id('agent start s-2 claude main --environment main')
+    story.expect_refusal('doc open 1', f'agent {story.agent.id}', actor=Actor(second_agent_id, ActorType.AGENT))
 
 
 def test_a_second_document_names_the_one_to_close(new_story):
@@ -79,13 +78,13 @@ def test_an_agent_edit_without_open_keeps_the_text(new_story):
 def test_closing_without_changes_adds_no_revision(new_story):
     story = new_story(fixture=DocumentOpen)
     story.expect_success('doc close 1', actor=story.agent)
-    assert len(json.loads(story.run('doc revisions 1 --json').output_text)['rows']) == 1
+    story.expect_rows(len(json.loads(story.run('doc revisions 1 --json').output_text)['rows']) == 1)
 
 
 def test_make_is_one_closed_revision(new_story):
     story = new_story(fixture=DocumentReady)
     rows = json.loads(story.run('doc revisions 1 --json').output_text)['rows']
-    assert len(rows) == 1 and rows[0]['author_id'] == story.agent.id
+    story.expect_rows(len(rows) == 1, rows[0]['author_id'] == story.agent.id)
     story.expect_success('task list', actor=story.agent)
 
 
@@ -105,9 +104,8 @@ def test_a_new_session_hook_keeps_the_document_open(new_story):
 
 def test_the_refusal_is_one_short_line_with_a_way_out(new_story):
     story = new_story(fixture=DocumentOpen)
-    result = story.hook('s-1', HookSamples.shell('journal task list', ShellPart('journal', CommandCategory.JOURNAL, ['task', 'list'])))
-    assert 'journal doc close 1' in result.refusal
-    assert len(result.refusal) < 120
+    reply = story.hook('s-1', HookSamples.shell('journal task list', ShellPart('journal', CommandCategory.JOURNAL, ['task', 'list'])))
+    story.expect_rows('journal doc close 1' in reply.refusal, len(reply.refusal) < 120)
 
 
 def test_reading_the_open_document_goes_through(new_story):
@@ -137,9 +135,8 @@ def test_a_viewer_edit_and_close_preserve_the_agent_author(new_story):
         server.viewer_line_value(cookie, {'window': 'viewer.shell', 'line': ['doc', 'edit', '1', '--body', 'Person text'], 'environment': 'main'})
         server.viewer_line_value(cookie, {'window': 'viewer.shell', 'line': ['doc', 'close', '1'], 'environment': 'main'})
     rows = json.loads(story.run('doc revisions 1 --json').output_text)['rows']
-    assert rows[-2]['body'] == 'Agent text' and rows[-2]['author_id'] == story.agent.id
-    assert rows[-1]['body'] == 'Person text' and rows[-1]['author_id'] != story.agent.id
-    assert rows[-1]['author_name'] == 'Ada'
+    story.expect_rows(rows[-2]['body'] == 'Agent text', rows[-2]['author_id'] == story.agent.id,
+                      rows[-1]['body'] == 'Person text', rows[-1]['author_id'] != story.agent.id, rows[-1]['author_name'] == 'Ada')
 
 
 def test_an_ended_agent_revision_is_kept_on_tick(new_story):
@@ -156,7 +153,7 @@ def test_time_passing_does_not_close_an_open_revision(new_story):
     story.advance(timedelta(days=1))
     story.expect_success('doc edit 1 --body "Still open"', actor=story.agent)
     story.expect_success('doc close 1', actor=story.agent)
-    assert len(json.loads(story.run('doc revisions 1 --json').output_text)['rows']) == 2
+    story.expect_rows(len(json.loads(story.run('doc revisions 1 --json').output_text)['rows']) == 2)
 
 
 def test_a_readonly_helper_can_make_open_edit_and_close_its_document(new_story):
@@ -193,11 +190,11 @@ def test_a_server_restart_keeps_the_open_document(new_story):
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key('Ada'))
         shown = server.viewer_line_value(cookie, {'window': 'viewer.shell', 'line': ['doc', 'inspect', '1'], 'environment': 'main'})
-        assert shown['open_author_id'] == story.agent.id
+        story.expect_rows(shown['open_author_id'] == story.agent.id)
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key('Ada'))
         shown = server.viewer_line_value(cookie, {'window': 'viewer.shell', 'line': ['doc', 'inspect', '1'], 'environment': 'main'})
-        assert shown['open_author_id'] == story.agent.id and shown['body'] == 'Before restart'
+        story.expect_rows(shown['open_author_id'] == story.agent.id, shown['body'] == 'Before restart')
 
 
 def test_the_inspector_shows_revision_authors_in_light_and_dark(new_story):

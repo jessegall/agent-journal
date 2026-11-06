@@ -20,9 +20,9 @@ class OpenDocHandler(Handler[OpenDoc, OpenDocument]):
 
     def handle(self, command: OpenDoc, context: Context) -> OpenDocument:
         self.queries.query(Doc).find(command.doc_id)
-        own = self.queries.query(OpenDocument).filter(author_id=context.actor.id).first()
-        if own is not None:
-            raise Refusal(f"doc {own.doc_id} is open; journal doc close {own.doc_id}")
+        author_document = self.queries.query(OpenDocument).filter(author_id=context.actor.id).first()
+        if author_document is not None:
+            raise Refusal(f"doc {author_document.doc_id} is open; journal doc close {author_document.doc_id}")
         opened = self.queries.query(OpenDocument).filter(doc_id=command.doc_id).first()
         if opened is not None:
             agent = self.queries.query(Agent).filter(id=opened.author_id).first()
