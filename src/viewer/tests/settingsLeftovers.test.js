@@ -3,8 +3,9 @@ import WorkerModels from "../../suites/coding/modules/workers/web/src/WorkerMode
 import ProjectWorktrees from "../../suites/coding/modules/workers/web/src/ProjectWorktrees.vue";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 
-const running = (answers) => {
-    const window = {...context(answers), lines: []};
+const MODEL_KEYS = {models: {line: "worker models", events: ["setting.*"]}};
+const running = (answers, keys) => {
+    const window = {...context(answers, null, keys), lines: []};
     window.run = async (line) => (window.lines.push(line), {ok: true});
     return window;
 };
@@ -17,7 +18,7 @@ const MODELS = [
 ];
 
 test("unticking a model saves the models left, and a program's last one cannot be unticked", async () => {
-    const window = running({"worker models": page(MODELS)});
+    const window = running({"worker models": page(MODELS)}, MODEL_KEYS);
     const element = await mounted(WorkerModels, window);
     expect(element.querySelector('[data-worker-model="codex luna"] input').disabled).toBe(true);
     const opus = element.querySelector('[data-worker-model="claude opus"] input');
@@ -27,7 +28,7 @@ test("unticking a model saves the models left, and a program's last one cannot b
 });
 
 test("the note says a worker runs on the model its profile names, not on a general model", async () => {
-    const element = await mounted(WorkerModels, running({"worker models": page(MODELS)}));
+    const element = await mounted(WorkerModels, running({"worker models": page(MODELS)}, MODEL_KEYS));
     const note = element.querySelector(".worker-models-note").textContent;
     expect(note).toContain("the model its profile names");
     expect(note).not.toContain("general model");
