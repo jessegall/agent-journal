@@ -1,8 +1,10 @@
 import pytest
 
+from core.base.driver.command_category import CommandCategory
 from core.testing.expect_reply import expect_reply_allowed, expect_reply_refusal
+from core.testing.shell_part import ShellPart
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker
-from tests.stories.suites.coding.modules.workers.support.phase_steps import OTHER_TEST_LINE, TEST_LINE, RunRequest, asking_main, worker_on_plan
+from tests.stories.suites.coding.modules.workers.support.phase_steps import OTHER_TEST_LINE, TEST_ALIAS, TEST_LINE, RunRequest, asking_main, worker_on_plan
 
 WHY = "the rounding only shows in a real run"
 OTHER_WHY = "the totals only show in a real run"
@@ -14,6 +16,12 @@ ASKED = RunRequest(1, TEST_LINE, WHY, "asked")
 @pytest.fixture
 def on_plan(new_story, monkeypatch):
     return worker_on_plan(new_story, monkeypatch)
+
+
+@pytest.fixture
+def alias_saved(on_plan):
+    on_plan.save_test_alias()
+    return on_plan
 
 
 @pytest.fixture
@@ -35,7 +43,7 @@ def expect_requests(worker, *requests: RunRequest) -> None:
 
 def test_a_flagged_run_does_not_run_and_sends_one_request(on_plan):
     reply = on_plan.run_test(asking_main(TEST_LINE, WHY))
-    expect_reply_refusal(reply, "request 1")
+    expect_reply_refusal(reply, "main agent")
     expect_requests(on_plan, ASKED)
 
 
@@ -53,8 +61,25 @@ def test_the_same_command_flagged_again_sends_nothing_more_and_names_the_same_re
 
 
 def test_a_different_command_sends_its_own_request(asked):
-    expect_reply_refusal(asked.run_test(asking_main(OTHER_TEST_LINE, OTHER_WHY)), "request 2")
+    expect_reply_refusal(asked.run_test(asking_main(OTHER_TEST_LINE, OTHER_WHY)), "main agent")
     expect_requests(asked, ASKED, RunRequest(2, OTHER_TEST_LINE, OTHER_WHY, "asked"))
+
+
+def test_the_flag_with_an_equals_sign_names_the_same_request(asked):
+    expect_reply_refusal(asked.run_test(f'{TEST_LINE} {FLAG}="{WHY}"'), "request 1")
+    expect_requests(asked, ASKED)
+
+
+def test_an_allowed_command_written_with_other_spacing_and_quoting_is_the_same_command(allowed):
+    expect_reply_allowed(allowed.run_test('pytest   "tests/cart.py"'))
+    expect_requests(allowed, RunRequest(1, TEST_LINE, WHY, "used"))
+
+
+def test_a_saved_alias_allowed_through_a_journal_line_runs_with_a_reading_flag(alias_saved):
+    alias_saved.run_line(f'journal {TEST_ALIAS} {FLAG} "{WHY}"', ShellPart("journal", CommandCategory.JOURNAL, [TEST_ALIAS, FLAG, WHY]))
+    alias_saved.story.expect_success(ALLOW, actor=alias_saved.story.agent)
+    expect_reply_allowed(alias_saved.run_line(f"journal {TEST_ALIAS} --tail 20", ShellPart("journal", CommandCategory.JOURNAL, [TEST_ALIAS, "--tail", "20"])))
+    expect_requests(alias_saved, RunRequest(1, f"journal {TEST_ALIAS}", WHY, "used"))
 
 
 def test_a_line_with_two_flagged_parts_sends_a_request_for_each(on_plan):
@@ -62,10 +87,9 @@ def test_a_line_with_two_flagged_parts_sends_a_request_for_each(on_plan):
     expect_requests(on_plan, ASKED, RunRequest(2, OTHER_TEST_LINE, OTHER_WHY, "asked"))
 
 
-def test_a_flagged_saved_test_alias_sends_one_request(on_plan):
-    on_plan.save_test_alias()
-    expect_reply_refusal(on_plan.run_saved_test(asking_main(TEST_LINE, WHY)), "request 1")
-    expect_requests(on_plan, ASKED)
+def test_a_flagged_saved_test_alias_sends_one_request(alias_saved):
+    expect_reply_refusal(alias_saved.run_saved_test(asking_main(TEST_LINE, WHY)), "main agent")
+    expect_requests(alias_saved, ASKED)
 
 
 def test_an_allowed_request_tells_the_worker_and_that_command_runs_once(asked):
