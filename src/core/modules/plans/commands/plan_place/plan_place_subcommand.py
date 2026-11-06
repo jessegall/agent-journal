@@ -24,10 +24,9 @@ class PlanPlaceSubcommand(ReadSubcommand[TaskPlace]):
         parser.add_argument("task_id", type=int)
 
     def read(self, arguments: Namespace, caller: Caller) -> TaskPlace:
-        places = self.queries.query(PlanTask).filter(task_id=arguments.task_id).limited(1)
-        if not places:
+        place = self.queries.query(PlanTask).filter(task_id=arguments.task_id).first()
+        if place is None:
             return TaskPlace()
-        place = places[0]
         phases = list(self.queries.query(Phase).filter(plan_id=place.plan_id).ordered("position").all_rows())
         number = next(index for index, phase in enumerate(phases, 1) if phase.id == place.phase_id)
         return TaskPlace(place.plan_id, self.queries.query(Plan).find(place.plan_id).title, number, len(phases), phases[number - 1].title)

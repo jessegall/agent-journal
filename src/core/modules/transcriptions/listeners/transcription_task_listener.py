@@ -47,8 +47,8 @@ class TranscriptionTaskListener(SaveListener[Changed[Transcription]]):
         task_ids = [link.target_id for link in linked]
         if not task_ids:
             return None
-        unfinished = self.queries.query(Task).matching(Among("id", task_ids)).matching(Among("state", UNFINISHED_STATES)).limited(1)
-        return unfinished[0].id if unfinished else None
+        unfinished = self.queries.query(Task).matching(Among("id", task_ids)).matching(Among("state", UNFINISHED_STATES)).first()
+        return unfinished.id if unfinished is not None else None
 
     def new_task_id(self, row: Transcription, context: Context) -> int:
         title = f"Summarize transcript {row.id}: {row.title}"[:TITLE_CHARACTERS]

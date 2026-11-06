@@ -34,12 +34,12 @@ class RecordReviewHandler(Handler[RecordReview, Review]):
     def answered(self, command: RecordReview, context: Context) -> Review:
         if command.review_id is not None:
             return self.reviews.find(command.review_id)
-        reviewed = self.reviews.reviewer(context.actor.id).newest().limited(1)
-        if reviewed:
-            return reviewed[0]
-        reviewing = self.reviews.filter(state=ReviewState.REVIEWING).oldest().limited(1)
-        if reviewing:
-            return reviewing[0]
+        reviewed = self.reviews.reviewer(context.actor.id).newest().first()
+        if reviewed is not None:
+            return reviewed
+        reviewing = self.reviews.filter(state=ReviewState.REVIEWING).oldest().first()
+        if reviewing is not None:
+            return reviewing
         raise Refusal("no review is waiting for a report", "a reviewer reports on the review assigned to it")
 
     def reported(self, review: Review, report: ReviewReport, context: Context) -> Review:

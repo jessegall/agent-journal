@@ -4,8 +4,6 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.queries import Queries
-from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 
@@ -20,12 +18,9 @@ class WorkersOutRule(DriverRule):
     drivers = ["coding.builder", "coding.orchestrator"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery) -> None:
-        self.queries, self.worktrees = queries, worktrees
+    def __init__(self, worktrees: WorktreeQuery) -> None:
+        self.worktrees = worktrees
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        nudges: list[Nudge] = []
-        for worktree in self.worktrees.open_worktrees():
-            task = self.queries.query(Task).find(worktree.task_id)
-            nudges.append(WORKER_TASK.nudge(worker=worktree.session_agent_id, task=task.id, state=worktree.state.value))
+        nudges: list[Nudge] = [WORKER_TASK.nudge(worker=worktree.session_agent_id, task=worktree.task_id, state=worktree.state.value) for worktree in self.worktrees.open_worktrees()]
         return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

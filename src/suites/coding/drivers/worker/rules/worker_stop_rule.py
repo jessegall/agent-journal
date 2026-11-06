@@ -30,15 +30,15 @@ class WorkerStopRule(DriverRule):
         self.requests, self.clock, self.queries = requests, clock, queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        rows = self.tasks.holder(hook.agent_id).started().limited(1)
-        task = rows[0] if rows else self.tasks.next_delegated(hook.agent_id)
+        started = self.tasks.holder(hook.agent_id).started().first()
+        task = started if started is not None else self.tasks.next_delegated(hook.agent_id)
         worktree = self.worktrees.worker_worktree(hook.agent_id)
         if self.requests.has_active_requests(hook.agent_id, self.clock.timestamp()):
             return RuleAnswer.allowed()
         if task is None:
             blocked = self.tasks.filter(delegated_to=hook.agent_id, state=TaskState.BLOCKED).all_rows()
             return RuleAnswer.with_nudges(*(WORKER_TASK_BLOCKED.nudge(worker=hook.agent_id, task=row.id) for row in blocked))
-        if not rows and worktree is not None and self.proofs.tests_waiting(worktree.id):
+        if started is None and worktree is not None and self.proofs.tests_waiting(worktree.id):
             return RuleAnswer.allowed()
         if self.processes.agent(hook.agent_id).running().exists() or self.has_running_helper(hook.agent_id):
             return RuleAnswer.allowed()

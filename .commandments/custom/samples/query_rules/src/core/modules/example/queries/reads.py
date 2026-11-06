@@ -15,6 +15,10 @@ def read_rows(query, ids):
     first = query.first()
     # @sin architecture_queries_one_row_page
     page = query.page(1, 1).rows
+    # @sin architecture_queries_one_row_page
+    one = query.newest().limited(1)
+    # @righteous architecture_queries_one_row_page
+    some = query.newest().limited(5)
     # @righteous architecture_queries_one_row_page
     page_rows = query.page(1, 25).rows
     # @righteous architecture_queries_one_row_page

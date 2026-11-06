@@ -18,8 +18,10 @@ class AgentTicks:
 
     def __call__(self, container: Container) -> None:
         queries, route, clock_time = container.get(Queries), container.get(HookRoute), container.get(Clock).timestamp()
-        for agent in tuple(queries.query(Agent).matching(IsNull("ended_at")).all_rows()):
-            route.answer(self.tick(agent, queries.query(Environment).find(agent.environment_id).name, clock_time))
+        agents = tuple(queries.query(Agent).matching(IsNull("ended_at")).all_rows())
+        environments = {environment.id: environment for environment in queries.query(Environment).find_many([agent.environment_id for agent in agents])}
+        for agent in agents:
+            route.answer(self.tick(agent, environments[agent.environment_id].name, clock_time))
 
     @staticmethod
     def tick(agent: Agent, environment: str, clock_time: Timestamp) -> HookEvent:
