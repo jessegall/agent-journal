@@ -1,5 +1,5 @@
-import {createApp, h} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
+import {appended as drawn} from "./support/windowContext.js";
 import Skeleton from "../src/kit/Skeleton.vue";
 import SkeletonLine from "../src/kit/SkeletonLine.vue";
 import SkeletonParts from "../src/kit/SkeletonParts.vue";
@@ -9,13 +9,6 @@ afterEach(() => {
     vi.restoreAllMocks();
     document.body.innerHTML = "";
 });
-
-function drawn(component, props) {
-    const element = document.createElement("div");
-    document.body.append(element);
-    createApp({render: () => h(component, props)}).mount(element);
-    return element;
-}
 
 const BARS = [{width: "50%", height: 10}];
 

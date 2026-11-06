@@ -9,7 +9,8 @@ from core.base.query.query import Query
 from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.agents.support.agent_type_limits import NO_LIMIT, AgentTypeLimits, TypeLimits
+from core.modules.usage.support.agent_type_limits import UNLIMITED_AGENT_COUNT, AgentTypeLimits
+from core.modules.agents.support.type_limits import TypeLimits
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.helpers.support.allowed_models import AllowedModels
@@ -52,7 +53,7 @@ class HelperLimits:
 
     def checked_running(self, profile: str) -> None:
         running_ids = {helper.id for helper in self.helpers(profile).matching(IsNull("ended_at")).all_rows()} | (self.kept.with_open_jobs(profile) - {None})
-        limit = self.limits.of(AgentRole.HELPER, profile).run
+        limit = self.limits.lookup(AgentRole.HELPER, profile).run
         if len(running_ids) >= limit:
             names = ", ".join(f"agent:{helper_id}" for helper_id in sorted(running_ids))[:RUNNING_NAMES_CHARACTERS]
             raise Refusal(f"{limit} of {profile} run: {names}", self.next_step_text())
@@ -62,9 +63,9 @@ class HelperLimits:
         self.checked_kept(profile)
 
     def checked_kept(self, profile: str) -> None:
-        limit = self.limits.of(AgentRole.HELPER, profile).kept
-        if limit != NO_LIMIT and self.helpers(profile).matching(IsNull("retired_at")).count() >= limit:
-            raise Refusal(f"{limit} of {profile} exist, which is the limit", TypeLimits.next_step_at_limit(self.kept.kept(profile)))
+        limit = self.limits.lookup(AgentRole.HELPER, profile).kept
+        if limit != UNLIMITED_AGENT_COUNT and self.helpers(profile).matching(IsNull("retired_at")).count() >= limit:
+            raise Refusal(f"{limit} of {profile} exist, which is the limit", TypeLimits.retirement_instruction(self.kept.kept(profile)))
 
     def helpers(self, profile: str) -> Query[Agent]:
         return self.queries.query(Agent).filter(role=AgentRole.HELPER, profile=profile)

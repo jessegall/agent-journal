@@ -5,7 +5,7 @@ KEPT = 8
 REASON = UPGRADE_RETIREMENT_REASON
 
 
-class SettleOldHelpersMigration(Migration):
+class RetireOldHelpersMigration(Migration):
     """Retires the ended helpers beyond the newest of each profile, once, since every agent used to end for good."""
 
     number = 2

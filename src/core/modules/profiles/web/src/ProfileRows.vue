@@ -102,7 +102,7 @@ async function save(profile, fields) {
         </template>
         <template v-if="panel">
             <ProfilePanel :types="types" :profile="panel" :used="usedWords(panel)" @close="close" @save="save" @reset="reset">
-                <HelperStartForm v-if="panel.name && panel.agent_type === 'helper'" :profile="panel.name" />
+                <template v-if="panel.name && panel.agent_type === 'helper'"><HelperStartForm :profile="panel.name" /></template>
             </ProfilePanel>
         </template>
     </section>

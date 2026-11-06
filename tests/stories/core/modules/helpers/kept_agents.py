@@ -9,7 +9,8 @@ from core.testing.story_helper_programs import StoryHelperPrograms
 import pytest
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.modules.agents.support.agent_type_limits import AgentTypeLimits, TypeLimits
+from core.modules.usage.support.agent_type_limits import AgentTypeLimits
+from core.modules.agents.support.type_limits import TypeLimits
 from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_fixture import StoryFixture
@@ -62,12 +63,12 @@ def test_helper_form_offers_send_for_an_idle_helper_through_the_viewer(helper_fo
     server, helper = helper_form_server
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
     availability = profile_line(server, cookie, ["helper", "availability", "--profile", "journal-researcher"])
-    assert not availability["can_start"] and availability["can_start_fresh"]
-    assert [row["id"] for row in availability["idle_helpers"]] == [helper.id]
+    server.story.expect_rows(not availability["can_start"] and availability["can_start_fresh"])
+    server.story.expect_rows([row["id"] for row in availability["idle_helpers"]] == [helper.id])
     profile_line(server, cookie, ["helper", "send", str(helper.id), "Read src/tax.py"])
     jobs = tuple(server.story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).all_rows())
-    assert jobs[-1].brief == "Read src/tax.py"
-    assert len({job.helper_id for job in jobs}) == 1
+    server.story.expect_rows(jobs[-1].brief == "Read src/tax.py")
+    server.story.expect_rows(len({job.helper_id for job in jobs}) == 1)
 
 
 def test_helper_form_offers_send_and_records_the_reason_for_another_helper(helper_form_server):
@@ -75,8 +76,8 @@ def test_helper_form_offers_send_and_records_the_reason_for_another_helper(helpe
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
     profile_line(server, cookie, ["helper", "start", "journal-researcher", "--brief", "Read src/tax.py", "--fresh", "An independent comparison"])
     job = server.story.container.get(Queries).query(HelperJob).newest().first()
-    assert job.helper_id != helper.id
-    assert job.new_agent_reason == "An independent comparison"
+    server.story.expect_rows(job.helper_id != helper.id)
+    server.story.expect_rows(job.new_agent_reason == "An independent comparison")
 
 
 def test_helper_form_offers_send_at_the_kept_limit_and_preserves_the_command_refusal(helper_form_server):
@@ -84,12 +85,12 @@ def test_helper_form_offers_send_at_the_kept_limit_and_preserves_the_command_ref
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
     server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", "journal.core.helpers.helper-profile-limits", '["journal-researcher:4:1"]', "--project"]})
     availability = profile_line(server, cookie, ["helper", "availability", "--profile", "journal-researcher"])
-    assert [row["id"] for row in availability["idle_helpers"]] == [helper.id]
-    assert not availability["can_start_fresh"]
+    server.story.expect_rows([row["id"] for row in availability["idle_helpers"]] == [helper.id])
+    server.story.expect_rows(not availability["can_start_fresh"])
     status, _, text = viewer_answer(server.viewer_port(), "/api/line", cookie, "", {"window": "profiles.profiles", "environment": "main", "line": ["helper", "start", "journal-researcher", "--brief", "Read the tax", "--fresh", "Another reader"]})
     answer = json.loads(text)
-    assert status == 200 and answer["code"] != 0
-    assert json.loads(answer["error"])["refused"] in availability["fresh_reason"]
+    server.story.expect_rows(status == 200 and answer["code"] != 0)
+    server.story.expect_rows(json.loads(answer["error"])["refused"] in availability["fresh_reason"])
     profile_line(server, cookie, ["helper", "send", str(helper.id), "Read the tax"])
 
 
@@ -179,17 +180,17 @@ def test_old_callback_leaves_the_new_run(new_story):
 def test_a_person_sets_the_limits_of_a_profile_and_a_number_in_a_profile_file_is_not_read(new_story):
     story = new_story(fixture=StartedHelper)
     limits = story.container.get(AgentTypeLimits)
-    story.expect_rows(limits.of("helper", "journal-researcher") == TypeLimits(4, 8), limits.of("main") is None)
+    story.expect_rows(limits.lookup("helper", "journal-researcher") == TypeLimits(4, 8), limits.lookup("main") is None)
     story.expect_success('setting set journal.core.helpers.helper-profile-limits \'["journal-researcher:1:2"]\' --project', actor=story.user)
-    story.expect_rows(story.container.get(AgentTypeLimits).of("helper", "journal-researcher") == TypeLimits(1, 2))
-    story.expect_rows(story.container.get(AgentTypeLimits).of("helper", "journal-planner") == TypeLimits(4, 8))
+    story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", "journal-researcher") == TypeLimits(1, 2))
+    story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", "journal-planner") == TypeLimits(4, 8))
 
 
 def test_at_the_run_limit_a_start_of_that_profile_is_refused_and_another_profile_starts(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_success('setting set journal.core.helpers.helper-profile-limits \'["journal-researcher:1:8"]\' --project', actor=story.user)
     expect_start_refused(story, "1 of journal-researcher run")
-    story.expect_rows(story.container.get(AgentTypeLimits).of("helper", "journal-debugger") == TypeLimits(4, 8))
+    story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", "journal-debugger") == TypeLimits(4, 8))
 
 
 def test_at_the_kept_maximum_a_new_start_is_refused_with_a_retire_line(new_story):
