@@ -1,3 +1,4 @@
+from core.base.database.database import Database
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.query.queries import Queries
@@ -123,3 +124,16 @@ def test_a_job_on_other_files_starts_a_new_helper(new_story):
     story = new_story(fixture=EndedHelper)
     FakeLauncher(story.home.socket("launcher"))
     story.expect_success('helper start journal-researcher --brief "Read src/queue.py" --environment main', actor=story.agent)
+
+
+def test_a_send_says_which_helper_takes_the_job(new_story):
+    story = new_story(fixture=StartedHelper)
+    helper = the_helper(story)
+    story.expect_success(f'helper send {helper.id} "{JOB}"', f"helper {helper.id} takes the job", actor=story.agent)
+
+
+def test_a_helper_that_ran_as_a_program_subagent_is_refused_a_new_job(new_story):
+    story = new_story(fixture=EndedHelper)
+    helper = the_helper(story)
+    story.container.get(Database).connection.execute("UPDATE agents SET profile = '' WHERE id = ?", [helper.id])
+    story.expect_refusal(f'helper send {helper.id} "{JOB}"', "start a new helper", actor=story.agent)

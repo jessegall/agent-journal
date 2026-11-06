@@ -14,7 +14,7 @@ from core.modules.helpers.support.helper_reach import HelperReach
 SHORT_JOB_CHARACTERS = 200
 
 
-class SendHelperHandler(Handler[SendHelper, None]):
+class SendHelperHandler(Handler[SendHelper, int]):
     """A running helper reads the job as a line, added to its open job; an ended one opens a new job and resumes."""
 
     command = SendHelper
@@ -22,17 +22,20 @@ class SendHelperHandler(Handler[SendHelper, None]):
     def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobRows, nudger: Nudger, repository: Repository, folders: AgentFolders) -> None:
         self.reach, self.limits, self.jobs, self.nudger, self.repository, self.folders = reach, limits, jobs, nudger, repository, folders
 
-    def handle(self, command: SendHelper, context: Context) -> None:
+    def handle(self, command: SendHelper, context: Context) -> int:
         helper = self.reach.checked_helper(command.helper_id, context.actor)
         last_job = self.jobs.helper_jobs(helper.id)[-1]
         if helper.ended_at is None:
             self.nudger.send_text(helper.id, command.job, HELPER_JOB_SOURCE, context, wakes_agent=True)
             self.repository.save(last_job.changed(brief=f"{last_job.brief}\n\n{command.job}"), context)
-            return
+            return helper.id
         self.check_resume(helper)
         self.repository.save(last_job.next_job(helper.session, command.job, command.job[:SHORT_JOB_CHARACTERS], context.actor.id), context)
+        return helper.id
 
     def check_resume(self, helper: Agent) -> None:
+        if not helper.profile:
+            raise Refusal(f"helper {helper.id} ran as a program subagent and cannot be resumed", "start a new helper")
         self.limits.checked_slot(helper.environment_id)
         if not self.folders.has_folder(helper):
             raise Refusal(f"helper {helper.id} worked in a folder that is gone", "start a new helper with --fresh")
