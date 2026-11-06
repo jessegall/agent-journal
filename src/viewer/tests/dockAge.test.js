@@ -12,10 +12,11 @@ afterEach(() => {
 
 const DECLARED = {type: "documents.doc", icon: "document", title: "{row_title}", buttons: [], reads: []};
 const PLAIN = {...DECLARED, type: "plans.plan"};
+const LEAVING = {...DECLARED, type: "processes.output", leaves_after_seconds: 5};
 const item = (type) => ({id: 5, type, target_model: "doc", target_id: 3, state: "docked", kept: false, leaves_at: null, text: "The abstract line", created_at: new Date(Date.now() - 601000).toISOString()});
 
 async function drawn(type) {
-    loadDockDeclarations([DECLARED, PLAIN]);
+    loadDockDeclarations([DECLARED, PLAIN, LEAVING]);
     vi.stubGlobal("ResizeObserver", class {
         observe() {}
         unobserve() {}
@@ -40,4 +41,9 @@ test("every card shows its age and leaves the full text to Open", async () => {
     const element = await drawn("plans.plan");
     expect(element.querySelector("[data-dock-age]").textContent).toBe("10m ago");
     expect(element.textContent).not.toContain("The abstract line");
+});
+
+test("a card that leaves by itself shows no age, so its module can show how long it ran", async () => {
+    const element = await drawn("processes.output");
+    expect(element.querySelector("[data-dock-age]").textContent).toBe("");
 });
