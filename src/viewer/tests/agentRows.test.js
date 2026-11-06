@@ -364,8 +364,9 @@ test("a worker's opened card shows its context and cost", async () => {
     document.body.append(element);
     cardOf(element, 4).click();
     await settle();
-    expect(cardOf(element, 4).querySelector("[data-agent-card-usage]").textContent.trim()).toBe("Context: 20% · $1.50");
-    expect(cardOf(element, 4).querySelector("[data-agent-card-usage]").closest(".agent-usage-band")).not.toBeNull();
+    const band = cardOf(element, 4).querySelector("[data-information-bar]");
+    expect(band.querySelector('[data-fact="context"]').textContent).toContain("20%");
+    expect(band.querySelector('[data-fact="cost"]').textContent).toContain("$1.50");
 });
 
 test("the running list has no show more button", async () => {

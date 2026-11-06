@@ -14,6 +14,8 @@ try {
         assert.match(await card.locator("[data-agent-last-heard]").textContent(), /Last heard:/);
         await page.screenshot({path: `${capture}-last-heard-${id}.png`, fullPage: true, animations: "disabled"});
         await card.click();
+        await card.locator("[data-information-bar]").waitFor();
+        await page.screenshot({path: `${capture}-band-${id}.png`, fullPage: true, animations: "disabled"});
         await card.locator('[data-tab="terminal"]').click();
         await card.getByText(command, {exact: true}).waitFor();
         assert.equal(await card.getByText(other, {exact: true}).count(), 0);
