@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -116,6 +117,12 @@ print(answer.stdout, end='')
 		runner := exec.Command(program, "--process", fmt.Sprint(10+index), "--limit", "0", "--read-only-shell", "--", line)
 		runner.Env = append(os.Environ(), "JOURNAL_HOME="+folder, "SHELL="+shell, "TMPPREFIX=/not-writable/zsh")
 		output, err := runner.CombinedOutput()
+		if runtime.GOOS == "darwin" && shell == "/bin/bash" {
+			if err == nil || !strings.Contains(string(output), "cannot create temp file for here document") {
+				t.Fatalf("macOS bash here document: %v: %s", err, output)
+			}
+			continue
+		}
 		if err != nil || !strings.Contains(string(output), "journal works") {
 			t.Fatalf("%s here document: %v: %s", shell, err, output)
 		}
