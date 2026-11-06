@@ -205,7 +205,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return
         session = viewer.login.session(token)
         try:
-            viewer.routes.queue.wait_for_hooks()
+            viewer.routes.queue.let_hooks_finish()
             answered = viewer.routes.line_route.answer(request.window, request.line, viewer.login.person_id(token), request.environment, session.shared)
         except ShareRefusal as refusal:
             self.answer(403, {"error": refusal.reason})
@@ -249,7 +249,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(400, {"error": str(error)})
             return
         session, person_id = viewer.login.session(token), viewer.login.person_id(token)
-        viewer.routes.queue.wait_for_hooks()
+        viewer.routes.queue.let_hooks_finish()
         answers = [asdict(answer) for answer in viewer.routes.line_route.answers(request, person_id, session.shared)]
         self.answer(200, {"answers": answers})
 
