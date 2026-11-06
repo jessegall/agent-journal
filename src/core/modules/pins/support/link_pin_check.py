@@ -1,6 +1,7 @@
 import re
 from dataclasses import replace
 from datetime import timedelta
+from urllib.parse import unquote, urlsplit
 
 from core.base.clock import Clock
 from core.base.database.kept_rows import KeptRows
@@ -19,6 +20,7 @@ LINK = re.compile(r"https?://[^\s<>()\[\]\"'`]+")
 LOCAL_ADDRESS = re.compile(r"^https?://(?:[^/.:]+|127\.0\.0\.1)(?:[:/]|$)")
 PIN_CLAIM = re.compile(r"\b(pinned (?:above|at the top|for you)|(?:i've|i have|i) pinned|(?:it's|it is|now) pinned)\b", re.IGNORECASE)
 PR_ADDRESS = re.compile(r"https://github\.com/[\w.-]+/[\w.-]+/pull/\d+")
+DESIGN_ADDRESS = re.compile(r"^https://claude\.ai/design/[^\s]+$")
 OPEN_LABEL = "Open"
 CLAIM_WINDOW_SECONDS = 60
 BANG_COMMAND = re.compile(r"(?:^|`|\b(?:run|type|enter|try)\s+)!\s?([^\s`][^`\n]*)", re.IGNORECASE | re.MULTILINE)
@@ -54,8 +56,18 @@ class LinkPinCheck:
         links = dict.fromkeys(PR_ADDRESS.findall(text))
         return [MakePin(f"Pull request {url.rsplit('/', 1)[-1]}", url, OPEN_LABEL) for url in links if not pins.matching(Among("link", (url, f"{url}/"))).exists()]
 
+    def design_pins(self, text: str) -> list[MakePin]:
+        pins = self.queries.query(Pin)
+        links = dict.fromkeys(url.rstrip(".,;:/") for url in LINK.findall(text) if DESIGN_ADDRESS.match(url))
+        return [MakePin(self.design_title(url), url, OPEN_LABEL) for url in links if not pins.matching(Among("link", (url, f"{url}/"))).exists()]
+
+    @staticmethod
+    def design_title(url: str) -> str:
+        name = unquote(urlsplit(url).path.rstrip("/").rsplit("/", 1)[-1]).replace("-", " ").replace("_", " ")
+        return f"Design: {name}"[:80]
+
     def first_unpinned(self, text: str) -> str | None:
-        links = dict.fromkeys(url.rstrip(".,;:") for url in LINK.findall(text) if not LOCAL_ADDRESS.match(url) and not PR_ADDRESS.match(url))
+        links = dict.fromkeys(url.rstrip(".,;:") for url in LINK.findall(text) if not LOCAL_ADDRESS.match(url) and not PR_ADDRESS.match(url) and not DESIGN_ADDRESS.match(url))
         pins = self.queries.query(Pin).matching(IsNull("closed_at"))
         return next((url for url in links if not self.kept.scoped_read(
             "pins", lambda: pins.matching(Among("link", (url.rstrip("/"), f"{url.rstrip('/')}/"))).exists(),
