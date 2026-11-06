@@ -5,7 +5,7 @@
         "select": "call",
         "where": [
             {"name": "module_part"},
-            {"argument": {"at": 0, "textMatches": "^DRIVERS_MODULE$"}}
+            {"argument": {"at": 0, "name": "DRIVERS_MODULE"}}
         ],
         "reject": [
             {"testCode": true},

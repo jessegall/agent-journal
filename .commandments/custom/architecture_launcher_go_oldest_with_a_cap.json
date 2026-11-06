@@ -1,0 +1,21 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "go",
+    "find": {
+        "select": "call",
+        "where": [
+            {"fileMatches": "(^|/)tools/journal/"},
+            {"descendant": {"all": [{"is": "literal"}, {"textMatches": "^\"?--oldest\"?$"}]}},
+            {"descendant": {"all": [{"is": "literal"}, {"textMatches": "^\"?--limit\"?$"}]}}
+        ],
+        "reject": [
+            {"testCode": true}
+        ]
+    },
+    "sin": {
+        "name": "go-oldest-with-a-cap",
+        "description": "A client read asks for the oldest rows with a limit, so once the journal holds more rows than the limit the newest rows are dropped.",
+        "rule": "Ask for the newest rows with the limit, or ask the journal for exactly the rows wanted; never cap an oldest-first read.",
+        "skill": "plain-code-words"
+    }
+}
