@@ -2,7 +2,7 @@ import http.client
 import os
 import socket
 from socketserver import StreamRequestHandler
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 
@@ -52,13 +52,13 @@ def test_the_queue_holds_as_many_clients_as_a_hand_over_needs(path):
 
 
 def test_a_viewer_that_took_the_socket_keeps_the_port_and_its_waiting_request():
-    old = ViewerListener(Mock(), Mock())
+    old = ViewerListener(MagicMock(), MagicMock())
     port = old.port
     connection = http.client.HTTPConnection("127.0.0.1", port, timeout=5)
     connection.request("GET", "/nothing")
     inherited = old.socket.dup()
     old.server_close()
-    new = ViewerListener(Mock(), Mock(), inherited_socket=inherited)
+    new = ViewerListener(MagicMock(), MagicMock(), inherited_socket=inherited)
     assert new.port == port
     new.handle_request()
     assert connection.getresponse().status > 0

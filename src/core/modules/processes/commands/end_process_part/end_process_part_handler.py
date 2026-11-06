@@ -1,7 +1,7 @@
 from dataclasses import replace
 
 from core.base.command.context import Context
-from core.base.command.completed_command import CompletedCommand
+from core.base.command.completed_command_error import CompletedCommandError
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
@@ -24,6 +24,6 @@ class EndProcessPartHandler(Handler[EndProcessPart, ProcessPart]):
         if part is None:
             raise Refusal(f"process {command.process_id} has no part {command.position}", f"journal process-part list --process {command.process_id}")
         if part.ended_at is not None:
-            raise CompletedCommand(f"part {command.position} of process {command.process_id} has ended already", "a part ends once")
+            raise CompletedCommandError(f"part {command.position} of process {command.process_id} has ended already", "a part ends once")
         state = PartState.FINISHED if command.exit_code == 0 else PartState.FAILED
         return self.repository.save(replace(part, state=state, exit_code=command.exit_code, started_at=part.started_at or context.timestamp, ended_at=context.timestamp), context)
