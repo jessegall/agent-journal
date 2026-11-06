@@ -1,6 +1,7 @@
 <script setup>
 import {ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
+import TextInput from "../kit/TextInput.vue";
 
 // the words that give a memory back to an agent that names them, added and taken off here
 const props = defineProps({id: {type: Number, required: true}, read: {type: Function, required: true}});
@@ -39,7 +40,7 @@ watch(() => props.id, load, {immediate: true});
             </template>
         </div>
         <form class="memory-add" data-memory-word-form @submit.prevent="add">
-            <input v-model="word" placeholder="Add a word" aria-label="Add a word" />
+            <TextInput v-model="word" class="memory-word-input" placeholder="Add a word" aria-label="Add a word" />
             <Btn small type="submit" :disabled="!word.trim()">Add</Btn>
         </form>
         <template v-if="refusal">
@@ -74,6 +75,10 @@ watch(() => props.id, load, {immediate: true});
     flex-wrap: wrap;
     gap: 6px;
     align-items: center;
+}
+
+.memory-word-input {
+    flex: 1 1 140px;
 }
 
 .memory-word {

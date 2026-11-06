@@ -1,4 +1,5 @@
 <script setup>
+import Shimmer from "./Shimmer.vue";
 import SwitchCase from "./SwitchCase.vue";
 
 // the parts a window's skeleton is declared from, drawn one inside the other: shimmer only, never a border
@@ -16,13 +17,13 @@ const tiled = (part) => ({...held(part), gridTemplateColumns: `repeat(auto-fill,
         <template v-for="copy in part.count" :key="copy">
             <SwitchCase :value="part.shape">
                 <template #line>
-                    <span class="shimmer shimmer-line" data-skeleton-line :style="{width: part.width, height: `${LINE_HEIGHTS[part.size]}px`}" />
+                    <Shimmer class="shimmer-line" data-skeleton-line :style="{width: part.width, height: `${LINE_HEIGHTS[part.size]}px`}" />
                 </template>
                 <template #circle>
-                    <span class="shimmer shimmer-circle" data-skeleton-circle :style="{width: `${CIRCLE_SIZES[part.size]}px`, height: `${CIRCLE_SIZES[part.size]}px`}" />
+                    <Shimmer class="shimmer-circle" data-skeleton-circle :style="{width: `${CIRCLE_SIZES[part.size]}px`, height: `${CIRCLE_SIZES[part.size]}px`}" />
                 </template>
                 <template #block>
-                    <span class="shimmer shimmer-block" data-skeleton-block :style="{width: part.width, height: `${part.height}px`}" />
+                    <Shimmer class="shimmer-block" data-skeleton-block :style="{width: part.width, height: `${part.height}px`}" />
                 </template>
                 <template #grow>
                     <span class="skeleton-grow" />
@@ -45,18 +46,6 @@ const tiled = (part) => ({...held(part), gridTemplateColumns: `repeat(auto-fill,
 </template>
 
 <style scoped>
-.shimmer {
-    display: block;
-    flex: none;
-    max-width: 100%;
-    background-color: color-mix(in srgb, var(--raised) 60%, transparent);
-    background-image: linear-gradient(100deg, transparent 35%, color-mix(in srgb, var(--text-3) 22%, transparent) 50%, transparent 65%);
-    background-size: 200vw 100%;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    animation: skeleton-parts-shimmer 1.6s linear infinite;
-}
-
 .shimmer-line {
     border-radius: 6px;
 }
@@ -97,21 +86,5 @@ const tiled = (part) => ({...held(part), gridTemplateColumns: `repeat(auto-fill,
 .skeleton-grid {
     display: grid;
     align-items: start;
-}
-
-@keyframes skeleton-parts-shimmer {
-    from {
-        background-position: -100vw 0;
-    }
-
-    to {
-        background-position: 100vw 0;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .shimmer {
-        animation: none;
-    }
 }
 </style>
