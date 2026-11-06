@@ -129,7 +129,7 @@ def test_s48_a_project_behind_a_link_gives_real_paths_and_the_same_event_for_bot
 
 
 def test_s49_an_edit_under_a_linked_library_is_linked_and_stays_with_the_worktree(new_story):
-    story = checkout_story(new_story, dispatch=f"{DISPATCH} --library-link node_modules", before_dispatch=lambda story: story.repository.library("node_modules", "x.js", "A\n"))
+    story = checkout_story(new_story, dispatch=f"{DISPATCH} --library-link node_modules", setup_repository=lambda story: story.repository.library("node_modules", "x.js", "A\n"))
     call = edit_event(story, story.worker_session, name=LIBRARY_FILE)
     story.expect_rows(file_of(call)["relative"] == LIBRARY_FILE, file_of(call)["linked"] is True, checkout_of(call)["kind"] == "worktree", checkout_of(call)["root"] == real(story.worktree))
 

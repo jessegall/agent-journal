@@ -46,8 +46,8 @@ class PlanRounds:
         names = self.actor_names({*helper_ids, *(report.creator_id for report in filed)})
         reports = {report.id: RoundReport(report.id, names[report.creator_id]) for report in filed}
         return tuple(PlanRound(number, start.timestamp, end.timestamp if end is not None else None, start.actor_id,
-                               tuple(dict.fromkeys(RoundReviewer(job.helper_id, names[job.helper_id]) for job in jobs if job.helper_id is not None and self.round_holds(job_events[job.id], start, end))),
-                               tuple(reports[link.source_id] for link in links if link.source_id in reports and self.round_holds(link_events[link.id], start, end)))
+                               tuple(dict.fromkeys(RoundReviewer(job.helper_id, names[job.helper_id]) for job in jobs if job.helper_id is not None and self.contains_event(job_events[job.id], start, end))),
+                               tuple(reports[link.source_id] for link in links if link.source_id in reports and self.contains_event(link_events[link.id], start, end)))
                      for number, (start, end) in enumerate(pairs, 1))
 
     @staticmethod
@@ -71,7 +71,7 @@ class PlanRounds:
         return created
 
     @staticmethod
-    def round_holds(event_id: int, start: LoggedEvent, end: LoggedEvent | None) -> bool:
+    def contains_event(event_id: int, start: LoggedEvent, end: LoggedEvent | None) -> bool:
         return start.id < event_id and (end is None or event_id < end.id)
 
     def actor_names(self, actor_ids: Set[int]) -> Mapping[int, str]:

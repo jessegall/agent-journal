@@ -26,7 +26,7 @@ class ScriptPipes:
 
     def answer(self, line: str, limit_ms: int | None, wait_callback: Callable[[], None] | None) -> str:
         readers = [threading.Thread(target=self.read_answer, daemon=True), threading.Thread(target=self.read_errors, daemon=True)]
-        for thread in (threading.Thread(target=self.write_line, args=(line,), daemon=True), *readers):
+        for thread in (threading.Thread(target=self.write_line, args=[line], daemon=True), *readers):
             thread.start()
         self.wait_end(limit_ms, wait_callback)
         self.join(readers)
@@ -100,16 +100,16 @@ class ScriptPipes:
         if pipe is None:
             return
         try:
-            while chunk := os.read(pipe.fileno(), READ_BYTES):
-                keep(chunk)
+            while data := os.read(pipe.fileno(), READ_BYTES):
+                keep(data)
         except (OSError, ValueError):
             return
 
-    def keep_answer(self, chunk: bytes) -> None:
+    def keep_answer(self, data: bytes) -> None:
         with self.lock:
             if len(self.answer_bytes) <= MOST_ANSWER_BYTES:
-                self.answer_bytes += chunk
+                self.answer_bytes += data
 
-    def keep_errors(self, chunk: bytes) -> None:
+    def keep_errors(self, data: bytes) -> None:
         with self.lock:
-            self.error_bytes = (self.error_bytes + chunk)[-ERROR_TAIL_BYTES:]
+            self.error_bytes = (self.error_bytes + data)[-ERROR_TAIL_BYTES:]

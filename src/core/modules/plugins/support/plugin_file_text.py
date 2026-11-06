@@ -14,9 +14,7 @@ READ_HINT = "a limited agent reads its own checkout, and in the project only the
 
 
 class PluginFileText:
-    """The text of a name in a checkout, in the project or in the base commit. The name is resolved before anything
-    is read, so a path that leaves through .. or a link is refused and a limited agent learns nothing of what lies
-    past its limit, not even whether it is there."""
+    """Reads a file from a checkout, project or base commit within the caller's access limits."""
 
     def __init__(self, checkouts: AgentCheckouts, reads: ProjectReads, access: PluginCallAccess) -> None:
         self.checkouts, self.reads, self.access = checkouts, reads, access

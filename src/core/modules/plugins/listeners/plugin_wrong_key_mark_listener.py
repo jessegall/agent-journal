@@ -41,6 +41,7 @@ class PluginWrongKeyMarkListener(MarkListener[RegistrySynced]):
 
     def show_wrong_keys(self, plugin_id: int, plugin_name: str, manifest: PluginManifest, logged: LoggedEvent) -> None:
         for row in self.rows.rows(manifest, self.folders.code(plugin_name)):
-            if row.state is PluginEventState.WRONG_KEY:
-                ending = ", so that guard no longer runs" if row.form == "guard" else ""
-                self.show(logged, PluginMarkType.HEALTH, PluginMarkVariant.WRONG_KEY, f"Plugin {plugin_name} listens to {row.key}, which this journal no longer has{ending}.", key=f"plugin-wrong-key:{plugin_id}:{row.key}")
+            if row.state is not PluginEventState.WRONG_KEY:
+                continue
+            ending = ", so that guard no longer runs" if row.form == "guard" else ""
+            self.show(logged, PluginMarkType.HEALTH, PluginMarkVariant.WRONG_KEY, f"Plugin {plugin_name} listens to {row.key}, which this journal no longer has{ending}.", key=f"plugin-wrong-key:{plugin_id}:{row.key}")

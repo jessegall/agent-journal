@@ -28,9 +28,7 @@ GUARD_NAME = "plugins.event-guard"
 
 
 class PluginEventScripts:
-    """Gives a change the answers of the guard or listen scripts on its key. With none yet, it rolls the command back
-    so they run with no lock held, and the next round reads them. A change with no script is one lookup. Saving a
-    fault runs no script, or a script on the plugin row that fails would record faults without end."""
+    """Gets guard and listen script answers for a change outside the transaction lock."""
 
     def __init__(self, subscriptions: PluginSubscriptions, log: EventLog, errors: ErrorLog, registry: Registry, runner: PluginEventRunner, bus: Bus, running: RunningScripts, caller: CallerStream) -> None:
         self.subscriptions, self.log, self.errors, self.registry, self.runner, self.bus, self.running, self.caller = subscriptions, log, errors, registry, runner, bus, running, caller
@@ -42,7 +40,11 @@ class PluginEventScripts:
         subscriptions = self.subscriptions.scripts(change.event, form)
         if form is EventForm.GUARD:
             subscriptions = tuple(subscription for subscription in subscriptions if not (subscription.allows_skip and f"{GUARD_NAME}:{subscription.plugin}" in context.skipped_guards))
-        if not subscriptions or context.explanation is not None or runs.is_plugin_script:
+        if not subscriptions:
+            return ()
+        if context.explanation is not None:
+            return ()
+        if runs.is_plugin_script:
             return ()
         turn = runs.turn(form.value, change.event)
         if turn.answers is not None:

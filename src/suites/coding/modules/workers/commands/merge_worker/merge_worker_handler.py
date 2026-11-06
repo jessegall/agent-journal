@@ -49,8 +49,8 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         self.git.rebuild(worktree, environment.folder)
         commit_before_merge = self.git.tip(environment.folder, worktree.base_branch)
         self.git.merge(environment.folder, worktree, f"task {task.id}: {task.title}, from worker {worktree.session_agent_id}")
-        merged = self.bus.run_with_context(RecordWorktreeMerge(worktree.id, (), commit_before_merge, self.git.tip(environment.folder, worktree.base_branch)), context)
-        self.git.remove(environment.folder, merged.worktree)
+        merge_outcome = self.bus.run_with_context(RecordWorktreeMerge(worktree.id, (), commit_before_merge, self.git.tip(environment.folder, worktree.base_branch)), context)
+        self.git.remove(environment.folder, merge_outcome.worktree)
         return MergeOutcome(self.bus.run_with_context(RecordWorktreeRemoval(worktree.id), context), ())
 
     def check(self, worktree: Worktree, environment: Environment) -> None:

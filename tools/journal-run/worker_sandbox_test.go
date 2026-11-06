@@ -126,7 +126,7 @@ func TestTheRulesFolderIsReadableOnlyWhenDeclared(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	holds := func(declared []string) bool {
+	isReadable := func(declared []string) bool {
 		limit, err := workerReadLimit(worktree, home, declared)
 		if err != nil {
 			t.Fatal(err)
@@ -138,10 +138,10 @@ func TestTheRulesFolderIsReadableOnlyWhenDeclared(t *testing.T) {
 		}
 		return false
 	}
-	if holds(nil) {
+	if isReadable(nil) {
 		t.Fatal("the rules folder is readable with nothing declared")
 	}
-	if !holds([]string{rules}) {
+	if !isReadable([]string{rules}) {
 		t.Fatal("a declared rules folder is not readable")
 	}
 }
@@ -242,27 +242,27 @@ func TestWorkerReadLimitOpensADeclaredFolderAndNeverTheCheckoutItself(t *testing
 	if err != nil {
 		t.Fatal(err)
 	}
-	main, worktree, outside := filepath.Join(root, "main"), filepath.Join(root, "worktree"), filepath.Join(root, "outside")
+	main, worktree, externalFolder := filepath.Join(root, "main"), filepath.Join(root, "worktree"), filepath.Join(root, "outside")
 	rules := filepath.Join(main, ".rules")
-	for _, folder := range []string{rules, filepath.Join(main, ".journal"), worktree, outside} {
+	for _, folder := range []string{rules, filepath.Join(main, ".journal"), worktree, externalFolder} {
 		if err := os.MkdirAll(folder, 0o755); err != nil {
 			t.Fatal(err)
 		}
 	}
-	linkedOut := filepath.Join(main, "linked-out")
-	if err := os.Symlink(outside, linkedOut); err != nil {
+	externalLink := filepath.Join(main, "linked-out")
+	if err := os.Symlink(externalFolder, externalLink); err != nil {
 		t.Fatal(err)
 	}
-	limit, err := workerReadLimit(worktree, filepath.Join(main, ".journal"), []string{rules, main, outside, linkedOut, filepath.Join(main, "missing")})
+	limit, err := workerReadLimit(worktree, filepath.Join(main, ".journal"), []string{rules, main, externalFolder, externalLink, filepath.Join(main, "missing")})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !slices.Contains(limit.Readable, rules) {
 		t.Fatalf("the declared folder is not readable: %v", limit.Readable)
 	}
-	for _, wrong := range []string{main, outside, linkedOut, filepath.Join(main, "missing")} {
-		if slices.Contains(limit.Readable, wrong) {
-			t.Fatalf("%s must stay closed: %v", wrong, limit.Readable)
+	for _, deniedFolder := range []string{main, externalFolder, externalLink, filepath.Join(main, "missing")} {
+		if slices.Contains(limit.Readable, deniedFolder) {
+			t.Fatalf("%s must stay closed: %v", deniedFolder, limit.Readable)
 		}
 	}
 }
@@ -288,8 +288,8 @@ func TestWorkerShellReadsADeclaredFolderAndNotItsNeighbour(t *testing.T) {
 	main := filepath.Join(folder, "main")
 	home := filepath.Join(main, ".journal")
 	worktree := filepath.Join(home, "worktrees", "worker")
-	declared, more, undeclared := filepath.Join(main, ".rules"), filepath.Join(main, ".more"), filepath.Join(main, ".private")
-	for _, path := range []string{worktree, declared, more, undeclared, filepath.Join(home, "bin")} {
+	rulesFolder, extraFolder, privateFolder := filepath.Join(main, ".rules"), filepath.Join(main, ".more"), filepath.Join(main, ".private")
+	for _, path := range []string{worktree, rulesFolder, extraFolder, privateFolder, filepath.Join(home, "bin")} {
 		if err := os.MkdirAll(path, 0o700); err != nil {
 			t.Fatal(err)
 		}
@@ -305,7 +305,7 @@ func TestWorkerShellReadsADeclaredFolderAndNotItsNeighbour(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	limit, err := workerReadLimit(worktree, home, []string{declared, more})
+	limit, err := workerReadLimit(worktree, home, []string{rulesFolder, extraFolder})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -318,12 +318,12 @@ func TestWorkerShellReadsADeclaredFolderAndNotItsNeighbour(t *testing.T) {
 		command.Dir = worktree
 		return command.Run()
 	}
-	for _, path := range []string{declared, more} {
+	for _, path := range []string{rulesFolder, extraFolder} {
 		if err := reads(path); err != nil {
 			t.Fatalf("a worker could not read the declared %s: %v", path, err)
 		}
 	}
-	if reads(undeclared) == nil {
-		t.Fatalf("a worker read %s, which no plugin declared", undeclared)
+	if reads(privateFolder) == nil {
+		t.Fatalf("a worker read %s, which no plugin declared", privateFolder)
 	}
 }

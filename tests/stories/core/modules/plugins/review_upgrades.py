@@ -14,9 +14,10 @@ SNAPSHOT = Path("tests/snapshots/plugin_event_contract.json")
 
 
 def test_s79_the_runner_line_gives_read_folders_in_a_variable_and_no_flag(new_story):
+    story = new_story()
     run = ForegroundRun(30, False, read_folders=tuple([Path("/project/.rules")]))
     line = RunnerLine.build(Path("/bin/journal-run"), 1, run, "true", "s-1")
-    assert f"{READ_FOLDERS_VARIABLE}=/project/.rules" in line and "--read-folder" not in line
+    story.expect_rows(f"{READ_FOLDERS_VARIABLE}=/project/.rules" in line, "--read-folder" not in line)
 
 
 def undeclared_read_marks(story) -> list[ChatMark]:
@@ -37,9 +38,9 @@ def test_s80_a_plugin_with_project_reads_gets_no_mark(new_story):
 
 def test_s81_the_snapshot_a_test_holds_names_what_journal_event_keys_lists(new_story):
     story = event_plugin_story(new_story)
-    held = json.loads(SNAPSHOT.read_text())
+    snapshot = json.loads(SNAPSHOT.read_text())
     rows = {row["key"] for row in json.loads(story.run("event keys --json", actor=story.user).output_text)["rows"]}
-    story.expect_rows(TASK_CREATED in held, TASK_CREATED in rows, held[TASK_CREATED]["fields"] != [])
+    story.expect_rows(TASK_CREATED in snapshot, TASK_CREATED in rows, snapshot[TASK_CREATED]["fields"] != [])
 
 
 @pytest.mark.parametrize("protocol", [None, 1])
@@ -54,4 +55,4 @@ def test_s82_a_manifest_with_protocol_two_installs_runs_nothing_and_says_so_on_t
     install_event_plugin(story, {"event": TASK_CREATED, "guard": "see.sh"}, protocol=2)
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.expect_rows(not script_calls(story, "see.sh"))
-    assert any(row["state"] == "needs a newer journal" for row in event_page.card()), event_page.card()
+    story.expect_rows(any(row["state"] == "needs a newer journal" for row in event_page.card()))

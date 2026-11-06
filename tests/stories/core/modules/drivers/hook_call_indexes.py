@@ -7,7 +7,7 @@ from tests.stories.core.support.fixtures import AgentStarted
 
 
 @pytest.mark.parametrize(("condition", "parameters", "index"), [
-    ("answer = ?", ("refused",), "hook_calls_refused"),
+    ("answer = ?", ["refused"], "hook_calls_refused"),
     ("hook <> 'tick'", (), "hook_calls_non_tick"),
 ])
 def test_latest_matching_hook_reads_one_row_with_an_index(new_story, condition, parameters, index):
@@ -33,5 +33,5 @@ def test_latest_matching_hook_reads_one_row_with_an_index(new_story, condition, 
 def test_agent_activity_uses_the_non_tick_index(new_story):
     story = new_story(fixture=AgentStarted)
     database = story.container.get(Database)
-    plan = database.query_plan(Statement(AGENT_ACTIVITIES_SELECT + " WHERE agents.id = ?", (story.agent.id,)))
+    plan = database.query_plan(Statement(AGENT_ACTIVITIES_SELECT + " WHERE agents.id = ?", [story.agent.id]))
     story.expect_rows(any("hook_calls_non_tick" in line for line in plan))

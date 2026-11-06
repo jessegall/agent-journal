@@ -58,7 +58,11 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         except Refusal as refusal:
             self.record(logged, delivery, RecordPluginFault(delivery.plugin_id, f"{refusal.reason} at {delivery.event}"))
             return
-        if manifest.needs_newer_journal or (delivery.script and not (self.runner.may_try(plugin, delivery.event, EventForm.COMMIT) and self.runner.may_run(plugin, manifest, logged.id))):
+        if manifest.needs_newer_journal:
+            return
+        if delivery.script and not self.runner.may_try(plugin, delivery.event, EventForm.COMMIT):
+            return
+        if delivery.script and not self.runner.may_run(plugin, manifest, logged.id):
             return
         environment = self.queries.query(Environment).find(delivery.environment_id).name if delivery.environment_id is not None else ""
         data: object = json.loads(delivery.data)

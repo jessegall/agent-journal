@@ -7,7 +7,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.plugins.support.event_stories import REFUSAL, SECOND_JOB, TASK_CREATED, event_page, event_plugin_story, install_event_plugin, logged_events
 from tests.stories.core.modules.plugins.event_manifest import replace_module
-from tests.stories.core.modules.plugins.support.event_modules import FORMER_NOTE_CREATED, NOTE_CREATED, NOTES, NOTES_GONE
+from tests.stories.core.modules.plugins.support.event_modules import FORMER_NOTE_CREATED, NOTE_CREATED, NOTES, REMOVED_NOTES_MODULE
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, the_helper
 
 AGENT_REFUSAL = "an agent may not use journal plugin run"
@@ -37,14 +37,14 @@ def test_s65_a_wrong_project_read_is_on_the_card_and_never_opened(event_page, en
     (story.home.project_folder / "link-out").symlink_to(story.home.folder.parent.parent, target_is_directory=True)
     install_event_plugin(story, project_reads=[entry])
     wrong = [row for row in event_page.card() if row["state"] == "wrong project read"]
-    assert [row["key"] for row in wrong] == [entry], event_page.card()
+    story.expect_rows([row["key"] for row in wrong] == [entry])
 
 
 def test_s52_the_journal_folder_is_a_wrong_project_read_on_the_card(event_page):
     story = event_page.story
     (story.home.folder / "worktrees").mkdir(parents=True, exist_ok=True)
     install_event_plugin(story, project_reads=[story.home.folder.name, f"{story.home.folder.name}/worktrees"])
-    assert sorted(row["state"] for row in event_page.card()) == ["wrong project read", "wrong project read"], event_page.card()
+    story.expect_rows(sorted(row["state"] for row in event_page.card()) == ["wrong project read", "wrong project read"])
 
 
 def test_s66_a_skip_names_one_plugin_and_the_other_still_refuses(new_story):
@@ -66,11 +66,11 @@ def test_s66_an_entry_with_skip_false_offers_no_skip_and_naming_it_passes_nothin
 
 def test_s68_a_removed_key_tells_the_chat_once(new_story):
     story = event_plugin_story(new_story, {"event": NOTE_CREATED, "guard": "see.sh"}, modules=[NOTES])
-    replace_module(story, NOTES, NOTES_GONE)
+    replace_module(story, NOTES, REMOVED_NOTES_MODULE)
     story.run_listeners()
     marks = story.container.get(Queries).query(ChatMark).all_rows()
-    said = [mark for mark in marks if "events" in mark.text and NOTE_CREATED in mark.text]
-    story.expect_rows(len(said) == 1, "no longer runs" in said[0].text)
+    matching_marks = [mark for mark in marks if "events" in mark.text and NOTE_CREATED in mark.text]
+    story.expect_rows(len(matching_marks) == 1, "no longer runs" in matching_marks[0].text)
     code, text = story.synced()
     story.expect_rows(code == 0, len([mark for mark in story.container.get(Queries).query(ChatMark).all_rows() if NOTE_CREATED in mark.text]) == 1)
 

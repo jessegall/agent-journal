@@ -203,7 +203,7 @@ func TestReadFoldersVariableIsReadClearedAndAMissingOneIsNothing(t *testing.T) {
 	if folders := readFolders(); len(folders) != 2 || folders[0] != "/a" {
 		t.Fatalf("read folders %v", folders)
 	}
-	if _, held := os.LookupEnv("JOURNAL_RUN_READ_FOLDERS"); held {
+	if _, exists := os.LookupEnv("JOURNAL_RUN_READ_FOLDERS"); exists {
 		t.Fatal("the variable stays for the line to read")
 	}
 	if folders := readFolders(); len(folders) != 0 {

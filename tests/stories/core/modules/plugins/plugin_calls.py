@@ -18,8 +18,8 @@ from tests.stories.core.modules.plugins.support.runner_binaries import recording
 
 SECRET_NAME = "secrets.txt"
 TRY_KEY = "suites.coding.workers.worker_worktree.cut"
-TOLD = '{"v": 1, "tell": "the worktree is tidy", "cards": [{"kind": "state", "key": "tidy", "label": "Tidy"}]}'
-TOLD_SCRIPT = f"echo '{TOLD}'"
+SCRIPT_ANSWER = '{"v": 1, "tell": "the worktree is tidy", "cards": [{"kind": "state", "key": "tidy", "label": "Tidy"}]}'
+ANSWER_SCRIPT = f"echo '{SCRIPT_ANSWER}'"
 ROOT_MARK = "ran at the root"
 
 
@@ -58,7 +58,7 @@ def test_s53_a_person_may_read_the_project_for_any_agent(new_story):
 
 
 def test_s53_a_worker_reads_its_own_checkout_and_a_declared_folder_of_the_project(new_story):
-    story = checkout_story(new_story, before_dispatch=lambda story: story.repository.library(".rules", "config.json", "the rules\n"), project_reads=[".rules"])
+    story = checkout_story(new_story, setup_repository=lambda story: story.repository.library(".rules", "config.json", "the rules\n"), project_reads=[".rules"])
     story.repository.uncommitted(SECRET_NAME, "the secret\n")
     story.expect_text(f"plugin file {ORDER}", "ORDER", actor=story.worker)
     story.expect_text("plugin file .rules/config.json --from project", "the rules", actor=story.worker)
@@ -94,11 +94,11 @@ def test_s58_plugin_run_runs_by_relative_path_at_the_root_of_the_worktree_with_t
 def test_s58_the_output_of_plugin_run_has_a_number(new_story):
     story = worker_with_tools(new_story)
     recording_runner_at(story.home)
-    before = {process.id for process in story.container.get(Queries).query(Process).all_rows()}
+    existing_process_ids = {process.id for process in story.container.get(Queries).query(Process).all_rows()}
     outcome = story.run(f"plugin run --agent {story.worker.id} -- sh ./tools/journal-run", actor=story.user)
-    made = [process.id for process in story.container.get(Queries).query(Process).all_rows() if process.id not in before]
-    story.expect_rows(outcome.code == 0, len(made) == 1)
-    story.expect_rows(str(made[0]) in outcome.output_text)
+    new_process_ids = [process.id for process in story.container.get(Queries).query(Process).all_rows() if process.id not in existing_process_ids]
+    story.expect_rows(outcome.code == 0, len(new_process_ids) == 1)
+    story.expect_rows(str(new_process_ids[0]) in outcome.output_text)
 
 
 def test_s58_a_slow_command_holds_no_lock(new_story):
@@ -159,7 +159,7 @@ def tried_story(new_story, script: str):
 
 
 def test_s61_trying_a_script_prints_the_line_and_the_answer_and_leaves_nothing(new_story):
-    story = tried_story(new_story, TOLD_SCRIPT)
+    story = tried_story(new_story, ANSWER_SCRIPT)
     story.expect_text(f"plugin try tidy-worktrees {TRY_KEY} --agent {story.worker.id}", TRY_KEY, "the worktree is tidy", actor=story.user)
     story.expect_rows(len(script_calls(story, "try.sh", "tidy-worktrees")) == story.calls_before + 1)
     story.run_listeners()
@@ -175,7 +175,7 @@ def test_s61_trying_a_script_that_fails_leaves_no_fault(new_story):
 
 
 def test_s61_trying_a_key_with_no_event_yet_uses_an_empty_row(new_story):
-    story = checkout_story(new_story, {"event": "core.pins.pin.created", "commit": "try.sh"}, scripts={"try.sh": TOLD_SCRIPT}, name="tidy-worktrees", program="try.sh")
+    story = checkout_story(new_story, {"event": "core.pins.pin.created", "commit": "try.sh"}, scripts={"try.sh": ANSWER_SCRIPT}, name="tidy-worktrees", program="try.sh")
     story.expect_text("plugin try tidy-worktrees core.pins.pin.created", "core.pins.pin.created", "the worktree is tidy", actor=story.user)
 
 

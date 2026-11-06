@@ -12,7 +12,7 @@ class PluginNamedEvents:
 
     @cached_property
     def keys(self) -> dict[str, str]:
-        return {entry.key: entry.event for entry in self.registry.event_keys.values() if entry.event in self.registry.plugin_moments}
+        return {entry.key: entry.event for entry in self.registry.event_keys.values() if entry.event in self.registry.named_plugin_events}
 
     def apply(self, manifest: PluginManifest) -> PluginManifest:
         return manifest.with_named_events(self.keys)

@@ -100,7 +100,9 @@ const uptime = computed(() => {
             <template v-if="branch">
                 <span class="fact" data-fact="branch" title="Current branch"><Icon name="branch" :size="12" /> {{ branch }}</span>
             </template>
-            <button v-if="!card" type="button" :class="['fact', {none: !jobs}]" data-fact="jobs" title="Jobs the agent scheduled for itself" @click="emit('open', 'jobs', $event.currentTarget)"><Icon name="clock" :size="12" /> {{ jobs }}</button>
+            <template v-if="!card">
+                <button type="button" :class="['fact', {none: !jobs}]" data-fact="jobs" title="Jobs the agent scheduled for itself" @click="emit('open', 'jobs', $event.currentTarget)"><Icon name="clock" :size="12" /> {{ jobs }}</button>
+            </template>
             <template v-if="run">
                 <button type="button" class="fact" data-fact="skills" title="View skills read by this agent" @click="openSkills"><Icon name="book" :size="12" /> {{ skillsRead.length }}</button>
             </template>

@@ -33,7 +33,7 @@ if "sample-rules" not in json.loads(sys.argv[1])["skills"]:
     answer.update(tell="cart.py has a sin", require_skills=["sample-rules"])
 print(json.dumps(answer))
 ' "$line" """
-ASKS_FOR_ANOTHER_PLUGINS_SKILL = """echo '{"v": 1, "require_skills": ["not-published-here"]}'"""
+OTHER_PLUGIN_SKILL_SCRIPT = """echo '{"v": 1, "require_skills": ["not-published-here"]}'"""
 
 
 def test_an_installed_plugin_publishes_its_skills_marked_with_its_name(new_story):
@@ -109,8 +109,7 @@ def test_s41_the_skills_reach_a_hears_delivery(new_story):
     story.expect_rows("sample-rules" in calls[0]["skills"])
 
 
-def answering_service(path: Path, lines: list[str]) -> socket.socket:
-    """A socket that answers as a plugin's service does, and keeps each line it is asked."""
+def start_service_socket(path: Path, lines: list[str]) -> socket.socket:
     path.parent.mkdir(parents=True, exist_ok=True)
     server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     server.bind(str(path))
@@ -136,7 +135,7 @@ def test_s41_the_skills_reach_an_answering_service(new_story):
     story.run("setting set journal.core.plugins.hold_window_ms 5000 --project", actor=story.user)
     mark_rules_loaded(story, skill_digest(story, "sample-rules"))
     lines: list[str] = []
-    server = answering_service(story.container.get(PluginSocketPaths).answers("events", "answers"), lines)
+    server = start_service_socket(story.container.get(PluginSocketPaths).answers("events", "answers"), lines)
     try:
         story.hook("s-1", LISTING_SAMPLE)
     finally:
@@ -171,7 +170,7 @@ def test_s44_a_plugin_asks_for_a_missing_skill_once_and_then_sends_neither_line_
 
 
 def test_s44_a_skill_the_plugin_does_not_publish_is_ignored(new_story):
-    story = event_plugin_story(new_story, scripts={"asks.sh": ASKS_FOR_ANOTHER_PLUGINS_SKILL}, program="asks.sh", hears=["file_edited"])
+    story = event_plugin_story(new_story, scripts={"asks.sh": OTHER_PLUGIN_SKILL_SCRIPT}, program="asks.sh", hears=["file_edited"])
     scanned_edit(story, "s-1", "cart.py")
     story.run_listeners()
     story.expect_rows(len(script_calls(story, "asks.sh")) == 1)

@@ -70,7 +70,7 @@ class ModuleCheck:
     def event_keys(cls, modules: Sequence[type[Module]]) -> tuple[EventKeyEntry, ...]:
         book = modules_book(modules)
         entries = [EventKeyEntry.built(module.name, event, forms) for module in modules for event, forms in cls.module_events(module, book).items() if forms]
-        plugin_events = [EventKeyEntry.plugin_event(module.name, name) for module in modules for name in module.plugin_moments]
+        plugin_events = [EventKeyEntry.plugin_event(module.name, name) for module in modules for name in module.plugin_event_names()]
         return (*(EventKeyEntry.system(SYSTEM_EVENTS_MODULE, event, COMMIT_FORM) for event in SYSTEM_EVENTS), *entries, *plugin_events)
 
     def check(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> None:

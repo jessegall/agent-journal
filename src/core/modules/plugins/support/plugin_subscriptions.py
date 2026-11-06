@@ -29,6 +29,7 @@ class PluginSubscriptions:
                 forms = self.registry.event_keys[event].forms if event else ()
                 for form in forms:
                     script = runnable.manifest.script(key, form)
-                    if script:
-                        subscriptions.setdefault((event, form), []).append(PluginSubscription(runnable.plugin.name, script, runnable.plugin.id, runnable.manifest.allows_skip(key)))
+                    if not script:
+                        continue
+                    subscriptions.setdefault((event, form), []).append(PluginSubscription(runnable.plugin.name, script, runnable.plugin.id, runnable.manifest.allows_skip(key)))
         return {event_form: tuple(rows) for event_form, rows in subscriptions.items()}

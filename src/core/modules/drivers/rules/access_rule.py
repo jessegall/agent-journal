@@ -50,7 +50,7 @@ class AccessRule(ReadonlyRule):
         return super().answer(hook)
 
     def reaches_outward(self, shell: ShellLine) -> bool:
-        if shell.contains_any(self.identity_variables()):
+        if shell.contains_fragment(self.identity_variables()):
             return True
         return any(self.is_outward(" ".join(part.arguments[:2])) for part in shell.parts_running_journal_command() if HELP_FLAG not in part.arguments)
 
