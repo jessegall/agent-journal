@@ -1,54 +1,310 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-98443b0b3c4c")) { const style = document.createElement("style"); style.id = "window-styles-98443b0b3c4c"; style.textContent = ".requests[data-v-bd59359a]{display:grid;grid-template-columns:minmax(360px,46%) 1px minmax(0,1fr);height:100%;min-height:0;overflow:hidden}.list[data-v-bd59359a]{display:flex;flex-direction:column;min-height:0;min-width:0}.list-scroll[data-v-bd59359a]{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}.columns[data-v-bd59359a],.row[data-v-bd59359a]{display:grid;grid-template-columns:minmax(80px,1.4fr) minmax(40px,.7fr) 32px 88px minmax(72px,1fr) 55px 60px;align-items:center;gap:5px;padding:10px;font-size:12px}.columns[data-v-bd59359a]{flex:none;border-bottom:1px solid var(--border);color:var(--text-3)}.columns[data-v-bd59359a]>:last-child,.duration[data-v-bd59359a],.queued[data-v-bd59359a],.parts[data-v-bd59359a]{text-align:right}.parts[data-v-bd59359a]{padding-right:4px;color:var(--text-3);font-variant-numeric:tabular-nums}.day[data-v-bd59359a]{display:flex;justify-content:space-between;padding:9px 16px;border-bottom:1px solid var(--border);background:var(--side);color:var(--text-3);font-size:11px}.row[data-v-bd59359a]{width:100%;border:0;border-bottom:1px solid var(--border);background:none;color:inherit;font-family:inherit;text-align:left;cursor:pointer}.row[data-v-bd59359a]:hover,.row.open[data-v-bd59359a]{background:var(--surface-2, var(--border))}.event[data-v-bd59359a]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.tool[data-v-bd59359a]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-3)}time[data-v-bd59359a],.duration[data-v-bd59359a],.queued[data-v-bd59359a]{font-variant-numeric:tabular-nums;white-space:nowrap}.slow .duration[data-v-bd59359a],.detail-head .slow[data-v-bd59359a]{color:#c58b35}.refused .event[data-v-bd59359a],.refused .duration[data-v-bd59359a],.detail-head .refused[data-v-bd59359a]{color:#d76b6b}.note[data-v-bd59359a]{margin:0;color:var(--text-3);font-size:12px}.detail[data-v-bd59359a]{padding:20px;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain}.divider[data-v-bd59359a]{background:var(--border)}.message[data-v-bd59359a]{padding:16px;line-height:1.6}.detail-head[data-v-bd59359a]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-bd59359a]{margin:0;color:var(--text);font-size:14px}.heading[data-v-bd59359a]{margin:0 0 8px;font-size:12px}pre[data-v-bd59359a]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}@media(max-width:760px){.requests[data-v-bd59359a]{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(140px,45%) 1px minmax(0,1fr)}}.numbers-tools[data-v-21644aad]{display:flex;gap:8px;margin-bottom:10px}.numbers-note[data-v-21644aad]{margin:0;color:var(--text-3);font-size:12.5px}.numbers-table[data-v-21644aad]{width:100%;border-collapse:collapse;font-size:12.5px}.numbers-table th[data-v-21644aad],.numbers-table td[data-v-21644aad]{padding:4px 8px;border-bottom:1px solid var(--border);text-align:left}.numbers-table th[data-v-21644aad]{color:var(--text-3);font-weight:500}\n"; document.head.appendChild(style); }
-import { computed as v, ref as b, openBlock as d, createBlock as R, unref as c, withCtx as T, createElementVNode as e, createElementBlock as l, toDisplayString as o, createCommentVNode as k, Fragment as q, renderList as H, createTextVNode as M, normalizeClass as y } from "vue";
-import { useReadLine as C, usePoll as L, WindowRoom as N, highlight as x } from "@journal/window-kit";
-import { _ as S } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const B = {
+if (!document.getElementById("window-styles-b40ae94b5a4a")) { const style = document.createElement("style"); style.id = "window-styles-b40ae94b5a4a"; style.textContent = ".band[data-v-1758914f]{display:flex;align-items:center;gap:7px;height:28px;margin:0;padding:0 14px;background:var(--side);border-bottom:1px solid var(--border);color:var(--text-2);font-size:11.5px;font-weight:500;letter-spacing:.03em}.band svg[data-v-1758914f]{color:var(--text-3)}.band span[data-v-1758914f]{margin-left:auto;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.inspector[data-v-1be4ba5a]{display:flex;flex-direction:column;min-height:0;height:100%;background:var(--bg)}header[data-v-1be4ba5a]{display:flex;align-items:center;gap:8px;padding:14px;border-bottom:1px solid var(--border)}header h1[data-v-1be4ba5a]{flex:1;margin:0;font-size:14px}.limits[data-v-1be4ba5a],.empty[data-v-1be4ba5a]{margin:0;padding:14px;color:var(--text-3);font-size:12px}.entry[data-v-1be4ba5a]{display:grid;grid-template-columns:110px minmax(0,1fr) 70px;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px}.entry strong[data-v-1be4ba5a]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.entry span[data-v-1be4ba5a]:last-child{text-align:right;font-variant-numeric:tabular-nums}.queue-button[data-v-03f4382c]{align-self:flex-end;margin:8px 12px}.queue-veil[data-v-03f4382c]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-03f4382c]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-03f4382c]{position:relative;display:grid;grid-template-columns:minmax(360px,46%) 1px minmax(0,1fr);height:100%;min-height:0;overflow:hidden}.list[data-v-03f4382c]{display:flex;flex-direction:column;min-height:0;min-width:0}.list-scroll[data-v-03f4382c]{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}.columns[data-v-03f4382c],.row[data-v-03f4382c]{display:grid;grid-template-columns:minmax(80px,1.4fr) minmax(40px,.7fr) 32px 88px minmax(72px,1fr) 55px 60px;align-items:center;gap:5px;padding:10px;font-size:12px}.columns[data-v-03f4382c]{flex:none;border-bottom:1px solid var(--border);color:var(--text-3)}.columns[data-v-03f4382c]>:last-child,.duration[data-v-03f4382c],.queued[data-v-03f4382c],.parts[data-v-03f4382c]{text-align:right}.parts[data-v-03f4382c]{padding-right:4px;color:var(--text-3);font-variant-numeric:tabular-nums}.day[data-v-03f4382c]{display:flex;justify-content:space-between;padding:9px 16px;border-bottom:1px solid var(--border);background:var(--side);color:var(--text-3);font-size:11px}.row[data-v-03f4382c]{width:100%;border:0;border-bottom:1px solid var(--border);background:none;color:inherit;font-family:inherit;text-align:left;cursor:pointer}.row[data-v-03f4382c]:hover,.row.open[data-v-03f4382c]{background:var(--surface-2, var(--border))}.event[data-v-03f4382c]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.tool[data-v-03f4382c]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-3)}time[data-v-03f4382c],.duration[data-v-03f4382c],.queued[data-v-03f4382c]{font-variant-numeric:tabular-nums;white-space:nowrap}.slow .duration[data-v-03f4382c],.detail-head .slow[data-v-03f4382c]{color:#c58b35}.refused .event[data-v-03f4382c],.refused .duration[data-v-03f4382c],.detail-head .refused[data-v-03f4382c]{color:#d76b6b}.note[data-v-03f4382c]{margin:0;color:var(--text-3);font-size:12px}.detail[data-v-03f4382c]{padding:20px;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain}.divider[data-v-03f4382c]{background:var(--border)}.message[data-v-03f4382c]{padding:16px;line-height:1.6}.detail-head[data-v-03f4382c]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-03f4382c]{margin:0;color:var(--text);font-size:14px}.heading[data-v-03f4382c]{margin:0 0 8px;font-size:12px}pre[data-v-03f4382c]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}@media(max-width:760px){.queue-button[data-v-03f4382c]{align-self:flex-end;margin:8px 12px}.queue-veil[data-v-03f4382c]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-03f4382c]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-03f4382c]{position:relative;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(140px,45%) 1px minmax(0,1fr)}}.numbers-tools[data-v-21644aad]{display:flex;gap:8px;margin-bottom:10px}.numbers-note[data-v-21644aad]{margin:0;color:var(--text-3);font-size:12.5px}.numbers-table[data-v-21644aad]{width:100%;border-collapse:collapse;font-size:12.5px}.numbers-table th[data-v-21644aad],.numbers-table td[data-v-21644aad]{padding:4px 8px;border-bottom:1px solid var(--border);text-align:left}.numbers-table th[data-v-21644aad]{color:var(--text-3);font-weight:500}\n"; document.head.appendChild(style); }
+import { openBlock as h, createElementBlock as r, normalizeStyle as R, createVNode as m, renderSlot as N, toDisplayString as t, createCommentVNode as x, ref as w, createElementVNode as e, unref as _, Fragment as f, withCtx as q, createTextVNode as V, renderList as b, computed as z, createBlock as S, normalizeClass as L, withModifiers as A } from "vue";
+import { useWindow as T, usePoll as $, Icon as B, CloseButton as Z, useReadLine as I, WindowRoom as Q, highlight as j } from "@journal/window-kit";
+import { _ as H } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+const P = ["stroke-width", "innerHTML"], W = {
+  __name: "Icon",
+  props: {
+    name: { type: String, default: "dot" },
+    size: { type: Number, default: 0 },
+    facing: { type: String, default: "right" },
+    bold: Boolean
+  },
+  setup(d) {
+    const M = d, v = { right: 0, down: 90, left: 180, up: 270 }, k = {
+      mail: "inbox",
+      circle: "todos",
+      play: "work",
+      flag: "plan",
+      file: "docs",
+      report: "reports",
+      pin: "pins",
+      list: "rules",
+      clock: "reminders",
+      help: "questions",
+      bubble: "inbox",
+      wrench: "tools",
+      brush: "style",
+      band: "rules",
+      smile: "smile",
+      bot: "agents",
+      panel: "activity",
+      x: "close",
+      check: "todos",
+      clip: "paperclip",
+      send: "arrow",
+      more: "dots",
+      chevron: "arrow"
+    }, s = {
+      phone: '<rect x="4.5" y="1.5" width="7" height="13" rx="1.6"/><path d="M7 12.2h2"/>',
+      key: '<circle cx="5.5" cy="10.5" r="2.8"/><path d="M7.5 8.5 13 3M10.8 5.2l1.7 1.7M9.2 6.8l1.2 1.2"/>',
+      terminal: '<path d="M2 3.5h12v9H2zM4.8 6.4 6.9 8l-2.1 1.6M8.4 10h3"/>',
+      trash: '<path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/>',
+      chat: '<path d="M2.5 3h11v7.5H8L5 13v-2.5H2.5z"/>',
+      edits: '<path d="M8 3v6M5 6h6M5 12.5h6"/>',
+      gauge: '<path d="M2.6 11.5a5.4 5.4 0 1 1 10.8 0"/><path d="M8 11.5 10.4 7.4"/><circle cx="8" cy="11.5" r=".6" fill="currentColor"/>',
+      hook: '<path d="M8 2v7.6a2.9 2.9 0 1 1-2.9-2.9"/><circle cx="8" cy="2.6" r=".7" fill="currentColor"/>',
+      request: '<path d="M3 5.2h9.4M10 2.9l2.4 2.3L10 7.5"/><path d="M13 10.8H3.6M6 8.5l-2.4 2.3L6 13.1"/>',
+      heart: '<path d="M8 13.2 3.2 8.4a2.9 2.9 0 0 1 4.1-4.1L8 5l.7-.7a2.9 2.9 0 0 1 4.1 4.1z"/>',
+      weight: '<path d="M2.5 13.5h11l-1.6-7.5H4.1zM6 6a2 2 0 1 1 4 0"/>',
+      points: '<path d="M3 13.2V8.6M6.7 13.2V5.4M10.4 13.2V9.8M14 13.2V2.8" stroke-linecap="round"/>',
+      bolt: '<path d="M9.2 2 4.2 8.8h3.6L6.8 14l5-6.8H8.2z"/>',
+      bulb: '<path d="M5.4 9.9a4.3 4.3 0 1 1 5.2 0c-.45.35-.7.85-.7 1.4v.2H6.1v-.2c0-.55-.25-1.05-.7-1.4Z"/><path d="M6.3 13.5h3.4"/>',
+      todos: '<circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/>',
+      task: '<rect x="3.5" y="2.5" width="9" height="11.5" rx="1.4"/><path d="M6.2 2.5V1.6h3.6v.9M5.8 6.4h4.4M5.8 8.9h4.4M5.8 11.4h2.6"/>',
+      pins: '<path d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>',
+      style: '<path d="M5.5 4.5 2.5 8l3 3.5M10.5 4.5l3 3.5-3 3.5M9 3.5l-2 9"/>',
+      warn: '<path d="M8 2.6 14 13H2zM8 6.6v3.2M8 11.6v.1"/>',
+      book: '<path d="M8 4.4c-1.7-1.2-3.8-1.5-6-.9v9c2.2-.6 4.3-.3 6 .9 1.7-1.2 3.8-1.5 6-.9v-9c-2.2-.6-4.3-.3-6 .9Z"/><path d="M8 4.4v9"/>',
+      auto: '<path d="M5 3.4 12.4 8 5 12.6z" fill="currentColor" stroke-width="1"/>',
+      branch: '<circle cx="5" cy="3.6" r="1.6"/><circle cx="5" cy="12.4" r="1.6"/><circle cx="11.6" cy="5.4" r="1.6"/><path d="M5 5.2v5.6M11.6 7v.6a3.6 3.6 0 0 1-3.6 3.6H6.6"/>',
+      scheme: '<circle cx="8" cy="8" r="5.75"/><path d="M8 2.25a5.75 5.75 0 0 1 0 11.5z" fill="currentColor" stroke="none"/>',
+      wide: '<path d="M6.2 2.6H2.6v3.6M9.8 2.6h3.6v3.6M6.2 13.4H2.6V9.8M9.8 13.4h3.6V9.8"/>',
+      narrow: '<path d="M2.6 6.2h3.6V2.6M13.4 6.2H9.8V2.6M2.6 9.8h3.6v3.6M13.4 9.8H9.8v3.6"/>',
+      up: '<path d="M8 12.5V4M4.5 7.5L8 4l3.5 3.5"/>',
+      down: '<path d="M8 3.5V12M4.5 8.5L8 12l3.5-3.5"/>',
+      board: '<rect x="1.8" y="2.5" width="12.4" height="11" rx="2"/><rect x="3.6" y="4.4" width="2.4" height="4" rx=".5" fill="currentColor" stroke="none"/><rect x="3.6" y="9.4" width="2.4" height="2.2" rx=".5" fill="currentColor" stroke="none"/><rect x="6.8" y="4.4" width="2.4" height="5.6" rx=".5" fill="currentColor" stroke="none"/><rect x="10" y="4.4" width="2.4" height="2.4" rx=".5" fill="currentColor" stroke="none"/><rect x="10" y="7.8" width="2.4" height="3.2" rx=".5" fill="currentColor" stroke="none"/>',
+      ticket: '<path d="M2.5 4.5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v1.75a1.75 1.75 0 0 0 0 3.5v1.75a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V9.75a1.75 1.75 0 0 0 0-3.5z"/><path d="M6.5 5v1M6.5 7.5v1M6.5 10v1"/>',
+      download: '<path d="M8 2.5v7.5M5 7l3 3 3-3"/><path d="M3 11v2h10v-2"/>',
+      upload: '<path d="M8 10V2.5M5 5.5l3-3 3 3"/><path d="M3 11v2h10v-2"/>',
+      open: '<path d="M9 3.5h3.5V7"/><path d="M12.5 3.5L7.5 8.5"/><path d="M11 9.5v3H3.5V5h3"/>',
+      sidepanel: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10"/>',
+      columns: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M8 3v10"/>',
+      rows: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M2.5 8h11"/>',
+      tab: '<path d="M2.5 5.5h11V13h-11zM2.5 5.5V3h5v2.5"/>',
+      float: '<rect x="5.5" y="5.5" width="8" height="7.5" rx="1"/><path d="M2.5 10.5V3h8"/>',
+      minimize: '<path d="M4 8h8"/>',
+      chapters: '<path d="M2.5 4h6M2.5 8h11M2.5 12h8"/><path d="M11 2.2v3.6l1.2-.9 1.2.9V2.2"/>',
+      reply: '<path d="M6.5 4.2 3 7.6l3.5 3.4"/><path d="M3.4 7.6h5.4a4 4 0 0 1 4 4v1.2"/>',
+      copy: '<rect x="5.5" y="5.5" width="8" height="8" rx="1.6"/><path d="M10.5 3.8V3.6A1.6 1.6 0 0 0 8.9 2H4.1A1.6 1.6 0 0 0 2.5 3.6v4.8A1.6 1.6 0 0 0 4.1 10h.2"/>',
+      broadcast: '<circle cx="8" cy="8" r="1.3"/><path d="M5.4 5.2a4 4 0 0 0 0 5.6"/><path d="M10.6 5.2a4 4 0 0 1 0 5.6"/><path d="M3.2 2.9a7 7 0 0 0 0 10.2"/><path d="M12.8 2.9a7 7 0 0 1 0 10.2"/>',
+      artboard: '<path d="M5 2.5v11M11 2.5v11M2.5 5h11M2.5 11h11"/>',
+      webpage: '<rect x="2.5" y="3" width="11" height="10" rx="1.6"/><path d="M2.5 5.8h11M5 8.6h6M5 10.6h3.6"/>',
+      pull: '<circle cx="4.5" cy="3.8" r="1.5"/><circle cx="4.5" cy="12.2" r="1.5"/><circle cx="11.5" cy="12.2" r="1.5"/><path d="M4.5 5.3v5.4M11.5 10.7V7.2a2.2 2.2 0 0 0-2.2-2.2H7.4M8.8 3.4 7.2 5l1.6 1.6"/>',
+      window: '<rect x="3.5" y="3.5" width="9" height="9" rx="1.5"/>',
+      dock: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M8 5.5V10M5.8 7.8 8 10l2.2-2.2"/>',
+      restore: '<path d="M3 8a5 5 0 1 0 1.5-3.55"/><path d="M3 2.75V5h2.25"/>',
+      caret: '<path d="M5 6.5l3 3 3-3"/>',
+      share: '<path d="M5.5 6H4.5A1.5 1.5 0 0 0 3 7.5v5A1.5 1.5 0 0 0 4.5 14h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 11.5 6h-1"/><path d="M8 9.5V2M5.75 4.25L8 2l2.25 2.25"/>',
+      floppy: '<path d="M3 4.5A1.5 1.5 0 0 1 4.5 3h6.4L13 5.1v6.4a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 3 11.5z"/><path d="M5.5 3v3h4.5V3"/><rect x="5" y="8.5" width="6" height="4.5" rx="0.6"/>',
+      saveinto: '<path d="M5.5 3H4a1.5 1.5 0 0 0-1.5 1.5v7A1.5 1.5 0 0 0 4 13h8a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 12 3h-1.5"/><path d="M8 1.75v6.5M5.75 6l2.25 2.25L10.25 6"/><path d="M5 10.75h6"/>',
+      tiles: '<rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1"/><rect x="9" y="9" width="4.5" height="4.5" rx="1"/>',
+      palette: '<path d="M8 2.5a5.5 5.5 0 1 0 0 11c.8 0 1.2-.5 1.2-1.1 0-.9-.8-1.2-.8-2 0-.6.5-1 1.1-1h1.6a2.4 2.4 0 0 0 2.4-2.4C13.5 4.6 11.1 2.5 8 2.5z"/><circle cx="5.3" cy="7.2" r=".6"/><circle cx="7.4" cy="5.1" r=".6"/><circle cx="10.2" cy="5.4" r=".6"/>',
+      pause: '<path d="M5.8 4v8M10.2 4v8"/>',
+      stop: '<path d="M4.5 4.5h7v7h-7z"/>',
+      phone: '<rect x="4.5" y="1.5" width="7" height="13" rx="1.6"/><path d="M7 12.2h2"/>',
+      resume: '<path d="M5.5 3.8v8.4L12.2 8z"/>',
+      tick: '<path d="M3.8 8.3l2.6 2.6 5.8-6.1"/>',
+      ring: '<circle cx="8" cy="8" r="5.25" stroke-width="2"/>',
+      checkbox: '<rect x="2.75" y="2.75" width="10.5" height="10.5" rx="2.5"/><path d="M5.4 8.1l1.8 1.8 3.5-3.7"/>',
+      layout: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9 3v10M9 8h4.5"/>',
+      info: '<circle cx="8" cy="8" r="5.75"/><path d="M8 7.3v3.4"/><path d="M8 5.1v.1"/>',
+      bell: '<path d="M4.5 11V7.5a3.5 3.5 0 0 1 7 0V11l1 1.5h-9z"/><path d="M6.8 13.5a1.3 1.3 0 0 0 2.4 0"/>',
+      activity: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10M11 6h1M11 8.5h1"/>',
+      arrow: '<path d="M3.5 8h9M9 4.5L12.5 8 9 11.5"/>',
+      chevronRight: '<path d="M6 3 11 8 6 13"/>',
+      back: '<path d="M12.5 8h-9M7 4.5L3.5 8 7 11.5"/>',
+      paperclip: '<path d="M10.5 5.5l-4.3 4.3a1.3 1.3 0 0 0 1.8 1.8l4.6-4.6a2.6 2.6 0 0 0-3.7-3.7L4.3 8a3.9 3.9 0 0 0 5.5 5.5l3.7-3.7"/>',
+      crosshair: '<circle cx="8" cy="8" r="4.2"/><path d="M8 1.5v3M8 11.5v3M1.5 8h3M11.5 8h3"/>',
+      camera: '<path d="M2 5.5h2.6l1.2-1.8h4.4l1.2 1.8H14v7.5H2z"/><circle cx="8" cy="9" r="2.3"/>',
+      wheel: '<circle cx="8" cy="8" r="5.6"/><circle cx="8" cy="8" r="1.6"/><path d="M8 2.4v4M8 9.6v4M2.4 8h4M9.6 8h4"/>',
+      model: '<path d="M8 2.2c.5 2.9 2 4.4 4.9 4.9-2.9.5-4.4 2-4.9 4.9-.5-2.9-2-4.4-4.9-4.9 2.9-.5 4.4-2 4.9-4.9z"/><path d="M12.6 10.6c.2 1.1.8 1.7 1.9 1.9-1.1.2-1.7.8-1.9 1.9-.2-1.1-.8-1.7-1.9-1.9 1.1-.2 1.7-.8 1.9-1.9z"/>',
+      agents: '<circle cx="6" cy="5.5" r="2"/><path d="M2.5 13a3.5 3.5 0 0 1 7 0"/><path d="M10.5 3.8a2 2 0 0 1 0 3.4"/><path d="M11.5 9.8a3.5 3.5 0 0 1 2 3.2"/>',
+      reviewer: '<circle cx="7" cy="7" r="4.6"/><path d="M10.4 10.4 14 14"/><path d="M5 7.1l1.4 1.4 2.6-2.8"/>',
+      verifier: '<path d="M8 1.8v1.4"/><path d="M5.5 3.2h5"/><path d="M5 4.6h6v7.4H5z"/><path d="M4.5 13.6h7"/><path d="M8 6.9c.9.9 1.2 1.6 1.2 2.3a1.2 1.2 0 0 1-2.4 0c0-.7.3-1.4 1.2-2.3z"/>',
+      reports: '<path d="M4 2.5h5.5L12 5v8.5H4z"/><path d="M6.5 8h3M6.5 10.5h3"/>',
+      work: '<circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/>',
+      reminders: '<path d="M13 8a5 5 0 1 1-1.5-3.55"/><path d="M13 2.75V5h-2.25"/><path d="M8 5.5V8l1.75 1.25"/>',
+      pencil: '<path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/>',
+      revisions: '<path d="M5.2 4.4h7v9.8h-7z"/><path d="M3.4 11.8V2.2h6.4"/><path d="M7 7.4h3.4M7 10h3.4"/>',
+      docs: '<path d="M4 1.8h5.5L12.5 5v9.2H4V1.8Z"/><path d="M9.5 1.8V5h3"/>',
+      rules: '<path d="M3 3.5h10M3 8h10M3 12.5h6"/>',
+      folder: '<path d="M2.5 3h4l1.5 1.5h5.5v8.5h-11V3Z"/>',
+      inbox: '<path d="M2 9.5l1.8-6h8.4l1.8 6v3.5H2V9.5Z"/><path d="M2 9.5h3.5l1 1.5h3l1-1.5H14"/>',
+      questions: '<circle cx="8" cy="8" r="5.5"/><path d="M6.4 6.3a1.7 1.7 0 0 1 3.2.7c0 1.2-1.6 1.4-1.6 2.5"/><circle cx="8" cy="11.4" r=".6" fill="currentColor" stroke="none"/>',
+      home: '<path d="M2.5 7.5L8 2.75l5.5 4.75v6.25h-3.75v-4h-3.5v4H2.5V7.5Z"/>',
+      close: '<path d="M4 4l8 8M12 4l-8 8"/>',
+      plus: '<path d="M8 3.5v9M3.5 8h9"/>',
+      minus: '<path d="M3.5 8h9"/>',
+      power: '<path d="M8 2v6"/><path d="M4.5 4.2a5 5 0 1 0 7 0"/>',
+      people: '<circle cx="6" cy="5.5" r="2.2"/><path d="M2.2 13c.4-2.2 1.9-3.5 3.8-3.5s3.4 1.3 3.8 3.5"/><circle cx="11.2" cy="6" r="1.8"/><path d="M11 9.6c1.6 0 2.8 1.1 3.1 3"/>',
+      lock: '<rect x="3.5" y="7" width="9" height="6.5" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/>',
+      plug: '<path d="M5.2 2.2v3.2M8.8 2.2v3.2M3.4 5.4h7.2v2.1a3.6 3.6 0 0 1-3.6 3.6 3.6 3.6 0 0 1-3.6-3.6Z"/><path d="M7 11.3v2.5"/>',
+      tools: '<path d="M9.8 2.3a3 3 0 0 0-3.6 3.9L2.5 9.9a1.2 1.2 0 0 0 1.7 1.7l3.7-3.7a3 3 0 0 0 3.9-3.6L10 6 8.6 5.4 8 4l1.8-1.7Z"/>',
+      plan: '<path d="M4 14V2.5M4 3h7.5l-1.5 2.75 1.5 2.75H4"/>',
+      search: '<circle cx="7" cy="7" r="4.25"/><path d="M10.25 10.25L13.5 13.5"/>',
+      settings: '<circle cx="8" cy="8" r="2"/><path d="M8 1.75v1.5M8 12.75v1.5M1.75 8h1.5M12.75 8h1.5M3.6 3.6l1.05 1.05M11.35 11.35l1.05 1.05M3.6 12.4l1.05-1.05M11.35 4.65l1.05-1.05"/>',
+      smile: '<circle cx="8" cy="8" r="5.5"/><path d="M5.8 9.5c1.2 1.2 3.2 1.2 4.4 0M6.2 6.5h.01M9.8 6.5h.01"/>',
+      dots: '<path d="M4 8h.01M8 8h.01M12 8h.01"/>',
+      "dots-vertical": '<circle cx="8" cy="3.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="12.5" r="1.3" fill="currentColor" stroke="none"/>',
+      eye: '<path d="M1.9 8c1.5-2.6 3.5-3.9 6.1-3.9s4.6 1.3 6.1 3.9c-1.5 2.6-3.5 3.9-6.1 3.9S3.4 10.6 1.9 8Z"/><circle cx="8" cy="8" r="1.8"/>',
+      dot: '<circle cx="8" cy="8" r="2.5"/>',
+      start: '<path d="M5.5 3.8v8.4L12 8z" stroke-linejoin="round"/>',
+      family: '<rect x="6" y="1.8" width="4" height="3.4" rx="1"/><rect x="1.8" y="10.8" width="4" height="3.4" rx="1"/><rect x="10.2" y="10.8" width="4" height="3.4" rx="1"/><path d="M8 5.2v2.6M3.8 10.8V9.4q0-1.6 1.6-1.6h5.2q1.6 0 1.6 1.6v1.4"/>',
+      loop: '<path d="M12.6 6.2A4.9 4.9 0 0 0 3.4 6M3.4 9.8a4.9 4.9 0 0 0 9.2.2"/><path d="M12.8 3v3.3H9.5M3.2 13V9.7h3.3"/>'
+    };
+    return (p, y) => (h(), r("svg", {
+      class: "ico",
+      style: R({
+        ...d.size ? { "--icon-size": `${d.size}px` } : {},
+        ...M.facing === "right" ? {} : { transform: `rotate(${v[M.facing]}deg)` }
+      }),
+      viewBox: "0 0 16 16",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": d.bold ? 2 : 1.4,
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+      "aria-hidden": "true",
+      innerHTML: s[k[d.name] || d.name] || s.dot
+    }, null, 12, P));
+  }
+}, E = { class: "band" }, O = { key: 0 }, D = {
+  __name: "ProcessQueueBand",
+  props: { icon: { type: String, required: !0 }, count: { type: Number, default: null } },
+  setup(d) {
+    return (M, v) => (h(), r("h2", E, [
+      m(W, {
+        name: d.icon,
+        size: 12
+      }, null, 8, ["name"]),
+      N(M.$slots, "default", {}, void 0, !0),
+      d.count !== null ? (h(), r("span", O, t(d.count), 1)) : x("", !0)
+    ]));
+  }
+}, C = /* @__PURE__ */ H(D, [["__scopeId", "data-v-1758914f"]]), U = {
+  class: "inspector",
+  "data-request-queue": ""
+}, F = {
+  key: 0,
+  class: "empty",
+  role: "alert"
+}, J = { class: "limits" }, G = {
+  key: 0,
+  class: "empty",
+  "data-request-queue-empty": ""
+}, K = {
+  key: 1,
+  class: "empty"
+}, X = {
+  __name: "RequestQueueInspector",
+  emits: ["close"],
+  setup(d, { emit: M }) {
+    const v = M, k = T(), s = w(null), p = w("");
+    async function y() {
+      const u = await k.read("developer request-queue", { unbatched: !0 });
+      p.value = u.ok ? "" : u.error, u.ok && (s.value = u.value);
+    }
+    $(y, () => !0);
+    const n = (u) => `${Math.round(u.waited_ms)} ms`;
+    return (u, c) => (h(), r("aside", U, [
+      e("header", null, [
+        m(_(B), {
+          name: "terminal",
+          size: 13
+        }),
+        c[1] || (c[1] = e("h1", null, "Request queue", -1)),
+        m(_(Z), {
+          title: "Close the request queue",
+          onClick: c[0] || (c[0] = (i) => v("close"))
+        })
+      ]),
+      p.value ? (h(), r("p", F, t(p.value), 1)) : s.value ? (h(), r(f, { key: 1 }, [
+        e("div", J, "Hooks at once: " + t(s.value.hook_limit) + " · Main agent wait: " + t(s.value.main_hook_seconds) + " s · Worker wait: " + t(s.value.agent_hook_seconds) + " s · Viewer wait: " + t(s.value.viewer_wait_seconds) + " s", 1),
+        m(C, {
+          icon: "start",
+          count: s.value.running.length
+        }, {
+          default: q(() => [...c[2] || (c[2] = [
+            V("Running", -1)
+          ])]),
+          _: 1
+        }, 8, ["count"]),
+        s.value.running.length ? x("", !0) : (h(), r("p", G, "Nothing is running.")),
+        (h(!0), r(f, null, b(s.value.running, (i, g) => (h(), r("div", {
+          key: `running-${g}`,
+          class: "entry",
+          "data-request-queue-running": ""
+        }, [
+          e("span", null, t(i.sender), 1),
+          e("strong", null, t(i.event), 1),
+          e("span", null, t(n(i)), 1)
+        ]))), 128)),
+        m(C, {
+          icon: "clock",
+          count: s.value.waiting.length
+        }, {
+          default: q(() => [...c[3] || (c[3] = [
+            V("Waiting", -1)
+          ])]),
+          _: 1
+        }, 8, ["count"]),
+        s.value.waiting.length ? x("", !0) : (h(), r("p", K, "Nothing is waiting.")),
+        (h(!0), r(f, null, b(s.value.waiting, (i, g) => (h(), r("div", {
+          key: `waiting-${g}`,
+          class: "entry",
+          "data-request-queue-waiting": ""
+        }, [
+          e("span", null, t(i.sender), 1),
+          e("strong", null, t(i.event), 1),
+          e("span", null, t(n(i)), 1)
+        ]))), 128))
+      ], 64)) : x("", !0)
+    ]));
+  }
+}, Y = /* @__PURE__ */ H(X, [["__scopeId", "data-v-1be4ba5a"]]), ee = {
   class: "requests",
   "data-hook-requests": ""
-}, E = {
+}, te = {
   class: "list",
   "aria-label": "Recorded requests"
-}, V = {
+}, ae = {
   class: "list-scroll",
   "data-hook-request-list": ""
-}, j = {
+}, he = {
   key: 0,
   class: "note message",
   role: "alert"
-}, D = {
+}, re = {
   key: 1,
   class: "note message"
-}, O = {
+}, se = {
   key: 0,
   class: "day",
   "data-hook-day": ""
-}, P = ["data-hook-request", "aria-pressed", "title", "onClick"], $ = { class: "event" }, z = { class: "tool" }, F = {
+}, oe = ["data-hook-request", "aria-pressed", "title", "onClick"], le = { class: "event" }, ne = { class: "tool" }, de = {
   class: "parts",
   "data-hook-parts": ""
-}, I = ["datetime"], J = { class: "queued" }, Q = { class: "duration" }, U = {
+}, ce = ["datetime"], ie = { class: "queued" }, ue = { class: "duration" }, pe = {
   class: "detail",
   "data-hook-request-detail-area": "",
   "aria-label": "Request details"
-}, W = {
+}, Me = {
   key: 0,
   "data-hook-request-detail": ""
-}, A = { class: "detail-head" }, G = ["innerHTML"], K = ["innerHTML"], X = {
+}, ve = { class: "detail-head" }, ye = ["innerHTML"], xe = ["innerHTML"], ge = {
   key: 1,
   class: "note message"
-}, Y = {
+}, me = {
   __name: "HookRequests",
-  setup(Z) {
-    const { value: f, failure: h, load: g } = C(() => "developer hook-requests"), u = v(() => {
-      var t;
-      return ((t = f.value) == null ? void 0 : t.rows) ?? [];
-    }), i = b(0), a = v(() => u.value.find((t) => t.id === i.value)), _ = (t) => x(JSON.stringify(t, null, 2), "json").join(`
-`), r = (t) => t.outcome === "refused", p = (t) => !r(t) && t.duration_ms >= 500, m = (t) => `${Math.round(t.duration_ms)} ms`;
-    return L(g, () => !0), (t, n) => (d(), R(c(N), { padding: "0" }, {
-      default: T(() => [
-        e("div", B, [
-          e("section", E, [
-            n[1] || (n[1] = e("div", { class: "columns" }, [
+  setup(d) {
+    const { value: M, failure: v, load: k } = I(() => "developer hook-requests"), s = z(() => {
+      var l;
+      return ((l = M.value) == null ? void 0 : l.rows) ?? [];
+    }), p = w(0), y = w(!1), n = z(() => s.value.find((l) => l.id === p.value)), u = (l) => j(JSON.stringify(l, null, 2), "json").join(`
+`), c = (l) => l.outcome === "refused", i = (l) => !c(l) && l.duration_ms >= 500, g = (l) => `${Math.round(l.duration_ms)} ms`;
+    return $(k, () => !0), (l, o) => (h(), S(_(Q), { padding: "0" }, {
+      default: q(() => [
+        e("div", ee, [
+          e("section", te, [
+            e("button", {
+              type: "button",
+              class: "queue-button",
+              "data-request-queue-open": "",
+              onClick: o[0] || (o[0] = (a) => y.value = !0)
+            }, "Request queue"),
+            o[4] || (o[4] = e("div", { class: "columns" }, [
               e("span", { "data-hook-column": "" }, "Event"),
               e("span", { "data-hook-column": "" }, "Tool"),
               e("span", {
@@ -60,68 +316,77 @@ const B = {
               e("span", { "data-hook-column": "" }, "Queued"),
               e("span", { "data-hook-column": "" }, "Duration")
             ], -1)),
-            e("div", V, [
-              c(h) ? (d(), l("p", j, o(c(h)), 1)) : u.value.length ? k("", !0) : (d(), l("p", D, "Nothing recorded yet. Record agent calls in the developer settings turns the log on.")),
-              (d(!0), l(q, null, H(u.value, (s) => (d(), l(q, {
-                key: s.id
+            e("div", ae, [
+              _(v) ? (h(), r("p", he, t(_(v)), 1)) : s.value.length ? x("", !0) : (h(), r("p", re, "Nothing recorded yet. Record agent calls in the developer settings turns the log on.")),
+              (h(!0), r(f, null, b(s.value, (a) => (h(), r(f, {
+                key: a.id
               }, [
-                s.day_start ? (d(), l("div", O, [
-                  M(o(s.day), 1),
-                  n[0] || (n[0] = e("span", null, "UTC", -1))
-                ])) : k("", !0),
+                a.day_start ? (h(), r("div", se, [
+                  V(t(a.day), 1),
+                  o[3] || (o[3] = e("span", null, "UTC", -1))
+                ])) : x("", !0),
                 e("button", {
                   type: "button",
-                  class: y(["row", { open: s.id === i.value, slow: p(s), refused: r(s) }]),
-                  "data-hook-request": s.id,
-                  "aria-pressed": s.id === i.value,
-                  title: s.outcome,
-                  onClick: (w) => i.value = s.id
+                  class: L(["row", { open: a.id === p.value, slow: i(a), refused: c(a) }]),
+                  "data-hook-request": a.id,
+                  "aria-pressed": a.id === p.value,
+                  title: a.outcome,
+                  onClick: (ke) => p.value = a.id
                 }, [
-                  e("span", $, o(s.event), 1),
-                  e("span", z, o(s.tool || "—"), 1),
-                  e("span", F, o(s.part_count || ""), 1),
+                  e("span", le, t(a.event), 1),
+                  e("span", ne, t(a.tool || "—"), 1),
+                  e("span", de, t(a.part_count || ""), 1),
                   e("time", {
-                    datetime: s.received_at
-                  }, o(s.time), 9, I),
-                  e("span", null, o(s.sender), 1),
-                  e("span", J, o(Math.round(s.queued_ms)) + " ms", 1),
-                  e("span", Q, o(m(s)), 1)
-                ], 10, P)
+                    datetime: a.received_at
+                  }, t(a.time), 9, ce),
+                  e("span", null, t(a.sender), 1),
+                  e("span", ie, t(Math.round(a.queued_ms)) + " ms", 1),
+                  e("span", ue, t(g(a)), 1)
+                ], 10, oe)
               ], 64))), 128))
             ])
           ]),
-          n[4] || (n[4] = e("div", {
+          o[7] || (o[7] = e("div", {
             class: "divider",
             "data-hook-request-divider": "",
             role: "separator",
             "aria-orientation": "vertical"
           }, null, -1)),
-          e("section", U, [
-            a.value ? (d(), l("div", W, [
-              e("div", A, [
-                e("h2", null, o(a.value.event), 1),
+          e("section", pe, [
+            n.value ? (h(), r("div", Me, [
+              e("div", ve, [
+                e("h2", null, t(n.value.event), 1),
                 e("span", {
-                  class: y({ slow: p(a.value), refused: r(a.value) })
-                }, o(a.value.sender) + " · queued " + o(Math.round(a.value.queued_ms)) + " ms · " + o(a.value.outcome) + " · " + o(m(a.value)), 3)
+                  class: L({ slow: i(n.value), refused: c(n.value) })
+                }, t(n.value.sender) + " · queued " + t(Math.round(n.value.queued_ms)) + " ms · " + t(n.value.outcome) + " · " + t(g(n.value)), 3)
               ]),
-              n[2] || (n[2] = e("h3", { class: "heading" }, "Headers", -1)),
+              o[5] || (o[5] = e("h3", { class: "heading" }, "Headers", -1)),
               e("pre", {
                 "data-hook-request-headers": "",
-                innerHTML: _(a.value.headers)
-              }, null, 8, G),
-              n[3] || (n[3] = e("h3", { class: "heading" }, "Body", -1)),
+                innerHTML: u(n.value.headers)
+              }, null, 8, ye),
+              o[6] || (o[6] = e("h3", { class: "heading" }, "Body", -1)),
               e("pre", {
                 "data-hook-request-body": "",
-                innerHTML: _(a.value.body)
-              }, null, 8, K)
-            ])) : (d(), l("p", X, "Select a request to see its headers and body."))
-          ])
+                innerHTML: u(n.value.body)
+              }, null, 8, xe)
+            ])) : (h(), r("p", ge, "Select a request to see its headers and body."))
+          ]),
+          y.value ? (h(), r("div", {
+            key: 0,
+            class: "queue-veil",
+            onClick: o[2] || (o[2] = A((a) => y.value = !1, ["self"]))
+          }, [
+            m(Y, {
+              onClose: o[1] || (o[1] = (a) => y.value = !1)
+            })
+          ])) : x("", !0)
         ])
       ]),
       _: 1
     }));
   }
-}, oe = /* @__PURE__ */ S(Y, [["__scopeId", "data-v-bd59359a"]]);
+}, qe = /* @__PURE__ */ H(me, [["__scopeId", "data-v-03f4382c"]]);
 export {
-  oe as default
+  qe as default
 };

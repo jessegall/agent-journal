@@ -15,7 +15,7 @@ class RequestLog:
         self.home = home
 
     def record(self, line: list[str], role: str, duration_ms: float, queued_ms: float, code: int) -> None:
-        if role == "viewer" and line[:2] == ["developer", "hook-requests"]:
+        if role == "viewer" and line[:2] in (["developer", "hook-requests"], ["developer", "request-queue"]):
             return
         try:
             connection = sqlite3.connect(self.home.database, timeout=0, autocommit=True)

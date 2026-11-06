@@ -1,4 +1,5 @@
 from collections.abc import Mapping
+from contextlib import nullcontext
 from types import MappingProxyType
 import json
 from time import perf_counter
@@ -208,9 +209,10 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         session = viewer.login.session(token)
         started_at = perf_counter()
         try:
-            viewer.routes.queue.let_hooks_finish()
-            queued_ms = (perf_counter() - started_at) * 1000
-            answered = viewer.routes.line_route.answer(request.window, request.line, viewer.login.person_id(token), request.environment, session.shared)
+            turn = nullcontext() if request.line[:2] == ["developer", "request-queue"] else viewer.routes.queue.viewer_turn(" ".join(request.line))
+            with turn:
+                queued_ms = (perf_counter() - started_at) * 1000
+                answered = viewer.routes.line_route.answer(request.window, request.line, viewer.login.person_id(token), request.environment, session.shared)
         except ShareRefusal as refusal:
             self.answer(403, {"error": refusal.reason})
             return
@@ -255,13 +257,23 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return
         session, person_id = viewer.login.session(token), viewer.login.person_id(token)
         started_at = perf_counter()
-        viewer.routes.queue.let_hooks_finish()
-        queued_ms = (perf_counter() - started_at) * 1000
-        answers = viewer.routes.line_route.answers(request, person_id, session.shared)
-        duration_ms = (perf_counter() - started_at) * 1000
-        for line, answer in zip(request.lines, answers):
-            RequestLog(viewer.routes.line_route.line_run.home).record(line.line, "viewer", duration_ms, queued_ms, answer.code)
-        self.answer(200, {"answers": [asdict(answer) for answer in answers]})
+        inspections = [(index, line) for index, line in enumerate(request.lines) if line.line[:2] == ["developer", "request-queue"]]
+        other_lines = [(index, line) for index, line in enumerate(request.lines) if line.line[:2] != ["developer", "request-queue"]]
+        if inspections and other_lines:
+            self.answer(400, {"error": "read the request queue separately from other lines"})
+            return
+        answers: dict[int, LineAnswer] = {}
+        for index, line in inspections:
+            answers[index] = viewer.routes.line_route.answers(ViewerLinesRequest([line]), person_id, session.shared)[0]
+        if other_lines:
+            with viewer.routes.queue.viewer_turn("; ".join(" ".join(line.line) for _, line in other_lines)):
+                queued_ms = (perf_counter() - started_at) * 1000
+                other_answers = viewer.routes.line_route.answers(ViewerLinesRequest([line for _, line in other_lines]), person_id, session.shared)
+            duration_ms = (perf_counter() - started_at) * 1000
+            for (index, line), answer in zip(other_lines, other_answers, strict=True):
+                answers[index] = answer
+                RequestLog(viewer.routes.line_route.line_run.home).record(line.line, "viewer", duration_ms, queued_ms, answer.code)
+        self.answer(200, {"answers": [asdict(answers[index]) for index in range(len(request.lines))]})
 
     def answer_share_comments(self, viewer: ViewerServer, session: ViewerSession, body: bytes | None) -> None:
         if session.share_id is None or not session.comments:

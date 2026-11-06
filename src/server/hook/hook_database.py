@@ -5,6 +5,7 @@ from core.base.database.database import Database
 from core.base.journal_home import JournalHome
 from server.hook.queue_priority import QueuePriority
 from server.hook.server_queue import ServerQueue
+from server.hook.queue_request import QueueRequest
 
 CLOSE_WAIT_SECONDS = 60.0
 
@@ -18,8 +19,8 @@ class HookDatabase:
         self.queue = ServerQueue()
 
     @contextmanager
-    def used(self, priority: QueuePriority, wait_seconds: float) -> Generator[Database]:
-        with self.queue.hook_turn(priority, wait_seconds):
+    def used(self, priority: QueuePriority, wait_seconds: float, request: QueueRequest | None = None) -> Generator[Database]:
+        with self.queue.hook_turn(priority, wait_seconds, request):
             yield self.database
 
     def close(self) -> None:

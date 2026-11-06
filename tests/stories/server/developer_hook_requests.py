@@ -14,7 +14,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingOn
 from tests.stories.server.support.browser_story import expect_browser
-from tests.stories.server.support.server_client import server_story
+from tests.stories.server.support.server_client import server_story, viewer_answer
 from core.testing.expect_row import expect_row
 from tests.stories.support.story_checks import expect_value
 
@@ -148,3 +148,71 @@ def test_recording_drops_requests_instead_of_waiting_for_a_writer(recording_serv
         writer.close()
     value = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})
     assert not any(row["event"] == "task list" for row in value["rows"])
+
+
+def test_queue_inspector_shows_an_empty_queue(recording_server):
+    server = recording_server
+    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+    value = server.viewer_line_value(cookie, {"line": ["developer", "request-queue"], "environment": "main", "window": "developer.hook-requests"})
+    assert value["running"] == []
+    assert value["waiting"] == []
+
+
+def test_queue_inspector_shows_hook_priority_without_waiting(recording_server):
+    server = recording_server
+    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+    worker_id = server.story.new_row_id("agent start s-queue-worker claude worker --environment main")
+    server.story.expect_success(f'agent edit {worker_id} --given-name "Ada"')
+    worker = HookSamples.sample("post_tool_use").with_fields(session="s-queue-worker", role="worker", firing="queue-worker")
+    main = HookSamples.sample("post_tool_use").with_fields(role="main", firing="queue-main")
+    with ThreadPoolExecutor(2) as pool:
+        with server.context.hook_database.used(QueuePriority.AGENT_HOOK, 1):
+            first = pool.submit(server.expect_hook_answer, "/hook", dict(worker.body), 200, '"refusal":')
+            with server.context.hook_database.queue.changed:
+                assert server.context.hook_database.queue.changed.wait_for(lambda: len(server.context.hook_database.queue.waiting_hooks) == 1, timeout=0.4)
+            second = pool.submit(server.expect_hook_answer, "/hook", dict(main.body), 200, '"refusal":')
+            with server.context.hook_database.queue.changed:
+                assert server.context.hook_database.queue.changed.wait_for(lambda: len(server.context.hook_database.queue.waiting_hooks) == 2, timeout=0.4)
+            value = server.viewer_line_value(cookie, {"line": ["developer", "request-queue"], "environment": "main", "window": "developer.hook-requests"})
+            assert [row["sender"] for row in value["waiting"][:2]] == ["Main agent", "Worker: Ada"]
+            assert all(row["waited_ms"] > 0 for row in value["waiting"][:2])
+        first.result()
+        second.result()
+
+
+def test_queue_inspector_shows_a_waiting_viewer_without_waiting_for_the_hook(recording_server):
+    server = recording_server
+    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+    with ThreadPoolExecutor(1) as pool:
+        with server.context.hook_database.used(QueuePriority.AGENT_HOOK, 1):
+            answer = pool.submit(server.viewer_line_value, cookie, {"line": ["task", "list"], "environment": "main", "window": "tasks.tasks"})
+            with server.context.hook_database.queue.changed:
+                assert server.context.hook_database.queue.changed.wait_for(lambda: bool(server.context.hook_database.queue.waiting_viewers), timeout=0.4)
+            value = server.viewer_line_value(cookie, {"line": ["developer", "request-queue"], "environment": "main", "window": "developer.hook-requests"})
+            assert value["running"][0]["event"] == "hook"
+            assert any(row["sender"] == "Viewer" and row["event"] == "task list" for row in value["waiting"])
+        answer.result()
+
+
+@pytest.mark.parametrize("line", ["setting switch journal.core.developer.tools off --project", "setting set journal.core.developer.tools.hooks.request-log false --project"])
+def test_queue_inspector_obeys_the_request_log_settings(recording_server, line):
+    server = recording_server
+    server.story.expect_success(line, actor=server.story.user)
+    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+    server.expect_viewer_line(cookie, {"line": ["developer", "request-queue"], "environment": "main", "window": "developer.hook-requests"}, 200, "the request log is off")
+
+
+def test_command_line_can_read_the_request_queue(recording_server):
+    recording_server.expect_cli_exit("developer request-queue", "/", 0, "Request queue")
+
+
+def test_a_mixed_batch_does_not_hold_the_queue_inspection(recording_server):
+    server = recording_server
+    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+    queue = {"line": ["developer", "request-queue"], "environment": "main", "window": "developer.hook-requests"}
+    task = {"line": ["task", "list"], "environment": "main", "window": "tasks.tasks"}
+    with server.context.hook_database.used(QueuePriority.AGENT_HOOK, 1):
+        started_at = perf_counter()
+        status, _, body = viewer_answer(server.viewer_port(), "/api/lines", cookie, "", {"lines": [queue, task]})
+        assert status == 400 and "read the request queue separately" in body
+        assert perf_counter() - started_at < 0.5

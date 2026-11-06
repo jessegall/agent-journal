@@ -1,10 +1,12 @@
 <script setup>
 import {computed, ref} from "vue";
 import {WindowRoom, highlight, usePoll, useReadLine} from "@journal/window-kit";
+import RequestQueueInspector from "./RequestQueueInspector.vue";
 
 const {value: requests, failure, load} = useReadLine(() => "developer hook-requests");
 const rows = computed(() => requests.value?.rows ?? []);
 const openedNumber = ref(0);
+const queueOpen = ref(false);
 const opened = computed(() => rows.value.find((row) => row.id === openedNumber.value));
 const shown = (value) => highlight(JSON.stringify(value, null, 2), "json").join("\n");
 const isRefused = (row) => row.outcome === "refused";
@@ -18,6 +20,7 @@ usePoll(load, () => true);
     <WindowRoom padding="0">
         <div class="requests" data-hook-requests>
             <section class="list" aria-label="Recorded requests">
+                <button type="button" class="queue-button" data-request-queue-open @click="queueOpen = true">Request queue</button>
                 <div class="columns">
                     <span data-hook-column>Event</span>
                     <span data-hook-column>Tool</span>
@@ -68,12 +71,17 @@ usePoll(load, () => true);
                     <p class="note message">Select a request to see its headers and body.</p>
                 </template>
             </section>
+            <div v-if="queueOpen" class="queue-veil" @click.self="queueOpen = false"><RequestQueueInspector @close="queueOpen = false" /></div>
         </div>
     </WindowRoom>
 </template>
 
 <style scoped>
+.queue-button { align-self: flex-end; margin: 8px 12px; }
+.queue-veil { position: absolute; inset: 0; display: flex; justify-content: flex-end; background: #0005; z-index: 3; }
+.queue-veil > * { width: min(560px, 100%); box-shadow: 0 0 24px #0003; }
 .requests {
+    position: relative;
     display: grid;
     grid-template-columns: minmax(360px, 46%) 1px minmax(0, 1fr);
     height: 100%;
@@ -237,7 +245,11 @@ pre {
 }
 
 @media (max-width: 760px) {
-    .requests {
+    .queue-button { align-self: flex-end; margin: 8px 12px; }
+.queue-veil { position: absolute; inset: 0; display: flex; justify-content: flex-end; background: #0005; z-index: 3; }
+.queue-veil > * { width: min(560px, 100%); box-shadow: 0 0 24px #0003; }
+.requests {
+    position: relative;
         grid-template-columns: minmax(0, 1fr);
         grid-template-rows: minmax(140px, 45%) 1px minmax(0, 1fr);
     }

@@ -28,6 +28,7 @@ from server.hook.raw_hook_body import RawHookBody, is_raw_body
 from server.hook.hook_headers import HookHeaders
 from server.hook.hook_database_busy_error import HookDatabaseBusyError
 from server.hook.queue_priority import QueuePriority
+from server.hook.queue_request import QueueRequest
 from server.server_context import ServerContext
 
 
@@ -71,7 +72,11 @@ class HookEndpoint:
         try:
             priority = queue_priority(data)
             limit_seconds = self.context.agent_hook_limit_seconds if priority is QueuePriority.AGENT_HOOK else self.context.hook_limit_seconds
-            with self.context.hook_database.used(priority, limit_seconds) as database:
+            fields = data if is_mapping(data) else {}
+            role = str(fields.get("role", "main"))
+            sender = "Helper" if role == "helper" else "Worker" if role == "worker" else "Main agent"
+            request = QueueRequest.started(sender, str(fields.get("event", fields.get("hook_event_name", "hook"))), str(fields.get("session", fields.get("session_id", ""))))
+            with self.context.hook_database.used(priority, limit_seconds, request) as database:
                 self.timing.stamp("hook_locked")
                 queued_ms = (perf_counter() - started_at) * 1000
                 return self.routed_answer(data, program, headers, database, started_at, limit_seconds, queued_ms)

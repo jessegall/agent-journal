@@ -324,6 +324,7 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
         context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
                                 hook_database, ViewerListener(login, ViewerRoutes(home, listener_thread, login, reported, hook_database.queue)), ServerTunnel(home), reported, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS)
         context.viewer.routes.line_route = StoryLineRoute(home, listener_thread, reported)
+        context.viewer.routes.line_route.line_run.request_queue = hook_database.queue
         server = JournalServer(str(files.socket), RequestHandler, context)
         if listener_thread_started:
             listener_thread.start()
