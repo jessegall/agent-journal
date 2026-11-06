@@ -15,6 +15,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_fault_error import PluginFaultError
+from core.modules.plugins.support.plugin_late_error import PluginLateError
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX
 from core.modules.plugins.support.plugin_manifest import LINE_VERSION
@@ -34,8 +35,9 @@ class PluginProgram:
     """Runs a plugin's program for one event, as version 4 did: in its folder and a process group of its
     own, the line on its input, a clean environment naming its folders and settings, and a time limit
     past which it is stopped; a late run, an error code or an answer that is not JSON is raised as the
-    plugin's fault. A plugin whose answering service has its socket open is asked there instead, and the
-    program answers once it is gone."""
+    plugin's fault. A plugin whose answering service has its socket open is asked there instead; a held event whose service is
+    closed is late at once, since a program started now would answer past its window, and the program answers
+    only for an event that names no service."""
 
     def __init__(self, home: JournalHome, folders: PluginFolders, sockets: PluginSocketPaths, skills: LoadedSkills, checkouts: AgentCheckouts, scripts: PluginScriptProcesses, agents: AgentRows) -> None:
         self.home, self.folders, self.sockets, self.skills, self.checkouts, self.scripts, self.agents = home, folders, sockets, skills, checkouts, scripts, agents
@@ -52,6 +54,8 @@ class PluginProgram:
         service_name = explicit_service or (socket_services[0] if socket_services and not call.script and limit_ms is not None else "")
         if service_name and (answer := self.service_answer(manifest.name, service_name, line, limit_ms)) is not None:
             return answer
+        if service_name and not explicit_service:
+            raise PluginLateError(f"its service {service_name} is not answering, and a program started now would answer past {limit_ms} ms")
         program = manifest.program if explicit_service else call.script or manifest.program
         if explicit_service and not program:
             raise PluginFaultError(f"its service {explicit_service} is not answering")

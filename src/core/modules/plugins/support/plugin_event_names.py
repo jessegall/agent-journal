@@ -8,8 +8,7 @@ PLAIN_EVENTS = {HookEventName.STOP: "idle", HookEventName.PROMPT: "prompt_submit
 
 
 class PluginEventNames:
-    """Converts agent hooks into plugin events, including the agent's working folder. A shell line is one
-    command_starting event, so a plugin that holds it starts once for the line, whatever its number of parts."""
+    """Converts agent hooks into plugin events, including the agent's working folder."""
 
     def events(self, hook: AgentHook) -> list[PluginEvent]:
         events = self.hook_events(hook)
@@ -32,9 +31,8 @@ class PluginEventNames:
         return PluginEvent("tool_starting", {"tool": tool.name, "input": dict(hook.event.tool_input()), "writes": tool.is_writing_files()})
 
     def command_events(self, tool: Tool) -> list[PluginEvent]:
-        if tool.shell is None or tool.shell.is_journal_line or not tool.shell.parts:
+        if tool.shell is None or tool.shell.is_journal_line:
             return []
         parts = tool.shell.parts
-        commands = [{"text": part.text, "files": [*part.input_paths, *part.output_paths], "position": place} for place, part in enumerate(parts)]
-        files = list(dict.fromkeys(file for command in commands for file in command["files"]))
-        return [PluginEvent("command_starting", {"text": " ; ".join(command["text"] for command in commands), "files": files, "position": 0, "parts": len(parts), "commands": commands})]
+        return [PluginEvent("command_starting", {"text": part.text, "files": [*part.input_paths, *part.output_paths], "position": place, "parts": len(parts)})
+                for place, part in enumerate(parts)]

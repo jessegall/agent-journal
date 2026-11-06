@@ -122,7 +122,7 @@ def test_a_line_read_by_a_hook_is_not_read_again_before_it_is_deleted(new_story)
     story.expect_rows(not any(queue.iterdir()))
 
 
-def test_a_shell_line_of_four_parts_starts_each_holding_plugin_once_and_reads_the_login_path_once(new_story, monkeypatch):
+def test_the_starts_of_one_hook_read_the_login_path_once(new_story, monkeypatch):
     story = install_runner(event_plugin_story(new_story, program="see.sh", hears=["command_starting"], holds=["command_starting"]))
     install_event_plugin(story, program="see.sh", hears=["command_starting"], holds=["command_starting"], name="second")
     story.run("setting set journal.core.plugins.hold_window_ms 5000 --project", actor=story.user)
@@ -131,9 +131,9 @@ def test_a_shell_line_of_four_parts_starts_each_holding_plugin_once_and_reads_th
     login_path.file.write_text("/usr/bin:/bin")
     reads = read_counter(monkeypatch, login_path.file)
     starts = start_counter(monkeypatch, "see.sh")
-    line = HookSamples.shell("ls && pwd && date && whoami", *(ShellPart(name, CommandCategory.READ, []) for name in ("ls", "pwd", "date", "whoami")))
+    line = HookSamples.shell("ls && pwd", *(ShellPart(name, CommandCategory.READ, []) for name in ("ls", "pwd")))
     story.expect_hook_allowed("s-1", line)
-    story.expect_rows(sorted(starts) == ["events", "second"], reads == [login_path.file.resolve()])
+    story.expect_rows(sorted(starts) == ["events", "events", "second", "second"], reads == [login_path.file.resolve()])
 
 
 def test_a_hook_starts_no_script_for_an_edit_the_plugin_hears_and_does_not_hold(new_story, monkeypatch):
