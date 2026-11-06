@@ -9,10 +9,8 @@ from core.modules.plugins.support.runnable_plugin import RunnablePlugin
 
 
 class RunnablePlugins:
-    """The one place that decides which plugins may run now: the enabled ones, leaving out a plugin whose upgrade is
-    under way, so its manifest is never read while the upgrade replaces its folder. Each comes with its manifest and
-    whether its files changed; only the plugins whose files are as installed run. A manifest that cannot be read
-    is a fault of that plugin alone: it is left out here and reported by unreadable."""
+    """Selects enabled plugins not being upgraded and reads their manifests and file changes. A manifest that cannot be
+    read is a fault of that plugin alone: it is left out here and reported by unreadable."""
 
     def __init__(self, plugins: PluginQuery, folders: PluginFolders, moments: PluginMoments) -> None:
         self.plugins, self.folders, self.moments = plugins, folders, moments

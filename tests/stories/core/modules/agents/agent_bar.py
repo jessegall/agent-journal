@@ -109,16 +109,16 @@ def no_launcher(story) -> None:
     return None
 
 
-def socket_of_a_dead_launcher(story) -> None:
+def stale_launcher_socket(story) -> None:
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as stale_socket:
         stale_socket.bind(str(story.home.socket("launcher")))
 
 
-def launcher_that_runs_another_program(story) -> None:
+def different_program_launcher(story) -> None:
     FakeLauncher(story.home.socket("launcher"))
 
 
-@pytest.fixture(params=[no_launcher, socket_of_a_dead_launcher, launcher_that_runs_another_program])
+@pytest.fixture(params=[no_launcher, stale_launcher_socket, different_program_launcher])
 def stopped_main(new_story, request):
     story = new_story(fixture=UserJoined)
     request.param(story)

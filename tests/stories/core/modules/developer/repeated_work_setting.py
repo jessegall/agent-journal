@@ -122,7 +122,7 @@ def test_the_same_finding_in_two_requests_is_reported_once(new_story, monkeypatc
     story.expect_rows(len(reported(story)) == 1)
 
 
-def read_twice_for_each(*row_ids):
+def read_twice_per_row(*row_ids):
     remaining = iter(row_ids)
 
     def read_twice_for_next_row(database):
@@ -135,7 +135,7 @@ def read_twice_for_each(*row_ids):
 
 def test_the_same_sql_read_for_two_rows_in_two_requests_is_reported_once_with_a_short_text(new_story, monkeypatch):
     story = new_story(fixture=RepeatedWorkOn)
-    replace_console_run(monkeypatch, read_twice_for_each(106281, 106286))
+    replace_console_run(monkeypatch, read_twice_per_row(106281, 106286))
     line_run = LineRun(story.home)
     for _ in range(2):
         run_as_core(story, line_run)
@@ -145,7 +145,7 @@ def test_the_same_sql_read_for_two_rows_in_two_requests_is_reported_once_with_a_
 
 def test_a_viewer_line_and_a_cli_line_share_the_reported_findings(new_story, monkeypatch):
     story = new_story(fixture=RepeatedWorkOn)
-    replace_console_run(monkeypatch, read_twice_for_each(106281, 106286))
+    replace_console_run(monkeypatch, read_twice_per_row(106281, 106286))
     shared = ReportedFindings()
     viewer_run = LineRoute(story.home, ListenerThread(lambda: None, lambda error: None), shared).line_run
     run_as_core(story, LineRun(story.home, reported=shared))

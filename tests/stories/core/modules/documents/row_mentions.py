@@ -30,8 +30,8 @@ def test_link_titles_read_tasks_together(new_story):
         story.run_listeners()
     database = story.container.get(Database)
     with patch.object(database, 'rows', wraps=database.rows) as reads:
-        result = story.run(f'link list --target task:{target} --json')
-    rows = json.loads(result.output_text)['rows']
+        outcome = story.run(f'link list --target task:{target} --json')
+    rows = json.loads(outcome.output_text)['rows']
     story.expect_rows(len(rows) == 12, {row['source_title'] for row in rows} == {f'Task {number}' for number in range(12)})
     task_reads = [call for call in reads.call_args_list if 'FROM tasks ' in call.args[0].sql]
     expect_value(len(task_reads), 1)

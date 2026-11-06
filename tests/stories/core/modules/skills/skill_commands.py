@@ -1,12 +1,10 @@
 import pytest
 
 from core.base.command.bus import Bus
-import shlex
 from core.base.registry.registry import Registry
 from core.base.database.database import Database
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.commands.reset_skills.reset_skills import ResetSkills
-from core.modules.skills.support.skill_files import SkillFiles
 from tests.stories.core.modules.skills.agent_skills import GOOD
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
@@ -21,8 +19,7 @@ def current_digest(story, skill: str) -> str:
 
 def test_require_makes_a_skill_due_for_an_agent(new_story):
     story = started(new_story)
-    path = story.container.get(SkillFiles).readable("journal-notes")
-    story.expect_success(f"skill require {story.agent.id} journal-notes", f"read: cat {shlex.quote(str(path))}")
+    story.expect_success(f"skill require {story.agent.id} journal-notes", "load this first with the Skill tool: journal-notes")
     story.expect_success(f"agent-skill list --agent {story.agent.id}", f"3  {story.agent.id}  journal-notes  due")
 
 
@@ -40,8 +37,7 @@ def test_require_does_nothing_for_a_skill_the_agent_holds_loaded_in_its_current_
 def test_require_makes_a_skill_read_in_an_older_text_due_again(required_notes_skill):
     story = required_notes_skill
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-notes", "an-old-digest"), story.agent)
-    path = story.container.get(SkillFiles).readable("journal-notes")
-    story.expect_success(f"skill require {story.agent.id} journal-notes", f"read: cat {shlex.quote(str(path))}")
+    story.expect_success(f"skill require {story.agent.id} journal-notes", "load this first with the Skill tool: journal-notes")
 
 
 def test_a_second_load_of_the_same_digest_changes_nothing(new_story):

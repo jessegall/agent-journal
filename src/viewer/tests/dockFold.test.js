@@ -6,9 +6,9 @@ test("scrolling down to the foot opens the docked cards, and scrolling up away f
     expect(dockOpening({top: 300, before: 600, height: 1000, shown: 300})).toBe(false);
 });
 
-test("a scroll that goes down but stays away from the foot, or up within the last few pixels, changes nothing", () => {
+test("a scroll that goes down but stays away from the foot, changes nothing until it reaches the foot", () => {
     expect(dockOpening({top: 400, before: 300, height: 1000, shown: 300})).toBeNull();
-    expect(dockOpening({top: 695, before: 700, height: 1000, shown: 300})).toBeNull();
+    expect(dockOpening({top: 695, before: 700, height: 1000, shown: 300})).toBe(true);
 });
 
 test("a card folded by hand keeps that, else it follows the scroll", () => {

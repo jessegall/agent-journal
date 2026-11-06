@@ -12,14 +12,22 @@ AGENT_CARDS_SELECT = (
     " LEFT JOIN phase_tasks ON phase_tasks.task_id = listed.id LEFT JOIN phases ON phases.id = phase_tasks.phase_id"
     " LEFT JOIN plans AS task_plan ON task_plan.id = phases.plan_id) AS tasks,"
     " EXISTS (SELECT 1 FROM agent_blocks WHERE agent_blocks.session_agent_id = agents.id AND agent_blocks.closed_at IS NULL) AS is_blocked,"
+    " coalesce((SELECT hook_calls.created_at FROM hook_calls WHERE hook_calls.session_agent_id = agents.id ORDER BY hook_calls.id DESC LIMIT 1), '') AS last_activity,"
     " coalesce(dispatch.program_model, '') AS job_model, coalesce(dispatch.profile, '') AS job_profile,"
     " coalesce(dispatch.description, '') AS job_description, coalesce(dispatch.instruction, '') AS job_instruction,"
+    " coalesce(current_job.description, '') AS helper_job_description, coalesce(current_job.brief, '') AS helper_job_brief,"
     " coalesce((SELECT latest.returned FROM helper_jobs AS latest WHERE latest.helper_id = agents.id ORDER BY latest.id DESC LIMIT 1), '') AS job_returned"
     " FROM agents"
     " LEFT JOIN helper_jobs AS dispatch ON dispatch.id = (SELECT min(helper_jobs.id) FROM helper_jobs WHERE helper_jobs.helper_id = agents.id)"
+    " LEFT JOIN helper_jobs AS current_job ON current_job.id = (SELECT id FROM helper_jobs WHERE helper_id = agents.id ORDER BY ended_at IS NULL DESC, id DESC LIMIT 1)"
 )
 
 AGENT_LISTING_SELECT = (
     "SELECT agent_cards.*, agents.parent_id, agents.created_at, agents.updated_at, agents.process_started_at"
     " FROM agent_cards JOIN agents ON agents.id = agent_cards.id"
+)
+
+AGENT_FILTER_OPTIONS_SELECT = (
+    "SELECT environment_id, json_group_array(DISTINCT role) AS roles,"
+    " json_group_array(DISTINCT profile) AS profiles FROM agents GROUP BY environment_id"
 )

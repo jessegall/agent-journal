@@ -1,5 +1,5 @@
 from core.base.container import Container
-from core.modules.documents.support.ended_documents import EndedDocuments
+from core.modules.documents.actions.ended_documents import EndedDocuments
 
 
 class CloseEndedDocumentsTick:

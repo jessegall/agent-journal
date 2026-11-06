@@ -1,12 +1,13 @@
 <script setup>
-import {inject, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, inject, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {WINDOW_CONTEXT} from "./windowContextKey.js";
 
 // the tabs a window declares in the backend, each with the count from the last answer the window read; choosing one is the window's to read
 // a band that never wraps: it scrolls sideways, keeps the open tab in view and draws one line that slides under it
-const props = defineProps({active: {type: Object, default: null}, answer: {type: Object, default: () => ({})}});
+const props = defineProps({active: {type: Object, default: null}, answer: {type: Object, default: () => ({})}, tabs: {type: Array, default: null}});
 const emit = defineEmits(["choose"]);
-const tabs = inject(WINDOW_CONTEXT, null)?.tabs ?? [];
+const context = inject(WINDOW_CONTEXT, null);
+const tabs = computed(() => props.tabs ?? context?.tabs ?? []);
 const band = ref(null);
 const line = ref({left: 0, width: 0, slides: false});
 const counted = (tab) => props.answer[tab.count_field] !== undefined;

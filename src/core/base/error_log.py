@@ -12,8 +12,8 @@ OLD_SUFFIX = ".1"
 
 class ErrorLog:
     """Records unexpected errors in full, so the console can point to them in one line, and notes a hook the
-    journal let through because no row holds its agent. The log stays under ERROR_LOG_BYTES: a write that would
-    pass it first moves the log to a file beside it ending in .1, replacing the one before."""
+    journal let through because no row holds its agent. A write that would exceed ERROR_LOG_BYTES moves the
+    log to a file beside it ending in .1, replacing the one before."""
 
     def __init__(self, home: JournalHome, sink: ExceptionSink) -> None:
         self.path, self.sink = home.error_log, sink

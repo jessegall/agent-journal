@@ -12,9 +12,8 @@ RESTART_LIMIT_SECONDS = 120
 
 class ServerRestartState:
     """Whether a restart or an install holds the server, from the files they leave, by the rules of the CLI and
-    the hook: a restart file counts under two minutes old, a run lock file under ten minutes old, a maintenance
-    file while the process it names runs and under ten minutes old, so a file left by a process that died holds
-    nothing for long."""
+    the hook. A restart file counts under two minutes old; a run lock counts under ten minutes. A maintenance
+    file counts for ten minutes while its process runs."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home
@@ -30,17 +29,17 @@ class ServerRestartState:
         if not maintenance_file.is_file() or time.time() - maintenance_file.stat().st_mtime >= MAINTENANCE_LIMIT_SECONDS:
             return False
         text = FileAccess.shared().read(maintenance_file).strip()
-        return not text.isdigit() or self.is_running(int(text))
+        return not text.isdigit() or self.is_running(text)
 
     @property
-    def is_waiting_for_runs(self) -> bool:
+    def has_run_lock(self) -> bool:
         run_lock = self.home.run_lock
         return run_lock.is_file() and time.time() - run_lock.stat().st_mtime < RUN_LOCK_LIMIT_SECONDS
 
     @staticmethod
-    def is_running(pid: int) -> bool:
+    def is_running(pid: str) -> bool:
         try:
-            os.kill(pid, 0)
+            os.kill(int(pid), 0)
         except ProcessLookupError:
             return False
         except PermissionError:

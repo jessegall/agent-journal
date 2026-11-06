@@ -34,7 +34,6 @@ class RefusalLog:
         return self.database.rows(selection.count_statement())[0][0] > 0
 
     def guards_refused_past(self, actor_id: int, created_after: str) -> set[str]:
-        """The guards that refused the actor since the time, each refusal that no guard made as an empty name."""
         selection = Select("refusals").column("DISTINCT guard").matching(Equal("actor_id", actor_id)).matching(Greater("created_at", created_after))
         return {row[0] for row in self.database.rows(selection.statement())}
 

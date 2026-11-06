@@ -61,12 +61,12 @@ class ReaderStep:
                              self.run.summary(reader, text) or output.reader_summary, progress,
                              steps_passed=passed, steps_failed=failed, test_count=test_count, replaces=restarted, progress_count_read=listing_ready)
 
-    def step_progress(self, reader: Reader, unfinished: str, completed: int, test_count: int, current: int) -> int:
+    def step_progress(self, reader: Reader, unfinished: str, completed_steps: int, test_count: int, current: int) -> int:
         total = self.run.count(reader, unfinished, test_count)
         if not total:
             return current
         partial_steps = StepTally.counted(reader.step_pattern, "", unfinished)
-        return min(100, (completed + partial_steps.passed + partial_steps.failed) * 100 // total)
+        return min(100, (completed_steps + partial_steps.passed + partial_steps.failed) * 100 // total)
 
     def script_advance(self, process: Process, output: Output, reader: Reader, is_final: bool) -> ReaderAdvance | None:
         advanced = self.text_advance(process, output, reader, is_final)

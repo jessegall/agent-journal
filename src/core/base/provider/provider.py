@@ -61,6 +61,9 @@ class Provider(ABC):
     def __init__(self, folders: ProgramFolders) -> None:
         self.folders = folders
 
+    def skill_instruction(self, skill: str, path: Path) -> str:
+        return f"read this first: {path}"
+
     def model_names(self) -> list[str]:
         return [model.name for model in self.models]
 

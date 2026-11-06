@@ -1,0 +1,32 @@
+import {h} from "vue";
+import {expect, test} from "vitest";
+import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
+import {context, mounted} from "./support/windowContext.js";
+
+test("an opened helper has its own information band and stop button", async () => {
+    const row = {id: 6, role: "helper", access: "read-only", session: "s-6", program: "claude", created_at: new Date().toISOString()};
+    const progress = {branch: "worker-6"};
+    const facts = {id: 6, tasks: [], model: "model-six", effort: "high", context_percent: 25, cost_dollars: 5.94};
+    const ctx = context({"usage tool --agent 6": {ok: true, value: {tool: "", note: ""}}});
+    const element = await mounted({render: () => h(AgentCard, {row, facts, progress, open: true})}, ctx);
+    const band = element.querySelector("[data-information-bar]");
+    expect(band.textContent).toContain("Claude");
+    expect(band.textContent).toContain("25%");
+    expect(band.textContent).toContain("model-six");
+    expect(band.textContent).toContain("high");
+    expect(band.textContent).toContain("$5.94");
+    expect(band.textContent).toContain("worker-6");
+    expect(band.querySelector("[data-helper-stop]")).not.toBeNull();
+    expect(band.querySelector('[data-fact="jobs"]')).toBeNull();
+});
+
+test("an opened worker shows its branch without a helper stop button", async () => {
+    const row = {id: 7, role: "worker", access: "writing", session: "s-7", program: "codex", created_at: new Date().toISOString()};
+    const facts = {id: 7, tasks: [], model: "model-seven", context_percent: 40};
+    const ctx = context({"usage tool --agent 7": {ok: true, value: {tool: "", note: ""}}});
+    const element = await mounted({render: () => h(AgentCard, {row, facts, progress: {branch: "worker-7"}, open: true})}, ctx);
+    const band = element.querySelector("[data-information-bar]");
+    expect(band.textContent).toContain("worker-7");
+    expect(band.textContent).toContain("40%");
+    expect(band.querySelector("[data-helper-stop]")).toBeNull();
+});

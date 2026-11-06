@@ -39,6 +39,6 @@ class CritiqueReportListener(CommitListener[Created[Link]]):
             self.bus.run(RequireSkill(agent_id, REVIEW_APPLYING_SKILL), self.actors.actor(MODULE_NAME), cause_id=logged.id)
         self.bus.run(MoveRow(Plan.model_name, plan.id, REVIEWED_MOVE.name), self.actors.actor(MODULE_NAME), cause_id=logged.id)
 
-    def applying_agent_ids(self, plan: Plan) -> tuple[int, ...]:
+    def applying_agent_ids(self, plan: Plan) -> list[int]:
         maker = self.queries.query(Agent).filter(id=plan.creator_id).first()
-        return (maker.id,) if maker is not None else tuple(agent.id for agent in MainAgentFinder.rows(self.queries))
+        return [maker.id] if maker is not None else [agent.id for agent in MainAgentFinder.rows(self.queries)]

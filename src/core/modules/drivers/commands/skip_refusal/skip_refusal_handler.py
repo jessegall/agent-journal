@@ -28,9 +28,9 @@ SKIP_SOURCE = "drivers.refusal-skip"
 
 class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
     """Keeps an agent's skip of a refusal that just met it, with its reason. A safety refusal has no skip.
-    A skip counts as one more in a row unless the agent obeyed a refusal since its last, which means something
-    other than the refusal it skips now refused it (a retry of the same refused line is no obeying); at five the
-    skip is gone, its main agent or the person is told, and only a restore gives it back."""
+    A skip counts as one more in a row unless the agent obeyed a refusal since its last, meaning something
+    other than the skipped refusal refused it (a retry is no obeying). At five, the skip is gone; its main
+    agent or the person is told, and only a restore gives it back."""
 
     command = SkipRefusal
 
@@ -75,7 +75,6 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
         return 1 if self.refused_names_past(actor, skipped_at) - {name} else last.streak + 1
 
     def refused_names_past(self, actor: Actor, skipped_at: str) -> set[str]:
-        """What refused the agent since its last skip, each refusal that no rule or guard made as an empty name."""
         calls = self.queries.query(HookCall).filter(session_agent_id=actor.id, answer=HookAnswer.REFUSED).matching(Greater("created_at", skipped_at)).all_rows()
         hook_names = {name for call in calls for name in self.refusing_rules(call)}
         return hook_names | self.refusals.guards_refused_past(actor.id, skipped_at)

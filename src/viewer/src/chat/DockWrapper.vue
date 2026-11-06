@@ -19,7 +19,7 @@ import {peekRef} from "../route.js";
 
 // one item docked above the chat, drawn as version 4 drew a docked card: the type's icon and title, its buttons, and the body its module gives it
 const emit = defineEmits(["fold", "undock"]);
-const props = defineProps({item: {type: Object, required: true}, folded: Boolean, leaving: Boolean, refusal: {type: String, default: ""}});
+const props = defineProps({item: {type: Object, required: true}, folded: Boolean, collapsed: Boolean, leaving: Boolean, refusal: {type: String, default: ""}});
 const declaration = computed(() => dockDeclaration(props.item.type));
 const now = useSharedNow();
 const age = computed(() => ago(props.item.created_at, now.value * 1000));
@@ -82,18 +82,19 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
         :type="declaration?.needs_user ? 'waiting' : ''"
         :folded="Boolean(declaration?.folds) && folded"
         :body="Boolean(declaration?.folds)"
+        :collapsed="collapsed"
         :data-figure-closing="leaving ? '' : null"
     >
         <template #edge>
             <template v-if="leaving && !item.kept"><DockLeave :ends-at="leaveSeconds(item)" /></template>
         </template>
         <template #head>
-            <template v-if="declaration?.draws_head"><span ref="head" class="dock-head" data-dock-head /></template>
+            <template v-if="declaration?.draws_head && !collapsed"><span ref="head" class="dock-head" data-dock-head /></template>
             <template v-else>
                 <Icon :name="look.icon" class="dock-icon" :size="14" />
                 <span class="dock-title" :title="look.title">{{ look.title }}</span>
             </template>
-            <template v-if="look.controls.length">
+            <template v-if="look.controls.length && !collapsed">
                 <span class="dock-controls">
                     <template v-for="button in look.controls" :key="button.action + button.runs">
                         <template
@@ -118,7 +119,7 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
                 </span>
             </template>
             <span ref="time" class="dock-age" data-dock-age>
-                <template v-if="!declaration?.leaves_after_seconds">{{ age }}</template>
+                <template v-if="collapsed || !declaration?.leaves_after_seconds">{{ age }}</template>
             </span>
         </template>
         <template #still>

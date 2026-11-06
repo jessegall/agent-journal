@@ -147,12 +147,12 @@ def test_a_hook_reads_only_the_records_of_its_own_lines(new_story):
     story = new_story(fixture=BuilderWithStartedTask)
     log = story.container.get(NudgeLog)
     others = [Nudge(f"sample.other.{number}", NudgeType.STEERING, f"Line {number}") for number in range(30)]
-    own = Nudge("sample.own", NudgeType.STEERING, "Own line")
-    answer = RuleAnswer.with_nudges(*others, own)
+    selected = Nudge("sample.own", NudgeType.STEERING, "Own line")
+    answer = RuleAnswer.with_nudges(*others, selected)
     context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
     with story.container.get(Database).transaction():
         log.write(story.agent.id, RuleAnswers(["lead"], [RuleRecord("sample", "lead", answer.outcome, answer)]), context)
-    rows = story.container.get(NudgeRecords).nudge_rows(story.agent.id, [own])
+    rows = story.container.get(NudgeRecords).nudge_rows(story.agent.id, [selected])
     expect_value([row.key for row in rows], ["sample.own"])
 
 

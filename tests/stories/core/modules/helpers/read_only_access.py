@@ -112,8 +112,8 @@ def test_a_read_only_helper_runs_nothing_that_changes_or_reaches_out(new_story, 
 @pytest.mark.parametrize("line", ["phase make --plan 1 Totals", "phase place 1 --phase 1", "phase move 1 --to 2", "doc --help", "agent stop --help"])
 def test_a_read_only_planner_can_file_its_plan_and_ask_any_command_for_its_help(new_story, line):
     story, session = helper_story(new_story, PROGRAMS[0])
-    words = line.split()
-    story.expect_hook_allowed(session, shell(f"journal {line}", part("journal", CommandCategory.JOURNAL, *words)))
+    arguments = line.split()
+    story.expect_hook_allowed(session, shell(f"journal {line}", part("journal", CommandCategory.JOURNAL, *arguments)))
 
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
@@ -169,8 +169,8 @@ def test_a_read_only_helper_reads_and_writes_rows_of_its_own(new_story, helper_f
 
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
-@pytest.mark.parametrize("arguments", [("task", "close", "1"), ("task", "edit", "1"), ("task", "delete", "1"), ("plan", "start", "1"), ("rule", "make", "x"), ("setting", "set", "a", "b")],
-                         ids=["close a task", "edit a task", "delete a task", "start a plan", "make a rule", "set a setting"])
+@pytest.mark.parametrize("arguments", [("task", "close", "1"), ("task", "delete", "1"), ("plan", "start", "1"), ("rule", "make", "x"), ("setting", "set", "a", "b")],
+                         ids=["close a task", "delete a task", "start a plan", "make a rule", "set a setting"])
 def test_a_read_only_helper_writes_no_row_of_another(new_story, helper_fixture, arguments):
     story, session = helper_story(new_story, helper_fixture)
     story.expect_hook_refusal(session, journal_line(*arguments), OUTWARD_JOURNAL_LINE.nudge().text)

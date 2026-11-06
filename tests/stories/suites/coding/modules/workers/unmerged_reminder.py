@@ -1,9 +1,12 @@
 from datetime import timedelta
 
+from core.base.query.queries import Queries
+from core.modules.drivers.models.agent_block import AgentBlock
 from suites.coding.modules.workers.support.worker_nudges import WORKER_UNMERGED
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from tests.stories.support.story_checks import expect_value
 
 MAIN_SESSION = "s-1"
 REMINDER_INTERVAL = timedelta(seconds=WORKER_UNMERGED.interval.seconds)
@@ -73,3 +76,40 @@ def test_the_unmerged_line_names_the_check_while_a_proof_waits(new_story):
     story.advance(REMINDER_INTERVAL)
     story.tick(MAIN_SESSION)
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"journal worker merge {worker.id}")
+
+
+def remind(story, times: int) -> None:
+    for _ in range(times):
+        story.advance(REMINDER_INTERVAL)
+        story.tick(MAIN_SESSION)
+
+
+def merge_block_rows(story, worker_id: int) -> list[AgentBlock]:
+    return [row for row in story.container.get(Queries).query(AgentBlock).filter(session_agent_id=story.agent.id).all_rows()
+            if f"journal worker merge {worker_id}" in row.condition_text and row.closed_at is None]
+
+
+def test_two_reminders_do_not_hold_the_main_agent(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    worker = delivered_worker(story, repository_environment(story))
+    remind(story, 2)
+    expect_value(merge_block_rows(story, worker.id), [])
+
+
+def test_the_third_reminder_holds_the_main_agent_until_it_merges_or_gives_a_reason(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    worker = delivered_worker(story, repository_environment(story))
+    remind(story, 3)
+    expect_value(len(merge_block_rows(story, worker.id)), 1)
+
+
+def test_a_reason_starts_the_next_round_of_three_reminders(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    worker = delivered_worker(story, repository_environment(story))
+    remind(story, 3)
+    block = merge_block_rows(story, worker.id)[0]
+    story.expect_success(f'agent-block skip {block.id} --reason "The user wants this held"', actor=story.agent)
+    remind(story, 2)
+    expect_value(merge_block_rows(story, worker.id), [])
+    remind(story, 1)
+    expect_value(len(merge_block_rows(story, worker.id)), 1)

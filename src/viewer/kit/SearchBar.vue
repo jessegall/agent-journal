@@ -8,7 +8,7 @@ import {WINDOW_CONTEXT} from "./windowContextKey.js";
 // one window's search: a field and, flush against it behind a divider, the button of the window's options; a window's own buttons sit beside it.
 // When the window declares its search, the declaration gives the placeholder, the entries of the options menu (an entry opens a menu or sends
 // its click key to the window as pick) and a standalone button beside the field, which sends its click key the same way
-const props = defineProps({modelValue: {type: String, default: ""}, placeholder: {type: String, default: "Search"}});
+const props = defineProps({modelValue: {type: String, default: ""}, placeholder: {type: String, default: "Search"}, menuCount: {type: Number, default: 0}});
 const emit = defineEmits(["update:modelValue", "pick"]);
 const slots = useSlots();
 const declared = inject(WINDOW_CONTEXT, null)?.search ?? {};
@@ -50,7 +50,7 @@ defineExpose({focus: () => field.value?.focus()});
                 <button type="button" class="search-bar-clear" data-search-clear aria-label="Clear the search" @click="clear"><Icon name="close" :size="12" /></button>
             </template>
             <template v-if="hasMenu">
-                <button type="button" class="search-bar-menu" data-search-menu aria-label="Options" title="Options" :aria-expanded="Boolean(anchor)" @click="toggleMenu"><Icon name="caret" :size="12" /></button>
+                <button type="button" class="search-bar-menu" data-search-menu aria-label="Options" title="Options" :aria-expanded="Boolean(anchor)" @click="toggleMenu"><span v-if="menuCount" data-menu-count>{{ menuCount }}</span><Icon name="caret" :size="12" /></button>
             </template>
         </div>
         <template v-if="declared.button?.title">

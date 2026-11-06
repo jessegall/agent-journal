@@ -26,7 +26,7 @@ def skill_path(story, skill: str) -> str:
 
 def test_with_a_skill_due_every_tool_but_a_read_of_it_is_refused_with_its_path(due_notes):
     story = due_notes
-    story.expect_hook_refusal("s-1", EDIT, f"read this first: {skill_path(story, 'journal-notes')}")
+    story.expect_hook_refusal("s-1", EDIT, "load this first with the Skill tool: journal-notes")
 
 
 def test_a_journal_command_passes_while_a_skill_is_due(due_notes):
@@ -65,7 +65,7 @@ def test_journal_skill_show_loads_the_skill_it_shows(due_notes):
 
 def test_a_block_names_the_next_due_skill_once_the_first_is_read(due_notes):
     story = due_notes
-    story.expect_hook_refusal("s-1", EDIT, "read this first: .claude/skills/journal-notes")
+    story.expect_hook_refusal("s-1", EDIT, "load this first with the Skill tool: journal-notes")
     read_of(story, ".claude/skills/journal-notes/SKILL.md")
     story.expect_hook_allowed("s-1", EDIT)
 
@@ -77,9 +77,9 @@ def test_a_stop_is_refused_naming_the_unread_skills(due_notes):
 
 def test_a_journal_command_of_a_noun_whose_skill_is_unread_is_refused_until_it_is_read(due_notes):
     story = due_notes
-    story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, f"read this first: {skill_path(story, 'journal-tasks')}")
+    story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "load this first with the Skill tool: journal-tasks")
     read_of(story, ".claude/skills/journal-notes/SKILL.md")
-    story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "read this first: .claude/skills/journal-tasks")
+    story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "load this first with the Skill tool: journal-tasks")
     read_of(story, ".claude/skills/journal-tasks/SKILL.md")
     story.expect_hook_allowed("s-1", JOURNAL_TASK_LIST)
 
