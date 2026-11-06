@@ -14,6 +14,7 @@ class AgentProfile:
     agent_type: str = "helper"
     access: Access | None = None
     program: str = ""
+    program_if_possible: bool = False
     model: str = ""
     codex_model: str = ""
     independent: bool = False
