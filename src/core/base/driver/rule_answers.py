@@ -1,9 +1,10 @@
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 from core.base.command.command import Command
 from core.base.driver.nudge import Nudge
 from core.base.driver.rule_record import RuleRecord
+from core.base.driver.stop_check import StopCheck
 
 
 @dataclass(frozen=True)
@@ -14,6 +15,7 @@ class RuleAnswers:
     rules: Sequence[RuleRecord]
     delays_lines: bool = False
     skipped_lines: frozenset[tuple[str, str]] = frozenset()
+    stop_checks: Sequence[StopCheck] = ()
 
     @property
     def answered(self) -> list[RuleRecord]:
@@ -93,4 +95,5 @@ class RuleAnswers:
         return "\n".join(rule.answer.terminal for rule in self.answered if rule.answer is not None and rule.answer.terminal)
 
     def metadata(self) -> dict[str, object]:
-        return {"layers": list(self.layers), "rules": [rule.saved_fields for rule in self.rules], "terminal": self.terminal}
+        return {"layers": list(self.layers), "rules": [rule.saved_fields for rule in self.rules], "terminal": self.terminal,
+                "stop_checks": [asdict(check) for check in self.stop_checks]}

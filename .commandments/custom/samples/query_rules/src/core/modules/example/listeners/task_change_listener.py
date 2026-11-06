@@ -14,7 +14,7 @@ class TaskChangeListener(CommitListener[Touched[Task]]):
         # @sin architecture_listeners_row_loaded_from_an_event
         row = self.tasks.filter(id=logged.row_id)
         # @sin architecture_listeners_row_loaded_from_an_event
-        held = self.rows.find(Task, logged.row_id)
+        task = self.rows.find(Task, logged.row_id)
         # @righteous architecture_listeners_row_loaded_from_an_event
         related = self.tasks.filter(parent_id=logged.row_id)
         # @righteous architecture_listeners_row_loaded_from_an_event

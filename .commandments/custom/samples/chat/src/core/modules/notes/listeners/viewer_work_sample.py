@@ -22,5 +22,5 @@ class NoteMarkInsideListener(SaveListener):
         self.bus = bus
 
     def handle(self, change: Change[Model]) -> None:
-        self.bus.dispatch(ShowMark(1, NoteMarkType.NOTE, NoteMarkVariant.MADE, "made:1", "Note made"), change.context)
+        self.bus.dispatch(ShowMark(NoteMarkType.NOTE, NoteMarkVariant.MADE, "made:1", "Note made"), change.context)
 

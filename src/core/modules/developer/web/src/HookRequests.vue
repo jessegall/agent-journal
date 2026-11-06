@@ -3,6 +3,7 @@ import {computed, ref, watch} from "vue";
 import {MenuItem, MenuLabel, MenuPanel, WindowRoom, peekRef, toggleFilter, usePoll, useWindow} from "@journal/window-kit";
 import RequestQueueInspector from "./RequestQueueInspector.vue";
 import RequestDetails from "./RequestDetails.vue";
+import {toggleFeedPause} from "./toggleFeedPause.js";
 
 const key = "journal.hook-requests.filters";
 const emptyFilters = () => ({kind: [], family: [], sender: []});
@@ -45,8 +46,7 @@ const isSlow = (row) => !isRefused(row) && row.duration_ms >= 500;
 const durationOf = (row) => `${Math.round(row.duration_ms)} ms`;
 
 function togglePause() {
-    paused.value = !paused.value;
-    if (!paused.value) load();
+    toggleFeedPause(paused, load);
 }
 usePoll(load, () => !paused.value);
 </script>

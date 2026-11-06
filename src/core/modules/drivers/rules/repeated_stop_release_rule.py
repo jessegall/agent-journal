@@ -22,5 +22,5 @@ class RepeatedStopReleaseRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if hook.role in self.suites.agent_policy().stop_required_roles or self.calls.stop_refusal_count(hook.agent_id) < STOP_REFUSAL_COUNT:
-            return RuleAnswer.allowed()
+            return RuleAnswer.allowed("the agent must finish its work or has fewer than five refused stops")
         return RuleAnswer.final_allowance(REPEATED_STOP.nudge())

@@ -16,4 +16,4 @@ class SampleDockWriter(CommitListener):
         # @sin architecture_docking_dock_written_outside_docking
         self.repository.save(DockItem(dock_id=1, creator_id=1, type=event.event, target_model="plan", target_id=1), event)
         # @sin architecture_docking_dock_written_outside_docking
-        self.repository.save(Dock(environment_id=1, creator_id=1), event)
+        self.repository.save(Dock(creator_id=1), event)

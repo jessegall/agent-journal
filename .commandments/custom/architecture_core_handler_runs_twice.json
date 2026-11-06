@@ -37,10 +37,16 @@
                                 "fileMatches": "(^|/)src/(suites|core/modules)/"
                             },
                             {
-                                "extendsAny": [
-                                    "SaveListener",
-                                    "DeletionListener",
-                                    "Guard"
+                                "any": [
+                                    {
+                                        "extendsAny": "SaveListener"
+                                    },
+                                    {
+                                        "extendsAny": "DeletionListener"
+                                    },
+                                    {
+                                        "extendsAny": "Guard"
+                                    }
                                 ]
                             },
                             {

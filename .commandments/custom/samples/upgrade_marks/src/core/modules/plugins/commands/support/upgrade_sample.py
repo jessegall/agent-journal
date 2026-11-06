@@ -1,5 +1,5 @@
 class UpgradeMarkSample:
-    def leaves_the_mark(self, files, mark):
+    def keep_mark(self, files, mark):
         files.update_timestamp(mark)
         try:
             self.run_setup()
@@ -8,7 +8,7 @@ class UpgradeMarkSample:
             self.clear_new_code()
             raise
 
-    def removes_the_mark(self, files, mark):
+    def remove_mark(self, files, mark):
         files.update_timestamp(mark)
         try:
             self.run_setup()
@@ -17,7 +17,7 @@ class UpgradeMarkSample:
             mark.unlink(missing_ok=True)
             raise
 
-    def sets_no_mark(self):
+    def skip_mark(self):
         try:
             self.run_setup()
         # @righteous architecture_plugins_mark_left_on_failure
@@ -25,7 +25,7 @@ class UpgradeMarkSample:
             self.clear_new_code()
             raise
 
-    def swallows_the_failure(self, files, mark):
+    def ignore_failure(self, files, mark):
         files.update_timestamp(mark)
         try:
             self.run_setup()
