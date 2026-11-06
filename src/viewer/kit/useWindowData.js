@@ -12,6 +12,7 @@ const TIMER_TICK_MS = 1000;
 export function useWindowData({state = () => ({}), tab = () => ""} = {}) {
     const context = useWindow();
     const data = reactive({});
+    const handlers = {};
     const waiting = new Set();
     let declared = {};
     let join = 0;
@@ -20,9 +21,28 @@ export function useWindowData({state = () => ({}), tab = () => ""} = {}) {
     const isOnScreen = (name) => !declared[name].tab || declared[name].tab === tab();
     const currentState = () => (tab() ? {...state(), tab: tab()} : state());
 
+    // a key a part of the window handles itself, such as a list of rows: its first answer and its events go to that part
+    function handle(name, heardEvent, showFirst) {
+        handlers[name] = {heardEvent, showFirst, isFirst: true};
+    }
+
+    async function readKey(name, flags) {
+        const state = Object.fromEntries(Object.entries(flags).map(([flag, value]) => [`${name}.${flag}`, value]));
+        const answer = await context.readKeys({only: [name], state: {...currentState(), ...state}});
+        return answer.ok ? answer.value.keys[name] : answer;
+    }
+
+    function showAnswer(name, result) {
+        const handler = handlers[name];
+        if (!handler) return;
+        if (handler.isFirst || !result.ok) handler.showFirst(result);
+        handler.isFirst = false;
+    }
+
     async function reload({only = []} = {}) {
         const answer = await context.readKeys({only, state: currentState()});
         if (!answer.ok) {
+            if (answer.failure !== "cancelled") Object.keys(handlers).forEach((name) => showAnswer(name, answer));
             if (answer.failure !== "cancelled") only.forEach((name) => (part(name).failure = answer.error));
             return false;
         }
@@ -31,6 +51,7 @@ export function useWindowData({state = () => ({}), tab = () => ""} = {}) {
             part(name).loaded = true;
             part(name).readAt = Date.now();
             if (result.ok) part(name).value = result.value;
+            showAnswer(name, result);
         });
         follow(answer.value.declared);
         return true;
@@ -48,8 +69,10 @@ export function useWindowData({state = () => ({}), tab = () => ""} = {}) {
 
     function heard(event) {
         const names = Object.keys(declared).filter((name) => event.event === REFRESH_EVENT || declared[name].events.some((pattern) => matches(pattern, event.event)));
-        names.filter((name) => !isOnScreen(name)).forEach((name) => (part(name).loaded = false));
-        reloadSoon(names.filter(isOnScreen));
+        names.filter((name) => handlers[name]).forEach((name) => handlers[name].heardEvent(event));
+        const ownNames = names.filter((name) => !handlers[name]);
+        ownNames.filter((name) => !isOnScreen(name)).forEach((name) => (part(name).loaded = false));
+        reloadSoon(ownNames.filter(isOnScreen));
     }
 
     function follow(listed) {
@@ -70,6 +93,6 @@ export function useWindowData({state = () => ({}), tab = () => ""} = {}) {
         if (due.length) reloadSoon(due);
     }
     usePoll(reloadDueKeys, () => context.visible.value, TIMER_TICK_MS);
-    reload();
-    return {data, reload};
+    queueMicrotask(reload);
+    return {data, reload, readKey, handle};
 }

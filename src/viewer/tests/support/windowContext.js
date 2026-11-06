@@ -4,8 +4,23 @@ import {WindowSubscriptions} from "../../src/windows/windowSubscriptions.js";
 
 export const page = (rows) => ({ok: true, value: {rows, page: 1, size: 50, total: rows.length}});
 
+// the chat window's keys as its module declares them, so a test answers a key by the line that fills it
+const WINDOW_KEYS = {
+    messages: {line: "message feed", events: ["message.*"]},
+    marks: {line: "chat-mark main", events: ["chat_mark.*"]},
+    docks: {line: "dock-item main", events: ["dock_item.*"]},
+    pins: {line: "pin list", events: ["pin.*"]},
+};
+
+const keyFlags = (name, state) => Object.entries(state).filter(([flag]) => flag.startsWith(`${name}.`)).map(([flag, value]) => ` --${flag.slice(name.length + 1)} ${value}`).join("");
+
 export function context(answers, agent = null) {
     const reads = [];
+    const read = async (line) => {
+        reads.push(line);
+        const key = Object.keys(answers).find((start) => line.startsWith(start));
+        return key ? answers[key] : {ok: false, failure: "refused", error: `no answer for ${line}`};
+    };
     return {
         reads,
         window: "test.window",
@@ -17,10 +32,12 @@ export function context(answers, agent = null) {
         links: {},
         visible: {value: true},
         permissions: {reads: [], runs: [], missing: [], ask: async () => true},
-        read: async (line) => {
-            reads.push(line);
-            const key = Object.keys(answers).find((start) => line.startsWith(start));
-            return key ? answers[key] : {ok: false, failure: "refused", error: `no answer for ${line}`};
+        read,
+        async readKeys({only = [], state = {}}) {
+            const names = only.length ? only : Object.keys(WINDOW_KEYS);
+            const results = await Promise.all(names.map((name) => this.read(`${WINDOW_KEYS[name].line}${keyFlags(name, state)}`)));
+            const declared = Object.fromEntries(Object.entries(WINDOW_KEYS).map(([name, key]) => [name, {tab: null, events: key.events, reload_seconds: 0}]));
+            return {ok: true, value: {declared, keys: Object.fromEntries(names.map((name, index) => [name, results[index]]))}};
         },
         run: async () => ({ok: true, value: null}),
         follow: () => {},
