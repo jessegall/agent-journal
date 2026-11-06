@@ -11,6 +11,7 @@ class DocumentsSeeder(Seeder):
         main = demo.people["main"]
         demo.run(f'doc make "Cart rules" --abstract "How the cart counts money" --body "{CART_RULES}"', main)
         demo.run('doc make "Release steps" --abstract "What happens before a release goes out" --body "## Steps\\n1. Run the suite\\n2. Tag it"', main)
-        demo.run("doc keep 1", main)
+        demo.run("doc open 1", main)
         demo.run(f'doc edit 1 --body "{CART_RULES}\\n## Returns\\nWithin 30 days."', main)
+        demo.run("doc close 1", main)
         demo.run('report make "Cart review" --abstract "What the review of the cart found" --body "## Found\\nThe tax was added twice." --about tasks:1', main)

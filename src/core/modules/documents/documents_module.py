@@ -1,4 +1,14 @@
 from core.base.skill.skill_declaration import SkillDeclaration
+from core.base.ticker.tick_handler import TickHandler
+from core.base.ticker.tick_interval import TickInterval
+from core.modules.documents.ticks.close_ended_documents_tick import CloseEndedDocumentsTick
+from core.modules.documents.commands.open_doc.open_doc_handler import OpenDocHandler
+from core.modules.documents.commands.open_doc.open_doc_subcommand import OpenDocSubcommand
+from core.modules.documents.models.open_document import OpenDocument
+from core.modules.documents.migrations.m006_revision_authors import RevisionAuthorsMigration
+from core.modules.documents.rules.open_document_rule import OpenDocumentRule
+from core.modules.documents.support.document_closed import DocumentClosed
+from core.modules.documents.listeners.close_ended_document_listener import CloseEndedDocumentListener
 from core.modules.documents.commands.record_subject_link.record_subject_link_handler import RecordSubjectLinkHandler
 from core.modules.documents.listeners.plan_document_link_listener import PlanDocumentLinkListener
 from core.modules.documents.listeners.reply_link_listener import ReplyLinkListener
@@ -7,9 +17,7 @@ from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from core.modules.documents.support.doc_library_share import DocLibraryShare
 from core.modules.documents.support.doc_searcher import DocSearcher
-from core.base.setting.setting_scope import SettingScope
-from core.base.setting.setting_type import SettingType
-from core.base.setting.setting_value import SettingValue
+from core.modules.documents.support.document_nudges import DOCUMENT_OPEN
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
@@ -77,22 +85,24 @@ class DocumentsModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.messages", "journal.core.tasks", "journal.core.plans", "journal.core.docking", "journal.core.agents", "journal.core.drivers", "journal.core.processes", "journal.core.chat"]
     skills = [SkillDeclaration("journal-documents", "Write lasting information as documents and what was checked as reports; read it before the first doc or report command of a session", keywords=("document", "documents", "report"), commands=("doc", "report"))]
-    settings = [SettingValue("revision-minutes", "Revision minutes", "Combine edits by the same person into one revision within this many minutes.", SettingType.NUMBER,
-                             default=30, scope=SettingScope.PROJECT)]
-    models = [ModelDeclaration(Doc, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Report, excluded_subcommands=ALL_SUBCOMMANDS),
+    nudges = [DOCUMENT_OPEN]
+    models = [ModelDeclaration(OpenDocument, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Doc, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Report, excluded_subcommands=ALL_SUBCOMMANDS),
               ModelDeclaration(DocRevision, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Link, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(CommentSelection, excluded_subcommands=ALL_SUBCOMMANDS)]
-    migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration, CommentSelectionsMigration, ProjectDocumentsMigration]
+    migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration, CommentSelectionsMigration, ProjectDocumentsMigration, RevisionAuthorsMigration]
+    driver_rules = [OpenDocumentRule]
+    block_conditions = [DocumentClosed]
+    tick_handlers = [TickHandler(TickInterval(seconds=5), CloseEndedDocumentsTick(), "close ended documents", starts_immediately=True)]
     library_shares = [DocLibraryShare]
     moves = [DocumentsMove]
     seeders = [DocumentsSeeder]
     windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.PANE_OR_PAGE, group="project", icon=WindowIcon.DOCUMENT,
                                  reads=["document library", "doc show", "report show"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"])]
     views = [DocumentRow]
-    handlers = [RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]
-    listeners = [PlanDocumentLinkListener, ReplyLinkListener, DocMentionListener, ReportMentionListener, TaskMentionListener, PlanMentionListener, MessageMentionListener, NewDocDockListener, NewReportDockListener, TextReadMarkListener]
+    handlers = [OpenDocHandler, RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]
+    listeners = [CloseEndedDocumentListener, PlanDocumentLinkListener, ReplyLinkListener, DocMentionListener, ReportMentionListener, PlanMentionListener, TaskMentionListener, MessageMentionListener, NewDocDockListener, NewReportDockListener, TextReadMarkListener]
     marks = TEXT_MARKS
     docks = TEXT_DOCKS
     bindings = {RowLinks: StoredRowLinks}
-    subcommands = [CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,
+    subcommands = [OpenDocSubcommand, CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,
                    DocRevisionsSubcommand, DocRevisionSubcommand, ReportMakeSubcommand, ReportEditSubcommand, ReportShowSubcommand, ReportListSubcommand,
                    ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand, DocInspectSubcommand, ReportInspectSubcommand]

@@ -6,8 +6,7 @@ from core.base.timestamp import Timestamp
 
 @dataclass(frozen=True, kw_only=True)
 class DocRevision(Model):
-    """One kept version of a document's text, numbered from 1, with what changed and when it stops taking
-    edits."""
+    """A document revision with its author, text, changes and closing timestamp."""
 
     model_name = "doc_revision"
     cli_name = "doc-revision"
@@ -20,3 +19,4 @@ class DocRevision(Model):
     body: str
     change: str
     closes_at: Timestamp
+    author_id: int | None = None

@@ -11,3 +11,4 @@ class TextInspection:
     text_row: TextRow
     comments: tuple[CommentRead, ...]
     revision: int | None
+    open_author_id: int | None = None

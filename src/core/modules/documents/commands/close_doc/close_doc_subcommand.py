@@ -7,3 +7,4 @@ class CloseDocSubcommand(CloseTextSubcommand):
 
     model = Doc
     cli_name = "doc"
+    name = "settle"
