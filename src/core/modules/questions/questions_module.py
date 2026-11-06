@@ -63,7 +63,10 @@ class QuestionsModule(Module):
     listeners = [OpenQuestionsDockListener, QuestionOpenMarkListener, QuestionEditedMarkListener, QuestionAnsweredMarkListener, QuestionClosedMarkListener]
     docks = QUESTION_DOCKS
     windows = [WindowDeclaration("questions.questions", "Questions", "questions.js", WindowLoading.COMPONENT, skeleton=QUESTIONS_QUESTIONS_SKELETON, icon=WindowIcon.QUESTION,
-                                 reads=["question list", "question show"], runs=["question answer", "question close", "message send"], events=["question.*"],
+                                 reads=["question list", "question show"],
+                                 keys=[WindowKey("questions", "question list --all", tab="list", events=["question.*"]),
+                                       WindowKey("question.*", "question show {id}", events=["question.*"], loading=KeyLoading.REQUESTED)],
+                                 runs=["question answer", "question close", "message send"], events=["question.*"],
                                  search=WindowSearch(QuestionSearcher, "Search the questions")),
                WindowDeclaration("questions.question", "Question", "question-card.js", WindowLoading.COMPONENT, skeleton=QUESTIONS_QUESTION_SKELETON, place=WindowPlace.DROPDOWN, icon=WindowIcon.QUESTION,
                                  reads=["question show"], keys=[WindowKey("question.*", "question show {id}", events=["question.*"], loading=KeyLoading.REQUESTED)],

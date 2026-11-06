@@ -1,3 +1,4 @@
+import {questionsWindowContext} from "./support/questionsWindowContext.js";
 import {ref} from "vue";
 import {expect, test, vi} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
@@ -56,7 +57,7 @@ test("a list with states offers Open, Closed and All, another does not", async (
     });
     const menuOf = async (component, answers) => {
         document.body.innerHTML = "";
-        const element = await mounted(component, component === SuggestionRows ? suggestionWindowContext(answers) : context(answers));
+        const element = await mounted(component, (new Map([[SuggestionRows, suggestionWindowContext], [QuestionRows, questionsWindowContext]]).get(component) ?? context)(answers));
         document.body.append(element);
         element.querySelector("[data-search-menu]").click();
         await settle();

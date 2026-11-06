@@ -1,9 +1,10 @@
+import {questionsWindowContext} from "./support/questionsWindowContext.js";
 import {expect, test} from "vitest";
 import QuestionRows from "../../core/modules/questions/web/src/QuestionRows.vue";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 
 const QUESTION = {id: 7, text: "Merge now?", state: "open", options: ["Now", "Later"], recommended: "Later", created_at: "2026-11-02T10:00:00+00:00"};
-const held = (run) => ({...context({"question list": page([QUESTION])}), run});
+const held = (run) => ({...questionsWindowContext({"question list": page([QUESTION])}), run});
 
 test("each option is a line of its own and the recommended one is tagged", async () => {
     const element = await mounted(QuestionRows, held(async () => ({ok: true, value: null})));

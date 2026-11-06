@@ -1,3 +1,4 @@
+import {questionsWindowContext} from "./support/questionsWindowContext.js";
 import {createApp, h, nextTick} from "vue";
 import {expect, test} from "vitest";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
@@ -18,7 +19,7 @@ async function mounted(component, windowContext) {
 }
 
 function recording(answers) {
-    const windowContext = context(answers);
+    const windowContext = questionsWindowContext(answers);
     const runs = [];
     windowContext.run = async (words) => {
         runs.push(words);
@@ -43,7 +44,7 @@ test("an empty waiting list shows an empty state", async () => {
 });
 
 test("the questions list shows the recommended choice first, with a chip that says so after its words", async () => {
-    const text = await drawn(Questions, context({"question list": page([QUESTION])}));
+    const text = await drawn(Questions, questionsWindowContext({"question list": page([QUESTION])}));
     expect(text).toContain("Which database?");
     expect(text.indexOf("Recommended")).toBeGreaterThan(text.indexOf("postgres"));
     expect(text.indexOf("Recommended")).toBeLessThan(text.indexOf("sqlite"));
@@ -78,5 +79,5 @@ test("the close button closes the question", async () => {
 });
 
 test("an empty questions list shows an empty state", async () => {
-    expect(await drawn(Questions, context({"question list": page([])}))).toContain("No open questions");
+    expect(await drawn(Questions, questionsWindowContext({"question list": page([])}))).toContain("No open questions");
 });

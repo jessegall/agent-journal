@@ -1,3 +1,4 @@
+import {questionsWindowContext} from "./support/questionsWindowContext.js";
 import {questionCardContext} from "./support/questionCardContext.js";
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
@@ -14,7 +15,7 @@ const source = (path) => readFileSync(resolve(__dirname, path), "utf8");
 const rule = (text, selector) => text.match(new RegExp(`${selector.replace(/[.()]/g, "\\$&")} \\{([^}]*)\\}`))[1];
 const CARD = "../../core/modules/questions/web/src/QuestionCard.vue";
 
-const inWindow = (rows) => mounted(QuestionRows, {...context({"question list": page(rows)}), run: async () => ({ok: true, value: null})});
+const inWindow = (rows) => mounted(QuestionRows, {...questionsWindowContext({"question list": page(rows)}), run: async () => ({ok: true, value: null})});
 
 test("an open question in the window is a flush card: a dot, its number and time, rows with a ring and a chip, and the answer foot", async () => {
     const element = await inWindow([QUESTION]);

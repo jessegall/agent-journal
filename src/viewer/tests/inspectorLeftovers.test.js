@@ -1,3 +1,4 @@
+import {questionsWindowContext} from "./support/questionsWindowContext.js";
 import {afterEach, expect, test} from "vitest";
 import {createApp, h} from "vue";
 import {settled} from "./settled.js";
@@ -74,7 +75,7 @@ test("a check can be run, and stopped unless it is", () => {
 });
 
 test("a question and a suggestion open in the panel", async () => {
-    const question = await mounted(QuestionRows, context({"question list": page([{id: 4, text: "Ship it?", state: "open", options: []}])}));
+    const question = await mounted(QuestionRows, questionsWindowContext({"question list": page([{id: 4, text: "Ship it?", state: "open", options: []}])}));
     question.querySelector('[data-question-open="4"]').click();
     await settle();
     expect(route.value.open).toMatchObject({table: "questions", id: 4});
