@@ -6,6 +6,7 @@ import {runChanged} from "./runChanged.js";
 // the rows a window lists from one read line (in a share, the one row it is shared for, read by its model's show line), read again whenever an event it follows arrives, with the reason a read
 // failed in place of the rows, and whether the first read has answered
 // whether the server says another page follows the one it answered
+const CHANGE_JOIN_MS = 50;
 const followed = (page, size) => "total" in page ? page.page * page.size < page.total : page.rows.length >= size;
 
 export function useDeclaredRows(key) {
@@ -13,7 +14,7 @@ export function useDeclaredRows(key) {
     return source ? useRows(source.read, source.events) : useRows("", []);
 }
 
-export function rowList(context, askRows, pageSizeOf, isIncremental) {
+export function rowList(context, askRows, pageSizeOf, isIncremental, readsIds = () => false) {
     const rows = ref([]);
     const listing = ref(null);
     const failure = ref("");
@@ -23,8 +24,30 @@ export function rowList(context, askRows, pageSizeOf, isIncremental) {
     const actionFailure = ref("");
     const answer = ref(null);
 
-    // a changed row is read alone, so one on an older page is kept up to date too; one that no longer lists leaves
-    async function changed(id) {
+    // the rows that changed within one moment are read together by their ids, so one on an older page is kept up to date too;
+    // a row that does not come back no longer lists and leaves
+    const changedIds = new Set();
+    let changedRead = null;
+    function changed(id) {
+        if (!readsIds()) return changedAlone(id);
+        changedIds.add(id);
+        return (changedRead ??= new Promise((resolve) => setTimeout(() => resolve(readChanged()), CHANGE_JOIN_MS)));
+    }
+
+    async function readChanged() {
+        const ids = new Set(changedIds);
+        changedIds.clear();
+        changedRead = null;
+        const turn = latestLoad;
+        const result = await askRows({ids: [...ids].join(","), limit: ids.size});
+        if (turn !== latestLoad) return;
+        if (!result.ok) return load();
+        const answered = new Map(result.value.rows.map((row) => [row.id, row]));
+        rows.value = rows.value.flatMap((held) => (!ids.has(held.id) ? [held] : (answered.has(held.id) ? [answered.get(held.id)] : [])));
+    }
+
+    // a changed row is read alone where its read cannot list by ids
+    async function changedAlone(id) {
         const turn = latestLoad;
         const result = await askRows({"before-id": id + 1, limit: 1});
         if (turn !== latestLoad) return;
