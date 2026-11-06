@@ -4,6 +4,8 @@ import {settled} from "./settled.js";
 import PluginRows from "../../core/modules/plugins/web/src/PluginRows.vue";
 import SuggestionRows from "../../core/modules/suggestions/web/src/SuggestionRows.vue";
 import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
+import {mounted as mountedWindow, page} from "./support/windowContext.js";
+import {suggestionWindowContext} from "./support/suggestionWindowContext.js";
 
 function mounted(component, rows, ran = []) {
     const context = {read: async () => ({ok: true, value: {rows}}), run: async (line) => (ran.push(line), {ok: true}), follow: () => {}, face: "person"};
@@ -25,7 +27,7 @@ test("a plugin row shows its title, release and switch, and its button switches 
 });
 
 test("a suggestion row shows its title and the answer, or that none was given", async () => {
-    const element = mounted(SuggestionRows, [{id: 1, title: "Run Code Commandments as a plugin", answer: "declined"}, {id: 2, title: "Pin the design", answer: null}]);
+    const element = await mountedWindow(SuggestionRows, suggestionWindowContext({"suggestion list": page([{id: 1, title: "Run Code Commandments as a plugin", answer: "declined"}, {id: 2, title: "Pin the design", answer: null}])}));
     await settled();
     expect(element.querySelector('[data-row="1"]').textContent).toContain("Answer: declined");
     expect(element.querySelector('[data-row="2"]').textContent).toContain("Answer: none yet");

@@ -1,12 +1,13 @@
 <script setup>
-import {ref} from "vue";
-import {AgentRowList, InnerTabs, SwitchCase, TabBody, WindowRoom, useRows, useWindow} from "@journal/window-kit";
+import {computed} from "vue";
+import {AgentRowList, InnerTabs, SwitchCase, TabBody, WindowRoom, useWindow} from "@journal/window-kit";
 import WorkerRecent from "./WorkerRecent.vue";
 
 // the workers this environment sent, and beside them what the workers did lately, as version 4's list showed both
-const context = useWindow();
-const tab = ref(context.tabs?.[0]);
-const {rows, failure, loaded} = useRows("agent list --role worker", ["agent.*"]);
+const window = useWindow();
+window.state.tab = window.tabs[0]?.key ?? "workers";
+const tab = computed({get: () => window.tabs.find((tab) => tab.key === window.state.tab), set: (tab) => (window.state.tab = tab.key)});
+const {rows, failure, loaded} = window.props.workers;
 </script>
 
 <template>

@@ -1,5 +1,6 @@
 import {afterEach, expect, test} from "vitest";
-import {context, mounted, page, settle, typeInto as typed} from "./support/windowContext.js";
+import {mounted, page, settle, typeInto as typed} from "./support/windowContext.js";
+import {triggerWindowContext as context} from "./support/triggerWindowContext.js";
 import TriggerCards from "../../core/modules/triggers/web/src/TriggerCards.vue";
 import {sentence} from "../../core/modules/triggers/web/src/triggerWords.js";
 

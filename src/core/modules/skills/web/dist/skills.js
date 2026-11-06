@@ -1,274 +1,280 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-880c30e2fb3f")) { const style = document.createElement("style"); style.id = "window-styles-880c30e2fb3f"; style.textContent = ".required-switch[data-v-ee9d0e40]{flex:none;width:28px;height:16px;padding:2px;border:0;border-radius:20px;background:var(--text-4);cursor:pointer}.required-switch span[data-v-ee9d0e40]{display:block;width:12px;height:12px;border-radius:50%;background:#fff;transition:transform .15s}.required-switch.on[data-v-ee9d0e40]{background:var(--accent)}.required-switch.on span[data-v-ee9d0e40]{transform:translate(12px)}.required-switch[data-v-ee9d0e40]:disabled{opacity:.5;cursor:wait}@media(max-width:700px){.required-switch[data-v-ee9d0e40]{width:40px;height:24px}.required-switch span[data-v-ee9d0e40]{width:20px;height:20px}.required-switch.on span[data-v-ee9d0e40]{transform:translate(16px)}}.skill-list-item[data-v-6699d870]{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border)}.skill-list-item.selected[data-v-6699d870]{background:var(--hover);box-shadow:inset 2px 0 var(--accent)}.skill-name[data-v-6699d870]{flex:1;min-width:0;padding:0;border:0;background:none;color:var(--text);text-align:left;cursor:pointer;font:inherit}.name-line[data-v-6699d870]{display:flex;align-items:center;gap:7px;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.description[data-v-6699d870]{display:block;margin:4px 0 0 20px;font-size:12px;line-height:1.5;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.read-dot[data-v-6699d870]{width:5px;height:5px;flex:none;border-radius:50%;background:var(--accent)}.group-head[data-v-383c3904]{display:flex;gap:6px;align-items:center;padding:13px 14px 8px;width:100%;border:0;background:var(--bg);color:var(--text-2);text-align:left;font:inherit;font-size:11px;font-weight:600;cursor:pointer}.group-head small[data-v-383c3904]{margin-left:auto;color:var(--text-3);font-size:10px;font-weight:400}.family[data-v-383c3904]{padding-left:25px}.skills-list[data-v-60b72429]{display:flex;flex-direction:column;width:440px;min-width:310px;flex:none;border-right:1px solid var(--border);min-height:0}.filters[data-v-60b72429]{display:flex;flex-wrap:wrap;gap:3px;padding:10px 12px;border-bottom:1px solid var(--border)}.filters button[data-v-60b72429]{padding:5px 7px;border:0;border-radius:6px;font:inherit;font-size:11px;background:none;color:var(--text-3);cursor:pointer}.filters button[aria-pressed=true][data-v-60b72429]{background:var(--hover);color:var(--text)}.filters small[data-v-60b72429]{margin-left:4px;font-size:10px}.skill-list-scroll[data-v-60b72429]{overflow:auto;flex:1;min-height:0}.column-head[data-v-60b72429]{display:flex;justify-content:space-between;padding:8px 14px;color:var(--text-3);font-size:10px}.skills-empty[data-v-60b72429]{padding:24px;font-size:12px;color:var(--text-3);line-height:1.6}.skills-empty strong[data-v-60b72429]{color:var(--text)}@media(max-width:1000px){.skills-list[data-v-60b72429]{width:340px;min-width:280px}}@media(max-width:700px){.skills-list[data-v-60b72429]{width:100%;min-width:0;border:0}}h3[data-v-6dff01bb]{margin:0;font-size:13px;font-weight:600}p[data-v-6dff01bb]{margin:6px 0 0;color:var(--text-3);font-size:12px;line-height:1.6}.block-head[data-v-6dff01bb]{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.switch-label[data-v-6dff01bb]{display:flex;align-items:center;gap:7px;flex:none;color:var(--text-3);font-size:11px}.choices[data-v-6dff01bb]{margin-top:16px;padding-left:16px;border-left:2px solid var(--border)}label[data-v-6dff01bb]{display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--text-2)}select[data-v-6dff01bb]{align-self:flex-start;max-width:100%;padding:6px 10px;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text);font:inherit}.again[data-v-6dff01bb]{flex-direction:row;align-items:center;justify-content:space-between;margin-top:16px;line-height:1.6}small[data-v-6dff01bb]{display:block;color:var(--text-3);font-size:11px}@media(max-width:700px){.block-head[data-v-6dff01bb]{flex-wrap:wrap}}.skill-trigger-card[data-v-8f3251db]{padding:14px;border:1px solid var(--border-2);border-radius:8px;font-size:12px;line-height:1.6;background:var(--bg)}p[data-v-8f3251db]{margin:0;overflow-wrap:anywhere}footer[data-v-8f3251db]{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;color:var(--text-3);font-size:11px}.push[data-v-8f3251db]{flex:1}button[data-v-8f3251db]{padding:4px 8px;border:1px solid var(--border-2);border-radius:5px;background:var(--bg);color:var(--text-2);font:inherit;cursor:pointer}.waiting[data-v-8f3251db]{margin-top:8px;color:var(--orange, #b57828)}.paused[data-v-8f3251db]{opacity:.7}.tiles[data-v-eb4da38d]{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}.tile[data-v-eb4da38d]{display:flex;flex-direction:column;gap:2px;padding:9px 11px;border:1px solid var(--border-2);border-radius:9px;background:var(--bg);color:inherit;font:inherit;text-align:left;cursor:pointer}.tile b[data-v-eb4da38d]{font-size:12.5px;font-weight:500}.tile span[data-v-eb4da38d]{color:var(--text-3);font-size:11.5px;line-height:1.4}.tile.picked[data-v-eb4da38d]{border-color:var(--accent);background:var(--accent-dim)}.tile.picked b[data-v-eb4da38d]{color:var(--accent-text)}.words[data-v-7a597156]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 8px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg)}.word[data-v-7a597156]{display:inline-flex;gap:4px;align-items:center;padding:1px 4px 1px 8px;border-radius:99px;background:var(--hover);font-size:13px}.word-remove[data-v-7a597156]{display:inline-grid;place-items:center;padding:2px;border:0;background:none;color:var(--text-3);cursor:pointer}.word-input[data-v-7a597156]{flex:1;min-width:140px;border:0;outline:none;background:none;color:var(--text);font:inherit;font-size:13px}.field[data-v-2e25b9b9],.block[data-v-2e25b9b9]{display:flex;flex-direction:column}.field[data-v-2e25b9b9]{gap:5px}.block[data-v-2e25b9b9]{gap:10px;padding:12px;border:1px solid var(--border-2);border-radius:10px;background:var(--bg-2)}.label[data-v-2e25b9b9]{color:var(--text-2);font-size:12.5px;font-weight:500}.check[data-v-2e25b9b9]{display:flex;gap:8px;align-items:center;color:var(--text-2);font-size:12.5px}.two[data-v-2e25b9b9]{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}input[data-v-2e25b9b9]:not([type=checkbox]),textarea[data-v-2e25b9b9]{box-sizing:border-box;width:100%;padding:6px 9px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px}textarea[data-v-2e25b9b9]{resize:vertical}.pattern-limit[data-v-2e25b9b9]{margin:0;color:var(--text-3);font-size:12px;line-height:1.5}.field[data-v-1a787719],.block[data-v-1a787719]{display:flex;flex-direction:column}.field[data-v-1a787719]{gap:5px}.block[data-v-1a787719]{gap:10px;padding:12px;border:1px solid var(--border-2);border-radius:10px;background:var(--bg-2)}.label[data-v-1a787719]{color:var(--text-2);font-size:12.5px;font-weight:500}.check[data-v-1a787719]{display:flex;gap:8px;align-items:center;color:var(--text-2);font-size:12.5px}.two[data-v-1a787719]{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}input[data-v-1a787719]:not([type=checkbox]),textarea[data-v-1a787719]{box-sizing:border-box;width:100%;padding:6px 9px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px}textarea[data-v-1a787719]{resize:vertical}.remove[data-v-1a787719]{align-self:flex-start}.skill-trigger-editor[data-v-e026cc21]{display:flex;flex-direction:column;gap:16px;padding:20px;border:1px solid var(--border-2);border-radius:10px;background:var(--bg);font-size:12px}h3[data-v-e026cc21]{margin:0;font-size:14px;font-weight:600;overflow-wrap:anywhere}.field[data-v-e026cc21]{display:flex;flex-direction:column;gap:7px;color:var(--text-2);font-size:12px}input[data-v-e026cc21],select[data-v-e026cc21]{min-width:0;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text);padding:8px;font:inherit}.summary[data-v-e026cc21]{padding:12px;border-radius:8px;background:var(--bg-2);line-height:1.6}.summary small[data-v-e026cc21],.help[data-v-e026cc21]{color:var(--text-3)}p[data-v-e026cc21]{margin:0}.summary p[data-v-e026cc21]{margin-top:4px}.more[data-v-e026cc21]{display:flex;flex-direction:column;gap:12px;padding-top:14px}summary[data-v-e026cc21]{color:var(--text-3);cursor:pointer}.trial[data-v-e026cc21]{color:var(--accent)}.actions[data-v-e026cc21]{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}button[data-v-e026cc21]{padding:6px 10px;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text-2);font:inherit;cursor:pointer}.primary[data-v-e026cc21]{background:var(--accent);border-color:var(--accent);color:#fff}button[data-v-e026cc21]:disabled{opacity:.5;cursor:default}.danger[data-v-e026cc21]{color:var(--red, #cc4b4b);margin-right:auto}.skill-details[data-v-4ab35e28]{display:flex;flex-direction:column;gap:24px;max-width:720px;padding:18px 24px 40px;margin:0 auto;font-size:12px}h2[data-v-4ab35e28]{display:flex;align-items:center;flex-wrap:wrap;gap:10px;font-size:15px;margin:0;font-weight:600;overflow-wrap:anywhere}h2 small[data-v-4ab35e28]{border:1px solid var(--border-2);border-radius:5px;padding:3px 6px;font-size:10px;color:var(--text-3);font-weight:400}header p[data-v-4ab35e28],.help[data-v-4ab35e28]{color:var(--text-3);line-height:1.7;margin:7px 0 0}h3[data-v-4ab35e28]{font-size:13px;margin:0;font-weight:600}.status[data-v-4ab35e28]{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:13px 15px;border:1px solid var(--border);border-radius:8px;background:var(--bg-2);line-height:1.6;color:var(--text-2)}.status span[data-v-4ab35e28]{flex:1;min-width:160px}.block[data-v-4ab35e28]{display:flex;flex-direction:column;gap:12px;padding-top:22px;border-top:1px solid var(--border)}.block-head[data-v-4ab35e28]{display:flex;align-items:center;justify-content:space-between;gap:10px}button[data-v-4ab35e28],a[data-v-4ab35e28]{flex:none;padding:6px 9px;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text-2);font:inherit;cursor:pointer;text-decoration:none;font-size:11px}pre[data-v-4ab35e28]{margin:0;font:12px/1.8 var(--mono, monospace);white-space:pre-wrap;overflow-wrap:anywhere}ul[data-v-4ab35e28]{padding-left:20px;line-height:1.9;margin:0;color:var(--text-2)}@media(max-width:700px){.skill-details[data-v-4ab35e28]{padding:20px 16px 35px}.block-head[data-v-4ab35e28]{flex-wrap:wrap}}.skills-title[data-v-47961cf4]{margin:0;font-size:13px}.skills-back[data-v-47961cf4]{padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text-2);font:inherit;cursor:pointer}.skills-text[data-v-47961cf4]{margin:0;white-space:pre-wrap;font-size:12px}.skills-page[data-v-d59c26e6]{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--bg);color:var(--text)}.page-head[data-v-d59c26e6]{display:flex;align-items:flex-end;justify-content:space-between;flex:none;gap:24px;padding:16px 20px 14px;border-bottom:1px solid var(--border)}h1[data-v-d59c26e6]{margin:0;font-size:16px;font-weight:600}.page-head p[data-v-d59c26e6]{margin:7px 0 0;max-width:650px;font-size:12px;line-height:1.7;color:var(--text-3)}nav[data-v-d59c26e6]{display:flex;flex:none;gap:4px;padding:3px;border:1px solid var(--border);border-radius:7px}nav button[data-v-d59c26e6]{border:0;background:none;color:var(--text-3);padding:5px 13px;font:inherit;font-size:12px;cursor:pointer;border-radius:4px}nav button[aria-pressed=true][data-v-d59c26e6]{background:var(--hover);color:var(--text)}.panes[data-v-d59c26e6]{display:flex;flex:1;min-height:0;overflow:hidden}.skill-pane[data-v-d59c26e6]{flex:1;min-width:0;min-height:0;overflow:auto}.empty[data-v-d59c26e6]{padding:30px;color:var(--text-3);font-size:12px;line-height:1.7}.empty strong[data-v-d59c26e6]{color:var(--text-2);font-weight:500;font-size:14px}.centre[data-v-d59c26e6]{max-width:420px;margin:60px auto;text-align:center}.phone-back[data-v-d59c26e6]{display:none}.triggers-list[data-v-d59c26e6]{flex:none;width:440px;border-right:1px solid var(--border);overflow:auto}.trigger-head[data-v-d59c26e6]{padding:16px;border-bottom:1px solid var(--border);font-size:12px;line-height:1.6;color:var(--text-3)}.trigger-head p[data-v-d59c26e6]{margin:0 0 10px}.trigger-cards[data-v-d59c26e6]{display:flex;flex-direction:column;gap:10px;padding:16px}.trigger-form[data-v-d59c26e6]{max-width:800px;padding:24px 28px;margin:auto}.warning[data-v-d59c26e6]{padding:12px 24px;margin:0;background:var(--bg-2);border-bottom:1px solid var(--border);color:var(--text-2);font-size:12px;line-height:1.6}button[data-v-d59c26e6]{padding:6px 10px;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text-2);font:inherit;cursor:pointer}@media(max-width:700px){.page-head[data-v-d59c26e6]{padding:16px;flex-wrap:wrap;gap:12px}.page-head h1[data-v-d59c26e6]{font-size:18px}.skill-open .page-head[data-v-d59c26e6],.trigger-open .page-head[data-v-d59c26e6],.page-head p[data-v-d59c26e6]{display:none}.panes[data-v-d59c26e6]{overflow:auto}.skill-pane[data-v-d59c26e6],.skill-open .skills-list[data-v-d59c26e6]{display:none}.skill-open .skill-pane[data-v-d59c26e6]{display:block}.skill-open .phone-back[data-v-d59c26e6]{display:block;margin:12px 16px 0}.triggers-list[data-v-d59c26e6]{width:100%;border:0}.trigger-open .triggers-list[data-v-d59c26e6]{display:none}.trigger-open .trigger-pane[data-v-d59c26e6]{display:block}.trigger-form[data-v-d59c26e6]{padding:16px}}\n"; document.head.appendChild(style); }
-import { ref as C, computed as j, onUnmounted as le, openBlock as l, createElementBlock as n, normalizeClass as J, createElementVNode as t, createVNode as L, unref as d, createTextVNode as T, toDisplayString as v, createCommentVNode as S, Fragment as A, renderList as P, createBlock as F, useModel as H, mergeProps as ke, mergeModels as Q, withDirectives as z, withKeys as me, withModifiers as se, vModelText as Y, withCtx as ne, reactive as he, watch as ae, vModelSelect as ve } from "vue";
-import { useWindow as ie, coalesced as ye, READ_RATES as fe, Icon as re, useListTools as pe, ListTools as be, DropList as oe, Btn as $e, WindowRoom as we } from "@journal/window-kit";
-function qe() {
-  const e = ie(), c = C([]), a = C([]), k = C([]), r = C({ session_start: [], after_compaction: [], main_agent: [], environment_overrides: !1 }), s = C(null), o = C(!1), u = C(""), i = C([]), w = C(""), $ = C(null), b = C(""), m = C("skills"), y = C(null), p = e.option("row");
-  let O = 0, I = 0;
-  const R = j(() => c.value.map((h) => {
-    const g = a.value.find((B) => B.skill === h.folder);
+if (!document.getElementById("window-styles-e17627ea1b5c")) { const style = document.createElement("style"); style.id = "window-styles-e17627ea1b5c"; style.textContent = ".required-switch[data-v-ee9d0e40]{flex:none;width:28px;height:16px;padding:2px;border:0;border-radius:20px;background:var(--text-4);cursor:pointer}.required-switch span[data-v-ee9d0e40]{display:block;width:12px;height:12px;border-radius:50%;background:#fff;transition:transform .15s}.required-switch.on[data-v-ee9d0e40]{background:var(--accent)}.required-switch.on span[data-v-ee9d0e40]{transform:translate(12px)}.required-switch[data-v-ee9d0e40]:disabled{opacity:.5;cursor:wait}@media(max-width:700px){.required-switch[data-v-ee9d0e40]{width:40px;height:24px}.required-switch span[data-v-ee9d0e40]{width:20px;height:20px}.required-switch.on span[data-v-ee9d0e40]{transform:translate(16px)}}.skill-list-item[data-v-6699d870]{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border)}.skill-list-item.selected[data-v-6699d870]{background:var(--hover);box-shadow:inset 2px 0 var(--accent)}.skill-name[data-v-6699d870]{flex:1;min-width:0;padding:0;border:0;background:none;color:var(--text);text-align:left;cursor:pointer;font:inherit}.name-line[data-v-6699d870]{display:flex;align-items:center;gap:7px;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.description[data-v-6699d870]{display:block;margin:4px 0 0 20px;font-size:12px;line-height:1.5;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.read-dot[data-v-6699d870]{width:5px;height:5px;flex:none;border-radius:50%;background:var(--accent)}.group-head[data-v-383c3904]{display:flex;gap:6px;align-items:center;padding:13px 14px 8px;width:100%;border:0;background:var(--bg);color:var(--text-2);text-align:left;font:inherit;font-size:11px;font-weight:600;cursor:pointer}.group-head small[data-v-383c3904]{margin-left:auto;color:var(--text-3);font-size:10px;font-weight:400}.family[data-v-383c3904]{padding-left:25px}.skills-list[data-v-60b72429]{display:flex;flex-direction:column;width:440px;min-width:310px;flex:none;border-right:1px solid var(--border);min-height:0}.filters[data-v-60b72429]{display:flex;flex-wrap:wrap;gap:3px;padding:10px 12px;border-bottom:1px solid var(--border)}.filters button[data-v-60b72429]{padding:5px 7px;border:0;border-radius:6px;font:inherit;font-size:11px;background:none;color:var(--text-3);cursor:pointer}.filters button[aria-pressed=true][data-v-60b72429]{background:var(--hover);color:var(--text)}.filters small[data-v-60b72429]{margin-left:4px;font-size:10px}.skill-list-scroll[data-v-60b72429]{overflow:auto;flex:1;min-height:0}.column-head[data-v-60b72429]{display:flex;justify-content:space-between;padding:8px 14px;color:var(--text-3);font-size:10px}.skills-empty[data-v-60b72429]{padding:24px;font-size:12px;color:var(--text-3);line-height:1.6}.skills-empty strong[data-v-60b72429]{color:var(--text)}@media(max-width:1000px){.skills-list[data-v-60b72429]{width:340px;min-width:280px}}@media(max-width:700px){.skills-list[data-v-60b72429]{width:100%;min-width:0;border:0}}h3[data-v-6dff01bb]{margin:0;font-size:13px;font-weight:600}p[data-v-6dff01bb]{margin:6px 0 0;color:var(--text-3);font-size:12px;line-height:1.6}.block-head[data-v-6dff01bb]{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.switch-label[data-v-6dff01bb]{display:flex;align-items:center;gap:7px;flex:none;color:var(--text-3);font-size:11px}.choices[data-v-6dff01bb]{margin-top:16px;padding-left:16px;border-left:2px solid var(--border)}label[data-v-6dff01bb]{display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--text-2)}select[data-v-6dff01bb]{align-self:flex-start;max-width:100%;padding:6px 10px;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text);font:inherit}.again[data-v-6dff01bb]{flex-direction:row;align-items:center;justify-content:space-between;margin-top:16px;line-height:1.6}small[data-v-6dff01bb]{display:block;color:var(--text-3);font-size:11px}@media(max-width:700px){.block-head[data-v-6dff01bb]{flex-wrap:wrap}}.skill-trigger-card[data-v-8f3251db]{padding:14px;border:1px solid var(--border-2);border-radius:8px;font-size:12px;line-height:1.6;background:var(--bg)}p[data-v-8f3251db]{margin:0;overflow-wrap:anywhere}footer[data-v-8f3251db]{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;color:var(--text-3);font-size:11px}.push[data-v-8f3251db]{flex:1}button[data-v-8f3251db]{padding:4px 8px;border:1px solid var(--border-2);border-radius:5px;background:var(--bg);color:var(--text-2);font:inherit;cursor:pointer}.waiting[data-v-8f3251db]{margin-top:8px;color:var(--orange, #b57828)}.paused[data-v-8f3251db]{opacity:.7}.tiles[data-v-eb4da38d]{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}.tile[data-v-eb4da38d]{display:flex;flex-direction:column;gap:2px;padding:9px 11px;border:1px solid var(--border-2);border-radius:9px;background:var(--bg);color:inherit;font:inherit;text-align:left;cursor:pointer}.tile b[data-v-eb4da38d]{font-size:12.5px;font-weight:500}.tile span[data-v-eb4da38d]{color:var(--text-3);font-size:11.5px;line-height:1.4}.tile.picked[data-v-eb4da38d]{border-color:var(--accent);background:var(--accent-dim)}.tile.picked b[data-v-eb4da38d]{color:var(--accent-text)}.words[data-v-7a597156]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 8px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg)}.word[data-v-7a597156]{display:inline-flex;gap:4px;align-items:center;padding:1px 4px 1px 8px;border-radius:99px;background:var(--hover);font-size:13px}.word-remove[data-v-7a597156]{display:inline-grid;place-items:center;padding:2px;border:0;background:none;color:var(--text-3);cursor:pointer}.word-input[data-v-7a597156]{flex:1;min-width:140px;border:0;outline:none;background:none;color:var(--text);font:inherit;font-size:13px}.field[data-v-2e25b9b9],.block[data-v-2e25b9b9]{display:flex;flex-direction:column}.field[data-v-2e25b9b9]{gap:5px}.block[data-v-2e25b9b9]{gap:10px;padding:12px;border:1px solid var(--border-2);border-radius:10px;background:var(--bg-2)}.label[data-v-2e25b9b9]{color:var(--text-2);font-size:12.5px;font-weight:500}.check[data-v-2e25b9b9]{display:flex;gap:8px;align-items:center;color:var(--text-2);font-size:12.5px}.two[data-v-2e25b9b9]{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}input[data-v-2e25b9b9]:not([type=checkbox]),textarea[data-v-2e25b9b9]{box-sizing:border-box;width:100%;padding:6px 9px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px}textarea[data-v-2e25b9b9]{resize:vertical}.pattern-limit[data-v-2e25b9b9]{margin:0;color:var(--text-3);font-size:12px;line-height:1.5}.field[data-v-1a787719],.block[data-v-1a787719]{display:flex;flex-direction:column}.field[data-v-1a787719]{gap:5px}.block[data-v-1a787719]{gap:10px;padding:12px;border:1px solid var(--border-2);border-radius:10px;background:var(--bg-2)}.label[data-v-1a787719]{color:var(--text-2);font-size:12.5px;font-weight:500}.check[data-v-1a787719]{display:flex;gap:8px;align-items:center;color:var(--text-2);font-size:12.5px}.two[data-v-1a787719]{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}input[data-v-1a787719]:not([type=checkbox]),textarea[data-v-1a787719]{box-sizing:border-box;width:100%;padding:6px 9px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px}textarea[data-v-1a787719]{resize:vertical}.remove[data-v-1a787719]{align-self:flex-start}.skill-trigger-editor[data-v-50b742ad]{display:flex;flex-direction:column;gap:16px;padding:20px;border:1px solid var(--border-2);border-radius:10px;background:var(--bg);font-size:12px}h3[data-v-50b742ad]{margin:0;font-size:14px;font-weight:600;overflow-wrap:anywhere}.field[data-v-50b742ad]{display:flex;flex-direction:column;gap:7px;color:var(--text-2);font-size:12px}input[data-v-50b742ad],select[data-v-50b742ad]{min-width:0;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text);padding:8px;font:inherit}.summary[data-v-50b742ad]{padding:12px;border-radius:8px;background:var(--bg-2);line-height:1.6}.summary small[data-v-50b742ad],.help[data-v-50b742ad]{color:var(--text-3)}p[data-v-50b742ad]{margin:0}.summary p[data-v-50b742ad]{margin-top:4px}.more[data-v-50b742ad]{display:flex;flex-direction:column;gap:12px;padding-top:14px}summary[data-v-50b742ad]{color:var(--text-3);cursor:pointer}.trial[data-v-50b742ad]{color:var(--accent)}.actions[data-v-50b742ad]{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}button[data-v-50b742ad]{padding:6px 10px;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text-2);font:inherit;cursor:pointer}.primary[data-v-50b742ad]{background:var(--accent);border-color:var(--accent);color:#fff}button[data-v-50b742ad]:disabled{opacity:.5;cursor:default}.danger[data-v-50b742ad]{color:var(--red, #cc4b4b);margin-right:auto}.skill-details[data-v-4ab35e28]{display:flex;flex-direction:column;gap:24px;max-width:720px;padding:18px 24px 40px;margin:0 auto;font-size:12px}h2[data-v-4ab35e28]{display:flex;align-items:center;flex-wrap:wrap;gap:10px;font-size:15px;margin:0;font-weight:600;overflow-wrap:anywhere}h2 small[data-v-4ab35e28]{border:1px solid var(--border-2);border-radius:5px;padding:3px 6px;font-size:10px;color:var(--text-3);font-weight:400}header p[data-v-4ab35e28],.help[data-v-4ab35e28]{color:var(--text-3);line-height:1.7;margin:7px 0 0}h3[data-v-4ab35e28]{font-size:13px;margin:0;font-weight:600}.status[data-v-4ab35e28]{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:13px 15px;border:1px solid var(--border);border-radius:8px;background:var(--bg-2);line-height:1.6;color:var(--text-2)}.status span[data-v-4ab35e28]{flex:1;min-width:160px}.block[data-v-4ab35e28]{display:flex;flex-direction:column;gap:12px;padding-top:22px;border-top:1px solid var(--border)}.block-head[data-v-4ab35e28]{display:flex;align-items:center;justify-content:space-between;gap:10px}button[data-v-4ab35e28],a[data-v-4ab35e28]{flex:none;padding:6px 9px;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text-2);font:inherit;cursor:pointer;text-decoration:none;font-size:11px}pre[data-v-4ab35e28]{margin:0;font:12px/1.8 var(--mono, monospace);white-space:pre-wrap;overflow-wrap:anywhere}ul[data-v-4ab35e28]{padding-left:20px;line-height:1.9;margin:0;color:var(--text-2)}@media(max-width:700px){.skill-details[data-v-4ab35e28]{padding:20px 16px 35px}.block-head[data-v-4ab35e28]{flex-wrap:wrap}}.skills-title[data-v-47961cf4]{margin:0;font-size:13px}.skills-back[data-v-47961cf4]{padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text-2);font:inherit;cursor:pointer}.skills-text[data-v-47961cf4]{margin:0;white-space:pre-wrap;font-size:12px}.skills-page[data-v-d59c26e6]{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--bg);color:var(--text)}.page-head[data-v-d59c26e6]{display:flex;align-items:flex-end;justify-content:space-between;flex:none;gap:24px;padding:16px 20px 14px;border-bottom:1px solid var(--border)}h1[data-v-d59c26e6]{margin:0;font-size:16px;font-weight:600}.page-head p[data-v-d59c26e6]{margin:7px 0 0;max-width:650px;font-size:12px;line-height:1.7;color:var(--text-3)}nav[data-v-d59c26e6]{display:flex;flex:none;gap:4px;padding:3px;border:1px solid var(--border);border-radius:7px}nav button[data-v-d59c26e6]{border:0;background:none;color:var(--text-3);padding:5px 13px;font:inherit;font-size:12px;cursor:pointer;border-radius:4px}nav button[aria-pressed=true][data-v-d59c26e6]{background:var(--hover);color:var(--text)}.panes[data-v-d59c26e6]{display:flex;flex:1;min-height:0;overflow:hidden}.skill-pane[data-v-d59c26e6]{flex:1;min-width:0;min-height:0;overflow:auto}.empty[data-v-d59c26e6]{padding:30px;color:var(--text-3);font-size:12px;line-height:1.7}.empty strong[data-v-d59c26e6]{color:var(--text-2);font-weight:500;font-size:14px}.centre[data-v-d59c26e6]{max-width:420px;margin:60px auto;text-align:center}.phone-back[data-v-d59c26e6]{display:none}.triggers-list[data-v-d59c26e6]{flex:none;width:440px;border-right:1px solid var(--border);overflow:auto}.trigger-head[data-v-d59c26e6]{padding:16px;border-bottom:1px solid var(--border);font-size:12px;line-height:1.6;color:var(--text-3)}.trigger-head p[data-v-d59c26e6]{margin:0 0 10px}.trigger-cards[data-v-d59c26e6]{display:flex;flex-direction:column;gap:10px;padding:16px}.trigger-form[data-v-d59c26e6]{max-width:800px;padding:24px 28px;margin:auto}.warning[data-v-d59c26e6]{padding:12px 24px;margin:0;background:var(--bg-2);border-bottom:1px solid var(--border);color:var(--text-2);font-size:12px;line-height:1.6}button[data-v-d59c26e6]{padding:6px 10px;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text-2);font:inherit;cursor:pointer}@media(max-width:700px){.page-head[data-v-d59c26e6]{padding:16px;flex-wrap:wrap;gap:12px}.page-head h1[data-v-d59c26e6]{font-size:18px}.skill-open .page-head[data-v-d59c26e6],.trigger-open .page-head[data-v-d59c26e6],.page-head p[data-v-d59c26e6]{display:none}.panes[data-v-d59c26e6]{overflow:auto}.skill-pane[data-v-d59c26e6],.skill-open .skills-list[data-v-d59c26e6]{display:none}.skill-open .skill-pane[data-v-d59c26e6]{display:block}.skill-open .phone-back[data-v-d59c26e6]{display:block;margin:12px 16px 0}.triggers-list[data-v-d59c26e6]{width:100%;border:0}.trigger-open .triggers-list[data-v-d59c26e6]{display:none}.trigger-open .trigger-pane[data-v-d59c26e6]{display:block}.trigger-form[data-v-d59c26e6]{padding:16px}}\n"; document.head.appendChild(style); }
+import { computed as x, ref as j, watch as X, onUnmounted as ee, openBlock as l, createElementBlock as n, normalizeClass as Y, createElementVNode as t, createVNode as W, unref as u, createTextVNode as T, toDisplayString as v, createCommentVNode as S, Fragment as A, renderList as V, createBlock as F, useModel as G, mergeProps as ue, mergeModels as J, withDirectives as K, withKeys as ce, withModifiers as te, vModelText as z, withCtx as le, reactive as ge, vModelSelect as ke } from "vue";
+import { useWindow as se, coalesced as me, READ_RATES as he, Icon as ne, useListTools as ve, ListTools as ye, DropList as ae, Btn as pe, WindowRoom as fe } from "@journal/window-kit";
+function be() {
+  const e = se(), { rows: g } = e.props.catalogue, { rows: i } = e.props.loaded, { rows: h } = e.props.triggers, a = x(() => e.props.requirements.data.value ?? { session_start: [], after_compaction: [], main_agent: [], environment_overrides: !1 }), s = x(() => {
+    var c;
+    return ((c = e.props["main-agent"].data.value) == null ? void 0 : c.id) ?? null;
+  }), r = x(() => e.props.catalogue.loaded.value && e.props.requirements.loaded.value && e.props.triggers.loaded.value), d = j(""), o = x(() => d.value || ["catalogue", "requirements", "triggers", "loaded"].map((c) => e.props[c].failure.value).find(Boolean) || ""), w = j([]), p = j(""), b = j(null), k = j("");
+  e.state.tab = "skills";
+  const y = x({ get: () => e.state.tab, set: (c) => e.state.tab = c }), f = j(null), O = e.option("row");
+  let N = 0;
+  const R = x(() => g.value.map((c) => {
+    const m = i.value.find((D) => D.skill === c.folder);
     return {
-      ...h,
-      required: r.value.session_start.includes(h.folder) || r.value.main_agent.includes(h.folder),
-      agents: r.value.main_agent.includes(h.folder) ? "main" : "all",
-      again: r.value.after_compaction.includes(h.folder),
-      held: g,
-      read: (g == null ? void 0 : g.state) === "loaded",
-      changed: (g == null ? void 0 : g.state) === "loaded" && g.digest !== h.digest
+      ...c,
+      required: a.value.session_start.includes(c.folder) || a.value.main_agent.includes(c.folder),
+      agents: a.value.main_agent.includes(c.folder) ? "main" : "all",
+      again: a.value.after_compaction.includes(c.folder),
+      held: m,
+      read: (m == null ? void 0 : m.state) === "loaded",
+      changed: (m == null ? void 0 : m.state) === "loaded" && m.digest !== c.digest
     };
-  })), E = j(() => R.value.find((h) => h.folder === w.value)), M = j(() => k.value.filter((h) => h.skill === w.value));
-  async function V() {
-    var Z;
-    const h = ++I, [g, B, x, D] = await Promise.all([e.read("agent main"), e.read("skill list"), e.read("skill requirements"), e.read("trigger list --skill")]);
-    if (h !== I) return;
-    s.value = g.ok ? g.value.id : null;
-    const K = s.value ? await e.read(`agent-skill list --agent ${s.value} --limit 1000`) : null;
-    h === I && (c.value = B.ok ? B.value.rows : [], a.value = K != null && K.ok ? K.value.rows : [], k.value = D.ok ? D.value.rows : [], x.ok && (r.value = x.value), u.value = ((Z = [B, x, D, K].find((_) => _ && !_.ok)) == null ? void 0 : Z.error) || "", o.value = !0);
+  })), I = x(() => R.value.find((c) => c.folder === p.value)), M = x(() => h.value.filter((c) => c.skill === p.value));
+  async function B() {
+    await e.reload({ only: ["main-agent", "catalogue", "requirements", "triggers", ...s.value ? ["loaded"] : []] });
   }
-  async function G(h, g = !0) {
-    if (w.value = h, $.value = null, b.value = "", y.value = null, g && !p.value) {
-      const D = new URL(location.href);
-      h ? D.searchParams.set("skill", h) : D.searchParams.delete("skill"), history.pushState(null, "", D);
+  X(s, async (c) => {
+    i.value = [], c && (e.state["loaded.agent"] = String(c), await e.reload("loaded"));
+  });
+  async function U(c, m = !0) {
+    if (p.value = c, b.value = null, k.value = "", f.value = null, m && !O.value) {
+      const H = new URL(location.href);
+      c ? H.searchParams.set("skill", c) : H.searchParams.delete("skill"), history.pushState(null, "", H);
     }
-    const B = ++O;
-    if (!h) return;
-    const x = await e.read(["skill", "show", h]);
-    B === O && ($.value = x.ok ? x.value : null, b.value = x.ok ? "" : x.failure === "refused" ? `The skill ${h} is no longer available.` : x.error);
+    const D = ++N;
+    if (!c) return;
+    e.state["text.folder"] = c;
+    const C = await e.readKey("text");
+    D === N && (b.value = C.ok ? C.value : null, k.value = C.ok ? "" : C.failure === "refused" ? `The skill ${c} is no longer available.` : C.error);
   }
-  async function U(h) {
-    const g = await e.run(h);
-    return u.value = g.ok ? "" : g.error, g.ok && await V(), g.ok;
+  async function P(c) {
+    const m = await e.run(c);
+    return d.value = m.ok ? "" : m.error, m.ok && await B(), m.ok;
   }
-  async function W(h, g, B = !0) {
-    i.value.includes(h) || (i.value = [...i.value, h], await U(["skill", "set-required", h, "--agents", g, ...B ? [] : ["--no-after-compaction"]]), i.value = i.value.filter((x) => x !== h));
+  async function E(c, m, D = !0) {
+    w.value.includes(c) || (w.value = [...w.value, c], await P(["skill", "set-required", c, "--agents", m, ...D ? [] : ["--no-after-compaction"]]), w.value = w.value.filter((C) => C !== c));
   }
-  async function f() {
-    if (!s.value || !E.value) return;
-    const h = E.value.held;
-    await U((h == null ? void 0 : h.state) === "loaded" ? ["agent-skill", "reset", String(h.id)] : ["skill", "require", String(s.value), w.value]);
+  async function $() {
+    if (!s.value || !I.value) return;
+    const c = I.value.held;
+    await P((c == null ? void 0 : c.state) === "loaded" ? ["agent-skill", "reset", String(c.id)] : ["skill", "require", String(s.value), p.value]);
   }
-  const q = () => G(new URLSearchParams(location.search).get("skill") || "", !1);
-  return window.addEventListener("popstate", q), le(() => window.removeEventListener("popstate", q)), e.follow(["agent.*", "agent_skill.*", "setting.*", "trigger.*"], ye(V, fe.openPanel)), V(), p.value ? e.read(`agent-skill show ${p.value.skillId}`).then((h) => h.ok ? G(h.value.skill, !1) : b.value = h.error) : q(), { context: e, skills: R, selected: E, selectedTriggers: M, triggers: k, requirements: r, mainAgent: s, answered: o, failure: u, busy: i, opened: w, text: $, openFailure: b, tab: m, draft: y, marked: p, load: V, open: G, run: U, requireSkill: W, readNow: f };
+  const q = () => U(new URLSearchParams(location.search).get("skill") || "", !1);
+  return globalThis.addEventListener("popstate", q), ee(() => globalThis.removeEventListener("popstate", q)), e.follow(["agent_skill.*"], me(() => {
+    s.value && e.reload("loaded");
+  }, he.openPanel)), O.value ? e.readKey(`agent-skill.${O.value.skillId}`).then((c) => c.ok ? U(c.value.skill, !1) : k.value = c.error) : q(), { window: e, skills: R, selected: I, selectedTriggers: M, triggers: h, requirements: a, mainAgent: s, answered: r, failure: o, busy: w, opened: p, text: b, openFailure: k, tab: y, draft: f, marked: O, load: B, open: U, run: P, requireSkill: E, readNow: $ };
 }
-const N = (e, c) => {
-  const a = e.__vccOpts || e;
-  for (const [k, r] of c)
-    a[k] = r;
-  return a;
-}, Se = ["aria-checked", "aria-label", "disabled"], xe = {
+const L = (e, g) => {
+  const i = e.__vccOpts || e;
+  for (const [h, a] of g)
+    i[h] = a;
+  return i;
+}, $e = ["aria-checked", "aria-label", "disabled"], we = {
   __name: "RequiredSkillSwitch",
   props: { folder: { type: String, required: !0 }, required: Boolean, busy: Boolean },
   emits: ["change"],
-  setup(e, { emit: c }) {
-    const a = c;
-    return (k, r) => (l(), n("button", {
+  setup(e, { emit: g }) {
+    const i = g;
+    return (h, a) => (l(), n("button", {
       type: "button",
       role: "switch",
       "aria-checked": e.required,
       "aria-label": `${e.required ? "Stop requiring" : "Require"} ${e.folder} at the start`,
       disabled: e.busy,
-      class: J(["required-switch", { on: e.required }]),
-      onClick: r[0] || (r[0] = (s) => a("change", !e.required))
-    }, [...r[1] || (r[1] = [
+      class: Y(["required-switch", { on: e.required }]),
+      onClick: a[0] || (a[0] = (s) => i("change", !e.required))
+    }, [...a[1] || (a[1] = [
       t("span", null, null, -1)
-    ])], 10, Se));
+    ])], 10, $e));
   }
-}, ue = /* @__PURE__ */ N(xe, [["__scopeId", "data-v-ee9d0e40"]]), Ce = ["data-skill"], Te = ["aria-label"], Re = { class: "name-line" }, Ae = {
+}, ie = /* @__PURE__ */ L(we, [["__scopeId", "data-v-ee9d0e40"]]), qe = ["data-skill"], Se = ["aria-label"], xe = { class: "name-line" }, Ce = {
   key: 0,
   class: "read-dot",
   title: "Read by the main agent"
-}, Oe = { class: "description" }, je = {
+}, Te = { class: "description" }, Re = {
   __name: "SkillListItem",
   props: { skill: { type: Object, required: !0 }, selected: Boolean, busy: Boolean },
   emits: ["open", "require"],
-  setup(e, { emit: c }) {
-    const a = c;
-    return (k, r) => (l(), n("div", {
-      class: J(["skill-list-item", { selected: e.selected }]),
+  setup(e, { emit: g }) {
+    const i = g;
+    return (h, a) => (l(), n("div", {
+      class: Y(["skill-list-item", { selected: e.selected }]),
       "data-skill": e.skill.folder
     }, [
       t("button", {
         type: "button",
         class: "skill-name",
         "aria-label": e.skill.folder,
-        onClick: r[0] || (r[0] = (s) => a("open", e.skill.folder))
+        onClick: a[0] || (a[0] = (s) => i("open", e.skill.folder))
       }, [
-        t("span", Re, [
-          L(d(re), {
+        t("span", xe, [
+          W(u(ne), {
             name: "book",
             size: 13
           }),
           T(v(e.skill.folder), 1),
-          e.skill.read ? (l(), n("span", Ae)) : S("", !0)
+          e.skill.read ? (l(), n("span", Ce)) : S("", !0)
         ]),
-        t("span", Oe, v(e.skill.description), 1)
-      ], 8, Te),
-      L(ue, {
+        t("span", Te, v(e.skill.description), 1)
+      ], 8, Se),
+      W(ie, {
         folder: e.skill.folder,
         required: e.skill.required,
         busy: e.busy,
-        onChange: r[1] || (r[1] = (s) => a("require", e.skill.folder, s))
+        onChange: a[1] || (a[1] = (s) => i("require", e.skill.folder, s))
       }, null, 8, ["folder", "required", "busy"])
-    ], 10, Ce));
+    ], 10, qe));
   }
-}, ee = /* @__PURE__ */ N(je, [["__scopeId", "data-v-6699d870"]]), Ie = { class: "skill-group" }, Ee = ["aria-expanded"], We = ["aria-expanded", "onClick"], Le = {
+}, Z = /* @__PURE__ */ L(Re, [["__scopeId", "data-v-6699d870"]]), Ae = { class: "skill-group" }, Oe = ["aria-expanded"], je = ["aria-expanded", "onClick"], Ie = {
   __name: "SkillListGroup",
   props: { title: { type: String, required: !0 }, skills: { type: Array, required: !0 }, opened: { type: String, default: "" }, busy: { type: Array, default: () => [] }, searching: Boolean },
   emits: ["open", "require"],
-  setup(e, { emit: c }) {
-    const a = e, k = c, r = C(!1), s = C(/* @__PURE__ */ new Set()), o = ($) => {
+  setup(e, { emit: g }) {
+    const i = e, h = g, a = j(!1), s = j(/* @__PURE__ */ new Set()), r = (p) => {
       var b;
-      return ((b = $.folder.match(/^commandments-([^-]+)-/)) == null ? void 0 : b[0].slice(0, -1)) || "";
-    }, u = j(() => a.skills.filter(($) => !o($))), i = j(() => [...new Set(a.skills.map(o).filter(Boolean))].map(($) => ({ name: $, skills: a.skills.filter((b) => o(b) === $) }))), w = ($) => {
+      return ((b = p.folder.match(/^commandments-([^-]+)-/)) == null ? void 0 : b[0].slice(0, -1)) || "";
+    }, d = x(() => i.skills.filter((p) => !r(p))), o = x(() => [...new Set(i.skills.map(r).filter(Boolean))].map((p) => ({ name: p, skills: i.skills.filter((b) => r(b) === p) }))), w = (p) => {
       const b = new Set(s.value);
-      b.has($) ? b.delete($) : b.add($), s.value = b;
+      b.has(p) ? b.delete(p) : b.add(p), s.value = b;
     };
-    return ($, b) => (l(), n("section", Ie, [
+    return (p, b) => (l(), n("section", Ae, [
       t("button", {
         type: "button",
         class: "group-head",
-        "aria-expanded": !r.value || e.searching,
-        onClick: b[0] || (b[0] = (m) => r.value = !r.value)
+        "aria-expanded": !a.value || e.searching,
+        onClick: b[0] || (b[0] = (k) => a.value = !a.value)
       }, [
-        T(v(r.value && !e.searching ? "›" : "⌄") + " " + v(e.title) + " ", 1),
-        t("small", null, v(e.skills.length) + ", " + v(e.skills.filter((m) => m.required).length) + " required", 1)
-      ], 8, Ee),
-      !r.value || e.searching ? (l(), n(A, { key: 0 }, [
-        (l(!0), n(A, null, P(u.value, (m) => (l(), F(ee, {
-          key: m.folder,
-          skill: m,
-          selected: e.opened === m.folder,
-          busy: e.busy.includes(m.folder),
-          onOpen: b[1] || (b[1] = (y) => k("open", y)),
-          onRequire: b[2] || (b[2] = (y, p) => k("require", y, p))
+        T(v(a.value && !e.searching ? "›" : "⌄") + " " + v(e.title) + " ", 1),
+        t("small", null, v(e.skills.length) + ", " + v(e.skills.filter((k) => k.required).length) + " required", 1)
+      ], 8, Oe),
+      !a.value || e.searching ? (l(), n(A, { key: 0 }, [
+        (l(!0), n(A, null, V(d.value, (k) => (l(), F(Z, {
+          key: k.folder,
+          skill: k,
+          selected: e.opened === k.folder,
+          busy: e.busy.includes(k.folder),
+          onOpen: b[1] || (b[1] = (y) => h("open", y)),
+          onRequire: b[2] || (b[2] = (y, f) => h("require", y, f))
         }, null, 8, ["skill", "selected", "busy"]))), 128)),
-        (l(!0), n(A, null, P(i.value, (m) => (l(), n(A, {
-          key: m.name
+        (l(!0), n(A, null, V(o.value, (k) => (l(), n(A, {
+          key: k.name
         }, [
           t("button", {
             type: "button",
             class: "group-head family",
-            "aria-expanded": s.value.has(m.name) || e.searching,
-            onClick: (y) => w(m.name)
+            "aria-expanded": s.value.has(k.name) || e.searching,
+            onClick: (y) => w(k.name)
           }, [
-            T(v(s.value.has(m.name) || e.searching ? "⌄" : "›") + " " + v(m.name) + " ", 1),
-            t("small", null, v(m.skills.length), 1)
-          ], 8, We),
-          s.value.has(m.name) || e.searching ? (l(!0), n(A, { key: 0 }, P(m.skills, (y) => (l(), F(ee, {
+            T(v(s.value.has(k.name) || e.searching ? "⌄" : "›") + " " + v(k.name) + " ", 1),
+            t("small", null, v(k.skills.length), 1)
+          ], 8, je),
+          s.value.has(k.name) || e.searching ? (l(!0), n(A, { key: 0 }, V(k.skills, (y) => (l(), F(Z, {
             key: y.folder,
             skill: y,
             selected: e.opened === y.folder,
             busy: e.busy.includes(y.folder),
-            onOpen: b[3] || (b[3] = (p) => k("open", p)),
-            onRequire: b[4] || (b[4] = (p, O) => k("require", p, O))
+            onOpen: b[3] || (b[3] = (f) => h("open", f)),
+            onRequire: b[4] || (b[4] = (f, O) => h("require", f, O))
           }, null, 8, ["skill", "selected", "busy"]))), 128)) : S("", !0)
         ], 64))), 128))
       ], 64)) : S("", !0)
     ]));
   }
-}, Ne = /* @__PURE__ */ N(Le, [["__scopeId", "data-v-383c3904"]]), Ve = {
+}, Ee = /* @__PURE__ */ L(Ie, [["__scopeId", "data-v-383c3904"]]), We = {
   class: "skills-list",
   "data-skills-catalogue": ""
-}, Be = { class: "filters" }, Pe = ["aria-pressed", "onClick"], Fe = { class: "skill-list-scroll" }, Me = {
+}, Le = { class: "filters" }, Ne = ["aria-pressed", "onClick"], Ve = { class: "skill-list-scroll" }, Be = {
   key: 1,
   class: "skills-empty"
-}, Ue = {
+}, Fe = {
   __name: "SkillsList",
   props: { skills: { type: Array, required: !0 }, opened: { type: String, default: "" }, busy: { type: Array, default: () => [] } },
   emits: ["open", "require"],
-  setup(e, { emit: c }) {
-    const a = e, k = c, r = C("all"), s = j(() => [...a.skills].sort((m, y) => (y.modified_at || 0) - (m.modified_at || 0))), o = pe(s, { title: (m) => m.folder });
-    o.order.value = "title";
-    const u = j(() => [{ key: "all", label: "All", count: a.skills.length }, { key: "required", label: "Required", count: a.skills.filter((m) => m.required).length }, { key: "read", label: "Read by the main agent", count: a.skills.filter((m) => m.read).length }]), i = j(() => o.shown.value.filter((m) => ({ all: !0, required: m.required, read: m.read })[r.value])), w = (m) => {
+  setup(e, { emit: g }) {
+    const i = e, h = g, a = j("all"), s = x(() => [...i.skills].sort((k, y) => (y.modified_at || 0) - (k.modified_at || 0))), r = ve(s, { title: (k) => k.folder });
+    r.order.value = "title";
+    const d = x(() => [{ key: "all", label: "All", count: i.skills.length }, { key: "required", label: "Required", count: i.skills.filter((k) => k.required).length }, { key: "read", label: "Read by the main agent", count: i.skills.filter((k) => k.read).length }]), o = x(() => r.shown.value.filter((k) => ({ all: !0, required: k.required, read: k.read })[a.value])), w = (k) => {
       var y;
-      return (y = m.module) != null && y.startsWith("plugin:") ? "plugin" : m.shipped ? "journal" : "project";
-    }, $ = j(() => [{ key: "journal", title: "From the journal" }, { key: "plugin", title: "From a plugin" }, { key: "project", title: "From this project" }].map((m) => ({ ...m, skills: i.value.filter((y) => w(y) === m.key) })).filter((m) => m.skills.length)), b = j(() => a.skills.length ? o.words.value.trim() ? ["No skill matches", "Try other words."] : r.value === "required" ? ["No skill is required", "Switch on Required beside a skill to make the agent read it at the start."] : ["No skill is read in this conversation", "Skills appear here after the main agent reads them."] : ["No skills are installed", "Add a folder with a SKILL.md file under .agents/skills in this project."]);
-    return (m, y) => (l(), n("aside", Ve, [
-      L(d(be), {
-        tools: d(o),
+      return (y = k.module) != null && y.startsWith("plugin:") ? "plugin" : k.shipped ? "journal" : "project";
+    }, p = x(() => [{ key: "journal", title: "From the journal" }, { key: "plugin", title: "From a plugin" }, { key: "project", title: "From this project" }].map((k) => ({ ...k, skills: o.value.filter((y) => w(y) === k.key) })).filter((k) => k.skills.length)), b = x(() => i.skills.length ? r.words.value.trim() ? ["No skill matches", "Try other words."] : a.value === "required" ? ["No skill is required", "Switch on Required beside a skill to make the agent read it at the start."] : ["No skill is read in this conversation", "Skills appear here after the main agent reads them."] : ["No skills are installed", "Add a folder with a SKILL.md file under .agents/skills in this project."]);
+    return (k, y) => (l(), n("aside", We, [
+      W(u(ye), {
+        tools: u(r),
         placeholder: "Find a skill"
       }, null, 8, ["tools"]),
-      t("div", Be, [
-        (l(!0), n(A, null, P(u.value, (p) => (l(), n("button", {
-          key: p.key,
+      t("div", Le, [
+        (l(!0), n(A, null, V(d.value, (f) => (l(), n("button", {
+          key: f.key,
           type: "button",
-          "aria-pressed": r.value === p.key,
-          onClick: (O) => r.value = p.key
+          "aria-pressed": a.value === f.key,
+          onClick: (O) => a.value = f.key
         }, [
-          T(v(p.label) + " ", 1),
-          t("small", null, v(p.count), 1)
-        ], 8, Pe))), 128))
+          T(v(f.label) + " ", 1),
+          t("small", null, v(f.count), 1)
+        ], 8, Ne))), 128))
       ]),
-      t("div", Fe, [
-        i.value.length ? (l(), n(A, { key: 0 }, [
+      t("div", Ve, [
+        o.value.length ? (l(), n(A, { key: 0 }, [
           y[3] || (y[3] = t("div", { class: "column-head" }, [
             t("span", null, "Skill"),
             t("span", null, "Required")
           ], -1)),
-          (l(!0), n(A, null, P($.value, (p) => (l(), F(Ne, {
-            key: p.key,
-            title: p.title,
-            skills: p.skills,
+          (l(!0), n(A, null, V(p.value, (f) => (l(), F(Ee, {
+            key: f.key,
+            title: f.title,
+            skills: f.skills,
             opened: e.opened,
             busy: e.busy,
-            searching: d(o).filtering.value || r.value !== "all",
-            onOpen: y[0] || (y[0] = (O) => k("open", O)),
-            onRequire: y[1] || (y[1] = (O, I) => k("require", O, I))
+            searching: u(r).filtering.value || a.value !== "all",
+            onOpen: y[0] || (y[0] = (O) => h("open", O)),
+            onRequire: y[1] || (y[1] = (O, N) => h("require", O, N))
           }, null, 8, ["title", "skills", "opened", "busy", "searching"]))), 128))
-        ], 64)) : (l(), n("div", Me, [
+        ], 64)) : (l(), n("div", Be, [
           t("strong", null, v(b.value[0]), 1),
           t("p", null, v(b.value[1]), 1),
-          d(o).words.value ? (l(), n("button", {
+          u(r).words.value ? (l(), n("button", {
             key: 0,
             type: "button",
-            onClick: y[2] || (y[2] = (p) => d(o).words.value = "")
+            onClick: y[2] || (y[2] = (f) => u(r).words.value = "")
           }, "Clear the search")) : S("", !0)
         ]))
       ])
     ]));
   }
-}, De = /* @__PURE__ */ N(Ue, [["__scopeId", "data-v-60b72429"]]), Ge = { class: "requirements" }, He = { class: "block-head" }, Ke = { class: "switch-label" }, ze = {
+}, Me = /* @__PURE__ */ L(Fe, [["__scopeId", "data-v-60b72429"]]), Pe = { class: "requirements" }, Ue = { class: "block-head" }, De = { class: "switch-label" }, Ge = {
   key: 0,
   class: "choices"
-}, Ye = ["value", "disabled"], Je = { key: 0 }, Qe = {
+}, He = ["value", "disabled"], Ke = { key: 0 }, ze = {
   key: 1,
   class: "again"
-}, Xe = ["checked", "disabled"], Ze = {
+}, Ye = ["checked", "disabled"], Je = {
   __name: "SkillRequirements",
   props: { skill: { type: Object, required: !0 }, busy: Boolean },
   emits: ["change"],
-  setup(e, { emit: c }) {
-    const a = c, k = (r) => a("change", r ? "all" : "none", !0);
-    return (r, s) => (l(), n("section", Ge, [
-      t("div", He, [
+  setup(e, { emit: g }) {
+    const i = g, h = (a) => i("change", a ? "all" : "none", !0);
+    return (a, s) => (l(), n("section", Pe, [
+      t("div", Ue, [
         s[3] || (s[3] = t("div", null, [
           t("h3", null, "Must the agent read it at the start?"),
           t("p", null, "When a conversation starts, the agent must read this skill before it may do anything else.")
         ], -1)),
-        t("span", Ke, [
+        t("span", De, [
           s[2] || (s[2] = T("Required ", -1)),
-          L(ue, {
+          W(ie, {
             folder: e.skill.folder,
             required: e.skill.required,
             busy: e.busy,
-            onChange: k
+            onChange: h
           }, null, 8, ["folder", "required", "busy"])
         ])
       ]),
-      e.skill.required ? (l(), n("div", ze, [
+      e.skill.required ? (l(), n("div", Ge, [
         t("label", null, [
           s[5] || (s[5] = T("Which agents must read it", -1)),
           t("select", {
             value: e.skill.agents,
             "aria-label": "Which agents must read it",
             disabled: e.busy,
-            onChange: s[0] || (s[0] = (o) => a("change", o.target.value, e.skill.again))
+            onChange: s[0] || (s[0] = (r) => i("change", r.target.value, e.skill.again))
           }, [...s[4] || (s[4] = [
             t("option", { value: "all" }, "Every agent", -1),
             t("option", { value: "main" }, "Only the main agent", -1)
-          ])], 40, Ye)
+          ])], 40, He)
         ]),
-        e.skill.agents === "main" ? (l(), n("p", Je, "The main agent reads it at the start and again after every compaction.")) : (l(), n("label", Qe, [
+        e.skill.agents === "main" ? (l(), n("p", Ke, "The main agent reads it at the start and again after every compaction.")) : (l(), n("label", ze, [
           s[6] || (s[6] = t("span", null, [
             T("Read it again after the conversation is compacted"),
             t("small", null, "Compacting empties what the agent has read.")
@@ -278,127 +284,127 @@ const N = (e, c) => {
             checked: e.skill.again,
             disabled: e.busy,
             "aria-label": "Read it again after the conversation is compacted",
-            onChange: s[1] || (s[1] = (o) => a("change", e.skill.agents, o.target.checked))
-          }, null, 40, Xe)
+            onChange: s[1] || (s[1] = (r) => i("change", e.skill.agents, r.target.checked))
+          }, null, 40, Ye)
         ]))
       ])) : S("", !0)
     ]));
   }
-}, _e = /* @__PURE__ */ N(Ze, [["__scopeId", "data-v-6dff01bb"]]), et = [
+}, Qe = /* @__PURE__ */ L(Je, [["__scopeId", "data-v-6dff01bb"]]), Xe = [
   { key: "nudge", value: "nudge", label: "Remind the agent", hint: "A short note only the agent sees. It carries on with its work.", ask: "What to remind the agent of", example: "Add the change to src/CHANGELOG.md in plain words." },
   { key: "instruct", value: "instruct", label: "Tell the agent to do something now", hint: "The agent sees “Do this now:” followed by your text.", ask: "What the agent should do", example: "Stop and ask me before you touch the database." },
   { key: "deny", value: "deny", label: "Block a command or file change", hint: "The command or file change is refused, and the agent is given your reason.", ask: "Reason the agent is given", example: "Never force-push. Ask me first." },
   { key: "skill", value: "skill", label: "Make the agent read a skill", hint: "The agent must read the skill before it continues.", ask: "Which skill the agent must read", example: "journal-plans" }
 ];
-et.filter((e) => !["deny", "skill"].includes(e.value));
-const tt = [
+Xe.filter((e) => !["deny", "skill"].includes(e.value));
+const Ze = [
   { key: "messages", label: "What you write to the agent" },
   { key: "commands", label: "Commands the agent runs" },
   { key: "files", label: "Files the agent changes" }
-], lt = [
+], _e = [
   { key: "part", label: "Part of the text", hint: "Capitals ignored" },
   { key: "word", label: "Whole word", hint: "Not part of another word" },
   { key: "pattern", label: "Pattern", hint: "A regular expression" }
-], st = [
+], et = [
   { key: "main", value: "main", label: "The main agent" },
   { key: "helper", value: "helper", label: "An agent or helper" }
-], te = [
-  { key: "agent", value: "agent", label: "Agent", note: "The main agent or a helper", choices: st },
+], _ = [
+  { key: "agent", value: "agent", label: "Agent", note: "The main agent or a helper", choices: et },
   { key: "environment", value: "environment", label: "Environment", note: "Only in one environment", example: "main" },
   { key: "fired", value: "fired", label: "How often it has fired", note: "Only the first few times", example: "3" },
   { key: "hours", value: "hours", label: "Hours of the day", note: "From one hour until another", example: "9-17" }
-], X = (e) => `“${e}”`;
-function nt(e) {
-  const c = e.slice(0, 3).map(X), a = e.length - 3;
-  return a > 0 ? `${c.join(", ")} or ${a} other ${a === 1 ? "phrase" : "phrases"}` : c.length > 1 ? `${c.slice(0, -1).join(", ")} or ${c.at(-1)}` : c[0];
+], Q = (e) => `“${e}”`;
+function tt(e) {
+  const g = e.slice(0, 3).map(Q), i = e.length - 3;
+  return i > 0 ? `${g.join(", ")} or ${i} other ${i === 1 ? "phrase" : "phrases"}` : g.length > 1 ? `${g.slice(0, -1).join(", ")} or ${g.at(-1)}` : g[0];
 }
-const at = {
+const lt = {
   skill: (e) => `make the agent read ${e}`,
   nudge: (e) => `remind the agent ${e}`,
   instruct: (e) => `tell the agent to do this now: ${e}`,
   deny: (e) => `block it and tell the agent ${e}`
-}, it = {
+}, st = {
   every: (e) => `Every ${e.every || "few"} minutes`,
   once: () => "At the time you choose",
   cron: () => "At the scheduled times"
 };
-function de(e) {
-  const c = at[e.action](e.action === "skill" ? X(e.skill || "the skill") : e.text ? X(e.text) : "(no text yet)");
-  return e.type === "time" ? `${it[e.time](e)}, ${c}.` : e.phrases.length ? `When ${nt(e.phrases)} appears, ${c}.` : "Add the words to watch for and choose what happens.";
+function re(e) {
+  const g = lt[e.action](e.action === "skill" ? Q(e.skill || "the skill") : e.text ? Q(e.text) : "(no text yet)");
+  return e.type === "time" ? `${st[e.time](e)}, ${g}.` : e.phrases.length ? `When ${tt(e.phrases)} appears, ${g}.` : "Add the words to watch for and choose what happens.";
 }
-const rt = {
+const nt = {
   key: 0,
   class: "waiting"
-}, ot = { key: 0 }, ut = ["disabled"], dt = ["disabled"], ct = ["disabled", "aria-label"], gt = {
+}, at = { key: 0 }, it = ["disabled"], rt = ["disabled"], ot = ["disabled", "aria-label"], dt = {
   __name: "SkillTriggerCard",
   props: { trigger: { type: Object, required: !0 }, busy: Boolean },
   emits: ["edit", "run"],
-  setup(e, { emit: c }) {
-    const a = e, k = c, r = j(() => de(a.trigger));
-    return (s, o) => (l(), n("article", {
-      class: J(["skill-trigger-card", { paused: e.trigger.paused_at }])
+  setup(e, { emit: g }) {
+    const i = e, h = g, a = x(() => re(i.trigger));
+    return (s, r) => (l(), n("article", {
+      class: Y(["skill-trigger-card", { paused: e.trigger.paused_at }])
     }, [
-      t("p", null, v(r.value), 1),
-      e.trigger.needs_enabling ? (l(), n("p", rt, "An agent made this trigger. It does nothing until you turn it on.")) : S("", !0),
+      t("p", null, v(a.value), 1),
+      e.trigger.needs_enabling ? (l(), n("p", nt, "An agent made this trigger. It does nothing until you turn it on.")) : S("", !0),
       t("footer", null, [
         t("span", null, v(e.trigger.fired_count ? `Fired ${e.trigger.fired_count} times` : "Not fired yet"), 1),
-        e.trigger.paused_at ? (l(), n("span", ot, "Paused")) : S("", !0),
-        o[3] || (o[3] = t("span", { class: "push" }, null, -1)),
+        e.trigger.paused_at ? (l(), n("span", at, "Paused")) : S("", !0),
+        r[3] || (r[3] = t("span", { class: "push" }, null, -1)),
         t("button", {
           type: "button",
           disabled: e.busy,
-          onClick: o[0] || (o[0] = (u) => k("edit", e.trigger))
-        }, "Edit", 8, ut),
+          onClick: r[0] || (r[0] = (d) => h("edit", e.trigger))
+        }, "Edit", 8, it),
         e.trigger.needs_enabling ? (l(), n("button", {
           key: 1,
           type: "button",
           disabled: e.busy,
-          onClick: o[1] || (o[1] = (u) => k("run", ["trigger", "enable", String(e.trigger.id)]))
-        }, "Turn it on", 8, dt)) : (l(), n("button", {
+          onClick: r[1] || (r[1] = (d) => h("run", ["trigger", "enable", String(e.trigger.id)]))
+        }, "Turn it on", 8, rt)) : (l(), n("button", {
           key: 2,
           type: "button",
           disabled: e.busy,
           "aria-label": e.trigger.paused_at ? "Resume this trigger" : "Pause this trigger",
-          onClick: o[2] || (o[2] = (u) => k("run", ["trigger", "pause", String(e.trigger.id), ...e.trigger.paused_at ? ["--off"] : []]))
-        }, v(e.trigger.paused_at ? "Resume" : "Pause"), 9, ct))
+          onClick: r[2] || (r[2] = (d) => h("run", ["trigger", "pause", String(e.trigger.id), ...e.trigger.paused_at ? ["--off"] : []]))
+        }, v(e.trigger.paused_at ? "Resume" : "Pause"), 9, ot))
       ])
     ], 2));
   }
-}, ce = /* @__PURE__ */ N(gt, [["__scopeId", "data-v-8f3251db"]]), kt = { class: "tiles" }, mt = ["onClick"], ht = {
+}, oe = /* @__PURE__ */ L(dt, [["__scopeId", "data-v-8f3251db"]]), ut = { class: "tiles" }, ct = ["onClick"], gt = {
   __name: "TriggerTiles",
-  props: /* @__PURE__ */ Q({ options: { type: Array, required: !0 }, mark: { type: String, required: !0 } }, {
+  props: /* @__PURE__ */ J({ options: { type: Array, required: !0 }, mark: { type: String, required: !0 } }, {
     modelValue: { type: String, required: !0 },
     modelModifiers: {}
   }),
   emits: ["update:modelValue"],
   setup(e) {
-    const c = H(e, "modelValue");
-    return (a, k) => (l(), n("div", kt, [
-      (l(!0), n(A, null, P(e.options, (r) => (l(), n("button", ke({
-        key: r.key,
+    const g = G(e, "modelValue");
+    return (i, h) => (l(), n("div", ut, [
+      (l(!0), n(A, null, V(e.options, (a) => (l(), n("button", ue({
+        key: a.key,
         type: "button",
-        class: ["tile", { picked: c.value === r.key }]
-      }, { ref_for: !0 }, { [`data-${e.mark}`]: r.key }, {
-        onClick: (s) => c.value = r.key
+        class: ["tile", { picked: g.value === a.key }]
+      }, { ref_for: !0 }, { [`data-${e.mark}`]: a.key }, {
+        onClick: (s) => g.value = a.key
       }), [
-        t("b", null, v(r.label), 1),
-        t("span", null, v(r.hint), 1)
-      ], 16, mt))), 128))
+        t("b", null, v(a.label), 1),
+        t("span", null, v(a.hint), 1)
+      ], 16, ct))), 128))
     ]));
   }
-}, vt = /* @__PURE__ */ N(ht, [["__scopeId", "data-v-eb4da38d"]]), yt = { class: "words" }, ft = ["aria-label", "onClick"], pt = ["onKeydown"], bt = {
+}, kt = /* @__PURE__ */ L(gt, [["__scopeId", "data-v-eb4da38d"]]), mt = { class: "words" }, ht = ["aria-label", "onClick"], vt = ["onKeydown"], yt = {
   __name: "WatchedWords",
   props: { words: { type: Array, required: !0 } },
   emits: ["words"],
-  setup(e, { emit: c }) {
-    const a = e, k = c, r = C("");
+  setup(e, { emit: g }) {
+    const i = e, h = g, a = j("");
     function s() {
-      const u = r.value.trim();
-      r.value = "", u && !a.words.includes(u) && k("words", [...a.words, u]);
+      const d = a.value.trim();
+      a.value = "", d && !i.words.includes(d) && h("words", [...i.words, d]);
     }
-    const o = (u) => k("words", a.words.filter((i) => i !== u));
-    return (u, i) => (l(), n("div", yt, [
-      (l(!0), n(A, null, P(e.words, (w) => (l(), n("span", {
+    const r = (d) => h("words", i.words.filter((o) => o !== d));
+    return (d, o) => (l(), n("div", mt, [
+      (l(!0), n(A, null, V(e.words, (w) => (l(), n("span", {
         key: w,
         class: "word"
       }, [
@@ -407,32 +413,32 @@ const rt = {
           type: "button",
           class: "word-remove",
           "aria-label": `Remove ${w}`,
-          onClick: ($) => o(w)
+          onClick: (p) => r(w)
         }, [
-          L(d(re), {
+          W(u(ne), {
             name: "close",
             size: 11
           })
-        ], 8, ft)
+        ], 8, ht)
       ]))), 128)),
-      z(t("input", {
-        "onUpdate:modelValue": i[0] || (i[0] = (w) => r.value = w),
+      K(t("input", {
+        "onUpdate:modelValue": o[0] || (o[0] = (w) => a.value = w),
         class: "word-input",
         placeholder: "Add a word, then Enter",
         "aria-label": "Add a word",
         "data-trigger-word": "",
-        onKeydown: me(se(s, ["prevent"]), ["enter"]),
+        onKeydown: ce(te(s, ["prevent"]), ["enter"]),
         onBlur: s
-      }, null, 40, pt), [
-        [Y, r.value]
+      }, null, 40, vt), [
+        [z, a.value]
       ])
     ]));
   }
-}, $t = /* @__PURE__ */ N(bt, [["__scopeId", "data-v-7a597156"]]), wt = { class: "field" }, qt = { class: "field" }, St = ["checked", "data-trigger-place", "onChange"], xt = { class: "field" }, Ct = {
+}, pt = /* @__PURE__ */ L(yt, [["__scopeId", "data-v-7a597156"]]), ft = { class: "field" }, bt = { class: "field" }, $t = ["checked", "data-trigger-place", "onChange"], wt = { class: "field" }, qt = {
   key: 0,
   class: "pattern-limit",
   "data-trigger-pattern-limit": ""
-}, Tt = {
+}, St = {
   __name: "TriggerWordFields",
   props: {
     phrases: { type: Array, required: !0 },
@@ -444,51 +450,51 @@ const rt = {
   },
   emits: ["update:phrases", "update:places", "update:match"],
   setup(e) {
-    const c = H(e, "phrases"), a = H(e, "places"), k = H(e, "match"), r = (s) => a.value = a.value.includes(s) ? a.value.filter((o) => o !== s) : [...a.value, s];
-    return (s, o) => (l(), n(A, null, [
-      t("div", wt, [
-        o[2] || (o[2] = t("span", { class: "label" }, "When these words appear", -1)),
-        L($t, {
-          words: c.value,
-          onWords: o[0] || (o[0] = (u) => c.value = u)
+    const g = G(e, "phrases"), i = G(e, "places"), h = G(e, "match"), a = (s) => i.value = i.value.includes(s) ? i.value.filter((r) => r !== s) : [...i.value, s];
+    return (s, r) => (l(), n(A, null, [
+      t("div", ft, [
+        r[2] || (r[2] = t("span", { class: "label" }, "When these words appear", -1)),
+        W(pt, {
+          words: g.value,
+          onWords: r[0] || (r[0] = (d) => g.value = d)
         }, null, 8, ["words"])
       ]),
-      t("div", qt, [
-        o[3] || (o[3] = t("span", { class: "label" }, "Where to look", -1)),
-        (l(!0), n(A, null, P(d(tt), (u) => (l(), n("label", {
-          key: u.key,
+      t("div", bt, [
+        r[3] || (r[3] = t("span", { class: "label" }, "Where to look", -1)),
+        (l(!0), n(A, null, V(u(Ze), (d) => (l(), n("label", {
+          key: d.key,
           class: "check"
         }, [
           t("input", {
             type: "checkbox",
-            checked: a.value.includes(u.key),
-            "data-trigger-place": u.key,
-            onChange: (i) => r(u.key)
-          }, null, 40, St),
-          T(v(u.label), 1)
+            checked: i.value.includes(d.key),
+            "data-trigger-place": d.key,
+            onChange: (o) => a(d.key)
+          }, null, 40, $t),
+          T(v(d.label), 1)
         ]))), 128))
       ]),
-      t("div", xt, [
-        o[4] || (o[4] = t("span", { class: "label" }, "How words match", -1)),
-        L(vt, {
-          modelValue: k.value,
-          "onUpdate:modelValue": o[1] || (o[1] = (u) => k.value = u),
-          options: d(lt),
+      t("div", wt, [
+        r[4] || (r[4] = t("span", { class: "label" }, "How words match", -1)),
+        W(kt, {
+          modelValue: h.value,
+          "onUpdate:modelValue": r[1] || (r[1] = (d) => h.value = d),
+          options: u(_e),
           mark: "trigger-match"
         }, null, 8, ["modelValue", "options"]),
-        k.value === "pattern" ? (l(), n("p", Ct, "Patterns have no time limit. A slow pattern can delay every command or file change. Patterns are limited to 200 characters and check only the first 2,000 characters; repeating a repeated group is refused.")) : S("", !0)
+        h.value === "pattern" ? (l(), n("p", qt, "Patterns have no time limit. A slow pattern can delay every command or file change. Patterns are limited to 200 characters and check only the first 2,000 characters; repeating a repeated group is refused.")) : S("", !0)
       ])
     ], 64));
   }
-}, Rt = /* @__PURE__ */ N(Tt, [["__scopeId", "data-v-2e25b9b9"]]), At = { class: "block" }, Ot = {
+}, xt = /* @__PURE__ */ L(St, [["__scopeId", "data-v-2e25b9b9"]]), Ct = { class: "block" }, Tt = {
   key: 0,
   class: "field"
-}, jt = { class: "label" }, It = {
+}, Rt = { class: "label" }, At = {
   key: 1,
   class: "field"
-}, Et = { class: "label" }, Wt = ["placeholder"], Lt = {
+}, Ot = { class: "label" }, jt = ["placeholder"], It = {
   __name: "TriggerListedField",
-  props: /* @__PURE__ */ Q({
+  props: /* @__PURE__ */ J({
     label: { type: String, required: !0 },
     example: { type: String, default: "" },
     choices: { type: Array, default: null }
@@ -496,45 +502,45 @@ const rt = {
     modelValue: { type: String, required: !0 },
     modelModifiers: {}
   }),
-  emits: /* @__PURE__ */ Q(["remove"], ["update:modelValue"]),
-  setup(e, { emit: c }) {
-    const a = e, k = c, r = H(e, "modelValue"), s = j(() => {
-      var o, u;
-      return ((u = (o = a.choices) == null ? void 0 : o.find((i) => i.value === r.value)) == null ? void 0 : u.label) ?? "Choose one";
+  emits: /* @__PURE__ */ J(["remove"], ["update:modelValue"]),
+  setup(e, { emit: g }) {
+    const i = e, h = g, a = G(e, "modelValue"), s = x(() => {
+      var r, d;
+      return ((d = (r = i.choices) == null ? void 0 : r.find((o) => o.value === a.value)) == null ? void 0 : d.label) ?? "Choose one";
     });
-    return (o, u) => (l(), n("div", At, [
-      e.choices ? (l(), n("div", Ot, [
-        t("span", jt, v(e.label), 1),
-        L(d(oe), {
+    return (r, d) => (l(), n("div", Ct, [
+      e.choices ? (l(), n("div", Tt, [
+        t("span", Rt, v(e.label), 1),
+        W(u(ae), {
           label: s.value,
           items: e.choices,
-          picked: r.value,
+          picked: a.value,
           "data-trigger-choice": "",
-          onPick: u[0] || (u[0] = (i) => r.value = i.value)
+          onPick: d[0] || (d[0] = (o) => a.value = o.value)
         }, null, 8, ["label", "items", "picked"])
-      ])) : (l(), n("label", It, [
-        t("span", Et, v(e.label), 1),
-        z(t("input", {
-          "onUpdate:modelValue": u[1] || (u[1] = (i) => r.value = i),
+      ])) : (l(), n("label", At, [
+        t("span", Ot, v(e.label), 1),
+        K(t("input", {
+          "onUpdate:modelValue": d[1] || (d[1] = (o) => a.value = o),
           placeholder: e.example,
           "data-trigger-listed": ""
-        }, null, 8, Wt), [
-          [Y, r.value]
+        }, null, 8, jt), [
+          [z, a.value]
         ])
       ])),
-      L(d($e), {
+      W(u(pe), {
         class: "remove",
         small: "",
-        onClick: u[2] || (u[2] = (i) => k("remove"))
+        onClick: d[2] || (d[2] = (o) => h("remove"))
       }, {
-        default: ne(() => [...u[3] || (u[3] = [
+        default: le(() => [...d[3] || (d[3] = [
           T("Remove", -1)
         ])]),
         _: 1
       })
     ]));
   }
-}, Nt = /* @__PURE__ */ N(Lt, [["__scopeId", "data-v-1a787719"]]), Vt = {
+}, Et = /* @__PURE__ */ L(It, [["__scopeId", "data-v-1a787719"]]), Wt = {
   __name: "TriggerConditionFields",
   props: {
     modelValue: { type: Array, required: !0 },
@@ -542,67 +548,66 @@ const rt = {
   },
   emits: ["update:modelValue"],
   setup(e) {
-    const c = H(e, "modelValue"), a = (o) => te.find((u) => u.value === o.type), k = (o, u) => c.value = c.value.map((i, w) => w === o ? { ...i, value: u } : i), r = (o) => c.value = c.value.filter((u, i) => i !== o), s = (o) => c.value = [...c.value, { type: o.value, value: "" }];
-    return (o, u) => (l(), n(A, null, [
-      (l(!0), n(A, null, P(c.value, (i, w) => (l(), F(Nt, {
+    const g = G(e, "modelValue"), i = (r) => _.find((d) => d.value === r.type), h = (r, d) => g.value = g.value.map((o, w) => w === r ? { ...o, value: d } : o), a = (r) => g.value = g.value.filter((d, o) => o !== r), s = (r) => g.value = [...g.value, { type: r.value, value: "" }];
+    return (r, d) => (l(), n(A, null, [
+      (l(!0), n(A, null, V(g.value, (o, w) => (l(), F(Et, {
         key: w,
-        "model-value": i.value,
-        label: a(i).label,
-        example: a(i).example,
-        choices: a(i).choices,
-        "onUpdate:modelValue": ($) => k(w, $),
-        onRemove: ($) => r(w)
+        "model-value": o.value,
+        label: i(o).label,
+        example: i(o).example,
+        choices: i(o).choices,
+        "onUpdate:modelValue": (p) => h(w, p),
+        onRemove: (p) => a(w)
       }, null, 8, ["model-value", "label", "example", "choices", "onUpdate:modelValue", "onRemove"]))), 128)),
-      L(d(oe), {
+      W(u(ae), {
         label: "Add a condition",
         icon: "plus",
-        items: d(te),
+        items: u(_),
         "data-trigger-add-condition": "",
         onPick: s
       }, null, 8, ["items"])
     ], 64));
   }
-}, Bt = {
+}, Lt = {
   key: 0,
   class: "field"
-}, Pt = ["value"], Ft = { class: "summary" }, Mt = { class: "field" }, Ut = {
+}, Nt = ["value"], Vt = { class: "summary" }, Bt = { class: "field" }, Ft = {
   key: 1,
   class: "trial",
   role: "status"
-}, Dt = ["open"], Gt = { class: "more" }, Ht = { class: "field" }, Kt = ["placeholder"], zt = {
+}, Mt = ["open"], Pt = { class: "more" }, Ut = { class: "field" }, Dt = ["placeholder"], Gt = {
   class: "help",
   role: "status"
-}, Yt = { class: "actions" }, Jt = ["disabled"], Qt = {
+}, Ht = { class: "actions" }, Kt = ["disabled"], zt = {
   __name: "SkillTriggerEditor",
   props: { skill: { type: String, default: "" }, trigger: { type: Object, default: null }, skills: { type: Array, required: !0 } },
   emits: ["saved", "cancel"],
-  setup(e, { emit: c }) {
-    var R, E, M, V, G, U;
-    const a = e, k = c, r = ie(), s = he({ skill: ((R = a.trigger) == null ? void 0 : R.skill) || a.skill, name: ((E = a.trigger) == null ? void 0 : E.name) || "", phrases: [...((M = a.trigger) == null ? void 0 : M.phrases) || []], places: [...((V = a.trigger) == null ? void 0 : V.watch_places) || ["messages", "commands", "files"]], match: ((G = a.trigger) == null ? void 0 : G.match_mode) || "word", conditions: JSON.parse(((U = a.trigger) == null ? void 0 : U.conditions) || "[]") }), o = C(""), u = C(null), i = C(""), w = C(!1), $ = C(!1), b = j(() => s.skill ? s.phrases.length ? s.places.length ? "" : "Choose where to look." : "Add at least one word." : "Choose a skill."), m = j(() => de({ ...s, action: "skill" }));
-    let y, p = 0;
-    ae(() => [o.value, s.phrases.join(","), s.match], () => {
+  setup(e, { emit: g }) {
+    var R, I, M, B, U, P;
+    const i = e, h = g, a = se(), s = ge({ skill: ((R = i.trigger) == null ? void 0 : R.skill) || i.skill, name: ((I = i.trigger) == null ? void 0 : I.name) || "", phrases: [...((M = i.trigger) == null ? void 0 : M.phrases) || []], places: [...((B = i.trigger) == null ? void 0 : B.watch_places) || ["messages", "commands", "files"]], match: ((U = i.trigger) == null ? void 0 : U.match_mode) || "word", conditions: JSON.parse(((P = i.trigger) == null ? void 0 : P.conditions) || "[]") }), r = j(""), d = j(null), o = j(""), w = j(!1), p = j(!1), b = x(() => s.skill ? s.phrases.length ? s.places.length ? "" : "Choose where to look." : "Add at least one word." : "Choose a skill."), k = x(() => re({ ...s, action: "skill" }));
+    let y, f = 0;
+    X(() => [r.value, s.phrases.join(","), s.match], () => {
       clearTimeout(y);
-      const W = ++p;
-      u.value = null, !(!o.value.trim() || !s.phrases.length) && (y = setTimeout(async () => {
-        const f = await r.read(["trigger", "try", s.phrases.join(","), o.value, "--match-mode", s.match]);
-        W === p && (u.value = f.ok ? f.value : { error: f.error });
+      const E = ++f;
+      d.value = null, !(!r.value.trim() || !s.phrases.length) && (y = setTimeout(async () => {
+        a.state["trial.phrases"] = s.phrases.join(","), a.state["trial.sentence"] = r.value, a.state["trial.match-mode"] = s.match, await a.reload("trial"), E === f && (d.value = a.props.trial.failure.value ? { error: a.props.trial.failure.value } : a.props.trial.data.value);
       }, 150));
-    }), le(() => {
-      clearTimeout(y), p++;
+    }), ee(() => {
+      clearTimeout(y), f++;
     });
     async function O() {
       if (w.value || b.value) return;
       w.value = !0;
-      const W = ["--name", s.name.trim() || `Read ${s.skill}`, "--skill", s.skill, "--watch-places", ...s.places, "--match-mode", s.match, "--conditions", JSON.stringify(s.conditions)], f = a.trigger ? ["trigger", "edit", String(a.trigger.id), ...W, ...s.phrases.map((h) => `--phrases=${h}`)] : ["trigger", "make", "--do", "skill", ...W, "--", s.phrases.join(", ")], q = await r.run(f);
-      i.value = q.ok ? "" : q.error, w.value = !1, q.ok && k("saved");
+      const E = ["--name", s.name.trim() || `Read ${s.skill}`, "--skill", s.skill, "--watch-places", ...s.places, "--match-mode", s.match, "--conditions", JSON.stringify(s.conditions)], $ = i.trigger ? ["trigger", "edit", String(i.trigger.id), ...E, ...s.phrases.map((c) => `--phrases=${c}`)] : ["trigger", "make", "--do", "skill", ...E, "--", s.phrases.join(", ")], q = await a.run($);
+      o.value = q.ok ? "" : q.error, w.value = !1, q.ok && h("saved");
     }
-    async function I() {
-      const W = await r.run(["trigger", "strike", String(a.trigger.id)]);
-      i.value = W.ok ? "" : W.error, W.ok && k("saved");
+    async function N() {
+      const E = await a.run(["trigger", "strike", String(i.trigger.id)]);
+      o.value = E.ok ? "" : E.error, E.ok && h("saved");
     }
-    return (W, f) => (l(), n("form", {
+    return (E, $) => (l(), n("form", {
       class: "skill-trigger-editor",
-      onSubmit: se(O, ["prevent"])
+      onSubmit: te(O, ["prevent"])
     }, [
       t("h3", null, [
         T(v(e.trigger ? "Edit this trigger" : "New trigger"), 1),
@@ -610,392 +615,392 @@ const rt = {
           T(" for " + v(s.skill), 1)
         ], 64)) : S("", !0)
       ]),
-      e.skill ? S("", !0) : (l(), n("label", Bt, [
-        f[10] || (f[10] = T("Which skill the agent must read", -1)),
-        z(t("select", {
-          "onUpdate:modelValue": f[0] || (f[0] = (q) => s.skill = q),
+      e.skill ? S("", !0) : (l(), n("label", Lt, [
+        $[10] || ($[10] = T("Which skill the agent must read", -1)),
+        K(t("select", {
+          "onUpdate:modelValue": $[0] || ($[0] = (q) => s.skill = q),
           "aria-label": "Which skill the agent must read"
         }, [
-          f[9] || (f[9] = t("option", { value: "" }, "Choose a skill", -1)),
-          (l(!0), n(A, null, P(e.skills, (q) => (l(), n("option", {
+          $[9] || ($[9] = t("option", { value: "" }, "Choose a skill", -1)),
+          (l(!0), n(A, null, V(e.skills, (q) => (l(), n("option", {
             key: q.folder,
             value: q.folder
-          }, v(q.folder), 9, Pt))), 128))
+          }, v(q.folder), 9, Nt))), 128))
         ], 512), [
-          [ve, s.skill]
+          [ke, s.skill]
         ])
       ])),
-      L(Rt, {
+      W(xt, {
         phrases: s.phrases,
-        "onUpdate:phrases": f[1] || (f[1] = (q) => s.phrases = q),
+        "onUpdate:phrases": $[1] || ($[1] = (q) => s.phrases = q),
         places: s.places,
-        "onUpdate:places": f[2] || (f[2] = (q) => s.places = q),
+        "onUpdate:places": $[2] || ($[2] = (q) => s.places = q),
         match: s.match,
-        "onUpdate:match": f[3] || (f[3] = (q) => s.match = q)
+        "onUpdate:match": $[3] || ($[3] = (q) => s.match = q)
       }, null, 8, ["phrases", "places", "match"]),
-      t("div", Ft, [
-        f[11] || (f[11] = t("small", null, "What this trigger does", -1)),
-        t("p", null, v(m.value), 1)
+      t("div", Vt, [
+        $[11] || ($[11] = t("small", null, "What this trigger does", -1)),
+        t("p", null, v(k.value), 1)
       ]),
-      t("label", Mt, [
-        f[12] || (f[12] = T("Try a sentence", -1)),
-        z(t("input", {
-          "onUpdate:modelValue": f[4] || (f[4] = (q) => o.value = q),
+      t("label", Bt, [
+        $[12] || ($[12] = T("Try a sentence", -1)),
+        K(t("input", {
+          "onUpdate:modelValue": $[4] || ($[4] = (q) => r.value = q),
           "aria-label": "Try a sentence",
           placeholder: "For example: take notes about the plan"
         }, null, 512), [
-          [Y, o.value]
+          [z, r.value]
         ])
       ]),
-      u.value ? (l(), n("p", Ut, v(u.value.error || (u.value.matches ? "This would fire." : "This would not fire.")), 1)) : S("", !0),
+      d.value ? (l(), n("p", Ft, v(d.value.error || (d.value.matches ? "This would fire." : "This would not fire.")), 1)) : S("", !0),
       t("details", {
         open: !!e.trigger
       }, [
-        f[14] || (f[14] = t("summary", null, "More choices: its name and when it applies", -1)),
-        t("div", Gt, [
-          t("label", Ht, [
-            f[13] || (f[13] = T("Name", -1)),
-            z(t("input", {
-              "onUpdate:modelValue": f[5] || (f[5] = (q) => s.name = q),
+        $[14] || ($[14] = t("summary", null, "More choices: its name and when it applies", -1)),
+        t("div", Pt, [
+          t("label", Ut, [
+            $[13] || ($[13] = T("Name", -1)),
+            K(t("input", {
+              "onUpdate:modelValue": $[5] || ($[5] = (q) => s.name = q),
               "aria-label": "Name",
               placeholder: `Read ${s.skill || "the skill"}`
-            }, null, 8, Kt), [
-              [Y, s.name]
+            }, null, 8, Dt), [
+              [z, s.name]
             ])
           ]),
-          L(Vt, {
+          W(Wt, {
             modelValue: s.conditions,
-            "onUpdate:modelValue": f[6] || (f[6] = (q) => s.conditions = q)
+            "onUpdate:modelValue": $[6] || ($[6] = (q) => s.conditions = q)
           }, null, 8, ["modelValue"])
         ])
-      ], 8, Dt),
-      t("p", zt, v(i.value || b.value), 1),
-      t("div", Yt, [
+      ], 8, Mt),
+      t("p", Gt, v(o.value || b.value), 1),
+      t("div", Ht, [
         e.trigger ? (l(), n("button", {
           key: 0,
           type: "button",
           class: "danger",
-          onClick: f[7] || (f[7] = (q) => $.value ? I() : $.value = !0)
-        }, v($.value ? "Yes, end it" : "End this trigger"), 1)) : S("", !0),
+          onClick: $[7] || ($[7] = (q) => p.value ? N() : p.value = !0)
+        }, v(p.value ? "Yes, end it" : "End this trigger"), 1)) : S("", !0),
         t("button", {
           type: "button",
-          onClick: f[8] || (f[8] = (q) => k("cancel"))
+          onClick: $[8] || ($[8] = (q) => h("cancel"))
         }, "Cancel"),
         t("button", {
           type: "submit",
           class: "primary",
           disabled: w.value || !!b.value
-        }, v(e.trigger ? "Save" : "Create trigger"), 9, Jt)
+        }, v(e.trigger ? "Save" : "Create trigger"), 9, Kt)
       ])
     ], 32));
   }
-}, ge = /* @__PURE__ */ N(Qt, [["__scopeId", "data-v-e026cc21"]]), Xt = { class: "skill-details" }, Zt = { class: "status" }, _t = { class: "block" }, el = { class: "block-head" }, tl = {
+}, de = /* @__PURE__ */ L(zt, [["__scopeId", "data-v-50b742ad"]]), Yt = { class: "skill-details" }, Jt = { class: "status" }, Qt = { class: "block" }, Xt = { class: "block-head" }, Zt = {
   key: 0,
   class: "help"
-}, ll = {
+}, _t = {
   key: 0,
   class: "block"
-}, sl = { key: 0 }, nl = { key: 1 }, al = { key: 2 }, il = { class: "block" }, rl = { class: "block-head" }, ol = ["href"], ul = {
+}, el = { key: 0 }, tl = { key: 1 }, ll = { key: 2 }, sl = { class: "block" }, nl = { class: "block-head" }, al = ["href"], il = {
   key: 0,
   "data-skill-text": ""
-}, dl = {
+}, rl = {
   key: 1,
   class: "help"
-}, cl = {
+}, ol = {
   __name: "SkillDetails",
   props: { skill: { type: Object, required: !0 }, text: { type: Object, default: null }, triggers: { type: Array, required: !0 }, skills: { type: Array, required: !0 }, agent: { type: Number, default: null }, draft: { type: Object, default: null }, busy: Boolean },
   emits: ["require", "read", "add", "edit", "run", "saved", "cancel"],
-  setup(e, { emit: c }) {
-    const a = e, k = c, r = j(() => {
-      var u;
-      return (u = a.skill.module) != null && u.startsWith("plugin:") ? "From a plugin" : a.skill.shipped ? "From the journal" : "From this project";
-    }), s = j(() => {
-      var u;
-      return a.agent ? a.skill.changed ? "This skill changed after the main agent read it." : ((u = a.skill.held) == null ? void 0 : u.state) === "due" ? "The main agent still has to read this skill. It cannot do anything else first." : a.skill.read ? `The main agent read this skill at ${new Date(a.skill.held.loaded_at).toLocaleString()}.` : "The main agent has not read this skill in this conversation." : "No main agent is running in this environment.";
-    }), o = C("");
-    return ae(() => a.text, (u, i, w) => {
-      if (!u) return;
-      const $ = URL.createObjectURL(new Blob([u.text], { type: "text/plain;charset=utf-8" }));
-      o.value = $, w(() => URL.revokeObjectURL($));
-    }, { immediate: !0 }), (u, i) => {
-      var w, $, b, m, y, p, O, I;
-      return l(), n("div", Xt, [
+  setup(e, { emit: g }) {
+    const i = e, h = g, a = x(() => {
+      var d;
+      return (d = i.skill.module) != null && d.startsWith("plugin:") ? "From a plugin" : i.skill.shipped ? "From the journal" : "From this project";
+    }), s = x(() => {
+      var d;
+      return i.agent ? i.skill.changed ? "This skill changed after the main agent read it." : ((d = i.skill.held) == null ? void 0 : d.state) === "due" ? "The main agent still has to read this skill. It cannot do anything else first." : i.skill.read ? `The main agent read this skill at ${new Date(i.skill.held.loaded_at).toLocaleString()}.` : "The main agent has not read this skill in this conversation." : "No main agent is running in this environment.";
+    }), r = j("");
+    return X(() => i.text, (d, o, w) => {
+      if (!d) return;
+      const p = URL.createObjectURL(new Blob([d.text], { type: "text/plain;charset=utf-8" }));
+      r.value = p, w(() => URL.revokeObjectURL(p));
+    }, { immediate: !0 }), (d, o) => {
+      var w, p, b, k, y, f, O, N;
+      return l(), n("div", Yt, [
         t("header", null, [
           t("h2", null, [
             T(v(e.skill.folder) + " ", 1),
-            t("small", null, v(r.value), 1)
+            t("small", null, v(a.value), 1)
           ]),
           t("p", null, v(e.skill.description), 1)
         ]),
-        t("div", Zt, [
+        t("div", Jt, [
           t("span", null, v(s.value), 1),
           e.agent && ((w = e.skill.held) == null ? void 0 : w.state) !== "due" ? (l(), n("button", {
             key: 0,
             type: "button",
-            onClick: i[0] || (i[0] = (R) => k("read"))
+            onClick: o[0] || (o[0] = (R) => h("read"))
           }, v(e.skill.read ? "Make the agent read it again" : "Make the agent read it now"), 1)) : S("", !0)
         ]),
-        L(_e, {
+        W(Qe, {
           skill: e.skill,
           busy: e.busy,
-          onChange: i[1] || (i[1] = (R, E) => k("require", R, E))
+          onChange: o[1] || (o[1] = (R, I) => h("require", R, I))
         }, null, 8, ["skill", "busy"]),
-        t("section", _t, [
-          t("div", el, [
-            i[7] || (i[7] = t("h3", null, "Make the agent read it when your words appear", -1)),
+        t("section", Qt, [
+          t("div", Xt, [
+            o[7] || (o[7] = t("h3", null, "Make the agent read it when your words appear", -1)),
             e.draft ? S("", !0) : (l(), n("button", {
               key: 0,
               type: "button",
-              onClick: i[2] || (i[2] = (R) => k("add"))
+              onClick: o[2] || (o[2] = (R) => h("add"))
             }, "Add a trigger"))
           ]),
-          !e.triggers.length && !e.draft ? (l(), n("p", tl, "No triggers yet. Add one, and the agent must read this skill as soon as your words appear.")) : S("", !0),
-          (l(!0), n(A, null, P(e.triggers, (R) => {
-            var E, M;
+          !e.triggers.length && !e.draft ? (l(), n("p", Zt, "No triggers yet. Add one, and the agent must read this skill as soon as your words appear.")) : S("", !0),
+          (l(!0), n(A, null, V(e.triggers, (R) => {
+            var I, M;
             return l(), n(A, {
               key: R.id
             }, [
-              ((M = (E = e.draft) == null ? void 0 : E.trigger) == null ? void 0 : M.id) !== R.id ? (l(), F(ce, {
+              ((M = (I = e.draft) == null ? void 0 : I.trigger) == null ? void 0 : M.id) !== R.id ? (l(), F(oe, {
                 key: 0,
                 trigger: R,
-                onEdit: i[3] || (i[3] = (V) => k("edit", V)),
-                onRun: i[4] || (i[4] = (V) => k("run", V))
+                onEdit: o[3] || (o[3] = (B) => h("edit", B)),
+                onRun: o[4] || (o[4] = (B) => h("run", B))
               }, null, 8, ["trigger"])) : S("", !0)
             ], 64);
           }), 128)),
-          e.draft ? (l(), F(ge, {
-            key: (($ = e.draft.trigger) == null ? void 0 : $.id) || e.skill.folder,
+          e.draft ? (l(), F(de, {
+            key: ((p = e.draft.trigger) == null ? void 0 : p.id) || e.skill.folder,
             skill: e.skill.folder,
             trigger: e.draft.trigger,
             skills: e.skills,
-            onSaved: i[5] || (i[5] = (R) => k("saved")),
-            onCancel: i[6] || (i[6] = (R) => k("cancel"))
+            onSaved: o[5] || (o[5] = (R) => h("saved")),
+            onCancel: o[6] || (o[6] = (R) => h("cancel"))
           }, null, 8, ["skill", "trigger", "skills"])) : S("", !0)
         ]),
-        (b = e.skill.keywords) != null && b.length || (m = e.skill.commands) != null && m.length || (y = e.skill.events) != null && y.length ? (l(), n("section", ll, [
-          i[11] || (i[11] = t("h3", null, "When the skill itself asks to be read", -1)),
-          i[12] || (i[12] = t("p", { class: "help" }, "These come with the skill and cannot be changed here.", -1)),
+        (b = e.skill.keywords) != null && b.length || (k = e.skill.commands) != null && k.length || (y = e.skill.events) != null && y.length ? (l(), n("section", _t, [
+          o[11] || (o[11] = t("h3", null, "When the skill itself asks to be read", -1)),
+          o[12] || (o[12] = t("p", { class: "help" }, "These come with the skill and cannot be changed here.", -1)),
           t("ul", null, [
-            (p = e.skill.keywords) != null && p.length ? (l(), n("li", sl, [
-              i[8] || (i[8] = T("When you write ", -1)),
+            (f = e.skill.keywords) != null && f.length ? (l(), n("li", el, [
+              o[8] || (o[8] = T("When you write ", -1)),
               t("code", null, v(e.skill.keywords.join(", ")), 1)
             ])) : S("", !0),
-            (O = e.skill.commands) != null && O.length ? (l(), n("li", nl, [
-              i[9] || (i[9] = T("Before it runs a command about ", -1)),
+            (O = e.skill.commands) != null && O.length ? (l(), n("li", tl, [
+              o[9] || (o[9] = T("Before it runs a command about ", -1)),
               t("code", null, v(e.skill.commands.join(", ")), 1)
             ])) : S("", !0),
-            (I = e.skill.events) != null && I.length ? (l(), n("li", al, [
-              i[10] || (i[10] = T("When these changes happen: ", -1)),
+            (N = e.skill.events) != null && N.length ? (l(), n("li", ll, [
+              o[10] || (o[10] = T("When these changes happen: ", -1)),
               t("code", null, v(e.skill.events.join(", ")), 1)
             ])) : S("", !0)
           ])
         ])) : S("", !0),
-        t("section", il, [
-          t("div", rl, [
-            i[13] || (i[13] = t("h3", null, "What the skill says", -1)),
-            o.value ? (l(), n("a", {
+        t("section", sl, [
+          t("div", nl, [
+            o[13] || (o[13] = t("h3", null, "What the skill says", -1)),
+            r.value ? (l(), n("a", {
               key: 0,
-              href: o.value,
+              href: r.value,
               target: "_blank",
               rel: "noopener"
-            }, "Open SKILL.md", 8, ol)) : S("", !0)
+            }, "Open SKILL.md", 8, al)) : S("", !0)
           ]),
-          e.text ? (l(), n("pre", ul, v(e.text.text), 1)) : (l(), n("p", dl, "Reading the skill…"))
+          e.text ? (l(), n("pre", il, v(e.text.text), 1)) : (l(), n("p", rl, "Reading the skill…"))
         ])
       ]);
     };
   }
-}, gl = /* @__PURE__ */ N(cl, [["__scopeId", "data-v-4ab35e28"]]), kl = { class: "skills" }, ml = { class: "skills-title" }, hl = {
+}, dl = /* @__PURE__ */ L(ol, [["__scopeId", "data-v-4ab35e28"]]), ul = { class: "skills" }, cl = { class: "skills-title" }, gl = {
   class: "skills-text",
   "data-skill-text": ""
-}, vl = {
+}, kl = {
   __name: "SkillText",
   props: { skill: { type: Object, default: null }, failure: { type: String, default: "" }, back: { type: Boolean, default: !0 } },
   emits: ["back"],
-  setup(e, { emit: c }) {
-    const a = c;
-    return (k, r) => (l(), n("div", kl, [
+  setup(e, { emit: g }) {
+    const i = g;
+    return (h, a) => (l(), n("div", ul, [
       e.back ? (l(), n("button", {
         key: 0,
         type: "button",
         class: "skills-back",
-        onClick: r[0] || (r[0] = (s) => a("back"))
+        onClick: a[0] || (a[0] = (s) => i("back"))
       }, "Back to skills")) : S("", !0),
-      t("h3", ml, v(e.skill ? e.skill.folder : ""), 1),
-      t("pre", hl, v(e.skill ? e.skill.text : e.failure), 1)
+      t("h3", cl, v(e.skill ? e.skill.folder : ""), 1),
+      t("pre", gl, v(e.skill ? e.skill.text : e.failure), 1)
     ]));
   }
-}, yl = /* @__PURE__ */ N(vl, [["__scopeId", "data-v-47961cf4"]]), fl = { class: "page-head" }, pl = { "aria-label": "Skills views" }, bl = ["aria-pressed"], $l = ["aria-pressed"], wl = {
+}, ml = /* @__PURE__ */ L(kl, [["__scopeId", "data-v-47961cf4"]]), hl = { class: "page-head" }, vl = { "aria-label": "Skills views" }, yl = ["aria-pressed"], pl = ["aria-pressed"], fl = {
   key: 0,
   class: "warning",
   role: "status"
-}, ql = {
+}, bl = {
   key: 1,
   class: "warning",
   role: "alert"
-}, Sl = {
+}, $l = {
   key: 2,
   class: "empty"
-}, xl = {
+}, wl = {
   key: 3,
   class: "panes"
-}, Cl = { class: "skill-pane" }, Tl = {
+}, ql = { class: "skill-pane" }, Sl = {
   key: 0,
   class: "empty"
-}, Rl = {
+}, xl = {
   key: 2,
   class: "empty centre"
-}, Al = {
+}, Cl = {
   key: 4,
   class: "panes"
-}, Ol = { class: "triggers-list" }, jl = {
+}, Tl = { class: "triggers-list" }, Rl = {
   key: 0,
   class: "trigger-cards"
-}, Il = {
+}, Al = {
   key: 1,
   class: "empty"
-}, El = { class: "skill-pane trigger-pane" }, Wl = {
+}, Ol = { class: "skill-pane trigger-pane" }, jl = {
   key: 0,
   class: "trigger-form"
-}, Ll = {
+}, Il = {
   key: 1,
   class: "empty centre"
-}, Nl = {
+}, El = {
   __name: "SkillRows",
   setup(e) {
-    const { skills: c, selected: a, selectedTriggers: k, triggers: r, requirements: s, mainAgent: o, answered: u, failure: i, busy: w, opened: $, text: b, openFailure: m, tab: y, draft: p, marked: O, load: I, open: R, run: E, requireSkill: M, readNow: V } = qe(), G = (h, g) => M(h, g ? "all" : "none"), U = () => p.value = { trigger: null }, W = (h) => p.value = { trigger: h }, f = async () => {
-      p.value = null, await I();
-    }, q = (h) => {
-      y.value = h, p.value = null;
+    const { skills: g, selected: i, selectedTriggers: h, triggers: a, requirements: s, mainAgent: r, answered: d, failure: o, busy: w, opened: p, text: b, openFailure: k, tab: y, draft: f, marked: O, load: N, open: R, run: I, requireSkill: M, readNow: B } = be(), U = (c, m) => M(c, m ? "all" : "none"), P = () => f.value = { trigger: null }, E = (c) => f.value = { trigger: c }, $ = async () => {
+      f.value = null, await N();
+    }, q = (c) => {
+      y.value = c, f.value = null;
     };
-    return (h, g) => (l(), F(d(we), { padding: "0" }, {
-      default: ne(() => {
-        var B;
+    return (c, m) => (l(), F(u(fe), { padding: "0" }, {
+      default: le(() => {
+        var D;
         return [
-          d(O) ? (l(), F(yl, {
+          u(O) ? (l(), F(ml, {
             key: 0,
-            skill: d(b),
-            failure: d(m),
+            skill: u(b),
+            failure: u(k),
             back: !1
           }, null, 8, ["skill", "failure"])) : (l(), n("main", {
             key: 1,
-            class: J(["skills-page", { "skill-open": d(y) === "skills" && !!d($), "trigger-open": d(y) === "triggers" && !!d(p) }])
+            class: Y(["skills-page", { "skill-open": u(y) === "skills" && !!u(p), "trigger-open": u(y) === "triggers" && !!u(f) }])
           }, [
-            t("header", fl, [
-              g[8] || (g[8] = t("div", null, [
+            t("header", hl, [
+              m[8] || (m[8] = t("div", null, [
                 t("h1", null, "Skills"),
                 t("p", null, "Instructions the agent reads before starting work. Choose which skills the agent must read, and when. These settings apply to the whole project.")
               ], -1)),
-              t("nav", pl, [
+              t("nav", vl, [
                 t("button", {
                   type: "button",
-                  "aria-pressed": d(y) === "skills",
-                  onClick: g[0] || (g[0] = (x) => q("skills"))
-                }, "Skills", 8, bl),
+                  "aria-pressed": u(y) === "skills",
+                  onClick: m[0] || (m[0] = (C) => q("skills"))
+                }, "Skills", 8, yl),
                 t("button", {
                   type: "button",
-                  "aria-pressed": d(y) === "triggers",
-                  onClick: g[1] || (g[1] = (x) => q("triggers"))
-                }, "Triggers", 8, $l)
+                  "aria-pressed": u(y) === "triggers",
+                  onClick: m[1] || (m[1] = (C) => q("triggers"))
+                }, "Triggers", 8, pl)
               ])
             ]),
-            d(s).environment_overrides ? (l(), n("p", wl, "This environment uses separate skill lists. Changes here apply to the whole project. The environment lists still take priority.")) : S("", !0),
-            d(i) ? (l(), n("div", ql, [
-              T(v(d(i)) + " ", 1),
+            u(s).environment_overrides ? (l(), n("p", fl, "This environment uses separate skill lists. Changes here apply to the whole project. The environment lists still take priority.")) : S("", !0),
+            u(o) ? (l(), n("div", bl, [
+              T(v(u(o)) + " ", 1),
               t("button", {
                 type: "button",
-                onClick: g[2] || (g[2] = (...x) => d(I) && d(I)(...x))
+                onClick: m[2] || (m[2] = (...C) => u(N) && u(N)(...C))
               }, "Try again")
             ])) : S("", !0),
-            d(u) ? d(y) === "skills" ? (l(), n("div", xl, [
-              L(De, {
-                skills: d(c),
-                opened: d($),
-                busy: d(w),
-                onOpen: d(R),
-                onRequire: G
+            u(d) ? u(y) === "skills" ? (l(), n("div", wl, [
+              W(Me, {
+                skills: u(g),
+                opened: u(p),
+                busy: u(w),
+                onOpen: u(R),
+                onRequire: U
               }, null, 8, ["skills", "opened", "busy", "onOpen"]),
-              t("article", Cl, [
+              t("article", ql, [
                 t("button", {
                   type: "button",
                   class: "phone-back",
-                  onClick: g[3] || (g[3] = (x) => d(R)(""))
+                  onClick: m[3] || (m[3] = (C) => u(R)(""))
                 }, "Back to skills"),
-                d(m) ? (l(), n("div", Tl, [
-                  g[9] || (g[9] = t("strong", null, "Could not read this skill", -1)),
-                  t("p", null, v(d(m)), 1),
+                u(k) ? (l(), n("div", Sl, [
+                  m[9] || (m[9] = t("strong", null, "Could not read this skill", -1)),
+                  t("p", null, v(u(k)), 1),
                   t("button", {
                     type: "button",
-                    onClick: g[4] || (g[4] = (x) => d(R)(d($), !1))
+                    onClick: m[4] || (m[4] = (C) => u(R)(u(p), !1))
                   }, "Try again")
-                ])) : d(a) ? (l(), F(gl, {
+                ])) : u(i) ? (l(), F(dl, {
                   key: 1,
-                  skill: d(a),
-                  text: d(b),
-                  triggers: d(k),
-                  skills: d(c),
-                  agent: d(o),
-                  draft: d(p),
-                  busy: d(w).includes(d($)),
-                  onRequire: g[5] || (g[5] = (x, D) => d(M)(d($), x, D)),
-                  onRead: d(V),
-                  onAdd: U,
-                  onEdit: W,
-                  onRun: d(E),
-                  onSaved: f,
-                  onCancel: g[6] || (g[6] = (x) => p.value = null)
-                }, null, 8, ["skill", "text", "triggers", "skills", "agent", "draft", "busy", "onRead", "onRun"])) : (l(), n("div", Rl, [...g[10] || (g[10] = [
+                  skill: u(i),
+                  text: u(b),
+                  triggers: u(h),
+                  skills: u(g),
+                  agent: u(r),
+                  draft: u(f),
+                  busy: u(w).includes(u(p)),
+                  onRequire: m[5] || (m[5] = (C, H) => u(M)(u(p), C, H)),
+                  onRead: u(B),
+                  onAdd: P,
+                  onEdit: E,
+                  onRun: u(I),
+                  onSaved: $,
+                  onCancel: m[6] || (m[6] = (C) => f.value = null)
+                }, null, 8, ["skill", "text", "triggers", "skills", "agent", "draft", "busy", "onRead", "onRun"])) : (l(), n("div", xl, [...m[10] || (m[10] = [
                   t("strong", null, "Choose a skill to read what it says", -1),
                   t("p", null, "Switch on Required to make the agent read a skill at the start. Open a skill to add words that make the agent read it later.", -1)
                 ])]))
               ])
-            ])) : (l(), n("div", Al, [
-              t("aside", Ol, [
+            ])) : (l(), n("div", Cl, [
+              t("aside", Tl, [
                 t("div", { class: "trigger-head" }, [
-                  g[11] || (g[11] = t("p", null, "Triggers that make an agent read a skill. Other triggers stay under Triggers.", -1)),
+                  m[11] || (m[11] = t("p", null, "Triggers that make an agent read a skill. Other triggers stay under Triggers.", -1)),
                   t("button", {
                     type: "button",
-                    onClick: U
+                    onClick: P
                   }, "Add a trigger")
                 ]),
-                d(r).length ? (l(), n("div", jl, [
-                  (l(!0), n(A, null, P(d(r), (x) => (l(), F(ce, {
-                    key: x.id,
-                    trigger: x,
-                    onEdit: W,
-                    onRun: d(E)
+                u(a).length ? (l(), n("div", Rl, [
+                  (l(!0), n(A, null, V(u(a), (C) => (l(), F(oe, {
+                    key: C.id,
+                    trigger: C,
+                    onEdit: E,
+                    onRun: u(I)
                   }, null, 8, ["trigger", "onRun"]))), 128))
-                ])) : (l(), n("div", Il, [
-                  g[12] || (g[12] = t("strong", null, "You have no triggers yet", -1)),
-                  g[13] || (g[13] = t("p", null, "A trigger makes the agent read a skill as soon as your words appear.", -1)),
+                ])) : (l(), n("div", Al, [
+                  m[12] || (m[12] = t("strong", null, "You have no triggers yet", -1)),
+                  m[13] || (m[13] = t("p", null, "A trigger makes the agent read a skill as soon as your words appear.", -1)),
                   t("button", {
                     type: "button",
-                    onClick: U
+                    onClick: P
                   }, "Add a trigger")
                 ]))
               ]),
-              t("article", El, [
-                d(p) ? (l(), n("div", Wl, [
-                  (l(), F(ge, {
-                    key: ((B = d(p).trigger) == null ? void 0 : B.id) || "new",
-                    trigger: d(p).trigger,
-                    skills: d(c),
-                    onSaved: f,
-                    onCancel: g[7] || (g[7] = (x) => p.value = null)
+              t("article", Ol, [
+                u(f) ? (l(), n("div", jl, [
+                  (l(), F(de, {
+                    key: ((D = u(f).trigger) == null ? void 0 : D.id) || "new",
+                    trigger: u(f).trigger,
+                    skills: u(g),
+                    onSaved: $,
+                    onCancel: m[7] || (m[7] = (C) => f.value = null)
                   }, null, 8, ["trigger", "skills"]))
-                ])) : (l(), n("div", Ll, [...g[14] || (g[14] = [
+                ])) : (l(), n("div", Il, [...m[14] || (m[14] = [
                   t("strong", null, "Choose Edit on a trigger to change it", -1),
                   t("p", null, "Or add a new one. Each trigger makes the agent read one skill.", -1)
                 ])]))
               ])
-            ])) : (l(), n("p", Sl, "Reading the skills…"))
+            ])) : (l(), n("p", $l, "Reading the skills…"))
           ], 2))
         ];
       }),
       _: 1
     }));
   }
-}, Pl = /* @__PURE__ */ N(Nl, [["__scopeId", "data-v-d59c26e6"]]);
+}, Nl = /* @__PURE__ */ L(El, [["__scopeId", "data-v-d59c26e6"]]);
 export {
-  Pl as default
+  Nl as default
 };

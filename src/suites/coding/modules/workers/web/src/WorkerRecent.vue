@@ -1,8 +1,9 @@
 <script setup>
-import {RowList, TimeAgo, peekRef, useRows} from "@journal/window-kit";
+import {RowList, TimeAgo, peekRef, useWindow} from "@journal/window-kit";
 
 // the moments the workers' marks in the chat name, newest first; one opens its worker
-const {rows, failure, loaded, older, more} = useRows("chat-mark main --type workers.worker", ["chat_mark.*"], {incremental: true});
+const window = useWindow();
+const {rows, failure, loaded, older, more} = window.props.recent;
 </script>
 
 <template>

@@ -1,14 +1,14 @@
 <script setup>
-import {computed, onUnmounted, ref} from "vue";
+import {computed} from "vue";
 import {Skeleton, TaskStatusIcon, useWindow} from "@journal/window-kit";
 import {NODE, taskGraphLayout} from "./taskGraphLayout.js";
 
 // what waits on what among the unfinished tasks: each task a card, a line from what it waits on to it
 defineProps({selected: {type: Number, default: 0}});
 const emit = defineEmits(["select"]);
-const context = useWindow();
-const graph = ref(null);
-const failure = ref("");
+const window = useWindow();
+window.state.tab = "graph";
+const {data: graph, failure} = window.props.graph;
 const layout = computed(() => taskGraphLayout(graph.value?.tasks ?? [], graph.value?.edges ?? []));
 const path = (line) => {
     const fromX = line.from.x + NODE.width;
@@ -18,15 +18,6 @@ const path = (line) => {
     return `M ${fromX} ${fromY} C ${middle} ${fromY}, ${middle} ${toY}, ${line.to.x} ${toY}`;
 };
 
-async function load() {
-    const answer = await context.read("task graph");
-    failure.value = answer.ok ? "" : answer.error;
-    if (answer.ok) graph.value = answer.value;
-}
-
-const stopFollowing = context.follow(["task.*"], load);
-onUnmounted(() => stopFollowing?.());
-load();
 </script>
 
 <template>

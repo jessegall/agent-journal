@@ -87,6 +87,7 @@ from suites.coding.modules.workers.rules.missing_process_rule import MissingProc
 from suites.coding.modules.workers.support.queue_run_workers import QueueRunWorkers
 from suites.coding.modules.workers.bindings.worker_queue_run_workers import WorkerQueueRunWorkers
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_tab import WindowTab
 from core.base.viewer.window_extension import WindowExtension
 from core.base.viewer.window_source import WindowSource
@@ -256,12 +257,14 @@ class WorkersModule(Module):
     listeners = [DeletedWorkerSourceListener, WorkerJobSourceListener, WorktreeRowsListener, SilentWorkerLineListener, WorkerTestCountListener, RemovedWorktreeAgentListener, ReaderSampleReadyListener,WorkerHelpRequestListener, WorkerStoppedMarkListener, WorkerHelpRequestMarkListener, WorkerStopResultListener, MainAgentWorkersListener, BlockedWorkerTaskListener, ReassignedTaskListener, DelegatedTaskCommentListener, WorkerCountRaisedListener, WorkerMoveMarkListener, WorkerJobMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerProofRowsListener, AffectedTestRowsListener, WorkerTaskWaitListener]
     tick_handlers = [TickHandler(TickInterval(seconds=10), WorkerResumeRetry(), "worker resume retry"), TickHandler(TickInterval(seconds=60), StalledWorkerTests(), "stalled worker tests")]
     windows =[WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, skeleton=WORKERS_POINTS_SKELETON, icon=WindowIcon.CHECK, shows=WindowShows.SELECTED_AGENT,
-                                 reads=["worker-worktree points", "proof points"], events=["proof.*", "worker_worktree.*"]),
+                                 reads=["worker-worktree points", "proof points"], events=["proof.*", "worker_worktree.*"], keys=[WindowKey("points", "worker-worktree points", arguments=["agent"], events=["proof.*", "worker_worktree.*"])]),
                WindowDeclaration("workers.todos", "Tasks", "todos.js", WindowLoading.COMPONENT, skeleton=WORKERS_TODOS_SKELETON, icon=WindowIcon.TASK, shows=WindowShows.SELECTED_AGENT, reads=["todo-item list"],
-                                 events=["todo_item.*"]),
+                                 events=["todo_item.*"], keys=[WindowKey("todos", "todo-item list --oldest", arguments=["agent"], events=["todo_item.*"])]),
                WindowDeclaration("workers.workers", "Workers", "workers.js", WindowLoading.COMPONENT, skeleton=WORKERS_WORKERS_SKELETON, icon=WindowIcon.AGENT, place=WindowPlace.DROPDOWN, reads=["agent list", "chat-mark main"], runs=["message send"], events=["agent.*", "chat_mark.*"],
-                                 tabs=[WindowTab("workers", "Workers", "agent list --role worker"), WindowTab("recent", "Recent activity", "chat-mark main --type workers.worker")]),
+                                 tabs=[WindowTab("workers", "Workers", "agent list --role worker"), WindowTab("recent", "Recent activity", "chat-mark main --type workers.worker")],
+                                 keys=[WindowKey("workers", "agent list --role worker", tab="workers", events=["agent.*"]),
+                                       WindowKey("recent", "chat-mark main --type workers.worker", tab="recent", events=["chat_mark.*"], arguments=["limit", "before-id", "after-id"], page_size=50)]),
                WindowDeclaration("workers.models", "Worker models", "models.js", WindowLoading.COMPONENT, skeleton=WORKERS_MODELS_SKELETON, group="project", icon=WindowIcon.MENU, reads=["worker models", "setting show"],
-                                 runs=["setting set"], events=["setting.*"]),
+                                 runs=["setting set"], events=["setting.*"], keys=[WindowKey("models", "worker models", events=["setting.*"])]),
                WindowDeclaration("workers.worktrees", "Worktrees", "worktrees.js", WindowLoading.COMPONENT, skeleton=WORKERS_WORKTREES_SKELETON, group="project", icon=WindowIcon.BRANCH, reads=["project-worktree list"],
-                                 runs=["project-worktree remove"])]
+                                 runs=["project-worktree remove"], keys=[WindowKey("worktrees", "project-worktree list")])]

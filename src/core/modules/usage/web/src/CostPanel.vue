@@ -1,17 +1,15 @@
 <script setup>
 import {computed} from "vue";
-import {WindowRoom, usePoll, useUsage, useWindow} from "@journal/window-kit";
+import {WindowRoom, useWindow} from "@journal/window-kit";
 import {byAgent, byModel, byProfile, dollars} from "./costBreakdown.js";
 
 // what the open sessions and their helpers would cost through an API, as a total, for this session and for each model, agent and profile that reported one
-const REFRESH_MILLISECONDS = 30000;
-const context = useWindow();
-const {value: usage, failure, load} = useUsage();
+const window = useWindow();
+const {data: usage, failure} = window.props.usage;
 const agents = computed(() => usage.value?.agents ?? []);
-const own = computed(() => agents.value.find((agent) => agent.id === context.agent) ?? null);
+const own = computed(() => agents.value.find((agent) => agent.id === window.agent) ?? null);
 const total = computed(() => agents.value.reduce((sum, agent) => sum + (agent.cost_dollars || 0), 0));
 
-usePoll(load, () => true, REFRESH_MILLISECONDS);
 </script>
 
 <template>

@@ -1,11 +1,10 @@
 <script setup>
-import {WindowRoom, useReadLine, useWindow} from "@journal/window-kit";
+import {WindowRoom, useWindow} from "@journal/window-kit";
 
 // the measures behind an agent's fitness score, each with its value and the level it should stay under
-const context = useWindow();
-const {value: fitness, failure, load} = useReadLine(() => `usage fitness --agent ${context.agent}`);
-
-load();
+const window = useWindow();
+window.state["fitness.agent"] = String(window.agent);
+const {data: fitness, failure} = window.props.fitness;
 </script>
 
 <template>

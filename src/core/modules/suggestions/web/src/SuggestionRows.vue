@@ -1,7 +1,8 @@
 <script setup>
-import {ListTools, RowList, WindowRoom, peekRef, useListTools, useRows} from "@journal/window-kit";
+import {ListTools, RowList, WindowRoom, peekRef, useListTools, useWindow} from "@journal/window-kit";
 
-const {rows, failure, loaded} = useRows("suggestion list", ["suggestion.*"]);
+const window = useWindow();
+const {rows, failure, loaded} = window.props.suggestions;
 const tools = useListTools(rows, {title: (row) => row.title});
 
 const answerText = (row) => (row.answer ? `Answer: ${row.answer}` : "Answer: none yet");

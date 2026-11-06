@@ -4,11 +4,13 @@ import TunnelWindow from "../../core/modules/tunnel/web/src/TunnelWindow.vue";
 import PhoneRows from "../../core/modules/phone/web/src/PhoneRows.vue";
 import TunlerAccount from "../../tunnels/tunler/web/src/TunlerAccount.vue";
 
+const tunnelContext = (answers) => context(answers, null, {status: {line: "tunnel status"}});
+
 test("the tunnel window says whether it is connected, its address, and why not", async () => {
-    const element = await mounted(TunnelWindow, context({"tunnel status": {ok: true, value: {state: "connected", address: "https://shop.example", reason: ""}}}));
+    const element = await mounted(TunnelWindow, tunnelContext({"tunnel status": {ok: true, value: {state: "connected", address: "https://shop.example", reason: ""}}}));
     expect(element.textContent).toContain("Connected");
     expect(element.querySelector("[data-tunnel-address]").textContent).toBe("https://shop.example");
-    const off = await mounted(TunnelWindow, context({"tunnel status": {ok: true, value: {state: "disconnected", address: "", reason: "no tunnel is installed"}}}));
+    const off = await mounted(TunnelWindow, tunnelContext({"tunnel status": {ok: true, value: {state: "disconnected", address: "", reason: "no tunnel is installed"}}}));
     expect(off.querySelector("[data-tunnel-reason]").textContent).toBe("no tunnel is installed");
 });
 

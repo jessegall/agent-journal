@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onUnmounted, ref, watch} from "vue";
+import {computed, ref, watch} from "vue";
 import {Icon, PriorityIcon, SearchBar, Skeleton, TaskStatusIcon, peekRef, priorityLabel, useWindow} from "@journal/window-kit";
 import {readPlanPlaces} from "./planPlaces.js";
 
@@ -14,16 +14,18 @@ const props = defineProps({
     display: {type: Object, default: () => ({grouping: "state", number: true, reason: false, showDone: true})},
 });
 const emit = defineEmits(["select"]);
-const context = useWindow();
+const window = useWindow();
+window.state.tab ??= window.shared ? "shared" : "list";
 const search = ref(null);
 const board = ref([]);
-const failure = ref("");
-const loaded = ref(false);
+const pageFailure = ref("");
+const failure = computed(() => pageFailure.value || window.props.board.failure.value);
+const loaded = computed(() => window.shared ? window.props[`task.${window.shared.id}`].loaded.value : window.props.board.loaded.value);
 const extended = ref(new Set());
 const query = ref("");
 // the rows each group shows on a page, chosen in the window's menu and kept on the pane
-const pageRows = context.option("rows");
-const pageLimit = computed(() => (Number(pageRows.value) > 0 ? ` --limit ${Number(pageRows.value)}` : ""));
+const pageRows = window.option("rows");
+const pageLimit = computed(() => (Number(pageRows.value) > 0 ? String(Number(pageRows.value)) : undefined));
 
 // the groups folded away, kept for this browser
 function keptFolded() {
@@ -47,27 +49,34 @@ function toggleFold(state) {
     }
 }
 
-async function load() {
-    const answer = await context.read(context.shared ? `${context.shared.model} show ${context.shared.id}` : `task board${pageLimit.value}`);
-    failure.value = answer.ok ? "" : answer.error;
-    loaded.value = true;
-    if (!answer.ok) return;
-    if (context.shared) return void (board.value = [{state: answer.value.state, total: 1, rows: [answer.value]}]);
+let loading = 0;
+async function readBoard(answer) {
+    if (!answer) return;
+    const request = ++loading;
     const held = new Map(board.value.map((group) => [group.state, group]));
-    board.value = await Promise.all(answer.value.groups.map((group) => withHeldRows(group, held.get(group.state))));
+    const groups = [];
+    for (const group of answer.groups) groups.push(await withHeldRows(group, held.get(group.state)));
+    if (request === loading) board.value = groups;
 }
+watch(() => window.props.board.data.value, readBoard, {immediate: true});
 
 // a group shown past its first page reads again as many rows as it shows, so a task that moved leaves it
 async function withHeldRows(group, held) {
     if (!extended.value.has(group.state) || !held?.rows.length) return group;
-    const answer = await context.read(`task board --state ${group.state} --limit ${held.rows.length}`);
+    const answer = await window.readKey("group", {state: group.state, limit: String(held.rows.length)});
     return answer.ok ? answer.value.groups[0] : group;
 }
 
 async function more(group) {
-    const before = !group.rows.length ? "" : FINISHED.has(group.state) ? ` --before-closed-at ${group.rows.at(-1).closed_at} --before-id ${group.rows.at(-1).id}` : ` --before-id ${Math.min(...group.rows.map((row) => row.id))}`;
-    const answer = await context.read(`task board --state ${group.state}${before}${pageLimit.value}`);
-    if (!answer.ok) return void (failure.value = answer.error);
+    const flags = {state: group.state};
+    if (pageLimit.value) flags.limit = pageLimit.value;
+    if (group.rows.length) {
+        flags["before-id"] = String(FINISHED.has(group.state) ? group.rows.at(-1).id : Math.min(...group.rows.map((row) => row.id)));
+        if (FINISHED.has(group.state)) flags["before-closed-at"] = group.rows.at(-1).closed_at;
+    }
+    const answer = await window.readKey("group", flags);
+    pageFailure.value = answer.ok ? "" : answer.error;
+    if (!answer.ok) return;
     extended.value = new Set([...extended.value, group.state]);
     const current = board.value.find((held) => held.state === group.state);
     const shown = new Set(current.rows.map((row) => row.id));
@@ -100,17 +109,24 @@ const planGroups = computed(() => {
 });
 const groups = computed(() => (props.display.grouping === "plan" ? planGroups.value : stateGroups.value));
 watch(() => props.display.grouping, async (grouping) => {
-    if (grouping === "plan") places.value = await readPlanPlaces(context);
+    if (grouping === "plan") places.value = await readPlanPlaces(window);
 }, {immediate: true});
 const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 const pick = (id) => (props.selectable ? emit("select", id) : peekRef(`tasks:${id}`));
 watch(pageRows, () => {
     extended.value = new Set();
-    load();
-});
-const stopFollowing = context.follow(["task.*"], load);
-onUnmounted(() => stopFollowing?.());
-load();
+    if (pageLimit.value) window.state["board.limit"] = pageLimit.value;
+    else delete window.state["board.limit"];
+    if (window.props.board.data.value) window.reload("board");
+}, {immediate: true});
+if (window.shared) {
+    const name = `task.${window.shared.id}`;
+    window.reload(name).then(() => {
+        const row = window.props[name].data.value;
+        pageFailure.value = window.props[name].failure.value;
+        if (row) board.value = [{state: row.state, total: 1, rows: [row]}];
+    });
+}
 defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
 </script>
 

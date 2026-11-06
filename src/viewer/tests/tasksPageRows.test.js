@@ -1,6 +1,7 @@
 import {ref} from "vue";
 import {afterEach, expect, test} from "vitest";
-import {context, mounted, settle} from "./support/windowContext.js";
+import {mounted, settle} from "./support/windowContext.js";
+import {taskWindowContext} from "./support/taskWindowContext.js";
 import {windowContext} from "../src/windows/windowContext.js";
 import TaskGroups from "../../core/modules/tasks/web/src/TaskGroups.vue";
 
@@ -10,7 +11,7 @@ const DECLARED = [{control: "choice", key: "rows", label: "Tasks per page", choi
 afterEach(() => (document.body.innerHTML = ""));
 
 function windowOf(rows) {
-    const window = context({"task board": BOARD});
+    const window = taskWindowContext({"task board": BOARD});
     window.option = (key) => (key === "rows" ? rows : {value: false});
     return window;
 }
@@ -32,7 +33,7 @@ test("a page size chosen in the menu reads the board again with it", async () =>
 });
 
 test("a page size the window was not given reads the board with the server's own page", async () => {
-    const window = context({"task board": BOARD});
+    const window = taskWindowContext({"task board": BOARD});
     await mounted(TaskGroups, window);
     expect(window.reads).toEqual(["task board"]);
 });

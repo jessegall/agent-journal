@@ -1,5 +1,6 @@
 import {expect, test} from "vitest";
-import {context, mounted, page, settle} from "./support/windowContext.js";
+import {mounted, page, settle} from "./support/windowContext.js";
+import {updateWindowContext as context} from "./support/updateWindowContext.js";
 import UpdatesPanel from "../../core/modules/updates/web/src/UpdatesPanel.vue";
 
 const NOTE = {tag: "v2", text: "A new thing", published_at: "2026-10-01T10:00:00Z"};

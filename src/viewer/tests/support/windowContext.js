@@ -19,13 +19,11 @@ const WINDOW_KEYS = {
 };
 
 const ID_KEY_LINES = {dock: "dock-item read", output: "output page", run: "process card", question: "question show"};
-const keyLine = (name) => WINDOW_KEYS[name]?.line ?? `${ID_KEY_LINES[name.split(".")[0]]} ${name.split(".")[1]}`;
+const keyLine = (name, keys) => keys[name]?.line ?? keys[`${name.split(".")[0]}.*`]?.line.replace("{id}", name.split(".")[1]) ?? `${ID_KEY_LINES[name.split(".")[0]]} ${name.split(".")[1]}`;
 const keyFlags = (name, state) => Object.entries(state).filter(([flag]) => flag.startsWith(`${name}.`)).map(([flag, value]) => ` --${flag.slice(name.length + 1)} ${value}`).join("");
 
-export function context(answers, agent = null) {
+export function context(answers, agent = null, keys = WINDOW_KEYS) {
     const reads = [];
-    const state = {};
-    const reports = ref([]);
     const read = async (line) => {
         reads.push(line);
         const key = Object.keys(answers).find((start) => line.startsWith(start));
@@ -33,13 +31,6 @@ export function context(answers, agent = null) {
     };
     return {
         reads,
-        state,
-        props: {reports: {rows: reports}},
-        async reload(name) {
-            if (name !== "reports") return;
-            const answer = await read(`message agent-reports --agent ${state["reports.agent"]}`);
-            if (answer.ok) reports.value = answer.value.rows;
-        },
         window: "test.window",
         environment: "main",
         agent,
@@ -51,9 +42,9 @@ export function context(answers, agent = null) {
         permissions: {reads: [], runs: [], missing: [], ask: async () => true},
         read,
         async readKeys({only = [], state = {}}) {
-            const names = only.length ? only : Object.keys(WINDOW_KEYS).filter((name) => !WINDOW_KEYS[name].loading);
-            const results = await Promise.all(names.map((name) => this.read(`${keyLine(name)}${keyFlags(name, state)}${WINDOW_KEYS[name]?.page_size && !(`${name}.limit` in state) ? ` --limit ${WINDOW_KEYS[name].page_size}` : ""}`)));
-            const declared = Object.fromEntries(Object.entries(WINDOW_KEYS).map(([name, key]) => [name, {tab: null, events: key.events, reload_seconds: 0, loading: key.loading ?? "first", page_size: key.page_size ?? 0}]));
+            const names = only.length ? only : Object.keys(keys).filter((name) => !keys[name].loading && !name.endsWith(".*") && (!keys[name].tab || keys[name].tab === state.tab));
+            const results = await Promise.all(names.map((name) => this.read(`${keyLine(name, keys)}${keyFlags(name, state)}${keys[name]?.page_size && !(`${name}.limit` in state) ? ` --limit ${keys[name].page_size}` : ""}`)));
+            const declared = Object.fromEntries(Object.entries(keys).map(([name, key]) => [name, {tab: key.tab ?? null, events: key.events ?? [], reload_seconds: 0, loading: key.loading ?? "first", page_size: key.page_size ?? 0}]));
             return {ok: true, value: {declared, keys: Object.fromEntries(names.map((name, index) => [name, results[index]]))}};
         },
         run: async () => ({ok: true, value: null}),

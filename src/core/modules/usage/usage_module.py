@@ -5,6 +5,7 @@ from core.modules.usage.commands.agent_cards.agent_cards_subcommand import Agent
 from core.modules.usage.commands.agent_limits.agent_limits_subcommand import AgentLimitsSubcommand
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
@@ -38,8 +39,8 @@ class UsageModule(Module):
     listeners = [EndedAgentStatusListener]
     moves = [StatisticsMove]
     subcommands = [AgentLimitsSubcommand, AgentCardsSubcommand, UsageAgentsSubcommand, UsageFitnessSubcommand, UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, UsageAgentSubcommand, StatisticListSubcommand]
-    windows = [WindowDeclaration("usage.usage", "Usage", "usage.js", WindowLoading.COMPONENT, skeleton=USAGE_USAGE_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"]),
-               WindowDeclaration("usage.cost", "Cost", "cost.js", WindowLoading.COMPONENT, skeleton=USAGE_COST_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"]),
-               WindowDeclaration("usage.fitness", "Fitness", "fitness.js", WindowLoading.COMPONENT, skeleton=USAGE_FITNESS_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, shows=WindowShows.SELECTED_AGENT, reads=["usage fitness"]),
-               WindowDeclaration("usage.load", "Load", "load.js", WindowLoading.COMPONENT, skeleton=USAGE_MACHINE_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, shows=WindowShows.SELECTED_AGENT, reads=["usage fitness"]),
-               WindowDeclaration("usage.context", "Context", "context.js", WindowLoading.COMPONENT, skeleton=USAGE_CONTEXT_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"])]
+    windows = [WindowDeclaration("usage.usage", "Usage", "usage.js", WindowLoading.COMPONENT, skeleton=USAGE_USAGE_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"], keys=[WindowKey("usage", "usage show", reload_seconds=30)]),
+               WindowDeclaration("usage.cost", "Cost", "cost.js", WindowLoading.COMPONENT, skeleton=USAGE_COST_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"], keys=[WindowKey("usage", "usage show", reload_seconds=30)]),
+               WindowDeclaration("usage.fitness", "Fitness", "fitness.js", WindowLoading.COMPONENT, skeleton=USAGE_FITNESS_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, shows=WindowShows.SELECTED_AGENT, reads=["usage fitness"], keys=[WindowKey("fitness", "usage fitness", arguments=["agent"])]),
+               WindowDeclaration("usage.load", "Load", "load.js", WindowLoading.COMPONENT, skeleton=USAGE_MACHINE_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, shows=WindowShows.SELECTED_AGENT, reads=["usage fitness"], keys=[WindowKey("fitness", "usage fitness", arguments=["agent"])]),
+               WindowDeclaration("usage.context", "Context", "context.js", WindowLoading.COMPONENT, skeleton=USAGE_CONTEXT_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"], keys=[WindowKey("usage", "usage show", reload_seconds=30)])]

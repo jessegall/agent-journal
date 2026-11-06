@@ -1,20 +1,10 @@
 <script setup>
-import {ref} from "vue";
 import {Skeleton, WindowRoom, useWindow} from "@journal/window-kit";
 
 // whether phones and share links can reach this viewer from outside: the tunnel's state, its address, and why not
 const WORDS = {connected: "Connected", disconnected: "Not connected", reconnecting: "Reconnecting"};
-const context = useWindow();
-const status = ref(null);
-const failure = ref("");
-
-async function load() {
-    const answer = await context.read("tunnel status");
-    failure.value = answer.ok ? "" : answer.error;
-    status.value = answer.ok ? answer.value : null;
-}
-
-load();
+const window = useWindow();
+const {data: status, failure} = window.props.status;
 </script>
 
 <template>

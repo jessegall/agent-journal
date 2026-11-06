@@ -95,6 +95,7 @@ def test_a_password_is_kept_only_by_its_digest_and_shown_as_locked(new_story):
 def test_the_opens_read_says_what_a_link_shows(new_story):
     story = new_story(fixture=PlanWithPhases)
     story.expect_text("share opens plans:1", "Plan 1, Version 5 core", "3 phases", actor=story.user)
+    story.expect_text("share opens --target plans:1", "Plan 1, Version 5 core", "3 phases", actor=story.user)
 
 
 def test_only_the_viewer_counts_views_checks_passwords_and_brings_in_comments(new_story):

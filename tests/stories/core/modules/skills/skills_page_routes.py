@@ -70,6 +70,7 @@ def test_the_page_creates_edits_filters_tries_pauses_enables_and_ends_skill_trig
         story.expect_rows(len(rows) == 1 and rows[0]["skill"] == "project-notes")
         story.expect_rows(line(server, cookie, "trigger", "list", "--skill", "journal")["rows"] == [])
         story.expect_rows(line(server, cookie, "trigger", "try", "cart", "a cart", "--match-mode", "word")["matches"] is True)
+        story.expect_rows(line(server, cookie, "trigger", "try", "--phrases", "cart", "--sentence", "a cart", "--match-mode", "word")["matches"] is True)
         story.expect_rows(line(server, cookie, "trigger", "try", "cart", "carton", "--match-mode", "word")["matches"] is False)
         story.expect_rows(line(server, cookie, "trigger", "try", r"c\w+t", "a cart", "--match-mode", "pattern")["matches"] is True)
         line(server, cookie, "trigger", "edit", "1", "--phrases", "notes", "--name", "Read notes")
