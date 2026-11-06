@@ -1,3 +1,5 @@
+from core.base.query.conditions.greater import Greater
+from core.base.query.conditions.equal import Equal
 from core.base.actor import Actor
 from core.base.clock import Clock
 from core.base.database.bookkeeping_table import BookkeepingTable
@@ -25,6 +27,14 @@ class RefusalLog:
 
     def count_with_reason(self, prefix: str) -> int:
         selection = Select("refusals").matching(Prefix("reason", prefix))
+        return self.database.rows(selection.count_statement())[0][0]
+
+    def guard_refused_past(self, actor_id: int, guard: str, created_after: str) -> bool:
+        selection = Select("refusals").matching(Equal("actor_id", actor_id)).matching(Equal("guard", guard)).matching(Greater("created_at", created_after))
+        return self.database.rows(selection.count_statement())[0][0] > 0
+
+    def count_past(self, actor_id: int, created_after: str) -> int:
+        selection = Select("refusals").matching(Equal("actor_id", actor_id)).matching(Greater("created_at", created_after))
         return self.database.rows(selection.count_statement())[0][0]
 
     def record(self, actor: Actor, command: str, refusal: Refusal) -> None:

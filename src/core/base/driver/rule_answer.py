@@ -6,6 +6,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.block_condition import BlockCondition
 from core.base.driver.block_until import BlockUntil
 from core.base.driver.nudge import Nudge
+from core.base.driver.nudge_type import NudgeType
 
 
 @dataclass(frozen=True)
@@ -79,6 +80,10 @@ class RuleAnswer:
     @property
     def is_final_allowance(self) -> bool:
         return self.last and not self.refusal
+
+    @property
+    def is_safety_refusal(self) -> bool:
+        return bool(self.refusal) and any(nudge.type is NudgeType.SAFETY_REFUSAL for nudge in self.nudges)
 
     @property
     def outcome(self) -> str:

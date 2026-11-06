@@ -14,6 +14,7 @@ class ReaderOwnerGuard(Guard[Deleted[Reader]]):
     """
 
     name = "processes.reader-owner"
+    is_safety = True
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

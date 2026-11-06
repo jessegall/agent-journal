@@ -8,6 +8,7 @@ from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_history_key import RuleHistoryKey
 from core.base.driver.layers import Layers
 from core.base.driver.overlay import Overlay
+from core.base.driver.refusal_skips import RefusalSkips
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.rule_answers import RuleAnswers
 from core.base.driver.rule_outcome import RuleOutcome
@@ -25,9 +26,9 @@ class DriverRules:
     rule that raises is recorded and passed by."""
 
     def __init__(self, registry: Registry, container: Container, switches: GuardSwitches, layers: Layers, history: HookHistory, errors: ErrorLog,
-                 allowances: EssentialAllowances, scopes: Scopes) -> None:
+                 allowances: EssentialAllowances, scopes: Scopes, skips: RefusalSkips) -> None:
         self.registry, self.container, self.switches, self.layers, self.history, self.errors = registry, container, switches, layers, history, errors
-        self.allowances, self.scopes = allowances, scopes
+        self.allowances, self.scopes, self.skips = allowances, scopes, skips
 
     def ask(self, hook: AgentHook) -> RuleAnswers:
         suite = self.registry.suite(hook.suite)
@@ -58,6 +59,16 @@ class DriverRules:
                 return walk.answers()
         return walk.answers()
 
+    def skippable(self, answer: RuleAnswer, entry: DriverRuleEntry, hook: AgentHook) -> RuleAnswer:
+        if not answer.refusal or answer.is_safety_refusal:
+            return answer
+        skip = self.skips.waiting(hook.agent_id, entry.name)
+        if skip is not None:
+            return RuleAnswer.allowed().running(skip)
+        if not self.skips.has_refused(hook.agent_id, entry.name):
+            return answer
+        return replace(answer, refusal=f"{answer.refusal} (to pass it: journal refusal skip {entry.name} --reason '<why>')")
+
     def outcome(self, entry: DriverRuleEntry, hook: AgentHook) -> RuleOutcome:
         try:
             rule = self.container.get(entry.path.checked_class(DriverRule))
@@ -65,7 +76,7 @@ class DriverRules:
                 return RuleOutcome.answered(RuleAnswer.allowed())
             control_return = rule.history and self.history.control_return(RuleHistoryKey(hook.agent_id, entry.name, hook.layer_ref))
             with self.scopes.read_scope(rule.disabled_scopes, hook.agent_id, hook.environment_id):
-                answer = rule.answer(replace(hook, control_return=control_return))
+                answer = self.skippable(rule.answer(replace(hook, control_return=control_return)), entry, hook)
         except Exception as error:
             self.errors.reported(["driver rule", entry.name], error, hook.environment_id)
             return RuleOutcome.raised(f"the journal's rule {entry.name} failed and was passed by: {type(error).__name__}")

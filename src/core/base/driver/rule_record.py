@@ -17,7 +17,7 @@ class RuleRecord:
 
     @property
     def saved_fields(self) -> Mapping[str, object]:
-        fields = {"rule": self.name, "outcome": self.outcome,
+        fields = {"rule": self.name, "outcome": self.outcome, "safety": True if self.answer is not None and self.answer.is_safety_refusal else None,
                   "layer": self.layer if self.layer else None,
                   "dropped_lines": self.answer.dropped_lines if self.answer is not None and self.answer.dropped_lines else None}
         return {key: value for key, value in fields.items() if value is not None}

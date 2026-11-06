@@ -16,7 +16,8 @@ def test_a_second_agent_reply_is_refused_with_the_flag_that_passes_it(new_story)
 def test_confirm_and_skip_guard_both_pass_it(new_story):
     story = answered_story(new_story)
     story.expect_success('message reply 1 "Done now" --confirm --environment main', "parent_id: 1", actor=story.agent)
-    story.expect_success('message reply 1 "And tested" --skip-guard messages.one-reply-per-message --environment main', "parent_id: 1", actor=story.agent)
+    story.expect_refusal('message reply 1 "And tested" --environment main', "already has your reply", actor=story.agent)
+    story.expect_success('message reply 1 "And tested" --skip-guard messages.one-reply-per-message --skip-reason "it adds the tests" --environment main', "parent_id: 1", actor=story.agent)
 
 
 def test_the_first_reply_and_a_users_message_never_meet_it(new_story):

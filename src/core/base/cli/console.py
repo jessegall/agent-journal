@@ -25,6 +25,7 @@ from core.base.model.tables import Tables
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from core.base.registry.registry import Registry
+from core.base.driver.refusal_skips import RefusalSkips
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.refusal import Refusal
 from core.base.refusal_log import RefusalLog
@@ -42,9 +43,10 @@ class Console:
 
     def __init__(self, registry: Registry, finder: ModuleFinder, fingerprint: CodeFingerprint, line_parser: LineParser, bus: Bus,
                  flags: WriteFlags, refusals: RefusalLog, errors: ErrorLog, tables: Tables, commit_listeners: CommitListenerRunner,
-                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog, scopes: Scopes) -> None:
+                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog, scopes: Scopes, refusal_skips: RefusalSkips) -> None:
         self.registry, self.finder, self.fingerprint, self.line_parser, self.bus = registry, finder, fingerprint, line_parser, bus
         self.flags, self.refusals, self.errors, self.tables, self.commit_listeners = flags, refusals, errors, tables, commit_listeners
+        self.refusal_skips = refusal_skips
         self.environment_names, self.resolver, self.aliases, self.handoff, self.events, self.scopes = environment_names, resolver, aliases, handoff, events, scopes
 
     def run(self, argv: list[str], caller: Caller, stream: TextIO, request: CallerRequest = CallerRequest()) -> int:
@@ -115,6 +117,7 @@ class Console:
             return SUCCESS_CODE
         self.commit_listeners.run()
         command, skipped = subcommand.command(arguments, caller), self.flags.skipped_guards(arguments)
+        self.refusal_skips.check_guards(caller.actor, arguments.skip_guard, arguments.skip_reason)
         if arguments.explain:
             output.explanation(self.bus.explain(command, caller.actor, skipped, environment_id))
             return SUCCESS_CODE

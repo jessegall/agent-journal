@@ -27,6 +27,15 @@ from core.modules.drivers.migrations.m008_required_command_type import RequiredC
 from core.modules.drivers.support.driver_nudges import DRIVER_NUDGES
 from core.base.driver.essential_allowances import EssentialAllowances
 from core.base.driver.hook_history import HookHistory
+from core.base.driver.refusal_skips import RefusalSkips
+from core.modules.drivers.bindings.table_refusal_skips import TableRefusalSkips
+from core.modules.drivers.commands.restore_refusal_skip.restore_refusal_skip_handler import RestoreRefusalSkipHandler
+from core.modules.drivers.commands.restore_refusal_skip.restore_refusal_skip_subcommand import RestoreRefusalSkipSubcommand
+from core.modules.drivers.commands.skip_refusal.skip_refusal_handler import SkipRefusalHandler
+from core.modules.drivers.commands.skip_refusal.skip_refusal_subcommand import SkipRefusalSubcommand
+from core.modules.drivers.commands.use_refusal_skip.use_refusal_skip_handler import UseRefusalSkipHandler
+from core.modules.drivers.migrations.m029_refusal_skips import RefusalSkipsTableMigration
+from core.modules.drivers.models.refusal_skip import RefusalSkip
 from core.base.guard.change_filter import ChangeFilter
 from core.base.driver.hook_route import HookRoute
 from core.base.module.model_declaration import ModelDeclaration
@@ -138,11 +147,11 @@ class DriversModule(Module):
     requires_core = ">=5,<6"
     settings = DRIVERS_SETTINGS
     dependencies = ["journal.core.chat", "journal.core.developer", "journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
-    models = [ModelDeclaration(HelperJob, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentBlock, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(NudgeRecord, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine, ClaimAgentLine, ReleaseAgentLine, EnterAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
+    models = [ModelDeclaration(RefusalSkip, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HelperJob, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentBlock, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(NudgeRecord, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine, ClaimAgentLine, ReleaseAgentLine, EnterAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
     views = [HookCallRow, NudgeTotal, AgentActivity]
-    migrations = [HelperJobsClosedMigration, DriverSessionMigration, HelperJobHelperIndexMigration, HelperJobsMigration, AgentLineRepeatsMigration, NudgeTotalIndexMigration, AgentLineTextIndexMigration, BlockStopNameMigration, StrictBlocksMigration, HookChangeNamesMigration, StopBlocksMigration, DriversTablesMigration,HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration, NudgeRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration, SubagentDispatchesMigration, DispatchSubagentMigration, HookCallLineChangesMigration, HookCallTimeIndexesMigration, BlockGracesMigration, AgentLineStateIndexMigration, AgentLineWakesMigration, ReadIndexesMigration]
-    handlers = [SendJournalStartedLineHandler, PruneTempFoldersHandler, BlockUntilHandler, CloseAgentBlockHandler, EndSilentHelpersHandler, RecordBypassLineHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
-    subcommands = [SkipAgentBlockSubcommand,PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
+    migrations = [HelperJobsClosedMigration, DriverSessionMigration, HelperJobHelperIndexMigration, HelperJobsMigration, AgentLineRepeatsMigration, NudgeTotalIndexMigration, AgentLineTextIndexMigration, BlockStopNameMigration, StrictBlocksMigration, HookChangeNamesMigration, StopBlocksMigration, DriversTablesMigration,HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration, NudgeRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration, SubagentDispatchesMigration, DispatchSubagentMigration, HookCallLineChangesMigration, HookCallTimeIndexesMigration, BlockGracesMigration, AgentLineStateIndexMigration, AgentLineWakesMigration, ReadIndexesMigration, RefusalSkipsTableMigration]
+    handlers = [SkipRefusalHandler, UseRefusalSkipHandler, RestoreRefusalSkipHandler, SendJournalStartedLineHandler, PruneTempFoldersHandler, BlockUntilHandler, CloseAgentBlockHandler, EndSilentHelpersHandler, RecordBypassLineHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
+    subcommands = [SkipRefusalSubcommand, RestoreRefusalSkipSubcommand, SkipAgentBlockSubcommand,PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
     listeners = [JournalStartedListener, ManageHooksListener, AgentBlockSkipMarkListener, BypassLogListener, HookWaitFileListener, TypedLineListener, StopLineTypingListener, ClaimedLineReleaseListener, NewDriverLinesListener]
@@ -153,7 +162,7 @@ class DriversModule(Module):
                      TickHandler(TickInterval(seconds=24 * 60 * 60), HookPruning(), "hook pruning", starts_immediately=True)]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]
     driver_rules = [BlockStopRule, LongOutputRule, ForeignHooksRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, AgentBlockRule, TakeoverRule, AccessRule, NativeSubagentRule]
-    bindings = {ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, HookHistory: TableHookHistory,HookRoute: AgentHookRoute, ChangeFilter: DriverChangeFilter,
+    bindings = {RefusalSkips: TableRefusalSkips, ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, HookHistory: TableHookHistory,HookRoute: AgentHookRoute, ChangeFilter: DriverChangeFilter,
                 EssentialAllowances: SettingEssentialAllowances}
     windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, skeleton=DRIVERS_NUDGES_SKELETON, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),
                WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, skeleton=DRIVERS_HOOK_CALLS_SKELETON, icon=WindowIcon.RUNS, shows=WindowShows.SELECTED_AGENT,

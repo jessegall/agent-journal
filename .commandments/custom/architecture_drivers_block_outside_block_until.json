@@ -25,6 +25,9 @@
             },
             {
                 "fileMatches": "/rules/[a-z_]+_stop_rule\\.py$"
+            },
+            {
+                "file": "**/processes/rules/failed_full_run_rule.py"
             }
         ]
     },

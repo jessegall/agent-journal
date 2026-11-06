@@ -66,7 +66,7 @@ def test_failed_saves_leave_no_reader_or_output_proof(worker_reader_sample):
 def test_the_worker_stops_saving_after_three_failures(exhausted_worker_reader):
     story = exhausted_worker_reader
     story.expect_refusal('reader add fourth --commands "custom-build*" --title Building --lines done --summary done --skip-guard processes.reader-owner',
-                         "main agent", actor=reader_worker(story))
+                         "has no skip", actor=reader_worker(story))
     story.expect_refusal("reader draft 1 --save", "main agent", actor=reader_worker(story))
     story.expect_rows(not story.container.get(Queries).query(Reader).filter(name="fourth").exists())
     story.expect_hook_allowed("s-1", HookSamples.prompt("help"), "reader request 1")

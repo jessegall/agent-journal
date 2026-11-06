@@ -54,7 +54,7 @@ def test_a_steering_line_and_a_refusal_are_at_most_120_characters_and_only_info_
 
 
 def test_every_declared_line_is_info_steering_or_a_refusal():
-    assert set(TYPES.values()) <= {"NOTICE", "STEERING", "REFUSAL"}
+    assert set(TYPES.values()) <= {"NOTICE", "STEERING", "REFUSAL", "SAFETY_REFUSAL"}
 
 
 @pytest.mark.parametrize("name,text,path", DECLARATIONS, ids=[row[0] for row in DECLARATIONS])

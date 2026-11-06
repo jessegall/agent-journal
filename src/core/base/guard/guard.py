@@ -9,6 +9,7 @@ class Guard(EventSubscriber[E]):
 
     name: ClassVar[str]
     short_flag: ClassVar[str] = ""
+    is_safety: ClassVar[bool] = False
 
     def check(self, event: E, context: Context) -> None:
         raise NotImplementedError(f"{type(self).__name__} states no check")

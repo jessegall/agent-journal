@@ -1,22 +1,23 @@
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 
-TOOL_RESTRICTION = NudgeDeclaration("drivers.tool_not_allowed", NudgeType.REFUSAL, "this driver allows no {category} tool")
-COMMAND_RESTRICTION = NudgeDeclaration("drivers.command_not_allowed", NudgeType.REFUSAL, "this driver runs no {category} command")
-READONLY = NudgeDeclaration("drivers.readonly", NudgeType.REFUSAL, "this driver reads and searches only; journal commands are allowed")
-FILE_ACCESS_RESTRICTION = NudgeDeclaration("drivers.read_and_writes_only", NudgeType.REFUSAL, "this driver reads and writes files only; journal commands are allowed")
-JOURNAL_RESTRICTION = NudgeDeclaration("drivers.journal_only", NudgeType.REFUSAL, "this driver runs journal commands only")
-SHELL_RESTRICTION = NudgeDeclaration("drivers.no_shell", NudgeType.REFUSAL, "this driver runs no shell commands")
-PROGRAM_RESTRICTION = NudgeDeclaration("drivers.program_not_allowed", NudgeType.REFUSAL, "this driver runs no {program} command")
-GIT_RESTRICTION = NudgeDeclaration("drivers.no_git", NudgeType.REFUSAL, "this driver runs no git commands")
-FULL_TEST_RESTRICTION = NudgeDeclaration("drivers.no_full_test_run", NudgeType.REFUSAL, "run the tests of the changed files; name the test files instead of running the whole suite", turn_limited=False)
-UNJUDGED_LINE = NudgeDeclaration("drivers.unjudged_line", NudgeType.REFUSAL, "this line cannot be judged from its text: read with grep, or say in your report what should be run")
-OLD_HOOK_LINE = NudgeDeclaration("drivers.old_hook_line", NudgeType.REFUSAL, "your hooks are too old to judge this line: update the journal, then start the agent again")
-OUTWARD_JOURNAL_LINE = NudgeDeclaration("drivers.outward_journal_line", NudgeType.REFUSAL, "this journal command reaches past the journal: say in your report what should be run")
-LIMITED_TOOL = NudgeDeclaration("drivers.limited_tool", NudgeType.REFUSAL, "a read-only agent has no {tool}: say in your report what you need")
-ENDED_HELPER = NudgeDeclaration("drivers.ended_helper", NudgeType.REFUSAL, "this helper has ended: stop your work, nothing more is recorded")
-NATIVE_SUBAGENT = NudgeDeclaration("drivers.native_subagent", NudgeType.REFUSAL, 'use journal helper start <profile> --brief "<job>"; journal profile list names them')
-NATIVE_SUBAGENT_WITHOUT_LAUNCH = NudgeDeclaration("drivers.native_subagent_no_launch", NudgeType.REFUSAL, "keep this work yourself: a helper needs journal launch, and none runs")
+TOOL_RESTRICTION = NudgeDeclaration("drivers.tool_not_allowed", NudgeType.SAFETY_REFUSAL, "this driver allows no {category} tool")
+COMMAND_RESTRICTION = NudgeDeclaration("drivers.command_not_allowed", NudgeType.SAFETY_REFUSAL, "this driver runs no {category} command")
+READONLY = NudgeDeclaration("drivers.readonly", NudgeType.SAFETY_REFUSAL, "this driver reads and searches only; journal commands are allowed")
+FILE_ACCESS_RESTRICTION = NudgeDeclaration("drivers.read_and_writes_only", NudgeType.SAFETY_REFUSAL, "this driver reads and writes files only; journal commands are allowed")
+JOURNAL_RESTRICTION = NudgeDeclaration("drivers.journal_only", NudgeType.SAFETY_REFUSAL, "this driver runs journal commands only")
+SHELL_RESTRICTION = NudgeDeclaration("drivers.no_shell", NudgeType.SAFETY_REFUSAL, "this driver runs no shell commands")
+PROGRAM_RESTRICTION = NudgeDeclaration("drivers.program_not_allowed", NudgeType.SAFETY_REFUSAL, "this driver runs no {program} command")
+GIT_RESTRICTION = NudgeDeclaration("drivers.no_git", NudgeType.SAFETY_REFUSAL, "this driver runs no git commands")
+FULL_TEST_RESTRICTION = NudgeDeclaration("drivers.no_full_test_run", NudgeType.SAFETY_REFUSAL, "run the tests of the changed files; name the test files instead of running the whole suite", turn_limited=False)
+UNJUDGED_LINE = NudgeDeclaration("drivers.unjudged_line", NudgeType.SAFETY_REFUSAL, "this line cannot be judged from its text: read with grep, or say in your report what should be run")
+OLD_HOOK_LINE = NudgeDeclaration("drivers.old_hook_line", NudgeType.SAFETY_REFUSAL, "your hooks are too old to judge this line: update the journal, then start the agent again")
+OUTWARD_JOURNAL_LINE = NudgeDeclaration("drivers.outward_journal_line", NudgeType.SAFETY_REFUSAL, "this journal command reaches past the journal: say in your report what should be run")
+LIMITED_TOOL = NudgeDeclaration("drivers.limited_tool", NudgeType.SAFETY_REFUSAL, "a read-only agent has no {tool}: say in your report what you need")
+ENDED_HELPER = NudgeDeclaration("drivers.ended_helper", NudgeType.SAFETY_REFUSAL, "this helper has ended: stop your work, nothing more is recorded")
+NATIVE_SUBAGENT = NudgeDeclaration("drivers.native_subagent", NudgeType.SAFETY_REFUSAL, 'use journal helper start <profile> --brief "<job>"; journal profile list names them')
+NATIVE_SUBAGENT_WITHOUT_LAUNCH = NudgeDeclaration("drivers.native_subagent_no_launch", NudgeType.SAFETY_REFUSAL, "keep this work yourself: a helper needs journal launch, and none runs")
 
-ACCESS_NUDGES = [NATIVE_SUBAGENT, NATIVE_SUBAGENT_WITHOUT_LAUNCH, ENDED_HELPER, UNJUDGED_LINE, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, TOOL_RESTRICTION, COMMAND_RESTRICTION, READONLY, FILE_ACCESS_RESTRICTION, JOURNAL_RESTRICTION,
+SKIPS_SPENT = NudgeDeclaration("drivers.skips_spent", NudgeType.STEERING, "agent:{agent} skipped {count} refusals in a row and lost the skip: journal refusal restore {agent}", turn_limited=False, wakes_agent=True)
+ACCESS_NUDGES = [SKIPS_SPENT, NATIVE_SUBAGENT, NATIVE_SUBAGENT_WITHOUT_LAUNCH, ENDED_HELPER, UNJUDGED_LINE, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, TOOL_RESTRICTION, COMMAND_RESTRICTION, READONLY, FILE_ACCESS_RESTRICTION, JOURNAL_RESTRICTION,
                  SHELL_RESTRICTION, PROGRAM_RESTRICTION, GIT_RESTRICTION, FULL_TEST_RESTRICTION]

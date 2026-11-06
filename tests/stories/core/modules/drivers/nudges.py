@@ -48,11 +48,11 @@ def test_a_nudge_longer_than_its_longest_is_cut_in_its_middle_so_its_end_stays()
 def test_a_steering_line_and_a_refusal_are_cut_at_120_characters_and_only_info_may_be_longer():
     template = "{text} " + "w" * 700
     lengths = {nudge_type: len(NudgeDeclaration("shop.kind", nudge_type, template).nudge(text="x").text) for nudge_type in NudgeType}
-    expect_value(lengths, {NudgeType.NOTICE: 702, NudgeType.STEERING: 120, NudgeType.REFUSAL: 120})
+    expect_value(lengths, {NudgeType.NOTICE: 702, NudgeType.STEERING: 120, NudgeType.REFUSAL: 120, NudgeType.SAFETY_REFUSAL: 120})
 
 
 def test_each_type_can_be_declared():
-    expect_item_nudge_type(["info", "steering", "refusal"])
+    expect_item_nudge_type(["info", "steering", "refusal", "safety_refusal"])
 
 
 def test_module_sync_registers_every_declared_nudge_under_its_module(new_story):

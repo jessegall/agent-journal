@@ -22,7 +22,7 @@ __all__ = ["private_folder"]
 
 pytestmark = [pytest.mark.skipif(shutil.which("go") is None, reason="the shared server needs go to build"), pytest.mark.usefixtures("private_folder")]
 
-SKIP_ADDRESS_GUARD = "--skip-guard library.address-by-person"
+SKIP_ADDRESS_GUARD = '--skip-guard library.address-by-person --skip-reason "the address is right"'
 
 
 @pytest.fixture(scope="module")
@@ -124,6 +124,7 @@ def test_with_the_address_guard_skipped_an_agent_moves_the_setting_but_no_token_
     with StubServer(StubAnswer(200, b"{}")) as stub:
         story = new_story(fixture=BuilderWithUser)
         story.expect_success(f"library connect {server.address} --token {token}", actor=story.user)
+        story.expect_refusal(f"setting set {ADDRESS_SETTING} {stub.address} --project", "library.address-by-person", actor=story.agent)
         story.expect_success(f"setting set {ADDRESS_SETTING} {stub.address} --project {SKIP_ADDRESS_GUARD}", actor=story.agent)
         stopped = None
         try:

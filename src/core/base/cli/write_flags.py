@@ -13,6 +13,7 @@ class WriteFlags:
     def add(self, parser: ArgumentParser) -> None:
         parser.add_argument("--environment")
         parser.add_argument("--skip-guard", action="append", default=[], dest="skip_guard")
+        parser.add_argument("--skip-reason", default="", dest="skip_reason")
         parser.add_argument("--explain", action="store_true")
         for short_flag in dict.fromkeys(guard.short_flag for guard in self.registry.guards if guard.short_flag):
             parser.add_argument(f"--{short_flag}", action="store_true", dest=self.destination(short_flag))

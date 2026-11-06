@@ -65,7 +65,7 @@ def test_the_guards_of_an_event_come_in_their_order(database):
 def test_a_guard_is_skipped_by_its_short_flag_or_by_name(database):
     guards = {guard.name: guard for guard in Registry.read(database).guards}
     assert guards["items.only-shelved"].skip_flag == "--confirm"
-    assert guards["items.no-second-item"].skip_flag == "--skip-guard items.no-second-item"
+    assert guards["items.no-second-item"].skip_flag == "--skip-guard items.no-second-item --skip-reason '<why>'"
 
 
 def test_listeners_are_listed_by_event_and_timing(database):

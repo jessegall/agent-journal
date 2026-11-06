@@ -16,6 +16,7 @@ class SecretValueGuard(Guard[Changed[Model]]):
     characters is too short to tell apart from ordinary text and is only masked."""
 
     name = "secrets.secret-value"
+    is_safety = True
 
     def __init__(self, values: SecretValues, keys: ServerKeys) -> None:
         self.values, self.keys = values, keys

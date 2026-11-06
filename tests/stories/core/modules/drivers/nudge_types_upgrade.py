@@ -23,10 +23,10 @@ def registered_types(story) -> set[str]:
 def test_a_database_that_holds_the_old_type_names_holds_the_new_ones_after_a_sync(new_story):
     story = new_story(fixture=UserJoined)
     old_registry(story)
-    expect_registered_types(story, {"instruction", "nudge", "refusal"})
+    expect_registered_types(story, {"instruction", "nudge", "refusal", "safety_refusal"})
     code, _ = story.synced()
     expect_value(code, 0)
-    expect_registered_types(story, {"info", "steering", "refusal"})
+    expect_registered_types(story, {"info", "steering", "refusal", "safety_refusal"})
 
 
 def test_the_nudge_list_names_the_new_types_after_the_sync(new_story):

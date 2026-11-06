@@ -35,16 +35,16 @@ class Guards:
         return frozenset(skipped)
 
     def is_checked(self, entry: GuardEntry, change: Change[Model]) -> bool:
-        if entry.name == LIFECYCLE_GUARD:
+        if entry.name == LIFECYCLE_GUARD or entry.path.checked_class(Guard).is_safety:
             return True
         return entry.name not in change.context.skipped_guards and self.switches.enabled(entry.name) and self.change_filter.applies(entry.name, change)
 
     def check(self, entry: GuardEntry, change: Change[Model]) -> None:
+        guard_class = entry.path.checked_class(Guard)
         try:
-            guard_class = entry.path.checked_class(Guard)
             self.container.get(guard_class).check(change.typed_event(guard_class), change.context)
         except Refusal as refusal:
-            guard_refusal = GuardRefusal(entry.name, refusal, "" if entry.name == LIFECYCLE_GUARD else entry.skip_flag)
+            guard_refusal = GuardRefusal(entry.name, refusal, "" if entry.name == LIFECYCLE_GUARD or guard_class.is_safety else entry.skip_flag)
             if change.context.explanation is None:
                 raise guard_refusal from refusal
             change.context.explanation.refusals.append(guard_refusal)
