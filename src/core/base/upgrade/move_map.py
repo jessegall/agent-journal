@@ -16,6 +16,9 @@ class MoveMap:
     def new_id(self, old_table: str, old_id: int) -> int | None:
         return self.table.new_id(old_table, old_id)
 
+    def moved_row(self, old_table: str, old_id: int) -> MovedRow | None:
+        return self.table.moved_row(old_table, old_id)
+
     def linked_id(self, end: VersionFourRef, old_table: str) -> int | None:
         return self.new_id(old_table, end.number) if end.table == old_table and end.number is not None else None
 

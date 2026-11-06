@@ -78,6 +78,7 @@ from core.modules.documents.listeners.text_read_mark_listener import TextReadMar
 from core.modules.documents.models.report import Report
 from core.modules.documents.seeders.documents_seeder import DocumentsSeeder
 from core.modules.documents.upgrade.documents_move import DocumentsMove
+from core.modules.documents.upgrade.message_links_move import MessageLinksMove
 from core.modules.documents.support.skeletons import DOCUMENTS_DOCUMENTS_SKELETON
 from core.modules.documents.listeners.phase_mention_listener import PhaseMentionListener
 from core.modules.documents.listeners.task_log_mention_listener import TaskLogMentionListener
@@ -107,7 +108,7 @@ class DocumentsModule(Module):
     block_conditions = [DocumentClosed]
     tick_handlers = [TickHandler(TickInterval(seconds=5), CloseEndedDocumentsTick(), "close ended documents", starts_immediately=True)]
     library_shares = [DocLibraryShare]
-    moves = [DocumentsMove]
+    moves = [DocumentsMove, MessageLinksMove]
     seeders = [DocumentsSeeder]
     windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.EITHER, group="project", icon=WindowIcon.DOCUMENT,
                                  reads=["document library", "doc show", "report show", "doc inspect", "report inspect", "doc comments", "report comments", "link list"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"])]
