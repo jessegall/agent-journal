@@ -6,7 +6,7 @@ export const SHORT_CHAT = 420;
 // reader scrolling up and away from the foot folds them; the answer is null when the scroll leaves them as they are
 export function dockOpening({top, before, height, shown}) {
     const gap = height - top - shown;
-    if (gap <= AT_BOTTOM && top > before) return true;
+    if (gap <= AT_BOTTOM) return true;
     if (top < before && gap > NEAR_BOTTOM) return false;
     return null;
 }
