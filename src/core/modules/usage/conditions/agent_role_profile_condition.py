@@ -5,7 +5,7 @@ from core.base.query.conditions.among import Among
 
 
 @dataclass(frozen=True)
-class AgentKinds:
+class AgentRoleProfileCondition:
     roles: list[str]
     profiles: list[str]
 

@@ -5,10 +5,7 @@ from core.base.model.model import Model
 
 @dataclass(frozen=True, kw_only=True)
 class PluginOutput(Model):
-    """A plugin's answer that shows cards or runs journal commands, waiting to be applied after the hook's
-    reply as the plugins module: the plugin, the environment and the agent, if any, and the answer's JSON line. A
-    system event has no environment, so this is no EnvironmentScoped model. The answer of a script named by key shows its
-    cards in the environment, whoever made the change."""
+    """A plugin answer waiting to be applied; system event answers have no environment."""
 
     model_name = "plugin_output"
     event_forms = ()

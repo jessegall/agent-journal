@@ -75,14 +75,14 @@ class TaskQuery(Query[Task]):
     def open_tasks(self) -> Self:
         return self.filter(state=TaskState.OPEN)
 
-    def available_for_delegation(self, excluded_agent_ids: Sequence[int]) -> Self:
+    def delegation_candidates(self, excluded_agent_ids: Sequence[int]) -> Self:
         active_delegates = SubqueryMatch("delegated_to", Select("agents").matching(IsNull("ended_at")).column("id"))
         active_task_ids = Select("tasks").matching(active_delegates).column("id")
         excluded_task_ids = Select("tasks").matching(Among("delegated_to", excluded_agent_ids)).column("id")
         return (self.open_tasks().matching(SubqueryMatch("id", active_task_ids, negated=True)).matching(SubqueryMatch("id", excluded_task_ids, negated=True))
-                .matching(self.outside_unapproved_plans()))
+                .matching(self.unapproved_plan_exclusion()))
 
-    def outside_unapproved_plans(self) -> Condition:
+    def unapproved_plan_exclusion(self) -> Condition:
         unapproved_plans = Select("plans").matching(Among("state", FOLLOWED_PLAN_STATES, negated=True)).column("id")
         unapproved_phases = Select("phases").matching(SubqueryMatch("plan_id", unapproved_plans)).column("id")
         return SubqueryMatch("id", Select("phase_tasks").matching(SubqueryMatch("phase_id", unapproved_phases)).column("task_id"), negated=True)

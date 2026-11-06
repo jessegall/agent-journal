@@ -33,8 +33,8 @@ export const countLine = (who, environment) => memoryLine({who, environment, lim
 
 export const ROLES = [
     {key: "all", label: "All", flag: ""},
-    {key: "workers", label: "Workers", flag: " --access writing"},
-    {key: "helpers", label: "Helpers", flag: " --access read-only"},
+    {key: "writing", label: "Writing agents", flag: " --access writing"},
+    {key: "read-only", label: "Read-only agents", flag: " --access read-only"},
 ];
 
 // the agents holding memories: those at work or those ended, of one kind, whose name holds every word

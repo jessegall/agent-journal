@@ -17,7 +17,7 @@ from core.modules.tasks.models.task import Task
 
 PATH = "tests.stories.core.modules.plugins.support.event_modules"
 NOTES = f"{PATH}:NotesModule"
-NOTES_GONE = f"{PATH}:NotesGoneModule"
+REMOVED_NOTES_MODULE = f"{PATH}:NotesGoneModule"
 NOTES_MOVED = "tests.stories.core.modules.plugins.support.moved_event_modules.notes:NotesModule"
 FAILS_LATER = f"{PATH}:FailsLaterModule"
 CLASHING = f"{PATH}:ClashingModule"
@@ -65,7 +65,7 @@ class ManyNotesHandler(Handler[ManyNotes, int]):
         return command.count
 
 
-class NoteSeen(CommitListener[Created[EventNote]]):
+class NoteCreatedListener(CommitListener[Created[EventNote]]):
     name = "acme.note-seen"
 
     def handle(self, event: Created[EventNote], logged: LoggedEvent) -> None:
@@ -78,7 +78,7 @@ class NotesModule(Module):
     models = [ModelDeclaration(EventNote)]
     migrations = [EventNotesTable]
     handlers = [ManyNotesHandler]
-    listeners = [NoteSeen]
+    listeners = [NoteCreatedListener]
     former_event_keys = {FORMER_NOTE_CREATED: NOTE_CREATED}
 
 
@@ -106,7 +106,7 @@ class FailsLaterModule(Module):
 
 
 @dataclass(frozen=True, kw_only=True)
-class ClashNote(Model):
+class ConflictingNote(Model):
     """A sample row with a change name that gives the same key as its creation."""
 
     model_name = "clash_note"
@@ -116,7 +116,7 @@ class ClashNote(Model):
     title: str
 
 
-class ClashNotesTable(Migration):
+class ConflictingNotesTable(Migration):
     number = 1
     statements = ("CREATE TABLE clash_notes (id INTEGER PRIMARY KEY, title TEXT NOT NULL, version INTEGER NOT NULL DEFAULT 1,"
                   " metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)), created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT",)
@@ -125,5 +125,5 @@ class ClashNotesTable(Migration):
 class ClashingModule(Module):
     name = "acme.clash"
     requires_core = ">=5,<6"
-    models = [ModelDeclaration(ClashNote)]
-    migrations = [ClashNotesTable]
+    models = [ModelDeclaration(ConflictingNote)]
+    migrations = [ConflictingNotesTable]

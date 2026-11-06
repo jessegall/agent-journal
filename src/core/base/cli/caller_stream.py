@@ -2,8 +2,7 @@ from typing import TextIO
 
 
 class CallerStream:
-    """Where a request can tell its caller something while it waits. With no stream it writes nothing, and with --json
-    it writes a blank line, which a JSON reader passes over. A write to a caller that left raises BrokenPipeError."""
+    """Writes progress to a caller, or a blank line for JSON; a closed stream raises BrokenPipeError."""
 
     def __init__(self, stream: TextIO | None = None, is_json: bool = False) -> None:
         self.stream, self.is_json = stream, is_json

@@ -21,8 +21,8 @@ NOTE_SECRET = "the secret text"
 CARD_LABEL = "Lane closed"
 CARD_ANSWER = json.dumps({"v": 1, "cards": [{"kind": "state", "key": "lane", "label": CARD_LABEL, "tone": "good"}]})
 CARD_SCRIPT = f"echo '{CARD_ANSWER}'"
-TOLD_LINE = "the job is noted"
-TOLD_SCRIPT = f"""echo '{{"v": 1, "tell": "{TOLD_LINE}"}}'"""
+MESSAGE_TEXT = "the job is noted"
+MESSAGE_SCRIPT = f"""echo '{{"v": 1, "tell": "{MESSAGE_TEXT}"}}'"""
 
 
 def test_s14_a_commit_script_receives_the_key_the_row_and_final_true_even_for_a_long_row(new_story):
@@ -111,15 +111,15 @@ def test_a_fault_write_starts_no_script_on_the_plugin_row(new_story):
 
 
 def test_a_tell_goes_to_the_queue_of_the_agent_that_made_the_change(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "told.sh"}, scripts={"told.sh": TOLD_SCRIPT})
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "told.sh"}, scripts={"told.sh": MESSAGE_SCRIPT})
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.run_listeners()
-    queued = list(plugin_data(story, "queue").glob("delivery-*.json"))
-    story.expect_rows(len(queued) == 1, TOLD_LINE in queued[0].read_text())
+    queue_files = list(plugin_data(story, "queue").glob("delivery-*.json"))
+    story.expect_rows(len(queue_files) == 1, MESSAGE_TEXT in queue_files[0].read_text())
 
 
 def test_a_tell_with_no_agent_is_dropped(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "told.sh"}, scripts={"told.sh": TOLD_SCRIPT})
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "told.sh"}, scripts={"told.sh": MESSAGE_SCRIPT})
     story.expect_success(SECOND_JOB, actor=story.user)
     story.run_listeners()
     story.expect_rows(len(script_calls(story, "told.sh")) == 1, not list(plugin_data(story, "queue").glob("delivery-*.json")), plugin_row(story).fault_count == 0)
@@ -130,8 +130,8 @@ def test_a_change_with_no_script_on_its_key_writes_no_delivery_and_adds_no_query
     subscriptions = story.container.get(PluginSubscriptions)
     tally = story.container.get(Database).tally
     subscriptions.scripts("task.create", EventForm.COMMIT)
-    before = tally.points()
-    story.expect_rows(subscriptions.scripts("task.create", EventForm.COMMIT) == (), tally.points().statements == before.statements)
+    initial_tally = tally.points()
+    story.expect_rows(subscriptions.scripts("task.create", EventForm.COMMIT) == (), tally.points().statements == initial_tally.statements)
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.expect_rows(not deliveries(story))
 
@@ -174,9 +174,9 @@ def test_a_hears_card_for_a_person_still_does_not_show(new_story):
 
 
 def test_a_tell_that_could_not_judge_reaches_the_queue_and_counts_no_fault(new_story):
-    told = """echo '{"v": 1, "tell": "could not judge this: the parser failed"}'"""
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "told.sh"}, scripts={"told.sh": told})
+    script = """echo '{"v": 1, "tell": "could not judge this: the parser failed"}'"""
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "told.sh"}, scripts={"told.sh": script})
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.run_listeners()
-    queued = list(plugin_data(story, "queue").glob("delivery-*.json"))
-    story.expect_rows(len(queued) == 1, "could not judge this" in queued[0].read_text(), plugin_row(story).fault_count == 0, not plugin_row(story).last_fault)
+    queue_files = list(plugin_data(story, "queue").glob("delivery-*.json"))
+    story.expect_rows(len(queue_files) == 1, "could not judge this" in queue_files[0].read_text(), plugin_row(story).fault_count == 0, not plugin_row(story).last_fault)

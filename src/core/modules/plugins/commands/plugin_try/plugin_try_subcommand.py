@@ -13,8 +13,7 @@ from core.modules.plugins.support.plugin_try_run import PluginTryRun
 
 
 class PluginTrySubcommand(ReadSubcommand[PluginTryRun]):
-    """`journal plugin try <name> <key> [--agent <n>]`: runs the plugin's script for that key for real, and prints the
-    line it was sent and what it answered. Nothing it answers is applied."""
+    """Runs a plugin script and shows its input and answer without applying the answer."""
 
     cli_name = "plugin"
     name = "try"

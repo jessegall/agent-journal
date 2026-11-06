@@ -15,7 +15,7 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.usage.models.agent_filter_options_view import AgentFilterOptionsView
 from core.modules.usage.support.agent_filter_options import AgentFilterOptions
 from core.modules.usage.conditions.agent_activity import AgentActivity
-from core.modules.usage.conditions.agent_kinds import AgentKinds
+from core.modules.usage.conditions.agent_role_profile_condition import AgentRoleProfileCondition
 from core.modules.usage.conditions.ended_agents import EndedAgents
 from core.modules.usage.conditions.available_agents import AvailableAgents
 from core.modules.usage.models.agent_listing import AgentListing
@@ -55,7 +55,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         if not arguments.include_main and (not arguments.role or AgentRole.MAIN not in arguments.role):
             rows = rows.matching(Equal("role", AgentRole.MAIN, negated=True))
         if arguments.role or arguments.profile:
-            rows = rows.matching(AgentKinds(arguments.role, arguments.profile))
+            rows = rows.matching(AgentRoleProfileCondition(arguments.role, arguments.profile))
         if arguments.program:
             rows = rows.matching(Among("program", arguments.program))
         match arguments.show:

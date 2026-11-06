@@ -142,14 +142,13 @@ def expect_listed(rows: Sequence[Mapping[str, object]], **fields: object) -> Non
 
 
 class PluginPage:
-    """The Plugins page of the viewer for one person: each method sends the line its client sends for that step, and
-    send takes it to the viewer's line route."""
+    """The viewer's Plugins page and its commands."""
 
-    def __init__(self, story: Story, send: Callable[[list[str]], object]) -> None:
-        self.story, self.send = story, send
+    def __init__(self, story: Story, send_line: Callable[[list[str]], object]) -> None:
+        self.story, self.send_line = story, send_line
 
     def line(self, *line: str) -> dict[str, object]:
-        return cast(dict[str, object], self.send(list(line)))
+        return cast(dict[str, object], self.send_line(list(line)))
 
     def preview(self, source: Path) -> list[dict[str, object]]:
         return cast(list[dict[str, object]], self.line("plugin", "preview", str(source))["rows"])
@@ -157,20 +156,19 @@ class PluginPage:
     def install(self, source: Path) -> None:
         self.line("plugin", "install", str(source), "--yes")
 
-    def switch_off(self, name: str = "events") -> None:
+    def disable(self, name: str = "events") -> None:
         self.line("plugin", "disable", name)
 
-    def switch_on(self, name: str = "events") -> None:
+    def enable(self, name: str = "events") -> None:
         self.line("plugin", "enable", name)
 
-    def upgrade_offer(self, name: str = "events") -> str:
+    def preview_upgrade(self, name: str = "events") -> str:
         return json.dumps(self.line("plugin", "upgrade", name))
 
     def upgrade(self, name: str = "events") -> None:
         self.line("plugin", "upgrade", name, "--yes")
 
     def card(self, name: str = "events") -> list[dict[str, object]]:
-        """The rows of the card's Listens to section."""
         rows = cast(list[dict[str, object]], self.line("plugin", "events")["rows"])
         return [row for row in rows if row["plugin"] == name]
 
@@ -188,16 +186,14 @@ class PluginPage:
 
 
 def plugin_page(story: Story) -> PluginPage:
-    """The page for Ada, on the route the viewer answers its lines with, with no listener thread behind it: the story
-    runs the listeners."""
     route = StoryLineRoute(story.home, ListenerThread(lambda: None, lambda error: None), ReportedFindings())
 
-    def send(line: list[str]) -> object:
+    def send_line(line: list[str]) -> object:
         story.steps.append(f"viewer line {line}")
         answer = route.answer(WINDOW, line, story.user.id, "main")
         assert answer.code == 0, f"{line} gave {answer.code}: {answer.error}"
         return answer.value
-    return PluginPage(story, send)
+    return PluginPage(story, send_line)
 
 
 @pytest.fixture

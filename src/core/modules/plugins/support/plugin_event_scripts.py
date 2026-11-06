@@ -12,7 +12,7 @@ from core.base.error_log import ErrorLog
 from core.base.model.event_form import EventForm
 from core.base.model.model import Model
 from core.base.registry.registry import Registry
-from core.base.running_scripts import RunningScripts
+from core.base.running_scripts import PluginScriptProcesses
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
 from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults import ClearPluginFaults
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
@@ -28,21 +28,23 @@ GUARD_NAME = "plugins.event-guard"
 
 
 class PluginEventScripts:
-    """Gives a change the answers of the guard or listen scripts on its key. With none yet, it rolls the command back
-    so they run with no lock held, and the next round reads them. A change with no script is one lookup. Saving a
-    fault runs no script, or a script on the plugin row that fails would record faults without end."""
+    """Gets guard and listen script answers for a change outside the transaction lock."""
 
-    def __init__(self, subscriptions: PluginSubscriptions, log: EventLog, errors: ErrorLog, registry: Registry, runner: PluginEventRunner, bus: Bus, running: RunningScripts, caller: CallerStream) -> None:
+    def __init__(self, subscriptions: PluginSubscriptions, log: EventLog, errors: ErrorLog, registry: Registry, runner: PluginEventRunner, bus: Bus, running: PluginScriptProcesses, caller: CallerStream) -> None:
         self.subscriptions, self.log, self.errors, self.registry, self.runner, self.bus, self.running, self.caller = subscriptions, log, errors, registry, runner, bus, running, caller
 
     def answers(self, form: EventForm, event: Changed[Model], context: Context) -> Sequence[PluginEventAnswer]:
         if isinstance(context.command, FAULT_WRITES):
             return ()
-        runs, change = context.outside_runs, Change.of(event, context)
+        runs, change = context.outside_runs, Change.from_event(event, context)
         subscriptions = self.subscriptions.scripts(change.event, form)
         if form is EventForm.GUARD:
             subscriptions = tuple(subscription for subscription in subscriptions if not (subscription.allows_skip and f"{GUARD_NAME}:{subscription.plugin}" in context.skipped_guards))
-        if not subscriptions or context.explanation is not None or runs.from_plugin_script:
+        if not subscriptions:
+            return ()
+        if context.explanation is not None:
+            return ()
+        if runs.is_plugin_script:
             return ()
         turn = runs.turn(form.value, change.event)
         if turn.answers is not None:
@@ -53,7 +55,7 @@ class PluginEventScripts:
             for subscription in subscriptions:
                 self.running.skipped(subscription.plugin, key, form, runs.closed_reason, context.timestamp)
             return ()
-        raise runs.rollback(PluginEventWork(self.runner, self.errors, self.caller, form, self.registry.event_key(change.event), subscriptions, PluginPayload.of(change, form, self.log, None),
+        raise runs.rollback(PluginEventWork(self.runner, self.errors, self.caller, form, self.registry.event_key(change.event), subscriptions, PluginPayload.from_change(change, form, self.log, None),
                                             PluginPayload.environment_id(change), self.agent_id(context), turn))
 
     def apply(self, answered: PluginEventAnswer, context: Context) -> None:

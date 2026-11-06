@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.running_scripts import RunningScripts
+from core.base.running_scripts import PluginScriptProcesses
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.repository.repository import Repository
@@ -19,7 +19,7 @@ class SwitchPluginHandler(Handler[SwitchPlugin, Plugin]):
     command = SwitchPlugin
     runs_once = True
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_files: PluginSkillFiles, repository: Repository, scripts: RunningScripts) -> None:
+    def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_files: PluginSkillFiles, repository: Repository, scripts: PluginScriptProcesses) -> None:
         self.plugins, self.folders, self.skill_files, self.repository, self.scripts = plugins, folders, skill_files, repository, scripts
 
     def prepare(self, command: SwitchPlugin, actor: Actor) -> None:

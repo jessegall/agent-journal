@@ -9,7 +9,7 @@ from core.base.caller.caller_resolver import CallerResolver
 from core.base.caller.process_row import ProcessRow
 from core.base.model.event_form import EventForm
 from core.base.query.queries import Queries
-from core.base.running_scripts import RunningScripts
+from core.base.running_scripts import PluginScriptProcesses
 from core.modules.drivers.models.agent_line import AgentLine
 from core.base.timestamp import Timestamp
 from tests.stories.core.modules.processes.support.process_samples import install_runner
@@ -18,10 +18,10 @@ from tests.stories.core.modules.plugins.support.event_modules import FAILS_LATER
 from tests.stories.core.modules.plugins.support.event_stories import (
     NOTES_PIN_TITLE, PIN_LINE, REFUSAL, SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, answer_with_commands, data_row, event_data, event_plugin_story, pins_titled, plugin_page, plugin_row, script_calls, tasks_titled)
 
-TOLD_WORDS = "pinned for you"
+MESSAGE_TEXT = "pinned for you"
 CARD_LABEL = "Pin made"
-ALL_PARTS = f"""cat <<'ANSWER'
-{json.dumps({"v": 1, "commands": [PIN_LINE], "tell": TOLD_WORDS, "cards": [{"kind": "state", "key": "pin", "label": CARD_LABEL, "tone": "good"}]})}
+ANSWER_SCRIPT = f"""cat <<'ANSWER'
+{json.dumps({"v": 1, "commands": [PIN_LINE], "tell": MESSAGE_TEXT, "cards": [{"kind": "state", "key": "pin", "label": CARD_LABEL, "tone": "good"}]})}
 ANSWER"""
 REFUSED_LINE = 'task close 999 --outcome "no such task"'
 READ_LINE = "task list"
@@ -53,12 +53,12 @@ def test_s27_a_listen_script_sees_the_row_uncommitted_and_not_final(new_story):
 
 
 def test_s27_a_line_with_its_tell_and_card_runs_once_and_the_card_shows(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "listen": "all.sh"}, scripts={"all.sh": ALL_PARTS})
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "listen": "all.sh"}, scripts={"all.sh": ANSWER_SCRIPT})
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.run_listeners()
     story.expect_text("chat-mark list --environment 1", CARD_LABEL, actor=story.user)
-    told = [line for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows() if TOLD_WORDS in line.text]
-    story.expect_rows(len(pins_titled(story, NOTES_PIN_TITLE)) == 1, len(told) == 1)
+    messages = [line for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows() if MESSAGE_TEXT in line.text]
+    story.expect_rows(len(pins_titled(story, NOTES_PIN_TITLE)) == 1, len(messages) == 1)
 
 
 def test_s27_an_answer_of_refuse_is_a_fault_and_the_change_goes_on(new_story):
@@ -93,7 +93,7 @@ def counted_table_reads(story) -> list[int]:
 
 def script_chain(story) -> tuple[subprocess.Popen, CallerRequest]:
     process =subprocess.Popen(["cat"], stdin=subprocess.PIPE, text=True)
-    story.container.get(RunningScripts).start(process, "events", TASK_CREATED, EventForm.LISTEN, Timestamp.parsed(STARTED_TEXT))
+    story.container.get(PluginScriptProcesses).start(process, "events", TASK_CREATED, EventForm.LISTEN, Timestamp.parsed(STARTED_TEXT))
     story.use_processes(ProcessRow(CLIENT_PID, process.pid, Timestamp.parsed(STARTED_TEXT)), ProcessRow(process.pid, 1, Timestamp.parsed(STARTED_TEXT)))
     return process, CallerRequest(variables={"USER": "Ada"}, folder="/", pid=CLIENT_PID)
 
@@ -104,7 +104,7 @@ def test_s29_a_request_whose_chain_holds_a_script_names_the_plugin_and_keeps_the
     try:
         caller = story.container.get(CallerResolver).caller(request)
     finally:
-        story.container.get(RunningScripts).finish(process)
+        story.container.get(PluginScriptProcesses).finish(process)
         process.kill()
         process.communicate()
     story.expect_rows(caller.plugin_script == "events", caller.actor == story.user)

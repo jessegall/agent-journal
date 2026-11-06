@@ -16,10 +16,10 @@ class SingleMainAgent:
     def __init__(self, agents: AgentRows, scopes: Scopes, bus: Bus) -> None:
         self.agents, self.scopes, self.bus = agents, scopes, bus
 
-    def end(self, opened: Agent, context: Context) -> None:
-        if opened.role != AgentRole.MAIN:
+    def end(self, agent: Agent, context: Context) -> None:
+        if agent.role != AgentRole.MAIN:
             return
-        with self.scopes.opened(None, opened.environment_id):
-            other_agents = [main for main in self.agents.running_main_agents() if main.id != opened.id]
-        for main in other_agents:
-            self.bus.dispatch(EndReplacedMain(main.id), replace(context, actor=Actor.core(), environment_id=opened.environment_id))
+        with self.scopes.opened(None, agent.environment_id):
+            existing_agents = [main for main in self.agents.running_main_agents() if main.id != agent.id]
+        for main in existing_agents:
+            self.bus.dispatch(EndReplacedMain(main.id), replace(context, actor=Actor.core(), environment_id=agent.environment_id))

@@ -110,7 +110,7 @@ class PluginsModule(Module):
                              SettingType.NUMBER, default=10, scope=SettingScope.PROJECT)]
     driver_rules = [PluginRule]
     bindings = {ProjectReads: PluginProjectReads}
-    plugin_moments = [*PLAIN_EVENTS.values(), "tool_starting", "command_starting", "file_edited"]
+    named_plugin_events = [*PLAIN_EVENTS.values(), "tool_starting", "command_starting", "file_edited"]
     marks = PLUGIN_MARKS
     tick_handlers = [TickHandler(TickInterval(seconds=1), PluginCardReading(), "plugin card reading"),
                      TickHandler(TickInterval(seconds=24 * 60 * 60), DeliveryPruning(), "plugin delivery pruning", starts_immediately=True)]

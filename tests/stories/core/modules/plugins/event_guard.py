@@ -6,7 +6,7 @@ import pytest
 from core.base.model.event_form import EventForm
 from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
-from core.base.running_scripts import RunningScripts
+from core.base.running_scripts import PluginScriptProcesses
 from core.base.script_stop import ScriptStop
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.plugins.commands.support.plugin_service_round import PluginServiceRound
@@ -18,16 +18,16 @@ from tests.stories.core.modules.plugins.support.event_stories import (
     REFUSAL, SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, EventPluginStarted, deliveries, event_plugin_story, install_event_plugin, logged_events, plugin_data, plugin_page, plugin_row, script_calls, tasks_titled)
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 
-GUARD_WORDS = "noted by the guard"
+GUARD_MESSAGE = "noted by the guard"
 CARD_LABEL = "Lane open"
-WORDS_SCRIPT = f"""echo '{{"v": 1, "tell": "{GUARD_WORDS}", "cards": [{{"kind": "state", "key": "lane", "label": "{CARD_LABEL}", "tone": "good"}}]}}'"""
+MESSAGE_SCRIPT = f"""echo '{{"v": 1, "tell": "{GUARD_MESSAGE}", "cards": [{{"kind": "state", "key": "lane", "label": "{CARD_LABEL}", "tone": "good"}}]}}'"""
 COMMAND_STARTING = "core.plugins.command_starting"
 GUARD_SKIP = "plugins.event-guard"
 SKIP_REASON = '--skip-reason "the plugin is wrong here"'
-HOLD_SETTING = "setting set journal.core.plugins.hold_window_ms {} --project"
+GUARD_LIMIT_SETTING = "setting set journal.core.plugins.hold_window_ms {} --project"
 CEILING_MS = 1000
 STOP_LIMIT_SECONDS = 5
-BLOCKED_ON_A_PIPE = 'mkfifo "$JOURNAL_PLUGIN_DATA/never-written"\nread answer < "$JOURNAL_PLUGIN_DATA/never-written"'
+BLOCKED_SCRIPT = 'mkfifo "$JOURNAL_PLUGIN_DATA/never-written"\nread answer < "$JOURNAL_PLUGIN_DATA/never-written"'
 LOCK_CHECK = """import sqlite3, sys
 connection = sqlite3.connect(sys.argv[1], timeout=0, isolation_level=None)
 try:
@@ -66,24 +66,24 @@ def test_s22_a_guard_that_prints_nothing_saves_the_row_once_with_one_event(new_s
     story.expect_rows(len(script_calls(story, "see.sh")) == 1, len(tasks_titled(story, SECOND_JOB_TITLE)) == 1, len(logged_events(story, "task.create")) == 2)
 
 
-def agent_lines_saying(story, text: str) -> list[AgentLine]:
+def agent_lines_containing(story, text: str) -> list[AgentLine]:
     return [line for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows() if text in line.text]
 
 
 def test_s22_an_allowing_guard_tells_the_agent_and_shows_its_card_once(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "words.sh"}, scripts={"words.sh": WORDS_SCRIPT})
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "words.sh"}, scripts={"words.sh": MESSAGE_SCRIPT})
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.run_listeners()
     story.expect_text("chat-mark list --environment 1", CARD_LABEL, actor=story.user)
-    story.expect_rows(len(agent_lines_saying(story, GUARD_WORDS)) == 1, len(script_calls(story, "words.sh")) == 1)
+    story.expect_rows(len(agent_lines_containing(story, GUARD_MESSAGE)) == 1, len(script_calls(story, "words.sh")) == 1)
 
 
 def test_s22_what_an_allowing_guard_tells_rolls_back_when_a_later_listener_refuses(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "words.sh"}, scripts={"words.sh": WORDS_SCRIPT}, modules=[FAILS_LATER])
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "words.sh"}, scripts={"words.sh": MESSAGE_SCRIPT}, modules=[FAILS_LATER])
     story.expect_refusal(f'task make "{REFUSED_TITLE}" --brief "Do it" --environment main', LATER_REFUSAL, actor=story.agent)
     story.run_listeners()
     story.expect_no_text("chat-mark list --environment 1", CARD_LABEL, actor=story.user)
-    story.expect_rows(not agent_lines_saying(story, GUARD_WORDS), not tasks_titled(story, REFUSED_TITLE))
+    story.expect_rows(not agent_lines_containing(story, GUARD_MESSAGE), not tasks_titled(story, REFUSED_TITLE))
 
 
 def test_s22_another_guard_that_refuses_keeps_the_guard_script_from_running(new_story):
@@ -113,14 +113,14 @@ def test_s24_a_guard_script_runs_with_no_lock_held_and_the_command_then_finishes
 
 def test_s25_switching_a_plugin_off_goes_through_and_the_round_stops_its_running_script(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "see.sh"})
-    scripts = story.container.get(RunningScripts)
+    scripts = story.container.get(PluginScriptProcesses)
     process = subprocess.Popen(["sleep", "60"], stdin=subprocess.PIPE, text=True, start_new_session=True)
     try:
         story.expect_success("plugin disable events", actor=story.user)
         story.expect_rows(plugin_row(story).enabled is False)
         scripts.start(process, "events", TASK_CREATED, EventForm.GUARD, story.clock.timestamp())
         story.container.get(PluginServiceRound).run(ServiceProcesses())
-        story.expect_rows(process.wait(timeout=STOP_LIMIT_SECONDS) != 0, scripts.stop_reason(process) is ScriptStop.SWITCHED_OFF)
+        story.expect_rows(process.wait(timeout=STOP_LIMIT_SECONDS) != 0, scripts.stop_reason(process) is ScriptStop.PLUGIN_DISABLED)
     finally:
         scripts.finish(process)
         process.kill()
@@ -139,15 +139,15 @@ def test_s26_explain_shows_what_would_happen_and_runs_no_script(new_story):
     story.expect_rows(not script_calls(story, "refuse.sh"), not script_calls(story, "pin.sh"), not script_calls(story, "see.sh"), not tasks_titled(story, SECOND_JOB_TITLE))
 
 
-def test_s40_a_guard_on_a_hook_moment_refuses_as_holds_does(new_story):
+def test_s40_a_hook_guard_can_refuse(new_story):
     story = install_runner(event_plugin_story(new_story, {"event": COMMAND_STARTING, "guard": "refuse.sh"}))
-    story.run(HOLD_SETTING.format(5000), actor=story.user)
+    story.run(GUARD_LIMIT_SETTING.format(5000), actor=story.user)
     story.expect_hook_refusal("s-1", REMOVAL_SAMPLE, REFUSAL)
     story.expect_rows(len(script_calls(story, "refuse.sh")) == 1)
 
 
-def test_s40_a_guard_on_a_hook_moment_stays_under_the_same_ceiling(new_story):
-    story = install_runner(event_plugin_story(new_story, {"event": COMMAND_STARTING, "guard": "blocked.sh"}, scripts={"blocked.sh": BLOCKED_ON_A_PIPE}))
-    story.run(HOLD_SETTING.format(CEILING_MS), actor=story.user)
+def test_s40_a_hook_guard_obeys_the_limit(new_story):
+    story = install_runner(event_plugin_story(new_story, {"event": COMMAND_STARTING, "guard": "blocked.sh"}, scripts={"blocked.sh": BLOCKED_SCRIPT}))
+    story.run(GUARD_LIMIT_SETTING.format(CEILING_MS), actor=story.user)
     story.expect_hook_allowed("s-1", LISTING_SAMPLE)
     story.expect_rows(len(script_calls(story, "blocked.sh")) == 1)

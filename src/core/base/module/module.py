@@ -65,7 +65,7 @@ class Module:
     listeners: ClassVar[list[ListenerClass]] = []
     file_events: ClassVar[list[str]] = []
     former_event_keys: ClassVar[dict[str, str]] = {}
-    plugin_moments: ClassVar[list[str]] = []
+    named_plugin_events: ClassVar[list[str]] = []
     removal: ClassVar[type[Migration] | None] = None
     bindings: ClassVar[dict[type, type]] = {}
     suites: ClassVar[list[type[Suite]]] = []
@@ -96,6 +96,12 @@ class Module:
     moves: ClassVar[list[type[VersionFourMove]]] = []
     move_reason: ClassVar[str] = ""
     seed_reason: ClassVar[str] = ""
+
+    @classmethod
+    def plugin_event_names(cls) -> list[str]:
+        if "named_plugin_events" in cls.__dict__:
+            return cls.named_plugin_events
+        return getattr(cls, "plugin_moments", cls.named_plugin_events)
 
     @classmethod
     @cache

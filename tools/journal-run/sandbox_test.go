@@ -126,14 +126,14 @@ print(answer.stdout, end='')
 		if err != nil || !strings.Contains(string(output), "journal works") {
 			t.Fatalf("%s here document: %v: %s", shell, err, output)
 		}
-		found := false
+		reportFound := false
 		for len(reports) > 0 {
 			arguments := <-reports
 			if len(arguments) == 5 && arguments[0] == "report" && arguments[4] == body {
-				found = true
+				reportFound = true
 			}
 		}
-		if !found {
+		if !reportFound {
 			t.Fatalf("%s did not send the report body", shell)
 		}
 	}
@@ -150,22 +150,22 @@ func TestDeclaredFoldersNeverHoldTheMainFolderOrAPathOutsideIt(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	inside := filepath.Join(main, ".rules")
-	if err := os.Mkdir(inside, 0o755); err != nil {
+	rulesFolder := filepath.Join(main, ".rules")
+	if err := os.Mkdir(rulesFolder, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	outside := t.TempDir()
+	externalFolder := t.TempDir()
 	home := filepath.Join(main, ".journal")
 	worktrees := filepath.Join(home, "worktrees")
 	if err := os.MkdirAll(worktrees, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	link := filepath.Join(main, "link-in")
-	if err := os.Symlink(home, link); err != nil {
+	journalLink := filepath.Join(main, "link-in")
+	if err := os.Symlink(home, journalLink); err != nil {
 		t.Fatal(err)
 	}
-	folders := declaredFolders([]string{main, outside, inside, filepath.Join(main, "missing"), home, worktrees, link}, main, home)
-	if len(folders) != 1 || folders[0] != inside {
+	folders := declaredFolders([]string{main, externalFolder, rulesFolder, filepath.Join(main, "missing"), home, worktrees, journalLink}, main, home)
+	if len(folders) != 1 || folders[0] != rulesFolder {
 		t.Fatalf("declared folders %v", folders)
 	}
 }
@@ -185,14 +185,14 @@ func TestAWorkerKeepsItsOwnWorktreeAndThePluginDataWithNothingDeclared(t *testin
 	if err != nil {
 		t.Fatal(err)
 	}
-	wanted := map[string]bool{worktree: false, filepath.Join(home, "plugin-data"): false}
+	expectedPaths := map[string]bool{worktree: false, filepath.Join(home, "plugin-data"): false}
 	for _, path := range limit.Readable {
-		if _, held := wanted[path]; held {
-			wanted[path] = true
+		if _, expected := expectedPaths[path]; expected {
+			expectedPaths[path] = true
 		}
 	}
-	for path, found := range wanted {
-		if !found {
+	for path, readable := range expectedPaths {
+		if !readable {
 			t.Fatalf("a worker cannot read %s", path)
 		}
 	}
@@ -203,7 +203,7 @@ func TestReadFoldersVariableIsReadClearedAndAMissingOneIsNothing(t *testing.T) {
 	if folders := readFolders(); len(folders) != 2 || folders[0] != "/a" {
 		t.Fatalf("read folders %v", folders)
 	}
-	if _, held := os.LookupEnv("JOURNAL_RUN_READ_FOLDERS"); held {
+	if _, exists := os.LookupEnv("JOURNAL_RUN_READ_FOLDERS"); exists {
 		t.Fatal("the variable stays for the line to read")
 	}
 	if folders := readFolders(); len(folders) != 0 {

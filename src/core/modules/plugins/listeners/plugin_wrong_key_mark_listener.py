@@ -20,9 +20,7 @@ UNDECLARED_READS_TEXT = "Plugin {plugin} runs commands in worker shells, and tho
 
 
 class PluginWrongKeyMarkListener(MarkListener[RegistrySynced]):
-    """After a sync the chat of the first environment says which enabled plugin listens to a key this journal no longer
-    has, one mark for each, so a guard that stopped working does not pass unseen. A renamed key is no wrong key. A plugin
-    with aliases and no project_reads is told once that worker shells read only what it declares."""
+    """Reports enabled plugins with unknown event keys or undeclared project reads."""
 
     name = "plugins.wrong-key-mark"
     module_name = "journal.core.plugins"
@@ -43,6 +41,7 @@ class PluginWrongKeyMarkListener(MarkListener[RegistrySynced]):
 
     def show_wrong_keys(self, plugin_id: int, plugin_name: str, manifest: PluginManifest, logged: LoggedEvent) -> None:
         for row in self.rows.rows(manifest, self.folders.code(plugin_name)):
-            if row.state is PluginEventState.WRONG_KEY:
-                ending = ", so that guard no longer runs" if row.form == "guard" else ""
-                self.show(logged, PluginMarkType.HEALTH, PluginMarkVariant.WRONG_KEY, f"Plugin {plugin_name} listens to {row.key}, which this journal no longer has{ending}.", key=f"plugin-wrong-key:{plugin_id}:{row.key}")
+            if row.state is not PluginEventState.WRONG_KEY:
+                continue
+            ending = ", so that guard no longer runs" if row.form == "guard" else ""
+            self.show(logged, PluginMarkType.HEALTH, PluginMarkVariant.WRONG_KEY, f"Plugin {plugin_name} listens to {row.key}, which this journal no longer has{ending}.", key=f"plugin-wrong-key:{plugin_id}:{row.key}")

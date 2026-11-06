@@ -134,15 +134,15 @@ func StopServer(home string, stdout, stderr io.Writer) int {
 // SendCli posts the request, copies the answer's output to stdout as it streams in, and returns the exit code
 // the answer ends with and the HTTP status. The timing is stamped with the given name right before the post and
 // sent in its header. A timeout is never resent: the command may still be running.
-// silenceWriter starts the limit on silence again at each piece of the answer.
-type silenceWriter struct {
+// idleTimeoutWriter resets the timer when it writes data.
+type idleTimeoutWriter struct {
 	out   io.Writer
 	timer *time.Timer
 }
 
-func (writer silenceWriter) Write(piece []byte) (int, error) {
+func (writer idleTimeoutWriter) Write(data []byte) (int, error) {
 	writer.timer.Reset(CliLimit)
-	return writer.out.Write(piece)
+	return writer.out.Write(data)
 }
 
 func SendCli(client *http.Client, request CliRequest, requestTiming *timing.Timing, stampName string, stdout, stderr io.Writer) (int, int) {
@@ -175,7 +175,7 @@ func SendCli(client *http.Client, request CliRequest, requestTiming *timing.Timi
 		}
 		return ErrorCode, response.StatusCode
 	}
-	if _, err := io.Copy(silenceWriter{stdout, silence}, response.Body); err != nil {
+	if _, err := io.Copy(idleTimeoutWriter{stdout, silence}, response.Body); err != nil {
 		fmt.Fprintf(stderr, "the answer broke off: %v; the command may still be running\n", err)
 		return ErrorCode, response.StatusCode
 	}

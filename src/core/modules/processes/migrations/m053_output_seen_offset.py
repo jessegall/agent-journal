@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class OutputSeenOffsetMigration(Migration):
+class OutputReadPositionMigration(Migration):
     """Adds the offset examined by the reader, including an unfinished last line."""
 
     number = 53

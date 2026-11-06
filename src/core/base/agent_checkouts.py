@@ -21,7 +21,7 @@ class AgentCheckouts:
     def base_text(self, checkout: Checkout, relative: str) -> str:
         raise Refusal("this project keeps no base commit", "read the file with --from checkout")
 
-    def changed_files(self, checkout: Checkout, since: str) -> tuple[CheckoutFile, ...]:
+    def changed_files(self, checkout: Checkout, base_commit: str) -> tuple[CheckoutFile, ...]:
         return ()
 
     def file_state(self, checkout: Checkout, relative: str) -> FileState:

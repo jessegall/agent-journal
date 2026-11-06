@@ -75,9 +75,11 @@ function pick(event) {
                         <span class="run-name">{{ row.key }}</span>
                         <span class="run-state">{{ eventText(row) }}</span>
                     </span>
-                    <span v-if="row.skip_reason" class="run" data-plugin-skip>
-                        <span class="run-state">Skipped {{ row.key }} {{ minutesSince(row.last_skipped_at) }} minutes ago: {{ row.skip_reason }}</span>
-                    </span>
+                    <template v-if="row.skip_reason">
+                        <span class="run" data-plugin-skip>
+                            <span class="run-state">Skipped {{ row.key }} {{ minutesSince(row.last_skipped_at) }} minutes ago: {{ row.skip_reason }}</span>
+                        </span>
+                    </template>
                 </template>
             </div>
         </template>

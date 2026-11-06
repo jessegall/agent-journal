@@ -15,9 +15,7 @@ from core.modules.plugins.support.plugin_subscription import PluginSubscription
 
 @dataclass(frozen=True)
 class PluginEventWork:
-    """The scripts a change is owed, run in install order once its transaction is over, stopping at a refusal. A
-    failure of the journal's own plugin code goes to the error log and the change goes on. The caller is told at once
-    and each minute, which is also how a caller that left is found: the write fails and the script is stopped."""
+    """Runs plugin scripts after the transaction and reports progress to the caller."""
 
     runner: PluginEventRunner
     errors: ErrorLog
@@ -48,12 +46,12 @@ class PluginEventWork:
         started_at = time.monotonic()
         waiting = f"waiting on plugin {subscription.plugin} at {self.key}"
 
-        def on_wait() -> None:
+        def wait_callback() -> None:
             self.caller.line(f"{waiting}, for {int((time.monotonic() - started_at) / 60)} minutes")
 
         try:
             self.caller.line(waiting)
-            return self.runner.answer(subscription, self.form, self.key, self.data, self.environment_id, self.agent_id, on_wait)
+            return self.runner.answer(subscription, self.form, self.key, self.data, self.environment_id, self.agent_id, wait_callback)
         except BrokenPipeError:
             raise
         except PLUGIN_CODE_FAULTS as error:

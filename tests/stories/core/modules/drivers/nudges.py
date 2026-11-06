@@ -146,13 +146,13 @@ def test_many_nudges_read_records_together(new_story):
 def test_a_hook_reads_only_the_records_of_its_own_lines(new_story):
     story = new_story(fixture=BuilderWithStartedTask)
     log = story.container.get(NudgeLog)
-    others = [Nudge(f"sample.other.{number}", NudgeType.STEERING, f"Line {number}") for number in range(30)]
-    selected = Nudge("sample.own", NudgeType.STEERING, "Own line")
-    answer = RuleAnswer.with_nudges(*others, selected)
+    other_nudges = [Nudge(f"sample.other.{number}", NudgeType.STEERING, f"Line {number}") for number in range(30)]
+    selected_nudge = Nudge("sample.own", NudgeType.STEERING, "Own line")
+    answer = RuleAnswer.with_nudges(*other_nudges, selected_nudge)
     context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
     with story.container.get(Database).transaction():
         log.write(story.agent.id, RuleAnswers(["lead"], [RuleRecord("sample", "lead", answer.outcome, answer)]), context)
-    rows = story.container.get(NudgeRecords).nudge_rows(story.agent.id, [selected])
+    rows = story.container.get(NudgeRecords).nudge_rows(story.agent.id, [selected_nudge])
     expect_value([row.key for row in rows], ["sample.own"])
 
 
@@ -182,16 +182,16 @@ def test_a_reader_request_notice_sees_its_last_reminder(new_story):
 
 def test_a_hooks_rules_are_asked_with_no_write_lock_held(new_story, monkeypatch):
     story = new_story(fixture=BuilderWithStartedTask)
-    database, transactions_open = story.container.get(Database), []
-    ask = DriverRules.ask
+    database, transaction_states = story.container.get(Database), []
+    original_ask = DriverRules.ask
 
-    def ask_while_another_connection_writes(rules, hook):
-        other = sqlite3.connect(story.container.get(JournalHome).database, timeout=0, autocommit=True)
-        other.execute("BEGIN IMMEDIATE")
-        other.execute("ROLLBACK")
-        other.close()
-        transactions_open.append(database.has_transaction)
-        return ask(rules, hook)
-    monkeypatch.setattr(DriverRules, "ask", ask_while_another_connection_writes)
+    def ask_with_lock_check(rules, hook):
+        connection = sqlite3.connect(story.container.get(JournalHome).database, timeout=0, autocommit=True)
+        connection.execute("BEGIN IMMEDIATE")
+        connection.execute("ROLLBACK")
+        connection.close()
+        transaction_states.append(database.has_transaction)
+        return original_ask(rules, hook)
+    monkeypatch.setattr(DriverRules, "ask", ask_with_lock_check)
     story.expect_hook_allowed("s-1", HookSamples.edit("a.py"))
-    expect_value(transactions_open, [False])
+    expect_value(transaction_states, [False])

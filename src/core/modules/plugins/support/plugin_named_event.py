@@ -7,8 +7,8 @@ CEILING_SETTING = "journal.core.plugins.hold_window_ms"
 
 
 @dataclass(frozen=True)
-class PluginMoment:
-    """A listen entry on a key of a moment a plugin hears by name: the moment's name, its key, the form and the script."""
+class PluginNamedEvent:
+    """A named event subscription and its script."""
 
     event: str
     key: str

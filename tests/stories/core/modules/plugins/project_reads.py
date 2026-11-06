@@ -13,13 +13,13 @@ from tests.stories.core.modules.plugins.support.event_stories import event_folde
 
 PREVIEW = Path("src/core/modules/plugins/web/src/PluginInstallPreview.vue")
 RULES_TEXT = "the rules of the plugin"
-OUTSIDE_THE_PROJECT = "../outside"
+EXTERNAL_PATH = "../outside"
 
 
-def with_project_folder(folder: str):
-    def write(story) -> None:
+def project_folder_setup(folder: str):
+    def create_folder(story) -> None:
         story.repository.library(folder, "config.json", RULES_TEXT)
-    return write
+    return create_folder
 
 
 def worker_line_reading(story, folder: str) -> str:
@@ -35,31 +35,31 @@ def declared_folders(line: str) -> list[str]:
 
 
 def test_s52_a_project_folder_a_plugin_declares_opens_for_the_shell_line_of_a_worker(new_story):
-    story = checkout_story(new_story, before_dispatch=with_project_folder(".rules"), project_reads=[".rules"])
+    story = checkout_story(new_story, setup_repository=project_folder_setup(".rules"), project_reads=[".rules"])
     story.expect_rows(declared_folders(worker_line_reading(story, ".rules")) == [f"{real(story.repository.folder)}/.rules"])
 
 
 def test_s52_the_rules_folder_opens_for_a_worker_through_a_declaration(new_story):
-    story = checkout_story(new_story, before_dispatch=with_project_folder(".commandments"), project_reads=[".commandments"])
+    story = checkout_story(new_story, setup_repository=project_folder_setup(".commandments"), project_reads=[".commandments"])
     story.expect_rows(declared_folders(worker_line_reading(story, ".commandments")) == [f"{real(story.repository.folder)}/.commandments"])
 
 
 def test_s52_a_folder_no_plugin_declares_is_not_opened(new_story):
-    story = checkout_story(new_story, before_dispatch=with_project_folder(".rules"))
+    story = checkout_story(new_story, setup_repository=project_folder_setup(".rules"))
     story.expect_rows(READ_FOLDERS_VARIABLE not in worker_line_reading(story, ".rules"))
 
 
 def test_s52_a_second_plugin_declares_another_folder_and_each_is_open_for_the_shell_line(new_story):
-    story = checkout_story(new_story, before_dispatch=with_project_folder(".rules"), project_reads=[".rules"])
+    story = checkout_story(new_story, setup_repository=project_folder_setup(".rules"), project_reads=[".rules"])
     install_event_plugin(story, name="second", project_reads=[".more"])
     story.expect_rows(declared_folders(worker_line_reading(story, ".rules")) == [f"{real(story.repository.folder)}/.rules", f"{real(story.repository.folder)}/.more"])
 
 
 def test_s52_an_entry_that_leaves_the_project_is_wrong_on_the_card_and_is_not_opened(new_story):
-    story = checkout_story(new_story, project_reads=[OUTSIDE_THE_PROJECT])
+    story = checkout_story(new_story, project_reads=[EXTERNAL_PATH])
     story.expect_rows(READ_FOLDERS_VARIABLE not in worker_line_reading(story, ".rules"))
     card = plugin_page(story).card()
-    story.expect_rows(any(OUTSIDE_THE_PROJECT in json.dumps(row) and "wrong" in str(row["state"]) for row in card))
+    story.expect_rows(any(EXTERNAL_PATH in json.dumps(row) and "wrong" in str(row["state"]) for row in card))
 
 
 def test_s52_the_preview_says_what_a_plugin_reads_from_the_project(new_story):

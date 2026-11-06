@@ -15,7 +15,7 @@ from core.modules.processes.models.process import Process
 from tests.stories.core.modules.plugins.support.event_modules import EventNote
 
 REFUSING = "tests.stories.core.modules.plugins.support.refusing_modules:RefusingModule"
-REFUSED_NOTES = "tests.stories.core.modules.plugins.support.refusing_modules:RefusedNotesModule"
+REFUSED_NOTES = "tests.stories.core.modules.plugins.support.refusing_modules:NoteTitleGuardModule"
 LATER_KEY_REFUSAL = "a later key refuses this"
 REFUSED_NOTE_TITLE = "Refused note"
 
@@ -58,24 +58,24 @@ class OrphanProcessRowHandler(Handler[OrphanProcessRow, None]):
 
 
 @dataclass(frozen=True)
-class OnceThenNote(Command[EventNote]):
+class CreateNoteAfterSlots(Command[EventNote]):
     title: str
 
 
-class OnceThenNoteHandler(Handler[OnceThenNote, EventNote]):
+class CreateNoteAfterSlotsHandler(Handler[CreateNoteAfterSlots, EventNote]):
     """Dispatches a command that runs once, then saves a row on a key a guard script hears."""
 
-    command = OnceThenNote
+    command = CreateNoteAfterSlots
 
     def __init__(self, bus: Bus, repository: Repository) -> None:
         self.bus, self.repository = bus, repository
 
-    def handle(self, command: OnceThenNote, context: Context) -> EventNote:
+    def handle(self, command: CreateNoteAfterSlots, context: Context) -> EventNote:
         self.bus.dispatch(GrantRunSlots(), context)
         return self.repository.save(EventNote(title=command.title), context)
 
 
-class RefusedNoteGuard(Guard[Created[EventNote]]):
+class NoteTitleGuard(Guard[Created[EventNote]]):
     """A note with the refused title is never saved."""
 
     name = "acme.refused-note"
@@ -88,10 +88,10 @@ class RefusedNoteGuard(Guard[Created[EventNote]]):
 class RefusingModule(Module):
     name = "acme.refusing"
     requires_core = ">=5,<6"
-    handlers = [DeleteProcessRowHandler, OrphanProcessRowHandler, OnceThenNoteHandler]
+    handlers = [DeleteProcessRowHandler, OrphanProcessRowHandler, CreateNoteAfterSlotsHandler]
 
 
-class RefusedNotesModule(Module):
+class NoteTitleGuardModule(Module):
     name = "acme.refused-notes"
     requires_core = ">=5,<6"
-    guards = [RefusedNoteGuard]
+    guards = [NoteTitleGuard]
