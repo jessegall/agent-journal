@@ -21,6 +21,7 @@ from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.report import Report
 from core.modules.documents.support.work_context_message import WorkContextMessage, WorkContextReference, WorkContextAttachment
 from core.modules.documents.support.work_context_page import WorkContextPage, WorkContextRequest, WorkContextText, WorkContextAttachmentPage, WorkContextFile, WorkContextFileContent
+from core.modules.documents.support.work_context_order import WorkContextOrder
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.modules.messages.queries.message_query import MessageQuery
@@ -29,6 +30,7 @@ from core.modules.messages.support.message_files import MessageFiles
 from core.modules.messages.support.message_captions import MessageCaptions
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.task_plans import TaskPlans
+from core.modules.plans.support.plan_approval import PlanApproval
 from core.modules.tasks.models.task import Task
 
 CONTEXT_CHARACTERS = 8000
@@ -46,6 +48,11 @@ class WorkContextReader:
                  plans: TaskPlans, sources: WorkSources, files: MessageFiles) -> None:
         self.queries, self.messages, self.comments, self.plans, self.sources = queries, messages, comments, plans, sources
         self.files = files
+
+    def overview(self, task: Task, caller: Caller) -> WorkContextPage:
+        result = self.read(task, caller, WorkContextRequest(order=WorkContextOrder.NEWEST))
+        assert isinstance(result, WorkContextPage)
+        return result
 
     def read(self, row: Task | Plan, caller: Caller, request: WorkContextRequest) -> WorkContextPage | WorkContextText | WorkContextAttachmentPage | WorkContextFile:
         self.check(request)
@@ -70,7 +77,7 @@ class WorkContextReader:
         participant_ids = tuple(sorted(participants)) if caller.actor.type is ActorType.AGENT else ()
         window = WorkContextMessages(seeds, row.environment_id, start, ANCESTRY_LENGTH, excluded, participant_ids)
         conversation = visible.matching(window)
-        command = f"journal {row.cli_name} context {row.id}"
+        command = f"journal {row.cli_name} context {row.id}{request.order.command()}"
         if request.ancestor_cursor is not None:
             command += f" --ancestor-cursor {request.ancestor_cursor}"
         if request.message_id is not None:
@@ -81,7 +88,7 @@ class WorkContextReader:
         more = visible.matching(replace(window, start=start + ANCESTRY_LENGTH)).exists()
         cursor = self.cursor(anchor, start + ANCESTRY_LENGTH) if more else None
         next_command = f"{command} --page {request.page + 1} --page-size {request.page_size}" if request.page * request.page_size < total else None
-        ancestor_command = f"journal {row.cli_name} context {row.id} --ancestor-cursor {cursor} --page-size {request.page_size}" if cursor is not None else None
+        ancestor_command = f"journal {row.cli_name} context {row.id}{request.order.command()} --ancestor-cursor {cursor} --page-size {request.page_size}" if cursor is not None else None
         return WorkContextPage(row.cli_name, row.id, rendered, request.page, request.page_size, total, start,
                                next_command, cursor, ancestor_command, (*self.unavailable(rows, visible), *self.references(rows)))
 
@@ -138,7 +145,8 @@ class WorkContextReader:
         return start
 
     def page_rows(self, conversation: MessageQuery, primary: Message | None, request: WorkContextRequest) -> tuple[Message, ...]:
-        pool = conversation.with_text_segment(0, CONTEXT_CHARACTERS).ordered("created_at", "id")
+        pool = conversation.with_text_segment(0, CONTEXT_CHARACTERS)
+        pool = pool.descending("created_at", "id") if request.order is WorkContextOrder.NEWEST else pool.ordered("created_at", "id")
         reserved = ()
         offset = (request.page - 1) * request.page_size
         size = request.page_size
@@ -262,6 +270,10 @@ class WorkContextReader:
     def references(self, roots: tuple[Task | Plan, ...]) -> tuple[WorkContextReference, ...]:
         references: dict[tuple[str, int], set[str]] = {}
         for root in roots:
+            if isinstance(root, Plan):
+                approval = PlanApproval.message_id(root)
+                if approval is not None:
+                    references.setdefault(("message", approval), set()).add("plan approval")
             outgoing = self.queries.query(Link).filter(source_model=root.model_name, source_id=root.id).matching(Among("target_model", ("doc", "report")))
             incoming = self.queries.query(Link).filter(target_model=root.model_name, target_id=root.id).matching(Among("source_model", ("doc", "report")))
             for link in outgoing.matching(Among("link_type", (LinkType.SUBJECT, LinkType.REFERENCE))).limited(50):
@@ -271,6 +283,11 @@ class WorkContextReader:
             if isinstance(root, Plan) and root.document_id is not None:
                 references.setdefault(("doc", root.document_id), set()).add("design")
         titles: dict[tuple[str, int], str] = {}
+        for root in roots:
+            if isinstance(root, Plan):
+                approval = PlanApproval.message_id(root)
+                if approval is not None and self.visible(root.environment_id, ()).filter(id=approval).exists():
+                    titles[("message", approval)] = "Plan approval"
         for model in (Doc, Report):
             ids = tuple(number for name, number in references if name == model.model_name)
             query = self.queries.query(model).matching(Among("id", ids))

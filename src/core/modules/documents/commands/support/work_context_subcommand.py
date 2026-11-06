@@ -8,6 +8,7 @@ from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.documents.support.work_context_page import WorkContextPage, WorkContextRequest, WorkContextText, WorkContextAttachmentPage, WorkContextFile
 from core.modules.documents.support.work_context_reader import WorkContextReader
+from core.modules.documents.support.work_context_order import WorkContextOrder
 from core.modules.plans.models.plan import Plan
 from core.modules.tasks.models.task import Task
 
@@ -29,6 +30,7 @@ class WorkContextSubcommand(ReadSubcommand[WorkContextPage | WorkContextText | W
         parser.add_argument("--message", type=int)
         parser.add_argument("--text-offset", type=int, default=0)
         parser.add_argument("--ancestor-cursor")
+        parser.add_argument("--newest", action="store_true")
         attachments = parser.add_mutually_exclusive_group()
         attachments.add_argument("--attachment")
         attachments.add_argument("--attachment-page", type=int)
@@ -39,7 +41,8 @@ class WorkContextSubcommand(ReadSubcommand[WorkContextPage | WorkContextText | W
         row = self.queries.query(self.model).find(arguments.row_id)
         return self.reader.read(row, caller, WorkContextRequest(arguments.page, arguments.page_size, arguments.message,
                                                                arguments.text_offset, arguments.ancestor_cursor,
-                                                               arguments.attachment, arguments.attachment_page))
+                                                               arguments.attachment, arguments.attachment_page,
+                                                               WorkContextOrder.NEWEST if arguments.newest else WorkContextOrder.OLDEST))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, (WorkContextPage, WorkContextText, WorkContextAttachmentPage, WorkContextFile)):

@@ -1,4 +1,6 @@
 from core.base.skill.skill_declaration import SkillDeclaration
+from core.modules.tasks.support.task_context_reader import TaskContextReader
+from core.modules.documents.support.work_context_reader import WorkContextReader
 from core.base.ticker.tick_handler import TickHandler
 from core.base.ticker.tick_interval import TickInterval
 from core.modules.documents.ticks.close_ended_documents_tick import CloseEndedDocumentsTick
@@ -112,7 +114,7 @@ class DocumentsModule(Module):
     listeners = [CloseEndedDocumentListener, PlanDocumentLinkListener, ReplyLinkListener, WorkSourceLinkListener, DocMentionListener, ReportMentionListener, PlanMentionListener, TaskMentionListener, MessageMentionListener, PhaseMentionListener, TaskLogMentionListener, DeletedRowLinkListener, NewDocDockListener, NewReportDockListener, TextReadMarkListener, LinkCorrectionResetListener]
     marks = TEXT_MARKS
     docks = TEXT_DOCKS
-    bindings = {RowLinks: StoredRowLinks}
+    bindings = {RowLinks: StoredRowLinks, TaskContextReader: WorkContextReader}
     subcommands = [OpenDocSubcommand, CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,
                    DocRevisionsSubcommand, DocRevisionSubcommand, ReportMakeSubcommand, ReportEditSubcommand, ReportShowSubcommand, ReportListSubcommand,
                    ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand, DocInspectSubcommand, ReportInspectSubcommand, RemoveLinkSubcommand, TaskContextSubcommand]

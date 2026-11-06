@@ -12,6 +12,10 @@ from core.base.database.statement import Statement
 from core.base.query.queries import Queries
 from core.base.scope.scopes import Scopes
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.models.task_read import TaskRead
+from core.modules.tasks.models.task_log import TaskLog
+from core.modules.messages.models.message import Message
+from core.base.query.query import Query
 from core.modules.documents.conditions.work_context_messages import WorkContextSeeds
 from core.modules.documents.support.work_context_page import WorkContextRequest
 from core.modules.documents.support.work_context_reader import WorkContextReader
@@ -242,3 +246,29 @@ def test_database_errors_are_not_replaced_by_empty_context(linked_trail):
         with patch.object(WorkContextSeeds, "statement", return_value=Statement("SELECT missing_context_column FROM messages")):
             with pytest.raises(sqlite3.OperationalError, match="missing_context_column"):
                 story.container.get(WorkContextReader).read(row, Caller(story.agent, 1), WorkContextRequest())
+
+
+def test_overview_failure_does_not_record_a_read_or_release_the_gate(linked_trail):
+    story = linked_trail.story
+    story.container.get(TaskBriefRequirement).is_required = True
+    linked_trail.command("task start 1")
+    with patch.object(WorkContextSeeds, "statement", return_value=Statement("SELECT missing_context_column FROM messages")):
+        with pytest.raises(sqlite3.OperationalError, match="missing_context_column"):
+            story.run("task overview 1", actor=story.agent)
+    with story.container.get(Scopes).read_scope((), story.agent.id, 1):
+        feature(not story.container.get(Queries).query(TaskRead).filter(task_id=1, session_agent_id=story.agent.id).exists(), "failed overview recorded TaskRead")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "journal task overview 1")
+    linked_trail.command("task overview 1")
+    story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
+
+
+def test_overview_never_loads_unbounded_messages_or_logs(linked_trail):
+    original = Query.all_rows
+
+    def bounded(query):
+        feature(query.model not in (Message, TaskLog), "overview loaded all messages or logs")
+        return original(query)
+
+    with patch.object(Query, "all_rows", bounded):
+        outcome = linked_trail.command("task overview 1")
+    feature("Original cart request" in outcome.output_text, outcome.output_text)

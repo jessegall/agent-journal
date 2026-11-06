@@ -1,6 +1,8 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
+from collections.abc import Mapping
 
 from core.modules.documents.support.work_context_message import WorkContextMessage, WorkContextReference, WorkContextAttachment
+from core.modules.documents.support.work_context_order import WorkContextOrder
 
 
 @dataclass(frozen=True)
@@ -14,6 +16,7 @@ class WorkContextRequest:
     ancestor_cursor: str | None = None
     attachment: str | None = None
     attachment_page: int | None = None
+    order: WorkContextOrder = WorkContextOrder.OLDEST
 
 
 @dataclass(frozen=True)
@@ -31,6 +34,9 @@ class WorkContextPage:
     ancestor_cursor: str | None
     ancestor_command: str | None
     references: tuple[WorkContextReference, ...] = ()
+
+    def json(self) -> Mapping[str, object]:
+        return asdict(self)
 
     def lines(self) -> tuple[str, ...]:
         continuations = tuple(command for command in (self.next_command, self.ancestor_command) if command is not None)
