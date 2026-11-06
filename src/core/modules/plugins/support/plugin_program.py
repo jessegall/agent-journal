@@ -7,6 +7,7 @@ from collections.abc import Mapping
 
 from core.base.agent_checkouts import AgentCheckouts
 from core.base.journal_home import JournalHome
+from core.base.running_scripts import RunningScripts
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_fault_error import PluginFaultError
@@ -29,8 +30,8 @@ class PluginProgram:
     plugin's fault. A plugin whose answering service has its socket open is asked there instead, and the
     program answers once it is gone."""
 
-    def __init__(self, home: JournalHome, folders: PluginFolders, sockets: PluginSocketPaths, skills: LoadedSkills, checkouts: AgentCheckouts) -> None:
-        self.home, self.folders, self.sockets, self.skills, self.checkouts = home, folders, sockets, skills, checkouts
+    def __init__(self, home: JournalHome, folders: PluginFolders, sockets: PluginSocketPaths, skills: LoadedSkills, checkouts: AgentCheckouts, scripts: RunningScripts) -> None:
+        self.home, self.folders, self.sockets, self.skills, self.checkouts, self.scripts = home, folders, sockets, skills, checkouts, scripts
 
     def run(self, call: PluginCall, limit_ms: int) -> PluginAnswer:
         manifest = call.manifest
@@ -49,11 +50,14 @@ class PluginProgram:
                 raise PluginFaultError("its service's answer is not JSON") from None
         process = subprocess.Popen([str(folder / manifest.program)], cwd=folder, env=self.environment(manifest.name, call.environment), stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, start_new_session=True)
+        self.scripts.start(process, manifest.name, call.event.name, call.form, call.timestamp)
         try:
             output, _ = process.communicate(line + "\n", timeout=limit_ms / 1000)
         except subprocess.TimeoutExpired:
             self.stop(process)
             raise PluginLateError(f"it ran past {limit_ms} ms") from None
+        finally:
+            self.scripts.finish(process)
         if process.returncode != 0:
             raise PluginFaultError(f"it ended with code {process.returncode}")
         try:

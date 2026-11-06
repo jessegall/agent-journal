@@ -5,6 +5,7 @@ from core.base.journal_home import JournalHome
 from core.base.model.state_book import StateBook
 from core.base.module.module_sync import ModuleSync
 from core.base.registry.registry import Registry
+from core.base.running_scripts import RunningScripts
 
 
 def opened_container(home: JournalHome) -> Container:
@@ -23,6 +24,7 @@ def database_container(home: JournalHome, database: Database) -> Container:
     container = Container()
     container.bind(JournalHome, home)
     container.bind(Database, database)
+    container.bind(RunningScripts, RunningScripts.shared(home))
     return container
 
 

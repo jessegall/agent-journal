@@ -1,15 +1,19 @@
+from collections.abc import Sequence
+
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
 from core.base.caller.caller_request import CallerRequest, SESSION_VARIABLE
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.caller.process_chain import ProcessChain
+from core.base.caller.process_row import ProcessRow
 from core.base.cli.shell_handoff import RUNNER_VARIABLE
 from core.base.cli.usage_error import UsageError
 from core.base.provider.providers import Providers
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
+from core.base.running_scripts import RunningScripts
 from core.base.caller.caller import Caller
 from core.modules.actors.queries.actor_query import ActorQuery
 from core.modules.agents.models.agent import Agent
@@ -23,20 +27,22 @@ class AgentCallerResolver(CallerResolver):
     Login and folder resolve callers; unresolved programs use core.
     Runner sessions may name ended agents."""
 
-    def __init__(self, queries: Queries, chain: ProcessChain, environments: EnvironmentQuery, actors: ActorQuery, providers: Providers) -> None:
-        self.queries, self.chain, self.environments, self.actors, self.providers = queries, chain, environments, actors, providers
+    def __init__(self, queries: Queries, chain: ProcessChain, environments: EnvironmentQuery, actors: ActorQuery, providers: Providers, scripts: RunningScripts) -> None:
+        self.queries, self.chain, self.environments, self.actors, self.providers, self.scripts = queries, chain, environments, actors, providers, scripts
 
     def caller(self, request: CallerRequest) -> Caller:
         program_sessions = tuple(request.variables[provider.session_variable] for provider in self.providers.all() if provider.session_variable in request.variables)
         session_agent = self.session_agent(request)
         if session_agent is not None:
             return Caller(Actor(session_agent.id, ActorType.AGENT), session_agent.environment_id)
-        agent = self.ancestor_agent(request) or self.program_agent(program_sessions)
+        steps = self.chain.steps(request.pid)
+        plugin_script = self.scripts.owner(steps)
+        agent = self.ancestor_agent(steps) or self.program_agent(program_sessions)
         if agent is not None:
-            return Caller(Actor(agent.id, ActorType.AGENT), agent.environment_id)
+            return Caller(Actor(agent.id, ActorType.AGENT), agent.environment_id, plugin_script)
         environment = self.environments.folder_environment(request.folder)
         person = None if program_sessions else self.actors.person(request.variables.get(LOGIN_VARIABLE, ""))
-        return Caller(Actor(person.id, ActorType.USER) if person else Actor.core(), environment.id if environment else None)
+        return Caller(Actor(person.id, ActorType.USER) if person else Actor.core(), environment.id if environment else None, plugin_script)
 
     def program_agent(self, sessions: tuple[str, ...]) -> Agent | None:
         return next(iter(self.queries.query(Agent).matching(Among("session", sessions)).matching(IsNull("ended_at")).all_rows()), None) if sessions else None
@@ -51,8 +57,7 @@ class AgentCallerResolver(CallerResolver):
             raise UsageError(f"{SESSION_VARIABLE} is session {session}, which is no open agent: start it with journal agent start")
         return agent
 
-    def ancestor_agent(self, request: CallerRequest) -> Agent | None:
-        steps = self.chain.steps(request.pid)
+    def ancestor_agent(self, steps: Sequence[ProcessRow]) -> Agent | None:
         agents = self.queries.query(Agent).matching(Among("pid", [step.pid for step in steps])).matching(IsNull("ended_at")).all_rows()
         started = {(agent.pid, agent.process_started_at): agent for agent in agents}
         return next((started[step.pid, step.started_at] for step in steps if (step.pid, step.started_at) in started), None)

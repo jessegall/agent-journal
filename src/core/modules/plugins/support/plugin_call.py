@@ -2,6 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from core.base.checkout import Checkout
+from core.base.model.event_form import EventForm
 from core.base.timestamp import Timestamp
 from core.modules.plugins.support.plugin_event import PluginEvent
 from core.modules.plugins.support.plugin_manifest import PluginManifest
@@ -20,3 +21,4 @@ class PluginCall:
     settings: Mapping[str, object]
     agent_id: int | None = None
     file_checkout: Checkout | None = None
+    form: EventForm = EventForm.COMMIT

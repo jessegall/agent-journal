@@ -6,10 +6,12 @@ from core.base.actor_type import ActorType
 
 @dataclass(frozen=True)
 class Caller:
-    """Who runs a command line and where: the actor, and the environment it runs in, if any."""
+    """Who runs a command line and where: the actor, the environment it runs in, if any, and the plugin whose
+    script the line came from, if any."""
 
     actor: Actor
     environment_id: int | None = None
+    plugin_script: str = ""
 
     @property
     def read_actor_id(self) -> int | None:

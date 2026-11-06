@@ -122,7 +122,7 @@ class Console:
             return SUCCESS_CODE
         self.refusal_skips.check_guards(caller.actor, sorted(skipped), arguments.skip_reason)
         newest_event_id = self.events.newest_id()
-        value = self.bus.run(command, caller.actor, skipped, environment_id=environment_id)
+        value = self.bus.run(command, caller.actor, skipped, environment_id=environment_id, plugin_script=caller.plugin_script)
         actor_events = [event for event in self.events.events_past(newest_event_id) if event.actor_id == caller.actor.id]
         command_timestamps = {event.timestamp for event in actor_events if event.command == command.label()}
         output.confirmation = "\n".join(TouchedRows.built(event for event in actor_events if event.timestamp in command_timestamps).lines())

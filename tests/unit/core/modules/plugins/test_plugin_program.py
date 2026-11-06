@@ -9,6 +9,7 @@ import pytest
 
 from core.base.agent_checkouts import AgentCheckouts
 from core.base.journal_home import JournalHome
+from core.base.running_scripts import RunningScripts
 from core.base.timestamp import Timestamp
 from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_event import PluginEvent
@@ -53,7 +54,7 @@ def test_a_late_program_whose_child_keeps_its_output_open_ends_soon_after_its_li
     (folder / "journal-plugin.json").write_text(json.dumps({"name": "late", "title": "Late", "version": "1", "program": "run.sh"}))
     (folder / "run.sh").write_text(DETACHED_CHILD_PROGRAM)
     (folder / "run.sh").chmod(0o755)
-    program = PluginProgram(home, folders, PluginSocketPaths(home), SimpleNamespace(names=lambda agent_id: ()), AgentCheckouts())
+    program = PluginProgram(home, folders, PluginSocketPaths(home), SimpleNamespace(names=lambda agent_id: ()), AgentCheckouts(), RunningScripts())
     call = PluginCall(PluginManifest.read(folder), PluginEvent("idle", {}), "main", Timestamp.parsed("2026-10-31T09:00:00+00:00"), {})
     started = time.monotonic()
     with pytest.raises(PluginLateError):

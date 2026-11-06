@@ -27,7 +27,7 @@ class Bus:
         self.container, self.database, self.registry, self.clock, self.deadline, self.timing, self.scopes = container, database, registry, clock, deadline, timing, scopes
 
     def run(self, command: Command[R], actor: Actor, skipped_guards: frozenset[str] = frozenset(), cause_id: int | None = None,
-            environment_id: int | None = None) -> R:
+            environment_id: int | None = None, plugin_script: str = "") -> R:
         if self.database.has_transaction:
             raise TransactionError(f"{command.label()} was run at the top inside a transaction: dispatch it with the context instead")
         handler = self.handler(command)
