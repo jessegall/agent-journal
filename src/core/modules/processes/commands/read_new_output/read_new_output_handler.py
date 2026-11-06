@@ -20,6 +20,7 @@ class ReadNewOutputHandler(Handler[ReadNewOutput, Output]):
     the run's progress."""
 
     command = ReadNewOutput
+    runs_once = True
 
     def __init__(self, outputs: OutputQuery, rows: EventRows, step: ReaderStep, folder: OutputFolder, repository: Repository) -> None:
         self.outputs, self.rows, self.step, self.folder, self.repository = outputs, rows, step, folder, repository

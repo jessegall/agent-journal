@@ -21,6 +21,7 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
     that clashed."""
 
     command = RecordWorktreeMerge
+    runs_once = True
     disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, rows: EventRows, repository: Repository, nudger: Nudger, advance: WorkerTaskAdvance) -> None:

@@ -140,3 +140,7 @@ def test_a_command_no_handler_carries_out_is_a_clear_fault(container):
 
     with pytest.raises(MissingHandlerError, match="Unhandled"):
         container.get(Bus).run(Unhandled(), AGENT)
+
+
+def test_a_handler_can_run_again_unless_it_says_it_runs_once():
+    assert Handler.runs_once is False

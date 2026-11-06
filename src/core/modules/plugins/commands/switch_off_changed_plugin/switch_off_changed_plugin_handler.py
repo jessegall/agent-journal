@@ -17,6 +17,7 @@ class SwitchOffChangedPluginHandler(Handler[SwitchOffChangedPlugin, Plugin]):
     so in the chat."""
 
     command = SwitchOffChangedPlugin
+    runs_once = True
 
     def __init__(self, queries: Queries, skill_files: PluginSkillFiles, repository: Repository, bus: Bus) -> None:
         self.queries, self.skill_files, self.repository, self.bus = queries, skill_files, repository, bus

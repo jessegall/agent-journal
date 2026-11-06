@@ -24,6 +24,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
     part."""
 
     command = StartProcess
+    runs_once = True
 
     def __init__(self, repository: Repository, folder: OutputFolder, readers: ReaderRows, requests: ReaderRequests, slots: RunSlots, visibility: PartVisibility, rows: EventRows) -> None:
         self.repository, self.folder, self.readers = repository, folder, readers

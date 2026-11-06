@@ -15,6 +15,7 @@ class SwitchPluginHandler(Handler[SwitchPlugin, Plugin]):
     they are now."""
 
     command = SwitchPlugin
+    runs_once = True
 
     def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_files: PluginSkillFiles, repository: Repository) -> None:
         self.plugins, self.folders, self.skill_files, self.repository = plugins, folders, skill_files, repository

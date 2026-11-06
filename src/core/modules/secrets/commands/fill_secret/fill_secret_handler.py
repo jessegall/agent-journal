@@ -17,6 +17,7 @@ class FillSecretHandler(Handler[FillSecret, FilledField]):
     types a value, and a value from a file is read and the file deleted, an empty one too."""
 
     command = FillSecret
+    runs_once = True
 
     def __init__(self, secrets: SecretQuery, repository: Repository, values: SecretValues) -> None:
         self.secrets, self.repository, self.values = secrets, repository, values

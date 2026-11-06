@@ -12,6 +12,7 @@ class EndAgentHandler(Handler[EndAgent, Agent]):
     """Marks a session ended while retaining its process identity for safe resume checks."""
 
     command = EndAgent
+    runs_once = True
 
     def __init__(self, rows: EventRows, repository: Repository, suites: SuiteChoice) -> None:
         self.rows, self.repository, self.suites = rows, repository, suites

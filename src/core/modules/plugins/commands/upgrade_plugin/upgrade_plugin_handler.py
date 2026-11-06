@@ -30,6 +30,7 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
     server's next round of services, which sees the plugin's new digest."""
 
     command = UpgradePlugin
+    runs_once = True
 
     def __init__(self, plugins: PluginQuery, folders: PluginFolders, staging: PluginStaging, steps: PluginInstallSteps, repository: Repository, skill_files: PluginSkillFiles, readers: PluginReaders, code_diff: PluginCodeDiff) -> None:
         self.plugins, self.folders, self.staging, self.steps, self.repository, self.skill_files, self.readers, self.code_diff = plugins, folders, staging, steps, repository, skill_files, readers, code_diff

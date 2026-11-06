@@ -11,6 +11,7 @@ class RecordWorktreeRemovalHandler(Handler[RecordWorktreeRemoval, Worktree]):
     """Moves a merged worktree's row to removed once git has taken its folder away."""
 
     command = RecordWorktreeRemoval
+    runs_once = True
     disabled_scopes = [ActorScope]
 
     def __init__(self, rows: EventRows, repository: Repository) -> None:

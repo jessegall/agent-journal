@@ -43,6 +43,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     back by itself; a tick's lines wait for the agent's next hook."""
 
     command = RecordHookCall
+    runs_once = True
 
     def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository, choice: SuiteChoice,
                  history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows) -> None:
