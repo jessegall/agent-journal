@@ -3,8 +3,9 @@ import {chromium} from "playwright-core";
 
 const [address, captures] = process.argv.slice(2);
 const browser = await chromium.launch({headless: true, executablePath: process.env.CHROMIUM_PATH});
+let page;
 try {
-    const page = await browser.newPage({viewport: {width: 1440, height: 1000}});
+    page = await browser.newPage({viewport: {width: 1440, height: 1000}});
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.emulateMedia({colorScheme: "light"});
@@ -61,6 +62,12 @@ try {
     await skills.getByRole("button", {name: "Yes, end it", exact: true}).click();
     await skills.getByText("No triggers yet.", {exact: false}).waitFor();
     assert.deepEqual(errors, []);
+} catch (error) {
+    if (page) {
+        process.stderr.write(`${await page.locator("body").innerText()}\n`);
+        await page.screenshot({path: `${captures}-failure.png`, animations: "disabled"});
+    }
+    throw error;
 } finally {
     await browser.close();
 }
