@@ -186,13 +186,13 @@ func (journal CommandJournal) TellMenuAnswer(agentID int, question, answer strin
 }
 
 // TellProgramExit tells the journal a program it asked for has exited; an older journal ends the row by its idle rule.
-func (journal CommandJournal) TellProgramExit(agentID, exitCode int) {
-	_, _ = journal.Run("agent", "exited", strconv.Itoa(agentID), strconv.Itoa(exitCode))
+func (journal CommandJournal) TellProgramExit(agentID, exitCode, pid int) {
+	_, _ = journal.Run("agent", "exited", strconv.Itoa(agentID), strconv.Itoa(exitCode), "--pid", strconv.Itoa(pid))
 }
 
 // TellLaunchEnded tells the journal a program was stopped because the launch that ran it ended.
-func (journal CommandJournal) TellLaunchEnded(agentID, exitCode int) {
-	_, _ = journal.Run("agent", "exited", strconv.Itoa(agentID), strconv.Itoa(exitCode), "--launch-ended")
+func (journal CommandJournal) TellLaunchEnded(agentID, exitCode, pid int) {
+	_, _ = journal.Run("agent", "exited", strconv.Itoa(agentID), strconv.Itoa(exitCode), "--launch-ended", "--pid", strconv.Itoa(pid))
 }
 
 // HookTrustLine is the one line a Codex launch prints when Codex does not trust the journal's hooks yet, or no longer.

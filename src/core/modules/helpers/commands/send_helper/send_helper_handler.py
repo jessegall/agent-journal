@@ -1,3 +1,4 @@
+from core.base.provider.providers import Providers
 from core.base.command.context import Context
 from dataclasses import replace
 from core.base.command.handler import Handler
@@ -23,10 +24,11 @@ class SendHelperHandler(Handler[SendHelper, int]):
 
     command = SendHelper
 
-    def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobRows, nudger: Nudger, repository: Repository, folders: AgentFolders, sources: WorkSources, scopes: Scopes) -> None:
+    def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobRows, nudger: Nudger, repository: Repository, folders: AgentFolders, sources: WorkSources, scopes: Scopes, providers: Providers) -> None:
         self.reach, self.limits, self.jobs, self.nudger, self.repository, self.folders = reach, limits, jobs, nudger, repository, folders
         self.sources = sources
         self.scopes = scopes
+        self.providers = providers
 
     def handle(self, command: SendHelper, context: Context) -> int:
         helper = self.reach.checked_helper(command.helper_id, context.actor)
@@ -55,3 +57,5 @@ class SendHelperHandler(Handler[SendHelper, int]):
         self.limits.checked_slot(helper.environment_id)
         if not self.folders.has_folder(helper):
             raise Refusal(f"helper {helper.id} worked in a folder that is gone", "start a new helper with --fresh")
+        if not self.providers.provider(helper.program).session_resumes_here(self.folders.folder(helper), helper.session):
+            raise Refusal(f"helper {helper.id}'s session is gone: journal agent retire {helper.id} --reason \"session gone\"", "start a new helper")

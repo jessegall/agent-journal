@@ -8,7 +8,7 @@ from core.testing.hook_samples import HookSamples
 from core.base.driver.tool_type import ToolType
 from tests.stories.core.modules.documents.support.trail_fixtures import SelectedTrail, Trail, feature
 from tests.stories.core.modules.helpers.start_helper import started
-from tests.stories.core.modules.helpers.helper_jobs import the_helper
+from tests.stories.core.modules.helpers.helper_jobs import resumable_session, the_helper
 
 
 class PlannerStarted(StoryFixture):
@@ -58,11 +58,12 @@ def test_helper_followups_keep_separate_request_boundaries(trail):
     trail.expect_no_link("message:1", "plan:2")
 
 
-def test_resumed_helper_does_not_reuse_previous_request(trail):
+def test_resumed_helper_does_not_reuse_previous_request(trail, monkeypatch):
     helper_id = the_helper(trail.story).id
     helper_plan(trail, helper_id, "First sourced helper assignment")
     trail.expect_link("message:2", "plan:2", "about")
     trail.story.expect_success(f"agent end {helper_id}")
+    resumable_session(trail.story, the_helper(trail.story), monkeypatch)
     trail.requested_command("message clear-work-source")
     trail.command(f'helper send {helper_id} "A separate unsourced job"')
     trail.story.hook(the_helper(trail.story).session, HookSamples.session_start())

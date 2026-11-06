@@ -1,3 +1,4 @@
+from core.base.error_log import ErrorLog
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
@@ -27,12 +28,12 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
     command = RecordProgramExit
     transactional = False
 
-    def __init__(self, queries: Queries, jobs: HelperJobRows, providers: Providers, folders: AgentFolders, reasons: ExitReasons, bus: Bus) -> None:
-        self.queries, self.jobs, self.providers, self.folders, self.reasons, self.bus = queries, jobs, providers, folders, reasons, bus
+    def __init__(self, queries: Queries, jobs: HelperJobRows, providers: Providers, folders: AgentFolders, reasons: ExitReasons, bus: Bus, errors: ErrorLog) -> None:
+        self.queries, self.jobs, self.providers, self.folders, self.reasons, self.bus, self.errors = queries, jobs, providers, folders, reasons, bus, errors
 
     def handle(self, command: RecordProgramExit, context: Context) -> None:
         agent = self.queries.query(Agent).find(command.agent_id)
-        if agent.role == AgentRole.MAIN:
+        if agent.role == AgentRole.MAIN or self.is_earlier_run(agent, command):
             return
         actor = Actor(agent.id, ActorType.AGENT)
         job = self.jobs.open_job(agent.id)
@@ -40,6 +41,12 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
             self.report_exit(agent, job, command, actor)
         if agent.ended_at is None:
             self.bus.run(EndAgent(agent.id), actor, environment_id=agent.environment_id)
+
+    def is_earlier_run(self, agent: Agent, command: RecordProgramExit) -> bool:
+        if command.pid is None or agent.pid is None or command.pid == agent.pid:
+            return False
+        self.errors.noted(f"agent {agent.id}: the exit of process {command.pid} changed nothing, since process {agent.pid} runs now")
+        return True
 
     def needs_exit_report(self, agent: Agent) -> bool:
         has_waiting_job = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING, source=HELPER_JOB_SOURCE).exists()

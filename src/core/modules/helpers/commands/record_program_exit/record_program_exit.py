@@ -10,3 +10,4 @@ class RecordProgramExit(Command[None]):
     agent_id: int
     exit_code: int
     launch_ended: bool = False
+    pid: int | None = None

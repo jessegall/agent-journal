@@ -16,6 +16,7 @@ class RecordProgramExitSubcommand(Subcommand[RecordProgramExit, None]):
         parser.add_argument("agent_id", type=int)
         parser.add_argument("exit_code", type=int)
         parser.add_argument("--launch-ended", action="store_true")
+        parser.add_argument("--pid", type=int)
 
     def command(self, arguments: Namespace, caller: Caller) -> RecordProgramExit:
-        return RecordProgramExit(arguments.agent_id, arguments.exit_code, arguments.launch_ended)
+        return RecordProgramExit(arguments.agent_id, arguments.exit_code, arguments.launch_ended, arguments.pid)

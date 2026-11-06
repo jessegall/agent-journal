@@ -230,6 +230,15 @@ class WorktreeGit:
         tip = self.checked(path, GIT_LIMIT_SECONDS, "rev-parse", "HEAD").stdout.strip()
         self.checked(folder, GIT_LIMIT_SECONDS, "update-ref", f"refs/worker-tips/{name}", tip)
 
+    def has_unmerged_branch(self, folder: str, worktree: Worktree) -> bool:
+        exists = self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", f"refs/heads/{worktree.branch}").returncode == 0
+        return exists and not self.is_merged(folder, worktree.base_branch, worktree.branch)
+
+    def has_uncommitted_files(self, worktree: Worktree) -> bool:
+        if not Path(worktree.folder).exists():
+            return False
+        return bool(self.git(worktree.folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.strip())
+
     def is_merged(self, folder: str, base_branch: str, branch: str | None) -> bool:
         if not base_branch or branch is None:
             return False

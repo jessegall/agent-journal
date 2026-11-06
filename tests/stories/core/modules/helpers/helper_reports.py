@@ -10,7 +10,7 @@ from core.modules.messages.models.message import Message
 from core.modules.drivers.ticks.end_silent_helpers_tick import EndSilentHelpersTick
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, StartedHelper, jobs_of, the_helper
+from tests.stories.core.modules.helpers.helper_jobs import resumable_session, EndedHelper, JOB, StartedHelper, jobs_of, the_helper
 from core.modules.helpers.support.helper_settings import HELPER_MAX_COST
 from core.modules.helpers.ticks.helper_limits_tick import HelperLimitsTick
 from tests.stories.core.modules.helpers.read_only_access import StartedCodexHelper
@@ -71,8 +71,9 @@ def test_a_report_to_a_parent_that_ended_for_good_goes_to_the_running_main_agent
     story.expect_text(LINES.format(agent=second.id), "The cart adds tax twice.")
 
 
-def test_a_resumed_helper_reports_its_next_job_the_same_way(new_story):
+def test_a_resumed_helper_reports_its_next_job_the_same_way(new_story, monkeypatch):
     story = new_story(fixture=EndedHelper)
+    resumable_session(story, the_helper(story), monkeypatch)
     story.expect_success(f'helper send {the_helper(story).id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     story.hook(the_helper(story).session, HookSamples.session_start())

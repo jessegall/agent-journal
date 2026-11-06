@@ -13,7 +13,8 @@ from core.base.provider.resumed_session import ResumedSession
 from core.base.provider.session_start import SessionStart
 from core.base.private.private_folder import PrivateFolder
 from core.base.private.server_keys import ServerKeys
-from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
+from core.modules.claude_code.providers.claude_code_provider import CONFIG_VARIABLE, ClaudeCodeProvider
+from core.modules.claude_code.providers.support.claude_folder_name import ClaudeFolderName
 
 
 def test_project_hook_files_include_shared_and_local_settings():
@@ -89,3 +90,14 @@ def test_the_hook_file_runs_the_hook_program_as_the_status_line(provider, tmp_pa
     settings = json.loads((tmp_path / ".claude" / "settings.local.json").read_text())
     assert settings["statusLine"] == {"type": "command", "command": f'"/p/.journal/bin/journal-hook" --status "{tmp_path}"', "padding": 0}
     assert settings["autoMemoryEnabled"] is False
+
+
+def test_a_session_found_under_another_project_does_not_resume_here(provider, tmp_path, monkeypatch):
+    monkeypatch.setenv(CONFIG_VARIABLE, str(tmp_path))
+    project, other = tmp_path / "project", tmp_path / "other"
+    transcript = tmp_path / "projects" / ClaudeFolderName.folder_name(other) / "thread.jsonl"
+    transcript.parent.mkdir(parents=True)
+    transcript.write_text("{}\n")
+    assert provider.transcript(project, "thread") == transcript
+    assert not provider.session_resumes_here(project, "thread")
+    assert provider.session_resumes_here(other, "thread")

@@ -58,3 +58,19 @@ def test_retired_row_stays_retired(new_story):
     story.expect_refusal(f"agent delete {helper.id}", "record stays", actor=story.user)
     story.expect_refusal(f'helper send {helper.id} "One more job"', "retired, for good", actor=story.agent)
     story.expect_rows(the_helper(story).retired_at is not None)
+
+
+def test_session_gone_says_retire(new_story):
+    story = new_story(fixture=EndedHelper)
+    helper = the_helper(story)
+    story.expect_refusal(f'helper send {helper.id} "One more job"', f"journal agent retire {helper.id}", actor=story.agent)
+
+
+def test_old_callback_leaves_the_new_run(new_story):
+    story = new_story(fixture=StartedHelper)
+    helper = the_helper(story)
+    story.expect_success(f"agent edit {helper.id} --pid 4242", actor=story.user)
+    story.expect_success(f"agent exited {helper.id} 0 --pid 1111", actor=story.user)
+    story.expect_rows(the_helper(story).ended_at is None)
+    story.expect_success(f"agent exited {helper.id} 0 --pid 4242", actor=story.user)
+    story.expect_rows(the_helper(story).ended_at is not None)

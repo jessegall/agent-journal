@@ -156,12 +156,12 @@ func launchJournal() launch.CommandJournal {
 }
 
 // programExitReporter says how a program ended, and whether the launch ending is why.
-func programExitReporter(journal launch.CommandJournal, inputs *launch.TerminalInputs) func(agentID, exitCode int) {
-	return func(agentID, exitCode int) {
+func programExitReporter(journal launch.CommandJournal, inputs *launch.TerminalInputs) func(agentID, exitCode, pid int) {
+	return func(agentID, exitCode, pid int) {
 		if inputs.IsClosing() {
-			journal.TellLaunchEnded(agentID, exitCode)
+			journal.TellLaunchEnded(agentID, exitCode, pid)
 			return
 		}
-		journal.TellProgramExit(agentID, exitCode)
+		journal.TellProgramExit(agentID, exitCode, pid)
 	}
 }

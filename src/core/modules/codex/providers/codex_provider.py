@@ -134,6 +134,15 @@ class CodexProvider(Provider):
             return ""
         return CodexSessionEffort(path, "model").read()
 
+    def session_resumes_here(self, project: Path, session: str) -> bool:
+        rollout = self.transcript(project, session)
+        if rollout is None:
+            return False
+        with rollout.open(encoding="utf-8") as lines:
+            header: object = json.loads(next(lines, "{}") or "{}")
+        payload = header.get("payload") if is_mapping(header) else None
+        return is_mapping(payload) and payload.get("cwd") == str(project)
+
     def transcript_row(self, line: str, position: int) -> TranscriptRow | None:
         fields: object = json.loads(line) if line.strip() else {}
         payload = fields.get("payload") if is_mapping(fields) else None
