@@ -1,8 +1,9 @@
 from core.base.skill.skill_contents import SkillContents
-from argparse import SUPPRESS, ArgumentParser, Namespace
+from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
+from core.base.subcommand.positional_or_flag import add_positional_or_flag
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.skill_text import SkillText
@@ -19,9 +20,7 @@ class SkillShowSubcommand(ReadSubcommand[SkillText]):
         self.catalogue = catalogue
 
     def arguments(self, parser: ArgumentParser) -> None:
-        folder = parser.add_mutually_exclusive_group(required=True)
-        folder.add_argument("folder", nargs="?", default=SUPPRESS)
-        folder.add_argument("--folder", dest="folder", default=SUPPRESS)
+        add_positional_or_flag(parser, "folder")
 
     def read(self, arguments: Namespace, caller: Caller) -> SkillText:
         skill = next((entry for entry in self.catalogue.skills() if entry.folder == arguments.folder), None)
