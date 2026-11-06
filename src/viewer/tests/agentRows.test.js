@@ -93,16 +93,16 @@ test("an idle helper's card opens its report", async () => {
     expect(element.textContent).toContain("The review is complete");
 });
 
-test("a card is two lines: the profile, name and time, then the provider, model and type, with no task or instruction", async () => {
+test("a closed card shows the profile, name and status without open-card details", async () => {
     const element = await drawn();
     const card = cardOf(element, 3);
     expect(card.querySelector("[data-agent-title]").textContent).toBe("Researcher");
     expect(card.querySelector("[data-agent-name]").textContent).toBe("Madame Curie");
-    expect(card.querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · helper");
+    expect(card.querySelector("[data-agent-identity]")).toBeNull();
     expect(card.querySelector(".agent-dot").dataset.state).toBe("blocked");
     expect(card.textContent).not.toContain("Running");
     expect(card.querySelector("[data-agent-instruction]")).toBeNull();
-    expect(card.title).toBe("s-sub");
+    expect(card.title).toBe("claude · sonnet · helper");
 });
 
 test("a click opens the card on its instruction with no usage line or Inspect button of its own, and a second closes it", async () => {
@@ -154,11 +154,12 @@ const TASKS = [
 test("the card counts what is completed and lists its tasks when opened, under the state names of the tasks window", async () => {
     const element = await drawn([{...FACTS[0], tasks: TASKS}]);
     let card = cardOf(element, 2);
-    expect(card.querySelector("[data-agent-tasks]").textContent.trim()).toBe("1 of 3 tasks");
+    expect(card.querySelector("[data-agent-tasks]")).toBeNull();
     expect(card.querySelector("[data-agent-delegated]")).toBeNull();
     card.click();
     await settle();
     card = cardOf(element, 2);
+    expect(card.querySelector("[data-agent-tasks]").textContent.trim()).toBe("1 of 3 tasks");
     const labels = [...card.querySelectorAll("[data-agent-section]")].map((section) => `${section.querySelector(".fold-label").textContent.trim()} ${section.querySelector(".fold-count").textContent.trim()}`);
     expect(labels).toEqual(["Started 1", "Blocked 0", "Open 1", "Completed 1"]);
     let rows = [...card.querySelectorAll("[data-agent-delegated]")];
@@ -196,14 +197,14 @@ test("the Completed section of the Tasks tab is folded until a click opens it", 
 
 test("a task in testing does not invent a waiting reason without the server's reason", async () => {
     const element = await drawn([{...FACTS[0], tasks: [{id: 11, title: "Fix the cart", state: "testing"}, {id: 13, title: "Print the receipt", state: "open"}]}]);
-    expect(cardOf(element, 2).querySelector("[data-agent-identity]").textContent).not.toContain("waiting");
+    expect(cardOf(element, 2).textContent).not.toContain("Waiting:");
     expect(cardOf(element, 2).querySelector(".agent-dot").dataset.state).toBe("running");
     expect(cardOf(element, 2).querySelector("[data-agent-waiting]")).toBeNull();
 });
 
 test("a worker with a started task does not say it waits for its tests", async () => {
     const element = await drawn([{...FACTS[0], tasks: TASKS}]);
-    expect(cardOf(element, 2).querySelector("[data-agent-identity]").textContent).not.toContain("Waiting: tests");
+    expect(cardOf(element, 2).textContent).not.toContain("Waiting: tests");
 });
 
 test("a profile title is shown on its agent card", async () => {
@@ -220,6 +221,9 @@ test("a running worker's card names the command it runs", async () => {
     const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null};
     const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([]), "usage tool --agent 4": {ok: true, value: {tool: "Bash make test"}}};
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
+    expect(element.querySelector("[data-agent-command]")).toBeNull();
+    cardOf(element, 4).click();
+    await settle();
     await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("Bash make test"));
 });
 
@@ -227,13 +231,16 @@ test("a running helper's card names the command it runs", async () => {
     const helper = {id: 6, session: "s-1", program: "claude", role: "helper", access: "read-only", ended_at: null};
     const lines = {"agent list": page([helper]), "agent running": page([helper]), "usage agents --closed": page([]), "usage tool --agent 6": {ok: true, value: {tool: "Read src/cart.py", note: ""}}};
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
+    expect(element.querySelector("[data-agent-command]")).toBeNull();
+    cardOf(element, 6).click();
+    await settle();
     await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("Read src/cart.py"));
 });
 
 test("an agent that has just ended reads just now, never now ago", async () => {
     const ended = {id: 6, session: "s-1", program: "claude", role: "helper", ended_at: new Date().toISOString()};
     const element = await mounted({render: () => h(AgentCard, {row: ended})}, context({}));
-    expect(element.querySelector(".agent-time").textContent).toBe("just now");
+    expect(element.querySelector(".agent-time").textContent).toBe("Idle, just now");
 });
 
 test("an open helper has transcript and terminal tabs with its instruction folded", async () => {
@@ -265,7 +272,7 @@ test("an agent's card shows its effort beside its model", async () => {
     const worker = {id: 4, session: "s-worker", program: "codex", role: "worker", ended_at: null};
     const lines = {"usage tool --agent 4": {ok: true, value: {tool: "", note: ""}}};
     const element = await mounted({render: () => h(AgentCard, {row: worker, facts: {model: "gpt-6.1-sol", effort: "medium"}})}, context(lines));
-    expect(element.textContent).toContain("gpt-6.1-sol · medium");
+    expect(element.querySelector("[data-agent-open]").title).toContain("gpt-6.1-sol · medium");
 });
 
 test("a worker that stopped with tasks left shows under Running as waiting, not closed", async () => {
@@ -297,6 +304,8 @@ test("a running helper that ran no command says so plainly", async () => {
     const helper = {id: 6, session: "s-1", program: "claude", role: "helper", ended_at: null};
     const lines = {"agent list": page([helper]), "agent running": page([helper]), "usage agents --closed": page([]), "usage tool --agent 6": {ok: true, value: {tool: "", note: "has run no command yet"}}};
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
+    cardOf(element, 6).click();
+    await settle();
     await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("has run no command yet"));
 });
 
@@ -314,7 +323,7 @@ test("a waiting worker's command line says it waits for its tests", async () => 
     const tasks = [{id: 11, title: "Fix the cart", state: "testing"}, {id: 13, title: "Print the receipt", state: "open"}];
     const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([{id: 4, tasks}]), "worker waits": page([{agent_id: 4, reason: "tests"}]), "usage tool --agent 4": {ok: true, value: {tool: "Bash make test"}}};
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
-    await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("Waiting: tests"));
+    await vi.waitFor(() => expect(element.querySelector("[data-agent-waiting]").textContent.trim()).toBe("Waiting: tests"));
 });
 
 test.each(["merge", "proof check", "tests", "a job"])("a worker card shows the server's waiting reason: %s", async (reason) => {
@@ -348,8 +357,9 @@ test("a worker's card shows its completed tasks per hour", async () => {
     const tasks = [{id: 11, title: "Fix the cart", state: "completed"}, {id: 12, title: "Add the totals", state: "completed"}, {id: 13, title: "Print", state: "started"}];
     const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([{id: 4, tasks}]), "usage tool --agent 4": {ok: true, value: {tool: ""}}};
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
+    cardOf(element, 4).click();
+    await settle();
     expect(element.querySelector("[data-agent-pace]").textContent.trim()).toBe("1 per hour");
-    expect(element.querySelector("[data-agent-foot] [data-agent-pace]")).not.toBeNull();
     expect(element.querySelector("[data-agent-tasks]").parentElement.querySelector("[data-agent-pace]")).toBeNull();
 });
 
@@ -361,6 +371,8 @@ test("worker totals and pace use its current worktree instead of session history
     const progress = {agent_id: 4, started_at: started, finished_at: null, completed_count: 1, task_count: 2};
     const lines = {"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page([{id: 4, tasks}]), "worker progress": page([progress])};
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
+    cardOf(element, 4).click();
+    await settle();
     expect(cardOf(element, 4).querySelector("[data-agent-tasks]").textContent.trim()).toBe("1 of 2 tasks");
     expect(cardOf(element, 4).querySelector("[data-agent-pace]").textContent.trim()).toBe("1 per hour");
 });
@@ -456,8 +468,8 @@ test("a worker's card shows the task it works on as its job and no queued count,
     const tasks = [{id: 1, title: "Add the tax", state: "started"}, {id: 2, title: "Print the receipt", state: "open"}, {id: 3, title: "Ship it", state: "open"}];
     const element = await mounted({render: () => h(AgentCard, {row: worker, facts: {job_enabled: true, task_id: 1, task_title: "Add the tax", tasks}})}, context(lines));
     expect(element.querySelector("[data-agent-job]").textContent).toBe("Add the tax");
-    expect(element.querySelector("[data-agent-identity]").compareDocumentPosition(element.querySelector("[data-agent-job]")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(element.querySelector("[data-agent-job]").parentElement.querySelector("[data-agent-tasks]")).not.toBeNull();
+    expect(element.querySelector("[data-agent-identity]")).toBeNull();
+    expect(element.querySelector("[data-agent-job]").parentElement.querySelector("[data-agent-tasks]")).toBeNull();
     expect(element.textContent).not.toContain("Queued");
     const main = {id: 1, session: "s-main", program: "claude", role: "main", ended_at: null};
     const idle = await mounted({render: () => h(AgentCard, {row: main, facts: {task_id: 1, task_title: "Add the tax", tasks}})}, context(lines));

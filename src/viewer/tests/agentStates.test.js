@@ -1,11 +1,11 @@
 import {h} from "vue";
 import {expect, test, vi} from "vitest";
-import {context, mounted, page, pickButton} from "./support/codingWindowContext.js";
+import {context, mounted, page, pickButton, settle} from "./support/codingWindowContext.js";
 import {agentFilterOptions} from "./support/agentFilterOptions.js";
 import Agents from "../../core/modules/agents/web/src/agents.js";
 
 vi.stubGlobal("matchMedia", () => ({matches: true}));
-const AGENTS = [{}, {id: 3, session: "s-idle", role: "helper", program: "claude"}, {id: 4, session: "s-retired", role: "worker", program: "codex", state: "retired", ended_at: "2026-11-02T10:00:00Z"}];
+const AGENTS = [{}, {id: 3, session: "s-idle", role: "helper", program: "claude"}, {id: 4, session: "s-retired", role: "worker", program: "codex", state: "retired", ended_at: "2026-11-02T10:00:00Z", retired_at: "2026-11-03T10:00:00Z"}];
 const cardOf = (element, id) => element.querySelector(`[data-agent-open="${id}"]`);
 
 test("an older idle agent keeps the details returned on its page", async () => {
@@ -17,6 +17,9 @@ test("an older idle agent keeps the details returned on its page", async () => {
     expect(card.querySelector("[data-agent-name]").textContent).toBe("Lady Lovelace");
     expect(card.querySelector("[data-agent-title]").textContent).toBe("Researcher");
     expect(card.querySelector("[data-agent-job]").textContent).toBe("Read the cart");
+    expect(card.querySelector("[data-agent-report]")).toBeNull();
+    card.click();
+    await settle();
     expect(card.querySelector("[data-agent-report]").textContent).toContain("The cart rounds twice.");
     expect(card.querySelector("[data-agent-last-heard]")).not.toBeNull();
     expect(card.querySelector("[data-agent-resume-reason]").textContent).toContain("cannot resume");
@@ -26,6 +29,9 @@ test("retired agents show their reason and the upgrade count", async () => {
     const retired = {...AGENTS[2], retirement_reason: "Its question is answered"};
     const element = await mounted(Agents, context({"agent cards --options": {ok: true, value: {...agentFilterOptions.value, upgrade_retired: 12}}, "agent cards": page([retired]), "usage agents --closed": page([])}));
     await pickButton(element, "Retired");
+    expect(cardOf(element, retired.id).querySelector(".agent-time").textContent).toContain("Retired,");
+    cardOf(element, retired.id).click();
+    await settle();
     expect(element.querySelector("[data-agent-retirement-reason]").textContent).toContain("Its question is answered");
     expect(element.querySelector("[data-agents-upgrade]").textContent).toBe("Retired during the upgrade: 12");
 });
@@ -33,6 +39,8 @@ test("retired agents show their reason and the upgrade count", async () => {
 test("live usage facts update a card while its page still holds earlier facts", async () => {
     const helper = {...AGENTS[1], facts: {tasks: [], job_returned: "Earlier report"}};
     const element = await mounted(Agents, context({"agent cards --options": agentFilterOptions, "agent cards": page([helper]), "usage agents --closed": page([{id: helper.id, tasks: [], job_returned: "Latest report"}])}));
+    cardOf(element, helper.id).click();
+    await settle();
     expect(cardOf(element, helper.id).querySelector("[data-agent-report]").textContent).toContain("Latest report");
 });
 
