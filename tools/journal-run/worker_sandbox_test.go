@@ -27,7 +27,7 @@ func TestWorkerShellSandbox(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	limit, err := workerReadLimit(worktree, filepath.Join(main, ".journal"))
+	limit, err := workerReadLimit(worktree, filepath.Join(main, ".journal"), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -112,6 +112,40 @@ func TestWorkerSandboxFlag(t *testing.T) {
 	}
 }
 
+func TestTheRulesFolderIsReadableOnlyWhenDeclared(t *testing.T) {
+	folder, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	main := filepath.Join(folder, "main")
+	home := filepath.Join(main, ".journal")
+	worktree := filepath.Join(home, "worktrees", "worker")
+	rules := filepath.Join(main, ".commandments")
+	for _, path := range []string{worktree, rules} {
+		if err := os.MkdirAll(path, 0o700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	holds := func(declared []string) bool {
+		limit, err := workerReadLimit(worktree, home, declared)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, path := range limit.Readable {
+			if path == rules {
+				return true
+			}
+		}
+		return false
+	}
+	if holds(nil) {
+		t.Fatal("the rules folder is readable with nothing declared")
+	}
+	if !holds([]string{rules}) {
+		t.Fatal("a declared rules folder is not readable")
+	}
+}
+
 func TestWorkerReadLimit(t *testing.T) {
 	if runtime.GOOS != "darwin" {
 		t.Skip("the read limit is enforced by the macOS sandbox only so far")
@@ -148,7 +182,7 @@ func TestWorkerReadLimit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	limit, err := workerReadLimit(worktree, home)
+	limit, err := workerReadLimit(worktree, home, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -161,12 +195,12 @@ func TestWorkerReadLimit(t *testing.T) {
 		command.Dir = worktree
 		return command.Run()
 	}
-	for _, path := range []string{filepath.Join(main, "secret.txt"), filepath.Join(sibling, "secret.txt"), "../other-worker/secret.txt"} {
+	for _, path := range []string{filepath.Join(main, "secret.txt"), filepath.Join(sibling, "secret.txt"), "../other-worker/secret.txt", filepath.Join(rules, "config.json")} {
 		if reads(path) == nil {
 			t.Fatalf("a worker read %s", path)
 		}
 	}
-	for _, path := range []string{"own.txt", "linked/lib.txt", filepath.Join(library, "lib.txt"), filepath.Join(rules, "config.json")} {
+	for _, path := range []string{"own.txt", "linked/lib.txt", filepath.Join(library, "lib.txt")} {
 		if err := reads(path); err != nil {
 			t.Fatalf("a worker could not read %s: %v", path, err)
 		}
@@ -194,11 +228,102 @@ func TestWorkerReadLimitOpensALibraryLinkedLowerInTheWorktree(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(gitFolder, worktreeExcludeFile), []byte("/src/viewer/node_modules\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	limit, err := workerReadLimit(worktree, filepath.Join(main, ".journal"))
+	limit, err := workerReadLimit(worktree, filepath.Join(main, ".journal"), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !slices.Contains(limit.Readable, library) {
 		t.Fatalf("the library is not readable: %v", limit.Readable)
+	}
+}
+
+func TestWorkerReadLimitOpensADeclaredFolderAndNeverTheCheckoutItself(t *testing.T) {
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	main, worktree, outside := filepath.Join(root, "main"), filepath.Join(root, "worktree"), filepath.Join(root, "outside")
+	rules := filepath.Join(main, ".rules")
+	for _, folder := range []string{rules, filepath.Join(main, ".journal"), worktree, outside} {
+		if err := os.MkdirAll(folder, 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	linkedOut := filepath.Join(main, "linked-out")
+	if err := os.Symlink(outside, linkedOut); err != nil {
+		t.Fatal(err)
+	}
+	limit, err := workerReadLimit(worktree, filepath.Join(main, ".journal"), []string{rules, main, outside, linkedOut, filepath.Join(main, "missing")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Contains(limit.Readable, rules) {
+		t.Fatalf("the declared folder is not readable: %v", limit.Readable)
+	}
+	for _, wrong := range []string{main, outside, linkedOut, filepath.Join(main, "missing")} {
+		if slices.Contains(limit.Readable, wrong) {
+			t.Fatalf("%s must stay closed: %v", wrong, limit.Readable)
+		}
+	}
+}
+
+func TestReadFoldersVariableIsReadAndCleared(t *testing.T) {
+	t.Setenv(readFoldersVariable, "/project/.rules"+string(os.PathListSeparator)+"/project/.more")
+	if folders := readFolders(); !slices.Equal(folders, []string{"/project/.rules", "/project/.more"}) {
+		t.Fatalf("the folders were misread: %v", folders)
+	}
+	if value, present := os.LookupEnv(readFoldersVariable); present {
+		t.Fatalf("the variable stays set for a run inside this one: %q", value)
+	}
+}
+
+func TestWorkerShellReadsADeclaredFolderAndNotItsNeighbour(t *testing.T) {
+	if runtime.GOOS != "darwin" {
+		t.Skip("the read limit is enforced by the macOS sandbox only so far")
+	}
+	folder, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	main := filepath.Join(folder, "main")
+	home := filepath.Join(main, ".journal")
+	worktree := filepath.Join(home, "worktrees", "worker")
+	declared, more, undeclared := filepath.Join(main, ".rules"), filepath.Join(main, ".more"), filepath.Join(main, ".private")
+	for _, path := range []string{worktree, declared, more, undeclared, filepath.Join(home, "bin")} {
+		if err := os.MkdirAll(path, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(path, "config.json"), []byte("{}"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	program := filepath.Join(home, "bin", "journal-run")
+	if output, err := exec.Command("go", "build", "-o", program, ".").CombinedOutput(); err != nil {
+		t.Fatalf("runner build: %v: %s", err, output)
+	}
+	allowed, err := workerFolders(worktree, home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	limit, err := workerReadLimit(worktree, home, []string{declared, more})
+	if err != nil {
+		t.Fatal(err)
+	}
+	sandbox, err := checkedSandbox(program, allowed, limit)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reads := func(path string) error {
+		command := sandbox.command("cat", filepath.Join(path, "config.json"))
+		command.Dir = worktree
+		return command.Run()
+	}
+	for _, path := range []string{declared, more} {
+		if err := reads(path); err != nil {
+			t.Fatalf("a worker could not read the declared %s: %v", path, err)
+		}
+	}
+	if reads(undeclared) == nil {
+		t.Fatalf("a worker read %s, which no plugin declared", undeclared)
 	}
 }

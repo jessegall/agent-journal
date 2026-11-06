@@ -30,7 +30,8 @@ const (
 // ExitCodeTrailer is the trailer a /cli answer ends with.
 const ExitCodeTrailer = "Journal-Exit-Code"
 
-// CliLimit is how long a command line may run through the server before the client stops waiting.
+// CliLimit is how long the server may stay silent on a command line before the client stops waiting. A line it
+// writes while it waits starts the limit again, so a long wait on a plugin's script goes on.
 var CliLimit = 10 * time.Minute
 
 // DrainLimit is how long a stopping server may take to finish its open requests, as the server's own limit.
@@ -133,14 +134,27 @@ func StopServer(home string, stdout, stderr io.Writer) int {
 // SendCli posts the request, copies the answer's output to stdout as it streams in, and returns the exit code
 // the answer ends with and the HTTP status. The timing is stamped with the given name right before the post and
 // sent in its header. A timeout is never resent: the command may still be running.
+// silenceWriter starts the limit on silence again at each piece of the answer.
+type silenceWriter struct {
+	out   io.Writer
+	timer *time.Timer
+}
+
+func (writer silenceWriter) Write(piece []byte) (int, error) {
+	writer.timer.Reset(CliLimit)
+	return writer.out.Write(piece)
+}
+
 func SendCli(client *http.Client, request CliRequest, requestTiming *timing.Timing, stampName string, stdout, stderr io.Writer) (int, int) {
 	body, err := request.Body()
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return ErrorCode, 0
 	}
-	limit, cancel := context.WithTimeout(context.Background(), CliLimit)
+	limit, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	silence := time.AfterFunc(CliLimit, cancel)
+	defer silence.Stop()
 	post, err := http.NewRequestWithContext(limit, http.MethodPost, "http://journal/cli", bytes.NewReader(body))
 	if err != nil {
 		fmt.Fprintln(stderr, err)
@@ -161,7 +175,7 @@ func SendCli(client *http.Client, request CliRequest, requestTiming *timing.Timi
 		}
 		return ErrorCode, response.StatusCode
 	}
-	if _, err := io.Copy(stdout, response.Body); err != nil {
+	if _, err := io.Copy(silenceWriter{stdout, silence}, response.Body); err != nil {
 		fmt.Fprintf(stderr, "the answer broke off: %v; the command may still be running\n", err)
 		return ErrorCode, response.StatusCode
 	}

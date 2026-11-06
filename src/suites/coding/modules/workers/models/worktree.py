@@ -32,6 +32,9 @@ class Worktree(Removable, EnvironmentScoped, Model):
     logs_read_at: Timestamp | None = None
     merged_at: Timestamp | None = None
     removed_at: Timestamp | None = None
+    commit_before_merge: str = ""
+    commit_after_merge: str = ""
+    merged_task_ids: str = ""
 
     def cut(self, timestamp: Timestamp, actor: Actor, base_commit: str) -> "Worktree":
         return self.moved(WorktreeLifecycle.cut, base_commit=base_commit, cut_at=timestamp)

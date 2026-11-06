@@ -13,10 +13,12 @@ class Handler(Generic[C, R]):
     """Carries out one type of command: reads what it needs through queries and saves through the repository;
     the work outside the database that must be done before its transaction opens, such as a program that
     writes to the journal itself, is done in prepare; a handler that only runs an outside program and saves
-    nothing sets transactional to False, so its wait holds no write lock."""
+    nothing sets transactional to False, so its wait holds no write lock; a handler whose work outside the
+    database cannot be repeated or undone sets runs_once, so nothing rolls its command back to run it again."""
 
     command: ClassVar[type[Command[object]]]
     transactional: ClassVar[bool] = True
+    runs_once: ClassVar[bool] = False
     disabled_scopes: ClassVar[WholeScopes] = ()
 
     def prepare(self, command: C, actor: Actor) -> None:

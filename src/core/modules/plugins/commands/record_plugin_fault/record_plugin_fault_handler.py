@@ -18,5 +18,5 @@ class RecordPluginFaultHandler(Handler[RecordPluginFault, Plugin]):
 
     def handle(self, command: RecordPluginFault, context: Context) -> Plugin:
         plugin = self.queries.query(Plugin).find(command.plugin_id)
-        count = plugin.fault_count + 1
+        count = plugin.fault_count + 1 if command.counts_toward_failing else plugin.fault_count
         return self.repository.save(plugin.changed(last_fault=command.fault, fault_count=count, failing=plugin.failing or count >= FAILING_COUNT), context)

@@ -3,7 +3,24 @@ from core.modules.plugins.migrations.m004_plugin_session import PluginSessionMig
 from core.modules.plugins.migrations.m003_plugin_output_index import PluginOutputIndexMigration
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.plugins.commands.deliver_file_edit.deliver_file_edit_handler import DeliverFileEditHandler
+from core.base.project_reads import ProjectReads
+from core.modules.plugins.guards.plugin_event_guard import PluginEventGuard
+from core.modules.plugins.migrations.m006_plugin_output_environment import PluginOutputEnvironmentMigration
+from core.modules.plugins.commands.prune_plugin_deliveries.prune_plugin_deliveries_handler import PrunePluginDeliveriesHandler
+from core.modules.plugins.ticks.delivery_pruning import DeliveryPruning
+from core.modules.plugins.listeners.plugin_event_listener import PluginEventListener
+from core.modules.plugins.listeners.plugin_wrong_key_mark_listener import PluginWrongKeyMarkListener
+from core.modules.plugins.listeners.system_event_delivery_listener import SystemEventDeliveryListener
+from core.modules.plugins.migrations.m005_plugin_event_deliveries import PluginEventDeliveriesMigration
+from core.modules.plugins.commands.plugin_events.plugin_events_subcommand import PluginEventsSubcommand
+from core.modules.plugins.support.plugin_event_names import PLAIN_EVENTS
+from core.modules.plugins.commands.run_plugin_command.run_plugin_command_handler import RunPluginCommandHandler
+from core.modules.plugins.commands.run_plugin_command.run_plugin_command_subcommand import RunPluginCommandSubcommand
+from core.modules.plugins.commands.plugin_changes.plugin_changes_subcommand import PluginChangesSubcommand
+from core.modules.plugins.commands.plugin_checkout.plugin_checkout_subcommand import PluginCheckoutSubcommand
+from core.modules.plugins.commands.plugin_file.plugin_file_subcommand import PluginFileSubcommand
 from core.modules.plugins.support.plugin_nudges import PLUGIN_NUDGES
+from core.modules.plugins.support.plugin_project_reads import PluginProjectReads
 from core.base.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch
@@ -26,6 +43,7 @@ from core.modules.plugins.commands.enable_plugin.enable_plugin_subcommand import
 from core.modules.plugins.commands.install_plugin.install_plugin_handler import InstallPluginHandler
 from core.modules.plugins.commands.install_plugin.install_plugin_subcommand import InstallPluginSubcommand
 from core.modules.plugins.commands.plugin_record.plugin_record_subcommand import PluginRecordSubcommand
+from core.modules.plugins.commands.plugin_try.plugin_try_subcommand import PluginTrySubcommand
 from core.modules.plugins.commands.plugin_list.plugin_list_subcommand import PluginListSubcommand
 from core.modules.plugins.commands.plugin_settings.plugin_settings_subcommand import PluginSettingsSubcommand
 from core.modules.plugins.commands.plugin_services.plugin_services_subcommand import PluginServicesSubcommand
@@ -80,10 +98,10 @@ class PluginsModule(Module):
               ModelDeclaration(PluginDelivery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PluginOutput, excluded_subcommands=ALL_SUBCOMMANDS),
               ModelDeclaration(PluginQueueFile, excluded_subcommands=ALL_SUBCOMMANDS)]
     moves = [PluginsMove]
-    windows = [WindowDeclaration("plugins.plugins", "Plugins", "plugins.js", WindowLoading.COMPONENT, skeleton=PLUGINS_PLUGINS_SKELETON, search=WindowSearch(PluginSearcher, "Search the plugins"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.PLUGIN, reads=["plugin record", "plugin list", "plugin settings", "plugin services", "plugin preview", "plugin latest", "plugin dashboard", "plugin dashboards", "plugin descriptions"],
+    windows = [WindowDeclaration("plugins.plugins", "Plugins", "plugins.js", WindowLoading.COMPONENT, skeleton=PLUGINS_PLUGINS_SKELETON, search=WindowSearch(PluginSearcher, "Search the plugins"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.PLUGIN, reads=["plugin events", "plugin record", "plugin list", "plugin settings", "plugin services", "plugin preview", "plugin latest", "plugin dashboard", "plugin dashboards", "plugin descriptions"],
                                  runs=["plugin upgrade", "plugin enable", "plugin disable", "plugin install", "plugin remove", "plugin configure", "message send"], events=["plugin.*"])]
-    migrations = [PluginSessionMigration, PluginOutputIndexMigration, PluginsTablesMigration, PluginQueueIndexMigration]
-    handlers = [SendPluginStepLineHandler, DeliverFileEditHandler, UpgradePluginHandler, InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler,
+    migrations = [PluginOutputEnvironmentMigration, PluginEventDeliveriesMigration, PluginSessionMigration, PluginOutputIndexMigration, PluginsTablesMigration, PluginQueueIndexMigration]
+    handlers = [PrunePluginDeliveriesHandler, RunPluginCommandHandler, SendPluginStepLineHandler, DeliverFileEditHandler, UpgradePluginHandler, InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler,
                 RecordPluginFaultHandler, ClearPluginFaultsHandler, AddPluginOutputHandler,
                 ClearPluginQueueFileHandler]
     settings = [SettingValue("hold_window_ms", "Plugin answer limit", "The most milliseconds a plugin may take to answer an event it holds before the agent goes on.",
@@ -91,8 +109,12 @@ class PluginsModule(Module):
                 SettingValue("condition_limit_seconds", "Service condition limit", "The most seconds a plugin service's condition may take before it counts as failed.",
                              SettingType.NUMBER, default=10, scope=SettingScope.PROJECT)]
     driver_rules = [PluginRule]
+    bindings = {ProjectReads: PluginProjectReads}
+    plugin_moments = [*PLAIN_EVENTS.values(), "tool_starting", "command_starting", "file_edited"]
     marks = PLUGIN_MARKS
-    tick_handlers = [TickHandler(TickInterval(seconds=1), PluginCardReading(), "plugin card reading")]
-    listeners = [LoginPathListener, PluginSkillPublishListener, PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]
-    subcommands = [PluginRecordSubcommand, PluginListSubcommand, PluginSettingsSubcommand, PluginServicesSubcommand, UpgradePluginSubcommand, PluginPreviewSubcommand, PluginLatestSubcommand, PluginDashboardSubcommand, PluginDashboardsSubcommand, PluginDescriptionsSubcommand, ProposePluginSubcommand, InstallPluginSubcommand, EnablePluginSubcommand,
+    tick_handlers = [TickHandler(TickInterval(seconds=1), PluginCardReading(), "plugin card reading"),
+                     TickHandler(TickInterval(seconds=24 * 60 * 60), DeliveryPruning(), "plugin delivery pruning", starts_immediately=True)]
+    guards = [PluginEventGuard]
+    listeners = [PluginWrongKeyMarkListener, PluginEventListener, SystemEventDeliveryListener, LoginPathListener, PluginSkillPublishListener, PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]
+    subcommands = [PluginTrySubcommand, PluginEventsSubcommand, RunPluginCommandSubcommand, PluginCheckoutSubcommand, PluginChangesSubcommand, PluginFileSubcommand, PluginRecordSubcommand, PluginListSubcommand, PluginSettingsSubcommand, PluginServicesSubcommand, UpgradePluginSubcommand, PluginPreviewSubcommand, PluginLatestSubcommand, PluginDashboardSubcommand, PluginDashboardsSubcommand, PluginDescriptionsSubcommand, ProposePluginSubcommand, InstallPluginSubcommand, EnablePluginSubcommand,
                    DisablePluginSubcommand, ConfigurePluginSubcommand, RemovePluginSubcommand]

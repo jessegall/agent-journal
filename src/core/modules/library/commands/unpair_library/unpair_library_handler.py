@@ -21,6 +21,7 @@ class UnpairLibraryHandler(Handler[UnpairLibrary, LibraryDisconnection]):
     deletes the copies and the connection; only a person disconnects."""
 
     command = UnpairLibrary
+    runs_once = True
 
     def __init__(self, connections: LibraryConnectionQuery, queries: Queries, repository: Repository, values: SecretValues, certificate: LibraryCertificate) -> None:
         self.connections, self.queries, self.repository, self.values, self.certificate = connections, queries, repository, values, certificate

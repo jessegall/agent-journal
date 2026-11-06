@@ -20,7 +20,8 @@ from core.base.database.database import Database
 from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.database.statement import Statement
 from core.base.listener.commit_listener import CommitListener
-from core.base.listener.commit_listener_runner import CommitListenerRunner
+from core.base.listener.commit_listener_runner import PLUGIN_RUN_ORDER, CommitListenerRunner
+from core.base.performance.performance_state import PerformanceState
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
@@ -138,6 +139,16 @@ class UrgentCounter(CommitListener[Created[Item]]):
         HANDLED.append(f"urgent {logged.row_id}")
 
 
+class PluginCounter(CommitListener[Created[Item]]):
+    """Counts new items on the plugin thread."""
+
+    name = "items.plugin-count"
+    run_order = PLUGIN_RUN_ORDER
+
+    def handle(self, event: Created[Item], logged: LoggedEvent) -> None:
+        HANDLED.append(f"plugin {logged.row_id}")
+
+
 class SlowCounter(CommitListener[Created[Item]]):
     """Adds an item, which raises an event, while it is the listener at work."""
 
@@ -184,6 +195,38 @@ def test_the_urgent_listeners_and_the_ordinary_ones_run_apart(tmp_path):
     assert HANDLED == ["urgent 1", "slow 1", "slow 2"]
     runner.run_urgent()
     assert HANDLED == ["urgent 1", "slow 1", "slow 2", "urgent 2"]
+
+
+def test_the_plugin_listeners_run_apart_and_a_full_run_still_holds_them(tmp_path):
+    container = container_with(tmp_path, PluginCounter, UrgentCounter)
+    runner = container.get(CommitListenerRunner)
+    runner.run()
+    container.get(Bus).run(MakeItem(title="Dune"), AGENT)
+    runner.run_urgent()
+    runner.run_ordinary()
+    assert HANDLED == ["urgent 1"]
+    runner.run_plugin_deliveries()
+    assert HANDLED == ["urgent 1", "plugin 1"]
+    container.get(Bus).run(MakeItem(title="Arrakis"), AGENT)
+    runner.run()
+    assert HANDLED == ["urgent 1", "plugin 1", "urgent 2", "plugin 2"]
+
+
+def test_a_plugin_listener_that_is_behind_leaves_the_start_free_to_finish_and_ordinary_rounds_end(tmp_path, monkeypatch):
+    container = container_with(tmp_path, PluginCounter, UrgentCounter)
+    runner = container.get(CommitListenerRunner)
+    runner.run()
+    container.get(Bus).run(MakeItem(title="Dune"), AGENT)
+    state = container.get(PerformanceState)
+    state.keep_boot_event(container.get(EventLog).newest_id())
+    runner.run_urgent()
+    rounds: list[int] = []
+    run_round = runner.run_round
+    monkeypatch.setattr(runner, "run_round", lambda entries, urgent_entries: rounds.append(1) or run_round(entries, urgent_entries))
+    runner.run_ordinary()
+    assert not state.starting.exists()
+    assert len(rounds) == 1
+    assert cursor(container, PluginCounter.name) < cursor(container, UrgentCounter.name)
 
 
 def test_a_listener_with_nothing_to_handle_does_not_run_the_urgent_listeners_again(tmp_path, monkeypatch):

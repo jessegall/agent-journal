@@ -15,6 +15,7 @@ class SkipReaderRequestHandler(Handler[SkipReaderRequest, ReaderRequest]):
     """Completes a request and releases its queued runs without a reader."""
 
     command = SkipReaderRequest
+    runs_once = True
 
     def __init__(self, requests: ReaderRequestQuery, repository: Repository, writers: ReaderWriters, slots: RunSlots) -> None:
         self.requests, self.repository, self.writers, self.slots = requests, repository, writers, slots

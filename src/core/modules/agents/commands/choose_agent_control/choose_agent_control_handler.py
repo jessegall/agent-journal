@@ -13,6 +13,7 @@ class ChooseAgentControlHandler(Handler[ChooseAgentControl, Agent]):
     not offer is refused."""
 
     command = ChooseAgentControl
+    runs_once = True
 
     def __init__(self, queries: Queries, providers: Providers, typing: TerminalTyping) -> None:
         self.queries, self.providers, self.typing = queries, providers, typing

@@ -174,6 +174,7 @@ def orphaned_process_group(background_build):
         folder.beat(process.id, story.clock.timestamp())
         story.advance(timedelta(seconds=100))
         story.tick('s-1')
+        story.run_listeners()
         yield group
     finally:
         group.kill()
@@ -190,6 +191,7 @@ def reused_process_pid(background_build):
         folder.beat(process.id, story.clock.timestamp())
         story.advance(timedelta(seconds=100))
         story.tick('s-1')
+        story.run_listeners()
         yield story, second
     finally:
         second.kill()
@@ -208,6 +210,7 @@ def orphaned_process_child(background_build):
         folder.beat(process.id, story.clock.timestamp())
         story.advance(timedelta(seconds=100))
         story.tick('s-1')
+        story.run_listeners()
         yield child_pid, leader.stdout
     finally:
         subprocess.run(['kill', '-9', str(child_pid)], capture_output=True, check=False)

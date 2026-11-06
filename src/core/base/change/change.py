@@ -31,6 +31,12 @@ class Change(Generic[M]):
         if self.old_row is None and self.new_row is None:
             raise MissingRowError("a change needs an old row, a new row or both")
 
+    @classmethod
+    def of(cls, event: Changed[M], context: Context) -> "Change[M]":
+        if isinstance(event, Deleted):
+            return cls(event.old_row or event.row, None, context)
+        return cls(event.old_row, event.row, context)
+
     @property
     def row(self) -> M:
         if self.new_row is not None:

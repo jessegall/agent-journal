@@ -37,6 +37,15 @@ const mostOutputVariable = "JOURNAL_RUN_MOST_OUTPUT"
 
 const queueWaitVariable = "JOURNAL_RUN_QUEUE_WAIT"
 
+const readFoldersVariable = "JOURNAL_RUN_READ_FOLDERS"
+
+// readFolders reads the folders of the project a worker's line may read, and clears them.
+func readFolders() []string {
+	folders := filepath.SplitList(os.Getenv(readFoldersVariable))
+	_ = os.Unsetenv(readFoldersVariable)
+	return folders
+}
+
 func queueWait() time.Duration {
 	value := os.Getenv(queueWaitVariable)
 	_ = os.Unsetenv(queueWaitVariable)
