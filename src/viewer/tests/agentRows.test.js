@@ -31,7 +31,7 @@ const AGENTS = [
 
 const FACTS = [
     {id: 2, model: "opus", context_percent: 62, cost_dollars: 1.2, task_id: 7, task_title: "Fix the cart", tasks: [], state: "", profile: "", given_name: "", instruction: ""},
-    {id: 3, model: "sonnet", context_percent: null, cost_dollars: 0, task_id: null, task_title: "", tasks: [], state: "blocked", profile: "journal-researcher", given_name: "Madame Curie", instruction: "Read the cart\nand report"},
+    {id: 3, model: "sonnet", context_percent: null, cost_dollars: 0, task_id: null, task_title: "", tasks: [], state: "blocked", profile: "journal-researcher", profile_title: "Researcher", given_name: "Madame Curie", instruction: "Read the cart\nand report"},
 ];
 // the pane menu's option as the window declares it
 const DEFAULT_OPTIONS = {order: "number"};
@@ -93,7 +93,7 @@ test("an idle helper's card opens its report", async () => {
 test("a card is two lines: the profile, name and time, then the provider, model and type, with no task or instruction", async () => {
     const element = await drawn();
     const card = cardOf(element, 3);
-    expect(card.querySelector("[data-agent-title]").textContent).toBe("Journal-researcher");
+    expect(card.querySelector("[data-agent-title]").textContent).toBe("Researcher");
     expect(card.querySelector("[data-agent-name]").textContent).toBe("Madame Curie");
     expect(card.querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · helper");
     expect(card.querySelector(".agent-dot").dataset.state).toBe("blocked");
@@ -203,9 +203,14 @@ test("a worker with a started task does not say it waits for its tests", async (
     expect(cardOf(element, 2).querySelector("[data-agent-identity]").textContent).not.toContain("Waiting: tests");
 });
 
-test("a profile's name shows with a capital letter", async () => {
+test("a profile title is shown on its agent card", async () => {
+    const element = await drawn([{...FACTS[0], profile: "journal-worker", profile_title: "Worker"}]);
+    expect(cardOf(element, 2).querySelector("[data-agent-title]").textContent).toBe("Worker");
+});
+
+test("a profile without a title shows its name", async () => {
     const element = await drawn([{...FACTS[0], profile: "auditor"}]);
-    expect(cardOf(element, 2).querySelector("[data-agent-title]").textContent).toBe("Auditor");
+    expect(cardOf(element, 2).querySelector("[data-agent-title]").textContent).toBe("auditor");
 });
 
 test("a running worker's card names the command it runs", async () => {
@@ -438,7 +443,7 @@ test.each([["agents", Agents], ["helpers", Helpers]])("the %s window keeps the s
     window.option = () => ({value: "state"});
     const element = await mounted(component, window);
     expect(listed(element)).toEqual([5, 6, 7]);
-    expect(window.reads.filter((line) => line.startsWith("agent cards"))).toHaveLength(1);
+    expect(window.reads.filter((line) => line.startsWith("agent cards") && line !== "agent cards --options")).toHaveLength(1);
     expect(window.reads).not.toContain("agent running");
 });
 
