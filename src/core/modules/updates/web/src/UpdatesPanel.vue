@@ -1,17 +1,21 @@
 <script setup>
-import {computed, ref} from "vue";
-import {Btn, RowList, TextDisplay, WindowRoom, useRows} from "@journal/window-kit";
+import {computed, ref, watch} from "vue";
+import {Btn, RowList, TextDisplay, WindowRoom, useWindow} from "@journal/window-kit";
 
-const releases = useRows("release list", ["release.*"]);
-const standing = ref(null);
-const checkFailure = ref("");
+const window = useWindow();
+const releases = window.props.releases;
+const {failure: checkFailure} = window.props.standing;
+const standing = computed(() => checkFailure.value ? null : window.props.standing.data.value);
 const installing = ref(false);
 const installationRequested = ref(false);
 const installed = computed(() => installationRequested.value && standing.value?.is_current && standing.value?.installation?.step === "finished");
 const notes = ref([]);
 const notesPage = ref(1);
-const lastPage = ref(true);
-const notesFailure = ref("");
+const lastPage = computed(() => window.props.notes.data.value?.is_last_page ?? true);
+const {failure: notesFailure} = window.props.notes;
+watch(() => window.props.notes.data.value, (answer) => {
+    if (answer) notes.value = notesPage.value === 1 ? answer.notes : [...notes.value, ...answer.notes];
+});
 const checkLine = computed(() => {
     if (standing.value) return standing.value.line;
     if (checkFailure.value) return "Release unavailable";
@@ -19,10 +23,7 @@ const checkLine = computed(() => {
 });
 
 async function check() {
-    checkFailure.value = "";
-    const result = await releases.context.read("update check");
-    standing.value = result.ok ? result.value : null;
-    checkFailure.value = result.ok ? "" : result.error;
+    await window.reload("standing");
 }
 
 async function install() {
@@ -35,19 +36,12 @@ async function install() {
 }
 
 async function readNotes(page) {
-    const result = await releases.context.read(`update notes --page ${page}`);
-    notesFailure.value = result.ok ? "" : result.error;
-    if (!result.ok) return;
-    notes.value = [...notes.value, ...result.value.notes];
     notesPage.value = page;
-    lastPage.value = result.value.is_last_page;
+    window.state["notes.page"] = String(page);
+    await window.reload("notes");
 }
 
-const reload = () => window.location.reload();
-
-releases.context.follow(["release.*", "release_install.*"], check);
-check();
-readNotes(1);
+const reload = () => globalThis.location.reload();
 </script>
 
 <template>
