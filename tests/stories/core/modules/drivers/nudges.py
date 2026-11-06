@@ -1,4 +1,5 @@
 import json
+import sqlite3
 
 from datetime import timedelta
 from unittest.mock import patch
@@ -8,6 +9,8 @@ from core.base.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.database.database import Database
 from core.base.driver.command_category import CommandCategory
+from core.base.driver.driver_rules import DriverRules
+from core.base.journal_home import JournalHome
 from core.base.driver.interval import Interval
 from core.base.driver.seconds import Seconds
 from core.base.driver.nudge import Nudge
@@ -175,3 +178,20 @@ def test_a_reader_request_notice_sees_its_last_reminder(new_story):
     with story.container.get(Database).transaction():
         log.write(story.agent.id, RuleAnswers(["lead"], [RuleRecord("sample", "lead", answer.outcome, answer)]), context)
     expect_value(story.container.get(ReaderRequestNotices).has_recent_notice(story.agent.id, 7, story.clock.timestamp()), True)
+
+
+def test_a_hooks_rules_are_asked_with_no_write_lock_held(new_story, monkeypatch):
+    story = new_story(fixture=BuilderWithStartedTask)
+    database, transactions_open = story.container.get(Database), []
+    ask = DriverRules.ask
+
+    def ask_while_another_connection_writes(rules, hook):
+        other = sqlite3.connect(story.container.get(JournalHome).database, timeout=0, autocommit=True)
+        other.execute("BEGIN IMMEDIATE")
+        other.execute("ROLLBACK")
+        other.close()
+        transactions_open.append(database.has_transaction)
+        return ask(rules, hook)
+    monkeypatch.setattr(DriverRules, "ask", ask_while_another_connection_writes)
+    story.expect_hook_allowed("s-1", HookSamples.edit("a.py"))
+    expect_value(transactions_open, [False])
