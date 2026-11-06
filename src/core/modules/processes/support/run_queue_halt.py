@@ -22,14 +22,14 @@ class RunQueueHalt:
 
     @property
     def is_update_waiting(self) -> bool:
-        return ServerRestartState(self.home).is_waiting_for_runs
+        return ServerRestartState(self.home).has_run_lock
 
     @property
     def is_halted(self) -> bool:
         return self.command_halted or self.is_restarting or self.is_update_waiting
 
     @property
-    def kind(self) -> str:
+    def halt_type(self) -> str:
         if self.command_halted:
             return "command"
         if self.is_update_waiting:

@@ -14,7 +14,8 @@ def test_a_coding_module_adds_its_template_to_the_critique_choices(third_party):
     story.expect_text("template list --target plan --purpose critique", "Security review", "Module: acme.review")
     template = next(entry for entry in json.loads(story.run("template list --json").output_text)["rows"] if entry["title"] == "Security review")
     story.expect_success(f'template send {template["id"]} --on=plan:1 --set=agents=2 --set=size="a normal read" --environment main', actor=story.user)
-    story.expect_text("message list", "(Security review), and compile what they find into a report linked to the plan.")
+    story.expect_text("plan comments 1", "(Security review), and compile what they find into a report linked to the plan.")
+    story.expect_absent("message feed", "Security review")
 
 
 def test_a_button_names_its_module_and_requires_a_persons_allowance(third_party, third_party_cookie):

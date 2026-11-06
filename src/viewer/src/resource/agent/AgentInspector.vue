@@ -58,7 +58,7 @@ async function load() {
     loads.value += 1;
 }
 
-useResourceEvents(["agent.*", "task.*", "process.*", "plan.*"], load);
+useResourceEvents(["agent.*", "task.*", "process.*", "plan.*", "hook_call.*"], load);
 onMounted(load);
 </script>
 

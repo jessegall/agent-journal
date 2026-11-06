@@ -116,7 +116,7 @@ func start(options Options, folder Folder, lastPosition int) (*exec.Cmd, error) 
 	command := exec.Command("/bin/sh", append([]string{"-c", `folder=$1; output=$2; shift 2; "$@" >> "$output" 2>&1; printf '%s' "$?" > "$folder/end"`, "journal-run", folder.Path, folder.outputPath(lastPosition)}, arguments...)...)
 	command.Env = journalEnvironment(options.Home)
 	if options.ReadOnlyShell {
-		command.Env = append(command.Env, "TMPDIR="+filepath.Join(folder.Path, "tmp"), "TMP="+filepath.Join(folder.Path, "tmp"), "TEMP="+filepath.Join(folder.Path, "tmp"))
+		command.Env = append(command.Env, "TMPDIR="+filepath.Join(folder.Path, "tmp"), "TMP="+filepath.Join(folder.Path, "tmp"), "TEMP="+filepath.Join(folder.Path, "tmp"), "TMPPREFIX="+filepath.Join(folder.Path, "tmp", "zsh"))
 	}
 	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	if err := command.Start(); err != nil {

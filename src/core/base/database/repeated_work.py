@@ -196,18 +196,17 @@ class RepeatedWork(PointTally):
         return PLACEHOLDER_LIST.sub("?...", " ".join(statement.sql.split()))
 
     @staticmethod
-    def calls() -> list[str]:
-        """The calls that led to the watch, from the outermost: file relative to the source root, line and name."""
+    def stack_calls() -> list[str]:
         frames = [frame for frame in traceback.extract_stack(limit=CALLER_FRAMES) if not frame.filename.endswith(WATCH_FILES)]
         return [f"{os.path.relpath(frame.filename, SOURCE_ROOT)}:{frame.lineno} {frame.name}" for frame in frames]
 
     @classmethod
     def shown_calls(cls) -> str:
-        return "\n".join(f"  {call}" for call in cls.calls()[-SHOWN_CALLS:])
+        return "\n".join(f"  {call}" for call in cls.stack_calls()[-SHOWN_CALLS:])
 
     @classmethod
-    def found(cls, kind: str, subject: str, text: str) -> RepeatedFinding:
-        return RepeatedFinding("|".join([kind, subject, *cls.calls()[-SHOWN_CALLS:]]), f"{text}\n{cls.shown_calls()}")
+    def found(cls, category: str, subject: str, text: str) -> RepeatedFinding:
+        return RepeatedFinding("|".join([category, subject, *cls.stack_calls()[-SHOWN_CALLS:]]), f"{text}\n{cls.shown_calls()}")
 
     def note_command(self, command: str) -> None:
         self.commands[command] += 1

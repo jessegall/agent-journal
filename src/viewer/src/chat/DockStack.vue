@@ -17,7 +17,7 @@ import {rememberedRef} from "../windows/rememberedState.js";
 
 // the items docked at the bottom of the chat, above the composer: a card eases in when it docks and out when it leaves (kit/ChatDock.vue), a leaving item runs a countdown down its top edge, pointing at it holds it,
 // and from three runs they share one row, which dissolves into single cards once fewer than two are still going
-const props = defineProps({items: {type: Array, required: true}, folded: Boolean});
+const props = defineProps({items: {type: Array, required: true}, folded: Boolean, collapsed: Boolean});
 const now = useNow(500);
 const held = ref(new Set());
 const grouped = ref(false);
@@ -52,7 +52,7 @@ const runs = computed(() =>
 );
 const rows = computed(() => docked.value.filter((item) => !runs.value.includes(item) && !isRunItem(item, dockDeclaration)));
 const going = computed(() => runs.value.filter((run) => !isLeaving(run)));
-const shared = computed(() => (grouped.value = groupedRuns(runs.value.length, grouped.value, going.value.length)) && !opened.value);
+const shared = computed(() => (grouped.value = groupedRuns(runs.value.length, grouped.value, going.value.length)) && !opened.value && !props.collapsed);
 
 // a card the person folded or unfolded by hand keeps that, the rest follow the chat's scroll
 const byHand = rememberedRef(`dock-folded:${store.identity?.root || location.host}`, {});
@@ -90,6 +90,7 @@ function release(item) {
                 :class="{timed: isLeaving(item)}"
                 :leaving="isLeaving(item) && !held.has(item.id)"
                 :folded="foldedFor(item)"
+                :collapsed="collapsed"
                 :refusal="refusals[item.id]"
                 @fold="fold(item)"
                 @undock="undock(item, $event)"
@@ -97,7 +98,7 @@ function release(item) {
                 @mouseleave="release(item)"
             />
         </template>
-        <template v-if="grouped && opened">
+        <template v-if="grouped && opened && !collapsed">
             <div key="runs-head" class="dock-runs-head">
                 <span>{{ runs.length }} runs</span>
                 <Btn small bordered aria-expanded="true" data-dock-runs-fold @click="foldRuns">
@@ -112,6 +113,7 @@ function release(item) {
                 :class="{timed: isLeaving(item)}"
                 :leaving="isLeaving(item) && !held.has(item.id)"
                 :folded="foldedFor(item)"
+                :collapsed="collapsed"
                 :refusal="refusals[item.id]"
                 @fold="fold(item)"
                 @undock="undock(item, $event)"

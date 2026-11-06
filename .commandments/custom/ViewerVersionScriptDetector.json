@@ -1,0 +1,40 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "of": "parent",
+                "nameIn": [
+                    "label",
+                    "title",
+                    "hint",
+                    "heading",
+                    "placeholder",
+                    "help",
+                    "line",
+                    "note",
+                    "empty"
+                ]
+            },
+            {
+                "textMatches": "(?i)\\b(?:version\\s*[-.]?\\s*(?:\\d+|one|two|three|four|five|six|seven|eight|nine|ten)|v\\s*\\d+)\\b"
+            }
+        ],
+        "reject": [
+            {
+                "file": "**/upgrade/**"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "description": "A viewer label names a numbered version.",
+        "name": "viewer-version-script",
+        "rule": "Describe the current behaviour without referring to a numbered version, except in an upgrade path.",
+        "skill": "plain-viewer-text"
+    }
+}

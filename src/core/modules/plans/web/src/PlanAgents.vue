@@ -13,7 +13,7 @@ const openAgent = (agent) => peekRef(`agents:${agent.id}`);
 <template>
     <span class="plan-agents" data-plan-agents @click.stop @keydown.enter.stop>
         <template v-if="!named.length">
-            <span class="plan-agents-none" data-plan-agents-none>Agents: none</span>
+            <span class="plan-agents-none" data-plan-agents-none>No agent assigned</span>
         </template>
         <template v-else-if="named.length === 1">
             <button type="button" class="plan-agents-button" :title="`Open ${named[0].name}`" data-plan-agent @click="openAgent(named[0])">Agent: {{ named[0].name }}</button>

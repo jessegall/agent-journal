@@ -91,7 +91,7 @@ async function check(width, height, name) {
     assert.deepEqual([...new Set(cards.bottom)], ["1px"]);
     assert.deepEqual([...new Set(cards.top)], ["0px"]);
     assert.deepEqual([...new Set(cards.titles)], ["nowrap"]);
-    assert.deepEqual([...new Set(cards.agentsText)], ["Agents: none"]);
+    assert.deepEqual([...new Set(cards.agentsText)], ["No agent assigned"]);
     // the agents row runs across the cell, short of it only by the one line on the cell's right
     assert.deepEqual([...new Set(cards.agentsWidth)], [-1]);
     assert.equal(cards.gridLeft, cards.roomLeft);

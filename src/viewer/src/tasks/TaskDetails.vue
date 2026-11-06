@@ -32,7 +32,7 @@ const label = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
                     <p class="note" data-task-openers>Opens by itself when {{ task.openers.join(" or ") }}.</p>
                 </template>
                 <template v-else>
-                    <p class="note">Unblock this task manually when it is ready to continue.</p>
+                    <p class="note">Nothing opens this task automatically. Unblock it when it is ready to continue.</p>
                 </template>
             </section>
         </template>

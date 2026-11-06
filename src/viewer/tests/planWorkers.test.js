@@ -25,7 +25,7 @@ test("a plan card shows the plan, its bar and who has it, in one row for none, o
         expect(row.querySelector("[data-plan-agents]")).not.toBeNull();
         expect(row.textContent).not.toContain("Cart");
     }
-    expect(none.querySelector("[data-plan-agents]").textContent.trim()).toBe("Agents: none");
+    expect(none.querySelector("[data-plan-agents]").textContent.trim()).toBe("No agent assigned");
     expect(one.querySelector("[data-plan-agents]").textContent.trim()).toBe("Agent: Lady Lovelace");
     expect(several.querySelector("[data-plan-agents-list]").textContent.trim()).toBe("Agents: 2");
     document.body.append(element);

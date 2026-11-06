@@ -9,4 +9,4 @@ def test_installing_a_plugin_from_the_plugins_page_answers_with_what_was_install
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         installed = server.viewer_line_value(cookie, {"window": "plugins.plugins", "environment": "main", "line": ["plugin", "install", str(folder), "--yes"]})
-        assert installed == {"installed": True, "name": "sample", "source": str(folder), "title": "Sample", "version": "1.0.0"}, installed
+        story.expect_rows(installed == {"installed": True, "name": "sample", "source": str(folder), "title": "Sample", "version": "1.0.0"})

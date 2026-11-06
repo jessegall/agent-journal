@@ -142,7 +142,7 @@ class ServerFiles:
         if not self.run_lock.is_file():
             return
         text = FileAccess.shared().read(self.run_lock).strip()
-        if not (text.isdigit() and ServerRestartState.is_running(int(text))):
+        if not (text.isdigit() and ServerRestartState.is_running(text)):
             self.clear_run_lock()
 
     def release_lock(self) -> None:

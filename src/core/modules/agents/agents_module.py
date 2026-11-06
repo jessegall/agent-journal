@@ -70,7 +70,7 @@ from core.modules.agents.seeders.agents_seeder import AgentsSeeder
 from core.modules.agents.support.skeletons import AGENTS_AGENTS_SKELETON, AGENTS_HELPERS_SKELETON, AGENTS_TRANSCRIPT_SKELETON
 
 
-CARD_READS = ["agent cards", "usage agents", "usage tool", "agent transcript", "hook-call feed", "task show", "process-part list"]
+CARD_READS = ["agent cards", "agent list", "agent programs", "usage agents", "usage tool", "agent transcript", "hook-call feed", "task show", "process-part list"]
 CARD_EVENTS = ["agent.*", "hook_call.*", "task.*", "process_part.*"]
 CARD_TABS = [WindowTab("tasks", "Tasks", "usage agents", "tasks"), WindowTab("transcript", "Transcript", "agent transcript")]
 

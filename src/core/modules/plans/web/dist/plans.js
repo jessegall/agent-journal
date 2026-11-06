@@ -1,6 +1,6 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-d7d89574f320")) { const style = document.createElement("style"); style.id = "window-styles-d7d89574f320"; style.textContent = ".plan-dock-agents[data-v-8157072c]{display:flex;flex-wrap:wrap;gap:6px;padding:7px 14px 0 36px;align-items:center;color:var(--text-3);font-size:12px}.plan-dock-agent[data-v-8157072c]{padding:0 8px;height:20px;border:1px solid var(--border-2);border-radius:99px;background:none;color:var(--text-2);font:inherit;font-size:11.5px;line-height:20px;cursor:pointer}.plan-dock-phases[data-v-8157072c]{margin:0;padding:4px 14px 5px;list-style:none}.plan-dock-phase[data-v-8157072c]{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;height:24px;font-size:12.5px}.plan-dock-number[data-v-8157072c]{color:var(--text-4);font-family:var(--mono);font-size:11px}.plan-dock-name[data-v-8157072c]{overflow:hidden;color:var(--text-2);text-overflow:ellipsis;white-space:nowrap}.plan-dock-phase.quiet .plan-dock-name[data-v-8157072c]{color:var(--text-4)}.plan-dock-tasks[data-v-8157072c]{color:var(--text-4);font-size:11.5px}.plan-dock-agent[data-v-8157072c]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.plan-dock-phase.current .plan-dock-name[data-v-8157072c]{color:var(--text)}.plan-dock-phase.current .plan-dock-tasks[data-v-8157072c]{color:var(--text-3)}.plan-dock-loading[data-v-8157072c]{margin:8px 36px}.plan-agents[data-v-e922f4c2]{display:flex;align-items:center;min-width:0;height:34px;margin:2px -14px 0;padding:0 14px;border-top:1px solid var(--border-inner);color:var(--text-3);font-size:12px}.plan-agents-none[data-v-e922f4c2]{color:var(--text-4)}.plan-agents-button[data-v-e922f4c2]{display:inline-flex;gap:5px;align-items:center;min-width:0;margin-left:-6px;padding:3px 6px;overflow:hidden;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.plan-agents-button[data-v-e922f4c2]:hover{background:var(--hover);color:var(--text)}.plans[data-v-982919f7]{display:flex;flex-direction:column}.plans-grid[data-v-982919f7]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));margin-right:-1px}.plan[data-v-982919f7]{cursor:pointer;display:flex;flex-direction:column;gap:8px;min-width:0;padding:12px 14px 0;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg)}.plan[data-v-982919f7]:hover{background:var(--raised)}.plan-head[data-v-982919f7]{display:flex;gap:6px;align-items:center;color:var(--text-3);font-size:12px}.plan-state[data-v-982919f7]{margin-left:auto;padding:1px 7px;border:1px solid var(--border-2);border-radius:999px;color:var(--text-2);font-size:11px}.plan-state.started[data-v-982919f7],.plan-state.completed[data-v-982919f7]{border-color:var(--tone-good, var(--green));color:var(--tone-good, var(--green))}.plan-state.blocked[data-v-982919f7]{border-color:var(--tone-warn);color:var(--tone-warn)}.plan-title[data-v-982919f7]{overflow:hidden;font-weight:500;text-overflow:ellipsis;white-space:nowrap}.plan-bar[data-v-982919f7]{display:flex;height:4px;overflow:hidden;border-radius:2px;background:var(--chip)}.plan-bar-fill[data-v-982919f7]{display:block;height:100%;background:var(--accent)}.plan-bar-testing[data-v-982919f7]{display:block;height:100%;background:color-mix(in srgb,var(--accent) 40%,transparent)}.plan-foot[data-v-982919f7],.plans-note[data-v-982919f7]{margin:0;color:var(--text-3);font-size:12px}.plans-note[data-v-982919f7],[data-plans-more][data-v-982919f7]{padding:8px 14px}\n"; document.head.appendChild(style); }
-import { computed as A, ref as f, openBlock as t, createElementBlock as p, withKeys as B, withModifiers as L, toDisplayString as d, Fragment as b, createElementVNode as _, createTextVNode as h, createVNode as k, unref as l, createBlock as $, withCtx as g, renderList as z, createCommentVNode as x, normalizeClass as W, normalizeStyle as N } from "vue";
+if (!document.getElementById("window-styles-a1a769d38784")) { const style = document.createElement("style"); style.id = "window-styles-a1a769d38784"; style.textContent = ".plan-dock-agents[data-v-8157072c]{display:flex;flex-wrap:wrap;gap:6px;padding:7px 14px 0 36px;align-items:center;color:var(--text-3);font-size:12px}.plan-dock-agent[data-v-8157072c]{padding:0 8px;height:20px;border:1px solid var(--border-2);border-radius:99px;background:none;color:var(--text-2);font:inherit;font-size:11.5px;line-height:20px;cursor:pointer}.plan-dock-phases[data-v-8157072c]{margin:0;padding:4px 14px 5px;list-style:none}.plan-dock-phase[data-v-8157072c]{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;height:24px;font-size:12.5px}.plan-dock-number[data-v-8157072c]{color:var(--text-4);font-family:var(--mono);font-size:11px}.plan-dock-name[data-v-8157072c]{overflow:hidden;color:var(--text-2);text-overflow:ellipsis;white-space:nowrap}.plan-dock-phase.quiet .plan-dock-name[data-v-8157072c]{color:var(--text-4)}.plan-dock-tasks[data-v-8157072c]{color:var(--text-4);font-size:11.5px}.plan-dock-agent[data-v-8157072c]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.plan-dock-phase.current .plan-dock-name[data-v-8157072c]{color:var(--text)}.plan-dock-phase.current .plan-dock-tasks[data-v-8157072c]{color:var(--text-3)}.plan-dock-loading[data-v-8157072c]{margin:8px 36px}.plan-agents[data-v-c34d84f7]{display:flex;align-items:center;min-width:0;height:34px;margin:2px -14px 0;padding:0 14px;border-top:1px solid var(--border-inner);color:var(--text-3);font-size:12px}.plan-agents-none[data-v-c34d84f7]{color:var(--text-4)}.plan-agents-button[data-v-c34d84f7]{display:inline-flex;gap:5px;align-items:center;min-width:0;margin-left:-6px;padding:3px 6px;overflow:hidden;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.plan-agents-button[data-v-c34d84f7]:hover{background:var(--hover);color:var(--text)}.plans[data-v-982919f7]{display:flex;flex-direction:column}.plans-grid[data-v-982919f7]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));margin-right:-1px}.plan[data-v-982919f7]{cursor:pointer;display:flex;flex-direction:column;gap:8px;min-width:0;padding:12px 14px 0;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg)}.plan[data-v-982919f7]:hover{background:var(--raised)}.plan-head[data-v-982919f7]{display:flex;gap:6px;align-items:center;color:var(--text-3);font-size:12px}.plan-state[data-v-982919f7]{margin-left:auto;padding:1px 7px;border:1px solid var(--border-2);border-radius:999px;color:var(--text-2);font-size:11px}.plan-state.started[data-v-982919f7],.plan-state.completed[data-v-982919f7]{border-color:var(--tone-good, var(--green));color:var(--tone-good, var(--green))}.plan-state.blocked[data-v-982919f7]{border-color:var(--tone-warn);color:var(--tone-warn)}.plan-title[data-v-982919f7]{overflow:hidden;font-weight:500;text-overflow:ellipsis;white-space:nowrap}.plan-bar[data-v-982919f7]{display:flex;height:4px;overflow:hidden;border-radius:2px;background:var(--chip)}.plan-bar-fill[data-v-982919f7]{display:block;height:100%;background:var(--accent)}.plan-bar-testing[data-v-982919f7]{display:block;height:100%;background:color-mix(in srgb,var(--accent) 40%,transparent)}.plan-foot[data-v-982919f7],.plans-note[data-v-982919f7]{margin:0;color:var(--text-3);font-size:12px}.plans-note[data-v-982919f7],[data-plans-more][data-v-982919f7]{padding:8px 14px}\n"; document.head.appendChild(style); }
+import { computed as A, ref as f, openBlock as t, createElementBlock as p, withKeys as B, withModifiers as S, toDisplayString as d, Fragment as b, createElementVNode as _, createTextVNode as h, createVNode as k, unref as l, createBlock as $, withCtx as g, renderList as z, createCommentVNode as x, normalizeClass as W, normalizeStyle as L } from "vue";
 import { Icon as K, MenuPanel as O, MenuLabel as q, MenuItem as D, peekRef as M, useWindow as F, WindowRoom as G, Skeleton as j, InnerTabs as H, TabBody as J, stateLook as Q, stateLabel as U, Btn as X, afterSkeletonMinimum as Y } from "@journal/window-kit";
 import { _ as V } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const Z = {
@@ -15,9 +15,9 @@ const Z = {
     return (m, s) => (t(), p("span", {
       class: "plan-agents",
       "data-plan-agents": "",
-      onClick: s[3] || (s[3] = L(() => {
+      onClick: s[3] || (s[3] = S(() => {
       }, ["stop"])),
-      onKeydown: s[4] || (s[4] = B(L(() => {
+      onKeydown: s[4] || (s[4] = B(S(() => {
       }, ["stop"]), ["enter"]))
     }, [
       a.value.length ? a.value.length === 1 ? (t(), p("button", {
@@ -70,10 +70,10 @@ const Z = {
           ]),
           _: 1
         }, 8, ["anchor"])) : x("", !0)
-      ], 64)) : (t(), p("span", Z, "Agents: none"))
+      ], 64)) : (t(), p("span", Z, "No agent assigned"))
     ], 32));
   }
-}, ne = /* @__PURE__ */ V(te, [["__scopeId", "data-v-e922f4c2"]]), le = { class: "plans" }, se = {
+}, ne = /* @__PURE__ */ V(te, [["__scopeId", "data-v-c34d84f7"]]), le = { class: "plans" }, se = {
   key: 1,
   class: "plans-note"
 }, oe = {
@@ -82,8 +82,8 @@ const Z = {
 }, ue = { class: "plans-grid" }, de = ["data-row", "onClick", "onKeydown"], pe = { class: "plan-head" }, ie = ["title"], re = { class: "plan-bar" }, ce = { class: "plan-foot" }, ve = 25, _e = {
   __name: "PlanCards",
   setup(w) {
-    var S;
-    const i = F(), a = f((S = i.tabs) == null ? void 0 : S[0]), n = f({ open_total: 0, closed_total: 0, plans: [] }), r = f(""), y = f(!1), m = performance.now(), s = () => a.value.read;
+    var P;
+    const i = F(), a = f((P = i.tabs) == null ? void 0 : P[0]), n = f({ open_total: 0, closed_total: 0, plans: [] }), r = f(""), y = f(!1), m = performance.now(), s = () => a.value.read;
     async function c() {
       const o = a.value, u = n.value.plans.length, v = await i.read(i.shared ? `${i.shared.model} show ${i.shared.id}` : `${s()}${u > ve ? ` --limit ${u}` : ""}`);
       o === a.value && (r.value = v.ok ? "" : v.error, Y(m, () => y.value = !0), v.ok && (n.value = i.shared ? { open_total: 1, closed_total: 0, plans: [{ task_count: 0, completed_count: 0, current_phase: 0, agents: [], ...v.value }] } : v.value));
@@ -101,7 +101,7 @@ const Z = {
     }, C = A(() => n.value.plans), R = A(() => {
       var o;
       return n.value[(o = a.value) == null ? void 0 : o.count_field];
-    }), P = (o, u) => o.task_count ? Math.round(u / o.task_count * 100) : 0;
+    }), N = (o, u) => o.task_count ? Math.round(u / o.task_count * 100) : 0;
     return i.follow(["plan.*", "phase.*", "task.*"], c), c(), (o, u) => (t(), $(l(G), { padding: "0" }, {
       default: g(() => [
         _("div", le, [
@@ -147,12 +147,12 @@ const Z = {
                       _("span", re, [
                         _("span", {
                           class: "plan-bar-fill",
-                          style: N({ width: `${P(e, e.completed_count)}%` })
+                          style: L({ width: `${N(e, e.completed_count)}%` })
                         }, null, 4),
                         _("span", {
                           class: "plan-bar-testing",
                           "data-plan-testing": "",
-                          style: N({ width: `${P(e, e.testing_count)}%` })
+                          style: L({ width: `${N(e, e.testing_count)}%` })
                         }, null, 4)
                       ]),
                       _("span", ce, [

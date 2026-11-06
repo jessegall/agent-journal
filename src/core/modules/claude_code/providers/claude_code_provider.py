@@ -64,6 +64,7 @@ class ClaudeCodeProvider(Provider):
     plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT]
     refusals = {HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.PROMPT: RefusalStyle.BLOCK, HookEventName.STOP: RefusalStyle.BLOCK}
     skills_folder = ".claude/skills"
+
     rewrites = {HookEventName.PRE_TOOL_USE: {"run_in_background": False}}
     refusal_output_tools = [ToolType.SHELL]
     monitor_tool = ToolType.MONITOR
@@ -88,6 +89,9 @@ class ClaudeCodeProvider(Provider):
     def __init__(self, folders: ProgramFolders, keys: ServerKeys) -> None:
         super().__init__(folders)
         self.keys = keys
+
+    def skill_instruction(self, skill: str, path: Path) -> str:
+        return f"load this first with the Skill tool: {skill}"
 
     def session_command(self, launch: Launch) -> LaunchCommand:
         skip = ["--dangerously-skip-permissions"] if launch.skip_prompts else []

@@ -4,6 +4,7 @@ import shutil
 from collections.abc import Sequence
 from pathlib import Path
 
+from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.driver.agent_hook import AgentHook
 from core.base.provider.providers import Providers
@@ -26,6 +27,16 @@ class SkillFiles:
         project = self.projects.agent_folder(hook.agent_id, hook.environment_id)
         path = Path(self.providers.provider(hook.event.program).skills_folder) / folder / SKILL_FILE
         return project / path if hook.role in self.suites.agent_policy().project_skill_roles else path
+
+    def instruction(self, folder: str, hook: AgentHook) -> str:
+        return self.providers.provider(hook.event.program).skill_instruction(folder, self.path(folder, hook))
+
+    def agent_instruction(self, folder: str, agent: Agent) -> str:
+        provider = self.providers.provider(agent.program)
+        path = Path(provider.skills_folder) / folder / SKILL_FILE
+        if agent.role in self.suites.agent_policy().project_skill_roles:
+            path = self.projects.agent_folder(agent.id, agent.environment_id) / path
+        return provider.skill_instruction(folder, path)
 
     def readable(self, folder: str) -> Path:
         return self.readable_paths([folder])[folder]

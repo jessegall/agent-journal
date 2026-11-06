@@ -1,18 +1,10 @@
 from argparse import ArgumentParser, Namespace
-from dataclasses import dataclass
 
 from core.base.caller.caller import Caller
 from core.base.refusal import Refusal
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.triggers.models.enums.trigger_match import TriggerMatch
-
-
-@dataclass(frozen=True)
-class TriggerTrial:
-    """Whether a trigger's words match a sentence, without firing it."""
-
-    matches: bool
-    phrases: tuple[str, ...]
+from core.modules.triggers.support.trigger_trial import TriggerTrial
 
 
 class TryTriggerSubcommand(ReadSubcommand[TriggerTrial]):

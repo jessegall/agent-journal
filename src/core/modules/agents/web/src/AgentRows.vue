@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, onUnmounted, ref, watch} from "vue";
-import {RowList, SearchBar, Segmented, useDeclaredRows, useRows, useWindow} from "@journal/window-kit";
+import {Btn, EmptyState, MenuItem, MenuLabel, RowList, SearchBar, Segmented, useDeclaredRows, useRows, useWindow} from "@journal/window-kit";
 import AgentCard from "./AgentCard.vue";
 
 const SHOWS = [
@@ -11,15 +11,35 @@ const SHOWS = [
 ];
 // `texts` is what the window says when it is empty on each tab, {running, closed, all}, each {title, hint}: what is empty in its own terms and what brings rows
 const props = defineProps({line: {type: String, required: true}, empty: {type: String, required: true}, texts: {type: Object, default: () => ({})}});
-const {rows: facts} = useRows("usage agents --closed", ["agent.*", "task.*"]);
+const {rows: facts} = useRows("usage agents --closed", ["agent.*", "task.*", "hook_call.*", "helper_job.*"]);
 const {rows: waits} = useDeclaredRows("waits");
 const {rows: progress} = useDeclaredRows("progress");
 const progressOf = (row) => progress.value.find((progress) => progress.agent_id === row.id) ?? null;
 const waitReasonOf = (row) => waits.value.find((wait) => wait.agent_id === row.id)?.reason ?? "";
 const show = ref("running");
 const words = ref("");
+const FILTER_KEY = "journal.agents.filters";
+const savedFilters = JSON.parse(localStorage.getItem(FILTER_KEY) || '{"roles":[],"profiles":[],"programs":[]}');
+const filters = ref(savedFilters);
+const filterOptions = ref({roles: [], profiles: []});
+const programs = ref([]);
+const filterCount = computed(() => filters.value.roles.length + filters.value.profiles.length + filters.value.programs.length);
+const toggleFilter = (group, value) => {
+    const values = filters.value[group];
+    filters.value = {...filters.value, [group]: values.includes(value) ? values.filter((item) => item !== value) : [...values, value]};
+};
+const clearFilters = () => { filters.value = {roles: [], profiles: [], programs: []}; };
+const label = (value) => value.slice(0, 1).toUpperCase() + value.slice(1);
+watch(filters, (value) => localStorage.setItem(FILTER_KEY, JSON.stringify(value)));
 
 const context = useWindow();
+async function readFilterOptions() {
+    const [options, installed] = await Promise.all([context.read("agent cards --options"), context.read("agent programs")]);
+    if (options.ok) filterOptions.value = options.value;
+    if (installed.ok) programs.value = installed.value.rows;
+}
+context.follow(["agent.*"], readFilterOptions);
+readFilterOptions();
 const rows = ref([]);
 const failure = ref("");
 const loaded = ref(false);
@@ -28,7 +48,12 @@ const limit = ref(25);
 let latestRead = 0;
 async function load() {
     const turn = ++latestRead;
-    const answer = await context.read(`${props.line} --show ${show.value} --search ${JSON.stringify(words.value)} --limit ${limit.value}`);
+    const selected = [
+        ...filters.value.roles.map((value) => `--role ${JSON.stringify(value)}`),
+        ...filters.value.profiles.map((value) => `--profile ${JSON.stringify(value)}`),
+        ...filters.value.programs.map((value) => `--program ${JSON.stringify(value)}`),
+    ].join(" ");
+    const answer = await context.read(`${props.line} --show ${show.value} --search ${JSON.stringify(words.value)} --limit ${limit.value} ${selected}`);
     if (turn !== latestRead) return;
     rows.value = answer.ok ? answer.value.rows : [];
     failure.value = answer.ok ? "" : answer.error;
@@ -40,7 +65,7 @@ async function older() {
     await load();
     return true;
 }
-watch([show, words], () => {
+watch([show, words, filters], () => {
     limit.value = 25;
     load();
 });
@@ -49,7 +74,7 @@ load();
 const factsOf = (row) => facts.value.find((fact) => fact.id === row.id) ?? null;
 const shown = rows;
 // a search is what makes an empty list mean nothing matches; the tab alone does not
-const searching = computed(() => Boolean(words.value.trim()));
+const searching = computed(() => Boolean(words.value.trim()) || filterCount.value > 0);
 const emptyText = computed(() => props.texts[show.value] ?? {title: props.empty, hint: ""});
 
 // one card is open at a time and takes the whole window: the others are held back, counted on a band at the foot, until it closes or a search starts
@@ -121,11 +146,23 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 
 <template>
     <div ref="agents" :class="['agents', {focused: openRow}]">
-        <SearchBar v-model="words" placeholder="Search agents" data-agents-search>
+        <SearchBar v-model="words" placeholder="Search agents" :menu-count="filterCount" data-agents-search>
+                <template #menu>
+                    <MenuLabel>Kind</MenuLabel>
+                    <MenuItem v-for="role in filterOptions.roles" :key="role" role="menuitemcheckbox" :aria-checked="filters.roles.includes(role)" :checked="filters.roles.includes(role)" :data-filter-role="role" @click="toggleFilter('roles', role)">{{ label(role) }}</MenuItem>
+                    <MenuLabel v-if="filterOptions.profiles.length">Profile</MenuLabel>
+                    <MenuItem v-for="profile in filterOptions.profiles" :key="profile" role="menuitemcheckbox" :aria-checked="filters.profiles.includes(profile)" :checked="filters.profiles.includes(profile)" :data-filter-profile="profile" @click="toggleFilter('profiles', profile)">{{ profile }}</MenuItem>
+                    <MenuLabel>Program</MenuLabel>
+                    <MenuItem v-for="program in programs" :key="program.name" role="menuitemcheckbox" :aria-checked="filters.programs.includes(program.name)" :checked="filters.programs.includes(program.name)" :data-filter-program="program.name" @click="toggleFilter('programs', program.name)">{{ program.title }}</MenuItem>
+                    <MenuItem v-if="filterCount" data-filter-clear @click="clearFilters">Clear filters</MenuItem>
+                </template>
                 <Segmented :options="SHOWS" :value="show" @pick="show = $event" />
         </SearchBar>
         <div ref="list" :class="['agents-view', {'agents-view-open': openRow}]">
-        <RowList :rows="visible" :failure="failure" :loaded="loaded" :more="!openRow && more" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
+        <EmptyState v-if="loaded && !failure && !visible.length && filterCount" title="No agents match the filters" data-filter-empty>
+            <Btn small data-empty-clear @click="clearFilters">Clear filters</Btn>
+        </EmptyState>
+        <RowList v-else :rows="visible" :failure="failure" :loaded="loaded" :more="!openRow && more" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
             <template #default="{row}">
                 <div class="agent-row" :data-agent-row="row.id">
                     <AgentCard :row="row" :facts="factsOf(row)" :progress="progressOf(row)" :wait-reason="waitReasonOf(row)" :open="row.id === openId" @toggle="toggle(row)" />

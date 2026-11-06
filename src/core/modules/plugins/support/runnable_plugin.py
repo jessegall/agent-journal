@@ -6,7 +6,7 @@ from core.modules.plugins.support.plugin_manifest import PluginManifest
 
 @dataclass(frozen=True)
 class RunnablePlugin:
-    """An enabled plugin that is not being upgraded, with its manifest, and whether its files differ from the digest kept when it was installed."""
+    """An enabled plugin not being upgraded, its manifest and whether its files differ from installation."""
 
     plugin: Plugin
     manifest: PluginManifest

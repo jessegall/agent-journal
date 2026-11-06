@@ -12,6 +12,7 @@ import {providerName} from "../domain/agents.js";
 // long it has run, its scheduled jobs, and last how fit and how loaded it is; a window has no place here, only what opens a dropdown
 const props = defineProps({
     agent: {type: Object, default: null},
+    card: Boolean,
     loading: Boolean,
     jobs: {type: Number, default: 0},
     usage: {type: Object, default: () => ({agents: [], windows: []})},
@@ -71,27 +72,27 @@ const uptime = computed(() => {
 </script>
 
 <template>
-    <div class="information" data-information-bar>
+    <div :class="['information', {card}]" data-information-bar>
         <template v-if="agent">
-            <button type="button" class="fact lead" data-fact="agent" :title="`Session ${agent.session}: stop it`" @click="openMenu($event, 'agent')"><Icon name="agents" :size="12" /> {{ providerName(agent.program) }}</button>
+            <button type="button" class="fact lead" :disabled="card" data-fact="agent" :title="`Session ${agent.session}: stop it`" @click="openMenu($event, 'agent')"><Icon name="agents" :size="12" /> {{ providerName(agent.program) }}</button>
             <template v-if="used !== null">
                 <button type="button" class="fact" data-fact="usage" :title="`${used}% of the plan's ${allowance.title} allowance used`" @click="emit('open', 'usage', $event.currentTarget)">
                     <Icon name="clock" :size="12" /> <span class="gauge usage"><span :style="{width: `${used}%`}" /></span> {{ used }}%
                 </button>
             </template>
             <template v-if="context !== null">
-                <button type="button" class="fact" data-fact="context" :title="`Context ${context}% full: clear or compact it`" @click="offers('context') ? openMenu($event, 'context') : emit('open', 'context', $event.currentTarget)">
+                <button type="button" class="fact" :disabled="card" data-fact="context" :title="`Context ${context}% full: clear or compact it`" @click="offers('context') ? openMenu($event, 'context') : emit('open', 'context', $event.currentTarget)">
                     <Icon name="gauge" :size="12" /> <span class="gauge"><span :style="{width: `${context}%`}" /></span> {{ context }}%
                 </button>
             </template>
             <template v-if="model">
-                <button type="button" class="fact" data-fact="model" :title="`${model}: change the model`" @click="offers('model') ? openMenu($event, 'model') : null"><Icon name="model" :size="12" /> {{ model }}</button>
+                <button type="button" class="fact" :disabled="card" data-fact="model" :title="`${model}: change the model`" @click="offers('model') ? openMenu($event, 'model') : null"><Icon name="model" :size="12" /> {{ model }}</button>
             </template>
-            <template v-if="offers('effort')">
-                <button type="button" class="fact" data-fact="effort" title="Reasoning effort: change it" @click="openMenu($event, 'effort')"><Icon name="bolt" :size="12" /> {{ effort }}</button>
+            <template v-if="offers('effort') || (card && effort)">
+                <button type="button" class="fact" :disabled="card" data-fact="effort" title="Reasoning effort: change it" @click="openMenu($event, 'effort')"><Icon name="bolt" :size="12" /> {{ effort }}</button>
             </template>
             <template v-if="cost">
-                <button type="button" class="fact" data-fact="cost" title="The predicted API price of this session: open its breakdown" @click="emit('open', 'cost', $event.currentTarget)">{{ cost }}</button>
+                <button type="button" class="fact" :disabled="card" data-fact="cost" title="The predicted API price of this session: open its breakdown" @click="emit('open', 'cost', $event.currentTarget)">{{ cost }}</button>
             </template>
             <template v-if="uptime">
                 <span class="fact" data-fact="uptime" title="How long this session has run"><Icon name="reminders" :size="12" /> {{ uptime }}</span>
@@ -99,7 +100,7 @@ const uptime = computed(() => {
             <template v-if="branch">
                 <span class="fact" data-fact="branch" title="Current branch"><Icon name="branch" :size="12" /> {{ branch }}</span>
             </template>
-            <button type="button" :class="['fact', {none: !jobs}]" data-fact="jobs" title="Jobs the agent scheduled for itself" @click="emit('open', 'jobs', $event.currentTarget)"><Icon name="clock" :size="12" /> {{ jobs }}</button>
+            <button v-if="!card" type="button" :class="['fact', {none: !jobs}]" data-fact="jobs" title="Jobs the agent scheduled for itself" @click="emit('open', 'jobs', $event.currentTarget)"><Icon name="clock" :size="12" /> {{ jobs }}</button>
             <template v-if="run">
                 <button type="button" class="fact" data-fact="skills" title="View skills read by this agent" @click="openSkills"><Icon name="book" :size="12" /> {{ skillsRead.length }}</button>
             </template>
@@ -171,6 +172,8 @@ const uptime = computed(() => {
     font-size: 12px;
 }
 
+.information.card { flex-wrap: wrap; gap: 8px; padding: 6px 14px; }
+
 @media (max-width: 760px) {
     .information {
         flex-wrap: wrap;
@@ -193,11 +196,13 @@ const uptime = computed(() => {
     white-space: nowrap;
 }
 
-button.fact {
+button.fact:disabled { cursor: default; }
+
+button.fact:not(:disabled) {
     cursor: pointer;
 }
 
-button.fact:hover {
+button.fact:not(:disabled):hover {
     background: var(--hover);
     color: var(--text);
 }
