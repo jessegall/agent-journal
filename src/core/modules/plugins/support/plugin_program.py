@@ -1,4 +1,5 @@
 from core.base.file_access import FileAccess
+from pathlib import Path
 import json
 import os
 import signal
@@ -6,12 +7,14 @@ import subprocess
 from collections.abc import Callable, Mapping
 
 from core.base.agent_checkouts import AgentCheckouts
+from core.base.checkout import Checkout
 from core.base.change.event_log import HIDDEN
 from core.base.journal_home import JournalHome
 from core.base.model.event_form import EventForm
 from core.base.plugin_script_processes import PluginScriptProcesses
 from core.base.script_stop import ScriptStop
 from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.plugins.support.agent_facts import AgentFacts
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_fault_error import PluginFaultError
@@ -41,6 +44,7 @@ class PluginProgram:
 
     def __init__(self, home: JournalHome, folders: PluginFolders, sockets: PluginSocketPaths, skills: LoadedSkills, checkouts: AgentCheckouts, scripts: PluginScriptProcesses, agents: AgentRows) -> None:
         self.home, self.folders, self.sockets, self.skills, self.checkouts, self.scripts, self.agents = home, folders, sockets, skills, checkouts, scripts, agents
+        self.written_settings: dict[Path, str] = {}
 
     def run(self, call: PluginCall, limit_ms: int | None, wait_callback: Callable[[], None] | None = None) -> PluginAnswer:
         manifest = call.manifest
@@ -100,11 +104,15 @@ class PluginProgram:
                 errors = errors.replace(str(value), HIDDEN)
         return f"it ended with code {code}: {errors}" if errors else f"it ended with code {code}"
 
+    def facts(self, agent_id: int | None, file_checkout: Checkout | None) -> AgentFacts:
+        if agent_id is None:
+            return AgentFacts("", (), file_checkout)
+        return AgentFacts(self.agents.find(agent_id).role, tuple(self.skills.names(agent_id)), file_checkout or self.checkouts.checkout(agent_id))
+
     def line(self, call: PluginCall, limit_ms: int | None) -> str:
-        role = self.agents.find(call.agent_id).role if call.agent_id is not None else ""
-        skills = self.skills.names(call.agent_id) if call.agent_id is not None else ()
-        checkout = call.file_checkout or (self.checkouts.checkout(call.agent_id) if call.agent_id is not None else None)
-        return json.dumps({"v": LINE_VERSION, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "role": role, "window_ms": limit_ms, "skills": list(skills), "checkout": checkout.values() if checkout is not None else {}, "data": dict(call.event.data)})
+        facts = call.facts if call.facts is not None else self.facts(call.agent_id, call.file_checkout)
+        checkout = call.file_checkout or facts.checkout
+        return json.dumps({"v": LINE_VERSION, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "role": facts.role, "window_ms": limit_ms, "skills": list(facts.skills), "checkout": checkout.values() if checkout is not None else {}, "data": dict(call.event.data)})
 
     @staticmethod
     def stop(process: "subprocess.Popen[str]") -> None:
@@ -122,8 +130,12 @@ class PluginProgram:
 
     def write_settings(self, plugin_name: str, settings: Mapping[str, object]) -> None:
         data = self.folders.data(plugin_name)
+        file, text = data / SETTINGS_FILE, json.dumps(dict(settings))
+        if self.written_settings.get(file) == text and file.is_file():
+            return
         data.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(data / SETTINGS_FILE, json.dumps(dict(settings)))
+        FileAccess.shared().write(file, text)
+        self.written_settings[file] = text
 
     def environment(self, plugin_name: str, environment: str) -> dict[str, str]:
         passed = {variable: os.environ[variable] for variable in PASSED_VARIABLES if variable in os.environ}

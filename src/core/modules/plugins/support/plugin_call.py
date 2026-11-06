@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from core.base.checkout import Checkout
 from core.base.model.event_form import EventForm
 from core.base.timestamp import Timestamp
+from core.modules.plugins.support.agent_facts import AgentFacts
 from core.modules.plugins.support.plugin_event import PluginEvent
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 
@@ -13,7 +14,7 @@ class PluginCall:
     """One run of a plugin's program: the plugin's manifest, the event, the environment and time it came from,
     the settings the program reads, the agent it came from, which the plugin writes back on what it
     queues, and for an event about a file the checkout that holds the file, which may not be the agent's own.
-    A held call is one a hook waits on, inside a window."""
+    A held call is one a hook waits on, inside a window. The facts of its agent may come with it, read once for a hook."""
 
     manifest: PluginManifest
     event: PluginEvent
@@ -25,3 +26,4 @@ class PluginCall:
     form: EventForm = EventForm.COMMIT
     script: str = ""
     held: bool = False
+    facts: AgentFacts | None = None
