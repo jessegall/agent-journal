@@ -25,7 +25,7 @@ class MakeTextHandler(Handler[MakeText, NewText]):
         text_row = self.repository.save(command.text_model(creator_id=context.actor.id, title=command.title,
                                                      abstract=command.abstract, body=command.body), context)
         if isinstance(text_row, Doc):
-            self.revisions.record(text_row, context)
+            self.revisions.record_standalone(text_row, context)
         for ref in subject_refs:
             self.repository.save(Link(creator_id=context.actor.id, source_model=text_row.model_name, source_id=text_row.id, target_model=ref.model, target_id=ref.row_id,
                                       link_type=LinkType.SUBJECT), context)

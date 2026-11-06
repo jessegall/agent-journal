@@ -71,7 +71,7 @@ class DocumentsMove(VersionFourMove):
     def insert_revision(self, rows: RowInsert, row: sqlite3.Row, doc_id: int, creator_id: int, context: MoveContext) -> int:
         created = row["created_at"] or context.timestamp
         closes_at = Timestamp(datetime.fromtimestamp(row["closes_at"], timezone.utc)).text if row["closes_at"] is not None else created
-        return rows.insert(REVISIONS, {"doc_id": doc_id, "creator_id": creator_id, "number": row["number"], "title": row["title"], "abstract": row["abstract"],
+        return rows.insert(REVISIONS, {"doc_id": doc_id, "creator_id": creator_id, "author_id": creator_id, "number": row["number"], "title": row["title"], "abstract": row["abstract"],
                                        "body": row["body"] or "", "change": row["change"] or "", "closes_at": closes_at, "created_at": created,
                                        "updated_at": row["updated_at"] or created})
 

@@ -4,8 +4,8 @@ import Btn from "../../kit/Btn.vue";
 import {lineDiff} from "../../domain/lineDiff.js";
 
 // a document's revisions: each with what changed; the one opened shows its difference from the current text and can be made the current text again
-const props = defineProps({id: {type: Number, required: true}, revisions: {type: Array, required: true}, text: {type: String, default: ""}, read: {type: Function, required: true}});
-const emit = defineEmits(["restored"]);
+const props = defineProps({id: {type: Number, required: true}, revisions: {type: Array, required: true}, text: {type: String, default: ""}, read: {type: Function, required: true}, editing: Boolean});
+const emit = defineEmits(["restored", "close-revision"]);
 const opened = ref(null);
 const failure = ref("");
 const lines = computed(() => (opened.value ? lineDiff(opened.value.body, props.text) : []));
@@ -25,9 +25,12 @@ async function restore() {
 
 <template>
     <div class="document-tab" data-document-revisions>
+        <template v-if="editing">
+            <Btn small bordered data-close-revision @click="emit('close-revision')">Close the open revision</Btn>
+        </template>
         <template v-if="revisions.length">
             <template v-for="row in revisions" :key="row.number">
-                <Btn variant="text" :data-text-revision="row.number" @click="open(row)">Revision {{ row.number }}: {{ row.change || row.created_at }}</Btn>
+                <Btn variant="text" :data-text-revision="row.number" @click="open(row)">Revision {{ row.number }}: {{ row.change }} · {{ row.author_name }} · <time :datetime="row.created_at">{{ row.created_at.slice(0, 16).replace("T", " ") }}</time></Btn>
             </template>
             <template v-if="failure">
                 <p class="revision-failure" role="alert" data-text-revision-failure>{{ failure }}</p>

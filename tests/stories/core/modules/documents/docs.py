@@ -118,5 +118,5 @@ def test_an_abstract_edit_of_an_old_text_with_a_fault_is_not_refused(new_story):
 
 def test_a_document_is_closed_only_with_the_reason_it_needs_no_action(new_story):
     story = doc_story(new_story)
-    story.expect_refusal('doc close 1 --why ""', 'doc 1 is closed only with the reason it needs no action: --why "<why>"', actor=story.user)
-    story.expect_success('doc close 1 --why "only reference"', "doc 1 closed: only reference", actor=story.user)
+    story.expect_refusal('doc settle 1 --why ""', 'doc 1 is closed only with the reason it needs no action: --why "<why>"', actor=story.user)
+    story.expect_success('doc settle 1 --why "only reference"', "doc 1 closed: only reference", actor=story.user)
