@@ -5,6 +5,7 @@ import subprocess
 from core.base.database.database import Database
 from core.modules.processes.migrations.m054_vitest_listing_counts import VitestListingCountsMigration
 from core.modules.processes.migrations.m055_vitest_summary_counts import VitestSummaryCountsMigration
+from core.modules.processes.support.count_command import CountCommand
 from core.modules.processes.support.stock_reader import STOCK_READERS
 
 VITEST = next(reader for reader in STOCK_READERS if reader.name == "vitest")
@@ -42,6 +43,20 @@ def test_the_count_command_counts_the_tests_a_quoted_alternation_selects(tmp_pat
     tool = tmp_path / "tool"
     tool.write_text("#!/bin/sh\n[ \"$1 $2\" = \"list -t\" ] && printf '%s\\n' 'a.test.js > one' 'a.test.js > two' 'b.test.js > three' | grep -E \"$3\"\n")
     tool.chmod(0o755)
-    line = VITEST.count_command.replace("{part}", f"{tool} run -t 'one|two' --reporter=dot")
+    line = CountCommand.filled(VITEST.count_command, f"{tool} run -t 'one|two' --reporter=dot")
     listed = subprocess.run(["sh", "-c", line], capture_output=True, text=True, check=True).stdout
     assert re.search(VITEST.count, listed.strip()).group(1) == "2"
+
+
+def test_the_count_command_counts_the_tests_a_text_with_an_apostrophe_selects(tmp_path):
+    tool = tmp_path / "tool"
+    tool.write_text("#!/bin/sh\n[ \"$1 $2\" = \"list -t\" ] && printf '%s\\n' 'a.test.js > it'\"'\"'s one' 'a.test.js > two' 'b.test.js > it'\"'\"'s three' | grep -F -- \"$3\"\n")
+    tool.chmod(0o755)
+    part = f'{tool} run -t "it\'s" --reporter=dot'
+    line = CountCommand.filled(VITEST.count_command, part)
+    listed = subprocess.run(["sh", "-c", line], capture_output=True, text=True, check=True).stdout
+    assert re.search(VITEST.count, listed.strip()).group(1) == "2"
+
+
+def test_a_command_that_holds_the_part_unquoted_runs_it_as_the_line_itself():
+    assert CountCommand.filled("{part} --collect-only -q", "pytest tests/a.py") == "pytest tests/a.py --collect-only -q"
