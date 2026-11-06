@@ -1,5 +1,6 @@
 from core.base.agent_role import AgentRole
 from core.base.database.kept_rows import KeptRows
+from core.base.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
@@ -7,13 +8,16 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.drivers.models.helper_job import HelperJob
 
+FULL_SESSION_PERCENT = 80
+
 
 class KeptHelpers:
     """Reads the idle helpers of a profile that can take a new job: not retired, process ended, no open job, on the
-    program and model asked for, and with a session that resumes in its folder. The newest comes first."""
+    program and model asked for, with a session that resumes in its folder and is not nearly full. The newest comes
+    first."""
 
-    def __init__(self, queries: Queries, providers: Providers, folders: AgentFolders, kept_rows: KeptRows) -> None:
-        self.queries, self.providers, self.folders, self.kept_rows = queries, providers, folders, kept_rows
+    def __init__(self, queries: Queries, providers: Providers, folders: AgentFolders, kept_rows: KeptRows, home: JournalHome) -> None:
+        self.queries, self.providers, self.folders, self.kept_rows, self.home = queries, providers, folders, kept_rows, home
 
     def with_open_jobs(self, profile: str) -> set[int | None]:
         return self.kept_rows.read("helper_jobs", lambda: {job.helper_id for job in self.queries.query(HelperJob).filter(profile=profile).matching(IsNull("ended_at")).all_rows()},
@@ -27,4 +31,7 @@ class KeptHelpers:
     def can_take_a_job(self, helper: Agent, open_jobs: set[int | None], program: str, model: str) -> bool:
         if helper.ended_at is None or helper.id in open_jobs or (program and helper.program != program) or (model and helper.program_model != model):
             return False
-        return self.providers.provider(helper.program).session_resumes_here(self.folders.folder(helper), helper.session)
+        provider = self.providers.provider(helper.program)
+        if not provider.session_resumes_here(self.folders.folder(helper), helper.session):
+            return False
+        return (provider.context_percent(self.home, helper.session) or 0) < FULL_SESSION_PERCENT

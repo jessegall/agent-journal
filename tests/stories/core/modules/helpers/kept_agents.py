@@ -1,3 +1,4 @@
+from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.modules.agents.support.agent_type_limits import AgentTypeLimits, TypeLimits
@@ -150,3 +151,13 @@ def test_an_idle_helper_on_another_model_or_with_its_session_gone_is_not_offered
     story.expect_rows(kept.idle("journal-researcher", "", "") == ())
     resumable_session(story, helper, monkeypatch)
     story.expect_rows(kept.idle("journal-researcher", "", "")[0].id == helper.id, kept.idle("journal-researcher", "", "another-model") == ())
+
+
+def test_a_nearly_full_session_is_not_offered(new_story, monkeypatch):
+    story = new_story(fixture=EndedHelper)
+    helper = helper_agent(story)
+    resumable_session(story, helper, monkeypatch)
+    kept = story.container.get(KeptHelpers)
+    story.expect_rows(kept.idle("journal-researcher", "", "")[0].id == helper.id)
+    monkeypatch.setattr(ClaudeCodeProvider, "context_percent", lambda provider, home, session: 80)
+    story.expect_rows(kept.idle("journal-researcher", "", "") == ())
