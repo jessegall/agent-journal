@@ -4,6 +4,7 @@ from core.base.command.context import Context
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.documents.models.link import Link
+from core.modules.documents.models.link_correction import LinkCorrection
 from core.modules.documents.support.row_ref import RowRef
 
 
@@ -15,6 +16,12 @@ class RowLinkWriter:
 
     def save(self, link: Link, context: Context) -> Link:
         return self.save_many((link,), context)[0]
+
+    def save_automatic(self, links: Sequence[Link], context: Context) -> tuple[Link, ...]:
+        allowed = tuple(link for link in links if not self.queries.query(LinkCorrection).filter(
+                        source_model=link.source_model, source_id=link.source_id, target_model=link.target_model,
+                        target_id=link.target_id, link_type=link.link_type).exists())
+        return self.save_many(allowed, context)
 
     def save_many(self, links: Sequence[Link], context: Context) -> tuple[Link, ...]:
         sources = dict.fromkeys(RowRef(link.source_model, link.source_id) for link in links)

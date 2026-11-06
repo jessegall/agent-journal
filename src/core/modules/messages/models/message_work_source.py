@@ -19,3 +19,4 @@ class MessageWorkSource(EnvironmentScoped, Model):
     origin: WorkSourceOrigin = WorkSourceOrigin.CLEAR
     provisional: bool = False
     used: bool = False
+    selection_number: int = 1

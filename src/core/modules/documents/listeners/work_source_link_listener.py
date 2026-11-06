@@ -45,7 +45,7 @@ class WorkSourceLinkListener(SaveListener[Created[Task] | Updated[Task] | Create
         if selected is None or selected.message_id is None or not self.sources.is_available(selected, context):
             return
         relations = (LinkType.SUBJECT,) if isinstance(event, Created) else (LinkType.SUBJECT, LinkType.EDITED)
-        self.links.save_many(tuple(Link(creator_id=context.actor.id, source_model=Message.model_name, source_id=selected.message_id,
+        self.links.save_automatic(tuple(Link(creator_id=context.actor.id, source_model=Message.model_name, source_id=selected.message_id,
                                         target_model=row.model_name, target_id=row.id, link_type=relation) for relation in relations), context)
         self.sources.use_snapshot(selected, context)
 

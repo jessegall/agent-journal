@@ -1,4 +1,5 @@
 from core.base.command.context import Context
+from core.base.caller.caller import Caller
 from core.base.database.kept_rows import KeptRows
 from core.base.query.conditions.has_value import HasValue
 from core.base.query.queries import Queries
@@ -15,7 +16,7 @@ class WorkerTaskSources(AssignedWorkSources):
     def __init__(self, worktrees: WorktreeQuery, queries: Queries, kept: KeptRows) -> None:
         self.worktrees, self.queries, self.kept = worktrees, queries, kept
 
-    def current(self, context: Context) -> WorkSourceSnapshot | None:
+    def current(self, context: Context | Caller) -> WorkSourceSnapshot | None:
         worktree = self.worktrees.worker_worktree(context.actor.id)
         if worktree is None:
             return None
@@ -27,4 +28,5 @@ class WorkerTaskSources(AssignedWorkSources):
                                 "worktree_id = ? AND task_id = ? AND started_at IS NOT NULL", [worktree.id, worktree.task_id], name="workers.current-task-source")
         if source is None:
             return WorkSourceSnapshot(None, 0, worktree.environment_id)
-        return WorkSourceSnapshot(source.source_message_id, source.source_version, source.environment_id, source.source_unavailable)
+        return WorkSourceSnapshot(source.source_message_id, source.source_version, source.environment_id, source.source_unavailable,
+                                  selecting_actor_id=source.creator_id)

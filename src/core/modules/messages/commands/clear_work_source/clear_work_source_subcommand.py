@@ -20,4 +20,4 @@ class ClearWorkSourceSubcommand(Subcommand[ClearWorkSource, None]):
         return ClearWorkSource()
 
     def write_output(self, value: object, output: Output) -> None:
-        output.line("work source cleared")
+        output.line("request selection: none (cleared)")

@@ -9,3 +9,5 @@ class WorkSourceSnapshot:
     version: int
     environment_id: int
     unavailable: bool = False
+    selecting_actor_id: int | None = None
+    origin: str = "job snapshot"

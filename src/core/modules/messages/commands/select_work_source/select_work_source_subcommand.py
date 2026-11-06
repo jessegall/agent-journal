@@ -22,4 +22,5 @@ class SelectWorkSourceSubcommand(Subcommand[SelectWorkSource, MessageWorkSource]
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, MessageWorkSource):
-            output.write(f"working from message {value.message_id}", output.values(value))
+            output.write(f"request selection: message:{value.message_id}\nselecting actor: agent:{value.agent_id}\n"
+                         f"environment: {value.environment_id}\norigin: {value.origin}", output.values(value))

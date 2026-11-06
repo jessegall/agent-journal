@@ -1,4 +1,5 @@
 from core.base.actor_type import ActorType
+from core.base.caller.caller import Caller
 from core.base.command.context import Context
 from core.base.database.kept_rows import KeptRows
 from core.base.query.queries import Queries
@@ -25,7 +26,7 @@ class WorkSources:
         self.kept = kept
         self.jobs, self.assignments, self.agents = jobs, assignments, agents
 
-    def current(self, context: Context) -> MessageWorkSource | None:
+    def current(self, context: Context | Caller) -> MessageWorkSource | None:
         return self.kept.read("message_work_sources",
                               lambda: self.queries.query(MessageWorkSource).filter(agent_id=context.actor.id, environment_id=context.environment_id).first(),
                               "agent_id = ? AND environment_id = ?", [context.actor.id, context.environment_id], name="messages.work-source")
@@ -43,7 +44,8 @@ class WorkSources:
         selected = self.current(context)
         provisional = origin is WorkSourceOrigin.READ
         if selected is not None:
-            return self.repository.update(selected, context, message_id=message.id, origin=origin, provisional=provisional, used=False)
+            return self.repository.update(selected, context, message_id=message.id, origin=origin, provisional=provisional,
+                                          used=False, selection_number=selected.selection_number + 1)
         return self.repository.save(MessageWorkSource(creator_id=context.actor.id, agent_id=context.actor.id,
                                                      environment_id=context.environment_id, message_id=message.id,
                                                      origin=origin, provisional=provisional), context)
@@ -76,7 +78,7 @@ class WorkSources:
             return
         self.repository.update(selected, context, used=True, provisional=False)
 
-    def for_work(self, context: Context) -> WorkSourceSnapshot | None:
+    def for_work(self, context: Context | Caller) -> WorkSourceSnapshot | None:
         if context.actor.type is not ActorType.AGENT or self.agents.find(context.actor.id).ended_at is not None:
             return None
         assigned = self.assignments.current(context)
@@ -84,11 +86,13 @@ class WorkSources:
             return assigned
         job = self.jobs.open_job(context.actor.id)
         if job is not None:
-            return WorkSourceSnapshot(job.source_message_id, job.source_version, job.environment_id, job.source_unavailable)
+            return WorkSourceSnapshot(job.source_message_id, job.source_version, job.environment_id, job.source_unavailable,
+                                      selecting_actor_id=job.creator_id)
         selected = self.current(context)
         if selected is None or selected.message_id is None:
             return None
-        return WorkSourceSnapshot(selected.message_id, selected.version, selected.environment_id)
+        return WorkSourceSnapshot(selected.message_id, selected.version, selected.environment_id,
+                                  selecting_actor_id=selected.agent_id, origin=selected.origin)
 
     def snapshot(self, context: Context) -> WorkSourceSnapshot:
         if context.environment_id is None:

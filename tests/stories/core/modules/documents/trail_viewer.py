@@ -110,7 +110,6 @@ def test_plan_start_pointer_is_read_before_work(new_story):
     feature("messages" in context, str(context))
 
 
-@pending(6888)
 def test_link_removal_does_not_reappear_on_retry(linked_trail):
     trail = linked_trail
     edge = next(row for row in trail.links("message:2") if row["link_type"] == "about")
