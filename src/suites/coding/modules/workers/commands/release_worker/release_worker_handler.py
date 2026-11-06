@@ -15,9 +15,8 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 
 class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
-    """Releases a worker's tasks and removes its worktree, keeping a branch with commits; a worktree that was never
-    cut is undone as a failed dispatch is. Git runs outside any transaction, so its wait holds no write lock, and a
-    release whose git failed takes up again from the abandoned worktree."""
+    """Releases a worker's tasks and removes its worktree, keeping a branch with commits. Git runs outside any
+    transaction; a release whose git failed goes on from the abandoned worktree."""
 
     command = ReleaseWorker
     transactional = False

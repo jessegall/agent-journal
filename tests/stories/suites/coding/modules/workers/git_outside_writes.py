@@ -27,7 +27,7 @@ def expect_git_calls_outside(git_calls):
     assert git_calls == [], f"git ran with a write open: {git_calls}"
 
 
-def stuck_removal(git, folder, worktree):
+def removal_past_its_limit(git, folder, worktree):
     raise subprocess.TimeoutExpired("git worktree remove", 1)
 
 
@@ -83,8 +83,8 @@ def test_a_release_whose_git_timed_out_takes_up_again_from_the_abandoned_worktre
     story, git_calls = git_in_writes
     repository_environment(story)
     worker = dispatched_worker(story)
-    with monkeypatch.context() as stuck_git:
-        stuck_git.setattr(WorktreeGit, "remove", stuck_removal)
+    with monkeypatch.context() as patch:
+        patch.setattr(WorktreeGit, "remove", removal_past_its_limit)
         failed = story.run(f'worker release {worker.id} "it went the wrong way"', actor=story.agent)
     story.expect_rows(failed.code != 0)
     story.expect_text("task show 1", "state: open")
