@@ -38,8 +38,8 @@ class NudgeLog:
         return nudge.turn_limited and (turn_start is None or delivered_at.text >= turn_start.text)
 
     def turn_start(self, agent_id: int) -> Timestamp | None:
-        prompts = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.PROMPT).newest().limited(1)
-        return prompts[0].created_at if prompts else None
+        prompt = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.PROMPT).newest().first()
+        return prompt.created_at if prompt is not None else None
 
     def record(self, agent_id: int, nudge: Nudge) -> NudgeRecord:
         record = self.records.newest_row(agent_id, nudge.key) if nudge.interval else self.records.newest_text_row(agent_id, nudge.key, nudge.text)

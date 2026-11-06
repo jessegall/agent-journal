@@ -26,8 +26,8 @@ class MarkTracker:
         passed = [mark for mark in marks if mark <= percent]
         if not passed:
             return None
-        compactions = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.COMPACT).descending("id").limited(1)
-        compaction_text = next((call.created_at.text for call in compactions if call.created_at is not None), "")
+        compaction = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.COMPACT).descending("id").first()
+        compaction_text = compaction.created_at.text if compaction is not None and compaction.created_at is not None else ""
         highest = max(passed)
         reached = self.queries.query(MemoryMark).filter(session_agent_id=agent_id).matching(Greater("opened_at", compaction_text)).matching(Minimum("percent", highest))
         return None if reached.exists() else highest

@@ -10,13 +10,13 @@ class AliasReaders:
         self.readers = readers
 
     def existing_reader_id(self, name: str) -> int | None:
-        rows = self.readers.with_name(name).limited(1) if name else ()
-        return rows[0].id if rows else None
+        reader = self.readers.with_name(name).first() if name else None
+        return reader.id if reader is not None else None
 
     def reader_id(self, name: str | None) -> int | None:
         if name is None:
             return None
-        rows = self.readers.with_name(name).limited(1)
-        if not rows:
+        reader = self.readers.with_name(name).first()
+        if reader is None:
             raise Refusal(f"no reader is called {name}: journal reader list lists them")
-        return rows[0].id
+        return reader.id

@@ -37,8 +37,7 @@ class DumpDockListener(CommitListener[Changed[Dump]]):
             for dock in self.event_docks(logged):
                 self.bus.run(AddDockItem(DumpDockType.DUMP.value, Dump.model_name, dump.id), actor, cause_id=logged.id, environment_id=dock.environment_id)
         if dump.closed_at is not None:
-            for item in self.items.type_items(DumpDockType.DUMP.value).row_items(Dump.model_name, dump.id).all_rows():
-                if item.state != DockItemState.DOCKED:
-                    continue
-                dock = self.queries.query(Dock).find(item.dock_id)
-                self.bus.run(RemoveDockItem(item.id), actor, cause_id=logged.id, environment_id=dock.environment_id)
+            docked = [item for item in self.items.type_items(DumpDockType.DUMP.value).row_items(Dump.model_name, dump.id).all_rows() if item.state == DockItemState.DOCKED]
+            docks = {dock.id: dock for dock in self.queries.query(Dock).find_many([item.dock_id for item in docked])}
+            for item in docked:
+                self.bus.run(RemoveDockItem(item.id), actor, cause_id=logged.id, environment_id=docks[item.dock_id].environment_id)

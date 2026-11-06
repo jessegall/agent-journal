@@ -20,10 +20,9 @@ class RemoveReaderHandler(Handler[RemoveReader, Reader]):
 
     def handle(self, command: RemoveReader, context: Context) -> Reader:
         self.writers.check(context.actor)
-        matching = self.readers.with_name(command.name).limited(1)
-        if not matching:
+        reader = self.readers.with_name(command.name).first()
+        if reader is None:
             raise Refusal(f"there is no reader {command.name}", "journal reader list shows them")
-        reader = matching[0]
         outputs = tuple(self.outputs.filter(reader_id=reader.id).all_rows())
         if any(output.ended_at is None for output in outputs):
             raise Refusal(f"reader {reader.name} is in use by a running output", "wait for the output to end")

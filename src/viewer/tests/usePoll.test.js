@@ -1,4 +1,4 @@
-import {afterEach, beforeEach, expect, test, vi} from "vitest";
+import {afterEach, beforeEach, describe, expect, test, vi} from "vitest";
 import {createApp, h} from "vue";
 import {usePoll} from "../kit/usePoll.js";
 
@@ -77,4 +77,70 @@ test("each poll uses the current interval returned by its window", async () => {
     expect(load).toHaveBeenCalledTimes(3);
     app.unmount();
     expect(vi.getTimerCount()).toBe(0);
+});
+
+let hidden = false;
+function showTab(isHidden) {
+    hidden = isHidden;
+    document.dispatchEvent(new Event("visibilitychange"));
+}
+
+describe("a hidden tab", () => {
+    beforeEach(() => {
+        hidden = false;
+        Object.defineProperty(document, "hidden", {configurable: true, get: () => hidden});
+    });
+    afterEach(() => delete document.hidden);
+
+    test("reads nothing while it is hidden and once when it is shown again", async () => {
+        const load = vi.fn().mockResolvedValue(undefined);
+        const app = pollingWindow(load);
+        await vi.advanceTimersByTimeAsync(0);
+        showTab(true);
+        await vi.advanceTimersByTimeAsync(20000);
+        expect(load).toHaveBeenCalledTimes(1);
+        expect(vi.getTimerCount()).toBe(0);
+        showTab(false);
+        await vi.advanceTimersByTimeAsync(0);
+        expect(load).toHaveBeenCalledTimes(2);
+        await vi.advanceTimersByTimeAsync(2000);
+        expect(load).toHaveBeenCalledTimes(3);
+        app.unmount();
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
+    test("shown again before its next read is due, it reads at once and not twice", async () => {
+        const load = vi.fn().mockResolvedValue(undefined);
+        pollingWindow(load);
+        await vi.advanceTimersByTimeAsync(1000);
+        showTab(true);
+        showTab(false);
+        await vi.advanceTimersByTimeAsync(0);
+        expect(load).toHaveBeenCalledTimes(2);
+        await vi.advanceTimersByTimeAsync(1999);
+        expect(load).toHaveBeenCalledTimes(2);
+        await vi.advanceTimersByTimeAsync(1);
+        expect(load).toHaveBeenCalledTimes(3);
+    });
+
+    test("a window that is closed while hidden reads nothing when the tab is shown", async () => {
+        const load = vi.fn().mockResolvedValue(undefined);
+        const app = pollingWindow(load);
+        await vi.advanceTimersByTimeAsync(0);
+        showTab(true);
+        app.unmount();
+        showTab(false);
+        await vi.advanceTimersByTimeAsync(10000);
+        expect(load).toHaveBeenCalledTimes(1);
+    });
+
+    test("a window that is not running reads nothing when the tab is shown", async () => {
+        const load = vi.fn().mockResolvedValue(undefined);
+        pollingWindow(load, () => false);
+        await vi.advanceTimersByTimeAsync(0);
+        showTab(true);
+        showTab(false);
+        await vi.advanceTimersByTimeAsync(10000);
+        expect(load).toHaveBeenCalledTimes(1);
+    });
 });

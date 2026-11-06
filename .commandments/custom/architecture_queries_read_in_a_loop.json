@@ -11,13 +11,13 @@
         ],
         "reject": [
             {"testCode": true},
-            {"fileMatches": "/(dump_dock_listener|agent_ticks|subagent_reuse_rule|next_plan_tasks|plan_task_line_rule|rule_dock_listener|plugin_card_reading|run_slots|run_admission|start_process_handler|waiting_message_run_listener|fade_memories_handler|broken_task_wait_rule|worker_resume_retry|unstarted_worker_rule|worker_reuse_rule|merge_checkout_rule|workers_out_rule|record_worker_test_handler|dispatch_worker_handler|main_agent_workers_listener)\\.py$"}
+            {"fileMatches": "/core/modules/plugins/ticks/plugin_card_reading\\.py$"}
         ]
     },
     "sin": {
         "name": "read-in-a-loop",
         "description": "A loop reads one row on each turn.",
-        "rule": "Read the rows together with find_many before the loop, then work on the held rows. The exact files named in reject are the existing reads recorded in output 94409; task 6613 and the final judge after both workers merge must resolve them and remove these temporary exceptions.",
+        "rule": "Read the rows together with find_many before the loop, then work on the held rows. PluginCardReading is the one file left out: it claims one queued card file at a time and the claim holds the file's lock until the next turn, so the agent ids of the cards are not known before the loop.",
         "skill": "plain-code-words"
     }
 }

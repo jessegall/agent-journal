@@ -1,0 +1,23 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "go",
+    "find": {
+        "select": "comparison",
+        "where": [
+            {"fileMatches": "(^|/)tools/journal/"},
+            {"any": [
+                {"descendant": {"all": [{"is": "literal"}, {"textMatches": "^\"?role\"?$"}]}},
+                {"descendant": {"all": [{"is": "member-access"}, {"name": "Role"}]}}
+            ]}
+        ],
+        "reject": [
+            {"testCode": true}
+        ]
+    },
+    "sin": {
+        "name": "go-role-compared-in-the-launcher",
+        "description": "The Go launcher compares an agent's role, so it decides in Go what only the journal knows about its agents.",
+        "rule": "Ask the journal a question it answers (a command that says whether an environment has a running main agent, or stops it) and use the answer; the launcher keeps no list of roles.",
+        "skill": "plain-code-words"
+    }
+}

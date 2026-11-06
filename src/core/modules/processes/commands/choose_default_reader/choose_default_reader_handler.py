@@ -21,10 +21,10 @@ class ChooseDefaultReaderHandler(Handler[ChooseDefaultReader, Reader]):
 
     def handle(self, command: ChooseDefaultReader, context: Context) -> Reader:
         self.writers.check(context.actor)
-        matching = self.readers.with_name(command.name).limited(1)
-        if not matching:
+        reader = self.readers.with_name(command.name).first()
+        if reader is None:
             raise Refusal(f"there is no reader {command.name}", "journal reader list shows them")
-        for previous_default in tuple(self.readers.filter(commands=matching[0].commands).defaults().all_rows()):
-            if previous_default.id != matching[0].id:
+        for previous_default in tuple(self.readers.filter(commands=reader.commands).defaults().all_rows()):
+            if previous_default.id != reader.id:
                 self.repository.save(replace(previous_default, is_default=False), context)
-        return self.repository.save(replace(matching[0], is_default=True), context)
+        return self.repository.save(replace(reader, is_default=True), context)

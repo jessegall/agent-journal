@@ -19,5 +19,7 @@ class CountShareViewHandler(Handler[CountShareView, ShareLink]):
     def handle(self, command: CountShareView, context: Context) -> ShareLink:
         if context.actor.type is not ActorType.CORE:
             raise Refusal("only the viewer counts a link's views")
-        link = self.queries.query(ShareLink).filter(token_digest=command.token_digest).limited(1)[0]
+        link = self.queries.query(ShareLink).filter(token_digest=command.token_digest).first()
+        if link is None:
+            raise Refusal("no share link has this token", "the link may have been removed")
         return self.repository.save(link.changed(view_count=link.view_count + 1), context)

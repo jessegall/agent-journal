@@ -40,9 +40,9 @@ class AgentHookRoute(HookRoute):
             return self.answered(event)
 
     def answered(self, event: HookEvent) -> HookReply:
-        stored_calls = self.queries.query(HookCall).filter(firing=event.firing).limited(1)
-        if stored_calls:
-            return HookReply.stored(stored_calls[0])
+        stored_call = self.queries.query(HookCall).filter(firing=event.firing).first()
+        if stored_call is not None:
+            return HookReply.stored(stored_call)
         agent = self.agent(event)
         if agent is None:
             return self.ended_agent_reply(event)
@@ -95,7 +95,7 @@ class AgentHookRoute(HookRoute):
         return agent if agent is not None and agent.ended_at is None else None
 
     def started(self, event: HookEvent, role: str, parent_id: int | None) -> Agent | None:
-        environments = self.queries.query(Environment).filter(name=event.environment).limited(1)
-        if not environments:
+        environment = self.queries.query(Environment).filter(name=event.environment).first()
+        if environment is None:
             return None
-        return self.bus.run(StartAgent(event.session, event.program, role, parent_id), Actor.core(), environment_id=environments[0].id)
+        return self.bus.run(StartAgent(event.session, event.program, role, parent_id), Actor.core(), environment_id=environment.id)

@@ -19,6 +19,7 @@ class ForgetPlaceListener(DeletionListener[Deleted[Task]]):
         self.queries, self.repository, self.positions = queries, repository, positions
 
     def handle(self, event: Deleted[Task], context: Context) -> None:
-        for place in self.queries.query(PhaseTask).filter(task_id=event.row.id).limited(1):
+        place = self.queries.query(PhaseTask).filter(task_id=event.row.id).first()
+        if place is not None:
             self.repository.delete(place, context)
             self.positions.renumber(PhaseTask, "phase_id", place.phase_id, place.position, context)

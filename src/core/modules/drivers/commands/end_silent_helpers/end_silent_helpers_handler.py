@@ -1,11 +1,15 @@
 from dataclasses import replace
+from datetime import timedelta
 
 from core.base.agent_role import AgentRole
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
+from core.base.query.conditions.among import Among
+from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
+from core.base.timestamp import Timestamp
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.end_silent_helpers.end_silent_helpers import EndSilentHelpers
@@ -25,8 +29,9 @@ class EndSilentHelpersHandler(Handler[EndSilentHelpers, None]):
 
     def handle(self, command: EndSilentHelpers, context: Context) -> None:
         helpers = self.queries.query(Agent).filter(role=AgentRole.HELPER).matching(IsNull("ended_at")).all_rows()
-        for helper in tuple(helpers):
-            calls = self.hook_calls.agent(helper.id).newest().limited(1)
-            last_call_time = calls[0].creation_timestamp() if calls else helper.creation_timestamp()
-            if last_call_time.elapsed_seconds(context.timestamp) >= SILENT_HELPER_SECONDS:
+        recent_limit = Timestamp(context.timestamp.value - timedelta(seconds=SILENT_HELPER_SECONDS))
+        helpers = tuple(helpers)
+        recently_called = {call.session_agent_id for call in self.hook_calls.matching(Among("session_agent_id", [helper.id for helper in helpers])).matching(Greater("created_at", recent_limit.text)).all_rows()}
+        for helper in helpers:
+            if helper.id not in recently_called and helper.creation_timestamp().elapsed_seconds(context.timestamp) >= SILENT_HELPER_SECONDS:
                 self.bus.dispatch(EndAgent(helper.id), replace(context, environment_id=helper.environment_id))

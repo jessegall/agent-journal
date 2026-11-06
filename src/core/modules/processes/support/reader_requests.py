@@ -79,8 +79,7 @@ class ReaderRequests:
         return spec.command_key or Path(spec.program).name
 
     def open_row(self, scope: ReaderSampleScope) -> ReaderRequest | None:
-        return next(iter(self.requests.open().filter(creator_id=scope.agent_id,
-                                                     command=scope.command).limited(1)), None)
+        return self.requests.open().filter(creator_id=scope.agent_id, command=scope.command).first()
 
     def open_request(self, process: Process, spec: PartSpec, reason: str, sample_process_id: int, context: Context) -> int:
         key = self.command_key(spec)

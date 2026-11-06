@@ -23,8 +23,8 @@ class ViewerLayoutCurrentSubcommand(ReadSubcommand[ViewerLayout]):
         parser.add_argument("--driver", default="")
 
     def read(self, arguments: Namespace, caller: Caller) -> ViewerLayout:
-        rows = self.queries.query(ViewerLayout).filter(person_id=caller.actor.id, suite=arguments.suite,
-                                                       page=arguments.page, driver=arguments.driver).limited(1)
-        if not rows:
+        layout = self.queries.query(ViewerLayout).filter(person_id=caller.actor.id, suite=arguments.suite,
+                                                       page=arguments.page, driver=arguments.driver).first()
+        if layout is None:
             raise Refusal(f"you saved no layout of {arguments.page} for {arguments.suite}", "the viewer then shows the suite's layout")
-        return rows[0]
+        return layout

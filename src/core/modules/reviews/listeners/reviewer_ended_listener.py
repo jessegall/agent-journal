@@ -22,9 +22,10 @@ class ReviewerEndedListener(CommitListener[AgentEnded]):
         self.bus, self.actors, self.reviewers, self.reviews = bus, actors, reviewers, reviews
 
     def handle(self, event: AgentEnded, logged: LoggedEvent) -> None:
-        if not self.reviewers.filter(id=logged.row_id).active().exists():
+        reviewer_id = event.row.id
+        if not self.reviewers.filter(id=reviewer_id).active().exists():
             return
         actor = self.actors.actor(MODULE_NAME)
-        for review in tuple(self.reviews.reviewer(logged.row_id).reviewing().all_rows()):
+        for review in tuple(self.reviews.reviewer(reviewer_id).reviewing().all_rows()):
             self.bus.run(AbandonReview(review.id), actor, cause_id=logged.id)
-        self.bus.run(EndReviewer(logged.row_id), actor, cause_id=logged.id)
+        self.bus.run(EndReviewer(reviewer_id), actor, cause_id=logged.id)

@@ -28,9 +28,9 @@ class ReaderProofListener(SaveListener[OutputEnded | Updated[Output]]):
         reader = self.rows.required(Reader, output.reader_id)
         if reader.proved_on is not None:
             return
-        parts = self.parts.process(output.process_id).filter(position=output.reader_position).limited(1)
-        if not parts:
+        part = self.parts.process(output.process_id).filter(position=output.reader_position).first()
+        if part is None:
             return
-        if self.judge.misses_read_output(reader, parts[0].category, output):
+        if self.judge.misses_read_output(reader, part.category, output):
             return
         self.repository.save(replace(reader, proved_on=output.process_id), context)

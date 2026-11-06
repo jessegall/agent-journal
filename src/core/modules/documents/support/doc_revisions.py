@@ -23,7 +23,7 @@ class DocRevisions:
         self.queries, self.repository, self.settings = queries, repository, settings
 
     def latest(self, doc_id: int) -> DocRevision | None:
-        return next(iter(self.queries.query(DocRevision).filter(doc_id=doc_id).descending("number").limited(1)), None)
+        return self.queries.query(DocRevision).filter(doc_id=doc_id).descending("number").first()
 
     def record(self, doc: Doc, context: Context) -> None:
         latest, closes_at = self.latest(doc.id), Timestamp(context.timestamp.value + timedelta(minutes=self.settings.project.number(WINDOW_SETTING)))

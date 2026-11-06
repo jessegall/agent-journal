@@ -37,10 +37,10 @@ class ChatMannersRule(DriverRule):
         self.queries, self.registry = queries, registry
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        rows = self.queries.query(Message).filter(type=MessageType.AGENT).newest().limited(1)
-        if not rows:
+        newest = self.queries.query(Message).filter(type=MessageType.AGENT).newest().first()
+        if newest is None:
             return RuleAnswer.allowed()
-        text = rows[0].text.strip()
+        text = newest.text.strip()
         declarations = [declaration for pattern, declaration in NUDGE_PATTERNS if pattern.search(text)]
         if self.has_journal_command(text) and SHOP_TALK_NUDGE not in declarations:
             declarations.append(SHOP_TALK_NUDGE)

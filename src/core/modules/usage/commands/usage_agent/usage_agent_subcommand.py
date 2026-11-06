@@ -63,8 +63,8 @@ class UsageAgentSubcommand(ReadSubcommand[AgentInspection]):
         return f"{name}, the main agent" if parent.role == AgentRole.MAIN else name
 
     def last_activity(self, agent_id: int) -> str:
-        calls = self.queries.query(HookCall).filter(session_agent_id=agent_id).newest().limited(1)
-        return calls[0].creation_timestamp().text if calls else ""
+        latest = self.queries.query(HookCall).filter(session_agent_id=agent_id).newest().first()
+        return latest.creation_timestamp().text if latest is not None else ""
 
     def failed_run_query(self, agent_id: int) -> ProcessQuery:
         return self.processes.agent(agent_id).matching(Among("state", tuple(FAILED_RUN_TEXTS))).matching(Greater("ended_at", ""))
@@ -84,10 +84,10 @@ class UsageAgentSubcommand(ReadSubcommand[AgentInspection]):
         return AgentMove(run.ended_at.text, f"{FAILED_RUN_TEXTS[run.state]}: {run.line}", BAD_TONE, UNLINKED_TABLE, run.id)
 
     def task_plan(self, task: Task) -> AgentPlan | None:
-        places = self.queries.query(PlanTask).filter(task_id=task.id).limited(1)
-        if not places:
+        place = self.queries.query(PlanTask).filter(task_id=task.id).first()
+        if place is None:
             return None
-        card = self.queries.query(PlanCard).find(places[0].plan_id)
+        card = self.queries.query(PlanCard).find(place.plan_id)
         return AgentPlan(card.id, card.title, card.current_phase, card.completed_count, card.task_count)
 
     def write_output(self, value: object, output: Output) -> None:

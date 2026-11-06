@@ -46,11 +46,11 @@ class OutputTexts:
         return [f"{number}: {line}" for number, line in self.folder.numbered_lines(process.id, int(first), int(last or first))]
 
     def reader_lines(self, process: Process, command: ReadOutput) -> list[str]:
-        matching = self.readers.with_name(command.reader).limited(1)
-        if not matching:
+        reader = self.readers.with_name(command.reader).first()
+        if reader is None:
             raise Refusal(f"there is no reader {command.reader}", "journal reader list shows them")
         kept = self.outputs.process_output(process.id)
-        if kept is None or kept.reader_id != matching[0].id:
+        if kept is None or kept.reader_id != reader.id:
             raise Refusal(f"output {process.id} is read by the reader chosen when it started, not by {command.reader}", f"journal output read {process.id} --all")
         return self.folder.reader_lines(process.id)
 

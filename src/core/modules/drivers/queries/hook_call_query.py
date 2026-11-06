@@ -39,8 +39,8 @@ class HookCallQuery(Query[HookCall]):
         return refused.index(False) if False in refused else len(refused)
 
     def last_stop_refused(self, agent_id: int) -> bool:
-        stops = self.agent(agent_id).filter(hook=HookEventName.STOP).newest().limited(1)
-        return bool(stops) and stops[0].answer == HookAnswer.REFUSED
+        stop = self.agent(agent_id).filter(hook=HookEventName.STOP).newest().first()
+        return stop is not None and stop.answer == HookAnswer.REFUSED
 
     def is_idle(self, agent_id: int, checked_at: Timestamp) -> bool:
         call = self.kept.read_newest(self.table.name, self.agent(agent_id).matching(Among("hook", TURN_HOOKS)).newest().first,

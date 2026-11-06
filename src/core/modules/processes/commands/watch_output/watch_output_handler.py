@@ -21,5 +21,5 @@ class WatchOutputHandler(Handler[WatchOutput, Watch]):
         process = self.access.process(context.actor, command.process_id)
         if not self.processes.running().filter(id=process.id).exists():
             raise Refusal(f"output {process.id} has ended, so there is nothing to watch", f"journal output read {process.id} --summary")
-        open_watches = self.watches.open(context.actor.id).filter(process_id=process.id).limited(1)
-        return open_watches[0] if open_watches else self.repository.save(Watch(session_agent_id=context.actor.id, process_id=process.id, creator_id=context.actor.id), context)
+        open_watch = self.watches.open(context.actor.id).filter(process_id=process.id).first()
+        return open_watch if open_watch is not None else self.repository.save(Watch(session_agent_id=context.actor.id, process_id=process.id, creator_id=context.actor.id), context)
