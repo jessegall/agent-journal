@@ -15,8 +15,19 @@ func TestTheCommandJournalReadsEnvironmentsWithTheirSuiteAndWhetherALiveSessionH
 		return answers[strings.Join(argv[:2], " ")], nil
 	}}
 	environments, err := journal.Environments()
-	if err != nil || len(environments) != 1 || environments[0] != (Environment{Name: "main", Folder: "/work/shop", Branch: "main", Suite: "coding", Working: true}) {
+	if err != nil || len(environments) != 1 || environments[0] != (Environment{ID: 1, Name: "main", Folder: "/work/shop", Branch: "main", Suite: "coding", Working: true}) {
 		t.Fatalf("the environments read are %+v, %v", environments, err)
+	}
+}
+
+func TestTheCommandJournalDeletesAnEnvironmentByItsRowNumber(t *testing.T) {
+	var requests []string
+	journal := CommandJournal{Run: func(argv ...string) (string, error) {
+		requests = append(requests, strings.Join(argv, " "))
+		return "", nil
+	}}
+	if err := journal.DeleteEnvironment(Environment{ID: 7, Name: "checkout"}); err != nil || len(requests) != 1 || requests[0] != "environment delete 7" {
+		t.Fatalf("the journal was asked %v, %v", requests, err)
 	}
 }
 

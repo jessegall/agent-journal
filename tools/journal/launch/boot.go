@@ -2,8 +2,10 @@ package launch
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -16,6 +18,10 @@ const (
 	RunningQuestion      = "A main agent is running in this environment. Stop it and start here?"
 	StopRunning          = "stop it and start here"
 	LeaveRunning         = "leave it running and quit"
+	KeepEnvironment      = "No, keep it"
+	DiscardEnvironment   = "Yes, delete it"
+	BackToEnvironments   = "Back"
+	DiscardKey           = 'x'
 	ConversationQuestion = "Which conversation?"
 	PromptQuestion       = "Permission prompts?"
 	NewEnvironment       = "a new environment"
@@ -33,6 +39,7 @@ const (
 
 // Environment is one environment of the journal, with the suite it runs and whether a working session holds it.
 type Environment struct {
+	ID      int
 	Name    string
 	Folder  string
 	Branch  string
@@ -56,6 +63,7 @@ type Journal interface {
 	MakeEnvironment(environment Environment) error
 	PrepareWorktree(folder, source, environment string) error
 	StopMainAgent(environment string) error
+	DeleteEnvironment(environment Environment) error
 }
 
 // ErrLeftRunning is the answer of a person who keeps the main agent that runs in the chosen environment: nothing starts.
@@ -120,16 +128,49 @@ func Boot(journal Journal, terminal Terminal, request Request) (Choice, error) {
 		}
 	}
 	menu.choice.Variables[EnvironmentVariable], menu.choice.Variables[ActiveVariable] = menu.choice.Environment, "1"
+	terminal.Draw(menu.summary())
 	return menu.choice, nil
 }
 
-func (menu *boot) answer(question Question) (string, error) {
-	question.Default = menu.request.Answers[question.Title]
-	answer, err := Answer(menu.terminal, question)
-	if err == nil {
-		menu.choice.Answers[question.Title] = answer
+// summary is the closing screen: what the launch starts with, one finished step to a line.
+func (menu *boot) summary() string {
+	style := menu.terminal.Style()
+	conversation, prompts := "new", "asked"
+	if menu.choice.Session != "" {
+		conversation = "continued from " + cut(menu.choice.Session, 8)
 	}
-	return answer, err
+	if menu.choice.SkipPrompts {
+		prompts = "skipped"
+	}
+	rows := [][2]string{{"suite", menu.choice.Suite}, {"environment", menu.choice.Environment}, {"conversation", conversation}, {"prompts", prompts}}
+	lines := []string{"  " + style.Accent("?") + " " + style.Bold("Starting"), ""}
+	for _, row := range rows {
+		lines = append(lines, fmt.Sprintf("    %s %-13s %s", style.Good("✓"), row[0], row[1]))
+	}
+	return strings.Join(lines, "\r\n") + "\r\n"
+}
+
+func (menu *boot) answer(question Question) (string, error) {
+	selection, err := menu.choose(question)
+	return selection.Option, err
+}
+
+// choose puts the question under the banner, with the last answer as its default, and keeps the option selection.
+func (menu *boot) choose(question Question) (Selection, error) {
+	question.Default = menu.request.Answers[question.Title]
+	question.Header = Banner(menu.terminal.Style(), menu.request.Program, menu.request.Root)
+	selection, err := Choose(menu.terminal, question)
+	if err == nil && selection.Action == 0 {
+		menu.choice.Answers[question.Title] = selection.Option
+	}
+	return selection, err
+}
+
+// query puts a question under the banner and keeps nothing of its answer: a line of text, or a question about the
+// environment chosen.
+func (menu *boot) query(question Question) (Selection, error) {
+	question.Header = Banner(menu.terminal.Style(), menu.request.Program, menu.request.Root)
+	return Choose(menu.terminal, question)
 }
 
 func (menu *boot) suite() (bool, error) {
@@ -153,18 +194,31 @@ func (menu *boot) environment() (bool, error) {
 	if menu.request.WorktreeGiven {
 		return false, menu.worktreeEnvironment(environments)
 	}
-	offered := suiteEnvironments(environments, menu.choice.Suite)
-	options := []string{}
-	for _, environment := range offered {
-		options = append(options, environment.Name)
-	}
 	for {
-		answer, err := menu.answer(Question{Title: EnvironmentQuestion, Options: append(options, NewEnvironment)})
+		offered := suiteEnvironments(environments, menu.choice.Suite)
+		options, badges := []string{}, map[string][]string{}
+		for _, environment := range offered {
+			options, badges[environment.Name] = append(options, environment.Name), menu.badges(environment)
+		}
+		selection, err := menu.choose(Question{Title: EnvironmentQuestion, Notes: []string{"An environment is one line of work with a record of its own."},
+			Options: append(options, NewEnvironment), Badges: badges, Actions: map[rune]string{DiscardKey: "x to delete"}, ApartLast: true})
 		if err != nil {
 			return true, err
 		}
-		if answer != NewEnvironment {
-			return true, menu.useEnvironment(offered[indexOf(options, answer)])
+		if selection.Action == DiscardKey {
+			if selection.Option != NewEnvironment {
+				err = menu.discard(offered[indexOf(options, selection.Option)])
+			}
+			if err != nil {
+				return true, err
+			}
+			if environments, err = menu.journal.Environments(); err != nil {
+				return true, err
+			}
+			continue
+		}
+		if selection.Option != NewEnvironment {
+			return true, menu.useEnvironment(offered[indexOf(options, selection.Option)])
 		}
 		if err := menu.newEnvironment(); !errors.Is(err, errBack) {
 			return true, err
@@ -172,16 +226,58 @@ func (menu *boot) environment() (bool, error) {
 	}
 }
 
+// inWorktree says whether the environment works in a worktree this launcher cuts.
+func (menu *boot) inWorktree(environment Environment) bool {
+	return filepath.Dir(environment.Folder) == (Worktrees{Root: menu.request.Root}).Folder()
+}
+
+// badges are the facts shown after an environment's name: whether an agent works in it and whether it is a worktree.
+func (menu *boot) badges(environment Environment) []string {
+	badges := []string{}
+	if environment.Working {
+		badges = append(badges, "working")
+	}
+	if menu.inWorktree(environment) {
+		badges = append(badges, "worktree")
+	}
+	return badges
+}
+
+// discard asks before an environment is deleted with everything recorded in it; an environment with an agent at work is
+// never deleted. The left arrow keeps it.
+func (menu *boot) discard(environment Environment) error {
+	if environment.Working {
+		_, err := menu.query(Question{Title: environment.Name + " has an agent working", Warning: true, Notes: []string{"Stop that agent first."}, Options: []string{BackToEnvironments}})
+		return ignoringBack(err)
+	}
+	notes := []string{"Everything recorded in it goes with it: tasks, messages, plans, memory, the record. This cannot be undone."}
+	if menu.inWorktree(environment) {
+		notes = append(notes, "Its worktree folder and its branch stay.")
+	}
+	selection, err := menu.query(Question{Title: "Delete " + environment.Name + "?", Warning: true, Notes: notes, Options: []string{KeepEnvironment, DiscardEnvironment}, Default: KeepEnvironment})
+	if err != nil || selection.Option != DiscardEnvironment {
+		return ignoringBack(err)
+	}
+	return menu.journal.DeleteEnvironment(environment)
+}
+
+func ignoringBack(err error) error {
+	if errors.Is(err, errBack) {
+		return nil
+	}
+	return err
+}
+
 func (menu *boot) newEnvironment() error {
-	name, err := Answer(menu.terminal, Question{Title: NameQuestion})
+	name, err := menu.query(Question{Title: NameQuestion})
 	if err != nil {
 		return err
 	}
-	branch, err := Answer(menu.terminal, Question{Title: BranchQuestion})
+	branch, err := menu.query(Question{Title: BranchQuestion})
 	if err != nil {
 		return err
 	}
-	environment := Environment{Name: name, Folder: menu.request.Root, Branch: branch, Suite: menu.choice.Suite}
+	environment := Environment{Name: name.Option, Folder: menu.request.Root, Branch: branch.Option, Suite: menu.choice.Suite}
 	if err := menu.journal.MakeEnvironment(environment); err != nil {
 		return err
 	}
@@ -191,10 +287,10 @@ func (menu *boot) newEnvironment() error {
 func (menu *boot) useEnvironment(environment Environment) error {
 	menu.choice.Environment, menu.choice.Folder = environment.Name, environment.Folder
 	menu.mainRunning = environment.Working
-	worktrees := Worktrees{Root: menu.request.Root}
-	if filepath.Dir(environment.Folder) != worktrees.Folder() {
+	if !menu.inWorktree(environment) {
 		return nil
 	}
+	worktrees := Worktrees{Root: menu.request.Root}
 	folder, created, err := menu.cut(worktrees, filepath.Base(environment.Folder))
 	if err != nil || !created {
 		return err
@@ -250,7 +346,7 @@ func (menu *boot) running() (bool, error) {
 	if !menu.mainRunning {
 		return false, nil
 	}
-	answer, err := menu.answer(Question{Title: RunningQuestion, Options: []string{StopRunning, LeaveRunning}})
+	answer, err := menu.answer(Question{Title: RunningQuestion, Warning: true, Notes: []string{"One environment has one main agent. Stopping it ends its row."}, Options: []string{StopRunning, LeaveRunning}})
 	if err != nil {
 		return true, err
 	}
@@ -283,13 +379,13 @@ func (menu *boot) conversation() (bool, error) {
 		label := conversation.Label(currentAt)
 		options, sessions[label] = append(options, label), conversation.Session
 	}
-	answer, err := menu.answer(Question{Title: ConversationQuestion, Options: append(options, FreshConversation)})
+	answer, err := menu.answer(Question{Title: ConversationQuestion, Notes: []string{"Carrying on opens an earlier conversation of this environment again."}, Options: append(options, FreshConversation), ApartLast: true})
 	menu.choice.Session = sessions[answer]
 	return true, err
 }
 
 func (menu *boot) prompts() (bool, error) {
-	answer, err := menu.answer(Question{Title: PromptQuestion, Options: []string{AskPrompts, SkipPrompts}})
+	answer, err := menu.answer(Question{Title: PromptQuestion, Notes: []string{"Skipping them lets " + capitalised(menu.request.Program) + " run without stopping to ask before each tool call."}, Options: []string{AskPrompts, SkipPrompts}})
 	menu.choice.SkipPrompts = answer == SkipPrompts
 	return true, err
 }

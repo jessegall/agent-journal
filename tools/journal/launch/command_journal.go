@@ -50,7 +50,8 @@ func (journal CommandJournal) Environments() ([]Environment, error) {
 		}
 		var run suiteRun
 		_ = json.Unmarshal([]byte(output), &run)
-		environments = append(environments, Environment{Name: name, Folder: text(row, "folder"), Branch: text(row, "branch"), Suite: run.Suite,
+		id, _ := row["id"].(float64)
+		environments = append(environments, Environment{ID: int(id), Name: name, Folder: text(row, "folder"), Branch: text(row, "branch"), Suite: run.Suite,
 			Working: hasOpenMain(agents, row["id"])})
 	}
 	return environments, nil
@@ -92,6 +93,12 @@ func (journal CommandJournal) MakeEnvironment(environment Environment) error {
 		return err
 	}
 	_, err := journal.Run("suite", "choose", environment.Suite, "--environment", environment.Name)
+	return err
+}
+
+// DeleteEnvironment deletes the environment's row with everything recorded in it.
+func (journal CommandJournal) DeleteEnvironment(environment Environment) error {
+	_, err := journal.Run("environment", "delete", strconv.Itoa(environment.ID))
 	return err
 }
 

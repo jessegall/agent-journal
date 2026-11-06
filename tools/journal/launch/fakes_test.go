@@ -12,6 +12,7 @@ import (
 type fakeTerminal struct {
 	presses []Press
 	screens []string
+	style   Style
 }
 
 func (terminal *fakeTerminal) Read() (Press, error) {
@@ -26,6 +27,8 @@ func (terminal *fakeTerminal) Read() (Press, error) {
 func (terminal *fakeTerminal) Draw(text string) {
 	terminal.screens = append(terminal.screens, text)
 }
+
+func (terminal *fakeTerminal) Style() Style { return terminal.style }
 
 func (terminal *fakeTerminal) screenText() string {
 	return strings.Join(terminal.screens, "\n")
@@ -52,6 +55,7 @@ var (
 // fakeJournal answers the launcher's questions to the journal from rows a story sets, and keeps what it was asked to make.
 type fakeJournal struct {
 	stoppedMains  []string
+	deleted       []Environment
 	suites        []string
 	environments  []Environment
 	conversations []Conversation
@@ -63,6 +67,17 @@ func (journal *fakeJournal) Suites() ([]string, error) { return journal.suites, 
 
 func (journal *fakeJournal) StopMainAgent(environment string) error {
 	journal.stoppedMains = append(journal.stoppedMains, environment)
+	return nil
+}
+
+func (journal *fakeJournal) DeleteEnvironment(environment Environment) error {
+	journal.deleted = append(journal.deleted, environment)
+	for index, made := range journal.environments {
+		if made.Name == environment.Name {
+			journal.environments = append(journal.environments[:index], journal.environments[index+1:]...)
+			break
+		}
+	}
 	return nil
 }
 
