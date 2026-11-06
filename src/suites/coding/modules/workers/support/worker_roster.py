@@ -1,3 +1,4 @@
+from core.base.actor import Actor
 from core.base.agent_roster import AgentRoster
 from core.base.command.bus import Bus
 from core.base.command.context import Context
@@ -33,9 +34,11 @@ class WorkerRoster(AgentRoster[Agent]):
                 return f"worker {agent.id} has unmerged work on {worktree.branch}: journal worker merge {agent.id}, or merge the branch by hand"
         return ""
 
-    def settle(self, agent: Agent, context: Context) -> None:
+    def release(self, agent: Agent, actor: Actor) -> None:
         if self.worktrees.worker_worktree(agent.id) is not None:
-            self.bus.dispatch(ReleaseWorker(agent.id, "retired"), context)
+            self.bus.run(ReleaseWorker(agent.id, "retired"), actor, environment_id=agent.environment_id)
+
+    def close_holdings(self, agent: Agent, context: Context) -> None:
         self.bus.dispatch(ClearDelegatedTasks(agent.id), context)
         for line in tuple(self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).all_rows()):
             self.repository.update(line, context, state=AgentLineState.HIDDEN)

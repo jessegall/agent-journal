@@ -1,4 +1,8 @@
+from unittest.mock import patch
+
 from core.base.command.bus import Bus
+from core.base.database.database import Database
+from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.commands.end_idle_worker.end_idle_worker import EndIdleWorker
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment
@@ -46,3 +50,31 @@ def test_retire_refused_with_a_preserved_branch(new_story):
     commit_in_worktree(repository, worker.id, "cart.py")
     story.expect_success(f'worker release {worker.id} "Not needed"', actor=story.agent)
     story.expect_refusal(f"agent retire {worker.id} {REASON}", "unmerged work", actor=story.agent)
+
+
+def test_a_failed_git_status_holds_the_retirement(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = dispatched_worker(story)
+    stopped(story, worker)
+    folder = repository.worktree_folder(worker.id)
+    (folder / ".git").write_text("not a git folder")
+    story.expect_refusal(f"agent retire {worker.id} {REASON}", "git status failed", actor=story.agent)
+
+
+def test_a_retire_runs_git_outside_the_transaction(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    stopped(story, worker)
+    database = story.container.get(Database)
+    git = WorktreeGit.git
+    inside = []
+
+    def recording_git(self, *arguments, **options):
+        if "status" in arguments or "rev-parse" in arguments:
+            inside.append(database.has_transaction)
+        return git(self, *arguments, **options)
+    with patch.object(WorktreeGit, "git", recording_git):
+        story.expect_success(f"agent retire {worker.id} {REASON}", actor=story.agent)
+    story.expect_rows(bool(inside), not any(inside))

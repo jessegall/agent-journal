@@ -22,13 +22,24 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
     def __init__(self, queries: Queries, repository: Repository, registry: Registry, container: Container) -> None:
         self.queries, self.repository, self.registry, self.container = queries, repository, registry, container
 
+    def prepare(self, command: RetireAgent, actor: Actor) -> None:
+        agent = self.queries.query(Agent).find(command.agent_id)
+        self.check_actor(agent, actor)
+        self.check_state(agent, command.reason)
+        roster = self.roster(agent)
+        if roster is None:
+            return
+        block = roster.retire_block(agent)
+        if block:
+            raise Refusal(block)
+        roster.release(agent, actor)
+
     def handle(self, command: RetireAgent, context: Context) -> Agent:
         agent = self.queries.query(Agent).find(command.agent_id)
-        self.check_actor(agent, context.actor)
         self.check_state(agent, command.reason)
         roster = self.roster(agent)
         if roster is not None:
-            roster.settle(agent, context)
+            roster.close_holdings(agent, context)
         return self.repository.save(agent.retired(context.timestamp, command.reason.strip(), context.actor.id), context)
 
     def check_actor(self, agent: Agent, actor: Actor) -> None:
@@ -47,10 +58,6 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
             raise Refusal(f"agent {agent.id} is retired already")
         if agent.ended_at is None:
             raise Refusal(f"agent {agent.id} is still running", f"journal agent stop {agent.id}, then retire it")
-        roster = self.roster(agent)
-        block = roster.retire_block(agent) if roster is not None else ""
-        if block:
-            raise Refusal(block)
 
     def roster(self, agent: Agent) -> AgentRoster[Agent] | None:
         entry = next((entry for entry in self.registry.agent_types if entry.key == agent.role), None)
