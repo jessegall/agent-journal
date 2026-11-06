@@ -8,6 +8,7 @@ import TriggerExtraAction from "./TriggerExtraAction.vue";
 defineProps({choices: {type: Array, required: true}});
 const emit = defineEmits(["change-extra"]);
 const action = defineModel("action", {type: String, required: true});
+const skill = defineModel("skill", {type: String, default: ""});
 const text = defineModel("text", {type: String, required: true});
 const extra = defineModel("extra", {type: Array, required: true});
 const does = computed(() => doesOf(action.value));
@@ -18,7 +19,8 @@ const added = (type) => (extra.value = [...extra.value, {type: type.value, targe
 <template>
     <div class="block">
         <DropList :label="does.label" :items="choices" :picked="action" data-trigger-action @pick="action = $event.value" />
-        <label class="field"><span class="label">{{ does.ask }}</span><textarea v-model="text" rows="2" :placeholder="does.example" data-trigger-text /></label>
+        <template v-if="action === 'skill'"><label class="field"><span class="label">Which skill the agent must read</span><input v-model="skill" placeholder="journal-plans" data-trigger-skill></label></template>
+        <template v-else><label class="field"><span class="label">{{ does.ask }}</span><textarea v-model="text" rows="2" :placeholder="does.example" data-trigger-text /></label></template>
     </div>
     <template v-for="(entry, position) in extra" :key="position">
         <TriggerExtraAction :entry="entry" :position="position + 2" @change="emit('change-extra', position, $event)" @remove="removed(position)" />

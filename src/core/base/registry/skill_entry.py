@@ -21,6 +21,7 @@ class SkillEntry:
     digest: str
     path: str
     shipped: bool
+    modified_at: int | None = None
 
     @cached_property
     def event_patterns(self) -> tuple[EventPattern, ...]:
