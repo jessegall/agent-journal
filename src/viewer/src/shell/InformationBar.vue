@@ -7,6 +7,7 @@ import MenuLabel from "../kit/MenuLabel.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import {useAgentControls} from "../composables/agentControls.js";
 import {providerName} from "../domain/agents.js";
+import {compactionLine} from "../domain/compaction.js";
 
 // the one line under the agent bar: who the agent is, its state, the plan's allowance used, how full its context is, its model and cost, how
 // long it has run, its scheduled jobs, and last how fit and how loaded it is; a window has no place here, only what opens a dropdown
@@ -144,6 +145,13 @@ const uptime = computed(() => {
                 </template>
                 <template v-else-if="group">
                     <MenuLabel>{{ group.label }}</MenuLabel>
+                    <template v-if="opened === 'context'">
+                        <div class="context-meter" data-context-menu-meter>
+                            <span class="gauge"><span :style="{width: `${context}%`}" /></span>
+                            <span class="context-used">{{ context }}%</span>
+                        </div>
+                        <p class="context-compaction" data-context-menu-compaction>{{ compactionLine(status?.last_compaction ?? null) }}</p>
+                    </template>
                     <template v-for="choice in group.choices" :key="choice.value">
                         <MenuItem :data-agent-choice="choice.value" @click="controls.choose(group.key, choice), closeMenu()">{{ choice.label }}</MenuItem>
                     </template>
@@ -161,6 +169,30 @@ const uptime = computed(() => {
 
 .load-fact.critical {
     color: var(--danger);
+}
+
+.context-meter {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 2px 10px 4px;
+}
+
+.context-meter .gauge {
+    flex: 1;
+    width: auto;
+}
+
+.context-used {
+    color: var(--text-2);
+    font-size: 11.5px;
+}
+
+.context-compaction {
+    margin: 0;
+    padding: 0 10px 6px;
+    color: var(--text-3);
+    font-size: 11.5px;
 }
 
 .information {

@@ -31,6 +31,7 @@ const props = defineProps({
 const emit = defineEmits(["close", "step", "select", "back"]);
 const task = ref(null);
 const place = ref(null);
+const graph = ref(null);
 const failure = ref("");
 const refusal = ref("");
 const menu = ref(null);
@@ -56,14 +57,16 @@ const crumb = computed(() => {
 
 async function load() {
     const turn = ++reading;
-    const [answer, where] = await Promise.all([
+    const [answer, where, chain] = await Promise.all([
         props.read(["task", "inspect", String(props.id)]),
         props.read(["plan", "place", String(props.id)]),
+        props.read(["task", "graph"]),
     ]);
     if (turn !== reading) return;
     failure.value = answer.ok ? "" : answer.error;
     task.value = answer.ok ? answer.value : null;
     place.value = where.ok ? where.value : null;
+    graph.value = chain.ok ? chain.value : null;
 }
 
 watch(
@@ -71,6 +74,7 @@ watch(
     () => {
         task.value = null;
         place.value = null;
+        graph.value = null;
         menu.value = null;
         tab.value = "details";
         load();
@@ -140,6 +144,7 @@ defineExpose({openStatus});
                         <TaskDetails
                             :task="task"
                             :place="place"
+                            :graph="graph"
                             :refusal="refusal"
                             @status="openStatus"
                             @priority="setPriority"

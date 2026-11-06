@@ -16,6 +16,7 @@ from core.base.profile.agent_profile import AgentProfile
 from core.modules.usage.models.agent_card import AgentCard
 from core.modules.usage.support.agent_facts import AgentFacts
 from core.modules.usage.support.agent_facts_list import AgentFactsList
+from core.modules.usage.support.session_status import SessionStatus
 from core.modules.usage.support.status_files import StatusFiles
 
 CLOSED_AGENTS_SHOWN = 50
@@ -47,7 +48,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
 
     def facts(self, card: AgentCard, job_roles: Collection[str], titles: dict[str, str]) -> AgentFacts:
         status = self.files.status(card.session)
-        return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.job_model, status.context_percent, status.cost_dollars, card.started_task_id, card.started_task_title,
+        return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
                           tuple(json.loads(card.tasks)), self.waiting_state(card), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
                           card.job_instruction, status.effort or self.session_effort(card), card.role in job_roles, card.job_returned, card.last_activity, self.helper_job(card), titles.get(card.profile or card.job_profile, card.profile or card.job_profile))
 
@@ -57,6 +58,9 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         if description and description not in (card.given_name, card.profile, card.job_profile):
             return description[:100]
         return next((line.strip()[:100] for line in card.helper_job_brief.splitlines() if line.strip()), "")
+
+    def context_percent(self, card: AgentCard, status: SessionStatus) -> int | None:
+        return status.context_percent if status.context_percent is not None else self.providers.context_percent(card.program, self.home, card.session)
 
     def reported_model(self, card: AgentCard) -> str:
         return self.providers.reported_model(card.program, self.home, card.session)

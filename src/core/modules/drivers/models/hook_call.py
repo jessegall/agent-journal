@@ -91,6 +91,11 @@ class HookCall(EnvironmentScoped, Model):
         return self.hook == HookEventName.COMPACT
 
     @property
+    def context_percent(self) -> int | None:
+        percent = self.metadata.module_part(DRIVERS_MODULE).get("context_percent")
+        return percent if isinstance(percent, int) else None
+
+    @property
     def is_compaction_start(self) -> bool:
         return self.metadata.module_part(DRIVERS_MODULE).get("compaction_start") is True
 
