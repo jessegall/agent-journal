@@ -2,6 +2,7 @@ import {expect, test, vi} from "vitest";
 import {ref} from "vue";
 import {context, drawn, mounted, page, settle} from "./support/windowContext.js";
 import {fileEditsWindowContext} from "./support/fileEditsWindowContext.js";
+import {fileFeedWindowContext} from "./support/fileFeedWindowContext.js";
 import {context as agentContext} from "./support/agentWindowContext.js";
 import Chat from "../../core/modules/messages/web/src/Chat.vue";
 import TaskList from "../../core/modules/tasks/web/src/tasks.js";
@@ -98,7 +99,7 @@ test("the hook calls window shows its agent's hook calls with their answers", as
 });
 
 test("the file feed shows its agent's edits with their counts", async () => {
-    const windowContext = context({"file-edit list": page([{id: 1, path: "src/cart.py", added: 3, removed: 1}])}, 2);
+    const windowContext = fileFeedWindowContext({"file-edit list": page([{id: 1, path: "src/cart.py", added: 3, removed: 1}])}, 2);
     const text = await drawn(FileFeed, windowContext);
     expect(text).toContain("cart.py");
     expect(text).toContain("+3");

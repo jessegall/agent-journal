@@ -40,6 +40,7 @@ from suites.coding.commands.git_overview_current.git_overview_current_subcommand
 from suites.coding.commands.git_overview_pulls.git_overview_pulls_subcommand import GitOverviewPullsSubcommand
 from suites.coding.commands.project_file_list.project_file_list_subcommand import ProjectFileListSubcommand
 from suites.coding.commands.project_file_show.project_file_show_subcommand import ProjectFileShowSubcommand
+from suites.coding.commands.file_edit_file.file_edit_file_subcommand import FileEditFileSubcommand
 from suites.coding.rules.introduction_rule import IntroductionRule
 from suites.coding.rules.waiting_items_rule import WaitingItemsRule
 from suites.coding.drivers.helper.helper_driver import HelperDriver
@@ -63,6 +64,7 @@ class CodingModule(Module):
     nudges = [*CODING_NUDGES, TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN]
     seeders = [CodingSeeder]
     window_extensions = [*(WindowExtension(name, reads=["file-edit list"], runs=["agent type"], events=["file_edit.create"],
+                                          keys=[WindowKey("agent-edits.*", "file-edit list --agent {id}", arguments=["limit", "before-id", "after-id"], page_size=50)],
                                           tabs=[WindowTab("file-feed", "File feed", "file-edit list", component="/modules/journal.suites.coding/agent-file-edits.js"),
                                                 WindowTab("terminal", "Terminal", "hook-call feed", component="/modules/journal.suites.coding/terminal.js")]) for name in ("agents.agents", "agents.helpers")),
                          WindowExtension("viewer.shell", reads=["git-overview current"]),
@@ -80,13 +82,16 @@ class CodingModule(Module):
     handlers = [RecordFileEditHandler, RecordFileChangesHandler]
     driver_rules = [WaitingItemsRule, IntroductionRule]
     listeners = [FullTestRunListener]
-    subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand, RecordFileChangesSubcommand]
+    subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand, FileEditFileSubcommand, RecordFileChangesSubcommand]
     windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, skeleton=CODING_GIT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"]),
                WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, skeleton=CODING_FILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"], search=WindowReadSearch("project-file find", "Find a file in the project")),
                WindowDeclaration("coding.work-mode", "Work mode", "work-mode.js", WindowLoading.COMPONENT, skeleton=CODING_WORK_MODE_SKELETON, icon=WindowIcon.WINDOW, place=WindowPlace.HEADER,
                                  reads=["suite current", "setting show", "usage bars"], runs=["driver choose", "setting set"]),
-               WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, skeleton=CODING_FILE_FEED_SKELETON, search=WindowSearch(FileEditSearcher, "Filter files"), icon=WindowIcon.FILE, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM, reads=FILE_EDIT_READS,
-                                 events=["file_edit.create"]),
+               WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, skeleton=CODING_FILE_FEED_SKELETON, search=WindowSearch(FileEditSearcher, "Filter files"), icon=WindowIcon.FILE, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM, reads=[*FILE_EDIT_READS, "file-edit file", "window setting"],
+                                 events=["file_edit.create"],
+                                 keys=[WindowKey("edits", "file-edit list", events=["file_edit.create"], arguments=["agent", "limit", "before-id", "after-id"], page_size=50),
+                                       WindowKey("view", "window setting coding.file-feed view"),
+                                       WindowKey("file.*", "file-edit file {id}")]),
                WindowDeclaration("coding.file-edits", "File edits", "file-edits.js", WindowLoading.COMPONENT, skeleton=CODING_FILE_EDITS_SKELETON, search=WindowSearch(FileEditSearcher, "Filter files"), icon=WindowIcon.COMMIT, reads=[*FILE_EDIT_READS, "agent list"],
                                  events=["file_edit.create"], keys=[WindowKey("edits", "file-edit list", events=["file_edit.create"], arguments=["limit", "before-id", "after-id"], page_size=50)]),
                WindowDeclaration("coding.terminal", "Terminal", "terminal.js", WindowLoading.COMPONENT, skeleton=CODING_TERMINAL_SKELETON, icon=WindowIcon.TERMINAL, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM,

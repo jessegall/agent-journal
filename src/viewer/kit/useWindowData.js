@@ -24,7 +24,7 @@ export function useWindowData(context) {
     let join = 0;
 
     function propOf(name) {
-        const key = () => declared[name] ?? {};
+        const key = () => declared[name] ?? declared[`${name.slice(0, name.lastIndexOf("."))}.*`] ?? {};
         const data = ref(undefined);
         const list = rowList(context, async (flags) => {
             const result = await readKey(name, flags);

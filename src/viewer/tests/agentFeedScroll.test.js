@@ -1,6 +1,7 @@
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 import {context as agentContext} from "./support/agentWindowContext.js";
+import {AGENT_EDIT_KEYS} from "./support/fileFeedWindowContext.js";
 import AgentFileEdits from "../../suites/coding/web/src/AgentFileEdits.vue";
 import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue";
 import Output from "../../core/modules/processes/web/src/Output.vue";
@@ -32,7 +33,8 @@ afterEach(() => {
 // a window whose rows the test changes, and the call a followed event makes
 function feed(line, rows) {
     const held = {rows};
-    const window = (line.startsWith("agent transcript") ? agentContext : context)({[line]: {get ok() {return true;}, get value() {return {rows: held.rows, page: 1, size: 50, total: held.rows.length};}}});
+    const answers = {[line]: {get ok() {return true;}, get value() {return {rows: held.rows, page: 1, size: 50, total: held.rows.length};}}};
+    const window = line.startsWith("agent transcript") ? agentContext(answers) : context(answers, null, AGENT_EDIT_KEYS);
     const follows = [];
     window.follow = (patterns, heard) => {
         const follow = {patterns, heard};
