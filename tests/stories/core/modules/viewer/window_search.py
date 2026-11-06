@@ -62,7 +62,7 @@ def test_searches_over_read_commands_declare_the_command_placeholder_and_matchin
         "settings.settings": ("setting tree", "Find a setting", ["title", "description", "key"]),
         "profiles.profiles": ("profile list", "Find a profile", ["name", "description", "agent_type", "model", "codex_model"]),
         "search.search": ("search find", "Search the journal", []),
-        "skills.skills": ("skill list", "Search the skills", ["folder", "description"]),
+        "skills.skills": ("skill list", "Find a skill", ["folder", "description"]),
         "messages.attachments": ("attachment list", "Search file names and their messages", ["name", "message_text"]),
         "coding.files": ("project-file find", "Find a file in the project", []),
     }
