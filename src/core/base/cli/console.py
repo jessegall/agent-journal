@@ -17,6 +17,8 @@ from core.base.cli.shell_handoff import ShellHandoff
 from core.base.cli.usage_error import UsageError
 from core.base.cli.write_flags import WriteFlags
 from core.base.command.bus import Bus
+from core.base.command.context import Context
+from core.base.command.handler import Handler
 from core.base.deadline_passed_error import DeadlinePassedError
 from core.base.environment_names import EnvironmentNames
 from core.base.error_log import ErrorLog
@@ -130,6 +132,25 @@ class Console:
         subcommand.write_output(value, output)
         self.run_commit_listeners(argv)
         return SUCCESS_CODE
+
+    def dispatched(self, argv: list[str], caller: Caller, context: Context) -> object:
+        subcommand, parser = self.line_parser.parser(argv)
+        captured_output = io.StringIO()
+        try:
+            with redirect_stdout(captured_output), redirect_stderr(captured_output):
+                arguments = parser.parse_args(argv[2:])
+        except SystemExit:
+            raise UsageError(f"journal {' '.join(argv)} does not parse: {captured_output.getvalue().strip()}") from None
+        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        self.scopes.check_environment(caller.actor, environment_id)
+        if not isinstance(subcommand, Subcommand):
+            raise Refusal(f"journal {' '.join(argv[:2])} only reads, so it has no place in a transaction")
+        command = subcommand.command(arguments, replace(caller, environment_id=environment_id))
+        handler = self.bus.handler(command)
+        if not handler.transactional or type(handler).prepare is not Handler.prepare:
+            raise Refusal(f"journal {' '.join(argv[:2])} works outside the database, so it cannot run inside a transaction")
+        with self.scopes.command_scope(handler.disabled_scopes, caller.actor, environment_id):
+            return self.bus.dispatch(command, replace(context, actor=caller.actor, environment_id=environment_id))
 
     def scoped_caller(self, subcommand: ReadSubcommand[object], caller: Caller) -> Caller:
         environment_id = self.scopes.environment_id or caller.environment_id

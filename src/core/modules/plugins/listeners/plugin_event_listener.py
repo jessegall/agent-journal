@@ -1,4 +1,5 @@
 import json
+from dataclasses import replace
 
 from core.base.actor_type import ActorType
 from core.base.change.change import Change
@@ -14,30 +15,44 @@ from core.base.model.tables import Tables
 from core.base.registry.registry import Registry
 from core.modules.plugins.commands.deliver_plugin_event.deliver_plugin_event import DeliverPluginEvent
 from core.modules.plugins.support.plugin_code_faults import PLUGIN_CODE_FAULTS
-from core.modules.plugins.support.plugin_event_scripts import FAULT_WRITES
+from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
+from core.modules.plugins.support.plugin_answer_lines import PluginAnswerLines
+from core.modules.plugins.support.plugin_event_answer import PluginEventAnswer
+from core.modules.plugins.support.plugin_event_scripts import FAULT_WRITES, PluginEventScripts
 from core.modules.plugins.support.plugin_payload import PluginPayload
 from core.modules.plugins.support.plugin_subscriptions import PluginSubscriptions
 
 
 class PluginEventListener(SaveListener[Changed[Model]]):
-    """Saves a delivery for each commit script of this change, in its transaction, so a delivery exists exactly when
-    the change does. A change with no script is one lookup and writes nothing. Saving a fault delivers nothing, or a
+    """Runs the listen scripts of this change and adds their lines to it, then saves a delivery for each commit script,
+    in its transaction, so a delivery exists exactly when the change does. A change with no script is one lookup each
+    and writes nothing. Saving a fault delivers nothing, or a
     script on the plugin row that fails would record faults without end. A failure of this code goes to the error
     log and the change goes on."""
 
     name = "plugins.event-listener"
 
-    def __init__(self, subscriptions: PluginSubscriptions, bus: Bus, log: EventLog, tables: Tables, errors: ErrorLog, registry: Registry) -> None:
-        self.subscriptions, self.bus, self.log, self.tables, self.errors, self.registry = subscriptions, bus, log, tables, errors, registry
+    def __init__(self, subscriptions: PluginSubscriptions, bus: Bus, log: EventLog, tables: Tables, errors: ErrorLog, registry: Registry, scripts: PluginEventScripts, lines: PluginAnswerLines) -> None:
+        self.subscriptions, self.bus, self.log, self.tables, self.errors, self.registry, self.scripts, self.lines = subscriptions, bus, log, tables, errors, registry, scripts, lines
 
     def handle(self, event: Changed[Model], context: Context) -> None:
         if isinstance(context.command, FAULT_WRITES):
             return
         change = Change.of(event, context)
         try:
+            for answered in self.scripts.answers(EventForm.LISTEN, event, context):
+                self.apply_listen_answer(answered, change, context)
             self.save_deliveries(change, context)
         except PLUGIN_CODE_FAULTS as error:
-            self.errors.noted(f"plugin deliveries of {change.event} were not saved: {type(error).__name__}: {error}")
+            self.errors.noted(f"plugin scripts of {change.event} were not handled: {type(error).__name__}: {error}")
+
+    def apply_listen_answer(self, answered: PluginEventAnswer, change: Change[Model], context: Context) -> None:
+        key = self.registry.event_key(change.event)
+        if answered.answer.is_refusal():
+            self.bus.dispatch(RecordPluginFault(answered.plugin_id, f"it answered refuse at {key} (listen): {answered.answer.reason}"), context)
+            return
+        self.lines.carry_out(answered, key, context)
+        self.scripts.apply(replace(answered, answer=answered.answer.without_commands()), context)
 
     def save_deliveries(self, change: Change[Model], context: Context) -> None:
         log_name = change.event

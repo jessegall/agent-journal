@@ -1,11 +1,15 @@
 import json
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from core.base.type_guards import is_list, is_mapping
 from core.modules.plugins.support.plugin_card import PluginCard
 
 OLD_TYPE_KEY = "kind"
+
+
+MOST_COMMAND_LINES = 20
+COMMANDS_KEY = "commands"
 
 
 @dataclass(frozen=True)
@@ -32,7 +36,7 @@ class PluginAnswer:
         if not is_mapping(fields):
             fields = {}
         cards: object = fields["cards"] if "cards" in fields else None
-        commands: object = fields["commands"] if "commands" in fields else None
+        commands: object = fields[COMMANDS_KEY] if COMMANDS_KEY in fields else None
         skills: object = fields["require_skills"] if "require_skills" in fields else None
         return cls(str(fields["answer"]) if "answer" in fields else "allow", cls.text(fields, "reason"), cls.text(fields, "tell"),
                    tuple(cls.card(entry) for entry in cards if is_mapping(entry)) if is_list(cards) else (),
@@ -53,6 +57,10 @@ class PluginAnswer:
 
     def duration_text(self) -> str:
         return f"{int(self.judged_ms) / 1000:.1f} s" if self.judged_ms else ""
+
+    def without_commands(self) -> "PluginAnswer":
+        fields = {key: value for key, value in json.loads(self.output or "{}").items() if key != COMMANDS_KEY}
+        return replace(self, commands=(), output=json.dumps(fields))
 
     def has_output(self) -> bool:
         return bool(self.cards or self.commands or self.required_skills)

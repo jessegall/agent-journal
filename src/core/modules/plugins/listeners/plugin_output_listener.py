@@ -17,7 +17,7 @@ from core.modules.plugins.models.enums.plugin_card_tone import PluginCardTone
 from core.modules.plugins.models.enums.plugin_mark_type import PluginMarkType
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_output import PluginOutput
-from core.modules.plugins.support.plugin_answer import PluginAnswer
+from core.modules.plugins.support.plugin_answer import MOST_COMMAND_LINES, PluginAnswer
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
@@ -25,7 +25,6 @@ from core.modules.skills.commands.request_skill.request_skill import RequestSkil
 from core.modules.plugins.support.plugins_module_name import MODULE_NAME
 from core.base.change.created import Created
 
-MOST_COMMAND_LINES = 20
 TONES = {tone.value: tone for tone in PluginCardTone}
 
 
