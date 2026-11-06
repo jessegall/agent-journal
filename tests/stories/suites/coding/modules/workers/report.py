@@ -1,5 +1,10 @@
+from datetime import timedelta
+
 from core.base.actor import Actor
+from core.base.actor_type import ActorType
+from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
+from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment, worker_session
 
@@ -67,3 +72,20 @@ def test_a_workers_report_stays_out_of_the_chat_and_the_main_agent_reads_it(new_
     story.expect_success('worker report "The cart needs a tax rate"', actor=worker)
     story.expect_absent("message feed --environment 1", "The cart needs a tax rate", actor=story.user)
     story.expect_text("message show 1", "The cart needs a tax rate", actor=story.agent)
+
+
+def test_a_worker_report_does_not_answer_a_users_message(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.expect_success('message send "Fix the cart" --environment main', actor=story.user)
+    story.advance(timedelta(seconds=1))
+    read = HookSamples.shell("journal message read 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")).with_fields(event="post_tool_use")
+    story.hook("s-1", read)
+    view = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
+    story.expect_hook_allowed("s-1", view, "answer message 1 before you go on")
+    story.advance(timedelta(seconds=301))
+    story.expect_success('worker report "The work is ready"', actor=worker)
+    story.hook("s-1", HookSamples.prompt("Continue"))
+    story.expect_hook_allowed("s-1", view, "answer message 1 before you go on")
