@@ -11,7 +11,6 @@ class MakePhaseSubcommand(Subcommand[MakePhase, Phase]):
 
     cli_name = "phase"
     name = "make"
-    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("title")

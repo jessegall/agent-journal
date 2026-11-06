@@ -10,7 +10,6 @@ class PlacePhaseSubcommand(Subcommand[PlacePhase, PhaseTask]):
 
     cli_name = "phase"
     name = "place"
-    outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("task_id", type=int)

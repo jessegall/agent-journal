@@ -109,6 +109,13 @@ def test_a_read_only_helper_runs_nothing_that_changes_or_reaches_out(new_story, 
     story.expect_hook_refusal(session, sample, "reads and searches only")
 
 
+@pytest.mark.parametrize("line", ["phase make --plan 1 Totals", "phase place 1 --phase 1", "phase move 1 --to 2", "doc --help", "agent stop --help"])
+def test_a_read_only_planner_can_file_its_plan_and_ask_any_command_for_its_help(new_story, line):
+    story, session = helper_story(new_story, PROGRAMS[0])
+    words = line.split()
+    story.expect_hook_allowed(session, shell(f"journal {line}", part("journal", CommandCategory.JOURNAL, *words)))
+
+
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
 def test_a_line_the_hook_could_not_judge_is_refused_with_a_way_on(new_story, helper_fixture):
     story, session = helper_story(new_story, helper_fixture)

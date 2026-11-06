@@ -17,6 +17,8 @@ from core.modules.profiles.support.profile_files import ProfileFiles
 MCP_PREFIX = "mcp__"
 LIMITED_TOOL_TYPES = (ToolType.QUESTION, ToolType.UNCATEGORISED)
 
+HELP_FLAG = "--help"
+
 
 class AccessRule(ReadonlyRule):
     """An agent with read-only access reads, searches and runs journal commands, on every program and under every
@@ -48,7 +50,7 @@ class AccessRule(ReadonlyRule):
     def reaches_outward(self, shell: ShellLine) -> bool:
         if any(variable in shell.display_text for variable in self.identity_variables()):
             return True
-        return any(self.registry.is_outward(" ".join(part.arguments[:2])) for part in shell.parts_running_journal_command())
+        return any(self.registry.is_outward(" ".join(part.arguments[:2])) for part in shell.parts_running_journal_command() if HELP_FLAG not in part.arguments)
 
     def identity_variables(self) -> tuple[str, ...]:
         return (SESSION_VARIABLE, RUNNER_VARIABLE, *(provider.session_variable for provider in self.providers.all()))
