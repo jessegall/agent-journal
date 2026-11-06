@@ -10,7 +10,7 @@ from functools import lru_cache
 from core.base.refusal import Refusal
 from core.base.type_guards import is_list, is_mapping
 from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX, ManifestListener
-from core.modules.plugins.support.plugin_named_event import PluginNamedEvent
+from core.modules.plugins.support.plugin_declared_event import PluginDeclaredEvent
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.manifest_alias import ManifestAlias
 from core.modules.plugins.support.manifest_dashboard import ManifestDashboard
@@ -60,7 +60,7 @@ class PluginManifest:
     description: str = ""
     project_reads: tuple[str, ...] = ()
     listeners: tuple[ManifestListener, ...] = ()
-    declared_events: tuple[PluginNamedEvent, ...] = ()
+    declared_events: tuple[PluginDeclaredEvent, ...] = ()
     protocol: int = LINE_VERSION
     listed_files: tuple[str, ...] = ()
 
@@ -231,7 +231,7 @@ class PluginManifest:
         return min(limits[0], ceiling_ms) if limits else ceiling_ms
 
     def with_declared_events(self, keys: Mapping[str, str]) -> "PluginManifest":
-        declared_events = tuple(PluginNamedEvent(keys[listener.event], listener.event, form, listener.allowed_script(form)) for listener in self.listeners if listener.event in keys
+        declared_events = tuple(PluginDeclaredEvent(keys[listener.event], listener.event, form, listener.allowed_script(form)) for listener in self.listeners if listener.event in keys
                         for form in (EventForm.GUARD, EventForm.COMMIT) if listener.allowed_script(form))
         if not declared_events:
             return self
@@ -239,7 +239,7 @@ class PluginManifest:
         windows = tuple(EventWindow(declared_event.event, 0) for declared_event in declared_events if declared_event.form is EventForm.GUARD and declared_event.event not in self.window_names())
         return replace(self, event_names=names, event_windows=(*self.event_windows, *windows), declared_events=declared_events)
 
-    def declared_event(self, event: str, form: EventForm) -> PluginNamedEvent | None:
+    def declared_event(self, event: str, form: EventForm) -> PluginDeclaredEvent | None:
         return next((declared_event for declared_event in self.declared_events if declared_event.event == event and declared_event.form is form), None)
 
     def script(self, key: str, form: EventForm) -> str:

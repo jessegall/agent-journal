@@ -160,12 +160,12 @@ class EndlessWork:
 
 
 @dataclass(frozen=True)
-class CreateItemOnce(Command[Item]):
+class CreateSingleItem(Command[Item]):
     title: str
 
 
-class CreateItemOnceHandler(EndlessItemHandler):
-    command = CreateItemOnce
+class CreateSingleItemHandler(EndlessItemHandler):
+    command = CreateSingleItem
     runs_once = True
 
 
@@ -257,30 +257,30 @@ class PassedOnHandler(Handler[PassedOn, int]):
 
 
 @dataclass(frozen=True)
-class CreateNestedItemOnce(Command[Item]):
+class CreateNestedSingleItem(Command[Item]):
     title: str
 
 
-class CreateNestedItemOnceHandler(CreateItemOnceHandler):
-    command = CreateNestedItemOnce
+class CreateNestedSingleItemHandler(CreateSingleItemHandler):
+    command = CreateNestedSingleItem
 
 
 @dataclass(frozen=True)
-class CreateItemAfterNestedOnce(Command[Item]):
+class CreateItemAfterNested(Command[Item]):
     title: str
 
 
-class CreateItemAfterNestedOnceHandler(Handler[CreateItemAfterNestedOnce, Item]):
+class CreateItemAfterNestedHandler(Handler[CreateItemAfterNested, Item]):
     """Dispatches a single-run command before requesting outside work."""
 
-    command = CreateItemAfterNestedOnce
+    command = CreateItemAfterNested
 
     def __init__(self, bus: Bus) -> None:
         self.bus = bus
 
-    def handle(self, command: CreateItemAfterNestedOnce, context: Context) -> Item:
+    def handle(self, command: CreateItemAfterNested, context: Context) -> Item:
         ROUNDS.append(context.outside_runs.rounds)
-        item = self.bus.dispatch(CreateNestedItemOnce(command.title), context)
+        item = self.bus.dispatch(CreateNestedSingleItem(command.title), context)
         if not context.outside_runs.closed:
             raise context.outside_runs.rollback(EndlessWork())
         return item
@@ -301,8 +301,8 @@ def container(tmp_path):
 def outside_container(tmp_path):
     for records in (ROUNDS, WORK_RUNS, CACHED_COUNTS, RECORDED_CONTEXTS):
         records.clear()
-    pairs = handlers((MakeCommand, MakeHandler), (CreateItemWithOutsideWork, CreateItemWithOutsideWorkHandler), (EndlessItem, EndlessItemHandler), (CreateItemOnce, CreateItemOnceHandler), (SwallowingItem, SwallowingItemHandler),
-                     (KeptItem, KeptItemHandler), (CreateItemsWithOutsideWork, CreateItemsWithOutsideWorkHandler), (RecordContext, RecordContextHandler), (PassedOn, PassedOnHandler), (CreateNestedItemOnce, CreateNestedItemOnceHandler), (CreateItemAfterNestedOnce, CreateItemAfterNestedOnceHandler))
+    pairs = handlers((MakeCommand, MakeHandler), (CreateItemWithOutsideWork, CreateItemWithOutsideWorkHandler), (EndlessItem, EndlessItemHandler), (CreateSingleItem, CreateSingleItemHandler), (SwallowingItem, SwallowingItemHandler),
+                     (KeptItem, KeptItemHandler), (CreateItemsWithOutsideWork, CreateItemsWithOutsideWorkHandler), (RecordContext, RecordContextHandler), (PassedOn, PassedOnHandler), (CreateNestedSingleItem, CreateNestedSingleItemHandler), (CreateItemAfterNested, CreateItemAfterNestedHandler))
     container = sample_container(tmp_path, Registry("abc", {}, pairs, {}, (), ()))
     container.bind(ScriptPolicy, ScriptPolicy(guards_run=True))
     return container
@@ -371,7 +371,7 @@ def test_the_round_past_the_limit_goes_closed_and_the_command_commits(outside_co
 
 
 def test_a_closed_run_never_raises_and_its_handler_runs_once(outside_container):
-    outside_container.get(Bus).run(CreateItemOnce("Dune"), AGENT)
+    outside_container.get(Bus).run(CreateSingleItem("Dune"), AGENT)
     assert ROUNDS == [1] and WORK_RUNS == []
     assert titles(outside_container) == ["Dune"]
 
@@ -405,7 +405,7 @@ def test_a_nested_command_keeps_the_skipped_guards_and_the_plugin_script(outside
 
 
 def test_dispatching_a_command_that_runs_once_closes_the_rest_of_the_command(outside_container):
-    outside_container.get(Bus).run(CreateItemAfterNestedOnce("Dune"), AGENT)
+    outside_container.get(Bus).run(CreateItemAfterNested("Dune"), AGENT)
     assert ROUNDS == [1, 1] and WORK_RUNS == []
     assert titles(outside_container) == ["Dune"]
 

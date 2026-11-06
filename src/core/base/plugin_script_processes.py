@@ -46,7 +46,7 @@ class PluginScriptProcesses:
             self.scripts[process.pid] = script
             stopped = self.server_stopped
         if stopped:
-            self.killed((script,), ScriptStop.SERVER)
+            self.killed([script], ScriptStop.SERVER)
         if self.pid_folder is not None:
             self.pid_folder.mkdir(parents=True, exist_ok=True)
             program = process.args[0] if isinstance(process.args, (list, tuple)) else process.args

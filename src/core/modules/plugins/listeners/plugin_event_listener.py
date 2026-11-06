@@ -34,7 +34,7 @@ class PluginEventListener(SaveListener[Changed[Model]]):
     def handle(self, event: Changed[Model], context: Context) -> None:
         if isinstance(context.command, FAULT_WRITES):
             return
-        change = Change.from_event(event, context)
+        change = Change.event_change(event, context)
         try:
             for answered in self.scripts.answers(EventForm.LISTEN, event, context):
                 self.apply_listen_answer(answered, change, context)
@@ -57,7 +57,7 @@ class PluginEventListener(SaveListener[Changed[Model]]):
             return
         row = change.row
         event_id = max(logged.id for logged in self.log.row_events(self.tables.table(type(row)).name, row.id) if logged.event == log_name)
-        data = json.dumps(PluginPayload.from_change(change, EventForm.COMMIT, self.log, event_id))
+        data = json.dumps(PluginPayload.change_payload(change, EventForm.COMMIT, self.log, event_id))
         environment_id = PluginPayload.environment_id(change)
         agent_id = context.actor.id if context.actor.type is ActorType.AGENT else None
         key = self.registry.event_key(log_name)
