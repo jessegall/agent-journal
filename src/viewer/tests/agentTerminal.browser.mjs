@@ -9,6 +9,10 @@ try {
     const window = page.locator('[data-window="agents.agents"]');
     for (const [id, command, other] of [[worker, "ls worker-files", "ls helper-files"], [helper, "ls helper-files", "ls worker-files"]]) {
         const card = window.locator(`[data-agent-open="${id}"]`);
+        await card.waitFor();
+        await card.locator("[data-agent-last-heard]").waitFor({timeout: 5000});
+        assert.match(await card.locator("[data-agent-last-heard]").textContent(), /Last heard:/);
+        await page.screenshot({path: `${capture}-last-heard-${id}.png`, fullPage: true, animations: "disabled"});
         await card.click();
         await card.locator('[data-tab="terminal"]').click();
         await card.getByText(command, {exact: true}).waitFor();

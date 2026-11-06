@@ -77,12 +77,15 @@ readCommand();
             <span class="agent-title" data-agent-title data-agent-motion>{{ title }}</span>
             <span class="agent-name" data-agent-name data-agent-motion>{{ facts?.given_name || row.id }}</span>
             <template v-if="!open"><Icon class="agent-chevron" name="chevronRight" :size="12" /></template>
+            <span class="agent-times">
             <template v-if="row.ended_at && !stoppedWithWork">
                 <TimeAgo class="agent-time" :at="row.ended_at" data-agent-motion />
             </template>
             <template v-else>
                 <span class="agent-time" data-agent-motion>{{ runTime }}</span>
             </template>
+            <span v-if="facts?.last_activity" class="agent-last-heard" data-agent-last-heard>Last heard: <TimeAgo :at="facts.last_activity" /></span>
+            </span>
         </span>
         <span class="agent-line">
             <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
@@ -427,6 +430,8 @@ readCommand();
 
 .agent-card { gap: 2px; padding: 9px 14px; }
 .agent-head { gap: 6px; }
+.agent-times { display: flex; flex-direction: column; align-items: flex-end; flex: none; }
+.agent-last-heard { color: var(--text-4); font-size: 10px; white-space: nowrap; }
 .agent-dot { margin-right: 3px; }
 .agent-name { flex: 0 1 auto; }
 .agent-chevron { position: static; flex: none; margin-left: -2px; color: var(--text-4); opacity: 1; }

@@ -12,6 +12,7 @@ AGENT_CARDS_SELECT = (
     " LEFT JOIN phase_tasks ON phase_tasks.task_id = listed.id LEFT JOIN phases ON phases.id = phase_tasks.phase_id"
     " LEFT JOIN plans AS task_plan ON task_plan.id = phases.plan_id) AS tasks,"
     " EXISTS (SELECT 1 FROM agent_blocks WHERE agent_blocks.session_agent_id = agents.id AND agent_blocks.closed_at IS NULL) AS is_blocked,"
+    " coalesce((SELECT hook_calls.created_at FROM hook_calls WHERE hook_calls.session_agent_id = agents.id ORDER BY hook_calls.id DESC LIMIT 1), '') AS last_activity,"
     " coalesce(dispatch.program_model, '') AS job_model, coalesce(dispatch.profile, '') AS job_profile,"
     " coalesce(dispatch.description, '') AS job_description, coalesce(dispatch.instruction, '') AS job_instruction,"
     " coalesce((SELECT latest.returned FROM helper_jobs AS latest WHERE latest.helper_id = agents.id ORDER BY latest.id DESC LIMIT 1), '') AS job_returned"

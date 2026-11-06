@@ -31,6 +31,7 @@ class AgentCard(EnvironmentScoped, ViewModel):
     started_task_title: str
     tasks: str
     is_blocked: bool
+    last_activity: str
     job_model: str
     job_profile: str
     job_description: str
