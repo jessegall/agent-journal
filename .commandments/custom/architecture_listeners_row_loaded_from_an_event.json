@@ -11,17 +11,10 @@
                 "fileMatches": "(^|/)src/(core/modules|suites)/.+/(listeners|guards)/[^/]+\\.py$"
             },
             {
-                "any": [{"all": [{"name": "find"}, {"argument": {
-                    "at": 0,
-                    "all": [
-                        {
-                            "is": "member-access"
-                        },
-                        {
-                            "name": "row_id"
-                        }
-                    ]
-                }}]}, {"all": [
+                "any": [{"all": [{"name": "find"}, {"any": [
+                    {"argument": {"at": 0, "all": [{"is": "member-access"}, {"name": "row_id"}]}},
+                    {"argument": {"at": 1, "all": [{"is": "member-access"}, {"name": "row_id"}]}}
+                ]}]}, {"all": [
                     {"name": "filter"},
                     {"descendant": {"all": [
                         {"kind": "keyword"},
@@ -34,16 +27,13 @@
         "reject": [
             {
                 "testCode": true
-            },
-            {
-                "fileMatches": "/(worker_test_listener|reply_link_listener|memory_mark_listener|process_end_mark_listener|reviewer_ended_listener)\\.py$"
             }
         ]
     },
     "sin": {
         "name": "row-loaded-from-an-event",
         "description": "A listener loads the row its event names, which the runner has already loaded.",
-        "rule": "Declare the row's event as the type parameter and read event.row. The five existing listener files named in reject await task 6608 and the final judge after both workers merge; their row reloads are temporary exceptions, not the pattern for a new listener.",
+        "rule": "Declare the row's event as the type parameter and read event.row. The find takes the row id as its first argument (a query) or its second (EventRows.find after the model), and both are read.",
         "skill": "plain-code-words"
     }
 }

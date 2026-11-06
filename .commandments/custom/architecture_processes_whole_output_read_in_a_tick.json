@@ -1,0 +1,25 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {"nameIn": ["reader_text", "all_output"]},
+            {"of": "enclosingFunction", "descendant": {"all": [{"is": "parameter"}, {"name": "is_final"}]}},
+            {"not": {"of": "enclosingFunction", "descendant": {"all": [
+                {"is": "branch"},
+                {"of": "condition", "any": [{"name": "is_final"}, {"descendant": {"name": "is_final"}}]},
+                {"descendant": {"is": "return"}}
+            ]}}}
+        ],
+        "reject": [
+            {"testCode": true}
+        ]
+    },
+    "sin": {
+        "name": "whole-output-read-in-a-tick",
+        "description": "A function that advances a reader on each tick (it takes is_final) reads the whole output of the run, so every tick reads a file that only grows.",
+        "rule": "Read the bytes after the reader's offset on a tick, and the whole output only in the final read: put the whole read behind an is_final return, or keep the counts the reader has already found.",
+        "skill": "processes-architecture"
+    }
+}

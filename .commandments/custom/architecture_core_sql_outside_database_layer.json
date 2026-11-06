@@ -29,16 +29,13 @@
             },
             {
                 "testCode": true
-            },
-            {
-                "fileMatches": "(^|/)core/modules/(tasks|drivers)/models/support/views\\.py$"
             }
         ]
     },
     "sin": {
         "name": "sql-outside-database-layer",
         "description": "SQL text is written outside base/database, base/query, a migration, a module's views.py or its conditions, so its table and column names go unchecked.",
-        "rule": "Name the statement in the database layer (base/database) or build it with the query builder, and use it from there. Temporary task 6613 exceptions name tasks/models/support/views.py and drivers/models/support/views.py: closed_task_counts_select and tool_use_counts_select are query builders that must leave views.py at the final judge after worker 570 merges.",
+        "rule": "Name the statement in the database layer (base/database) or build it with the query builder, and use it from there. A views.py function only joins named statements: the SQL text itself stands as a top-level constant of the file.",
         "skill": "sql-in-the-database-layer"
     }
 }

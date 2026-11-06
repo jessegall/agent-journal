@@ -28,10 +28,10 @@ class DocRevisionSubcommand(ReadSubcommand[RevisionReading]):
         count = revisions.count()
         if not count:
             raise Refusal(f"doc {arguments.id} has no revisions yet", "its first save writes revision 1")
-        matching = revisions.filter(number=arguments.number).limited(1)
-        if not matching:
+        revision = revisions.filter(number=arguments.number).first()
+        if revision is None:
             raise Refusal(f"doc {arguments.id} has revisions 1 to {count}", "name one of them")
-        return RevisionReading(matching[0], count)
+        return RevisionReading(revision, count)
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, RevisionReading):

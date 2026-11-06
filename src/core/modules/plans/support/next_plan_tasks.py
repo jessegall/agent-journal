@@ -20,21 +20,18 @@ class NextPlanTasks:
 
     def following(self, plan_id: int) -> int | None:
         waiting = SubqueryMatch("task_id", Select(OpenDependency.view).column("task_id"), negated=True)
-        unfinished = self.queries.query(PlanTask).filter(plan_id=plan_id).matching(Among("state", UNFINISHED_STATES)).matching(waiting).ordered("phase_position").limited(1)
-        if not unfinished:
+        unfinished = self.queries.query(PlanTask).filter(plan_id=plan_id).matching(Among("state", UNFINISHED_STATES)).matching(waiting).ordered("phase_position").first()
+        if unfinished is None:
             return None
         free = SubqueryMatch("task_id", Select("tasks").matching(HasValue("delegated_to")).column("id"), negated=True)
-        free_tasks = self.queries.query(PlanTask).filter(plan_id=plan_id, phase_position=unfinished[0].phase_position, state=TaskState.OPEN).matching(waiting).matching(free).matching(CheckpointLimit(plan_id)).all_rows()
+        free_tasks = self.queries.query(PlanTask).filter(plan_id=plan_id, phase_position=unfinished.phase_position, state=TaskState.OPEN).matching(waiting).matching(free).matching(CheckpointLimit(plan_id)).all_rows()
         first = min(free_tasks, key=lambda place: (-place.priority, place.task_id), default=None)
         return first.task_id if first is not None else None
 
     def environment_task(self) -> Task | None:
         plans = self.queries.query(Plan).filter(state=PlanState.STARTED).ordered("started_at", "id").all_rows()
-        for plan in tuple(plans):
-            following = self.following(plan.id)
-            if following is not None:
-                return self.queries.query(Task).find(following)
-        return None
+        following = next((task_id for task_id in map(self.following, (plan.id for plan in plans)) if task_id is not None), None)
+        return None if following is None else self.queries.query(Task).find(following)
 
     def plan_exclusion(self) -> SubqueryMatch:
         return SubqueryMatch("id", Select("phase_tasks").column("task_id"), negated=True)

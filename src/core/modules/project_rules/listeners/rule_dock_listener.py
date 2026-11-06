@@ -35,6 +35,7 @@ class RuleDockListener(CommitListener[Changed[ProjectRule]]):
             environment_id = logged.environment_id or self.queries.query(Agent).find(rule.creator_id).environment_id
             self.bus.run(AddDockItem(RuleDockType.PROPOSED.value, ProjectRule.model_name, rule.id), actor, cause_id=logged.id, environment_id=environment_id)
             return
-        for item in self.items.type_items(RuleDockType.PROPOSED.value).row_items(ProjectRule.model_name, rule.id).filter(state=DockItemState.DOCKED).all_rows():
-            dock = self.queries.query(Dock).find(item.dock_id)
-            self.bus.run(RemoveDockItem(item.id), actor, cause_id=logged.id, environment_id=dock.environment_id)
+        docked = list(self.items.type_items(RuleDockType.PROPOSED.value).row_items(ProjectRule.model_name, rule.id).filter(state=DockItemState.DOCKED).all_rows())
+        docks = {dock.id: dock for dock in self.queries.query(Dock).find_many([item.dock_id for item in docked])}
+        for item in docked:
+            self.bus.run(RemoveDockItem(item.id), actor, cause_id=logged.id, environment_id=docks[item.dock_id].environment_id)

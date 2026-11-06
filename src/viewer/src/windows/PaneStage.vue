@@ -11,6 +11,7 @@ import {usePaneActions} from "../composables/paneActions.js";
 import {coalesced} from "../composables/coalesced.js";
 import {useSharedNow} from "../composables/now.js";
 import {usageRead} from "../../kit/useUsage.js";
+import {usePoll} from "../../kit/usePoll.js";
 import DetachedWindows from "../layout/DetachedWindows.vue";
 import DragGhost from "../panes/DragGhost.vue";
 import DropCompass from "../panes/DropCompass.vue";
@@ -107,9 +108,6 @@ const lastProject = rememberedRef("last-project", "agent-journal");
 const project = computed(() => environments.value?.find?.((row) => row.name === props.environment)?.folder?.split("/").pop() || lastProject.value);
 watchEffect(() => (lastProject.value = project.value));
 watchEffect(() => (document.title = pageTitle(props.environment, project.value)));
-let activityTimer = null;
-let usageTimer = null;
-let branchTimer = null;
 // the bars follow events; what no event announces, the usage files of the agent programs and the checkout's branch, is read on a slow clock
 const EVENT_READ_GAP_MS = 5000;
 const USAGE_SECONDS = 10;
@@ -184,13 +182,21 @@ async function readBars() {
 }
 const askBars = coalesced(readBars, EVENT_READ_GAP_MS);
 const askUsage = coalesced(readUsage, EVENT_READ_GAP_MS);
+function readEventFacts() {
+    if (!props.shellRead) return;
+    readPhones();
+    readBars();
+}
 function readFacts() {
     if (!props.shellRead) return;
     readUsage();
     readBranch();
-    readPhones();
-    readBars();
+    readEventFacts();
 }
+// each poll reads once as it starts, so the first reading of these three is theirs
+usePoll(readUsage, () => true, USAGE_SECONDS * 1000);
+usePoll(readBranch, () => true, BRANCH_SECONDS * 1000);
+usePoll(readActivity, () => activityOpen.value, ACTIVITY_SECONDS * 1000);
 const chatFirst = (pane) => (pane.pane.tabs.includes(CHAT_WINDOW) ? 0 : 1);
 const phone = computed(() => props.face === "phone");
 const phoneNames = computed(() => {
@@ -216,19 +222,13 @@ onMounted(() => {
     readEnvironments();
     readActiveEnvironments();
     props.subscriptions.follow("stage:environments", ["agent.*"], readActiveEnvironments);
-    readFacts();
+    readEventFacts();
     props.subscriptions.follow("stage:bars", ["task.*", "agent.*", "question.*", "scheduled_job.*", "process.*"], askBars);
     props.subscriptions.follow("stage:usage", ["agent.*"], askUsage);
     props.subscriptions.follow("stage:phones", ["phone.*"], readPhones);
-    usageTimer = setInterval(readUsage, USAGE_SECONDS * 1000);
-    branchTimer = setInterval(readBranch, BRANCH_SECONDS * 1000);
-    activityTimer = setInterval(readActivity, ACTIVITY_SECONDS * 1000);
     if (linkedRef()) openRef(linkedRef());
 });
 onUnmounted(() => {
-    clearInterval(activityTimer);
-    clearInterval(usageTimer);
-    clearInterval(branchTimer);
     askBars.cancel();
     askUsage.cancel();
     window.removeEventListener("resize", measure);

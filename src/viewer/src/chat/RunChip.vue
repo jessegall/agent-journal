@@ -1,19 +1,18 @@
 <script setup>
-import {computed, inject, ref} from "vue";
+import {computed, inject, onBeforeUnmount, onMounted, ref} from "vue";
 import MarkIcon from "../kit/MarkIcon.vue";
 import DockLeave from "./DockLeave.vue";
 import {isLeaving, leaveSeconds} from "../domain/dockItems.js";
-import {usePoll} from "../../kit/usePoll.js";
 import {WINDOW_CONTEXT, lineResult} from "../windows/windowContext.js";
 
 // one run in the compact row of several docked runs: where it stands as a ring or a sign, its name, a line of its progress,
 // and, once it ended, the countdown to its leaving along its top edge as its card has
 const OUTPUT_WINDOW = "processes.output";
-const CHIP_READ_MILLISECONDS = 5000;
 const TONES = {running: "var(--tone-work)", finished: "var(--tone-good)", failed: "var(--danger)"};
 const ICONS = {finished: "tick", failed: "cross", stopped: "stop", orphaned: "stop"};
 const props = defineProps({item: {type: Object, required: true}});
-const environment = inject(WINDOW_CONTEXT, null)?.environment ?? "";
+const context = inject(WINDOW_CONTEXT, null);
+const environment = context?.environment ?? "";
 const card = ref(null);
 const running = computed(() => !card.value || card.value.state === "running" || card.value.state === "background");
 const name = computed(() => card.value?.title || card.value?.line || props.item.title || "");
@@ -24,7 +23,15 @@ async function load() {
     if (answer.ok) card.value = answer.value;
 }
 
-usePoll(load, () => running.value, CHIP_READ_MILLISECONDS);
+// the card is read once and again whenever an event announces a change of this run
+let stop = null;
+onMounted(() => {
+    load();
+    stop = context?.subscriptions?.follow(`run chip ${props.item.id}`, ["process.*"], (event) => {
+        if (!event.row_id || event.row_id === props.item.target_id) load();
+    });
+});
+onBeforeUnmount(() => stop?.());
 </script>
 
 <template>

@@ -44,8 +44,8 @@ class FitnessMeasures:
         return AgentFitness(agent.id, is_measured, score, measures, workload, self.workload_level(workload), arrivals_hourly, answers_hourly, self.waiting_messages(agent))
 
     def message_wait(self, agent: Agent, current_time: Timestamp) -> FitnessMeasure:
-        waiting = self.queries.query(Message).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().limited(1)
-        minutes = waiting[0].creation_timestamp().elapsed_seconds(current_time) / 60 if waiting else 0.0
+        oldest = self.queries.query(Message).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().first()
+        minutes = oldest.creation_timestamp().elapsed_seconds(current_time) / 60 if oldest is not None else 0.0
         return FitnessMeasure("message_wait", "Oldest message waiting, minutes", round(minutes, 1), MESSAGE_WAIT_PASS_MINUTES, self.minutes_score(minutes), MESSAGE_WEIGHT)
 
     def wait_share(self, agent: Agent, current_time: Timestamp) -> FitnessMeasure:

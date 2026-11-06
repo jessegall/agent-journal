@@ -27,7 +27,7 @@ class WorkerLogDueRule(DriverRule):
         worktree = self.worktrees.worker_worktree(hook.agent_id)
         if worktree is None:
             return RuleAnswer.allowed()
-        proofs = self.queries.query(Proof).filter(worktree_id=worktree.id).newest().limited(1)
-        latest = proofs[0].creation_timestamp() if proofs else worktree.creation_timestamp()
+        latest_proof = self.queries.query(Proof).filter(worktree_id=worktree.id).newest().first()
+        latest = latest_proof.creation_timestamp() if latest_proof is not None else worktree.creation_timestamp()
         minutes = latest.elapsed_minutes(hook.timestamp)
         return RuleAnswer.with_nudges(WORKER_LOG_DUE.nudge(minutes=minutes)) if minutes >= LOG_DUE_MINUTES else RuleAnswer.allowed()

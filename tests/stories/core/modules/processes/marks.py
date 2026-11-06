@@ -54,6 +54,23 @@ def test_the_readers_progress_is_the_marks_figure_updated_in_place(new_story):
     story.expect_text(MARKS, "80%")
 
 
+def test_the_steps_a_reader_counts_move_the_mark_of_a_run_that_has_no_progress_figure(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.run('reader add steps --commands "make*" --lines "FAILED" --step "[.F]"', actor=story.agent)
+    process = started_run(story, "make test", category=CommandCategory.TEST_RUN)
+    story.run_listeners()
+    starting_count = mark_count(story)
+    story.container.get(OutputFolder).write_output(process.id, 1, "..\n")
+    tick(story)
+    story.run_listeners()
+    story.expect_text(MARKS, "2 passed")
+    story.container.get(OutputFolder).write_output(process.id, 1, "....\n")
+    tick(story)
+    story.run_listeners()
+    expect_mark_count(story, starting_count)
+    story.expect_text(MARKS, "4 passed")
+
+
 def test_a_mark_of_a_stopped_run_says_the_agent_stopped_it_and_not_its_last_line(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "make test", category=CommandCategory.TEST_RUN)

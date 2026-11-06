@@ -27,7 +27,7 @@ class AliasNames:
             raise Refusal(f"the alias {name} exists: change it with journal alias edit {name}")
 
     def alias(self, name: str) -> Alias:
-        rows = self.aliases.with_name(name).limited(1)
-        if not rows:
+        alias = self.aliases.with_name(name).first()
+        if alias is None:
             raise Refusal(f"no alias is called {name}", "journal alias list lists them")
-        return rows[0]
+        return alias

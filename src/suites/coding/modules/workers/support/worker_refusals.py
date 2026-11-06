@@ -33,5 +33,5 @@ class WorkerRefusals:
         self.repository.save(counts.changed(count=0, notice_at=None), context)
 
     def read_count(self, worktree: Worktree, context: Context) -> WorkerRefusalCount:
-        rows = self.queries.query(WorkerRefusalCount).filter(worktree_id=worktree.id).limited(1)
-        return rows[0] if rows else WorkerRefusalCount(worktree_id=worktree.id, creator_id=context.actor.id)
+        counted = self.queries.query(WorkerRefusalCount).filter(worktree_id=worktree.id).first()
+        return counted if counted is not None else WorkerRefusalCount(worktree_id=worktree.id, creator_id=context.actor.id)

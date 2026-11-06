@@ -30,8 +30,8 @@ class UnreadMessageWriteRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         delivered = self.messages.unread(hook.agent_id).matching(Greater("delivered_at", "")).oldest()
-        first = delivered.limited(1)
-        first_delivered_at = first[0].delivered_at if first else None
+        first = delivered.first()
+        first_delivered_at = first.delivered_at if first is not None else None
         if first_delivered_at is None:
             return RuleAnswer.allowed()
         remaining_calls = UNREAD_TOOL_USES - self.hook_calls.tool_call_count(hook.agent_id, first_delivered_at)

@@ -21,5 +21,5 @@ class OverviewOverlay(Overlay):
         self.queries = queries
 
     def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
-        blocks = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, nudge_key=OVERVIEW_REFUSAL.key).matching(IsNull("closed_at")).oldest().limited(1)
-        return [OpenRow("agent_block", block.id, block.creation_timestamp()) for block in blocks]
+        block = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, nudge_key=OVERVIEW_REFUSAL.key).matching(IsNull("closed_at")).oldest().first()
+        return [OpenRow("agent_block", block.id, block.creation_timestamp())] if block is not None else []

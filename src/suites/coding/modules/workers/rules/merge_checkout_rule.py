@@ -31,8 +31,10 @@ class MergeCheckoutRule(DriverRule):
         if self.hook_history.has_recent_answer(self.name, hook, REMINDER_SPAN):
             return RuleAnswer.allowed()
         nudges: list[Nudge] = []
-        for worktree in self.delivered.delivered(hook.agent_id):
-            environment = self.queries.query(Environment).find(worktree.environment_id)
+        delivered = list(self.delivered.delivered(hook.agent_id))
+        environments = {environment.id: environment for environment in self.queries.query(Environment).find_many([worktree.environment_id for worktree in delivered])}
+        for worktree in delivered:
+            environment = environments[worktree.environment_id]
             if not self.proofs.waiting_proofs(worktree.id).exists() and self.git.head(environment.folder) != worktree.base_branch:
                 nudges.append(MERGE_WAITS.nudge(worker=worktree.session_agent_id, environment=environment.name, branch=worktree.base_branch))
         return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()
