@@ -144,7 +144,7 @@ class Trail:
         feature(actual == (number,), f"expected selected message {number}, got {actual}")
 
     def links(self, source: str):
-        value = json.loads(self.command(f"link list --source {source} --json").output_text)
+        value = json.loads(self.command(f"link list --source {source} --page-size 50 --json").output_text)
         return value["rows"]
 
     def expect_link(self, source: str, target: str, relation: str) -> None:

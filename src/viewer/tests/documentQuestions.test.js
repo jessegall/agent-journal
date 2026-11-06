@@ -19,7 +19,8 @@ async function inspector(width = 980) {
     const ran = [];
     const read = async (line) => {
         ran.push(line);
-        if (line[1] === "inspect") return {ok: true, value: {id: 4, title: "Cart", body: "The total is in cents.", abstract: "Cart totals", comments: [{id: 7, body: "A comment", quote: "total", position: 4, selection_type: "text"}]}};
+        if (line[1] === "inspect") return {ok: true, value: {id: 4, title: "Cart", body: "The total is in cents.", abstract: "Cart totals"}};
+        if (line[1] === "comments") return {ok: true, value: {rows: [{id: 7, body: "A comment", quote: "total", position: 4, selection_type: "text"}], total: 1}};
         if (line[0] === "question" && line[1] === "list") return {ok: true, value: {rows: questions.map((row) => ({...row}))}};
         if (line[0] === "question" && line[1] === "answer") {
             Object.assign(questions.find((row) => row.id === Number(line[2])), {state: "answered", answer: line[4]});
