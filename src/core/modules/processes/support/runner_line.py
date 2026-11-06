@@ -32,4 +32,5 @@ class RunnerLine:
         variables += f" {READ_FLAGS_VARIABLE}={shlex.quote(','.join(run.read_flags))}" if run.read_flags else ""
         variables += f" {QUEUE_WAIT_VARIABLE}={run.queue_wait_seconds}" if run.queued else ""
         variables += f" {READ_FOLDERS_VARIABLE}={shlex.quote(os.pathsep.join(str(folder) for folder in run.read_folders))}" if run.read_folders else ""
-        return f"{SESSION_VARIABLE}={shlex.quote(session)} {RUNNER_VARIABLE}={process_id}{variables} {shlex.quote(str(runner))} --process {process_id} --limit {run.seconds}{background} -- {shlex.quote(line)}"
+        session_variable = f"{SESSION_VARIABLE}={shlex.quote(session)} " if session else ""
+        return f"{session_variable}{RUNNER_VARIABLE}={process_id}{variables} {shlex.quote(str(runner))} --process {process_id} --limit {run.seconds}{background} -- {shlex.quote(line)}"

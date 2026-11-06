@@ -1,0 +1,44 @@
+import argparse
+import shlex
+from argparse import ArgumentParser, Namespace
+
+from core.base.caller.caller import Caller
+from core.base.cli.usage_error import UsageError
+from core.base.refusal import Refusal
+from core.base.subcommand.output import Output
+from core.base.subcommand.subcommand import Subcommand
+from core.modules.plugins.commands.run_plugin_command.run_plugin_command import RunPluginCommand
+from core.modules.plugins.support.plugin_call_access import PluginCallAccess
+from core.modules.plugins.support.plugin_command_run import PluginCommandRun
+
+LINE_SEPARATOR = "--"
+
+
+class RunPluginCommandSubcommand(Subcommand[RunPluginCommand, PluginCommandRun]):
+    """`journal plugin run [--agent <n>] [--read-only] -- <command>`: runs a command at the root of the checkout of an
+    agent, with that agent's sandbox, and gives back its output and exit code. An agent may not call it, even naming
+    itself: a line in the run has no session, so it would resolve as the person whose login runs the journal."""
+
+    cli_name = "plugin"
+    name = "run"
+    outward = True
+
+    def __init__(self, access: PluginCallAccess) -> None:
+        self.access = access
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("--agent", type=int)
+        parser.add_argument("--read-only", action="store_true")
+        parser.add_argument("line", nargs=argparse.REMAINDER)
+
+    def command(self, arguments: Namespace, caller: Caller) -> RunPluginCommand:
+        if self.access.is_limited(caller):
+            raise Refusal("an agent may not use journal plugin run", "run the command in your own shell")
+        words = arguments.line[1:] if arguments.line[:1] == [LINE_SEPARATOR] else arguments.line
+        if not words:
+            raise UsageError("name the command to run after --")
+        return RunPluginCommand(self.access.agent_id(arguments.agent, caller), shlex.join(words), arguments.read_only, caller.plugin_script)
+
+    def write_output(self, value: object, output: Output) -> None:
+        if isinstance(value, PluginCommandRun):
+            output.write(f"{value.output}output {value.process_id}, exit code {value.exit_code}", output.values(value))

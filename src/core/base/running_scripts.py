@@ -13,10 +13,11 @@ from core.base.timestamp import Timestamp
 
 
 class RunningScripts:
-    """The plugin processes running now, scripts and services alike, one list for each journal home, since every request and round has a
-    container of its own. A process is known by its pid alone: an unreaped Popen keeps its pid from being reused
-    while it is listed. Nothing here reads the process table, because a program starts under the write lock on
-    the hook path. A variable proves nothing, so the chain of processes is the only way to be a script."""
+    """The plugin processes running now, scripts and services alike, one list for each journal home, since every
+    request and round has a container of its own. A process is known by its pid alone: an unreaped Popen keeps its
+    pid from being reused while it is listed. Nothing here reads the process table, because a program starts under
+    the write lock on the hook path. A variable proves nothing, so the chain of processes is the only way to be a
+    script."""
 
     def __init__(self) -> None:
         self.lock = threading.Lock()

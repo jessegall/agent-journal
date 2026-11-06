@@ -6,12 +6,13 @@ import sys
 from core.base.caller.caller import Caller
 from core.base.cli.console import Console
 from core.base.query.queries import Queries
+from core.base.running_scripts import RunningScripts
 from core.modules.plugins.models.plugin_output import PluginOutput
 from core.modules.processes.models.process import Process
 from tests.stories.core.modules.plugins.event_guard import LOCK_CHECK
 from tests.stories.core.modules.plugins.support.checkout_stories import ORDER, checkout_story, real
 from tests.stories.core.modules.plugins.support.event_stories import EVENT_SCRIPTS, plugin_row, script_calls
-from tests.stories.core.modules.plugins.support.runner_binaries import real_runner_at, recording_runner_at
+from tests.stories.core.modules.plugins.support.runner_binaries import recording_runner_at
 
 SECRET_NAME = "secrets.txt"
 TRY_KEY = "suites.coding.workers.worker_worktree.cut"
@@ -108,13 +109,41 @@ def test_s58_a_slow_command_holds_no_lock(new_story):
     story.expect_rows((story.worktree / "lock.txt").read_text() == "free\n")
 
 
-def test_s58_a_write_outside_the_worktree_fails(new_story):
-    story = checkout_story(new_story)
-    real_runner_at(story.home)
-    outside = story.repository.folder / "written-by-the-run.txt"
-    story.run(f"plugin run --agent {story.worker.id} -- touch {outside}", actor=story.user)
-    inside = story.run(f"plugin run --agent {story.worker.id} -- touch inside.txt", actor=story.user)
-    story.expect_rows(inside.code == 0, (story.worktree / "inside.txt").exists(), not outside.exists())
+def test_s58_read_only_gives_the_run_no_folder_to_write_in(new_story):
+    story = worker_with_tools(new_story)
+    recorded = recording_runner_at(story.home)
+    story.expect_success(f"plugin run --agent {story.worker.id} --read-only -- true", actor=story.user)
+    arguments = json.loads(recorded.read_text())["arguments"]
+    story.expect_rows("--read-only-shell" in arguments, "--write-folder" not in arguments)
+
+
+def test_s58_an_agent_may_not_use_plugin_run_even_naming_itself(new_story):
+    story = worker_with_tools(new_story)
+    recorded = recording_runner_at(story.home)
+    story.expect_refusal(f"plugin run --agent {story.worker.id} -- true", "may not use", actor=story.worker)
+    story.expect_refusal("plugin run -- true", "may not use", actor=story.worker)
+    story.expect_rows(not recorded.exists())
+
+
+def test_s58_a_plugin_script_may_run_for_an_agent_and_the_run_is_listed_for_its_plugin(new_story):
+    story = worker_with_tools(new_story)
+    tools = story.worktree / "tools" / "journal-run"
+    tools.write_text("cat listed.txt\n")
+    (story.worktree / "listed.txt").write_text("listed\n")
+    recording_runner_at(story.home)
+    caller = Caller(story.user, 1, plugin_script="events")
+    stream = io.StringIO()
+    code = story.container.get(Console).run(shlex.split(f"plugin run --agent {story.worker.id} -- sh ./tools/journal-run"), caller, stream)
+    story.expect_rows(code == 0, "listed" in stream.getvalue(), not story.container.get(RunningScripts).running("events"))
+
+
+def test_s58_the_main_checkout_gets_no_sandbox_unless_it_asks_for_read_only(new_story):
+    story = worker_with_tools(new_story)
+    recorded = recording_runner_at(story.home)
+    story.expect_success(f"plugin run --agent {story.agent.id} -- true", actor=story.user)
+    story.expect_rows("--read-only-shell" not in json.loads(recorded.read_text())["arguments"])
+    story.expect_success(f"plugin run --agent {story.agent.id} --read-only -- true", actor=story.user)
+    story.expect_rows("--read-only-shell" in json.loads(recorded.read_text())["arguments"])
 
 
 def tried_story(new_story, script: str):
