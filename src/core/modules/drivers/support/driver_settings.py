@@ -10,12 +10,12 @@ DRIVER_SETTINGS = f"{MODULE_KEY}.driver."
 HOOK_WAIT_SECONDS = f"{MODULE_KEY}.hook-wait-seconds"
 ALLOWANCE_SETTINGS = f"{MODULE_KEY}.essential."
 DRIVERS_SETTINGS = [
-    SettingValue("suite", "Suite", "The set of agent roles and workflows available in this environment.", SettingType.TEXT, default="", scope=SettingScope.ENVIRONMENT),
+    SettingValue("suite", "Suite", "The set of agent roles and workflows available in this environment.", SettingType.TEXT, default="", scope=SettingScope.ENVIRONMENT, person_set=True),
     SettingValue("hook-wait-seconds", "Tool call wait", "Seconds to wait for the journal before allowing a tool call without checks.", SettingType.NUMBER, default=5, scope=SettingScope.PROJECT),
     SettingValue("hook-call-days", "Call record days", "How many days the journal keeps the record of each call from the agent program.", SettingType.NUMBER, default=30,
                  scope=SettingScope.PROJECT),
     SettingGroup("driver", "Drivers", "The driver each type of agent works under in this environment.",
-                 any_key=SettingValue("*", "Driver", "The driver this type of agent works under.", SettingType.TEXT, default="", scope=SettingScope.ENVIRONMENT)),
+                 any_key=SettingValue("*", "Driver", "The driver this type of agent works under.", SettingType.TEXT, default="", scope=SettingScope.ENVIRONMENT, person_set=True)),
     SettingGroup("essential", "Essential rules", "Essential rules the user allowed to be switched off.",
-                 any_key=SettingValue("*", "Allowed", "Whether this essential rule may be switched off.", SettingType.FLAG, default=False, scope=SettingScope.PROJECT)),
+                 any_key=SettingValue("*", "Allowed", "Whether this essential rule may be switched off.", SettingType.FLAG, default=False, scope=SettingScope.PROJECT, person_set=True)),
 ]

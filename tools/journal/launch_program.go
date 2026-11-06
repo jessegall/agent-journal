@@ -84,14 +84,14 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 	defer close(stopWatching)
 	go watcher.Watch(stopWatching)
 	restoreProgram := terminal.Raw()
-	defer inputs.Close(agentID)
-	programInput, programLog := inputs.Open(agentID, os.Stdin), io.MultiWriter(log, watcher)
-	if launch.ShowsBand() {
-		err = launch.RunBelowBand(launch.NewBand(stdout, labels), command, programInput, programLog)
-	} else {
+	programLog := io.MultiWriter(log, watcher)
+	err = runMainProgram(inputs, agentID, command, os.Stdin, func(input io.Reader, started func()) error {
+		if launch.ShowsBand() {
+			return launch.RunBelowBand(launch.NewBand(stdout, labels), command, input, programLog, started)
+		}
 		fmt.Fprintln(stdout, launch.HeaderBar(choice.Environment, agentID, labels.End))
-		err = launch.RunInTerminal(command, programInput, stdout, programLog)
-	}
+		return launch.RunInTerminal(command, input, stdout, programLog, started)
+	})
 	restoreProgram()
 	if err != nil {
 		var exit *exec.ExitError
@@ -102,6 +102,13 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 		return ErrorCode
 	}
 	return SuccessCode
+}
+
+// runMainProgram runs the launch's own program under its agent row, kept in the inputs once it has started so a stop on
+// the launcher's socket reaches it, and takes it out when it ends.
+func runMainProgram(inputs *launch.TerminalInputs, agentID int, command *exec.Cmd, keyboard io.Reader, run func(input io.Reader, started func()) error) error {
+	defer inputs.Close(agentID)
+	return run(inputs.Open(agentID, keyboard), func() { inputs.Track(agentID, command) })
 }
 
 func prepareProgramHooks(journal launch.CommandJournal, program, folder string, stderr io.Writer) {

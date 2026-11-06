@@ -23,9 +23,10 @@ type HookEvent struct {
 	FiredAtMs    int64           `json:"fired_at_ms"`
 	Actor        string          `json:"actor"`
 	Environment  string          `json:"environment"`
-	ChildAgent     string          `json:"child_agent"`
+	ChildAgent   string          `json:"child_agent"`
 	AcceptsLines bool            `json:"accepts_lines"`
 	Launch       string          `json:"launch"`
+	Role         string          `json:"role"`
 	Tool         *Tool           `json:"tool"`
 	Prompt       *string         `json:"prompt"`
 	Raw          json.RawMessage `json:"raw"`

@@ -24,23 +24,26 @@ func ioctl(file *os.File, request uintptr, argument uintptr) error {
 }
 
 // RunInTerminal runs the program in a pseudo terminal of its own: what the person types goes to it, and what it
-// prints goes to the person's screen and to the log alike. It returns when the program ends.
-func RunInTerminal(command *exec.Cmd, input io.Reader, screen io.Writer, log io.Writer) error {
+// prints goes to the person's screen and to the log alike. It calls started once the program has started, and returns
+// when the program ends.
+func RunInTerminal(command *exec.Cmd, input io.Reader, screen io.Writer, log io.Writer, started func()) error {
 	wait, err := StartInTerminal(command, input, screen, log)
 	if err != nil {
 		return err
 	}
+	started()
 	return wait()
 }
 
 // RunBelowBand is RunInTerminal with the band on the top row of the person's terminal: the program has one row less and
 // prints on the screen through the band.
-func RunBelowBand(band *Band, command *exec.Cmd, input io.Reader, log io.Writer) error {
+func RunBelowBand(band *Band, command *exec.Cmd, input io.Reader, log io.Writer, started func()) error {
 	defer band.End()
 	wait, err := startIn(band, command, input, band, log)
 	if err != nil {
 		return err
 	}
+	started()
 	return wait()
 }
 

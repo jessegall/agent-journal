@@ -1,6 +1,9 @@
 from core.modules.agents.agents_module import AgentsModule
 import json
+import socket
 import subprocess
+
+import pytest
 
 from core.base.database.database import Database
 from core.base.leftover_process import LeftoverProcess
@@ -102,9 +105,33 @@ def test_stopping_holds_no_write_lock_and_a_session_its_hooks_ended_stays_ended(
     story.expect_text(f"agent show {agent_id}", "ended_at:", actor=story.user)
 
 
-def test_stopping_an_agent_with_no_known_process_or_ended_is_refused(new_story):
+def no_launcher(story) -> None:
+    return None
+
+
+def socket_of_a_dead_launcher(story) -> None:
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as stale_socket:
+        stale_socket.bind(str(story.home.socket("launcher")))
+
+
+def launcher_that_runs_another_program(story) -> None:
+    FakeLauncher(story.home.socket("launcher"))
+
+
+@pytest.fixture(params=[no_launcher, socket_of_a_dead_launcher, launcher_that_runs_another_program])
+def stopped_main(new_story, request):
     story = new_story(fixture=UserJoined)
-    story.expect_refusal(f"agent stop {story.agent.id}", "does not know the process", actor=story.agent)
+    request.param(story)
+    story.expect_success(f"agent stop {story.agent.id}", f"stopped agent {story.agent.id}", actor=story.user)
+    return story
+
+
+def test_a_main_with_no_process_and_no_launcher_that_answers_ends_when_stopped(stopped_main):
+    stopped_main.expect_text(f"agent show {stopped_main.agent.id}", "ended_at:", actor=stopped_main.user)
+
+
+def test_stopping_an_ended_agent_is_refused(new_story):
+    story = new_story(fixture=UserJoined)
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
     story.expect_refusal(f"agent stop {story.agent.id}", "has ended already", actor=story.user)
 

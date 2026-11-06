@@ -27,6 +27,12 @@ class SettingCatalogue:
                 return replace(entry, key=key, title=key.removeprefix(f"{group}."))
         raise Refusal(f"no module declares the setting {key}", "journal setting tree lists every setting")
 
+    def is_person_set(self, key: str) -> bool:
+        try:
+            return self.entry(key).person_set
+        except Refusal:
+            return False
+
     def value(self, key: str) -> SettingEntry:
         entry = self.entry(key)
         if entry.type == GROUP_TYPE:

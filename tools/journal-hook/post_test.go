@@ -297,3 +297,26 @@ func TestAStopNeverAnsweredIsNotNotedAsBypassed(t *testing.T) {
 		t.Errorf("a held stop was noted as going through unchecked")
 	}
 }
+
+func TestAWorkersOrHelpersToolTheJournalDoesNotAnswerIsNotNotedAsBypassed(t *testing.T) {
+	for _, role := range []string{"worker", "helper", "reviewer"} {
+		root := project(t, "8431")
+		writeFile(t, filepath.Join(root, ".journal", versionFourSwitchName), "")
+		outgoing := sample(root, "pre_tool_use")
+		outgoing.role = role
+		post(outgoing, unreachable, time.Unix(1793395000, 0))
+		if _, err := os.Stat(filepath.Join(root, ".journal", "runtime", "bypass.log")); err == nil {
+			t.Errorf("a %s's refused tool was noted as going around the journal", role)
+		}
+	}
+}
+
+func TestOnlyAMainAgentsToolGoesOnWithoutTheJournal(t *testing.T) {
+	cases := map[[2]string]bool{{"worker", "pre_tool_use"}: true, {"helper", "pre_tool_use"}: true, {"reviewer", "pre_tool_use"}: true,
+		{"main", "pre_tool_use"}: false, {"", "pre_tool_use"}: false, {"worker", "post_tool_use"}: false, {"helper", "prompt"}: false}
+	for setting, wanted := range cases {
+		if mustBeChecked(setting[0], setting[1]) != wanted {
+			t.Errorf("%v must be checked: %v", setting, !wanted)
+		}
+	}
+}

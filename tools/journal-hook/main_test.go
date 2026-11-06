@@ -131,3 +131,38 @@ func firstLine(t *testing.T, path string) []byte {
 	scanner.Scan()
 	return append([]byte(nil), scanner.Bytes()...)
 }
+
+// runProgram runs the built hook as the program's own hook and gives everything it printed.
+func runProgram(t *testing.T, binary, program, root string, body []byte, variables ...string) string {
+	t.Helper()
+	limit, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	command := exec.CommandContext(limit, binary, program, root)
+	command.Env = append(os.Environ(), variables...)
+	command.Stdin = bytes.NewReader(body)
+	output, _ := command.CombinedOutput()
+	return string(output)
+}
+
+func TestWithNoServerAWorkerOrHelperRunsNoToolOnAnyProgramAndAMainAgentGoesOn(t *testing.T) {
+	binary := builtHook(t)
+	for _, program := range []string{"claude", "codex"} {
+		body := firstLine(t, filepath.Join("testdata", "recorded", program, "PreToolUse.jsonl"))
+		for _, role := range []string{"worker", "helper"} {
+			root := project(t, "")
+			output := runProgram(t, binary, program, root, body, "AGENT_JOURNAL_ACTIVE=1", "JOURNAL_ENV=scratch", RoleVariable+"="+role)
+			if !strings.Contains(output, "this tool did not run") || !strings.Contains(output, "stop and write in your report") {
+				t.Errorf("a %s on %s was answered %q", role, program, output)
+			}
+			if _, err := os.Stat(filepath.Join(root, ".journal", "runtime", "bypass.log")); err == nil {
+				t.Errorf("a refused tool of a %s on %s was noted as going around the journal", role, program)
+			}
+		}
+		root := project(t, "")
+		output := runProgram(t, binary, program, root, body, "AGENT_JOURNAL_ACTIVE=1", "JOURNAL_ENV=scratch", RoleVariable+"=main")
+		if strings.Contains(output, "this tool did not run") || read(t, filepath.Join(root, ".journal", "runtime", "bypass.log")) == "" {
+			t.Errorf("a main agent on %s was answered %q", program, output)
+		}
+	}
+}
+

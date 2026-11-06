@@ -8,6 +8,7 @@ import sqlite3
 from pathlib import Path
 
 from core.base.driver.hook_event import HOOK_EVENT_VERSION
+from core.modules.drivers.bindings.agent_hook_route import AgentHookRoute
 from core.base.timing import TIMING_HEADER
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from core.testing.hook_samples import HookSamples
@@ -103,6 +104,32 @@ def test_a_claude_stop_posted_as_a_prepared_object_is_refused_as_the_builder_dec
 def test_a_stop_that_waits_past_its_limit_for_another_hook_is_held(lead_server):
     story = lead_server
     story.expect_locked_hook_answer(lead_stop("server-4"), "the journal could not check this stop and holds it")
+
+
+@pytest.mark.parametrize("role", ["worker", "helper"])
+def test_a_workers_or_helpers_tool_that_waits_past_its_limit_is_refused_and_told_what_to_do(lead_server, role):
+    body = dict(HookSamples.edit("a.py").with_fields(session="s-1", environment="main", firing=f"held-{role}", role=role).body)
+    lead_server.expect_locked_hook_answer(body, "so it did not run")
+    lead_server.expect_locked_hook_answer(body, "stop and write in your report")
+
+
+def test_a_main_agents_tool_that_waits_past_its_limit_goes_through_with_one_line(lead_server):
+    body = dict(HookSamples.edit("a.py").with_fields(session="s-1", environment="main", firing="held-main", role="main").body)
+    lead_server.expect_locked_hook_answer(body, "the journal let this through unchecked")
+
+
+def test_a_workers_tool_from_an_old_hook_runner_is_refused(lead_server):
+    body = dict(HookSamples.edit("a.py").with_fields(session="s-1", environment="main", firing="old-runner", role="worker", foreign=[{}]).body)
+    lead_server.expect_hook_answer("/hook", body, 200, "so it did not run")
+
+
+def test_a_workers_tool_after_the_journal_fails_on_it_is_refused(lead_server, monkeypatch):
+    def broken(route, event):
+        raise ValueError("broken")
+
+    monkeypatch.setattr(AgentHookRoute, "answer", broken)
+    body = dict(HookSamples.edit("a.py").with_fields(session="s-1", environment="main", firing="failed", role="helper").body)
+    lead_server.expect_hook_answer("/hook", body, 200, "so it did not run")
 
 
 def test_a_tool_hook_that_waits_past_its_limit_for_another_hook_is_let_through_with_one_line(lead_server):

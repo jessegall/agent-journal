@@ -1,0 +1,27 @@
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
+from core.base.change.logged_event import LoggedEvent
+from core.base.change.moved import Moved
+from core.base.command.bus import Bus
+from core.base.listener.commit_listener import CommitListener
+from core.base.query.queries import Queries
+from core.modules.questions.models.lifecycles.question_lifecycle import QuestionLifecycle
+from core.modules.questions.models.question import Question
+from core.modules.setting_requests.commands.request_setting.request_setting_handler import APPROVE_OPTION
+from core.modules.setting_requests.models.setting_request import SettingRequest
+from core.modules.settings.commands.set_setting.set_setting import SetSetting
+
+
+class ApprovedSettingListener(CommitListener[Moved[Question]]):
+    """Applies a requested setting once a person approves its question, with that person as the actor."""
+
+    name = "setting-requests.approved"
+    moves = tuple([QuestionLifecycle.answer])
+
+    def __init__(self, queries: Queries, bus: Bus) -> None:
+        self.queries, self.bus = queries, bus
+
+    def handle(self, event: Moved[Question], logged: LoggedEvent) -> None:
+        request = self.queries.query(SettingRequest).filter(question_id=event.row.id).first()
+        if request is not None and event.row.answer == APPROVE_OPTION:
+            self.bus.run(SetSetting(request.key, request.value, request.project), Actor(logged.actor_id, ActorType.USER), cause_id=logged.id, environment_id=request.environment_id)

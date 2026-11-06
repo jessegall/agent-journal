@@ -55,7 +55,7 @@ func TestAProgramRunsInAPseudoTerminalAndItsOutputReachesTheLog(t *testing.T) {
 	}
 	var screen bytes.Buffer
 	command := exec.Command("sh", "-c", `test -t 1 && echo "in a terminal"; echo done`)
-	if err := RunInTerminal(command, strings.NewReader(""), &screen, log); err != nil {
+	if err := RunInTerminal(command, strings.NewReader(""), &screen, log, func() {}); err != nil {
 		t.Fatal(err)
 	}
 	log.Close()

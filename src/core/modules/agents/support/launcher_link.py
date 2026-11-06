@@ -23,6 +23,9 @@ class LauncherLink:
     def stop(self, agent_id: int) -> bool:
         return self.sent({"agent_id": agent_id, "stop": True}, ANSWER_BYTES) == STOPPED_ANSWER
 
+    def request_stop(self, agent_id: int) -> None:
+        self.sent({"agent_id": agent_id, "stop": True})
+
     def sent(self, request: Mapping[str, object], answer_bytes: int = 0) -> bytes | None:
         path = self.home.socket(LAUNCHER_SOCKET)
         if not path.exists():

@@ -17,12 +17,21 @@ type CommandJournal struct {
 	Run LineRunner
 }
 
-type listing struct {
-	Rows []map[string]any `json:"rows"`
+type environmentRow struct {
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	Folder      string `json:"folder"`
+	Branch      string `json:"branch"`
+	Suite       string `json:"suite"`
+	MainRunning bool   `json:"main_running"`
 }
 
-type suiteRun struct {
-	Suite string `json:"suite"`
+type sessionRow struct {
+	Session string `json:"session"`
+}
+
+type runningRow struct {
+	ID int `json:"id"`
 }
 
 // Suites are the installed top suites, as journal suite list gives them.
@@ -31,43 +40,28 @@ func (journal CommandJournal) Suites() ([]string, error) {
 	return strings.Fields(output), err
 }
 
-// Environments are the journal's environments, oldest first, each with its suite and whether a live session holds it.
+// Environments are the journal's environments, oldest first, each with its suite and whether a main agent runs in it.
 func (journal CommandJournal) Environments() ([]Environment, error) {
-	rows, err := journal.rows("environment", "list")
+	rows, err := readRows[environmentRow](journal, "environment", "menu")
 	if err != nil {
 		return nil, err
 	}
-	agents, err := journal.rows("agent", "list")
-	if err != nil {
-		return nil, err
-	}
-	environments := []Environment{}
+	environments := make([]Environment, 0, len(rows))
 	for _, row := range rows {
-		name := text(row, "name")
-		output, err := journal.Run("suite", "current", name, "--json")
-		if err != nil {
-			return nil, err
-		}
-		var run suiteRun
-		_ = json.Unmarshal([]byte(output), &run)
-		id, _ := row["id"].(float64)
-		environments = append(environments, Environment{ID: int(id), Name: name, Folder: text(row, "folder"), Branch: text(row, "branch"), Suite: run.Suite,
-			Working: hasOpenMain(agents, row["id"])})
+		environments = append(environments, Environment{ID: row.ID, Name: row.Name, Folder: row.Folder, Branch: row.Branch, Suite: row.Suite, Working: row.MainRunning})
 	}
 	return environments, nil
 }
 
-// Conversations are the program's past sessions in the environment, newest first.
+// Conversations are the program's past main sessions in the environment, newest first.
 func (journal CommandJournal) Conversations(environment, program string) ([]Conversation, error) {
-	rows, err := journal.rows("agent", "list", "--environment", environment)
+	rows, err := readRows[sessionRow](journal, "agent", "main-sessions", program, "--environment", environment)
 	if err != nil {
 		return nil, err
 	}
-	conversations := []Conversation{}
-	for index := len(rows) - 1; index >= 0; index-- {
-		if text(rows[index], "program") == program {
-			conversations = append(conversations, Conversation{Session: text(rows[index], "session"), Role: text(rows[index], "role")})
-		}
+	conversations := make([]Conversation, 0, len(rows))
+	for _, row := range rows {
+		conversations = append(conversations, Conversation{Session: row.Session})
 	}
 	return conversations, nil
 }
@@ -108,46 +102,33 @@ func (journal CommandJournal) PrepareWorktree(folder, source, environment string
 	return err
 }
 
-func (journal CommandJournal) rows(argv ...string) ([]map[string]any, error) {
-	output, err := journal.Run(append(argv, "--oldest", "--limit", "1000", "--json")...)
-	if err != nil {
-		return nil, err
-	}
-	var page listing
-	if err := json.Unmarshal([]byte(output), &page); err != nil {
-		return nil, fmt.Errorf("journal %s gave no rows: %s", strings.Join(argv, " "), output)
-	}
-	return page.Rows, nil
-}
-
 // StopMainAgent stops the main agents that run in the environment, each through the journal.
 func (journal CommandJournal) StopMainAgent(environment string) error {
-	agents, err := journal.rows("agent", "list", "--environment", environment)
+	agents, err := readRows[runningRow](journal, "agent", "running-main-agents", "--environment", environment)
 	if err != nil {
 		return err
 	}
 	for _, agent := range agents {
-		if agent["ended_at"] == nil && text(agent, "role") == MainRole {
-			if _, err := journal.Run("agent", "stop", fmt.Sprint(agent["id"]), "--environment", environment); err != nil {
-				return err
-			}
+		if _, err := journal.Run("agent", "stop", strconv.Itoa(agent.ID), "--environment", environment); err != nil {
+			return err
 		}
 	}
 	return nil
 }
 
-func hasOpenMain(agents []map[string]any, environmentID any) bool {
-	for _, agent := range agents {
-		if agent["environment_id"] == environmentID && agent["ended_at"] == nil && text(agent, "role") == "main" {
-			return true
-		}
+// readRows reads the rows a journal read line answers with.
+func readRows[Row any](journal CommandJournal, argv ...string) ([]Row, error) {
+	output, err := journal.Run(append(argv, "--json")...)
+	if err != nil {
+		return nil, err
 	}
-	return false
-}
-
-func text(row map[string]any, column string) string {
-	value, _ := row[column].(string)
-	return value
+	var page struct {
+		Rows []Row `json:"rows"`
+	}
+	if err := json.Unmarshal([]byte(output), &page); err != nil {
+		return nil, fmt.Errorf("journal %s gave no rows: %s", strings.Join(argv, " "), output)
+	}
+	return page.Rows, nil
 }
 
 // AnswersFile is where a journal keeps the boot menu's last answers, the next launch's defaults.

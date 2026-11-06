@@ -8,7 +8,7 @@ from core.base.caller.caller_request import SESSION_VARIABLE
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.command_effect import CommandEffect
 from core.base.driver.tool_type import ToolType
-from core.modules.drivers.support.access_nudges import ENDED_HELPER, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, UNJUDGED_LINE
+from core.modules.drivers.support.access_nudges import ENDED_AGENT, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, UNJUDGED_LINE
 from core.base.query.queries import Queries
 from core.modules.documents.models.report import Report
 from core.testing.expect_reply import expect_reply_allowed
@@ -225,11 +225,17 @@ def test_an_ended_helper_is_refused_its_next_tool_and_writes_no_second_report(ne
     story, session = helper_story(new_story, StartedHelper)
     story.expect_success(f"agent end {the_helper(story).id}", actor=story.user)
     story.run_listeners()
-    story.expect_hook_refusal(session, tool("Edit", ToolType.EDIT), ENDED_HELPER.nudge().text)
+    story.expect_hook_refusal(session, tool("Edit", ToolType.EDIT), ENDED_AGENT.nudge().text)
     lines_at_end = story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text
     story.hook(session, HookSamples.stop())
     story.run_listeners()
     story.expect_rows(story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text == lines_at_end)
+
+
+def test_a_codex_helper_ended_before_its_first_hook_is_refused_an_edit(new_story):
+    story, launch_name = helper_story(new_story, StartedCodexHelper)
+    story.expect_success(f"agent end {the_helper(story).id}", actor=story.user)
+    story.expect_hook_refusal("t-9", tool("Edit", ToolType.EDIT).with_fields(program="codex", launch=launch_name), ENDED_AGENT.nudge().text)
 
 
 def main_story(new_story):

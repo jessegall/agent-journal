@@ -1,5 +1,8 @@
 from core.base.file_access import FileAccess
+import fcntl
 import subprocess
+from collections.abc import Generator
+from contextlib import contextmanager
 from functools import lru_cache
 from core.base.file_version import FileVersion
 import shutil
@@ -24,10 +27,14 @@ NAME_SEPARATOR = "\0"
 # With -M -z a rename is three fields: status, old name, new name.
 RENAME_STATUS = "R"
 DIFF_STATUSES = {"A": FileStatus.ADDED, "D": FileStatus.DELETED}
+STASH_MESSAGE = "journal merge of "
+STASH_LOCK_FILE = "journal-stash.lock"
 
 
 class WorktreeGit:
-    """Runs timed Git operations on worker branches and worktrees."""
+    """Runs timed Git operations on worker branches and worktrees. Every worktree of a project shares one
+    stash stack, so a worktree finds its stash by its own message, and a lock holds the stack during a push or
+    a drop."""
 
     def tip(self, folder: str, branch: str) -> str:
         revision = self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}")
@@ -133,8 +140,7 @@ class WorktreeGit:
                 self.unstash(worktree, stash)
 
     def restore_stashes(self, worktree: Worktree) -> None:
-        entries = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H%x00%gs").stdout.splitlines()
-        stashes = [entry.partition("\0")[0] for entry in entries if entry.partition("\0")[2].endswith(f": journal merge of {worktree.branch}")]
+        stashes = self.branch_stashes(worktree)
         if not stashes:
             return
         self.git(worktree.folder, GIT_LIMIT_SECONDS, "rebase", "--abort")
@@ -145,18 +151,34 @@ class WorktreeGit:
         if not self.checked(worktree.folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.strip():
             return ""
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "add", "--update")
-        self.checked(worktree.folder, GIT_LIMIT_SECONDS, "stash", "push", "--include-untracked", "--message", f"journal merge of {worktree.branch}")
-        return self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "stash@{0}").stdout.strip()
+        with self.stash_stack_lock(worktree):
+            self.checked(worktree.folder, GIT_LIMIT_SECONDS, "stash", "push", "--include-untracked", "--message", f"{STASH_MESSAGE}{worktree.branch}")
+            return self.branch_stashes(worktree)[0]
+
+    def branch_stashes(self, worktree: Worktree) -> list[str]:
+        entries = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H%x00%gs").stdout.splitlines()
+        return [entry.partition("\0")[0] for entry in entries if entry.partition("\0")[2].endswith(f": {STASH_MESSAGE}{worktree.branch}")]
+
+    @contextmanager
+    def stash_stack_lock(self, worktree: Worktree) -> Generator[None]:
+        common_folder = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "--git-common-dir").stdout.strip()
+        with FileAccess.shared().writer(Path(worktree.folder, common_folder, STASH_LOCK_FILE), "a") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            try:
+                yield
+            finally:
+                fcntl.flock(lock, fcntl.LOCK_UN)
 
     def unstash(self, worktree: Worktree, stash: str) -> None:
         applied = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "apply", stash).returncode == 0
         has_markers = bool(self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.strip())
         if not applied and not has_markers:
             raise Refusal(f"after the rebase, git stash apply failed for the uncommitted changes of worker {worktree.session_agent_id}", f"they stay in its stash {stash}: the worker applies them")
-        entries = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H %gd").stdout.splitlines()
-        for entry in (line.split() for line in entries):
-            if entry[0] == stash:
-                self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "drop", entry[1])
+        with self.stash_stack_lock(worktree):
+            entries = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H %gd").stdout.splitlines()
+            for entry in (line.split() for line in entries):
+                if entry[0] == stash:
+                    self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "drop", entry[1])
 
     def uncommitted_overlap(self, folder: str, worktree: Worktree) -> tuple[str, ...]:
         changed = set(self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{worktree.base_branch}...{worktree.branch}").stdout.split())

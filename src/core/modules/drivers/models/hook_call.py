@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from core.base.driver.hook_event_name import HookEventName
@@ -54,6 +55,10 @@ class HookCall(EnvironmentScoped, Model):
     @property
     def foreign_runs(self) -> tuple[ForeignRun, ...]:
         return ForeignRun.parsed_many(self.metadata.module_part(DRIVERS_MODULE).get("foreign", []))
+
+    @property
+    def refused_rules(self) -> tuple[Mapping[str, object], ...]:
+        return tuple(row for row in self.metadata.module_part(DRIVERS_MODULE).get("rules", []) if row.get("outcome") == "refused")
 
     @property
     def terminal(self) -> str:

@@ -1,6 +1,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+from core.base.agent_role import AgentRole
 from core.base.driver.foreign_run import ForeignRun
 from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_event_name import HookEventName
@@ -12,7 +13,9 @@ from core.base.driver.tool import Tool
 HOOK_EVENT_VERSION = 3
 RESUME_SOURCE = "resume"
 COMPACTION_SOURCE = "compact"
-CONTINUING_SOURCES = (COMPACTION_SOURCE, "clear")
+CLEAR_SOURCE = "clear"
+CLEAR_REASON = "clear"
+CONTINUING_SOURCES = (COMPACTION_SOURCE, CLEAR_SOURCE)
 REQUIRED_KEYS = ("version", "program", "event", "session", "firing", "fired_at_ms", "actor", "environment", "tool", "prompt", "raw", "accepts_lines", "launch", "foreign")
 
 
@@ -36,6 +39,7 @@ class HookEvent:
     launch: str = ""
     foreign: tuple[ForeignRun, ...] = ()
     child_agent: str = ""
+    role: str = ""
 
     @classmethod
     def tick(cls, program: str, session: str, firing: str, hook_timestamp_ms: int, actor: str, environment: str) -> "HookEvent":
@@ -61,7 +65,7 @@ class HookEvent:
         return cls(HOOK_EVENT_VERSION, text(fields, "program"), HookEventName(event), text(fields, "session"), text(fields, "firing"),
                    number(fields, "fired_at_ms"), text(fields, "actor"), text(fields, "environment"),
                    Tool.parsed(tool) if tool is not None else None, prompt, mapping(fields.get("raw", {}), "raw"), accepts_lines,
-                   text(fields, "launch"), ForeignRun.parsed_many(fields["foreign"]), str(fields.get("child_agent", "")))
+                   text(fields, "launch"), ForeignRun.parsed_many(fields["foreign"]), str(fields.get("child_agent", "")), str(fields.get("role", "")))
 
     @property
     def is_resume(self) -> bool:
@@ -70,6 +74,18 @@ class HookEvent:
     @property
     def is_compaction_start(self) -> bool:
         return self.raw.get("source") == COMPACTION_SOURCE
+
+    @property
+    def is_clear_start(self) -> bool:
+        return self.event is HookEventName.SESSION_START and self.raw.get("source") == CLEAR_SOURCE
+
+    @property
+    def is_launch_clear_end(self) -> bool:
+        return self.event is HookEventName.SESSION_END and self.raw.get("reason") == CLEAR_REASON and bool(self.launch)
+
+    @property
+    def is_check_required(self) -> bool:
+        return self.event is HookEventName.PRE_TOOL_USE and self.role not in ("", AgentRole.MAIN)
 
     @property
     def is_interrupt(self) -> bool:

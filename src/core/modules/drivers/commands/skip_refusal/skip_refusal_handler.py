@@ -7,7 +7,6 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.guard.guard import Guard
-from core.base.module.driver_entries import DRIVERS_MODULE
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
@@ -63,8 +62,8 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
         if self.refusals.guard_refused_past(actor.id, name, skipped_at):
             return
         call = self.queries.query(HookCall).filter(session_agent_id=actor.id, answer=HookAnswer.REFUSED).newest().first()
-        rules = call.metadata.module_part(DRIVERS_MODULE).get("rules", []) if call is not None and call.creation_timestamp().text > skipped_at else []
-        refused = next((rule for rule in rules if rule.get("rule") == name and rule.get("outcome") == "refused"), None)
+        rules = call.refused_rules if call is not None and call.creation_timestamp().text > skipped_at else ()
+        refused = next((rule for rule in rules if rule.get("rule") == name), None)
         if refused is None:
             raise Refusal(f"{name} has not refused you skipped_at your last skip", "a skip follows a refusal; carry on without one")
         if refused.get("safety"):
@@ -83,8 +82,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
 
     @staticmethod
     def refusing_rules(call: HookCall) -> list[str]:
-        rules = call.metadata.module_part(DRIVERS_MODULE).get("rules", [])
-        return [row.get("rule", "") for row in rules if row.get("outcome") == "refused"] or [""]
+        return [str(row.get("rule", "")) for row in call.refused_rules] or [""]
 
     def raised(self, agent_id: int, context: Context) -> None:
         agent = self.queries.query(Agent).find(agent_id)

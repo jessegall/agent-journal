@@ -24,6 +24,7 @@ class SettingValue:
     secret: bool = False
     scope: SettingScope = SettingScope.LAYERED
     choices: Sequence[str] = ()
+    person_set: bool = False
 
     def accepts(self, value: object) -> bool:
         match self.type:
@@ -45,7 +46,7 @@ class SettingValue:
 
     def declaration(self) -> SettingDeclaration:
         return SettingDeclaration(self.title, self.description, self.type.value, None if self.secret else self.default, self.secret, self.scope.value,
-                                  tuple(self.choices), False, True)
+                                  tuple(self.choices), False, True, person_set=self.person_set)
 
     def members(self) -> Sequence[SettingNode]:
         return ()
