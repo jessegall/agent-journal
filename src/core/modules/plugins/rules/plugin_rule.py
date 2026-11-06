@@ -19,9 +19,7 @@ from core.modules.plugins.commands.switch_off_changed_plugin.switch_off_changed_
 from core.modules.plugins.models.enums.refusable_event import RefusableEvent
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_queue_file import PluginQueueFile
-from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.plugin_call import PluginCall
-from core.modules.plugins.support.plugin_digest import PluginDigest
 from core.modules.plugins.support.plugin_event import PluginEvent
 from core.modules.plugins.support.plugin_event_names import PluginEventNames
 from core.modules.plugins.support.plugin_fault_error import PluginFaultError
@@ -31,6 +29,7 @@ from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_program import PluginProgram
 from core.modules.plugins.support.plugin_queue import PluginQueue
 from core.modules.plugins.support.plugin_settings import PluginSettings
+from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
 CEILING_SETTING = "journal.core.plugins.hold_window_ms"
@@ -44,9 +43,9 @@ class PluginRule(DriverRule):
     drivers = ["*"]
     role_group = RoleGroup.PLUGIN
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, setting_values: SettingValues,
+    def __init__(self, runnable: RunnablePlugins, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, setting_values: SettingValues,
                  queries: Queries) -> None:
-        self.plugins, self.folders, self.program, self.settings, self.setting_values = plugins, folders, program, settings, setting_values
+        self.runnable, self.folders, self.program, self.settings, self.setting_values = runnable, folders, program, settings, setting_values
         self.queries = queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -54,11 +53,9 @@ class PluginRule(DriverRule):
         commands: list[Command[object]] = []
         events = PluginEventNames().events(hook)
         values: dict[int, dict[str, object]] = {}
-        for plugin in self.plugins.enabled_plugins():
-            if self.folders.is_upgrading(plugin.name):
-                continue
-            manifest = PluginManifest.read(self.folders.code(plugin.name))
-            if PluginDigest.digest(self.folders.code(plugin.name), manifest) != plugin.files_digest:
+        for runnable in self.runnable.enabled():
+            plugin, manifest = runnable.plugin, runnable.manifest
+            if runnable.is_changed:
                 lines.append(f"[plugin {plugin.name}] switched off: its files changed since it was installed; the user switches it on again once they read the change")
                 commands.append(SwitchOffChangedPlugin(plugin.id))
                 continue

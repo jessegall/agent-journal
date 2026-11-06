@@ -3,9 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.subcommand.row_list import RowList
-from core.modules.plugins.queries.plugin_query import PluginQuery
-from core.modules.plugins.support.plugin_folders import PluginFolders
-from core.modules.plugins.support.plugin_manifest import PluginManifest
+from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 
 
 class PluginDashboardsSubcommand(ReadSubcommand[RowList]):
@@ -17,12 +15,12 @@ class PluginDashboardsSubcommand(ReadSubcommand[RowList]):
     cli_name = "plugin"
     name = "dashboards"
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders) -> None:
-        self.plugins, self.folders = plugins, folders
+    def __init__(self, runnable: RunnablePlugins) -> None:
+        self.runnable = runnable
 
     def arguments(self, parser: ArgumentParser) -> None:
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
-        boards = [(plugin.name, PluginManifest.read(self.folders.code(plugin.name)).dashboard) for plugin in self.plugins.enabled_plugins()]
+        boards = [(runnable.plugin.name, runnable.manifest.dashboard) for runnable in self.runnable.running()]
         return RowList([{"id": name, "plugin": name, "title": board.title} for name, board in boards if board is not None])

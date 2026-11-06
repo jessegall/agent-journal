@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from core.base.database.collecting_repeated_work import CollectingRepeatedWork
 from core.base.database.database import Database
 from core.base.database.repeated_calls_error import RepeatedCallsError
+from core.base.database.repeated_finding import RepeatedFinding
 from core.base.database.reported_findings import ReportedFindings
 from core.base.database.request_watch import RequestWatch
 from core.base.error_log import ErrorLog
@@ -36,6 +37,6 @@ class ReportingRequestWatch(RequestWatch):
             original.add(work.points().minus(start_points))
             self.report(argv, work.findings)
 
-    def report(self, argv: list[str], findings: list[str]) -> None:
+    def report(self, argv: list[str], findings: list[RepeatedFinding]) -> None:
         for finding in self.reported.unreported(findings):
-            self.errors.reported(argv, RepeatedCallsError(finding))
+            self.errors.reported(argv, RepeatedCallsError(finding.text))

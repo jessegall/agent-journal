@@ -317,9 +317,10 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
         listener_thread = ListenerThread(listener_round.run, listener_round.report)
         phones = PhoneSessions(home, listener_thread)
         login = ViewerLogin(phones, ShareSessions(phones.journal_output))
+        reported = ReportedFindings()
         context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
-                                HookDatabase(home), ViewerListener(login, ViewerRoutes(home, listener_thread, login)), ServerTunnel(home), STORY_HOOK_LIMIT_SECONDS)
-        context.viewer.routes.line_route = StoryLineRoute(home, listener_thread)
+                                HookDatabase(home), ViewerListener(login, ViewerRoutes(home, listener_thread, login, reported)), ServerTunnel(home), reported, STORY_HOOK_LIMIT_SECONDS)
+        context.viewer.routes.line_route = StoryLineRoute(home, listener_thread, reported)
         server = JournalServer(str(files.socket), RequestHandler, context)
         if listener_thread_started:
             listener_thread.start()

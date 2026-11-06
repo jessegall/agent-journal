@@ -9,6 +9,7 @@ class ReaderAdvance:
     lines: list[str]
     read_offset: int
     read_lines: int
+    seen_offset: int
     summary: str
     progress: int
     replaces: bool = False
