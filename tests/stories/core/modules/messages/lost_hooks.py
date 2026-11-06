@@ -1,12 +1,17 @@
 import json
+import sqlite3
 from datetime import timedelta
+from threading import Event
 
 import pytest
 
 from core.base.provider.transcript_entries import TranscriptEntries
+from core.base.database.database import BUSY_TIMEOUT_SECONDS
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.server.support.server_client import server_story
+from server.endpoints.hook_endpoint import HookEndpoint
+from server.hook.queue_priority import QueuePriority
 
 AGENT_TEXT = "Loading the nudge records takes 10.5 seconds, so I am reading the query code now."
 TOOL_FINISHED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
@@ -177,6 +182,37 @@ def test_a_new_message_line_comes_at_the_next_hook_after_one_went_through_unchec
 def test_a_new_message_line_whose_hook_left_before_the_answer_comes_again_at_the_next_hook(server):
     server.send_hook_and_leave(hook_body("left-tool"))
     server.expect_hook_line_soon("new message 1", "next-tool")
+
+
+def test_a_lost_hook_answer_retries_its_messages_after_another_writer_releases_the_database(server, monkeypatch):
+    reset_attempted = Event()
+    answer_lost = HookEndpoint.answer_lost
+
+    def answer_lost_while_busy(endpoint, reply):
+        with sqlite3.connect(server.story.home.database) as writer:
+            writer.execute("BEGIN IMMEDIATE")
+            try:
+                answer_lost(endpoint, reply)
+            finally:
+                writer.rollback()
+                reset_attempted.set()
+
+    monkeypatch.setattr(HookEndpoint, "answer_lost", answer_lost_while_busy)
+    server.send_hook_and_leave(hook_body("left-while-busy"))
+    assert reset_attempted.wait(10), "the lost hook answer never attempted to reset its deliveries"
+    folder = server.story.home.folder / "runtime" / "lost-hook-answers"
+    assert list(folder.iterdir()), "the busy reset left no retry"
+    server.expect_hook_answer("/hook", hook_body("next-after-busy"), 200, "new message 1")
+    assert not list(folder.iterdir())
+    refusal, delivered_lines = server.hook_decision(hook_body("already-delivered"), {})
+    assert refusal == ""
+    assert "new message 1" not in str(delivered_lines)
+
+
+def test_a_hook_returns_its_connection_with_the_default_busy_timeout(server):
+    server.expect_hook_answer("/hook", hook_body("timeout-restored"), 200, "new message 1")
+    with server.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, 1) as database:
+        assert database.busy_timeout_seconds() == BUSY_TIMEOUT_SECONDS
 
 
 def test_an_answer_that_arrived_delivers_the_message_once(server):

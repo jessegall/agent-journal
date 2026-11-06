@@ -182,6 +182,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         except OSError as error:
             if client_disconnected(error):
                 endpoint.answer_lost(reply)
+                return
             raise
 
     def answer_cli(self, request: CliRequest) -> None:

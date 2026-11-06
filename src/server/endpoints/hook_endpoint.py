@@ -12,11 +12,8 @@ from core.base.driver.hook_event import HookEvent
 from core.base.driver.old_hook_runner_error import OldHookRunnerError
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute
-from core.base.actor import Actor
-from core.base.command.bus import Bus
 from core.base.provider.providers import Providers
 from core.base.provider.transcript_entries import TranscriptEntries
-from core.base.query.queries import Queries
 from core.base.journal_container import synced_database_container
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
@@ -28,8 +25,7 @@ from core.base.performance.route_cost_tool import RouteCostTool
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
-from core.modules.drivers.models.hook_call import HookCall
-from core.modules.messages.commands.reset_message_deliveries.reset_message_deliveries import ResetMessageDeliveries
+from server.hook.hook_delivery_retries import HookDeliveryRetries
 from server.hook.raw_hook_body import RawHookBody, is_raw_body
 from server.hook.hook_headers import HookHeaders
 from server.hook.hook_database_busy_error import HookDatabaseBusyError
@@ -101,13 +97,18 @@ class HookEndpoint:
     def answer_lost(self, reply: HookReply) -> None:
         if reply.hook_call_id is None:
             return
+        retries = HookDeliveryRetries(self.context.home)
+        retries.keep(reply.hook_call_id)
         try:
             with self.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, self.context.hook_limit_seconds) as database:
-                container = synced_database_container(self.context.home, database)
-                call = container.get(Queries).query(HookCall).find(reply.hook_call_id)
-                container.get(Bus).run(ResetMessageDeliveries(call.id), Actor.core(), environment_id=call.environment_id)
+                database.set_busy_timeout(self.context.hook_limit_seconds)
+                retries.retry(synced_database_container(self.context.home, database))
         except HookDatabaseBusyError as error:
-            self.context.files.log_line(f"the deliveries of hook call {reply.hook_call_id} stay as they are: {error}")
+            self.context.files.log_line(f"delivery reset for hook call {reply.hook_call_id} will retry at the next hook: {error}")
+        except sqlite3.OperationalError as error:
+            if error.sqlite_errorcode != sqlite3.SQLITE_BUSY:
+                raise
+            self.context.files.log_line(f"delivery reset for hook call {reply.hook_call_id} will retry at the next hook: {error}")
 
     def routed_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, started_at: float, limit_seconds: float, queued_ms: float) -> HookReply:
         try:
@@ -142,6 +143,7 @@ class HookEndpoint:
         tools = container.get(PerformanceTools)
         start_points = tools.begin()
         try:
+            HookDeliveryRetries(self.context.home).retry(container)
             route = container.get(HookRoute)
             self.timing.stamp("route_ready")
             return route.answer(event)
