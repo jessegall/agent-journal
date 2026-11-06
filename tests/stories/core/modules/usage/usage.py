@@ -4,6 +4,7 @@ import json
 import pytest
 
 from core.base.command.bus import Bus
+from core.base.file_access import FileAccess
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.tool_type import ToolType
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
@@ -314,6 +315,21 @@ def test_an_ended_sessions_report_stays_readable_for_its_card(ended_worker_repor
     story = ended_worker_report
     expect_file_status_folder_2(story, "ended", "s-2.json")
     expect_windows_status(story, "s-2")
+
+
+def test_an_ended_sessions_status_file_can_disappear_during_the_read(ended_worker_report, monkeypatch):
+    story = ended_worker_report
+    path = story.home.status_folder / "ended" / "s-2.json"
+    read = FileAccess.read
+
+    def remove_before_read(access, file, *args, **kwargs):
+        if file == path:
+            path.unlink()
+        return read(access, file, *args, **kwargs)
+
+    monkeypatch.setattr(FileAccess, "read", remove_before_read)
+    story.expect_text("usage agents --closed --environment main --json", '"cost_dollars": null', actor=story.user)
+    assert not path.exists()
 
 
 def test_an_open_session_keeps_its_status_file_and_its_windows_win_over_plan_json(ended_worker_report):
