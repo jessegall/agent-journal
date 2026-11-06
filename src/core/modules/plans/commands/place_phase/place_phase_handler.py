@@ -25,11 +25,11 @@ class PlacePhaseHandler(Handler[PlacePhase, PhaseTask]):
         plan = self.queries.query(Plan).find(phase.plan_id)
         if plan.state in (PlanState.COMPLETED, PlanState.CANCELLED):
             raise Refusal(f"plan {plan.id} is {plan.state}, so no task can be placed in its phases")
-        current = self.queries.query(PhaseTask).filter(task_id=command.task_id).limited(1)
-        if current and current[0].phase_id == command.phase_id:
-            return current[0]
-        if current:
-            self.repository.delete(current[0], context)
-            self.positions.renumber(PhaseTask, "phase_id", current[0].phase_id, current[0].position, context)
+        current = self.queries.query(PhaseTask).filter(task_id=command.task_id).first()
+        if current is not None and current.phase_id == command.phase_id:
+            return current
+        if current is not None:
+            self.repository.delete(current, context)
+            self.positions.renumber(PhaseTask, "phase_id", current.phase_id, current.position, context)
         return self.repository.save(PhaseTask(phase_id=command.phase_id, task_id=command.task_id, creator_id=context.actor.id,
                                               position=self.positions.next_position(PhaseTask, "phase_id", command.phase_id)), context)

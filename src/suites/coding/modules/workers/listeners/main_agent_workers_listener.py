@@ -23,6 +23,6 @@ class MainAgentWorkersListener(SaveListener[Created[Agent]]):
         agent = event.row
         if agent.role != AgentRole.MAIN:
             return
-        for worktree in self.worktrees.open_worktrees():
-            worker = self.queries.query(Agent).find(worktree.session_agent_id)
-            self.repository.save(worker.changed(parent_id=agent.id), context)
+        worker_ids = [worktree.session_agent_id for worktree in self.worktrees.open_worktrees()]
+        for worker in self.queries.query(Agent).find_many(worker_ids):
+            self.repository.save_change(worker, worker.changed(parent_id=agent.id), context)

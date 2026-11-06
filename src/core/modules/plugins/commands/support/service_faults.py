@@ -1,6 +1,7 @@
 from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
+from core.base.refusal import Refusal
 from core.modules.environments.models.environment import Environment
 from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults import ClearPluginFaults
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
@@ -26,4 +27,7 @@ class ServiceFaults:
             self.bus.run(ClearPluginFaults(plugin.id), self.actors.actor(MODULE_NAME), environment_id=self.environment_id())
 
     def environment_id(self) -> int:
-        return self.queries.query(Environment).oldest().limited(1)[0].id
+        oldest = self.queries.query(Environment).oldest().first()
+        if oldest is None:
+            raise Refusal("the project has no environment", "journal environment list shows them")
+        return oldest.id

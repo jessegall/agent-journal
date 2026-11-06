@@ -15,9 +15,9 @@ class MergeChecks:
         self.queries, self.proofs, self.kept, self.environments = queries, proofs, kept, environments
 
     def check_proofs(self, worktree: Worktree) -> None:
-        selected = self.kept.read("affected_tests", lambda: self.queries.query(AffectedTest).filter(worktree_id=worktree.id).newest().limited(1),
+        selected = self.kept.read("affected_tests", lambda: self.queries.query(AffectedTest).filter(worktree_id=worktree.id).newest().first(),
                                   "worktree_id = ?", [worktree.id], name="workers.merge_selected")
-        if selected and selected[0].state not in (AffectedTestState.PASSED, AffectedTestState.CANCELLED):
+        if selected is not None and selected.state not in (AffectedTestState.PASSED, AffectedTestState.CANCELLED):
             raise Refusal("selected tests have not passed", "wait for the selected tests to finish")
         unchecked = [str(proof.point) for proof in self.kept.read("proofs", lambda: tuple(self.proofs.worktree_proofs(worktree.id).oldest().all_rows()),
                      "worktree_id = ?", [worktree.id], name="workers.merge_proofs") if proof.state is not ProofState.CHECKED]

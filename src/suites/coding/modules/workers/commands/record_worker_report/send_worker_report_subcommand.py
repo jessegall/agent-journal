@@ -25,10 +25,9 @@ class SendWorkerReportSubcommand(Subcommand[RecordParentReport, Message]):
         parser.add_argument("text")
 
     def command(self, arguments: Namespace, caller: Caller) -> RecordParentReport:
-        workers = self.queries.query(Agent).filter(id=caller.actor.id, role=AgentRole.WORKER).limited(1)
-        if not workers:
+        worker = self.queries.query(Agent).filter(id=caller.actor.id, role=AgentRole.WORKER).first()
+        if worker is None:
             raise Refusal("only a worker reports to its main agent", "journal message send writes a main agent's message")
-        worker = workers[0]
         if worker.parent_id is None:
             raise Refusal("the worker has no main agent", f"journal agent show {worker.id}")
         return RecordParentReport(worker.id, worker.parent_id, arguments.text)

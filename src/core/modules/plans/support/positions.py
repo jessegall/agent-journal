@@ -17,8 +17,8 @@ class Positions:
         self.queries, self.repository = queries, repository
 
     def next_position(self, model: type[Phase] | type[PhaseTask], parent_column: str, parent_id: int) -> int:
-        highest = self.queries.query(model).filter(**{parent_column: parent_id}).descending(POSITION).limited(1)
-        return highest[0].position + 1 if highest else 1
+        highest = self.queries.query(model).filter(**{parent_column: parent_id}).descending(POSITION).first()
+        return highest.position + 1 if highest is not None else 1
 
     def renumber(self, model: type[Phase] | type[PhaseTask], parent_column: str, parent_id: int, position: int, context: Context) -> None:
         later = self.queries.query(model).filter(**{parent_column: parent_id}).matching(Greater(POSITION, position)).ordered(POSITION)

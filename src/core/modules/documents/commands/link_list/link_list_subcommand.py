@@ -42,5 +42,5 @@ class LinkListSubcommand(ReadSubcommand[Sequence[Link]]):
         model = self.row_refs.model(model_name)
         if model is None:
             return ""
-        rows = self.queries.query(model).filter(id=row_id).limited(1)
-        return next((str(getattr(row, "title", "")) for row in rows), "")
+        row = self.queries.query(model).filter(id=row_id).first()
+        return str(getattr(row, "title", "")) if row is not None else ""

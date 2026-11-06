@@ -28,15 +28,15 @@ class MakeProofHandler(Handler[MakeProof, Proof]):
             raise Refusal("only a worker with a worktree out makes proofs", "journal worker-worktree list shows the worktrees")
         if self.is_piped(command.test_command):
             raise Refusal("a proof's test runs without a pipe, a redirect or a reading flag such as --tail, since the journal reads its whole output", "give the bare test command")
-        rows = self.proofs.worktree_proofs(worktree.id).filter(point=command.point, task_id=worktree.task_id).limited(1)
-        if not rows:
+        existing = self.proofs.worktree_proofs(worktree.id).filter(point=command.point, task_id=worktree.task_id).first()
+        if existing is None:
             return self.repository.save(Proof(task_id=worktree.task_id, worktree_id=worktree.id, creator_id=context.actor.id, point=command.point,
                                               text=command.text, test_command=command.test_command), context)
-        if rows[0].state is ProofState.SHORT:
-            return self.repository.save(rows[0].revise(context.timestamp, context.actor, command.text, command.test_command), context)
-        if rows[0].state is ProofState.CHECKED:
+        if existing.state is ProofState.SHORT:
+            return self.repository.save(existing.revise(context.timestamp, context.actor, command.text, command.test_command), context)
+        if existing.state is ProofState.CHECKED:
             raise Refusal(f"point {command.point} is checked already", "prove the points that are not")
-        return self.repository.save(rows[0].changed(text=command.text, test_command=command.test_command or rows[0].test_command), context)
+        return self.repository.save(existing.changed(text=command.text, test_command=command.test_command or existing.test_command), context)
 
     @staticmethod
     def is_piped(line: str) -> bool:

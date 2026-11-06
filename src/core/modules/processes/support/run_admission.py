@@ -36,10 +36,5 @@ class RunAdmission:
             return True
         if self.folder.count_status(process.id) is None and self.listings.has_listing(process, agent):
             return False
-        for part in parts:
-            if part.reader_request_id is None:
-                continue
-            request = self.queries.query(ReaderRequest).find(part.reader_request_id)
-            if request.completed_at is None and request.expires_at > current_time and request.sample_process_id != process.id:
-                return False
-        return True
+        requests = self.queries.query(ReaderRequest).find_many([part.reader_request_id for part in parts if part.reader_request_id is not None])
+        return not any(request.completed_at is None and request.expires_at > current_time and request.sample_process_id != process.id for request in requests)

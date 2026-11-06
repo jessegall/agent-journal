@@ -26,13 +26,25 @@ class SkillCatalogue:
 
     def plugin_skills(self) -> list[SkillEntry]:
         entries: list[SkillEntry] = []
-        paths = {path.parent.name: path for program_folder in reversed(self.providers.skill_folders()) for path in (self.home.project_folder / program_folder).glob(f"*/{SKILL_FILE}")}
+        paths = {path.parent.name: path for program_folder in reversed(self.providers.skill_folders()) for path in self.skill_files(self.home.project_folder / program_folder)}
         for path in [paths[name] for name in sorted(paths)]:
             try:
                 entries.extend(self.loaded_skill(path, FileAccess.shared().version(path)))
             except FileNotFoundError:
                 continue
         return entries
+
+    @staticmethod
+    def skill_files(folder: Path) -> tuple[Path, ...]:
+        try:
+            return SkillCatalogue.listed_skill_files(folder, FileAccess.shared().version(folder))
+        except FileNotFoundError:
+            return ()
+
+    @staticmethod
+    @lru_cache(maxsize=16)
+    def listed_skill_files(folder: Path, version: FileVersion) -> tuple[Path, ...]:
+        return tuple(folder.glob(f"*/{SKILL_FILE}"))
 
     @staticmethod
     @lru_cache(maxsize=256)

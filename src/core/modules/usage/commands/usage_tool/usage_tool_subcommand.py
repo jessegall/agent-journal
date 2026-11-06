@@ -50,20 +50,20 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         return self.agent_tool(main_agents[0].id, self.open_question_lines(main_agents[0].id))
 
     def agent_tool(self, agent_id: int, question_lines: Sequence[str]) -> ToolFacts:
-        calls = self.queries.query(HookCall).filter(session_agent_id=agent_id).matching(Among("hook", TURN_HOOKS)).newest().limited(1)
-        if calls and calls[0].hook == HookEventName.PRE_TOOL_USE:
-            return ToolFacts(" ".join(part for part in (calls[0].tool, ProjectPaths.short_paths(self.running_part_text(calls[0]) or calls[0].summary), self.line_changes(calls[0])) if part))
+        latest_call = self.queries.query(HookCall).filter(session_agent_id=agent_id).matching(Among("hook", TURN_HOOKS)).newest().first()
+        if latest_call is not None and latest_call.hook == HookEventName.PRE_TOOL_USE:
+            return ToolFacts(" ".join(part for part in (latest_call.tool, ProjectPaths.short_paths(self.running_part_text(latest_call) or latest_call.summary), self.line_changes(latest_call)) if part))
         wait_target = " and ".join((*self.running_titles(agent_id), *question_lines))
         has_run_command = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.PRE_TOOL_USE).exists()
-        return ToolFacts(wait_target=wait_target, note="" if wait_target or has_run_command else IDLE_NOTE, thinking=bool(calls) and calls[0].hook == HookEventName.PROMPT, asking=bool(question_lines))
+        return ToolFacts(wait_target=wait_target, note="" if wait_target or has_run_command else IDLE_NOTE, thinking=latest_call is not None and latest_call.hook == HookEventName.PROMPT, asking=bool(question_lines))
 
     def running_part_text(self, call: HookCall) -> str:
-        runs = self.processes.agent(call.session_agent_id).newest().limited(1)
-        if not runs or runs[0].creation_timestamp().value < call.creation_timestamp().value:
+        latest_run = self.processes.agent(call.session_agent_id).newest().first()
+        if latest_run is None or latest_run.creation_timestamp().value < call.creation_timestamp().value:
             return ""
-        if runs[0].queued_at is not None:
+        if latest_run.queued_at is not None:
             return QUEUE_LINE
-        parts = tuple(self.queries.query(ProcessPart).filter(process_id=runs[0].id).ordered("position").all_rows())
+        parts = tuple(self.queries.query(ProcessPart).filter(process_id=latest_run.id).ordered("position").all_rows())
         return next((part.text for state in (PartState.RUNNING, PartState.WAITING) for part in parts if part.state is state), parts[-1].text if parts else "")
 
     def line_changes(self, call: HookCall) -> str:
@@ -73,8 +73,8 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         return tuple(self.title(process) for process in self.processes.agent(agent_id).running().newest().page(1, SHOWN_RUNS).rows)
 
     def title(self, process: Process) -> str:
-        kept = self.outputs.process(process.id).limited(1)
-        return kept[0].title if kept and kept[0].title else process.line
+        kept = self.outputs.process(process.id).first()
+        return kept.title if kept is not None and kept.title else process.line
 
     def open_question_lines(self, agent_id: int) -> list[str]:
         open_questions = self.questions.agent(agent_id).open_questions().oldest().page(1, SHOWN_RUNS)

@@ -23,9 +23,9 @@ class UpdateCheckSubcommand(ReadSubcommand[UpdateStanding]):
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> UpdateStanding:
-        installed = self.queries.query(Release).newest().limited(1)
-        installations = self.queries.query(ReleaseInstall).newest().limited(1)
-        return UpdateStanding(self.source.newest(), installed[0] if installed else None, installations[0] if installations else None)
+        installed = self.queries.query(Release).newest().first()
+        installation = self.queries.query(ReleaseInstall).newest().first()
+        return UpdateStanding(self.source.newest(), installed, installation)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, UpdateStanding):

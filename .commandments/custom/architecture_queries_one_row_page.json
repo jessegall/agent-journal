@@ -2,23 +2,24 @@
     "$schema": "../rule.schema.json",
     "engine": "python",
     "find": {
-        "select": "member-access",
+        "select": "call",
         "where": [
-            {"name": "rows"},
-            {"of": "child:value", "is": "call"},
-            {"of": "child:value", "name": "page"},
-            {"of": "child:value", "argument": {"at": 0, "textMatches": "^1$"}},
-            {"of": "child:value", "argument": {"at": 1, "textMatches": "^1$"}}
+            {
+                "any": [
+                    {"all": [{"name": "limited"}, {"argument": {"at": 0, "textMatches": "^1$"}}]},
+                    {"all": [{"name": "page"}, {"argument": {"at": 0, "textMatches": "^1$"}}, {"argument": {"at": 1, "textMatches": "^1$"}}]}
+                ]
+            }
         ],
         "reject": [
             {"testCode": true},
-            {"fileMatches": "/(remove_task_dependency_handler|dependencies_closed_guard|unread_message_show_rule|one_reply_per_message_guard|open_dump_rule|takeover_rule|dispatch_mark_rule|bind_subagent_dispatch_handler|block_until_handler|suite_current_subcommand|suite_presets_subcommand|end_silent_helpers_handler|suite_layout_subcommand|nudge_log|record_subagent_dispatch_handler|table_hook_history|driver_change_filter|agent_hook_route|hook_wait_file_listener|count_share_view_handler|share_targets|upgrade_mark_listener|positions|next_plan_tasks|plan_task_line_rule|plan_place_subcommand|place_phase_handler|next_plan_task_starter_listener|finished_plan_listener|forget_place_listener|started_task_plan_listener|plugin_query|configure_plugin_handler|service_faults|plugin_record_subcommand|grown_outputs|output_read|reader_requests|reader_request_notices|ended_output_text|run_slots|reader_hint_rule|large_output_read_rule|long_run_dock_rule|process_card_subcommand|watch_output_handler|end_process_handler|title_output_handler|add_reader_handler|end_process_part_handler|choose_default_reader_handler|remove_reader_handler|update_stock_readers_handler|unwatch_output_handler|read_new_output_handler|start_process_part_handler|read_output_handler|reader_proof_listener|start_agent_handler|bind_agent_session_handler|usage_show_subcommand|mcp_server_query|update_check_subcommand|viewer_layout_current_subcommand|save_person_preset_handler|window_allowances|save_viewer_layout_handler|transcription_task_listener|sequence_run_query|move_sequence_run_handler|doc_revisions|doc_revision_subcommand|new_text_dock_listener|alias_shell_aliases|alias_readers|alias_names|alias_expansion_rule|reader_alias_guard|retire_reviewer_handler|assign_next_review_handler|record_review_handler|worker_stop_rule|worktree_query|worker_refusals|worker_test_listings|merge_checks|worker_log_due_rule|make_proof_handler|record_worker_report_subcommand|start_next_worker_task_handler|record_worker_test_handler|dispatch_worker_handler|reassigned_task_listener|worker_test_listener|worker_task_guard)\\.py$"}
+            {"fileMatches": "(^|/)src/core/base/query/query\\.py$"}
         ]
     },
     "sin": {
         "name": "one-row-page",
-        "description": "A single-row read builds a counted page and then takes its rows.",
-        "rule": "Use first() for one row so the read does not count the whole result. The exact files in reject are the 109 existing sites recorded in output 94413, already assigned to task 6611. Remove the list after worker 570 merges and resolve any remainder at the final judge.",
+        "description": "A single-row read asks for a page or a list of one row and then takes its first row.",
+        "rule": "Use first() for one row so the read does not count the whole result and the caller does not index a list. Query.first itself is the one place that reads a list of one row.",
         "skill": "plain-code-words"
     }
 }

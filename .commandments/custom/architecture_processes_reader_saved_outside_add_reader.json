@@ -24,7 +24,7 @@
     "sin": {
         "name": "reader-saved-outside-add-reader",
         "description": "A reader is saved outside its writer check and output proof.",
-        "rule": "Save reader definitions through AddReader. Temporary unsaved readers used for judgement are values, not saved definitions.",
+        "rule": "Save reader definitions through AddReader. A reader built only to judge a command is a value, not a saved definition.",
         "skill": "processes-architecture"
     }
 }

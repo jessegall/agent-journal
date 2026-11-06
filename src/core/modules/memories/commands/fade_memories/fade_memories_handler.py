@@ -18,5 +18,6 @@ class FadeMemoriesHandler(Handler[FadeMemories, None]):
 
     def handle(self, command: FadeMemories, context: Context) -> None:
         with self.scopes.opened(command.agent_id):
-            for row in self.active.all_rows():
-                self.repository.save(self.queries.query(Memory).find(row.memory_id).faded(context.timestamp, context.actor), context)
+            memory_ids = [row.memory_id for row in self.active.all_rows()]
+            for memory in self.queries.query(Memory).find_many(memory_ids):
+                self.repository.save_change(memory, memory.faded(context.timestamp, context.actor), context)

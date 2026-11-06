@@ -25,9 +25,9 @@ class AddReaderHandler(Handler[AddReader, Reader]):
         self.readers, self.repository, self.judge, self.writers = readers, repository, judge, writers
 
     def handle(self, command: AddReader, context: Context) -> Reader:
-        existing = self.readers.with_name(command.name).limited(1)
-        if existing:
-            return self.checked_save(self.changed(existing[0], command), command, context)
+        existing = self.readers.with_name(command.name).first()
+        if existing is not None:
+            return self.checked_save(self.changed(existing, command), command, context)
         reader_type = ReaderType.SCRIPT if command.script else ReaderType.PATTERN
         return self.checked_save(Reader(creator_id=context.actor.id, name=command.name, type=reader_type, commands=command.commands, lines_pattern=command.lines,
                                            script=command.script, progress_pattern=command.progress, finished_pattern=command.finished, failed_pattern=command.failed,

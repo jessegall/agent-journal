@@ -22,8 +22,7 @@ class WorkerPointsSubcommand(ReadSubcommand[WorkerPointList]):
         parser.add_argument("--agent", type=int, required=True)
 
     def read(self, arguments: Namespace, caller: Caller) -> WorkerPointList:
-        page = self.queries.query(WorkerPoints).filter(session_agent_id=arguments.agent).descending("worktree_id").page(1, 1)
-        return WorkerPointList(page.rows[0] if page.rows else None)
+        return WorkerPointList(self.queries.query(WorkerPoints).filter(session_agent_id=arguments.agent).descending("worktree_id").first())
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, WorkerPointList):
