@@ -42,7 +42,7 @@ from core.modules.messages.commands.tag_message.tag_message_handler import TagMe
 from core.modules.messages.commands.tag_message.tag_message_subcommand import TagMessageSubcommand
 from core.modules.messages.commands.unread_messages.unread_messages_subcommand import UnreadMessagesSubcommand
 from core.modules.messages.commands.unread_reports.unread_reports_subcommand import UnreadReportsSubcommand
-from core.modules.messages.commands.agent_reports_subcommand import AgentReportsSubcommand
+from core.modules.messages.commands.agent_reports.agent_reports_subcommand import AgentReportsSubcommand
 from core.modules.messages.commands.record_message_delivery.record_message_delivery_handler import RecordMessageDeliveryHandler
 from core.modules.messages.commands.attachment_list.attachment_list_subcommand import AttachmentListSubcommand
 from core.modules.messages.commands.comment_message.comment_message_subcommand import CommentMessageSubcommand

@@ -1,4 +1,4 @@
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from contextlib import nullcontext
 from types import MappingProxyType
 import json
@@ -324,11 +324,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         except ViewerRequestError as error:
             self.answer(400, {"error": str(error)})
             return
-        self.answer(200, asdict(answer.body()), {"X-Journal-Request-Id": request_id})
-        self.wfile.flush()
         http = ViewerHttpRequest(request_id, received_at, request_id, (perf_counter() - started_at) * 1000, 0, person_id)
-        viewer.routes.request_log.record_viewers([ViewerRequestRecord(http, line, index, timed.duration_ms, 0.0, timed.answer.code, timed.points)
-                                                  for index, (line, timed) in enumerate(zip(answer.lines, answer.answers, strict=True))])
+        self.answer_and_record(viewer, asdict(answer.body()), request_id, [ViewerRequestRecord(http, line, index, timed.duration_ms, 0.0, timed.answer.code, timed.points)
+                                                                            for index, (line, timed) in enumerate(zip(answer.lines, answer.answers, strict=True))])
 
     def answer_lines(self, viewer: ViewerServer, token: str, body: bytes | None) -> None:
         try:
@@ -355,7 +353,10 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             for (index, line), timed in zip(command_lines, command_answers, strict=True):
                 answers[index] = timed.answer
                 records.append(ViewerRequestRecord(http, line, index, timed.duration_ms, queued_ms, timed.answer.code, timed.points))
-        self.answer(200, {"answers": [asdict(answers[index]) for index in range(len(request.lines))]}, {"X-Journal-Request-Id": request_id})
+        self.answer_and_record(viewer, {"answers": [asdict(answers[index]) for index in range(len(request.lines))]}, request_id, records)
+
+    def answer_and_record(self, viewer: ViewerServer, body: Mapping[str, object], request_id: str, records: Sequence[ViewerRequestRecord]) -> None:
+        self.answer(200, body, {"X-Journal-Request-Id": request_id})
         self.wfile.flush()
         viewer.routes.request_log.record_viewers(records)
 
