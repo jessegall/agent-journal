@@ -3,7 +3,7 @@ import pytest
 from core.base.driver.command_category import CommandCategory
 from core.testing.expect_reply import expect_absent_reply_refusal, expect_reply_allowed, expect_reply_refusal
 from core.testing.shell_part import ShellPart
-from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, asking_main, shell_test_part, worker_on_plan, worker_outside_plan
+from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_ALIAS, TEST_LINE, asking_main, shell_test_part, worker_on_plan, worker_outside_plan
 
 FLAG = "--ask-main"
 RULE = "workers.phase-tests"
@@ -12,6 +12,12 @@ RULE = "workers.phase-tests"
 @pytest.fixture
 def on_plan(new_story, monkeypatch):
     return worker_on_plan(new_story, monkeypatch)
+
+
+@pytest.fixture
+def alias_saved(on_plan):
+    on_plan.save_test_alias()
+    return on_plan
 
 
 @pytest.fixture
@@ -29,10 +35,23 @@ def test_a_test_run_on_a_started_plan_is_refused_naming_the_flag_and_sends_nothi
     expect_no_main_agent_lines(on_plan)
 
 
-def test_a_saved_test_alias_is_refused_as_a_test_line_is(on_plan):
-    on_plan.save_test_alias()
-    expect_reply_refusal(on_plan.run_saved_test(), FLAG)
-    expect_no_main_agent_lines(on_plan)
+def test_a_saved_test_alias_is_refused_as_a_test_line_is(alias_saved):
+    expect_reply_refusal(alias_saved.run_saved_test(), FLAG)
+    expect_no_main_agent_lines(alias_saved)
+
+
+def test_a_saved_test_alias_that_reaches_the_hook_as_a_journal_line_is_refused(alias_saved):
+    reply = alias_saved.run_line(f"journal {TEST_ALIAS} --tail 20", ShellPart("journal", CommandCategory.JOURNAL, [TEST_ALIAS, "--tail", "20"]))
+    expect_reply_refusal(reply, FLAG)
+
+
+def test_the_worker_hears_the_flag_before_a_reader_request_holds_the_run(on_plan):
+    on_plan.story.expect_success("setting set journal.core.processes.readers-forced on --environment main")
+    expect_reply_refusal(on_plan.run_test(), FLAG)
+
+
+def test_the_worker_hears_the_flag_before_the_rule_about_saved_commands(on_plan):
+    expect_reply_refusal(on_plan.run_test_with_saved_commands_known(), FLAG)
 
 
 def test_a_line_with_a_test_part_among_other_parts_is_refused_whole(on_plan):

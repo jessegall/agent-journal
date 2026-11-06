@@ -45,8 +45,14 @@ class WorkerPhases:
         return tuple(task for task in testing if self.phase(task) is not None)
 
     def holds_back(self, worker_id: int) -> bool:
+        return self.held_phase(worker_id) is not None
+
+    def held_phase(self, worker_id: int) -> Phase | None:
         worktree = self.worktrees.worker_worktree(worker_id)
         if worktree is None:
-            return False
+            return None
         task = self.queries.query(Task).find(worktree.task_id)
-        return task.state in HELD_BACK_TASK_STATES and self.phase(task) is not None and not self.failure_out(worktree)
+        if task.state not in HELD_BACK_TASK_STATES:
+            return None
+        phase = self.phase(task)
+        return None if phase is None or self.failure_out(worktree) else phase

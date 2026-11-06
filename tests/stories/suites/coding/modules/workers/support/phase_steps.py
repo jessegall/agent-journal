@@ -88,6 +88,10 @@ class StoryWorker:
         self.story.expect_success(f'alias add {TEST_ALIAS} "{line}" --category "test run"', actor=self.story.agent)
         self.story.run_listeners()
 
+    def run_test_with_saved_commands_known(self, line: str = TEST_LINE) -> HookReply:
+        shell = {"line": line, "parts": [shell_test_part(line).prepared(line)], "redirects": [], "is_journal_only": False, "parse_error": "", "saved_commands_known": True}
+        return self.story.hook(self.session, HookSamples.tool_use("Bash", ToolType.SHELL, [], None, shell=shell))
+
     def run_saved_test(self, line: str = TEST_LINE) -> HookReply:
         part = shell_test_part(line).prepared(line)
         part.update(saved_command=TEST_ALIAS, read_flag="tail:20")

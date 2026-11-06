@@ -65,6 +65,14 @@ def clash_waiting(new_story, monkeypatch):
 
 
 @pytest.fixture
+def at_last_task(on_plan):
+    on_plan.prove_and_move_on(TEST_LINE)
+    on_plan.prove_and_move_on()
+    on_plan.prove()
+    return on_plan
+
+
+@pytest.fixture
 def outside_task_first(new_story, monkeypatch):
     story = planned_story(new_story)
     story.run('task make "Docs" --brief "The docs" --environment main', actor=story.agent)
@@ -118,16 +126,13 @@ def test_the_stalled_test_tick_does_not_start_the_proofs_of_a_task_moved_past(mo
     moved_past_a_test.story.expect_text("proof show 1", "state: shown", actor=moved_past_a_test.story.agent)
 
 
-def test_the_stalled_test_tick_starts_a_test_left_behind_after_the_hand_in_of_a_phase(on_plan, monkeypatch):
-    on_plan.prove_and_move_on(TEST_LINE)
-    on_plan.prove_and_move_on()
-    on_plan.prove()
+def test_the_stalled_test_tick_starts_a_test_left_behind_after_the_hand_in_of_a_phase(at_last_task, monkeypatch):
     with monkeypatch.context() as stopped_server:
         stopped_server.setattr(WorkerTestListener, "start_next", lambda listener, logged: None)
-        on_plan.story.expect_text("worker next", "queued", actor=on_plan.worker)
-    on_plan.story.expect_text("proof show 1", "state: queued", actor=on_plan.story.agent)
-    StalledWorkerTests()(on_plan.story.container)
-    on_plan.story.expect_text("proof show 1", "state: running", actor=on_plan.story.agent)
+        at_last_task.story.expect_text("worker next", "queued", actor=at_last_task.worker)
+    at_last_task.story.expect_text("proof show 1", "state: queued", actor=at_last_task.story.agent)
+    StalledWorkerTests()(at_last_task.story.container)
+    at_last_task.story.expect_text("proof show 1", "state: running", actor=at_last_task.story.agent)
 
 
 def test_a_test_already_running_ends_as_today_and_brings_the_next_task(running_from_before):
@@ -198,10 +203,8 @@ def test_a_person_sees_a_task_moved_past_as_testing(moved_past_no_test):
     assert (states[1], states[2]) == ("testing", "started"), states
 
 
-def test_a_person_sees_the_tasks_of_a_phase_as_completed_once_its_tests_have_passed(on_plan):
-    on_plan.prove_and_move_on(TEST_LINE)
-    on_plan.prove_and_move_on()
-    on_plan.prove_and_move_on()
-    on_plan.end_all_tests()
-    states = task_states_seen_by_the_person(on_plan)
+def test_a_person_sees_the_tasks_of_a_phase_as_completed_once_its_tests_have_passed(at_last_task):
+    at_last_task.story.run("worker next", actor=at_last_task.worker)
+    at_last_task.end_all_tests()
+    states = task_states_seen_by_the_person(at_last_task)
     assert (states[1], states[2], states[3], states[4]) == ("completed", "completed", "completed", "started"), states
