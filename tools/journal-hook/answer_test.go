@@ -53,7 +53,7 @@ func TestLinesGoOnAnEventThatTakesThemAndAreDroppedElsewhere(t *testing.T) {
 }
 
 func TestAnUnansweredCodexHookTellsTheAgentToo(t *testing.T) {
-	stdout, _, code := shippedAnswer("codex", "SessionStart", "session_start", Reply{Lines: []string{missedLine(3*time.Second)}})
+	stdout, _, code := shippedAnswer("codex", "SessionStart", "session_start", Reply{Lines: []string{missedLine(3 * time.Second)}})
 	if code != 0 || !strings.Contains(stdout, "did not answer within 3 seconds") {
 		t.Fatalf("printed %q %d", stdout, code)
 	}
@@ -120,3 +120,20 @@ func TestLinesReachAnAgentAfterAToolAndNeverAtAStop(t *testing.T) {
 	}
 }
 
+func TestAWorkersToolWithNoAnswerIsRefusedAndToldWhatToDoIfItStaysRefused(t *testing.T) {
+	var stdout, stderr strings.Builder
+	program := programs.Program{Refusals: map[string]string{"pre_tool_use": "deny"}}
+	code := Answered(&stdout, &stderr, program, "PreToolUse", "pre_tool_use", checkRequired, nil, "/nowhere", 5*time.Second)
+	if code != 0 || !strings.Contains(stdout.String(), `"permissionDecision":"deny"`) || !strings.Contains(stdout.String(), "Run it once more") || !strings.Contains(stdout.String(), "stop and write in your report") {
+		t.Fatalf("code %d, stdout %s, stderr %s", code, stdout.String(), stderr.String())
+	}
+}
+
+func TestAMainAgentsToolWithNoAnswerGoesOnWithItsLine(t *testing.T) {
+	var stdout, stderr strings.Builder
+	program := programs.Program{Refusals: map[string]string{"pre_tool_use": "deny"}}
+	code := Answered(&stdout, &stderr, program, "PreToolUse", "pre_tool_use", 0, nil, "/nowhere", 5*time.Second)
+	if code != 0 || strings.Contains(stdout.String(), `"permissionDecision":"deny"`) {
+		t.Fatalf("code %d, stdout %s", code, stdout.String())
+	}
+}

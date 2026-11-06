@@ -106,3 +106,11 @@ func writeFile(t *testing.T, path, text string) {
 		t.Fatal(err)
 	}
 }
+
+func TestTheHookReadsTheRoleFromTheVariableTheJournalStartedItWith(t *testing.T) {
+	variables := map[string]string{"AGENT_JOURNAL_ACTIVE": "1", RoleVariable: "worker"}
+	context, skip := hookContext(func(name string) string { return variables[name] }, t.TempDir(), t.TempDir(), 1, time.Now())
+	if skip || context.Role != "worker" {
+		t.Fatalf("skip %v, role %q", skip, context.Role)
+	}
+}

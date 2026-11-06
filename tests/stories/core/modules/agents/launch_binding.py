@@ -1,7 +1,7 @@
 import pytest
 
 from core.testing.fake_launcher import FakeLauncher
-from core.modules.drivers.support.access_nudges import ENDED_AGENT
+from core.modules.drivers.support.access_nudges import ENDED_AGENT, UNKNOWN_AGENT
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
@@ -25,6 +25,11 @@ def test_a_session_under_an_unknown_launch_name_is_let_through_and_logged(new_st
     story.expect_hook_silent("t-9", HookSamples.session_start().with_fields(program="codex", launch="worker-99"))
     story.expect_absent("agent list --environment 1", "t-9")
     story.expect_rows("launch name worker-99" in story.error_log_text())
+
+
+def test_a_workers_tool_no_agent_holds_is_refused(new_story):
+    story = new_story(SAMPLES, fixture=SampleSuiteChoice)
+    story.expect_hook_refusal("t-8", HookSamples.edit("a.py").with_fields(program="codex", launch="worker-98", role="worker"), UNKNOWN_AGENT.nudge().text)
 
 
 def test_a_claude_helper_is_found_by_the_session_it_was_given(started_main_agent):

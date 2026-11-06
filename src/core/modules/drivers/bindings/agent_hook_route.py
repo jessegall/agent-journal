@@ -16,7 +16,7 @@ from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.drivers.models.hook_call import HookCall
-from core.modules.drivers.support.access_nudges import ENDED_AGENT
+from core.modules.drivers.support.access_nudges import ENDED_AGENT, UNKNOWN_AGENT
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
 from core.modules.drivers.support.hook_durations import HookDurations
 from core.modules.environments.models.environment import Environment
@@ -28,7 +28,7 @@ class AgentHookRoute(HookRoute):
     launch name it was started under, saving the real session on it, starts the main agent at its
     session's first hook, gives back the stored answer of a hook sent twice, refuses the tools of a
     program whose agent has ended and asks the launcher to stop it, and lets through, without a
-    record, a hook from an agent it does not know."""
+    record, a hook from an agent it does not know, unless a worker or helper sent it for a tool."""
 
     def __init__(self, bus: Bus, queries: Queries, errors: ErrorLog, durations: HookDurations, settings: SettingValues, agents: AgentRows, launcher: LauncherLink) -> None:
         self.bus, self.queries, self.errors, self.durations, self.settings = bus, queries, errors, durations, settings
@@ -53,6 +53,8 @@ class AgentHookRoute(HookRoute):
 
     def ended_agent_reply(self, event: HookEvent) -> HookReply:
         row = self.ended_agent(event)
+        if row is None and event.requires_check:
+            return HookReply(refusal=UNKNOWN_AGENT.nudge().text)
         if row is None or event.event != HookEventName.PRE_TOOL_USE:
             return HookReply.allowed()
         self.launcher.request_stop(row.terminal_id)

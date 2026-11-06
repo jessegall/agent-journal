@@ -1,6 +1,8 @@
 import pytest
 
+from core.base.database.database import Database
 from core.testing.hook_samples import HookSamples
+from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -24,3 +26,19 @@ def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new
     story.expect_success("worker deliver", actor=worker)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")
+
+
+def test_worker_send_runs_git_outside_its_transaction(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    database, transaction_flags, synced = story.container.get(Database), [], WorktreeGit.sync
+
+    def watched_sync(git, worktree):
+        transaction_flags.append(database.has_transaction)
+        return synced(git, worktree)
+
+    monkeypatch.setattr(WorktreeGit, "sync", watched_sync)
+    story.expect_text(f'worker send {worker.id} "Finish the total"', "takes the job", actor=story.agent)
+    story.expect_rows(transaction_flags == [False])
+

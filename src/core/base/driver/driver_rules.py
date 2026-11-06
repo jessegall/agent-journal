@@ -1,4 +1,5 @@
 from dataclasses import replace
+from time import perf_counter
 
 from core.base.container import Container
 from core.base.driver.agent_hook import AgentHook
@@ -19,6 +20,9 @@ from core.base.guard.guard_switches import GuardSwitches
 from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.registry import Registry
 from core.base.scope.scopes import Scopes
+
+
+SLOW_RULE_SECONDS = 0.1
 
 
 class DriverRules:
@@ -71,6 +75,14 @@ class DriverRules:
         return replace(answer, refusal=f"{answer.refusal} (to pass it: journal refusal skip {entry.name} --reason '<why>')")
 
     def outcome(self, entry: DriverRuleEntry, hook: AgentHook) -> RuleOutcome:
+        started_at = perf_counter()
+        outcome = self.rule_outcome(entry, hook)
+        elapsed = perf_counter() - started_at
+        if elapsed >= SLOW_RULE_SECONDS:
+            self.errors.noted(f"rule {entry.name} took {elapsed * 1000:.0f} ms on a {hook.hook_name} hook")
+        return outcome
+
+    def rule_outcome(self, entry: DriverRuleEntry, hook: AgentHook) -> RuleOutcome:
         try:
             rule = self.container.get(entry.path.checked_class(DriverRule))
             if rule.start_line_rule and hook.event.is_resume:

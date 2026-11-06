@@ -1,3 +1,4 @@
+from core.base.actor import Actor
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
@@ -21,7 +22,7 @@ from suites.coding.modules.workers.support.worker_task_advance import WorkerTask
 
 class SendWorkerHandler(Handler[SendWorker, AgentLine]):
     """Gives a worker that still has its worktree its next job as a line, on the latest of its base branch; a
-    delivered worker's task goes back in hand."""
+    delivered worker's task goes back in hand. Git runs before the transaction, so no hook waits on it."""
 
     command = SendWorker
     disabled_scopes = [ActorScope]
@@ -29,6 +30,16 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
     def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance) -> None:
         self.rows, self.worktrees, self.repository, self.git, self.nudger = rows, worktrees, repository, git, nudger
         self.advance = advance
+        self.conflicts: tuple[str, ...] = ()
+
+    def prepare(self, command: SendWorker, actor: Actor) -> None:
+        worktree = self.worktrees.worker_worktree(command.worker_id)
+        if worktree is None:
+            return
+        task = self.rows.required(Task, worktree.task_id)
+        if not self.git.conflict_files(worktree):
+            self.git.commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.session_agent_id}")
+        self.conflicts = tuple(self.git.sync(worktree))
 
     def handle(self, command: SendWorker, context: Context) -> AgentLine:
         worktree = self.worktrees.worker_worktree(command.worker_id)
@@ -37,11 +48,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         if worktree.state is WorktreeState.DELIVERED:
             self.advance.restart_task(worktree, self.rows.required(Task, worktree.task_id), context)
             self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)
-        task = self.rows.required(Task, worktree.task_id)
-        if not self.git.conflict_files(worktree):
-            self.git.commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.session_agent_id}")
-        conflicts = self.git.sync(worktree)
-        job = f"{command.job}\n{worktree.base_branch} is merged into your worktree and clashes on {', '.join(conflicts)}: settle the conflict markers first." if conflicts else command.job
+        job = f"{command.job}\n{worktree.base_branch} is merged into your worktree and clashes on {', '.join(self.conflicts)}: settle the conflict markers first." if self.conflicts else command.job
         self.repository.save(Message(creator_id=context.actor.id, type=MessageType.PEER, text=command.job, read_at=context.timestamp, delivered_at=context.timestamp,
                                      recipient=WorkerRecipient.text(command.worker_id)), context)
         return self.nudger.send_text(command.worker_id, job, WORKER_JOB_SOURCE, context)
