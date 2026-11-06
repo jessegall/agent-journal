@@ -39,7 +39,9 @@ test("an ask during a slow read waits for its answer and then reads once", async
     await vi.advanceTimersByTimeAsync(5000);
     expect(read).toHaveBeenCalledTimes(1);
     slow.resolve();
-    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(1999);
+    expect(read).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1);
     expect(read).toHaveBeenCalledTimes(2);
 });
 
@@ -63,4 +65,19 @@ test("two windows asking usage at once share one read, and a later ask reads aga
     usageRead("main", read);
     expect(read).toHaveBeenCalledTimes(2);
     answered({ok: true});
+});
+
+test("the wait counts from when the answer arrived, not from when the read began", async () => {
+    let answer;
+    const read = vi.fn(() => new Promise((resolve) => (answer = resolve)));
+    const ask = coalesced(read, 10000);
+    ask();
+    await vi.advanceTimersByTimeAsync(6000);
+    answer();
+    await vi.advanceTimersByTimeAsync(0);
+    ask();
+    await vi.advanceTimersByTimeAsync(9999);
+    expect(read).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(read).toHaveBeenCalledTimes(2);
 });

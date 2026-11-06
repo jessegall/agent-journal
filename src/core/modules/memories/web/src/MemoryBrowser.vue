@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {useWindow, wordLabel} from "@journal/window-kit";
+import {READ_RATES, coalesced, useWindow, wordLabel} from "@journal/window-kit";
 import AgentColumn from "./AgentColumn.vue";
 import MemoryPane from "./MemoryPane.vue";
 import {EVERYONE, MAIN, OTHERS, agentIdOf, isAgent} from "./memoryScope.js";
@@ -31,7 +31,7 @@ const pick = (chosen) => {
     picking.value = false;
 };
 watch(who, readAgent, {immediate: true});
-context.follow(["agent.*"], () => readAgent());
+context.follow(["agent.*"], coalesced(() => readAgent(), READ_RATES.openPanel));
 </script>
 
 <template>

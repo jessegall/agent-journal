@@ -3,7 +3,7 @@ import {computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch}
 import {useComposerHeight} from "./composerHeight.js";
 import DumpForm from "./DumpForm.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
-import {Btn, DockStack, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, openInChat, patched, removed, shownMarks, usePins, useRows, withDayLines} from "@journal/window-kit";
+import {READ_RATES, coalesced, Btn, DockStack, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, openInChat, patched, removed, shownMarks, usePins, useRows, withDayLines} from "@journal/window-kit";
 
 const {rows: messages, failure, loaded, load, loadLatest, older, act, context} = useRows("message feed --limit 50", ["message.*"], {incremental: true});
 context.markMotion = ref(false);
@@ -89,7 +89,7 @@ async function readTool() {
     thinking.value = answer.ok ? Boolean(answer.value.thinking) : false;
     asking.value = answer.ok ? Boolean(answer.value.asking) : false;
 }
-context.follow(["hook_call.*", "dock_item.*", "process_part.*"], readTool);
+context.follow(["hook_call.*", "dock_item.*", "process_part.*"], coalesced(readTool, READ_RATES.runningTool));
 readTool();
 const FOLD_AFTER_MS = 500;
 const ECHO_SLACK_MS = 2000;
