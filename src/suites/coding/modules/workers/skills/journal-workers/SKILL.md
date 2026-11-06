@@ -5,10 +5,15 @@ description: Send a worker to write a bounded job, check its proofs and merge it
 
 # Workers
 
-A helper only reads. A worker writes, in a worktree of its own, on one task whose brief is its whole prompt.
+A helper only reads. A worker writes in a worktree on its assigned tasks, each with its own brief. A stopped worker
+stays kept on the same agent number and session until retired.
 
 ## As the one who sends
 
+- Give new work to a kept worker that can take it, even when the subject changes; prefer the one that already knows
+  the work. `journal worker send <n> --task <task> [<task> ...]` assigns its next tasks. A kept worker can take them on
+  its open worktree; after its work is merged, a send creates a new worktree in its old folder on the same session.
+  What it already delivered and its proofs stay recorded. An unmerged branch is never overwritten.
 - `journal worker dispatch <task> [<task> ...] --model <model>` starts a worker on the tasks; `--profile` is a checked worker profile, journal-worker by default, whose text the worker starts from, and `--model` falls back to that profile's model (`--name` shows on its card), which it takes one by one with no report in
   between; outside a plan the journal runs the tests of each before the next starts and tells you when the last passes. `--library-link <folder>` links a folder such as
   `.venv` into its worktree and `--library-copy <folder>` copies it. `--program <program>` names the agent program.
@@ -20,8 +25,12 @@ A helper only reads. A worker writes, in a worktree of its own, on one task whos
   decline, do nothing: the worker goes on and the request stays on the task's log.
 - Give a worker many tasks at once: a large batch runs long and bothers you less than many small dispatches.
 - `journal worker models` lists each program's models from the cheapest to the strongest.
-- A worker that reported takes its next job with `journal worker send <n> "<job>"`, with its memory of the last. Send
-  related work to the worker that knows it; never start a new one on work another already knows.
+- `journal worker send <n> "<job>"` adds instructions to a kept worker's existing work. Use `--task` for new assigned
+  tasks. A dispatch is refused when a compatible idle worker can take those tasks. Use `--fresh "<why>"` on dispatch
+  only when a separate session is needed; its reason stays with the new worktree.
+- `journal agent retire <n> --reason "<why>"` permanently retires a stopped worker. It retains its history and
+  transcript but can never resume or receive another job. Dirty files or unmerged work prevent retirement; settle
+  them first. Reporting, delivering, merging and stopping a process do not by themselves retire the agent.
 - Read each proof with `journal proof list --task <n>`, check it with `journal proof check <n>` or send it back with
   `journal proof short <n> "<what is missing>"`.
 - Read each completed task and its log with `journal worker logs <worker>` after the latest hand-in.
@@ -29,6 +38,17 @@ A helper only reads. A worker writes, in a worktree of its own, on one task whos
   It first merges the branch into the worktree. When only built files under `web/dist` clash it keeps the branch's:
   rebuild after it. A clash in source goes back to the worker with conflict markers to settle.
 - `journal worker release <worker> "<why>"` puts its task back to open.
+
+## Running and kept limits
+
+`journal agent limits --environment <name>` shows the running and kept counts and limits in force. A running limit
+counts simultaneous worker processes; a kept limit counts both running and idle workers until retirement. Running 0
+allows none to start; kept 0 means no limit. Lowering a kept limit never removes a worker. Retire an unused worker
+explicitly to free a kept place.
+
+Only a person changes the limits, through the agents window or settings. Environment values override project values;
+numbers written in a profile file have no effect. Helpers have their own limits per profile. To add instructions to
+a busy helper's current job, use `journal helper send <n> --steer "<text>"`; give separate work to an idle helper.
 
 ## Process rules
 

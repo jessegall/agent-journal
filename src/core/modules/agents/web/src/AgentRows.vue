@@ -2,13 +2,8 @@
 import {computed, nextTick, onUnmounted, ref, watch} from "vue";
 import {READ_RATES, coalesced, Btn, EmptyState, MenuItem, MenuLabel, RowList, SearchBar, Segmented, toggleFilter, useDeclaredRows, useRows, useWindow} from "@journal/window-kit";
 import AgentCard from "./AgentCard.vue";
+import AgentLimits from "./AgentLimits.vue";
 
-const SHOWS = [
-    {key: "running", label: "Running"},
-    {key: "idle", label: "Idle"},
-    {key: "retired", label: "Retired"},
-    {key: "all", label: "All"},
-];
 // `texts` is what the window says when it is empty on each tab, {running, closed, all}, each {title, hint}: what is empty in its own terms and what brings rows
 const props = defineProps({line: {type: String, required: true}, empty: {type: String, required: true}, texts: {type: Object, default: () => ({})}});
 const {rows: facts} = useRows("usage agents --closed", ["agent.*", "task.*", "hook_call.*", "helper_job.*"]);
@@ -21,7 +16,7 @@ const words = ref("");
 const FILTER_KEY = "journal.agents.filters";
 const savedFilters = JSON.parse(localStorage.getItem(FILTER_KEY) || '{"roles":[],"profiles":[],"programs":[]}');
 const filters = ref(savedFilters);
-const filterOptions = ref({roles: [], profiles: []});
+const filterOptions = ref({roles: [], profiles: [], states: [], upgrade_retired: 0});
 const programs = ref([]);
 const filterCount = computed(() => filters.value.roles.length + filters.value.profiles.length + filters.value.programs.length);
 const updateFilter = (group, value) => { filters.value = toggleFilter(filters.value, group, value); };
@@ -68,7 +63,7 @@ watch([show, words, filters], () => {
 });
 context.follow(["agent.*", "task.*", ...context.sources.flatMap((source) => source.events)], coalesced(load, READ_RATES.pageOfAgents));
 load();
-const factsOf = (row) => facts.value.find((fact) => fact.id === row.id) ?? null;
+const factsOf = (row) => facts.value.find((fact) => fact.id === row.id) ?? row.facts ?? null;
 const shown = rows;
 // a search is what makes an empty list mean nothing matches; the tab alone does not
 const searching = computed(() => Boolean(words.value.trim()) || filterCount.value > 0);
@@ -143,6 +138,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 
 <template>
     <div ref="agents" :class="['agents', {focused: openRow}]">
+        <AgentLimits />
         <SearchBar v-model="words" placeholder="Search agents" :menu-count="filterCount" data-agents-search>
                 <template #menu>
                     <MenuLabel>Type</MenuLabel>
@@ -153,8 +149,9 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                     <template v-for="program in programs" :key="program.name"><MenuItem role="menuitemcheckbox" :aria-checked="filters.programs.includes(program.name)" :checked="filters.programs.includes(program.name)" :data-filter-program="program.name" @click="updateFilter('programs', program.name)">{{ program.title }}</MenuItem></template>
                     <template v-if="filterCount"><MenuItem data-filter-clear @click="clearFilters">Clear filters</MenuItem></template>
                 </template>
-                <Segmented :options="SHOWS" :value="show" @pick="show = $event" />
+                <Segmented :options="filterOptions.states" :value="show" @pick="show = $event" />
         </SearchBar>
+        <template v-if="show === 'retired' && filterOptions.upgrade_retired"><p class="agents-upgrade" data-agents-upgrade>Retired during the upgrade: {{ filterOptions.upgrade_retired }}</p></template>
         <div ref="list" :class="['agents-view', {'agents-view-open': openRow}]">
         <template v-if="loaded && !failure && !visible.length && filterCount"><EmptyState title="No agents match the filters" data-filter-empty>
             <Btn small data-empty-clear @click="clearFilters">Clear filters</Btn>
@@ -174,6 +171,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 </template>
 
 <style scoped>
+.agents-upgrade { margin: 0; padding: 8px 14px; color: var(--text-3); font-size: 12px; border-bottom: 1px solid var(--border); }
 .agents {
     display: flex;
     flex-direction: column;

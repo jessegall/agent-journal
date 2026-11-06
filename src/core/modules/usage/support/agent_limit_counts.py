@@ -1,0 +1,25 @@
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class AgentProfileLimitCounts:
+    profile: str
+    title: str
+    running: int
+    kept: int
+    run_limit: int
+    kept_limit: int
+
+
+@dataclass(frozen=True)
+class AgentLimitCounts:
+    key: str
+    label: str
+    running: int
+    kept: int
+    run_limit: int
+    kept_limit: int
+    run_setting: str
+    kept_setting: str
+    per_profile: bool
+    profiles: tuple[AgentProfileLimitCounts, ...]

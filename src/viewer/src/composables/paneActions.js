@@ -1,4 +1,4 @@
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import {activated, aimAt, holding, leaves, measure, ordered, paneClosed, placed, tabClosed, tuned} from "../domain/panes.js";
 import {useDetached} from "./detached.js";
 import {usePaneDrag} from "./paneDrag.js";
@@ -17,6 +17,12 @@ const HINTS = {
 export function usePaneActions({store, area, catalogue, counts, environment}) {
     const layout = () => store.layout.value;
     const offer = ref(null);
+    const waitingToOpen = [];
+    watch(() => store.loaded?.value, (loaded) => {
+        if (!loaded) return;
+        const requested = waitingToOpen.splice(0);
+        for (const name of requested) openView(name);
+    });
     const detached = useDetached(store, catalogue, environment);
 
     function stripAt(x, y) {
@@ -115,6 +121,10 @@ export function usePaneActions({store, area, catalogue, counts, environment}) {
 
     // a window joins the pane holding it, else the pane it was closed in, else the largest pane
     function openView(name) {
+        if (store.loaded?.value === false) {
+            waitingToOpen.push(name);
+            return;
+        }
         const at = holding(layout(), name);
         if (at !== null) return pick(at, name);
         const before = lastPane.get(name);

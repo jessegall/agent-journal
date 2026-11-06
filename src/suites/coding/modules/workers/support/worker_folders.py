@@ -22,3 +22,7 @@ class WorkerFolders(AgentFolders):
     def folder(self, agent: Agent) -> Path:
         worktree = self.worktrees.worker_worktree(agent.id)
         return Path(worktree.folder) if worktree is not None else super().folder(agent)
+
+    def resume_folder(self, agent: Agent) -> Path:
+        worktree = self.worktrees.newest_worktree(agent.id)
+        return Path(worktree.folder) if worktree is not None else super().resume_folder(agent)

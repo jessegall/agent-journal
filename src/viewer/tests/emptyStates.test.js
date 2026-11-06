@@ -7,6 +7,7 @@ import {context, mounted, page, pickButton, settle} from "./support/windowContex
 import RowList from "../kit/RowList.vue";
 import {useListTools} from "../kit/useListTools.js";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
+import {agentFilterOptions} from "./support/agentFilterOptions.js";
 import MemoriesPage from "../../core/modules/memories/web/src/MemoriesPage.vue";
 import {default as helpers} from "../../core/modules/agents/web/src/helpers.js";
 
@@ -69,7 +70,7 @@ test("a list tool says it is filtering once words are typed or open and closed i
 const closedAgent = {id: 9, session: "s-9", program: "claude", role: "worker", ended_at: "2026-11-02T10:00:00Z", created_at: "2026-11-02T09:00:00Z"};
 
 async function agents(component, answers) {
-    const element = await mounted(component, context({...answers, "agent cards": answers?.["agent cards"] || page([]), "usage agents --closed": page([])}));
+    const element = await mounted(component, context({"agent cards --options": agentFilterOptions, ...answers, "agent cards": answers?.["agent cards"] || page([]), "usage agents --closed": page([])}));
     document.body.append(element);
     host = element;
     return element;
@@ -84,7 +85,7 @@ const type = async (element, text) => {
 
 test("the running tab of the helpers window with none running says so and what brings one, though closed helpers exist", async () => {
     const element = await agents(helpers);
-    expect(words()).toEqual(["No helpers running", "Running helpers and reviewers appear here."]);
+    expect(words()).toEqual(["No helpers working", "Helpers with a running process appear here."]);
     expect(element.textContent).not.toContain("Nothing matches");
 });
 
@@ -98,7 +99,7 @@ test("the other tabs of the helpers window say what is empty in their own terms"
     const element = await agents(helpers, {"agent cards": page([])});
     const pick = (label) => pickButton(element, label, ".segmented button");
     await pick("Idle");
-    expect(words()).toEqual(["No helpers idle", "Helpers available for another job appear here."]);
+    expect(words()).toEqual(["No helpers idle", "Kept helpers whose process has stopped appear here."]);
     await pick("Retired");
     expect(words()).toEqual(["No helpers retired", "Retired helpers appear here."]);
     await pick("All");

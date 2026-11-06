@@ -30,4 +30,4 @@ class ProfilesModule(Module):
     subcommands = [ResetProfileSubcommand, RemoveProfileSubcommand, ProfileListSubcommand, SaveProfileSubcommand]
     listeners = [ProfilePublishListener]
     windows = [WindowDeclaration("profiles.profiles", "Agent profiles", "profiles.js", WindowLoading.COMPONENT, skeleton=PROFILES_PROFILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.AGENT, search=WindowReadSearch("profile list", "Find a profile", ("name", "description", "agent_type", "model", "codex_model")),
-                                 reads=["helper availability", "profile list"], runs=["helper start", "profile save", "profile reset", "profile remove"])]
+                                 reads=["helper availability", "profile list"], runs=["helper start", "helper send", "profile save", "profile reset", "profile remove"])]

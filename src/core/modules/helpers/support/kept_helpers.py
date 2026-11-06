@@ -4,6 +4,7 @@ from core.base.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
+from core.base.refusal import Refusal
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.drivers.models.helper_job import HelperJob
@@ -41,3 +42,7 @@ class KeptHelpers:
         if not provider.session_resumes_here(self.folders.folder(helper), helper.session):
             return False
         return (provider.context_percent(self.home, helper.session) or 0) < FULL_SESSION_PERCENT
+
+    def idle_refusal(self, helpers: tuple[Agent, ...]) -> Refusal:
+        others = f" (also {', '.join(str(helper.id) for helper in helpers[1:3])})" if helpers[1:] else ""
+        return Refusal(f'helper {helpers[0].id} is idle: journal helper send {helpers[0].id} "<job>"{others}', 'or --fresh "<why>"')

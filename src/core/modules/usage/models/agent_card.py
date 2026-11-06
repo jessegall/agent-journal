@@ -27,6 +27,8 @@ class AgentCard(EnvironmentScoped, ViewModel):
     given_name: str
     paused_at: Timestamp | None
     ended_at: Timestamp | None
+    retired_at: Timestamp | None
+    retirement_reason: str
     started_task_id: int | None
     started_task_title: str
     tasks: str

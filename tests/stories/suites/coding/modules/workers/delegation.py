@@ -356,7 +356,8 @@ def test_a_merged_worker_with_a_task_still_assigned_is_not_listed_as_running(new
     story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     expect_card_listed(story, "running", worker.id, False)
-    expect_card_listed(story, "retired", worker.id, True)
+    expect_card_listed(story, "idle", worker.id, True)
+    expect_card_listed(story, "retired", worker.id, False)
 
 
 def test_a_workers_facts_carry_its_model_profile_and_name_with_no_status_file(new_story):

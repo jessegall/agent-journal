@@ -2,6 +2,11 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
+from core.base.shell_sandbox import ShellSandbox
+from core.testing.story_shell_sandbox import StoryShellSandbox
+from core.modules.helpers.support.helper_programs import HelperPrograms
+from core.testing.story_helper_programs import StoryHelperPrograms
+import pytest
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.modules.agents.support.agent_type_limits import AgentTypeLimits, TypeLimits
@@ -10,6 +15,10 @@ from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, resumable_session
+from tests.stories.core.modules.helpers.helper_jobs import EndedHelper as ReportedHelper
+from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.server.support.browser_story import expect_browser
+import json
 
 REASON = '--reason "Its question is answered"'
 
@@ -23,6 +32,70 @@ class EndedHelper(StoryFixture):
         helper = helper_agent(story)
         story.expect_success(f"agent edit {helper.id} --pid 4242", actor=story.user)
         story.expect_success(f"agent stop {helper.id}", actor=story.agent)
+
+
+@pytest.fixture
+def helper_form_server(new_story, monkeypatch):
+    story = new_story(fixture=ReportedHelper)
+    story.expect_success("setting set journal.core.viewer.tour-completed true --project", actor=story.user)
+    helper = helper_agent(story)
+    resumable_session(story, helper, monkeypatch)
+    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    try:
+        with server_story(story, listener_thread_started=False) as server:
+            yield server, helper
+        story.run_listeners()
+        launcher.thread.join(timeout=5)
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
+
+
+def profile_line(server, cookie, line):
+    return server.viewer_line_value(cookie, {"window": "profiles.profiles", "environment": "main", "line": line})
+
+
+def test_helper_form_offers_send_for_an_idle_helper_through_the_viewer(helper_form_server):
+    server, helper = helper_form_server
+    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+    availability = profile_line(server, cookie, ["helper", "availability", "--profile", "journal-researcher"])
+    assert not availability["can_start"] and availability["can_start_fresh"]
+    assert [row["id"] for row in availability["idle_helpers"]] == [helper.id]
+    profile_line(server, cookie, ["helper", "send", str(helper.id), "Read src/tax.py"])
+    jobs = tuple(server.story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).all_rows())
+    assert jobs[-1].brief == "Read src/tax.py"
+    assert len({job.helper_id for job in jobs}) == 1
+
+
+def test_helper_form_offers_send_and_records_the_reason_for_another_helper(helper_form_server):
+    server, helper = helper_form_server
+    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+    profile_line(server, cookie, ["helper", "start", "journal-researcher", "--brief", "Read src/tax.py", "--fresh", "An independent comparison"])
+    job = server.story.container.get(Queries).query(HelperJob).newest().first()
+    assert job.helper_id != helper.id
+    assert job.new_agent_reason == "An independent comparison"
+
+
+def test_helper_form_offers_send_at_the_kept_limit_and_preserves_the_command_refusal(helper_form_server):
+    server, helper = helper_form_server
+    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+    server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", "journal.core.helpers.helper-profile-limits", '["journal-researcher:4:1"]', "--project"]})
+    availability = profile_line(server, cookie, ["helper", "availability", "--profile", "journal-researcher"])
+    assert [row["id"] for row in availability["idle_helpers"]] == [helper.id]
+    assert not availability["can_start_fresh"]
+    status, _, text = viewer_answer(server.viewer_port(), "/api/line", cookie, "", {"window": "profiles.profiles", "environment": "main", "line": ["helper", "start", "journal-researcher", "--brief", "Read the tax", "--fresh", "Another reader"]})
+    answer = json.loads(text)
+    assert status == 200 and answer["code"] != 0
+    assert json.loads(answer["error"])["refused"] in availability["fresh_reason"]
+    profile_line(server, cookie, ["helper", "send", str(helper.id), "Read the tax"])
+
+
+def test_helper_form_offers_send_in_light_and_dark(helper_form_server):
+    server, helper = helper_form_server
+    expect_browser(server, "helperStartForm.browser.mjs", [str(helper.id), "/tmp/worker-675-helper-form"])
 
 
 def expect_start_refused(story, reason: str) -> None:

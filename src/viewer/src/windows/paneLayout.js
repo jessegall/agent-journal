@@ -75,6 +75,7 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, copy = brow
     const layout = ref(fresh());
     // false until the page's own layout, or the tab's copy of it, is known, so the stage draws a skeleton and never one wide pane that narrows
     const ready = ref(false);
+    const loaded = ref(false);
     const refusal = ref("");
     const born = ref({});
     const dying = ref({});
@@ -119,6 +120,7 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, copy = brow
 
     // no layout is kept while one loads: a change to the empty layout would be saved over the person's own
     async function load(at) {
+        loaded.value = false;
         await flush();
         key = null;
         loading = at;
@@ -129,16 +131,20 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, copy = brow
             layout.value = tidied(kept, entry);
             ready.value = true;
         }
-        const found = await store.layout(at);
-        if (loading !== at) return;
-        key = at;
-        version = found.version;
-        layout.value = tidied(own && wellShaped(own) ? own : found.layout, entry);
-        copy.write(tabKey(at), layout.value);
-        ready.value = true;
+        try {
+            const found = await store.layout(at);
+            if (loading !== at) return;
+            key = at;
+            version = found.version;
+            layout.value = tidied(own && wellShaped(own) ? own : found.layout, entry);
+            copy.write(tabKey(at), layout.value);
+            ready.value = true;
+        } finally {
+            if (loading === at) loaded.value = true;
+        }
     }
 
-    const settle = () => (ready.value = true);
+    const settle = () => { ready.value = true; loaded.value = true; };
 
     function keep() {
         if (key === null) return;
@@ -195,5 +201,5 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, copy = brow
         return [...live, ...closing].sort((a, b) => a.id - b.id);
     });
     const open = computed(() => opened(layout.value));
-    return {layout, ready, settle, refusal, drawKept, load, flush, apply, replace, activate, resize, gone, measured, panes, open};
+    return {layout, ready, loaded, settle, refusal, drawKept, load, flush, apply, replace, activate, resize, gone, measured, panes, open};
 }
