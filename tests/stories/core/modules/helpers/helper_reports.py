@@ -16,6 +16,7 @@ from core.modules.helpers.ticks.helper_limits_tick import HelperLimitsTick
 from tests.stories.core.modules.helpers.read_only_access import StartedCodexHelper
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.modules.documents.support.trail_fixtures import viewer
 
 PROGRAMS = [StartedHelper, StartedCodexHelper]
 LINES = "agent-line list --agent {agent}"
@@ -35,6 +36,14 @@ def reported(new_story, helper_fixture, text):
 
 def helper_report(story):
     return story.container.get(Queries).query(Message).filter(session_agent_id=helper_agent(story).id).first()
+
+
+def test_the_agent_card_reads_reports_through_the_viewer(new_story):
+    story = reported(new_story, StartedHelper, "The total is wrong.")
+    report = helper_report(story)
+    story.expect_success(f"message read {report.id}", actor=story.agent)
+    answer = viewer(story, "agents.agents", ["message", "agent-reports", "--agent", str(helper_agent(story).id)])
+    story.expect_rows([row["id"] for row in answer["rows"]] == [report.id], answer["rows"][0]["text"] == "The total is wrong.")
 
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
