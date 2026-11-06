@@ -26,7 +26,8 @@ test("a frame window is a sandboxed frame that may run scripts and has no origin
 test("the bridge sends a frame's line with the frame's own window name, whatever window the frame names", async () => {
     const bodies = [];
     vi.stubGlobal("fetch", async (url, request) => {
-        bodies.push(JSON.parse(request.body));
+        const {attribution, ...body} = JSON.parse(request.body);
+        bodies.push(body);
         return {json: async () => ({code: 0, value: {rows: []}, error: ""})};
     });
     const board = frame();

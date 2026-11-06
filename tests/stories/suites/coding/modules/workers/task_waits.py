@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from suites.coding.modules.workers.rules.inactive_worker_retire_rule import HOUR_SECONDS
+from suites.coding.modules.workers.rules.idle_worker_stop_rule import HOUR_SECONDS
 from suites.coding.modules.workers.support.worker_settings import WORKER_IDLE_HOURS
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, checked_worker, dispatched_worker, repository_environment

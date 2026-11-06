@@ -20,7 +20,8 @@ const settled = async () => {
 test("a process mark opens to its run's output and folds on the next click", async () => {
     const asked = [];
     vi.stubGlobal("fetch", async (url, init) => {
-        asked.push(JSON.parse(init.body));
+        const {attribution, ...line} = JSON.parse(init.body);
+        asked.push(line);
         return {json: async () => ({code: 0, value: {lines: ["compiling the cart", "1 failed"], first_byte: 0, last_byte: 30, total: 30}, error: ""})};
     });
     const element = document.createElement("div");
