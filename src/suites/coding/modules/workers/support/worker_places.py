@@ -6,6 +6,7 @@ from core.base.query.conditions.greater import Greater
 from core.base.timestamp import Timestamp
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
+from core.base.refusal import Refusal
 from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
 from core.modules.agents.support.agent_type_limits import NO_LIMIT, AgentTypeLimits
@@ -15,6 +16,7 @@ from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
 from suites.coding.support.coding_agent_role import CodingAgentRole
 
 JOB_DELIVERY_SECONDS = 120
+KEPT_NAMES_SHOWN = 5
 
 
 class WorkerPlaces:
@@ -39,8 +41,14 @@ class WorkerPlaces:
     def kept_limit(self) -> int:
         return self.limits.of(CodingAgentRole.WORKER).kept
 
-    def has_kept_place(self) -> bool:
-        return self.kept_limit() == NO_LIMIT or len(self.kept_workers()) < self.kept_limit()
+    def check_new_place(self) -> None:
+        running = self.running()
+        if len(running) + self.resuming_count() >= self.run_limit():
+            raise Refusal(f"{self.run_limit()} workers are running", "wait for one to report, or stop one")
+        kept = self.kept_workers()
+        if self.kept_limit() != NO_LIMIT and len(kept) >= self.kept_limit():
+            names = ", ".join(f"agent:{worker.id}" for worker in kept[:KEPT_NAMES_SHOWN])
+            raise Refusal(f"{self.kept_limit()} workers are kept: {names}", 'journal agent retire <n> --reason "<why>"')
 
     def run_limit(self) -> int:
         return self.limits.of(CodingAgentRole.WORKER).run

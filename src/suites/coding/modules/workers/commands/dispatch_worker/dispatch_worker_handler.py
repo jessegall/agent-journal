@@ -35,7 +35,6 @@ from dataclasses import replace
 from suites.coding.modules.workers.commands.cancel_worker_opening.cancel_worker_opening import CancelWorkerOpening
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
-KEPT_NAMES_SHOWN = 5
 
 class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     """Starts a worker: its agent row, a worktree cut from the environment's branch, its first task and the
@@ -64,8 +63,6 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             if listed.state is not TaskState.OPEN:
                 raise Refusal(f"task {listed.id} is {listed.state.value}", "a worker is dispatched to an open task")
         environment = self.environments.find(task.environment_id)
-        if not self.places.has_free_place():
-            raise Refusal(f"{self.places.run_limit()} workers are running", "wait for one to report, or stop one")
         caller = self.rows.find(Agent, context.actor.id)
         program = command.program or (caller.program if caller is not None else "")
         if not program:
@@ -77,9 +74,6 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         self.programs.installed(program)
         if not command.new_agent_reason.strip():
             self.check_idle(environment.folder, WorkerAsked(profile.name, program, model), tasks)
-        if not self.places.has_kept_place():
-            names = ", ".join(f"agent:{worker.id}" for worker in self.places.kept_workers()[:KEPT_NAMES_SHOWN])
-            raise Refusal(f"{self.places.kept_limit()} workers are kept: {names}", 'journal agent retire <n> --reason "<why>"')
         start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
         source = self.sources.source_copy(replace(context, environment_id=task.environment_id))
         task_sources = self.copies.copies(tasks, source)
