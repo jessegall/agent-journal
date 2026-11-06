@@ -7,7 +7,7 @@ class TaskLifecycle(Lifecycle):
     states = TaskState
     initial = [TaskState.OPEN]
     editable = (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED, TaskState.TESTING)
-    deletable = (TaskState.OPEN, TaskState.CANCELLED)
+    deletable = (TaskState.OPEN, TaskState.BLOCKED, TaskState.CANCELLED)
 
     start = Move("start", [TaskState.OPEN], TaskState.STARTED)
     block = Move("block", (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED), TaskState.BLOCKED)

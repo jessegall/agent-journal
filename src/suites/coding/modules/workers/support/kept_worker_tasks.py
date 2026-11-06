@@ -11,7 +11,7 @@ from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.messages.support.work_sources import WorkSources
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.queries.task_query import TaskQuery
+from core.modules.tasks.support.task_waits import TaskWaits
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource
@@ -30,18 +30,18 @@ class KeptWorkerTasks:
     overwritten."""
 
     def __init__(self, queries: Queries, repository: Repository, worktrees: WorktreeQuery, git: WorktreeGit, nudger: Nudger,
-                 environments: EnvironmentRows, advance: WorkerTaskAdvance, sources: WorkSources, copies: WorkerTaskCopies, tasks: TaskQuery,
+                 environments: EnvironmentRows, advance: WorkerTaskAdvance, sources: WorkSources, copies: WorkerTaskCopies, waits: TaskWaits,
                  proof_queue: WorkerProofQueue) -> None:
         self.queries, self.repository, self.worktrees, self.git, self.nudger = queries, repository, worktrees, git, nudger
-        self.environments, self.advance, self.sources, self.copies, self.tasks, self.proof_queue = environments, advance, sources, copies, tasks, proof_queue
+        self.environments, self.advance, self.sources, self.copies, self.waits, self.proof_queue = environments, advance, sources, copies, waits, proof_queue
 
     def checked_cut(self, worker: Agent, task_ids: tuple[int, ...]) -> tuple[Task, ...]:
         tasks = tuple(self.queries.query(Task).find_many(list(task_ids)))
-        for task in tasks:
-            if task.state is not TaskState.OPEN:
-                raise Refusal(f"task {task.id} is {task.state.value}", "a worker takes an open task")
-        if self.tasks.filter(id=tasks[0].id).matching(self.tasks.no_open_dependency()).first() is None:
+        if tasks[0].state is TaskState.BLOCKED and self.waits.has_only_task_waits(tasks[0].id):
             raise Refusal(f"task {tasks[0].id} waits on an open task", "send it when that one is done")
+        for task in tasks:
+            if task.state is not TaskState.OPEN and not (task.state is TaskState.BLOCKED and self.waits.has_only_task_waits(task.id)):
+                raise Refusal(f"task {task.id} is {task.state.value}", "a worker takes an open task")
         worktree = self.worktrees.worker_worktree(worker.id)
         if worktree is not None:
             if self.proof_queue.tests_pending(worktree):

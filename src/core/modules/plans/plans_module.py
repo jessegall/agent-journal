@@ -6,6 +6,7 @@ from core.modules.plans.support.block_conditions.plan_context_read import PlanCo
 from core.modules.plans.rules.plan_context_rule import PlanContextRule
 from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclaration, ButtonMenuItem, TextField
 from core.modules.plans.commands.block_plan.block_plan import BlockPlan
+from core.modules.plans.commands.rework_plan.rework_plan import ReworkPlan
 from core.modules.plans.commands.approve_plan.approve_plan import ApprovePlan
 from core.modules.plans.commands.approve_plan.approve_plan_handler import ApprovePlanHandler
 from core.modules.plans.commands.cancel_plan.cancel_plan import CancelPlan
@@ -73,7 +74,7 @@ from core.modules.plans.support.block_conditions.plan_approved import PlanApprov
 from core.modules.plans.support.block_conditions.plan_finished import PlanFinished
 from core.modules.plans.support.skeletons import PLANS_PLANS_SKELETON
 
-PLAN_COMMANDS = (ApprovePlan, BlockPlan, CancelPlan, ClosePlan, StartPlan)
+PLAN_COMMANDS = (ApprovePlan, BlockPlan, CancelPlan, ClosePlan, ReworkPlan, StartPlan)
 
 
 class PlansModule(Module):

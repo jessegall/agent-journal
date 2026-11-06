@@ -18,7 +18,7 @@ def test_the_inspector_reads_a_task_with_what_it_waits_on_and_its_log_in_one_ans
     story.run('task log 1 "Found the rounding"', actor=story.agent)
     story.run('task log 1 "Wrote the test"', actor=story.agent)
     answer = inspected(story, 1)
-    expect_row(answer, title="Fix the cart", brief="The total adds up", state="open", priority=200)
+    expect_row(answer, title="Fix the cart", brief="The total adds up", state="blocked", priority=200)
     expect_row(answer, waits=[{"id": 2, "title": "Fix the totals", "state": "open"}])
     expect_log_logs_answer(answer, ["Found the rounding", "Wrote the test"])
 
