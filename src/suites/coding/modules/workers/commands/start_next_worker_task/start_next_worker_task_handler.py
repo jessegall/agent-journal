@@ -48,7 +48,7 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
             raise Refusal("only a worker with a started task moves to its next", "journal worker-worktree list shows the worktrees")
         task = self.rows.required(Task, worktree.task_id)
         if task.state is TaskState.TESTING:
-            if self.proof_queue.has_tests_going(worktree):
+            if self.proof_queue.tests_pending(worktree):
                 raise Refusal(f"the tests of task {task.id} are running: your next task comes when they pass")
             if self.proof_queue.queue_proofs(worktree, context):
                 return task

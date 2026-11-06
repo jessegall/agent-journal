@@ -53,7 +53,7 @@ class AgentHookRoute(HookRoute):
 
     def ended_agent_reply(self, event: HookEvent) -> HookReply:
         row = self.ended_agent(event)
-        if row is None and event.requires_check:
+        if row is None and event.is_check_required:
             return HookReply(refusal=UNKNOWN_AGENT.nudge().text)
         if row is None or event.event != HookEventName.PRE_TOOL_USE:
             return HookReply.allowed()

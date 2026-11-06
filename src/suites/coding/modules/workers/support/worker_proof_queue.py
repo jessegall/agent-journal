@@ -15,7 +15,7 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 import shlex
 
 PROOF_WAITS_SOURCE = "workers.proof-waits"
-GOING_AFFECTED_STATES = (AffectedTestState.QUEUED, AffectedTestState.PICKING, AffectedTestState.TESTING)
+PENDING_AFFECTED_STATES = (AffectedTestState.QUEUED, AffectedTestState.PICKING, AffectedTestState.TESTING)
 
 
 class WorkerProofQueue:
@@ -26,9 +26,9 @@ class WorkerProofQueue:
         self.proofs, self.repository, self.main_agent_line, self.queries = proofs, repository, main_agent_line, queries
         self.settings, self.git = settings, git
 
-    def has_tests_going(self, worktree: Worktree) -> bool:
-        affected = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).matching(Among("state", GOING_AFFECTED_STATES)).exists()
-        return affected or self.proofs.tests_waiting(worktree.id)
+    def tests_pending(self, worktree: Worktree) -> bool:
+        affected_pending = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).matching(Among("state", PENDING_AFFECTED_STATES)).exists()
+        return affected_pending or self.proofs.tests_waiting(worktree.id)
 
     def queue_proofs(self, worktree: Worktree, context: Context) -> int:
         queued_count = 0

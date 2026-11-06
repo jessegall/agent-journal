@@ -1,7 +1,7 @@
 from core.base.actor import Actor
 from core.base.command.bus import Bus
 from core.base.container import Container
-from suites.coding.modules.workers.commands.queue_worker_tests.requeue_stalled_tests import RequeueStalledTests
+from suites.coding.modules.workers.commands.queue_worker_tests.queue_stalled_tests import QueueStalledTests
 from suites.coding.modules.workers.commands.queue_worker_tests.start_worker_tests import StartWorkerTests
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
@@ -14,7 +14,7 @@ class StalledWorkerTests:
 
     def __call__(self, container: Container) -> None:
         bus = container.get(Bus)
-        bus.run(RequeueStalledTests(), Actor.core())
+        bus.run(QueueStalledTests(), Actor.core())
         environments = {worktree.id: worktree.environment_id for worktree in container.get(WorktreeQuery).all_worktrees()}
         queued = {environments[proof.worktree_id] for proof in container.get(ProofQuery).test_rows() if proof.state is ProofState.QUEUED and proof.worktree_id in environments}
         for environment_id in queued:

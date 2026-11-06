@@ -1,4 +1,6 @@
 import json
+from concurrent.futures import ThreadPoolExecutor
+
 import pytest
 
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -161,3 +163,51 @@ def test_a_hand_in_leaves_another_workers_stash_untouched(new_story):
     repository.expect_file(repository.worker_branch(worker.id), "cart.py", CART_CHANGE)
     story.expect_rows(not (repository.worktree_folder(sibling.id) / "sibling.py").exists())
     story.expect_rows(repository.git("stash", "list", "--format=%H").stdout.splitlines() == [stash])
+
+
+def sibling_worker(story, repository):
+    story.expect_success('task make "Another job" --environment main', actor=story.agent)
+    sibling = dispatched_worker(story, "worker dispatch --model sonnet 2")
+    repository.changed(sibling.id, "sibling.py", "OTHER = 1\n")
+    return sibling
+
+
+def test_a_stash_another_worker_pushes_in_the_middle_of_a_hand_in_is_never_taken(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = worker_on_a_moved_base(story, repository)
+    sibling = sibling_worker(story, repository)
+    repository.changed(worker.id, "notes.py", "NOTE = 1\n")
+    sibling_branch = repository.worker_branch(sibling.id)
+    pushed_stash = WorktreeGit.checked
+
+    def checked_with_sibling_stash(git, folder, limit, *arguments):
+        finished = pushed_stash(git, folder, limit, *arguments)
+        if arguments[:2] == ("stash", "push") and folder == str(repository.worktree_folder(worker.id)):
+            repository.git("stash", "push", "--include-untracked", "--message", f"journal merge of {sibling_branch}", folder=repository.worktree_folder(sibling.id))
+        return finished
+
+    monkeypatch.setattr(WorktreeGit, "checked", checked_with_sibling_stash)
+    story.expect_success(DELIVERY, actor=worker)
+
+    repository.expect_file(repository.worker_branch(worker.id), "notes.py", "NOTE = 1\n")
+    story.expect_rows(not (repository.worktree_folder(worker.id) / "sibling.py").exists())
+    story.expect_rows(len(repository.git("stash", "list", "--format=%H").stdout.splitlines()) == 1)
+    story.expect_rows(f"journal merge of {sibling_branch}" in repository.git("stash", "list").stdout)
+
+
+def test_two_worktrees_rebasing_at_once_each_keep_their_own_files(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = worker_on_a_moved_base(story, repository)
+    sibling = sibling_worker(story, repository)
+    repository.changed(worker.id, "notes.py", "NOTE = 1\n")
+    worktrees = [story.container.get(Queries).query(Worktree).filter(session_agent_id=agent.id).first() for agent in (worker, sibling)]
+    with ThreadPoolExecutor(2) as pool:
+        list(pool.map(WorktreeGit().rebase, worktrees))
+
+    worker_folder, sibling_folder = repository.worktree_folder(worker.id), repository.worktree_folder(sibling.id)
+    story.expect_rows((worker_folder / "notes.py").exists(), not (worker_folder / "sibling.py").exists())
+    story.expect_rows((sibling_folder / "sibling.py").exists(), not (sibling_folder / "notes.py").exists())
+    repository.expect_no_stash()
+

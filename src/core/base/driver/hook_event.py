@@ -84,7 +84,7 @@ class HookEvent:
         return self.event is HookEventName.SESSION_END and self.raw.get("reason") == CLEAR_REASON and bool(self.launch)
 
     @property
-    def requires_check(self) -> bool:
+    def is_check_required(self) -> bool:
         return self.event is HookEventName.PRE_TOOL_USE and self.role not in ("", AgentRole.MAIN)
 
     @property
