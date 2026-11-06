@@ -3,6 +3,7 @@ from typing import ClassVar
 
 from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
+from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.documents.commands.support.row_comments import RowComments
@@ -23,15 +24,24 @@ class TextCommentsSubcommand(ReadSubcommand[TextComments]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("id", type=int)
+        parser.add_argument("--page", type=int, default=1)
+        parser.add_argument("--page-size", type=int, default=25)
 
     def read(self, arguments: Namespace, caller: Caller) -> TextComments:
         text_row = self.queries.query(self.model).find(arguments.id)
-        return TextComments(self.model.cli_name, arguments.id, self.comments.reads(text_row))
+        size = min(arguments.page_size, 50)
+        if arguments.page < 1 or size < 1 or arguments.page > 9223372036854775807 // size:
+            raise Refusal("use a positive comment page and page size within the supported range")
+        page = self.comments.page(text_row, arguments.page, size)
+        next_command = None if page.is_last else f"journal {self.model.cli_name} comments {arguments.id} --page {arguments.page + 1} --page-size {size}"
+        return TextComments(self.model.cli_name, arguments.id, page.rows, page.number, page.size, page.total, next_command)
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, TextComments):
             return
-        if not value.comments:
-            output.line(f"no comments on {value.cli_name} {value.row_id}")
-            return
-        output.write("\n".join(f"message {comment.id}: {comment.text}" for comment in value.comments), {"rows": [output.values(comment) for comment in value.comments]})
+        text = "\n".join(f"message {comment.id}: {comment.text}" for comment in value.comments) or f"no comments on {value.cli_name} {value.row_id}"
+        if value.next_command is not None:
+            text += f"\n{value.next_command}"
+        output.write(text, {"rows": [output.values(comment) for comment in value.comments], "page": value.page,
+                           "page_size": value.page_size, "total": value.total, "has_more": value.next_command is not None,
+                           "next_page": value.page + 1 if value.next_command is not None else None, "next_command": value.next_command})

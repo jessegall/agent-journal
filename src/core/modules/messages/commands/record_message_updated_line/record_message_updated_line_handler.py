@@ -6,8 +6,8 @@ from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.messages.commands.record_message_updated_line.record_message_updated_line import RecordMessageUpdatedLine
 from core.modules.messages.support.message_nudges import MESSAGE_UPDATED
-from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.messages.models.message import Message
+from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.support.message_targets import MessageTargets
 
 UPDATED_SOURCE = "messages.updated"
@@ -23,7 +23,10 @@ class RecordMessageUpdatedLineHandler(Handler[RecordMessageUpdatedLine, None]):
         self.targets = targets
 
     def handle(self, command: RecordMessageUpdatedLine, context: Context) -> None:
-        agent = self.targets.recipient(self.queries.query(Message).find(command.message_id))
+        message = self.queries.query(Message).filter(id=command.message_id).first()
+        if message is None or message.type not in PERSON_MESSAGE_TYPES or message.read_at is None:
+            return
+        agent = self.targets.recipient(message)
         if agent is None:
             return
         source = IDLE_MESSAGE_SOURCE if self.hook_calls.is_idle(agent.id, context.timestamp) else UPDATED_SOURCE

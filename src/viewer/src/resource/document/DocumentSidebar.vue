@@ -2,9 +2,11 @@
 import {stateLabel} from "../../domain/states.js";
 import RowMoves from "../RowMoves.vue";
 import CommentRail from "./CommentRail.vue";
+import MoreItems from "../../../kit/MoreItems.vue";
 
-defineProps({mode: {type: String, default: "comments"}, comments: {type: Array, required: true}, questions: {type: Array, required: true}, hot: {type: Number, default: 0}, lost: {type: Array, default: () => []}, failure: {type: String, default: ""}, read: {type: Function, required: true}, tab: Boolean});
-defineEmits(["update:mode", "show", "changed"]);
+defineProps({mode: {type: String, default: "comments"}, comments: {type: Array, required: true}, questions: {type: Array, required: true}, hot: {type: Number, default: 0}, lost: {type: Array, default: () => []}, failure: {type: String, default: ""}, read: {type: Function, required: true}, tab: Boolean,
+    commentMore: Boolean, commentLoading: Boolean, commentFailure: {type: String, default: ""}, commentTotal: {type: Number, default: 0}});
+defineEmits(["update:mode", "show", "changed", "more"]);
 </script>
 
 <template>
@@ -14,7 +16,10 @@ defineEmits(["update:mode", "show", "changed"]);
             <button type="button" :aria-pressed="mode === 'questions'" data-document-notes="questions" @click="$emit('update:mode', 'questions')">Questions</button>
         </nav>
         <template v-if="mode === 'comments'">
-            <CommentRail tab :comments="comments" :hot="hot" :lost="lost" @show="$emit('show', $event)" />
+            <template v-if="comments.length || (!commentFailure && !commentLoading)">
+                <CommentRail tab :comments="comments" :hot="hot" :lost="lost" :total="commentTotal" @show="$emit('show', $event)" />
+            </template>
+            <MoreItems :more="commentMore" :loading="commentLoading" :failure="commentFailure" label="More comments" @more="$emit('more')" />
         </template>
         <template v-else>
             <aside class="question-rail" aria-label="Questions" data-question-rail>

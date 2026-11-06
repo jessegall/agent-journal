@@ -1,6 +1,7 @@
 from typing import ClassVar
 
 from core.base.change.logged_event import LoggedEvent
+from core.base.change.deleted import Deleted
 from core.base.command.bus import Bus
 from core.base.library.library_lookup import LibraryLookup
 from core.base.listener.commit_listener import CommitListener
@@ -25,8 +26,10 @@ class TextMentionListener(CommitListener[E]):
         self.bus, self.actors, self.queries, self.library = bus, actors, queries, library
 
     def handle(self, event: E, logged: LoggedEvent) -> None:
+        if isinstance(event, Deleted):
+            return
         row = event.row
         if self.library.is_copy(row.model_name, row.id):
             return
-        text = "\n".join(str(getattr(row, field)) for field in self.text_fields)
-        self.bus.run(RecordMentions(RowRef(row.model_name, row.id), text), self.actors.actor(MODULE_NAME), cause_id=logged.id)
+        texts = tuple(str(getattr(row, field)) for field in self.text_fields)
+        self.bus.run(RecordMentions(RowRef(row.model_name, row.id), texts), self.actors.actor(MODULE_NAME), cause_id=logged.id)

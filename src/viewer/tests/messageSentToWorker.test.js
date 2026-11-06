@@ -3,6 +3,7 @@ import {createApp, h} from "vue";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
 import {context, page, settle} from "./support/windowContext.js";
 import MessageCard from "../kit/MessageCard.vue";
+import {linkPage} from "./support/linkPages.js";
 
 const COMMENT = {id: 9, type: "comment", text: "use the new cart", reactions: "[]", files: [], captions: "{}", created_at: "2026-11-02T10:00:00Z", commented_row: "task:1"};
 let app;
@@ -18,7 +19,7 @@ async function card(message, links) {
     host = document.createElement("div");
     document.body.append(host);
     app = createApp({render: () => h(MessageCard, {message})});
-    app.provide(WINDOW_CONTEXT, context({"link list": page(links)}));
+    app.provide(WINDOW_CONTEXT, {...context({}), read: async (line) => linkPage(links, line)});
     app.mount(host);
     await settle();
 }

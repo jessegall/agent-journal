@@ -11,9 +11,13 @@ class MentionRefs:
     @staticmethod
     def found(text: str, cli_names: Iterable[str]) -> tuple[tuple[str, int], ...]:
         candidate_names = sorted({*cli_names, *CLI_NAMES}, key=len, reverse=True)
-        pattern = re.compile(rf"\b({'|'.join(re.escape(word) for word in candidate_names)})(?:\s+|:)(\d+)\b", re.IGNORECASE)
+        pattern = re.compile(rf"(?<![\w-])({'|'.join(re.escape(word) for word in candidate_names)})(?:\s+|:)([0-9]+)(?![\w-]|\.[0-9])", re.IGNORECASE)
         refs: list[tuple[str, int]] = []
-        for word, number in pattern.findall(text):
+        for match in pattern.finditer(text):
+            word, number = match.groups()
+            significant = number.lstrip("0")
+            if not significant or len(significant) > 19 or (len(significant) == 19 and significant > "9223372036854775807"):
+                continue
             lowered = str(word).lower()
-            refs.append((CLI_NAMES[lowered] if lowered in CLI_NAMES else lowered, int(number)))
+            refs.append((CLI_NAMES[lowered] if lowered in CLI_NAMES else lowered, int(significant)))
         return tuple(dict.fromkeys(refs))

@@ -21,6 +21,10 @@ def test_the_map_gives_back_the_version_5_id_of_a_row_it_recorded(tmp_path):
     moved = opened(tmp_path)
     moved.record(MovedRow("tasks", 12, "tasks", 3))
     assert moved.new_id("tasks", 12) == 3 and moved.new_id("tasks", 13) is None and moved.new_id("plans", 12) is None
+    assert moved.moved_row("tasks", 12) == MovedRow("tasks", 12, "tasks", 3)
+    assert moved.moved_row("tasks", 13) is None
+    moved.record(MovedRow("messages", 2, "chat_marks", 3))
+    assert moved.moved_row("messages", 2) == MovedRow("messages", 2, "chat_marks", 3)
 
 
 def test_transfer_inserts_a_row_once_and_says_so_the_second_time(tmp_path):

@@ -1,9 +1,11 @@
 <script setup>
 import CloseButton from "../kit/CloseButton.vue";
+import MoreItems from "../../kit/MoreItems.vue";
 
 // the comments on a document, in a column beside its text, or under it when it is shown below
-defineProps({comments: {type: Array, required: true}, words: {type: Function, required: true}, below: Boolean});
-defineEmits(["close"]);
+defineProps({comments: {type: Array, required: true}, words: {type: Function, required: true}, below: Boolean,
+    more: Boolean, loading: Boolean, failure: {type: String, default: ""}});
+defineEmits(["close", "more"]);
 </script>
 
 <template>
@@ -12,12 +14,17 @@ defineEmits(["close"]);
             <h3>Comments</h3>
             <CloseButton title="Close the comments" @click="$emit('close')" />
         </header>
-        <template v-if="!comments.length">
+        <template v-if="!comments.length && !loading && !failure">
             <p class="comment-none">No comments yet</p>
         </template>
         <template v-for="row in comments" :key="row.id">
-            <p class="comment" data-comment>{{ words(row) }}</p>
+            <section>
+                <template v-if="row.quote"><blockquote>{{ row.quote }}</blockquote></template>
+                <template v-if="row.revision"><span class="comment-none">Revision {{ row.revision }}</span></template>
+                <p class="comment" data-comment>{{ words(row) }}</p>
+            </section>
         </template>
+        <MoreItems :more="more" :loading="loading" :failure="failure" label="More comments" @more="$emit('more')" />
     </aside>
 </template>
 

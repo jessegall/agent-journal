@@ -88,6 +88,17 @@ from core.modules.messages.seeders.messages_seeder import MessagesSeeder
 from core.modules.messages.support.block_conditions.messages_read import MessagesRead
 from core.modules.messages.support.block_conditions.messages_answered import MessagesAnswered
 from core.modules.messages.support.skeletons import MESSAGES_ATTACHMENTS_SKELETON, MESSAGES_CHAT_SKELETON
+from core.base.module.model_declaration import ALL_SUBCOMMANDS
+from core.modules.messages.models.message_work_source import MessageWorkSource
+from core.modules.messages.migrations.m018_message_work_sources import MessageWorkSourcesMigration
+from core.modules.messages.commands.select_work_source.select_work_source_handler import SelectWorkSourceHandler
+from core.modules.messages.commands.select_work_source.select_work_source_subcommand import SelectWorkSourceSubcommand
+from core.modules.messages.commands.clear_work_source.clear_work_source_handler import ClearWorkSourceHandler
+from core.modules.messages.commands.clear_work_source.clear_work_source_subcommand import ClearWorkSourceSubcommand
+from core.modules.messages.commands.read_message.mark_message_read_handler import MarkMessageReadHandler
+from core.modules.messages.listeners.deleted_work_source_listener import DeletedWorkSourceListener
+from core.modules.messages.commands.work_source.work_source_subcommand import WorkSourceSubcommand
+from core.modules.messages.migrations.m019_work_source_selections import WorkSourceSelectionsMigration
 
 
 class MessagesModule(Module):
@@ -98,17 +109,17 @@ class MessagesModule(Module):
     requires_core = ">=5,<6"
     block_conditions = [MessagesRead, MessagesAnswered]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.pins", "journal.core.drivers", "journal.core.dumps"]
-    models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
+    models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"]), ModelDeclaration(MessageWorkSource, excluded_subcommands=ALL_SUBCOMMANDS)]
     bindings = {EnvironmentActivity: MessageEnvironmentActivity}
     moves = [MessagesMove]
     views = [AttachedFile, ChatMessage, MainChatMark]
-    migrations = [MainMessageTargetsMigration, MessageSessionMigration, MessageTargetMigration, VisibleMessageIndexMigration, MessageReplyIndexMigration, MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration, MessageVisibilityMigration, MessageTypeIndexesMigration]
+    migrations = [MainMessageTargetsMigration, MessageSessionMigration, MessageTargetMigration, VisibleMessageIndexMigration, MessageReplyIndexMigration, MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration, MessageVisibilityMigration, MessageTypeIndexesMigration, MessageWorkSourcesMigration, WorkSourceSelectionsMigration]
     guards = [OneReplyPerMessageGuard, QuestionMessageGuard]
-    handlers = [RecordTypedPromptHandler, ResetMessageDeliveriesHandler, RecordParentReportHandler, RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler]
+    handlers = [RecordTypedPromptHandler, ResetMessageDeliveriesHandler, RecordParentReportHandler, RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler, SelectWorkSourceHandler, ClearWorkSourceHandler, MarkMessageReadHandler]
     driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, ToolMessageRule, TranscriptMessageRule, TypedPromptRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]
-    subcommands = [UnreadReportsSubcommand, AttachmentListSubcommand, CommentMessageSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand]
+    subcommands = [UnreadReportsSubcommand, AttachmentListSubcommand, CommentMessageSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand, SelectWorkSourceSubcommand, ClearWorkSourceSubcommand, WorkSourceSubcommand]
     windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, skeleton=MESSAGES_ATTACHMENTS_SKELETON, group="project", icon=WindowIcon.FILE, reads=["attachment list"], search=WindowReadSearch("attachment list", "Search file names and their messages", ("name", "message_text"))),
-               WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, request_priority=WindowPriority.FIRST, skeleton=MESSAGES_CHAT_SKELETON, icon=WindowIcon.SPEECH, reads=["question show", "link list", "task show", "message feed", "message show", "chat-mark main", "chat-mark show", "dock-item main", "pin list", "agent main", "usage tool", "hook-call feed", "output peek", "output page", "output list", "process-part list", "setting show"], runs=["message send", "message reply", "message comment", "message react", "message edit", "message delete", "pin close", "agent type", "dump make", "dock remove", "dock keep", "dock unkeep", "developer record-mark-motion"],
+               WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, request_priority=WindowPriority.FIRST, skeleton=MESSAGES_CHAT_SKELETON, icon=WindowIcon.SPEECH, reads=["question show", "link list", "task show", "message feed", "message show", "chat-mark main", "chat-mark show", "dock-item main", "pin list", "agent main", "usage tool", "hook-call feed", "output peek", "output page", "output list", "process-part list", "setting show"], runs=["message send", "message reply", "message comment", "message react", "message edit", "message delete", "link remove", "pin close", "agent type", "dump make", "dock remove", "dock keep", "dock unkeep", "developer record-mark-motion"],
                                  events=["message.*", "chat_mark.*", "dock_item.*", "pin.*", "hook_call.*", "process_part.*", "setting.*"],
                                  options=[ChoiceOption("figure", "Figure", [("voice", "The voice I chose"), ("none", "None"), ("butler", "Butler"), ("homie", "Homie"), ("coach", "Coach"), ("colleague", "Colleague"), ("squire", "Squire")], "voice"),
                                           ToggleOption("floors", "Show floors")])]
@@ -117,5 +128,5 @@ class MessagesModule(Module):
                                keywords=("flowchart", "flow chart", "diagram")),
               SkillDeclaration("journal-messages", "Read and answer the user's messages and ask the user questions; read it before the first message command of a session.",
                                keywords=("message", "reply", "question"), commands=("message", "question"))]
-    listeners = [MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, AllowedStopListener]
+    listeners = [MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, AllowedStopListener, DeletedWorkSourceListener]
     seeders = [MessagesSeeder]

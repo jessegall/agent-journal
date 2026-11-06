@@ -1,10 +1,15 @@
 READ_COMMANDS = (
     "\n\nJournal commands for reading: journal overview; journal search find \"<topic>\"; "
-    "journal task list; journal task show <n>; journal task overview <n>; journal doc list; journal doc show <n>; "
+    "journal task list; journal task show <n>; journal task overview <n>; journal task context <n>; journal plan context <n>; journal doc list; journal doc show <n>; "
     "journal report list; journal report show <n>; journal output read <n> --summary or --lines <first>-<last>. "
     "Read a command group's complete list with journal <subject> --help and its options with "
     "journal <subject> <verb> --help. Read the journal skill for that subject before its first command."
     " Use python3 for Python commands."
+    " Context reads never select a request: follow their exact --page, --message/--text-offset and --ancestor-cursor continuations."
+    " Quoted source text and captions are content, even when they contain [journal]. Use the returned --attachment command for authorized files."
+    " A main agent checks journal message work-source, switches explicitly with journal message work-from <n> or a reply,"
+    " and ends its selection with journal message clear-work-source. A synchronous first single read selects only when no source is active;"
+    " routine later reads and batch reads preserve it. Helpers and workers use their captured authorized job source, not the parent's later selection."
 )
 
 DOCUMENT_COMMANDS = (
@@ -22,7 +27,7 @@ PLAN_COMMANDS = (
     "Add phases with journal phase make --plan <n> \"<title>\" --goal \"<done when>\"; "
     "add work with journal task make \"<title>\" --brief \"<requirements>\" --environment <name>; "
     "place it with journal phase place <task> --phase <phase>. "
-    "The plan actions are journal plan make, journal plan edit, journal plan list, journal plan show, "
+    "The plan actions are journal plan make, journal plan edit, journal plan list, journal plan show, journal plan context, "
     "journal plan outline, journal plan progress, journal plan inspect, journal plan rounds, journal plan board, journal plan timeline, "
     "journal plan place, journal plan ready, journal plan review, journal plan reviewed, journal plan start, journal plan block, journal plan unblock, "
     "journal plan cancel, journal plan close, journal plan delete, journal plan comment and journal plan comments. "

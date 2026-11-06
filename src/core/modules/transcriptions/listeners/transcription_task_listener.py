@@ -7,6 +7,7 @@ from core.base.scope.scopes import Scopes
 from core.base.repository.repository import Repository
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
+from core.modules.documents.support.row_link_writer import RowLinkWriter
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.support.task_priority import URGENT_PRIORITY
 from core.modules.tasks.models.task import Task
@@ -28,8 +29,9 @@ class TranscriptionTaskListener(SaveListener[Changed[Transcription]]):
 
     name = "transcriptions.task"
 
-    def __init__(self, queries: Queries, repository: Repository, line: MainAgentLine, scopes: Scopes) -> None:
+    def __init__(self, queries: Queries, repository: Repository, line: MainAgentLine, scopes: Scopes, links: RowLinkWriter) -> None:
         self.queries, self.repository, self.line, self.scopes = queries, repository, line, scopes
+        self.links = links
 
     def handle(self, event: Changed[Transcription], context: Context) -> None:
         if isinstance(event, Deleted):
@@ -55,5 +57,5 @@ class TranscriptionTaskListener(SaveListener[Changed[Transcription]]):
         brief = (f"Read transcription {row.id} with journal transcription show {row.id}, and write what it calls for: a summary, meeting notes, a document, tasks or a plan. "
                  f"Link each row you make to it with journal transcription link {row.id} <model> <number>.")
         task = self.repository.save(Task(creator_id=context.actor.id, title=title, brief=brief, priority=URGENT_PRIORITY), context)
-        self.repository.save(Link(creator_id=context.actor.id, source_model=row.model_name, source_id=row.id, target_model=Task.model_name, target_id=task.id, link_type=LinkType.SUBJECT), context)
+        self.links.save(Link(creator_id=context.actor.id, source_model=row.model_name, source_id=row.id, target_model=Task.model_name, target_id=task.id, link_type=LinkType.SUBJECT), context)
         return task.id

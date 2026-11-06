@@ -24,8 +24,9 @@ function drawn(comments = [onWords, whole], width = 980) {
     const read = async (line) => {
         ran.push(line);
         if (line[1] === "inspect") return {ok: true, value: {...ROW, comments}};
+        if (line[1] === "comments") return {ok: true, value: {rows: comments, total: comments.length}};
         if (line[1] === "comment" && line.at(-1) === "no") return {ok: false, error: "refused"};
-        if (line[0] === "link") return {ok: true, value: {rows: [{id: 1, target_model: "plan", target_id: 3, link_type: "mentions"}]}};
+        if (line[0] === "link") return {ok: true, value: {rows: [], counterparts: [{endpoint: {model: "plan", id: 3, title: "plan:3", exists: true, unavailable: false, open_ref: "plans:3"}, relations: ["mentions"], link_ids: [1]}], total: 1}};
         if (line[1] === "revisions") return {ok: true, value: {rows: [{number: 2, change: "Totals", author_name: "Lady Lovelace", created_at: "2026-11-01"}, {number: 1, change: "First", author_name: "Unknown", created_at: "2026-10-31"}]}};
         if (line[1] === "revision") return {ok: true, value: {body: "the old text"}};
         return {ok: true, value: {rows: []}};

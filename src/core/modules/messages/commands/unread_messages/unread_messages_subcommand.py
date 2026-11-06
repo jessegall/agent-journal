@@ -19,6 +19,7 @@ class UnreadMessagesSubcommand(ReadSubcommand[tuple[MessageText, ...]]):
 
     cli_name = "message"
     name = "unread"
+    help = "Show unread messages without choosing or replacing a work source."
     environment_refusal = "unread messages are read for one environment"
 
     def __init__(self, links: RowLinks, messages: MessageQuery) -> None:

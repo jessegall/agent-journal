@@ -1,5 +1,6 @@
 from core.base.provider.providers import Providers
 from core.base.command.context import Context
+from dataclasses import replace
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
@@ -11,6 +12,9 @@ from core.modules.helpers.commands.send_helper.send_helper import SendHelper
 from core.modules.helpers.support.helper_job_source import HELPER_JOB_SOURCE
 from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.support.helper_reach import HelperReach
+from core.modules.messages.support.work_sources import WorkSources
+from core.base.scope.scopes import Scopes
+from core.base.scope.actor_scope import ActorScope
 
 SHORT_JOB_CHARACTERS = 200
 
@@ -20,18 +24,31 @@ class SendHelperHandler(Handler[SendHelper, int]):
 
     command = SendHelper
 
-    def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobRows, nudger: Nudger, repository: Repository, folders: AgentFolders, providers: Providers) -> None:
-        self.reach, self.limits, self.jobs, self.nudger, self.repository, self.folders, self.providers = reach, limits, jobs, nudger, repository, folders, providers
+    def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobRows, nudger: Nudger, repository: Repository, folders: AgentFolders, sources: WorkSources, scopes: Scopes, providers: Providers) -> None:
+        self.reach, self.limits, self.jobs, self.nudger, self.repository, self.folders = reach, limits, jobs, nudger, repository, folders
+        self.sources = sources
+        self.scopes = scopes
+        self.providers = providers
 
     def handle(self, command: SendHelper, context: Context) -> int:
         helper = self.reach.checked_helper(command.helper_id, context.actor)
         last_job = self.jobs.helper_jobs(helper.id)[-1]
+        source_context = replace(context, environment_id=helper.environment_id)
+        source = self.sources.snapshot(source_context)
         if helper.ended_at is None:
-            self.nudger.send_text(helper.id, command.job, HELPER_JOB_SOURCE, context, wakes_agent=True)
-            self.repository.save(last_job.changed(brief=f"{last_job.brief}\n\n{command.job}"), context)
+            with self.scopes.opened(context.actor.id, context.environment_id, [ActorScope]):
+                line = self.nudger.send_text(helper.id, command.job, HELPER_JOB_SOURCE, context, wakes_agent=True)
+            if last_job.ended_at is None and last_job.source_message_id == source.message_id and last_job.source_unavailable == source.unavailable:
+                self.repository.save(last_job.changed(brief=f"{last_job.brief}\n\n{command.job}"), context)
+                return helper.id
+            next_job = last_job.next_job(helper.session, command.job, command.job[:SHORT_JOB_CHARACTERS], context.actor.id)
+            self.repository.save(next_job.changed(source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, source_line_id=line.id), context)
+            self.sources.use_snapshot(source, source_context)
             return helper.id
         self.check_resume(helper)
-        self.repository.save(last_job.next_job(helper.session, command.job, command.job[:SHORT_JOB_CHARACTERS], context.actor.id), context)
+        next_job = last_job.next_job(helper.session, command.job, command.job[:SHORT_JOB_CHARACTERS], context.actor.id)
+        self.repository.save(next_job.changed(source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp), context)
+        self.sources.use_snapshot(source, source_context)
         return helper.id
 
     def check_resume(self, helper: Agent) -> None:

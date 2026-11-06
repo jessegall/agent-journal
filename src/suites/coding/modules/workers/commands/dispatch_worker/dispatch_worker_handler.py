@@ -27,10 +27,18 @@ from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from suites.coding.modules.workers.commands.open_worker_worktree.open_worker_worktree import OpenWorkerWorktree
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
 from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_cut import RecordWorktreeCut
+from core.modules.messages.support.work_sources import WorkSources
+from core.modules.messages.support.work_source_snapshot import WorkSourceSnapshot
+from core.modules.messages.models.message import Message
+from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
+from core.modules.documents.models.link import Link
+from core.modules.documents.models.enums.link_type import LinkType
+from core.base.query.conditions.among import Among
+from suites.coding.modules.workers.support.task_source_snapshot import TaskSourceSnapshot
+from dataclasses import replace
 from suites.coding.modules.workers.commands.cancel_worker_opening.cancel_worker_opening import CancelWorkerOpening
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
-from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
 class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     """Starts a worker: its agent row, a worktree cut from the environment's branch, its first task and the
@@ -41,11 +49,12 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     transactional = False
 
     def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
-                 providers: Providers, programs: HelperPrograms, models: AllowedModels, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes, places: WorkerPlaces) -> None:
+                 providers: Providers, programs: HelperPrograms, models: AllowedModels, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces) -> None:
         self.places = places
         self.queries, self.bus, self.settings = queries, bus, settings
         self.git, self.worker_command, self.worktrees, self.providers, self.programs, self.models = git, worker_command, worktrees, providers, programs, models
         self.environments, self.rows, self.types, self.profiles, self.scopes = environments, rows, types, profiles, scopes
+        self.sources = sources
 
     def handle(self, command: DispatchWorker, context: Context) -> WorkerLaunch:
         tasks = self.queries.query(Task).find_many([command.task_id, *command.delegated_ids])
@@ -70,17 +79,29 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         self.check_model(program, model)
         self.programs.installed(program)
         start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
+        source = self.sources.snapshot(replace(context, environment_id=task.environment_id))
+        task_sources = self.task_sources(tasks, source)
         opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id), context)
         try:
             base_commit = self.git.tip(environment.folder, environment.branch)
             self.git.cut(environment.folder, opened.worktree)
             self.bus.run_with_context(PrepareWorktree(opened.worktree.folder, environment.folder, environment.name, command.library_links, command.library_copies), context)
-            worktree = self.bus.run_with_context(RecordWorktreeCut(opened.worktree.id, base_commit, tuple(listed.id for listed in tasks)), context)
+            worktree = self.bus.run_with_context(RecordWorktreeCut(opened.worktree.id, base_commit, tuple(listed.id for listed in tasks), task_sources), context)
         except Exception:
             self.git.remove(environment.folder, opened.worktree)
             self.bus.run_with_context(CancelWorkerOpening(opened.worktree.id), context)
             raise
         return WorkerLaunch(opened.worker, worktree, self.worker_command.command(opened.worker, worktree, environment, task))
+
+    def task_sources(self, tasks: list[Task], fallback: WorkSourceSnapshot) -> tuple[TaskSourceSnapshot, ...]:
+        links = self.queries.query(Link).filter(source_model=Message.model_name, target_model=Task.model_name, link_type=LinkType.SUBJECT)
+        edges = tuple(links.matching(Among("target_id", [task.id for task in tasks])).newest().all_rows())
+        messages = self.queries.query(Message).filter(environment_id=fallback.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES))
+        available = {message.id for message in messages.matching(Among("id", tuple({edge.source_id for edge in edges}))).all_rows()}
+        by_task: dict[int, WorkSourceSnapshot] = {}
+        for link in edges:
+            by_task.setdefault(link.target_id, WorkSourceSnapshot(link.source_id, 0, fallback.environment_id, link.source_id not in available))
+        return tuple(TaskSourceSnapshot(task.id, by_task.get(task.id, fallback)) for task in tasks)
 
     def worker_profile(self, name: str) -> AgentProfile:
         worker_type = self.types.find(AgentRole.WORKER)

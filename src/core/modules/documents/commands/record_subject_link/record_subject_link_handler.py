@@ -1,10 +1,9 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
-from core.base.repository.repository import Repository
 from core.modules.documents.commands.record_subject_link.record_subject_link import RecordSubjectLink
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
+from core.modules.documents.support.row_link_writer import RowLinkWriter
 from core.modules.messages.models.message import Message
 
 
@@ -13,11 +12,9 @@ class RecordSubjectLinkHandler(Handler[RecordSubjectLink, None]):
 
     command = RecordSubjectLink
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, links: RowLinkWriter) -> None:
+        self.links = links
 
     def handle(self, command: RecordSubjectLink, context: Context) -> None:
         link = Link(creator_id=context.actor.id, source_model=Message.model_name, source_id=command.message_id, target_model=command.target_model, target_id=command.target_id, link_type=LinkType.SUBJECT)
-        existing = self.queries.query(Link).filter(source_model=link.source_model, source_id=link.source_id, target_model=link.target_model, target_id=link.target_id)
-        if not existing.count():
-            self.repository.save(link, context)
+        self.links.save_automatic((link,), context)

@@ -9,6 +9,7 @@ from core.modules.documents.models.link import Link
 from core.modules.documents.support.doc_revisions import DocRevisions
 from core.modules.documents.support.markdown_check import MarkdownCheck
 from core.modules.documents.support.row_refs import RowRefs
+from core.modules.documents.support.row_link_writer import RowLinkWriter
 
 
 class MakeTextHandler(Handler[MakeText, NewText]):
@@ -16,8 +17,9 @@ class MakeTextHandler(Handler[MakeText, NewText]):
 
     command = MakeText
 
-    def __init__(self, repository: Repository, revisions: DocRevisions, row_refs: RowRefs) -> None:
+    def __init__(self, repository: Repository, revisions: DocRevisions, row_refs: RowRefs, links: RowLinkWriter) -> None:
         self.repository, self.revisions, self.row_refs = repository, revisions, row_refs
+        self.links = links
 
     def handle(self, command: MakeText, context: Context) -> NewText:
         MarkdownCheck.check(command.body)
@@ -27,6 +29,6 @@ class MakeTextHandler(Handler[MakeText, NewText]):
         if isinstance(text_row, Doc):
             self.revisions.record_standalone(text_row, context)
         for ref in subject_refs:
-            self.repository.save(Link(creator_id=context.actor.id, source_model=text_row.model_name, source_id=text_row.id, target_model=ref.model, target_id=ref.row_id,
+            self.links.save(Link(creator_id=context.actor.id, source_model=text_row.model_name, source_id=text_row.id, target_model=ref.model, target_id=ref.row_id,
                                       link_type=LinkType.SUBJECT), context)
         return NewText(text_row, tuple(ref.text for ref in subject_refs))

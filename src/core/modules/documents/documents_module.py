@@ -1,4 +1,8 @@
 from core.base.skill.skill_declaration import SkillDeclaration
+from core.modules.plans.commands.plan_context.plan_context_subcommand import PlanContextSubcommand
+from core.modules.documents.commands.plan_context.read_plan_context_handler import ReadPlanContextHandler
+from core.modules.tasks.support.task_context_reader import TaskContextReader
+from core.modules.documents.support.work_context_reader import WorkContextReader
 from core.base.ticker.tick_handler import TickHandler
 from core.base.ticker.tick_interval import TickInterval
 from core.modules.documents.ticks.close_ended_documents_tick import CloseEndedDocumentsTick
@@ -74,7 +78,18 @@ from core.modules.documents.listeners.text_read_mark_listener import TextReadMar
 from core.modules.documents.models.report import Report
 from core.modules.documents.seeders.documents_seeder import DocumentsSeeder
 from core.modules.documents.upgrade.documents_move import DocumentsMove
+from core.modules.documents.upgrade.message_links_move import MessageLinksMove
 from core.modules.documents.support.skeletons import DOCUMENTS_DOCUMENTS_SKELETON
+from core.modules.documents.listeners.phase_mention_listener import PhaseMentionListener
+from core.modules.documents.listeners.task_log_mention_listener import TaskLogMentionListener
+from core.modules.documents.listeners.deleted_row_link_listener import DeletedRowLinkListener
+from core.modules.documents.listeners.work_source_link_listener import WorkSourceLinkListener
+from core.modules.documents.models.link_correction import LinkCorrection
+from core.modules.documents.migrations.m007_link_corrections import LinkCorrectionsMigration
+from core.modules.documents.commands.remove_link.remove_link_handler import RemoveLinkHandler
+from core.modules.documents.commands.remove_link.remove_link_subcommand import RemoveLinkSubcommand
+from core.modules.documents.listeners.link_correction_reset_listener import LinkCorrectionResetListener
+from core.modules.tasks.commands.task_context.task_context_subcommand import TaskContextSubcommand
 
 
 class DocumentsModule(Module):
@@ -87,22 +102,22 @@ class DocumentsModule(Module):
     skills = [SkillDeclaration("journal-documents", "Write lasting information as documents and what was checked as reports; read it before the first doc or report command of a session", keywords=("document", "documents", "report"), commands=("doc", "report"))]
     nudges = [DOCUMENT_OPEN]
     models = [ModelDeclaration(OpenDocument, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Doc, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Report, excluded_subcommands=ALL_SUBCOMMANDS),
-              ModelDeclaration(DocRevision, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Link, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(CommentSelection, excluded_subcommands=ALL_SUBCOMMANDS)]
-    migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration, CommentSelectionsMigration, ProjectDocumentsMigration, RevisionAuthorsMigration]
+              ModelDeclaration(DocRevision, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Link, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(CommentSelection, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(LinkCorrection, excluded_subcommands=ALL_SUBCOMMANDS)]
+    migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration, CommentSelectionsMigration, ProjectDocumentsMigration, RevisionAuthorsMigration, LinkCorrectionsMigration]
     driver_rules = [OpenDocumentRule]
     block_conditions = [DocumentClosed]
     tick_handlers = [TickHandler(TickInterval(seconds=5), CloseEndedDocumentsTick(), "close ended documents", starts_immediately=True)]
     library_shares = [DocLibraryShare]
-    moves = [DocumentsMove]
+    moves = [DocumentsMove, MessageLinksMove]
     seeders = [DocumentsSeeder]
     windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.EITHER, group="project", icon=WindowIcon.DOCUMENT,
-                                 reads=["document library", "doc show", "report show"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"])]
+                                 reads=["document library", "doc show", "report show", "doc inspect", "report inspect", "doc comments", "report comments", "link list"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"])]
     views = [DocumentRow]
-    handlers = [OpenDocHandler, RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]
-    listeners = [CloseEndedDocumentListener, PlanDocumentLinkListener, ReplyLinkListener, DocMentionListener, ReportMentionListener, PlanMentionListener, TaskMentionListener, MessageMentionListener, NewDocDockListener, NewReportDockListener, TextReadMarkListener]
+    handlers = [OpenDocHandler, RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler, RemoveLinkHandler, ReadPlanContextHandler]
+    listeners = [CloseEndedDocumentListener, PlanDocumentLinkListener, ReplyLinkListener, WorkSourceLinkListener, DocMentionListener, ReportMentionListener, PlanMentionListener, TaskMentionListener, MessageMentionListener, PhaseMentionListener, TaskLogMentionListener, DeletedRowLinkListener, NewDocDockListener, NewReportDockListener, TextReadMarkListener, LinkCorrectionResetListener]
     marks = TEXT_MARKS
     docks = TEXT_DOCKS
-    bindings = {RowLinks: StoredRowLinks}
+    bindings = {RowLinks: StoredRowLinks, TaskContextReader: WorkContextReader}
     subcommands = [OpenDocSubcommand, CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,
                    DocRevisionsSubcommand, DocRevisionSubcommand, ReportMakeSubcommand, ReportEditSubcommand, ReportShowSubcommand, ReportListSubcommand,
-                   ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand, DocInspectSubcommand, ReportInspectSubcommand]
+                   ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand, DocInspectSubcommand, ReportInspectSubcommand, RemoveLinkSubcommand, TaskContextSubcommand, PlanContextSubcommand]

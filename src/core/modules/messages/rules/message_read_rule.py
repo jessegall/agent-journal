@@ -7,11 +7,8 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.conditions.among import Among
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
 from core.modules.messages.queries.message_query import MessageQuery
-from core.modules.messages.commands.read_message.read_message import ReadMessage
-from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
+from core.modules.messages.commands.read_message.mark_message_read import MarkMessageRead
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_captions import MessageCaptions
 
@@ -34,13 +31,14 @@ class MessageReadRule(DriverRule):
         if shell is None:
             return RuleAnswer.allowed()
         numbers = shell.journal_command_numbers("message read")
-        unread = list(self.messages.addressed(hook.agent_id).matching(IsNull("read_at")).matching(Among("id", numbers)).all_rows()) if numbers else []
+        unread = list(self.messages.addressed(hook.agent_id).matching(Among("id", numbers)).all_rows()) if numbers else []
+        unread = [message for message in unread if message.read_notice_at is None]
         if shell.parts_running_journal_command("message unread"):
             all_unread = self.messages.unread(hook.agent_id).oldest().all_rows()
             unread = [message for message in all_unread if message.delivered_at is not None]
         images = [nudge for message in unread for nudge in self.image_nudges(message)]
         nudges = [MESSAGE_NOTE.nudge(), REPLY_COMMAND.nudge(), *images] if unread else []
-        return RuleAnswer.with_nudges(*nudges).running(*(ReadMessage(message.id) for message in unread))
+        return RuleAnswer.with_nudges(*nudges).running(*(MarkMessageRead(message.id) for message in unread))
 
     def image_nudges(self, message: Message) -> list[Nudge]:
         captions = MessageCaptions.decoded(message)

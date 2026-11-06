@@ -72,9 +72,9 @@ def test_a_persons_dispatch_without_a_program_is_refused_naming_the_flag(new_sto
     expect_clean_environment(story, repository)
 
 
-def test_a_dispatch_is_refused_while_the_environment_has_as_many_workers_out_as_its_limit_allows(new_story):
+def test_a_zero_worker_run_limit_refuses_dispatch_without_creating_a_worker(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository_environment(story)
     story.expect_success("setting make journal.suites.coding.workers.worker-run-limit 0 --environment main", "key: journal.suites.coding.workers.worker-run-limit")
-    story.expect_refusal(DISPATCH, "0 workers are out already", actor=story.agent)
+    story.expect_refusal(DISPATCH, "0 workers are running", actor=story.agent)
     story.expect_success("agent list --role worker", "nothing found")

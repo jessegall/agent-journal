@@ -11,6 +11,7 @@ test.each([true, false])("a pending comment uses one card and is removed after i
     const response = new Promise((resolve) => (answer = resolve));
     const window_ = {...context(answers), run: () => response};
     const element = await mounted(Chat, window_);
+    await expect.poll(() => element.querySelector("[data-growing-comment]")).not.toBeNull();
     element.querySelector("[data-growing-comment]").click();
     const input = element.querySelector(".composer-input");
     typeInto(input, COMMENT);
@@ -35,6 +36,7 @@ test("a sent message stays on screen until its saved copy has been read", async 
     let release = () => {};
     const read = (line) => (reading ? new Promise((resolve) => (release = () => resolve(plain.read(line)))) : plain.read(line));
     const element = await mounted(Chat, {...plain, read, run: async () => ({ok: true, value: {}})});
+    await expect.poll(() => element.textContent).toContain(SOURCE.text);
     typeInto(element.querySelector(".composer-input"), "Hello there");
     await settle();
     reading = true;
