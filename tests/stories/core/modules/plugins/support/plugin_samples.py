@@ -1,4 +1,5 @@
 import json
+from collections.abc import Mapping
 from pathlib import Path
 
 PROGRAM = """#!/bin/sh
@@ -35,4 +36,18 @@ def sample_plugin_folder(parent: Path) -> Path:
     program = folder / "run.sh"
     program.write_text(PROGRAM)
     program.chmod(0o755)
+    return folder
+
+
+def event_plugin_folder(parent: Path, listen_entries: object, scripts: Mapping[str, str], name: str = "events", version: str = "1.0.0", **manifest: object) -> Path:
+    """A plugin whose manifest holds a listen list, with one executable script per name: each adds the line it was
+    given to the file <script>.called in the plugin's data folder and then runs the shell text given for it, which
+    may read that line as $line."""
+    folder = parent / f"{name}-plugin"
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "journal-plugin.json").write_text(json.dumps({"name": name, "title": name.capitalize(), "version": version, "protocol": 1, "listen": listen_entries, **manifest}))
+    for script, body in scripts.items():
+        path = folder / script
+        path.write_text(f'#!/bin/sh\nline=$(cat)\nprintf "%s\\n" "$line" >> "$JOURNAL_PLUGIN_DATA/{script}.called"\n{body}\n')
+        path.chmod(0o755)
     return folder
