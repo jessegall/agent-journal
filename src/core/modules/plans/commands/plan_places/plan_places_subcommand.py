@@ -14,6 +14,8 @@ from core.modules.plans.queries.plan_query import PlanQuery
 class PlanPlacesSubcommand(ReadSubcommand[RowList]):
     """Reads the phases of open plans and the tasks placed in them for a task's plan picker."""
 
+    row_line = "{label}"
+    empty_line = "no plan places"
     cli_name = "plan"
     name = "places"
     environment_refusal = "plan places are shown for one environment"

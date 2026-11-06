@@ -24,8 +24,6 @@ const keyFlags = (name, state) => Object.entries(state).filter(([flag]) => flag.
 
 export function context(answers, agent = null, keys = WINDOW_KEYS) {
     const reads = [];
-    const state = {};
-    const reports = ref([]);
     const read = async (line) => {
         reads.push(line);
         const key = Object.keys(answers).find((start) => line.startsWith(start));
@@ -33,13 +31,6 @@ export function context(answers, agent = null, keys = WINDOW_KEYS) {
     };
     return {
         reads,
-        state,
-        props: {reports: {rows: reports}},
-        async reload(name) {
-            if (name !== "reports") return;
-            const answer = await read(`message agent-reports --agent ${state["reports.agent"]}`);
-            if (answer.ok) reports.value = answer.value.rows;
-        },
         window: "test.window",
         environment: "main",
         agent,

@@ -74,7 +74,11 @@ test.each([
     ["the dumps", DumpRows, {"dump board": {ok: true, value: {dumps: [], total: 0}}}],
     ["the reviews", ReviewerSteps, {"review board": {ok: true, value: {reviews: [], queued: 0}}}],
 ])("the list of %s has the bar", async (_, component, answers) => {
-    const element = await mounted(component, component === TemplateCards ? templateWindowContext(answers) : context(answers));
+    const contexts = new Map([
+        [TemplateCards, templateWindowContext],
+        [ShareRows, (answers) => context(answers, null, {shares: {line: "share list", events: ["share_link.*", "share_comment.*"]}})],
+    ]);
+    const element = await mounted(component, (contexts.get(component) ?? context)(answers));
     expect(element.querySelector("[data-list-tools]")).not.toBeNull();
 });
 
