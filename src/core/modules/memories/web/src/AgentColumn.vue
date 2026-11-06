@@ -1,6 +1,6 @@
 <script setup>
 import {computed, reactive, ref} from "vue";
-import {Segmented} from "@journal/window-kit";
+import {SearchBar, Segmented} from "@journal/window-kit";
 import AgentList from "./AgentList.vue";
 import WhoRow from "./WhoRow.vue";
 import {EVERYONE, MAIN, OTHERS, ROLES, agentOf} from "./memoryScope.js";
@@ -23,23 +23,23 @@ const pickAgent = (agent) => emit("pick", agentOf(agent.agent_id), agent);
         <div class="pinned">
             <WhoRow name="Main agent" meta="Reads these at every start" mark="main" :count="counts.main" :selected="who === MAIN" data-main @pick="emit('pick', MAIN)" />
             <template v-if="others">
-                <WhoRow name="Workers and helpers" meta="All of them in one list" :count="others" :selected="who === OTHERS" data-others @pick="emit('pick', OTHERS)" />
-                <WhoRow name="Every agent" meta="Main agent, workers and helpers" :count="counts.everyone" :selected="who === EVERYONE" data-everyone @pick="emit('pick', EVERYONE)" />
+                <WhoRow name="Other agents" meta="All of them in one list" :count="others" :selected="who === OTHERS" data-others @pick="emit('pick', OTHERS)" />
+                <WhoRow name="Every agent" meta="All agents" :count="counts.everyone" :selected="who === EVERYONE" data-everyone @pick="emit('pick', EVERYONE)" />
             </template>
         </div>
         <template v-if="!others">
-            <p class="note" data-no-agents>No worker or helper has saved a memory yet. When one does, it shows here.</p>
+            <p class="note" data-no-agents>No other agent has saved a memory yet. When one does, it shows here.</p>
         </template>
         <template v-else>
             <div class="tools">
-                <input v-model="find" class="input" placeholder="Find an agent" aria-label="Find an agent" data-agent-find>
+                <SearchBar v-model="find" placeholder="Find an agent" data-agent-find />
                 <Segmented fill :options="ROLES" :value="role" data-agent-roles @pick="role = $event" />
             </div>
             <div class="list">
                 <AgentList :environment="environment" :role="role" :name="find" :who="who" @counted="listed.working = $event" @pick="pickAgent" />
                 <AgentList ended :environment="environment" :role="role" :name="find" :who="who" :open="endedOpen || searching" @counted="listed.ended = $event" @fold="endedOpen = !endedOpen" @pick="pickAgent" />
                 <template v-if="(searching || role !== 'all') && !listed.working && !listed.ended">
-                    <p class="note" data-no-agent-match><b>No agent matches</b><br>Try another name, or a role and number such as worker 212.</p>
+                    <p class="note" data-no-agent-match><b>No agent matches</b><br>Try another name, or a role and number such as helper 212.</p>
                 </template>
                 <p class="note">Agents with no memories are left out.</p>
             </div>

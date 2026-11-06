@@ -150,7 +150,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                 <template #menu>
                     <MenuLabel>Kind</MenuLabel>
                     <MenuItem v-for="role in filterOptions.roles" :key="role" role="menuitemcheckbox" :aria-checked="filters.roles.includes(role)" :checked="filters.roles.includes(role)" :data-filter-role="role" @click="toggleFilter('roles', role)">{{ label(role) }}</MenuItem>
-                    <MenuLabel>Profile</MenuLabel>
+                    <MenuLabel v-if="filterOptions.profiles.length">Profile</MenuLabel>
                     <MenuItem v-for="profile in filterOptions.profiles" :key="profile" role="menuitemcheckbox" :aria-checked="filters.profiles.includes(profile)" :checked="filters.profiles.includes(profile)" :data-filter-profile="profile" @click="toggleFilter('profiles', profile)">{{ profile }}</MenuItem>
                     <MenuLabel>Program</MenuLabel>
                     <MenuItem v-for="program in programs" :key="program.name" role="menuitemcheckbox" :aria-checked="filters.programs.includes(program.name)" :checked="filters.programs.includes(program.name)" :data-filter-program="program.name" @click="toggleFilter('programs', program.name)">{{ program.title }}</MenuItem>

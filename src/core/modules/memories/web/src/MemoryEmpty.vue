@@ -25,7 +25,7 @@ const emit = defineEmits(["retry", "everyone", "others", "make"]);
             </template>
             <template #main-others>
                 <b>The main agent has no memories yet</b>
-                <p>Your workers and helpers have {{ others }} active {{ others === 1 ? "memory" : "memories" }}.</p>
+                <p>Your other agents have {{ others }} active {{ others === 1 ? "memory" : "memories" }}.</p>
                 <Btn small bordered data-memory-others @click="emit('others')">Read those</Btn>
             </template>
             <template #main>

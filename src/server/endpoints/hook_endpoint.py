@@ -86,7 +86,7 @@ class HookEndpoint:
             limit_seconds = self.context.agent_hook_limit_seconds if priority is QueuePriority.AGENT_HOOK else self.context.hook_limit_seconds
             fields = data if is_mapping(data) else {}
             role = str(fields.get("role", "main"))
-            sender = "Helper" if role == "helper" else "Worker" if role == "worker" else "Main agent"
+            sender = {"helper": "Helper", "worker": "Worker"}.get(role, "Main agent")
             request = QueueRequest.started(sender, str(fields.get("event", fields.get("hook_event_name", "hook"))), str(fields.get("session", fields.get("session_id", ""))))
             with self.context.hook_database.used(priority, limit_seconds, hook_owner(data), request) as database:
                 self.timing.stamp("hook_locked")

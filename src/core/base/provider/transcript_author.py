@@ -5,14 +5,16 @@ TRANSCRIPT_AUTHORS = ("user", "assistant")
 AGENT_AUTHOR = "assistant"
 JOURNAL_AUTHOR = "journal"
 MONITOR_AUTHOR = "monitor"
+PEER_AUTHOR = "peer"
 USER_AUTHOR = "user"
 JOURNAL_OPENINGS = ("[journal]", "Stop hook feedback", "<system-reminder", "[SYSTEM NOTIFICATION")
 MONITOR_OPENINGS = ("<task-notification", "<monitor")
+PEER_OPENING = "<cross-session-message"
 
 
 class TranscriptAuthor:
-    """Who wrote a transcript row: an agent program files the journal's lines and a monitor's events as the user's,
-    so a user row is told apart by how it opens."""
+    """Who wrote a transcript row: an agent program files the journal's lines, a monitor's events and another
+    agent's messages as the user's, so a user row is told apart by how it opens."""
 
     @staticmethod
     def row(position: int, row_type: object, text: str, time: object = "") -> TranscriptRow:
@@ -25,4 +27,6 @@ class TranscriptAuthor:
         opening = text.lstrip()
         if opening.startswith(MONITOR_OPENINGS):
             return MONITOR_AUTHOR
+        if opening.startswith(PEER_OPENING):
+            return PEER_AUTHOR
         return JOURNAL_AUTHOR if opening.startswith(JOURNAL_OPENINGS) else USER_AUTHOR
