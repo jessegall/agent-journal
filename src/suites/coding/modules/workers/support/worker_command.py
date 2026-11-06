@@ -27,13 +27,14 @@ class WorkerCommand:
         self.profiles, self.types = profiles, types
 
     def command(self, worker: Agent, worktree: Worktree, environment: Environment, task: Task) -> LaunchCommand:
-        skills = Path(worktree.folder) / self.providers.provider(worker.program).skills_folder
-        reads = "\n".join(str(skills / name / "SKILL.md") for name in
+        provider = self.providers.provider(worker.program)
+        skills = Path(worktree.folder) / provider.skills_folder
+        reads = "\n".join(provider.skill_instruction(name, skills / name / "SKILL.md") for name in
                           ("journal", "journal-etiquette", "journal-tasks", "journal-shell", "journal-workers"))
         profile = self.profiles.effective(worker.profile or self.types.find(worker.role).default_profile)
         brief = (f"You are worker {worker.id}.\n{profile.body}\n\nYour task is {task.id}, {task.title}.\n{task.brief}\n"
-                 f"Read these files before your first write:\n{reads}\n"
-                 f"Run journal overview, then journal task show {task.id}. Read the architectural skills required by the files you change in {skills}.\n"
+                 f"Load these skills before your first write:\n{reads}\n"
+                 f"Run journal overview, then journal task show {task.id}. Load the architectural skills required by the files you change in {skills}.\n"
                  f"Run only tests of the code you change, never the whole test suite.\n"
                  f"Decide what you can yourself. A question goes in your report to the main agent, never to the user.\n{WORK_STEPS}")
         return self.launched(worker, worktree, environment, SessionStart(worker.session), brief)
