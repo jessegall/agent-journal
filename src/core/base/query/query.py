@@ -5,6 +5,7 @@ from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
 from core.base.database.database import Database
 from core.base.missing_rows_error import MissingRowsError
 from core.base.model.agent_scoped import AgentScoped
+from core.base.model.removable import Removable
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.model.view_model import ViewModel
@@ -26,6 +27,7 @@ PAGE_SIZE_ROWS = 25
 READ_ALL_BATCH_ROWS = 1000
 AGENT_COLUMN = "agent_id"
 SESSION_COLUMN = "session_agent_id"
+REMOVED_COLUMN = "removed_at"
 ROW_KEY = "id"
 VERSION_COLUMN = "version"
 
@@ -37,16 +39,22 @@ class Query(Generic[M]):
     def __init__(self, database: Database, tables: Tables, model: type[M]) -> None:
         self.database, self.model, self.table = database, model, tables.table(model)
         self.select = Select(self.table.name)
+        self.shows_removed = False
+
+    def with_removed(self) -> Self:
+        query = copy(self)
+        query.shows_removed = True
+        return query
 
     def find(self, row_id: int) -> M:
         kept = self.database.kept_rows
         if kept is None or self.table.key != ROW_KEY or not self.table.has_column(VERSION_COLUMN):
             return self.find_many([row_id])[0]
-        statement = self.scoped(self.select).conditions
+        statement = self.with_removed().scoped(self.select).conditions
         return kept.read_newest(self.table.name, lambda: self.find_many([row_id])[0], f"{self.table.key} = ?", [row_id], name=f"query.find:{statement}")
 
     def find_many(self, row_ids: Sequence[int]) -> list[M]:
-        row_index = {getattr(row, self.table.key): row for row in self.rows(self.select.matching(Among(self.table.key, row_ids)))}
+        row_index = {getattr(row, self.table.key): row for row in self.with_removed().rows(self.select.matching(Among(self.table.key, row_ids)))}
         missing = tuple(row_id for row_id in row_ids if row_id not in row_index)
         if missing:
             raise MissingRowsError(self.model.cli_name, missing)
@@ -59,7 +67,8 @@ class Query(Generic[M]):
         select = self.select
         for column, value in values.items():
             select = select.matching(Equal(column, stored(value)))
-        return self.with_select(select)
+        query = self.with_select(select)
+        return query.with_removed() if ROW_KEY in values else query
 
     def matching(self, condition: Condition) -> Self:
         return self.with_select(self.select.matching(condition))
@@ -128,6 +137,8 @@ class Query(Generic[M]):
 
     def scoped(self, select: Select) -> Select:
         owner = self.database.row_owner
+        if issubclass(self.model, Removable) and not self.shows_removed:
+            select = select.matching(IsNull(REMOVED_COLUMN))
         if owner is not None and issubclass(self.model, EnvironmentScoped):
             select = self.environment_rows(select, owner)
         if issubclass(self.model, AgentScoped):

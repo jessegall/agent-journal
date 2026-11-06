@@ -21,19 +21,19 @@ class CheckQuery(Query[Check]):
         super().__init__(database, tables, Check)
 
     def kept(self) -> list[Check]:
-        return self.rows_without("removed_at")
+        return list(self.oldest().all_rows())
 
     def running(self) -> list[Check]:
         return [check for check in self.kept() if check.is_running]
 
     def broken_task_waits(self) -> list[Check]:
-        return list(self.matching(IsNull("removed_at")).matching(Greater("task_wait_id", 0)).filter(last_passed=False).matching(TaskWaitCommandFailure()).oldest().all_rows())
+        return list(self.matching(Greater("task_wait_id", 0)).filter(last_passed=False).matching(TaskWaitCommandFailure()).oldest().all_rows())
 
     def due(self, present: Timestamp) -> list[Check]:
-        return list(self.matching(IsNull("removed_at")).filter(stopped=False).matching(IntervalPassed(present.text)).oldest().all_rows())
+        return list(self.filter(stopped=False).matching(IntervalPassed(present.text)).oldest().all_rows())
 
     def unreported(self, present: Timestamp, repeat_minutes: int) -> list[Check]:
-        failing = self.matching(IsNull("removed_at")).matching(IsNull("task_wait_id")).filter(stopped=False, last_passed=False)
+        failing = self.matching(IsNull("task_wait_id")).filter(stopped=False, last_passed=False)
         unreported_rows = failing.matching(IsNull("reported_at")).oldest().all_rows()
         cutoff = Timestamp(present.value - timedelta(minutes=repeat_minutes))
         repeat_rows = failing.matching(Less("reported_at", cutoff.text)).oldest().all_rows()
