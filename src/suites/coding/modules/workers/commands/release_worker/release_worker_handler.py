@@ -13,7 +13,10 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.cancel_worker_opening.cancel_worker_opening import CancelWorkerOpening
 from suites.coding.modules.workers.commands.release_worker.release_worker import ReleaseWorker
+from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
+from suites.coding.modules.workers.models.proof import Proof
+from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.release_outcome import ReleaseOutcome
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
@@ -21,11 +24,13 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 
 WAITING_STATES = (TaskState.OPEN, TaskState.BLOCKED)
+HANDED_OUT_STATES = (TaskState.STARTED, TaskState.TESTING)
 
 
 class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
-    """Releases tasks still assigned to the worker and removes its worktree, keeping a branch with commits; a
-    worktree that was never cut is undone as a failed dispatch is."""
+    """Releases tasks still assigned to the worker, those it moved past with proofs not all checked included, and
+    removes its worktree, keeping a branch with commits; a worktree that was never cut is undone as a failed
+    dispatch is."""
 
     command = ReleaseWorker
     runs_once = True
@@ -45,9 +50,19 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
         abandoned = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.abandon), context)
         task = self.rows.required(Task, worktree.task_id)
         if task.delegated_to == worktree.session_agent_id:
-            self.repository.save_change(task, replace(task.release(context.timestamp, context.actor, command.reason), delegated_to=None), context)
+            self.release_task(task, command.reason, context)
+        for handed_out in tuple(self.queries.query(Task).filter(delegated_to=worktree.session_agent_id).matching(Among("state", HANDED_OUT_STATES)).all_rows()):
+            if not self.has_all_proofs_checked(handed_out, worktree):
+                self.release_task(handed_out, command.reason, context)
         for delegated in tuple(self.queries.query(Task).filter(delegated_to=worktree.session_agent_id).matching(Among("state", WAITING_STATES)).all_rows()):
             self.repository.update(delegated, context, delegated_to=None)
         unmerged = self.git.remove(self.environments.find(abandoned.environment_id).folder, abandoned)
         removed = self.repository.save_change(abandoned, abandoned.remove(context.timestamp, context.actor), context)
         return ReleaseOutcome(removed, removed.branch if unmerged else "")
+
+    def release_task(self, task: Task, reason: str, context: Context) -> None:
+        self.repository.save_change(task, replace(task.release(context.timestamp, context.actor, reason), delegated_to=None), context)
+
+    def has_all_proofs_checked(self, task: Task, worktree: Worktree) -> bool:
+        proofs = tuple(self.queries.query(Proof).filter(task_id=task.id, worktree_id=worktree.id).all_rows())
+        return bool(proofs) and all(proof.state is ProofState.CHECKED for proof in proofs)

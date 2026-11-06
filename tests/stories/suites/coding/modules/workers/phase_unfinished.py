@@ -61,6 +61,13 @@ def test_a_release_after_the_hand_in_leaves_the_tasks_with_tests_running_open_an
     expect_open_and_not_delegated(phase_handed_in, 1, 2, 3)
 
 
+def test_a_release_leaves_a_task_with_all_its_proofs_checked_as_it_is(moved_on):
+    moved_on.story.expect_success("proof check 1", actor=moved_on.story.agent)
+    moved_on.story.expect_success(f'worker release {moved_on.worker.id} "the plan is done with"', actor=moved_on.story.agent)
+    moved_on.story.expect_no_text("task show 1", "state: open", actor=moved_on.story.agent)
+    expect_open_and_not_delegated(moved_on, 2, 3)
+
+
 def test_a_release_in_the_middle_of_a_phase_keeps_the_branch(moved_on):
     branch = moved_on.repository.worker_branch(moved_on.worker.id)
     tip = moved_on.repository.tip(branch)
