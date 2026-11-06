@@ -8,6 +8,7 @@ try {
     await page.goto(`${address}&windows=agents.agents`);
     const job = page.locator(`[data-window="agents.agents"] [data-agent-open="${helper}"] [data-agent-job]`);
     await job.waitFor();
+    await page.locator('[data-window="agents.agents"] [aria-busy="true"]').waitFor({state: "hidden"});
     assert.match(await job.textContent(), /Read src\/cart.py/);
     await page.screenshot({path: capture, fullPage: true, animations: "disabled"});
 } finally {

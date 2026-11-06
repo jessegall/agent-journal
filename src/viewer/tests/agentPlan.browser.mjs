@@ -8,6 +8,7 @@ try {
     await page.goto(`${address}&windows=agents.agents`);
     const plan = page.locator(`[data-window="agents.agents"] [data-agent-open="${agent}"] [data-agent-plan]`);
     await plan.waitFor();
+    await page.locator('[data-window="agents.agents"] [aria-busy="true"]').waitFor({state: "hidden"});
     assert.match(await plan.textContent(), /Plan 1: Release work/);
     await page.screenshot({path: capture, animations: "disabled"});
     await plan.click();

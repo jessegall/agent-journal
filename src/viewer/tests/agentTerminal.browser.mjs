@@ -11,6 +11,7 @@ try {
         const card = window.locator(`[data-agent-open="${id}"]`);
         await card.waitFor();
         await card.locator("[data-agent-last-heard]").waitFor({timeout: 5000});
+        await window.locator('[aria-busy="true"]').waitFor({state: "hidden"});
         assert.match(await card.locator("[data-agent-last-heard]").textContent(), /Last heard:/);
         await page.screenshot({path: `${capture}-last-heard-${id}.png`, fullPage: true, animations: "disabled"});
         await card.click();

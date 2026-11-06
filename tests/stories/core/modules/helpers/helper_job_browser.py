@@ -8,6 +8,7 @@ from tests.stories.server.support.server_client import server_story
 
 def test_running_helper_job_is_in_the_agents_window(new_story, tmp_path):
     story = new_story(fixture=StartedHelper)
+    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
     helper = the_helper(story)
     rows = json.loads(story.run("usage agents --environment main --json", actor=story.user).output_text)["rows"]
     story.expect_rows(next(row for row in rows if row["id"] == helper.id)["helper_job"] == "Read src/cart.py")
