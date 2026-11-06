@@ -23,6 +23,8 @@ usePoll(load, () => true);
                     <span data-hook-column>Tool</span>
                     <span class="parts" data-hook-column>Parts</span>
                     <span data-hook-column>Time</span>
+                    <span data-hook-column>Sender</span>
+                    <span data-hook-column>Queued</span>
                     <span data-hook-column>Duration</span>
                 </div>
                 <div class="list-scroll" data-hook-request-list>
@@ -41,6 +43,8 @@ usePoll(load, () => true);
                             <span class="tool">{{ row.tool || '—' }}</span>
                             <span class="parts" data-hook-parts>{{ row.part_count || '' }}</span>
                             <time :datetime="row.received_at">{{ row.time }}</time>
+                            <span>{{ row.sender }}</span>
+                            <span class="queued">{{ Math.round(row.queued_ms) }} ms</span>
                             <span class="duration">{{ durationOf(row) }}</span>
                         </button>
                     </template>
@@ -52,7 +56,7 @@ usePoll(load, () => true);
                     <div data-hook-request-detail>
                         <div class="detail-head">
                             <h2>{{ opened.event }}</h2>
-                            <span :class="{slow: isSlow(opened), refused: isRefused(opened)}">{{ opened.outcome }} · {{ durationOf(opened) }}</span>
+                            <span :class="{slow: isSlow(opened), refused: isRefused(opened)}">{{ opened.sender }} · queued {{ Math.round(opened.queued_ms) }} ms · {{ opened.outcome }} · {{ durationOf(opened) }}</span>
                         </div>
                         <h3 class="heading">Headers</h3>
                         <pre data-hook-request-headers v-html="shown(opened.headers)" />
@@ -94,10 +98,10 @@ usePoll(load, () => true);
 .columns,
 .row {
     display: grid;
-    grid-template-columns: minmax(105px, 1.4fr) minmax(52px, 0.7fr) 64px 96px 72px;
+    grid-template-columns: minmax(80px, 1.4fr) minmax(40px, 0.7fr) 32px 88px minmax(72px, 1fr) 55px 60px;
     align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
+    gap: 5px;
+    padding: 10px 10px;
     font-size: 12px;
 }
 
@@ -109,12 +113,13 @@ usePoll(load, () => true);
 
 .columns > :last-child,
 .duration,
+.queued,
 .parts {
     text-align: right;
 }
 
 .parts {
-    padding-right: 28px;
+    padding-right: 4px;
     color: var(--text-3);
     font-variant-numeric: tabular-nums;
 }
@@ -160,7 +165,8 @@ usePoll(load, () => true);
 }
 
 time,
-.duration {
+.duration,
+.queued {
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
 }

@@ -1,4 +1,9 @@
 import json
+import sqlite3
+from concurrent.futures import ThreadPoolExecutor
+from time import perf_counter, sleep
+
+from server.hook.queue_priority import QueuePriority
 
 import pytest
 
@@ -94,3 +99,52 @@ def expect_value_15(text, body, expected) -> None:
     actual = text in body.decode()
     assert actual is expected, actual
 
+
+
+def test_requests_show_the_sender_and_queue_time(recording_server):
+    server = recording_server
+    story = server.story
+    worker = story.new_row_id("agent start s-worker claude worker --environment main")
+    story.expect_success(f'agent edit {worker} --given-name "Ada"')
+    for session, role in (("s-1", "main"), ("s-worker", "worker")):
+        sample = HookSamples.sample("post_tool_use").with_fields(session=session, role=role, firing=f"sender-{role}")
+        server.expect_hook_answer("/hook", dict(sample.body), 200, '"refusal":')
+    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+    server.viewer_line_value(cookie, {"line": ["task", "list"], "environment": "main", "window": "tasks.tasks"})
+    server.expect_cli_exit("task list", "/", 0, "")
+    value = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})
+    rows = value["rows"]
+    assert [row["sender"] for row in rows[:4]] == ["Command line", "Viewer", "Worker: Ada", "Main agent"]
+    assert [row["event"] for row in rows[:2]] == ["task list", "task list"]
+    assert all(row["queued_ms"] >= 0 for row in rows[:4])
+    assert rows[0]["queued_ms"] == 0
+
+
+def test_a_hook_shows_the_time_it_waited_for_another(recording_server):
+    server = recording_server
+    sample = HookSamples.sample("post_tool_use").with_fields(firing="queued")
+    with ThreadPoolExecutor(1) as pool:
+        with server.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, 1):
+            answer = pool.submit(server.expect_hook_answer, "/hook", dict(sample.body), 200, '"refusal":')
+            sleep(0.1)
+        answer.result()
+    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+    value = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})
+    assert value["rows"][0]["queued_ms"] >= 50
+
+
+def test_recording_drops_requests_instead_of_waiting_for_a_writer(recording_server):
+    server = recording_server
+    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+    writer = sqlite3.connect(server.story.home.database, timeout=0)
+    writer.execute("BEGIN IMMEDIATE")
+    try:
+        started_at = perf_counter()
+        server.viewer_line_value(cookie, {"line": ["task", "list"], "environment": "main", "window": "tasks.tasks"})
+        server.expect_cli_exit("task list", "/", 0, "")
+        assert perf_counter() - started_at < 1
+    finally:
+        writer.rollback()
+        writer.close()
+    value = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})
+    assert not any(row["event"] == "task list" for row in value["rows"])

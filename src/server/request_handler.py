@@ -1,6 +1,7 @@
 import json
 from collections.abc import Callable
 import traceback
+from time import perf_counter
 from urllib.parse import parse_qs
 from dataclasses import asdict
 from http.server import BaseHTTPRequestHandler
@@ -13,6 +14,7 @@ from core.base.caller.caller_request import CallerRequest
 from core.base.refusal import Refusal
 from core.base.type_guards import is_mapping
 from server.client_disconnected import client_disconnected
+from server.request_log import RequestLog
 from server.viewer.viewer_key_route import ViewerKeyRoute
 from server.endpoints.cli_endpoint import CliEndpoint
 from core.base.performance.performance_state import PerformanceState
@@ -178,6 +180,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.answer_json(200, reply.json())
 
     def answer_cli(self, request: CliRequest) -> None:
+        started_at = perf_counter()
         self.status = 200
         self.send_response(200)
         self.send_header("Content-Type", "text/plain; charset=utf-8")
@@ -191,6 +194,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.journal_server().context.files.log_line("".join(traceback.format_exception(error)))
             self.send_chunk(f"{type(error).__name__}: {error}\n".encode())
             code = ERROR_CODE
+        RequestLog(self.journal_server().context.home).record(request.argv, "cli", (perf_counter() - started_at) * 1000, 0, code)
         self.timing.stamp("command_done")
         self.exit_code = code
         self.wfile.write(f"0\r\n{EXIT_CODE_TRAILER}: {code}\r\n\r\n".encode())

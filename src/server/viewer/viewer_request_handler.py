@@ -1,12 +1,14 @@
 from collections.abc import Mapping
 from types import MappingProxyType
 import json
+from time import perf_counter
 from dataclasses import asdict, replace
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qsl, parse_qs, urlencode, urlsplit
 
 from server.server_instance import server_instance
+from server.request_log import RequestLog
 from server.viewer.event_stream import EventStream
 from server.viewer.file_route import LIMIT_BYTES
 from server.viewer.events_request import EventsRequest
@@ -204,12 +206,15 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(400, {"error": str(error)})
             return
         session = viewer.login.session(token)
+        started_at = perf_counter()
         try:
             viewer.routes.queue.let_hooks_finish()
+            queued_ms = (perf_counter() - started_at) * 1000
             answered = viewer.routes.line_route.answer(request.window, request.line, viewer.login.person_id(token), request.environment, session.shared)
         except ShareRefusal as refusal:
             self.answer(403, {"error": refusal.reason})
             return
+        RequestLog(viewer.routes.line_route.line_run.home).record(request.line, "viewer", (perf_counter() - started_at) * 1000, queued_ms, answered.code)
         self.answer(200, asdict(answered))
 
     def answer_notices(self, viewer: ViewerServer, token: str, body: bytes | None) -> None:
@@ -249,9 +254,14 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(400, {"error": str(error)})
             return
         session, person_id = viewer.login.session(token), viewer.login.person_id(token)
+        started_at = perf_counter()
         viewer.routes.queue.let_hooks_finish()
-        answers = [asdict(answer) for answer in viewer.routes.line_route.answers(request, person_id, session.shared)]
-        self.answer(200, {"answers": answers})
+        queued_ms = (perf_counter() - started_at) * 1000
+        answers = viewer.routes.line_route.answers(request, person_id, session.shared)
+        duration_ms = (perf_counter() - started_at) * 1000
+        for line, answer in zip(request.lines, answers):
+            RequestLog(viewer.routes.line_route.line_run.home).record(line.line, "viewer", duration_ms, queued_ms, answer.code)
+        self.answer(200, {"answers": [asdict(answer) for answer in answers]})
 
     def answer_share_comments(self, viewer: ViewerServer, session: ViewerSession, body: bytes | None) -> None:
         if session.share_id is None or not session.comments:
