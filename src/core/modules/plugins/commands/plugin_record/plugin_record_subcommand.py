@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
-from core.base.running_scripts import PluginScriptProcesses
+from core.base.plugin_script_processes import PluginScriptProcesses
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plugins.models.plugin import Plugin

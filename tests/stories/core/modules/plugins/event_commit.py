@@ -128,10 +128,10 @@ def test_a_tell_with_no_agent_is_dropped(new_story):
 def test_a_change_with_no_script_on_its_key_writes_no_delivery_and_adds_no_query(new_story):
     story = event_plugin_story(new_story, {"event": PIN_CREATED, "commit": "see.sh"})
     subscriptions = story.container.get(PluginSubscriptions)
-    tally = story.container.get(Database).tally
+    row_total = story.container.get(Database).tally
     subscriptions.scripts("task.create", EventForm.COMMIT)
-    initial_tally = tally.points()
-    story.expect_rows(subscriptions.scripts("task.create", EventForm.COMMIT) == (), tally.points().statements == initial_tally.statements)
+    initial_total = row_total.points()
+    story.expect_rows(subscriptions.scripts("task.create", EventForm.COMMIT) == (), row_total.points().statements == initial_total.statements)
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.expect_rows(not deliveries(story))
 

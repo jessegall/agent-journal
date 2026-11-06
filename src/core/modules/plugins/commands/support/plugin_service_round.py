@@ -1,4 +1,4 @@
-from core.base.running_scripts import PluginScriptProcesses
+from core.base.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.commands.support.service_faults import ServiceFaults
 from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.plugin_services import PluginServices

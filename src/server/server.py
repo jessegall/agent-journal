@@ -34,7 +34,7 @@ from server.server_tunnel import ServerTunnel
 from server.hook.hook_database import HookDatabase
 from server.journal_round import JournalRound
 from server.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
-from core.base.running_scripts import PluginScriptProcesses
+from core.base.plugin_script_processes import PluginScriptProcesses
 from server.ordinary_listener_work import OrdinaryListenerWork
 from server.plugin_listener_work import PluginListenerWork
 from server.urgent_listener_work import UrgentListenerWork

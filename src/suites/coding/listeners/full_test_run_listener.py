@@ -34,19 +34,19 @@ class FullTestRunListener(SaveListener[Created[Process] | ProcessEnded]):
         if not run.is_full_test_run:
             return
         if isinstance(event, Created):
-            self.send_line(run, self.testing_tasks(run), TESTING_TASKS_FULL_RUN, context)
+            self.line_sender(run, self.testing_tasks(run), TESTING_TASKS_FULL_RUN, context)
             return
         self.ended(run, context)
 
     def ended(self, run: Process, context: Context) -> None:
         tasks = self.testing_tasks(run)
         if run.state is not ProcessState.FINISHED:
-            self.send_line(run, tasks, TESTING_TASKS_FAILED_RUN, context)
+            self.line_sender(run, tasks, TESTING_TASKS_FAILED_RUN, context)
             return
         for task in tasks:
             self.repository.save(task.close(context.timestamp, context.actor, f"the full test run, process {run.id}, passed"), context)
 
-    def send_line(self, run: Process, tasks: tuple[Task, ...], declaration: NudgeDeclaration, context: Context) -> None:
+    def line_sender(self, run: Process, tasks: tuple[Task, ...], declaration: NudgeDeclaration, context: Context) -> None:
         if tasks:
             names = ", ".join(f"task:{task.id}" for task in tasks)
             self.nudger.send(run.session_agent_id, declaration, SOURCE, context, tasks=names)

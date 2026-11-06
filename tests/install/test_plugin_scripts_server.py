@@ -27,9 +27,9 @@ def run_line(journal, client: Path, *line: str) -> subprocess.CompletedProcess[s
 
 
 def expect_line(journal, client: Path, *line: str) -> str:
-    result = run_line(journal, client, *line)
-    assert result.returncode == 0, result.stdout + result.stderr
-    return result.stdout
+    completed = run_line(journal, client, *line)
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    return completed.stdout
 
 
 def journal_line(journal, client: Path, *line: str) -> str:
@@ -42,7 +42,7 @@ def plugin_journal_line(journal, client: Path, *line: str) -> str:
     return f"""{journal_line(journal, client, *line)} > /dev/null\necho $? >> "$JOURNAL_PLUGIN_DATA/own-write\""""
 
 
-def plugin_write_result(journal) -> list[str]:
+def plugin_write_outcome(journal) -> list[str]:
     output_file = plugin_data(journal, "own-write")
     return output_file.read_text().split() if output_file.is_file() else []
 
@@ -107,7 +107,7 @@ def agent_run_line(journal, client: Path, command: str) -> str:
 def test_s29_a_script_that_writes_through_the_journal_does_not_wait_or_start_itself(journal, client):
     start_with_plugin(journal, client, {"event": TASK_CREATED, "listen": "script.sh"}, plugin_journal_line(journal, client, "task", "log", "1", "seen"))
     expect_line(journal, client, *SECOND_JOB_LINE)
-    assert len(script_calls(journal, "script.sh")) == 1 and plugin_write_result(journal) == ["0"], (script_calls(journal, "script.sh"), plugin_write_result(journal))
+    assert len(script_calls(journal, "script.sh")) == 1 and plugin_write_outcome(journal) == ["0"], (script_calls(journal, "script.sh"), plugin_write_outcome(journal))
     assert "seen" in expect_line(journal, client, "task", "overview", "1")
     assert expect_line(journal, client, "task", "list").count(SECOND_JOB_TITLE) == 1
 
@@ -123,8 +123,8 @@ def test_s29_a_script_that_writes_the_same_row_causes_no_stale_row_error(journal
 def test_s29_when_the_change_is_then_refused_the_plugin_write_result_of_the_script_stays(journal, client):
     script = f'{plugin_journal_line(journal, client, "task", "log", "1", "seen")}\n{EVENT_SCRIPTS["refuse.sh"]}'
     start_with_plugin(journal, client, {"event": TASK_CREATED, "guard": "script.sh"}, script)
-    result = run_line(journal, client, *SECOND_JOB_LINE)
-    assert result.returncode == 1 and REFUSAL in result.stdout + result.stderr, result.stdout + result.stderr
+    completed = run_line(journal, client, *SECOND_JOB_LINE)
+    assert completed.returncode == 1 and REFUSAL in completed.stdout + completed.stderr, completed.stdout + completed.stderr
     assert "seen" in expect_line(journal, client, "task", "overview", "1")
     assert SECOND_JOB_TITLE not in expect_line(journal, client, "task", "list")
 
@@ -140,7 +140,7 @@ def test_s25_a_script_that_never_ends_shows_on_the_card_and_switching_off_stops_
     try:
         assert "started" in wait_for_line(start_pipe, process)
         assert any(row["form"] == "guard" and row["started_at"] for row in page.card()), page.card()
-        page.switch_off()
+        page.disable()
         stdout, stderr = process.communicate(timeout=TIMEOUT_SECONDS)
     finally:
         if process.poll() is None:
@@ -209,7 +209,7 @@ def test_s58_switching_the_plugin_off_stops_its_run(journal, client):
     expect_line(journal, client, "actor", "make", "user", "Ada")
     expect_line(journal, client, "pin", "make", "Notes", "--link", "https://example.org/notes", "--environment", "main")
     assert "started" in wait_for_line(start_pipe)
-    viewer_page(journal).switch_off()
+    viewer_page(journal).disable()
     expect_process_ended(int(run_pid.read_text()))
 
 

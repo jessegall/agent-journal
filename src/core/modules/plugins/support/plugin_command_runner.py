@@ -13,7 +13,7 @@ from core.base.model.event_form import EventForm
 from core.base.project_reads import ProjectReads
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
-from core.base.running_scripts import PluginScriptProcesses
+from core.base.plugin_script_processes import PluginScriptProcesses
 from core.modules.agents.models.agent import Agent
 from core.modules.plugins.support.plugin_command_run import PluginCommandRun
 from core.modules.processes.models.process import Process

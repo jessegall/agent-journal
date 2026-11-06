@@ -5,7 +5,7 @@ from core.base.journal_home import JournalHome
 from core.base.model.state_book import StateBook
 from core.base.module.module_sync import ModuleSync
 from core.base.registry.registry import Registry
-from core.base.running_scripts import PluginScriptProcesses
+from core.base.plugin_script_processes import PluginScriptProcesses
 
 
 def opened_container(home: JournalHome) -> Container:

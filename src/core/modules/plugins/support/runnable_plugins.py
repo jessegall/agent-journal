@@ -11,8 +11,8 @@ from core.modules.plugins.support.runnable_plugin import RunnablePlugin
 class RunnablePlugins:
     """Selects enabled plugins and reads their manifests and file changes."""
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, named_events: PluginNamedEvents) -> None:
-        self.plugins, self.folders, self.named_events = plugins, folders, named_events
+    def __init__(self, plugins: PluginQuery, folders: PluginFolders, declared_events: PluginNamedEvents) -> None:
+        self.plugins, self.folders, self.declared_events = plugins, folders, declared_events
 
     def enabled(self) -> list[RunnablePlugin]:
         return [self.runnable(plugin) for plugin in self.plugins.enabled_plugins() if not self.folders.is_upgrading(plugin.name) and self.readable_manifest(plugin) is not None]
@@ -31,5 +31,5 @@ class RunnablePlugins:
 
     def runnable(self, plugin: Plugin) -> RunnablePlugin:
         code = self.folders.code(plugin.name)
-        manifest = self.named_events.apply(PluginManifest.read(code))
+        manifest = self.declared_events.apply(PluginManifest.read(code))
         return RunnablePlugin(plugin, manifest, PluginDigest.digest(code, manifest) != plugin.files_digest)

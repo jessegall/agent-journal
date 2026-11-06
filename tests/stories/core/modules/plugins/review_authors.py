@@ -5,7 +5,7 @@ from pathlib import Path
 from core.base.change.event_log import HIDDEN
 from core.base.command.bus import Bus
 from core.base.model.event_form import EventForm
-from core.base.running_scripts import PluginScriptProcesses
+from core.base.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.commands.prune_plugin_deliveries.prune_plugin_deliveries import PrunePluginDeliveries
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from tests.stories.core.modules.plugins.event_many import WORKTREE_MERGE

@@ -13,7 +13,7 @@ from core.base.command.bus import Bus
 from core.base.journal_container import synced_container
 from core.base.model.event_form import EventForm
 from core.base.query.queries import Queries
-from core.base.running_scripts import PluginScriptProcesses
+from core.base.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 from tests.stories.core.modules.plugins.support.event_modules import NOTE_CREATED, NOTES, EventNote, ManyNotes

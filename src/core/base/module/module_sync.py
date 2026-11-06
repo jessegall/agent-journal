@@ -132,7 +132,7 @@ class ModuleSync:
             fingerprint=self.fingerprint.text(modules),
             events=self.check.known_events(modules),
             event_keys={entry.event: entry for entry in self.check.event_keys(modules)},
-            named_plugin_events=tuple(event for module in modules for event in module.plugin_event_names()),
+            declared_plugin_events=tuple(event for module in modules for event in module.plugin_event_names()),
             former_event_keys={former: current for module in modules for former, current in module.former_event_keys.items()},
             module_fingerprints={module.name: self.fingerprint.module_text(module) for module in modules},
             module_suites={module.name: tuple(dict.fromkeys([suite for suite in

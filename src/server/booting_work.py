@@ -4,7 +4,7 @@ from core.base.clock import Clock
 from core.base.container import Container
 from core.base.database.database import Database
 from core.base.performance.performance_state import PerformanceState
-from core.base.running_scripts import PluginScriptProcesses
+from core.base.plugin_script_processes import PluginScriptProcesses
 from server.round_work import RoundWork
 
 

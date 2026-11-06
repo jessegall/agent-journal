@@ -10,7 +10,7 @@ import pytest
 
 from core.base.agent_checkouts import AgentCheckouts
 from core.base.journal_home import JournalHome
-from core.base.running_scripts import PluginScriptProcesses
+from core.base.plugin_script_processes import PluginScriptProcesses
 from core.base.timestamp import Timestamp
 from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_event import PluginEvent

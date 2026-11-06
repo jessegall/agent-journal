@@ -60,7 +60,7 @@ class PluginManifest:
     description: str = ""
     project_reads: tuple[str, ...] = ()
     listeners: tuple[ManifestListener, ...] = ()
-    named_events: tuple[PluginNamedEvent, ...] = ()
+    declared_events: tuple[PluginNamedEvent, ...] = ()
     protocol: int = LINE_VERSION
     listed_files: tuple[str, ...] = ()
 
@@ -230,17 +230,17 @@ class PluginManifest:
         limits = [window.window_ms for window in self.event_windows if window.event == event and window.window_ms > 0]
         return min(limits[0], ceiling_ms) if limits else ceiling_ms
 
-    def with_named_events(self, keys: Mapping[str, str]) -> "PluginManifest":
-        named_events = tuple(PluginNamedEvent(keys[listener.event], listener.event, form, listener.allowed_script(form)) for listener in self.listeners if listener.event in keys
+    def with_declared_events(self, keys: Mapping[str, str]) -> "PluginManifest":
+        declared_events = tuple(PluginNamedEvent(keys[listener.event], listener.event, form, listener.allowed_script(form)) for listener in self.listeners if listener.event in keys
                         for form in (EventForm.GUARD, EventForm.COMMIT) if listener.allowed_script(form))
-        if not named_events:
+        if not declared_events:
             return self
-        names = tuple(dict.fromkeys((*self.event_names, *(named_event.event for named_event in named_events))))
-        windows = tuple(EventWindow(named_event.event, 0) for named_event in named_events if named_event.form is EventForm.GUARD and named_event.event not in self.window_names())
-        return replace(self, event_names=names, event_windows=(*self.event_windows, *windows), named_events=named_events)
+        names = tuple(dict.fromkeys((*self.event_names, *(declared_event.event for declared_event in declared_events))))
+        windows = tuple(EventWindow(declared_event.event, 0) for declared_event in declared_events if declared_event.form is EventForm.GUARD and declared_event.event not in self.window_names())
+        return replace(self, event_names=names, event_windows=(*self.event_windows, *windows), declared_events=declared_events)
 
-    def named_event(self, event: str, form: EventForm) -> PluginNamedEvent | None:
-        return next((named_event for named_event in self.named_events if named_event.event == event and named_event.form is form), None)
+    def declared_event(self, event: str, form: EventForm) -> PluginNamedEvent | None:
+        return next((declared_event for declared_event in self.declared_events if declared_event.event == event and declared_event.form is form), None)
 
     def script(self, key: str, form: EventForm) -> str:
         return next((listener.allowed_script(form) for listener in self.listeners if listener.event == key and listener.script(form)), "")

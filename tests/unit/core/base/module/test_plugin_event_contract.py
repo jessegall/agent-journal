@@ -9,7 +9,7 @@ from core.base.module.module import Module
 from core.base.module.module_check import ModuleCheck
 from core.base.module.module_finder import ModuleFinder
 
-CONTRACT_SNAPSHOT = Path("tests/snapshots/plugin_event_contract.json")
+CONTRACT_FILE = Path("tests/snapshots/plugin_event_contract.json")
 UPDATE_FLAG = "JOURNAL_UPDATE_PLUGIN_CONTRACT"
 
 
@@ -33,15 +33,15 @@ def current_contract(tmp_path) -> dict[str, dict[str, list[str]]]:
 
 def test_keys_forms_and_payload_fields_keep_their_contract(tmp_path):
     contract = current_contract(tmp_path)
-    snapshot = json.loads(CONTRACT_SNAPSHOT.read_text()) if CONTRACT_SNAPSHOT.exists() else {}
+    contract_file = json.loads(CONTRACT_FILE.read_text()) if CONTRACT_FILE.exists() else {}
     former_keys = {key for module in ModuleFinder(JournalHome(tmp_path)).default_modules() for key in module.former_event_keys}
-    removed_keys = sorted(key for key in snapshot if key not in contract and key not in former_keys)
+    removed_keys = sorted(key for key in contract_file if key not in contract and key not in former_keys)
     assert not removed_keys, f"these keys are gone: {removed_keys}: add a former_event_keys line for each"
-    removed_fields = sorted(f"{key}.{name}" for key, row in snapshot.items() if key in contract for name in row["fields"] if name not in contract[key]["fields"])
+    removed_fields = sorted(f"{key}.{name}" for key, row in contract_file.items() if key in contract for name in row["fields"] if name not in contract[key]["fields"])
     assert not removed_fields, f"these payload fields are gone: {removed_fields}: add former_event_keys, or raise v in the event line"
-    removed_forms = sorted(f"{key} {form}" for key, row in snapshot.items() if key in contract for form in row["forms"] if form not in contract[key]["forms"])
+    removed_forms = sorted(f"{key} {form}" for key, row in contract_file.items() if key in contract for form in row["forms"] if form not in contract[key]["forms"])
     assert not removed_forms, f"these forms are gone: {removed_forms}: a plugin's script on them stops running"
     if os.environ.get(UPDATE_FLAG):
-        CONTRACT_SNAPSHOT.write_text(json.dumps(contract, indent=2) + "\n")
+        CONTRACT_FILE.write_text(json.dumps(contract, indent=2) + "\n")
         return
-    assert contract == snapshot, f"the contract grew by keys {sorted(set(contract) - set(snapshot))} or by fields: run this test with {UPDATE_FLAG}=1 to add them to the snapshot"
+    assert contract == contract_file, f"the contract grew by keys {sorted(set(contract) - set(contract_file))} or by fields: run this test with {UPDATE_FLAG}=1 to add them to the snapshot"
