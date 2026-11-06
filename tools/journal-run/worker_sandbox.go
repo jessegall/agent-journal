@@ -14,8 +14,7 @@ type readLimit struct {
 }
 
 // workerReadLimit denies the main checkout, which holds the worktree, and keeps what a worker's programs run from:
-// the worktree, the shared git store, the rules the judge reads, the journal's programs, linked libraries and the
-// folders plugins declare.
+// the worktree, the shared git store, the journal's programs, linked libraries and the folders plugins declare.
 // The file in a worktree's git folder where the journal lists what it placed there, named in worktree_git.py.
 const worktreeExcludeFile = "journal-exclude"
 
@@ -28,7 +27,7 @@ func workerReadLimit(worktree, journalHome string, declared []string) (readLimit
 	if err != nil {
 		return readLimit{}, err
 	}
-	readable := []string{resolved, filepath.Join(main, ".git"), filepath.Join(main, ".venv"), filepath.Join(main, "node_modules"), filepath.Join(main, ".commandments")}
+	readable := []string{resolved, filepath.Join(main, ".git"), filepath.Join(main, ".venv"), filepath.Join(main, "node_modules")}
 	for _, name := range []string{"bin", "runtime", "plugins", "plugin-data"} {
 		readable = append(readable, filepath.Join(main, filepath.Base(journalHome), name))
 	}

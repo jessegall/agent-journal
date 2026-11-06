@@ -59,6 +59,7 @@ def test_s66_an_entry_with_skip_false_offers_no_skip_and_naming_it_passes_nothin
 def test_s68_a_removed_key_tells_the_chat_once(new_story):
     story = event_plugin_story(new_story, {"event": NOTE_CREATED, "guard": "see.sh"}, modules=[NOTES])
     replace_module(story, NOTES, NOTES_GONE)
+    story.run_listeners()
     marks = story.container.get(Queries).query(ChatMark).all_rows()
     said = [mark for mark in marks if "events" in mark.text and NOTE_CREATED in mark.text]
     story.expect_rows(len(said) == 1, "no longer runs" in said[0].text)

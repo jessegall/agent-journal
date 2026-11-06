@@ -6,6 +6,7 @@ from core.base.query.queries import Queries
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.processes.support.foreground_run import ForegroundRun
 from core.modules.processes.support.runner_line import READ_FOLDERS_VARIABLE, RunnerLine
+from tests.stories.core.modules.plugins.support.event_modules import NOTES
 from tests.stories.core.modules.plugins.support.event_stories import SECOND_JOB, TASK_CREATED, event_page, event_plugin_story, install_event_plugin, script_calls
 from pathlib import Path
 
@@ -18,17 +19,20 @@ def test_s79_the_runner_line_gives_read_folders_in_a_variable_and_no_flag(new_st
     assert f"{READ_FOLDERS_VARIABLE}=/project/.rules" in line and "--read-folder" not in line
 
 
+def undeclared_read_marks(story) -> list[ChatMark]:
+    story.expect_sync_success(NOTES)
+    story.run_listeners()
+    return [mark for mark in story.container.get(Queries).query(ChatMark).all_rows() if "project_reads" in mark.text]
+
+
 def test_s80_a_plugin_with_aliases_and_no_project_reads_gets_one_mark_saying_what_to_declare(new_story):
-    story = event_plugin_story(new_story, aliases={"judge": {"line": "bin/judge"}})
-    code, text = story.synced()
-    marks = [mark for mark in story.container.get(Queries).query(ChatMark).all_rows() if "project_reads" in mark.text]
-    story.expect_rows(code == 0, len(marks) == 1)
+    story = event_plugin_story(new_story, aliases=[{"name": "judge", "line": "see.sh"}])
+    story.expect_rows(len(undeclared_read_marks(story)) == 1)
 
 
 def test_s80_a_plugin_with_project_reads_gets_no_mark(new_story):
-    story = event_plugin_story(new_story, project_reads=[".rules"], aliases={"judge": {"line": "bin/judge"}})
-    code, text = story.synced()
-    story.expect_rows(code == 0, not [mark for mark in story.container.get(Queries).query(ChatMark).all_rows() if "project_reads" in mark.text])
+    story = event_plugin_story(new_story, project_reads=[".rules"], aliases=[{"name": "judge", "line": "see.sh"}])
+    story.expect_rows(not undeclared_read_marks(story))
 
 
 def test_s81_the_snapshot_a_test_holds_names_what_journal_event_keys_lists(new_story):

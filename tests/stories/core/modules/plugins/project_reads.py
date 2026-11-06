@@ -39,6 +39,11 @@ def test_s52_a_project_folder_a_plugin_declares_opens_for_the_shell_line_of_a_wo
     story.expect_rows(declared_folders(worker_line_reading(story, ".rules")) == [f"{real(story.repository.folder)}/.rules"])
 
 
+def test_s52_the_rules_folder_opens_for_a_worker_through_a_declaration(new_story):
+    story = checkout_story(new_story, before_dispatch=with_project_folder(".commandments"), project_reads=[".commandments"])
+    story.expect_rows(declared_folders(worker_line_reading(story, ".commandments")) == [f"{real(story.repository.folder)}/.commandments"])
+
+
 def test_s52_a_folder_no_plugin_declares_is_not_opened(new_story):
     story = checkout_story(new_story, before_dispatch=with_project_folder(".rules"))
     story.expect_rows(READ_FOLDERS_VARIABLE not in worker_line_reading(story, ".rules"))

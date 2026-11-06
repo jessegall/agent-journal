@@ -16,9 +16,13 @@ from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 
 
+UNDECLARED_READS_TEXT = "Plugin {plugin} runs commands in worker shells, and those shells no longer read project folders it has not declared. If it reads one, it declares project_reads in its manifest."
+
+
 class PluginWrongKeyMarkListener(MarkListener[RegistrySynced]):
     """After a sync the chat of the first environment says which enabled plugin listens to a key this journal no longer
-    has, one mark for each, so a guard that stopped working does not pass unseen. A renamed key is no wrong key."""
+    has, one mark for each, so a guard that stopped working does not pass unseen. A renamed key is no wrong key. A plugin
+    with aliases and no project_reads is told once that worker shells read only what it declares."""
 
     name = "plugins.wrong-key-mark"
     module_name = "journal.core.plugins"
@@ -34,6 +38,8 @@ class PluginWrongKeyMarkListener(MarkListener[RegistrySynced]):
         with self.scopes.opened(None, environment.id):
             for runnable in self.runnable.running():
                 self.show_wrong_keys(runnable.plugin.id, runnable.plugin.name, runnable.manifest, logged)
+                if runnable.manifest.aliases and not runnable.manifest.project_reads:
+                    self.show(logged, PluginMarkType.HEALTH, PluginMarkVariant.WRONG_KEY, UNDECLARED_READS_TEXT.format(plugin=runnable.plugin.name), key=f"plugin-undeclared-reads:{runnable.plugin.id}")
 
     def show_wrong_keys(self, plugin_id: int, plugin_name: str, manifest: PluginManifest, logged: LoggedEvent) -> None:
         for row in self.rows.rows(manifest, self.folders.code(plugin_name)):

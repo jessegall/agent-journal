@@ -112,6 +112,40 @@ func TestWorkerSandboxFlag(t *testing.T) {
 	}
 }
 
+func TestTheRulesFolderIsReadableOnlyWhenDeclared(t *testing.T) {
+	folder, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	main := filepath.Join(folder, "main")
+	home := filepath.Join(main, ".journal")
+	worktree := filepath.Join(home, "worktrees", "worker")
+	rules := filepath.Join(main, ".commandments")
+	for _, path := range []string{worktree, rules} {
+		if err := os.MkdirAll(path, 0o700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	holds := func(declared []string) bool {
+		limit, err := workerReadLimit(worktree, home, declared)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, path := range limit.Readable {
+			if path == rules {
+				return true
+			}
+		}
+		return false
+	}
+	if holds(nil) {
+		t.Fatal("the rules folder is readable with nothing declared")
+	}
+	if !holds([]string{rules}) {
+		t.Fatal("a declared rules folder is not readable")
+	}
+}
+
 func TestWorkerReadLimit(t *testing.T) {
 	if runtime.GOOS != "darwin" {
 		t.Skip("the read limit is enforced by the macOS sandbox only so far")
@@ -161,12 +195,12 @@ func TestWorkerReadLimit(t *testing.T) {
 		command.Dir = worktree
 		return command.Run()
 	}
-	for _, path := range []string{filepath.Join(main, "secret.txt"), filepath.Join(sibling, "secret.txt"), "../other-worker/secret.txt"} {
+	for _, path := range []string{filepath.Join(main, "secret.txt"), filepath.Join(sibling, "secret.txt"), "../other-worker/secret.txt", filepath.Join(rules, "config.json")} {
 		if reads(path) == nil {
 			t.Fatalf("a worker read %s", path)
 		}
 	}
-	for _, path := range []string{"own.txt", "linked/lib.txt", filepath.Join(library, "lib.txt"), filepath.Join(rules, "config.json")} {
+	for _, path := range []string{"own.txt", "linked/lib.txt", filepath.Join(library, "lib.txt")} {
 		if err := reads(path); err != nil {
 			t.Fatalf("a worker could not read %s: %v", path, err)
 		}
