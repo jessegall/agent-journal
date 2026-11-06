@@ -5451,7 +5451,7 @@ const tg = { class: "chat-dock-fold" }, ng = ["aria-label"], ag = { class: "chat
       ])
     ], 2));
   }
-}, Lr = /* @__PURE__ */ K(rg, [["__scopeId", "data-v-b06db566"]]), lg = {
+}, Lr = /* @__PURE__ */ K(rg, [["__scopeId", "data-v-79b4bcb1"]]), lg = {
   class: "dock-leave",
   "aria-hidden": "true"
 }, aa = 5, ig = {
@@ -10319,7 +10319,7 @@ const Dk = /* @__PURE__ */ Rk(Nk), Pk = ["width", "height", "viewBox"], jk = ["w
       ce(t.$slots, "default", {}, void 0, !0)
     ], 4));
   }
-}, vx = /* @__PURE__ */ K(Wk, [["__scopeId", "data-v-47e67f04"]]), yx = Ll(() => import("./VoiceFigure-D5ZeQrKR.js").then((e) => e.V)), bx = "1.1.0", kx = "3.5";
+}, vx = /* @__PURE__ */ K(Wk, [["__scopeId", "data-v-47e67f04"]]), yx = Ll(() => import("./VoiceFigure-vhZb2A_J.js").then((e) => e.V)), bx = "1.1.0", kx = "3.5";
 export {
   hy as $,
   xe as A,
