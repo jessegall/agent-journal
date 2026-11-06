@@ -1,3 +1,7 @@
+from core.base.actor import Actor
+from core.base.command.bus import Bus
+from core.modules.sequences.commands.save_standard_sequences.save_standard_sequences import SaveStandardSequences
+from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 import pytest
 
 from core.base.query.queries import Queries
@@ -124,3 +128,14 @@ def test_malformed_or_repeated_values_are_refused(new_story, value):
     story = new_story(fixture=SendingTemplates)
     story.expect_refusal(f"template send 1 --on=plan:1 --set={value} --environment main", "value", actor=story.user)
     expect_empty_messages(story)
+
+
+def test_a_critique_request_starts_the_sequence_that_applies_the_reviews(new_story):
+    story = new_story(fixture=SendingTemplates)
+    story.container.get(Bus).run(SaveStandardSequences(), Actor.core())
+    story.expect_success(CRITIQUE, actor=story.user)
+    story.run_listeners()
+    run = story.container.get(SequenceRunQuery).current(story.agent.id)
+    story.expect_rows(run is not None)
+    story.expect_text(f"sequence show {run.sequence_id}", "Applying a plan's reviews")
+

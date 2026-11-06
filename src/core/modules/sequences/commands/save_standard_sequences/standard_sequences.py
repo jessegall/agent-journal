@@ -50,7 +50,7 @@ UPDATE_WRITING = Sequence(
 PLAN_REVIEW_APPLYING = Sequence(
     creator_id=CORE_ACTOR_ID,
     title="Applying a plan's reviews",
-    triggers=row_trigger("review.assign"),
+    triggers=json.dumps([*json.loads(row_trigger("review.assign")), *json.loads(row_trigger("plan.review"))]),
     step_guards=guards(FILE_EDITS_OPEN, FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED),
     steps=(
         f"Wait for the reviewers: {PLAIN_WRITING}Read what each reviewer finds as it comes back, noting every finding with the phase it belongs in; you may work on other files meanwhile",
