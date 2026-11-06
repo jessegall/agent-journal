@@ -9,7 +9,7 @@ from core.base.actor_type import ActorType
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from core.testing.hook_samples import HookSamples
 from core.testing.fake_launcher import FakeLauncher
-from tests.stories.core.modules.documents.support.trail_fixtures import IMAGE_BYTES, SelectedTrail, Trail, feature, pending, send_picture
+from tests.stories.core.modules.documents.support.trail_fixtures import IMAGE_BYTES, SelectedTrail, Trail, feature, send_picture
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -52,7 +52,6 @@ def advance(trail: WorkerTrail, worker: Actor) -> None:
     trail.story.expect_success("worker next", actor=worker)
 
 
-@pending(6892)
 def test_dispatch_uses_task_overview_context(worker_trail):
     worker_trail.story.container.get(TaskBriefRequirement).is_required = True
     result = worker_trail.command("worker dispatch --model sonnet 1")
@@ -66,7 +65,6 @@ def test_dispatch_uses_task_overview_context(worker_trail):
     worker_trail.story.expect_hook_allowed(session, HookSamples.edit("src/cart.py"))
 
 
-@pending(6892)
 def test_worker_context_excludes_unrelated_messages(assigned_worker):
     worker_trail, worker = assigned_worker.trail, assigned_worker.worker
     worker_trail.person("messages.chat", "message", "send", "Unrelated confidential message")
@@ -141,7 +139,6 @@ def test_deleted_worker_source_is_not_a_reused_message_number(worker_trail):
     trail.expect_link(f'message:{replacement["id"]}', "task:3", "about")
 
 
-@pending(6892)
 def test_queued_and_resumed_workers_read_their_current_context(worker_trail):
     worker_trail.story.container.get(TaskBriefRequirement).is_required = True
     worker_trail.make_task("Queued cart assignment")
@@ -155,7 +152,6 @@ def test_queued_and_resumed_workers_read_their_current_context(worker_trail):
     worker_trail.story.expect_hook_allowed(worker_session(worker_trail.story, worker), HookSamples.edit("src/cart.py"))
 
 
-@pending(6892)
 def test_worker_compaction_requires_current_task_context(assigned_worker):
     worker_trail, worker = assigned_worker.trail, assigned_worker.worker
     worker_trail.story.container.get(TaskBriefRequirement).is_required = True
@@ -169,7 +165,6 @@ def test_worker_compaction_requires_current_task_context(assigned_worker):
     worker_trail.story.expect_hook_allowed(session, HookSamples.edit("src/cart.py"))
 
 
-@pending(6892)
 def test_worker_can_open_its_source_attachment(worker_trail):
     message_id = send_picture(worker_trail)
     worker_trail.switch(message_id)
@@ -182,7 +177,6 @@ def test_worker_can_open_its_source_attachment(worker_trail):
     feature(refused.code == 1 and "content_base64" not in refused.output_text, refused.output_text)
 
 
-@pending(6892)
 def test_resumed_launch_requires_current_overview(assigned_worker):
     trail, worker = assigned_worker.trail, assigned_worker.worker
     trail.story.container.get(TaskBriefRequirement).is_required = True

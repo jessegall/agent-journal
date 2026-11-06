@@ -16,7 +16,7 @@ from tests.stories.core.modules.documents.support.trail_fixtures import LinkedTr
 from tests.stories.core.modules.documents.support.trail_fixtures import PictureTrail
 from tests.stories.server.viewer.attachments import uploaded
 
-from tests.stories.core.modules.documents.support.trail_fixtures import IMAGE_BYTES, feature, linked_trail, pending, picture_trail
+from tests.stories.core.modules.documents.support.trail_fixtures import IMAGE_BYTES, feature, linked_trail, picture_trail
 
 
 class VisitorReviewReady(StoryFixture):
@@ -186,7 +186,6 @@ def test_visible_helper_report_uses_its_session_author(linked_trail):
     assert message["author"].startswith("Agent ")
 
 
-@pending(6893)
 def test_shipped_instructions_teach_source_lifetime_and_context(linked_trail):
     linked_trail.story.expect_success("skill write")
     path = linked_trail.story.home.project_folder / ".agents" / "skills" / "journal-messages" / "SKILL.md"
@@ -207,7 +206,6 @@ def test_shipped_instructions_teach_source_lifetime_and_context(linked_trail):
     linked_trail.requested_command("message work-source")
 
 
-@pending(6893)
 def test_profile_launch_uses_current_context_commands(linked_trail):
     _, launcher = started(linked_trail.story, 'helper start journal-planner --brief "Read the task context" --model sonnet --environment main')
     prompt = " ".join(launcher.requests[0]["command"])
