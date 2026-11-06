@@ -3,6 +3,7 @@ from core.base.driver.interval import Interval
 from core.base.driver.seconds import Seconds
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
+from suites.coding.modules.workers.commands.report_silent_agent.report_silent_agent import SILENT_AGENT_FAILED
 
 HELPER_INACTIVE = NudgeDeclaration("workers.helper_inactive", NudgeType.STEERING, '{name}:{agent} has used no tool for {minutes} minutes{queue}: {action}', turn_limited=False, wakes_agent=True)
 BUILDER_BUILDS = NudgeDeclaration("workers.builder_builds", NudgeType.REFUSAL, 'this builder builds its tasks itself: coding.builder-dispatches-workers is false')
@@ -51,6 +52,5 @@ WORKER_STATUS_FIRST = NudgeDeclaration("workers.status_first", NudgeType.REFUSAL
 SILENT_AGENT_CONTINUE = NudgeDeclaration("workers.continue_silent_agent", NudgeType.STEERING, "Go on with your unfinished work.", turn_limited=False, wakes_agent=True, repeats_without_hook=True)
 SILENT_WORKER_CONTINUE = replace(SILENT_AGENT_CONTINUE, key="workers.continue_silent_worker", wakes_agent=False)
 
-SILENT_AGENT_FAILED = NudgeDeclaration("workers.silent_agent_failed", NudgeType.STEERING, "agent:{agent} could not resume. Check its terminal.", turn_limited=False, wakes_agent=True)
 WORKER_READ_REFUSAL = NudgeDeclaration("workers.read_outside_worktree", NudgeType.REFUSAL, "that file is outside your worktree: read what is in it, or ask with journal worker report")
 WORKER_NUDGES = [WORKER_READ_REFUSAL, SILENT_AGENT_CONTINUE, SILENT_WORKER_CONTINUE, SILENT_AGENT_FAILED, WORKER_STATUS_FIRST, WORKER_UNSTARTED, READER_SAMPLE_READY, WORKER_RUN_RUNS_AFTER_STOP, WORKER_RESTARTED, WORKER_HELP_REQUEST, WORKER_REFUSED, WORKER_TASK_BLOCKED, WORKER_LIMIT_RAISED, WORKER_MERGE_CONFLICT, WORKER_PROOF_SHORT, WORKER_ENDED_WITH_TASKS, WORKER_REUSE, WORKER_NEXT_TASK, WORKER_TASK_REASSIGNED, WORKER_TASK_AFTER_REASSIGNED, WORKER_JUDGE_SCOPE, WORKER_COMMENT_COPY, WORKER_TASK_COMMENT, WORKER_UNFINISHED_TASKS, WORKER_TESTS_PASSED, WORKER_TESTS_FAILED, WORKER_FILE, WORKER_LOG_DUE, HELPER_INACTIVE, WORKER_UNMERGED, SMALL_BATCH, WORKER_RETIRED, BUILDER_BUILDS, PROOF_CHECK, PROOF_WAITS, MERGE_WAITS, WORKER_TASK, WORKER_RUN_ENDED]

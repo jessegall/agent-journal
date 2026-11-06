@@ -7,7 +7,7 @@ from core.base.query.queries import Queries
 from core.modules.documents.models.link import Link
 from core.modules.sequences.commands.move_sequence_run.move_sequence_run import MoveSequenceRun, START
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
-from core.modules.sequences.support.sequence_trigger import SequenceTrigger
+from core.modules.sequences.models.support.sequence_trigger import SequenceTrigger
 from core.modules.sequences.support.sequence_events import SequenceEvents
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.support.main_agent_finder import MainAgentFinder

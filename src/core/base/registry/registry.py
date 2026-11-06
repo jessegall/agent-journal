@@ -301,10 +301,10 @@ class Registry:
         return next((dock for dock in self.docks if dock.type == type_name), None)
 
     def is_outward(self, line: str) -> bool:
-        cli_name, _, verb = line.partition(" ")
+        cli_name, _, subcommand = line.partition(" ")
         if line in self.subcommands:
             return line in self.outward_lines
-        return cli_name in self.models and verb not in BUILT_READS
+        return cli_name in self.models and subcommand not in BUILT_READS
 
     def has_window(self, name: str) -> bool:
         return any(window.name == name for window in self.windows)

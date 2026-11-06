@@ -6,7 +6,7 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
-from core.modules.agents.commands.record_parent_report.record_parent_report import RecordParentReport
+from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 from core.modules.agents.models.agent import Agent
 from core.modules.messages.models.message import Message
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.modules.sequences.models.sequence import Sequence
-from core.modules.sequences.support.sequence_trigger import SequenceTrigger
+from core.modules.sequences.models.support.sequence_trigger import SequenceTrigger
 
 
 @dataclass(frozen=True)

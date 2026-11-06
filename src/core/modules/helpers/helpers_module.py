@@ -27,7 +27,8 @@ from core.modules.helpers.support.helper_settings import HELPER_SETTINGS
 
 
 class HelpersModule(Module):
-    """Starts and keeps helpers: extra agents the journal runs on any program, for a parent that hears from them by message."""
+    """Starts and keeps helpers: extra agents the journal runs on any program, for a parent that hears
+    from them by message."""
 
     name = "journal.core.helpers"
     seed_reason = "it keeps no rows of its own yet"

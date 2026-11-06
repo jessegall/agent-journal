@@ -28,7 +28,7 @@ func TestTheCorpusThroughTheReadOnlyRule(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer opened.Close()
-	verdicts, refused := map[string]int{}, map[string]map[string]int{}
+	answers, refused := map[string]int{}, map[string]map[string]int{}
 	scanner := bufio.NewScanner(opened)
 	scanner.Buffer(make([]byte, 0, 1<<20), 64<<20)
 	for scanner.Scan() {
@@ -36,19 +36,19 @@ func TestTheCorpusThroughTheReadOnlyRule(t *testing.T) {
 		if json.Unmarshal(scanner.Bytes(), &line) != nil || line == "" {
 			continue
 		}
-		verdict, program := readOnlyVerdict(shippedClassifier.Line(line))
-		verdicts[verdict]++
+		answer, program := readOnlyVerdict(shippedClassifier.Line(line))
+		answers[answer]++
 		if program == "" || !programName.MatchString(program) {
 			continue
 		}
-		if refused[verdict] == nil {
-			refused[verdict] = map[string]int{}
+		if refused[answer] == nil {
+			refused[answer] = map[string]int{}
 		}
-		refused[verdict][program]++
+		refused[answer][program]++
 	}
-	t.Logf("verdicts: %v", verdicts)
-	for verdict, programs := range refused {
-		t.Logf("refused as %s: %v", verdict, topNames(programs))
+	t.Logf("answers: %v", answers)
+	for answer, programs := range refused {
+		t.Logf("refused as %s: %v", answer, topNames(programs))
 	}
 }
 

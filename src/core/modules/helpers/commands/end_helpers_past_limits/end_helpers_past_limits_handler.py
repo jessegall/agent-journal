@@ -7,7 +7,7 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.scope.scopes import Scopes
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
-from core.modules.agents.commands.record_parent_report.record_parent_report import RecordParentReport
+from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.drivers.models.agent_line import AgentLine

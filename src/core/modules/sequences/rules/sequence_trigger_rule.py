@@ -9,7 +9,7 @@ from core.modules.sequences.commands.move_sequence_run.move_sequence_run import 
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.support.sequence_nudges import SEQUENCE_STARTED
-from core.modules.sequences.support.sequence_triggers import SequenceTriggers
+from core.modules.sequences.models.support.sequence_triggers import SequenceTriggers
 
 EMPTY_TRIGGERS = "[]"
 

@@ -1,12 +1,9 @@
-from core.base.file_access import FileAccess
 import json
-from copy import deepcopy
-from functools import lru_cache
-from core.base.file_version import FileVersion
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from core.base.json_settings import JsonSettings
 from core.base.provider.hook_partition import HookPartition
 from core.base.provider.hook_block_partition import HookBlockPartition
 from core.base.provider.managed_hook import ManagedHook
@@ -59,7 +56,7 @@ class ProgramHooks:
         return is_mapping(stored_hooks) and all(is_list(blocks := stored_hooks.get(event)) and any(self.is_journals(block) for block in blocks)
                                                 for event in self.events)
 
-    def settings(self) -> dict[object, object]:
+    def settings(self) -> dict[str, object]:
         return self.read(self.path)
 
     @property
@@ -67,21 +64,12 @@ class ProgramHooks:
         return JOURNAL_MARKS[1] in json.dumps(self.settings().get("hooks"))
 
     @staticmethod
-    def read(path: Path) -> dict[object, object]:
-        if not path.is_file():
-            return {}
-        return deepcopy(ProgramHooks.loaded_settings(path, FileAccess.shared().version(path)))
+    def read(path: Path) -> dict[str, object]:
+        return JsonSettings.read(path)
 
     @staticmethod
-    @lru_cache(maxsize=128)
-    def loaded_settings(path: Path, version: FileVersion) -> dict[object, object]:
-        loaded: object = json.loads(FileAccess.shared().read(path) or "{}")
-        return dict(loaded) if is_mapping(loaded) else {}
-
-    @staticmethod
-    def store(path: Path, settings: Mapping[object, object]) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(path, json.dumps(dict(settings), indent=2) + "\n")
+    def store(path: Path, settings: Mapping[str, object]) -> None:
+        JsonSettings.write(path, settings)
 
     @staticmethod
     def partitioned(stored_hooks: object) -> HookPartition:

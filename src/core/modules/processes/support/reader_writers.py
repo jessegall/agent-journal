@@ -1,6 +1,5 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.agent_role import AgentRole
 from core.base.refusal import Refusal
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.support.suite_choice import SuiteChoice
@@ -54,4 +53,4 @@ class ReaderWriters:
                       "stop, or read on; you are started again once the reader exists")
 
     def allows(self, actor: Actor) -> bool:
-        return actor.type is not ActorType.AGENT or self.agents.find(actor.id).role == AgentRole.MAIN
+        return actor.type is not ActorType.AGENT or self.agents.is_main(actor.id)

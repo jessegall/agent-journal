@@ -22,6 +22,9 @@ class AgentRows:
     def find(self, agent_id: int) -> Agent:
         return self.rows.required(Agent, agent_id)
 
+    def is_main(self, agent_id: int) -> bool:
+        return self.find(agent_id).role == AgentRole.MAIN
+
     def is_visible(self, agent_id: int) -> bool:
         return self.rows.find(Agent, agent_id) is not None
 

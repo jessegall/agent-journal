@@ -2,7 +2,7 @@ import json
 
 from core.base.refusal import Refusal
 from core.base.type_guards import is_list, is_mapping
-from core.modules.sequences.support.sequence_trigger import SequenceTrigger
+from core.modules.sequences.models.support.sequence_trigger import SequenceTrigger
 
 
 class SequenceTriggers:

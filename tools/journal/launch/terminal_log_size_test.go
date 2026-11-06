@@ -14,16 +14,16 @@ func TestALongOutputLineIsCutWithBoundedMemory(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	chunk := []byte(strings.Repeat("x", 64*1024))
+	payload := []byte(strings.Repeat("x", 64*1024))
 	for range 80 {
-		if _, err := log.Write(chunk); err != nil {
+		if _, err := log.Write(payload); err != nil {
 			t.Fatal(err)
 		}
 	}
-	var before, after runtime.MemStats
-	runtime.ReadMemStats(&before)
+	var statsBefore, statsAfter runtime.MemStats
+	runtime.ReadMemStats(&statsBefore)
 	_, _ = log.Write([]byte("tail of the long line\nnext line\n"))
-	runtime.ReadMemStats(&after)
+	runtime.ReadMemStats(&statsAfter)
 	if cap(log.pending) > 4*TerminalLineBytes {
 		t.Errorf("the pending buffer grew to %d bytes", cap(log.pending))
 	}
@@ -48,8 +48,8 @@ func TestALogKeepsAboutItsByteLimit(t *testing.T) {
 		_, _ = log.Write(line)
 	}
 	_ = log.Close()
-	info, _ := os.Stat(path)
-	if info.Size() > TerminalLogBytes {
-		t.Errorf("the log holds %d bytes", info.Size())
+	stat, _ := os.Stat(path)
+	if stat.Size() > TerminalLogBytes {
+		t.Errorf("the log holds %d bytes", stat.Size())
 	}
 }

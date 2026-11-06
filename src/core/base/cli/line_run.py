@@ -27,8 +27,8 @@ class LineRun:
     do: a module sync on an opened database, any other line on a synced one that waits for another writer up
     to its busy timeout, or the time left before the caller's deadline, and the database closed after. The
     server hands it the runner its commit listeners go to and the request's timing, stamped once the container
-    is built; a direct run has no timing set, so it stamps nothing. Each line runs inside the request watch of the
-    container, which shares the findings already reported with every other line of this run."""
+    is built; a direct run has no timing set, so it stamps nothing. Each line runs inside the request watch
+    of the container, which shares the findings already reported with every other line of this run."""
 
     def __init__(self, home: JournalHome, busy_timeout_seconds: float = BUSY_TIMEOUT_SECONDS, listener_runner: CommitListenerRunner | None = None,
                  reported: ReportedFindings | None = None) -> None:

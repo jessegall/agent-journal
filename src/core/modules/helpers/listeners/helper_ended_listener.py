@@ -6,7 +6,7 @@ from core.base.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
-from core.modules.agents.commands.record_parent_report.record_parent_report import RecordParentReport
+from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 from core.modules.agents.events.agent_ended import AgentEnded
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import HelperJob

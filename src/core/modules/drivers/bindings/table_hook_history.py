@@ -8,7 +8,8 @@ from core.modules.drivers.models.enums.rule_due_outcome import RuleDueOutcome
 
 class TableHookHistory(HookHistory):
     """Reads the rule history table: whether a rule with history was silenced for a layer the last time it was
-    due, and when it last answered; an agent's rows of a layer are read once, and kept until the hook's histories are written."""
+    due, and when it last answered; an agent's rows of a layer are read once, and kept until the hook's
+    histories are written."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

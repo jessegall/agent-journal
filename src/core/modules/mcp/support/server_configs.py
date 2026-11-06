@@ -3,6 +3,7 @@ from pathlib import Path
 
 from core.base.query.queries import Queries
 from core.base.database.kept_rows import KeptRows
+from core.base.json_settings import JsonSettings
 from core.modules.mcp.models.mcp_server import McpServer
 from core.modules.mcp.support.claude_server_file import FILE as CLAUDE_FILE, ClaudeServerFile
 from core.modules.mcp.support.codex_server_file import FILE as CODEX_FILE, CodexServerFile
@@ -23,7 +24,7 @@ class ServerConfigs:
 
     def write_folder(self, folder: Path) -> tuple[Path, ...]:
         servers = self.installed()
-        previous = tuple(ClaudeServerFile.read_file(folder / CLAUDE_FILE).get("mcpServers", {}))
+        previous = tuple(JsonSettings.read(folder / CLAUDE_FILE).get("mcpServers", {}))
         ClaudeServerFile.write_file(folder / CLAUDE_FILE, servers, previous)
         CodexServerFile.write_file(folder / CODEX_FILE, servers)
         return CLAUDE_FILE, CODEX_FILE

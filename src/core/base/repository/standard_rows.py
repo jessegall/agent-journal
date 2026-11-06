@@ -21,11 +21,10 @@ class StandardRows:
         stored = self.kept.read(query.table.name, lambda: {getattr(row, "title"): row for row in query.all_rows()},
                                 "creator_id = ?", [CORE_ACTOR_ID], name="standard.rows")
         titles = {getattr(row, "title") for row in standard}
-        for title, row in stored.items():
-            if title not in titles and not used(row):
-                self.repository.delete_stored(row, context)
-                self.kept.update(query.table.name, lambda rows: {title: current for title, current in rows.items() if current.id != row.id},
-                                  "creator_id = ?", [CORE_ACTOR_ID], name="standard.rows")
+        for row in [row for title, row in stored.items() if title not in titles and not used(row)]:
+            self.repository.delete_stored(row, context)
+            self.kept.update(query.table.name, lambda rows: {title: current for title, current in rows.items() if current.id != row.id},
+                              "creator_id = ?", [CORE_ACTOR_ID], name="standard.rows")
         for row in standard:
             existing = stored.get(getattr(row, "title"))
             if existing is not None and not any(getattr(existing, field) != getattr(row, field) for field in fields):

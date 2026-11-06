@@ -68,14 +68,14 @@ def targeted_chat(new_story, monkeypatch):
         yield server, cookie, typing
 
 
-def send_target(server, cookie, target, text):
+def post_target(server, cookie, target, text):
     return server.viewer_line_value(cookie, {"window": "agents.transcript", "environment": "main", "line": ["message", "send", text, "--target-agent", str(target.id)]})
 
 
 def test_a_workers_message_reaches_its_hook_without_reaching_main(targeted_chat):
     server, cookie, typing = targeted_chat
     story = server.story
-    message = send_target(server, cookie, story.worker, "Keep the worker change small")
+    message = post_target(server, cookie, story.worker, "Keep the worker change small")
     expect_value(message["target_agent_id"], story.worker.id)
     expect_absent_reply_line(story.hook("s-1", READ), "new message")
     expect_reply_line(story.hook(story.worker_session, READ), f"new message {message['id']}")
@@ -88,7 +88,7 @@ def test_a_message_wakes_its_idle_target(targeted_chat, role):
     story = server.story
     story.advance(timedelta(seconds=31))
     target = getattr(story, role)
-    message = send_target(server, cookie, target, f"Continue the {role} job")
+    message = post_target(server, cookie, target, f"Continue the {role} job")
     story.run_listeners()
     expect_row(typing, typed=[(target.id, f"[journal] new message {message['id']}")])
 
@@ -96,7 +96,7 @@ def test_a_message_wakes_its_idle_target(targeted_chat, role):
 def test_main_ignores_a_workers_unread_message_and_its_limit(targeted_chat):
     server, cookie, typing = targeted_chat
     story = server.story
-    send_target(server, cookie, story.worker, "Check the worker output")
+    post_target(server, cookie, story.worker, "Check the worker output")
     expect_absent_reply_refusal(story.hook("s-1", HookSamples.stop()), "message 1 is unread")
     expect_reply_refusal(story.hook(story.worker_session, HookSamples.stop()), "message 1 is unread")
     story.hook("s-1", READ)
@@ -108,7 +108,7 @@ def test_main_ignores_a_workers_unread_message_and_its_limit(targeted_chat):
 def test_a_main_message_leaves_the_worker_limit_unchanged(targeted_chat):
     server, cookie, typing = targeted_chat
     story = server.story
-    send_target(server, cookie, story.agent, "Main should answer this")
+    post_target(server, cookie, story.agent, "Main should answer this")
     expect_absent_reply_line(story.hook(story.worker_session, READ), "new message")
     story.hook("s-1", READ)
     story.expect_text("process show 1", "limit_seconds: 15")
@@ -118,8 +118,8 @@ def test_a_main_message_leaves_the_worker_limit_unchanged(targeted_chat):
 def test_a_worker_reads_only_its_messages(targeted_chat):
     server, cookie, typing = targeted_chat
     story = server.story
-    send_target(server, cookie, story.worker, "Read the worker message")
-    send_target(server, cookie, story.agent, "Read the main message")
+    post_target(server, cookie, story.worker, "Read the worker message")
+    post_target(server, cookie, story.agent, "Read the main message")
     story.expect_text("message unread --environment main", "Read the worker message", actor=story.worker)
     story.expect_absent("message unread --environment main", "Read the main message", actor=story.worker)
     expect_absent_reply_line(story.hook("s-1", READ), "new message 1")
@@ -130,7 +130,7 @@ def test_a_workers_message_moves_only_its_foreground_run(targeted_chat):
     story = server.story
     story.hook("s-1", READ)
     story.hook(story.worker_session, READ)
-    send_target(server, cookie, story.worker, "Interrupt the worker command")
+    post_target(server, cookie, story.worker, "Interrupt the worker command")
     story.run_listeners()
     folder = story.container.get(OutputFolder)
     expect_value(folder.text(1, "move"), "")
@@ -139,7 +139,7 @@ def test_a_workers_message_moves_only_its_foreground_run(targeted_chat):
 
 def test_main_chat_hides_worker_messages(targeted_chat):
     server, cookie, typing = targeted_chat
-    send_target(server, cookie, server.story.worker, "Only in the worker conversation")
+    post_target(server, cookie, server.story.worker, "Only in the worker conversation")
     visible = server.viewer_line_value(cookie, {"window": "messages.chat", "environment": "main", "line": ["message", "feed"]})
     expect_value(visible["rows"], [])
 
@@ -156,7 +156,7 @@ def test_a_message_without_a_running_target_waits_for_main(new_story):
 def test_a_read_message_edit_wakes_the_same_worker(targeted_chat):
     server, cookie, typing = targeted_chat
     story = server.story
-    send_target(server, cookie, story.worker, "Worker text before editing")
+    post_target(server, cookie, story.worker, "Worker text before editing")
     story.run("message read 1", actor=story.worker)
     story.hook(story.worker_session, READ_MESSAGE_HOOK)
     story.advance(timedelta(seconds=31))

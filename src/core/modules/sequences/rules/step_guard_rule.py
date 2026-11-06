@@ -6,7 +6,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.queries import Queries
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
-from core.modules.sequences.support.sequence_guards import SequenceGuards
+from core.modules.sequences.models.support.sequence_guards import SequenceGuards
 from core.modules.sequences.support.sequence_nudges import STEP_EDIT_BAN
 
 

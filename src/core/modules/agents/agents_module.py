@@ -58,7 +58,6 @@ from core.base.viewer.window_tab import WindowTab
 from core.modules.agents.bindings.agent_caller_resolver import AgentCallerResolver
 from core.modules.agents.migrations.m011_helper_rows import HelperRowsMigration
 from core.modules.agents.migrations.m012_open_agent_index import OpenAgentIndexMigration
-from core.modules.agents.commands.record_parent_report.record_parent_report_handler import RecordParentReportHandler
 from core.modules.agents.support.report_nudges import REPORT_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.agents.seeders.agents_seeder import AgentsSeeder
@@ -81,7 +80,7 @@ class AgentsModule(Module):
     moves = [AgentsMove]
     migrations = [HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
     nudges = [*LAUNCH_FAILURE_NUDGES, *REPORT_NUDGES]
-    handlers = [RecordParentReportHandler, RecordAgentLaunchFailureHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
+    handlers = [RecordAgentLaunchFailureHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
     subcommands = [ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand]
     bindings = {CallerResolver: AgentCallerResolver}
     windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, skeleton=AGENTS_AGENTS_SKELETON, search=WindowSearch(AgentSearcher, "Search the agents"), icon=WindowIcon.AGENT, reads=["agent show", *CARD_READS], runs=["message send"], events=CARD_EVENTS, tabs=CARD_TABS),

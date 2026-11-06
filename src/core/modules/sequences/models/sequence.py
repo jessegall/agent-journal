@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 from core.base.model.model import Model
 from core.base.refusal import Refusal
-from core.modules.sequences.support.sequence_guards import SequenceGuards
-from core.modules.sequences.support.sequence_triggers import SequenceTriggers
+from core.modules.sequences.models.support.sequence_guards import SequenceGuards
+from core.modules.sequences.models.support.sequence_triggers import SequenceTriggers
 
 STEP_LIMIT_CHARACTERS = 600
 

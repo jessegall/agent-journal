@@ -48,7 +48,7 @@ class AccessRule(ReadonlyRule):
         return super().answer(hook)
 
     def reaches_outward(self, shell: ShellLine) -> bool:
-        if any(variable in shell.display_text for variable in self.identity_variables()):
+        if shell.includes_text_from(self.identity_variables()):
             return True
         return any(self.registry.is_outward(" ".join(part.arguments[:2])) for part in shell.parts_running_journal_command() if HELP_FLAG not in part.arguments)
 

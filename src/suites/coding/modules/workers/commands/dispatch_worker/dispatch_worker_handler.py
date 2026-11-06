@@ -31,9 +31,9 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.worker_settings import WORKER_LIMIT
 
 class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
-    """Starts a worker: its agent row, a worktree cut from the environment's branch, its first task and the tasks
-    delegated after it. Its rows are saved in short transactions before and after the git and prepare work, which
-    run with no write open; a failure undoes the first."""
+    """Starts a worker: its agent row, a worktree cut from the environment's branch, its first task and the
+    tasks delegated after it. Its rows are saved in short transactions before and after the git and prepare
+    work, which run with no write open; a failure undoes the first."""
 
     command = DispatchWorker
     transactional = False

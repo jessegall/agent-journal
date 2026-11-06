@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class RefusalSkipsTableMigration(Migration):
+class SkippedRefusalsTableMigration(Migration):
     """Creates the table of refusals agents passed, with their reasons."""
 
     number = 29

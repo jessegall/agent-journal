@@ -139,13 +139,13 @@ var closedHeredoc = regexp.MustCompile(`<<-?\s*(?:'(\w+)'|"(\w+)")`)
 
 // withoutClosedHeredocs takes out the text of heredocs the shell does not expand, so no word in it reads as a command.
 func withoutClosedHeredocs(text string) string {
-	for _, found := range closedHeredoc.FindAllStringSubmatchIndex(text, -1) {
-		word := closedWord(text, found)
-		start := strings.Index(text[found[1]:], "\n")
+	for _, match := range closedHeredoc.FindAllStringSubmatchIndex(text, -1) {
+		word := closedWord(text, match)
+		start := strings.Index(text[match[1]:], "\n")
 		if start < 0 {
 			continue
 		}
-		bodyStart := found[1] + start
+		bodyStart := match[1] + start
 		end := strings.Index(text[bodyStart:], "\n"+word)
 		if end < 0 {
 			return text[:bodyStart]
@@ -155,9 +155,9 @@ func withoutClosedHeredocs(text string) string {
 	return text
 }
 
-func closedWord(text string, found []int) string {
-	if found[2] >= 0 {
-		return text[found[2]:found[3]]
+func closedWord(text string, match []int) string {
+	if match[2] >= 0 {
+		return text[match[2]:match[3]]
 	}
-	return text[found[4]:found[5]]
+	return text[match[4]:match[5]]
 }
