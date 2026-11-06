@@ -34,8 +34,10 @@ checks and output proof. After the configured failed-save limit (default 3), it 
 asked to help. Drafts without `--save` use no try. A worker cannot remove readers, choose defaults or skip requests.
 
 A reader's `--count-command` lists tests before a queued run gets a spot when `worker-run-most-tests` is
-positive. Counts of test parts are added. A failed listing, a listing cut off after 120 seconds, or one
-with no number leaves the count unknown and the run goes on. A known count above the limit stops it.
+positive. Counts of test parts are added. A count above the limit stops the run. A listing that fails, is cut off
+after 120 seconds or gives no number stops it too, and the line says why: a tool the worktree lacks, such as
+`node_modules`, is linked with `--library-link` at dispatch. A test tool with no reader runs once, so a reader can
+be drawn from its output.
 
 `journal task block <n> --on worker:<m>` opens when that worker is merged, released or ended. Pending
 tests, corrections and queued tasks keep it blocked. A crashed worker is detected on a tick; one that

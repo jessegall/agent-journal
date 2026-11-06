@@ -70,9 +70,10 @@ class WorkerTestListings(RunCounts):
     def reject_unknown(self, process: Process, agent: Agent, status: int | None, count: int, context: Context) -> None:
         if status == 0 and count > 0:
             return
-        if not self.requires_count(process, agent):
+        if not self.requires_count(process, agent) or (status is None and not self.has_listing(process, agent)):
             return
-        self.nudger.send(process.session_agent_id, TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE, context, output=process.id)
+        lines = self.folder.count_text(process.id).strip().splitlines()
+        self.nudger.send(process.session_agent_id, TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE, context, output=process.id, listing=lines[-1] if lines else "no output")
         self.bus.dispatch(StopProcess(process.id), context)
 
     def counting_reader(self, part: ProcessPart, output: Output | None, readers: tuple[Reader, ...]) -> Reader | None:

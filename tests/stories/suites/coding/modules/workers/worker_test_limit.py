@@ -163,13 +163,19 @@ def test_a_listing_without_a_known_count_stops_the_run(limited_run, status):
                       len(lines) == 1, "could not count" in lines[0].text)
 
 
-def test_a_worker_test_with_no_listing_is_stopped(new_story):
+def test_a_worker_test_tool_with_no_reader_runs_once_so_a_reader_can_be_drawn_from_its_output(new_story):
     story = new_story(fixture=TestLimitSetup)
     install_runner(story)
     process = worker_run(story, "unknown-test tests/cart", CommandCategory.TEST_RUN)
+    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.RUNNING)
+
+
+def test_a_listing_that_fails_says_why_in_the_line(limited_run):
+    story, process = limited_run
+    story.container.get(OutputFolder).write_count(process.id, "zsh: no such file: vitest\n", 1)
+    story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
     lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=process.session_agent_id, source="processes.worker-test-limit").all_rows())
-    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED,
-                      len(lines) == 1, "could not count" in lines[0].text)
+    story.expect_rows(len(lines) == 1, "no such file: vitest" in lines[0].text)
 
 
 def test_a_chain_lists_each_test_part_and_adds_the_counts(limited_run):
