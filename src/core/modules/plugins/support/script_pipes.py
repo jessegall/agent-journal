@@ -54,10 +54,17 @@ class ScriptPipes:
                 raise PluginLateError(f"it ran past {limit_ms} ms")
             if on_wait is not None and time.monotonic() >= next_line_at:
                 next_line_at += WAIT_LINE_SECONDS
-                on_wait()
+                self.told(on_wait)
             time.sleep(POLL_SECONDS)
         if self.is_too_long():
             raise self.too_long()
+
+    def told(self, on_wait: Callable[[], None]) -> None:
+        try:
+            on_wait()
+        except OSError:
+            self.stop_group(self.process)
+            raise
 
     def is_too_long(self) -> bool:
         with self.lock:

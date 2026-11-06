@@ -1,4 +1,4 @@
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 
 from core.base.clock import Clock
 from core.base.command.bus import Bus
@@ -35,7 +35,7 @@ class PluginEventRunner:
     def __init__(self, queries: Queries, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, clock: Clock, bus: Bus, actors: ModuleActors) -> None:
         self.queries, self.folders, self.program, self.settings, self.clock, self.bus, self.actors = queries, folders, program, settings, clock, bus, actors
 
-    def answer(self, subscription: PluginSubscription, form: EventForm, key: str, data: Mapping[str, object], environment_id: int | None, agent_id: int | None) -> PluginEventAnswer | None:
+    def answer(self, subscription: PluginSubscription, form: EventForm, key: str, data: Mapping[str, object], environment_id: int | None, agent_id: int | None, on_wait: Callable[[], None]) -> PluginEventAnswer | None:
         plugin = self.queries.query(Plugin).filter(id=subscription.plugin_id).first()
         if plugin is None or not plugin.enabled:
             return None
@@ -50,7 +50,7 @@ class PluginEventRunner:
         environment = self.queries.query(Environment).find(environment_id).name if environment_id is not None else ""
         call = PluginCall(manifest, PluginEvent(key, data), environment, self.clock.timestamp(), self.settings.values(plugin, manifest), agent_id, form=form, script=subscription.script)
         try:
-            answer = self.program.run(call, None)
+            answer = self.program.run(call, None, on_wait)
         except PluginStoppedError as stopped:
             if stopped.stop is ScriptStop.SERVER:
                 raise ServerStoppingError.before(plugin.name, key) from stopped

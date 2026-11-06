@@ -5,6 +5,7 @@ from core.base.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.change.changed import Changed
 from core.base.change.event_log import EventLog
+from core.base.cli.caller_stream import CallerStream
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.error_log import ErrorLog
@@ -31,8 +32,8 @@ class PluginEventScripts:
     so they run with no lock held, and the next round reads them. A change with no script is one lookup. Saving a
     fault runs no script, or a script on the plugin row that fails would record faults without end."""
 
-    def __init__(self, subscriptions: PluginSubscriptions, log: EventLog, errors: ErrorLog, registry: Registry, runner: PluginEventRunner, bus: Bus, running: RunningScripts) -> None:
-        self.subscriptions, self.log, self.errors, self.registry, self.runner, self.bus, self.running = subscriptions, log, errors, registry, runner, bus, running
+    def __init__(self, subscriptions: PluginSubscriptions, log: EventLog, errors: ErrorLog, registry: Registry, runner: PluginEventRunner, bus: Bus, running: RunningScripts, caller: CallerStream) -> None:
+        self.subscriptions, self.log, self.errors, self.registry, self.runner, self.bus, self.running, self.caller = subscriptions, log, errors, registry, runner, bus, running, caller
 
     def answers(self, form: EventForm, event: Changed[Model], context: Context) -> Sequence[PluginEventAnswer]:
         if isinstance(context.command, FAULT_WRITES):
@@ -50,7 +51,7 @@ class PluginEventScripts:
             self.errors.noted(f"{form.value} scripts of {change.event} were skipped: {runs.closed_reason}")
             self.running.note_skip(change.event, runs.closed_reason)
             return ()
-        raise runs.rollback(PluginEventWork(self.runner, self.errors, form, self.registry.event_key(change.event), subscriptions, PluginPayload.of(change, form, self.log, None),
+        raise runs.rollback(PluginEventWork(self.runner, self.errors, self.caller, form, self.registry.event_key(change.event), subscriptions, PluginPayload.of(change, form, self.log, None),
                                             PluginPayload.environment_id(change), self.agent_id(context), turn))
 
     def apply(self, answered: PluginEventAnswer, context: Context) -> None:

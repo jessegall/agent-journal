@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import subprocess
@@ -7,6 +8,7 @@ from server.booting_work import BootingWork
 from core.base.caller.caller_request import CallerRequest
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.caller.process_table import ProcessTable
+from core.base.cli.caller_stream import CallerStream
 from core.base.command.bus import Bus
 from core.base.journal_container import synced_container
 from core.base.model.event_form import EventForm
@@ -87,16 +89,21 @@ def test_s74_a_line_from_a_script_in_a_direct_run_is_known_by_its_variable(new_s
     story.expect_rows(caller.plugin_script == "events")
 
 
-def test_s75_a_caller_waiting_on_a_guard_script_is_told_at_once_and_each_minute(new_story):
+def test_s75_a_caller_waiting_on_a_guard_script_is_told_at_once(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "see.sh"})
-    outcome = story.run(SECOND_JOB, actor=story.agent)
-    story.expect_rows(f"waiting on plugin events at {TASK_CREATED}" in outcome.output_text)
+    told = io.StringIO()
+    story.container.get(CallerStream).stream = told
+    story.expect_success(SECOND_JOB, actor=story.agent)
+    story.expect_rows(f"waiting on plugin events at {TASK_CREATED}" in told.getvalue())
 
 
 def test_s75_with_json_the_waits_are_blank_lines_and_the_output_parses(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "see.sh"})
+    told = io.StringIO()
+    caller = story.container.get(CallerStream)
+    caller.stream, caller.is_json = told, True
     outcome = story.run(f"{SECOND_JOB} --json", actor=story.agent)
-    story.expect_rows("waiting on" not in outcome.output_text, bool(json.loads(outcome.output_text)))
+    story.expect_rows(told.getvalue().strip() == "", bool(json.loads(told.getvalue() + outcome.output_text)))
 
 
 def sleeping_scripts(story, count: int) -> list[subprocess.Popen]:
