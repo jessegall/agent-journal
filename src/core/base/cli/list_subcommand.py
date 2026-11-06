@@ -1,5 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from enum import StrEnum
+from core.base.model.removable import Removable
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
@@ -40,6 +41,8 @@ class ListSubcommand(ReadSubcommand[Page[Model]]):
         parser.add_argument("--after-id", type=int, default=None)
         parser.add_argument("--before-id", type=int, default=None)
         parser.add_argument("--columns", default="")
+        if issubclass(self.table.model, Removable):
+            parser.add_argument("--removed", action="store_true", help="also show removed rows")
         lifecycle = self.book.lifecycle(self.table.model)
         for column in self.filter_columns():
             if column == STATE and lifecycle is not None and lifecycle.added_states:
@@ -54,6 +57,8 @@ class ListSubcommand(ReadSubcommand[Page[Model]]):
         if values.get(ENVIRONMENT_COLUMN) is not None:
             values[ENVIRONMENT_COLUMN] = caller.environment_id
         query = self.queries.query(self.table.model).filter(**{column: value for column, value in values.items() if value is not None})
+        if getattr(arguments, "removed", False):
+            query = query.with_removed()
         if arguments.after_id is not None:
             query = query.matching(Greater("id", arguments.after_id))
         if arguments.before_id is not None:

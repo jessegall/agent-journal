@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.model.agent_scoped import AgentScoped
+from core.base.model.removable import Removable
 from core.base.model.environment_scoped import EnvironmentScoped
 
 from core.base.actor import Actor
@@ -18,7 +19,7 @@ FADING_REMOVAL_REASON = "faded to weight 0"
 
 
 @dataclass(frozen=True, kw_only=True)
-class Memory(AgentScoped, EnvironmentScoped, Model):
+class Memory(Removable, AgentScoped, EnvironmentScoped, Model):
     """What the journal gives back to the agent that made it: a text with a weight from 0 to 10, given only above
     0, which fades.
     """

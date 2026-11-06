@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.model.model import Model
+from core.base.model.removable import Removable
 from core.base.refusal import Refusal
 from core.base.timestamp import Timestamp
 
@@ -8,7 +9,7 @@ CHECK_TITLE_LIMIT_CHARACTERS = 200
 
 
 @dataclass(frozen=True, kw_only=True)
-class Check(Model):
+class Check(Removable, Model):
     """A command that proves a point, run by hand or every so many minutes: it keeps whether it last passed,
     what it printed, when it ran, how far a running command has come and when the agent was last told it
     fails; it can be stopped or removed."""

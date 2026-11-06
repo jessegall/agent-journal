@@ -5,7 +5,6 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.path_mentions import PathMentions
 from core.base.driver.part import Part
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
@@ -44,7 +43,7 @@ class WorkerReuseRule(DriverRule):
         paths = PathMentions.found(" ".join(task.brief for task in self.queries.query(Task).find_many(task_ids)))
         if not paths:
             return None
-        worktrees = list(self.queries.query(Worktree).matching(IsNull("removed_at")).all_rows())
+        worktrees = list(self.queries.query(Worktree).all_rows())
         workers = {worker.id: worker for worker in self.queries.query(Agent).find_many([worktree.session_agent_id for worktree in worktrees])}
         for worktree in worktrees:
             is_ended = workers[worktree.session_agent_id].ended_at is not None
