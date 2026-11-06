@@ -107,9 +107,9 @@ class PluginsModule(Module):
                                        WindowKey("services", "plugin services", events=["plugin.*"], reload_seconds=15),
                                        WindowKey("events", "plugin events", events=["plugin.*"], reload_seconds=15),
                                        WindowKey("preview", "plugin preview {source}", loading=KeyLoading.REQUESTED),
-                                       WindowKey("latest.*", "plugin latest {id}", named_ids=True, loading=KeyLoading.REQUESTED),
-                                       WindowKey("settings.*", "plugin settings {id}", named_ids=True, loading=KeyLoading.REQUESTED),
-                                       WindowKey("record.*", "plugin record {id}", named_ids=True, loading=KeyLoading.REQUESTED),
+                                       WindowKey("latest.*", "plugin latest {id}", name_ids=True, loading=KeyLoading.REQUESTED),
+                                       WindowKey("settings.*", "plugin settings {id}", name_ids=True, loading=KeyLoading.REQUESTED),
+                                       WindowKey("record.*", "plugin record {id}", name_ids=True, loading=KeyLoading.REQUESTED),
                                        WindowKey("dashboard", "plugin dashboard {plugin}", tab="dashboard"),
                                        WindowKey("dashboard-poll", "plugin dashboard {plugin}", tab="dashboard-poll", reload_seconds=60)],
                                  runs=["plugin upgrade", "plugin enable", "plugin disable", "plugin install", "plugin remove", "plugin configure", "message send"], events=["plugin.*"])]

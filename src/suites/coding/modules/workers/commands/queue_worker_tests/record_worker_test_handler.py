@@ -19,7 +19,7 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
-from suites.coding.modules.workers.support.worker_settings import MERGER_ON
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worker_test_failures import WorkerTestFailures
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK, WORKER_PHASE_TESTS_FAILED, WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
@@ -73,7 +73,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
                 proof_ids = ', '.join(str(row.id) for row in waiting if row.task_id == task_id)
                 self.main_agent_line.send(PROOF_CHECK.nudge(worker=worktree.session_agent_id, task=task_id, proofs=proof_ids).text, LINE_SOURCE, context)
             return
-        if self.settings.flag(MERGER_ON):
+        if self.settings.flag(MERGER_ENABLED):
             self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.mark_tests_passed, tests_passed_at=context.timestamp), context)
             return
         self.main_agent_line.send(WORKER_TESTS_PASSED.nudge(worker=worktree.session_agent_id).text, LINE_SOURCE, context)

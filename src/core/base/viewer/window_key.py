@@ -6,7 +6,7 @@ from core.base.viewer.key_loading import KeyLoading
 
 ID_KEY_SUFFIX = ".*"
 ID_PLACE = "{id}"
-NAMED_ID = re.compile(r"[\w@][\w./@-]*")
+NAME_ID = re.compile(r"[\w@][\w./@-]*")
 
 
 @dataclass(frozen=True)
@@ -15,7 +15,7 @@ class WindowKey:
     belongs to if any, the events and the timer that reload it on its own, and the names in the window's
     state it takes as flags of its line. A page_size makes it a list read a page at a time, and an argument
     ids lets it read the rows with given ids together. A key named run.* is one key per id, such as run.12,
-    with {id} in its line, and named_ids lets that id be a name; another word in braces is one word from the
+    with {id} in its line, and name_ids lets that id be a name; another word in braces is one word from the
     state under the key; answered_line means its read answers the line and window that fill it."""
 
     name: str
@@ -27,7 +27,7 @@ class WindowKey:
     loading: KeyLoading = KeyLoading.FIRST
     page_size: int = 0
     answered_line: bool = False
-    named_ids: bool = False
+    name_ids: bool = False
 
     def listed(self) -> Mapping[str, object]:
         return {"tab": self.tab, "events": list(self.events), "reload_seconds": self.reload_seconds, "loading": self.loading,
@@ -45,7 +45,7 @@ class WindowKey:
         return replace(self, name=name, read=self.read.replace(ID_PLACE, row_id))
 
     def takes_id(self, row_id: str) -> bool:
-        return row_id.isdigit() or (self.named_ids and NAMED_ID.fullmatch(row_id) is not None)
+        return row_id.isdigit() or (self.name_ids and NAME_ID.fullmatch(row_id) is not None)
 
     def loads_first(self, tab: str) -> bool:
         return not self.has_ids and self.loading == KeyLoading.FIRST and (self.tab is None or self.tab == tab)
