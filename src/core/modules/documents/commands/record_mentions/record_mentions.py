@@ -9,4 +9,4 @@ class RecordMentions(Command[int]):
     """Links a row to every existing row its text names in words, once each."""
 
     source: RowRef
-    text: str
+    texts: tuple[str, ...]

@@ -9,3 +9,5 @@ class LinkType(StrEnum):
     MENTION = "mentions"
     COMMENT = "comments_on"
     RECIPIENT = "sent_to"
+    EDITED = "edited"
+    REFERENCE = "refers_to"

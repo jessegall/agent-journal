@@ -1,6 +1,12 @@
 from datetime import timedelta
 
 from core.base.actor import Actor
+from core.base.actor_type import ActorType
+from core.base.driver.block_until import BlockUntil
+from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
+from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
+from core.modules.tasks.support.task_nudges import TASK_BRIEF_FIRST
+from core.modules.tasks.support.block_conditions.task_brief_read import TaskBriefRead
 from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.query.conditions.greater import Greater
@@ -23,13 +29,11 @@ JOB_DELIVERY_SECONDS = 120
 
 
 class WorkerResume:
-    """Resumes an ended worker's session with its waiting job as the brief. A session handed its job in the
-    last two minutes is on its way and takes the line at its first hook; one that has not come back by then
-    failed to start, and the next job starts it again. With no launcher the line stays waiting, and a paused
-    worker stays stopped until it is resumed."""
+    """Resumes ended workers on waiting jobs and retries a job that did not start."""
 
-    def __init__(self, launcher: AgentLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock) -> None:
+    def __init__(self, launcher: AgentLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock, requirement: TaskBriefRequirement) -> None:
         self.launcher, self.queries, self.worktrees, self.worker_command, self.bus, self.clock = launcher, queries, worktrees, worker_command, bus, clock
+        self.requirement = requirement
 
     def resume(self, worker: Agent, actor: Actor) -> None:
         if worker.ended_at is None or worker.paused_at is not None:
@@ -56,6 +60,11 @@ class WorkerResume:
         answer = self.launcher.hand(worker, environment, self.worker_command.resumed(worker, worktree, environment, job.text))
         if answer is not LaunchAnswer.STARTED:
             return
+        if self.requirement.is_required:
+            worker_actor = Actor(worker.id, ActorType.AGENT)
+            self.bus.run(ResetTaskReads(worker.id), worker_actor, environment_id=worktree.environment_id)
+            self.bus.run(BlockUntil(worker.id, TASK_BRIEF_FIRST.nudge(task=worktree.task_id), TaskBriefRead(worktree.task_id)),
+                         worker_actor, environment_id=worktree.environment_id)
         job = self.queries.query(AgentLine).find(job.id)
         if job.state is not AgentLineState.WAITING:
             return

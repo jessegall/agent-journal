@@ -18,6 +18,7 @@ import Segmented from "../kit/Segmented.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import QuickCommentBar from "../kit/QuickCommentBar.vue";
 import {useTextComments} from "../composables/textComments.js";
+import ResourceLinks from "../../kit/ResourceLinks.vue";
 
 const props = defineProps({
     id: {type: Number, required: true},
@@ -145,14 +146,15 @@ defineExpose({openStatus});
                             @select="emit('select', $event)"
                         />
                         <InspectorSections slot-name="inspector.task" :row="task" />
+                        <ResourceLinks model="task" :id="id" :read="read" :changes="changes" @open="emit('select', $event)" />
                     </template>
                     <template #comments>
-                        <CommentSide below :comments="textComments.comments.value" :words="textComments.words" @close="tab = 'details'" />
+                        <CommentSide below :comments="textComments.comments.value" :words="textComments.words" :more="Boolean(textComments.nextPage.value)" :loading="textComments.loading.value" :failure="textComments.failure.value" @more="textComments.loadMore" @close="tab = 'details'" />
                     </template>
                     <template #log><TaskLog :id="id" :read="read" :changes="changes" /></template>
                 </SwitchCase>
             </div>
-            <QuickCommentBar :send="textComments.send" :count="textComments.comments.value.length" @show="tab = 'comments'" />
+            <QuickCommentBar :send="textComments.send" :count="textComments.total.value" @show="tab = 'comments'" />
         </template>
         <template v-if="menu">
             <MenuPanel :anchor="menu" :min-width="220" :max-width="300" @close="menu = null">

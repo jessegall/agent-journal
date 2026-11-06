@@ -24,6 +24,13 @@ and then it is followed.
   `journal plan inspect <n>` both, and `journal plan list` every plan.
 - `journal plan block <n> --reason "<why>"` when one thing stops all of it; `journal plan unblock <n>` opens it.
 - `journal plan cancel <n>` abandons it.
+- On each actual start or unblock, a main agent receives a pointer to `journal plan context <n>` and reads it
+  before changing project files. Title edits do not begin a new execution episode; a replacement main agent
+  reads the current episode even when the plan started earlier. A plan with no tasks still has context.
+- Plan context includes bounded quoted messages and comments, with approval, design and report references.
+  Follow its exact `--page`, `--message M --text-offset K` and `--ancestor-cursor TOKEN` continuations;
+  read files through its returned `--message M --attachment "name"` command. These reads do not select a request.
+  The first task's overview inherits its plan context; approval, checkpoints and task order still apply.
 
 ## How its tasks are handed out
 

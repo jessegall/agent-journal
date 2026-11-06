@@ -1,48 +1,40 @@
 <script setup>
-import {computed, inject, ref} from "vue";
-import {WINDOW_CONTEXT} from "./windowContextKey.js";
+import {computed, ref} from "vue";
 import FoldSign from "../src/kit/FoldSign.vue";
 import MarkIcon from "../src/kit/MarkIcon.vue";
-import TextDisplay from "../src/kit/TextDisplay.vue";
+import MoreItems from "./MoreItems.vue";
 import {useOutside} from "../src/composables/outside.js";
-import {tableOfWord} from "../src/domain/tables.js";
 import {peekRef} from "../src/route.js";
 
 // The quiet line under a person's message naming the rows linked to it, as version 4 drew it: up to three as chips,
 // and from four (three on a phone) a count that opens a list of them in place
-const props = defineProps({links: {type: Array, required: true}});
+const props = defineProps({links: {type: Array, required: true}, total: {type: Number, default: 0}, more: Boolean, loading: Boolean, failure: {type: String, default: ""}});
+const emit = defineEmits(["more"]);
 const CHIPS_UP_TO = 3;
 const TASK = "task";
-const context = inject(WINDOW_CONTEXT, null);
-const count = computed(() => props.links.length);
-const noun = computed(() => (props.links.every((link) => link.model === TASK) ? "tasks" : "items"));
-const chipsLine = computed(() => `Linked: ${props.links.map((link) => `${link.model} ${link.id}`).join(" ")}`);
+const count = computed(() => props.total || props.links.length);
+const noun = computed(() => (props.links.every((link) => link.endpoint.model === TASK) ? "tasks" : "items"));
 const open = ref(false);
-const titles = ref({});
 const line = ref(null);
 useOutside(line, () => (open.value = false));
 
-async function readTitles() {
-    const tasks = props.links.filter((link) => link.model === TASK && !(link.id in titles.value));
-    const answers = await Promise.all(tasks.map((link) => context.read(`task show ${link.id}`)));
-    titles.value = {...titles.value, ...Object.fromEntries(answers.filter((answer) => answer.ok).map((answer) => [answer.value.id, answer.value.title]))};
-}
-
-function toggle() {
-    open.value = !open.value;
-    if (open.value) readTitles();
-}
+const toggle = () => (open.value = !open.value);
+const unavailable = (link) => link.endpoint.unavailable || !link.endpoint.open_ref;
+const meaning = (link) => link.relations.includes("edited") ? (link.relations.includes("about") ? "Created, edited" : "Edited") : "";
 
 function go(link) {
+    if (unavailable(link)) return;
     open.value = false;
-    peekRef(`${tableOfWord(link.model)}:${link.id}`);
+    peekRef(link.endpoint.open_ref);
 }
 </script>
 
 <template>
     <div ref="line" :class="['message-links', {many: count > CHIPS_UP_TO, three: count === CHIPS_UP_TO, open}]" data-message-links>
         <MarkIcon class="message-links-icon" name="linked" />
-        <span class="message-links-few" data-message-links-rows><TextDisplay :text="chipsLine" inline /></span>
+        <template v-if="links.length">
+            <span class="message-links-few" data-message-links-rows><span class="md inline">Linked: <template v-for="link in links" :key="`${link.endpoint.model}:${link.endpoint.id}`"><button type="button" class="message-links-inline" :disabled="unavailable(link)" :title="link.endpoint.title" @click="go(link)">{{ link.endpoint.model.replaceAll("_", " ") }} {{ link.endpoint.id }}<template v-if="meaning(link)"> ({{ meaning(link) }})</template><template v-if="unavailable(link)"> (unavailable)</template></button> </template></span></span>
+        </template>
         <template v-if="count >= CHIPS_UP_TO">
             <span class="message-links-many">
                 <button type="button" class="message-links-count" data-message-links-count :aria-expanded="open" @click="toggle">
@@ -53,14 +45,17 @@ function go(link) {
         </template>
         <template v-if="open">
             <div class="message-links-list" data-message-links-list aria-label="Items linked to this message">
-                <template v-for="link in links" :key="`${link.model}:${link.id}`">
-                    <button type="button" class="message-links-row" @click="go(link)">
-                        <span class="row-pill message-links-chip">{{ link.model }} {{ link.id }}</span>
-                        <span class="message-links-title">{{ titles[link.id] }}</span>
+                <template v-for="link in links" :key="`${link.endpoint.model}:${link.endpoint.id}`">
+                    <button type="button" class="message-links-row" :disabled="unavailable(link)" @click="go(link)">
+                        <span class="row-pill message-links-chip">{{ link.endpoint.model.replaceAll("_", " ") }} {{ link.endpoint.id }}</span>
+                        <span class="message-links-title">{{ link.endpoint.title }}</span>
+                        <span>{{ meaning(link) }}</span>
+                        <template v-if="unavailable(link)"><span>Unavailable</span></template>
                     </button>
                 </template>
             </div>
         </template>
+        <MoreItems :more="open && more" :loading="loading" :failure="failure" label="More linked work" @more="emit('more')" />
     </div>
 </template>
 
@@ -80,6 +75,9 @@ function go(link) {
 .message-links :deep(p) {
     margin: 0;
 }
+
+.message-links-inline {border: 0; border-radius: 4px; padding: 1px 4px; background: var(--chip); color: var(--accent-text); font: inherit; cursor: pointer;}
+.message-links-inline:disabled, .message-links-row:disabled {cursor: default; opacity: .65;}
 
 .message-links-icon {
     color: var(--group-work);

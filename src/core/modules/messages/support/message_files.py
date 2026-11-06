@@ -4,6 +4,8 @@ from pathlib import Path
 
 from core.base.journal_home import JournalHome
 from core.base.refusal import Refusal
+from core.base.file_access import FileAccess
+from core.modules.messages.models.message import Message
 
 PENDING_PATTERN = re.compile(r"^[0-9a-f]{16}/[^/\\]+$")
 
@@ -18,6 +20,16 @@ class MessageFiles:
 
     def pending_path(self, pending: str) -> Path:
         return self.home.pending_files / pending
+
+    def read_attached(self, message: Message, name: str) -> bytes:
+        if name not in message.files or name in ("", ".", "..") or Path(name).name != name or "\\" in name or "\x00" in name:
+            raise Refusal("name an attachment declared on this context message")
+        folder = self.home.message_files(message.id)
+        path = folder / name
+        root = self.home.message_files(0).parent.resolve()
+        if folder.resolve() != root / str(message.id) or path.resolve().parent != folder.resolve() or not path.is_file():
+            raise Refusal("this message attachment is unavailable")
+        return FileAccess.shared().binary(path)
 
     def check(self, pending: tuple[str, ...]) -> tuple[str, ...]:
         for file in pending:

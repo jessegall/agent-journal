@@ -7,3 +7,4 @@ class TaskComment:
 
     message_id: int
     text: str
+    next_command: str | None = None

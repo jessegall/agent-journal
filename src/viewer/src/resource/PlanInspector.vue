@@ -80,14 +80,14 @@ async function sendComment(text) {
                         <PlanDetails :plan="plan" :read="read" :environment="environment" :read-only="readOnly" @done="load" @select="emit('select', $event)" @open="emit('open', $event)" />
                     </template>
                     <template #comments>
-                        <CommentSide below :comments="textComments.comments.value" :words="textComments.words" @close="tab = 'details'" />
+                        <CommentSide below :comments="textComments.comments.value" :words="textComments.words" :more="Boolean(textComments.nextPage.value)" :loading="textComments.loading.value" :failure="textComments.failure.value" @more="textComments.loadMore" @close="tab = 'details'" />
                     </template>
                     <template #timeline>
                         <div class="body"><PlanTimeline :id="id" :read="read" @select="emit('select', $event)" /></div>
                     </template>
                 </SwitchCase>
             </div>
-            <QuickCommentBar :send="sendComment" :count="textComments.comments.value.length" @show="tab = 'comments'" />
+            <QuickCommentBar :send="sendComment" :count="textComments.total.value" @show="tab = 'comments'" />
         </template>
     </article>
 </template>

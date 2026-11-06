@@ -2,6 +2,7 @@ import {createApp, h, nextTick} from "vue";
 import {afterEach, expect, test} from "vitest";
 import MessageCard from "../kit/MessageCard.vue";
 import {reactionGroups} from "../src/domain/reactionGroups.js";
+import {linkPage} from "./support/linkPages.js";
 
 afterEach(() => (document.body.innerHTML = ""));
 
@@ -63,7 +64,7 @@ test("a person's message shows the rows it linked, under it", async () => {
     const {WINDOW_CONTEXT} = await import("../kit/windowContextKey.js");
     const element = document.createElement("div");
     const app = createApp({render: () => h(MessageCard, {message: {id: 4, type: "user", text: "see report 1", reactions: "[]", created_at: "2026-11-02T10:00:00Z"}})});
-    app.provide(WINDOW_CONTEXT, {environment: "main", read: async () => ({ok: true, value: {rows: [{target_model: "report", target_id: 1, link_type: "about"}, {target_model: "plan", target_id: 2, link_type: "comments_on"}]}})});
+    app.provide(WINDOW_CONTEXT, {environment: "main", read: async (line) => linkPage([{target_model: "report", target_id: 1, link_type: "about"}, {target_model: "plan", target_id: 2, link_type: "comments_on"}], line)});
     app.mount(element);
     await new Promise((resolve) => setTimeout(resolve));
     await nextTick();
@@ -81,8 +82,8 @@ test("four linked tasks group into a chip that opens a list with their titles", 
     const {WINDOW_CONTEXT} = await import("../kit/windowContextKey.js");
     const element = document.createElement("div");
     document.body.append(element);
-    const link = (id) => ({target_model: "task", target_id: id, link_type: "about"});
-    const read = async (line) => (line.startsWith("link list") ? {ok: true, value: {rows: [link(1), link(2), link(3), link(4)]}} : {ok: true, value: {id: Number(line.split(" ")[2]), title: `Title of ${line.split(" ")[2]}`}});
+    const link = (id) => ({target_model: "task", target_id: id, target_title: `Title of ${id}`, link_type: "about"});
+    const read = async (line) => linkPage([link(1), link(2), link(3), link(4)], line);
     const app = createApp({render: () => h(MessageCard, {message: {id: 4, type: "user", text: "see these", reactions: "[]", created_at: "2026-11-02T10:00:00Z"}})});
     app.provide(WINDOW_CONTEXT, {environment: "main", read});
     app.mount(element);
@@ -105,7 +106,7 @@ test("one linked task shows no group", async () => {
     const {WINDOW_CONTEXT} = await import("../kit/windowContextKey.js");
     const element = document.createElement("div");
     const app = createApp({render: () => h(MessageCard, {message: {id: 4, type: "user", text: "see it", reactions: "[]", created_at: "2026-11-02T10:00:00Z"}})});
-    app.provide(WINDOW_CONTEXT, {environment: "main", read: async () => ({ok: true, value: {rows: [{target_model: "task", target_id: 9, link_type: "about"}]}})});
+    app.provide(WINDOW_CONTEXT, {environment: "main", read: async (line) => linkPage([{target_model: "task", target_id: 9, link_type: "about"}], line)});
     app.mount(element);
     await new Promise((resolve) => setTimeout(resolve));
     await nextTick();

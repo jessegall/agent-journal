@@ -25,3 +25,8 @@ class RowInsert:
     def name_row_id(self, table: str, name: str) -> int | None:
         rows = self.database.rows(Statement(f"SELECT id FROM {table} WHERE name = ?", [name]))
         return int(rows[0]["id"]) if rows else None
+
+    def matching_row_id(self, table: str, values: Mapping[str, object]) -> int | None:
+        condition = " AND ".join(f"{column} IS ?" for column in values)
+        rows = self.database.rows(Statement(f"SELECT id FROM {table} WHERE {condition} ORDER BY id LIMIT 1", tuple(values.values())))
+        return int(rows[0]["id"]) if rows else None

@@ -12,18 +12,14 @@ from core.base.upgrade.move_report import MoveReport
 from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.upgrade.version_four_ref import VersionFourRef
 from core.base.upgrade.version_four_source import VersionFourSource
-from core.modules.documents.models.enums.link_type import LinkType
-from core.modules.documents.support.row_ref import RowRef
 
 TEXT_TABLES = ("docs", "reports")
 REVISIONS = "doc_revisions"
 REVISION_LINK_TYPE = "revision_of"
-LINK_TYPES = tuple(link_type.value for link_type in LinkType)
-LINK_END_MODELS = {"docs": "doc", "reports": "report", "tasks": "task", "plans": "plan", "messages": "message", "questions": "question"}
 
 
 class DocumentsMove(VersionFourMove):
-    """Moves version 4 documents, reports, revisions and links into the project library."""
+    """Moves version 4 documents, reports and their revisions into the project library."""
 
     name = "documents"
     reads = [*TEXT_TABLES, REVISIONS]
@@ -47,20 +43,6 @@ class DocumentsMove(VersionFourMove):
                 continue
             report.count(REVISIONS, map.transfer(REVISIONS, revision["id"], REVISIONS, partial(self.insert_revision, rows, revision, doc_id,
                                                                                                 creators.actor_id(revision["creator"]), context)))
-        kept_links: set[tuple[RowRef, RowRef, str]] = set()
-        for link in [link for link in source.links(*LINK_TYPES) if self.changes_text(link)]:
-            link_source, link_target = self.moved_end(map, link["source"]), self.moved_end(map, link["target"])
-            if link_source is None or link_target is None:
-                report.drop("links to a row that did not move", 1)
-                continue
-            if (link_source, link_target, link["link_type"]) in kept_links:
-                report.drop("links written twice in version 4", 1)
-                continue
-            kept_links.add((link_source, link_target, link["link_type"]))
-            report.count("links", map.transfer("links", link["id"], "links", partial(rows.insert, "links", {
-                "creator_id": creators.actor_id(link["creator"]), "source_model": link_source.model, "source_id": link_source.row_id,
-                "target_model": link_target.model, "target_id": link_target.row_id, "link_type": link["link_type"],
-                "created_at": link["created_at"] or context.timestamp, "updated_at": link["updated_at"] or link["created_at"] or context.timestamp})))
         return report
 
     def insert_text(self, rows: RowInsert, table: str, row: sqlite3.Row, creator_id: int, context: MoveContext) -> int:
@@ -75,12 +57,3 @@ class DocumentsMove(VersionFourMove):
                                        "body": row["body"] or "", "change": row["change"] or "", "closes_at": closes_at, "created_at": created,
                                        "updated_at": row["updated_at"] or created})
 
-    @staticmethod
-    def changes_text(link: sqlite3.Row) -> bool:
-        return any(VersionFourRef.parsed(link[end]).table in TEXT_TABLES for end in ("source", "target"))
-
-    @staticmethod
-    def moved_end(map: MoveMap, text: str) -> RowRef | None:
-        end = VersionFourRef.parsed(text)
-        new_id = map.linked_id(end, end.table) if end.table in LINK_END_MODELS else None
-        return RowRef(LINK_END_MODELS[end.table], new_id) if new_id is not None else None

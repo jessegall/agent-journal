@@ -1,4 +1,5 @@
 from core.base.journal_home import JournalHome
+from core.base.file_access import FileAccess
 from pathlib import PurePosixPath
 from server.viewer.file_answer import FileAnswer
 from urllib.parse import unquote
@@ -26,11 +27,11 @@ class FileRoute:
         pending = f"{secrets.token_hex(TOKEN_BYTES)}/{self.safe_name(name)}"
         path = self.home.pending_files / pending
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(data)
+        FileAccess.shared().write_binary(path, data)
         return pending
 
     def download(self, message_id: int, name: str) -> FileAnswer | None:
         path = self.home.message_files(message_id) / self.safe_name(name)
         if not path.is_file():
             return None
-        return FileAnswer(path.read_bytes(), mimetypes.guess_type(path.name)[0] or UNKNOWN_TYPE)
+        return FileAnswer(FileAccess.shared().binary(path), mimetypes.guess_type(path.name)[0] or UNKNOWN_TYPE)

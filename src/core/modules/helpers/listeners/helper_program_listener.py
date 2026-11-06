@@ -22,6 +22,8 @@ class HelperProgramListener(CommitListener[Created[HelperJob]]):
         self.helper_resume = resume
 
     def handle(self, event: Created[HelperJob], logged: LoggedEvent) -> None:
+        if event.row.source_line_id is not None:
+            return
         helper_id = event.row.helper_id
         if helper_id is None:
             return

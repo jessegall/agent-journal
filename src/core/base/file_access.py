@@ -37,6 +37,13 @@ class FileAccess:
         with io.TextIOWrapper(io.BytesIO(self.binary(file)), encoding=encoding, errors=errors, newline=newline) as text:
             return text.read()
 
+    def bytes_range(self, file: Path | str, start: int, length: int) -> bytes:
+        path = Path(file).resolve()
+        sys.audit(FILE_READ_EVENT, str(path))
+        with path.open("rb") as opened:
+            opened.seek(start)
+            return opened.read(length)
+
     def binary(self, file: Path | str) -> bytes:
         path = Path(file).resolve()
         sys.audit(FILE_READ_EVENT, str(path))

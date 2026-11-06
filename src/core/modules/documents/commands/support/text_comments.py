@@ -10,3 +10,7 @@ class TextComments:
     cli_name: str
     row_id: int
     comments: tuple[CommentRead, ...]
+    page: int = 1
+    page_size: int = 25
+    total: int = 0
+    next_command: str | None = None

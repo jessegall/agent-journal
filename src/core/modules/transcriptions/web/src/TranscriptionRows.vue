@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, ListTools, RowList, TimeAgo, WindowRoom, peekRef, useListTools, useRows, useWindow} from "@journal/window-kit";
+import {Btn, ListTools, RowList, TimeAgo, WindowRoom, ResourceLinks, peekRef, useListTools, useRows, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
 const {rows, failure, loaded, act, actionFailure} = useRows("transcription list", ["transcription.*"]);
@@ -10,7 +10,6 @@ const drafting = ref(false);
 const draft = ref({title: "", text: ""});
 const opened = ref(null);
 const openedText = ref("");
-const linked = ref([]);
 const notice = ref("");
 
 const canMake = computed(() => draft.value.title.trim() && draft.value.text.trim());
@@ -23,12 +22,12 @@ async function make() {
     drafting.value = false;
 }
 
-async function open(row) {
+function open(row) {
     opened.value = row;
     openedText.value = row.text;
-    const answer = await context.read(["link", "list", "--source", `transcription:${row.id}`]);
-    linked.value = answer.ok ? answer.value.rows ?? [] : [];
 }
+
+const openLinked = (target) => peekRef(`${target.table}:${target.id}`);
 
 async function save() {
     const result = await act(["transcription", "edit", String(opened.value.id), "--text", openedText.value]);
@@ -81,13 +80,8 @@ async function fetchFrom(server) {
                         <Btn small variant="primary" data-transcription-save :disabled="openedText === opened.text" @click="save">Save</Btn>
                         <Btn small @click="opened = null">Close</Btn>
                     </div>
-                    <h3 class="note">Created from this transcript</h3>
-                    <template v-if="!linked.length">
-                        <p class="note">Nothing yet</p>
-                    </template>
-                    <template v-for="link in linked" :key="link.id">
-                        <button type="button" class="row" data-transcription-link @click="peekRef(`${link.target_model}:${link.target_id}`)">{{ link.target_model }} {{ link.target_id }}</button>
-                    </template>
+                    <h3 class="note">Linked items</h3>
+                    <ResourceLinks model="transcription" :id="opened.id" :read="context.read" link-attribute="data-transcription-link" empty="Nothing yet" @open="openLinked" />
                 </section>
             </template>
         </div>

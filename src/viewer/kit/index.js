@@ -2,6 +2,7 @@ import {defineAsyncComponent} from "vue";
 export {default as EmptyState} from "../src/kit/EmptyState.vue";
 export {default as FoldGroup} from "../src/kit/FoldGroup.vue";
 export {default as Btn} from "../src/kit/Btn.vue";
+export {default as ResourceLinks} from "./ResourceLinks.vue";
 export {default as SplitButton} from "../src/kit/SplitButton.vue";
 export {default as ButtonSlot} from "../src/kit/ButtonSlot.vue";
 export {default as ButtonForm} from "../src/kit/ButtonForm.vue";
