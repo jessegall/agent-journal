@@ -43,9 +43,10 @@ COMMIT_SUFFIX = " (commit)"
 
 
 class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
-    """Runs a plugin's program for an event it plugin_event without holding it, once the hook has committed,
-    and puts the line it tells in its queue, which reaches the agent at its next hook. It asks how a file stands
-    here and not when the delivery is saved, since this runs with no lock and the answer may run git."""
+    """Runs a plugin's program for an event it listens to, without holding the event, once the hook has
+    committed, and puts the line it tells in its queue, which reaches the agent at its next hook. It asks how
+    a file stands here and not when the delivery is saved, since this runs with no lock and the answer may run
+    git. A delivery that a server stop interrupted stays unhandled, so the next start runs it."""
 
     name = "plugins.delivery"
     run_order = PLUGIN_RUN_ORDER
@@ -63,7 +64,7 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         except Refusal as refusal:
             self.record(logged, delivery, RecordPluginFault(delivery.plugin_id, f"{refusal.reason} at {delivery.event}"))
             return
-        if manifest.needs_newer_journal or (delivery.script and not (self.runner.may_try(plugin, delivery.event, EventForm.COMMIT) and self.runner.may_run(plugin, manifest, logged.id))):
+        if manifest.needs_newer_journal or (delivery.script and not self.may_run_script(plugin, manifest, delivery, logged)):
             return
         environment = self.queries.query(Environment).find(delivery.environment_id).name if delivery.environment_id is not None else ""
         data: object = json.loads(delivery.data)
@@ -74,10 +75,13 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         call = PluginCall(manifest, PluginEvent(delivery.event, event_data), environment, self.clock.timestamp(), self.settings.values(plugin, manifest), delivery.session_agent_id, file_checkout, script=delivery.script)
         try:
             answer = self.program.run(call, self.policy.commit_limit_ms if delivery.script else DELIVERY_LIMIT_MS)
-        except PluginFaultError as fault:
-            if isinstance(fault, PluginStoppedError) and fault.stop is ScriptStop.SERVER:
+        except PluginStoppedError as stopped:
+            if stopped.stop is ScriptStop.SERVER:
                 raise ServerStoppingError.before(plugin.name, delivery.event) from None
-            self.record(logged, delivery, RecordPluginFault.of(delivery.plugin_id, fault, f"at {delivery.event}{COMMIT_SUFFIX if delivery.script else ''}"))
+            self.record_fault(logged, delivery, stopped)
+            return
+        except PluginFaultError as fault:
+            self.record_fault(logged, delivery, fault)
             return
         if delivery.script and answer.is_refusal():
             self.record(logged, delivery, RecordPluginFault(delivery.plugin_id, f"it answered refuse at {delivery.event}{COMMIT_SUFFIX}: {answer.reason}"))
@@ -88,6 +92,12 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
             PluginQueue(self.folders.data(plugin.name)).add(environment, delivery.session_agent_id, answer.line, f"delivery-{delivery.id}")
         if answer.has_output():
             self.bus.run(AddPluginOutput(plugin.id, delivery.session_agent_id, answer.output, bool(delivery.script)), self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=delivery.environment_id)
+
+    def may_run_script(self, plugin: Plugin, manifest: PluginManifest, delivery: PluginDelivery, logged: LoggedEvent) -> bool:
+        return self.runner.may_try(plugin, delivery.event, EventForm.COMMIT) and self.runner.may_run(plugin, manifest, logged.id)
+
+    def record_fault(self, logged: LoggedEvent, delivery: PluginDelivery, fault: PluginFaultError) -> None:
+        self.record(logged, delivery, RecordPluginFault.of(delivery.plugin_id, fault, f"at {delivery.event}{COMMIT_SUFFIX if delivery.script else ''}"))
 
     def delivery_checkout(self, delivery: PluginDelivery, event_data: Mapping[str, object]) -> Checkout | None:
         file = event_data.get(FILE_FIELD)
