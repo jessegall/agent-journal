@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {WindowRoom, usePoll, useWindow} from "@journal/window-kit";
+import {READ_RATES, WindowRoom, usePoll, useWindow} from "@journal/window-kit";
 import {toggleFeedPause} from "./toggleFeedPause.js";
 
 const context = useWindow();
@@ -30,7 +30,7 @@ watch(page, () => { if (!paused.value) load(); });
 function togglePause() {
     toggleFeedPause(paused, load);
 }
-usePoll(load, () => !paused.value);
+usePoll(load, () => !paused.value, READ_RATES.systemLogs);
 </script>
 
 <template>

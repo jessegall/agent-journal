@@ -9,4 +9,5 @@ export const READ_RATES = {
     numbers: 10000,
     services: 15000,
     libraryCopies: 30000,
+    systemLogs: 5000,
 };
