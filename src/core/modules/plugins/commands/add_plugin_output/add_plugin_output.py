@@ -10,5 +10,5 @@ class AddPluginOutput(Command[PluginOutput]):
     """
 
     plugin_id: int
-    agent_id: int
+    agent_id: int | None
     output: str

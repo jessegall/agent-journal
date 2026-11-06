@@ -50,7 +50,7 @@ class PluginOutputListener(CommitListener[Created[PluginOutput]]):
         except Refusal as refusal:
             self.bus.run(RecordPluginFault(plugin.id, refusal.reason), actor, cause_id=logged.id)
             return
-        is_main = self.queries.query(Agent).find(row.session_agent_id).role == AgentRole.MAIN
+        is_main = row.session_agent_id is not None and self.queries.query(Agent).find(row.session_agent_id).role == AgentRole.MAIN
         for card in answer.cards if is_main else ():
             tone = card.tone or (manifest.card_tones[card.card_type] if card.card_type in manifest.card_tones else "")
             if tone in TONES:
@@ -60,5 +60,5 @@ class PluginOutputListener(CommitListener[Created[PluginOutput]]):
         for line in answer.commands[:MOST_COMMAND_LINES]:
             self.console.run(shlex.split(line), Caller(actor), io.StringIO())
         published = self.skill_files.names(self.folders.code(plugin.name), manifest)
-        for name in [name for name in answer.required_skills if name in published]:
+        for name in [name for name in answer.required_skills if name in published and row.session_agent_id is not None]:
             self.bus.run(RequestSkill(row.session_agent_id, name), actor, cause_id=logged.id)

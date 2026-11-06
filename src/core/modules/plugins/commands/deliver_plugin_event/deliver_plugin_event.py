@@ -9,6 +9,6 @@ class DeliverPluginEvent(Command[PluginDelivery]):
     """Records an event a plugin hears without holding it, for its program to run after the hook's reply."""
 
     plugin_id: int
-    agent_id: int
+    agent_id: int | None
     event: str
     data: str

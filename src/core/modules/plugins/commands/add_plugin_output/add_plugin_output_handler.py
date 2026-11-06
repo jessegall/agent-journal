@@ -14,6 +14,6 @@ class AddPluginOutputHandler(Handler[AddPluginOutput, PluginOutput]):
         self.repository = repository
 
     def handle(self, command: AddPluginOutput, context: Context) -> PluginOutput:
-        return self.repository.save(PluginOutput(plugin_id=command.plugin_id, session_agent_id=command.agent_id,
+        return self.repository.save(PluginOutput(plugin_id=command.plugin_id, environment_id=context.environment_id, session_agent_id=command.agent_id,
                                                  creator_id=context.actor.id,
                                                  output=command.output), context)

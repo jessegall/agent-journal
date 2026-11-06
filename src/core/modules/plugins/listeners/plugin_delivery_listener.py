@@ -55,7 +55,7 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         except Refusal as refusal:
             self.record(logged, delivery, RecordPluginFault(delivery.plugin_id, f"{refusal.reason} at {delivery.event}"))
             return
-        environment = self.queries.query(Environment).find(delivery.environment_id).name
+        environment = self.queries.query(Environment).find(delivery.environment_id).name if delivery.environment_id is not None else ""
         data: object = json.loads(delivery.data)
         event_data = {str(key): value for key, value in data.items()} if is_mapping(data) else {}
         file_checkout = self.delivery_checkout(delivery, event_data)
@@ -69,14 +69,14 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
             return
         if plugin.fault_count:
             self.record(logged, delivery, ClearPluginFaults(delivery.plugin_id))
-        if answer.line:
+        if answer.line and delivery.session_agent_id is not None:
             PluginQueue(self.folders.data(plugin.name)).add(environment, delivery.session_agent_id, answer.line, f"delivery-{delivery.id}")
         if answer.has_output():
             self.record(logged, delivery, AddPluginOutput(plugin.id, delivery.session_agent_id, answer.output))
 
     def delivery_checkout(self, delivery: PluginDelivery, event_data: Mapping[str, object]) -> Checkout | None:
         file = event_data.get(FILE_FIELD)
-        return self.checkouts.file_checkout(delivery.session_agent_id, Path(str(file["path"]))) if is_mapping(file) else None
+        return self.checkouts.file_checkout(delivery.session_agent_id, Path(str(file["path"]))) if is_mapping(file) and delivery.session_agent_id is not None else None
 
     def with_file_state(self, checkout: Checkout, values: object) -> dict[str, object]:
         file = CheckoutFile.restored(values)
