@@ -5,6 +5,8 @@ import subprocess
 
 import pytest
 
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.database.database import Database
 from core.base.leftover_process import LeftoverProcess
 from core.modules.agents.support.terminal_typing import TerminalTyping
@@ -97,9 +99,10 @@ def test_stopping_holds_no_write_lock_and_a_session_its_hooks_ended_stays_ended(
 
     def stopped(pid: int, program: str) -> None:
         transaction_flags.append(database.has_transaction)
-        story.expect_success(f"agent end {agent_id}", actor=story.user)
+        story.expect_success(f"agent end {agent_id}", actor=Actor(agent_id, ActorType.AGENT))
 
     monkeypatch.setattr(LeftoverProcess, "stop", stopped)
+    monkeypatch.setattr(LeftoverProcess, "command_line", staticmethod(lambda pid: ""))
     story.expect_success(f"agent stop {agent_id}", f"stopped agent {agent_id}", actor=story.user)
     story.expect_rows(transaction_flags == [False])
     story.expect_text(f"agent show {agent_id}", "ended_at:", actor=story.user)

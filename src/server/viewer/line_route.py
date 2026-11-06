@@ -40,8 +40,8 @@ FLAG_SEPARATOR = "--"
 class LineRoute:
     """Checks and runs viewer lines, sharing one read container for a batch and returning each line's answer."""
 
-    def __init__(self, home: JournalHome, listener_thread: ListenerThread, reported: ReportedFindings, request_queue: RequestQueue | None = None, on_completed: Callable[[Container, list[str]], None] = ignore_completed) -> None:
-        self.line_run = LineRun(home, CLI_LIMIT_SECONDS, ListenerWake(listener_thread), reported, request_queue, on_completed)
+    def __init__(self, home: JournalHome, listener_thread: ListenerThread, reported: ReportedFindings, request_queue: RequestQueue | None = None, completion_callback: Callable[[Container, list[str]], None] = ignore_completed) -> None:
+        self.line_run = LineRun(home, CLI_LIMIT_SECONDS, ListenerWake(listener_thread), reported, request_queue, completion_callback)
 
     def answer(self, window: str, argv: list[str], person_id: int, environment: str, shared: SharedRow | None = None) -> LineAnswer:
         return self.timed_single_answer(window, argv, person_id, environment, shared).answer

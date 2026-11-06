@@ -9,7 +9,7 @@ from core.testing.shell_part import ShellPart
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
-from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, the_helper
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 
@@ -33,7 +33,7 @@ class HelperDocumentReady(StoryFixture):
     parent = StartedHelper
 
     def steps(self, story):
-        story.helper = Actor(the_helper(story).id, ActorType.AGENT)
+        story.helper = Actor(helper_agent(story).id, ActorType.AGENT)
         story.run('doc make "Findings" --abstract "What was found" --body "First"', actor=story.helper)
 
 
@@ -158,7 +158,7 @@ def test_time_passing_does_not_close_an_open_revision(new_story):
 
 def test_a_readonly_helper_can_make_open_edit_and_close_its_document(new_story):
     story = new_story(fixture=HelperDocumentReady)
-    helper = the_helper(story)
+    helper = helper_agent(story)
     story.expect_hook_allowed(helper.session, HookSamples.shell('journal doc open 1', ShellPart('journal', CommandCategory.JOURNAL, ['doc', 'open', '1'])))
     story.expect_success('doc open 1', actor=story.helper)
     story.expect_success('doc edit 1 --body "Checked"', actor=story.helper)

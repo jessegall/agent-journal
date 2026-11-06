@@ -35,7 +35,7 @@ class RecordWorktreeCutHandler(Handler[RecordWorktreeCut, Worktree]):
             self.repository.save(WorkerTaskSource(creator_id=context.actor.id, worktree_id=worktree.id, task_id=assigned.task_id,
                                                   environment_id=worktree.environment_id, source_message_id=assigned.source.message_id,
                                                   source_version=assigned.source.version, source_unavailable=assigned.source.unavailable, started_at=context.timestamp), context)
-            self.sources.use_snapshot(assigned.source, replace(context, environment_id=worktree.environment_id))
+            self.sources.use_copy(assigned.source, replace(context, environment_id=worktree.environment_id))
         for task in self.queries.query(Task).find_many(command.task_ids):
             self.repository.update(task, context, delegated_to=worktree.session_agent_id)
         self.bus.dispatch(StartTask(command.task_ids[0]), replace(context, actor=Actor(worktree.session_agent_id, ActorType.AGENT)))

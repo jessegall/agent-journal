@@ -4,8 +4,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.modules.documents.commands.support.row_comments import RowComments
-from core.modules.messages.conditions.message_text_segment import MessageTextSegment
+from core.modules.documents.support.row_comments import RowComments
 from core.modules.tasks.commands.read_task_brief.read_task_brief import ReadTaskBrief
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_log import TaskLog
@@ -27,9 +26,8 @@ class ReadTaskBriefHandler(Handler[ReadTaskBrief, TaskBrief]):
     def handle(self, command: ReadTaskBrief, context: Context) -> TaskBrief:
         task = self.queries.query(Task).find(command.task_id)
         conversation = self.reader.overview(task, Caller(context.actor, context.environment_id))
-        comments = self.comments.query(task)
-        comment_total = comments.count()
-        comments = comments.with_select(comments.select.column(MessageTextSegment(0, 1600).columns(comments.table.columns)))
+        comment_total = self.comments.query(task).count()
+        comments = self.comments.previews(task, 1600)
         recent_comments = tuple(TaskComment(message.id, message.text[:1600],
                                f"journal task context {task.id} --message {message.id} --text-offset 1600" if len(message.text) > 1600 else None)
                                for message in reversed(comments.newest().limited(5)))

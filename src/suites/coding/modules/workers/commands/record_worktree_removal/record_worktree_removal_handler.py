@@ -8,7 +8,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 
 
 class RecordWorktreeRemovalHandler(Handler[RecordWorktreeRemoval, Worktree]):
-    """Moves a merged worktree's row to removed once git has taken its folder away."""
+    """Moves a merged or abandoned worktree's row to removed once git has taken its folder away."""
 
     command = RecordWorktreeRemoval
     runs_once = True

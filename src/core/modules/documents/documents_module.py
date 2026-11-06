@@ -1,5 +1,5 @@
 from core.base.skill.skill_declaration import SkillDeclaration
-from core.modules.plans.commands.plan_context.plan_context_subcommand import PlanContextSubcommand
+from core.modules.plans.commands.plan_context.read_plan_context_subcommand import ReadPlanContextSubcommand
 from core.modules.documents.commands.plan_context.read_plan_context_handler import ReadPlanContextHandler
 from core.modules.tasks.support.task_context_reader import TaskContextReader
 from core.modules.documents.support.work_context_reader import WorkContextReader
@@ -120,4 +120,4 @@ class DocumentsModule(Module):
     bindings = {RowLinks: StoredRowLinks, TaskContextReader: WorkContextReader}
     subcommands = [OpenDocSubcommand, CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,
                    DocRevisionsSubcommand, DocRevisionSubcommand, ReportMakeSubcommand, ReportEditSubcommand, ReportShowSubcommand, ReportListSubcommand,
-                   ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand, DocInspectSubcommand, ReportInspectSubcommand, RemoveLinkSubcommand, TaskContextSubcommand, PlanContextSubcommand]
+                   ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand, DocInspectSubcommand, ReportInspectSubcommand, RemoveLinkSubcommand, TaskContextSubcommand, ReadPlanContextSubcommand]

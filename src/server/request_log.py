@@ -39,7 +39,7 @@ class RequestLog:
         self.container: Container | None = None
         self.configuration = RequestLogSettings()
         self.last_refreshed_at: float | None = None
-        self.retained = 0
+        self.stored_rows = 0
         self.recording_ms = 0.0
         self.counts = {"attempted": 0, "recorded": 0, "dropped": 0, "disabled": 0, "http_requests": 0,
                        "receipt_attempted": 0, "receipt_recorded": 0, "receipt_dropped": 0, "receipt_disabled": 0}
@@ -69,9 +69,9 @@ class RequestLog:
         with settings.keep_rows():
             enabled = settings.flag(HOOK_REQUEST_LOG_SETTING)
             configuration = RequestLogSettings(enabled, max(settings.number(HOOK_REQUEST_LOG_SIZE_SETTING), 1) if enabled else 0)
-        retained = container.get(HookRequestsTable).kept_row_count()
+        stored_rows = container.get(HookRequestsTable).kept_row_count()
         with self.lock:
-            self.configuration, self.retained = configuration, retained
+            self.configuration, self.stored_rows = configuration, stored_rows
             self.last_refreshed_at = perf_counter()
             if not configuration.enabled:
                 self.close()
@@ -87,8 +87,8 @@ class RequestLog:
         with self.lock:
             if self.configuration.enabled:
                 with self.connected() as container:
-                    self.retained = container.get(HookRequestsTable).kept_row_count()
-            return {**self.counts, "epoch": self.epoch, "enabled": self.configuration.enabled, "retained": self.retained, "retention_limit": self.configuration.limit,
+                    self.stored_rows = container.get(HookRequestsTable).kept_row_count()
+            return {**self.counts, "epoch": self.epoch, "enabled": self.configuration.enabled, "retained": self.stored_rows, "retention_limit": self.configuration.limit,
                     "recording_ms": self.recording_ms}
 
     def record_viewer(self, record: ViewerRequestRecord) -> None:
@@ -161,7 +161,7 @@ class RequestLog:
                 log = container.get(HookRequestLog)
                 payloads = [log.payload("", {}, entry.body, entry.duration_ms, HookAnswer.ALLOWED if entry.code == 0 else HookAnswer.REFUSED, entry.queued_ms, entry.role, "") for entry in entries]
                 container.get(HookRequestsTable).record_many(payloads, configuration.limit)
-                self.retained = container.get(HookRequestsTable).kept_row_count()
+                self.stored_rows = container.get(HookRequestsTable).kept_row_count()
             with self.lock:
                 self.counts["recorded"] += len(entries)
         except sqlite3.Error as error:

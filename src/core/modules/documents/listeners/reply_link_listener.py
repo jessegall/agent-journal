@@ -29,7 +29,7 @@ class ReplyLinkListener(CommitListener[Created[Message]]):
         answered = self.queries.query(Message).filter(id=reply.parent_id).first()
         if answered is None or answered.type not in PERSON_MESSAGE_TYPES:
             return
-        references = tuple(ref for ref in MentionRefs.found(reply.text, (Task.cli_name,)) if ref[0] == Task.cli_name)
+        references = tuple(ref for ref in MentionRefs.found(reply.text, [Task.cli_name]) if ref[0] == Task.cli_name)
         for target in self.row_refs.existing_many(references):
             self.bus.run(RecordSubjectLink(answered.id, target.model, target.row_id), Actor(logged.actor_id, ActorType.AGENT),
                          environment_id=reply.environment_id, cause_id=logged.id)

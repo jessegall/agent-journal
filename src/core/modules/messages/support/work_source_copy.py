@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class WorkSourceSnapshot:
+class WorkSourceCopy:
     """The request authorized for one job when it was assigned."""
 
     message_id: int | None
@@ -11,3 +11,6 @@ class WorkSourceSnapshot:
     unavailable: bool = False
     selecting_actor_id: int | None = None
     origin: str = "job snapshot"
+
+    def differs_from(self, previous: "WorkSourceCopy | None") -> bool:
+        return previous is None or previous.message_id != self.message_id or previous.unavailable != self.unavailable

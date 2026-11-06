@@ -15,7 +15,7 @@ class RowLinkWriter:
         self.queries, self.repository = queries, repository
 
     def save(self, link: Link, context: Context) -> Link:
-        return self.save_many((link,), context)[0]
+        return self.save_many([link], context)[0]
 
     def save_automatic(self, links: Sequence[Link], context: Context) -> tuple[Link, ...]:
         allowed = tuple(link for link in links if not self.queries.query(LinkCorrection).filter(

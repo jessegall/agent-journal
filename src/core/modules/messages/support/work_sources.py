@@ -11,7 +11,7 @@ from core.modules.messages.models.enums.work_source_origin import WorkSourceOrig
 from core.modules.messages.models.message import Message
 from core.modules.messages.models.message_work_source import MessageWorkSource
 from core.modules.messages.queries.message_query import MessageQuery
-from core.modules.messages.support.work_source_snapshot import WorkSourceSnapshot
+from core.modules.messages.support.work_source_copy import WorkSourceCopy
 from core.modules.messages.support.assigned_work_sources import AssignedWorkSources
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.agents.support.agent_rows import AgentRows
@@ -78,7 +78,7 @@ class WorkSources:
             return
         self.repository.update(selected, context, used=True, provisional=False)
 
-    def for_work(self, context: Context | Caller) -> WorkSourceSnapshot | None:
+    def work_source(self, context: Context | Caller) -> WorkSourceCopy | None:
         if context.actor.type is not ActorType.AGENT or self.agents.find(context.actor.id).ended_at is not None:
             return None
         assigned = self.assignments.current(context)
@@ -86,23 +86,23 @@ class WorkSources:
             return assigned
         job = self.jobs.open_job(context.actor.id)
         if job is not None:
-            return WorkSourceSnapshot(job.source_message_id, job.source_version, job.environment_id, job.source_unavailable,
+            return WorkSourceCopy(job.source_message_id, job.source_version, job.environment_id, job.source_unavailable,
                                       selecting_actor_id=job.creator_id)
         selected = self.current(context)
         if selected is None or selected.message_id is None:
             return None
-        return WorkSourceSnapshot(selected.message_id, selected.version, selected.environment_id,
+        return WorkSourceCopy(selected.message_id, selected.version, selected.environment_id,
                                   selecting_actor_id=selected.agent_id, origin=selected.origin)
 
-    def snapshot(self, context: Context) -> WorkSourceSnapshot:
+    def source_copy(self, context: Context) -> WorkSourceCopy:
         if context.environment_id is None:
             raise Refusal("a request snapshot needs one environment")
-        return self.for_work(context) or WorkSourceSnapshot(None, 0, context.environment_id)
+        return self.work_source(context) or WorkSourceCopy(None, 0, context.environment_id)
 
-    def is_available(self, source: WorkSourceSnapshot, context: Context) -> bool:
+    def is_available(self, source: WorkSourceCopy, context: Context) -> bool:
         return not source.unavailable and source.message_id is not None and source.environment_id == context.environment_id and self.messages.filter(id=source.message_id).matching(Among("type", PERSON_MESSAGE_TYPES)).exists()
 
-    def use_snapshot(self, source: WorkSourceSnapshot, context: Context) -> None:
+    def use_copy(self, source: WorkSourceCopy, context: Context) -> None:
         selected = self.current(context)
         if selected is None or selected.message_id != source.message_id or selected.version != source.version:
             return

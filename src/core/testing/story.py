@@ -266,8 +266,8 @@ class Story:
             self.container = story_container(self.home, self.clock, self.process_table)
         return code, stream.getvalue()
 
-    def expect_rows(self, *checks: bool) -> None:
-        assert all(checks), f"a row check failed: {checks}"
+    def expect_rows(self, *checks: object, detail: str = "") -> None:
+        assert all(checks), detail or f"a row check failed: {checks}"
 
 
 def story_container(home: JournalHome, clock: ManualClock, process_table: "FixedProcessTable") -> Container:

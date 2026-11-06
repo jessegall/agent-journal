@@ -7,6 +7,7 @@ from core.base.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.base.registry.registry import Registry
 from core.base.registry.skill_entry import SkillEntry
+from core.base.request_values import RequestValues
 from core.base.skill.skill_declaration import SKILL_FILE
 from core.base.skill.skill_digest import SkillDigest
 
@@ -15,12 +16,26 @@ PLUGIN_KEY = "plugin"
 
 
 class SkillCatalogue:
-    """Lists module skills and skills installed in the project's program folders."""
+    """Lists module skills and skills installed in the project's program folders. One request reads the skill files
+    once, and again only when a program folder changes."""
 
-    def __init__(self, registry: Registry, home: JournalHome, providers: Providers) -> None:
-        self.registry, self.home, self.providers = registry, home, providers
+    def __init__(self, registry: Registry, home: JournalHome, providers: Providers, request_values: RequestValues) -> None:
+        self.registry, self.home, self.providers, self.request_values = registry, home, providers, request_values
 
     def skills(self) -> tuple[SkillEntry, ...]:
+        return self.request_values.read("skills.catalogue", self.folder_versions, self.read_skills)
+
+    def folder_versions(self) -> tuple[FileVersion | None, ...]:
+        return tuple(self.folder_version(self.home.project_folder / program_folder) for program_folder in self.providers.skill_folders())
+
+    @staticmethod
+    def folder_version(folder: Path) -> FileVersion | None:
+        try:
+            return FileAccess.shared().version(folder)
+        except FileNotFoundError:
+            return None
+
+    def read_skills(self) -> tuple[SkillEntry, ...]:
         declared = {skill.folder for skill in self.registry.skills}
         return (*self.registry.skills, *(skill for skill in self.plugin_skills() if skill.folder not in declared))
 

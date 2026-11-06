@@ -140,14 +140,14 @@ class HookEndpoint:
         self.context.files.log_line("".join(traceback.format_exception(error)), LogLevel.ERROR)
         if sender.is_stop:
             return HookReply(refusal=f"the journal failed on this stop and holds it: {type(error).__name__}: {error}")
-        if sender.must_be_checked:
+        if sender.needs_check:
             return HookReply(refusal=UNCHECKED_TOOL.format(reason=f"{type(error).__name__}: {error}"))
         return HookReply.allowed(f"the journal failed on this hook and let it through: {type(error).__name__}: {error}")
 
     def unchecked(self, sender: HookSender, reason: Exception) -> HookReply:
         if sender.is_stop:
             return HookReply(refusal=f"the journal could not check this stop and holds it: {reason}")
-        if sender.must_be_checked:
+        if sender.needs_check:
             return HookReply(refusal=UNCHECKED_TOOL.format(reason=reason))
         return HookReply.allowed(f"the journal let this through unchecked: {reason}")
 

@@ -28,13 +28,13 @@ from suites.coding.modules.workers.commands.open_worker_worktree.open_worker_wor
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
 from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_cut import RecordWorktreeCut
 from core.modules.messages.support.work_sources import WorkSources
-from core.modules.messages.support.work_source_snapshot import WorkSourceSnapshot
+from core.modules.messages.support.work_source_copy import WorkSourceCopy
 from core.modules.messages.models.message import Message
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.documents.models.link import Link
 from core.modules.documents.models.enums.link_type import LinkType
 from core.base.query.conditions.among import Among
-from suites.coding.modules.workers.support.task_source_snapshot import TaskSourceSnapshot
+from suites.coding.modules.workers.support.task_source_copy import TaskSourceCopy
 from dataclasses import replace
 from suites.coding.modules.workers.commands.cancel_worker_opening.cancel_worker_opening import CancelWorkerOpening
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -79,7 +79,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         self.check_model(program, model)
         self.programs.installed(program)
         start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
-        source = self.sources.snapshot(replace(context, environment_id=task.environment_id))
+        source = self.sources.source_copy(replace(context, environment_id=task.environment_id))
         task_sources = self.task_sources(tasks, source)
         opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id), context)
         try:
@@ -93,15 +93,15 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             raise
         return WorkerLaunch(opened.worker, worktree, self.worker_command.command(opened.worker, worktree, environment, task))
 
-    def task_sources(self, tasks: list[Task], fallback: WorkSourceSnapshot) -> tuple[TaskSourceSnapshot, ...]:
+    def task_sources(self, tasks: list[Task], fallback: WorkSourceCopy) -> tuple[TaskSourceCopy, ...]:
         links = self.queries.query(Link).filter(source_model=Message.model_name, target_model=Task.model_name, link_type=LinkType.SUBJECT)
         edges = tuple(links.matching(Among("target_id", [task.id for task in tasks])).newest().all_rows())
         messages = self.queries.query(Message).filter(environment_id=fallback.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES))
         available = {message.id for message in messages.matching(Among("id", tuple({edge.source_id for edge in edges}))).all_rows()}
-        by_task: dict[int, WorkSourceSnapshot] = {}
+        task_copies: dict[int, WorkSourceCopy] = {}
         for link in edges:
-            by_task.setdefault(link.target_id, WorkSourceSnapshot(link.source_id, 0, fallback.environment_id, link.source_id not in available))
-        return tuple(TaskSourceSnapshot(task.id, by_task.get(task.id, fallback)) for task in tasks)
+            task_copies.setdefault(link.target_id, WorkSourceCopy(link.source_id, 0, fallback.environment_id, link.source_id not in available))
+        return tuple(TaskSourceCopy(task.id, task_copies.get(task.id, fallback)) for task in tasks)
 
     def worker_profile(self, name: str) -> AgentProfile:
         worker_type = self.types.find(AgentRole.WORKER)

@@ -3,7 +3,7 @@ from dataclasses import asdict, dataclass
 
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_comment import TaskComment
-from core.modules.tasks.support.task_context_reader import TaskConversation
+from core.modules.tasks.support.task_conversation import TaskConversation
 
 @dataclass(frozen=True)
 class TaskBrief:

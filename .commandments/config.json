@@ -155,6 +155,7 @@
         "architecture_processes_reader_run_outside_tick",
         "architecture_processes_slot_written_outside_the_queue",
         "architecture_nudges_agent_line_outside_nudger",
+        "architecture_agents_launcher_stop_outside_agent_program",
         "architecture_agents_main_agent_query_by_hand",
         "architecture_scopes_environment_filtered_by_hand",
         "architecture_scopes_model_without_environment_scope",

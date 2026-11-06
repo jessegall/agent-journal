@@ -4,7 +4,8 @@ from core.base.query.queries import Queries
 from core.base.query.query import Query
 from core.base.page import Page
 from core.base.query.conditions.subquery_match import SubqueryMatch
-from core.modules.documents.commands.support.comment_read import CommentRead
+from core.modules.documents.support.comment_read import CommentRead
+from core.modules.messages.conditions.message_text_segment import MessageTextSegment
 from core.modules.documents.models.comment_selection import CommentSelection
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
@@ -28,6 +29,10 @@ class RowComments:
     def query(self, row: Model) -> Query[Message]:
         links = self.queries.query(Link).filter(target_model=row.model_name, target_id=row.id, link_type=LinkType.COMMENT, source_model=MESSAGE_MODEL).oldest()
         return self.queries.query(Message).matching(SubqueryMatch("id", links.select.column("source_id")))
+
+    def previews(self, row: Model, characters: int) -> Query[Message]:
+        comments = self.query(row)
+        return comments.with_select(comments.select.column(MessageTextSegment(0, characters).columns(comments.table.columns)))
 
     def reads(self, row: TextRow | Plan | Task) -> tuple[CommentRead, ...]:
         return self.page(row).rows

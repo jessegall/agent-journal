@@ -8,4 +8,4 @@ class TaskLogMentionListener(TextMentionListener[Created[TaskLog] | Updated[Task
     """Links a task log entry to the rows it names."""
 
     name = "documents.task-log-mentions"
-    text_fields = ("line",)
+    text_fields = tuple(["line"])

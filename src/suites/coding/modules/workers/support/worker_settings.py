@@ -5,7 +5,10 @@ MODULE_KEY = "journal.suites.coding.workers"
 DISPATCHES_WORKERS_SETTING = f"{MODULE_KEY}.builder-dispatches-workers"
 LIBRARY_LINKS = f"{MODULE_KEY}.library-links"
 LIBRARY_COPIES = f"{MODULE_KEY}.library-copies"
-WORKTREE_COMMANDS = f"{MODULE_KEY}.worktree-commands"
+WORKTREE_COMMANDS_NAME = "worktree-commands"
+WORKTREE_COMMANDS = f"{MODULE_KEY}.{WORKTREE_COMMANDS_NAME}"
+MERGE_COMMANDS_NAME = "merge-commands"
+MERGE_COMMANDS = f"{MODULE_KEY}.{MERGE_COMMANDS_NAME}"
 WORKER_RUN_LIMIT = f"{MODULE_KEY}.worker-run-limit"
 WORKER_KEPT_LIMIT = f"{MODULE_KEY}.worker-kept-limit"
 DEFAULT_WORKER_COUNT = 2
@@ -29,6 +32,8 @@ WORKER_SETTINGS = [
     SettingValue("quiet-helper-minutes", "Quiet helper minutes", "Minutes without tool use before the main agent is prompted to check a worker or helper.", SettingType.NUMBER, default=5),
     SettingValue("library-links", "Library links", "Folders each worker's worktree links from the main checkout.", SettingType.LIST, default=()),
     SettingValue("library-copies", "Library copies", "Folders each worker's worktree gets a copy of.", SettingType.LIST, default=()),
-    SettingValue("worktree-commands", "Worktree commands", "Commands run in each new worker worktree before the worker starts.",
+    SettingValue(WORKTREE_COMMANDS_NAME, "Worktree commands", "Commands run in each new worker worktree before the worker starts.",
+                 SettingType.LIST, default=()),
+    SettingValue(MERGE_COMMANDS_NAME, "Merge commands", "Commands run in the main checkout after each worker merge, such as a push. The task closes only when they all succeed.",
                  SettingType.LIST, default=()),
 ]

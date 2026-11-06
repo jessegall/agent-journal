@@ -27,3 +27,6 @@ each piece keeps to its place.
   found, listed, switched and recorded by its name: give it `name = "<module>.<what it is>"`.
 - **`agent-keeps-a-stack`** - the agent model declares a `stack`, `states` or `state` field. Overlays are worked
   out from open rows on every hook and nothing about where the agent stands is stored on the agent.
+- **`launcher-stop-outside-agent-program`** - code asks `LauncherLink` to stop a program. End the agent's row instead:
+  `EndedAgentProgramListener` stops the program through `AgentProgram` when another ended it, and an agent that ended
+  itself gets no stop.

@@ -16,7 +16,7 @@ from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, the_helper
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
 WRITES = [CommandEffect.WRITES_FILES]
@@ -44,7 +44,7 @@ PROGRAMS = [StartedHelper, StartedCodexHelper]
 
 def helper_story(new_story, helper_fixture):
     story = new_story(fixture=helper_fixture)
-    return story, the_helper(story).session
+    return story, helper_agent(story).session
 
 
 def shell(line, *parts, redirects=()):
@@ -79,7 +79,7 @@ def test_a_read_only_helper_reads_and_searches(new_story, helper_fixture, sample
 def test_a_read_only_helper_calls_the_read_tools_of_its_program(new_story, helper_fixture):
     story, session = helper_story(new_story, helper_fixture)
     for name in SAFE_TOOLS[helper_fixture]:
-        expect_reply_allowed(story.hook(session, tool(name).with_fields(program=the_helper(story).program)))
+        expect_reply_allowed(story.hook(session, tool(name).with_fields(program=helper_agent(story).program)))
 
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
@@ -147,7 +147,7 @@ def test_a_tool_outside_the_list_is_refused_with_a_way_on(new_story, helper_fixt
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
 def test_a_wait_does_not_lift_the_limit(new_story, helper_fixture):
     story, session = helper_story(new_story, helper_fixture)
-    story.run('wait stuck "no way on"', actor=Actor(the_helper(story).id, ActorType.AGENT))
+    story.run('wait stuck "no way on"', actor=Actor(helper_agent(story).id, ActorType.AGENT))
     story.expect_hook_refusal(session, tool("Edit", ToolType.EDIT), "reads and searches only")
 
 
@@ -223,7 +223,7 @@ def test_git_output_to_a_file_is_refused(new_story, helper_fixture):
 
 def test_an_ended_helper_is_refused_its_next_tool_and_writes_no_second_report(new_story):
     story, session = helper_story(new_story, StartedHelper)
-    story.expect_success(f"agent end {the_helper(story).id}", actor=story.user)
+    story.expect_success(f"agent end {helper_agent(story).id}", actor=story.user)
     story.run_listeners()
     story.expect_hook_refusal(session, tool("Edit", ToolType.EDIT), ENDED_AGENT.nudge().text)
     lines_at_end = story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text
@@ -234,7 +234,7 @@ def test_an_ended_helper_is_refused_its_next_tool_and_writes_no_second_report(ne
 
 def test_a_codex_helper_ended_before_its_first_hook_is_refused_an_edit(new_story):
     story, launch_name = helper_story(new_story, StartedCodexHelper)
-    story.expect_success(f"agent end {the_helper(story).id}", actor=story.user)
+    story.expect_success(f"agent end {helper_agent(story).id}", actor=story.user)
     story.expect_hook_refusal("t-9", tool("Edit", ToolType.EDIT).with_fields(program="codex", launch=launch_name), ENDED_AGENT.nudge().text)
 
 

@@ -5,6 +5,7 @@ from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.driver.hook_event import HookEvent
 from core.base.log_level import LogLevel
+from core.base.request_values import RequestValues
 from core.base.system_log_writer import SystemLogWriter
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_reply import HookReply
@@ -14,8 +15,8 @@ from core.modules.agents.models.agent import Agent
 from core.base.agent_role import AgentRole
 from core.modules.agents.commands.bind_agent_session.bind_agent_session import BindAgentSession
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
+from core.modules.agents.support.agent_program import AgentProgram
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.support.access_nudges import ENDED_AGENT, UNKNOWN_AGENT
 from core.modules.drivers.support.hook_rule_answers import HookRuleAnswers
@@ -32,14 +33,14 @@ class AgentHookRoute(HookRoute):
     program whose agent has ended and asks the launcher to stop it, and lets through, without a
     record, a hook from an unknown agent when the event does not require an agent check."""
 
-    def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, launcher: LauncherLink, rule_answers: HookRuleAnswers) -> None:
-        self.rule_answers = rule_answers
+    def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, rule_answers: HookRuleAnswers, request_values: RequestValues) -> None:
+        self.rule_answers, self.request_values = rule_answers, request_values
         self.bus, self.queries, self.system_log, self.durations, self.settings = bus, queries, system_log, durations, settings
-        self.agents, self.launcher = agents, launcher
+        self.agents, self.program = agents, program
 
     def answer(self, event: HookEvent) -> HookReply:
         self.durations.begin()
-        with self.settings.keep_rows():
+        with self.settings.keep_rows(), self.request_values.opened():
             return self.answered(event)
 
     def answered(self, event: HookEvent) -> HookReply:
@@ -63,7 +64,7 @@ class AgentHookRoute(HookRoute):
             return HookReply(refusal=UNKNOWN_AGENT.nudge().text)
         if row is None or event.event != HookEventName.PRE_TOOL_USE:
             return HookReply.allowed()
-        self.launcher.request_stop(row.terminal_id)
+        self.program.request_stop(row)
         return HookReply(refusal=ENDED_AGENT.nudge().text)
 
     def ended_agent(self, event: HookEvent) -> Agent | None:

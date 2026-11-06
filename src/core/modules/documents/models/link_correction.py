@@ -13,7 +13,7 @@ class LinkCorrection(EnvironmentScoped, Model):
     cli_name = "link-correction"
 
     creator_id: int
-    environment_id: int
+    environment_id: int = 0
     link_id: int
     link_creator_id: int
     source_model: str

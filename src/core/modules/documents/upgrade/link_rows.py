@@ -16,7 +16,7 @@ END_MODELS = {"docs": "doc", "reports": "report", "tasks": "task", "plans": "pla
               "questions": "question", "agents": "agent", "phases": "phase", "task_logs": "task_log"}
 DOMAIN_LINKS = {"depends": "task dependencies", "holds": "task holders", "phase_of": "plan phases", "in_phase": "phase tasks",
                 "revision_of": "document revisions", "reacts": "message reactions", "shares": "shared rows"}
-LINK_TYPES = frozenset(kind.value for kind in LinkType)
+LINK_TYPES = frozenset(link_type.value for link_type in LinkType)
 
 
 class LinkRows:
@@ -27,33 +27,33 @@ class LinkRows:
         self.creators = CreatorResolver(target, mapping)
 
     @staticmethod
-    def touches_question(link: sqlite3.Row) -> bool:
+    def has_question_end(link: sqlite3.Row) -> bool:
         return any(VersionFourRef.parsed(link[end]).table == "questions" for end in ("source", "target"))
 
     def move(self, links: Iterable[sqlite3.Row]) -> MoveReport:
         report = MoveReport()
         handled: dict[str, int] = {}
         for link in links:
-            kind = link["link_type"]
-            if kind in DOMAIN_LINKS:
-                owner = f"{kind}: {DOMAIN_LINKS[kind]}"
+            link_type = link["link_type"]
+            if link_type in DOMAIN_LINKS:
+                owner = f"{link_type}: {DOMAIN_LINKS[link_type]}"
                 handled[owner] = handled.get(owner, 0) + 1
                 continue
-            if kind not in LINK_TYPES:
-                report.drop(f"unsupported link type {kind}", 1)
-                report.skip("links", link["id"], f"unsupported link type {kind}")
+            if link_type not in LINK_TYPES:
+                report.drop(f"unsupported link type {link_type}", 1)
+                report.skip("links", link["id"], f"unsupported link type {link_type}")
                 continue
             if self.mapping.moved_row("links", link["id"]) is not None:
                 owner = "already mapped general links"
                 handled[owner] = handled.get(owner, 0) + 1
                 continue
-            left, right = self.end(link["source"]), self.end(link["target"])
-            if isinstance(left, str) or isinstance(right, str):
-                reason = "; ".join(end for end in (left, right) if isinstance(end, str))
+            source_end, target_end = self.end(link["source"]), self.end(link["target"])
+            if isinstance(source_end, str) or isinstance(target_end, str):
+                reason = "; ".join(end for end in (source_end, target_end) if isinstance(end, str))
                 report.drop("links to a row that did not move", 1)
                 report.skip("links", link["id"], reason)
                 continue
-            identity = {"source_model": left.model, "source_id": left.row_id, "target_model": right.model, "target_id": right.row_id, "link_type": kind}
+            identity = {"source_model": source_end.model, "source_id": source_end.row_id, "target_model": target_end.model, "target_id": target_end.row_id, "link_type": link_type}
             existing = self.rows.matching_row_id("links", identity)
             if existing is not None:
                 self.mapping.record(MovedRow("links", link["id"], "links", existing))

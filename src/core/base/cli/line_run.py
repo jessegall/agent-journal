@@ -39,12 +39,12 @@ class LineRun:
 
     def __init__(self, home: JournalHome, busy_timeout_seconds: float = BUSY_TIMEOUT_SECONDS, listener_runner: CommitListenerRunner | None = None,
                  reported: ReportedFindings | None = None, request_queue: RequestQueue | None = None,
-                 on_completed: Callable[[Container, list[str]], None] = ignore_completed) -> None:
+                 completion_callback: Callable[[Container, list[str]], None] = ignore_completed) -> None:
         self.home, self.busy_timeout_seconds, self.listener_runner = home, busy_timeout_seconds, listener_runner
         self.reported = reported or ReportedFindings()
         self.fingerprint = CodeFingerprint()
         self.request_queue = request_queue
-        self.on_completed = on_completed
+        self.completion_callback = completion_callback
 
     def run(self, argv: list[str], request: CallerRequest, stream: TextIO, deadline: Deadline | None = None,
             timing: Timing | None = None) -> int:
@@ -88,7 +88,7 @@ class LineRun:
 
     def close(self, container: Container, argv: list[str]) -> None:
         try:
-            self.on_completed(container, argv)
+            self.completion_callback(container, argv)
         finally:
             container.get(Database).close()
 

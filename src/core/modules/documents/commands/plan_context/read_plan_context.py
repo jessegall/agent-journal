@@ -1,7 +1,11 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
-from core.modules.documents.support.work_context_page import WorkContextRequest, WorkContextPage, WorkContextText, WorkContextAttachmentPage, WorkContextFile
+from core.modules.documents.support.work_context_request import WorkContextRequest
+from core.modules.documents.support.work_context_page import WorkContextPage
+from core.modules.documents.support.work_context_text import WorkContextText
+from core.modules.documents.support.work_context_attachment_page import WorkContextAttachmentPage
+from core.modules.documents.support.work_context_file import WorkContextFile
 
 
 @dataclass(frozen=True)

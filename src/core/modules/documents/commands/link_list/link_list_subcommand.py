@@ -9,12 +9,16 @@ from core.base.page import Page
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.modules.documents.conditions.link_counterparts import FirstLinkCounterpart, LinkCounterparts
-from core.modules.documents.conditions.link_scope import LinkScope, LinkSide
+from core.modules.documents.conditions.first_link_counterpart import FirstLinkCounterpart
+from core.modules.documents.conditions.link_counterparts import LinkCounterparts
+from core.modules.documents.conditions.link_scope import LinkScope
+from core.modules.documents.conditions.link_side import LinkSide
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
-from core.modules.documents.support.link_endpoint import LinkEndpointReader
-from core.modules.documents.support.link_page import LinkPage, LinkRead, LinkCounterpart
+from core.modules.documents.support.link_endpoint_reader import LinkEndpointReader
+from core.modules.documents.support.link_page import LinkPage
+from core.modules.documents.support.link_read import LinkRead
+from core.modules.documents.support.link_counterpart import LinkCounterpart
 from core.modules.documents.support.row_ref import RowRef
 from core.modules.documents.support.row_refs import RowRefs
 
@@ -67,7 +71,7 @@ class LinkListSubcommand(ReadSubcommand[LinkPage]):
                        tuple(sorted({str(link.link_type) for link in links if scope.counterpart(link) == counterpart})),
                        tuple(link.id for link in links if scope.counterpart(link) == counterpart)) for counterpart in counterparts)
         command = f"journal link list --{side} {reference.text} --page {arguments.page + 1} --page-size {size}"
-        command += "".join(f" --type {kind}" for kind in types)
+        command += "".join(f" --type {link_type}" for link_type in types)
         if arguments.group_counterparts:
             command += " --group-counterparts"
         if arguments.first_counterpart:
@@ -78,11 +82,11 @@ class LinkListSubcommand(ReadSubcommand[LinkPage]):
         if not arguments.first_counterpart:
             return query.oldest().page(arguments.page, size)
         first = self.row_refs.parsed(arguments.first_counterpart)
-        priority = query.matching(LinkCounterparts(reference, (first,))).oldest().first()
+        priority = query.matching(LinkCounterparts(reference, [first])).oldest().first()
         if priority is None:
             return query.oldest().page(arguments.page, size)
         total = query.count()
-        pool = query.matching(Among("id", (priority.id,), negated=True)).oldest()
+        pool = query.matching(Among("id", [priority.id], negated=True)).oldest()
         if arguments.page == 1:
             following = tuple(pool.limited(size - 1)) if size > 1 else ()
             return Page((priority, *following), arguments.page, size, total)

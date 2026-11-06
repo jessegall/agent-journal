@@ -55,13 +55,13 @@ class EventStream:
 
     @staticmethod
     def known_environments(environment_names: EnvironmentNames, names: tuple[str, ...]) -> dict[int | None, str]:
-        environments_by_id: dict[int | None, str] = {}
+        environment_id_names: dict[int | None, str] = {}
         for name in names:
             try:
-                environments_by_id[environment_names.environment_id(name)] = name
+                environment_id_names[environment_names.environment_id(name)] = name
             except Refusal:
                 continue
-        return environments_by_id
+        return environment_id_names
 
     @staticmethod
     def message(event: LoggedEvent, environment: str | None) -> str:
@@ -76,7 +76,7 @@ class EventStream:
                     sources.append(source)
             if sources:
                 value.update(source_model=sources[-1]["model"], source_id=sources[-1]["id"], sources=sources)
-            kinds = tuple(dict.fromkeys(kind for kind in event.data.get("link_type", ()) if isinstance(kind, str)))
-            if kinds:
-                value.update(link_type=kinds[-1], link_types=kinds)
+            link_types = tuple(dict.fromkeys(link_type for link_type in event.data.get("link_type", ()) if isinstance(link_type, str)))
+            if link_types:
+                value.update(link_type=link_types[-1], link_types=link_types)
         return f"id: {event.id}\ndata: {json.dumps(value)}\n\n"

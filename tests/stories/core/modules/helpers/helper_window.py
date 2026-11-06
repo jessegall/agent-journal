@@ -3,7 +3,7 @@ from core.base.viewer.person_lines import PERSON_LINES
 from core.modules.helpers.support.helper_settings import HELPER_RUN_LIMIT
 from core.testing.fake_launcher import FakeLauncher
 from core.modules.viewer.migrations.m003_helpers_window_key import HelpersWindowKeyMigration
-from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, StartedHelper, the_helper
+from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, StartedHelper, helper_agent
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
 
@@ -14,15 +14,15 @@ LAYOUT = "viewer-layout current --suite coding --page home --environment main"
 
 def test_a_person_stops_a_runaway_helper_from_its_card(new_story):
     story = new_story(fixture=StartedHelper)
-    helper = the_helper(story)
+    helper = helper_agent(story)
     WindowStory(story).expect_window_allowed("agents.helpers", f"helper stop {helper.id}")
     story.expect_success(f"helper stop {helper.id}", actor=story.user)
-    story.expect_rows(the_helper(story).ended_at is not None)
+    story.expect_rows(helper_agent(story).ended_at is not None)
 
 
 def test_a_person_sends_a_job_to_a_helper_from_its_card(new_story):
     story = new_story(fixture=StartedHelper)
-    helper = the_helper(story)
+    helper = helper_agent(story)
     WindowStory(story).expect_window_allowed("agents.helpers", f'helper send {helper.id} "{JOB}"')
     story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.user)
 

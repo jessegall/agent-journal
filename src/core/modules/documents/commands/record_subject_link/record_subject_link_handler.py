@@ -17,4 +17,4 @@ class RecordSubjectLinkHandler(Handler[RecordSubjectLink, None]):
 
     def handle(self, command: RecordSubjectLink, context: Context) -> None:
         link = Link(creator_id=context.actor.id, source_model=Message.model_name, source_id=command.message_id, target_model=command.target_model, target_id=command.target_id, link_type=LinkType.SUBJECT)
-        self.links.save_automatic((link,), context)
+        self.links.save_automatic([link], context)

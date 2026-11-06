@@ -42,8 +42,8 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.queries.agent_query import AgentQuery
 from core.modules.agents.models.menu_answer import MenuAnswer
 from core.modules.agents.upgrade.agents_move import AgentsMove
+from core.modules.agents.listeners.ended_agent_program_listener import EndedAgentProgramListener
 from core.modules.agents.listeners.menu_answer_mark_listener import MenuAnswerMarkListener
-from core.modules.agents.listeners.replaced_main_listener import ReplacedMainListener
 from core.modules.agents.commands.running_main_agents.running_main_agents_subcommand import RunningMainAgentsSubcommand
 from core.modules.agents.commands.main_sessions.main_sessions_subcommand import MainSessionsSubcommand
 from core.modules.agents.commands.end_replaced_main.end_replaced_main_handler import EndReplacedMainHandler
@@ -103,6 +103,6 @@ class AgentsModule(Module):
                                  events=CARD_EVENTS, tabs=CARD_TABS),
                WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, skeleton=AGENTS_TRANSCRIPT_SKELETON, icon=WindowIcon.DOCUMENT, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM,
                                  reads=["agent transcript", "hook-call feed"], runs=["message send"], events=["hook_call.*"])]
-    listeners = [MenuAnswerMarkListener, ReplacedMainListener]
+    listeners = [MenuAnswerMarkListener, EndedAgentProgramListener]
     marks = AGENT_MARKS
     seeders = [AgentsSeeder]

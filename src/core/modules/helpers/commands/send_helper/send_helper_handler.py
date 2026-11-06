@@ -6,12 +6,14 @@ from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
+from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.helpers.commands.send_helper.send_helper import SendHelper
 from core.modules.helpers.support.helper_job_source import HELPER_JOB_SOURCE
 from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.support.helper_reach import HelperReach
+from core.modules.messages.support.work_source_copy import WorkSourceCopy
 from core.modules.messages.support.work_sources import WorkSources
 from core.base.scope.scopes import Scopes
 from core.base.scope.actor_scope import ActorScope
@@ -34,22 +36,26 @@ class SendHelperHandler(Handler[SendHelper, int]):
         helper = self.reach.checked_helper(command.helper_id, context.actor)
         last_job = self.jobs.helper_jobs(helper.id)[-1]
         source_context = replace(context, environment_id=helper.environment_id)
-        source = self.sources.snapshot(source_context)
+        source = self.sources.source_copy(source_context)
         if helper.ended_at is None:
             with self.scopes.opened(context.actor.id, context.environment_id, [ActorScope]):
                 line = self.nudger.send_text(helper.id, command.job, HELPER_JOB_SOURCE, context, wakes_agent=True)
-            if last_job.ended_at is None and last_job.source_message_id == source.message_id and last_job.source_unavailable == source.unavailable:
+            if self.continues(last_job, source):
                 self.repository.save(last_job.changed(brief=f"{last_job.brief}\n\n{command.job}"), context)
                 return helper.id
             next_job = last_job.next_job(helper.session, command.job, command.job[:SHORT_JOB_CHARACTERS], context.actor.id)
             self.repository.save(next_job.changed(source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, source_line_id=line.id), context)
-            self.sources.use_snapshot(source, source_context)
+            self.sources.use_copy(source, source_context)
             return helper.id
         self.check_resume(helper)
         next_job = last_job.next_job(helper.session, command.job, command.job[:SHORT_JOB_CHARACTERS], context.actor.id)
         self.repository.save(next_job.changed(source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp), context)
-        self.sources.use_snapshot(source, source_context)
+        self.sources.use_copy(source, source_context)
         return helper.id
+
+    @staticmethod
+    def continues(job: HelperJob, source: WorkSourceCopy) -> bool:
+        return job.ended_at is None and job.source_message_id == source.message_id and job.source_unavailable == source.unavailable
 
     def check_resume(self, helper: Agent) -> None:
         if not helper.profile:

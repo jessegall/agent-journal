@@ -46,16 +46,16 @@ def read_source_ids(queries: Queries, registry: Registry, agent_id: int):
     return tuple(row.message_id for row in read_source_rows(queries, registry, agent_id) if row.message_id is not None)
 
 
-def viewer_answer(story: Story, window: str, words: list[str], environment: str = "main", person_id: int | None = None):
-    story.steps.append(f"viewer {window} {environment}: {json.dumps(words)}")
+def viewer_answer(story: Story, window: str, arguments: list[str], environment: str = "main", person_id: int | None = None):
+    story.steps.append(f"viewer {window} {environment}: {json.dumps(arguments)}")
     listeners = ListenerThread(story.run_listeners, pytest.fail)
     route = StoryLineRoute(story.home, listeners, ReportedFindings())
-    return route.run_line(story.container, window, words, story.user.id if person_id is None else person_id, environment, None)
+    return route.run_line(story.container, window, arguments, story.user.id if person_id is None else person_id, environment, None)
 
 
-def viewer(story: Story, window: str, words: list[str]):
-    answer = viewer_answer(story, window, words)
-    assert answer.code == 0, (window, words, answer.error)
+def viewer(story: Story, window: str, arguments: list[str]):
+    answer = viewer_answer(story, window, arguments)
+    assert answer.code == 0, (window, arguments, answer.error)
     return answer.value
 
 
@@ -106,16 +106,16 @@ class StartedTrailPlan(StoryFixture):
 
 
 @dataclass(frozen=True)
-class Trail:
+class Scenario:
     story: Story
 
-    def person(self, window: str, *words: str):
-        return viewer(self.story, window, list(words))
+    def person(self, window: str, *arguments: str):
+        return viewer(self.story, window, list(arguments))
 
-    def comment(self, window: str, noun: str, number: int, text: str):
-        self.person(window, noun, "comment", str(number), text)
+    def comment(self, window: str, row_type: str, number: int, text: str):
+        self.person(window, row_type, "comment", str(number), text)
         rows = self.person("messages.chat", "message", "feed")["rows"]
-        return next(row for row in rows if row["text"] == text and row["commented_row"] == f"{noun}:{number}")
+        return next(row for row in rows if row["text"] == text and row["commented_row"] == f"{row_type}:{number}")
 
     def command(self, line: str):
         outcome = self.story.run(line, actor=self.story.agent)
@@ -141,7 +141,7 @@ class Trail:
 
     def expect_source(self, number: int) -> None:
         actual = self.source_ids(self.story.agent.id)
-        feature(actual == (number,), f"expected selected message {number}, got {actual}")
+        feature(actual == tuple([number]), f"expected selected message {number}, got {actual}")
 
     def links(self, source: str):
         value = json.loads(self.command(f"link list --source {source} --page-size 50 --json").output_text)
@@ -149,8 +149,8 @@ class Trail:
 
     def expect_link(self, source: str, target: str, relation: str) -> None:
         model, number = target.split(":")
-        found = [row for row in self.links(source) if row["target_model"] == model and row["target_id"] == int(number) and row["link_type"] == relation]
-        feature(len(found) == 1, f"expected one {source} {relation} {target}, got {found}")
+        matches = [row for row in self.links(source) if row["target_model"] == model and row["target_id"] == int(number) and row["link_type"] == relation]
+        feature(len(matches) == 1, f"expected one {source} {relation} {target}, got {matches}")
 
     def expect_no_link(self, source: str, target: str) -> None:
         model, number = target.split(":")
@@ -159,8 +159,8 @@ class Trail:
     def make_task(self, title: str = "New cart work") -> None:
         self.command(f"task make {shlex.quote(title)} --brief 'Follow the request' --environment main")
 
-    def context(self, noun: str = "task", number: int = 1, flags: str = ""):
-        outcome = self.requested_command(f"{noun} context {number} --json {flags}")
+    def context(self, row_type: str = "task", number: int = 1, flags: str = ""):
+        outcome = self.requested_command(f"{row_type} context {number} --json {flags}")
         return json.loads(outcome.output_text)
 
     def tick(self):
@@ -168,38 +168,38 @@ class Trail:
 
 
 @pytest.fixture
-def trail(new_story):
-    return Trail(new_story(fixture=TrailReady))
+def scenario(new_story):
+    return Scenario(new_story(fixture=TrailReady))
 
 
 @pytest.fixture
-def linked_trail(new_story):
-    return Trail(new_story(fixture=LinkedTrail))
+def linked_scenario(new_story):
+    return Scenario(new_story(fixture=LinkedTrail))
 
 
 @pytest.fixture
-def selected_trail(new_story):
-    return Trail(new_story(fixture=SelectedTrail))
+def selected_scenario(new_story):
+    return Scenario(new_story(fixture=SelectedTrail))
 
 
-def send_picture(trail: Trail) -> int:
-    with server_story(trail.story, listener_thread_started=False) as server:
+def attach_image(scenario: Scenario) -> int:
+    with server_story(scenario.story, listener_thread_started=False) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         token = uploaded(server, cookie, "cart.png", IMAGE_BYTES)
         message = server.viewer_line_value(cookie, {"window": "messages.chat", "environment": "main", "line": ["message", "send", "", "--file", token]})
     number = message["id"]
-    trail.command(f'message tag {number} "cart.png" "Cart total is wrong"')
-    trail.command(f'message reply {number} "Review task 1"')
-    trail.story.run_listeners()
+    scenario.command(f'message tag {number} "cart.png" "Cart total is wrong"')
+    scenario.command(f'message reply {number} "Review task 1"')
+    scenario.story.run_listeners()
     return number
 
 
 @dataclass(frozen=True)
-class PictureTrail:
-    trail: Trail
+class ImageScenario:
+    scenario: Scenario
     message_id: int
 
 
 @pytest.fixture
-def picture_trail(linked_trail):
-    return PictureTrail(linked_trail, send_picture(linked_trail))
+def image_scenario(linked_scenario):
+    return ImageScenario(linked_scenario, attach_image(linked_scenario))

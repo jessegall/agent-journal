@@ -64,12 +64,12 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
             self.check_idle(profile, program, model)
         start = StartAgent(str(uuid4()), program, agent_type.key, parent.id, program_model=model, profile=profile.name, given_name=command.given_name, access=profile.access or agent_type.access)
         source_context = replace(context, environment_id=parent.environment_id)
-        source = self.sources.snapshot(source_context)
+        source = self.sources.source_copy(source_context)
         helper = self.bus.dispatch(start, context)
         self.repository.save(HelperJob(session_agent_id=parent.id, creator_id=context.actor.id, tool_key=helper.session, helper_id=helper.id, profile=profile.name, program_model=model,
                                        description=command.given_name or profile.name, brief=command.brief, instruction=command.brief[:SHORT_BRIEF_CHARACTERS],
                                        source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp), context)
-        self.sources.use_snapshot(source, source_context)
+        self.sources.use_copy(source, source_context)
         self.bus.dispatch(CountProfileUse(profile.name), context)
         return helper
 

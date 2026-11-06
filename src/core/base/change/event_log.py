@@ -108,8 +108,8 @@ class EventLog:
     def row_events(self, row_table: str, row_id: int) -> list[LoggedEvent]:
         return [LoggedEvent.parsed(row) for row in self.table.row_rows(row_table, row_id)]
 
-    def newest_row_named(self, row_table: str, row_id: int, names: Sequence[str]) -> LoggedEvent | None:
-        row = self.table.newest_row_named(row_table, row_id, names)
+    def latest_row(self, row_table: str, row_id: int, names: Sequence[str]) -> LoggedEvent | None:
+        row = self.table.latest_row(row_table, row_id, names)
         return LoggedEvent.parsed(row) if row is not None else None
 
     def row_events_many(self, row_table: str, row_ids: Sequence[int]) -> list[LoggedEvent]:

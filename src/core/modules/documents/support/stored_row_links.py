@@ -1,8 +1,9 @@
 from core.base.cli.row_links import RowLinks
 from core.base.query.queries import Queries
 from core.modules.documents.models.link import Link
-from core.modules.documents.conditions.link_scope import LinkScope, LinkSide
-from core.modules.documents.conditions.link_counterparts import FirstLinkCounterpart
+from core.modules.documents.conditions.link_scope import LinkScope
+from core.modules.documents.conditions.link_side import LinkSide
+from core.modules.documents.conditions.first_link_counterpart import FirstLinkCounterpart
 from core.modules.documents.support.row_ref import RowRef
 
 LINKS_SHOWN = 50
@@ -16,7 +17,7 @@ class StoredRowLinks(RowLinks):
 
     def lines(self, model_name: str, row_id: int, exceptions: tuple[str, ...] = ()) -> list[str]:
         reference = RowRef(model_name, row_id)
-        scope = LinkScope(reference, LinkSide.BOTH)
+        scope = LinkScope(reference, LinkSide.ROW)
         query = self.queries.query(Link).matching(scope)
         page = query.matching(FirstLinkCounterpart(query.select, reference)).oldest().page(1, LINKS_SHOWN)
         names = tuple(scope.counterpart(link).text for link in page.rows)

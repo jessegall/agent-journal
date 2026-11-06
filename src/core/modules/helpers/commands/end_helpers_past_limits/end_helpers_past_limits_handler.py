@@ -8,7 +8,6 @@ from core.base.scope.scopes import Scopes
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
@@ -24,15 +23,15 @@ WARNING_SHARE = 0.8
 
 
 class EndHelpersPastLimitsHandler(Handler[EndHelpersPastLimits, None]):
-    """Tells a parent once at 80 percent of a limit, and past it reports the job and stops the helper. It reads the
-    status files and stops programs outside any transaction, and leaves every other type of agent alone."""
+    """Tells a parent once at 80 percent of a limit, and past it reports the job and ends the helper's row. It reads
+    the status files outside any transaction, and leaves every other type of agent alone."""
 
     command = EndHelpersPastLimits
     transactional = False
 
-    def __init__(self, queries: Queries, agents: AgentRows, jobs: HelperJobRows, settings: SettingValues, files: StatusFiles, scopes: Scopes, bus: Bus, launcher: LauncherLink) -> None:
+    def __init__(self, queries: Queries, agents: AgentRows, jobs: HelperJobRows, settings: SettingValues, files: StatusFiles, scopes: Scopes, bus: Bus) -> None:
         self.queries, self.agents, self.jobs, self.settings, self.files, self.scopes = queries, agents, jobs, settings, files, scopes
-        self.bus, self.launcher = bus, launcher
+        self.bus = bus
 
     def handle(self, command: EndHelpersPastLimits, context: Context) -> None:
         for helper in self.agents.running(AgentRole.HELPER):
@@ -56,4 +55,3 @@ class EndHelpersPastLimitsHandler(Handler[EndHelpersPastLimits, None]):
         text = f"It was stopped at its {spend.limit_name} limit."
         self.bus.run(RecordParentReport(helper.id, helper.parent_id, text, job.id), Actor.core(), environment_id=helper.environment_id)
         self.bus.run(EndAgent(helper.id), Actor.core(), environment_id=helper.environment_id)
-        self.launcher.stop(helper.id)
