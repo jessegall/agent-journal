@@ -32,10 +32,11 @@ class HookRequestLog:
             query = query.matching(Among("family", ["process bookkeeping"], negated=True))
         return list(query.all_rows())
 
-    def record(self, program: str, headers: Mapping[str, str], body: object, duration_ms: float, outcome: HookAnswer, queued_ms: float = 0, role: str = "main", agent: str = "") -> None:
+    def record(self, program: str, headers: Mapping[str, str], body: object, duration_ms: float, outcome: HookAnswer, queued_ms: float = 0, role: str = "main", agent: str = "") -> bool:
         if not self.settings.project.flag(HOOK_REQUEST_LOG_SETTING):
-            return
+            return False
         received_at = (self.clock.timestamp().value - timedelta(milliseconds=duration_ms)).isoformat(timespec="microseconds")
         payload = json.dumps({"received_at": received_at, "program": program,
                               "headers": dict(headers), "body": body, "duration_ms": duration_ms, "queued_ms": queued_ms, "role": role, "agent": agent, "outcome": outcome.value})
         self.table.record(payload, max(self.settings.project.number(HOOK_REQUEST_LOG_SIZE_SETTING), 1))
+        return True

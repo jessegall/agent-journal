@@ -138,8 +138,9 @@ async function readAnswer(body, signal, unbatched) {
 // a line of a window, read or write, whichever way it was asked: the server's knowledge of its command decides, and only a read is joined
 export async function lineResult(window, line, environment, signal = undefined, unbatched = false) {
     const body = {window, line: Array.isArray(line) ? line : lineWords(line), environment};
-    if (!(await transport.isRead(body.line))) return lineAnswer(() => lineBatch.write(body), signal);
-    return transport.joined(JSON.stringify(body), (stop) => readAnswer(body, stop, unbatched), signal).catch(() => CANCELLED);
+    if (!(await transport.isRead(body.line))) return lineAnswer(() => lineBatch.write({...body, attribution: {
+        client_id: transport.clientId, command_id: crypto.randomUUID(), joined_callers: 0, trailing_of: "", complete: true}}), signal);
+    return transport.joined(JSON.stringify(body), (stop, attribution) => readAnswer({...body, attribution}, stop, unbatched), signal, body).catch(() => CANCELLED);
 }
 
 // a file the person attached, sent to the journal to wait for the message that names it: answers {ok, value: its pending name}

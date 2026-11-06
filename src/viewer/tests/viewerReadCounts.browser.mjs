@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
-import {readFileSync, writeFileSync} from "node:fs";
+import {existsSync, readFileSync, readdirSync, writeFileSync} from "node:fs";
+import {homedir} from "node:os";
+import {join} from "node:path";
 import {fileURLToPath} from "node:url";
 import {build} from "esbuild";
 import {chromium} from "playwright-core";
@@ -7,6 +9,14 @@ import {chromium} from "playwright-core";
 const viewerFolder = fileURLToPath(new URL("..", import.meta.url));
 const pause = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 const isCommand = (request) => /\/api\/lines?$/.test(new URL(request.url()).pathname);
+
+function chromiumPath() {
+    if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
+    if (existsSync(chromium.executablePath())) return chromium.executablePath();
+    const cache = join(homedir(), "Library/Caches/ms-playwright");
+    const folders = existsSync(cache) ? readdirSync(cache).filter((name) => name.startsWith("chromium_headless_shell-")).sort().reverse() : [];
+    return folders.map((folder) => join(cache, folder, "chrome-headless-shell-mac-arm64/chrome-headless-shell")).find(existsSync);
+}
 
 async function fixtureCode() {
     const bundled = await build({
@@ -70,6 +80,15 @@ async function advancePoll(page) {
     if (!hidden) await page.waitForFunction((before) => readFixture.results.length > before, previous);
 }
 
+async function funnelEvidence(page) {
+    return page.evaluate(async () => {
+        const transport = globalThis[Symbol.for("journal.transport")];
+        await transport.flushReadReceipts();
+        return {client_id: transport.clientId, counts: transport.requestTotals(), receiptFailures: transport.receiptFailures,
+            windows: Object.fromEntries([...transport.lineCounts.keys()].map((window) => [window, transport.requestCounts(window)]))};
+    });
+}
+
 async function visibilityCase(context, address, code, caseName) {
     const page = await controlledPage(context, address, code, caseName === "initially-hidden");
     const before = await page.evaluate(() => readFixture.transport.sentCounts("messages.chat"));
@@ -102,8 +121,9 @@ async function visibilityCase(context, address, code, caseName) {
     await page.waitForFunction(() => readFixture.results.at(-1).ok);
     const after = await page.evaluate(() => ({counts: readFixture.transport.sentCounts("messages.chat"),
         eventCalls: readFixture.eventCalls, successfulReturn: readFixture.results.at(-1).ok}));
+    const funnel = await funnelEvidence(page);
     await page.close();
-    return {before, during, held, after};
+    return {before, during, held, after, funnel};
 }
 
 async function raceCase(context, address, code) {
@@ -143,15 +163,18 @@ async function raceCase(context, address, code) {
     const after = await page.evaluate(() => readFixture.transport.sentCounts("messages.chat"));
     assert.equal(after["message feed"] - before["message feed"], 2);
     assert.equal(after["message send"] - (before["message send"] ?? 0), 1);
+    const funnel = await funnelEvidence(page);
     await page.close();
-    return {before, after, joinedAnswerEqual: true, trailingContainsAction: true};
+    return {before, after, joinedAnswerEqual: true, trailingContainsAction: true, funnel};
 }
 
-async function scheduleCase(context, address, workload) {
+async function scheduleCase(context, address, workload, code) {
     const page = await context.newPage();
     await page.goto(address);
     await page.locator(".composer-input").waitFor();
     await page.locator("[data-message]").first().waitFor();
+    await page.addScriptTag({type: "module", content: code});
+    await page.waitForFunction(() => Boolean(globalThis.readFixture));
     assert.equal(await page.locator(".dock-title").count(), workload.docks.length);
     const rows = await page.locator("[data-message]").count();
     assert.equal(rows, workload.displayed_rows);
@@ -163,14 +186,8 @@ async function scheduleCase(context, address, workload) {
     const startedAt = Date.now();
     for (const event of workload.events) {
         await pause(Math.max(0, startedAt + event.at_seconds * 1000 - Date.now()));
-        const answer = await page.evaluate(async (event) => {
-            const transport = globalThis[Symbol.for("journal.transport")];
-            const body = {window: "messages.chat", environment: event.environment, line: event.line};
-            const response = await transport.raw("/api/line", {method: "POST", headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(body)}, {window: body.window, line: body.line.join(" ")});
-            return response.json();
-        }, event);
-        assert.equal(answer.code, 0, JSON.stringify(answer));
+        const answer = await page.evaluate((event) => readFixture.lineResult("messages.chat", event.line, event.environment), event);
+        assert.equal(answer.ok, true, JSON.stringify(answer));
     }
     await pause(Math.max(0, startedAt + workload.visible_seconds * 1000 - Date.now()));
     const visible = await snapshot();
@@ -186,13 +203,14 @@ async function scheduleCase(context, address, workload) {
     });
     await pause(1000);
     const returned = await snapshot();
+    const funnel = await funnelEvidence(page);
     await page.close();
-    return {before, visible, hidden, returned, scheduleClock: "wall", elapsedMs: Date.now() - startedAt};
+    return {before, visible, hidden, returned, funnel, scheduleClock: "wall", elapsedMs: Date.now() - startedAt};
 }
 
 export async function runViewerReadWorkload(address, workload, caseName = "schedule") {
     assert.equal(workload.identifier, "viewer-post-funnel-v1");
-    const browser = await chromium.launch({executablePath: process.env.CHROMIUM_PATH, headless: true});
+    const browser = await chromium.launch({executablePath: chromiumPath(), headless: true});
     const records = [];
     try {
         const context = await browser.newContext({viewport: {width: 1440, height: 1000}});
@@ -201,7 +219,7 @@ export async function runViewerReadWorkload(address, workload, caseName = "sched
             records.push({url: response.url(), body: response.request().postDataJSON(), status: response.status(),
                 request_id: response.headers()["x-journal-request-id"] ?? null});
         });
-        const result = caseName === "schedule" ? await scheduleCase(context, address, workload)
+        const result = caseName === "schedule" ? await scheduleCase(context, address, workload, await fixtureCode())
             : caseName === "action-event-race" ? await raceCase(context, address, await fixtureCode())
                 : await visibilityCase(context, address, await fixtureCode(), caseName);
         return {workload, caseName, result, network: records};

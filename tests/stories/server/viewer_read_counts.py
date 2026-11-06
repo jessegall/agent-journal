@@ -166,6 +166,29 @@ class WorkloadServer:
         assert all(answer["code"] == 0 for answer in measured.answers), measured.answers
         return tuple(row for answer in measured.answers for row in answer["value"]["rows"])
 
+    def attributed_evidence(self, funnel: dict[str, object]) -> dict[str, object]:
+        status, _, text = viewer_answer(self.server.viewer_port(), "/api/request-log-status", self.cookie, "")
+        assert status == 200, text
+        status = json.loads(text)
+        rows = self.server.viewer_line_value(self.cookie, {"window": "developer.hook-requests", "environment": "main",
+                                                          "line": ["developer", "hook-requests"]})["rows"]
+        attributed = tuple(row["body"]["attribution"] for row in rows if
+                           row["body"].get("attribution", {}).get("client_id") == funnel["client_id"])
+        if not all(row["complete"] for row in attributed):
+            raise IncompleteViewerSample.for_reason("some joined reads have no completion receipt")
+        commands = {row["command_id"]: row for row in attributed}
+        evidence = {"attribution": {"http_requests": len({row["request_id"] for row in attributed}),
+                                    "logical_commands": len(attributed),
+                                    "joined_callers": sum(row["joined_callers"] for row in commands.values()),
+                                    "trailing_reads": sum(bool(row["trailing_of"]) for row in commands.values())},
+                    "retention": {"required": status["recorded"], "retained": status["retained"]},
+                    "losses": {"attempted": status["attempted"], "recorded": status["recorded"], "dropped": status["dropped"]},
+                    "funnel": funnel["counts"]}
+        if status["receipt_dropped"] or funnel["receiptFailures"]:
+            raise IncompleteViewerSample.for_reason("completion receipts were lost")
+        validate_sample(evidence)
+        return {**evidence, "epoch": status["epoch"], "retention_limit": status["retention_limit"]}
+
     def read(self, lines: tuple[ReadLine, ...]) -> ReadMeasurement:
         databases = []
         statements = []
@@ -248,6 +271,9 @@ def validate_sample(evidence: dict[str, object]) -> None:
     counts = {"http_requests", "logical_commands", "joined_callers", "trailing_reads"}
     if not counts <= evidence["attribution"].keys() or not counts <= evidence["funnel"].keys():
         raise IncompleteViewerSample.for_reason("every counter must have explicit attribution")
+    if any(type(evidence[section][key]) is not int or evidence[section][key] < 0
+           for section in ("attribution", "funnel") for key in counts):
+        raise IncompleteViewerSample.for_reason("every counter must be a nonnegative integer")
     losses = evidence["losses"]
     if losses["dropped"] != 0 or losses["attempted"] != losses["recorded"]:
         raise IncompleteViewerSample.for_reason("the log lost records")
@@ -271,7 +297,11 @@ def run_workload_browser(new_story, tmp_path: Path, case: str = "schedule") -> d
         result = json.loads(FileAccess.shared().read(result_file))
         assert result["workload"]["identifier"] == sample.workload.identifier
         assert result["workload"]["build"] == sample.workload.manifest()["build"]
-        print(json.dumps(result, sort_keys=True))
+        if case != "failure-return":
+            result["counter_agreement"] = sample.attributed_evidence(result["result"]["funnel"])
+        FileAccess.shared().write(result_file, json.dumps(result))
+        print(json.dumps({"workload": result["workload"], "case": case, "result": result["result"],
+                          "artifact": str(result_file)}, sort_keys=True))
         return result
 
 

@@ -68,9 +68,10 @@ class LineRoute:
             container.get(Database).close()
 
     def timed_answer(self, container: Container, request: ViewerLineRequest, person_id: int, shared: SharedRow | None) -> TimedLineAnswer:
+        before = container.get(Database).tally.points()
         started_at = perf_counter()
         answer = self.batch_answer(container, request, person_id, shared)
-        return TimedLineAnswer(answer, (perf_counter() - started_at) * 1000)
+        return TimedLineAnswer(answer, (perf_counter() - started_at) * 1000, container.get(Database).tally.points().minus(before))
 
     def batch_answer(self, container: Container, request: ViewerLineRequest, person_id: int, shared: SharedRow | None) -> LineAnswer:
         try:

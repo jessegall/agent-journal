@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from core.base.type_guards import is_mapping, is_text_list
 from server.viewer.viewer_request_error import ViewerRequestError
+from server.viewer.read_attribution import ReadAttribution
 
 
 @dataclass(frozen=True)
@@ -12,6 +13,7 @@ class ViewerLineRequest:
     window: str
     line: list[str]
     environment: str
+    attribution: ReadAttribution = ReadAttribution()
 
     @classmethod
     def parsed(cls, data: object) -> "ViewerLineRequest":
@@ -22,4 +24,5 @@ class ViewerLineRequest:
             raise ViewerRequestError("every line names the window that sends it")
         if not is_text_list(arguments) or not isinstance(environment, str):
             raise ViewerRequestError("a line names its arguments as a list of words and its environment")
-        return cls(window, list(arguments), environment)
+        attribution = ReadAttribution.parsed(data["attribution"]) if "attribution" in data else ReadAttribution()
+        return cls(window, list(arguments), environment, attribution)
