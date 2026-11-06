@@ -75,6 +75,7 @@ class CommitListenerRunner:
 
     def run_round(self, entries: list[ListenerEntry], urgent_entries: list[ListenerEntry]) -> bool:
         positions = self.known_positions(entries)
+        entries = [entry for entry in entries if entry.name in positions]
         events = self.log.events_past(min(positions[entry.name] for entry in entries)) if entries else []
         if not events:
             return False

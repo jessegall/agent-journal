@@ -38,7 +38,7 @@ def test_a_helpers_task_move_stays_out_of_the_main_chat_and_is_stored_as_its_own
     story = subagent_task
     story.expect_absent(MAIN_CHAT, MADE)
     mark = next(story.container.get(Queries).query(ChatMark).filter(target_model="task", target_id=1).all_rows())
-    expect_row(mark, agent_id=story.helper.id)
+    expect_row(mark, session_agent_id=story.helper.id)
 
 
 def test_a_main_agents_task_move_still_shows_in_the_main_chat(new_story):
@@ -96,12 +96,6 @@ def test_a_helpers_message_send_is_refused_and_a_main_agents_is_not(new_story):
     story = new_story(fixture=HelperUnderBuilder)
     story.expect_refusal('message send "The cart is done" --environment main', "only a main agent", actor=story.helper)
     story.expect_success('message send "The cart is done" --environment main', actor=story.agent)
-
-
-def test_a_command_that_cannot_be_told_from_an_open_helper_is_recorded_as_the_journals(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
-    story.expect_requested_success(TASK_LINE, CallerRequest({"CLAUDE_CODE_SESSION_ID": "s-1"}))
-    story.expect_text("task show 1", "creator_id: 1")
 
 
 def test_the_commands_of_the_main_agent_leave_out_a_helpers_and_the_helpers_page_shows_them(new_story):

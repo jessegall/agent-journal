@@ -1,7 +1,9 @@
 import pytest
 
-from core.base.change.touched import Touched
-from core.base.database.database import Database
+from core.base.change.deleted import Deleted
+from core.modules.drivers.support.driver_settings import HOOK_WAIT_SECONDS
+from core.modules.settings.models.setting import Setting
+from core.modules.settings.support.setting_rows import SettingRows
 from core.base.journal_home import JournalHome
 from core.modules.drivers.listeners.hook_wait_file_listener import HookWaitFileListener
 from core.testing.hook_samples import HookSamples
@@ -52,8 +54,8 @@ def test_the_hook_wait_a_person_sets_reaches_the_file_the_go_hook_reads(new_stor
     story.expect_success("setting set journal.core.drivers.hook-wait-seconds 12 --project", actor=story.user)
     story.run_listeners()
     story.expect_rows(home.hook_wait_file.read_text().strip() == "12")
-    story.container.get(Database).connection.execute("DELETE FROM settings")
-    story.container.get(HookWaitFileListener).handle(Touched(), None)
+    setting = next(row for row in story.container.get(SettingRows).kept_table(Setting).values() if row.key == HOOK_WAIT_SECONDS)
+    story.container.get(HookWaitFileListener).handle(Deleted(setting), None)
     story.expect_rows(not home.hook_wait_file.exists())
 
 

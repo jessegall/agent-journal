@@ -32,8 +32,8 @@ def test_a_few_words_answering_a_journal_line_stay_out_of_the_chat(new_story):
 def test_a_question_after_a_journal_line_reaches_the_chat(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.hook("s-1", HookSamples.prompt("[journal] output 3 ended: finished"))
-    story.hook("s-1", HookSamples.message_display("Should I go on?"))
-    expect_chat(story, "Should I go on?")
+    story.hook("s-1", HookSamples.message_display("Where is the cart total kept?"))
+    expect_chat(story, "Where is the cart total kept?")
 
 
 def test_a_plain_answer_to_a_new_message_line_reaches_the_chat(new_story):

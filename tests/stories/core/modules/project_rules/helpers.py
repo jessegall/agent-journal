@@ -22,6 +22,7 @@ def test_a_worker_and_a_helper_start_with_the_rules_and_none_of_the_main_agents_
     story.expect_success('rule make "Name things plainly"')
     story.new_row_id("agent start s-9 claude worker --environment main")
     worker_lines = story.hook("s-9", HookSamples.session_start()).lines
+    story.new_row_id(f"agent start sub-2 claude helper --parent {story.agent.id} --environment main")
     subagent_lines = story.hook("sub-2", HookSamples.session_start()).lines
     expect_value_with(" ".join(worker_lines), RULE_LINE)
     expect_value_with(" ".join(subagent_lines), RULE_LINE)
@@ -60,7 +61,7 @@ def test_what_a_worker_keeps_reaches_neither_the_main_agent_nor_a_second_worker(
     worker = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
     second_worker = Actor(story.new_row_id("agent start s-10 claude worker --environment main"), ActorType.AGENT)
     story.expect_success(f'memory make "{OWN_MEMORY}" --environment main', actor=worker)
-    story.expect_text("memory list --environment main", SHARED_MEMORY, actor=worker)
+    story.expect_absent("memory list --environment main", SHARED_MEMORY, actor=worker)
     story.expect_text("memory list --environment main", OWN_MEMORY, actor=worker)
     story.expect_absent("memory list --environment main", OWN_MEMORY, actor=story.agent)
     story.expect_absent("memory list --environment main", OWN_MEMORY, actor=second_worker)

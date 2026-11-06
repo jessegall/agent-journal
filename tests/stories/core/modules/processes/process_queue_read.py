@@ -30,6 +30,7 @@ def test_a_queue_read_costs_the_same_with_many_ended_runs(new_story):
 def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an_edited_limit(new_story):
     story = install_runner(new_story(fixture=BuilderWithUser))
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
+    story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main", actor=story.user)
     story.expect_success("setting set journal.core.processes.readers-forced false --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start queue-worker claude worker --environment main"), ActorType.AGENT)
     first = start_process(story, "make package", category=CommandCategory.BUILD)
@@ -48,6 +49,7 @@ def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an
     story.expect_rows([limit["title"] for limit in page["suite_limits"]] == ["Test limit per worker command"])
     story.expect_success(f"setting set {page['suite_limits'][0]['key']} 500 --environment main", actor=story.user)
     story.expect_rows(queue_page(story)["suite_limits"][0]["value"] == 500)
+    story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main", actor=story.user)
     story.expect_success(f"setting set {page['limit_setting']} 2 --environment main", actor=story.user)
     third = start_process(story, "make site", category=CommandCategory.BUILD)
     page = queue_page(story)

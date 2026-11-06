@@ -15,7 +15,7 @@ test("a running agent offers pause and stop, a paused one resume, an ended one n
 
 test("stopping an agent asks before it runs", async () => {
     const ran = [];
-    const element = mounted(RowMoves, {type: "agent", id: 7, row: {ended_at: null, paused_at: null}, read: async (line) => (ran.push(line.join(" ")), {ok: true, value: {}})});
+    const element = mounted(RowMoves, {noun: "agent", id: 7, row: {ended_at: null, paused_at: null}, read: async (line) => (ran.push(line.join(" ")), {ok: true, value: {}})});
     element.querySelector('[data-move="stop"]').click();
     await settle();
     expect(ran).toEqual([]);

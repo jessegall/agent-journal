@@ -65,7 +65,7 @@ def test_a_service_is_started_again_once_the_files_of_its_plugin_changed(new_sto
         first = story.processes.running[("served", "answers")]
         story.services.follow(story.processes)
         story.expect_rows(story.processes.running[("served", "answers")].pid == first.pid)
-        story.container.get(Database).update(Statement("UPDATE plugins SET files_digest = 'upgraded' WHERE name = 'served'"))
+        story.container.get(Database).update(Statement("UPDATE plugins SET files_digest = 'upgraded', version = version + 1 WHERE name = 'served'"))
         story.services.follow(story.processes)
         second = story.processes.running[("served", "answers")]
         story.expect_rows(second.pid != first.pid, second.running(), not first.running())

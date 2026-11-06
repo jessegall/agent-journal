@@ -4,6 +4,7 @@ from pathlib import Path
 
 from core.base.access import Access
 from core.base.file_access import FileAccess
+from core.base.kept_file_text import KeptFileText
 from core.base.journal_home import JournalHome
 from core.base.profile.agent_profile import AgentProfile
 from core.base.profile.profile_name import PROFILE_NAME
@@ -28,6 +29,7 @@ class ProfileFiles:
 
     def __init__(self, home: JournalHome, settings: SettingValues, registry: Registry, digest: TextDigest) -> None:
         self.home, self.settings, self.registry, self.digest = home, settings, registry, digest
+        self.kept = KeptFileText()
 
     @property
     def module_profiles(self) -> tuple[AgentProfile, ...]:
@@ -98,7 +100,7 @@ class ProfileFiles:
                        codex_model=profile.codex_model or self.settings.project.text(CODEX_MODEL_SETTING))
 
     def fields(self, path: Path) -> ProfileFields:
-        fields = ProfileFormat.fields(FileAccess.shared().read(path))
+        fields = ProfileFormat.fields(self.kept.read(path))
         if path.parent == self.folder(PROFILE_FOLDER) and "agent_type" not in fields and "body" in fields and "module_text" not in fields:
             raise Refusal("a change file with instructions needs module-text")
         return fields

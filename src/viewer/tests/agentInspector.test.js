@@ -125,7 +125,7 @@ test("the main agent is titled without a number, shows the tasks done of its pla
     expect([...element.querySelectorAll("[data-agent-foot] [data-move]")].map((move) => move.dataset.move)).toEqual(["pause", "stop"]);
     element.querySelectorAll("[data-agent-fold]")[0].click();
     await settle();
-    expect(text(element, "[data-agent-helper]")).toBe("CurieSubagent 22");
+    expect(text(element, "[data-agent-helper]")).toBe("CurieHelper 22");
 });
 
 const ENDED = {
@@ -151,7 +151,7 @@ test("an ended worker says how long it ran and what it finished, reads no tool a
 });
 
 const SUBAGENT = {
-    "agent show 22": row({id: 22, role: "helper", parent_id: 1}),
+    "agent show 22": row({id: 22, role: "helper", access: "read-only", parent_id: 1}),
     "usage agents": {rows: [facts({id: 22, given_name: "Curie", profile: "explorer", model: "Haiku 4.5", effort: "", context_percent: 9, cost_dollars: 0.07, instruction: "Find where the queue gives a command its place, and say which file holds the rule. Reply with the file and the line."})]},
     "usage agent 22": inspection({id: 22}),
     "usage tool --agent 22": {tool: "Read src/core/modules/processes/support/run_slots.py", thinking: false, wait_target: ""},

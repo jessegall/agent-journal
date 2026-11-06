@@ -46,7 +46,7 @@ test("a memory with no keywords says what that means", async () => {
 test("a worker's moves go to the worker command, with its words after its number", async () => {
     const lines = [];
     const read = async (line) => (lines.push(line), {ok: true, value: {}});
-    const element = drawn(RowMoves, {type: "agent", id: 9, row: {role: "worker"}, read});
+    const element = drawn(RowMoves, {noun: "agent", id: 9, row: {role: "worker"}, read});
     await settled();
     element.querySelector('[data-move="release"]').click();
     await settled();

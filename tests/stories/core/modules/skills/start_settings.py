@@ -1,3 +1,4 @@
+from core.base.scope.scopes import Scopes
 from core.modules.skills.support.start_skills import JOURNAL_SKILLS, StartSkills
 
 DEFAULT_SKILLS = list(JOURNAL_SKILLS)
@@ -32,7 +33,8 @@ def test_an_environment_setting_wins_over_the_projects(new_story):
 
 
 def expect_after_compaction(story, number, expected) -> None:
-    actual = story.container.get(StartSkills).after_compaction()
+    with story.container.get(Scopes).opened(None, number):
+        actual = story.container.get(StartSkills).after_compaction()
     assert actual == expected, actual
 
 

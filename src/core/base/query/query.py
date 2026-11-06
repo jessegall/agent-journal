@@ -1,6 +1,7 @@
 from collections.abc import Iterator, Sequence
 from copy import copy
 from typing import Generic, Self, TypeVar
+from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
 from core.base.database.database import Database
 from core.base.missing_rows_error import MissingRowsError
 from core.base.model.agent_scoped import AgentScoped
@@ -24,7 +25,6 @@ M = TypeVar("M", bound=Model | ViewModel, covariant=True)
 PAGE_SIZE_ROWS = 25
 AGENT_COLUMN = "agent_id"
 SESSION_COLUMN = "session_agent_id"
-ENVIRONMENT_COLUMN = "environment_id"
 ROW_KEY = "id"
 VERSION_COLUMN = "version"
 

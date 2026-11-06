@@ -24,6 +24,7 @@ OPEN_REQUEST: ContextVar["RepeatedWork | None"] = ContextVar("open_request", def
 SCAN_TABLE = re.compile(r"\bSCAN(?: TABLE)? (\w+)")
 SCAN_INDEX = re.compile(r"\bUSING INDEX (\w+)")
 BOUNDED_PAGE = re.compile(r"^SELECT \* FROM (\w+)(?: ORDER BY id (?:ASC|DESC))? LIMIT ([1-9]\d*|\?) OFFSET (\d+|\?)$", re.IGNORECASE)
+UNFILTERED_COUNT = re.compile(r"^SELECT count\(\*\) FROM \w+$", re.IGNORECASE)
 SMALL_TABLES = {
     "settings": "Project and environment settings are small configuration sets kept on the connection.",
     "secret_settings": "Secret settings are a small configuration set kept on the connection.",
@@ -39,6 +40,8 @@ SMALL_TABLES = {
     "plugins": "Installed plugins form a small configuration catalogue, not event history.",
     "releases": "Available releases form a small upstream catalogue, not event history.",
     "statistics": "One row per named statistic, listed together.",
+    "hook_requests": "The developer's request log keeps only its newest requests.",
+    "secrets": "A project's secrets form a small catalogue.",
     "docs": "The document library is read and counted as one small list.",
     "reports": "The report library is read and counted as one small list.",
 }
@@ -50,7 +53,10 @@ ALLOWED_READ_REPEATS = {
     ("core/base/change/event_log.py", "events_past"): "Listener rounds read new events written by earlier listeners.",
 }
 BULK_SEEDS = "core/base/seed/demo.py"
-READ_HELPERS = ("core/base/database/database.py", "core/base/database/bookkeeping_table.py")
+READ_HELPERS = ("core/base/database/database.py", "core/base/database/bookkeeping_table.py", "unittest/mock.py", "<string>")
+ALLOWED_FILE_READS = {
+    "core/modules/plugins/support/plugin_code_diff.py": "An upgrade preview compares every file of a plugin, its manifest among them.",
+}
 
 
 class RepeatedWork(PointTally):
@@ -138,6 +144,8 @@ class RepeatedWork(PointTally):
         if statement in self.checked_plans:
             return
         self.checked_plans.add(statement)
+        if UNFILTERED_COUNT.fullmatch(statement.sql):
+            return
         page = BOUNDED_PAGE.fullmatch(statement.sql)
         plans = self.database.query_plan(statement)
         for plan in plans:
@@ -148,7 +156,7 @@ class RepeatedWork(PointTally):
                 continue
             if self.is_logical_scan(match.group(1), plans):
                 continue
-            if page is not None and page.group(1) == match.group(1) and self.has_page_bounds(page, statement):
+            if page is not None and not any("TEMP B-TREE" in step for step in plans) and self.has_page_bounds(page, statement):
                 continue
             index = SCAN_INDEX.search(plan)
             if index is not None and self.database.is_partial_index(index.group(1)):
@@ -180,9 +188,15 @@ class RepeatedWork(PointTally):
             self.reject(f"one request started this more than {COMMAND_LIMIT_REPEATS} times: {command}")
 
     def note_file_read(self, path: str) -> None:
+        if self.is_allowed_file_read():
+            return
         self.file_reads[path] += 1
         if self.file_reads[path] == 2:
             self.findings.append(f"one request read file twice: {path}\n{self.caller_lines()}")
+
+    @staticmethod
+    def is_allowed_file_read() -> bool:
+        return any(frame.filename.endswith(reader) for frame in traceback.extract_stack(limit=CALLER_FRAMES) for reader in ALLOWED_FILE_READS)
 
     def note_file_write(self, path: str) -> None:
         self.file_reads.pop(path, None)

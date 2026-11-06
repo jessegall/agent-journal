@@ -27,7 +27,7 @@ def test_a_plan_of_another_environment_is_refused_without_a_message(new_story):
     story = new_story(fixture=ReadyApprovalPlan)
     story.expect_success("environment make other /work/other", actor=story.user)
     story.expect_refusal('plan approve 1 --message "Wrong environment" --environment other',
-                         "plan 1 belongs to another environment", actor=story.user)
+                         "no plan 1", actor=story.user)
     story.expect_rows(story.container.get(Queries).query(Message).count() == 0,
                       story.container.get(Queries).query(Link).count() == 0)
     story.expect_success("plan show 1", "state: ready")

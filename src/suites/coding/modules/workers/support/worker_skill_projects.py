@@ -13,11 +13,19 @@ class WorkerSkillProjects(SkillProjects):
     def __init__(self, home: JournalHome, environments: EnvironmentRows, worktrees: WorktreeQuery, git: WorktreeGit) -> None:
         super().__init__(home, environments)
         self.worktrees, self.git = worktrees, git
+        self.kept_folders: dict[Path, tuple[int, tuple[Path, ...]]] = {}
 
     def projects(self) -> tuple[Path, ...]:
         projects = super().projects()
-        worktrees = (Path(folder) for project in projects if (project / ".git").exists() for folder, _ in self.git.folders(str(project)) if Path(folder).is_dir())
+        worktrees = (folder for project in projects if (project / ".git").exists() for folder in self.worktree_folders(project) if folder.is_dir())
         return tuple(dict.fromkeys((*projects, *worktrees)))
+
+    def worktree_folders(self, project: Path) -> tuple[Path, ...]:
+        listing = project / ".git" / "worktrees"
+        mark = listing.stat().st_mtime_ns if listing.exists() else 0
+        if project not in self.kept_folders or self.kept_folders[project][0] != mark:
+            self.kept_folders[project] = (mark, tuple(Path(folder) for folder, _ in self.git.folders(str(project))))
+        return self.kept_folders[project][1]
 
     def agent_folder(self, agent_id: int, environment_id: int) -> Path:
         worktree = self.worktrees.worker_worktree(agent_id)

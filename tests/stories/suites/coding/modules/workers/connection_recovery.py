@@ -142,6 +142,7 @@ def test_a_reconnection_resumes_a_silent_worker_once(offline_recovery):
 
 def test_a_running_or_queued_shell_command_prevents_recovery(recovery):
     recovery.story.expect_success("setting set journal.core.processes.readers-forced off --environment main")
+    recovery.story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
     recovery.story.agent = recovery.worker
     process = start_process(recovery.story, "sleep 30", category=CommandCategory.TEST_RUN)
     recovery.online = False

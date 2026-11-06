@@ -1,5 +1,4 @@
 import io
-import os
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
@@ -9,6 +8,7 @@ from core.base.container import Container
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
+from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.registry.registry import Registry
 from tests.unit.core.base.samples.module_copy import items_module_copy
@@ -58,8 +58,7 @@ def test_a_stale_registry_is_refused(tmp_path, monkeypatch):
     module_path, copy = items_module_copy(tmp_path, monkeypatch)
     container = synced(JournalHome(tmp_path), module_path)
     container.bind(Registry, Registry.read(container.get(Database)))
-    status = os.stat(copy)
-    os.utime(copy, ns=(status.st_atime_ns, status.st_mtime_ns + 1_000_000))
+    monkeypatch.setattr(CodeFingerprint, "text", lambda self, modules: "changed code")
     assert run(container, "item", "list") == (2, "the journal's modules changed: journal module sync\n")
 
 

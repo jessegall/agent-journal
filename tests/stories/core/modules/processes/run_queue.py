@@ -58,6 +58,7 @@ def test_each_environment_queues_its_runs_by_its_own_batch_size(new_story):
     story = install_runner(new_story(fixture=QueueAgents))
     story.run("environment make web /work/web", actor=story.user)
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment web", actor=story.user)
+    story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment web", actor=story.user)
     main_first, main_second, main_third = queued(story, "make one"), queued(story, "make two"), queued(story, "make three")
     story.agent = Actor(story.new_row_id("agent start s-9 claude worker --environment web"), ActorType.AGENT)
     web_first, web_second = queued(story, "make four"), queued(story, "make five")

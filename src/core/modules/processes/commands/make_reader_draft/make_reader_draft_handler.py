@@ -34,8 +34,11 @@ class MakeReaderDraftHandler(Handler[MakeReaderDraft, ReaderDraft]):
             raise ReaderSaveRefusal.failed_save(request.id, refusal) from refusal
 
     def save_draft(self, command: MakeReaderDraft, context: Context) -> ReaderDraft:
-        draft = self.drafting.draft(self.requests.find(command.request_id))
+        request = self.requests.find(command.request_id)
+        draft = self.drafting.draft(request)
         if draft.missing:
+            if not self.writers.allows(context.actor):
+                self.writers.check_attempts(request)
             raise Refusal("; ".join(f"could not fill {field}" for field in draft.missing), "write the missing fields on the reader add line")
         self.bus.dispatch(AddReader(draft.name, commands=draft.commands, title=draft.title, lines=draft.lines,
                                    progress=draft.progress, summary=draft.summary, count=draft.count, count_command=draft.count_command,

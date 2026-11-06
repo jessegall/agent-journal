@@ -7,7 +7,7 @@ import {settle} from "./support/windowContext.js";
 
 afterEach(() => (document.body.innerHTML = ""));
 
-const SOURCE = () => ({type: "doc", id: 4, title: "Cart"});
+const SOURCE = () => ({noun: "doc", id: 4, title: "Cart"});
 
 function mountedComments(answer) {
     const ran = [];

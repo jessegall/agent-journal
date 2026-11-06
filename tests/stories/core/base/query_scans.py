@@ -31,7 +31,8 @@ def test_a_declared_small_table_may_be_scanned(new_story, statement):
         story.container.get(Database).rows(statement)
 
 
-def test_a_statement_is_explained_once_per_request(new_story):
+def test_a_statement_is_explained_once_per_request(new_story, monkeypatch):
+    monkeypatch.setattr("core.testing.repeated_work.READ_LIMIT_REPEATS", 3)
     story = new_story()
     database = story.container.get(Database)
     statement = Statement("SELECT * FROM tasks WHERE id = ?", [0])

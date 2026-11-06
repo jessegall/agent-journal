@@ -1,3 +1,4 @@
+from core.base.shell_sandbox import ShellSandbox
 from datetime import timedelta
 
 from core.base.command.bus import Bus
@@ -59,8 +60,9 @@ def test_the_limit_drops_to_10_seconds_while_a_message_waits_for_the_user(new_st
 
 def test_a_helper_s_line_runs_through_the_runner_as_a_run_of_its_own(new_story):
     story = install_runner(new_story(fixture=HelperUnderBuilder))
+    story.container.get(ShellSandbox).is_required = True
     story.hook("s-1", SERVER)
-    expect_updated_input_hook_6(story, "s-1", SERVER, "sub-1", {"command": runner_line(story, 2, "node serve.js", session="sub-1")})
+    expect_updated_input_hook(story, "sub-1", SERVER, {"command": runner_line(story, 2, "node serve.js", session="sub-1")})
     story.expect_success("process show 2", "line: node serve.js", "state: running", f"session_agent_id: {story.helper.id}")
     story.expect_success("process part-start 2 --position 1", actor=story.helper)
     story.expect_refusal("process part-end 2 --position 1 --exit-code 0", "only the agent that ran a line reports on it", actor=story.agent)
@@ -147,9 +149,4 @@ def expect_lines_second_without_line(second, expected) -> None:
 
 def expect_updated_input_hook_5(story, text, item, expected) -> None:
     actual = dict(story.hook(text, with_parse_error(item)).updated_input)
-    assert actual == expected, actual
-
-
-def expect_updated_input_hook_6(story, text, item, text_2, expected) -> None:
-    actual = dict(story.hook(text, item.with_fields(helper=text_2)).updated_input)
     assert actual == expected, actual

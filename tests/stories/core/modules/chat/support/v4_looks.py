@@ -26,7 +26,7 @@ FILED = V4Appearance("messages.filed", "filed", "messages.filed", "work", "group
 TASK = V4Appearance("tasks.task", "task_moves", "tasks.tasks", "work", "group", "task_start")
 PLAN = V4Appearance("plans.plan", "plans", "plans.plans", "work", "group", "plan")
 REPORTED_WAIT = V4Appearance("waits.impasse", "stuck", "waits.impasse", "agent", "group", "stuck")
-SUBAGENT = V4Appearance("agents.helper", "helpers", "agents.helpers", "agent", "group", "helper", "{count} helper updates")
+SUBAGENT = V4Appearance("agents.subagent", "helpers", "agents.helpers", "agent", "group", "subagent", "{count} helper updates")
 
 
 def expect_declared_appearance(story: Story, appearance: V4Appearance) -> None:

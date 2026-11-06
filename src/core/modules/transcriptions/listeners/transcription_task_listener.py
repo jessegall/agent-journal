@@ -3,6 +3,7 @@ from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
+from core.base.scope.scopes import Scopes
 from core.base.repository.repository import Repository
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
@@ -27,8 +28,8 @@ class TranscriptionTaskListener(SaveListener[Changed[Transcription]]):
 
     name = "transcriptions.task"
 
-    def __init__(self, queries: Queries, repository: Repository, line: MainAgentLine) -> None:
-        self.queries, self.repository, self.line = queries, repository, line
+    def __init__(self, queries: Queries, repository: Repository, line: MainAgentLine, scopes: Scopes) -> None:
+        self.queries, self.repository, self.line, self.scopes = queries, repository, line, scopes
 
     def handle(self, event: Changed[Transcription], context: Context) -> None:
         if isinstance(event, Deleted):
@@ -37,8 +38,9 @@ class TranscriptionTaskListener(SaveListener[Changed[Transcription]]):
         has_new_text = old_row is None or (old_row is not None and old_row.text != row.text and context.actor.type is ActorType.USER)
         if not has_new_text or not row.text.strip():
             return
-        task_id = self.unfinished_task_id(row) or self.new_task_id(row, context)
-        self.line.send(TRANSCRIPTION_CHANGED.nudge(transcription=row.id, task=task_id).text, LINE_SOURCE, context)
+        with self.scopes.row_scope(row):
+            task_id = self.unfinished_task_id(row) or self.new_task_id(row, context)
+            self.line.send(TRANSCRIPTION_CHANGED.nudge(transcription=row.id, task=task_id).text, LINE_SOURCE, context)
 
     def unfinished_task_id(self, row: Transcription) -> int | None:
         linked = self.queries.query(Link).filter(source_model=row.model_name, source_id=row.id, target_model=Task.model_name).all_rows()

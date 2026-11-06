@@ -21,4 +21,5 @@ class UpgradeMarkListener(MarkListener[UpgradeFinished]):
         counts = logged.data["counts"][1]
         text = "Upgraded from version 4: " + ", ".join(f"{counts.get(table, 0) if is_mapping(counts) else 0} {table}" for table in SHOWN) + " moved"
         if environments:
-            self.show(logged, ChatMarkType.UPGRADE, UpgradeMarkVariant.VERSION_FOUR, text, environments[0].id, None, "", None, str(logged.data["report"][1]))
+            with self.bus.scopes.opened(None, environments[0].id):
+                self.show(logged, ChatMarkType.UPGRADE, UpgradeMarkVariant.VERSION_FOUR, text, detail=str(logged.data["report"][1]))

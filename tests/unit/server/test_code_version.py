@@ -4,6 +4,7 @@ from pathlib import Path
 from core.base.journal_home import JournalHome
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
+from core.base.module.source_hash import SourceHash
 from server.code_version import CodeVersion
 from server.code_folders import CodeFolders
 
@@ -47,7 +48,8 @@ def test_a_servers_requests_read_what_the_ticker_found(monkeypatch):
     monkeypatch.setattr(CodeFingerprint, "ticked", True)
     monkeypatch.setattr(CodeFingerprint, "kept_texts", {})
     first = fingerprint.text([])
-    monkeypatch.setattr(fingerprint, "folder_text", lambda folders: "read again")
+    monkeypatch.setattr(SourceHash, "text", staticmethod(lambda folders: "read again"))
     assert fingerprint.text([]) == first
-    assert fingerprint.refreshed([]) == "read again"
-    assert fingerprint.text([]) == "read again"
+    new_text = fingerprint.selected_text("read again", [])
+    assert fingerprint.refreshed([]) == new_text
+    assert fingerprint.text([]) == new_text

@@ -1,3 +1,4 @@
+from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 import json
 import pytest
@@ -225,9 +226,9 @@ def test_an_agents_facts_carry_the_effort_it_runs_at(new_story):
 
 def test_a_helpers_facts_carry_its_profile_given_name_and_instruction(new_story):
     story = new_story(fixture=BuilderWithStartedTask)
-    dispatch = {"subagent_type": "journal-researcher", "model": "sonnet", "description": "Madame Curie, reader of the cart", "prompt": "Read the cart"}
-    story.hook("s-1", HookSamples.tool_use("Agent", ToolType.AGENT, [], None).with_raw({"tool_input": dispatch, "tool_use_id": "tool-1"}))
-    story.hook("sub-1", HookSamples.sample("session_start").with_raw({"agent_type": "journal-researcher"}))
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.run('helper start journal-researcher --model sonnet --name "Madame Curie" --brief "Read the cart" --environment main', actor=story.agent)
+    launcher.server.close()
     story.expect_text("usage agents --environment main --json", '"profile": "journal-researcher"', '"given_name": "Madame Curie"', '"instruction": "Read the cart"')
 
 

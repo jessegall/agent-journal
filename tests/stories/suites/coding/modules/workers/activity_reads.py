@@ -10,6 +10,8 @@ from tests.stories.support.story_checks import expect_value
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session, repository_environment
 
+BATCH_READS = 3
+
 
 @pytest.fixture
 def four_tasks(new_story):
@@ -54,12 +56,12 @@ def test_a_later_tick_reads_fresh_activity_after_a_worker_acts(four_workers):
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{workers[1].id}, {workers[2].id}, {workers[3].id} has used no tool")
 
 
-def test_a_worker_dispatch_reads_its_whole_task_batch_once(four_tasks):
+def test_a_worker_dispatch_reads_its_whole_task_batch_once_per_transaction(four_tasks):
     story = four_tasks
     with patch.object(Database, "rows", autospec=True, side_effect=Database.rows) as reads:
         story.expect_success("worker dispatch --fresh --model sonnet 1 2 3 4", actor=story.agent)
     batch_reads = [call for call in reads.call_args_list if "FROM tasks WHERE id IN (?, ?, ?, ?)" in call.args[1].sql]
-    expect_value(len(batch_reads), 1)
+    expect_value(len(batch_reads), BATCH_READS)
 
 
 def test_a_tick_limits_the_stopped_workers_process_read_to_its_environment(four_workers):

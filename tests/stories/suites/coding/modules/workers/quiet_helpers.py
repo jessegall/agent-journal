@@ -71,6 +71,7 @@ def test_the_inactive_line_of_a_worker_with_a_queued_run_says_so(new_story):
     story, worker = idle_worker(new_story)
     main = story.agent
     story.expect_success("setting set journal.core.processes.readers-forced off --environment main", actor=main)
+    story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main", actor=main)
     start_process(story, "make first", category=CommandCategory.TEST_RUN)
     start_process(story, "make second", category=CommandCategory.TEST_RUN)
     story.expect_success("setting set journal.core.processes.main-runs-take-slots on --environment main", actor=main)
@@ -136,6 +137,7 @@ def test_the_setting_sets_how_long_a_helper_is_quiet_before_it_is_named(new_stor
     story = new_story(fixture=HelperUnderBuilder)
     later = DEFAULT_MINUTES * 2
     story.expect_success(f"setting make {INACTIVE_HELPER_MINUTES} {later} --environment main", f"key: {INACTIVE_HELPER_MINUTES}")
+    story.hook("sub-1", HookSamples.session_start())
     story.advance(minutes(DEFAULT_MINUTES))
     story.tick(MAIN_SESSION)
     story.expect_rows(line_count(story, f"helper:{story.helper.id} has used no tool") == 0)

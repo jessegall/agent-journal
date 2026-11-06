@@ -25,6 +25,7 @@ def test_finished_reads_and_searches_of_any_agent_stay_out_of_the_queue(new_stor
 def test_a_queued_test_moves_from_waiting_to_running_to_recent_even_after_newer_reads(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
+    story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main", actor=story.user)
     story.expect_success("setting set journal.core.processes.readers-forced false --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start queued-tester claude worker --environment main"), ActorType.AGENT)
     first = start_process(story, "pytest first.py", category=CommandCategory.TEST_RUN)

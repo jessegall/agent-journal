@@ -27,7 +27,7 @@ from core.base.change.touched import Touched
 
 MODULE_NAME = "journal.core.processes"
 LINE_CHARACTERS = 70
-LAST_LINES = 5
+END_MARK_LINE_COUNT = 5
 OUTCOMES = {ProcessState.FINISHED: MarkOutcome.PASSED, ProcessState.FAILED: MarkOutcome.FAILED, ProcessState.STOPPED: MarkOutcome.WARNED, ProcessState.ORPHANED: MarkOutcome.FAILED}
 PHRASES = {ProcessState.RUNNING: "Running", ProcessState.BACKGROUND: "Running", ProcessState.FINISHED: "Ran", ProcessState.FAILED: "Failed",
          ProcessState.STOPPED: "Stopped", ProcessState.ORPHANED: "Lost"}
@@ -94,7 +94,7 @@ class ProcessEndMarkListener(CommitListener[Touched[Process]]):
 
     def detail(self, process: Process, logged: LoggedEvent) -> str:
         if process.state is not ProcessState.STOPPED:
-            return "\n".join(self.folder.last_lines(process.id, LAST_LINES))
+            return "\n".join(self.folder.last_lines(process.id, END_MARK_LINE_COUNT))
         if process.expired_at is not None:
             return f"It ran past its timeout of {process.timeout_seconds} seconds"
         return f"{ACTOR_LABELS.get(self.rows.required(ActorRecord, logged.actor_id).type, 'The journal')} stopped it"

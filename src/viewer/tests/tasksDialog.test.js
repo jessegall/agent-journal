@@ -213,7 +213,7 @@ test("a block from the inspector can name what opens the task", async () => {
     const {default: RowMoves} = await import("../src/resource/RowMoves.vue");
     const {createApp, h, nextTick} = await import("vue");
     const element = document.createElement("div");
-    createApp({render: () => h(RowMoves, {type: "task", id: 7, row: {state: "started"}, read: async (line) => (lines.push(line), {ok: true, value: {}})})}).mount(element);
+    createApp({render: () => h(RowMoves, {noun: "task", id: 7, row: {state: "started"}, read: async (line) => (lines.push(line), {ok: true, value: {}})})}).mount(element);
     element.querySelector('[data-move="block"]').click();
     await nextTick();
     const [reason, opener] = element.querySelectorAll("input");

@@ -95,7 +95,7 @@ def test_a_target_outside_the_template_targets_is_refused(new_story):
 def test_a_target_in_another_environment_leaves_no_message(new_story):
     story = new_story(fixture=SendingTemplates)
     story.expect_success("environment make other /work/other")
-    story.expect_refusal(CRITIQUE.replace("--environment main", "--environment other"), "belongs to another environment", actor=story.user)
+    story.expect_refusal(CRITIQUE.replace("--environment main", "--environment other"), "no plan 1", actor=story.user)
     expect_empty_messages(story)
 
 

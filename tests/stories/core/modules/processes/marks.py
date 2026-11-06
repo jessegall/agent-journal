@@ -1,3 +1,4 @@
+from core.modules.docking.ticks.dock_item_leaves import DockItemLeaves
 import pytest
 
 from datetime import timedelta
@@ -124,8 +125,8 @@ def test_a_docked_output_leaves_10_seconds_after_its_process_ends_unless_kept(ne
     end_run(story, kept, "a\n")
     end_run(story, leaving, "b\n")
     story.advance(timedelta(seconds=11))
-    story.run('task make "Tick" --environment main', actor=story.agent)
     story.run_listeners()
+    DockItemLeaves()(story.container)
     story.expect_text("dock-item show 1", "state: docked")
     story.expect_text("dock-item show 2", "state: undocked")
 
@@ -262,7 +263,7 @@ def test_when_an_agent_ends_the_runs_it_left_going_end_as_lost(new_story):
     story.user_actor = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"agent end {story.agent.id}", actor=story.user_actor)
     story.run_listeners()
-    story.expect_text(f"output status {process.id}", f"{process.id}  orphaned", actor=story.user_actor)
+    story.expect_text(f"output status {process.id} --environment main", f"{process.id}  orphaned", actor=story.user_actor)
 
 
 def test_an_ended_run_says_its_result_on_its_mark(new_story):

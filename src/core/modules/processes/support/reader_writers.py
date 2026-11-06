@@ -42,7 +42,6 @@ class ReaderWriters:
             return
         if request not in self.agent_requests(actor):
             raise Refusal("save a reader only for your own open reader request", "read your request before saving")
-        self.check_attempts(request)
 
     def check_attempts(self, request: ReaderRequest) -> None:
         if self.attempts.needs_help(request):

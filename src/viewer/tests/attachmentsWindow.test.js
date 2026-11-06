@@ -14,7 +14,7 @@ test("images draw as tiles and other files as rows, with the counts on the types
     expect(element.textContent).toContain("Images 1");
     element.querySelector("[data-attachment-more]").click();
     await settle();
-    expect(window.reads).toContain("attachment list --type all --skip 2");
+    expect(window.reads).toContain("attachment list --category all --skip 2");
 });
 
 test("choosing a type reads that type", async () => {
@@ -23,7 +23,7 @@ test("choosing a type reads that type", async () => {
     [...element.querySelectorAll(".segmented-option")].find((option) => option.textContent.includes("Other")).click();
     await settle();
     await new Promise((resolve) => setTimeout(resolve, 5));
-    expect(window.reads).toContain("attachment list --type other --skip 0");
+    expect(window.reads).toContain("attachment list --category other --skip 0");
 });
 
 test("nothing stored says so", async () => {

@@ -1,3 +1,4 @@
+from core.base.shell_sandbox import ShellSandbox
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.base.driver.command_category import CommandCategory
@@ -15,6 +16,7 @@ def test_a_run_keeps_its_sandbox_level(new_story):
 
 def test_a_helpers_shell_is_sandboxed(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
+    story.container.get(ShellSandbox).is_required = True
     story.run(f"agent start helper-1 claude helper --parent {story.agent.id} --environment main")
     reply = story.hook("helper-1", HookSamples.shell("cat notes.txt", ShellPart("cat", CommandCategory.READ, ["notes.txt"])))
     expect_rewritten(reply, runner_line(story, 1, "cat notes.txt", session="helper-1", read_command=True, sandbox=True))

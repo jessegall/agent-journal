@@ -1,3 +1,4 @@
+from core.base.module.agent_type_check import AGENTS_MODULE
 from core.base.chat.mark_outcome import MarkOutcome
 from core.base.change.logged_event import LoggedEvent
 from core.modules.agents.models.agent import Agent
@@ -8,7 +9,6 @@ from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.base.change.created import Created
 
-AGENTS_MODULE = "journal.core.agents"
 
 
 class MenuAnswerMarkListener(MarkListener[Created[MenuAnswer]]):
@@ -23,4 +23,4 @@ class MenuAnswerMarkListener(MarkListener[Created[MenuAnswer]]):
         text = f'A menu in the agent\'s terminal was answered: "{menu_answer.question}" The journal {menu_answer.answer}.'
         key = f"menu:{menu_answer.id}"
         self.bus.run(ShowMark(AgentMarkType.MENU, AgentMarkVariant.ANSWERED, key, text, agent_id=agent.id, outcome=MarkOutcome.PASSED, ended=True),
-                     self.actors.actor(self.module_name), cause_id=logged.id)
+                     self.actors.actor(self.module_name), cause_id=logged.id, environment_id=agent.environment_id)

@@ -3,7 +3,7 @@ from core.base.model.model import Model
 from core.base.listener.event_rows import EventRows
 from core.base.registry.registry import Registry
 
-TITLE_FIELDS = ("title", "name", "text")
+TITLE_FIELDS = ("title", "name", "text", "label")
 TEXT_FIELDS = ("brief", "abstract", "text", "goal", "outcome", "detail")
 TEXT_LIMIT_CHARACTERS = 200
 

@@ -24,7 +24,7 @@ from suites.coding.modules.workers.commands.report_silent_agent.report_silent_ag
 from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES
 
 STOP_WAIT_SECONDS = 5
-STOP_POLL_SECONDS = 0.05
+SESSION_STOP_POLL_SECONDS = 0.05
 
 
 class WorkerSessions(AgentLaunchGuard):
@@ -79,7 +79,7 @@ class WorkerSessions(AgentLaunchGuard):
         commands[pid] = program
         deadline = time.monotonic() + STOP_WAIT_SECONDS
         while self.running(commands) and time.monotonic() < deadline:
-            time.sleep(STOP_POLL_SECONDS)
+            time.sleep(SESSION_STOP_POLL_SECONDS)
         return not self.running(commands)
 
     def descendants(self, pid: int) -> list[int]:

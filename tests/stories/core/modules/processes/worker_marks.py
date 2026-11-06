@@ -54,6 +54,7 @@ def test_a_workers_merge_makes_a_chat_mark_and_a_docked_card_while_it_runs(new_s
 def test_a_test_run_and_a_build_make_a_chat_mark_and_a_docked_card_for_the_main_agent_and_for_a_worker(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     worker = new_worker(story)
+    story.run("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
     for line, category in [("make test", CommandCategory.TEST_RUN), ("make build", CommandCategory.BUILD)]:
         worker_run(story, worker, line, category)
         main_run = moved_run(story, line, category=category)

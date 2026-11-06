@@ -21,7 +21,8 @@ class ProofQuery(Query[Proof]):
         return self.filter(worktree_id=worktree_id)
 
     def tests_waiting(self, worktree_id: int) -> bool:
-        return self.worktree_proofs(worktree_id).matching(Among("state", TEST_WAITING_STATES)).exists()
+        return self.kept.read(self.table.name, self.worktree_proofs(worktree_id).matching(Among("state", TEST_WAITING_STATES)).exists,
+                              f"worktree_id = ? AND state IN ({', '.join('?' for _ in TEST_WAITING_STATES)})", [worktree_id, *TEST_WAITING_STATES], name="workers.tests_waiting")
 
     def untested_proofs(self, worktree_id: int) -> Self:
         return self.waiting_proofs(worktree_id).filter(test_command="")

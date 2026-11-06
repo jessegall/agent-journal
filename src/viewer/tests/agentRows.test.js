@@ -77,7 +77,7 @@ test("the agents window filters on running, idle, retired or all", async () => {
 });
 
 test("an idle helper's card opens its report", async () => {
-    const helper = {...AGENTS[1], state: "idle", ended_at: "2026-11-02T10:00:00Z"};
+    const helper = {...AGENTS[1], access: "read-only", state: "idle", ended_at: "2026-11-02T10:00:00Z"};
     const held = window(FACTS, {}, [helper]);
     const read = held.read;
     held.read = (line) => line.startsWith("agent transcript 3") ? Promise.resolve(page([{id: 1, author: "assistant", text: "The review is complete"}])) : read(line);
@@ -215,7 +215,7 @@ test("a running worker's card names the command it runs", async () => {
 });
 
 test("a running helper's card names the command it runs", async () => {
-    const helper = {id: 6, session: "s-1", program: "claude", role: "helper", ended_at: null};
+    const helper = {id: 6, session: "s-1", program: "claude", role: "helper", access: "read-only", ended_at: null};
     const lines = {"agent list": page([helper]), "agent running": page([helper]), "usage agents --closed": page([]), "usage tool --agent 6": {ok: true, value: {tool: "Read src/cart.py", note: ""}}};
     const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context(lines));
     await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("Read src/cart.py"));
@@ -228,7 +228,7 @@ test("an agent that has just ended reads just now, never now ago", async () => {
 });
 
 test("an open helper's card has no tabs: its instruction folded above its transcript", async () => {
-    const helper = {id: 6, session: "s-1", program: "claude", role: "helper", ended_at: null};
+    const helper = {id: 6, session: "s-1", program: "claude", role: "helper", access: "read-only", ended_at: null};
     const lines = {"usage tool --agent 6": {ok: true, value: {tool: "", note: ""}}, "agent transcript 6": page([])};
     const element = await mounted({render: () => h(AgentCard, {row: helper, facts: {instruction: "Read the cart"}, open: true})}, context(lines));
     expect(element.querySelector("[data-inner-tabs]")).toBeNull();

@@ -57,7 +57,8 @@ class Repository:
     def merge(self, existing: M | None, model: M, context: Context) -> M:
         if existing is None:
             return self.save(model, context)
-        return self.save_change(existing, replace(existing, **{field.name: getattr(model, field.name) for field in fields(model) if field.name not in IDENTITY_FIELDS}), context)
+        applied = self.scopes.applied(model)
+        return self.save_change(existing, replace(existing, **{field.name: getattr(applied, field.name) for field in fields(applied) if field.name not in IDENTITY_FIELDS}), context)
 
     def delete(self, model: Model, context: Context) -> None:
         self.delete_change(self.stored(model), model, context)

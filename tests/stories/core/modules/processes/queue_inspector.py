@@ -10,6 +10,7 @@ from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
 def test_the_inspector_reads_live_spots_wait_order_start_times_and_recent_output(new_story):
     story = install_runner(new_story(fixture=BuilderWithUser))
+    story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main", actor=story.user)
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start inspector-worker claude worker --environment main"), ActorType.AGENT)
     first = start_process(story, "make package", category=CommandCategory.BUILD)
