@@ -196,3 +196,4 @@ def test_a_tick_reads_new_output_with_no_open_transactions(new_story, monkeypatc
     append(story, process.id, FIRST)
     tick(story)
     story.expect_rows(open_transactions == [False])
+
