@@ -17,7 +17,9 @@ from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
+from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from suites.coding.modules.workers.support.worker_task_commit import WorkerTaskCommit
 
@@ -25,14 +27,15 @@ from suites.coding.modules.workers.support.worker_task_commit import WorkerTaskC
 class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
     """Commits the worker's current task, moves it to testing and queues its proofs' tests; the next task
     delegated to it starts now when there are no tests, else once they pass. A task in testing with no test
-    going has them queued again, or lets the worker go on."""
+    going has them queued again, or lets the worker go on. Inside a phase of a started plan the next task
+    starts at once and nothing is queued."""
 
     command = StartNextWorkerTask
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, tasks: TaskQuery, task_commit: WorkerTaskCommit, proof_queue: WorkerProofQueue, repository: Repository, bus: Bus, queries: Queries) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, tasks: TaskQuery, task_commit: WorkerTaskCommit, proof_queue: WorkerProofQueue, repository: Repository, bus: Bus, queries: Queries, phases: WorkerPhases) -> None:
         self.rows, self.worktrees, self.tasks, self.task_commit, self.proof_queue, self.repository, self.bus = rows, worktrees, tasks, task_commit, proof_queue, repository, bus
-        self.queries = queries
+        self.queries, self.phases = queries, phases
 
     def prepare(self, command: StartNextWorkerTask, actor: Actor) -> None:
         worktree = self.worktrees.worker_worktree(actor.id)
@@ -62,13 +65,16 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
         if following is None:
             raise Refusal(f"task {task.id} is your last", "journal worker deliver hands in all your tasks")
         if task.state is not TaskState.STARTED:
-            started = self.bus.dispatch(StartTask(following.id), context)
-            self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
-            return started
+            return self.start_following(worktree, following, context)
         tested = self.repository.save_change(task, task.moved(TaskLifecycle.test), context)
+        if self.phases.continues(tested, following):
+            return self.start_following(worktree, following, context)
         if self.proof_queue.queue(worktree, context):
             return tested
         self.close_checked(tested, context)
+        return self.start_following(worktree, following, context)
+
+    def start_following(self, worktree: Worktree, following: Task, context: Context) -> Task:
         started = self.bus.dispatch(StartTask(following.id), context)
         self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
         return started

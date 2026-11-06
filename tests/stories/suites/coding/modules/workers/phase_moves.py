@@ -10,7 +10,7 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import PLAN
 
 FLAG = "--ask-main"
 MAIN_SESSION = "s-1"
-PLAN_STOPS = ['plan block 1 --reason "the supplier is late"', "plan cancel 1"]
+PLAN_BLOCK = 'plan block 1 --reason "the supplier is late"'
 
 
 @pytest.fixture
@@ -133,18 +133,22 @@ def test_a_test_run_after_a_running_test_is_refused_with_a_line_that_says_what_t
     expect_reply_refusal(ended_from_before.run_test(), FLAG)
 
 
-@pytest.mark.parametrize("plan_stop", PLAN_STOPS)
-def test_on_a_stopped_plan_a_worker_runs_tests_as_today(moved_past_a_test, plan_stop):
-    moved_past_a_test.story.run(plan_stop, actor=moved_past_a_test.story.agent)
+def test_on_a_blocked_plan_a_worker_runs_tests_as_today(moved_past_a_test):
+    moved_past_a_test.story.expect_success(PLAN_BLOCK, actor=moved_past_a_test.story.agent)
     expect_reply_allowed(moved_past_a_test.run_test())
 
 
-@pytest.mark.parametrize("plan_stop", PLAN_STOPS)
-def test_on_a_stopped_plan_the_earlier_proofs_run_at_the_next_hand_in(moved_past_a_test, plan_stop):
-    moved_past_a_test.story.run(plan_stop, actor=moved_past_a_test.story.agent)
+def test_on_a_blocked_plan_the_earlier_proofs_run_at_the_next_hand_in(moved_past_a_test):
+    moved_past_a_test.story.expect_success(PLAN_BLOCK, actor=moved_past_a_test.story.agent)
     moved_past_a_test.prove_and_move_on()
     moved_past_a_test.story.expect_text("proof show 1", "state: running", actor=moved_past_a_test.story.agent)
     assert len(moved_past_a_test.started) == 1, moved_past_a_test.started
+
+
+def test_a_cancelled_plan_cancels_the_workers_tasks_and_the_worker_may_stop(moved_past_a_test):
+    moved_past_a_test.story.expect_success('plan cancel 1 --reason "the cart is dropped"', actor=moved_past_a_test.story.agent)
+    moved_past_a_test.story.expect_text("task show 2", "state: cancelled", actor=moved_past_a_test.story.agent)
+    moved_past_a_test.story.expect_hook_allowed(moved_past_a_test.session, HookSamples.stop())
 
 
 def test_a_task_outside_a_plan_and_then_a_task_of_a_plan_each_follow_their_own_flow(outside_task_first):
