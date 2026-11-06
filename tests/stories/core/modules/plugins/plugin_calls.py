@@ -6,7 +6,7 @@ import sys
 from core.base.caller.caller import Caller
 from core.base.cli.console import Console
 from core.base.query.queries import Queries
-from core.base.running_scripts import RunningScripts
+from core.base.running_scripts import PluginScriptProcesses
 from core.modules.plugins.models.plugin_output import PluginOutput
 from core.modules.processes.models.process import Process
 from tests.stories.core.modules.plugins.event_guard import LOCK_CHECK
@@ -136,7 +136,7 @@ def test_s58_a_plugin_script_may_run_for_an_agent_and_the_run_is_listed_for_its_
     caller = Caller(story.user, 1, plugin_script="events")
     stream = io.StringIO()
     code = story.container.get(Console).run(shlex.split(f"plugin run --agent {story.worker.id} -- sh ./tools/journal-run"), caller, stream)
-    story.expect_rows(code == 0, "listed" in stream.getvalue(), not story.container.get(RunningScripts).running("events"))
+    story.expect_rows(code == 0, "listed" in stream.getvalue(), not story.container.get(PluginScriptProcesses).running("events"))
 
 
 def test_s58_the_main_checkout_gets_no_sandbox_unless_it_asks_for_read_only(new_story):

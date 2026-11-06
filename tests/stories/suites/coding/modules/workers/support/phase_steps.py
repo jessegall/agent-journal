@@ -92,10 +92,10 @@ class StoryWorker:
         shell = {"line": line, "parts": [shell_test_part(line).prepared(line)], "redirects": [], "is_journal_only": False, "parse_error": "", "saved_commands_known": True}
         return self.story.hook(self.session, HookSamples.tool_use("Bash", ToolType.SHELL, [], None, shell=shell))
 
-    def run_saved_test(self, line: str = TEST_LINE) -> HookReply:
+    def run_saved_test(self, line: str = TEST_LINE, read_flag: str = "tail:20") -> HookReply:
         part = shell_test_part(line).prepared(line)
-        part.update(saved_command=TEST_ALIAS, read_flag="tail:20")
-        shell = {"line": line, "parts": [part], "aliases": [TEST_ALIAS], "redirects": [], "is_journal_only": False, "parse_error": ""}
+        part.update(saved_command=TEST_ALIAS, read_flag=read_flag)
+        shell = {"line": line, "parts": [part], "aliases": [TEST_ALIAS], "redirects": [], "is_journal_only": False, "parse_error": "", "saved_commands_known": True}
         return self.story.hook(self.session, HookSamples.tool_use("Bash", ToolType.SHELL, [], None, shell=shell))
 
     def current_task(self) -> int:

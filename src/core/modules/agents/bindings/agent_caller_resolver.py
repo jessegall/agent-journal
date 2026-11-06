@@ -14,7 +14,7 @@ from core.base.query.conditions.among import Among
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.command.script_policy import ScriptPolicy
-from core.base.running_scripts import RunningScripts
+from core.base.running_scripts import PluginScriptProcesses
 from core.base.caller.caller import Caller
 from core.modules.actors.queries.actor_query import ActorQuery
 from core.modules.agents.models.agent import Agent
@@ -31,7 +31,7 @@ class AgentCallerResolver(CallerResolver):
     Login and folder resolve callers; unresolved programs use core.
     Runner sessions may name ended agents."""
 
-    def __init__(self, queries: Queries, chain: ProcessChain, environments: EnvironmentQuery, actors: ActorQuery, providers: Providers, scripts: RunningScripts, policy: ScriptPolicy) -> None:
+    def __init__(self, queries: Queries, chain: ProcessChain, environments: EnvironmentQuery, actors: ActorQuery, providers: Providers, scripts: PluginScriptProcesses, policy: ScriptPolicy) -> None:
         self.queries, self.chain, self.environments, self.actors, self.providers, self.scripts, self.policy = queries, chain, environments, actors, providers, scripts, policy
 
     def caller(self, request: CallerRequest) -> Caller:

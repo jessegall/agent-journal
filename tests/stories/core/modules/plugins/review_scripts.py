@@ -13,7 +13,7 @@ from core.base.command.bus import Bus
 from core.base.journal_container import synced_container
 from core.base.model.event_form import EventForm
 from core.base.query.queries import Queries
-from core.base.running_scripts import RunningScripts
+from core.base.running_scripts import PluginScriptProcesses
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 from tests.stories.core.modules.plugins.support.event_modules import NOTE_CREATED, NOTES, EventNote, ManyNotes
@@ -104,7 +104,7 @@ def test_s75_with_json_the_waits_are_blank_lines_and_the_output_parses(new_story
 
 
 def sleeping_scripts(story, count: int) -> list[subprocess.Popen]:
-    scripts, processes = story.container.get(RunningScripts), []
+    scripts, processes = story.container.get(PluginScriptProcesses), []
     for _ in range(count):
         process = subprocess.Popen(["sleep", "60"], start_new_session=True)
         scripts.start(process, "events", TASK_CREATED, EventForm.COMMIT, story.clock.timestamp())
@@ -120,7 +120,7 @@ def test_s77_a_plugin_past_its_running_limit_has_its_guard_skipped(new_story):
         story.expect_rows(not script_calls(story, "see.sh"), "was skipped" in story.error_log_text(), len(tasks_titled(story, SECOND_JOB_TITLE)) == 1)
     finally:
         for process in processes:
-            story.container.get(RunningScripts).finish(process)
+            story.container.get(PluginScriptProcesses).finish(process)
             process.kill()
             process.wait()
 
@@ -139,7 +139,7 @@ def test_s77_a_failing_plugin_has_its_guard_skipped_and_is_tried_again_after_fiv
 
 def test_s78_a_running_script_has_a_pid_file_and_a_finished_one_has_none(new_story):
     story = event_plugin_story(new_story)
-    scripts = story.container.get(RunningScripts)
+    scripts = story.container.get(PluginScriptProcesses)
     folder = story.container.get(PluginSocketPaths).folder
     process = subprocess.Popen([str(story.home.folder / "plugins" / "events" / "see.sh")], stdin=subprocess.PIPE, start_new_session=True)
     try:
@@ -191,7 +191,7 @@ def test_s78_a_removal_stops_a_running_script_at_once(event_page):
         event_page.line("plugin", "remove", "events")
         story.expect_rows(processes[0].wait(timeout=WAIT_SECONDS) != 0)
     finally:
-        story.container.get(RunningScripts).finish(processes[0])
+        story.container.get(PluginScriptProcesses).finish(processes[0])
         processes[0].kill()
         processes[0].wait()
 
@@ -204,6 +204,6 @@ def test_s78_a_disable_stops_a_running_script_at_once(event_page):
         event_page.disable()
         story.expect_rows(processes[0].wait(timeout=WAIT_SECONDS) != 0)
     finally:
-        story.container.get(RunningScripts).finish(processes[0])
+        story.container.get(PluginScriptProcesses).finish(processes[0])
         processes[0].kill()
         processes[0].wait()

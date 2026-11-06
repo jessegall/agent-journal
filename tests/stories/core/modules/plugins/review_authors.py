@@ -5,7 +5,7 @@ from pathlib import Path
 from core.base.change.event_log import HIDDEN
 from core.base.command.bus import Bus
 from core.base.model.event_form import EventForm
-from core.base.running_scripts import RunningScripts
+from core.base.running_scripts import PluginScriptProcesses
 from core.modules.plugins.commands.prune_plugin_deliveries.prune_plugin_deliveries import PrunePluginDeliveries
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from tests.stories.core.modules.plugins.event_many import WORKTREE_MERGE
@@ -20,7 +20,7 @@ KEEP_COUNT = 50
 def test_s86_a_skipped_guard_on_a_merge_shows_on_the_card_with_its_reason_and_plugin_try_says_so(event_page):
     story = event_page.story
     install_event_plugin(story, {"event": WORKTREE_MERGE, "guard": "see.sh"})
-    story.container.get(RunningScripts).skipped("events", WORKTREE_MERGE, EventForm.GUARD, "this command runs only once", story.clock.timestamp())
+    story.container.get(PluginScriptProcesses).skipped("events", WORKTREE_MERGE, EventForm.GUARD, "this command runs only once", story.clock.timestamp())
     row = next(row for row in event_page.card() if row["form"] == "guard")
     story.expect_rows(row["skip_reason"] == "this command runs only once", bool(row["last_skipped_at"]))
     story.expect_text(f"plugin try events {WORKTREE_MERGE}", "runs only once", actor=story.user)

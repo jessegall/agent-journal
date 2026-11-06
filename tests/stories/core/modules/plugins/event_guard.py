@@ -6,7 +6,7 @@ import pytest
 from core.base.model.event_form import EventForm
 from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
-from core.base.running_scripts import RunningScripts
+from core.base.running_scripts import PluginScriptProcesses
 from core.base.script_stop import ScriptStop
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.plugins.commands.support.plugin_service_round import PluginServiceRound
@@ -113,7 +113,7 @@ def test_s24_a_guard_script_runs_with_no_lock_held_and_the_command_then_finishes
 
 def test_s25_switching_a_plugin_off_goes_through_and_the_round_stops_its_running_script(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "see.sh"})
-    scripts = story.container.get(RunningScripts)
+    scripts = story.container.get(PluginScriptProcesses)
     process = subprocess.Popen(["sleep", "60"], stdin=subprocess.PIPE, text=True, start_new_session=True)
     try:
         story.expect_success("plugin disable events", actor=story.user)

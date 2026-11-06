@@ -10,7 +10,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import C
 WORKTREE_CUT = "suites.coding.workers.worker_worktree.cut"
 WORKTREE_DELIVER = "suites.coding.workers.worker_worktree.deliver"
 WORKTREE_MERGE = "suites.coding.workers.worker_worktree.merge"
-WORKTREE_REMOVE = "suites.coding.workers.worker_worktree.remove"
+WORKTREE_REMOVAL_EVENT = "suites.coding.workers.worker_worktree.remove"
 WORKTREE_CREATED = "suites.coding.workers.worker_worktree.created"
 RULES = ".commandments/rules.md"
 RULES_TEXT = "the rules\n"
@@ -131,7 +131,7 @@ def test_a_plugin_hears_one_event_for_a_merge_with_its_commits_and_none_for_a_re
 
 
 def removal_story(new_story):
-    story = event_plugin_story(new_story, {"event": WORKTREE_REMOVE, "commit": "see.sh"}, fixture=EventWorkerStarted)
+    story = event_plugin_story(new_story, {"event": WORKTREE_REMOVAL_EVENT, "commit": "see.sh"}, fixture=EventWorkerStarted)
     story.repository = repository_environment(story)
     story.worker = dispatched_worker(story, DISPATCH)
     return story

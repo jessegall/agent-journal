@@ -4,7 +4,7 @@ from core.base.model.event_form import EventForm
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
-from core.base.running_scripts import RunningScripts
+from core.base.running_scripts import PluginScriptProcesses
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.environments.models.environment import Environment
 from core.modules.plugins.models.plugin import Plugin
@@ -24,7 +24,7 @@ TRY_LIMIT_MS = 60_000
 class PluginTry:
     """Runs a plugin script with a recent event without applying its answer or recording faults."""
 
-    def __init__(self, queries: Queries, registry: Registry, folders: PluginFolders, log: EventLog, program: PluginProgram, settings: PluginSettings, clock: Clock, scripts: RunningScripts) -> None:
+    def __init__(self, queries: Queries, registry: Registry, folders: PluginFolders, log: EventLog, program: PluginProgram, settings: PluginSettings, clock: Clock, scripts: PluginScriptProcesses) -> None:
         self.queries, self.registry, self.folders, self.log, self.program, self.settings, self.clock, self.scripts = queries, registry, folders, log, program, settings, clock, scripts
 
     def run(self, name: str, key: str, agent_id: int | None, environment_id: int | None) -> PluginTryRun:

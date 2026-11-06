@@ -5,7 +5,7 @@ from pathlib import Path
 from core.base.journal_home import JournalHome
 from core.base.model.event_form import EventForm
 from core.base.registry.registry import Registry
-from core.base.running_scripts import RunningScripts
+from core.base.running_scripts import PluginScriptProcesses
 from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX, ManifestListener
 from core.modules.plugins.support.plugin_event_row import PluginEventRow
 from core.modules.plugins.support.plugin_event_state import PluginEventState
@@ -22,7 +22,7 @@ class PluginEventRows:
     """What a plugin listens to and every wrong entry, worked out when it is read and never stored, so an upgrade of
     the journal that removes a key shows at once."""
 
-    def __init__(self, registry: Registry, scripts: RunningScripts, home: JournalHome, setting_values: SettingValues) -> None:
+    def __init__(self, registry: Registry, scripts: PluginScriptProcesses, home: JournalHome, setting_values: SettingValues) -> None:
         self.registry, self.scripts, self.home, self.setting_values = registry, scripts, home, setting_values
 
     def rows(self, manifest: PluginManifest, folder: Path) -> tuple[PluginEventRow, ...]:
@@ -54,7 +54,7 @@ class PluginEventRows:
         elif entry is None:
             state = PluginEventState.WRONG_KEY
         elif form not in entry.forms:
-            state = PluginEventState.FORM_NOT_OFFERED
+            state = PluginEventState.UNSUPPORTED_FORM
         elif script.startswith(SERVICE_PREFIX):
             state = PluginEventState.LISTENS if manifest.answers_as(script) else PluginEventState.WRONG_SCRIPT
         elif not os.access(folder / script, os.X_OK):

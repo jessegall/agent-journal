@@ -34,7 +34,7 @@ def test_a_hand_in_test_that_runs_is_a_run_a_waiting_update_waits_for(running_ha
     story, process_id, _ = running_hand_in
     story.home.run_lock.write_text(str(os.getpid()))
     story.expect_rows(process_id in RunDrain(story.home).running_folders(), RunQueueHalt(story.home).halt_type == "update",
-                      RunQueueHalt(story.home).running_run_ids() == (process_id,))
+                      RunQueueHalt(story.home).running_run_ids() == tuple([process_id]))
 
 
 def test_a_hand_in_test_that_has_ended_no_longer_holds_an_update(running_hand_in):

@@ -12,7 +12,7 @@ from core.base.error_log import ErrorLog
 from core.base.model.event_form import EventForm
 from core.base.model.model import Model
 from core.base.registry.registry import Registry
-from core.base.running_scripts import RunningScripts
+from core.base.running_scripts import PluginScriptProcesses
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
 from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults import ClearPluginFaults
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
@@ -30,7 +30,7 @@ GUARD_NAME = "plugins.event-guard"
 class PluginEventScripts:
     """Gets guard and listen script answers for a change outside the transaction lock."""
 
-    def __init__(self, subscriptions: PluginSubscriptions, log: EventLog, errors: ErrorLog, registry: Registry, runner: PluginEventRunner, bus: Bus, running: RunningScripts, caller: CallerStream) -> None:
+    def __init__(self, subscriptions: PluginSubscriptions, log: EventLog, errors: ErrorLog, registry: Registry, runner: PluginEventRunner, bus: Bus, running: PluginScriptProcesses, caller: CallerStream) -> None:
         self.subscriptions, self.log, self.errors, self.registry, self.runner, self.bus, self.running, self.caller = subscriptions, log, errors, registry, runner, bus, running, caller
 
     def answers(self, form: EventForm, event: Changed[Model], context: Context) -> Sequence[PluginEventAnswer]:

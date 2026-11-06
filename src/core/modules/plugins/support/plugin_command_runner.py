@@ -13,7 +13,7 @@ from core.base.model.event_form import EventForm
 from core.base.project_reads import ProjectReads
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
-from core.base.running_scripts import RunningScripts
+from core.base.running_scripts import PluginScriptProcesses
 from core.modules.agents.models.agent import Agent
 from core.modules.plugins.support.plugin_command_run import PluginCommandRun
 from core.modules.processes.models.process import Process
@@ -30,7 +30,7 @@ RUN_KEY = "plugin run"
 class PluginCommandRunner:
     """Runs a command in an agent's checkout without taking the agent's session."""
 
-    def __init__(self, checkouts: AgentCheckouts, reads: ProjectReads, runner: RunnerBinary, scripts: RunningScripts, bus: Bus, queries: Queries) -> None:
+    def __init__(self, checkouts: AgentCheckouts, reads: ProjectReads, runner: RunnerBinary, scripts: PluginScriptProcesses, bus: Bus, queries: Queries) -> None:
         self.checkouts, self.reads, self.runner, self.scripts, self.bus, self.queries = checkouts, reads, runner, scripts, bus, queries
 
     def run(self, agent_id: int, line: str, is_readonly: bool, plugin: str, context: Context) -> PluginCommandRun:

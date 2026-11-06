@@ -6,7 +6,7 @@ from core.base.timestamp import Timestamp
 
 
 @dataclass(frozen=True)
-class RunningScript:
+class PluginScriptProcess:
     """A running plugin script and the event it handles."""
 
     process: "subprocess.Popen[str]"
@@ -14,3 +14,6 @@ class RunningScript:
     key: str
     form: EventForm
     started_at: Timestamp
+
+
+RunningScript = PluginScriptProcess

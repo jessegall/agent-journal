@@ -12,7 +12,7 @@ from core.base.journal_home import JournalHome
 from core.base.file_access import FileAccess
 from core.base.leftover_process import LeftoverProcess
 from core.base.model.event_form import EventForm
-from core.base.running_script import RunningScript
+from core.base.running_script import PluginScriptProcess
 from core.base.script_skip import ScriptSkip
 from core.base.script_stop import ScriptStop
 from core.base.timestamp import Timestamp
@@ -21,13 +21,13 @@ from core.base.timestamp import Timestamp
 KEPT_LINE_COUNT = 50
 
 
-class RunningScripts:
+class PluginScriptProcesses:
     """Tracks running plugin scripts and services for a journal home."""
 
     def __init__(self, pid_folder: Path | None = None) -> None:
         self.pid_folder = pid_folder
         self.lock = threading.Lock()
-        self.scripts: dict[int, RunningScript] = {}
+        self.scripts: dict[int, PluginScriptProcess] = {}
         self.services: dict[int, str] = {}
         self.stop_reasons: dict[int, ScriptStop] = {}
         self.sent_lines: dict[str, deque[str]] = {}
@@ -37,11 +37,11 @@ class RunningScripts:
 
     @classmethod
     @cache
-    def shared(cls, home: JournalHome) -> "RunningScripts":
+    def shared(cls, home: JournalHome) -> "PluginScriptProcesses":
         return cls(home.plugin_socket_folder)
 
     def start(self, process: "subprocess.Popen[str]", plugin: str, key: str, form: EventForm, started_at: Timestamp) -> None:
-        script = RunningScript(process, plugin, key, form, started_at)
+        script = PluginScriptProcess(process, plugin, key, form, started_at)
         with self.lock:
             self.scripts[process.pid] = script
             stopped = self.server_stopped
@@ -109,7 +109,7 @@ class RunningScripts:
             owners = {**self.services, **{pid: script.plugin for pid, script in self.scripts.items()}}
         return next((owners[step.pid] for step in steps if step.pid in owners), "")
 
-    def running(self, plugin: str) -> tuple[RunningScript, ...]:
+    def running(self, plugin: str) -> tuple[PluginScriptProcess, ...]:
         with self.lock:
             return tuple(script for script in self.scripts.values() if script.plugin == plugin)
 
@@ -126,7 +126,7 @@ class RunningScripts:
             scripts = tuple(self.scripts.values())
         self.killed(scripts, ScriptStop.SERVER)
 
-    def killed(self, scripts: Sequence[RunningScript], reason: ScriptStop) -> None:
+    def killed(self, scripts: Sequence[PluginScriptProcess], reason: ScriptStop) -> None:
         with self.lock:
             self.stop_reasons.update({script.process.pid: reason for script in scripts})
         for script in scripts:
@@ -134,3 +134,6 @@ class RunningScripts:
                 os.killpg(script.process.pid, signal.SIGKILL)
             except (ProcessLookupError, PermissionError):
                 continue
+
+
+RunningScripts = PluginScriptProcesses
