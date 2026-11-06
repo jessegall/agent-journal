@@ -85,13 +85,11 @@ async function visibilityCase(context, address, code, caseName) {
         await page.unroute(/\/api\/lines?$/);
     }
     for (let step = 0; step < 15; step++) await advancePoll(page);
+    const during = await page.evaluate(() => readFixture.transport.sentCounts("messages.chat"));
     await page.evaluate(() => readFixture.subscriptions.dispatch({event: "message.changed", environment: "main"}));
     const held = await page.evaluate(() => readFixture.subscriptions.held.size);
-    const during = await page.evaluate(() => readFixture.transport.sentCounts("messages.chat"));
     if (caseName === "hidden-pane") assert.equal(held, 1);
     if (["hidden-tab", "initially-hidden"].includes(caseName)) {
-        // usePoll currently performs its initial load even when the tab starts hidden.
-        // The event subscription has separate pane visibility; it is not a timer poll.
         assert.deepEqual(during, before);
     }
     await page.evaluate(() => {
@@ -102,7 +100,6 @@ async function visibilityCase(context, address, code, caseName) {
     });
     await page.clock.runFor(200);
     await page.waitForFunction(() => readFixture.results.at(-1).ok);
-    const result = await page.evaluate(() => ({before, results: readFixture.results.length})).catch(() => null);
     const after = await page.evaluate(() => ({counts: readFixture.transport.sentCounts("messages.chat"),
         eventCalls: readFixture.eventCalls, successfulReturn: readFixture.results.at(-1).ok}));
     await page.close();

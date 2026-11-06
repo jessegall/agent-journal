@@ -101,17 +101,20 @@ class ViewerReadDataset(StoryFixture):
             story.expect_success(f'memory make "Memory {number}" --weight 5 --environment main', actor=story.user)
             story.expect_success(f'question ask "Question {number}?" --environment main', actor=story.agent)
             story.expect_success(f'doc make "Document {number}" --abstract "Workload document" --body "Fixed body" --environment main', actor=story.user)
-        started_run(story, "workload running")
-        moved_run(story, "workload background")
-        ended_run(story, "workload finished", ("a" * 63 + "\n") * 64)
-        ended_run(story, "workload failed", ("b" * 63 + "\n") * 1024, exit_code=1)
-        running = started_run(story, "workload output")
-        story.container.get(OutputFolder).write_output(running.id, 1, ("c" * 63 + "\n") * 16)
-        current = json.loads(story.run("dock-item main --environment main --json", actor=story.user).output_text)
-        for dock in current["rows"]:
-            story.expect_success(f'dock remove {dock["id"]} --environment main', actor=story.user)
-        for kind, model, number in viewer_workload().docks:
-            story.expect_success(f"dock add {kind} {model} {number} --environment main", actor=story.user)
+
+
+def build_workload_outputs_and_docks(story) -> None:
+    started_run(story, "workload running")
+    moved_run(story, "workload background")
+    ended_run(story, "workload finished", ("a" * 63 + "\n") * 64)
+    ended_run(story, "workload failed", ("b" * 63 + "\n") * 1024, exit_code=1)
+    running = started_run(story, "workload output")
+    story.container.get(OutputFolder).write_output(running.id, 1, ("c" * 63 + "\n") * 16)
+    current = json.loads(story.run("dock-item main --environment main --json", actor=story.user).output_text)
+    for dock in current["rows"]:
+        story.expect_success(f'dock remove {dock["id"]} --environment main', actor=story.user)
+    for kind, model, number in viewer_workload().docks:
+        story.expect_success(f"dock add {kind} {model} {number} --environment main", actor=story.user)
 
 
 @dataclass(frozen=True)
@@ -217,7 +220,9 @@ class WorkloadServer:
 
 @contextmanager
 def workload_server(new_story):
-    with server_story(new_story(fixture=ViewerReadDataset), listener_thread_started=False) as server:
+    story = new_story(fixture=ViewerReadDataset)
+    build_workload_outputs_and_docks(story)
+    with server_story(story, listener_thread_started=False) as server:
         yield WorkloadServer(server)
 
 
