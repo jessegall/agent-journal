@@ -19,6 +19,7 @@ from core.modules.schedules.models.scheduled_job import ScheduledJob
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.usage.support.bar_facts import BarFacts
+from core.modules.agents.queries.agent_query import AgentQuery
 
 PAGE_ROWS = 1
 UNFINISHED_WORK_STATES = (TaskState.OPEN, TaskState.STARTED, TaskState.TESTING)
@@ -32,11 +33,11 @@ class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
     name = "bars"
     environment_refusal = "the bars are shown for one environment"
 
-    def __init__(self, queries: Queries, tasks: TaskQuery, queue_runs: ActiveQueueRuns) -> None:
-        self.queries, self.tasks, self.queue_runs = queries, tasks, queue_runs
+    def __init__(self, queries: Queries, agent_query: AgentQuery, tasks: TaskQuery, queue_runs: ActiveQueueRuns) -> None:
+        self.queries, self.agent_query, self.tasks, self.queue_runs = queries, agent_query, tasks, queue_runs
 
     def read(self, arguments: Namespace, caller: Caller) -> BarFacts:
-        agents = self.queries.query(Agent).matching(IsNull("ended_at"))
+        agents = self.agent_query.running()
         helpers = agents.matching(Equal("role", AgentRole.MAIN, negated=True)).page(1, PAGE_ROWS).total + self.ended_delegates()
         tasks =self.tasks.unclosed().page(1, PAGE_ROWS).total
         waiting = self.queries.query(Question).filter(state=QuestionState.OPEN).page(1, PAGE_ROWS).total

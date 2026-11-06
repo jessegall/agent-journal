@@ -1,7 +1,5 @@
 from core.base.agent_role import AgentRole
 from core.base.command.bus import Bus
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
 from core.base.listener.save_listener import SaveListener
 from core.base.listener.event_rows import EventRows
 from core.base.scope.actor_scope import ActorScope
@@ -11,6 +9,7 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.base.change.changed import Changed
 from core.base.command.context import Context
+from core.modules.agents.support.agent_rows import AgentRows
 
 
 class RemovedWorktreeAgentListener(SaveListener[Changed[Worktree]]):
@@ -20,14 +19,14 @@ class RemovedWorktreeAgentListener(SaveListener[Changed[Worktree]]):
     name = "workers.removed-worktree-agent"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, bus: Bus, queries: Queries) -> None:
-        self.rows, self.bus, self.queries = rows, bus, queries
+    def __init__(self, rows: EventRows, bus: Bus, agents: AgentRows) -> None:
+        self.rows, self.bus, self.agents = rows, bus, agents
 
     def handle(self, event: Changed[Worktree], context: Context) -> None:
         worktree = event.row
         if worktree.state is not WorktreeState.REMOVED:
             return
-        for helper in tuple(self.queries.query(Agent).filter(parent_id=worktree.session_agent_id, role=AgentRole.HELPER).matching(IsNull("ended_at")).all_rows()):
+        for helper in self.agents.running(AgentRole.HELPER, worktree.session_agent_id):
             self.bus.dispatch(EndAgent(helper.id), context)
         if self.rows.required(Agent, worktree.session_agent_id).ended_at is None:
             self.bus.dispatch(EndAgent(worktree.session_agent_id), context)

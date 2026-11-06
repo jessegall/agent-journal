@@ -1,8 +1,5 @@
 from core.base.agent_role import AgentRole
 from core.base.clock import Clock
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
-from core.modules.agents.models.agent import Agent
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from suites.coding.support.coding_nudges import WORKER_TASK_STARTED
 from core.base.driver.agent_hook import AgentHook
@@ -15,6 +12,7 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
+from core.modules.agents.support.agent_rows import AgentRows
 
 
 class WorkerStopRule(DriverRule):
@@ -25,9 +23,9 @@ class WorkerStopRule(DriverRule):
     name = "workers.stop-once-delivered"
     hook = HookEventName.STOP
 
-    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock, queries: Queries) -> None:
+    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock, agents: AgentRows) -> None:
         self.tasks, self.worktrees, self.proofs, self.processes = tasks, worktrees, proofs, processes
-        self.requests, self.clock, self.queries = requests, clock, queries
+        self.requests, self.clock, self.agents = requests, clock, agents
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         started = self.tasks.holder(hook.agent_id).started().first()
@@ -45,4 +43,4 @@ class WorkerStopRule(DriverRule):
         return RuleAnswer.refused(WORKER_TASK_STARTED.nudge(task=task.id))
 
     def has_running_helper(self, agent_id: int) -> bool:
-        return self.queries.query(Agent).filter(parent_id=agent_id, role=AgentRole.HELPER).matching(IsNull("ended_at")).exists()
+        return bool(self.agents.running(AgentRole.HELPER, agent_id))

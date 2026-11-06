@@ -1,23 +1,18 @@
-from core.base.database.kept_rows import KeptRows
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
-from core.modules.agents.models.agent import AGENTS_TABLE, Agent
+from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_type_limits import AgentTypeLimits
 from suites.coding.support.coding_agent_role import CodingAgentRole
+from core.modules.agents.support.agent_rows import AgentRows
 
 
 class WorkerPlaces:
     """How many workers run against the run limit. A run place is a process that has not ended: delivered work with
     its process stopped takes no run place."""
 
-    def __init__(self, queries: Queries, limits: AgentTypeLimits, kept: KeptRows) -> None:
-        self.queries, self.limits, self.kept = queries, limits, kept
+    def __init__(self, agents: AgentRows, limits: AgentTypeLimits) -> None:
+        self.agents, self.limits = agents, limits
 
     def running(self) -> tuple[Agent, ...]:
-        return self.kept.read(AGENTS_TABLE, self.running_rows, "role = ?", [CodingAgentRole.WORKER.value], name="workers.running")
-
-    def running_rows(self) -> tuple[Agent, ...]:
-        return tuple(self.queries.query(Agent).filter(role=CodingAgentRole.WORKER).matching(IsNull("ended_at")).all_rows())
+        return self.agents.running(CodingAgentRole.WORKER)
 
     def run_limit(self) -> int:
         return self.limits.of(CodingAgentRole.WORKER).run

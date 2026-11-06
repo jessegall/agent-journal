@@ -1,8 +1,8 @@
 from core.base.agent_role import AgentRole
 from core.base.query.conditions.among import Among
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.queries.agent_query import AgentQuery
 
 
 class MainAgentFinder:
@@ -10,12 +10,12 @@ class MainAgentFinder:
 
     @staticmethod
     def rows(queries: Queries) -> tuple[Agent, ...]:
-        row = queries.query(Agent).filter(role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().first()
+        row = AgentQuery(queries.database, queries.tables).running().filter(role=AgentRole.MAIN).newest().first()
         return () if row is None else tuple([row])
 
     @staticmethod
     def all_running(queries: Queries) -> tuple[Agent, ...]:
-        return tuple(queries.query(Agent).filter(role=AgentRole.MAIN).matching(IsNull("ended_at")).all_rows())
+        return tuple(AgentQuery(queries.database, queries.tables).running().filter(role=AgentRole.MAIN).all_rows())
 
     @staticmethod
     def sessions(queries: Queries, program: str) -> tuple[Agent, ...]:

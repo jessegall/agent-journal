@@ -5,14 +5,16 @@ from core.base.agent_role import AgentRole
 from core.base.scope.environment_scope import EnvironmentScope
 from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.queries.agent_query import AgentQuery
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
 
 class AgentRows:
-    """Shares agent lookups until the matching agent changes."""
+    """Shares agent lookups until the matching agent changes: running agents are one row set for every environment,
+    so all readers in a tick share it."""
 
-    def __init__(self, queries: Queries, kept: KeptRows, rows: EventRows, scopes: Scopes) -> None:
-        self.queries, self.kept, self.rows, self.scopes = queries, kept, rows, scopes
+    def __init__(self, queries: Queries, agents: AgentQuery, kept: KeptRows, rows: EventRows, scopes: Scopes) -> None:
+        self.queries, self.agents, self.kept, self.rows, self.scopes = queries, agents, kept, rows, scopes
 
     def session(self, session: str) -> Agent | None:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
@@ -33,6 +35,14 @@ class AgentRows:
 
     def is_visible(self, agent_id: int) -> bool:
         return self.rows.find(Agent, agent_id) is not None
+
+    def running(self, role: str | None = None, parent_id: int | None = None) -> tuple[Agent, ...]:
+        environment_id = self.scopes.environment_id
+        with self.scopes.opened(None, disabled=[EnvironmentScope]):
+            agents = self.kept.read("agents", lambda: tuple(self.agents.running().oldest().all_rows()), "ended_at IS NULL", name="agents.running")
+        agents = tuple(agent for agent in agents if environment_id is None or agent.environment_id == environment_id)
+        agents = tuple(agent for agent in agents if role is None or agent.role == role)
+        return tuple(agent for agent in agents if parent_id is None or agent.parent_id == parent_id)
 
     def running_main_agents(self) -> tuple[Agent, ...]:
         return self.kept.scoped_read("agents", lambda: MainAgentFinder.all_running(self.queries),

@@ -1,0 +1,47 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "matching"
+            },
+            {
+                "argument": {
+                    "at": 0,
+                    "all": [
+                        {
+                            "name": "IsNull"
+                        },
+                        {
+                            "argument": {
+                                "at": 0,
+                                "text": "ended_at"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "descendant": {
+                    "name": "Agent"
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/agents/queries/agent_query\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "running-agents-by-hand",
+        "description": "Running agents are read with IsNull(ended_at) by hand, so each view has its own idea of which agents run.",
+        "rule": "Ask AgentRows.running, or AgentQuery.running when the read needs more conditions or a page.",
+        "skill": "plain-code-words"
+    }
+}

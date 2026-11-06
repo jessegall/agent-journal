@@ -5,7 +5,6 @@ from core.base.agent_role import AgentRole
 from core.base.caller.caller import Caller
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.query.query import Query
 from core.base.subcommand.output import Output
@@ -16,6 +15,7 @@ from core.modules.drivers.models.hook_call import HookCall
 from core.modules.usage.support.environment_usage import EnvironmentUsage
 from core.modules.usage.support.session_status import SessionStatus
 from core.modules.usage.support.status_files import StatusFiles
+from core.modules.agents.queries.agent_query import AgentQuery
 
 
 class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
@@ -26,13 +26,12 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
     name = "show"
     environment_refusal = "usage is shown for one environment"
 
-    def __init__(self, queries: Queries, files: StatusFiles) -> None:
-        self.queries, self.files = queries, files
+    def __init__(self, queries: Queries, agents: AgentQuery, files: StatusFiles) -> None:
+        self.queries, self.agents, self.files = queries, agents, files
 
     def read(self, arguments: Namespace, caller: Caller) -> EnvironmentUsage:
-        agents = self.queries.query(Agent)
-        opened = tuple(agents.matching(IsNull("ended_at")).oldest().all_rows())
-        counted = (*opened, *self.ended_helpers(agents, opened))
+        opened = tuple(self.agents.running().oldest().all_rows())
+        counted = (*opened, *self.ended_helpers(self.agents, opened))
         statuses = {agent.session: self.files.status(agent.session) for agent in counted}
         return EnvironmentUsage(tuple((agent, statuses[agent.session]) for agent in counted), self.files.plan_windows(statuses))
 
