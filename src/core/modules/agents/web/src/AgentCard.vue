@@ -27,7 +27,8 @@ const planTask = computed(() => {
     const current = tasks.value.find((task) => task.id === props.facts?.task_id);
     return current?.plan_id ? current : queuedTasks.value.find((task) => task.plan_id);
 });
-const job = computed(() => props.row.role === "helper" ? props.facts?.helper_job || "" : (props.facts?.job_enabled ? props.facts?.task_title || queuedTasks.value[0]?.title || "" : ""));
+const job = computed(() => props.row.role === "helper" ? props.facts?.helper_job || "" : (props.facts?.job_enabled ? props.facts?.task_title || queuedTasks.value[0]?.title || tasks.value.at(-1)?.title || "" : ""));
+const report = computed(() => props.facts?.job_returned || props.row.job_returned || "");
 const jobRef = computed(() => {
     const match = job.value.match(/\b(plan|doc)(?::|\s+)(\d+)\b/i);
     return match ? `${match[1].toLowerCase() === "plan" ? "plans" : "docs"}:${match[2]}` : "";
@@ -109,6 +110,9 @@ readCommand();
                 </template>
             </span>
         </template>
+        <template v-if="report"><p class="agent-summary" data-agent-report><span>Last report: </span>{{ report }}</p></template>
+        <template v-if="row.retirement_reason"><p class="agent-summary" data-agent-retirement-reason>Retirement reason: {{ row.retirement_reason }}</p></template>
+        <template v-if="row.resume_reason"><p class="agent-summary" data-agent-resume-reason>{{ row.resume_reason }}</p></template>
         <template v-if="!open && (showsCommand || (totalCount && tasksPerHour))">
             <span :class="['agent-foot', {'agent-work-start': !job && !planTask}]" data-agent-foot>
                 <template v-if="showsCommand">
@@ -165,6 +169,8 @@ readCommand();
 </template>
 
 <style scoped>
+.agent-summary { margin: 3px 0 0 16px; color: var(--text-2); font-size: 12px; white-space: pre-wrap; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.agent-card.open .agent-summary { margin: 8px 14px; -webkit-line-clamp: unset; }
 .agent-ended-reason {
     margin: 4px 0;
     color: var(--danger, var(--text));

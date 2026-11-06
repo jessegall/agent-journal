@@ -5,6 +5,10 @@ from core.base.profile.agent_profile import AgentProfile
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.base.agent_role import AgentRole
 from core.base.caller.caller import Caller
+from core.base.provider.providers import Providers
+from core.modules.agents.models.agent import Agent, UPGRADE_RETIREMENT_REASON
+from core.modules.agents.support.agent_folders import AgentFolders
+from core.modules.usage.commands.usage_agents.usage_agents_subcommand import UsageAgentsSubcommand
 from core.base.page import Page, is_page
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.equal import Equal
@@ -30,8 +34,10 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
     name = "cards"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, activity: AgentActivity, profiles: ProfileFiles) -> None:
+    def __init__(self, queries: Queries, activity: AgentActivity, profiles: ProfileFiles, providers: Providers, folders: AgentFolders, usage: UsageAgentsSubcommand) -> None:
         self.queries, self.activity, self.profiles = queries, activity, profiles
+        self.providers, self.folders = providers, folders
+        self.usage = usage
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--options", action="store_true")
@@ -45,12 +51,13 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         parser.add_argument("--limit", type=int, default=25)
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[AgentListingState] | AgentFilterOptions:
+        titles = {profile.name: profile.display_title for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
         if arguments.options:
             options = self.queries.query(AgentFilterOptionsView).first()
             if options is None:
                 return AgentFilterOptions((), ())
-            titles = {profile.name: profile.display_title for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
-            return AgentFilterOptions(tuple(sorted(role for role in json.loads(options.roles) if role != AgentRole.MAIN)), tuple((name, titles.get(name, name)) for name in sorted(profile for profile in json.loads(options.profiles) if profile)))
+            upgrade_retired = self.queries.query(Agent).matching(EndedAgents(self.activity)).filter(retirement_reason=UPGRADE_RETIREMENT_REASON).count()
+            return AgentFilterOptions(tuple(sorted(role for role in json.loads(options.roles) if role != AgentRole.MAIN)), tuple((name, titles.get(name, name)) for name in sorted(profile for profile in json.loads(options.profiles) if profile)), upgrade_retired)
         rows = self.queries.query(AgentListing)
         if not arguments.include_main and (not arguments.role or AgentRole.MAIN not in arguments.role):
             rows = rows.matching(Equal("role", AgentRole.MAIN, negated=True))
@@ -74,11 +81,26 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         running = {row.id for row in selected.matching(self.activity).all_rows()}
         idle = {row.id for row in selected.matching(AvailableAgents(self.activity)).all_rows()}
         states = {**dict.fromkeys(running, AgentListState.RUNNING), **dict.fromkeys(idle, AgentListState.IDLE)}
-        return Page(tuple(AgentListingState(**vars(row), state=states.get(row.id, AgentListState.RETIRED)) for row in page.rows),
+        agents = {agent.id: agent for agent in self.queries.query(Agent).find_many(tuple(row.id for row in page.rows))}
+        job_roles = self.usage.suites.agent_policy().job_roles
+        return Page(tuple(AgentListingState(**vars(row), state=states.get(row.id, AgentListState.RETIRED),
+                                           resume_reason=self.resume_reason(agents[row.id]) if row.id in idle else None,
+                                           facts=self.usage.facts(row, job_roles, titles).json()) for row in page.rows),
                     page.number, page.size, page.total)
+
+    def resume_reason(self, agent: Agent) -> str | None:
+        if agent.role == AgentRole.HELPER and not agent.profile:
+            return "This helper ran as a program subagent and cannot resume."
+        if not self.folders.has_folder(agent):
+            return "The folder this agent worked in is gone."
+        if not self.providers.provider(agent.program).session_resumes_here(self.folders.folder(agent), agent.session):
+            return "The saved session is gone; this agent cannot resume."
+        return None
 
     def write_output(self, value: object, output: Output) -> None:
         if is_page(value):
             output.page(value)
         if isinstance(value, AgentFilterOptions):
-            output.write("agent filter options", {"roles": value.roles, "profiles": [{"name": name, "title": title} for name, title in value.profiles]})
+            output.write("agent filter options", {"roles": value.roles, "profiles": [{"name": name, "title": title} for name, title in value.profiles],
+                                                  "states": [{"key": state.value, "label": state.label} for state in AgentListState],
+                                                  "upgrade_retired": value.upgrade_retired})

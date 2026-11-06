@@ -6,6 +6,7 @@ from core.base.agent_policy import AgentPolicy
 
 AGENTS_TABLE = "agents"
 ENDED_FIELD = "ended_at"
+UPGRADE_RETIREMENT_REASON = "Over the kept limit at the upgrade to kept agents"
 
 
 @dataclass(frozen=True, kw_only=True)

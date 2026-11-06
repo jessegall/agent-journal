@@ -45,8 +45,6 @@ from suites.coding.modules.workers.migrations.m004_proofs_per_task import Proofs
 from suites.coding.modules.workers.rules.worker_status_first_rule import WorkerStatusFirstRule
 from suites.coding.modules.workers.support.worker_nudges import WORKER_NUDGES
 from core.base.skill.skill_declaration import SkillDeclaration
-from core.modules.usage.conditions.agent_activity import AgentActivity
-from suites.coding.modules.workers.conditions.worker_agent_activity import WorkerAgentActivity
 from suites.coding.modules.workers.models.worker_progress import WorkerProgress
 from suites.coding.modules.workers.commands.worker_progress.worker_progress_subcommand import WorkerProgressSubcommand
 from core.modules.tasks.support.task_assignees import TaskAssignees
@@ -251,7 +249,7 @@ class WorkersModule(Module):
     driver_rules = [ApprovedPlanStopRule, PhaseTestRule, HelperAllowanceRule, WorkerReadRule, WorkerStatusFirstRule, MissingProcessRule, WorkerTestCountRule, WorkerJudgeScopeRule, WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, UnstartedWorkerRule, StoppedWorkerRunRule, UnmergedWorkerRule, SmallBatchRule, IdleWorkerStopRule, OrphanWorktreeRule, WorkerReportRule]
     marks = WORKER_MARKS
     declared_plugin_events = ["worker_clocking_out", "worker_delivering", "worker_merging"]
-    bindings = {AssignedWorkSources: WorkerTaskSources, AgentFolders: WorkerFolders, AgentStops: WorkerAgentStops, AgentLaunchGuard: WorkerSessions, AgentWriteFolder: WorkerWriteFolder, AgentCheckouts: WorkerCheckouts, AgentActivity: WorkerAgentActivity, TaskAssignees: WorkerTaskAssignees, SkillProjects: WorkerSkillProjects, TaskWaitTargets: WorkerTaskWaitTargets, QueueRunWorkers: WorkerQueueRunWorkers, RunCounts: WorkerTestListings, PartVisibility: WorkerPartVisibility}
+    bindings = {AssignedWorkSources: WorkerTaskSources, AgentFolders: WorkerFolders, AgentStops: WorkerAgentStops, AgentLaunchGuard: WorkerSessions, AgentWriteFolder: WorkerWriteFolder, AgentCheckouts: WorkerCheckouts, TaskAssignees: WorkerTaskAssignees, SkillProjects: WorkerSkillProjects, TaskWaitTargets: WorkerTaskWaitTargets, QueueRunWorkers: WorkerQueueRunWorkers, RunCounts: WorkerTestListings, PartVisibility: WorkerPartVisibility}
     listeners = [DeletedWorkerSourceListener, WorkerJobSourceListener, WorktreeRowsListener, SilentWorkerLineListener, WorkerTestCountListener, RemovedWorktreeAgentListener, ReaderSampleReadyListener,WorkerHelpRequestListener, WorkerStoppedMarkListener, WorkerHelpRequestMarkListener, WorkerStopResultListener, MainAgentWorkersListener, BlockedWorkerTaskListener, ReassignedTaskListener, DelegatedTaskCommentListener, WorkerCountRaisedListener, WorkerMoveMarkListener, WorkerJobMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerProofRowsListener, AffectedTestRowsListener, WorkerTaskWaitListener]
     tick_handlers = [TickHandler(TickInterval(seconds=10), WorkerResumeRetry(), "worker resume retry"), TickHandler(TickInterval(seconds=60), StalledWorkerTests(), "stalled worker tests")]
     windows =[WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, skeleton=WORKERS_POINTS_SKELETON, icon=WindowIcon.CHECK, shows=WindowShows.SELECTED_AGENT,

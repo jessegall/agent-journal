@@ -1,6 +1,11 @@
 import pytest
 import json
 from datetime import timedelta
+from core.modules.agents.models.agent import UPGRADE_RETIREMENT_REASON
+from core.testing.story_fixture import StoryFixture
+from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, helper_agent, resumable_session
+from tests.stories.server.support.server_client import server_story
+from tests.stories.server.support.browser_story import expect_browser
 
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
@@ -66,7 +71,8 @@ def test_agent_filters_leave_out_main_agents_and_include_finished_helpers(new_st
     story.run(f"agent end {worker}")
     story.run(f"agent end {retired_main}")
     expect_listed(story, "running", running_helper, running_worker)
-    expect_listed(story, "idle", helper, reviewer)
+    expect_listed(story, "idle", helper, reviewer, worker)
+    story.expect_success(f'agent retire {worker} --reason "Its work is finished"', actor=story.user)
     expect_listed(story, "retired", worker)
     expect_listed(story, "all", helper, reviewer, worker, running_helper, running_worker)
     expect_unlisted(story, main, retired_main)
@@ -84,6 +90,67 @@ def expect_states_2(states, worker, expected) -> None:
 def expect_session_matching(matching_rows, expected) -> None:
     actual = [row['session'] for row in matching_rows]
     assert actual == expected, actual
+
+
+class AgentsWithStates(StoryFixture):
+    parent = EndedHelper
+
+    def steps(self, story):
+        story.expect_success("setting set journal.core.viewer.tour-completed true --project", actor=story.user)
+        worker = story.new_row_id("agent start idle-worker codex worker --environment main")
+        story.expect_success(f"agent end {worker}", actor=story.user)
+        retired = story.new_row_id("agent start retired-reviewer claude reviewer --environment main")
+        story.expect_success(f"agent end {retired}", actor=story.user)
+        story.expect_success(f'agent retire {retired} --reason "{UPGRADE_RETIREMENT_REASON}"', actor=story.user)
+        story.expect_success("agent start working-reviewer claude reviewer --environment main")
+
+
+def test_agent_tabs_read_working_idle_and_retired_through_the_viewer(new_story, monkeypatch):
+    story = new_story(fixture=AgentsWithStates)
+    helper = helper_agent(story)
+    resumable_session(story, helper, monkeypatch)
+    with server_story(story) as server:
+        cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+        def read(*arguments):
+            return server.viewer_line_value(cookie, {"window": "agents.agents", "environment": "main", "line": ["agent", "cards", *arguments]})
+        options = read("--options")
+        assert [state["label"] for state in options["states"]] == ["Working", "Idle", "Retired", "All"]
+        assert options["upgrade_retired"] == 1
+        working = read("--show", "running")["rows"]
+        assert [row["session"] for row in working] == ["working-reviewer"]
+        idle = read("--show", "idle")["rows"]
+        assert {row["role"] for row in idle} == {"helper", "worker"}
+        helper_row = next(row for row in idle if row["id"] == helper.id)
+        assert helper_row["resume_reason"] is None
+        assert helper_row["facts"]["helper_job"] == "Read src/cart.py"
+        assert helper_row["facts"]["profile_title"] == "Researcher"
+        assert helper_row["facts"]["job_returned"]
+        assert "cannot resume" in next(row for row in idle if row["role"] == "worker")["resume_reason"]
+        retired = read("--show", "retired")["rows"]
+        assert len(retired) == 1 and retired[0]["retirement_reason"] == UPGRADE_RETIREMENT_REASON
+        assert retired[0]["retired_at"] and retired[0]["state"] == "retired"
+        assert len(read("--show", "all")["rows"]) == 4
+
+
+def test_agent_tabs_keep_old_agents_details_on_later_pages(new_story):
+    story = new_story(fixture=AgentsWithStates)
+    helper = helper_agent(story)
+    for number in range(51):
+        agent = story.new_row_id(f"agent start later-{number} claude reviewer --environment main")
+        story.expect_success(f"agent end {agent}", actor=story.user)
+    with server_story(story) as server:
+        cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+        answer = server.viewer_line_value(cookie, {"window": "agents.agents", "environment": "main", "line": ["agent", "cards", "--show", "all", "--limit", "1"]})
+        row = answer["rows"][0]
+        assert row["id"] == helper.id and answer["total"] == 55
+        assert row["facts"]["given_name"] and row["facts"]["profile_title"] == "Researcher"
+        assert row["facts"]["helper_job"] == "Read src/cart.py" and row["facts"]["job_returned"]
+
+
+def test_agent_tabs_in_light_and_dark(new_story):
+    story = new_story(fixture=AgentsWithStates)
+    with server_story(story) as server:
+        expect_browser(server, "agentStates.browser.mjs", [str(helper_agent(story).id), "/tmp/worker-675-agent-states"])
 
 
 @pytest.mark.parametrize(("role", "job_enabled"), [("worker", True), ("main", False), ("helper", False)])

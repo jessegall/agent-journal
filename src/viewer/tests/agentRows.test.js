@@ -10,6 +10,7 @@ import Agents from "../../core/modules/agents/web/src/agents.js";
 import Helpers from "../../core/modules/agents/web/src/helpers.js";
 import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue";
 import {age, ago} from "../src/format/time.js";
+import {agentFilterOptions} from "./support/agentFilterOptions.js";
 
 vi.stubGlobal("matchMedia", () => ({matches: true}));
 
@@ -51,6 +52,7 @@ const answers = {
 const WORKERS = AGENTS.map((row) => (row.id === 3 ? {...row, role: "worker"} : row));
 const window = (facts = FACTS, options = {}, agents = AGENTS) => ({
     ...context({
+        "agent cards --options": agentFilterOptions,
         "agent list --show running": page(agents.filter((row) => !row.ended_at)),
         "agent list --show idle": page(agents.filter((row) => row.ended_at && row.role === "helper")),
         "agent list --show retired": page(agents.filter((row) => row.ended_at && row.role !== "helper")),
@@ -63,8 +65,9 @@ const window = (facts = FACTS, options = {}, agents = AGENTS) => ({
 const drawn = (facts, options, agents) => mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, window(facts, options, agents));
 const cardOf = (element, id) => element.querySelector(`[data-agent-open="${id}"]`);
 
-test("the agents window filters on running, idle, retired or all", async () => {
+test("the agents window filters on working, idle, retired or all from the server", async () => {
     const element = await drawn();
+    expect([...element.querySelectorAll('.segmented button')].map((button) => button.textContent.trim())).toEqual(["Working", "Idle", "Retired", "All"]);
     expect(cardOf(element, 2)).not.toBeNull();
     expect(cardOf(element, 1)).toBeNull();
     await pickButton(element, "Idle");
@@ -75,6 +78,28 @@ test("the agents window filters on running, idle, retired or all", async () => {
     await pickButton(element, "All");
     expect(cardOf(element, 2)).not.toBeNull();
     expect(cardOf(element, 1)).not.toBeNull();
+});
+
+test("an older idle agent keeps the details returned on its page", async () => {
+    const helper = {...AGENTS[1], state: "idle", ended_at: "2026-11-02T10:00:00Z", resume_reason: "The saved session is gone; this agent cannot resume.", facts: {
+        profile_title: "Researcher", given_name: "Lady Lovelace", helper_job: "Read the cart", job_returned: "The cart rounds twice.", last_activity: "2026-11-01T10:00:00Z", tasks: [],
+    }};
+    const element = await mounted(Agents, context({"agent cards --options": agentFilterOptions, "agent cards": page([helper]), "usage agents --closed": page([])}));
+    const card = cardOf(element, helper.id);
+    expect(card.querySelector("[data-agent-name]").textContent).toBe("Lady Lovelace");
+    expect(card.querySelector("[data-agent-title]").textContent).toBe("Researcher");
+    expect(card.querySelector("[data-agent-job]").textContent).toBe("Read the cart");
+    expect(card.querySelector("[data-agent-report]").textContent).toContain("The cart rounds twice.");
+    expect(card.querySelector("[data-agent-last-heard]")).not.toBeNull();
+    expect(card.querySelector("[data-agent-resume-reason]").textContent).toContain("cannot resume");
+});
+
+test("retired agents show their reason and the upgrade count", async () => {
+    const retired = {...AGENTS[2], retirement_reason: "Its question is answered"};
+    const element = await mounted(Agents, context({"agent cards --options": {ok: true, value: {...agentFilterOptions.value, upgrade_retired: 12}}, "agent cards": page([retired]), "usage agents --closed": page([])}));
+    await pickButton(element, "Retired");
+    expect(element.querySelector("[data-agent-retirement-reason]").textContent).toContain("Its question is answered");
+    expect(element.querySelector("[data-agents-upgrade]").textContent).toBe("Retired during the upgrade: 12");
 });
 
 test("an idle helper's card opens its report", async () => {

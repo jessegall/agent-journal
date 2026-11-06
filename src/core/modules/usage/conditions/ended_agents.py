@@ -9,6 +9,4 @@ class EndedAgents:
     activity: AgentActivity
 
     def statement(self) -> Statement:
-        active = self.activity.statement()
-        idle = self.activity.idle()
-        return Statement(f"NOT ({active.sql}) AND NOT ({idle.sql})", active.parameters + idle.parameters)
+        return Statement("retired_at IS NOT NULL")
