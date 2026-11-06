@@ -3,12 +3,12 @@ from tests.stories.core.support.fixtures import AgentStarted
 SETTING = "journal.core.project-rules.agents-make-rules"
 AGENT_SETTING = "journal.core.settings.backup-minutes"
 REQUEST = f'setting request {SETTING} on --reason "Rules need no card" --environment main'
-ASKED = "question 1 waits for the user's answer"
+QUESTION_WAITING = "question 1 waits for the user's answer"
 
 
 def test_the_main_agent_asks_a_person_to_change_a_setting_with_the_old_and_new_value_and_the_reason(new_story):
     story = new_story(fixture=AgentStarted)
-    story.expect_success(REQUEST, ASKED, actor=story.agent)
+    story.expect_success(REQUEST, QUESTION_WAITING, actor=story.agent)
     story.expect_text("question show 1", "Agents make rules without approval", "from False to True", "Reason: Rules need no card", "state: open", actor=story.user)
     story.expect_text(f"setting show {SETTING} --environment main", "value: False", actor=story.user)
 
