@@ -10,6 +10,12 @@ from tests.stories.core.modules.developer.support.hook_recording_fixture import 
 from tests.stories.server.support.server_client import server_story, viewer_answer
 
 
+@pytest.fixture
+def logging_server(new_story):
+    with server_story(new_story(fixture=HookRecordingOn), listener_thread_started=False) as server:
+        yield server
+
+
 @pytest.mark.parametrize("enabled", [False, True])
 def test_a_batch_uses_no_logging_connection_when_off_and_one_reused_connection_when_on(new_story, monkeypatch, enabled):
     story = new_story(fixture=HookRecordingOn)
@@ -55,50 +61,48 @@ def test_a_batch_uses_no_logging_connection_when_off_and_one_reused_connection_w
         assert len(story.container.get(HookRequestLog).read()) == 20 * int(enabled)
 
 
-def test_cli_requests_keep_the_same_logger_counts_and_epoch(new_story, monkeypatch):
-    story = new_story(fixture=HookRecordingOn)
-    with server_story(story, listener_thread_started=False) as server:
-        log = server.context.request_log
-        epoch = log.epoch
-        recorded = Event()
-        record = log.record
+def test_cli_requests_keep_the_same_logger_counts_and_epoch(logging_server, monkeypatch):
+    server = logging_server
+    log = server.context.request_log
+    epoch = log.epoch
+    recorded = Event()
+    record = log.record
 
-        def record_counted(*args):
-            try:
-                record(*args)
-            finally:
-                recorded.set()
+    def record_counted(*args):
+        try:
+            record(*args)
+        finally:
+            recorded.set()
 
-        monkeypatch.setattr(log, "record", record_counted)
-        server.expect_cli_exit("task list", "/", 0, "")
-        assert recorded.wait(3)
-        recorded.clear()
-        server.expect_cli_exit("agent list", "/", 0, "")
-        assert recorded.wait(3)
-        assert server.context.request_log is server.context.viewer.routes.request_log
-        assert log.epoch == epoch
-        assert log.counts["recorded"] == 2
+    monkeypatch.setattr(log, "record", record_counted)
+    server.expect_cli_exit("task list", "/", 0, "")
+    assert recorded.wait(3)
+    recorded.clear()
+    server.expect_cli_exit("agent list", "/", 0, "")
+    assert recorded.wait(3)
+    assert server.context.request_log is server.context.viewer.routes.request_log
+    assert log.epoch == epoch
+    assert log.counts["recorded"] == 2
 
 
-def test_a_viewer_setting_change_refreshes_recording_before_the_next_request(new_story, monkeypatch):
-    story = new_story(fixture=HookRecordingOn)
-    with server_story(story, listener_thread_started=False) as server:
-        cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-        log = server.context.request_log
-        completed = Event()
-        save_many = log.save_many
+def test_a_viewer_setting_change_refreshes_recording_before_the_next_request(logging_server, monkeypatch):
+    server = logging_server
+    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+    log = server.context.request_log
+    completed = Event()
+    save_many = log.save_many
 
-        def saved(entries):
-            try:
-                save_many(entries)
-            finally:
-                completed.set()
+    def saved(entries):
+        try:
+            save_many(entries)
+        finally:
+            completed.set()
 
-        monkeypatch.setattr(log, "save_many", saved)
-        server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", "journal.core.developer.tools.hooks.request-log", "false", "--project"]})
-        assert completed.wait(3)
-        assert not log.configuration.enabled and log.container is None
-        completed.clear()
-        server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", "journal.core.developer.tools.hooks.request-log", "true", "--project"]})
-        assert completed.wait(3)
-        assert log.configuration.enabled and log.counts["recorded"] == 1
+    monkeypatch.setattr(log, "save_many", saved)
+    server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", "journal.core.developer.tools.hooks.request-log", "false", "--project"]})
+    assert completed.wait(3)
+    assert not log.configuration.enabled and log.container is None
+    completed.clear()
+    server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", "journal.core.developer.tools.hooks.request-log", "true", "--project"]})
+    assert completed.wait(3)
+    assert log.configuration.enabled and log.counts["recorded"] == 1
