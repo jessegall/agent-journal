@@ -112,7 +112,7 @@ def replaced_launcher(story, *answers: bytes) -> FakeLauncher:
 
 
 @pytest.fixture
-def worker_with_a_held_program(running_worker):
+def worker_with_waiting_job(running_worker):
     """A worker another agent ended and then sent a job, whose program the launcher still answers for."""
     story = running_worker
     start_launcher(story, b"running\n", request_count=10)
@@ -123,8 +123,8 @@ def worker_with_a_held_program(running_worker):
     return story
 
 
-def test_a_resume_answered_as_running_stops_the_program_and_starts_again(worker_with_a_held_program):
-    story = worker_with_a_held_program
+def test_a_resume_answered_as_running_stops_the_program_and_starts_again(worker_with_waiting_job):
+    story = worker_with_waiting_job
     launcher = replaced_launcher(story, b"running\n", b"stopped\n", f"started {RESUMED_PID}\n".encode())
     WorkerResumeRetry()(story.container)
     story.expect_rows("command" in launcher.requests[0], launcher.requests[1] == {"agent_id": story.worker.id, "stop": True}, "command" in launcher.requests[2])
@@ -133,17 +133,17 @@ def test_a_resume_answered_as_running_stops_the_program_and_starts_again(worker_
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "could not resume")
 
 
-def test_a_program_the_launcher_still_holds_is_told_to_the_main_agent_once_with_its_pid(worker_with_a_held_program):
-    story = worker_with_a_held_program
+def test_a_program_the_launcher_still_holds_is_told_to_the_main_agent_once_with_its_pid(worker_with_waiting_job):
+    story = worker_with_waiting_job
     replaced_launcher(story, *(b"running\n" for _ in range(6)))
     WorkerResumeRetry()(story.container)
     WorkerResumeRetry()(story.container)
-    told = story.run(f"agent-line list --agent {story.agent.id}").output_text
-    story.expect_rows(told.count(f"agent:{story.worker.id} could not resume: the launcher still holds its program, process {WORKER_PID}") == 1)
+    notices = story.run(f"agent-line list --agent {story.agent.id}").output_text
+    story.expect_rows(notices.count(f"agent:{story.worker.id} could not resume: the launcher still holds its program, process {WORKER_PID}") == 1)
 
 
-def test_a_resume_a_launch_in_hand_holds_stops_nothing(worker_with_a_held_program):
-    story = worker_with_a_held_program
+def test_a_resume_a_launch_in_hand_holds_stops_nothing(worker_with_waiting_job):
+    story = worker_with_waiting_job
     launcher = replaced_launcher(story, b"stopped\n")
     with story.container.get(AgentLaunchGuard).lock(story.row(Agent, story.worker.id).session):
         WorkerResumeRetry()(story.container)
@@ -156,9 +156,9 @@ def test_a_send_to_an_ended_worker_does_not_say_it_starts(ended_worker):
     ended_worker.expect_rows("the job waits until it starts, and you are told if it does not" in outcome.output_text, "starts it again" not in outcome.output_text)
 
 
-def test_a_worker_whose_job_waits_to_start_is_not_listed_as_running(worker_with_a_held_program):
-    story = worker_with_a_held_program
-    listed = {show: [row["id"] for row in json.loads(story.run(f"agent cards --environment main --show {show} --json", actor=story.agent).output_text).get("rows", [])] for show in ("running", "idle")}
+def test_a_worker_whose_job_waits_to_start_is_not_listed_as_running(worker_with_waiting_job):
+    story = worker_with_waiting_job
+    listed = {view: [row["id"] for row in json.loads(story.run(f"agent cards --environment main --show {view} --json", actor=story.agent).output_text).get("rows", [])] for view in ("running", "idle")}
     story.expect_rows(story.worker.id not in listed["running"], story.worker.id in listed["idle"])
 
 

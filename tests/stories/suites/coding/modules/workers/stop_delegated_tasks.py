@@ -38,7 +38,7 @@ def test_a_stop_of_a_worker_with_fifteen_waiting_tasks_passes_the_repeated_read_
 
 def test_a_stop_blocks_each_task_that_waited_on_what_the_worker_held(worker_with_waiting_tasks):
     story = worker_with_waiting_tasks
-    states_before = [state_of(story, number) for number in range(2, TASK_COUNT)]
+    initial_states = [state_of(story, number) for number in range(2, TASK_COUNT)]
     story.expect_success(f"agent stop {story.worker.id}", actor=story.user)
-    story.expect_rows(states_before == ["open"] * len(states_before), all(state_of(story, number) == "blocked" for number in range(2, TASK_COUNT + 1)))
+    story.expect_rows(initial_states == ["open"] * len(initial_states), all(state_of(story, number) == "blocked" for number in range(2, TASK_COUNT + 1)))
     story.expect_text("task show 3", "reason: waits on task 1", actor=story.agent)

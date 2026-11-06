@@ -16,9 +16,9 @@ MODULE_NAME = "journal.core.documents"
 
 
 class TextMentionListener(CommitListener[E]):
-    """After a row's text is saved, on the deferred queue, links it to every row its text fields name. A save that
-    changes no text field has nothing to link, and a row that follows an item of a team library is skipped, since
-    its numbers mean something else in another journal."""
+    """After a row's text is saved, on the deferred queue, links it to every row its text fields name. A save
+    that changes no text field has nothing to link, and a row that follows an item of a team library is
+    skipped, since its numbers mean something else in another journal."""
 
     text_fields: ClassVar[tuple[str, ...]] = ("title", "abstract", "body")
     disabled_scopes = [ActorScope]
