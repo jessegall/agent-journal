@@ -1,13 +1,13 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, RowList, useRows, useWindow, WindowRoom} from "@journal/window-kit";
+import {Btn, RowList, useWindow, WindowRoom} from "@journal/window-kit";
 
 const PROPOSED = "proposed";
 const STATE_ORDER = [PROPOSED, "active"];
 
 // the rules of the project: what holds for every agent, and what agents proposed, which waits on a person
 const context = useWindow();
-const {rows, failure, loaded, more, load, older} = useRows("rule list", ["rule.*"], {incremental: true});
+const {rows, failure, loaded, more, load, older} = context.props.rules;
 const shown = computed(() => STATE_ORDER.flatMap((state) => rows.value.filter((row) => row.state === state)));
 const refusal = ref("");
 

@@ -1,48 +1,56 @@
 <script setup>
-import {computed, ref} from "vue";
-import {READ_RATES, coalesced, Btn, Icon, InnerTabs, Skeleton, TabBody, WindowRoom, afterSkeletonMinimum, peekRef, stateLabel, stateLook, useWindow} from "@journal/window-kit";
+import {computed, ref, watch} from "vue";
+import {Btn, Icon, InnerTabs, Skeleton, TabBody, WindowRoom, afterSkeletonMinimum, peekRef, stateLabel, stateLook, useWindow} from "@journal/window-kit";
 import PlanAgents from "./PlanAgents.vue";
 
 // plans as version 4 drew them: a card for each, the task count with a bar, the phase it is in, and tabs for the open and the closed; one read brings a tab's cards and both counts
-const context = useWindow();
+const window = useWindow();
 const PAGE_ROWS = 25;
-const tab = ref(context.tabs?.[0]);
+window.state.tab = window.shared ? "shared" : window.tabs[0].key;
+const tab = computed(() => window.tabs.find((tab) => tab.key === window.state.tab) ?? window.tabs[0]);
+const key = computed(() => window.shared ? `plan.${window.shared.id}` : window.state.tab);
+const active = computed(() => window.props[key.value]);
 const board = ref({open_total: 0, closed_total: 0, plans: []});
-const failure = ref("");
+const pageFailure = ref("");
+const failure = computed(() => pageFailure.value || active.value.failure.value);
 const loaded = ref(false);
 const startedAt = performance.now();
-const tabLine = () => tab.value.read;
-
-async function load() {
-    const asked = tab.value;
-    const held = board.value.plans.length;
-    const answer = await context.read(context.shared ? `${context.shared.model} show ${context.shared.id}` : `${tabLine()}${held > PAGE_ROWS ? ` --limit ${held}` : ""}`);
-    if (asked !== tab.value) return;
-    failure.value = answer.ok ? "" : answer.error;
-    afterSkeletonMinimum(startedAt, () => (loaded.value = true));
-    if (answer.ok) board.value = context.shared ? {open_total: 1, closed_total: 0, plans: [{task_count: 0, completed_count: 0, current_phase: 0, agents: [], ...answer.value}]} : answer.value;
-}
+watch(() => active.value.loaded.value, (ready) => {
+    if (ready) afterSkeletonMinimum(startedAt, () => (loaded.value = true));
+}, {immediate: true});
+watch(() => active.value.data.value, (value) => {
+    if (!value) return;
+    pageFailure.value = "";
+    board.value = window.shared ? {open_total: 1, closed_total: 0, plans: [{task_count: 0, completed_count: 0, current_phase: 0, agents: [], ...value}]} : value;
+}, {immediate: true});
 
 async function more() {
     if (!board.value.plans.length) return;
     const asked = tab.value;
-    const answer = await context.read(`${tabLine()} --before-id ${Math.min(...board.value.plans.map((plan) => plan.id))}`);
+    const pageKey = `older-${asked.key}`;
+    window.state[`${pageKey}.before-id`] = Math.min(...board.value.plans.map((plan) => plan.id));
+    await window.reload(pageKey);
     if (asked !== tab.value) return;
-    if (!answer.ok) return void (failure.value = answer.error);
+    const page = window.props[pageKey];
+    if (page.failure.value) return void (pageFailure.value = page.failure.value);
     const shown = new Set(board.value.plans.map((plan) => plan.id));
-    board.value = {...answer.value, plans: [...board.value.plans, ...answer.value.plans.filter((plan) => !shown.has(plan.id))]};
+    board.value = {...page.data.value, plans: [...board.value.plans, ...page.data.value.plans.filter((plan) => !shown.has(plan.id))]};
+    if (board.value.plans.length > PAGE_ROWS) window.state[`${asked.key}.limit`] = board.value.plans.length;
 }
 
 const choose = (chosen) => {
-    tab.value = chosen;
+    if (chosen.key === window.state.tab) return;
+    window.state.tab = chosen.key;
     board.value = {...board.value, plans: []};
-    load();
+    pageFailure.value = "";
 };
 const shown = computed(() => board.value.plans);
 const total = computed(() => board.value[tab.value?.count_field]);
 const share = (row, count) => (row.task_count ? Math.round((count / row.task_count) * 100) : 0);
-context.follow(["plan.*", "phase.*", "task.*"], coalesced(load, READ_RATES.planCard));
-load();
+if (window.shared) {
+    window.reload(key.value);
+    window.follow(["plan.*", "phase.*", "task.*"], () => window.reload(key.value));
+}
 </script>
 
 <template>

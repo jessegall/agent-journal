@@ -96,7 +96,7 @@ export {default as MenuPanel} from "../src/kit/MenuPanel.vue";
 export {default as TaskInspector} from "../src/tasks/TaskInspector.vue";
 export {default as TaskStatusIcon} from "../src/tasks/TaskStatusIcon.vue";
 export {useOutside} from "../src/composables/outside.js";
-export {useOutputPages} from "../src/composables/outputPages.js";
+export {readOutputProp, useOutputPages} from "../src/composables/outputPages.js";
 export {default as OutputLines} from "../src/kit/OutputLines.vue";
 export {default as QrCode} from "../src/kit/QrCode.vue";
 export {default as WindowRoom} from "./WindowRoom.vue";

@@ -1,20 +1,14 @@
 <script setup>
-import {computed, ref} from "vue";
-import {Btn, ListTools, QrCode, RowList, WindowRoom, removed, useListTools, useRows} from "@journal/window-kit";
+import {computed} from "vue";
+import {Btn, ListTools, QrCode, RowList, WindowRoom, removed, useListTools, useWindow} from "@journal/window-kit";
 
 const ABILITIES = ["Read the chat and see what needs you", "Answer questions", "Read reports, documents, plans and tasks", "Approve a plan or ask for changes", "Send the agent instructions"];
 
-const {rows, failure, loaded, act, actionFailure, answer, context} = useRows("phone list", ["phone.*"]);
+const window = useWindow();
+const {rows, failure, loaded, act, actionFailure, answer} = window.props.phones;
+const {data: tunnel} = window.props.tunnel;
 const paired = computed(() => rows.value.filter((row) => row.state === "paired"));
 const tools = useListTools(paired, {title: (row) => row.name});
-const tunnel = ref(null);
-
-async function readTunnel() {
-    const result = await context.read("tunnel status");
-    tunnel.value = result.ok ? result.value : null;
-}
-
-readTunnel();
 </script>
 
 <template>

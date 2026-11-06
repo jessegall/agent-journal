@@ -1,22 +1,17 @@
 <script setup>
-import {computed, ref, watch} from "vue";
+import {computed, watch} from "vue";
 import {InspectorPart, TextDisplay, useWindow} from "@journal/window-kit";
 
 // the reviews of a plan, oldest first, each with who reviewed it and what they reported
 const PLAN_SUBJECT = "plan";
 const context = useWindow();
 const row = context.option("row");
-const reviews = ref([]);
+const key = computed(() => `reviews.${row.value.id}`);
+const reviews = computed(() => context.props[key.value].rows.value);
 const shown = computed(() => reviews.value.filter((review) => review.subject_model === PLAN_SUBJECT));
 const label = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 
-async function load() {
-    const answer = await context.read(`review list --subject ${row.value.id} --oldest`);
-    reviews.value = answer.ok ? answer.value.rows : [];
-}
-
-context.follow(["review.*"], load);
-watch(() => row.value.id, load, {immediate: true});
+watch(key, (name) => context.reload(name), {immediate: true});
 </script>
 
 <template>

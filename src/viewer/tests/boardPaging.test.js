@@ -3,6 +3,7 @@ import {resolve} from "node:path";
 import {afterEach, expect, test} from "vitest";
 import {context, mounted, settle} from "./support/windowContext.js";
 import {taskWindowContext} from "./support/taskWindowContext.js";
+import {planWindowContext} from "./support/planWindowContext.js";
 import PlanCards from "../../core/modules/plans/web/src/PlanCards.vue";
 import TaskGroups from "../../core/modules/tasks/web/src/TaskGroups.vue";
 
@@ -11,9 +12,9 @@ afterEach(() => (document.body.innerHTML = ""));
 const task = (id, title) => ({id, title, state: "open", priority: "normal"});
 const plan = (id, title) => ({id, title, state: "started", task_count: 1, completed_count: 0, phase_count: 1, current_phase: 1, created_at: "2026-11-01T10:00:00Z"});
 
-function reader(answers) {
+function reader(answers, makeContext = taskWindowContext) {
     const reads = [];
-    const window = taskWindowContext({});
+    const window = makeContext({});
     window.read = async (line) => (reads.push(line), answers(line));
     return {window, reads};
 }
@@ -79,7 +80,7 @@ test("a plan answer for the tab left behind is dropped", async () => {
     const {window} = reader((line) => {
         if (line.includes("--closed")) return new Promise((resolve) => (answerClosed = () => resolve({ok: true, value: {open_total: 1, closed_total: 1, plans: [plan(2, "Closed plan")]}})));
         return {ok: true, value: {open_total: 1, closed_total: 1, plans: [plan(1, "Open plan")]}};
-    });
+    }, planWindowContext);
     const element = await mounted(PlanCards, {...window, tabs: [{key: "open", label: "Open", read: "plan board", count_field: "open_total"}, {key: "closed", label: "Closed", read: "plan board --closed", count_field: "closed_total"}]});
     element.querySelector('[data-tab="closed"]').click();
     await settle();
@@ -93,7 +94,7 @@ test("a plan answer for the tab left behind is dropped", async () => {
 
 test("show more on an empty plan list asks for nothing", async () => {
     const reads = [];
-    const window = context({});
+    const window = planWindowContext({});
     window.read = async (line) => (reads.push(line), {ok: true, value: {open_total: 3, closed_total: 0, plans: []}});
     const element = await mounted(PlanCards, {...window, tabs: [{key: "open", label: "Open", read: "plan board", count_field: "open_total"}, {key: "closed", label: "Closed", read: "plan board --closed", count_field: "closed_total"}]});
     expect(element.querySelector("[data-plans-more]")).toBeNull();
@@ -102,7 +103,7 @@ test("show more on an empty plan list asks for nothing", async () => {
 
 test("a plan card shows its state as a badge, and no phase once none is left", async () => {
     const finished = {...plan(4, "Done"), state: "approved", task_count: 3, completed_count: 3, current_phase: 0};
-    const {window} = reader(() => ({ok: true, value: {open_total: 1, closed_total: 0, plans: [finished]}}));
+    const {window} = reader(() => ({ok: true, value: {open_total: 1, closed_total: 0, plans: [finished]}}), planWindowContext);
     const element = await mounted(PlanCards, {...window, tabs: [{key: "open", label: "Open", read: "plan board", count_field: "open_total"}, {key: "closed", label: "Closed", read: "plan board --closed", count_field: "closed_total"}]});
     await settle();
     expect(element.querySelector("[data-plan-state]").textContent).toBe("Approved");

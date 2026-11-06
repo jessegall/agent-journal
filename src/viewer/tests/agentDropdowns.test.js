@@ -39,6 +39,6 @@ test("the workers dropdown's Recent activity tab lists the workers' moments newe
 });
 
 test("the reviewers dropdown reads its own role and says when there are none", async () => {
-    const element = await mounted(ReviewerDropdown, context({"agent list --role reviewer": page([])}));
+    const element = await mounted(ReviewerDropdown, context({"agent list --role reviewer": page([])}, null, {reviewers: {line: "agent list --role reviewer", events: ["agent.*"]}}));
     expect(element.textContent).toContain("No reviewers have been sent from here");
 });

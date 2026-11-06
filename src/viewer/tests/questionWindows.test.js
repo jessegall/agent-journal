@@ -1,9 +1,12 @@
+import {questionsWindowContext} from "./support/questionsWindowContext.js";
 import {createApp, h, nextTick} from "vue";
 import {expect, test} from "vitest";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
 import {context, drawn, page} from "./support/windowContext.js";
 import Questions from "../../core/modules/questions/web/src/questions.js";
 import Waiting from "../../core/modules/questions/web/src/waiting.js";
+
+const waitingWindowContext = (answers) => context(answers, null, {waits: {line: "wait waiting", events: ["wait.*"]}});
 
 const QUESTION = {id: 1, text: "Which database?", options: ["postgres", "sqlite"], recommended: "postgres", state: "open"};
 
@@ -18,7 +21,7 @@ async function mounted(component, windowContext) {
 }
 
 function recording(answers) {
-    const windowContext = context(answers);
+    const windowContext = questionsWindowContext(answers);
     const runs = [];
     windowContext.run = async (words) => {
         runs.push(words);
@@ -28,7 +31,7 @@ function recording(answers) {
 }
 
 test("the waiting list shows each item with its label, its status and where it waits", async () => {
-    const text = await drawn(Waiting, context({
+    const text = await drawn(Waiting, waitingWindowContext({
         "wait waiting": page([{id: 1, focus: "Which database?", state: "open", opened_at: new Date(Date.now() - 5 * 60000).toISOString(), targets: "questions:1"}]),
     }));
     expect(text).toContain("Which database?");
@@ -39,11 +42,11 @@ test("the waiting list shows each item with its label, its status and where it w
 });
 
 test("an empty waiting list shows an empty state", async () => {
-    expect(await drawn(Waiting, context({"wait waiting": page([])}))).toContain("Nothing is waiting");
+    expect(await drawn(Waiting, waitingWindowContext({"wait waiting": page([])}))).toContain("Nothing is waiting");
 });
 
 test("the questions list shows the recommended choice first, with a chip that says so after its words", async () => {
-    const text = await drawn(Questions, context({"question list": page([QUESTION])}));
+    const text = await drawn(Questions, questionsWindowContext({"question list": page([QUESTION])}));
     expect(text).toContain("Which database?");
     expect(text.indexOf("Recommended")).toBeGreaterThan(text.indexOf("postgres"));
     expect(text.indexOf("Recommended")).toBeLessThan(text.indexOf("sqlite"));
@@ -78,5 +81,5 @@ test("the close button closes the question", async () => {
 });
 
 test("an empty questions list shows an empty state", async () => {
-    expect(await drawn(Questions, context({"question list": page([])}))).toContain("No open questions");
+    expect(await drawn(Questions, questionsWindowContext({"question list": page([])}))).toContain("No open questions");
 });

@@ -1,5 +1,6 @@
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
+import {pluginWindowContext} from "./support/pluginWindowContext.js";
 import PluginRows from "../../core/modules/plugins/web/src/PluginRows.vue";
 import {fileAddress} from "../../core/modules/plugins/web/src/fileAddress.js";
 
@@ -19,12 +20,13 @@ const PREVIEW = {name: "sins", title: "Sins", version: "1.0", source: "owner/rep
 
 async function drawn(refuse = false) {
     const ran = [];
-    const window = context({"plugin list": page([PLUGIN])});
+    const window = pluginWindowContext({"plugin list": page([PLUGIN])});
     window.read = async (line) => {
         if (line === "plugin dashboards") return page([{id: "sins", plugin: "sins", title: "Sins board"}]);
         if (line === "plugin descriptions") return page([{id: "sins", plugin: "sins", description: "Judges the code"}]);
         if (line === "plugin services") return page([{id: "sins a", plugin: "sins", service: "a", running: true, pid: 12}, {id: "sins b", plugin: "sins", service: "b", running: false, pid: null}]);
-        if (!Array.isArray(line)) return page([PLUGIN]);
+        if (line === "plugin list" || line === "plugin events") return page([PLUGIN]);
+        line = line.split(" ");
         if (line[1] === "preview") return refuse ? {ok: false, error: "no such plugin"} : {ok: true, value: PREVIEW};
         if (line[1] === "latest") return {ok: true, value: {line: "sins: v2 is newer than 1.0", is_newer: true}};
         if (line[1] === "dashboard") return {ok: true, value: {missing: "sins has written nothing on its dashboard yet."}};
@@ -75,7 +77,7 @@ const fromMenu = async (element, item) => {
 test.each([true, false])("a plugin switch changes before the answer and returns on refusal, enabled=%s", async (enabled) => {
     let reply;
     const pending = new Promise((resolve) => (reply = resolve));
-    const window = context({
+    const window = pluginWindowContext({
         "plugin list": page([{...PLUGIN, enabled}]),
         "plugin dashboards": page([]),
         "plugin descriptions": page([]),
@@ -193,7 +195,7 @@ test("a plugin's settings show the control of their type and a group's switches 
 });
 
 async function recordDrawn(answer) {
-    const window = context({"plugin record": answer, "plugin list": page([PLUGIN])});
+    const window = pluginWindowContext({"plugin record": answer, "plugin list": page([PLUGIN])});
     const element = await mounted(PluginRows, window);
     element.querySelector("[data-plugin-record]").click();
     await settle();
@@ -237,7 +239,7 @@ test("a card says what the plugin is for and which of its services run", async (
 });
 
 test("a page with no plugin says so and still offers to make one", async () => {
-    const window = context({"plugin list": page([]), "plugin dashboards": page([]), "plugin descriptions": page([]), "plugin services": page([])});
+    const window = pluginWindowContext({"plugin list": page([]), "plugin dashboards": page([]), "plugin descriptions": page([]), "plugin services": page([])});
     const element = await mounted(PluginRows, window);
     expect(element.querySelector("[data-plugin-none]").textContent).toContain("No plugin is installed");
     expect(element.querySelector("[data-plugin-make]")).not.toBeNull();

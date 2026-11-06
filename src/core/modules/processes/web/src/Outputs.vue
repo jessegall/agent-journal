@@ -1,9 +1,10 @@
 <script setup>
-import {ListTools, RowList, WindowRoom, stateLabel, useListTools, useRows, useWindow} from "@journal/window-kit";
+import {ListTools, RowList, WindowRoom, stateLabel, useListTools, useWindow} from "@journal/window-kit";
 import RunButtons from "./RunButtons.vue";
 
 const context = useWindow();
-const {rows, failure, loaded} = useRows(context.agent == null ? "process feed" : `process feed --session-agent-id ${context.agent}`, ["process.*", "output.*"]);
+if (context.agent != null) context.state["runs.session-agent-id"] = context.agent;
+const {rows, failure, loaded} = context.props.runs;
 const tools = useListTools(rows, {title: (row) => row.line, isOpen: (row) => row.state === "running"});
 
 const isRunning = (row) => row.state === "running" || row.state === "background";

@@ -1,3 +1,4 @@
+import {planWindowContext} from "./support/planWindowContext.js";
 import {expect, test, vi} from "vitest";
 import {ref} from "vue";
 import {context, drawn, mounted, page, settle} from "./support/windowContext.js";
@@ -66,7 +67,7 @@ test("the tasks window shows each task's title and state", async () => {
 });
 
 test("the plans window shows each plan's title and state", async () => {
-    const window = {...context({"plan board": {ok: true, value: {open_total: 1, closed_total: 0, plans: [{id: 3, title: "Checkout", state: "started", task_count: 0, completed_count: 0, current_phase: 0}]}}}), tabs: [{key: "open", read: "plan board"}]};
+    const window = {...planWindowContext({"plan board": {ok: true, value: {open_total: 1, closed_total: 0, plans: [{id: 3, title: "Checkout", state: "started", task_count: 0, completed_count: 0, current_phase: 0}]}}}), tabs: [{key: "open", read: "plan board"}]};
     const text = await drawn(PlanList, window);
     expect(text).toContain("Checkout");
     expect(text).toContain("Started");

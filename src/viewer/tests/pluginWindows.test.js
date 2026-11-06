@@ -1,6 +1,7 @@
 import {createApp, h} from "vue";
 import {expect, test} from "vitest";
 import {settled} from "./settled.js";
+import {pluginWindowContext} from "./support/pluginWindowContext.js";
 import PluginRows from "../../core/modules/plugins/web/src/PluginRows.vue";
 import SuggestionRows from "../../core/modules/suggestions/web/src/SuggestionRows.vue";
 import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
@@ -8,7 +9,8 @@ import {mounted as mountedWindow, page} from "./support/windowContext.js";
 import {suggestionWindowContext} from "./support/suggestionWindowContext.js";
 
 function mounted(component, rows, ran = []) {
-    const context = {read: async () => ({ok: true, value: {rows}}), run: async (line) => (ran.push(line), {ok: true}), follow: () => {}, face: "person"};
+    const context = pluginWindowContext({"plugin list": page(rows)});
+    context.run = async (line) => (ran.push(line), {ok: true});
     const element = document.createElement("div");
     createApp({setup: () => () => h(component), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
     return element;
