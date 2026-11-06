@@ -173,7 +173,9 @@ def test_two_quick_switches_keep_both_skills_in_the_project_lists(skills_page_st
 
 def test_a_required_plugin_skill_is_due_at_start_and_after_compaction(skills_page_story):
     story = skills_page_story
-    story.expect_success("skill set-required sample-plugin --agents all", actor=story.user)
+    with skills_server(story) as server:
+        cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+        line(server, cookie, "skill", "set-required", "sample-plugin", "--agents", "all")
     story.hook("s-1", HookSamples.session_start())
     story.run_listeners()
     story.expect_text(f"agent-skill list --agent {story.agent.id}", "sample-plugin", "due")
