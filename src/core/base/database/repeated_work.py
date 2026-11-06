@@ -3,6 +3,7 @@ from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from contextvars import ContextVar
 from functools import cache
+from pathlib import Path
 import sqlite3
 import re
 import sys
@@ -75,6 +76,7 @@ class RepeatedWork(PointTally):
         self.checked_plans: set[Statement] = set()
         self.allowed_scans: dict[Statement, str] = {}
         self.file_reads: Counter[str] = Counter()
+        self.file_versions: dict[str, int] = {}
         self.read_mark: tuple[int, int] | None = None
 
     @contextmanager
@@ -194,9 +196,17 @@ class RepeatedWork(PointTally):
     def note_file_read(self, path: str) -> None:
         if self.is_allowed_file_read():
             return
+        version = self.file_version(path)
+        if self.file_versions.get(path) != version:
+            self.file_reads.pop(path, None)
+        self.file_versions[path] = version
         self.file_reads[path] += 1
         if self.file_reads[path] == 2:
             self.findings.append(f"one request read file twice: {path}\n{self.caller_lines()}")
+
+    @staticmethod
+    def file_version(path: str) -> int:
+        return Path(path).stat().st_mtime_ns if Path(path).exists() else 0
 
     @staticmethod
     def is_allowed_file_read() -> bool:

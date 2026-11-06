@@ -113,3 +113,14 @@ def test_a_write_invalidates_parsed_values_when_the_modified_time_is_unchanged(n
         files.write(path, '["bravo.module:Bravo"]')
         os.utime(path, ns=(status.st_atime_ns, status.st_mtime_ns))
         expect_value(list(finder.plugin_paths()), ["bravo.module:Bravo"])
+
+
+def test_a_file_a_program_changed_between_two_reads_is_read_twice_without_a_finding(new_story, tmp_path):
+    story = new_story()
+    changing = tmp_path / "config"
+    changing.write_text("first")
+    with story.repeated_work.request():
+        FileAccess.shared().read(changing)
+        os.utime(changing, ns=(1, 1))
+        FileAccess.shared().read(changing)
+
