@@ -58,6 +58,7 @@ test("the bar appears only for multiple cards and keeps the chosen sizes", async
     const first = await stack(2);
     const button = first.host.querySelector("[data-dock-all]");
     expect(button.textContent).toContain("Collapse all");
+    expect(button.classList.contains("bordered")).toBe(true);
     button.click();
     await nextTick();
     expect(first.host.querySelectorAll(".chat-dock.collapsed")).toHaveLength(2);
@@ -91,4 +92,20 @@ test("a chosen collapse stays at the foot and without a choice follows scroll", 
     expect(first.host.querySelectorAll(".chat-dock.collapsed")).toHaveLength(2);
     first.app.unmount();
     localStorage.clear();
+});
+
+test("a collapsed card waiting for the person keeps its warning strip", async () => {
+    loadDockDeclarations([
+        {type: "documents.doc", icon: "document", title: "Document", buttons: [], reads: []},
+        {type: "plans.plan", icon: "plan", title: "Plan", needs_user: true, buttons: [], reads: []},
+    ]);
+    const host = document.createElement("div");
+    document.body.append(host);
+    const items = [item(1), {...item(2), type: "plans.plan"}];
+    const app = createApp({render: () => h(DockStack, {items, collapsed: true})});
+    app.provide(WINDOW_CONTEXT, {environment: "main"});
+    app.mount(host);
+    await nextTick();
+    expect(host.querySelector(".chat-dock.collapsed .chat-dock-card.waiting")).not.toBeNull();
+    app.unmount();
 });

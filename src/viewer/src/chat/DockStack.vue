@@ -171,6 +171,11 @@ function release(item) {
     background: var(--raised);
 }
 
+.dock-all :deep([data-dock-all]) {
+    border-color: var(--border-3);
+    background: var(--bg-2);
+}
+
 .dock-stack {
     display: flex;
     flex-direction: column;
