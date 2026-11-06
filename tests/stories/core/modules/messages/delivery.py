@@ -488,7 +488,7 @@ def test_editing_a_message_the_agent_read_names_it_to_the_agent_without_its_text
     story.expect_success('message edit 1 --text "Better words"', actor=story.user)
     story.run_listeners()
     lines = story.hook("s-1", HookSamples.edit("cart.py"))
-    expect_reply_line(lines, "message 1 updated")
+    expect_reply_line(lines, "message:1 updated")
     expect_absent_reply_line(lines, "Better words")
 
 
