@@ -42,6 +42,7 @@ from core.modules.messages.commands.tag_message.tag_message_handler import TagMe
 from core.modules.messages.commands.tag_message.tag_message_subcommand import TagMessageSubcommand
 from core.modules.messages.commands.unread_messages.unread_messages_subcommand import UnreadMessagesSubcommand
 from core.modules.messages.commands.unread_reports.unread_reports_subcommand import UnreadReportsSubcommand
+from core.modules.messages.commands.agent_reports_subcommand import AgentReportsSubcommand
 from core.modules.messages.commands.record_message_delivery.record_message_delivery_handler import RecordMessageDeliveryHandler
 from core.modules.messages.commands.attachment_list.attachment_list_subcommand import AttachmentListSubcommand
 from core.modules.messages.commands.comment_message.comment_message_subcommand import CommentMessageSubcommand
@@ -120,12 +121,12 @@ class MessagesModule(Module):
     guards = [OneReplyPerMessageGuard, QuestionMessageGuard]
     handlers = [RecordTypedPromptHandler, ResetMessageDeliveriesHandler, RecordParentReportHandler, RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler, ChooseWorkSourceHandler, ClearWorkSourceHandler, NoteMessageReadHandler]
     driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, ToolMessageRule, TranscriptMessageRule, TypedPromptRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]
-    subcommands = [UnreadReportsSubcommand, AttachmentListSubcommand, CommentMessageSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand, ChooseWorkSourceSubcommand, ClearWorkSourceSubcommand, WorkSourceSubcommand]
+    subcommands = [AgentReportsSubcommand, UnreadReportsSubcommand, AttachmentListSubcommand, CommentMessageSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand, ChooseWorkSourceSubcommand, ClearWorkSourceSubcommand, WorkSourceSubcommand]
     windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, skeleton=MESSAGES_ATTACHMENTS_SKELETON, group="project", icon=WindowIcon.FILE, reads=["attachment list"], search=WindowReadSearch("attachment list", "Search file names and their messages", ("name", "message_text"))),
                WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, request_priority=WindowPriority.FIRST, skeleton=MESSAGES_CHAT_SKELETON, icon=WindowIcon.SPEECH, reads=["question show", "link list", "task show", "message feed", "message show", "chat-mark main", "chat-mark show", "dock-item main", "dock-item read", "process card", "pin list", "agent main", "usage tool", "hook-call feed", "output peek", "output page", "output list", "process-part list", "setting show"], runs=["message send", "message reply", "message comment", "message react", "message edit", "message delete", "link remove", "pin close", "agent type", "dump make", "dock remove", "dock keep", "dock unkeep", "developer record-mark-motion"],
                                  events=["message.*", "chat_mark.*", "dock_item.*", "pin.*", "hook_call.*", "process_part.*", "setting.*"],
-                                 keys=[WindowKey("messages", "message feed", events=["message.*"], arguments=["limit", "before-id", "after-id"], page_size=50),
-                                       WindowKey("marks", "chat-mark main", events=["chat_mark.*"], arguments=["limit", "before-id", "after-id"], page_size=50),
+                                 keys=[WindowKey("messages", "message feed", events=["message.*"], arguments=["limit", "before-id", "after-id", "ids"], page_size=50),
+                                       WindowKey("marks", "chat-mark main", events=["chat_mark.*"], arguments=["limit", "before-id", "after-id", "ids"], page_size=50),
                                        WindowKey("docks", "dock-item main", events=["dock_item.*"]),
                                        WindowKey("pins", "pin list", events=["pin.*"]),
                                        WindowKey("mark-motion", "setting show journal.core.developer.tools.mark-motion", events=["setting.*"]),

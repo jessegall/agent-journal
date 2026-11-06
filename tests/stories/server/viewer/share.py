@@ -12,6 +12,7 @@ from core.testing.story import Story
 from tests.stories.core.support.fixtures import PlanWithTasks
 from tests.stories.server.support.server_client import ServerStory, server_story, viewer_answer
 from tests.stories.support.story_checks import expect_id_cancelled, expect_value_line, expect_value_without
+from tests.stories.server.window_data_route import window_data
 
 SHARE_WINDOW = "sharing.shares"
 PLAN_WINDOW = "plans.plans"
@@ -276,3 +277,10 @@ def expect_headers_with(headers, text, text_2, expected) -> None:
 def expect_cookie_headers_with(headers, expected) -> None:
     actual = headers['Set-Cookie']
     assert expected in actual, actual
+
+
+def test_a_share_session_reads_window_keys_with_the_rights_of_its_link(shared_plan_link):
+    story, ((_, share)) = shared_plan_link
+    cookie = opened(story, share)
+    status, answer = window_data(story, cookie, keys="pins")
+    story.story.expect_rows(status == 200, answer["keys"]["pins"]["code"] != 0)

@@ -3,8 +3,10 @@ from collections.abc import Sequence
 from typing import ClassVar
 
 from core.base.caller.caller import Caller
+from core.base.cli.number_list import number_list
 from core.base.cli.view_row_page import ViewRowPage
 from core.base.model.view_model import ViewModel
+from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.less import Less
 from core.base.query.queries import Queries
@@ -15,7 +17,7 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 
 class ViewRowsSubcommand(ReadSubcommand[ViewRowPage]):
     """The read of a window that lists a view: rows newest first, by id, only the columns of the view, for the
-    filters it names; --after-id and --before-id page by id.
+    filters it names; --after-id and --before-id page by id and --ids lists only the rows with those ids.
     """
 
     model: ClassVar[type[ViewModel]]
@@ -28,6 +30,7 @@ class ViewRowsSubcommand(ReadSubcommand[ViewRowPage]):
         parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
         parser.add_argument("--after-id", type=int, default=None)
         parser.add_argument("--before-id", type=int, default=None)
+        parser.add_argument("--ids", type=number_list, default=None)
         for column in self.filters:
             parser.add_argument(f"--{column.replace('_', '-')}", type=int if column.endswith("_id") else str, default=None)
 
@@ -38,6 +41,8 @@ class ViewRowsSubcommand(ReadSubcommand[ViewRowPage]):
             query = query.matching(Greater("id", arguments.after_id))
         if arguments.before_id is not None:
             query = query.matching(Less("id", arguments.before_id))
+        if arguments.ids is not None:
+            query = query.matching(Among("id", arguments.ids))
         return ViewRowPage(tuple(query.newest().limited(arguments.limit)))
 
     def filtered(self, query: Query[ViewModel], arguments: Namespace) -> Query[ViewModel]:

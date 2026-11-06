@@ -29,7 +29,7 @@ export function useWindowData(context) {
             const result = await readKey(name, flags);
             if (result.ok && !Object.keys(flags).length) data.value = result.value;
             return result;
-        }, () => key().page_size || DEFAULT_PAGE_SIZE, () => Boolean(key().page_size));
+        }, () => key().page_size || DEFAULT_PAGE_SIZE, () => Boolean(key().page_size), () => Boolean(key().reads_ids));
         return (held[name] = {...list, data, readAt: 0});
     }
     const props = new Proxy({}, {get: (_, name) => (typeof name !== "string" || name.startsWith("__v") ? undefined : (held[name] ?? propOf(name)))});

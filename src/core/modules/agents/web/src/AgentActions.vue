@@ -2,7 +2,6 @@
 import {computed, ref} from "vue";
 import {Btn, SwitchCase, useWindow} from "@journal/window-kit";
 import AgentJobForm from "./AgentJobForm.vue";
-import AgentMessageForm from "./AgentMessageForm.vue";
 import AgentRetireForm from "./AgentRetireForm.vue";
 
 const props = defineProps({row: {type: Object, required: true}});
@@ -74,10 +73,6 @@ async function sendJob() {
     const job = props.row.job_task_flag ? [props.row.job_task_flag, task.value] : [text.value.trim()];
     await run([...props.row.job_command, String(props.row.id), ...job], "Job sent.");
 }
-async function sendMessage() {
-    if (retired.value || idle.value || !text.value.trim()) return;
-    await run(["message", "send", text.value.trim(), "--target-agent", String(props.row.id)], "Message sent.");
-}
 async function retire() {
     if (!idle.value || mode.value !== "retire" || !reason.value.trim()) return;
     await run(["agent", "retire", String(props.row.id), "--reason", reason.value.trim()], "Agent retired permanently.");
@@ -92,14 +87,10 @@ async function retire() {
                     <template v-if="row.job_command?.length"><Btn small data-agent-send-job :disabled="pending || loading || !canSendJob" @click="openJob">Send a job</Btn></template>
                     <template v-if="row.role !== 'main'"><Btn small data-agent-retire :disabled="pending || loading" @click="choose('retire')">Retire</Btn></template>
                 </template>
-                <template v-else><Btn small data-agent-send-message :disabled="pending" @click="choose('message')">Send a message</Btn></template>
             </div>
             <SwitchCase :value="mode">
                 <template #job>
                     <AgentJobForm v-model:task="task" v-model:text="text" :row="row" :tasks="tasks" :pending="pending" :loading="loading" :more-tasks="moreTasks" :failure="failure" :job-ready="jobReady" @submit="sendJob" @more="readTasks" @cancel="choose('')" />
-                </template>
-                <template #message>
-                    <AgentMessageForm v-model:text="text" :pending="pending" @submit="sendMessage" @cancel="choose('')" />
                 </template>
                 <template #retire>
                     <AgentRetireForm v-model:reason="reason" :pending="pending" @submit="retire" @cancel="choose('')" />

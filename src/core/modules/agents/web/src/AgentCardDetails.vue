@@ -1,7 +1,6 @@
 <script setup>
 import {computed, defineAsyncComponent, onUnmounted, ref, watch} from "vue";
-import {READ_RATES, coalesced, Btn, EmptyState, FoldGroup, InnerTabs, loadWindowComponent, SwitchCase, TabBody, useWindow} from "@journal/window-kit";
-import InformationBar from "../../../../../viewer/src/shell/InformationBar.vue";
+import {READ_RATES, coalesced, EmptyState, FoldGroup, InnerTabs, loadWindowComponent, peekRef, SwitchCase, TabBody, useWindow} from "@journal/window-kit";
 import AgentCommand from "./AgentCommand.vue";
 import AgentTaskGroup from "./AgentTaskGroup.vue";
 import TranscriptRows from "./TranscriptRows.vue";
@@ -10,7 +9,6 @@ import AgentActions from "./AgentActions.vue";
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, tasks: {type: Array, required: true}, stoppedWithWork: Boolean, open: Boolean, totalCount: Number, tasksPerHour: String});
 const TASK_STATES = ["started", "blocked", "open", "completed"];
 const ENDED_WITHOUT_REPORT = "It ended without a report";
-const report = computed(() => props.facts?.job_returned || props.row.job_returned || "");
 const endedReason = computed(() => (props.row.ended_at && props.facts?.job_returned?.startsWith(ENDED_WITHOUT_REPORT) ? props.facts.job_returned : ""));
 const sections = computed(() => props.tasks.length ? TASK_STATES.map((state) => ({state, label: state.slice(0, 1).toUpperCase() + state.slice(1), tasks: props.tasks.filter((task) => task.state === state || (state === "started" && task.state === "testing") || (state === "completed" && task.state === "cancelled"))})) : []);
 const FOLDED_STATES = new Set(["completed"]);
@@ -19,18 +17,20 @@ const sectionOpen = (state) => !(folded.value[state] ?? FOLDED_STATES.has(state)
 const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(state)});
 // a running helper's card names the command it runs, as the foot of the chat does for the main agent, or says plainly that it ran none
 const context = useWindow();
+const {rows: reports} = context.props.reports;
+context.state["reports.agent"] = String(props.row.id);
+context.reload("reports");
 const isReader = computed(() => props.row.access === "read-only");
 const retired = computed(() => Boolean(props.row.retired_at) || props.row.state === "retired");
 const cardTabs = computed(() => {
-    if (retired.value) return context.tabs.filter((item) => item.key === "transcript");
-    return isReader.value ? context.tabs.filter((item) => ["transcript", "terminal"].includes(item.key)) : context.tabs;
+    if (retired.value) return context.tabs.filter((item) => ["reports", "transcript"].includes(item.key));
+    return isReader.value ? context.tabs.filter((item) => ["reports", "transcript", "terminal"].includes(item.key)) : context.tabs;
 });
-const tab = ref(cardTabs.value[0]);
+const firstTab = () => isReader.value || retired.value ? cardTabs.value.find((item) => item.key === "transcript") : cardTabs.value[0];
+const tab = ref(firstTab());
 watch(cardTabs, (tabs) => { if (!tabs.some((item) => item.key === tab.value?.key)) tab.value = tabs[0]; });
-watch(() => props.open, (open) => { if (open) tab.value = cardTabs.value[0]; });
+watch(() => props.open, (open) => { if (open) tab.value = firstTab(); });
 const components = Object.fromEntries(context.tabs.filter((tab) => tab.component).map((tab) => [tab.key, defineAsyncComponent(() => loadWindowComponent(tab.component))]));
-const isRunningHelper = computed(() => props.row.role === "helper" && !props.row.ended_at);
-const stopHelper = () => context.run(["helper", "stop", String(props.row.id)]);
 const instructionOpen = ref(false);
 const runningCommand = ref("");
 const noCommandNote = ref("");
@@ -49,19 +49,19 @@ watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true
 
 <template>
     <div class="agent-more" data-agent-more @click.stop>
-        <template v-if="report"><p class="agent-summary" data-agent-report>Last report: {{ report }}</p></template>
         <template v-if="row.retirement_reason"><p class="agent-summary" data-agent-retirement-reason>Retirement reason: {{ row.retirement_reason }}</p></template>
         <template v-if="row.resume_reason"><p class="agent-summary" data-agent-resume-reason>{{ row.resume_reason }}</p></template>
         <AgentActions :row="row" />
         <template v-if="totalCount && tasksPerHour"><span class="agent-pace" data-agent-pace data-agent-motion>{{ tasksPerHour }}</span></template>
-                <InformationBar :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: []}" card>
-                    <template v-if="isRunningHelper"><Btn variant="ghost" small data-helper-stop @click="stopHelper">Stop</Btn></template>
-                </InformationBar>
                 <template v-if="showsCommand"><AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" /></template>
                 <template v-if="endedReason"><p class="agent-ended-reason" data-agent-ended-reason>{{ endedReason }}</p></template>
-                <InnerTabs class="agent-tabs" :tabs="cardTabs" :active="tab" :answer="{tasks: tasks.length}" @choose="tab = $event" />
+                <InnerTabs class="agent-tabs" :tabs="cardTabs" :active="tab" :answer="{tasks: tasks.length, reports: reports.length}" @choose="tab = $event" />
                 <TabBody class="agent-tab-body" :tab="tab" :data-agent-tab-body="tab?.key">
                     <SwitchCase :value="tab?.key">
+                        <template #reports>
+                            <template v-if="!reports.length"><EmptyState title="No reports">This agent has not sent any reports.</EmptyState></template>
+                            <button v-for="report in reports" :key="report.id" type="button" class="agent-report" :data-peek="`messages:${report.id}`" @click="peekRef(`messages:${report.id}`)">{{ report.text }}</button>
+                        </template>
                         <template #tasks>
                             <template v-if="!tasks.length"><EmptyState title="No tasks">No tasks have been assigned to this agent.</EmptyState></template>
                             <template v-for="section in sections" :key="section.state">
@@ -98,6 +98,7 @@ watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true
 <style scoped>
 .agent-more { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; max-width: 100%; cursor: default; }
 .agent-summary { margin: 8px 14px; color: var(--text-2); font-size: 12px; white-space: pre-wrap; }
+.agent-report { padding: 8px 14px; border: 0; border-bottom: 1px solid var(--border-inner); background: transparent; color: var(--text); text-align: left; white-space: pre-wrap; cursor: pointer; }
 .agent-pace { align-self: flex-end; color: var(--text-4); font-size: 10.5px; }
 .agent-ended-reason { margin: 4px 0; color: var(--danger, var(--text)); }
 .agent-command { width: 100%; max-width: 100%; overflow: hidden; padding: 6px 40% 6px 14px; border-bottom: 1px solid var(--border-inner); }

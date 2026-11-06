@@ -13,15 +13,11 @@ async function actions(row = helper, run = vi.fn(async () => ({ok: true})), answ
     return {element, held, run};
 }
 
-test("a working agent offers a message and sends it to that agent", async () => {
-    const {element, run} = await actions({...helper, state: "running", ended_at: null});
+test("a working agent does not offer card actions", async () => {
+    const {element} = await actions({...helper, state: "running", ended_at: null});
     expect(element.querySelector("[data-agent-send-job]")).toBeNull();
     expect(element.querySelector("[data-agent-retire]")).toBeNull();
-    await pickButton(element, "Send a message");
-    typeInto(element.querySelector("[data-agent-message-text]"), "Check the rounding");
-    await settle();
-    await pickButton(element, "Send the message");
-    expect(run).toHaveBeenCalledExactlyOnceWith(["message", "send", "Check the rounding", "--target-agent", "42"]);
+    expect(element.querySelector("[data-agent-send-message]")).toBeNull();
 });
 
 test("an idle helper takes another job on the same agent", async () => {
