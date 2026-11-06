@@ -25,12 +25,12 @@ class AgentRows:
     def is_visible(self, agent_id: int) -> bool:
         return self.rows.find(Agent, agent_id) is not None
 
-    def running_mains(self) -> tuple[Agent, ...]:
+    def running_main_agents(self) -> tuple[Agent, ...]:
         return self.kept.scoped_read("agents", lambda: MainAgentFinder.all_running(self.queries),
-                                       "role = ? AND ended_at IS NULL", [AgentRole.MAIN], name="agents.running_mains")
+                                       "role = ? AND ended_at IS NULL", [AgentRole.MAIN], name="agents.running_main_agents")
 
     def main_agent(self) -> Agent | None:
-        return max(self.running_mains(), key=lambda agent: agent.id, default=None)
+        return max(self.running_main_agents(), key=lambda agent: agent.id, default=None)
 
     def main_agents(self) -> tuple[Agent, ...]:
         main = self.main_agent()

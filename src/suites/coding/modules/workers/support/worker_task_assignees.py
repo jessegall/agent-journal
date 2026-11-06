@@ -1,7 +1,7 @@
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
-from core.modules.tasks.support.task_takers import TaskTakers
+from core.modules.tasks.support.task_assignees import TaskAssignees
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.queries.task_query import TaskQuery
@@ -9,7 +9,7 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 
-class WorkerTaskTakers(TaskTakers):
+class WorkerTaskAssignees(TaskAssignees):
     """The main agent and a worker whose worktree is cut take a task; a worker whose work is delivered, or any
     other helper, never starts one."""
 

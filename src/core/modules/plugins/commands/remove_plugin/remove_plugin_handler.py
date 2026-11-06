@@ -21,9 +21,9 @@ class RemovePluginHandler(Handler[RemovePlugin, str]):
 
     def handle(self, command: RemovePlugin, context: Context) -> str:
         plugin = self.plugins.find_name(command.name)
-        self.readers.withdraw(plugin.name, context)
+        self.readers.remove(plugin.name, context)
         self.repository.delete(plugin, context)
-        self.skill_files.withdraw(plugin.name)
+        self.skill_files.remove(plugin.name)
         shutil.rmtree(self.folders.code(plugin.name), ignore_errors=True)
         if command.purge:
             shutil.rmtree(self.folders.data(plugin.name), ignore_errors=True)

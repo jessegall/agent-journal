@@ -19,9 +19,9 @@ class PluginQuery(Query[Plugin]):
             raise Refusal(f"no plugin named {name} is installed", "journal plugin list shows them")
         return plugin
 
-    def enabled_ones(self) -> list[Plugin]:
+    def enabled_plugins(self) -> list[Plugin]:
         return list(self.kept.read(self.table.name, lambda: tuple(self.filter(enabled=True).oldest().all_rows()),
-                                   "enabled = ?", [True], name="plugins.enabled_ones"))
+                                   "enabled = ?", [True], name="plugins.enabled_plugins"))
 
     def is_installed(self, name: str) -> bool:
         return self.kept.read(self.table.name, self.filter(name=name).exists, "name = ?", [name], name="plugins.installed")

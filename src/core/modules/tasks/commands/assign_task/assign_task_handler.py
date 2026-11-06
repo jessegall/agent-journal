@@ -10,7 +10,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.tasks.commands.assign_task.assign_task import AssignTask
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.support.task_takers import TaskTakers
+from core.modules.tasks.support.task_assignees import TaskAssignees
 
 
 class AssignTaskHandler(Handler[AssignTask, Task]):
@@ -18,15 +18,15 @@ class AssignTaskHandler(Handler[AssignTask, Task]):
 
     command = AssignTask
 
-    def __init__(self, queries: Queries, repository: Repository, takers: TaskTakers) -> None:
-        self.queries, self.repository, self.takers = queries, repository, takers
+    def __init__(self, queries: Queries, repository: Repository, assignees: TaskAssignees) -> None:
+        self.queries, self.repository, self.assignees = queries, repository, assignees
 
     def handle(self, command: AssignTask, context: Context) -> Task:
         task = self.queries.query(Task).find(command.task_id)
         agent = self.queries.query(Agent).find(command.agent_id)
         if agent.ended_at is not None:
             raise Refusal(f"agent {agent.id} has ended", "journal agent list shows who is running")
-        self.takers.check(agent)
+        self.assignees.check(agent)
         delegated_to = None if agent.role == AgentRole.MAIN else agent.id
         if task.state is TaskState.OPEN:
             return self.repository.save(replace(task, delegated_to=delegated_to), context)
@@ -34,5 +34,5 @@ class AssignTaskHandler(Handler[AssignTask, Task]):
             raise Refusal(f"task {task.id} is {task.state.value}: only an open or started task moves")
         if task.holder_id == agent.id:
             raise Refusal(f"task {task.id} is with agent {agent.id}: nothing to move")
-        self.takers.check_reassignment(task)
+        self.assignees.check_reassignment(task)
         return self.repository.save(replace(task.release(context.timestamp, context.actor, f"assigned to agent {agent.id}"), delegated_to=delegated_to), context)

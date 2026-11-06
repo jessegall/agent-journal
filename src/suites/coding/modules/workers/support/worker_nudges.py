@@ -16,7 +16,7 @@ WORKER_UNMERGED = NudgeDeclaration("workers.worker_unmerged", NudgeType.STEERING
 
 WORKER_LIMIT_RAISED = NudgeDeclaration("workers.limit_raised", NudgeType.STEERING, 'worker limit is now {limit}: {workers} workers out, {count} open tasks not delegated; hand out more', turn_limited=False)
 
-SMALL_BATCH =NudgeDeclaration("workers.small_batch", NudgeType.STEERING, 'batch of {count}: queue more tasks on a worker, a long batch runs on and bothers you less', turn_limited=False)
+SMALL_BATCH =NudgeDeclaration("workers.small_batch", NudgeType.STEERING, 'batch of {count}: queue more tasks on a worker, a long batch runs on and interrupts you less', turn_limited=False)
 
 WORKER_RETIRED = NudgeDeclaration("workers.worker_retired", NudgeType.STEERING, 'worker:{worker} was idle too long: released, task:{task} is open again', turn_limited=False)
 
@@ -43,7 +43,7 @@ WORKER_TASK_BLOCKED = NudgeDeclaration("workers.task_blocked", NudgeType.STEERIN
 WORKER_REFUSAL_INTERVAL = Interval(Seconds(600))
 WORKER_REFUSED = NudgeDeclaration("workers.repeated_refusal", NudgeType.STEERING, 'worker:{worker} refused {count} times on task:{task}: journal worker status {worker}', interval=WORKER_REFUSAL_INTERVAL, turn_limited=False)
 
-WORKER_RUN_OUTLASTS = NudgeDeclaration("workers.run_outlasts", NudgeType.STEERING, "worker:{worker} stopped and waits on output {output}, still running: journal output stop {output}", interval=Interval(Seconds(600)), turn_limited=False, wakes_agent=True)
+WORKER_RUN_RUNS_AFTER_STOP = NudgeDeclaration("workers.run_outlasts", NudgeType.STEERING, "worker:{worker} stopped and waits on output {output}, still running: journal output stop {output}", interval=Interval(Seconds(600)), turn_limited=False, wakes_agent=True)
 WORKER_RESTARTED = NudgeDeclaration("workers.restarted", NudgeType.STEERING, "worker:{worker} stopped with {tasks} left and is started again", turn_limited=False)
 WORKER_HELP_REQUEST = NudgeDeclaration("workers.help-request", NudgeType.STEERING, 'worker:{worker} is stuck on {tasks}, wait:{wait}: journal worker send {worker} "<job>"', turn_limited=False, wakes_agent=True)
 WORKER_STATUS_FIRST = NudgeDeclaration("workers.status_first", NudgeType.REFUSAL, "after a compaction, run journal worker status first")
@@ -53,4 +53,4 @@ SILENT_WORKER_CONTINUE = replace(SILENT_AGENT_CONTINUE, key="workers.continue_si
 
 SILENT_AGENT_FAILED = NudgeDeclaration("workers.silent_agent_failed", NudgeType.STEERING, "agent:{agent} could not resume. Check its terminal.", turn_limited=False, wakes_agent=True)
 WORKER_READ_REFUSAL = NudgeDeclaration("workers.read_outside_worktree", NudgeType.REFUSAL, "that file is outside your worktree: read what is in it, or ask with journal worker report")
-WORKER_NUDGES = [WORKER_READ_REFUSAL, SILENT_AGENT_CONTINUE, SILENT_WORKER_CONTINUE, SILENT_AGENT_FAILED, WORKER_STATUS_FIRST, WORKER_UNSTARTED, READER_SAMPLE_READY, WORKER_RUN_OUTLASTS, WORKER_RESTARTED, WORKER_HELP_REQUEST, WORKER_REFUSED, WORKER_TASK_BLOCKED, WORKER_LIMIT_RAISED, WORKER_MERGE_CONFLICT, WORKER_PROOF_SHORT, WORKER_ENDED_WITH_TASKS, WORKER_REUSE, WORKER_NEXT_TASK, WORKER_TASK_REASSIGNED, WORKER_TASK_AFTER_REASSIGNED, WORKER_JUDGE_SCOPE, WORKER_COMMENT_COPY, WORKER_TASK_COMMENT, WORKER_UNFINISHED_TASKS, WORKER_TESTS_PASSED, WORKER_TESTS_FAILED, WORKER_FILE, WORKER_LOG_DUE, HELPER_INACTIVE, WORKER_UNMERGED, SMALL_BATCH, WORKER_RETIRED, BUILDER_BUILDS, PROOF_CHECK, PROOF_WAITS, MERGE_WAITS, WORKER_TASK, WORKER_RUN_ENDED]
+WORKER_NUDGES = [WORKER_READ_REFUSAL, SILENT_AGENT_CONTINUE, SILENT_WORKER_CONTINUE, SILENT_AGENT_FAILED, WORKER_STATUS_FIRST, WORKER_UNSTARTED, READER_SAMPLE_READY, WORKER_RUN_RUNS_AFTER_STOP, WORKER_RESTARTED, WORKER_HELP_REQUEST, WORKER_REFUSED, WORKER_TASK_BLOCKED, WORKER_LIMIT_RAISED, WORKER_MERGE_CONFLICT, WORKER_PROOF_SHORT, WORKER_ENDED_WITH_TASKS, WORKER_REUSE, WORKER_NEXT_TASK, WORKER_TASK_REASSIGNED, WORKER_TASK_AFTER_REASSIGNED, WORKER_JUDGE_SCOPE, WORKER_COMMENT_COPY, WORKER_TASK_COMMENT, WORKER_UNFINISHED_TASKS, WORKER_TESTS_PASSED, WORKER_TESTS_FAILED, WORKER_FILE, WORKER_LOG_DUE, HELPER_INACTIVE, WORKER_UNMERGED, SMALL_BATCH, WORKER_RETIRED, BUILDER_BUILDS, PROOF_CHECK, PROOF_WAITS, MERGE_WAITS, WORKER_TASK, WORKER_RUN_ENDED]

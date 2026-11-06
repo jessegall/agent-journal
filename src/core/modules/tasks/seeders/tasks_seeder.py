@@ -13,7 +13,7 @@ class TasksSeeder(Seeder):
         demo.run(f"task start {closed}", main)
         demo.run(f'task log {closed} "Rounded in the cart total"', main)
         demo.run(f'task close {closed} --outcome "done"', main)
-        started = demo.new_id(f'task make "Fix the cart total" --brief "The total shows dollars where cents are meant." {flag}', user)
+        started = demo.new_id(f'task make "Fix the cart total" --brief "The total shows dollars where cents are expected." {flag}', user)
         demo.run(f"task start {started}", main)
         demo.run(f'task log {started} "Found the cart total in cents"', main)
         demo.run(f'task log {started} "The tax is added twice in the summary"', main)

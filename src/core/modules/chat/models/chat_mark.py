@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from core.base.actor import Actor
 from core.base.chat.mark_outcome import MarkOutcome
 from core.base.model.environment_scoped import EnvironmentScoped
-from core.base.model.session_owned import SessionOwned
+from core.base.model.session_bound import SessionBound
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
 from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
@@ -11,7 +11,7 @@ from core.modules.chat.models.lifecycles.chat_mark_lifecycle import ChatMarkLife
 
 
 @dataclass(frozen=True, kw_only=True)
-class ChatMark(EnvironmentScoped, SessionOwned, Model):
+class ChatMark(EnvironmentScoped, SessionBound, Model):
     """One mark in an environment's chat, of a type a module declared: its words, the row it is about, how it
     stands, and, for a mark that follows a process, whether it still runs. Its lines are kept one to a line of
     text."""

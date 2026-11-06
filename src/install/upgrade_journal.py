@@ -79,11 +79,11 @@ class UpgradeJournal:
         return [f"failed: {error.module} ({error.reason})", f"rolled back: {error.module}", f"stayed moved: {standing}", FINISH_LINE]
 
     def kept(self, outcome: UpgradeOutcome, dry_run: bool = False) -> UpgradeOutcome:
-        if self.is_worth_saving(outcome, dry_run):
+        if self.should_save(outcome, dry_run):
             UpgradeReportFile(self.home.folder).save(outcome.text)
         return outcome
 
-    def is_worth_saving(self, outcome: UpgradeOutcome, dry_run: bool) -> bool:
+    def should_save(self, outcome: UpgradeOutcome, dry_run: bool) -> bool:
         return self.ran and not dry_run and outcome.text != FINISHED_LINE and self.home.folder.is_dir()
 
     def has_answer(self) -> bool:

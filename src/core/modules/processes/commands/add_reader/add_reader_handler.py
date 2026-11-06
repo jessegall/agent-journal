@@ -43,7 +43,7 @@ class AddReaderHandler(Handler[AddReader, Reader]):
             if request is not None:
                 scope = ReaderSampleScope(request.creator_id, request.command)
                 judgement = self.judge.judged_command(reader, request.category, scope)
-                if not judgement.is_proper:
+                if not judgement.is_valid:
                     raise Refusal(f"reader {reader.name} missed {'; '.join((*judgement.missing, *judgement.missed))}", "try the patterns on the named output")
                 return self.save(reader, judgement, context)
             return self.save(reader, self.judge.tested(reader), context)

@@ -7,7 +7,7 @@ from core.modules.processes.support.run_slots import RunSlots
 
 
 class ResumeRunQueueHandler(Handler[ResumeRunQueue, str]):
-    """Lifts the halt a command put on the run queue and grants the spots that are free."""
+    """Removes the halt a command put on the run queue and grants the slots that are free."""
 
     command = ResumeRunQueue
 

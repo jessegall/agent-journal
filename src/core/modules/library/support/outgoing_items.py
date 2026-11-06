@@ -10,7 +10,7 @@ from core.modules.secrets.guards.secret_value_guard import SHORTEST_GUARDED_CHAR
 
 
 class OutgoingItems:
-    """Checks a local row before it is shared and gives what travels: the row must exist, its share must allow it, it
+    """Checks a local row before it is shared and gives what is sent: the row must exist, its share must allow it, it
     must follow no item yet, and no text of it may hold the value of a stored secret."""
 
     def __init__(self, shares: LibraryShares, queries: Queries, values: SecretValues, registry: Registry) -> None:

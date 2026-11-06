@@ -41,8 +41,8 @@ def test_the_program_runs_with_a_throwaway_home_and_nothing_of_the_agents_enviro
     story = filled_story(new_story)
     monkeypatch.setenv("LEAKED_NAME", "leaked-value")
     outcome = story.run("secret run 1 -- printenv", story.agent)
-    homes = [line.removeprefix("HOME=") for line in outcome.output_text.splitlines() if line.startswith("HOME=")]
-    story.expect_rows(outcome.code == 0, "LEAKED_NAME" not in outcome.output_text, len(homes) == 1, str(private_folder / "runs") in homes[0],
+    home_lines = [line.removeprefix("HOME=") for line in outcome.output_text.splitlines() if line.startswith("HOME=")]
+    story.expect_rows(outcome.code == 0, "LEAKED_NAME" not in outcome.output_text, len(home_lines) == 1, str(private_folder / "runs") in home_lines[0],
                       not any((private_folder / "runs").iterdir()))
 
 

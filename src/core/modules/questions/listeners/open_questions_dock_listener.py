@@ -31,7 +31,7 @@ class OpenQuestionsDockListener(CommitListener[Touched[Question]]):
         if logged.environment_id is None:
             return
         actor = self.actors.actor(QUESTIONS_MODULE)
-        open_ids = {question.id for question in self.questions.open_ones().matching(MainAgentRows()).oldest().all_rows()}
+        open_ids = {question.id for question in self.questions.open_questions().matching(MainAgentRows()).oldest().all_rows()}
         docks = [dock.id for dock in self.queries.query(Dock).all_rows()]
         docked = [item for item in self.items.type_items(QuestionDockType.OPEN.value).filter(state=DockItemState.DOCKED).all_rows() if item.dock_id in docks]
         if open_ids and not docked:

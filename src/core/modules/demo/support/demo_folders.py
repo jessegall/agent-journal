@@ -14,7 +14,7 @@ SCRATCH_ROOT = "/tmp"
 
 class DemoFolders:
     """The scratch folders demos leave in the temp folders: a demo older than a day is stopped, and a folder
-    whose demo no longer runs is removed, whether it ended or crashed. A folder too young to have a server
+    whose demo no longer runs is removed, whether it ended or crashed. A folder too recent to have a server
     yet stays."""
 
     def __init__(self, roots: Sequence[Path] = (Path(tempfile.gettempdir()), Path(SCRATCH_ROOT))) -> None:

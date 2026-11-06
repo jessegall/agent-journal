@@ -36,7 +36,7 @@ func TestPatchRowsKeepOnlyTheFirstFile(t *testing.T) {
 	}
 }
 
-func TestAHugeChangeIsCutWithARowSayingHowManyAreLeftOut(t *testing.T) {
+func TestALargeChangeIsCutWithARowSayingHowManyAreLeftOut(t *testing.T) {
 	rows := NewFileRows(strings.Repeat("line\n", rowsMost+5))
 	last := rows[len(rows)-1]
 	if len(rows) != rowsMost+1 || last.LineType != "fold" || last.Hidden != 5 {

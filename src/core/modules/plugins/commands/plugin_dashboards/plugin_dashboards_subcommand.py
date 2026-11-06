@@ -24,5 +24,5 @@ class PluginDashboardsSubcommand(ReadSubcommand[RowList]):
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
-        boards = [(plugin.name, PluginManifest.read(self.folders.code(plugin.name)).dashboard) for plugin in self.plugins.enabled_ones()]
+        boards = [(plugin.name, PluginManifest.read(self.folders.code(plugin.name)).dashboard) for plugin in self.plugins.enabled_plugins()]
         return RowList([{"id": name, "plugin": name, "title": board.title} for name, board in boards if board is not None])

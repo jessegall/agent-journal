@@ -226,7 +226,7 @@ func (menu *boot) worktreeEnvironment(environments []Environment) error {
 	if name == "" {
 		name = worktrees.UnusedName(names)
 	}
-	name = UnheldName(name, working)
+	name = UnusedName(name, working)
 	folder, created, err := menu.cut(worktrees, name)
 	if err != nil {
 		return err
@@ -266,20 +266,20 @@ func (menu *boot) conversation() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	mains := []Conversation{}
+	main_agents := []Conversation{}
 	for _, conversation := range conversations {
 		if conversation.Role == MainRole || conversation.Role == "" {
-			mains = append(mains, conversation)
+			main_agents = append(main_agents, conversation)
 		}
 	}
 	if menu.request.Program == ClaudeProgram {
 		home, _ := os.UserHomeDir()
-		mains = ClaudeTranscripts{Home: home}.Titled(menu.choice.Folder, mains)
+		main_agents = ClaudeTranscripts{Home: home}.Titled(menu.choice.Folder, main_agents)
 	} else {
-		mains = limited(mains)
+		main_agents = limited(main_agents)
 	}
 	options, sessions, currentAt := []string{}, map[string]string{}, time.Now()
-	for _, conversation := range mains {
+	for _, conversation := range main_agents {
 		label := conversation.Label(currentAt)
 		options, sessions[label] = append(options, label), conversation.Session
 	}

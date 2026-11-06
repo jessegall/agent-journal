@@ -75,7 +75,7 @@ DOCUMENT_SORTING = Sequence(
     triggers=row_trigger("doc.create"),
     step_guards=guards(FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED),
     steps=(
-        "Check the document: Check the document you filed reads as you meant: `journal doc show <doc n>` lists its sections, one for each ## heading of the file",
+        "Check the document: Check the document you filed reads as you intended: `journal doc show <doc n>` lists its sections, one for each ## heading of the file",
         "Tell the user: Tell the user in one or two plain lines what the document concludes, then its reference like doc 41, never in backticks",
     ),
 )

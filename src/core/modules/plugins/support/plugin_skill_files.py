@@ -31,7 +31,7 @@ class PluginSkillFiles:
                 target.parent.mkdir(parents=True, exist_ok=True)
                 FileAccess.shared().write(target, text)
 
-    def withdraw(self, plugin_name: str) -> None:
+    def remove(self, plugin_name: str) -> None:
         for root in self.projects.roots(self.providers.skill_folders()):
             for path in root.glob(f"*/{SKILL_FILE}"):
                 fields = SkillCatalogue.front_matter(SkillContents.read(path).text)

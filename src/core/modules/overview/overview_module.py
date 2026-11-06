@@ -8,8 +8,8 @@ from core.modules.overview.support.overview_settings import OVERVIEW_SETTINGS
 
 
 class OverviewModule(Module):
-    """Adds journal overview, a page of what is in flight that shows the commands the user chooses, and which an
-    agent must run first when its session starts or is compacted."""
+    """Adds journal overview, a page of what is open or running that shows the commands the user chooses, and which
+    an agent must run first when its session starts or is compacted."""
 
     name = "journal.core.overview"
     seed_reason = "it keeps no rows"

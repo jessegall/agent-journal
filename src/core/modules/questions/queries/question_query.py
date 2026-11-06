@@ -13,7 +13,7 @@ class QuestionQuery(Query[Question]):
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, Question)
 
-    def open_ones(self) -> Self:
+    def open_questions(self) -> Self:
         return self.filter(state=QuestionState.OPEN)
 
     def agent(self, agent_id: int) -> Self:

@@ -24,7 +24,7 @@ class SuiteChoice:
 
     def runs(self, suite_name: str) -> bool:
         suite = self.suite()
-        return suite is not None and suite_name in self.registry.lineage(suite)
+        return suite is not None and suite_name in self.registry.ancestors(suite)
 
     def agent_policy(self) -> AgentPolicy:
         suite = self.suite()

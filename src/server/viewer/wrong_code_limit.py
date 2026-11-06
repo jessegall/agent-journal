@@ -8,8 +8,8 @@ WINDOW_SECONDS = 60.0
 
 
 class WrongCodeLimit:
-    """Takes at most five pairing codes a minute, counted when each arrives under one lock, so codes sent at
-    the same moment cannot all slip past the limit and a code cannot be guessed by trying many."""
+    """Accepts at most five pairing codes a minute, counted when each arrives under one lock, so codes sent at
+    the same moment cannot all get past the limit and a code cannot be guessed by trying many."""
 
     def __init__(self, seconds: Callable[[], float] = time.monotonic) -> None:
         self.seconds, self.lock, self.attempt_times = seconds, threading.Lock(), deque[float]()

@@ -9,7 +9,7 @@ GIT_LIMIT_SECONDS = 10
 @dataclass(frozen=True)
 class HookFilesGit:
     """Reads tracked hook files and controls their skip-worktree index marks; each answers whether git did it, so a
-    held index lock or a folder that is gone never stops a sweep or a restore halfway."""
+    locked index or a folder that is gone never stops a sweep or a restore in the middle."""
 
     folder: Path
 

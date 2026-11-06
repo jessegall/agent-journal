@@ -29,8 +29,8 @@ HELPER_PROFILES = [
 WORKER_PROFILES = [
     AgentProfile("journal-senior", "A worker for a job that needs judgement: a design inside the code, a hard fault, a change across many files. Writes, on Opus.",
                  f"You are a senior worker on one bounded job that needs judgement. Weigh the ways to do it against the code as it is, choose the one that fits it, and say in your report why. {WORKER_RULES}{READ_COMMANDS}{WORKER_COMMANDS}", agent_type="worker", model="opus", codex_model="gpt-6.1-sol"),
-    AgentProfile("journal-medior", "A worker for a job whose shape is defined: a change the brief spells out, tests to write, a rename. Writes, on Sonnet.",
-                 f"You are a medium worker on one bounded job whose shape the brief defines. Do what it says and no more; where it leaves a choice undecided, take the plainest one and name it in your report. {WORKER_RULES}{READ_COMMANDS}{WORKER_COMMANDS}", agent_type="worker", model="sonnet", codex_model="gpt-6.1-terra"),
+    AgentProfile("journal-medior", "A worker for a job whose shape is defined: a change the brief states, tests to write, a rename. Writes, on Sonnet.",
+                 f"You are a medium worker on one bounded job whose shape the brief defines. Do what it says and no more; where it leaves a choice undecided, choose the simplest one and name it in your report. {WORKER_RULES}{READ_COMMANDS}{WORKER_COMMANDS}", agent_type="worker", model="sonnet", codex_model="gpt-6.1-terra"),
     AgentProfile("journal-worker", "Works on one assigned task", "Work on the assigned task. Use journal task --help for its commands. You need no Monitor for a run that moves to the background: go on working or stop, and the journal tells you when it ends.",
                  agent_type="worker", model="sonnet", codex_model="gpt-6.1-terra"),
 ]

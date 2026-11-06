@@ -3,7 +3,7 @@ from core.base.seed.seeder import Seeder
 
 
 class DumpsSeeder(Seeder):
-    """Pours one dump of two notes in; the agent files the first and leaves the second unread."""
+    """Adds one dump of two notes; the agent files the first and leaves the second unread."""
 
     def seed(self, demo: Demo) -> None:
         user, main = demo.people["user"], demo.people["main"]

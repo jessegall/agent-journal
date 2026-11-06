@@ -4,7 +4,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
 
 
-class TaskTakers:
+class TaskAssignees:
     """Says which agents a task can be assigned to: the main agent, which hands tasks out, and no other. A suite
     whose helpers take tasks binds its own."""
 

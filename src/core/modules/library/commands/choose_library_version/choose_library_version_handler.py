@@ -17,8 +17,8 @@ from core.modules.library.ticks.library_sync import LibrarySync
 
 
 class ChooseLibraryVersionHandler(Handler[ChooseLibraryVersion, LibraryCopy]):
-    """Keeps the person's text by sending it with the version they saw, or keeps the library's by bringing the row to
-    the item. Both ask the server with no write lock held; only a person chooses."""
+    """Keeps the person's text by sending it with the version they were shown, or keeps the library's by
+    copying the row to the item. Both ask the server with no write lock held; only a person chooses."""
 
     command = ChooseLibraryVersion
     transactional = False

@@ -125,8 +125,8 @@ class ShellLine:
         return tuple(part for part in self.parts if part.program == JOURNAL_PROGRAM and (not command_terms or any(part.arguments[:len(terms)] == terms for terms in command_terms)))
 
     def journal_command_numbers(self, *commands: str) -> tuple[int, ...]:
-        firsts = (next((word for word in part.arguments if word.isdigit()), "") for part in self.parts_running_journal_command(*commands))
-        return tuple(int(number) for number in firsts if number)
+        first_numbers = (next((word for word in part.arguments if word.isdigit()), "") for part in self.parts_running_journal_command(*commands))
+        return tuple(int(number) for number in first_numbers if number)
 
     def has_part_running(self, command: str) -> bool:
         return any(part.text.strip("() ") == command or part.text.strip("() ").startswith(f"{command} ") for part in self.parts)

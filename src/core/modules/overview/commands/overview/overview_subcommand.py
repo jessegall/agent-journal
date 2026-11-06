@@ -13,8 +13,8 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 
 
 class OverviewSubcommand(ReadSubcommand[OverviewPage]):
-    """`journal overview`: everything in flight here, as the commands the setting journal.core.overview.commands
-    names show it, each under its own heading."""
+    """`journal overview`: everything open or running here, as the commands the setting
+    journal.core.overview.commands names show it, each under its own heading."""
 
     cli_name = "overview"
     name = "overview"

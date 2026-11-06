@@ -43,7 +43,7 @@ class PluginServices:
     def follow(self, processes: ServiceProcesses) -> list[ServiceFault]:
         wanted: set[tuple[str, str]] = set()
         faults: list[ServiceFault] = []
-        for plugin in self.plugins.enabled_ones():
+        for plugin in self.plugins.enabled_plugins():
             folder = self.folders.code(plugin.name)
             manifest = PluginManifest.read(folder)
             for service in manifest.services:
@@ -104,7 +104,7 @@ class PluginServices:
 
     def check_health(self, processes: ServiceProcesses) -> list[ServiceFault]:
         misses: list[ServiceFault] = []
-        for plugin in self.plugins.enabled_ones():
+        for plugin in self.plugins.enabled_plugins():
             folder = self.folders.code(plugin.name)
             manifest = PluginManifest.read(folder)
             for service in [service for service in manifest.services if (plugin.name, service.name) in processes.running]:

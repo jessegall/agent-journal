@@ -23,5 +23,5 @@ class ReactMessageSubcommand(Subcommand[ReactMessage, Message]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Message):
-            faces = " ".join(str(reaction["emoji"]) for reaction in MessageReactions.decoded(value))
-            output.line(f"message {value.id}: {faces or 'no faces'}")
+            emoji = " ".join(str(reaction["emoji"]) for reaction in MessageReactions.decoded(value))
+            output.line(f"message {value.id}: {emoji or 'no emoji'}")

@@ -3,7 +3,7 @@ from core.base.database.migration import Migration
 
 class JournalExceptionTableMigration(Migration):
     """Creates the table of journal exceptions, first named journal_faults and renamed by migration 4; an
-    exception outlives the environment it happened in, which it forgets."""
+    exception remains after its environment is deleted."""
 
     number = 2
     statements = (

@@ -54,7 +54,7 @@ class PluginRule(DriverRule):
         commands: list[Command[object]] = []
         events = PluginEventNames().events(hook)
         values: dict[int, dict[str, object]] = {}
-        for plugin in self.plugins.enabled_ones():
+        for plugin in self.plugins.enabled_plugins():
             manifest = PluginManifest.read(self.folders.code(plugin.name))
             if PluginDigest.digest(self.folders.code(plugin.name), manifest) != plugin.files_digest:
                 lines.append(f"[plugin {plugin.name}] switched off: its files changed since it was installed; the user switches it on again once they read the change")

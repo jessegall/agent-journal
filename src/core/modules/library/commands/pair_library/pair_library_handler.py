@@ -46,7 +46,7 @@ class PairLibraryHandler(Handler[PairLibrary, LibraryConnection]):
         try:
             server = self.client.call(address, token, ServerInfo.parsed, "GET", "/info", opener=opener)
             if server.protocol != PROTOCOL:
-                raise Refusal(f"This server speaks protocol {server.protocol}, this journal {PROTOCOL}", "update whichever of the journal and the server is behind")
+                raise Refusal(f"This server speaks protocol {server.protocol}, this journal {PROTOCOL}", "update the one that is behind, the journal or the server")
             return server, self.client.call(address, token, ServerUser.parsed, "GET", "/me", opener=opener)
         except LibraryStoppedError as stopped:
             raise Refusal("The server did not accept this token.", stopped.suggestion or stopped.reason) from stopped

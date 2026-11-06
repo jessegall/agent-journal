@@ -6,7 +6,7 @@ from core.modules.processes.support.reader_save_refusal import ReaderSaveRefusal
 
 
 class ReaderSaveAttempts:
-    """Reads failed saves that survived the refused command's rollback."""
+    """Reads failed saves that remain after the refused command's rollback."""
 
     def __init__(self, refusals: RefusalLog, settings: ProcessSettings) -> None:
         self.refusals, self.settings = refusals, settings

@@ -6,7 +6,7 @@ from core.base.library.library_share import Fields
 
 @dataclass(frozen=True)
 class SequenceColumns:
-    """The columns of a sequence that travel to the library and back: its title, its steps and what each step holds
+    """The columns of a sequence that are sent to the library and back: its title, its steps and what each step holds
     back."""
 
     title: str

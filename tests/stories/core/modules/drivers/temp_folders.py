@@ -39,16 +39,16 @@ def test_an_ended_sessions_folder_goes(new_story, monkeypatch, tmp_path):
 
 def test_an_unknown_sessions_folder_stays_a_week(new_story, monkeypatch, tmp_path):
     story = new_story(fixture=BuilderStarted)
-    folders = session_folders(story, monkeypatch, tmp_path, "young", "old")
+    folders = session_folders(story, monkeypatch, tmp_path, "recent", "old")
     month_old = time.time() - 30 * 24 * 3600
     os.utime(folders["old"], (month_old, month_old))
     prune(story)
-    expect_exists_young_folders(folders)
+    expect_exists_recent_folders(folders)
     expect_absent_exists_old_folders(folders)
 
 
-def expect_exists_young_folders(folders) -> None:
-    actual = folders['young'].exists()
+def expect_exists_recent_folders(folders) -> None:
+    actual = folders['recent'].exists()
     assert actual, actual
 
 

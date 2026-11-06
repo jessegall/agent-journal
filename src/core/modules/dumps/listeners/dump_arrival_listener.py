@@ -21,5 +21,5 @@ class DumpArrivalListener(SaveListener[Created[Dump]]):
 
     def handle(self, event: Created[Dump], context: Context) -> None:
         dump = event.row
-        for agent in self.agents.running_mains():
+        for agent in self.agents.running_main_agents():
             self.nudger.send(agent.id, DUMP_ARRIVED, LINE_SOURCE, context, dump=dump.id)

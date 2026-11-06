@@ -327,13 +327,13 @@ class Registry:
         return [suite for suite in suites if suite.name not in required]
 
     # The suite's name and the names of every suite it requires, those they require too, nearest first.
-    def lineage(self, suite: SuiteEntry) -> tuple[str, ...]:
+    def ancestors(self, suite: SuiteEntry) -> tuple[str, ...]:
         names = [suite.name]
         for required in suite.requires:
             parent = self.suite(required)
-            names.extend(name for name in (self.lineage(parent) if parent is not None else [required]) if name not in names)
+            names.extend(name for name in (self.ancestors(parent) if parent is not None else [required]) if name not in names)
         return tuple(names)
 
     def suite_drivers(self, suite: SuiteEntry) -> list[DriverEntry]:
-        return [driver for driver in self.drivers if driver.suite in self.lineage(suite)]
+        return [driver for driver in self.drivers if driver.suite in self.ancestors(suite)]
 

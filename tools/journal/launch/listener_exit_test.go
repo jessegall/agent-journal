@@ -45,7 +45,7 @@ func TestAStopEndsAProgramThatIgnoresTheFirstSignal(t *testing.T) {
 	}
 }
 
-func TestASecondLaunchKeepsTheFirstsProgramsReachable(t *testing.T) {
+func TestASecondLaunchKeepsTheFirstProgramsReachable(t *testing.T) {
 	folder, err := os.MkdirTemp("/tmp", "launch")
 	if err != nil {
 		t.Fatal(err)

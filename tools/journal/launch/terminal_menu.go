@@ -51,9 +51,9 @@ func PlainTerminalText(raw string) string {
 // ReadTerminalMenu finds the last menu on the screen's bytes, or nil with none.
 func ReadTerminalMenu(screen string) *TerminalMenu {
 	text := PlainTerminalText(screen)
-	menuText, footed := text, false
+	menuText, hasFooter := text, false
 	if footers := menuFooter.FindAllStringIndex(text, -1); len(footers) > 0 {
-		menuText, footed = text[:footers[len(footers)-1][0]], true
+		menuText, hasFooter = text[:footers[len(footers)-1][0]], true
 	}
 	matches := menuOption.FindAllStringSubmatchIndex(menuText, -1)
 	options := []MenuOption{}
@@ -71,7 +71,7 @@ func ReadTerminalMenu(screen string) *TerminalMenu {
 	if len(options) < 2 || options[0].Number != 1 {
 		return nil
 	}
-	if !footed && !hasPointer(menuText, matches[len(matches)-len(options):]) {
+	if !hasFooter && !hasPointer(menuText, matches[len(matches)-len(options):]) {
 		return nil
 	}
 	return &TerminalMenu{questionAbove(menuText[:start]), options}

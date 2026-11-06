@@ -76,7 +76,7 @@ func TestAnOutputThatNeverEndsGivesUpAndAnUnknownOneSaysSo(t *testing.T) {
 	}
 }
 
-func TestAnOutputThatGoesAwayEndsTheWaitAfterTwoMinutes(t *testing.T) {
+func TestAnOutputThatIsDeletedEndsTheWaitAfterTwoMinutes(t *testing.T) {
 	requestCount := 0
 	var output bytes.Buffer
 	query := func(line ...string) (string, int) {

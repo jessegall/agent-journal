@@ -7,6 +7,6 @@ WORD_LIST_FILE = "lists"
 
 
 def test_every_custom_rule_file_is_enrolled_in_the_config():
-    enrolled = set(json.loads((ROOT / ".commandments" / "config.json").read_text())["detectors"])
+    registered = set(json.loads((ROOT / ".commandments" / "config.json").read_text())["detectors"])
     rule_files = {path.stem for path in CUSTOM_FOLDER.glob("*.json")} - {WORD_LIST_FILE}
-    assert sorted(rule_files - enrolled) == []
+    assert sorted(rule_files - registered) == []

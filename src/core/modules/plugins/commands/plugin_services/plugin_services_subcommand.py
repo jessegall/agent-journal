@@ -29,7 +29,7 @@ class PluginServicesSubcommand(ReadSubcommand[RowList]):
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
-        return RowList([self.row(plugin.name, service) for plugin in self.plugins.enabled_ones() for service in PluginManifest.read(self.folders.code(plugin.name)).services if self.is_listed(plugin.name, service)])
+        return RowList([self.row(plugin.name, service) for plugin in self.plugins.enabled_plugins() for service in PluginManifest.read(self.folders.code(plugin.name)).services if self.is_listed(plugin.name, service)])
 
     def is_listed(self, plugin_name: str, service: ManifestService) -> bool:
         return service.is_listed(self.sockets.pid(plugin_name, service.name))

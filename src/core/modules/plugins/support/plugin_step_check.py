@@ -28,7 +28,7 @@ class PluginStepCheck:
         self.bus, self.agents = bus, agents
 
     def refusal(self, event: str, data: Mapping[str, object], environment: str, timestamp: Timestamp, agent_id: int | None = None) -> str:
-        for plugin in self.plugins.enabled_ones():
+        for plugin in self.plugins.enabled_plugins():
             manifest = PluginManifest.read(self.folders.code(plugin.name))
             if event not in manifest.window_names():
                 continue

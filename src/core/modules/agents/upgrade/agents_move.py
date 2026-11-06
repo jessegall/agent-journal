@@ -57,8 +57,8 @@ class AgentsMove(VersionFourMove):
         sessions = {row["session"] for row in agent_rows}
         helpers = {row["session"]: row for row in source.rows(HELPERS) if row["session"]}
         subagent_programs = {row["session"].partition(SEPARATOR)[0]: row["provider"] for row in agent_rows if row["session"] and self.is_subagent_session(row["session"])}
-        commonest = Counter(row["provider"] for row in agent_rows).most_common(1)
-        common_program = commonest[0][0] if commonest else None
+        common_programs = Counter(row["provider"] for row in agent_rows).most_common(1)
+        common_program = common_programs[0][0] if common_programs else None
         moved = 0
         for span in source.creator_spans(AGENT):
             session = self.session(span)

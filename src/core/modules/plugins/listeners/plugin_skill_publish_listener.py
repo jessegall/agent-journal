@@ -17,6 +17,6 @@ class PluginSkillPublishListener(CommitListener[JournalBooting]):
         self.plugins, self.folders, self.skill_files = plugins, folders, skill_files
 
     def handle(self, event: JournalBooting, logged: LoggedEvent) -> None:
-        for plugin in self.plugins.enabled_ones():
+        for plugin in self.plugins.enabled_plugins():
             folder = self.folders.code(plugin.name)
             self.skill_files.publish(folder, PluginManifest.read(folder))

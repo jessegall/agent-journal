@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 class Nudge:
     """One line said to an agent: the key and the type of its declaration, its words with their fields filled
     in, the interval before it may be said again, whether a turn says it only once, and the command that
-    settles it, if it names one to run. A line made from a declaration keeps its fields and the declaration,
+    clears it, if it names one to run. A line made from a declaration keeps its fields and the declaration,
     so lines of one key in a hook can be written as one."""
 
     key: str

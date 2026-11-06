@@ -29,15 +29,15 @@ def test_a_folder_whose_demo_ended_or_crashed_goes_and_a_young_folder_stays(tmp_
 
 
 def test_a_running_demo_stays_until_it_is_older_than_a_day_and_is_then_stopped(tmp_path):
-    young_server = subprocess.Popen([sys.executable, "-c", "import sys; sys.stdin.read()"], stdin=subprocess.PIPE)
+    recent_server = subprocess.Popen([sys.executable, "-c", "import sys; sys.stdin.read()"], stdin=subprocess.PIPE)
     old_server = subprocess.Popen([sys.executable, "-c", "import sys; sys.stdin.read()"], stdin=subprocess.PIPE)
-    young = demo_folder(tmp_path, "journal-demo-young", START_SECONDS + 1, young_server.pid)
+    recent = demo_folder(tmp_path, "journal-demo-recent", START_SECONDS + 1, recent_server.pid)
     old = demo_folder(tmp_path, "journal-demo-old", DEMO_LIFE_SECONDS + 1, old_server.pid)
     assert DemoFolders([tmp_path]).prune() == 0
     assert old_server.wait(10) != 0
-    assert young_server.poll() is None and young.exists() and old.exists()
-    young_server.kill()
-    young_server.wait(10)
+    assert recent_server.poll() is None and recent.exists() and old.exists()
+    recent_server.kill()
+    recent_server.wait(10)
     assert DemoFolders([tmp_path]).prune() == 2
 
 
