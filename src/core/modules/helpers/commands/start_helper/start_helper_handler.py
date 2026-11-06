@@ -28,6 +28,8 @@ from core.modules.messages.support.work_sources import WorkSources
 BRIEF_LIMIT_CHARACTERS = 100000
 SHORT_BRIEF_CHARACTERS = 200
 
+INDEPENDENT_REASON = "An independent profile starts a new helper for its own view."
+
 
 class StartHelperHandler(Handler[StartHelper, Agent]):
     """Starts a helper of a profile as a process the journal owns, in the folder of the agent that asked."""
@@ -68,7 +70,7 @@ class StartHelperHandler(Handler[StartHelper, Agent]):
         source = self.sources.source_copy(source_context)
         helper = self.bus.dispatch(start, context)
         self.repository.save(HelperJob(session_agent_id=parent.id, creator_id=context.actor.id, tool_key=helper.session, helper_id=helper.id, profile=profile.name, program_model=model,
-                                       description=command.given_name or profile.name, brief=command.brief, new_agent_reason=command.new_agent_reason.strip(), instruction=command.brief[:SHORT_BRIEF_CHARACTERS],
+                                       description=command.given_name or profile.name, brief=command.brief, new_agent_reason=INDEPENDENT_REASON if profile.independent and not command.new_agent_reason.strip() else command.new_agent_reason.strip(), review_plan_id=command.review_plan_id, instruction=command.brief[:SHORT_BRIEF_CHARACTERS],
                                        source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp), context)
         self.sources.use_copy(source, source_context)
         self.bus.dispatch(CountProfileUse(profile.name), context)

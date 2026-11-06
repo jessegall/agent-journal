@@ -26,6 +26,7 @@ class HelperJob(EnvironmentScoped, Model):
     helper_id: int | None = None
     brief: str = ""
     new_agent_reason: str = ""
+    review_plan_id: int | None = None
     report_message_id: int | None = None
     source_message_id: int | None = None
     source_version: int = 0

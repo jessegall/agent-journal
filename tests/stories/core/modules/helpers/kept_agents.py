@@ -8,6 +8,7 @@ from core.modules.agents.support.agent_type_limits import AgentTypeLimits, TypeL
 from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_fixture import StoryFixture
+from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, resumable_session
 
 REASON = '--reason "Its question is answered"'
@@ -211,4 +212,20 @@ def test_steering_or_new_job(new_story):
     story.expect_success(f'helper send {helper.id} "Also read the tax" --steer', actor=story.agent)
     jobs = tuple(story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).all_rows())
     story.expect_rows(len(jobs) == 1, "Also read the tax" in jobs[0].brief)
+
+
+def test_same_reviewer_same_plan_is_refused(new_story, monkeypatch):
+    story = new_story(fixture=BuilderWithUser)
+    launcher = FakeLauncher(story.home.socket("launcher"), request_count=2)
+    story.expect_success("helper start journal-plan-reviewer --plan 7 --brief 'Review plan 7' --environment main", actor=story.agent)
+    reviewer = helper_agent(story)
+    job = story.container.get(Queries).query(HelperJob).filter(helper_id=reviewer.id).first()
+    story.expect_rows(job.review_plan_id == 7, job.new_agent_reason != "")
+    story.expect_success(f"agent end {reviewer.id}", actor=story.user)
+    story.run_listeners()
+    resumable_session(story, reviewer, monkeypatch)
+    story.expect_refusal(f'helper send {reviewer.id} "Review it again" --plan 7', "reviewed plan 7", actor=story.agent)
+    story.expect_success(f'helper send {reviewer.id} "Review plan 8" --plan 8', actor=story.agent)
+    launcher.server.close()
+    story.home.socket("launcher").unlink()
 

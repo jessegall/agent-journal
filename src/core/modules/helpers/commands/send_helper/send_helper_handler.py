@@ -35,7 +35,10 @@ class SendHelperHandler(Handler[SendHelper, int]):
 
     def handle(self, command: SendHelper, context: Context) -> int:
         helper = self.reach.checked_helper(command.helper_id, context.actor)
-        last_job = self.jobs.helper_jobs(helper.id)[-1]
+        jobs = self.jobs.helper_jobs(helper.id)
+        last_job = jobs[-1]
+        if command.review_plan_id is not None and any(job.review_plan_id == command.review_plan_id for job in jobs):
+            raise Refusal(f"helper {helper.id} reviewed plan {command.review_plan_id} already", "an independent review needs another helper: journal helper start")
         source_context = replace(context, environment_id=helper.environment_id)
         source = self.sources.source_copy(source_context)
         if helper.ended_at is None:
@@ -50,7 +53,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
         if parent_id != helper.parent_id:
             self.repository.save(helper.changed(parent_id=parent_id), context)
         next_job = last_job.next_job(helper.session, command.job, command.job[:SHORT_JOB_CHARACTERS], context.actor.id)
-        self.repository.save(next_job.changed(session_agent_id=parent_id, source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp), context)
+        self.repository.save(next_job.changed(session_agent_id=parent_id, review_plan_id=command.review_plan_id, source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp), context)
         self.sources.use_copy(source, source_context)
         return helper.id
 
