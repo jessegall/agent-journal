@@ -5,7 +5,7 @@ from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.modules.documents.commands.support.row_comments import RowComments
+from core.modules.documents.support.row_comments import RowComments
 from core.modules.documents.commands.support.text_inspection import TextInspection
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.open_document import OpenDocument

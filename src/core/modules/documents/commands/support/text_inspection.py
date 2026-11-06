@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.modules.documents.commands.support.comment_read import CommentRead
+from core.modules.documents.support.comment_read import CommentRead
 from core.modules.documents.models.text_row import TextRow
 
 

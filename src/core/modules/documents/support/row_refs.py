@@ -44,16 +44,16 @@ class RowRefs:
 
     def existing_many(self, references: Sequence[tuple[str, int]]) -> tuple[RowRef, ...]:
         models = {name: self.model(name) for name, _ in references}
-        ids_by_model: dict[type[Model], set[int]] = {}
+        model_ids: dict[type[Model], set[int]] = {}
         resolved: list[RowRef] = []
         for name, number in references:
             model = models[name]
             if model is None:
                 continue
             resolved.append(RowRef(model.model_name, number))
-            ids_by_model.setdefault(model, set()).add(number)
+            model_ids.setdefault(model, set()).add(number)
         existing: set[RowRef] = set()
-        for model, numbers in ids_by_model.items():
+        for model, numbers in model_ids.items():
             ids = tuple(numbers)
             for start in range(0, len(ids), 500):
                 rows = self.queries.query(model).matching(Among("id", ids[start:start + 500])).all_rows()

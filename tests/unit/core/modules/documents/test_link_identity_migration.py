@@ -25,7 +25,7 @@ def insert_link(database, relation: str, creator: int = 1) -> None:
 def test_existing_migration_already_keeps_relation_type_in_identity(links_database):
     insert_link(links_database, "about")
     insert_link(links_database, "edited")
-    assert links_database.execute("SELECT link_type FROM links ORDER BY id").fetchall() == [("about",), ("edited",)]
+    assert [row[0] for row in links_database.execute("SELECT link_type FROM links ORDER BY id").fetchall()] == ["about", "edited"]
 
 
 def test_duplicate_identity_cannot_replace_earliest_actor_or_timestamp(links_database):
@@ -58,14 +58,14 @@ def test_correction_migration_preserves_links_and_identity(corrected_links_datab
     with pytest.raises(sqlite3.IntegrityError):
         insert_link(database, "about")
     insert_link(database, "edited")
-    assert database.execute("SELECT count(*) FROM links").fetchone() == (2,)
+    assert database.execute("SELECT count(*) FROM links").fetchone()[0] == 2
 
 
 def test_removed_link_numbers_are_never_reused(corrected_links_database):
     database = corrected_links_database
     database.execute("DELETE FROM links")
     insert_link(database, "edited")
-    assert database.execute("SELECT id FROM links").fetchone() == (2,)
+    assert database.execute("SELECT id FROM links").fetchone()[0] == 2
 
 
 @pytest.mark.parametrize("column", ["source", "target"])

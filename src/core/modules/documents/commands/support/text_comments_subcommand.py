@@ -6,7 +6,7 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.modules.documents.commands.support.row_comments import RowComments
+from core.modules.documents.support.row_comments import RowComments
 from core.modules.documents.commands.support.text_comments import TextComments
 from core.modules.documents.models.text_row import TextRow
 from core.modules.plans.models.plan import Plan

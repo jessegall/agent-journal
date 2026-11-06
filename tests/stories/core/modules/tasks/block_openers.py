@@ -1,4 +1,4 @@
-from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, the_helper
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.core.modules.tasks.task_waits import TwoTasks, posted
 
 
@@ -12,7 +12,7 @@ def test_a_plain_reason_tells_the_agent_how_to_make_the_block_open_itself(new_st
 
 def test_a_task_waiting_for_a_helper_opens_when_its_report_arrives(new_story):
     story = new_story(fixture=StartedHelper)
-    helper = the_helper(story)
+    helper = helper_agent(story)
     task = story.new_row_id('task make "Read the report" --environment main', actor=story.agent)
     story.expect_success(f'task block {task} --on helper:{helper.id}', 'state: blocked', actor=story.agent)
     story.expect_text(f'task inspect {task} --json', f'helper {helper.id} reports')

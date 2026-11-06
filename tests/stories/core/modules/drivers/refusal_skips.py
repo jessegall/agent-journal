@@ -16,7 +16,7 @@ from core.testing.shell_part import ShellPart
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
-from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, the_helper
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
 RULE = "processes.failed-full-run"
@@ -99,7 +99,7 @@ def test_a_skip_with_no_reason_is_refused(new_story):
 
 def test_a_safety_refusal_has_no_skip(new_story):
     story = new_story(fixture=StartedHelper)
-    helper = the_helper(story)
+    helper = helper_agent(story)
     story.expect_hook_refusal(helper.session, HookSamples.tool_use("Edit", ToolType.EDIT, [], None), "reads and searches only")
     story.advance(timedelta(seconds=1))
     story.expect_refusal('refusal skip drivers.access --reason "I must" --environment main', "safety refusal", actor=Actor(helper.id, ActorType.AGENT))
