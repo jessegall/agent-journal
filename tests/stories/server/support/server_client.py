@@ -7,6 +7,9 @@ import shlex
 import subprocess
 import socket
 import time
+from unittest.mock import patch
+from core.base.caller.process_table import ProcessTable
+from core.testing.fixed_process_table import FixedProcessTable
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -306,36 +309,37 @@ def started_server(home: JournalHome, code_folders: CodeFolders | None = None, l
 
 @contextmanager
 def running_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True):
-    files = ServerFiles(home)
-    assert files.acquire_lock(), "a server already holds the lock of this journal"
-    files.clear_leftover_socket()
-    listener_round = JournalRound(home, "listener thread", ListenerWork())
-    listener_thread = ListenerThread(listener_round.run, listener_round.report)
-    phones = PhoneSessions(home, listener_thread)
-    login = ViewerLogin(phones, ShareSessions(phones.journal_output))
-    reported = ReportedFindings()
-    context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
-                            HookDatabase(home), ViewerListener(login, ViewerRoutes(home, listener_thread, login, reported)), ServerTunnel(home), reported, STORY_HOOK_LIMIT_SECONDS)
-    context.viewer.routes.line_route = StoryLineRoute(home, listener_thread, reported)
-    server = JournalServer(str(files.socket), RequestHandler, context)
-    if listener_thread_started:
-        listener_thread.start()
-    files.write_pid()
-    thread = Thread(target=server.serve_requests, daemon=True)
-    thread.start()
-    context.viewer.start()
-    try:
-        yield server, files.socket, context
-    finally:
-        context.viewer.stop()
-        listener_thread.stop()
-        server.request_stop()
-        thread.join(TIMEOUT_SECONDS)
-        server.drain(DRAIN_LIMIT_SECONDS)
-        context.hook_database.close()
-        files.remove_server_files()
-        server.server_close()
-        files.release_lock()
+    with patch.object(ProcessTable, "rows", FixedProcessTable([]).rows):
+        files = ServerFiles(home)
+        assert files.acquire_lock(), "a server already holds the lock of this journal"
+        files.clear_leftover_socket()
+        listener_round = JournalRound(home, "listener thread", ListenerWork())
+        listener_thread = ListenerThread(listener_round.run, listener_round.report)
+        phones = PhoneSessions(home, listener_thread)
+        login = ViewerLogin(phones, ShareSessions(phones.journal_output))
+        reported = ReportedFindings()
+        context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
+                                HookDatabase(home), ViewerListener(login, ViewerRoutes(home, listener_thread, login, reported)), ServerTunnel(home), reported, STORY_HOOK_LIMIT_SECONDS)
+        context.viewer.routes.line_route = StoryLineRoute(home, listener_thread, reported)
+        server = JournalServer(str(files.socket), RequestHandler, context)
+        if listener_thread_started:
+            listener_thread.start()
+        files.write_pid()
+        thread = Thread(target=server.serve_requests, daemon=True)
+        thread.start()
+        context.viewer.start()
+        try:
+            yield server, files.socket, context
+        finally:
+            context.viewer.stop()
+            listener_thread.stop()
+            server.request_stop()
+            thread.join(TIMEOUT_SECONDS)
+            server.drain(DRAIN_LIMIT_SECONDS)
+            context.hook_database.close()
+            files.remove_server_files()
+            server.server_close()
+            files.release_lock()
 
 
 def request_answer(socket_path: Path, method: str, route: str, body: object = None, headers: dict[str, str] | None = None) -> ServerAnswer:
