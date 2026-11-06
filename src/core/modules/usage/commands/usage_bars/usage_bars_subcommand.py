@@ -12,8 +12,7 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.plans.models.plan_task import PlanTask
-from core.modules.processes.models.enums.process_state import RUNNING_STATES
-from core.modules.processes.models.process import Process
+from core.modules.processes.support.active_queue_runs import ActiveQueueRuns
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.question import Question
 from core.modules.schedules.models.scheduled_job import ScheduledJob
@@ -33,8 +32,8 @@ class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
     name = "bars"
     environment_refusal = "the bars are shown for one environment"
 
-    def __init__(self, queries: Queries, tasks: TaskQuery) -> None:
-        self.queries, self.tasks = queries, tasks
+    def __init__(self, queries: Queries, tasks: TaskQuery, queue_runs: ActiveQueueRuns) -> None:
+        self.queries, self.tasks, self.queue_runs = queries, tasks, queue_runs
 
     def read(self, arguments: Namespace, caller: Caller) -> BarFacts:
         agents = self.queries.query(Agent).matching(IsNull("ended_at"))
@@ -44,7 +43,7 @@ class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
         main_agents = MainAgentFinder.rows(self.queries)
         started_tasks = self.tasks.holder(main_agents[0].id).started().descending("started_at").page(1, PAGE_ROWS).rows if main_agents else ()
         jobs = self.queries.query(ScheduledJob).filter(session_agent_id=main_agents[0].id).matching(IsNull("ended_at")).page(1, PAGE_ROWS).total if main_agents else 0
-        processes = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(IsNull("queued_at")).page(1, PAGE_ROWS).total
+        processes = self.queue_runs.query().page(1, PAGE_ROWS).total
         plans = self.queries.query(PlanTask).filter(task_id=started_tasks[0].id).page(1, PAGE_ROWS).rows if started_tasks else ()
         return BarFacts(helpers, tasks, waiting, started_tasks[0].id if started_tasks else None, started_tasks[0].title if started_tasks else "", jobs, processes,
                         plans[0].plan_id if plans else None)
