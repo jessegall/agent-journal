@@ -1,5 +1,6 @@
 from typing import ClassVar
 
+from core.base.script_stop import ScriptStop
 from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 
 
@@ -8,6 +9,6 @@ class PluginStoppedError(PluginFaultError):
 
     counts_toward_failing: ClassVar[bool] = False
 
-    @classmethod
-    def because(cls, reason: str) -> "PluginStoppedError":
-        return cls(f"it was stopped when {reason}")
+    def __init__(self, stop: ScriptStop) -> None:
+        super().__init__(f"it was stopped when {stop.value}")
+        self.stop = stop

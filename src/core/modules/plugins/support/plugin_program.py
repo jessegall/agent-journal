@@ -66,7 +66,7 @@ class PluginProgram:
         finally:
             self.scripts.finish(process)
         if stop_reason:
-            raise PluginStoppedError.because(stop_reason)
+            raise PluginStoppedError(stop_reason)
         if process.returncode != 0:
             raise PluginFaultError(self.ended_text(process.returncode, pipes.error_tail(), call))
         try:

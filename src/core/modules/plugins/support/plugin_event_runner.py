@@ -2,10 +2,12 @@ from collections.abc import Mapping
 
 from core.base.clock import Clock
 from core.base.command.bus import Bus
+from core.base.command.server_stopping_error import ServerStoppingError
 from core.base.model.event_form import EventForm
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
+from core.base.script_stop import ScriptStop
 from core.modules.environments.models.environment import Environment
 from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults import ClearPluginFaults
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
@@ -20,6 +22,7 @@ from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_program import PluginProgram
 from core.modules.plugins.support.plugin_settings import PluginSettings
+from core.modules.plugins.support.plugin_stopped_error import PluginStoppedError
 from core.modules.plugins.support.plugin_subscription import PluginSubscription
 from core.modules.plugins.support.plugins_module_name import MODULE_NAME
 
@@ -48,6 +51,11 @@ class PluginEventRunner:
         call = PluginCall(manifest, PluginEvent(key, data), environment, self.clock.timestamp(), self.settings.values(plugin, manifest), agent_id, form=form, script=subscription.script)
         try:
             answer = self.program.run(call, None)
+        except PluginStoppedError as stopped:
+            if stopped.stop is ScriptStop.SERVER:
+                raise ServerStoppingError.before(plugin.name, key) from stopped
+            self.record(RecordPluginFault.of(plugin.id, stopped, where))
+            return None
         except PluginFaultError as fault:
             self.record(RecordPluginFault.of(plugin.id, fault, where))
             return None

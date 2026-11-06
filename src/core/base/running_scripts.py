@@ -13,12 +13,11 @@ from core.base.file_access import FileAccess
 from core.base.leftover_process import LeftoverProcess
 from core.base.model.event_form import EventForm
 from core.base.running_script import RunningScript
+from core.base.script_stop import ScriptStop
 from core.base.timestamp import Timestamp
 
 
 KEPT_LINE_COUNT = 50
-SWITCHED_OFF_REASON = "the plugin was switched off"
-SERVER_STOP_REASON = "the server stopped"
 
 
 class RunningScripts:
@@ -33,7 +32,7 @@ class RunningScripts:
         self.lock = threading.Lock()
         self.scripts: dict[int, RunningScript] = {}
         self.services: dict[int, str] = {}
-        self.stop_reasons: dict[int, str] = {}
+        self.stop_reasons: dict[int, ScriptStop] = {}
         self.sent_lines: dict[str, deque[str]] = {}
         self.skips: dict[str, str] = {}
 
@@ -66,9 +65,9 @@ class RunningScripts:
             LeftoverProcess.stop(int(pid), program)
             pid_file.unlink(missing_ok=True)
 
-    def stop_reason(self, process: "subprocess.Popen[str]") -> str:
+    def stop_reason(self, process: "subprocess.Popen[str]") -> ScriptStop | None:
         with self.lock:
-            return self.stop_reasons.get(process.pid, "")
+            return self.stop_reasons.get(process.pid)
 
     def keep_line(self, plugin: str, line: str) -> None:
         with self.lock:
@@ -104,14 +103,14 @@ class RunningScripts:
             return tuple(script for script in self.scripts.values() if script.plugin == plugin)
 
     def stop(self, plugin: str) -> None:
-        self.killed(self.running(plugin), SWITCHED_OFF_REASON)
+        self.killed(self.running(plugin), ScriptStop.SWITCHED_OFF)
 
     def stop_all(self) -> None:
         with self.lock:
             scripts = tuple(self.scripts.values())
-        self.killed(scripts, SERVER_STOP_REASON)
+        self.killed(scripts, ScriptStop.SERVER)
 
-    def killed(self, scripts: Sequence[RunningScript], reason: str) -> None:
+    def killed(self, scripts: Sequence[RunningScript], reason: ScriptStop) -> None:
         with self.lock:
             self.stop_reasons.update({script.process.pid: reason for script in scripts})
         for script in scripts:

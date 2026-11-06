@@ -18,6 +18,7 @@ from core.base.cli.usage_error import UsageError
 from core.base.cli.write_flags import WriteFlags
 from core.base.command.bus import Bus
 from core.base.command.context import Context
+from core.base.command.server_stopping_error import ServerStoppingError
 from core.base.command.handler import Handler
 from core.base.deadline_passed_error import DeadlinePassedError
 from core.base.environment_names import EnvironmentNames
@@ -70,7 +71,7 @@ class Console:
         except (UsageError, StaleRegistryError) as error:
             output.error(str(error))
             return USAGE_CODE
-        except DeadlinePassedError as error:
+        except (DeadlinePassedError, ServerStoppingError) as error:
             output.error(str(error))
             return ERROR_CODE
         except Refusal as refusal:

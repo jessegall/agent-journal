@@ -6,7 +6,8 @@ import pytest
 from core.base.model.event_form import EventForm
 from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
-from core.base.running_scripts import SWITCHED_OFF_REASON, RunningScripts
+from core.base.running_scripts import RunningScripts
+from core.base.script_stop import ScriptStop
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.plugins.commands.support.plugin_service_round import PluginServiceRound
 from core.modules.plugins.support.service_processes import ServiceProcesses
@@ -119,7 +120,7 @@ def test_s25_switching_a_plugin_off_goes_through_and_the_round_stops_its_running
         story.expect_success("plugin disable events", actor=story.user)
         story.expect_rows(process.poll() is None, plugin_row(story).enabled is False)
         story.container.get(PluginServiceRound).run(ServiceProcesses())
-        story.expect_rows(process.wait(timeout=STOP_LIMIT_SECONDS) != 0, scripts.stop_reason(process) == SWITCHED_OFF_REASON)
+        story.expect_rows(process.wait(timeout=STOP_LIMIT_SECONDS) != 0, scripts.stop_reason(process) is ScriptStop.SWITCHED_OFF)
     finally:
         scripts.finish(process)
         process.kill()
