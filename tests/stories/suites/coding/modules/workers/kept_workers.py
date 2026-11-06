@@ -13,6 +13,8 @@ from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from core.base.journal_home import LAUNCHER_SOCKET
 from core.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from core.base.refusal import Refusal
+from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -186,4 +188,43 @@ def test_stop_allowed_when_a_dispatch_cannot_proceed(new_story):
     dispatched_worker(story)
     story.new_row_id('task make "A second task"', actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.sample("stop"))
+
+
+def merged_kept_worker(story, repository):
+    worker = checked_worker(story, repository)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    return worker
+
+
+def test_a_send_with_an_open_dependency_is_refused_and_the_worker_stays(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    worker = merged_kept_worker(story, repository_environment(story))
+    first, second = (story.new_row_id(f'task make "Task {number}"', actor=story.agent) for number in (2, 3))
+    story.expect_success(f"task depend {second} --on {first}", actor=story.agent)
+    story.expect_refusal(f"worker send {worker.id} --task {second}", f"task {second} waits on an open task", actor=story.agent)
+    story.expect_rows(story.container.get(WorktreeQuery).worker_worktree(worker.id) is None)
+
+
+def test_a_failed_cut_leaves_no_worktree_and_the_real_error(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    worker = merged_kept_worker(story, repository_environment(story))
+    task_id = story.new_row_id('task make "A second task"', actor=story.agent)
+
+    def refused_cut(git, folder, worktree):
+        raise Refusal("the cut failed")
+
+    monkeypatch.setattr(WorktreeGit, "cut", refused_cut)
+    story.expect_refusal(f"worker send {worker.id} --task {task_id}", "the cut failed", actor=story.agent)
+    story.expect_rows(story.container.get(WorktreeQuery).worker_worktree(worker.id) is None)
+
+
+def test_a_send_while_tests_run_is_refused_and_nothing_moves(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    worker = delivered_worker(story, repository_environment(story))
+    task_id = story.new_row_id('task make "A second task"', actor=story.agent)
+    monkeypatch.setattr(WorkerProofQueue, "tests_pending", lambda queue, worktree: True)
+    story.expect_refusal(f"worker send {worker.id} --task {task_id}", "are running", actor=story.agent)
+    story.expect_text(f"task show {task_id}", "state: open", actor=story.agent)
 

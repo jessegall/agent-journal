@@ -23,6 +23,7 @@ from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
+from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.gone_agents import GoneAgents
 from suites.coding.modules.workers.support.kept_worker_tasks import KeptWorkerTasks
@@ -68,6 +69,11 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
             self.git.commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.session_agent_id}")
         self.conflicts = tuple(self.git.sync(worktree))
 
+    def job_text(self, command: SendWorker, worktree: Worktree) -> str:
+        if not self.conflicts:
+            return command.job
+        return f"{command.job}\n{worktree.base_branch} is merged into your worktree and clashes on {', '.join(self.conflicts)}: settle the conflict markers first."
+
     def cut(self, worker: Agent, tasks: tuple[Task, ...], command: SendWorker, actor: Actor) -> None:
         environment = self.environments.find(worker.environment_id)
         opened = self.bus.run(OpenKeptWorktree(worker.id, tasks[0].id), actor, environment_id=worker.environment_id)
@@ -79,7 +85,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
             self.bus.run(RecordWorktreeCut(opened.id, base_commit, tuple(task.id for task in tasks)), actor, environment_id=worker.environment_id)
         except Exception:
             self.git.remove(environment.folder, opened)
-            self.bus.run(CancelWorkerOpening(opened.id), actor, environment_id=worker.environment_id)
+            self.bus.run(CancelWorkerOpening(opened.id, keeps_agent=True), actor, environment_id=worker.environment_id)
             raise
 
     def handle(self, command: SendWorker, context: Context) -> AgentLine:
@@ -94,11 +100,11 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         if self.is_gone:
             self.bus.dispatch(EndGoneWorker(command.worker_id), context)
         if command.task_ids:
-            return self.kept_tasks.handed(worker, worktree, command.task_ids, command.job, context)
+            return self.kept_tasks.handed(worker, worktree, command.task_ids, self.job_text(command, worktree), context)
         if worktree.state is WorktreeState.DELIVERED:
             self.advance.restart_task(worktree, self.rows.required(Task, worktree.task_id), context)
             self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)
-        job = f"{command.job}\n{worktree.base_branch} is merged into your worktree and clashes on {', '.join(self.conflicts)}: settle the conflict markers first." if self.conflicts else command.job
+        job = self.job_text(command, worktree)
         self.repository.save(Message(creator_id=context.actor.id, type=MessageType.PEER, text=command.job, read_at=context.timestamp, delivered_at=context.timestamp,
                                      recipient=WorkerRecipient.text(command.worker_id)), context)
         line = self.nudger.send_text(command.worker_id, job, WORKER_JOB_SOURCE, context)

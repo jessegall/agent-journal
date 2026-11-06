@@ -30,13 +30,13 @@ class WorkerPlaces:
         self.queries, self.limits, self.kept, self.clock, self.scopes = queries, limits, kept, clock, scopes
 
     def running(self) -> tuple[Agent, ...]:
-        return self.kept.read(AGENTS_TABLE, self.running_rows, "role = ?", [CodingAgentRole.WORKER.value], name="workers.running")
+        return self.kept.scoped_read(AGENTS_TABLE, self.running_rows, "role = ?", [CodingAgentRole.WORKER.value], name="workers.running")
 
     def running_rows(self) -> tuple[Agent, ...]:
         return tuple(self.queries.query(Agent).filter(role=CodingAgentRole.WORKER).matching(IsNull("ended_at")).all_rows())
 
     def kept_workers(self) -> tuple[Agent, ...]:
-        return self.kept.read(AGENTS_TABLE, self.kept_rows, "role = ?", [CodingAgentRole.WORKER.value], name="workers.kept")
+        return self.kept.scoped_read(AGENTS_TABLE, self.kept_rows, "role = ?", [CodingAgentRole.WORKER.value], name="workers.kept")
 
     def kept_rows(self) -> tuple[Agent, ...]:
         return tuple(self.queries.query(Agent).filter(role=CodingAgentRole.WORKER).matching(IsNull("retired_at")).newest().all_rows())

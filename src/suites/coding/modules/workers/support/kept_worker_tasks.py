@@ -11,12 +11,14 @@ from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.messages.support.work_sources import WorkSources
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
+from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 from suites.coding.modules.workers.support.worker_task_copies import WorkerTaskCopies
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -28,16 +30,22 @@ class KeptWorkerTasks:
     overwritten."""
 
     def __init__(self, queries: Queries, repository: Repository, worktrees: WorktreeQuery, git: WorktreeGit, nudger: Nudger,
-                 environments: EnvironmentRows, advance: WorkerTaskAdvance, sources: WorkSources, copies: WorkerTaskCopies) -> None:
+                 environments: EnvironmentRows, advance: WorkerTaskAdvance, sources: WorkSources, copies: WorkerTaskCopies, tasks: TaskQuery,
+                 proof_queue: WorkerProofQueue) -> None:
         self.queries, self.repository, self.worktrees, self.git, self.nudger = queries, repository, worktrees, git, nudger
-        self.environments, self.advance, self.sources, self.copies = environments, advance, sources, copies
+        self.environments, self.advance, self.sources, self.copies, self.tasks, self.proof_queue = environments, advance, sources, copies, tasks, proof_queue
 
     def checked_cut(self, worker: Agent, task_ids: tuple[int, ...]) -> tuple[Task, ...]:
         tasks = tuple(self.queries.query(Task).find_many(list(task_ids)))
         for task in tasks:
             if task.state is not TaskState.OPEN:
                 raise Refusal(f"task {task.id} is {task.state.value}", "a worker takes an open task")
-        if self.worktrees.worker_worktree(worker.id) is not None:
+        if self.tasks.filter(id=tasks[0].id).matching(self.tasks.no_open_dependency()).first() is None:
+            raise Refusal(f"task {tasks[0].id} waits on an open task", "send it when that one is done")
+        worktree = self.worktrees.worker_worktree(worker.id)
+        if worktree is not None:
+            if self.proof_queue.tests_pending(worktree):
+                raise Refusal(f"the tests of worker {worker.id} are running", "send the task when they have passed")
             return ()
         last = self.worktrees.newest_worktree(worker.id)
         if last is None:

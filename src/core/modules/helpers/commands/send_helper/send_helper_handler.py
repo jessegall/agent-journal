@@ -36,6 +36,8 @@ class SendHelperHandler(Handler[SendHelper, int]):
     def handle(self, command: SendHelper, context: Context) -> int:
         helper = self.reach.checked_helper(command.helper_id, context.actor)
         jobs = self.jobs.helper_jobs(helper.id)
+        if not jobs:
+            raise Refusal(f"helper {helper.id} has no job to go on from", "journal helper start starts a new one")
         last_job = jobs[-1]
         if command.review_plan_id is not None and any(job.review_plan_id == command.review_plan_id for job in jobs):
             raise Refusal(f"helper {helper.id} reviewed plan {command.review_plan_id} already", "an independent review needs another helper: journal helper start")
@@ -66,7 +68,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
             self.repository.save(last_job.changed(brief=f"{last_job.brief}\n\n{command.job}"), context)
             return helper.id
         next_job = last_job.next_job(helper.session, command.job, command.job[:SHORT_JOB_CHARACTERS], context.actor.id)
-        self.repository.save(next_job.changed(source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, source_line_id=line.id), context)
+        self.repository.save(next_job.changed(review_plan_id=command.review_plan_id, source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, source_line_id=line.id), context)
         self.sources.use_copy(source, source_context)
         return helper.id
 
