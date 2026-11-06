@@ -3,6 +3,7 @@ import {expect, test, vi} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 import {suggestionWindowContext} from "./support/suggestionWindowContext.js";
 import {templateWindowContext} from "./support/templateWindowContext.js";
+import {checkWindowContext} from "./support/checkWindowContext.js";
 import {useListTools} from "../kit/useListTools.js";
 import SuggestionRows from "../../core/modules/suggestions/web/src/SuggestionRows.vue";
 import QuestionRows from "../../core/modules/questions/web/src/QuestionRows.vue";
@@ -76,6 +77,7 @@ test.each([
 ])("the list of %s has the bar", async (_, component, answers) => {
     const contexts = new Map([
         [TemplateCards, templateWindowContext],
+        [CheckCards, checkWindowContext],
         [ShareRows, (answers) => context(answers, null, {shares: {line: "share list", events: ["share_link.*", "share_comment.*"]}})],
     ]);
     const element = await mounted(component, (contexts.get(component) ?? context)(answers));
