@@ -3,7 +3,7 @@ from core.base.actor_type import ActorType
 from core.modules.agents.support.agent_type_limits import AgentTypeLimits, TypeLimits
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, the_helper
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, resumable_session, the_helper
 
 REASON = '--reason "Its question is answered"'
 
@@ -106,3 +106,15 @@ def test_at_the_kept_maximum_a_new_start_is_refused_with_a_retire_line(new_story
     helper = the_helper(story)
     story.expect_success('setting set journal.core.helpers.helper-profile-limits \'["journal-researcher:4:1"]\' --project', actor=story.user)
     expect_start_refused(story, f"journal agent retire {helper.id}")
+
+
+def test_launches_in_flight_count(new_story, monkeypatch):
+    story = new_story(fixture=EndedHelper)
+    helper = the_helper(story)
+    resumable_session(story, helper, monkeypatch)
+    story.expect_success('setting set journal.core.helpers.helper-profile-limits \'["journal-researcher:1:8"]\' --project', actor=story.user)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.expect_success(f'helper send {helper.id} "One more job"', actor=story.agent)
+    story.expect_refusal(f'helper send {helper.id} "And another"', "1 of journal-researcher run", actor=story.agent)
+    launcher.server.close()
+    story.home.socket("launcher").unlink()
