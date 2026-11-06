@@ -28,3 +28,13 @@ def test_the_brief_and_the_answer_are_rows_of_the_transcript():
     provider = object.__new__(CodexProvider)
     assert provider.transcript_row(rollout_line("user", "You are worker 446"), 1) is not None
     assert provider.transcript_row(rollout_line("assistant", "I will read the guidance"), 2) is not None
+
+
+def test_a_block_of_codex_own_context_is_hidden_and_the_journal_block_beside_it_stays():
+    line = json.dumps({"payload": {"role": "developer", "content": [{"text": "<skills_instructions>\nSkills"}, {"text": "<collaboration_mode>Mode"}, {"text": "You are a worker"}]}})
+    assert CodexProvider.transcript_row(object.__new__(CodexProvider), line, 1).text == "You are a worker"
+
+
+def test_a_message_of_codex_own_context_alone_shows_nothing():
+    line = json.dumps({"payload": {"role": "developer", "content": [{"text": "<skills_instructions>\nSkills"}, {"text": "<recommended_plugins>\nPlugins"}]}})
+    assert CodexProvider.transcript_row(object.__new__(CodexProvider), line, 1) is None

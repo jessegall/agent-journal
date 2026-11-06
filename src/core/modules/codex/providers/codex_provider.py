@@ -32,7 +32,7 @@ from core.modules.codex.providers.support.codex_trust import CodexTrust
 
 HOME_VARIABLE = "CODEX_HOME"
 DEVELOPER_ROLE = "developer"
-CODEX_CONTEXT_OPENINGS = ("# AGENTS.md instructions", "<environment_context>", "<permissions instructions>")
+CODEX_CONTEXT_OPENINGS = ("# AGENTS.md instructions", "<environment_context>", "<permissions instructions>", "<skills_instructions>", "<collaboration_mode>", "<recommended_plugins>", "<apps_instructions>")
 HOOK_PROMPT_TAG = re.compile(r"</?hook_prompt[^>]*>")
 
 
@@ -137,9 +137,7 @@ class CodexProvider(Provider):
         content = payload.get("content") if is_mapping(payload) else None
         if role not in (*TRANSCRIPT_AUTHORS, DEVELOPER_ROLE) or not is_list(content):
             return None
-        text = "\n".join(str(block.get("text", "")) for block in content if is_mapping(block))
-        if text.startswith(CODEX_CONTEXT_OPENINGS):
-            return None
+        text = "\n".join(str(block.get("text", "")) for block in content if is_mapping(block) and not str(block.get("text", "")).startswith(CODEX_CONTEXT_OPENINGS))
         shown = html.unescape(HOOK_PROMPT_TAG.sub("", text))
         if not shown.strip():
             return None
