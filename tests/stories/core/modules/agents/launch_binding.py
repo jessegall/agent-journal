@@ -1,5 +1,6 @@
 import pytest
 
+from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
@@ -48,6 +49,17 @@ def test_a_launch_that_resumes_an_ended_session_reopens_that_agent_and_ends_the_
     story.expect_rows(resumed.id == old.id)
     story.expect_text(f"agent show {old.id}", "session: s-1")
     story.expect_text(f"agent show {placeholder_id}", "ended_at")
+
+
+def test_a_resumed_main_is_stopped_through_the_launcher_under_the_row_its_launch_started(started_main_agent):
+    story, old = started_main_agent
+    story.run(f"agent end {old.id}")
+    launch_row_id = story.new_row_id("agent start main-3 claude main --environment main")
+    hook_agent(story, story.hook("s-1", HookSamples.session_start().with_fields(launch="main-3")))
+    launcher = FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n")
+    story.expect_success(f"agent stop {old.id}", f"stopped agent {old.id}")
+    story.expect_rows(launcher.requests == [{"agent_id": launch_row_id, "stop": True}])
+    story.expect_text(f"agent show {old.id}", "ended_at:")
 
 
 @pytest.fixture

@@ -1,7 +1,6 @@
 package launch
 
 import (
-	"time"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,6 +10,8 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 )
 
 // TypedAnswer is what the launcher answers once it has typed a line into an agent's terminal, and StartedAnswer and
@@ -57,6 +58,10 @@ type Starter interface {
 
 // socketDialLimit is how long a launch waits to learn whether another launch still answers on a socket.
 const socketDialLimit = 300 * time.Millisecond
+
+// answerWait is how long a closing launch waits for the requests it took: a stop of its own program is answered only
+// once that program has ended, which is also what ends the launch.
+const answerWait = stopWait + forcedStopWait
 
 // ProcessStarter starts a program in a pseudo terminal of its own in its folder, its output kept in its agent's
 // terminal log under the journal's folder and read for its status file.
@@ -152,16 +157,23 @@ func Listen(path string, starter Starter, inputs *TerminalInputs) (io.Closer, er
 		_ = listener.Close()
 		return nil, err
 	}
+	answers := &sync.WaitGroup{}
+	answers.Add(1)
 	go func() {
+		defer answers.Done()
 		for {
 			connection, err := listener.Accept()
 			if err != nil {
 				return
 			}
-			go answered(connection, starter, inputs, previous)
+			answers.Add(1)
+			go func() {
+				defer answers.Done()
+				answered(connection, starter, inputs, previous)
+			}()
 		}
 	}()
-	return launchSocket{listener: listener, path: path, previous: previous, bound: bound}, nil
+	return launchSocket{listener: listener, path: path, previous: previous, bound: bound, answers: answers}, nil
 }
 
 // launchSocket is one launch's socket. A second launch in a project takes the name and keeps the first's socket beside
@@ -171,9 +183,11 @@ type launchSocket struct {
 	path     string
 	previous string
 	bound    os.FileInfo
+	answers  *sync.WaitGroup
 }
 
-// Close frees the name when it is still this launch's, and gives it back to the launch before it.
+// Close frees the name when it is still this launch's, gives it back to the launch before it, and waits for the answers
+// still owed.
 func (socket launchSocket) Close() error {
 	err := socket.listener.Close()
 	if current, statErr := os.Stat(socket.path); statErr == nil && os.SameFile(current, socket.bound) {
@@ -182,7 +196,20 @@ func (socket launchSocket) Close() error {
 			restorePrevious(socket.previous, socket.path)
 		}
 	}
+	socket.awaitAnswers()
 	return err
+}
+
+func (socket launchSocket) awaitAnswers() {
+	finished := make(chan struct{})
+	go func() {
+		socket.answers.Wait()
+		close(finished)
+	}()
+	select {
+	case <-finished:
+	case <-time.After(answerWait):
+	}
 }
 
 func setAsidePrevious(path string) string {

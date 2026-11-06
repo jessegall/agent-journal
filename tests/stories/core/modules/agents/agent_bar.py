@@ -1,5 +1,6 @@
 from core.modules.agents.agents_module import AgentsModule
 import json
+import socket
 import subprocess
 
 from core.base.database.database import Database
@@ -102,11 +103,27 @@ def test_stopping_holds_no_write_lock_and_a_session_its_hooks_ended_stays_ended(
     story.expect_text(f"agent show {agent_id}", "ended_at:", actor=story.user)
 
 
-def test_stopping_an_agent_with_no_known_process_or_ended_is_refused(new_story):
+def test_a_main_with_no_process_and_no_launcher_ends_and_a_second_stop_is_refused(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_refusal(f"agent stop {story.agent.id}", "does not know the process", actor=story.agent)
-    story.expect_success(f"agent end {story.agent.id}", actor=story.user)
+    story.expect_success(f"agent stop {story.agent.id}", f"stopped agent {story.agent.id}", actor=story.user)
+    story.expect_text(f"agent show {story.agent.id}", "ended_at:", actor=story.user)
     story.expect_refusal(f"agent stop {story.agent.id}", "has ended already", actor=story.user)
+
+
+def test_a_main_whose_launcher_died_and_left_its_socket_ends(new_story):
+    story = new_story(fixture=UserJoined)
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as stale_socket:
+        stale_socket.bind(str(story.home.socket("launcher")))
+    story.expect_success(f"agent stop {story.agent.id}", f"stopped agent {story.agent.id}", actor=story.user)
+    story.expect_text(f"agent show {story.agent.id}", "ended_at:", actor=story.user)
+
+
+def test_a_main_the_running_launcher_does_not_run_ends(new_story):
+    story = new_story(fixture=UserJoined)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.expect_success(f"agent stop {story.agent.id}", f"stopped agent {story.agent.id}", actor=story.user)
+    story.expect_rows(launcher.requests == [{"agent_id": story.agent.id, "stop": True}])
+    story.expect_text(f"agent show {story.agent.id}", "ended_at:", actor=story.user)
 
 
 def test_launch_hands_the_launcher_the_program_in_the_environments_folder_under_a_new_agent_row(new_story):
