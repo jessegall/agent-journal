@@ -1,5 +1,7 @@
 from core.base.refusal import Refusal
 from core.modules.helpers.support.helper_limits import HelperLimits
+from core.testing.story_helper_programs import StoryHelperPrograms
+import json
 
 from datetime import timedelta
 
@@ -17,6 +19,7 @@ from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
 START = 'helper start journal-researcher --brief "How does the queue hold a run?" --environment main'
 CODEX_START = f"{START} --program codex --model gpt-6.1-sol"
+PLAIN_START = 'helper start journal-researcher --brief "Read the queue" --environment main'
 
 
 class LauncherRuns(StoryFixture):
@@ -205,3 +208,43 @@ def test_a_helper_that_sent_a_hook_stays(new_story):
     story.hook("s-1", HookSamples.tick())
     story.run_listeners()
     story.expect_no_text(f"agent show {helper_id}", "ended_at: 20")
+
+
+def claude_not_installed(monkeypatch):
+    def refusing(programs, program, folder):
+        if program == "claude":
+            raise Refusal("claude is not installed here", "install claude or name another program")
+    monkeypatch.setattr(StoryHelperPrograms, "checked", refusing)
+
+
+def save_profile(story, flags):
+    story.expect_success(f'profile save journal-researcher --description "Reads and reports" --program claude {flags} --environment main', actor=story.user)
+
+
+def test_a_profile_that_always_uses_its_program_is_refused_when_it_cannot_start(new_story, monkeypatch):
+    story = new_story(fixture=LauncherRuns)
+    save_profile(story, "--no-program-if-possible")
+    claude_not_installed(monkeypatch)
+    launcher_of(story)
+    story.expect_refusal(START, "claude is not installed", actor=story.agent)
+    story.expect_rows(helpers(story) == [])
+
+
+def test_a_profile_that_uses_its_program_if_possible_starts_on_the_other_one_and_says_why(new_story, monkeypatch):
+    story = new_story(fixture=LauncherRuns)
+    save_profile(story, "--program-if-possible --codex-model gpt-6.1-sol")
+    claude_not_installed(monkeypatch)
+    launcher = launcher_of(story)
+    answer = json.loads(story.run(f"{PLAIN_START} --json", actor=story.agent).output_text.splitlines()[0])
+    story.run_listeners()
+    launcher.thread.join(timeout=5)
+    launcher.server.close()
+    story.expect_rows(answer["program"] == "codex", answer["note"] == "claude could not start (claude is not installed here: install claude or name another program), so it runs on codex")
+    story.expect_success(f"agent show {answer['id']}", "program: codex", "program_model: gpt-6.1-sol")
+
+
+def test_a_profile_that_uses_its_program_if_possible_keeps_it_when_it_can_start(new_story):
+    story = new_story(fixture=LauncherRuns)
+    save_profile(story, "--program-if-possible")
+    helper_id, _ = started(story, f'{START} --name "Marie"')
+    story.expect_success(f"agent show {helper_id}", "program: claude")

@@ -11,9 +11,9 @@ TICK_LIMIT_POINTS = 50
 
 
 class SlowTickTool(PerformanceTool):
-    """Shows a warning mark in the chat of each environment with the option on when a tick of the journal's clock
-    goes over its limit, as an exception does, so it reaches the main agent as a line while that option is on, and
-    answers whether it did."""
+    """Shows a warning mark in the chat of each environment with the option on when a tick of the journal's
+    clock goes over its limit, as an exception does, so it reaches the main agent as a line while that option
+    is on, and answers whether it did."""
 
     name = "developer.slow-clock-ticks"
 

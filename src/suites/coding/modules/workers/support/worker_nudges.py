@@ -38,7 +38,7 @@ TEST_REQUEST_WAITING = NudgeDeclaration("workers.test_request_waiting", NudgeTyp
 TEST_REQUEST_ALLOWED = NudgeDeclaration("workers.test_request_allowed", NudgeType.SAFETY_REFUSAL, 'request {request} is allowed: run this command once, without the flag', turn_limited=False)
 TEST_REQUEST_REASON_MISSING = NudgeDeclaration("workers.test_request_no_reason", NudgeType.SAFETY_REFUSAL, 'the flag needs a reason: run it again with --ask-main "<why>"', turn_limited=False)
 TEST_REQUEST_UNNEEDED = NudgeDeclaration("workers.test_needs_no_request", NudgeType.SAFETY_REFUSAL, 'you need not ask: run the command without the flag', turn_limited=False)
-PHASE_TEST_REFUSED = NudgeDeclaration("workers.phase_test_refused", NudgeType.SAFETY_REFUSAL, 'phase {phase} of plan {plan} runs its tests at its end; to run this now, run it again with --ask-main "<why>"', turn_limited=False)
+PHASE_TEST_REFUSED = NudgeDeclaration("workers.phase_test_refused", NudgeType.SAFETY_REFUSAL, 'phase {phase} of plan {plan} runs its tests at its end, so your work is tested then and you go on. Only if you cannot continue at all without this run, run it again with --ask-main "<why>"', turn_limited=False)
 WORKER_RUN_ENDED = NudgeDeclaration("workers.run_ended", NudgeType.STEERING, 'your run {output} ended: journal output read {output} --summary, then go on')
 WORKER_UNFINISHED_TASKS = NudgeDeclaration("workers.unfinished_tasks", NudgeType.STEERING, 'you ended with tasks left: go on with journal worker next, deliver after the last, and stop only then')
 READER_SAMPLE_READY = NudgeDeclaration("workers.reader_sample_ready", NudgeType.STEERING, "read the sample: journal output read {output} --reader {reader}", wakes_agent=True)

@@ -25,11 +25,12 @@ class ProfileFormat:
                 fields[name] = ""
         if fields.get("agent_type") == "subagent":
             fields["agent_type"] = "helper"
-        if "independent" in fields:
-            value = fields["independent"]
-            if value not in (True, False, "true", "false"):
-                raise Refusal("independent must be true or false")
-            fields["independent"] = value is True or value == "true"
+        for name in ("independent", "program_if_possible"):
+            if name in fields:
+                value = fields[name]
+                if value not in (True, False, "true", "false"):
+                    raise Refusal(f"{name.replace('_', '-')} must be true or false")
+                fields[name] = value is True or value == "true"
         if "mcp_tools" in fields:
             fields["mcp_tools"] = ProfileFormat.tools(fields["mcp_tools"])
         return fields

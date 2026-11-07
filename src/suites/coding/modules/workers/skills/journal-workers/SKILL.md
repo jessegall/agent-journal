@@ -113,8 +113,8 @@ never starts is retired after the idle time.
   tests in turn; those that fail come back to you to fix and deliver again.
 - On a task of a started plan you work through the phase with nothing run:
   - Inside a phase `journal worker next` commits your task and gives you the next one at once. A proof may have no test.
-  - A test run is refused. If you really need one, run it again with `--ask-main "<why>"`: the run does not happen, the
-    request goes to your main agent, and you go on working. When it is allowed you are told, and that exact command
+  - A test run is refused, and your work is tested at the phase's end. Only if you cannot continue at all without this
+    run, run it again with `--ask-main "<why>"`: the run does not happen, the request goes on, and you go on working. When it is allowed you are told, and that exact command
     runs once, without the flag.
   - At the end of the phase, `journal worker next` when your next task is in another phase, or `journal worker deliver`
     after your last, runs the tests of all your tasks of the phase and the phase's own test. Stop then.

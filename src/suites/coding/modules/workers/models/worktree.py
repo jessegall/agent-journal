@@ -31,6 +31,7 @@ class Worktree(Removable, EnvironmentScoped, Model):
     cut_at: Timestamp | None = None
     logs_read_at: Timestamp | None = None
     tests_passed_at: Timestamp | None = None
+    left_to_main_at: Timestamp | None = None
     merged_at: Timestamp | None = None
     removed_at: Timestamp | None = None
     commit_before_merge: str = ""

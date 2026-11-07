@@ -31,6 +31,7 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
         parser.add_argument("--body", default="")
         parser.add_argument("--access", type=Access, choices=list(Access))
         parser.add_argument("--independent", action=BooleanOptionalAction, default=None)
+        parser.add_argument("--program-if-possible", action=BooleanOptionalAction, default=None, help="start on the other program when this one cannot start")
 
     def command(self, arguments: Namespace, caller: Caller) -> SaveProfile:
         if self.files.has(arguments.profile_name):
@@ -39,7 +40,7 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
                 raise Refusal(profile.problem, "fix the file or use journal profile reset")
         else:
             profile = AgentProfile(arguments.profile_name, description=arguments.description, body=arguments.body)
-        fields = {name: value for name, value in vars(arguments).items() if name in ("title", "description", "model", "codex_model", "body", "program", "access", "independent") and value is not None}
+        fields = {name: value for name, value in vars(arguments).items() if name in ("title", "description", "model", "codex_model", "body", "program", "program_if_possible", "access", "independent") and value is not None}
         if arguments.type is not None:
             fields["agent_type"] = arguments.type
         if arguments.mcp_tools is not None:
