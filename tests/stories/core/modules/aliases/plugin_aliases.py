@@ -136,5 +136,5 @@ def test_a_manifest_alias_for_agents_is_open_to_a_worker_on_install(new_story):
     judge = folder / "judge"
     judge.write_text('#!/bin/sh\necho judged\n')
     judge.chmod(0o755)
-    story.expect_success(f"plugin install {folder} --yes", actor=story.agent)
+    story.expect_success(f"plugin install {folder} --yes", actor=story.user)
     story.expect_success("sample-judge --changes", "judged", actor=worker)
