@@ -12,7 +12,7 @@ from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.drivers.models.agent_line import AgentLine
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
-from core.modules.tasks.queries.task_query import TaskQuery
+from suites.coding.modules.workers.support.kept_worker_tasks import KeptWorkerTasks
 from suites.coding.modules.workers.support.worker_route_policy import WorkerRoutePolicy
 from suites.coding.modules.workers.support.worker_route_request import WorkerRouteRequest
 
@@ -27,7 +27,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
     outward = True
 
     def __init__(self, home: JournalHome, agents: AgentRows, requests: WorkerCommandRequest,
-                 tasks: TaskQuery, policy: WorkerRoutePolicy, flags: WriteFlags, scopes: Scopes) -> None:
+                 tasks: KeptWorkerTasks, policy: WorkerRoutePolicy, flags: WriteFlags, scopes: Scopes) -> None:
         self.requests = requests
         self.home, self.agents = home, agents
         self.tasks, self.policy, self.flags, self.scopes = tasks, policy, flags, scopes
@@ -45,7 +45,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
         if arguments.task:
             with self.scopes.opened(caller.read_actor_id, caller.environment_id):
                 worker = self.agents.find(arguments.worker_id)
-                self.policy.check_tasks(self.tasks.find_many(arguments.task),
+                self.policy.check_tasks(self.tasks.check_tasks(tuple(arguments.task)),
                                         WorkerRouteRequest(worker.program, caller.actor.type, self.flags.skipped_guards(arguments)))
         argv = ["worker", "send", str(arguments.worker_id), arguments.job]
         if arguments.task:

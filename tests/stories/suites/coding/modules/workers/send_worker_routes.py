@@ -36,7 +36,7 @@ def test_sending_a_routed_task_to_another_program_is_refused_before_git(routed_w
         story.expect_refusal(f"worker send {worker.id} --task {task_id} {wait_flag}",
                              f"task {task_id} goes to codex by route {route_id}", actor=story.agent)
     story.expect_absent(f"task show {task_id}", f"delegated_to: {worker.id}")
-    story.expect_rows(not story.container.get(Queries).query(WorkerOperation).all_rows())
+    story.expect_rows(not story.container.get(Queries).query(WorkerOperation).exists())
 
 
 def test_a_route_skip_on_send_is_recorded_on_the_assignment_event(routed_worker_task):
