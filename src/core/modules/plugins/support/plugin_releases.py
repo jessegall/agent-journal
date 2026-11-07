@@ -3,7 +3,7 @@ import re
 import subprocess
 from pathlib import Path
 
-from core.base.journal_version import VersionNumbers
+from core.base.version_numbers import VersionNumbers
 from core.base.refusal import Refusal
 from core.modules.plugins.support.plugin_latest import PluginLatest
 from core.modules.plugins.support.plugin_manifest import PluginManifest

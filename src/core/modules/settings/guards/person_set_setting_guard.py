@@ -4,7 +4,7 @@ from core.base.actor_type import ActorType
 from core.base.change.changed import Changed
 from core.base.command.context import Context
 from core.base.guard.guard import Guard
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.modules.settings.models.setting import Setting
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_revision import SettingRevision
@@ -23,7 +23,7 @@ class PersonSetSettingGuard(Guard[Changed[Setting]]):
 
     def check(self, event: Changed[Setting], context: Context) -> None:
         if context.actor.type is ActorType.AGENT and self.declared.is_person_set(event.row.key):
-            raise UserApproval(f"Change {self.declared.value(event.row.key).title}?", self.arguments(event.row))
+            raise UserApprovalRefusal(f"Change {self.declared.value(event.row.key).title}?", self.arguments(event.row))
 
     def arguments(self, row: Setting) -> tuple[str, ...]:
         value = json.loads(row.value)

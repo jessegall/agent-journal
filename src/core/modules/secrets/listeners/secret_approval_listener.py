@@ -7,7 +7,7 @@ from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.environment_scope import EnvironmentScope
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.modules.secrets.models.secret import Secret
 
 
@@ -27,7 +27,7 @@ class SecretApprovalListener(CommitListener[Changed[Secret]]):
             if event.old_row is not None and program in event.old_row.proposed:
                 continue
             arguments = ("secret", "allow", str(secret.id), program)
-            approval = UserApproval(f"Allow {program} to use the secret {secret.title}?", arguments)
+            approval = UserApprovalRefusal(f"Allow {program} to use the secret {secret.title}?", arguments)
             self.bus.run(RequestUserApproval(approval, arguments, logged.actor_id), actor,
                          cause_id=logged.id, environment_id=logged.environment_id)
         for program in secret.programs:

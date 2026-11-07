@@ -1,0 +1,15 @@
+from core.base.block_refusal import BlockRefusal
+
+
+class UserApprovalRefusal(BlockRefusal):
+    """An action that waits for a person to accept or refuse it in the dock."""
+
+    def __init__(self, question: str, arguments: tuple[str, ...] = (), refused_arguments: tuple[str, ...] = (),
+                 required_person_id: int | None = None, continued_arguments: tuple[str, ...] = (), source_version: int | None = None,
+                 returns_output: bool = False) -> None:
+        super().__init__(question, "A person was asked in the dock.")
+        self.arguments, self.refused_arguments = arguments, refused_arguments
+        self.required_person_id = required_person_id
+        self.continued_arguments = continued_arguments
+        self.source_version = source_version
+        self.returns_output = returns_output

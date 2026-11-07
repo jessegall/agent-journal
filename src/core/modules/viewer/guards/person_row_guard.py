@@ -6,7 +6,7 @@ from core.base.change.event_subscriber import E
 from core.base.command.context import Context
 from core.base.guard.guard import Guard
 from core.base.refusal import Refusal
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.modules.viewer.models.person_preset import PersonPreset
 from core.modules.viewer.models.viewer_layout import ViewerLayout
 from core.modules.viewer.models.window_permission import WindowPermission
@@ -25,6 +25,6 @@ class PersonRowGuard(Guard[E]):
             return
         actor = context.actor
         if actor.type is ActorType.AGENT:
-            raise UserApproval(self.question, required_person_id=event.row.person_id)
+            raise UserApprovalRefusal(self.question, required_person_id=event.row.person_id)
         if actor.type is not ActorType.USER or actor.id != event.row.person_id:
             raise self.refusal

@@ -32,7 +32,10 @@ defineProps({plan: {type: Object, required: true}, read: {type: Function, defaul
                 </div>
             </section>
         </template>
-        <template v-if="plan.delegated">
+        <template v-if="plan.assignee">
+            <p class="delegation" data-plan-assignee>Agent: {{ plan.assignee.name }}</p>
+        </template>
+        <template v-else-if="plan.delegated">
             <p class="delegation" data-plan-delegated>{{ delegationWord(plan) }}</p>
         </template>
         <template v-if="plan.brief">

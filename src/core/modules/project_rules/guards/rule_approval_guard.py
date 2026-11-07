@@ -5,7 +5,7 @@ from core.base.change.moved import Moved
 from core.base.command.context import Context
 from core.base.guard.guard import Guard
 from core.base.refusal import Refusal
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.modules.project_rules.models.enums.rule_state import RuleState
 from core.modules.project_rules.models.project_rule import ProjectRule
 
@@ -22,4 +22,4 @@ class RuleApprovalGuard(Guard[Changed[ProjectRule]]):
         if isinstance(event, Moved) and event.old_row.state is RuleState.PROPOSED:
             raise Refusal("a person was asked to decide this rule in the dock")
         if event.row.state is RuleState.ACTIVE or event.old_row.state is RuleState.ACTIVE:
-            raise UserApproval(f"Change this project rule?\n{event.row.text}")
+            raise UserApprovalRefusal(f"Change this project rule?\n{event.row.text}")

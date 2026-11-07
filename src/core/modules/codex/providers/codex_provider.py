@@ -97,7 +97,7 @@ class CodexProvider(Provider):
     def session_command(self, launch: Launch) -> LaunchCommand:
         skip = ["--dangerously-bypass-approvals-and-sandbox"] if launch.skip_prompts else []
         model = [] if launch.names_flag("-m") or launch.names_flag("--model") else ["-m", launch.model]
-        arguments = [self.executable, "--no-daemon", *model, *skip, *launch.program_arguments, *launch.session.arguments(self)]
+        arguments = [self.executable, "--no-daemon", *model, *skip, *launch.program_arguments, *launch.session.arguments(self), *launch.prompt_arguments]
         return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()})
 
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:

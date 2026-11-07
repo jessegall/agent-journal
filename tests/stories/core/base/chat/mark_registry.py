@@ -11,7 +11,7 @@ def test_a_synced_mark_is_registered_with_every_field_it_declares(new_story):
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.module == "good")
     expect_type_mark_module(mark, ("good.note", "good", "notes", "Notes", "work", "group", ["plain"]))
     expect_row(mark, label="Notes", mark_icon="words", click="unfold", grouping="family", group_label="{family}: {count} updates", body="note.js")
-    expect_buttons_mark_shown(mark, ([{"icon": "words", "label": "Open", "runs": "task edit {row_id}", "primary": False, "variants": []}], True, True, False, False, ""))
+    expect_buttons_mark_shown(mark, ([{"icon": "words", "label": "Edit the task", "runs": "task edit {row_id}", "primary": False, "variants": []}], True, True, False, False, ""))
 
 
 def test_a_synced_dock_is_registered_with_every_field_it_declares(new_story):

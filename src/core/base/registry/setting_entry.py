@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from core.base.setting.setting_declaration import GROUP_TYPE, SettingDefault
-from core.base.setting.setting_rule import SettingRuleText
+from core.base.setting.setting_rule_text import SettingRuleText
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
 

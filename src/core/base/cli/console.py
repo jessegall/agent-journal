@@ -35,7 +35,7 @@ from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.refusal import Refusal
 from core.base.refusal_log import RefusalLog
 from core.base.scope.scopes import Scopes
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 
 SUCCESS_CODE, REFUSED_CODE, USAGE_CODE, ERROR_CODE = 0, 1, 2, 3
 HELP_FLAGS = ("--help", "-h")
@@ -88,7 +88,7 @@ class Console:
 
     def request_approval(self, refusal: Refusal, argv: list[str], caller: Caller) -> None:
         approval = refusal.original
-        if not isinstance(approval, UserApproval):
+        if not isinstance(approval, UserApprovalRefusal):
             return
         arguments = approval.arguments or tuple(argv)
         self.bus.run(RequestUserApproval(approval, arguments), caller.actor, environment_id=caller.environment_id)

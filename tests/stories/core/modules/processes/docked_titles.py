@@ -55,3 +55,13 @@ def test_a_reader_title_that_is_the_whole_chain_still_needs_a_name(new_story):
     expect_reply_line(reply, f"output {process.id} has its raw command as its title")
     card = json.loads(story.run(f"process card {process.id} --json", actor=story.agent).output_text)
     expect_row(card, title="Removing files")
+
+
+def test_an_untitled_run_is_named_for_what_it_runs_and_never_output_and_its_number(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    build = start_process(story, "vite build", category=CommandCategory.BUILD)
+    tests = start_process(story, "pytest -q", category=CommandCategory.TEST_RUN)
+    built = json.loads(story.run(f"process card {build.id} --json", actor=story.agent).output_text)
+    tested = json.loads(story.run(f"process card {tests.id} --json", actor=story.agent).output_text)
+    expect_row(built, title="Building")
+    expect_row(tested, title="Running Python tests")

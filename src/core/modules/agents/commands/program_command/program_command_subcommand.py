@@ -12,11 +12,14 @@ from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_text_list
 
+FIRST_PROMPT = "The journal started this session: follow its opening lines."
+
 
 class ProgramCommandSubcommand(ReadSubcommand[list[str]]):
     """`journal program command <program> <folder> --launch <name> [--resume <session>] [--ask-prompts]
     [--program-argument=<argument>]...`: the command line that starts the program in the folder, one argument
-    a line, as its provider builds it, for the launcher."""
+    a line, as its provider builds it, for the launcher. It starts the program's first turn with the journal's
+    first prompt, unless the person gave arguments of their own."""
 
     cli_name = "program"
     name = "command"
@@ -36,7 +39,8 @@ class ProgramCommandSubcommand(ReadSubcommand[list[str]]):
         provider = self.providers.provider(arguments.program)
         session = ResumedSession(arguments.resume) if arguments.resume else SessionStart(str(uuid4()))
         launch = Launch(self.home.folder.parent, Path(arguments.folder), provider.session_model(), arguments.launch, session, {},
-                        skip_prompts=not arguments.ask_prompts, program_arguments=tuple(arguments.program_argument))
+                        skip_prompts=not arguments.ask_prompts, program_arguments=tuple(arguments.program_argument),
+                        first_prompt="" if arguments.program_argument else FIRST_PROMPT)
         return list(provider.session_command(launch).arguments)
 
     def write_output(self, value: object, output: Output) -> None:

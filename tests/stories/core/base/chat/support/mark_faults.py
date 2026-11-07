@@ -47,7 +47,7 @@ class GoodModule(Module):
     name = "good"
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
-    marks = [mark(Plain.NOTE, buttons=[MarkButton("words", "Open", "task edit {row_id}")], body="note.js")]
+    marks = [mark(Plain.NOTE, buttons=[MarkButton("words", "Edit the task", "task edit {row_id}")], body="note.js")]
     docks = [DockDeclaration(Plain.NOTE, "words", "{row_title}", "note.js", reads=["task list"])]
 
 
@@ -107,7 +107,7 @@ class SharedLineModule(Module):
     name = "shared"
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
-    marks = [mark(SharedLine.NOTE, buttons=[MarkButton("words", "Open", "task edit {row_id}")], body="note.js")]
+    marks = [mark(SharedLine.NOTE, buttons=[MarkButton("words", "Edit the task", "task edit {row_id}")], body="note.js")]
 
 
 class DuplicateMarkModule(Module):
@@ -149,7 +149,7 @@ class SecondPlaceholderModule(Module):
     name = "good"
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
-    marks = [mark(Plain.NOTE, buttons=[MarkButton("words", "Open", "task edit {task_id}")])]
+    marks = [mark(Plain.NOTE, buttons=[MarkButton("words", "Edit the task", "task edit {task_id}")])]
 
 
 class MissingBodyModule(Module):

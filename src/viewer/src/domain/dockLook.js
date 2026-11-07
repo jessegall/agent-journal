@@ -31,3 +31,6 @@ export function dockLook(item, declaration) {
     return {icon: declaration?.icon || "", title: dockTitle(item, declaration), buttons,
         controls: buttons.filter(button => button.iconOnly), actions: buttons.filter(button => !button.iconOnly)};
 }
+
+// the title a card shows: a card that draws its own head is named by what its card says it holds, such as the run's own name; the dock's generic title only until it has read
+export const shownTitle = (item, declaration, card) => (declaration?.draws_head && card?.title) || dockLook(item, declaration).title;

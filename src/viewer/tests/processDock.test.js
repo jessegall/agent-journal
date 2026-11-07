@@ -216,15 +216,17 @@ async function foldedTime(run, collapsed) {
     return {time, head};
 }
 
-test("a card folded to its title line shows only the percent, left of the duration, with no steps or failures", async () => {
+test("a card folded to its title line shows only the percent in place of the duration, with no steps or failures", async () => {
     const {time, head} = await foldedTime({progress: 42, steps_passed: 12, steps_failed: 1}, true);
-    expect([...time.children].map((child) => child.className)).toEqual(["output-dock-percent", "output-dock-figure"]);
+    expect([...time.children].map((child) => child.className)).toEqual(["output-dock-percent"]);
     expect(time.querySelector("[data-output-percent]").textContent).toBe("42%");
     expect(time.textContent).not.toMatch(/passed|failed|Steps/);
     expect(head.textContent).not.toMatch(/passed|failed|Steps/);
 });
 
 test("a process with no progress shows no percent, and an unfolded card shows none either", async () => {
-    expect((await foldedTime({progress: 0}, true)).time.querySelector("[data-output-percent]")).toBeNull();
+    const idle = (await foldedTime({progress: 0}, true)).time;
+    expect(idle.querySelector("[data-output-percent]")).toBeNull();
+    expect(idle.querySelector(".output-dock-figure")).not.toBeNull();
     expect((await foldedTime({progress: 42}, false)).time.querySelector("[data-output-percent]")).toBeNull();
 });

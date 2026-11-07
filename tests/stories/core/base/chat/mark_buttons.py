@@ -10,7 +10,7 @@ def test_a_mark_button_is_an_allowed_line_of_the_chat_window_kept_with_its_modul
     story = new_story(fixture=MainEnvironment)
     story.expect_sync_success(f"{PATH}:GoodModule")
     registry = Registry.read(story.container.get(Database))
-    expect_button_lines_registry_3(registry, "good", [ButtonLine("good", "task edit {row_id}", False, label="Open")])
+    expect_button_lines_registry_3(registry, "good", [ButtonLine("good", "task edit {row_id}", False, label="Edit the task")])
     expect_button_lines_registry_2(registry, "good", [])
 
 
