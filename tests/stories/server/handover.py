@@ -24,6 +24,7 @@ from core.base.unix_connection import UnixConnection
 from server.server_files import ServerFiles
 from tests.stories.support.story_checks import expect_value_4
 from tests.stories.server.support.server_client import request_answer
+from tests.stories.server.support.file_changes import FileChanges
 
 pytestmark = pytest.mark.install_job
 
@@ -165,14 +166,16 @@ def cli_answer(home, argv):
 def wait_install(home, step):
     deadline = time.monotonic() + START_LIMIT_SECONDS
     answer = None
-    while time.monotonic() < deadline:
-        answer = cli_answer(home, ["release-install", "list", "--json"])
-        if answer.exit_code != 0:
-            raise AssertionError(answer)
-        rows = json.loads(answer.text)["rows"]
-        if rows and rows[0]["step"] == step:
-            return rows[0]
-        time.sleep(0.02)
+    with FileChanges(home.folder) as changes:
+        while time.monotonic() < deadline:
+            answer = cli_answer(home, ["release-install", "list", "--json"])
+            if answer.exit_code != 0:
+                raise AssertionError(answer)
+            rows = json.loads(answer.text)["rows"]
+            if rows and rows[0]["step"] == step:
+                return rows[0]
+            if not changes.wait(max(0, deadline - time.monotonic())):
+                break
     raise AssertionError(f"installation did not reach {step}: {answer}")
 
 

@@ -229,6 +229,13 @@
     ],
     "parallel": 2,
     "configure": {
+        "architecture_testing_sleep_in_a_test": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
         "naming_long_docstring_line": [
             {
                 "judges": [

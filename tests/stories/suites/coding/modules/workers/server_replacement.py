@@ -11,6 +11,7 @@ from core.modules.processes.ticks.run_slot_grant import RunSlotGrant
 from suites.coding.modules.workers.models.proof import Proof
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.server.support.server_client import server_story, started_server
+from tests.stories.server.support.file_changes import FileChanges
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
 
 RUNNER_SOURCE = Path(__file__).resolve().parents[6] / "tools" / "journal-run"
@@ -37,13 +38,17 @@ def run_report(story) -> str:
 
 def waiting_for(story, ticks, wanted: str) -> None:
     deadline = time.monotonic() + WAIT_SECONDS
-    while proof_state(story) != wanted:
-        assert time.monotonic() < deadline, f"the proof is {proof_state(story)}, not {wanted}\n{run_report(story)}"
-        story.advance(timedelta(seconds=3))
-        for tick in ticks:
-            tick(story.container)
-        story.run_listeners()
-        time.sleep(0.5)
+    process_id = story.container.get(Queries).query(Proof).find(1).process_id
+    folder = story.home.folder.resolve() / "processes" / str(process_id)
+    with FileChanges(folder) as changes:
+        while proof_state(story) != wanted:
+            assert time.monotonic() < deadline, f"the proof is {proof_state(story)}, not {wanted}\n{run_report(story)}"
+            story.advance(timedelta(seconds=3))
+            for tick in ticks:
+                tick(story.container)
+            story.run_listeners()
+            if proof_state(story) != wanted:
+                assert changes.wait(max(0, deadline - time.monotonic())), run_report(story)
 
 
 def test_a_queued_proof_is_started_by_the_new_server_and_counts(new_story, monkeypatch):

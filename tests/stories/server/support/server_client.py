@@ -14,13 +14,14 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
-from threading import Thread
+from threading import Event, Thread
 from urllib.parse import urlencode
 
 from core.base.cli.console import ERROR_CODE
 from core.base.journal_home import JournalHome
 from core.base.journal_container import synced_database_container
 from server.endpoints.cli_endpoint import CliEndpoint
+from server.endpoints.hook_endpoint import HookEndpoint
 from core.base.timestamp import Timestamp
 from core.base.timing import TIMING_HEADER, Timing
 from core.base.timing_log import TimingLog
@@ -88,25 +89,28 @@ class ServerStory:
         """Holds the hook in the queue until its client has closed, after the server took the connection, as a
         hook that gave up at its limit does, and waits until the server has answered it."""
         data = json.dumps(body).encode()
-        with self.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, LOCKED_HOOK_WAIT_SECONDS), socket.socket(socket.AF_UNIX) as connection:
-            connection.connect(str(self.socket_path))
-            connection.sendall(f"POST /hook HTTP/1.1\r\nHost: journal\r\nContent-Length: {len(data)}\r\nConnection: close\r\n\r\n".encode() + data)
-            time.sleep(STORY_HOOK_LIMIT_SECONDS / 2)
-        deadline = time.monotonic() + TIMEOUT_SECONDS
-        while not self.story.container.get(Queries).query(HookCall).filter(firing=body["firing"]).exists():
-            assert time.monotonic() < deadline, f"the server never answered the hook {body['firing']}"
-            time.sleep(POLL_SECONDS)
+        finished = Event()
+        answer_lost = HookEndpoint.answer_lost
+
+        def record_lost(endpoint, reply):
+            try:
+                answer_lost(endpoint, reply)
+            finally:
+                finished.set()
+
+        with patch.object(HookEndpoint, "answer_lost", record_lost):
+            with self.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, LOCKED_HOOK_WAIT_SECONDS), socket.socket(socket.AF_UNIX) as connection:
+                connection.connect(str(self.socket_path))
+                connection.sendall(f"POST /hook HTTP/1.1\r\nHost: journal\r\nContent-Length: {len(data)}\r\nConnection: close\r\n\r\n".encode() + data)
+                queue = self.context.hook_database.queue
+                with queue.changed:
+                    assert queue.changed.wait_for(lambda: bool(queue.waiting_hooks), TIMEOUT_SECONDS)
+            assert finished.wait(TIMEOUT_SECONDS), f"the server never completed the lost hook {body['firing']}"
 
     def expect_hook_line_soon(self, text: str, firing: str) -> None:
-        deadline = time.monotonic() + TIMEOUT_SECONDS
-        tries = 0
-        while time.monotonic() < deadline:
-            tries += 1
-            body = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use", session="s-1", environment="main", firing=f"{firing}-{tries}", role="main").body
-            if text in request_answer(self.socket_path, "POST", "/hook", dict(body)).text:
-                return
-            time.sleep(POLL_SECONDS)
-        raise AssertionError(f"no hook was told {text!r} in {tries} tries")
+        body = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use", session="s-1", environment="main", firing=firing, role="main").body
+        answer = request_answer(self.socket_path, "POST", "/hook", dict(body))
+        assert text in answer.text, answer.text
 
     def hook_decision(self, body: dict[str, object], headers: dict[str, str]) -> tuple[object, object]:
         reply = request_answer(self.socket_path, "POST", "/hook?program=claude", body, headers).json()
