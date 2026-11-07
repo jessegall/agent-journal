@@ -1,7 +1,7 @@
 import sqlite3
 from contextlib import contextmanager
 from dataclasses import asdict
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from core.base.container import Container
 from threading import RLock
 from uuid import uuid4
@@ -25,6 +25,10 @@ from server.viewer.window_priorities import WindowPriorities
 from server.request_log_settings import RequestLogSettings
 
 SETTINGS_REFRESH_SECONDS = 5.0
+
+
+def is_database_busy(error: sqlite3.Error) -> bool:
+    return getattr(error, "sqlite_errorcode", 0) & 0xff in (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED)
 
 
 class RequestLog:
@@ -81,7 +85,8 @@ class RequestLog:
             if argv[:1] == ["setting"] or self.last_refreshed_at is None or perf_counter() - self.last_refreshed_at >= SETTINGS_REFRESH_SECONDS:
                 self.refresh(container)
         except sqlite3.Error as error:
-            self.system_log.write(LogLevel.WARNING, f"request log settings could not be refreshed: {error}", LogSource.SERVER)
+            if not is_database_busy(error):
+                self.system_log.write(LogLevel.WARNING, f"request log settings could not be refreshed: {error}", LogSource.SERVER)
 
     def status(self) -> dict[str, object]:
         with self.lock:
@@ -132,13 +137,31 @@ class RequestLog:
         except sqlite3.Error as error:
             with self.lock:
                 self.counts["receipt_dropped"] += len(receipts)
-            self.system_log.write(LogLevel.WARNING, f"read receipt recording failed: {error}", LogSource.SERVER)
+            if not is_database_busy(error):
+                self.system_log.write(LogLevel.WARNING, f"read receipt recording failed: {error}", LogSource.SERVER)
         finally:
             with self.lock:
                 self.recording_ms += (perf_counter() - started_at) * 1000
 
     def record(self, line: list[str], role: str, duration_ms: float, queued_ms: float, code: int) -> None:
         self.save(RequestLogEntry(line, role, duration_ms, queued_ms, code, {"event": " ".join(line)}))
+
+    def record_hook(self, record: Callable[[], bool]) -> None:
+        started_at = perf_counter()
+        with self.lock:
+            self.counts["attempted"] += 1
+        try:
+            recorded = record()
+            with self.lock:
+                self.counts["recorded" if recorded else "disabled"] += 1
+        except sqlite3.Error as error:
+            with self.lock:
+                self.counts["dropped"] += 1
+            if not is_database_busy(error):
+                self.system_log.write(LogLevel.WARNING, f"request recording failed: {error}", LogSource.SERVER)
+        finally:
+            with self.lock:
+                self.recording_ms += (perf_counter() - started_at) * 1000
 
     def save(self, entry: RequestLogEntry) -> None:
         self.save_many([entry])
@@ -167,7 +190,8 @@ class RequestLog:
         except sqlite3.Error as error:
             with self.lock:
                 self.counts["dropped"] += len(entries)
-            self.system_log.write(LogLevel.WARNING, f"request recording failed: {error}", LogSource.SERVER)
+            if not is_database_busy(error):
+                self.system_log.write(LogLevel.WARNING, f"request recording failed: {error}", LogSource.SERVER)
         finally:
             with self.lock:
                 self.recording_ms += (perf_counter() - started_at) * 1000
