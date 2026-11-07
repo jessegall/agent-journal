@@ -15,3 +15,5 @@ class ReadOutput(Command[OutputLines]):
     tail: int = 0
     reader: str = ""
     is_repeat_allowed: bool = False
+    reader_process_id: int | None = None
+    json_output: bool = False

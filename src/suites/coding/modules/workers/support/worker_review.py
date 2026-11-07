@@ -18,6 +18,9 @@ class WorkerReview:
     flagged: Mapping[int, tuple[str, ...]]
     proofs: tuple[Proof, ...]
 
+    def covers_all_tasks(self, task_id: int | None) -> bool:
+        return task_id is None or (len(self.tasks) == 1 and self.tasks[0].id == task_id)
+
     def task_logs(self, task: Task) -> tuple[TaskLog, ...]:
         return tuple(log for log in self.logs if log.task_id == task.id)
 

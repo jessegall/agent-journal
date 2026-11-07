@@ -15,6 +15,11 @@ class CallerRequest:
     folder: str = ""
     pid: int = 0
 
+    @property
+    def process_id(self) -> int | None:
+        number = self.variables.get("JOURNAL_PROCESS", "")
+        return int(number) if number.isdecimal() else None
+
     @classmethod
     def parsed(cls, data: object) -> "CallerRequest":
         if not is_mapping(data):

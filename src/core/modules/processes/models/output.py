@@ -36,7 +36,12 @@ class Output(Model):
     state: OutputState = OutputState.KEPT
     ended_at: Timestamp | None = None
     read_at: Timestamp | None = None
+    fully_read_at: Timestamp | None = None
+    full_read_output_id: int | None = None
     pruned_at: Timestamp | None = None
+
+    def has_new_full_read(self, previous: "Output | None") -> bool:
+        return self.fully_read_at is not None and (previous is None or previous.fully_read_at != self.fully_read_at)
 
     def change_name(self, old_row: "Output | None") -> str | None:
         newly_ended = self.ended_at is not None and (old_row is None or old_row.ended_at is None)

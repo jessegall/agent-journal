@@ -14,5 +14,5 @@ class ReadWorkerLogsSubcommand(Subcommand[ReadWorkerLogs, str]):
         parser.add_argument("--task", type=int, help="print this task's lines whole")
 
     def command(self, arguments: Namespace, caller: Caller) -> ReadWorkerLogs:
-        return ReadWorkerLogs(arguments.worker_id, arguments.task)
+        return ReadWorkerLogs(arguments.worker_id, arguments.task, caller.process_id, arguments.json)
 

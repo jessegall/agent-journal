@@ -6,6 +6,8 @@ from datetime import timedelta
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
 from core.base.driver.tool_type import ToolType
+from core.base.driver.command_category import CommandCategory
+from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.documents.support.trail_fixtures import ApprovedTrailPlan, StartedTrailPlan, Scenario, feature, viewer_answer
 
 
@@ -104,3 +106,16 @@ def test_first_task_overview_inherits_plan_context(approved_scenario):
     scenario.command("plan start 1")
     outcome = scenario.command("task overview 1")
     feature("Keep the approved cart scope" in outcome.output_text, outcome.output_text)
+
+
+def test_redirecting_or_piping_plan_context_does_not_release_the_context_block(scenario):
+    story = scenario.story
+    scenario.tick()
+    part = ShellPart("journal", CommandCategory.JOURNAL, ["plan", "context", "1"], subcommand="plan")
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal plan context 1 > /tmp/plan", part, redirects=["> /tmp/plan"]), "journal plan context 1")
+    piped = ShellPart("journal", CommandCategory.JOURNAL, ["plan", "context", "1"], subcommand="plan", pipe_target=1)
+    reader = ShellPart("cat", CommandCategory.READ, [])
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal plan context 1 && cat", piped, reader), "run the read command directly, without a pipe or redirect")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "journal plan context 1")
+    scenario.context("plan")
+    story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))

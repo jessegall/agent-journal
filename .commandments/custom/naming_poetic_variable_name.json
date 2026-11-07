@@ -12,7 +12,8 @@
             {
                 "nameIn": [
                     "commit_before_merge",
-                    "runs_once"
+                    "runs_once",
+                    "NO_WORKER_WAITING"
                 ]
             },
             {

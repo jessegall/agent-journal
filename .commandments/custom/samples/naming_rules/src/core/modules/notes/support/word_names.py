@@ -60,6 +60,8 @@ class NoteLine:
     def held(self, in_the_hour: str, text: str) -> str:
         # @righteous naming_poetic_variable_name
         line = text
+        # @righteous naming_poetic_variable_name
+        line = NO_WORKER_WAITING
         # @sin naming_sentence_variable_name
         return line + in_the_hour
 

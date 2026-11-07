@@ -134,3 +134,40 @@ def expect_dumps_with(schema, expected) -> None:
 def expect_updated_input_hook_3(story, text, line, item, item_2, expected) -> None:
     actual = dict(story.hook(text, HookSamples.shell(line, item, item_2)).updated_input)
     assert actual == expected, actual
+
+
+def test_commands_that_count_as_reading_refuse_redirects_and_pipes(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    commands = ("overview", "task overview 1", "plan context 1", "worker logs 2", "merger next", "message read 3", "message unread", "proof list --task 1", "output read 4 --all", "worker status", "memory list")
+    for command in commands:
+        arguments = command.split()
+        part = ShellPart("journal", CommandCategory.JOURNAL, arguments, subcommand=arguments[0])
+        story.expect_hook_refusal("s-1", HookSamples.shell(f"journal {command} > /tmp/out", part, redirects=["> /tmp/out"]), "run the read command directly, without a pipe or redirect")
+        piped = ShellPart("journal", CommandCategory.JOURNAL, arguments, subcommand=arguments[0], pipe_target=1)
+        sink = ShellPart("cat", CommandCategory.READ, [])
+        story.expect_hook_refusal("s-1", HookSamples.shell(f"journal {command} && cat", piped, sink), "run the read command directly, without a pipe or redirect")
+
+
+def test_a_read_command_can_follow_an_unrelated_redirect(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    writer = ShellPart("cat", CommandCategory.EDIT, [], output_paths=["notes.txt"])
+    reader = ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "3"], subcommand="message")
+    story.expect_hook_allowed("s-1", HookSamples.shell("cat > notes.txt && journal message read 3", writer, reader, redirects=["> notes.txt"]))
+
+
+def test_a_read_command_inside_a_redirected_group_is_refused(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    group = ShellPart("{", CommandCategory.UNKNOWN, [])
+    story.expect_hook_refusal("s-1", HookSamples.shell("{ journal worker logs 2; } > /tmp/log", group, redirects=["> /tmp/log"]), "run the read command directly, without a pipe or redirect")
+
+
+def test_a_read_command_inside_command_substitution_is_refused(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    command = ShellPart("echo", CommandCategory.UNKNOWN, [])
+    story.expect_hook_refusal("s-1", HookSamples.shell("echo $(journal message read 3)", command), "run the read command directly, without a pipe or redirect")
+
+
+def test_words_about_a_read_command_do_not_refuse_a_shell_line(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    command = ShellPart("echo", CommandCategory.READ, ["journal message read 3"])
+    story.expect_hook_allowed("s-1", HookSamples.shell("echo 'journal message read 3'", command))
