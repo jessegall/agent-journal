@@ -44,6 +44,7 @@ const link = (task, current = false) => ({status: statusIcon(task.state), number
 <style scoped>
 .task-chain {
     margin-bottom: 18px;
+    padding: 0 16px;
 }
 h4 {
     margin: 0 0 6px;

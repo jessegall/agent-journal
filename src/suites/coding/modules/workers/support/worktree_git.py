@@ -79,6 +79,16 @@ class WorktreeGit:
         self.checked(folder, GIT_LIMIT_SECONDS, "commit", "-m", message, "--", *existing)
         return True
 
+    def changed_names(self, folder: str, folders: tuple[str, ...]) -> tuple[str, ...]:
+        existing = tuple(name for name in folders if Path(folder, name).exists())
+        if not existing:
+            return ()
+        listing = self.checked(folder, GIT_LIMIT_SECONDS, "status", "--porcelain", "--untracked-files=all", "--", *existing).stdout
+        return tuple(line[3:] for line in listing.splitlines())
+
+    def is_on_branch(self, folder: str, branch: str) -> bool:
+        return self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--is-inside-work-tree").returncode == 0 and self.head(folder) == branch
+
     def rebased_commit(self, worktree: Worktree, message: str, trailer: str) -> tuple[str, ...]:
         self.restore_stashes(worktree)
         self.refuse_conflicts(worktree)

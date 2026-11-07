@@ -38,7 +38,7 @@ const emit = defineEmits(["close", "back", "step", "open"]);
 const TEXT_NOUNS = new Set(["question", "memory", "rule"]);
 const listing = computed(() => props.catalogue.inspector(props.noun) ?? {
     reads: `${props.noun} show {row_id}`, label: "", title: "{title}", description: "", width: "small", components: [], comments: false, events: [],
-    links: {kinds: [], open: false, outside_plan: false, page_size: 10}, shareable: false,
+    links: {kinds: [], open: false, outside_plan: false, page_size: 10}, shareable: false, lists_fields: true,
 });
 const row = ref(null);
 const creator = ref("");
@@ -50,8 +50,9 @@ const drawnWidth = ref(0);
 let reading = 0;
 
 const filled = computed(() => ({row_id: props.id, id: props.id}));
-const label = computed(() => (row.value ? inspectorLabel(listing.value, props.noun, row.value, props.id) : ""));
 const title = computed(() => (row.value ? fill(listing.value.title, row.value, filled.value) || titleOf(props.noun, row.value, props.id) : ""));
+const kindLabel = computed(() => (row.value ? inspectorLabel(listing.value, props.noun, row.value, props.id) : ""));
+const label = computed(() => (kindLabel.value === title.value ? "" : kindLabel.value));
 const description = computed(() => (row.value ? fill(listing.value.description, row.value, filled.value) : ""));
 const text = computed(() => row.value?.body || row.value?.brief || (TEXT_NOUNS.has(props.noun) ? row.value?.text : "") || "");
 const html = computed(() => (text.value ? render(text.value, {env: "", rowNames: false}) : ""));
@@ -144,7 +145,9 @@ onUnmounted(() => watcher?.disconnect());
                                     <template v-if="html">
                                         <div class="md text" data-resource-text v-html="html" />
                                     </template>
-                                    <ResourceFields :fields="fields" @peek="emit('open', $event)" />
+                                    <template v-if="listing.lists_fields !== false">
+                                        <ResourceFields :fields="fields" @peek="emit('open', $event)" />
+                                    </template>
                                 </div>
                                 <InspectorSections :slot-name="`inspector.${noun}`" :names="partsOf('')" :row="{...row, id, noun}" />
                             </template>
@@ -231,12 +234,10 @@ onUnmounted(() => watcher?.disconnect());
 .inspector-body {
     flex: 1;
     overflow-y: auto;
-    padding: 16px 0 28px;
 }
 
-.inspector-text,
-.inspector-body :deep(.inspector-section) {
-    padding: 0 16px;
+.inspector-text {
+    padding: 16px 16px 0;
 }
 
 .text {
