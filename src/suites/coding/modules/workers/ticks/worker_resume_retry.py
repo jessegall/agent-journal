@@ -30,4 +30,5 @@ class WorkerResumeRetry:
                 resume.replace_running_program(worker, Actor.core())
 
     def may_resume(self, container: Container, worker: Agent, lines: list[AgentLine]) -> bool:
-        return worker.role == AgentRole.WORKER and worker.ended_at is not None and container.get(WorkerStop).is_job_due(worker, lines)
+        return (worker.role == AgentRole.WORKER and worker.ended_at is not None
+                and container.get(WorkerStop).is_job_due(worker, lines) and container.get(WorkerResume).may_resume(worker))

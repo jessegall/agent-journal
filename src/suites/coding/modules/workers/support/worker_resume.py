@@ -27,15 +27,26 @@ from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
 from suites.coding.modules.workers.support.worker_places import JOB_DELIVERY_SECONDS, WorkerPlaces
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from suites.coding.modules.workers.models.worktree import Worktree
+from core.modules.helpers.support.program_state import ProgramState
+from core.modules.helpers.support.program_states import ProgramStates
+from suites.coding.modules.workers.support.worker_program_wait import WorkerProgramWait
+from suites.coding.modules.workers.commands.report_worker_program_back.report_worker_program_back import ReportWorkerProgramBack
 
 
 class WorkerResume:
     """Resumes ended workers on waiting jobs and retries a job that did not start."""
 
     def __init__(self, launcher: AgentLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock, requirement: TaskBriefRequirement,
-                 places: WorkerPlaces, program: AgentProgram) -> None:
+                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates) -> None:
         self.launcher, self.queries, self.worktrees, self.worker_command, self.bus, self.clock = launcher, queries, worktrees, worker_command, bus, clock
         self.requirement, self.places, self.program = requirement, places, program
+        self.states = states
+
+    def program_state(self, worker: Agent) -> ProgramState:
+        return self.states.outage_state(worker.program)
+
+    def may_resume(self, worker: Agent) -> bool:
+        return self.program_state(worker).is_ready
 
     def replace_running_program(self, worker: Agent, actor: Actor) -> None:
         if self.resume(worker, actor) is not LaunchAnswer.RUNNING:
@@ -69,12 +80,13 @@ class WorkerResume:
         self.launch_job(worker, worktree, job, actor)
 
     def launch_job(self, worker: Agent, worktree: Worktree, job: AgentLine, actor: Actor) -> LaunchAnswer:
-        if not self.places.can_resume(worker):
+        if not self.may_resume(worker) or not self.places.can_resume(worker):
             return LaunchAnswer.SKIPPED
         environment = self.queries.query(Environment).find(worktree.environment_id)
         answer = self.launcher.hand(worker, environment, self.worker_command.resumed(worker, worktree, environment, job.text))
         if answer is not LaunchAnswer.STARTED:
             return answer
+        self.bus.run(ReportWorkerProgramBack(worker.id, WorkerProgramWait.source(worker)), Actor.core(), environment_id=worktree.environment_id)
         if self.requirement.is_required:
             worker_actor = Actor(worker.id, ActorType.AGENT)
             self.bus.run(ResetTaskReads(worker.id), worker_actor, environment_id=worktree.environment_id)

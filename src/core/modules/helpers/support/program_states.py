@@ -39,11 +39,10 @@ class ProgramStates:
             return ProgramState.unavailable(refusal.text)
         if provider.hook_trust(folder) is not HookTrust.READY:
             return ProgramState.unavailable(f"{program} has not trusted the journal hooks in {folder}")
+        outage = self.outage_state(program)
+        if not outage.is_ready:
+            return outage
         checked_at = self.clock.timestamp()
-        outages = self.queries.query(ProviderOutage).filter(program=program).ordered("-ends_at").all_rows()
-        outage = next((row for row in outages if row.ends_at > checked_at), None)
-        if outage is not None:
-            return ProgramState.unavailable(outage.reason, outage.ends_at)
         threshold = self.settings.number(PROGRAM_WINDOW_PERCENT)
         if threshold == 0:
             return ProgramState.ready()
@@ -56,6 +55,18 @@ class ProgramStates:
             return ProgramState.ready()
         window = max(blocked, key=lambda row: row.reset_epoch_seconds)
         return ProgramState.unavailable(window.line, Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc)))
+
+    def outage_state(self, program: str) -> ProgramState:
+        try:
+            self.providers.provider(program)
+        except UnknownProgramError:
+            return ProgramState.unavailable(f"{program} has no installed provider module")
+        checked_at = self.clock.timestamp()
+        outages = self.queries.query(ProviderOutage).filter(program=program).ordered("-ends_at").all_rows()
+        outage = next((row for row in outages if row.ends_at > checked_at), None)
+        if outage is None:
+            return ProgramState.ready()
+        return ProgramState.unavailable(outage.reason, outage.ends_at)
 
     def ready_programs(self, folder: Path) -> tuple[str, ...]:
         return tuple(provider.name for provider in self.providers.all() if self.state(provider.name, folder).is_ready)
