@@ -1,12 +1,14 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
-import {AutoScrollPane, Btn, RowList, WindowRoom, useWindow} from "@journal/window-kit";
+import {AutoScrollPane, Btn, FeedPaginator, RowList, WindowRoom, useWindow} from "@journal/window-kit";
 
 // the conversation oldest first with its newest row at the foot, where the pane opens and stays as rows arrive; scrolling up stops that and
-// shows Newest; each row says who wrote it, lined up with the card's tabs, its words, and at its end when
+// shows Newest, and reaching the top reads the page of rows before the oldest; each row says who wrote it, lined up with the card's tabs, its words, and at its end when
 const props = defineProps({name: {type: String, required: true}, agent: {type: Number, default: null}, padding: {type: String, default: "8px 22px 8px 27px"}, helper: Boolean});
 const view = useWindow();
-const {rows, failure, loaded} = view.props[props.name];
+const feed = view.props[props.name];
+const {failure, loaded} = feed;
+const paginator = FeedPaginator.ofRows("transcript", feed);
 view.reload(props.name);
 const stopFollowing = view.follow(["hook_call.*"], () => view.reload(props.name));
 onUnmounted(() => stopFollowing?.());
@@ -26,6 +28,7 @@ function sendOnEnter(event) {
     event.preventDefault();
     send();
 }
+const rows = computed(() => [...feed.rows.value].sort((one, two) => one.id - two.id));
 const newest = computed(() => rows.value.at(-1)?.id ?? 0);
 const timeOf = (row) => (row.time ? new Date(row.time).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"}) : "");
 </script>
@@ -33,7 +36,7 @@ const timeOf = (row) => (row.time ? new Date(row.time).toLocaleTimeString([], {h
 <template>
     <WindowRoom :padding="padding">
         <div class="transcript">
-            <AutoScrollPane :row-count="newest">
+            <AutoScrollPane :row-count="newest" :feed="paginator">
                 <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No conversation yet" hint="The agent’s messages and tool calls appear here.">
                     <template #default="{row}">
                         <span class="author" :data-author="row.author">{{ row.author }}</span>

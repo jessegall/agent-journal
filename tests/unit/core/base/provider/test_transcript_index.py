@@ -49,3 +49,13 @@ def test_a_shrunk_file_is_indexed_anew(provider, tmp_path):
     transcript.write_text(transcript_lines(9))
     page = index.page(provider, transcript, 1, 5)
     assert [row.text for row in page.rows] == ["line 9"] and page.total == 1
+
+
+def test_the_page_before_a_row_is_the_rows_just_above_it_and_its_total_is_how_many_come_before(provider, tmp_path):
+    transcript = tmp_path / "s-1.jsonl"
+    transcript.write_text(transcript_lines(*range(1, 21)))
+    index = TranscriptIndex()
+    page = index.before(provider, transcript, 11, 4)
+    assert ([row.id for row in page.rows], page.total) == ([7, 8, 9, 10], 10)
+    page = index.before(provider, transcript, 3, 4)
+    assert ([row.id for row in page.rows], page.total) == ([1, 2], 2)

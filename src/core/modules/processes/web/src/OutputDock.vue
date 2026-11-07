@@ -102,6 +102,7 @@ async function load() {
     await nextTick();
     if (following && terminal.value)
       terminal.value.scrollTop = terminal.value.scrollHeight;
+    if (terminal.value) pages.feed.drawn(terminal.value);
   });
 }
 

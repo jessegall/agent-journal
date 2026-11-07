@@ -59,7 +59,7 @@ onMounted(load);
                     </template>
                 </div>
                 <template v-if="isWhole">
-                    <OutputLines class="text" data-output-text :lines="pages.lines.value" @older="pages.loadEarlier" />
+                    <OutputLines class="text" data-output-text :lines="pages.lines.value" :feed="pages.feed" @older="pages.loadEarlier" />
                 </template>
                 <template v-else>
                     <AutoScrollPane :row-count="lines.length">

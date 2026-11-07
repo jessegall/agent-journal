@@ -124,7 +124,7 @@ export function rowList(context, askRows, pageSizeOf, isIncremental, readsIds = 
         return result;
     }
 
-    return {rows, listing, failure, loaded, more, load, loadLatest, older, act, actionFailure, answer, context, heard, showFirst};
+    return {rows, listing, failure, loaded, more, load, loadLatest, older, act, actionFailure, answer, context, heard, showFirst, pageSize: pageSizeOf};
 }
 
 const flagWords = (flags) => Object.entries(flags).map(([name, value]) => ` --${name} ${value}`).join("");

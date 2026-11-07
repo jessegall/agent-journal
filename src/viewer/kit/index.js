@@ -66,6 +66,7 @@ export {READ_RATES} from "../src/composables/readRates.js";
 export {useNow} from "./useNow.js";
 export {default as TimeAgo} from "./TimeAgo.vue";
 export {useRows, useDeclaredRows} from "./useRows.js";
+export {FeedPaginator, feeds} from "./feedPaginator.js";
 export {useDockRow} from "./useDockRow.js";
 export {afterSkeletonMinimum} from "./skeletonMinimum.js";
 export {matchesSearch} from "./searchFields.js";

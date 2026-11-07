@@ -24,6 +24,15 @@ class TranscriptIndex:
             rows = tuple(self.row(provider, transcript, indexed.lines[position], position + 1) for position in range(start, end))
         return Page(rows, number, size, len(indexed.lines))
 
+    def before(self, provider: Provider, path: Path, row_id: int, size: int) -> Page[TranscriptRow]:
+        """The page of `size` rows just before the row `row_id`, oldest first; its total is how many rows come before that row."""
+        indexed = self.indexed(provider, path)
+        end = min(max(row_id - 1, 0), len(indexed.lines))
+        start = max(end - size, 0)
+        with path.open("rb") as transcript:
+            rows = tuple(self.row(provider, transcript, indexed.lines[position], position + 1) for position in range(start, end))
+        return Page(rows, 1, size, end)
+
     def indexed(self, provider: Provider, path: Path) -> IndexedTranscript:
         size = path.stat().st_size
         indexed = self.files.get(path)

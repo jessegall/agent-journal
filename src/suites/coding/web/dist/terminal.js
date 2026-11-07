@@ -1,248 +1,293 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-87ea5a5b3958")) { const style = document.createElement("style"); style.id = "window-styles-87ea5a5b3958"; style.textContent = ".file-feed[data-v-f25449e7]{display:flex;flex:1;flex-direction:column;min-height:0}.file-feed-older[data-v-f25449e7]{align-self:flex-start;margin:0 0 6px;padding:2px 8px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.file-feed-older[data-v-f25449e7]:hover{background:var(--hover);color:var(--text)}.group[data-v-ae4c856a]{display:flex;flex-direction:column;gap:10px;padding:12px}.group-row[data-v-ae4c856a]{display:flex;align-items:center;justify-content:space-between;gap:16px}.group-text[data-v-ae4c856a]{display:flex;flex-direction:column}.group-label[data-v-ae4c856a]{font-size:13px;color:var(--text)}.group-line[data-v-ae4c856a],.group-source[data-v-ae4c856a]{font-size:12px;color:var(--text-2)}.group-input[data-v-ae4c856a]{width:90px}.group-hint[data-v-ae4c856a]{margin:0;font-size:12px;color:var(--text-2)}.group-failure[data-v-ae4c856a]{margin:0;font-size:12px;color:var(--danger)}.group-buttons[data-v-ae4c856a]{display:flex;justify-content:flex-end;gap:8px}.agents[data-v-249c0f13]{display:flex;flex-direction:column;gap:12px;padding:12px}.agents-title[data-v-249c0f13]{margin:0;font-size:13px}.agents-count[data-v-249c0f13],.agents-profiles[data-v-249c0f13],.agents-empty[data-v-249c0f13]{margin:0;font-size:12px;color:var(--text-2)}.agents-profiles[data-v-249c0f13]{padding-left:16px}.agents-group[data-v-249c0f13]{color:var(--text-3, var(--text-2));font-size:11px}.work[data-v-6d97181c]{display:flex;flex-direction:column;gap:10px;padding:12px}.work-flow[data-v-6d97181c]{margin:0;color:var(--text-2);font-size:12.5px}.work-presets[data-v-6d97181c]{display:flex;gap:8px}.work-row[data-v-6d97181c]{display:flex;align-items:center;justify-content:space-between;gap:16px}.work-text[data-v-6d97181c]{display:flex;flex-direction:column}.work-label[data-v-6d97181c]{font-size:13px;color:var(--text)}.work-line[data-v-6d97181c]{font-size:12px;color:var(--text-2)}.work-hint[data-v-6d97181c]{margin:0;font-size:12px;color:var(--text-2)}.work-failure[data-v-6d97181c]{margin:0;font-size:12px;color:var(--danger)}.work-buttons[data-v-6d97181c]{display:flex;justify-content:flex-end;gap:8px}.settings[data-v-1f00b7cf]{display:flex;flex-direction:column;gap:8px}.main[data-v-de4b6996]{flex:1}.note[data-v-de4b6996]{color:var(--text-3);font-size:12px}.feed-bar-lines[data-v-db39481b]{display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding:6px 10px;font-size:13px}.file-feed[data-v-3114dc6c]{display:flex;flex-direction:column;height:100%;min-height:0;container-type:inline-size}.file-feed-flow[data-v-3114dc6c]{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;padding:12px}.file-feed.flush .file-feed-flow[data-v-3114dc6c]{gap:0;padding:0}.file-feed-failure[data-v-3114dc6c]{padding:8px 12px;color:var(--danger)}.files[data-v-3cd926d2]{display:flex;flex-direction:column;height:100%;min-height:0}.files-bar[data-v-3cd926d2]{flex-wrap:wrap;gap:4px}.files-body[data-v-3cd926d2]{display:grid;flex:1;grid-template-columns:minmax(220px,1fr) 3fr;min-height:0}.files-list[data-v-3cd926d2]{overflow-y:auto;padding:6px;border-right:1px solid var(--border)}.files-row[data-v-3cd926d2]{display:flex;gap:8px;align-items:center;width:100%;padding:4px 8px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;font-size:13px;text-align:left;cursor:pointer}.files-row[data-v-3cd926d2]:hover,.files-row.on[data-v-3cd926d2]{background:var(--hover)}.files-name[data-v-3cd926d2]{overflow:hidden;min-width:0;text-overflow:ellipsis;white-space:nowrap}.files-reader[data-v-3cd926d2]{overflow:auto;padding:14px 18px}.files-path[data-v-3cd926d2]{margin:0 0 10px;font-size:14px;font-weight:600}.files-text[data-v-3cd926d2]{margin:0;font-family:var(--mono, monospace);font-size:12.5px;line-height:1.5}.files-line[data-v-3cd926d2]{display:block;white-space:pre}.files-line.target[data-v-3cd926d2]{background:var(--hover)}.files-number[data-v-3cd926d2]{display:inline-block;width:44px;margin-right:12px;color:var(--text-3);text-align:right;-webkit-user-select:none;user-select:none}.files-note[data-v-3cd926d2]{margin:6px 8px;color:var(--text-2);font-size:13px}.git[data-v-d3f94cc6]{display:flex;flex-direction:column;gap:24px;padding:24px 28px}.part[data-v-d3f94cc6]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}h3[data-v-d3f94cc6]{margin:0;font-size:13px;font-weight:600}.row[data-v-d3f94cc6]{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;width:100%;font-size:13px}.row.current .name[data-v-d3f94cc6]{font-weight:600}.name[data-v-d3f94cc6],.subject[data-v-d3f94cc6]{min-width:0;overflow-wrap:anywhere}.subject[data-v-d3f94cc6]{flex:1}.sha[data-v-d3f94cc6],.fact[data-v-d3f94cc6]{color:var(--text-3);font-size:12px}.sha[data-v-d3f94cc6]{font-family:var(--font-mono, ui-monospace, monospace)}.fact.failed[data-v-d3f94cc6]{color:var(--danger)}.output-lines[data-v-c2fb1783]{overflow:auto}.output-follow[data-v-c2fb1783]{position:sticky;bottom:8px;display:block;width:fit-content;margin-left:auto;padding:3px 10px;border:1px solid var(--border-2);border-radius:999px;background:var(--raised);color:var(--text);font:inherit;font-size:11.5px;cursor:pointer;-webkit-user-select:none;user-select:none}.output-follow[data-v-c2fb1783]:hover{border-color:var(--accent)}.terminal-output[data-v-e09584a8]{max-height:240px;margin:4px 0 8px 18px;color:var(--text-3);white-space:pre-wrap;overflow-wrap:anywhere}.terminal[data-v-8302ba23]{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--code-bg)}.terminal[data-v-8302ba23] .terminal-body{flex:1;min-height:0;margin:0;padding:8px 12px;overflow:auto;color:var(--text-1);font-family:var(--font-mono, ui-monospace, monospace);font-size:12px;line-height:1.45}.terminal-row[data-v-8302ba23]{display:flex;gap:7px;align-items:baseline}.terminal-mark[data-v-8302ba23],.terminal-state[data-v-8302ba23]{flex:none;color:var(--text-3)}.terminal-row.refused .terminal-text[data-v-8302ba23],.terminal-row.refused .terminal-state[data-v-8302ba23]{color:var(--danger)}.terminal-text[data-v-8302ba23]{min-width:0;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.terminal-text.open[data-v-8302ba23]{overflow-wrap:anywhere;white-space:pre-wrap}.terminal-run[data-v-8302ba23]{display:flex;align-items:center;gap:8px;padding:6px 12px;border-top:1px solid var(--border);font-family:var(--font-mono, ui-monospace, monospace);font-size:12px}.terminal-prompt[data-v-8302ba23]{color:var(--text-3)}.terminal-input[data-v-8302ba23]{flex:1;min-width:0;border:0;outline:0;background:transparent;color:inherit;font:inherit}.terminal-failure[data-v-8302ba23]{padding:8px 12px;color:var(--text-3)}.agentset[data-v-4b97ef20]{position:relative;display:flex;align-items:center;gap:10px;padding:3px 4px 3px 8px;border:1px solid var(--border-2);border-radius:8px}.agentset-settings[data-v-4b97ef20]{display:inline-flex;align-items:center;padding:3px 5px;border:0;border-radius:5px;background:none;color:var(--text-2);cursor:pointer}.agentset-settings[data-v-4b97ef20]:hover,.agentset-settings[aria-expanded=true][data-v-4b97ef20]{background:var(--hover);color:var(--text)}.agentset-menu[data-v-4b97ef20]{position:absolute;top:calc(100% + 8px);right:0;z-index:40;display:flex;flex-direction:column;gap:10px;width:260px;padding:12px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised);box-shadow:0 12px 32px #00000073}.agentset-row[data-v-4b97ef20]{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--text-2);font-size:12.5px}.agentset-failure[data-v-4b97ef20]{margin:0;color:var(--danger);font-size:12px}.agentset-ask[data-v-4b97ef20]{margin:0 0 8px;font-size:13px}.agentset-ask-buttons[data-v-4b97ef20]{display:flex;justify-content:flex-end;gap:8px}\n"; document.head.appendChild(style); }
-import { ref as m, nextTick as F, getCurrentScope as ee, onScopeDispose as te, watch as q, openBlock as p, createElementBlock as k, createTextVNode as le, toDisplayString as E, unref as h, createCommentVNode as H, createBlock as L, onMounted as ne, onUnmounted as ae, computed as oe, withCtx as se, Fragment as R, renderList as ue, createElementVNode as x, normalizeClass as j, withModifiers as D, withDirectives as re, withKeys as K, vModelText as ie } from "vue";
-import { useWindow as J, Skeleton as ce, EmptyState as me, AutoScrollPane as fe } from "@journal/window-kit";
-import { _ as I } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const de = 60;
-function pe(s, v) {
-  const f = m([]), l = m(0);
-  let u = -1, c = 0, r = !1;
-  async function i() {
-    const t = await s(["output", "page", String(v())]);
-    return t.ok && (f.value = t.value.lines, l.value = t.value.first_byte, u = t.value.last_byte, c = t.value.cut_bytes), t;
+if (!document.getElementById("window-styles-43cfc1bcefb0")) { const style = document.createElement("style"); style.id = "window-styles-43cfc1bcefb0"; style.textContent = ".file-feed[data-v-548cfd47]{display:flex;flex:1;flex-direction:column;min-height:0}.file-feed-older[data-v-548cfd47]{align-self:flex-start;margin:0 0 6px;padding:2px 8px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.file-feed-older[data-v-548cfd47]:hover{background:var(--hover);color:var(--text)}.group[data-v-7205c60c]{display:flex;flex-direction:column;gap:10px;padding:12px}.group-row[data-v-7205c60c]{display:flex;align-items:center;justify-content:space-between;gap:16px}.group-text[data-v-7205c60c]{display:flex;flex-direction:column}.group-label[data-v-7205c60c]{font-size:13px;color:var(--text)}.group-line[data-v-7205c60c],.group-source[data-v-7205c60c]{font-size:12px;color:var(--text-2)}.group-input[data-v-7205c60c]{width:90px}.group-hint[data-v-7205c60c]{margin:0;font-size:12px;color:var(--text-2)}.group-failure[data-v-7205c60c]{margin:0;font-size:12px;color:var(--danger)}.group-buttons[data-v-7205c60c]{display:flex;justify-content:flex-end;gap:8px}.agents[data-v-b044d246]{display:flex;flex-direction:column;gap:12px;padding:12px}.agents-title[data-v-b044d246]{margin:0;font-size:13px}.agents-count[data-v-b044d246],.agents-profiles[data-v-b044d246],.agents-empty[data-v-b044d246]{margin:0;font-size:12px;color:var(--text-2)}.agents-profiles[data-v-b044d246]{padding-left:16px}.agents-group[data-v-b044d246]{color:var(--text-3, var(--text-2));font-size:11px}.work[data-v-cb79d625]{display:flex;flex-direction:column;gap:10px;padding:12px}.work-flow[data-v-cb79d625]{margin:0;color:var(--text-2);font-size:12.5px}.work-presets[data-v-cb79d625]{display:flex;gap:8px}.work-row[data-v-cb79d625]{display:flex;align-items:center;justify-content:space-between;gap:16px}.work-text[data-v-cb79d625]{display:flex;flex-direction:column}.work-label[data-v-cb79d625]{font-size:13px;color:var(--text)}.work-line[data-v-cb79d625]{font-size:12px;color:var(--text-2)}.work-hint[data-v-cb79d625]{margin:0;font-size:12px;color:var(--text-2)}.work-failure[data-v-cb79d625]{margin:0;font-size:12px;color:var(--danger)}.work-buttons[data-v-cb79d625]{display:flex;justify-content:flex-end;gap:8px}.settings[data-v-b066268a]{display:flex;flex-direction:column;gap:8px}.main[data-v-efe93d8b]{flex:1}.note[data-v-efe93d8b]{color:var(--text-3);font-size:12px}.feed-bar-lines[data-v-91d6f280]{display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding:6px 10px;font-size:13px}.file-feed[data-v-f8443f00]{display:flex;flex-direction:column;height:100%;min-height:0;container-type:inline-size}.file-feed-flow[data-v-f8443f00]{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;padding:12px}.file-feed.flush .file-feed-flow[data-v-f8443f00]{gap:0;padding:0}.file-feed-failure[data-v-f8443f00]{padding:8px 12px;color:var(--danger)}.files[data-v-7fb9b540]{display:flex;flex-direction:column;height:100%;min-height:0}.files-bar[data-v-7fb9b540]{flex-wrap:wrap;gap:4px}.files-body[data-v-7fb9b540]{display:grid;flex:1;grid-template-columns:minmax(220px,1fr) 3fr;min-height:0}.files-list[data-v-7fb9b540]{overflow-y:auto;padding:6px;border-right:1px solid var(--border)}.files-row[data-v-7fb9b540]{display:flex;gap:8px;align-items:center;width:100%;padding:4px 8px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;font-size:13px;text-align:left;cursor:pointer}.files-row[data-v-7fb9b540]:hover,.files-row.on[data-v-7fb9b540]{background:var(--hover)}.files-name[data-v-7fb9b540]{overflow:hidden;min-width:0;text-overflow:ellipsis;white-space:nowrap}.files-reader[data-v-7fb9b540]{overflow:auto;padding:14px 18px}.files-path[data-v-7fb9b540]{margin:0 0 10px;font-size:14px;font-weight:600}.files-text[data-v-7fb9b540]{margin:0;font-family:var(--mono, monospace);font-size:12.5px;line-height:1.5}.files-line[data-v-7fb9b540]{display:block;white-space:pre}.files-line.target[data-v-7fb9b540]{background:var(--hover)}.files-number[data-v-7fb9b540]{display:inline-block;width:44px;margin-right:12px;color:var(--text-3);text-align:right;-webkit-user-select:none;user-select:none}.files-note[data-v-7fb9b540]{margin:6px 8px;color:var(--text-2);font-size:13px}.git[data-v-0a89b6ab]{display:flex;flex-direction:column;gap:24px;padding:24px 28px}.part[data-v-0a89b6ab]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}h3[data-v-0a89b6ab]{margin:0;font-size:13px;font-weight:600}.row[data-v-0a89b6ab]{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;width:100%;font-size:13px}.row.current .name[data-v-0a89b6ab]{font-weight:600}.name[data-v-0a89b6ab],.subject[data-v-0a89b6ab]{min-width:0;overflow-wrap:anywhere}.subject[data-v-0a89b6ab]{flex:1}.sha[data-v-0a89b6ab],.fact[data-v-0a89b6ab]{color:var(--text-3);font-size:12px}.sha[data-v-0a89b6ab]{font-family:var(--font-mono, ui-monospace, monospace)}.fact.failed[data-v-0a89b6ab]{color:var(--danger)}.output-lines[data-v-cd5e59e0]{overflow:auto}.output-follow[data-v-cd5e59e0]{position:sticky;bottom:8px;display:block;width:fit-content;margin-left:auto;padding:3px 10px;border:1px solid var(--border-2);border-radius:999px;background:var(--raised);color:var(--text);font:inherit;font-size:11.5px;cursor:pointer;-webkit-user-select:none;user-select:none}.output-follow[data-v-cd5e59e0]:hover{border-color:var(--accent)}.terminal-output[data-v-351453f7]{max-height:240px;margin:4px 0 8px 18px;color:var(--text-3);white-space:pre-wrap;overflow-wrap:anywhere}.terminal[data-v-2e667d4f]{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--code-bg)}.terminal[data-v-2e667d4f] .terminal-body{flex:1;min-height:0;margin:0;padding:8px 12px;overflow:auto;color:var(--text-1);font-family:var(--font-mono, ui-monospace, monospace);font-size:12px;line-height:1.45}.terminal-row[data-v-2e667d4f]{display:flex;gap:7px;align-items:baseline}.terminal-mark[data-v-2e667d4f],.terminal-state[data-v-2e667d4f]{flex:none;color:var(--text-3)}.terminal-row.refused .terminal-text[data-v-2e667d4f],.terminal-row.refused .terminal-state[data-v-2e667d4f]{color:var(--danger)}.terminal-text[data-v-2e667d4f]{min-width:0;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.terminal-text.open[data-v-2e667d4f]{overflow-wrap:anywhere;white-space:pre-wrap}.terminal-run[data-v-2e667d4f]{display:flex;align-items:center;gap:8px;padding:6px 12px;border-top:1px solid var(--border);font-family:var(--font-mono, ui-monospace, monospace);font-size:12px}.terminal-prompt[data-v-2e667d4f]{color:var(--text-3)}.terminal-input[data-v-2e667d4f]{flex:1;min-width:0;border:0;outline:0;background:transparent;color:inherit;font:inherit}.terminal-failure[data-v-2e667d4f]{padding:8px 12px;color:var(--text-3)}.agentset[data-v-bcc971c1]{position:relative;display:flex;align-items:center;gap:10px;padding:3px 4px 3px 8px;border:1px solid var(--border-2);border-radius:8px}.agentset-settings[data-v-bcc971c1]{display:inline-flex;align-items:center;padding:3px 5px;border:0;border-radius:5px;background:none;color:var(--text-2);cursor:pointer}.agentset-settings[data-v-bcc971c1]:hover,.agentset-settings[aria-expanded=true][data-v-bcc971c1]{background:var(--hover);color:var(--text)}.agentset-menu[data-v-bcc971c1]{position:absolute;top:calc(100% + 8px);right:0;z-index:40;display:flex;flex-direction:column;gap:10px;width:260px;padding:12px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised);box-shadow:0 12px 32px #00000073}.agentset-row[data-v-bcc971c1]{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--text-2);font-size:12.5px}.agentset-failure[data-v-bcc971c1]{margin:0;color:var(--danger);font-size:12px}.agentset-ask[data-v-bcc971c1]{margin:0 0 8px;font-size:13px}.agentset-ask-buttons[data-v-bcc971c1]{display:flex;justify-content:flex-end;gap:8px}\n"; document.head.appendChild(style); }
+import { nextTick as M, ref as y, getCurrentScope as X, onScopeDispose as G, watch as I, openBlock as v, createElementBlock as S, createTextVNode as Z, toDisplayString as E, unref as g, createCommentVNode as N, createBlock as $, onMounted as Q, onUnmounted as Y, computed as ee, withCtx as te, Fragment as R, renderList as oe, createElementVNode as x, normalizeClass as D, withModifiers as A, withDirectives as ne, withKeys as U, vModelText as le } from "vue";
+import { useWindow as K, FeedPaginator as ae, Skeleton as se, EmptyState as re, AutoScrollPane as ie } from "@journal/window-kit";
+import { _ as F } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+const ue = 8, ce = 40;
+class P {
+  constructor(e, t, { top: o = ue, development: a = !1 } = {}) {
+    Object.assign(this, { name: e, source: t, top: o, development: a }), this.breaches = [], this.shown = !1, this.loading = !1;
   }
-  async function a() {
-    if (u < 0) return i();
-    const t = await s(["output", "page", String(v()), "--after", String(u)]);
-    return t.ok ? t.value.cut_bytes !== c || t.value.total < u ? i() : (t.value.lines.length && (f.value = [...f.value, ...t.value.lines]), u = t.value.last_byte, t) : t;
+  // a feed over a window's rows, as `useRows` and a window's props give them: refs of the rows, whether they loaded and whether more follow
+  static ofRows(e, t, o) {
+    return new P(e, {
+      loaded: () => t.loaded.value,
+      count: () => t.rows.value.length,
+      pageSize: t.pageSize,
+      more: () => t.more.value,
+      previous: t.older
+    }, o);
   }
-  async function g(t) {
-    if (r || l.value <= 0 || t.scrollTop > de) return;
-    r = !0;
-    const T = t.scrollHeight, _ = await s(["output", "page", String(v()), "--before", String(l.value)]);
-    r = !1, _.ok && (f.value = [..._.value.lines, ...f.value], l.value = _.value.first_byte, await F(), t.scrollTop += t.scrollHeight - T);
+  breach(e) {
+    const t = `feed ${this.name}: ${e}`;
+    if (this.breaches.push(t), this.development) throw new Error(t);
+    return !1;
   }
-  return { lines: f, newest: i, follow: a, loadEarlier: g };
+  isLoaded() {
+    return this.source.loaded();
+  }
+  // the first rows of the feed are on screen, and the pane has been taken to its bottom
+  drawn(e) {
+    if (this.shown || !this.source.loaded() || !this.source.count()) return;
+    this.shown = !0;
+    const t = e.scrollHeight - e.scrollTop - e.clientHeight;
+    t > ce && this.breach(`opened ${t}px above the bottom`), this.source.count() > this.source.pageSize() && this.breach(`opened with ${this.source.count()} rows, more than the newest page of ${this.source.pageSize()}`);
+  }
+  // the reader scrolled: at the top of the pane the page before the oldest one is read
+  async reachTop(e) {
+    return e.scrollTop < this.top ? this.scrollUp(e) : !1;
+  }
+  // one earlier page is read, and a pane stays on the row it showed. Without a pane the reader asked for it by a button.
+  async scrollUp(e = null) {
+    if (this.loading || !this.source.more()) return !1;
+    if (!this.source.loaded()) return this.breach("an earlier page was read before the newest page");
+    if (e && e.scrollTop >= this.top) return this.breach(`an earlier page was read ${e.scrollTop}px below the top`);
+    this.loading = !0;
+    const t = this.source.count(), o = (e == null ? void 0 : e.scrollHeight) ?? 0;
+    let a = !1;
+    try {
+      a = await this.source.previous();
+    } finally {
+      this.loading = !1;
+    }
+    const s = this.source.count() - t;
+    return s > this.source.pageSize() && this.breach(`one scroll up added ${s} rows, a page is ${this.source.pageSize()}`), a && e && (await M(), e.scrollTop += e.scrollHeight - o), a;
+  }
+  // rows too few to scroll leave no way to reach the top, so earlier pages are read until the pane scrolls or none is left
+  async fill(e) {
+    for (; e.clientHeight > 0 && e.scrollHeight <= e.clientHeight && this.source.more() && await this.scrollUp(); ) await M();
+  }
 }
-const ve = 24, ge = 1e3, V = 2e3, _e = 0.25, ye = 5e3;
-function he(s, v = ve, f = () => !0) {
-  const l = m(!1), u = m(0), c = m(!1);
-  let r = 0, i = 0, a = 0;
-  const g = () => s && "value" in s ? s.value : s, t = () => {
-    const y = g();
-    return y ? y.scrollHeight - y.scrollTop - y.clientHeight : 0;
-  }, T = () => !g() || t() <= v;
-  function _(y) {
-    if (clearTimeout(r), !y) {
-      c.value = !1, a = Date.now();
+const de = 60, fe = 300;
+function me(i, e) {
+  const t = y([]), o = y(0);
+  let a = -1, s = 0;
+  async function c() {
+    const n = await i(["output", "page", String(e())]);
+    return n.ok && (t.value = n.value.lines, o.value = n.value.first_byte, a = n.value.last_byte, s = n.value.cut_bytes), n;
+  }
+  async function m() {
+    if (a < 0) return c();
+    const n = await i(["output", "page", String(e()), "--after", String(a)]);
+    return n.ok ? n.value.cut_bytes !== s || n.value.total < a ? c() : (n.value.lines.length && (t.value = [...t.value, ...n.value.lines]), a = n.value.last_byte, n) : n;
+  }
+  async function r() {
+    const n = await i(["output", "page", String(e()), "--before", String(o.value)]);
+    return n.ok ? (t.value = [...n.value.lines, ...t.value], o.value = n.value.first_byte, !0) : !1;
+  }
+  const h = new P("output", { loaded: () => a >= 0, count: () => t.value.length, pageSize: () => fe, more: () => o.value > 0, previous: r }, { top: de });
+  return { lines: t, newest: c, follow: m, loadEarlier: (n) => h.reachTop(n), feed: h };
+}
+const he = 24, pe = 1e3, j = 2e3, ve = 0.25, ge = 5e3;
+function ye(i, e = he, t = () => !0) {
+  const o = y(!1), a = y(0), s = y(!1);
+  let c = 0, m = 0, r = 0;
+  const h = () => i && "value" in i ? i.value : i, p = () => {
+    const _ = h();
+    return _ ? _.scrollHeight - _.scrollTop - _.clientHeight : 0;
+  }, n = () => !h() || p() <= e;
+  function k(_) {
+    if (clearTimeout(c), !_) {
+      s.value = !1, r = Date.now();
       return;
     }
-    const d = Date.now() - a < V ? V : ge;
-    r = setTimeout(() => c.value = l.value, d);
+    const d = Date.now() - r < j ? j : pe;
+    c = setTimeout(() => s.value = o.value, d);
   }
-  function b() {
-    clearTimeout(i), l.value = !1, u.value = 0, _(!1);
+  function w() {
+    clearTimeout(m), o.value = !1, a.value = 0, k(!1);
   }
-  function w(y = !1) {
-    const d = g();
-    d && y && d.scrollTo ? d.scrollTo({ top: d.scrollHeight, behavior: "smooth" }) : d && (d.scrollTop = d.scrollHeight), b();
+  function b(_ = !1) {
+    const d = h();
+    d && _ && d.scrollTo ? d.scrollTo({ top: d.scrollHeight, behavior: "smooth" }) : d && (d.scrollTop = d.scrollHeight), w();
   }
-  function S() {
-    $(), !l.value && (l.value = !0, _(!0));
+  function O() {
+    B(), !o.value && (o.value = !0, k(!0));
   }
-  const O = () => !!g() && t() <= g().clientHeight * _e;
-  function $() {
-    clearTimeout(i), O() && (i = setTimeout(() => l.value && O() && f() && w(!0), ye));
+  const T = () => !!h() && p() <= h().clientHeight * ve;
+  function B() {
+    clearTimeout(m), T() && (m = setTimeout(() => o.value && T() && t() && b(!0), ge));
   }
-  function N() {
-    T() ? b() : S();
+  function H() {
+    n() ? w() : O();
   }
-  function C(y = 1, d = !1) {
-    l.value ? u.value += Math.max(0, y) : w(d);
+  function C(_ = 1, d = !1) {
+    o.value ? a.value += Math.max(0, _) : b(d);
   }
-  return ee() && te(() => [r, i].forEach(clearTimeout)), { away: l, missed: u, showNewest: c, gap: t, atBottom: T, follow: b, toBottom: w, left: S, scrolled: N, arrived: C };
+  return X() && G(() => [c, m].forEach(clearTimeout)), { away: o, missed: a, showNewest: s, gap: p, atBottom: n, follow: w, toBottom: b, left: O, scrolled: H, arrived: C };
 }
-const Te = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|\x1b/g, Se = (s) => String(s ?? "").replace(Te, ""), ke = {
+const _e = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|\x1b/g, we = (i) => String(i ?? "").replace(_e, ""), Te = {
   __name: "OutputLines",
-  props: { lines: { type: Array, required: !0 }, empty: { type: String, default: "No output yet." } },
+  props: { lines: { type: Array, required: !0 }, empty: { type: String, default: "No output yet." }, feed: { type: Object, default: null } },
   emits: ["older"],
-  setup(s, { emit: v }) {
-    const f = s, l = v, u = m(null), { away: c, scrolled: r, arrived: i, toBottom: a } = he(u);
-    q(
-      () => f.lines.length,
-      () => F(() => i()),
+  setup(i, { emit: e }) {
+    const t = i, o = e, a = y(null), { away: s, scrolled: c, arrived: m, toBottom: r } = ye(a);
+    I(
+      () => t.lines.length,
+      () => M(() => {
+        var p;
+        m(), a.value && ((p = t.feed) == null || p.drawn(a.value));
+      }),
       { immediate: !0 }
     );
-    function g(t) {
-      r(), l("older", t.target);
+    function h(p) {
+      c(), o("older", p.target);
     }
-    return (t, T) => (p(), k("pre", {
+    return (p, n) => (v(), S("pre", {
       ref_key: "box",
-      ref: u,
+      ref: a,
       class: "output-lines",
-      onScroll: g
+      onScroll: h
     }, [
-      le(E(h(Se)(s.lines.join(`
-`)) || s.empty), 1),
-      h(c) ? (p(), k("button", {
+      Z(E(g(we)(i.lines.join(`
+`)) || i.empty), 1),
+      g(s) ? (v(), S("button", {
         key: 0,
         type: "button",
         class: "output-follow",
         title: "Follow the output: keep its newest line in view as lines arrive",
-        onClick: T[0] || (T[0] = (_) => h(a)(!0))
-      }, "Follow")) : H("", !0)
+        onClick: n[0] || (n[0] = (k) => g(r)(!0))
+      }, "Follow")) : N("", !0)
     ], 544));
   }
-}, be = /* @__PURE__ */ I(ke, [["__scopeId", "data-v-c2fb1783"]]), we = {
+}, Se = /* @__PURE__ */ F(Te, [["__scopeId", "data-v-cd5e59e0"]]), be = {
   key: 0,
   role: "alert"
-}, xe = {
+}, ke = {
   __name: "TerminalOutput",
   props: { call: { type: Number, required: !0 } },
   emits: ["command"],
-  setup(s, { emit: v }) {
-    const f = s, l = v, u = J(), c = pe((a) => u.readKey(`terminal-output.${f.call}`, a[3] ? { [a[3].slice(2)]: a[4] } : {}), () => f.call), r = m(""), i = m(!1);
-    return c.newest().then((a) => {
-      r.value = a.ok ? "" : a.error, a.ok && a.value.command && l("command", a.value.command), i.value = !0;
-    }), (a, g) => r.value ? (p(), k("p", we, E(r.value), 1)) : i.value ? (p(), L(be, {
+  setup(i, { emit: e }) {
+    const t = i, o = e, a = K(), s = me((r) => a.readKey(`terminal-output.${t.call}`, r[3] ? { [r[3].slice(2)]: r[4] } : {}), () => t.call), c = y(""), m = y(!1);
+    return s.newest().then((r) => {
+      c.value = r.ok ? "" : r.error, r.ok && r.value.command && o("command", r.value.command), m.value = !0;
+    }), (r, h) => c.value ? (v(), S("p", be, E(c.value), 1)) : m.value ? (v(), $(Se, {
       key: 1,
       class: "terminal-output",
-      lines: h(c).lines.value,
+      lines: g(s).lines.value,
       empty: "No output recorded.",
+      feed: g(s).feed,
       "data-terminal-output": "",
-      onOlder: h(c).loadEarlier
-    }, null, 8, ["lines", "onOlder"])) : H("", !0);
+      onOlder: g(s).loadEarlier
+    }, null, 8, ["lines", "feed", "onOlder"])) : N("", !0);
   }
-}, Ee = /* @__PURE__ */ I(xe, [["__scopeId", "data-v-e09584a8"]]), Oe = {
+}, xe = /* @__PURE__ */ F(ke, [["__scopeId", "data-v-351453f7"]]), Ee = {
   key: 0,
   class: "terminal-failure"
-}, Ne = ["title"], Ce = { class: "terminal-mark" }, Be = ["aria-expanded", "onClick"], Ae = {
+}, Oe = ["title"], $e = { class: "terminal-mark" }, Ne = ["aria-expanded", "onClick"], Be = {
   key: 0,
   class: "terminal-state",
   "data-terminal-refused": ""
-}, Le = ["onKeydown"], He = {
+}, Ce = ["onKeydown"], He = {
   key: 4,
   class: "terminal-failure",
   role: "alert",
   "data-terminal-refusal": ""
-}, U = 100, W = 8, $e = {
+}, Le = {
   __name: "Terminal",
   props: { agent: { type: Number, default: null } },
-  setup(s) {
-    const v = /* @__PURE__ */ new Set(["Bash", "Monitor", "shell", "exec_command"]), f = /^(\S+=\S+\s+)*(\S*\/)?journal(\s|$)/, l = J(), u = s, c = u.agent ?? l.agent, r = u.agent !== null;
-    r || (l.state["calls.session-agent-id"] = String(c));
-    const i = l.props[r ? `terminal-calls.${c}` : "calls"], { rows: a, failure: g, loaded: t, older: T } = i;
-    if (r) {
-      ne(() => i.loadLatest());
-      const e = l.follow(["hook_call.*"], i.heard);
-      ae(e);
+  setup(i) {
+    const e = /* @__PURE__ */ new Set(["Bash", "Monitor", "shell", "exec_command"]), t = /^(\S+=\S+\s+)*(\S*\/)?journal(\s|$)/, o = K(), a = i, s = a.agent ?? o.agent, c = a.agent !== null;
+    c || (o.state["calls.session-agent-id"] = String(s));
+    const m = o.props[c ? `terminal-calls.${s}` : "calls"], { rows: r, failure: h, loaded: p, more: n } = m, k = ae.ofRows("terminal", m);
+    if (c) {
+      Q(() => m.loadLatest());
+      const l = o.follow(["hook_call.*"], m.heard);
+      Y(l);
     }
-    const _ = m(""), b = m(""), w = m(null), S = m(/* @__PURE__ */ new Set()), O = m({}), $ = m(null), N = m(!1), C = m(!1), y = {
-      commands: (e) => v.has(e.tool) && !d(e),
-      journal: (e) => v.has(e.tool),
+    const w = y(""), b = y(""), O = y(null), T = y(/* @__PURE__ */ new Set()), B = y({}), H = {
+      commands: (l) => e.has(l.tool) && !C(l),
+      journal: (l) => e.has(l.tool),
       everything: () => !0
-    }, d = (e) => f.test(e.summary), z = l.option("verbosity"), B = oe(() => a.value.filter((e) => e.hook === "pre_tool_use" && e.summary && y[z.value ?? "everything"](e)).sort((e, o) => e.id - o.id)), G = (e) => d(e) ? "#" : v.has(e.tool) ? "$" : ">";
-    async function P() {
-      var A;
-      if (N.value || C.value) return !1;
-      N.value = !0;
-      const e = (A = $.value) == null ? void 0 : A.pane, o = (e == null ? void 0 : e.scrollTop) < W, n = e == null ? void 0 : e.scrollHeight;
-      return C.value = !await T(), o && (await F(), e.scrollTop += e.scrollHeight - n), N.value = !1, !C.value;
+    }, C = (l) => t.test(l.summary), _ = o.option("verbosity"), d = ee(() => r.value.filter((l) => l.hook === "pre_tool_use" && l.summary && H[_.value ?? "everything"](l)).sort((l, f) => l.id - f.id)), V = (l) => C(l) ? "#" : e.has(l.tool) ? "$" : ">";
+    async function W() {
+      for (; p.value && !d.value.length && n.value && await k.scrollUp(); ) ;
     }
-    async function X() {
-      let e = !0;
-      for (; e && B.value.length < U; ) e = await P();
+    I(() => p.value && !d.value.length, W, { immediate: !0 });
+    function q(l) {
+      const f = new Set(T.value);
+      f.delete(l.id) || f.add(l.id), T.value = f;
     }
-    function Z(e) {
-      e.target.scrollTop < W && P();
+    async function L() {
+      const l = w.value;
+      if (!l.trim()) return;
+      w.value = "";
+      const f = await o.run(["agent", "type", String(s), l]);
+      b.value = f.ok ? "" : f.error, f.ok || (w.value = l);
     }
-    q(() => t.value && B.value.length < U, (e) => e && X(), { immediate: !0 });
-    function Q(e) {
-      const o = new Set(S.value);
-      o.delete(e.id) || o.add(e.id), S.value = o;
+    function J(l) {
+      var f;
+      String(globalThis.getSelection()) || l.target.closest("button, a, input, textarea, .terminal-text") || (f = O.value) == null || f.focus();
     }
-    async function M() {
-      const e = _.value;
-      if (!e.trim()) return;
-      _.value = "";
-      const o = await l.run(["agent", "type", String(c), e]);
-      b.value = o.ok ? "" : o.error, o.ok || (_.value = e);
-    }
-    function Y(e) {
-      var o;
-      String(globalThis.getSelection()) || e.target.closest("button, a, input, textarea, .terminal-text") || (o = w.value) == null || o.focus();
-    }
-    return (e, o) => (p(), k("section", {
+    return (l, f) => (v(), S("section", {
       class: "terminal",
-      onClick: Y
+      onClick: J
     }, [
-      h(g) ? (p(), k("p", Oe, E(h(g)), 1)) : h(t) ? B.value.length ? (p(), L(h(fe), {
+      g(h) ? (v(), S("p", Ee, E(g(h)), 1)) : g(p) ? d.value.length ? (v(), $(g(ie), {
         key: 3,
-        ref_key: "log",
-        ref: $,
-        "row-count": B.value.length,
+        "row-count": d.value.length,
+        feed: g(k),
         "pane-class": "terminal-body",
-        "data-terminal-log": "",
-        onScrollCapture: Z
+        "data-terminal-log": ""
       }, {
-        default: se(() => [
-          (p(!0), k(R, null, ue(B.value, (n) => (p(), k(R, {
-            key: n.id
+        default: te(() => [
+          (v(!0), S(R, null, oe(d.value, (u) => (v(), S(R, {
+            key: u.id
           }, [
             x("div", {
-              class: j(["terminal-row", { refused: n.refusal }]),
+              class: D(["terminal-row", { refused: u.refusal }]),
               "data-terminal-command": "",
-              title: n.refusal ? `The journal refused this before it ran: ${n.refusal}` : null
+              title: u.refusal ? `The journal refused this before it ran: ${u.refusal}` : null
             }, [
-              x("span", Ce, E(G(n)), 1),
+              x("span", $e, E(V(u)), 1),
               x("button", {
                 type: "button",
-                class: j(["terminal-text", { open: S.value.has(n.id) }]),
-                "aria-expanded": S.value.has(n.id),
-                onClick: (A) => Q(n)
-              }, E(S.value.has(n.id) && O.value[n.id] || n.summary), 11, Be),
-              n.refusal ? (p(), k("span", Ae, "refused")) : H("", !0)
-            ], 10, Ne),
-            S.value.has(n.id) ? (p(), L(Ee, {
+                class: D(["terminal-text", { open: T.value.has(u.id) }]),
+                "aria-expanded": T.value.has(u.id),
+                onClick: (z) => q(u)
+              }, E(T.value.has(u.id) && B.value[u.id] || u.summary), 11, Ne),
+              u.refusal ? (v(), S("span", Be, "refused")) : N("", !0)
+            ], 10, Oe),
+            T.value.has(u.id) ? (v(), $(xe, {
               key: 0,
-              call: n.id,
-              onCommand: (A) => O.value[n.id] = A
-            }, null, 8, ["call", "onCommand"])) : H("", !0)
+              call: u.id,
+              onCommand: (z) => B.value[u.id] = z
+            }, null, 8, ["call", "onCommand"])) : N("", !0)
           ], 64))), 128))
         ]),
         _: 1
-      }, 8, ["row-count"])) : (p(), L(h(me), {
+      }, 8, ["row-count", "feed"])) : (v(), $(g(re), {
         key: 2,
         title: "No commands from this agent yet"
-      })) : (p(), L(h(ce), {
+      })) : (v(), $(g(se), {
         key: 1,
         shape: "text"
       })),
       x("form", {
         class: "terminal-run",
         "data-terminal-run": "",
-        onSubmit: D(M, ["prevent"])
+        onSubmit: A(L, ["prevent"])
       }, [
-        o[1] || (o[1] = x("span", { class: "terminal-prompt" }, "$", -1)),
-        re(x("input", {
+        f[1] || (f[1] = x("span", { class: "terminal-prompt" }, "$", -1)),
+        ne(x("input", {
           ref_key: "input",
-          ref: w,
-          "onUpdate:modelValue": o[0] || (o[0] = (n) => _.value = n),
+          ref: O,
+          "onUpdate:modelValue": f[0] || (f[0] = (u) => w.value = u),
           class: "terminal-input",
           "aria-label": "A command to run in the agent's terminal",
           autocomplete: "off",
           onKeydown: [
-            K(D(M, ["ctrl", "prevent"]), ["enter"]),
-            K(D(M, ["meta", "prevent"]), ["enter"])
+            U(A(L, ["ctrl", "prevent"]), ["enter"]),
+            U(A(L, ["meta", "prevent"]), ["enter"])
           ]
-        }, null, 40, Le), [
-          [ie, _.value]
+        }, null, 40, Ce), [
+          [le, w.value]
         ])
       ], 32),
-      b.value ? (p(), k("p", He, E(b.value), 1)) : H("", !0)
+      b.value ? (v(), S("p", He, E(b.value), 1)) : N("", !0)
     ]));
   }
-}, Ie = /* @__PURE__ */ I($e, [["__scopeId", "data-v-8302ba23"]]);
+}, Pe = /* @__PURE__ */ F(Le, [["__scopeId", "data-v-2e667d4f"]]);
 export {
-  Ie as default
+  Pe as default
 };

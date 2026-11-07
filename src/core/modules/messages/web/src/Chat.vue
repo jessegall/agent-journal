@@ -3,13 +3,15 @@ import {computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch}
 import {useComposerHeight} from "./composerHeight.js";
 import DumpForm from "./DumpForm.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
-import {READ_RATES, coalesced, Btn, DockStack, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, reachMessages, openInChat, patched, removed, shownMarks, usePins, useWindow, withDayLines} from "@journal/window-kit";
+import {READ_RATES, coalesced, Btn, DockStack, FeedPaginator, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, reachMessages, openInChat, patched, removed, shownMarks, usePins, useWindow, withDayLines} from "@journal/window-kit";
 
 const view = useWindow();
 const {rows: messages, failure, loaded, load, loadLatest, older, act} = view.props.messages;
+const messageFeed = view.props.messages;
 const settingOf = (key) => view.props[key].data.value?.value;
 view.markMotion = computed(() => settingOf("mark-motion") === true);
 const {rows: allMarks, loaded: marksLoaded, older: olderMarks, loadLatest: latestMarks} = view.props.marks;
+const markFeed = view.props.marks;
 const {rows: docked} = view.props.docks;
 const dockedRows = computed(() => new Set(docked.value.filter((item) => item.state === "docked").map((item) => `${item.target_model}:${item.target_id}`)));
 const {rows: pins, act: runOnPin} = view.props.pins;
@@ -345,17 +347,17 @@ text.value = readDraft();
 watch(text, (words) => !editing.value && keepDraft(words));
 // the docked cards open when the chat is scrolled down to its foot and fold, a moment later, when it is scrolled up away from it
 const paging = ref(false);
-// scrolled to the top, the page of older messages is read and added, and the view stays on the message it showed
+// scrolled to the top, the page of older messages and the page of older marks beside it are read and added, and the view stays on the message it showed
+const paginator = new FeedPaginator("chat", {loaded: () => loaded.value, count: () => messages.value.length, pageSize: messageFeed.pageSize,
+    more: () => messageFeed.more.value || markFeed.more.value, previous: async () => (await Promise.all([older(), olderMarks()])).some(Boolean)});
 async function pageOlder() {
     if (returning || paging.value || !loaded.value) return;
     paging.value = true;
-    const before = scroller.value.scrollHeight;
-    const [more, moreMarks] = await Promise.all([older(), olderMarks()]);
-    if (more || moreMarks) {
-        await nextTick();
-        scroller.value.scrollTop += scroller.value.scrollHeight - before;
+    try {
+        await paginator.scrollUp(scroller.value);
+    } finally {
+        paging.value = false;
     }
-    paging.value = false;
 }
 function followScroll() {
     atTop.value = !scroller.value || scroller.value.scrollTop < 8;
@@ -385,6 +387,7 @@ watch(() => messages.value[0]?.id, (newest, before) => {
 watch([rows, loaded], async () => {
     await nextTick();
     if (atFoot && scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight;
+    if (scroller.value) paginator.drawn(scroller.value);
 });
 // a row that lands while the reader follows the foot comes in as version 4's did: the chat glides up, then the row fades in; the first rows and a page of older ones just appear
 const SETTLE_MS = 1500;

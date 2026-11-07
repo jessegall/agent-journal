@@ -19,7 +19,7 @@ pages.newest().then((answer) => {
 
 <template>
     <template v-if="failure"><p role="alert">{{ failure }}</p></template>
-    <template v-else-if="loaded"><OutputLines class="terminal-output" :lines="pages.lines.value" empty="No output recorded." data-terminal-output @older="pages.loadEarlier" /></template>
+    <template v-else-if="loaded"><OutputLines class="terminal-output" :lines="pages.lines.value" empty="No output recorded." :feed="pages.feed" data-terminal-output @older="pages.loadEarlier" /></template>
 </template>
 
 <style scoped>

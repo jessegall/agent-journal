@@ -7,7 +7,8 @@ import {WINDOW_CONTEXT} from "./windowContextKey.js";
 // reaching that end again starts it
 const EDGE_PIXELS = 40;
 const TOP = "top";
-const props = defineProps({rowCount: {type: Number, default: 0}, paneClass: {type: String, default: ""}});
+// `feed` is the window's FeedPaginator: it reads the page before the oldest when the top is reached, and checks the pane opened at the bottom
+const props = defineProps({rowCount: {type: Number, default: 0}, paneClass: {type: String, default: ""}, feed: {type: Object, default: null}});
 const direction = inject(WINDOW_CONTEXT, null)?.autoScroll;
 const followsTop = computed(() => direction === TOP);
 const pane = ref(null);
@@ -18,11 +19,18 @@ const scrollToEdge = () => pane.value.scrollTo({top: edgeTop(), behavior: "smoot
 
 function followScroll() {
     paused.value = edgeDistance(pane.value) >= EDGE_PIXELS;
+    if (!followsTop.value) props.feed?.reachTop(pane.value);
 }
 
-watch(() => props.rowCount, async () => {
+// the pane goes to its edge as rows arrive and once the feed has loaded, which can draw more than the rows alone did
+watch(() => [props.rowCount, props.feed?.isLoaded()], async () => {
     await nextTick();
-    if (!paused.value && pane.value) pane.value.scrollTop = edgeTop();
+    if (!pane.value) return;
+    if (!paused.value) pane.value.scrollTop = edgeTop();
+    if (props.feed && !followsTop.value) {
+        props.feed.drawn(pane.value);
+        await props.feed.fill(pane.value);
+    }
 }, {immediate: true, flush: "post"});
 
 defineExpose({pane});
