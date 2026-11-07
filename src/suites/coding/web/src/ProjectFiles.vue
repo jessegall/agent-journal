@@ -2,49 +2,44 @@
 import {computed, ref, watch} from "vue";
 import {Btn, Icon, SearchBar, Skeleton, useWindow} from "@journal/window-kit";
 
-// the project's files as version 4's browser had them: a folder's entries or the files a search finds, and the file chosen beside them
-const context = useWindow();
+const window = useWindow();
+window.state["entries.folder"] = "";
 const folder = ref("");
 const words = ref("");
-const rows = ref(null);
-const failure = ref("");
-const chosen = ref(null);
-const refusal = ref("");
+const list = computed(() => window.props[words.value.trim() ? "matches" : "entries"]);
+const rows = computed(() => list.value.loaded.value ? list.value.rows.value : null);
+const failure = computed(() => list.value.failure.value);
+const {data: chosen, failure: refusal} = window.props.file;
 const targetLine = ref(0);
 const crumbs = computed(() => (folder.value ? folder.value.split("/") : []));
 const crumbPath = (index) => crumbs.value.slice(0, index + 1).join("/");
 const lines = computed(() => (chosen.value?.text ?? "").split("\n"));
-let reading = 0;
-
-async function load() {
-    const turn = ++reading;
+function load() {
     const wanted = words.value.trim();
-    const answer = await context.read(wanted ? `project-file find ${JSON.stringify(wanted)}` : `project-file list ${JSON.stringify(folder.value)}`);
-    if (turn !== reading) return;
-    failure.value = answer.ok ? "" : answer.error;
-    rows.value = answer.ok ? answer.value.rows : [];
+    window.state["entries.folder"] = folder.value;
+    window.state["matches.words"] = wanted;
+    window.reload(wanted ? "matches" : "entries");
 }
 
 function scrolledTo(element, number) {
     if (element && number === targetLine.value) element.scrollIntoView?.({block: "center"});
 }
 
-async function open(row, lineNumber = 0) {
+function open(row, lineNumber = 0) {
     if (row.folder) {
         words.value = "";
         folder.value = row.id;
         return;
     }
     targetLine.value = lineNumber;
-    const answer = await context.read(`project-file show ${JSON.stringify(row.id)}`);
-    refusal.value = answer.ok ? "" : answer.error;
-    chosen.value = answer.ok ? answer.value : null;
+    window.state["file.path"] = row.id;
+    window.reload("file");
 }
 
-watch([folder, words], load, {immediate: true});
+watch([folder, words], load);
 
 // an address can name a file to open, and the line to show first, as a plugin's dashboard does
-const address = new URLSearchParams(window.location.search);
+const address = new URLSearchParams(globalThis.location.search);
 if (address.get("file")) open({id: address.get("file"), folder: false}, Number(address.get("line")) || 0);
 </script>
 

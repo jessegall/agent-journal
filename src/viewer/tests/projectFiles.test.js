@@ -1,5 +1,6 @@
 import {afterEach, expect, test} from "vitest";
-import {context, mounted, settle} from "./support/windowContext.js";
+import {mounted, settle, typeInto} from "./support/windowContext.js";
+import {projectFilesWindowContext} from "./support/projectFilesWindowContext.js";
 import ProjectFiles from "../../suites/coding/web/src/ProjectFiles.vue";
 
 afterEach(() => (document.body.innerHTML = ""));
@@ -8,7 +9,7 @@ const row = (id, folder = false) => ({id, name: id.split("/").at(-1), folder, si
 
 function drawn() {
     const reads = [];
-    const window = context({});
+    const window = projectFilesWindowContext({});
     window.read = async (line) => {
         reads.push(line);
         if (line.startsWith("project-file find")) return {ok: true, value: {rows: [row("shop/cart.py")]}};
@@ -23,11 +24,34 @@ test("a folder opens into its entries and the crumbs lead back", async () => {
     const element = await mounted(ProjectFiles, window);
     element.querySelector('[data-file="shop"]').click();
     await settle();
-    expect(reads).toContain('project-file list "shop"');
+    expect(reads).toContain("project-file list shop");
     expect(element.querySelector('[data-file="shop/cart.py"]')).not.toBeNull();
     element.querySelector("[data-files-root]").click();
     await settle();
     expect(element.querySelector('[data-file="readme.md"]')).not.toBeNull();
+});
+
+test("the first read asks for the folder without searching or opening a file", async () => {
+    const {reads, window} = drawn();
+    await mounted(ProjectFiles, window);
+    expect(reads).toEqual(["project-file list "]);
+});
+
+test("a late search answer leaves the newer matches on screen", async () => {
+    const {window} = drawn();
+    const read = window.read;
+    let finish;
+    window.read = (line) => line === "project-file find old" ? new Promise((resolve) => (finish = resolve)) : read(line);
+    const element = await mounted(ProjectFiles, window);
+    const search = element.querySelector("input");
+    typeInto(search, "old");
+    await settle();
+    typeInto(search, "cart");
+    await settle();
+    finish({ok: true, value: {rows: [row("old.py")]}});
+    await settle();
+    expect(element.querySelector('[data-file="shop/cart.py"]')).not.toBeNull();
+    expect(element.querySelector('[data-file="old.py"]')).toBeNull();
 });
 
 test("a file opens beside the list with its line numbers", async () => {
@@ -49,7 +73,7 @@ test("typing finds files across the project", async () => {
     search.value = "cart";
     search.dispatchEvent(new Event("input"));
     await settle();
-    expect(reads).toContain('project-file find "cart"');
+    expect(reads).toContain("project-file find cart");
     expect(element.textContent).toContain("shop/cart.py");
 });
 

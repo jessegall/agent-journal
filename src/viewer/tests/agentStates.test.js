@@ -3,6 +3,7 @@ import {expect, test, vi} from "vitest";
 import {context, mounted, page, pickButton, settle} from "./support/codingWindowContext.js";
 import {agentFilterOptions} from "./support/agentFilterOptions.js";
 import Agents from "../../core/modules/agents/web/src/agents.js";
+import Helpers from "../../core/modules/agents/web/src/helpers.js";
 
 vi.stubGlobal("matchMedia", () => ({matches: true}));
 const AGENTS = [{}, {id: 3, session: "s-idle", role: "helper", program: "claude"}, {id: 4, session: "s-retired", role: "worker", program: "codex", state: "retired", ended_at: "2026-11-02T10:00:00Z", retired_at: "2026-11-03T10:00:00Z"}];
@@ -36,6 +37,20 @@ test("retired agents show their reason and the upgrade count", async () => {
     expect(element.querySelector("[data-agents-upgrade]").textContent).toBe("Retired during the upgrade: 12");
 });
 
+test("a reloaded agent key updates the facts in its card", async () => {
+    const helper = {...AGENTS[1], facts: {tasks: [], given_name: "Earlier name"}};
+    const answer = page([helper]);
+    const held = context({"agent cards --options": agentFilterOptions, "agent cards": answer});
+    const element = await mounted(Agents, held);
+    cardOf(element, helper.id).click();
+    await settle();
+    answer.value.rows = [{...helper, facts: {...helper.facts, given_name: "Latest name"}}];
+    await held.reload("agents");
+    await settle();
+    expect(cardOf(element, helper.id).querySelector("[data-agent-name]").textContent).toContain("Latest name");
+    expect(held.reads.some((line) => line.startsWith("usage agents"))).toBe(false);
+});
+
 test("the server supplies the agent tabs and the chosen state is sent back", async () => {
     const held = context({"agent cards --options": agentFilterOptions, "agent cards": page([]), "usage agents --closed": page([])});
     const element = await mounted(Agents, held);
@@ -44,4 +59,14 @@ test("the server supplies the agent tabs and the chosen state is sent back", asy
         await pickButton(element, label);
         expect(held.reads.at(-1)).toContain(`--show ${state}`);
     }
+});
+
+test.each([Agents, Helpers])("the initial window read joins visible keys and leaves card details until requested", async (component) => {
+    const held = context({"agent cards --options": agentFilterOptions, "agent cards": page([])});
+    const readKeys = held.readKeys;
+    held.readKeys = vi.fn(function (request) { return readKeys.call(this, request); });
+    await mounted(component, held);
+    expect(held.readKeys).toHaveBeenCalledTimes(1);
+    expect(held.readKeys.mock.calls[0][0]).toMatchObject({only: [], state: {"agents.show": "running", "agents.limit": "25"}});
+    expect(held.reads.some((line) => line.startsWith("usage tool") || line.startsWith("agent transcript") || line.startsWith("task list"))).toBe(false);
 });

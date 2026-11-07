@@ -1,36 +1,26 @@
 <script setup>
-import {onMounted, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import {Btn, EmptyState, Skeleton, TimeAgo, useWindow} from "@journal/window-kit";
 import {checksLine, distanceLine, reviewLine, shortSha} from "./gitWords.js";
 
-// the project's repository as version 4's Git page showed it: its branches, the recent commits and the open pull requests
-const context = useWindow();
+const window = useWindow();
 
-function pagedList(line) {
-    const list = {rows: ref([]), failure: ref(""), loaded: ref(false), more: ref(false)};
-    list.load = async () => {
-        const answer = await context.read(`${line} --skip ${list.rows.value.length}`);
-        list.failure.value = answer.ok ? "" : answer.error;
-        list.loaded.value = true;
-        if (!answer.ok) return;
-        list.rows.value = [...list.rows.value, ...answer.value.rows];
-        list.more.value = !answer.value.is_last_page;
+function pagedList(key) {
+    const prop = window.props[key];
+    const rows = ref([]);
+    watch(prop.data, (page) => {
+        if (page) rows.value = window.state[`${key}.skip`] ? [...rows.value, ...page.rows] : page.rows;
+    }, {immediate: true});
+    const load = () => {
+        window.state[`${key}.skip`] = String(rows.value.length);
+        return window.reload(key);
     };
-    return list;
+    return {...prop, rows, load, more: computed(() => prop.data.value?.is_last_page === false)};
 }
 
-const branches = pagedList("git-overview branches");
-const commits = pagedList("git-overview commits");
-const pulls = ref(null);
-const pullsFailure = ref("");
-
-onMounted(async () => {
-    branches.load();
-    commits.load();
-    const answer = await context.read("git-overview pulls");
-    pulls.value = answer.ok ? answer.value : null;
-    pullsFailure.value = answer.ok ? "" : answer.error;
-});
+const branches = pagedList("branches");
+const commits = pagedList("commits");
+const {data: pulls, failure: pullsFailure} = window.props.pulls;
 </script>
 
 <template>

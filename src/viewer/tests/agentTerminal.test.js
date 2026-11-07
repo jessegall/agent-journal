@@ -1,7 +1,7 @@
 import {h} from "vue";
 import {expect, test, vi} from "vitest";
 import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
-import {context, mounted, page, settle} from "./support/windowContext.js";
+import {context, mounted, page, settle} from "./support/agentWindowContext.js";
 
 vi.mock("../kit/loadWindowComponent.js", () => ({loadWindowComponent: () => import("../../suites/coding/web/src/terminal.js")}));
 vi.stubGlobal("ResizeObserver", class { observe() {} disconnect() {} });

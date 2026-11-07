@@ -1,9 +1,9 @@
 import {h} from "vue";
 import {expect, test, vi} from "vitest";
 import AgentLimits from "../../core/modules/agents/web/src/AgentLimits.vue";
-import {context, mounted, pickButton, settle} from "./support/windowContext.js";
+import {context, mounted, pickButton, settle} from "./support/agentWindowContext.js";
 
-const worker = {key: "worker", label: "Worker", running: 1, kept: 3, run_limit: 2, kept_limit: 8, run_setting: "sample.run", kept_setting: "sample.kept", per_profile: false, profiles: []};
+const worker = {key: "worker", label: "Worker", running: 1, kept: 3, run_limit: 2, kept_limit: 8, run_setting: "sample.run", kept_setting: "sample.kept", run_source: "environment main", kept_source: "environment main", per_profile: false, profiles: []};
 async function limits({rows = [structuredClone(worker)], refusal = "", readOnly = false} = {}) {
     const followed = [];
     const held = {...context({}), readOnly, follow: (patterns, handler) => followed.push({patterns, handler})};
@@ -45,11 +45,11 @@ test("helper profile limits show each effective override beside its counts", asy
 
 test("a person changes both limits for this environment through the settings command", async () => {
     const {element, held} = await limits();
-    expect(held.read.mock.calls.map(([line]) => line)).toEqual(["agent limits"]);
+    expect(held.read.mock.calls.filter(([line]) => line === "agent limits")).toHaveLength(1);
     element.querySelector(".summary").click();
     await settle();
     await pickButton(element, "Edit limits");
-    expect(held.read.mock.calls.map(([line]) => line)).toEqual(["agent limits", "setting show sample.run", "setting show sample.kept"]);
+    expect(held.read.mock.calls.some(([line]) => line.startsWith("setting show"))).toBe(false);
     await change(element, "[data-agent-run-limit]", "3");
     await change(element, "[data-agent-kept-limit]", "9");
     expect(held.run.mock.calls.map(([command]) => command)).toEqual([
@@ -84,7 +84,8 @@ test("setting and agent events refresh counts and effective limits", async () =>
     const {element, rows, followed} = await limits();
     rows[0].run_limit = 6;
     rows[0].kept = 4;
-    await followed.find((item) => item.patterns.includes("setting.*") && item.patterns.includes("agent.*")).handler();
+    await followed.find((item) => item.patterns.includes("setting.*") && item.patterns.includes("agent.*")).handler({event: "setting.edit"});
+    await new Promise((resolve) => setTimeout(resolve, 70));
     await settle();
     expect(element.querySelector(".limit-row").textContent).toContain("1 of 64 of 8Within limits");
 });

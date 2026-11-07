@@ -9,4 +9,4 @@ const TEXTS = {
 };
 
 // every agent working for the main one, whatever its role, each as the agents window's card
-export default {render: () => h(AgentRows, {line: "agent cards", empty: "No helpers yet", texts: TEXTS})};
+export default {render: () => h(AgentRows, {empty: "No helpers yet", texts: TEXTS})};

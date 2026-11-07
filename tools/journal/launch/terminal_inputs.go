@@ -21,7 +21,7 @@ const (
 // TerminalInputs keeps the input of each running program by its agent row, so a line typed in the viewer reaches the
 // program's pseudo terminal beside what the person types at the keyboard, with when each last came.
 type TerminalInputs struct {
-	closing bool
+	closing  bool
 	mutex    sync.Mutex
 	writers  map[int]*io.PipeWriter
 	keyedAt  map[int]time.Time
@@ -75,6 +75,13 @@ func (inputs *TerminalInputs) IsOpen(agentID int) bool {
 	inputs.mutex.Lock()
 	defer inputs.mutex.Unlock()
 	return inputs.starting[agentID] || inputs.writers[agentID] != nil || inputs.programs[agentID] != nil
+}
+
+// HasPrograms includes programs still starting or keeping a terminal open.
+func (inputs *TerminalInputs) HasPrograms() bool {
+	inputs.mutex.Lock()
+	defer inputs.mutex.Unlock()
+	return len(inputs.starting)+len(inputs.writers)+len(inputs.programs) > 0
 }
 
 // ProgramPid is the process number of the agent's running program, and 0 when it has none.

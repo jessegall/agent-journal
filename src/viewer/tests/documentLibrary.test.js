@@ -5,6 +5,7 @@ import DocumentLibrary from "../../core/modules/documents/web/src/DocumentLibrar
 import {grouped} from "../../core/modules/documents/web/src/libraryGroups.js";
 import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
 import {opening} from "../src/route.js";
+import {documentWindowContext} from "./support/documentWindowContext.js";
 
 const NOW = Date.parse("2026-10-31T12:00:00Z");
 const DOCS = [
@@ -16,7 +17,7 @@ const BODY = {id: 1, title: "Cart rules", abstract: "How the cart counts money",
 function mounted() {
     const reads = [];
     const read = async (line) => (reads.push(line), line.startsWith("doc show") ? {ok: true, value: BODY} : {ok: true, value: {total: DOCS.length, rows: line === "document library --type doc --state open" ? DOCS : []}});
-    const context = {read, run: async () => ({ok: true}), follow: () => {}, face: "person"};
+    const context = {...documentWindowContext({}), read, run: async () => ({ok: true}), follow: () => {}, face: "person"};
     const element = document.createElement("div");
     createApp({setup: () => () => h(DocumentLibrary), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
     return {element, reads};

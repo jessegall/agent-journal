@@ -1,5 +1,6 @@
 import {afterEach, expect, test} from "vitest";
-import {context, mounted, settle} from "./support/windowContext.js";
+import {mounted, settle} from "./support/windowContext.js";
+import {documentWindowContext as context} from "./support/documentWindowContext.js";
 import DocumentLibrary from "../../core/modules/documents/web/src/DocumentLibrary.vue";
 
 afterEach(() => (document.body.innerHTML = ""));

@@ -4,7 +4,7 @@ import HookNumbers from "../../core/modules/developer/web/src/HookNumbers.vue";
 
 test("the numbers show points, sort by cost and reset", async () => {
     const ran = [];
-    const window = context({});
+    const window = context({}, null, {numbers: {line: "developer numbers", switches: ["costliest"]}});
     const rows = {ok: true, value: {rows: [{id: "stop", hook: "stop", count: 2, most_points: 30, average_points: 5}]}};
     window.read = async (line) => (ran.push(line), rows);
     window.run = async (line) => (ran.push(line), rows);
@@ -19,4 +19,7 @@ test("the numbers show points, sort by cost and reset", async () => {
     element.querySelector("[data-numbers-reset]").click();
     await settle();
     expect(ran).toContainEqual(["developer", "reset-numbers"]);
+    element.querySelector("[data-numbers-sort]").click();
+    await settle();
+    expect(ran.at(-1)).toBe("developer numbers");
 });

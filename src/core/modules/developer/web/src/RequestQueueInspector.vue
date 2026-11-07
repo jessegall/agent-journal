@@ -1,18 +1,11 @@
 <script setup>
-import {ref} from "vue";
 import {CloseButton, Icon, usePoll, useWindow} from "@journal/window-kit";
 import ProcessQueueBand from "../../../../../viewer/src/resource/ProcessQueueBand.vue";
 
 const emit = defineEmits(["close"]);
-const context = useWindow();
-const queue = ref(null);
-const failure = ref("");
-async function load() {
-    const answer = await context.read("developer request-queue", {unbatched: true});
-    failure.value = answer.ok ? "" : answer.error;
-    if (answer.ok) queue.value = answer.value;
-}
-usePoll(load, () => true);
+const window = useWindow();
+const {data: queue, failure} = window.props.queue;
+usePoll(() => window.reload("queue"), () => window.visible.value);
 const elapsed = (row) => `${Math.round(row.waited_ms)} ms`;
 </script>
 

@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
+from core.base.cli.json_text_list import json_text_list
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_tuple
@@ -21,9 +22,11 @@ class HookRequestsSubcommand(ReadSubcommand[tuple[HookRequest, ...]]):
         parser.add_argument("--kind", action="append", default=[])
         parser.add_argument("--family", action="append", default=[])
         parser.add_argument("--sender", action="append", default=[])
+        for name in ("kinds", "families", "senders"):
+            parser.add_argument(f"--{name}", type=json_text_list, default=[])
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[HookRequest, ...]:
-        return tuple(self.log.filtered(arguments.kind, arguments.family, arguments.sender))
+        return tuple(self.log.filtered([*arguments.kind, *arguments.kinds], [*arguments.family, *arguments.families], [*arguments.sender, *arguments.senders]))
 
     def write_output(self, value: object, output: Output) -> None:
         if is_tuple(value):

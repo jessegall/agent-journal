@@ -1,7 +1,8 @@
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {expect, test, vi} from "vitest";
-import {context, mounted, page, settle} from "./support/windowContext.js";
+import {mounted, page, settle} from "./support/windowContext.js";
+import {fileFeedWindowContext as context} from "./support/fileFeedWindowContext.js";
 import FileFeed from "../../suites/coding/web/src/FileFeed.vue";
 import {cardsOf} from "../../suites/coding/web/src/fileCards.js";
 
@@ -48,8 +49,7 @@ test("the view menu hides removals and is kept", async () => {
 });
 
 test("headers only folds the cards and the filter keeps the files that match", async () => {
-    const window = context({"file-edit list": page([EDIT(2, "b.py"), EDIT(1, "a.py")])}, 2);
-    window.setting = async () => ({headers: true});
+    const window = context({"file-edit list": page([EDIT(2, "b.py"), EDIT(1, "a.py")])}, 2, {headers: true});
     const element = await mounted(FileFeed, window);
     await settle();
     expect(element.querySelectorAll(".diff-row").length).toBe(0);
@@ -57,12 +57,13 @@ test("headers only folds the cards and the filter keeps the files that match", a
 });
 
 test("the whole file button reads the file as it is now", async () => {
-    const window = context({"file-edit list": page([EDIT(1, "src/cart.py")]), "project-file show": {ok: true, value: {text: "first\nsecond"}}}, 2);
+    const window = context({"file-edit list": page([EDIT(1, "src/cart.py")]), "file-edit file 1": {ok: true, value: {text: "first\nsecond"}}}, 2);
     const element = await mounted(FileFeed, window);
     await settle();
     element.querySelector(".diff-card-whole").click();
     await settle();
-    expect(window.reads).toContain('project-file show "src/cart.py"');
+    expect(window.reads).toContain("file-edit file 1");
+    expect(window.reads.some((line) => line.startsWith("project-file show"))).toBe(false);
     expect(element.textContent).toContain("second");
 });
 
@@ -73,8 +74,7 @@ test("an edit kept before the changed lines were kept draws as its header alone"
 });
 
 test("in the view menu a checked and an unchecked item start their label at the same place", async () => {
-    const window = context({"file-edit list": page([EDIT(1, "src/cart.py")])}, 2);
-    window.setting = async () => ({headers: true});
+    const window = context({"file-edit list": page([EDIT(1, "src/cart.py")])}, 2, {headers: true});
     const element = await mounted(FileFeed, window);
     document.body.append(element);
     await settle();

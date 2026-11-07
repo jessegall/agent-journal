@@ -21,6 +21,8 @@ import (
 // in the chosen environment's folder, with the launcher's socket open for the workers its session dispatches. Arguments
 // other than the worktree's go to the program, over the journal's own defaults.
 func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
+	binary := filepath.Join(home, "bin", "journal")
+	version, versionErr := launch.ReadBinaryVersion(binary)
 	request, err := launchRequest(argv)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
@@ -43,7 +45,7 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 	_ = launch.SaveAnswers(home, choice.Answers)
 	prepareProgramHooks(journal, request.Program, choice.Folder, stderr)
 	inputs := launch.NewTerminalInputs()
-	if listener, err := launch.Listen(socket.NamedPath(home, "launcher"), launch.ProcessStarter{Home: home, Inputs: inputs, OnAnswer: journal.TellMenuAnswer, OnExit: programExitReporter(journal, inputs)}, inputs); err == nil {
+	if listener, err := launch.ListenVersioned(socket.NamedPath(home, "launcher"), launch.ProcessStarter{Home: home, Inputs: inputs, OnAnswer: journal.TellMenuAnswer, OnExit: programExitReporter(journal, inputs)}, inputs, version.Digest); err == nil {
 		defer listener.Close()
 		defer inputs.StopAll()
 	}
@@ -86,12 +88,20 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 	go watcher.Watch(stopWatching)
 	restoreProgram := terminal.Raw()
 	programLog := io.MultiWriter(log, watcher)
+	stopReplacement := make(chan struct{})
+	defer close(stopReplacement)
 	err = runMainProgram(inputs, agentID, command, os.Stdin, func(input io.Reader, started func()) error {
+		track := func() {
+			started()
+			if versionErr == nil {
+				go watchLauncher(home, binary, version, stopReplacement, stderr)
+			}
+		}
 		if launch.ShowsBand() {
-			return launch.RunBelowBand(launch.NewBand(stdout, labels), command, input, programLog, started)
+			return launch.RunBelowBand(launch.NewBand(stdout, labels), command, input, programLog, track)
 		}
 		fmt.Fprintln(stdout, launch.HeaderBar(choice.Environment, agentID, labels.Address))
-		return launch.RunInTerminal(command, input, stdout, programLog, started)
+		return launch.RunInTerminal(command, input, stdout, programLog, track)
 	})
 	restoreProgram()
 	if err != nil {

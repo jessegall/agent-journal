@@ -24,11 +24,12 @@ try {
         await window.screenshot({path: `${capture}-idle-${colorScheme}.png`, animations: "disabled"});
     }
     await window.locator(`[data-agent-open="${helper}"]`).click();
-    await window.locator('[data-agent-report]').waitFor();
+    await window.locator('[data-agent-tab-body="transcript"]').waitFor();
     await window.locator('[data-agent-resume-reason]').first().waitFor();
     await window.locator('.agent-back').click();
     await window.getByRole('radio', {name: 'Retired', exact: true}).click();
     await window.locator('[data-agents-upgrade]').waitFor();
+    await page.waitForFunction(() => document.querySelectorAll('[data-window="agents.agents"] [data-agent-open]').length === 1);
     assert.equal(await window.locator('[data-agent-open]').count(), 1);
     for (const colorScheme of ["light", "dark"]) {
         await page.emulateMedia({colorScheme});

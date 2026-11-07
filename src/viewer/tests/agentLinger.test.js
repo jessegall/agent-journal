@@ -1,6 +1,6 @@
 import {afterEach, expect, test} from "vitest";
 import {h} from "vue";
-import {context, mounted, page, pickButton, settle} from "./support/windowContext.js";
+import {context, mounted, page, pickButton, settle} from "./support/agentWindowContext.js";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
 import {agentFilterOptions} from "./support/agentFilterOptions.js";
 
