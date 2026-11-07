@@ -12,6 +12,7 @@ from core.base.query.conditions.subquery_match import SubqueryMatch
 from core.base.query.queries import Queries
 from core.base.query.query import Query
 from core.base.refusal import Refusal
+from core.base.scope.scopes import Scopes
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.documents.support.row_comments import RowComments
 from core.modules.documents.conditions.work_context_messages import WorkContextMessages
@@ -57,10 +58,11 @@ class WorkContextReader:
     """Reads one bounded conversation through existing resource links and message threads."""
 
     def __init__(self, queries: Queries, messages: MessageQuery, comments: RowComments,
-                 plans: TaskPlans, sources: WorkSources, files: MessageFiles, assignments: AssignedWorkSources) -> None:
+                 plans: TaskPlans, sources: WorkSources, files: MessageFiles, assignments: AssignedWorkSources, scopes: Scopes) -> None:
         self.queries, self.messages, self.comments, self.plans, self.sources = queries, messages, comments, plans, sources
         self.files = files
         self.assignments = assignments
+        self.scopes = scopes
 
     def overview(self, task: Task, caller: Caller) -> WorkContextPage:
         page = self.read(task, caller, WorkContextRequest(order=WorkContextOrder.NEWEST))
@@ -68,12 +70,16 @@ class WorkContextReader:
         return page
 
     def read(self, row: Task | Plan, caller: Caller, request: WorkContextRequest) -> WorkContextPage | WorkContextText | WorkContextAttachmentPage | WorkContextFile:
+        with self.scopes.row_scope(row):
+            return self.read_scoped(row, caller, request)
+
+    def read_scoped(self, row: Task | Plan, caller: Caller, request: WorkContextRequest) -> WorkContextPage | WorkContextText | WorkContextAttachmentPage | WorkContextFile:
         self.check(request)
         request = replace(request, page_size=min(request.page_size, 50))
         rows = self.related_rows(row)
         source = self.sources.work_source(caller)
         excluded = [source.message_id] if source is not None and source.unavailable and source.message_id is not None else []
-        visible = self.visible(row.environment_id, excluded)
+        visible = self.visible(excluded)
         assigned = self.assignments.task_source(row.id, caller) if isinstance(row, Task) and caller.actor.type is ActorType.AGENT else None
         assignment_queries = []
         if self.usable_source(assigned, row):
@@ -90,7 +96,7 @@ class WorkContextReader:
         if primary is None:
             primary = visible.matching(SubqueryMatch("id", seeds)).with_text_segment(0, CONTEXT_CHARACTERS).ordered("created_at", "id").first()
         anchor = self.anchor(row, caller, primary)
-        start = self.cursor_start(request.ancestor_cursor, anchor, row.environment_id)
+        start = self.cursor_start(request.ancestor_cursor, anchor)
         participants = {caller.actor.id, *(root.creator_id for root in rows)}
         if source is not None and source.selecting_actor_id is not None:
             participants.add(source.selecting_actor_id)
@@ -142,9 +148,9 @@ class WorkContextReader:
     def is_other_original(original: Message | None, primary: Message) -> bool:
         return original is not None and original.id != primary.id
 
-    def visible(self, environment_id: int, excluded: Sequence[int]) -> MessageQuery:
+    def visible(self, excluded: Sequence[int]) -> MessageQuery:
         users = self.queries.query(ActorRecord).filter(type=ActorType.USER).select.column("id")
-        return self.messages.filter(environment_id=environment_id, is_chat_visible=True).matching(ContextMessageType(users)).matching(Among("id", excluded, negated=True))
+        return self.messages.filter(is_chat_visible=True).matching(ContextMessageType(users)).matching(Among("id", excluded, negated=True))
 
     def source_links(self, row: Task | Plan) -> Query[Link]:
         return self.queries.query(Link).filter(source_model="message", target_model=row.model_name, target_id=row.id).matching(Among("link_type", SOURCE_TYPES))
@@ -156,7 +162,7 @@ class WorkContextReader:
     def cursor(self, anchor: str, start: int) -> str:
         return base64.urlsafe_b64encode(f"{anchor}:{start}".encode()).decode().rstrip("=")
 
-    def cursor_start(self, token: str | None, anchor: str, environment_id: int) -> int:
+    def cursor_start(self, token: str | None, anchor: str) -> int:
         if token is None:
             return 0
         if len(token) > 160:
@@ -168,7 +174,7 @@ class WorkContextReader:
             raise Refusal("this ancestry cursor is invalid") from error
         if identity != anchor or start < ANCESTRY_MESSAGES or start % ANCESTRY_MESSAGES:
             raise Refusal("this ancestry cursor belongs to another context or source")
-        if start > self.messages.filter(environment_id=environment_id).count():
+        if start > self.messages.count():
             raise Refusal("this ancestry cursor is beyond the conversation")
         return start
 
@@ -320,7 +326,7 @@ class WorkContextReader:
             if not isinstance(root, Plan):
                 continue
             approval = PlanApproval.message_id(root)
-            if approval is not None and self.visible(root.environment_id, ()).filter(id=approval).exists():
+            if approval is not None and self.visible(()).filter(id=approval).exists():
                 titles[("message", approval)] = "Plan approval"
         for model in (Doc, Report):
             ids = tuple(number for name, number in references if name == model.model_name)

@@ -15,6 +15,11 @@ class TranscriptTail:
         with self.path.open(encoding="utf-8") as log:
             return log.readline()
 
+    def read_from(self, offset: int) -> bytes:
+        with self.path.open("rb") as log:
+            log.seek(offset)
+            return log.read()
+
     def lines(self, count: int = 0) -> list[str]:
         if not self.path.is_file():
             return []

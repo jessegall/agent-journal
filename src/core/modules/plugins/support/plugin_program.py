@@ -35,12 +35,7 @@ STOP_LIMIT_SECONDS = 1
 
 
 class PluginProgram:
-    """Runs a plugin's program for one event, in its folder and a process group of its
-    own, the line on its input, a clean environment naming its folders and settings, and a time limit
-    past which it is stopped; a late run, an error code or an answer that is not JSON is raised as the
-    plugin's fault. A plugin whose answering service has its socket open is asked there instead. A call a hook
-    holds, with its service closed, starts no program, since a program started now would answer past the window;
-    every other call starts the program."""
+    """Runs a plugin event through its service or a time-limited process."""
 
     def __init__(self, home: JournalHome, folders: PluginFolders, sockets: PluginSocketPaths, skills: LoadedSkills, checkouts: AgentCheckouts, scripts: PluginScriptProcesses, agents: AgentRows) -> None:
         self.home, self.folders, self.sockets, self.skills, self.checkouts, self.scripts, self.agents = home, folders, sockets, skills, checkouts, scripts, agents
@@ -77,7 +72,7 @@ class PluginProgram:
             stop_reason = self.scripts.stop_reason(process)
         finally:
             self.scripts.finish(process)
-        if stop_reason is not ScriptStop.RUNNING_ON:
+        if stop_reason is not ScriptStop.NOT_STOPPED:
             raise PluginStoppedError(stop_reason)
         if process.returncode != 0:
             raise PluginFaultError(self.ended_text(process.returncode, pipes.error_tail(), call))

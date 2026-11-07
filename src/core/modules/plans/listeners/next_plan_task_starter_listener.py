@@ -31,8 +31,8 @@ class NextPlanTaskStarterListener(CommitListener[Moved[Task]]):
         self.plans.prepare([event.row_id for event in events])
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
-        place = self.plans.find_phase(logged.row_id)
-        plan = self.plans.find(logged.row_id)
+        place = self.plans.find_phase(event.row.id)
+        plan = self.plans.find(event.row.id)
         if plan is None or self.assigners.assigner() is None or plan.state is not PlanState.STARTED or self.tasks.holder(logged.actor_id).started().exists() or self.urgent_task_waits():
             return
         following = self.next_tasks.following(place.plan_id)

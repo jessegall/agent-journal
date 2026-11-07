@@ -7,7 +7,7 @@ from core.base.driver.hook_event import HookEvent
 from core.base.driver.rule_answers import RuleAnswers
 from core.base.timing import Timing
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.commands.support.nudge_log import NudgeLog
+from core.modules.drivers.support.nudge_log import NudgeLog
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
@@ -18,7 +18,7 @@ class HookRuleAnswers:
     def __init__(self, rules: DriverRules, choice: SuiteChoice, settings: SettingValues, nudges: NudgeLog, timing: Timing, clock: Clock) -> None:
         self.rules, self.choice, self.settings, self.nudges, self.timing, self.clock = rules, choice, settings, nudges, timing, clock
 
-    def asked(self, event: HookEvent, agent: Agent) -> RuleAnswers:
+    def evaluate(self, event: HookEvent, agent: Agent) -> RuleAnswers:
         timestamp = self.clock.timestamp()
         suite, driver = self.choice.suite(), self.choice.driver(agent.role)
         hook = AgentHook(event, agent.id, agent.environment_id, agent.role, driver.name if driver is not None else "", timestamp,

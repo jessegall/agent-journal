@@ -52,7 +52,7 @@ class AgentHookRoute(HookRoute):
             return self.ended_agent_reply(event)
         actor = Actor(agent.id, ActorType.AGENT)
         with self.bus.scopes.command_scope((), actor, agent.environment_id):
-            answers = self.rule_answers.asked(event, agent)
+            answers = self.rule_answers.evaluate(event, agent)
         reply = self.bus.run(RecordHookCall(event, agent.id, answers), actor, environment_id=agent.environment_id)
         with self.bus.scopes.read_scope((), None, agent.environment_id):
             measured = self.durations.measured(event, reply.labelled_lines or [*reply.lines, reply.refusal])

@@ -4,6 +4,7 @@ from core.base.command.context import Context
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
+from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.nudger import Nudger
@@ -31,9 +32,10 @@ class KeptWorkerTasks:
 
     def __init__(self, queries: Queries, repository: Repository, worktrees: WorktreeQuery, git: WorktreeGit, nudger: Nudger,
                  environments: EnvironmentRows, advance: WorkerTaskAdvance, sources: WorkSources, copies: WorkerTaskCopies, waits: TaskWaits,
-                 proof_queue: WorkerProofQueue) -> None:
+                 proof_queue: WorkerProofQueue, scopes: Scopes) -> None:
         self.queries, self.repository, self.worktrees, self.git, self.nudger = queries, repository, worktrees, git, nudger
         self.environments, self.advance, self.sources, self.copies, self.waits, self.proof_queue = environments, advance, sources, copies, waits, proof_queue
+        self.scopes = scopes
 
     def check_tasks(self, task_ids: tuple[int, ...]) -> tuple[Task, ...]:
         tasks = tuple(self.queries.query(Task).find_many(list(task_ids)))
@@ -74,8 +76,9 @@ class KeptWorkerTasks:
         return self.nudger.send_text(worker.id, job or f"Task:{first} is yours next: journal task overview {first}", WORKER_JOB_SOURCE, context)
 
     def record_sources(self, worktree: Worktree, tasks: list[Task], context: Context) -> None:
-        source = self.sources.source_copy(context)
-        for assigned in self.copies.copies(tasks, source):
-            self.repository.save(WorkerTaskSource(creator_id=context.actor.id, worktree_id=worktree.id, task_id=assigned.task_id, environment_id=worktree.environment_id,
-                                                  source_message_id=assigned.source.message_id, source_version=assigned.source.version,
-                                                  source_unavailable=assigned.source.unavailable), context)
+        with self.scopes.row_scope(worktree):
+            source = self.sources.source_copy(context)
+            for assigned in self.copies.copies(tasks, source):
+                self.repository.save(WorkerTaskSource(creator_id=context.actor.id, worktree_id=worktree.id, task_id=assigned.task_id,
+                                                      source_message_id=assigned.source.message_id, source_version=assigned.source.version,
+                                                      source_unavailable=assigned.source.unavailable), context)

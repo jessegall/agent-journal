@@ -31,11 +31,12 @@ class ProfileFormat:
         if fields.get("agent_type") == "subagent":
             fields["agent_type"] = "helper"
         for name in ("independent", "program_if_possible"):
-            if name in fields:
-                value = fields[name]
-                if value not in (True, False, "true", "false"):
-                    raise Refusal(f"{name.replace('_', '-')} must be true or false")
-                fields[name] = value is True or value == "true"
+            if name not in fields:
+                continue
+            value = fields[name]
+            if value not in (True, False, "true", "false"):
+                raise Refusal(f"{name.replace('_', '-')} must be true or false")
+            fields[name] = value is True or value == "true"
         if "program_models" in fields:
             models = json.loads(fields["program_models"]) if isinstance(fields["program_models"], str) else fields["program_models"]
             if not is_mapping(models) or not all(isinstance(name, str) and isinstance(model, str) for name, model in models.items()):

@@ -4,7 +4,7 @@ import subprocess
 import pytest
 
 from core.base.driver.command_category import CommandCategory
-from suites.coding.modules.workers.support.worker_test_listings import WorkerTestListings
+from suites.coding.modules.workers.bindings.worker_test_listings import WorkerTestListings
 from tests.stories.core.modules.processes.support.reader_block_fixtures import worker_run
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.server.support.go_build import GoBuild

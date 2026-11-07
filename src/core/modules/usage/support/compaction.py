@@ -6,9 +6,7 @@ from core.modules.drivers.models.hook_call import HookCall
 
 @dataclass(frozen=True)
 class Compaction:
-    """The last compaction of a session: when it started, the percent of the context in use just before it, and
-    the percent measured when the session started again after it. A later percent that is not lower is dropped,
-    since a program's reading after a compaction may still hold the old turn's usage. Hook calls come oldest first."""
+    """A session's last compaction and the context percentages before and after it."""
 
     started_at: str
     start_percent: int | None

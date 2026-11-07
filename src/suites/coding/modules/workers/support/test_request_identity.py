@@ -12,9 +12,7 @@ VALUE_MARK = "="
 
 
 class TestRequestIdentity:
-    """What a test command runs, written one way: pytest, python3 -m pytest and a saved command of either are the
-    same program on the same targets, whatever the interpreter or the options a saved command adds. The options a
-    saved command adds are its option words, each with its value when the word after it is no path or test."""
+    """Identifies a test command by its program and targets, excluding saved command options."""
 
     __test__ = False
 
@@ -47,9 +45,9 @@ class TestRequestIdentity:
         return [token for position, token in enumerate(tokens[1:], 1) if cls.is_option(token) or cls.is_option_value(tokens[position - 1], token)]
 
     @classmethod
-    def is_option_value(cls, before: str, token: str) -> bool:
-        takes_value = cls.is_option(before) and VALUE_MARK not in before
-        return takes_value and not cls.is_target(token)
+    def is_option_value(cls, option: str, token: str) -> bool:
+        expects_value = cls.is_option(option) and VALUE_MARK not in option
+        return expects_value and not cls.is_target(token)
 
     @staticmethod
     def is_option(token: str) -> bool:

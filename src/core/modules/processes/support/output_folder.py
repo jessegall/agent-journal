@@ -330,6 +330,12 @@ class OutputFolder:
     def count_status(self, process_id: int) -> int | None:
         return self.number(process_id, COUNT_STATUS)
 
+    def count_error(self, process_id: int) -> list[str]:
+        status = self.count_status(process_id)
+        if status is None or status == 0:
+            return []
+        return self.count_text(process_id).splitlines()[-20:]
+
     def write_count(self, process_id: int, text: str, status: int) -> None:
         self.write(process_id, COUNT_OUTPUT, text)
         self.write_number(process_id, COUNT_STATUS, status)

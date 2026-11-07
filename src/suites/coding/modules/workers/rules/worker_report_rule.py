@@ -29,4 +29,4 @@ class WorkerReportRule(DriverRule):
         main_agent_id = self.agents.find(hook.agent_id).parent_id
         if not text or main_agent_id is None or self.tasks.started_tasks(hook.agent_id) or self.tasks.next_delegated(hook.agent_id) is not None:
             return RuleAnswer.allowed()
-        return RuleAnswer.allowed().running(RecordParentReport(hook.agent_id, main_agent_id, text, tells_receiver=not self.settings.flag(MERGER_ENABLED)))
+        return RuleAnswer.allowed().running(RecordParentReport(hook.agent_id, main_agent_id, text, notify_parent=not self.settings.flag(MERGER_ENABLED)))

@@ -9895,7 +9895,7 @@ const l2 = {
       ], 32)
     ]));
   }
-}, l5 = /* @__PURE__ */ Y(o5, [["__scopeId", "data-v-16bfe5c1"]]), r5 = { class: "comment-side-head" }, i5 = {
+}, l5 = /* @__PURE__ */ Y(o5, [["__scopeId", "data-v-1d720cf2"]]), r5 = { class: "comment-side-head" }, i5 = {
   key: 0,
   class: "comment-none"
 }, c5 = { key: 0 }, u5 = {
@@ -11463,7 +11463,7 @@ function k8(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const x8 = wi(() => import("./VoiceFigure-jpqpjyPw.js").then((e) => e.V)), $8 = "1.2.0", M8 = "3.5";
+const x8 = wi(() => import("./VoiceFigure-DfFjMZKI.js").then((e) => e.V)), $8 = "1.2.0", M8 = "3.5";
 export {
   Bd as $,
   _e as A,

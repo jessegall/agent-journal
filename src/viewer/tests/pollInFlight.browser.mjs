@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import {chromium} from "playwright-core";
 
-const POLLED_LINE = "hook-requests";
+const POLLED_WINDOW = "developer.hook-requests";
 const SLOW_MILLISECONDS = 7000;
 const browser = await chromium.launch({headless: true, executablePath: process.env.CHROMIUM_PATH});
 const [address] = process.argv.slice(2);
@@ -20,8 +20,9 @@ try {
     let flying = 0;
     let mostFlying = 0;
     let asked = 0;
-    await page.route(/\/api\/lines?$/, async (route) => {
-        if (!route.request().postData()?.includes(POLLED_LINE)) return route.continue();
+    await page.route(/\/api\/window(?:\?|$)/, async (route) => {
+        const headers = route.request().headers();
+        if (headers["x-journal-window"] !== POLLED_WINDOW || !headers["x-journal-data-only"]?.split(",").includes("requests")) return route.continue();
         asked += 1;
         flying += 1;
         mostFlying = Math.max(mostFlying, flying);

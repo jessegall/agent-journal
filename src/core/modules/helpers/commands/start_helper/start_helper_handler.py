@@ -19,7 +19,7 @@ from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.modules.helpers.support.helper_counts import HelperCounts
 from core.modules.helpers.support.program_shares import ProgramShares
 from core.modules.helpers.support.program_states import ProgramStates
-from core.modules.helpers.commands.start_helper.helper_started import HelperStarted
+from core.modules.helpers.support.helper_started import HelperStarted
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.support.profile_models import ProfileModels

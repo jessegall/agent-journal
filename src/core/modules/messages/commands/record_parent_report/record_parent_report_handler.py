@@ -35,7 +35,7 @@ class RecordParentReportHandler(Handler[RecordParentReport, Message]):
         return message
 
     def should_notify(self, command: RecordParentReport) -> bool:
-        if not command.tells_receiver:
+        if not command.notify_parent:
             return False
         agent = self.rows.required(Agent, command.agent_id)
         profile = self.profiles.registered(agent.profile)

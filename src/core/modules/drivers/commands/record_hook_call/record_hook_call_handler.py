@@ -26,7 +26,7 @@ from core.modules.drivers.commands.deliver_agent_line.deliver_agent_line import 
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
 from core.modules.drivers.commands.support.delivered_lines import DeliveredLines
 from core.modules.drivers.commands.support.required_commands import RequiredCommands
-from core.modules.drivers.commands.support.nudge_log import NudgeLog
+from core.modules.drivers.support.nudge_log import NudgeLog
 from core.modules.drivers.commands.support.one_move_per_row import OneMovePerRow
 from core.modules.drivers.commands.support.rule_history_writer import RuleHistoryWriter
 from core.modules.drivers.models.agent_line import AgentLine

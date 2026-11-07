@@ -4,7 +4,7 @@ from core.base.model.model import Model
 from core.base.model.session_private import SessionPrivate
 from core.base.timestamp import Timestamp
 from core.base.driver.nudge import Nudge
-from core.modules.drivers.support.driver_nudges import AGENT_LINE_AVAILABLE
+from core.modules.drivers.models.support.agent_line_nudge import AGENT_LINE_AVAILABLE
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.modules.drivers.models.lifecycles.agent_line_lifecycle import AgentLineLifecycle
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState

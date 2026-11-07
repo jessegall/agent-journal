@@ -1,10 +1,10 @@
 <script setup>
 import {RowList, useWindow} from "@journal/window-kit";
 
-const window = useWindow();
-const {rows, failure, loaded} = window.props.commands;
-window.reload("commands");
-window.follow(["alias.*"], () => window.reload("commands"));
+const view = useWindow();
+const {rows, failure, loaded} = view.props.commands;
+view.reload("commands");
+view.follow(["alias.*"], () => view.reload("commands"));
 </script>
 
 <template>

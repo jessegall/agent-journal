@@ -3,7 +3,7 @@ from pathlib import Path
 from core.base.journal_home import JournalHome
 from core.base.log_level import LogLevel
 from core.base.log_source import LogSource
-from core.modules.developer.support.log_file_lines import CHUNK_BYTES, LogFileLines
+from core.modules.developer.support.log_file_lines import BLOCK_BYTES, LogFileLines
 from core.modules.developer.support.log_filter import LogFilter
 from core.modules.developer.support.system_log import SystemLog
 
@@ -25,7 +25,7 @@ def test_the_newest_lines_read_only_a_chunk_of_a_large_log(tmp_path):
     reader = LogFileLines(home.folder / "runtime" / "server.log")
     lines = reader.newest_first()
     first = [next(lines) for _ in range(50)]
-    assert len(first) == 50 and reader.bytes_read == CHUNK_BYTES
+    assert len(first) == 50 and reader.bytes_read == BLOCK_BYTES
 
 
 def test_an_older_page_reaches_the_rotated_file_and_the_first_does_not(tmp_path):

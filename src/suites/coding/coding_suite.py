@@ -19,6 +19,7 @@ class CodingSuite(Suite):
     task_assigner = NextTask
     agent_policy = AgentPolicy(
         job_roles=tuple(["worker"]),
+        active_task_unblocked_roles=tuple(["worker"]),
         task_roles=("main", "worker"), prompt_roles=("main", "worker"), plugin_roles=("main", "worker"),
         dispatch_roles=("main", "worker"), stop_required_roles=("main", "worker"),
         private_output_roles=tuple(["worker"]), reader_request_roles=tuple(["worker"]), queued_run_roles=tuple(["worker"]),

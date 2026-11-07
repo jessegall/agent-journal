@@ -22,9 +22,7 @@ MODULE_NAME = "journal.core.drivers"
 
 
 class BypassLogListener(CommitListener[Changed[HookCall]]):
-    """The first hook of a main agent the journal records after it was silent names, once, what went around
-    it: a mark in the chat, a line for the agent, and each line of the file the Go programs leave for it in the
-    system log."""
+    """Reports hooks that passed while the journal did not answer."""
 
     name = "drivers.bypass-log"
 

@@ -20,6 +20,6 @@ class CancelWorkerOpeningHandler(Handler[CancelWorkerOpening, None]):
     def handle(self, command: CancelWorkerOpening, context: Context) -> None:
         worktree = self.rows.required(Worktree, command.worktree_id)
         self.repository.delete(worktree, context)
-        if command.keeps_agent:
+        if command.retain_agent:
             return
         self.opening.remove_agent(worktree.session_agent_id, context)

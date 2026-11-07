@@ -32,6 +32,7 @@ from core.modules.skills.listeners.skill_loaded_mark_listener import SkillLoaded
 from core.modules.skills.listeners.skill_part_read_listener import SkillPartReadListener
 from core.modules.skills.listeners.skill_read_listener import SkillReadListener
 from core.modules.skills.listeners.skill_request_listener import SkillRequestListener
+from core.modules.skills.listeners.skill_request_save_listener import SkillRequestSaveListener
 from core.modules.skills.listeners.start_skills_listener import StartSkillsListener
 from core.modules.skills.migrations.m001_skills import SkillsTablesMigration
 from core.modules.skills.migrations.m002_skill_requests import SkillRequestsTableMigration
@@ -64,7 +65,7 @@ class SkillsModule(Module):
     migrations = [SkillSessionMigration, SkillsTablesMigration, SkillRequestsTableMigration]
     subcommands = [SetRequiredSkillSubcommand, SkillRequirementsSubcommand, SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand, AgentSkillUnreadSubcommand, SkillRequiredSubcommand]
     handlers = [SetRequiredSkillHandler, RequireSkillHandler, LoadSkillHandler, ResetSkillsHandler, RequestSkillHandler]
-    listeners = [SkillPublishListener, SkillReadListener, SkillPartReadListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener]
+    listeners = [SkillPublishListener, SkillReadListener, SkillPartReadListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener, SkillRequestSaveListener]
     marks = SKILL_MARKS
     driver_rules = [SkillReadFirstRule, UnreadSkillStopRule, CommandSkillRule]
     windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, skeleton=SKILLS_SKILLS_SKELETON, group="project", place=WindowPlace.PAGE, icon=WindowIcon.SKILL, search=WindowReadSearch("skill list", "Find a skill", ("folder", "description")),

@@ -92,10 +92,10 @@ def test_a_locked_hook_log_counts_the_dropped_row_without_a_warning(recording_se
             connection.close()
 
     monkeypatch.setattr(HookRequestLog, "record_hook", record_while_locked)
-    before = server.context.request_log.counts["dropped"]
+    previous_count = server.context.request_log.counts["dropped"]
     sample = HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", firing="locked-log")
     server.expect_hook_answer("/hook", dict(sample.body), 200, '"refusal":')
-    server.story.expect_rows(server.context.request_log.counts["dropped"] == before + 1,
+    server.story.expect_rows(server.context.request_log.counts["dropped"] == previous_count + 1,
                              "request recording failed: database is locked" not in server.story.system_log_text())
 
 

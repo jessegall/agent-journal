@@ -35,14 +35,14 @@ class OutputReading:
         return has_read
 
     def read(self, container: Container) -> bool:
-        grown = container.get(GrownOutputs)
+        new_output = container.get(GrownOutputs)
         processes = tuple(container.get(ProcessQuery).running().oldest().all_rows())
         outputs = container.get(OutputQuery).process_outputs(tuple(process.id for process in processes)) if processes else ()
-        by_process = {output.process_id: output for output in outputs}
-        grown_runs = [(process, by_process[process.id]) for process in processes if process.id in by_process and grown.has_new_output(by_process[process.id])]
-        for process, output in grown_runs:
+        process_outputs = {output.process_id: output for output in outputs}
+        updated = [(process, process_outputs[process.id]) for process in processes if process.id in process_outputs and new_output.has_new_output(process_outputs[process.id])]
+        for process, output in updated:
             self.read_run(container, process, output)
-        return bool(grown_runs)
+        return bool(updated)
 
     @staticmethod
     def read_run(container: Container, process: Process, output: Output) -> None:

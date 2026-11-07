@@ -14,6 +14,7 @@ def test_an_agent_name_with_a_description_is_refused(new_story):
         story.home.socket("launcher").unlink(missing_ok=True)
 
 
-def test_a_person_name_is_a_plain_name():
-    assert all(PLAIN_NAME.fullmatch(name) for name in ("Mary Shelley", "Sir Tony Hoare", "Grace Murray", "Dr. O'Neil-Smith", "Ada"))
-    assert not any(PLAIN_NAME.fullmatch(name) for name in ("Mary, Shelley", "Ada (reader)", "Worker 12", "Ada: reader"))
+def test_a_person_name_is_a_plain_name(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    story.expect_rows(all(PLAIN_NAME.fullmatch(name) for name in ("Mary Shelley", "Sir Tony Hoare", "Grace Murray", "Dr. O'Neil-Smith", "Ada")),
+                      not any(PLAIN_NAME.fullmatch(name) for name in ("Mary, Shelley", "Ada (reader)", "Worker 12", "Ada: reader")))

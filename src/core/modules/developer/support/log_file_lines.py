@@ -8,15 +8,13 @@ from core.base.log_level import LogLevel
 from core.base.log_source import LogSource
 from core.modules.developer.support.log_line import LogLine
 
-CHUNK_BYTES = 256 * 1024
+BLOCK_BYTES = 256 * 1024
 STAMPED_LINE = re.compile(r"^(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?(?:Z|[+-]\d\d:\d\d)) (.*)$")
 LOG_LINE_FIELDS = re.compile(rf"^({'|'.join(LogLevel)}) ({'|'.join(LogSource)}) (.*)$")
 
 
 class LogFileLines:
-    """Reads one log file from its end in chunks, so a page of the newest lines never reads the whole file. A line
-    the system log writer did not write is raw output of the server's process: a warning from the server, at the
-    time of the stamped line above it."""
+    """Reads a log backwards in blocks, using the preceding timestamp for raw server output."""
 
     def __init__(self, path: Path) -> None:
         self.path = path
@@ -40,10 +38,10 @@ class LogFileLines:
         end = self.path.stat().st_size
         tail = b""
         while end > 0:
-            start = max(0, end - CHUNK_BYTES)
-            chunk = FileAccess.shared().bytes_range(self.path, start, end - start)
-            self.bytes_read += len(chunk)
-            parts = (chunk + tail).split(b"\n")
+            start = max(0, end - BLOCK_BYTES)
+            block = FileAccess.shared().bytes_range(self.path, start, end - start)
+            self.bytes_read += len(block)
+            parts = (block + tail).split(b"\n")
             tail = parts[0] if start > 0 else b""
             offset = start + len(parts[0]) + 1
             positions = []

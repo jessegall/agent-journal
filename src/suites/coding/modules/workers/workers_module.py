@@ -1,6 +1,7 @@
+from suites.coding.modules.workers.migrations.m041_worker_mark_cursors import WorkerMarkCursorMigration
 from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
-from suites.coding.modules.workers.migrations.m041_worker_operations import WorkerOperationsMigration
+from suites.coding.modules.workers.migrations.m042_worker_operations import WorkerOperationsMigration
 from suites.coding.modules.workers.commands.queue_worker_operation.queue_worker_operation_handler import QueueWorkerOperationHandler
 from suites.coding.modules.workers.commands.run_worker_operation.claim_worker_operation_handler import ClaimWorkerOperationHandler
 from suites.coding.modules.workers.commands.run_worker_operation.run_worker_operation_handler import RunWorkerOperationHandler
@@ -117,11 +118,11 @@ from suites.coding.modules.workers.listeners.deleted_worker_source_listener impo
 from core.base.module.module import Module
 from core.base.access import Access
 from core.base.agent_type import AgentType
-from suites.coding.modules.workers.support.worker_roster import WorkerRoster
+from suites.coding.modules.workers.bindings.worker_roster import WorkerRoster
 from core.modules.processes.support.run_counts import RunCounts
 from core.modules.processes.support.part_visibility import PartVisibility
 from suites.coding.modules.workers.support.worker_part_visibility import WorkerPartVisibility
-from suites.coding.modules.workers.support.worker_test_listings import WorkerTestListings
+from suites.coding.modules.workers.bindings.worker_test_listings import WorkerTestListings
 from suites.coding.modules.workers.listeners.worker_test_count_listener import WorkerTestCountListener
 from suites.coding.modules.workers.rules.worker_test_count_rule import WorkerTestCountRule
 from suites.coding.modules.workers.support.test_limit_nudges import TEST_COUNT_UNKNOWN, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL
@@ -319,7 +320,7 @@ class WorkersModule(Module):
               ModelDeclaration(Proof, query=ProofQuery, excluded_subcommands=["make", "edit", "delete", "revise", "queue", "run"]),
               ModelDeclaration(WorkerTestRequest, excluded_subcommands=["make", "edit", "delete", "allow", "use"]),
               ModelDeclaration(TodoItem, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(WorkerTaskSource, excluded_subcommands=ALL_SUBCOMMANDS)]
-    migrations = [WorkerOperationsMigration, WorkerRoutesMigration, WorktreeSplitIndexesMigration, WorktreeRouteMigration, WorkerLogOutputMigration, WorktreePassReasonMigration, WorkerTestGroupsMigration, WorkerPhaseTestRunsMigration, WorktreeDeliveryMigration, WorktreeLibraryLinksMigration, MergerLineNudgeMigration, WorktreeReasonNameMigration, WorkerTestFailuresMigration, WorktreeTestsPassedMigration, MergerLinesMigration, WorktreeNewAgentReasonMigration, RetireOldWorkersMigration, WorkerLimitKeysMigration, WorkerTaskSourcesMigration, WorkerTestRequestsMigration, ProofPhaseTestPointMigration, WorktreeMergeCommitsMigration, WorkerLogsReadMigration, StartsHelpersKeyMigration, WorkerSessionMigration, AllowedModelsKeyMigration, WorkerQueueReadIndexesMigration, WorkerReadIndexesMigration, AffectedTestsMigration, ProcessOwnerMigration, ProofProcessWorkMigration, WorkerRefusalsMigration, WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration, WorkerTestSettingMigration, ReportVisibilityMigration, AliasAccessMigration, OpenWorktreeIndexMigration]
+    migrations = [WorkerOperationsMigration, WorkerMarkCursorMigration, WorkerRoutesMigration, WorktreeSplitIndexesMigration, WorktreeRouteMigration, WorkerLogOutputMigration, WorktreePassReasonMigration, WorkerTestGroupsMigration, WorkerPhaseTestRunsMigration, WorktreeDeliveryMigration, WorktreeLibraryLinksMigration, MergerLineNudgeMigration, WorktreeReasonNameMigration, WorkerTestFailuresMigration, WorktreeTestsPassedMigration, MergerLinesMigration, WorktreeNewAgentReasonMigration, RetireOldWorkersMigration, WorkerLimitKeysMigration, WorkerTaskSourcesMigration, WorkerTestRequestsMigration, ProofPhaseTestPointMigration, WorktreeMergeCommitsMigration, WorkerLogsReadMigration, StartsHelpersKeyMigration, WorkerSessionMigration, AllowedModelsKeyMigration, WorkerQueueReadIndexesMigration, WorkerReadIndexesMigration, AffectedTestsMigration, ProcessOwnerMigration, ProofProcessWorkMigration, WorkerRefusalsMigration, WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration, WorkerTestSettingMigration, ReportVisibilityMigration, AliasAccessMigration, OpenWorktreeIndexMigration]
     views = [WorkerWorkReview, WorkerPoints, WorkerWait, WorkerProgress]
     moves = [WorkersMove, AliasPermissionsMove]
     handlers = [QueueWorkerOperationHandler, ClaimWorkerOperationHandler, RunWorkerOperationHandler, EditWorkerRouteHandler, MakeWorkerRouteHandler, DeleteWorkerRouteHandler, MoveWorkerRouteHandler, ReportWorkerRouteFallbackHandler, ReportWorkerProgramRecoveryHandler, RecordWorkerTestRunHandler, SendMergerInputHandler, SendMergerReportHandler, StartMergerHandler, ReadNextMergeHandler, MergeNextWorkerHandler, ReturnWorkerHandler, SendMergeFindingsHandler, RecordOwnTestFailureHandler, OpenKeptWorktreeHandler, EndIdleWorkerHandler, AskWorkerTestHandler, AllowWorkerTestHandler, UseWorkerTestHandler, RestoreWorkerTestsHandler, ReadWorkerLogsHandler, QueueStalledTestsHandler, SendSilentAgentLinesHandler, ReportSilentAgentHandler, RecordAffectedTestHandler, EndGoneWorkerHandler, RecordWorkerRefusalHandler, ClearWorkerRefusalsHandler, StartWorkerTestsHandler, RecordWorkerTestHandler, SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, RecordWorktreeBaseHandler, RecordWorktreeMergeHandler, RecordWorktreeRemovalHandler, RecordWorktreeReleaseHandler, OpenWorkerWorktreeHandler, RecordWorktreeCutHandler, CancelWorkerOpeningHandler, StartNextWorkerTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler, RemoveOrphanWorktreesHandler]

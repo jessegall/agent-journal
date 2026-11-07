@@ -17,8 +17,8 @@ const replacementStartLimit = 5 * time.Second
 
 // BinaryVersion identifies an installed executable and the file that supplied it.
 type BinaryVersion struct {
-	Digest string
-	info   os.FileInfo
+	Digest   string
+	metadata os.FileInfo
 }
 
 func ReadBinaryVersion(path string) (BinaryVersion, error) {
@@ -27,7 +27,7 @@ func ReadBinaryVersion(path string) (BinaryVersion, error) {
 		return BinaryVersion{}, err
 	}
 	defer file.Close()
-	info, err := file.Stat()
+	metadata, err := file.Stat()
 	if err != nil {
 		return BinaryVersion{}, err
 	}
@@ -35,7 +35,7 @@ func ReadBinaryVersion(path string) (BinaryVersion, error) {
 	if _, err := io.Copy(digest, file); err != nil {
 		return BinaryVersion{}, err
 	}
-	return BinaryVersion{hex.EncodeToString(digest.Sum(nil)), info}, nil
+	return BinaryVersion{hex.EncodeToString(digest.Sum(nil)), metadata}, nil
 }
 
 func socketAnswer(path string, request WorkerRequest) (string, error) {
@@ -104,11 +104,11 @@ func watchBinary(stop <-chan struct{}, binary, socket string, current BinaryVers
 			return
 		case <-ticker.C:
 		}
-		info, err := os.Stat(binary)
+		metadata, err := os.Stat(binary)
 		if err != nil {
 			continue
 		}
-		if !os.SameFile(info, latest.info) || !info.ModTime().Equal(latest.info.ModTime()) || info.Size() != latest.info.Size() {
+		if !os.SameFile(metadata, latest.metadata) || !metadata.ModTime().Equal(latest.metadata.ModTime()) || metadata.Size() != latest.metadata.Size() {
 			changed, err := ReadBinaryVersion(binary)
 			if err != nil {
 				failed(err)

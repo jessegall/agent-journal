@@ -17,10 +17,7 @@ CLOSEST_SCAN_ROWS = 300
 
 
 class RowSearch:
-    """Finds the rows of every model that names its search fields which hold every term, a message before other
-    rows and then the newest first, at most 40, with how many hold them in all. When no row holds every term of
-    several, it finds the rows that hold at least half of them, the ones holding most first. A search command
-    run by an agent is no row that holds the words it searched for."""
+    """Searches model fields and ranks exact or partial matches."""
 
     def __init__(self, registry: Registry, queries: Queries) -> None:
         self.registry, self.queries = registry, queries
@@ -45,8 +42,8 @@ class RowSearch:
     def closest(self, terms: Sequence[str], search_models: Sequence[type[Model]]) -> SearchResult:
         enough = (len(terms) + 1) // 2
         rows = [row for model in search_models for row in self.searchable(model).matching(ContainsSome(model.search_fields, terms)).newest().limited(CLOSEST_SCAN_ROWS)]
-        hits = [hit for hit in (SearchHit.matched(row, terms) for row in rows) if hit.held >= enough]
-        ranked = sorted(hits, key=lambda hit: (-hit.held, -hit.rank, -hit.created_at.value.timestamp()))
+        hits = [hit for hit in (SearchHit.matched(row, terms) for row in rows) if hit.matched_terms >= enough]
+        ranked = sorted(hits, key=lambda hit: (-hit.matched_terms, -hit.rank, -hit.created_at.value.timestamp()))
         return SearchResult(terms, ranked[:HIT_LIMIT_ROWS], len(ranked), is_closest=True)
 
     def searchable(self, model: type[Model]) -> Query[Model]:

@@ -56,7 +56,7 @@ type Band struct {
 	mutex   sync.Mutex
 	rows    int
 	columns int
-	drawn   bool
+	visible bool
 }
 
 // NewBand makes a band that draws on the writer.
@@ -72,10 +72,10 @@ func (band *Band) Begin(rows, columns int) {
 	previous := band.rows
 	band.rows, band.columns = rows, columns
 	opening := clearScreenCode
-	if band.drawn {
+	if band.visible {
 		opening = "\x1b7" + band.rowCode(previous) + eraseLineCode + "\x1b8"
 	}
-	band.drawn = true
+	band.visible = true
 	_, _ = io.WriteString(band.screen, opening+band.region()+band.line()+homeCode)
 }
 

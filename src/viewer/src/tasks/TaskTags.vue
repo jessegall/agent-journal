@@ -17,10 +17,10 @@ function add() {
 <template>
     <section class="task-tags" aria-label="Task tags">
         <div class="tags">
-            <span v-for="tag in tags" :key="tag" class="tag" data-task-tag>
+            <template v-for="tag in tags" :key="tag"><span class="tag" data-task-tag>
                 {{ tag }}
                 <button type="button" :aria-label="`Remove tag ${tag}`" :data-remove-tag="tag" @click="emit('remove', tag)">×</button>
-            </span>
+            </span></template>
         </div>
         <form class="add-tag" @submit.prevent="add">
             <input v-model="word" aria-label="New tag" placeholder="New tag" pattern="[a-z0-9-]+" data-task-tag-input />

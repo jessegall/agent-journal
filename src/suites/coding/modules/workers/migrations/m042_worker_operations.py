@@ -2,7 +2,7 @@ from core.base.database.migration import Migration
 
 
 class WorkerOperationsMigration(Migration):
-    number = 41
+    number = 42
     statements = [
         "CREATE TABLE worker_operations (id INTEGER PRIMARY KEY, worker_id INTEGER NOT NULL REFERENCES agents(id),"
         " creator_id INTEGER NOT NULL REFERENCES actors(id), actor_type TEXT NOT NULL,"

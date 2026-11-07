@@ -23,4 +23,4 @@ class ReportWorkerProgramRecoveryHandler(Handler[ReportWorkerProgramRecovery, No
         if not notices.filter(source=command.waiting_source).exists() or notices.filter(source=f"{command.waiting_source}:back").exists():
             return
         self.nudger.send(worker.parent_id, WORKER_PROGRAM_RESUMED, f"{command.waiting_source}:back", context,
-                         worker=worker.id, program=worker.program)
+                         worker=worker.id)

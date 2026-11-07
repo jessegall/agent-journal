@@ -2,9 +2,9 @@
 import {computed, reactive, ref, watch} from "vue";
 import {Btn, ListTools, RowList, WindowRoom, TimeAgo, added as addedRow, removed, useListTools, useWindow} from "@journal/window-kit";
 
-const window = useWindow();
-const installed = window.props.installed;
-const suggested = window.props.suggested;
+const view = useWindow();
+const installed = view.props.installed;
+const suggested = view.props.suggested;
 const tools = useListTools(installed.rows, {title: (row) => row.title});
 const typed = reactive({});
 
@@ -13,17 +13,17 @@ const offered = computed(() => suggested.rows.value.filter((row) => !installedNa
 const notice = ref("");
 const failure = computed(() => installed.actionFailure.value || suggested.actionFailure.value);
 const added = reactive({name: "", target: ""});
-const checkLines = computed(() => window.props.check.data.value?.lines ?? []);
+const checkLines = computed(() => view.props.check.data.value?.lines ?? []);
 const checkedAt = ref(null);
 
-watch(window.props.check.data, (value) => {
+watch(view.props.check.data, (value) => {
     if (value) checkedAt.value = new Date().toISOString();
 });
 
 const checkLine = (row) => checkLines.value.find((line) => line.startsWith(`${row.name}  `))?.slice(row.name.length + 2);
 
 async function refresh() {
-    await window.reload(["installed", "suggested", "check"]);
+    await view.reload(["installed", "suggested", "check"]);
 }
 
 async function add() {
@@ -31,7 +31,7 @@ async function add() {
     const result = await installed.act(["mcp", "add", added.name.trim(), added.target.trim()], addedRow(pending));
     if (!result.ok) return;
     Object.assign(added, {name: "", target: ""});
-    await window.reload("check");
+    await view.reload("check");
 }
 
 async function signIn(row) {
@@ -42,7 +42,7 @@ async function signIn(row) {
 
 async function install(row) {
     await suggested.act(["mcp", "install", row.name], removed(row.id));
-    await window.reload("installed");
+    await view.reload("installed");
 }
 
 async function giveKey(row) {

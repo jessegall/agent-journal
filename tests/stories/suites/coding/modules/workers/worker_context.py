@@ -6,9 +6,6 @@ from datetime import timedelta
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.query.queries import Queries
-from core.modules.drivers.models.agent_line import AgentLine
-from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from core.testing.hook_samples import HookSamples
 from core.testing.fake_launcher import FakeLauncher
@@ -100,9 +97,8 @@ def test_worker_followup_changes_source_only_after_delivery(assigned_worker):
     scenario.story.expect_success('task make "Work already running" --environment main', actor=worker)
     scenario.expect_link("message:2", "task:2", "about")
     reply = scenario.story.hook(worker_session(scenario.story, worker), HookSamples.tool_use("Read", ToolType.READ, [], None))
-    job = scenario.story.container.get(Queries).query(AgentLine).filter(session_agent_id=worker.id, source=WORKER_JOB_SOURCE).newest().first()
-    scenario.story.expect_rows(any(f"agent-line:{job.id}" in line for line in reply.lines), detail=reply.lines)
-    scenario.story.expect_text(f"agent-line show {job.id}", "Handle the original request next", actor=worker)
+    line_id = next(line.split(":", 1)[1].split(":", 1)[0] for line in reply.lines if line.startswith("agent-line:"))
+    scenario.story.expect_text(f"agent-line show {line_id}", "Handle the original request next", actor=worker)
     scenario.story.expect_success('task make "Work from delivered followup" --environment main', actor=worker)
     scenario.expect_link("message:1", "task:3", "about")
     scenario.expect_no_link("message:2", "task:3")

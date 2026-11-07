@@ -21,14 +21,13 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
     """Create or resume an agent and record its process."""
 
     command = StartAgent
+    caller_prepares = True
 
     def __init__(self, agents: AgentRows, repository: Repository, chain: ProcessChain, types: AgentTypeBook, sandbox: ShellSandbox, single_main: SingleMainAgent) -> None:
         self.agents, self.repository, self.chain = agents, repository, chain
         self.types = types
         self.sandbox = sandbox
         self.single_main = single_main
-
-    caller_prepares = True
 
     def prepare(self, command: StartAgent, actor: Actor) -> None:
         if self.types.find(command.role).access is Access.READ:
