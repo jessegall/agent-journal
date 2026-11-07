@@ -12,6 +12,10 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.modules.memories.commands.memory_counts.memory_counts_subcommand import MemoryCountsSubcommand
+from core.modules.memories.commands.memory_page.memory_page_subcommand import MemoryPageSubcommand
+from core.base.viewer.window_key import WindowKey
+from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_place import WindowPlace
 from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch
@@ -90,8 +94,14 @@ class MemoriesModule(Module):
     overlays = [WeighingOverlay]
     listeners = [StartMemoriesListener, CompactionFaderListener, TaskMemoryRemoverListener, MarkCloserListener, MemoryMadeMarkListener, MemoryWeighedMarkListener,
                  MemoryRemovedMarkListener, MemoryFadedMarkListener, MemoryGivenMarkListener, CompactionMarkListener]
-    subcommands = [MemoryListSubcommand, MemoryAgentsSubcommand, MakeMemorySubcommand, WeighMemoriesSubcommand, ReadMemorySubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, SkipMemoryMarkSubcommand]
+    subcommands = [MemoryListSubcommand, MemoryAgentsSubcommand, MemoryCountsSubcommand, MemoryPageSubcommand, MakeMemorySubcommand, WeighMemoriesSubcommand, ReadMemorySubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, SkipMemoryMarkSubcommand]
     marks = MEMORY_MARKS
     docks = MEMORY_DOCKS
-    windows = [WindowDeclaration("memories.memories", "Memories", "memories.js", WindowLoading.COMPONENT, skeleton=MEMORIES_MEMORIES_SKELETON, search=WindowSearch(MemorySearcher, "Search the memories"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILED, reads=["memory list", "memory agents", "agent show"], runs=["memory make"], events=["memory.*", "agent.*"])]
+    windows = [WindowDeclaration("memories.memories", "Memories", "memories.js", WindowLoading.COMPONENT, skeleton=MEMORIES_MEMORIES_SKELETON, search=WindowSearch(MemorySearcher, "Search the memories"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILED, reads=["memory list", "memory agents", "memory counts", "memory page", "agent show"], keys=[
+        WindowKey("counts", "memory counts", events=["memory.*"]),
+        WindowKey("memories", "memory page", arguments=["agent", "environment", "state", "search", "order", "limit"], switches=["main-agent", "other-agents", "removed"], events=["memory.*"], loading=KeyLoading.REQUESTED),
+        WindowKey("working", "memory agents", arguments=["environment", "access", "name", "limit"], switches=["working"], events=["agent.*", "memory.*"], loading=KeyLoading.REQUESTED),
+        WindowKey("ended", "memory agents", arguments=["environment", "access", "name", "limit"], switches=["ended"], events=["agent.*", "memory.*"], loading=KeyLoading.REQUESTED),
+        WindowKey("selected", "agent show {id}", events=["agent.*"], loading=KeyLoading.REQUESTED),
+    ], runs=["memory make"], events=["memory.*", "agent.*"])]
     seeders = [MemoriesSeeder]

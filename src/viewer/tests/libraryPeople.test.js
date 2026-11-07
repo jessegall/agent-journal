@@ -1,5 +1,5 @@
 import {afterEach, expect, test} from "vitest";
-import {context, mounted, settle} from "./support/windowContext.js";
+import {context, mounted, settle} from "./support/teamsContext.js";
 import TeamsPage from "../../core/modules/library/web/src/TeamsPage.vue";
 
 afterEach(() => document.body.replaceChildren());
@@ -20,7 +20,7 @@ const GRACE_TOKENS = {tokens: [
 function window(status = {}, extra = {}) {
     const result = context({
         "library status": {ok: true, value: {...LINKED, ...status}},
-        "library list": {ok: true, value: {page: 1, size: 30, total: 0, rows: []}},
+        "library browse": {ok: true, value: {page: 1, size: 30, total: 0, rows: []}},
         "library copies": {ok: true, value: {rows: []}},
         "library-user list": {ok: true, value: USERS},
         "library-user tokens 2": {ok: true, value: GRACE_TOKENS},

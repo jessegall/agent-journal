@@ -15,7 +15,6 @@ class SendLibraryItemHandler(Handler[SendLibraryItem, SharedLibraryItem]):
     shares."""
 
     command = SendLibraryItem
-    transactional = False
 
     def __init__(self, outgoing: OutgoingItems, writes: LibraryWrites, bus: Bus) -> None:
         self.outgoing, self.writes, self.bus = outgoing, writes, bus

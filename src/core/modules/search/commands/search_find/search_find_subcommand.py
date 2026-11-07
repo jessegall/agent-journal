@@ -23,12 +23,14 @@ class SearchFindSubcommand(ReadSubcommand[SearchResult]):
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("terms", nargs="+")
         parser.add_argument("--model", default="")
+        parser.add_argument("--split-terms", action="store_true")
 
     def read(self, arguments: Namespace, caller: Caller) -> SearchResult:
         wanted = [model for model in arguments.model.split(",") if model]
-        local = self.search.result(arguments.terms, wanted)
+        terms = [word for term in arguments.terms for word in term.split()] if arguments.split_terms else arguments.terms
+        local = self.search.result(terms, wanted)
         shares = [share for share in self.registry.library_shares if not wanted or share in wanted]
-        return replace(local, library=self.lookup.hits(arguments.terms, shares)) if shares else local
+        return replace(local, library=self.lookup.hits(terms, shares)) if shares else local
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, SearchResult):

@@ -7,4 +7,6 @@ from core.base.command.command import Command
 class RecordMarkMotion(Command[None]):
     """Keeps the frames the viewer sampled while a chat mark opened or closed, as one JSON line."""
 
+    lock = False
+
     frames: str

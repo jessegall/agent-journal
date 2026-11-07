@@ -6,6 +6,7 @@ from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_place import WindowPlace
 from core.modules.secrets.commands.allow_program.allow_program_handler import AllowProgramHandler
 from core.modules.secrets.commands.change_secret_deletion.change_secret_deletion_handler import ChangeSecretDeletionHandler
@@ -17,6 +18,7 @@ from core.modules.secrets.commands.allow_program.allow_program_subcommand import
 from core.modules.secrets.commands.delete_secret.delete_secret_subcommand import DeleteSecretSubcommand
 from core.modules.secrets.commands.fill_secret.fill_secret_subcommand import FillSecretSubcommand
 from core.modules.secrets.commands.secret_list.secret_list_subcommand import SecretListSubcommand
+from core.modules.secrets.commands.secret_board.secret_board_subcommand import SecretBoardSubcommand
 from core.modules.secrets.commands.make_secret.make_secret_subcommand import MakeSecretSubcommand
 from core.modules.secrets.commands.propose_program.propose_program_subcommand import ProposeProgramSubcommand
 from core.modules.secrets.commands.request_secret.request_secret_subcommand import RequestSecretSubcommand
@@ -50,9 +52,9 @@ class SecretsModule(Module):
     migrations = [ActiveSecretIndexMigration, SecretsTableMigration]
     moves = [SecretsMove]
     handlers = [MakeSecretHandler, EditSecretHandler, FillSecretHandler, ProposeProgramHandler, AllowProgramHandler, ChangeSecretDeletionHandler]
-    subcommands = [MakeSecretSubcommand, RequestSecretSubcommand, EditSecretSubcommand, FillSecretSubcommand, StoreSecretSubcommand, SecretListSubcommand,
+    subcommands = [MakeSecretSubcommand, RequestSecretSubcommand, EditSecretSubcommand, FillSecretSubcommand, StoreSecretSubcommand, SecretListSubcommand, SecretBoardSubcommand,
                    SecretShowSubcommand, SecretRunSubcommand, ProposeProgramSubcommand, AllowProgramSubcommand, DeleteSecretSubcommand, RestoreSecretSubcommand]
     guards = [SecretValueGuard]
     driver_rules = [SecretsFolderRule]
     windows = [WindowDeclaration("secrets.secrets", "Secrets", "secrets.js", WindowLoading.COMPONENT, skeleton=SECRETS_SECRETS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.HASH,
-                                 reads=["secret list", "secret show"], runs=["secret fill", "secret allow", "secret make", "secret update", "secret delete", "secret restore"], events=["secret.*"])]
+                                 reads=["secret list", "secret show", "secret board"], keys=[WindowKey("secrets", "secret board", events=["secret.*"])], runs=["secret fill", "secret allow", "secret make", "secret update", "secret delete", "secret restore"], events=["secret.*"])]

@@ -285,3 +285,34 @@ def test_a_service_whose_condition_later_passes_starts_once_it_is_checked_again(
         story.expect_rows(("served", "answers") in story.processes.running)
     finally:
         story.processes.close()
+
+
+def test_a_service_started_by_an_exec_script_lists_by_health_and_keeps_stderr(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    folder = service_plugin_folder(story.home.folder.parent)
+    manifest_path = folder / "journal-plugin.json"
+    manifest = json.loads(FileAccess.shared().read(manifest_path))
+    manifest["services"][0]["command"] = ["start.sh"]
+    FileAccess.shared().write(manifest_path, json.dumps(manifest))
+    script = folder / "start.sh"
+    FileAccess.shared().write(script, '#!/bin/sh\necho "service diagnostic" >&2\nexec ./serve.py\n')
+    script.chmod(0o755)
+    story.expect_success(f"plugin install {folder} --yes", actor=story.user)
+    services, processes = story.container.get(PluginServices), ServiceProcesses()
+    try:
+        services.follow(processes)
+        story.expect_text("plugin services", "served answers: running")
+        story.expect_text("plugin service-log served answers --lines 1", "service diagnostic")
+        FileAccess.shared().write(story.home.folder / "plugin-data" / "served" / "unwell", "")
+        story.expect_text("plugin services", "served answers: stopped")
+        services.check_health(processes)
+        story.expect_rows("plugin served service answers restarted after a missed health check" in FileAccess.shared().read(story.home.system_log))
+        process = processes.running[("served", "answers")]
+        os.kill(process.pid, signal.SIGKILL)
+        process.wait(5)
+        story.expect_text("plugin services", "served answers: stopped")
+        services.follow(processes)
+        story.expect_rows("plugin served service answers restarted after exit" in FileAccess.shared().read(story.home.system_log))
+    finally:
+        processes.close()

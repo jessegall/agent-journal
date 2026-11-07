@@ -25,6 +25,7 @@ class TaskCard(EnvironmentScoped, ViewModel):
     complexity: TaskComplexity | None
     tags: tuple[str, ...]
     reason: str
+    automatic: bool
     closed_at: str | None
     delegated_to: int | None
     delegated_name: str | None

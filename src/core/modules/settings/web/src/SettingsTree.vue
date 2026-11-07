@@ -1,18 +1,20 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
-import {SearchBar, Segmented, Skeleton, WindowRoom, matchesSearch, patchedWhere, useRows} from "@journal/window-kit";
+import {SearchBar, Segmented, Skeleton, WindowRoom, matchesSearch, patchedWhere, useWindow} from "@journal/window-kit";
 import CommandSettings from "./CommandSettings.vue";
 import SettingNode from "./SettingNode.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
 
 const CHANGED_SOURCES = new Set(["environment", "project"]);
 const TYPING = "input,textarea,select,[contenteditable]";
-const {rows, failure, loaded, act, context} = useRows("setting tree", ["setting.*"]);
+const context = useWindow();
+const {rows, failure, loaded, act} = context.props.settings;
+context.state.tab = "settings";
 const TABS = [
     {key: "settings", label: "Settings"},
     {key: "environments", label: "Environments"},
 ];
-const tab = ref("settings");
+const tab = computed({get: () => context.state.tab, set: (value) => (context.state.tab = value)});
 const query = ref("");
 const filter = ref("all");
 const field = ref(null);
@@ -55,10 +57,10 @@ function slashFocus(event) {
     field.value?.focus();
 }
 onMounted(() => {
-    window.addEventListener("keydown", slashFocus);
+    globalThis.addEventListener("keydown", slashFocus);
 });
 onUnmounted(() => {
-    window.removeEventListener("keydown", slashFocus);
+    globalThis.removeEventListener("keydown", slashFocus);
 });
 
 // a setting shows its new value at once, and is put back with the refusal when the server refuses it

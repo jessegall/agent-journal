@@ -107,3 +107,27 @@ def test_an_upgrade_leaves_alone_a_name_the_project_holds(new_story):
     story.run('alias add extra "echo mine"', actor=story.user)
     upgraded_with(story, [ALIASES[0], {"name": "extra", "line": "bin/greet"}])
     story.expect_success("extra", "mine", actor=story.user)
+
+
+def test_an_upgrade_keeps_agent_access_a_person_granted(new_story):
+    story = plugin_with_aliases(new_story, [ALIASES[1]])
+    story.expect_success(f"plugin install {story.plugin_folder} --yes", actor=story.user)
+    story.expect_success("alias edit greet --agents", actor=story.user)
+    manifest = json.loads((story.plugin_folder / "journal-plugin.json").read_text())
+    (story.plugin_folder / "journal-plugin.json").write_text(json.dumps({**manifest, "version": "2.0.0", "aliases": [{**ALIASES[1], "description": "Updated"}]}))
+    story.expect_success("plugin upgrade sample --yes", actor=story.user)
+    story.expect_text("alias show 1", "agent_access: True", "description: Updated", actor=story.user)
+
+
+def test_a_manifest_alias_for_agents_is_open_to_a_worker_on_install(new_story):
+    from tests.stories.core.modules.aliases.running import worker_actor
+
+    story, worker = worker_actor(new_story)
+    folder = sample_plugin_folder(story.home.folder.parent)
+    manifest = json.loads((folder / "journal-plugin.json").read_text())
+    (folder / "journal-plugin.json").write_text(json.dumps({**manifest, "aliases": [{"name": "sample-judge", "line": "judge", "agents": True}]}))
+    judge = folder / "judge"
+    judge.write_text('#!/bin/sh\necho judged\n')
+    judge.chmod(0o755)
+    story.expect_success(f"plugin install {folder} --yes", actor=story.agent)
+    story.expect_success("sample-judge --changes", "judged", actor=worker)

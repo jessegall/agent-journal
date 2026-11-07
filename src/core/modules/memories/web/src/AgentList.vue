@@ -2,7 +2,7 @@
 import {watch} from "vue";
 import {TimeAgo, wordLabel} from "@journal/window-kit";
 import WhoRow from "./WhoRow.vue";
-import {AGENT_ROWS, agentOf, agentsLine} from "./memoryScope.js";
+import {AGENT_ROWS, agentOf} from "./memoryScope.js";
 import {usePagedRead} from "./usePagedRead.js";
 
 // the agents that hold memories and are at work, or that have ended: a fold for the ended ones that reads only how many there are until it is open
@@ -10,7 +10,7 @@ const props = defineProps({environment: {type: String, required: true}, ended: B
 const emit = defineEmits(["pick", "fold", "counted"]);
 
 const shown = () => !props.ended || props.open;
-const agents = usePagedRead((limit) => agentsLine({environment: props.environment, ended: props.ended, role: props.role, name: props.name, limit: shown() ? limit : 1}), ["agent.*", "memory.*"], AGENT_ROWS);
+const agents = usePagedRead(props.ended ? "ended" : "working", (limit) => ({environment: props.environment, ...(props.role !== "all" ? {access: props.role} : {}), ...(props.name.trim() ? {name: props.name.trim()} : {}), [props.ended ? "ended" : "working"]: true, limit: shown() ? limit : 1}), AGENT_ROWS, ["agent.*", "memory.*"]);
 watch(() => [props.environment, props.role, props.name, props.open], () => agents.reset());
 watch(agents.total, (total) => emit("counted", total));
 

@@ -31,9 +31,9 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     back to the worker. The merge commands run before the task closes, so a failed one, such as a push, leaves
     the task open to merge again. Git runs outside any transaction, so its wait holds no write lock."""
 
+    runs_once = True
     command = MergeWorker
     disabled_scopes = [ActorScope]
-    transactional = False
 
     def __init__(self, rows: EventRows, worktrees: WorktreeQuery, checks: MergeChecks, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, settings: SettingValues, commands: WorktreeCommands, log_lines: WorkerLogLines) -> None:
         self.log_lines = log_lines

@@ -1,4 +1,5 @@
 from typing import ClassVar
+from collections.abc import Sequence
 
 from core.base.change.event_subscriber import E, EventSubscriber
 from core.base.change.logged_event import LoggedEvent
@@ -12,6 +13,9 @@ class CommitListener(EventSubscriber[E]):
     name: ClassVar[str]
     run_order: ClassVar[int] = 0
     disabled_scopes: ClassVar[DisabledScopes] = ()
+
+    def prepare(self, events: Sequence[LoggedEvent]) -> None:
+        return None
 
     def handle(self, event: E, logged: LoggedEvent) -> None:
         raise NotImplementedError(f"{type(self).__name__} handles nothing")

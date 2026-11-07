@@ -10,5 +10,7 @@ class ChooseLibraryVersion(Command[LibraryCopy]):
     """Ends a conflict, a refused change or a new version to read by keeping the text of this journal or the
     library's."""
 
+    lock = False
+
     copy_id: int
     keep: KeptSide

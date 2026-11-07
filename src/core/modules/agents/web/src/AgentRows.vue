@@ -50,9 +50,13 @@ const emptyText = computed(() => props.texts[show.value] ?? {title: props.empty,
 
 // one card is open at a time and takes the whole window until it closes or a search starts
 const openId = ref(null);
+const openedRow = ref(null);
 const agents = ref(null);
 const list = ref(null);
-const openRow = computed(() => shown.value.find((row) => row.id === openId.value) ?? null);
+const openRow = computed(() => {
+    if (openId.value === null) return null;
+    return view.props[`card.${openId.value}`].rows.value.find((row) => row.id === openId.value) ?? openedRow.value;
+});
 const visible = computed(() => (openRow.value ? [openRow.value] : shown.value));
 const easing = "cubic-bezier(0.2, 0.9, 0.25, 1)";
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -70,7 +74,9 @@ async function open(row) {
     const bands = [...card.querySelectorAll(".agent-head, .agent-line")];
     const elements = [...bands, ...card.querySelectorAll("[data-agent-motion]")];
     const before = elements.map((element) => element.getBoundingClientRect());
+    openedRow.value = row;
     openId.value = row.id;
+    view.reload(`card.${row.id}`);
     await nextTick();
     if (!reduced()) {
         const after = elements.map((element) => element.getBoundingClientRect());
@@ -106,6 +112,11 @@ async function close() {
     }
     changing = false;
 }
+function inspectAgent(row) {
+    openedRow.value = row;
+    openId.value = row.id;
+    view.reload(`card.${row.id}`);
+}
 const toggle = (row) => { if (openId.value === row.id) return close(); return open(row); };
 watch(words, (typed) => typed.trim() && (openId.value = null));
 watch(show, () => { openId.value = null; });
@@ -116,7 +127,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 
 <template>
     <div ref="agents" :class="['agents', {focused: openRow}]">
-        <AgentLimits />
         <SearchBar v-model="words" placeholder="Search agents" :menu-count="filterCount" data-agents-search>
                 <template #menu>
                     <MenuLabel>Type</MenuLabel>
@@ -128,6 +138,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                     <template v-if="filterCount"><MenuItem data-filter-clear @click="clearFilters">Clear filters</MenuItem></template>
                 </template>
                 <Segmented :options="filterOptions.states" :value="show" @pick="show = $event" />
+                <AgentLimits @open-agent="inspectAgent" />
         </SearchBar>
         <template v-if="show === 'retired' && filterOptions.upgrade_retired"><p class="agents-upgrade" data-agents-upgrade>Retired during the upgrade: {{ filterOptions.upgrade_retired }}</p></template>
         <div ref="list" :class="['agents-view', {'agents-view-open': openRow}]">

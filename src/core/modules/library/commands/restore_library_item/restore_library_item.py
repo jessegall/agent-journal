@@ -8,6 +8,8 @@ from core.modules.library.support.restored_library_item import RestoredLibraryIt
 class RestoreLibraryItem(Command[RestoredLibraryItem]):
     """Brings back a removed item of the shared server, or puts an old version of its text in again as a new version."""
 
+    lock = False
+
     share: str
     item_id: int
     version: int | None = None

@@ -32,6 +32,8 @@ command refers to the plugin.
 
 A wrong entry never stops an install. It shows on the plugin's card, and the rest of the plugin works.
 
+The journal records each service’s standard output and standard error in its plugin data folder, keeping the latest 1 MB. Read it with `journal plugin service-log <plugin> <service> --lines 100`. A restart after an exit or missed health check is recorded in the system log. `journal plugin services` reports a service running when its process is alive and its declared health check answers.
+
 A service may hold long-lived children. They end with its process group when it stops or crashes, and a child that calls setsid leaves the group and is not stopped.
 
 ## Finding a key

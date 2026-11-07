@@ -5,6 +5,7 @@ from core.modules.mcp.support.server_searcher import ServerSearcher
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_place import WindowPlace
 from core.modules.mcp.commands.give_server_key.give_server_key_handler import GiveServerKeyHandler
 from core.modules.mcp.commands.install_server.install_server_handler import InstallServerHandler
@@ -40,4 +41,6 @@ class McpModule(Module):
     handlers = [AddServerHandler, InstallServerHandler, GiveServerKeyHandler, RemoveServerHandler]
     subcommands = [AddServerSubcommand, McpListSubcommand, McpSuggestedSubcommand, InstallServerSubcommand, GiveServerKeySubcommand, RemoveServerSubcommand, McpCheckSubcommand]
     windows = [WindowDeclaration("mcp.integrations", "Integrations", "integrations.js", WindowLoading.COMPONENT, skeleton=MCP_INTEGRATIONS_SKELETON, search=WindowSearch(ServerSearcher, "Search the servers"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.PLUGIN,
-                                 reads=["mcp list", "mcp suggested", "mcp check"], runs=["mcp add", "mcp install", "mcp key", "mcp remove", "message send"])]
+                                 reads=["mcp list", "mcp suggested", "mcp check"], events=["mcp_server.*"], keys=[WindowKey("installed", "mcp list", events=["mcp_server.*"]),
+                                                                                         WindowKey("suggested", "mcp suggested"),
+                                                                                         WindowKey("check", "mcp check")], runs=["mcp add", "mcp install", "mcp key", "mcp remove", "message send"])]

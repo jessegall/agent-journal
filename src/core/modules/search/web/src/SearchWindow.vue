@@ -26,11 +26,14 @@ async function find() {
     const words = terms.value.trim().split(/\s+/).filter(Boolean);
     if (!words.length) return void (answer.value = null);
     searching.value = true;
-    const model = picked.value.size ? ` --model ${[...picked.value].join(",")}` : "";
-    const result = await context.read(`search find ${words.map((word) => `"${word}"`).join(" ")}${model}`);
+    context.state["results.terms"] = words.join(" ");
+    if (picked.value.size) context.state["results.model"] = [...picked.value].join(",");
+    else delete context.state["results.model"];
+    await context.reload("results");
+    const result = context.props.results;
     searching.value = false;
-    failure.value = result.ok ? "" : result.error;
-    answer.value = result.ok ? result.value : null;
+    failure.value = result.failure.value;
+    answer.value = failure.value ? null : result.data.value;
 }
 
 function toggle(model) {

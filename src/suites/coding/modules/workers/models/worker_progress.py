@@ -19,6 +19,7 @@ class WorkerProgress(EnvironmentScoped, ViewModel):
     agent_id: int
     environment_id: int
     branch: str
+    task_id: int
     started_at: Timestamp
     finished_at: Timestamp | None
     task_count: int

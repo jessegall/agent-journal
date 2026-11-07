@@ -3,11 +3,10 @@ from core.base.actor_type import ActorType
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.queries import Queries
-from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.enums.plan_state import PlanState
-from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.support.next_plan_tasks import NextPlanTasks
+from core.modules.plans.support.task_plans import TaskPlans
+from collections.abc import Sequence
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.support.suite_task_assigners import SuiteTaskAssigners
@@ -25,12 +24,15 @@ class NextPlanTaskStarterListener(CommitListener[Moved[Task]]):
     name = "plans.next-plan-task-starter"
     moves = tuple([TaskLifecycle.close])
 
-    def __init__(self, bus: Bus, queries: Queries, next_tasks: NextPlanTasks, tasks: TaskQuery, assigners: SuiteTaskAssigners) -> None:
-        self.bus, self.queries, self.next_tasks, self.tasks, self.assigners = bus, queries, next_tasks, tasks, assigners
+    def __init__(self, bus: Bus, next_tasks: NextPlanTasks, tasks: TaskQuery, assigners: SuiteTaskAssigners, plans: TaskPlans) -> None:
+        self.bus, self.next_tasks, self.tasks, self.assigners, self.plans = bus, next_tasks, tasks, assigners, plans
+
+    def prepare(self, events: Sequence[LoggedEvent]) -> None:
+        self.plans.prepare([event.row_id for event in events])
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
-        place = self.queries.query(PlanTask).filter(task_id=logged.row_id).first()
-        plan = self.queries.query(Plan).find(place.plan_id) if place is not None else None
+        place = self.plans.find_phase(logged.row_id)
+        plan = self.plans.find(logged.row_id)
         if plan is None or self.assigners.assigner() is None or plan.state is not PlanState.STARTED or self.tasks.holder(logged.actor_id).started().exists() or self.urgent_task_waits():
             return
         following = self.next_tasks.following(place.plan_id)

@@ -10,7 +10,6 @@ class AddLibraryUserHandler(Handler[AddLibraryUser, NewLibraryUser]):
     """Asks the server to add a user with no write lock held; only a person adds, and the server asks for an admin."""
 
     command = AddLibraryUser
-    transactional = False
 
     def __init__(self, people: LibraryPeople) -> None:
         self.people = people

@@ -8,4 +8,6 @@ from core.modules.project_rules.models.project_rule import ProjectRule
 class MakeRule(Command[ProjectRule]):
     """Makes a project rule, active from a person and proposed from an agent."""
 
+    lock = False
+
     text: str

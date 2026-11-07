@@ -1,12 +1,24 @@
 import {expect, test} from "vitest";
-import {context, mounted, page, settle} from "./support/windowContext.js";
+import {context, mounted, page, settle as tick} from "./support/windowContext.js";
 import ServerRows from "../../core/modules/mcp/web/src/ServerRows.vue";
+
+async function settle() {
+    await tick();
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    await tick();
+}
+
+const KEYS = {
+    installed: {line: "mcp list", events: ["mcp_server.*"]},
+    suggested: {line: "mcp suggested"},
+    check: {line: "mcp check"},
+};
 
 const LINEAR = {id: 1, name: "linear", title: "Linear", url: "https://mcp.linear.app/mcp", command: "", args: [], auth: "oauth", standing: "signs in on its own"};
 const SHOP = {id: 2, name: "shop", title: "shop", url: "", command: "npx", args: ["-y", "shop"], auth: "none", standing: "ready"};
 
 function integrations(lines = ["linear  written in .mcp.json and .codex/config.toml"]) {
-    const window = context({"mcp list": page([LINEAR, SHOP]), "mcp suggested": page([]), "mcp check": {ok: true, value: {lines}}});
+    const window = context({"mcp list": page([LINEAR, SHOP]), "mcp suggested": page([]), "mcp check": {ok: true, value: {lines}}}, null, KEYS);
     window.lines = [];
     window.run = async (line) => {
         window.lines.push(line);

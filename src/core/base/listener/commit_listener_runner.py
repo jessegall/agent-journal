@@ -160,16 +160,17 @@ class CommitListenerRunner:
         listener_class = entry.path.loaded()
         if not issubclass(listener_class, CommitListener):
             return
-        groups: dict[tuple[EventType, int | None], list[LoggedEvent]] = {}
+        groups: dict[tuple[EventType, int | None, int | None], list[LoggedEvent]] = {}
         for event in events:
             event_type = listener_class.event_type(event.event)
             if event_type.model is None or not issubclass(event_type.event_class, Changed):
                 continue
             with self.scopes.event_scope(listener_class.disabled_scopes, event):
-                groups.setdefault((event_type, self.scopes.actor_id), []).append(event)
-        for (event_type, actor_id), grouped in groups.items():
-            with self.scopes.opened(actor_id):
+                groups.setdefault((event_type, self.scopes.actor_id, self.scopes.environment_id), []).append(event)
+        for (event_type, _, _), grouped in groups.items():
+            with self.scopes.event_scope(listener_class.disabled_scopes, grouped[0]):
                 self.container.get(EventBuilder).prepare(event_type, grouped)
+                self.container.get(listener_class).prepare(grouped)
 
     def handle_event(self, entry: ListenerEntry, event: LoggedEvent) -> bool:
         listener_class = entry.path.loaded()

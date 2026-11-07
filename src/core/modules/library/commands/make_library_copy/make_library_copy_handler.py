@@ -17,7 +17,6 @@ class MakeLibraryCopyHandler(Handler[MakeLibraryCopy, NewLibraryCopy]):
     short transaction. An item that comes with a warning is made only when it was read first."""
 
     command = MakeLibraryCopy
-    transactional = False
 
     def __init__(self, shares: LibraryShares, browse: LibraryBrowse, queries: Queries, bus: Bus) -> None:
         self.shares, self.browse, self.queries, self.bus = shares, browse, queries, bus

@@ -45,6 +45,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--options", action="store_true")
+        parser.add_argument("--id", type=int, default=None)
         parser.add_argument("--include-main", action="store_true")
         parser.add_argument("--role", action="append", default=[])
         parser.add_argument("--profile", action="append", default=[])
@@ -69,6 +70,8 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
             upgrade_retired = self.queries.query(Agent).matching(EndedAgents()).filter(retirement_reason=UPGRADE_RETIREMENT_REASON).count()
             return AgentFilterOptions(tuple(sorted(role for role in json.loads(options.roles) if role != AgentRole.MAIN)), tuple((name, titles.get(name, name)) for name in sorted(profile for profile in json.loads(options.profiles) if profile)), upgrade_retired)
         rows = self.queries.query(AgentListing)
+        if arguments.id is not None:
+            rows = rows.filter(id=arguments.id)
         if not arguments.include_main and (not arguments.role or AgentRole.MAIN not in arguments.role):
             rows = rows.matching(Equal("role", AgentRole.MAIN, negated=True))
         if arguments.role or arguments.profile:

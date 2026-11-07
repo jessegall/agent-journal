@@ -8,6 +8,8 @@ from core.modules.plugins.support.plugin_command_run import PluginCommandRun
 class RunPluginCommand(Command[PluginCommandRun]):
     """Runs a shell line at the root of the checkout of an agent, for a plugin or a person."""
 
+    lock = False
+
     agent_id: int
     line: str
     is_readonly: bool

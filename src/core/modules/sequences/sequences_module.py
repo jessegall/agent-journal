@@ -8,6 +8,7 @@ from core.modules.sequences.listeners.sequence_event_index_listener import Seque
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_place import WindowPlace
 from core.modules.sequences.commands.abandon_sequence.abandon_sequence_subcommand import AbandonSequenceSubcommand
 from core.modules.sequences.commands.follow_step.follow_step_subcommand import FollowStepSubcommand
@@ -17,6 +18,7 @@ from core.modules.sequences.commands.move_sequence_run.move_sequence_run_handler
 from core.modules.sequences.commands.advance_step.advance_step_subcommand import AdvanceStepSubcommand
 from core.modules.sequences.commands.run_sequence.run_sequence_subcommand import RunSequenceSubcommand
 from core.modules.sequences.commands.sequence_list.sequence_list_subcommand import SequenceListSubcommand
+from core.modules.sequences.commands.sequence_board.sequence_board_subcommand import SequenceBoardSubcommand
 from core.modules.sequences.commands.sequence_run_list.sequence_run_list_subcommand import SequenceRunListSubcommand
 from core.modules.sequences.commands.sequence_show.sequence_show_subcommand import SequenceShowSubcommand
 from core.modules.sequences.commands.save_standard_sequences.save_standard_sequences_handler import SaveStandardSequencesHandler
@@ -65,7 +67,7 @@ class SequencesModule(Module):
     moves = [SequencesMove]
     handlers = [MakeSequenceHandler, MoveSequenceRunHandler, SaveStandardSequencesHandler]
     guards = [StandardSequenceGuard]
-    subcommands = [MakeSequenceSubcommand, SequenceShowSubcommand, SequenceListSubcommand, SequenceRunListSubcommand, RunSequenceSubcommand, FollowStepSubcommand,
+    subcommands = [MakeSequenceSubcommand, SequenceShowSubcommand, SequenceListSubcommand, SequenceBoardSubcommand, SequenceRunListSubcommand, RunSequenceSubcommand, FollowStepSubcommand,
                    AdvanceStepSubcommand, AbandonSequenceSubcommand]
     views = [SequenceRunRow]
     listeners = [SequenceEventIndexListener, SequenceRowTriggerListener, SequenceEndListener, StandardSequencesListener, SequenceStartedMarkListener]
@@ -73,4 +75,4 @@ class SequencesModule(Module):
     driver_rules = [UnstartedStepRule, StepGuardRule, SequenceTriggerRule]
     seeders = [SequencesSeeder]
     windows = [WindowDeclaration("sequences.sequences", "Sequences", "sequences.js", WindowLoading.COMPONENT, skeleton=SEQUENCES_SEQUENCES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.SEQUENCE,
-                                 reads=["sequence list", "sequence show", "sequence-run list"], runs=["sequence make", "sequence edit", "sequence delete"], events=["sequence.*", "sequence_run.*"])]
+                                 reads=["sequence list", "sequence show", "sequence-run list", "sequence board"], keys=[WindowKey("board", "sequence board", events=["sequence.*", "sequence_run.*"])], runs=["sequence make", "sequence edit", "sequence delete"], events=["sequence.*", "sequence_run.*"])]

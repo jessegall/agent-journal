@@ -142,7 +142,7 @@ test("worker identity stays the same when opened", async () => {
     expect(opened.querySelector("[data-agent-open]").title).toBe("");
     expect(opened.querySelector("[data-agent-last-heard]").parentElement).toBe(opened.querySelector("[data-agent-identity]").parentElement);
     const dispatched = opened.querySelector("[data-agent-first-dispatched]");
-    expect(dispatched.textContent).toBe("First dispatched: 6m ago");
+    expect(dispatched.textContent).toBe("First started: 6m ago");
     expect(dispatched.querySelector("[data-icon]").dataset.icon).toBe("time");
     expect(dispatched.querySelector("time").dateTime).toBe(row.created_at);
     expect(dispatched.nextElementSibling).toBe(opened.querySelector("[data-agent-last-heard]"));
@@ -518,7 +518,7 @@ test.each([["agents", Agents], ["helpers", Helpers]])("the %s window keeps the s
     window.option = () => ({value: "state"});
     const element = await mounted(component, window);
     expect(listed(element)).toEqual([5, 6, 7]);
-    expect(window.reads.filter((line) => line.startsWith("agent cards") && line !== "agent cards --options")).toHaveLength(1);
+    expect(window.reads.filter((line) => line.startsWith("agent cards") && line !== "agent cards --options" && line !== "agent cards --show all --limit 10000")).toHaveLength(1);
     expect(window.reads).not.toContain("agent running");
 });
 
@@ -554,4 +554,79 @@ test("a card says Blocked with its reason when the facts name one, and nothing w
     const held = await shown({state: ""});
     expect(held.querySelector(".agent-dot").dataset.state).toBe("running");
     expect(held.querySelector(".agent-work-status")).toBeNull();
+});
+
+test("an open agent keeps its updated card after it leaves the list", async () => {
+    const held = window();
+    const read = held.read;
+    let running = true;
+    held.read = async (line) => {
+        if (line.startsWith("agent cards --show all --include-main --id 3")) {
+            return page([{...AGENTS[1], ended_at: running ? null : "2026-11-07T10:00:00Z", facts: {...FACTS[1], instruction: running ? "Working" : "Finished reading"}}]);
+        }
+        if (line.startsWith("agent cards --show running")) return page(running ? AGENTS.slice(0, 2) : [AGENTS[0]]);
+        return read(line);
+    };
+    const element = await mounted(AgentRows, held, {empty: "No agents yet"});
+    cardOf(element, 3).click();
+    await settle();
+    running = false;
+    await held.reload(["agents", "card.3"]);
+    await settle();
+    expect(cardOf(element, 3).getAttribute("aria-expanded")).toBe("true");
+    expect(cardOf(element, 3).textContent).toContain("Finished reading");
+    cardOf(element, 3).querySelector("[aria-label='Back to the list']").click();
+    await settle();
+    expect(cardOf(element, 3)).toBeNull();
+    expect(cardOf(element, 2)).not.toBeNull();
+});
+
+
+test("a worker's list card shows its pace beneath the time only after a task is completed", async () => {
+    const started = "2026-11-01T08:00:00Z";
+    const finished = "2026-11-01T10:00:00Z";
+    const workers = [
+        {id: 4, session: "finished", program: "claude", role: "worker", created_at: started, ended_at: null},
+        {id: 5, session: "new", program: "claude", role: "worker", created_at: started, ended_at: null},
+    ];
+    const progress = [
+        {agent_id: 4, started_at: started, finished_at: finished, completed_count: 2, task_count: 3},
+        {agent_id: 5, started_at: started, finished_at: finished, completed_count: 0, task_count: 1},
+    ];
+    const element = await mounted(AgentRows, context({"agent cards --options": agentFilterOptions, "agent cards": page(workers), "worker progress": page(progress)}), {empty: "No agents yet"});
+    const pace = cardOf(element, 4).querySelector("[data-agent-list-pace]");
+    expect(pace.textContent.trim()).toBe("1 per hour");
+    expect(pace.previousElementSibling.classList.contains("agent-time")).toBe(true);
+    expect(cardOf(element, 5).querySelector("[data-agent-list-pace]")).toBeNull();
+});
+
+test("a worker shows its worktree task and notes another blocked task", async () => {
+    const row = {id: 4, role: "worker", state: "running", ended_at: null};
+    const tasks = [{id: 1, title: "Current task", state: "started"}, {id: 2, title: "Blocked task", state: "blocked"}];
+    const facts = {job_enabled: true, task_id: 1, task_title: "Current task", tasks, state: ""};
+    const progress = {task_id: 1};
+    for (const open of [false, true]) {
+        const element = await mounted({render: () => h(AgentCard, {row, facts, progress, open})}, context({}));
+        expect(element.querySelector("[data-agent-job]").textContent).toBe("Current task");
+        expect(element.querySelector("[data-agent-blocked-tasks]").textContent).toBe("Blocked: task 2");
+        if (!open) expect(element.querySelector(".agent-dot").dataset.state).toBe("running");
+    }
+});
+
+test("the task line names its plan after the title, and a task outside a plan has no plan link", async () => {
+    const row = {id: 4, role: "worker", state: "running", ended_at: null};
+    for (const planId of [7, null]) {
+        const tasks = [{id: 1, title: "Add the tax", state: "started", plan_id: planId, plan_title: "Cart plan"}, {id: 2, title: "Later", state: "open", plan_id: 9}];
+        const facts = {job_enabled: true, task_id: 1, task_title: "Add the tax", tasks};
+        const element = await mounted({render: () => h(AgentCard, {row, facts, open: true})}, context({}));
+        const job = element.querySelector("[data-agent-job]");
+        const plan = element.querySelector("[data-agent-plan]");
+        expect(job.textContent).toContain("Add the tax");
+        if (planId) {
+            expect(plan.textContent).toBe("plan 7");
+            expect(plan.closest("[data-agent-job]")).toBe(job);
+            expect(plan.dataset.peek).toBe("plans:7");
+        } else expect(plan).toBeNull();
+        expect(job.textContent).not.toContain("Cart plan");
+    }
 });

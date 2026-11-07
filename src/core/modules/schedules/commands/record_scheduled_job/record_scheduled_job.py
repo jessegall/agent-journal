@@ -8,6 +8,8 @@ from core.modules.schedules.models.scheduled_job import ScheduledJob
 class RecordScheduledJob(Command[ScheduledJob]):
     """An agent's program scheduled a job."""
 
+    lock = False
+
     agent_id: int
     job_id: str
     cron: str

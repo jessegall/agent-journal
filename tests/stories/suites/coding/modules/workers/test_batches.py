@@ -116,6 +116,26 @@ def test_the_default_batch_size_keeps_testing_each_task(new_story, monkeypatch):
     worker.story.expect_rows(worker.current_task() == 2)
 
 
+def test_a_large_batch_moves_on_without_repeated_row_reads(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    UserJoined().steps(story)
+    repository_environment(story)
+    for number in range(2, 14):
+        story.expect_success(f'task make "Job {number}" --brief "Do job {number}"', actor=story.agent)
+    memory_id = story.new_row_id('memory make "Remember the cart" --task 1 --environment main', actor=story.agent)
+    worker = dispatched_story_worker(story, "worker dispatch --model sonnet " + " ".join(str(number) for number in range(1, 14)), monkeypatch)
+    configure(worker, BATCH, "12")
+    for _ in range(11):
+        worker.prove_and_move_on()
+    worker.prove()
+    story.expect_success("worker next --differences none", actor=worker.worker)
+    reads = story.repeated_work.read_texts
+    story.expect_rows(reads["SELECT * FROM tasks WHERE id = ? AND environment_id = ? LIMIT 1 OFFSET 0"] < 12,
+                      reads["SELECT * FROM phase_tasks WHERE task_id = ? LIMIT 1 OFFSET 0"] < 12)
+    story.expect_rows(worker.current_task() == 13)
+    story.expect_success(f"memory show {memory_id}", "state: removed", actor=story.agent)
+
+
 def test_both_settings_appear_in_the_viewers_workers_section_and_are_person_set(batch):
     with server_story(batch.story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))

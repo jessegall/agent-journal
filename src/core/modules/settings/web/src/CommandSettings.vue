@@ -1,7 +1,10 @@
 <script setup>
-import {RowList, useRows} from "@journal/window-kit";
+import {RowList, useWindow} from "@journal/window-kit";
 
-const {rows, failure, loaded} = useRows("alias saved --limit 1000", ["alias.*"]);
+const window = useWindow();
+const {rows, failure, loaded} = window.props.commands;
+window.reload("commands");
+window.follow(["alias.*"], () => window.reload("commands"));
 </script>
 
 <template>

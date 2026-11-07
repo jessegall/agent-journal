@@ -37,7 +37,6 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
     terminal log and the transcript outside any transaction."""
 
     command = RecordProgramExit
-    transactional = False
 
     def __init__(self, queries: Queries, jobs: HelperJobRows, providers: Providers, folders: AgentFolders, reasons: ExitReasons, bus: Bus, system_log: SystemLogWriter, clock: Clock, profiles: ProfileFiles) -> None:
         self.queries, self.jobs, self.providers, self.folders, self.reasons, self.bus, self.system_log = queries, jobs, providers, folders, reasons, bus, system_log

@@ -1,6 +1,7 @@
 from core.base.file_access import FileAccess
 import subprocess
 import time
+from threading import Thread
 from datetime import timedelta
 from pathlib import Path
 
@@ -8,6 +9,8 @@ from core.base.child_process import ChildProcess
 from core.base.clock import Clock
 from core.base.leftover_process import LeftoverProcess
 from core.base.plugin_script_processes import PluginScriptProcesses
+from core.base.system_log_writer import SystemLogWriter
+from core.base.log_level import LogLevel
 from core.modules.plugins.models.enums.service_restart import ServiceRestart
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.modules.plugins.support.service_fault import ServiceFault
@@ -27,6 +30,7 @@ CONDITION_RECHECK = timedelta(minutes=10)
 SOCKET_LIMIT_SECONDS = 5
 SOCKET_POLL_SECONDS = 0.02
 HEALTH_LIMIT_MS = 200
+SERVICE_LOG_LIMIT_BYTES = 1_000_000
 
 
 class PluginServices:
@@ -38,8 +42,9 @@ class PluginServices:
     before its new one starts."""
 
     def __init__(self, runnable: RunnablePlugins, folders: PluginFolders, program: PluginProgram, sockets: PluginSocketPaths, setting_values: SettingValues,
-                 clock: Clock, scripts: PluginScriptProcesses) -> None:
+                 clock: Clock, scripts: PluginScriptProcesses, system_log: SystemLogWriter) -> None:
         self.runnable, self.folders, self.program, self.sockets, self.setting_values, self.clock, self.scripts = runnable, folders, program, sockets, setting_values, clock, scripts
+        self.system_log = system_log
 
     def follow(self, processes: ServiceProcesses) -> list[ServiceFault]:
         wanted: set[tuple[str, str]] = set()
@@ -66,6 +71,8 @@ class PluginServices:
         process = processes.running.get(key)
         if process is not None and (process.running() or service.restart is ServiceRestart.STOPPED_END or (service.restart is ServiceRestart.FAILED_END and process.exit_code() == 0)):
             return []
+        if process is not None:
+            self.system_log.write(LogLevel.WARNING, f"plugin {key[0]} service {key[1]} restarted after exit {process.exit_code()}")
         environment = self.environment(key, manifest)
         if process is None and service.condition:
             limit_seconds = self.setting_values.project.number(CONDITION_LIMIT_SETTING)
@@ -82,13 +89,24 @@ class PluginServices:
         program, pid_file = str(folder / service.command[0]), self.sockets.pid(*key)
         if process is None and pid_file.is_file():
             LeftoverProcess.stop(int(FileAccess.shared().read(pid_file)), program)
-        processes.running[key] = ChildProcess(subprocess.Popen([program, *service.command[1:]], cwd=folder, env=environment, stdin=subprocess.DEVNULL,
-                                                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True))
+        log = self.folders.service_log(*key)
+        log.parent.mkdir(parents=True, exist_ok=True)
+        started = subprocess.Popen([program, *service.command[1:]], cwd=folder, env=environment, stdin=subprocess.DEVNULL,
+                                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT, start_new_session=True)
+        processes.running[key] = ChildProcess(started)
+        Thread(target=self.record_output, args=(started.stdout, log), daemon=True).start()
         FileAccess.shared().write(pid_file, str(processes.running[key].pid))
         processes.digests[key] = digest
         if service.answers:
             self.poll_socket(self.sockets.answers(*key), processes.running[key])
         return []
+
+    @staticmethod
+    def record_output(stream, path: Path) -> None:
+        while data := stream.read1(8192):
+            access = FileAccess.shared()
+            previous = access.binary(path) if path.is_file() else b""
+            access.write_binary(path, (previous + data)[-SERVICE_LOG_LIMIT_BYTES:])
 
     def poll_socket(self, path: Path, process: ChildProcess) -> None:
         deadline = time.monotonic() + SOCKET_LIMIT_SECONDS
@@ -111,10 +129,11 @@ class PluginServices:
             folder = self.folders.code(plugin.name)
             for service in [service for service in manifest.services if (plugin.name, service.name) in processes.running]:
                 path = self.sockets.health(plugin.name, service.name)
-                if manifest.health is None or not path.is_socket():
+                if manifest.health is None:
                     continue
                 if self.is_healthy(path, manifest.health):
                     continue
+                self.system_log.write(LogLevel.WARNING, f"plugin {plugin.name} service {service.name} restarted after a missed health check")
                 processes.running.pop((plugin.name, service.name)).stop_group(STOP_LIMIT_SECONDS)
                 self.keep(processes, (plugin.name, service.name), folder, service, manifest, plugin.files_digest)
                 misses.append(ServiceFault(plugin, f"its service {service.name} missed its health check"))
