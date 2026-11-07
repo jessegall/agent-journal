@@ -112,3 +112,11 @@ test("collapsed waiting cards hide the warning strip", () => {
     const source = readFileSync(resolve(__dirname, "../src/kit/ChatDock.vue"), "utf8");
     expect(source).toMatch(/\.chat-dock\.collapsed \.chat-dock-card\.waiting::before\s*\{\s*display:\s*none;\s*\}/);
 });
+
+test("the all-docks header sticks to the top while the cards scroll under it", () => {
+    const source = readFileSync(resolve(__dirname, "../src/chat/DockStack.vue"), "utf8");
+    expect(source).toMatch(/\.dock-all\s*\{[^}]*position:\s*sticky;[^}]*top:\s*0;[^}]*z-index:\s*2;/);
+    expect(source).toMatch(/\.dock-stack\s*\{[^}]*overflow:\s*clip;/);
+    expect(source).not.toMatch(/\.dock-stack\s*\{[^}]*overflow:\s*hidden;/);
+    expect(readFileSync(resolve(__dirname, "../../core/modules/messages/web/src/Chat.vue"), "utf8")).toMatch(/\.chat-foot\s*\{[^}]*overflow-y:\s*auto;/);
+});

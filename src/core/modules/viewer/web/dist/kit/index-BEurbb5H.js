@@ -6849,7 +6849,7 @@ const V0 = {
       _: 1
     }, 8, ["duration"]));
   }
-}, I4 = /* @__PURE__ */ Y(J0, [["__scopeId", "data-v-d078676b"]]), $t = { notice: 0.42, gap: 8, shuffles: 3, seconds: 2.4, frames: 48, fps: 20, lift: 0.12 }, In = (e) => Math.min(Math.max(e, 0), 1), Z0 = (e) => {
+}, I4 = /* @__PURE__ */ Y(J0, [["__scopeId", "data-v-5f556521"]]), $t = { notice: 0.42, gap: 8, shuffles: 3, seconds: 2.4, frames: 48, fps: 20, lift: 0.12 }, In = (e) => Math.min(Math.max(e, 0), 1), Z0 = (e) => {
   const t = In(e);
   return t * t * (3 - 2 * t);
 }, gt = (e, t, n) => Z0((e - t) / (n - t));
@@ -11562,7 +11562,7 @@ function B8(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const L8 = $i(() => import("./VoiceFigure-DhKlr4oP.js").then((e) => e.V)), N8 = "1.2.0", D8 = "3.5";
+const L8 = $i(() => import("./VoiceFigure-DvwQQtqh.js").then((e) => e.V)), N8 = "1.2.0", D8 = "3.5";
 export {
   Gd as $,
   _e as A,

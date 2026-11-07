@@ -33,4 +33,4 @@ class PluginSubscriptions:
         for key in dict.fromkeys(listener.event for listener in manifest.listeners if not listener.is_wrong):
             event = self.registry.event_name(key)
             forms = self.registry.event_keys[event].forms if event else ()
-            yield from (((event, form), PluginSubscription(runnable.plugin.name, manifest.script(key, form), runnable.plugin.id, manifest.allows_skip(key))) for form in forms if manifest.script(key, form))
+            yield from (((event, form), PluginSubscription(runnable.plugin.name, manifest.script(key, form), runnable.plugin.id, manifest.allows_skip(key), manifest.listen_window_ms(key))) for form in forms if manifest.script(key, form))
