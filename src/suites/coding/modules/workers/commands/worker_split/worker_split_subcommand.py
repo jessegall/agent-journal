@@ -51,8 +51,13 @@ class WorkerSplitSubcommand(ReadSubcommand[RowList | WorkerSplitPreview | Worker
         folder = self.home.project_folder if caller.environment_id is None else Path(self.environments.find(caller.environment_id).folder)
         shares, counts = self.shares.shares(), self.counts.recent(caller.environment_id)
         helper_counts = self.helpers.recent(caller.environment_id)
+        outages = {provider.name: self.states.outage_state(provider.name) for provider in self.providers.all()}
         return RowList([{"id": provider.name, "title": provider.title, "share": shares.get(provider.name, 0),
                          "recent": counts[provider.name], "helpers_recent": helper_counts[provider.name],
+                         "windows": [window.line for window in self.states.windows(provider.name)],
+                         "outage": not outages[provider.name].is_ready,
+                         "outage_reason": outages[provider.name].line if not outages[provider.name].is_ready else None,
+                         "outage_ends_at": outages[provider.name].ends_at.text if outages[provider.name].ends_at is not None else None,
                          **self.states.state(provider.name, folder).listed()}
                         for provider in self.providers.all()])
 

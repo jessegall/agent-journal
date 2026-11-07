@@ -18,6 +18,7 @@ from core.modules.helpers.support.program_state import ProgramState
 from core.modules.helpers.support.program_readiness import ProgramReadiness
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.usage.support.status_files import StatusFiles
+from core.modules.usage.support.plan_window import PlanWindow
 
 
 class ProgramStates:
@@ -50,15 +51,17 @@ class ProgramStates:
         threshold = self.settings.number(PROGRAM_WINDOW_PERCENT)
         if threshold == 0:
             return ProgramState.ready()
-        with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            agents = self.agents.running().filter(program=program).all_rows()
-        status = self.statuses.newest_status([agent.session for agent in agents], checked_at)
-        blocked = [window for window in status.windows
+        blocked = [window for window in self.windows(program)
                    if window.used_percent >= threshold and window.reset_epoch_seconds > checked_at.value.timestamp()]
         if not blocked:
             return ProgramState.ready()
         window = max(blocked, key=lambda row: row.reset_epoch_seconds)
         return ProgramState.unavailable(window.line, Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc)))
+
+    def windows(self, program: str) -> tuple[PlanWindow, ...]:
+        with self.scopes.opened(None, disabled=[EnvironmentScope]):
+            agents = self.agents.running().filter(program=program).all_rows()
+        return self.statuses.newest_status([agent.session for agent in agents], self.clock.timestamp()).windows
 
     def outage_state(self, program: str) -> ProgramState:
         try:

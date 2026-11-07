@@ -50,6 +50,7 @@ const word = computed(() => (pendingWork.value ? `Status: ${pendingWork.value}` 
             <span class="agent-space" />
         </template>
         <slot />
+        <Btn variant="icon" data-workers aria-label="Workers" title="Workers" @click="emit('open', 'workers', $event.currentTarget)"><Icon name="agents" :size="12" />{{ workers }}</Btn>
         <button type="button" class="agent-helpers agent-helpers-count" data-process-queue aria-label="Process queue" title="Process queue: processes running now" @click="peekRef('test_queue:0')">
             <Icon name="terminal" :size="12" />
             {{ processes }}

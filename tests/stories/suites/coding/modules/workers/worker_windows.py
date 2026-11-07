@@ -57,8 +57,9 @@ def test_split_tab_saves_shares_that_add_to_100_worker_limit_matches_settings(sp
     key = 'journal.suites.coding.workers.worker-run-limit'
     split_viewer.value('workers.workers', ['setting', 'set', key, '4', '--project'])
     dropdown = split_viewer.value('workers.workers', ['setting', 'show', key])
-    settings = split_viewer.value('settings.settings', ['setting', 'show', key])
-    story.expect_rows(dropdown == settings, '4' in str(settings))
+    settings = split_viewer.value('settings.settings', ['setting', 'tree'])['rows']
+    saved = next(row for row in settings if row['key'] == key)
+    story.expect_rows(dropdown['value'] == saved['value'], saved['value'] == 4)
 
 
 def test_person_adds_a_route_in_the_split_tab(split_story, split_viewer):
