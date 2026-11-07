@@ -110,7 +110,7 @@ class ModuleSync:
         with self.database.transaction():
             timestamp = self.clock.timestamp().text
             self.actors.core_actor(timestamp)
-            actor_ids = {module.name: self.actors.module_actor(module.name, timestamp) for module in modules}
+            actor_ids = self.actors.module_actors([module.name for module in modules], timestamp)
             registry = self.registry(modules, rules, actor_ids)
             registry_changed = self.registry_table.write(registry.fingerprint, registry.entries_text(), timestamp)
             if registry_changed:

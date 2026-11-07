@@ -1,8 +1,6 @@
-from core.base.actor_type import ActorType
 from core.base.command.context import Context
-from core.base.refusal import Refusal
+from core.modules.agents.support.person_check import PersonCheck
 
 
 def check_profile_person(context: Context) -> None:
-    if context.actor.type is not ActorType.USER:
-        raise Refusal("only a person changes a profile", "say in your report what you would change")
+    PersonCheck.require(context, "Change this profile?")

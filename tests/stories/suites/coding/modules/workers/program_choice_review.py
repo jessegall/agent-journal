@@ -531,7 +531,7 @@ def test_codex_hooks_run_in_the_worker_folder(new_story, monkeypatch, program, m
     session = worker_session(story, worker)
     launcher.expect_started(worker.id, session, folder)
     story.expect_rows("--dangerously-bypass-hook-trust" in launcher.starts[0]["command"])
-    story.expect_success(f"program trust codex {shlex.quote(str(folder))}", "untrusted")
+    story.expect_success(f"program trust codex {shlex.quote(str(folder))}", "ready")
     hooks = ProgramHooks.hooks(CodexProvider, folder).settings()["hooks"]
     path = folder / "cart.py"
     environment = GoBuild.environment(**launcher.starts[0]["variables"])
@@ -546,7 +546,7 @@ def test_codex_hooks_run_in_the_worker_folder(new_story, monkeypatch, program, m
     calls = tuple(story.container.get(Queries).query(HookCall).filter(session_agent_id=worker.id, tool="read_file").all_rows())
     story.expect_rows(len(calls) == 1)
     story.expect_rows(calls[0].folder == str(folder))
-    story.expect_success(f"program trust codex {shlex.quote(str(folder))}", "untrusted")
+    story.expect_success(f"program trust codex {shlex.quote(str(folder))}", "ready")
 
 
 @pytest.mark.parametrize("case", [pytest.param("third-provider", id="S70")])

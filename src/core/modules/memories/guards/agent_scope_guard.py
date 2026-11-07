@@ -11,6 +11,7 @@ class AgentScopeGuard(Guard[Changed[Memory]]):
     """An agent writes a memory only in its own environment, both as it was and as it becomes."""
 
     name = "memories.agent-scope"
+    is_safety = True
 
     def __init__(self, scope: MemoryScope) -> None:
         self.scope = scope

@@ -9,6 +9,8 @@ from core.base.driver.tool_type import ToolType
 from core.base.guard.guard_refusal import GuardRefusal
 from core.base.refusal import Refusal
 from core.base.refusal_log import RefusalLog
+from core.base.query.queries import Queries
+from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.processes.commands.start_process.start_process import PartSpec, StartProcess
 from core.modules.processes.models.process import Process
 from core.testing.hook_samples import HookSamples
@@ -18,6 +20,7 @@ from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 RULE = "processes.failed-full-run"
 GUARD = "tasks.dependencies-closed"
@@ -108,10 +111,11 @@ def test_a_safety_refusal_has_no_skip(new_story):
 def test_a_main_agent_at_five_skips_loses_the_skip_and_the_person_is_told_and_gives_it_back(new_story):
     story = new_story(fixture=BuilderWithUser)
     guard_skips(story, story.agent, 5)
-    story.expect_text("message list --environment main", "skipped 5 refusals in a row", actor=story.user)
-    story.expect_refusal(GUARD_SKIP, "lost the skip", actor=story.agent)
-    story.expect_refusal(f"refusal restore {story.agent.id} --environment main", "only a person", actor=story.agent)
-    story.expect_success(f"refusal restore {story.agent.id} --environment main", actor=story.user)
+    approval = story.container.get(Queries).query(ApprovalRequest).first()
+    story.expect_rows(approval is not None, "skipped 5 refusals" in approval.text)
+    story.expect_refusal(GUARD_SKIP, "A person was asked in the dock", actor=story.agent)
+    with viewer_client(story) as viewer:
+        viewer.value("messages.chat", ["approval", "accept", str(approval.id)])
     guard_skips(story, story.agent, 1)
 
 

@@ -26,7 +26,7 @@ class ChooseLibraryVersionHandler(Handler[ChooseLibraryVersion, LibraryCopy]):
         self.queries, self.shares, self.connections, self.sync, self.browse, self.bus = queries, shares, connections, sync, browse, bus
 
     def handle(self, command: ChooseLibraryVersion, context: Context) -> LibraryCopy:
-        LibraryPerson.require(context, "only a person chooses between a copy and its item", "ask the user to choose on the Teams page")
+        LibraryPerson.require(context, "only a person chooses between a copy and its item")
         copy = self.queries.query(LibraryCopy).find(command.copy_id)
         if not copy.state.needs_choice:
             raise Refusal(f"{copy.share} {copy.row_id} has nothing to resolve: it is {copy.state.value}", "journal library copies shows what needs a choice")

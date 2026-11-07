@@ -48,7 +48,7 @@ def test_the_program_runs_with_a_throwaway_home_and_nothing_of_the_agents_enviro
 
 def test_a_program_the_user_did_not_allow_is_refused_with_how_to_propose_it(new_story):
     story = filled_story(new_story)
-    story.expect_refusal("secret run 1 -- curl https://api.github.com", "secret 1 may not go to curl: journal secret propose 1 curl", actor=story.agent)
+    story.expect_refusal("secret run 1 -- curl https://api.github.com", "A person was asked in the dock", actor=story.agent)
 
 
 def test_a_wrapper_is_refused_even_named_after_the_separator(new_story):
@@ -80,7 +80,7 @@ def test_a_helper_is_refused_until_the_user_lets_helpers_have_the_secret(new_sto
     story = filled_story(new_story)
     worker = story.new_row_id(f"agent start s-2 claude worker --parent {story.agent.id} --environment main")
     helper = Actor(worker, ActorType.AGENT)
-    story.expect_refusal("secret run 1 -- head -c 64", "secret 1 is the main agent's alone: the user lets helpers have it on the Secrets window", actor=helper)
+    story.expect_refusal("secret run 1 -- head -c 64", "A person was asked in the dock", actor=helper)
     story.expect_success("secret allow 1 --helpers", "helpers may use secret 1", actor=story.user)
     story.expect_text("secret run 1 -- head -c 64", MASK, actor=helper)
 

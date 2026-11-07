@@ -10,4 +10,5 @@ class LayoutOwnerGuard(PersonRowGuard[Changed[ViewerLayout]]):
     someone's pages."""
 
     name = "viewer.layout-owner"
-    refusal = Refusal("only a person keeps a layout", "the viewer saves a layout when the person arranges a page")
+    refusal = Refusal("this layout belongs to another person")
+    question = "Change this saved layout?"

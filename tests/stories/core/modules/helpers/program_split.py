@@ -9,6 +9,8 @@ from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.start_helper import START, started
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, START as FILE_START, helper_agent
 from core.modules.helpers.support.helper_programs import HelperPrograms
+from core.base.provider.program_hooks import ProgramHooks
+from core.modules.codex.providers.codex_provider import CodexProvider
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.suites.coding.modules.workers.support.program_split import SPLIT, real_program_checks, set_split, viewer_client
 from tests.stories.support.program_states import real_program_states
@@ -58,8 +60,13 @@ def test_split_passes_over_a_program_not_trusted_named_program_keeps_the_refusal
     monkeypatch.setenv('CODEX_HOME', str(tmp_path / 'untrusted'))
     monkeypatch.setattr('shutil.which', lambda name: name)
     real_program_checks(story)
+    hooks = ProgramHooks.hooks(CodexProvider, tmp_path / 'helper-project')
+    hooks.write('journal-hook', story.home.project_folder)
+    settings = hooks.settings()
+    settings['hooks']['PreToolUse'][0]['hooks'][0]['command'] += ' --foreign'
+    ProgramHooks.store(hooks.path, settings)
     FakeLauncher(story.home.socket('launcher'))
-    story.expect_refusal(f'{START} --program codex', 'journal program trust', actor=story.agent)
+    story.expect_refusal(f'{START} --program codex', 'untrusted codex hooks', actor=story.agent)
 
 
 @pytest.mark.parametrize('shares,reason', [('claude 80,codex 10', '100'), ('claude 80,unknown 20', 'unknown')])

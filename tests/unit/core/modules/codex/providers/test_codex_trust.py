@@ -100,3 +100,29 @@ def test_a_worktree_never_creates_trust_for_changed_or_unapproved_hooks(trusted_
         path.write_text(path.read_text().replace("journal-hook codex /work/app", "journal-hook codex /work/changed"))
     CodexTrust(config).copied(hooks, target)
     assert CodexTrust(config).trust(target, HOOK_NAMES) is HookTrust.UNTRUSTED
+
+
+def test_a_worktree_refreshes_existing_trust_after_the_journal_rewrites_its_source(trusted_hooks, tmp_path):
+    hooks, config = trusted_hooks
+    target = tmp_path / "worker/hooks.json"
+    target.parent.mkdir()
+    target.write_text(hooks.read_text())
+    trust = CodexTrust(config)
+    trust.copied(hooks, target)
+    generated = json.loads(hooks.read_text())
+    generated["hooks"]["PreToolUse"][0]["hooks"][0]["timeout"] += 1
+    hooks.write_text(json.dumps(generated))
+    trust.record_generated(hooks, generated["hooks"])
+    target.write_text(hooks.read_text())
+    assert trust.trust(target, HOOK_NAMES) is HookTrust.CHANGED
+    trust.copied(hooks, target)
+    assert trust.trust(target, HOOK_NAMES) is HookTrust.READY
+    assert 'model = "sample"' in config.read_text()
+
+
+def test_a_write_records_generated_definitions_without_approving_a_later_foreign_edit(trusted_hooks):
+    hooks, config = trusted_hooks
+    generated = json.loads(hooks.read_text())
+    hooks.write_text(hooks.read_text().replace("journal-hook codex /work/app", "journal-hook codex /work/foreign"))
+    CodexTrust(config).record_generated(hooks, generated["hooks"])
+    assert CodexTrust(config).trust(hooks, HOOK_NAMES) is HookTrust.CHANGED

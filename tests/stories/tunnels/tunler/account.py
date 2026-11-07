@@ -1,5 +1,8 @@
 import json
 
+from core.base.query.queries import Queries
+from core.modules.approvals.models.approval_request import ApprovalRequest
+
 from core.base.tunnel.tunnel_state import TunnelState
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
@@ -10,6 +13,7 @@ from tunnels.tunler.support.tunler_client import TunlerClient
 from tunnels.tunler.support.tunler_tunnel import TunlerTunnel
 from core.testing.expect_row import expect_row
 from tests.stories.support.story_checks import expect_value
+from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 MODULE = "tunnels.tunler.tunler_module:TunlerModule"
 SUBDOMAIN_SETTING = "journal.tunnels.tunler.subdomain"
@@ -124,8 +128,20 @@ def test_installing_takes_the_server_address_without_its_scheme_or_path(new_stor
 
 def test_only_a_person_logs_in_or_changes_tunler(new_story):
     story, _ = account_story(new_story)
-    for line in (f"tunler login {TUNLER_HOST} {ACCOUNT} secret-one", "tunler logout", "tunler update", f"tunler install {TUNLER_HOST}", f"tunler release {SPARE_DOMAIN}"):
-        story.expect_refusal(line, "only a person", actor=story.agent)
+    story.expect_refusal(f"tunler login {TUNLER_HOST} {ACCOUNT} secret-one", "sign-in credentials are entered by a person", actor=story.agent)
+    for line in ("tunler logout", "tunler update", f"tunler install {TUNLER_HOST}", f"tunler release {SPARE_DOMAIN}"):
+        story.expect_refusal(line, "A person was asked in the dock", actor=story.agent)
+
+
+def test_a_person_accepts_a_tunler_logout_request_in_the_viewer(new_story, monkeypatch):
+    story, client = account_story(new_story)
+    story.expect_refusal("tunler logout", "A person was asked in the dock", actor=story.agent)
+    approval = story.container.get(Queries).query(ApprovalRequest).first()
+    monkeypatch.setattr(TunlerClient, "logout", lambda self: client.logout())
+    with viewer_client(story) as viewer:
+        viewer.value("messages.chat", ["approval", "accept", str(approval.id)])
+    expect_logged_client(client, 1)
+    story.expect_rows(not client.authenticated)
 
 
 def test_the_tunler_window_declares_what_it_reads_and_runs(new_story):
@@ -148,7 +164,7 @@ def test_a_tunnel_made_for_one_read_says_why_none_is_open(new_story):
     story, client = account_story(new_story, FakeTunlerClient(authenticated=False))
     story.expect_success(f"setting set {SUBDOMAIN_SETTING} cart-team --project", actor=story.user)
     new = TunlerTunnel(client, story.container.get(SettingValues), SetClock())
-    story.expect_rows(new.state() is TunnelState.DISCONNECTED, new.reason() == "this machine is not logged in to tunler: run tunler login")
+    story.expect_rows(new.state() is TunnelState.DISCONNECTED, new.reason() == "this machine is not logged in to Tunler: sign in on the Tunler page")
 
 
 def expect_installed_client(client, expected) -> None:

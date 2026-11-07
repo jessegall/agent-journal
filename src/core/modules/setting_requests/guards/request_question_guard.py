@@ -22,4 +22,4 @@ class RequestQuestionGuard(Guard[Changed[Question]]):
         if context.actor.type is not ActorType.AGENT or event.row.state is QuestionState.CLOSED:
             return
         if self.queries.query(SettingRequest).filter(question_id=event.row.id).exists():
-            raise Refusal(f"only a person answers question {event.row.id}", "wait for the answer, or close it with journal question close")
+            raise Refusal(f"a person was asked to decide question {event.row.id} in the dock")

@@ -1,9 +1,10 @@
 from core.base.command.context import Context
+from core.base.actor_type import ActorType
+from core.base.refusal import Refusal
 from core.base.command.handler import Handler
 from tunnels.tunler.commands.login_tunler.login_tunler import LoginTunler
 from tunnels.tunler.support.tunler_client import TunlerClient
 from tunnels.tunler.support.tunler_login import TunlerLogin
-from tunnels.tunler.support.tunler_person import TunlerPerson
 
 
 class LoginTunlerHandler(Handler[LoginTunler, TunlerLogin]):
@@ -15,5 +16,6 @@ class LoginTunlerHandler(Handler[LoginTunler, TunlerLogin]):
         self.client = client
 
     def handle(self, command: LoginTunler, context: Context) -> TunlerLogin:
-        TunlerPerson.require(context)
+        if context.actor.type is not ActorType.USER:
+            raise Refusal("sign-in credentials are entered by a person in the Tunler window")
         return self.client.login(command.host, command.username, command.password, command.master)

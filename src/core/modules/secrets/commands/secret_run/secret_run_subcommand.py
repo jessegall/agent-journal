@@ -1,3 +1,4 @@
+from core.base.user_approval import UserApproval
 from argparse import ArgumentParser, Namespace
 
 from core.base.actor_type import ActorType
@@ -38,8 +39,21 @@ class SecretRunSubcommand(ReadSubcommand[SecretRunOutcome]):
             raise Refusal(f"secret {deleted[0].id} is deleted", f"journal secret restore {deleted[0].id} brings it back")
         secret = self.secrets.find_title(arguments.secret)
         if not secret.helpers and caller.actor.type is ActorType.AGENT and self.queries.query(Agent).find(caller.actor.id).role != AgentRole.MAIN:
-            raise Refusal(f"secret {secret.id} is the main agent's alone", "the user lets helpers have it on the Secrets window")
-        return self.runner.run(secret, [word for word in arguments.command if word != SEPARATOR], arguments.stdin, arguments.env)
+            raise UserApproval(f"Allow helpers to use the secret {secret.title} and run the requested command?",
+                               ("secret", "allow", str(secret.id), "--helpers"), continued_arguments=self.run_arguments(arguments), returns_output=True)
+        try:
+            return self.runner.run(secret, [word for word in arguments.command if word != SEPARATOR], arguments.stdin, arguments.env)
+        except UserApproval as approval:
+            approval.continued_arguments = self.run_arguments(arguments)
+            raise
+
+    @staticmethod
+    def run_arguments(arguments: Namespace) -> tuple[str, ...]:
+        flags = ("--stdin", arguments.stdin) if arguments.stdin else ()
+        if arguments.env:
+            flags = (*flags, "--env")
+        command = tuple(word for word in arguments.command if word != SEPARATOR)
+        return ("secret", "run", arguments.secret, *flags, SEPARATOR, *command)
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, SecretRunOutcome):

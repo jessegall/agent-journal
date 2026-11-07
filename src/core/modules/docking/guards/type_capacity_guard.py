@@ -20,7 +20,7 @@ class TypeCapacityGuard(Guard[Changed[DockItem]]):
     def check(self, event: Changed[DockItem], context: Context) -> None:
         item = DockingArrival.item(event)
         capacity = self.limits.type_capacity(item.type) if item is not None else None
-        if item is None or capacity is None:
+        if item is None or capacity is None or self.limits.requires_user(item.type):
             return
         docked_items = [sibling for sibling in self.items.docked(item.dock_id).same_chat(item.session_agent_id).type_items(item.type).all_rows() if sibling.id != item.id]
         if len(docked_items) >= capacity:

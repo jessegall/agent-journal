@@ -10,4 +10,5 @@ class PermissionOwnerGuard(PersonRowGuard[Changed[WindowPermission]]):
     person gives rights for someone."""
 
     name = "viewer.permission-owner"
-    refusal = Refusal("only the person a window permission is for may give it", "ask the user to allow it in the viewer")
+    refusal = Refusal("these permissions belong to another person")
+    question = "Change these window permissions?"

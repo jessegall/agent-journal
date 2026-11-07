@@ -14,3 +14,7 @@ class Refusal(Exception):
     @property
     def is_completed(self) -> bool:
         return False
+
+    @property
+    def original(self) -> "Refusal":
+        return self

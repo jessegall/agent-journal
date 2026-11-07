@@ -23,6 +23,8 @@ from core.modules.sharing.commands.share_comments.share_comments_subcommand impo
 from core.modules.sharing.commands.share_opens.share_opens_subcommand import ShareOpensSubcommand
 from core.modules.sharing.commands.share_unlock.share_unlock_subcommand import ShareUnlockSubcommand
 from core.modules.sharing.guards.share_link_row_guard import ShareLinkRowGuard
+from core.modules.sharing.listeners.share_approval_listener import ShareApprovalListener
+from core.modules.sharing.migrations.m005_share_approval_index import ShareApprovalIndexMigration
 from core.modules.sharing.migrations.m002_share_options import ShareOptionsMigration
 from core.modules.sharing.models.share_comment import ShareComment
 from core.modules.sharing.migrations.m001_share_links import ShareLinksTableMigration
@@ -44,7 +46,8 @@ class SharingModule(Module):
     models = [ModelDeclaration(ShareLink, commands=[RevokeShareLink, DenyShareLink], excluded_subcommands=["make", "edit", "accept"]),
               ModelDeclaration(ShareComment, excluded_subcommands=["make", "edit", "delete"])]
     guards = [ShareLinkRowGuard]
-    migrations = [ShareCommentIndexMigration, ShareLinksTableMigration, ShareOptionsMigration, ShareLinkEnvironmentIndexMigration]
+    listeners = [ShareApprovalListener]
+    migrations = [ShareCommentIndexMigration, ShareLinksTableMigration, ShareOptionsMigration, ShareLinkEnvironmentIndexMigration, ShareApprovalIndexMigration]
     subcommands = [MakeShareLinkSubcommand, ShareSessionSubcommand, AcceptShareLinkSubcommand, CountShareViewSubcommand, ShareUnlockSubcommand, LeaveShareCommentSubcommand, ShareCommentsSubcommand, ShareOpensSubcommand]
     handlers = [MakeShareLinkHandler, AcceptShareLinkHandler, CountShareViewHandler, LeaveShareCommentHandler]
     moves = [ShareMove]

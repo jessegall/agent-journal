@@ -5,6 +5,7 @@ from core.base.command.context import Context
 from core.base.guard.guard import Guard
 from core.modules.phone.models.lifecycles.phone_lifecycle import PhoneLifecycle
 from core.base.refusal import Refusal
+from core.base.user_approval import UserApproval
 from core.modules.phone.models.phone import Phone
 
 
@@ -22,4 +23,6 @@ class PhoneRowGuard(Guard[Changed[Phone]]):
         is_owner_change = isinstance(event, Deleted) or event.move is PhoneLifecycle.unpair
         if is_owner_change and actor.type is ActorType.USER and actor.id == event.row.person_id:
             return
-        raise Refusal("only the phone's person unpairs it, and only the viewer pairs it", "unpair it from the Phones window")
+        if is_owner_change and actor.type is ActorType.AGENT:
+            raise UserApproval(f"Unpair phone {event.row.id}?", required_person_id=event.row.person_id)
+        raise Refusal("a paired phone belongs to its person and can only be paired by the viewer")

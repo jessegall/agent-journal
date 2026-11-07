@@ -2,6 +2,8 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
+from core.base.actor_type import ActorType
+from core.base.user_approval import UserApproval
 from core.base.repository.repository import Repository
 from core.modules.viewer.commands.remove_person_preset.remove_person_preset import RemovePersonPreset
 from core.modules.viewer.models.person_preset import PersonPreset
@@ -17,6 +19,8 @@ class RemovePersonPresetHandler(Handler[RemovePersonPreset, PersonPreset]):
 
     def handle(self, command: RemovePersonPreset, context: Context) -> PersonPreset:
         layout = self.queries.query(PersonPreset).find(command.row_id)
+        if context.actor.type is ActorType.AGENT:
+            raise UserApproval(f"Remove the layout preset {layout.name}?", required_person_id=layout.person_id)
         if layout.person_id != context.actor.id:
             raise Refusal(f"preset {layout.id} is another person's", "journal person-preset list lists yours")
         self.repository.delete(layout, context)

@@ -17,7 +17,7 @@ class RestoreLibraryItemHandler(Handler[RestoreLibraryItem, RestoredLibraryItem]
         self.writes = writes
 
     def handle(self, command: RestoreLibraryItem, context: Context) -> RestoredLibraryItem:
-        LibraryPerson.require(context, "an agent cannot restore an item of the library", "ask the user to restore it")
+        LibraryPerson.require(context, "an agent cannot restore an item of the library")
         if command.version is None:
             return RestoredLibraryItem(self.writes.restore_removed(command.share, command.item_id), None)
         return RestoredLibraryItem(self.writes.restore_version(VersionRequest(command.share, command.item_id, command.version)), command.version)
