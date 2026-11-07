@@ -1,7 +1,10 @@
 <script setup>
-import { useDockRow } from "@journal/window-kit";
+import {computed} from "vue";
+import {useDockCard, useWindow} from "@journal/window-kit";
 
-const request = useDockRow("approval");
+const card = useDockCard();
+const item = useWindow().option("row");
+const request = computed(() => card.data.value?.rows?.find((row) => row.id === item.value.target_id));
 </script>
 
 <template>

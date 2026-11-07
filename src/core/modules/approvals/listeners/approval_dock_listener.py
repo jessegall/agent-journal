@@ -27,7 +27,7 @@ class ApprovalDockListener(CommitListener[Changed[ApprovalRequest]]):
         request = event.row
         items = tuple(self.items.type_items(ApprovalDockType.REQUEST.value).row_items(ApprovalRequest.model_name, request.id).filter(state=DockItemState.DOCKED).all_rows())
         actor = self.actors.actor("journal.core.approvals")
-        if request.state in (ApprovalState.OPEN, ApprovalState.RUNNING):
+        if request.state in (ApprovalState.OPEN, ApprovalState.RUNNING) and request.recipient_agent_id is None:
             if not items:
                 self.bus.run(AddDockItem(ApprovalDockType.REQUEST.value, ApprovalRequest.model_name, request.id), actor,
                              cause_id=logged.id, environment_id=request.environment_id)

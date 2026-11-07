@@ -29,7 +29,7 @@ class DockItemReadSubcommand(ReadSubcommand[WindowKeyLine]):
         item = self.queries.query(DockItem).find(arguments.item_id)
         dock = self.registry.dock(item.type)
         read_line = dock.reads[0].split() if dock is not None and dock.reads else []
-        is_item_read = bool(read_line) and item.target_id and read_line[-1] != LIST_COMMAND
+        is_item_read = dock is not None and dock.reads_target and bool(read_line) and item.target_id and read_line[-1] != LIST_COMMAND
         return WindowKeyLine(item.type, [*read_line, str(item.target_id)] if is_item_read else read_line)
 
     def write_output(self, value: object, output: Output) -> None:
