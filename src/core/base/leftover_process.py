@@ -10,7 +10,8 @@ POLL_SECONDS = 0.05
 
 
 class LeftoverProcess:
-    """A process a killed journal left running, found by its saved pid and stopped with its group."""
+    """A process a killed journal left running, found by its saved pid and stopped with its group. Its command line
+    is checked once; after the signal it is watched by its pid alone, so the wait starts no process per poll."""
 
     @classmethod
     def stop(cls, pid: int, program: str) -> bool:
@@ -18,12 +19,31 @@ class LeftoverProcess:
             return True
         cls.signal(pid, signal.SIGTERM)
         deadline = time.monotonic() + STOP_LIMIT_SECONDS
-        while program in cls.command_line(pid) and time.monotonic() < deadline:
+        while cls.is_running(pid) and time.monotonic() < deadline:
             time.sleep(POLL_SECONDS)
-        if program not in cls.command_line(pid):
+        if not cls.is_running(pid):
             return True
         cls.signal(pid, signal.SIGKILL)
         return False
+
+    @classmethod
+    def is_running(cls, pid: int) -> bool:
+        if cls.is_reaped(pid):
+            return False
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            return False
+        except PermissionError:
+            return True
+        return True
+
+    @staticmethod
+    def is_reaped(pid: int) -> bool:
+        try:
+            return os.waitpid(pid, os.WNOHANG)[0] == pid
+        except ChildProcessError:
+            return False
 
     @staticmethod
     def signal(pid: int, number: int) -> None:
