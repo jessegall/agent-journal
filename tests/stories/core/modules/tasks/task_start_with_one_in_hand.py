@@ -10,7 +10,7 @@ START_TOTAL_TASK = HookSamples.shell("journal task start 1", ShellPart("journal"
 def test_starting_a_task_with_another_in_hand_asks_about_testing_that_one(new_story):
     story = new_story(fixture=TwoOpenTasks)
     story.run("task start 1", actor=story.agent)
-    story.expect_hook_allowed("s-1", START_TAX_TASK, "did you mean to move task:1 to testing first? journal task test 1")
+    story.expect_hook_allowed("s-1", START_TAX_TASK, "did you mean to move task:1 to testing first?")
 
 
 def test_starting_a_task_with_none_in_hand_says_nothing(new_story):

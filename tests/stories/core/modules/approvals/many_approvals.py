@@ -34,7 +34,7 @@ def test_several_approvals_reach_the_agent_as_one_counted_notice(pending_request
     story = pending_requests
     answer = story.hook("s-1", HookSamples.prompt("Continue"))
     lines = [line for line in answer.lines if "A person was asked" in line]
-    story.expect_rows(lines == ["A person was asked for 12 approvals: journal approval list --state open"])
+    story.expect_rows(lines == ["A person was asked for 12 approvals"])
     following = story.hook("s-1", HookSamples.prompt("Continue"))
     story.expect_rows(not any("A person was asked" in line for line in following.lines))
 

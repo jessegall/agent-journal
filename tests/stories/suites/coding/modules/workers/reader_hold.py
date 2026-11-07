@@ -134,7 +134,7 @@ def test_a_saved_proper_reader_frees_the_worker_and_starts_its_run_with_that_rea
     story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
     output = story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0]
     story.expect_rows(output.reader_id == reader, output.read_offset == 0, story.container.get(OutputFolder).has_slot(process.id))
-    story.expect_text(f"agent-line list --agent {reader_worker(story).id}", "journal output read 1 --reader proper")
+    story.expect_text(f"agent-line list --agent {reader_worker(story).id}", "read the sample of output 1 with reader proper")
 
 
 def test_a_reader_that_does_not_read_the_command_leaves_the_request_open(new_story):

@@ -5,11 +5,11 @@ from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 
 WORKER_OPERATION_NEXT = NudgeDeclaration("workers.operation_next", NudgeType.STEERING,
-    'task:{task} is yours next: journal task overview {task}; output {output}', turn_limited=False, wakes_agent=True)
+    'task:{task} is yours next; output {output}', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_TESTS = NudgeDeclaration("workers.operation_tests", NudgeType.STEERING,
     'task:{task} tests queued: stop now; output {output}', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_CONFLICT = NudgeDeclaration("workers.operation_conflict", NudgeType.STEERING,
-    'worker:{worker} has a merge conflict: journal output read {output} --tail 30', turn_limited=False, wakes_agent=True)
+    'worker:{worker} has a merge conflict: output {output}', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_MERGED = NudgeDeclaration("workers.operation_merged", NudgeType.STEERING,
     'worker:{worker} merged: output {output}', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_JOB = NudgeDeclaration("workers.operation_job", NudgeType.STEERING,

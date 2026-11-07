@@ -46,8 +46,8 @@ def test_only_the_owner_is_told_to_read_a_shared_sample(new_story):
     end_run(story, sample, "compile\n" * 8 + "done\n")
     story.expect_success('reader add custom --commands "custom-build*" --title Building --lines done --summary done', actor=story.agent)
     story.run_listeners()
-    story.expect_text(f"agent-line list --agent {sample.session_agent_id}", f"journal output read {sample.id} --reader custom")
-    story.expect_no_text(f"agent-line list --agent {second.id}", f"journal output read {sample.id}")
+    story.expect_text(f"agent-line list --agent {sample.session_agent_id}", f"read the sample of output {sample.id} with reader custom")
+    story.expect_no_text(f"agent-line list --agent {second.id}", f"read the sample of output {sample.id}")
 
 
 def test_a_shell_limit_before_pytest_needs_no_reader_of_its_own(new_story):

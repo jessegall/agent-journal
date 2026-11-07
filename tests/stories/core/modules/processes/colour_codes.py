@@ -25,7 +25,7 @@ def ended(new_story, line: str, text: str, category: CommandCategory):
 
 def test_a_vitest_run_with_colour_codes_gives_its_counts_as_the_summary_with_no_escape(ended_vitest):
     story, lines = ended_vitest
-    expect_value_with(lines, "output 1 ended: journal output read 1 --summary")
+    expect_value_with(lines, "output 1 ended")
     story.expect_text("output read 1 --summary", "12 passed", actor=story.agent)
     expect_value_without_line(lines, "\x1b")
 
@@ -41,7 +41,7 @@ def test_the_mark_of_a_run_and_its_output_read_by_the_agent_show_no_colour_code(
 
 def test_a_test_run_no_reader_reads_tells_the_agent_to_add_one_once_whatever_colour_it_prints(ended_custom_tests):
     story, lines = ended_custom_tests
-    expect_value_line(lines, "no reader reads check-cart.sh yet: journal reader add check-cart.sh")
+    expect_value_line(lines, "no reader reads check-cart.sh yet")
     story.expect_absent_hook_line("s-1", NOTHING, "no reader reads")
 
 

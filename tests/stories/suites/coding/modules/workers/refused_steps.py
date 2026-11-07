@@ -27,7 +27,7 @@ def test_a_worker_refused_by_a_plugin_five_times_is_named_to_the_main_agent(work
         story.expect_refusal(step, REASON, actor=worker)
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "refused")
     story.expect_refusal(step, REASON, actor=worker)
-    story.expect_text(f"agent-line list --agent {story.agent.id} --json", f"worker:{worker.id} refused 5 times on task:1: journal worker status {worker.id}")
+    story.expect_text(f"agent-line list --agent {story.agent.id} --json", f"worker:{worker.id} refused 5 times on task:1")
     story.expect_refusal(step, REASON, actor=worker)
     expect_count_output_2(story, f"agent-line list --agent {story.agent.id}", "refused 5 times", 1)
     story.advance(timedelta(minutes=10))
@@ -39,13 +39,13 @@ def test_a_worker_refused_its_stop_five_times_is_named_to_the_main_agent(working
     story, worker = working_story
     session = worker_session(story, worker)
     for _ in range(5):
-        story.expect_hook_refusal(session, HookSamples.stop(), "journal worker next")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} refused 5 times on task:1", f"journal worker status {worker.id}")
+        story.expect_hook_refusal(session, HookSamples.stop(), "task:1 is not finished")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} refused 5 times on task:1")
 
 
 def test_a_single_refusal_tells_the_main_agent_nothing(working_story):
     story, worker = working_story
-    story.expect_hook_refusal(worker_session(story, worker), HookSamples.stop(), "journal worker next")
+    story.expect_hook_refusal(worker_session(story, worker), HookSamples.stop(), "task:1 is not finished")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "refused")
 
 
@@ -53,12 +53,12 @@ def test_an_allowed_stop_clears_the_refusal_count(working_story):
     story, worker = working_story
     session = worker_session(story, worker)
     for _ in range(4):
-        story.expect_hook_refusal(session, HookSamples.stop(), "journal worker next")
+        story.expect_hook_refusal(session, HookSamples.stop(), "task:1 is not finished")
     story.expect_success('wait stuck "the build tool is missing"', actor=worker)
     story.expect_hook_allowed(session, HookSamples.stop())
     story.expect_success("wait end 1", actor=worker)
     for _ in range(4):
-        story.expect_hook_refusal(session, HookSamples.stop(), "journal worker next")
+        story.expect_hook_refusal(session, HookSamples.stop(), "task:1 is not finished")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "refused")
-    story.expect_hook_refusal(session, HookSamples.stop(), "journal worker next")
+    story.expect_hook_refusal(session, HookSamples.stop(), "task:1 is not finished")
     story.expect_text(f"agent-line list --agent {story.agent.id}", "refused 5 times")

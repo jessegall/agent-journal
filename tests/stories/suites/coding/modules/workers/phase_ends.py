@@ -156,12 +156,12 @@ def test_with_no_test_at_all_the_tasks_close_at_once_and_the_next_task_starts(un
 def test_with_no_test_and_no_next_task_the_tasks_close_and_the_main_agent_hears(single_phase_untested):
     single_phase_untested.story.expect_success("worker deliver --wait --differences none", actor=single_phase_untested.worker)
     expect_task_states(single_phase_untested, "completed", 1, 2, 3)
-    single_phase_untested.story.expect_rows(any(f"worker merge {single_phase_untested.worker.id}" in line for line in single_phase_untested.main_agent_lines()))
+    single_phase_untested.story.expect_rows(any(f"the tests of worker:{single_phase_untested.worker.id} all pass" in line for line in single_phase_untested.main_agent_lines()))
 
 
 def test_a_delivered_phase_that_passes_gives_the_main_agent_one_line_and_the_merge_needs_no_check(delivered_phase):
     lines = delivered_phase.main_agent_lines()
-    delivered_phase.story.expect_rows(len(lines) == 1 and f"worker merge {delivered_phase.worker.id}" in lines[0])
+    delivered_phase.story.expect_rows(len(lines) == 1 and f"the tests of worker:{delivered_phase.worker.id} all pass" in lines[0])
     delivered_phase.repository.checkout(ENVIRONMENT_BRANCH)
     delivered_phase.story.expect_success(f"worker logs {delivered_phase.worker.id}", actor=delivered_phase.story.agent)
     delivered_phase.story.expect_success(f"worker merge --wait {delivered_phase.worker.id}", actor=delivered_phase.story.agent)

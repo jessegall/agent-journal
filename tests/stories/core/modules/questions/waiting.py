@@ -75,7 +75,7 @@ def test_a_closed_question_is_told_to_the_agent_once(new_story):
 
 def test_the_agent_programs_own_question_tool_is_refused_with_the_journal_way(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.expect_hook_refusal("s-1", QUESTION_TOOL, "ask with journal question ask")
+    story.expect_hook_refusal("s-1", QUESTION_TOOL, "ask through the question command")
 
 
 def test_a_refused_ask_leaves_no_wait(new_story):
@@ -86,7 +86,7 @@ def test_a_refused_ask_leaves_no_wait(new_story):
 
 def test_the_codex_programs_own_question_tool_is_refused_with_the_journal_way(new_story):
     story = new_story(fixture=CodexBuilderStarted)
-    story.expect_hook_refusal("s-1", CODEX_QUESTION_TOOL, "ask with journal question ask")
+    story.expect_hook_refusal("s-1", CODEX_QUESTION_TOOL, "ask through the question command")
 
 
 def test_the_waiting_read_brings_the_wait_on_the_user_with_its_targets_and_nothing_else(new_story):
