@@ -34,3 +34,13 @@ def test_the_skills_of_an_agent_list_with_their_count_and_a_state_filter(new_sto
     worker_id = story.new_row_id("agent start skill-count codex worker --environment main")
     listing = json.loads(story.run(f"agent-skill list --agent {worker_id} --state loaded --limit 1 --columns id --json").output_text)
     story.expect_rows(listing["total"] == 0 and listing["rows"] == [])
+
+
+def test_a_status_file_with_no_context_percent_is_read_once_for_the_card(new_story):
+    from tests.stories.core.modules.usage.support.status_files import save_status_file
+    story = new_story(fixture=BuilderWithUser)
+    worker_id = story.new_row_id("agent start status-once claude worker --environment main")
+    save_status_file(story, "status-once", {"model": {"display_name": "Opus"}})
+    facts = json.loads(story.run("usage agents --environment main --json").output_text)["rows"]
+    row = next(row for row in facts if row["id"] == worker_id)
+    story.expect_rows(row["model"] == "Opus", row["context_percent"] is None)
