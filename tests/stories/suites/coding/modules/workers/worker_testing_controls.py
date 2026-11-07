@@ -1,4 +1,8 @@
-from core.testing.expect_reply import expect_reply_allowed
+import json
+
+from core.base.driver.command_category import CommandCategory
+from core.testing.expect_reply import expect_reply_allowed, expect_reply_refusal
+from core.testing.shell_part import ShellPart
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, worker_on_plan, worker_outside_plan
 from tests.stories.suites.coding.modules.workers.test_batches import BATCH, PHASE, configure
@@ -27,3 +31,28 @@ def test_s33_a_batch_outside_a_plan_runs_its_proofs_together_when_its_size_is_re
     worker.story.expect_rows(len(worker.started) == 2)
     worker.story.expect_text("task show 1", "state: completed", actor=worker.story.agent)
     worker.story.expect_text("task show 2", "state: completed", actor=worker.story.agent)
+
+
+RUNS = "journal.suites.coding.workers.worker-phase-test-runs"
+COMMAND_TYPES = "journal.suites.coding.worker-command-types"
+
+
+def test_s34_a_zero_allowance_sends_the_first_grouped_test_command_to_the_main_agent_for_approval(new_story, monkeypatch):
+    worker = worker_on_plan(new_story, monkeypatch)
+    configure(worker, RUNS, "0")
+    expect_reply_refusal(worker.run_test(), "--ask-main")
+
+
+def test_s34_a_settings_edit_between_commands_keeps_the_commands_already_used(new_story, monkeypatch):
+    worker = worker_on_plan(new_story, monkeypatch)
+    expect_reply_allowed(worker.run_test())
+    configure(worker, RUNS, "1")
+    expect_reply_refusal(worker.run_test(), "--ask-main")
+    configure(worker, RUNS, "3")
+    expect_reply_allowed(worker.run_test())
+
+
+def test_s36_adding_version_control_to_the_worker_command_types_does_not_allow_a_worker_git(new_story, monkeypatch):
+    worker = worker_on_plan(new_story, monkeypatch)
+    configure(worker, COMMAND_TYPES, json.dumps(["read", "search", "edit", "test run", "build", "version control"]))
+    expect_reply_refusal(worker.run_line("git status", ShellPart("git", CommandCategory.VERSION_CONTROL, ["status"])), "a worker runs no git")
