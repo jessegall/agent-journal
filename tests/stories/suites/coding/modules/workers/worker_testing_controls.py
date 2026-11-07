@@ -1,15 +1,26 @@
 import json
 
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
+from core.base.shell_sandbox import ShellSandbox
+from core.modules.helpers.support.helper_programs import HelperPrograms
+from core.testing.fake_launcher import FakeLauncher
+from core.testing.story_helper_programs import StoryHelperPrograms
+from core.testing.story_shell_sandbox import StoryShellSandbox
 from core.testing.expect_reply import expect_reply_allowed, expect_reply_refusal
 from core.testing.shell_part import ShellPart
 from core.base.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
+from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.suites.coding.modules.workers.merger import merger_of
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, worker_on_plan, worker_outside_plan
 from tests.stories.suites.coding.modules.workers.test_batches import BATCH, PHASE, configure
-from tests.stories.suites.coding.modules.workers.test_queue import affected_test_story, ended
+from tests.stories.suites.coding.modules.workers.test_queue import affected_test_story, ended, queued_story
 
 
 def test_s32_the_phase_setting_off_tests_each_plan_task_whatever_the_outside_batch_size(new_story, monkeypatch):
@@ -78,3 +89,40 @@ def test_s38_a_failed_selected_test_returns_the_work_and_no_full_suite_follows(n
     ended(story, started[2], 1)
     story.expect_rows(len(started) == 3)
     story.expect_text("task show 1", "state: started", actor=story.agent)
+
+
+def merged_by_the_merger(new_story, monkeypatch):
+    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
+    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    try:
+        ended(story, started[0], 0)
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    return story, worker, Actor(merger_of(story).id, ActorType.AGENT)
+
+
+def test_empty_merger_checks_keep_mechanical_judging(new_story, monkeypatch):
+    story, worker, merger = merged_by_the_merger(new_story, monkeypatch)
+    story.expect_no_text(f"merger merge {worker.id}", "run:", actor=merger)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
+
+
+def test_s39_configured_merger_checks_are_listed_after_the_merge_with_the_commit(new_story, monkeypatch):
+    story, worker, merger = merged_by_the_merger(new_story, monkeypatch)
+    story.expect_success("setting set journal.suites.coding.workers.merger-commands '[\"journal sins --branch={commit}\"]' --project", actor=story.user)
+    story.expect_text(f"merger merge {worker.id}", "run: journal sins --branch=", actor=merger)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
+
+
+def test_manual_merge_keeps_mechanical_judging(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
