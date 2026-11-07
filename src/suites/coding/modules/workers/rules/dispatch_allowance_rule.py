@@ -15,7 +15,7 @@ class DispatchAllowanceRule(DriverRule):
 
     name = "workers.dispatch-allowed"
     hook = HookEventName.PRE_TOOL_USE
-    drivers = ["coding.builder"]
+    drivers = ["coding.builder", "coding.orchestrator"]
     roles = [AgentRole.MAIN]
 
     def __init__(self, settings: SettingValues) -> None:
