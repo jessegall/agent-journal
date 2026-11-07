@@ -4,7 +4,8 @@ import {expect, test} from "vitest";
 import PlanCards from "../../core/modules/plans/web/src/PlanCards.vue";
 import TaskGroups from "../../core/modules/tasks/web/src/TaskGroups.vue";
 import DumpRows from "../../core/modules/dumps/web/src/DumpRows.vue";
-import {context, mounted, settle} from "./support/windowContext.js";
+import {mounted, settle} from "./support/windowContext.js";
+import {dumpWindowContext} from "./support/dumpWindowContext.js";
 import {taskWindowContext} from "./support/taskWindowContext.js";
 
 // task 5489: the windows as version 4 drew them
@@ -39,7 +40,7 @@ test("tasks sit in a group for each state and a search narrows them", async () =
 });
 
 test("a dump is a card with each item, where the agent has got to with it and what it filed it into", async () => {
-    const window = context({
+    const window = dumpWindowContext({
         "dump board": {ok: true, value: {total: 1, dumps: [{id: 5, title: "Notes", brief: "From the call", outcome: "", items: [
             {id: 2, text: "First", state: "filed", note: "", summary: "Cart rules", refs: ["doc 3"]},
             {id: 1, text: "Second", state: "failed", note: "no home for it", summary: "", refs: []},

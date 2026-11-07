@@ -176,7 +176,7 @@ class DriversModule(Module):
     driver_rules = [BlockStopRule, LongOutputRule, ForeignHooksRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, AgentBlockRule, TakeoverRule, AccessRule, NativeSubagentRule, PrivateCorpusRule]
     bindings = {RefusalSkips: TableRefusalSkips, ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, HookHistory: TableHookHistory,HookRoute: AgentHookRoute, ChangeFilter: DriverChangeFilter,
                 EssentialAllowances: SettingEssentialAllowances}
-    windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, skeleton=DRIVERS_NUDGES_SKELETON, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),
+    windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, skeleton=DRIVERS_NUDGES_SKELETON, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"], keys=[WindowKey("nudges", "nudge list", events=["nudge_record.*"]) ]),
                WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, skeleton=DRIVERS_HOOK_CALLS_SKELETON, icon=WindowIcon.RUNS, shows=WindowShows.SELECTED_AGENT,
                                  reads=["hook-call feed", "hook-call show", "hook-call stops"], events=["hook_call.*"],
                                  keys=[WindowKey("calls", "hook-call feed", events=["hook_call.*"], arguments=["session-agent-id", "limit", "before-id", "after-id"], page_size=50)])]

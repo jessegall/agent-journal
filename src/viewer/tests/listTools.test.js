@@ -1,4 +1,5 @@
 import {questionsWindowContext} from "./support/questionsWindowContext.js";
+import {dumpWindowContext} from "./support/dumpWindowContext.js";
 import {ref} from "vue";
 import {expect, test, vi} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
@@ -80,6 +81,7 @@ test.each([
     ["the reviews", ReviewerSteps, {"review board": {ok: true, value: {reviews: [], queued: 0}}}],
 ])("the list of %s has the bar", async (_, component, answers) => {
     const contexts = new Map([
+        [DumpRows, dumpWindowContext],
         [TemplateCards, templateWindowContext],
         [CheckCards, checkWindowContext],
         [PhoneRows, phoneWindowContext],
