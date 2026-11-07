@@ -7,6 +7,8 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.start_helper import START, started
+from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, START as FILE_START, helper_agent
+from core.modules.helpers.support.helper_programs import HelperPrograms
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.suites.coding.modules.workers.support.program_split import SPLIT, real_program_checks, set_split, viewer_client
 from tests.stories.support.program_states import real_program_states
@@ -46,6 +48,7 @@ def test_split_passes_over_a_program_not_trusted(helper_split_story, tmp_path, m
     monkeypatch.setenv('CODEX_HOME', str(tmp_path / 'codex-config'))
     monkeypatch.setattr('shutil.which', lambda name: name)
     real_program_checks(story)
+    story.container.get(HelperPrograms).checked("claude", tmp_path / "helper-project")
     helper_id, _ = started(story)
     story.expect_text(f'agent show {helper_id}', 'program: claude')
 
@@ -97,13 +100,12 @@ def test_helper_goes_by_the_split_profile_program_wins(helper_split_story, helpe
     story.expect_text(f'agent show {helper_id}', 'program: claude')
 
 
-def test_helper_goes_by_the_split_reuse_still_goes_first(helper_split_story):
-    story = helper_split_story
-    helper_id, _ = started(story)
-    story.expect_success(f'agent end {helper_id}', actor=story.user)
+def test_helper_goes_by_the_split_reuse_still_goes_first(new_story):
+    story = new_story(fixture=EndedHelper)
+    helper_id = helper_agent(story).id
     set_split(story, 'codex 100,claude 0')
     FakeLauncher(story.home.socket('launcher'))
-    story.expect_refusal(START, f'journal helper send {helper_id}', actor=story.agent)
+    story.expect_refusal(FILE_START, f'journal helper send {helper_id}', actor=story.agent)
 
 
 def test_helper_goes_by_the_split_named_out_program_is_started_with_warning(helper_split_story):

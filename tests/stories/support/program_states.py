@@ -14,7 +14,10 @@ def bind_ready_programs(story):
     state_type = importlib.import_module(STATE_MODULE).ProgramState
     states = Mock(spec=states_type)
     states.state.return_value = state_type.ready()
-    states.ready_programs.return_value = tuple(provider.name for provider in story.container.get(Providers).all())
+    ready = {provider.name: state_type.ready() for provider in story.container.get(Providers).all()}
+    states.ready_programs.return_value = tuple(ready)
+    readiness_type = importlib.import_module('core.modules.helpers.support.program_readiness').ProgramReadiness
+    states.readiness.return_value = readiness_type(ready)
     story.container.bind(states_type, states)
 
 

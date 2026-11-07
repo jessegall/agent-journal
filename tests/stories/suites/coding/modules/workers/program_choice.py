@@ -7,6 +7,9 @@ import pytest
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.testing.fake_launcher import FakeLauncher
+from core.modules.helpers.support.helper_programs import HelperPrograms
+from core.modules.environments.support.environment_rows import EnvironmentRows
+from pathlib import Path
 from tests.stories.core.modules.helpers.start_helper import START, started
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.suites.coding.modules.workers.support.program_split import (
@@ -97,29 +100,34 @@ def test_split_passes_over_a_program_not_installed(split_story, monkeypatch):
     story = split_story
     set_split(story, 'claude 20,codex 80')
     real_program_checks(story)
+    story.container.get(HelperPrograms).checked('claude', Path(story.container.get(EnvironmentRows).find(1).folder))
     monkeypatch.setattr(shutil, 'which', lambda name: None if name == 'codex' else name)
     worker = dispatch(story)
     expect_program(story, worker, 'claude')
     story.expect_text('worker split', 'codex', 'not installed')
 
 
-def test_split_passes_over_a_nearly_used_plan_window(split_story):
-    story = split_story
-    set_split(story)
-    resets_at = int((story.clock.timestamp().value + timedelta(hours=1)).timestamp())
-    save_status_file(story, 's-1', {'rate_limits': {'five_hour': {'used_percentage': 96, 'resets_at': resets_at}}})
-    expect_program(story, dispatch(story), 'codex')
+@pytest.fixture
+def window_split_story(split_story, request):
+    set_split(split_story)
+    resets_at = int((split_story.clock.timestamp().value + timedelta(hours=1)).timestamp())
+    save_status_file(split_story, 's-1', {'rate_limits': {'five_hour': {'used_percentage': request.param, 'resets_at': resets_at}}})
+    return split_story, dispatch(split_story)
+
+
+@pytest.mark.parametrize('window_split_story', [96], indirect=True)
+def test_split_passes_over_a_nearly_used_plan_window(window_split_story):
+    story, worker = window_split_story
+    expect_program(story, worker, 'codex')
     story.advance(timedelta(hours=1, seconds=1))
     next_task = make_task(story, 'After reset')
     expect_program(story, dispatch(story, str(next_task)), 'claude')
 
 
-def test_split_passes_over_a_nearly_used_plan_window_at_94_is_ready(split_story):
-    story = split_story
-    set_split(story)
-    resets_at = int((story.clock.timestamp().value + timedelta(hours=1)).timestamp())
-    save_status_file(story, 's-1', {'rate_limits': {'five_hour': {'used_percentage': 94, 'resets_at': resets_at}}})
-    expect_program(story, dispatch(story), 'claude')
+@pytest.mark.parametrize('window_split_story', [94], indirect=True)
+def test_split_passes_over_a_nearly_used_plan_window_at_94_is_ready(window_split_story):
+    story, worker = window_split_story
+    expect_program(story, worker, 'claude')
 
 
 def test_split_passes_over_a_nearly_used_plan_window_no_status_is_ready(split_story):
@@ -219,8 +227,9 @@ def test_split_counts_tasks_not_workers(split_story):
     expect_program(story, dispatch(story, str(fourth)), 'claude')
 
 
-def test_out_program_share_goes_to_the_others(split_story):
+def test_out_program_share_goes_to_the_others(split_story, split_viewer):
     story = split_story
+    split_viewer.value('settings.settings', ['setting', 'set', 'journal.suites.coding.workers.worker-run-limit', '3', '--environment', 'main'])
     set_split(story, 'claude 50,codex 50')
     outage(story)
     expect_program(story, dispatch(story), 'claude')

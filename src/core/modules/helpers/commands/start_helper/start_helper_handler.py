@@ -104,9 +104,10 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
         if not self.shares.is_configured:
             return parent.program
         folder = self.folders.folder(parent)
-        program = self.shares.next_program(self.counts.recent(parent.environment_id), self.states.ready_programs(folder))
+        readiness = self.states.readiness(folder)
+        program = self.shares.next_program(self.counts.recent(parent.environment_id), readiness.ready_programs)
         if program is None:
-            raise Refusal(f"no program can take this helper: {self.states.earliest_line(folder)}", "name --program explicitly, or wait")
+            raise Refusal(f"no program can take this helper: {readiness.earliest_line}", "name --program explicitly, or wait")
         return program
 
     def availability_note(self, command: StartHelper, program: str) -> str:

@@ -32,9 +32,10 @@ class WorkerRouting:
         if self.shares.is_configured:
             environment = self.environments.find(tasks[0].environment_id)
             folder = Path(environment.folder)
-            program = self.shares.next_program(self.counts.recent(environment.id), self.states.ready_programs(folder))
+            readiness = self.states.readiness(folder)
+            program = self.shares.next_program(self.counts.recent(environment.id), readiness.ready_programs)
             if program is None:
-                raise Refusal(f"no program can take this worker: {self.states.earliest_line(folder)}", "add --program, or wait")
+                raise Refusal(f"no program can take this worker: {readiness.earliest_line}", "add --program, or wait")
             return self.selected(command, profile, program, "the split")
         self.programs.installed(caller.program)
         return self.selected(command, profile, caller.program, "the program of the agent that sent it")

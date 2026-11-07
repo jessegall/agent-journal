@@ -15,6 +15,7 @@ from core.modules.helpers.models.provider_outage import ProviderOutage
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.helpers.support.helper_settings import PROGRAM_WINDOW_PERCENT
 from core.modules.helpers.support.program_state import ProgramState
+from core.modules.helpers.support.program_readiness import ProgramReadiness
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.usage.support.status_files import StatusFiles
 
@@ -72,12 +73,10 @@ class ProgramStates:
         return ProgramState.unavailable(outage.reason, outage.ends_at)
 
     def ready_programs(self, folder: Path) -> tuple[str, ...]:
-        return tuple(provider.name for provider in self.providers.all() if self.state(provider.name, folder).is_ready)
+        return self.readiness(folder).ready_programs
+
+    def readiness(self, folder: Path) -> ProgramReadiness:
+        return ProgramReadiness({provider.name: self.state(provider.name, folder) for provider in self.providers.all()})
 
     def earliest_line(self, folder: Path) -> str:
-        states = [self.state(provider.name, folder) for provider in self.providers.all()]
-        timed = [state for state in states if state.ends_at is not None]
-        if timed:
-            earliest = min(timed, key=lambda state: state.ends_at)
-            return f"{earliest.line}, until {earliest.ends_at.text}"
-        return "; ".join(state.line for state in states)
+        return self.readiness(folder).earliest_line

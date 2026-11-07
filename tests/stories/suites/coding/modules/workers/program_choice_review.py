@@ -22,15 +22,15 @@ from tests.stories.suites.coding.modules.workers.support.program_split import (
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 
 
-@pytest.mark.parametrize('kind', ['worker', 'helper'])
+@pytest.mark.parametrize('agent_role', ['worker', 'helper'])
 @pytest.mark.parametrize('cause', ['window', 'outage'])
-def test_nothing_set_ignores_readiness(split_story, kind, cause):
+def test_nothing_set_ignores_readiness(split_story, agent_role, cause):
     story = split_story
     if cause == 'outage':
         outage(story, 'claude')
     if cause == 'window':
         save_status_file(story, 's-1', {'rate_limits': {'five_hour': {'used_percentage': 96, 'resets_at': int((story.clock.timestamp().value + timedelta(hours=1)).timestamp())}}})
-    if kind == 'worker':
+    if agent_role == 'worker':
         expect_program(story, dispatch(story), 'claude', 'sonnet')
         return
     helper_id, _ = started(story)
@@ -65,11 +65,11 @@ def test_both_plans_reuse_stays_on_the_chosen_program_repeated_dispatch(split_st
 
 
 @pytest.mark.parametrize('program,model,shares', [('claude', 'sonnet', 'codex 100,claude 0'), ('codex', 'gpt-6.1-terra', 'claude 100,codex 0')])
-@pytest.mark.parametrize('kind', ['worker', 'helper'])
-def test_named_model_fixes_the_program(split_story, program, model, shares, kind):
+@pytest.mark.parametrize('agent_role', ['worker', 'helper'])
+def test_named_model_fixes_the_program(split_story, program, model, shares, agent_role):
     story = split_story
     set_split(story, shares)
-    if kind == 'worker':
+    if agent_role == 'worker':
         expect_program(story, dispatch(story, flags=f'--model {model}'), program, model)
         return
     helper_id, _ = started(story, f'{START} --model {model}')
@@ -98,12 +98,17 @@ def test_split_counts_only_since_it_changed(split_story):
     story.expect_rows(next(row for row in rows if row['id'] == 'claude')['recent'] == 1)
 
 
-@pytest.mark.parametrize('kind', ['worker', 'helper'])
-def test_split_with_none_eligible_differs_from_unset(split_story, kind):
-    story = split_story
-    set_split(story, 'claude 0,codex 100')
-    _, ends_at = outage(story)
-    if kind == 'worker':
+@pytest.fixture
+def unavailable_split(split_story):
+    set_split(split_story, 'claude 0,codex 100')
+    _, ends_at = outage(split_story)
+    return split_story, ends_at
+
+
+@pytest.mark.parametrize('agent_role', ['worker', 'helper'])
+def test_split_with_none_eligible_differs_from_unset(unavailable_split, agent_role):
+    story, ends_at = unavailable_split
+    if agent_role == 'worker':
         story.expect_refusal('worker dispatch 1', ends_at, actor=story.agent)
         story.expect_text('worker-worktree list', 'nothing found')
         return
