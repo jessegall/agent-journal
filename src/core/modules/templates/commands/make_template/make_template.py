@@ -8,6 +8,8 @@ from core.modules.templates.models.template import Template
 class MakeTemplate(Command[Template]):
     """Writes a template from its title and its fields."""
 
+    lock = False
+
     title: str
     brief: str
     targets: tuple[str, ...]

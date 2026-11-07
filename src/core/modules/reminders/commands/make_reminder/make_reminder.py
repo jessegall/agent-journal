@@ -9,6 +9,8 @@ from core.modules.reminders.models.reminder import Reminder
 class MakeReminder(Command[Reminder]):
     """Makes a reminder for a date and time or on an interval, once or repeating, with a block if asked."""
 
+    lock = False
+
     text: str
     interval_seconds: int = 0
     interval_tool_uses: int = 0

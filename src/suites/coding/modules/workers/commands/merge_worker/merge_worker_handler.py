@@ -31,6 +31,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     back to the worker. The merge commands run before the task closes, so a failed one, such as a push, leaves
     the task open to merge again. Git runs outside any transaction, so its wait holds no write lock."""
 
+    runs_once = True
     command = MergeWorker
     disabled_scopes = [ActorScope]
 

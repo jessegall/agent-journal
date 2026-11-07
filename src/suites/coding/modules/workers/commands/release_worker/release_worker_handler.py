@@ -18,6 +18,7 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
     """Releases a worker's tasks and removes its worktree, keeping a branch with commits. Git runs outside any
     transaction; a release whose git failed goes on from the abandoned worktree."""
 
+    runs_once = True
     command = ReleaseWorker
 
     def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, environments: EnvironmentRows, bus: Bus) -> None:
