@@ -150,7 +150,7 @@
         "architecture_memories_memory_lines_outside_rules",
         "architecture_memories_memory_built_outside_handlers",
         "architecture_nudges_raw_line_from_a_rule",
-        "architecture_nudges_instruction_without_payment",
+        "architecture_nudges_command_in_a_nudge",
         "listener_repeats_a_listener_repeats_a_decision",
         "architecture_processes_reader_run_outside_tick",
         "architecture_processes_slot_written_outside_the_queue",

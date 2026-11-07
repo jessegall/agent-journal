@@ -6,6 +6,7 @@ from core.base.command.command import Command
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.database.database import Database
+from core.base.listener.event_rows import EventRows
 from core.base.log_level import LogLevel
 from core.base.system_log_writer import SystemLogWriter
 from core.base.driver.agent_hook import AgentHook
@@ -47,8 +48,9 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     runs_once = True
 
     def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository, choice: SuiteChoice,
-                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, system_log: SystemLogWriter, home: JournalHome) -> None:
+                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome) -> None:
         self.home = home
+        self.event_rows = event_rows
         self.system_log = system_log
         self.required_commands = required_commands
         self.agents = agents
@@ -90,6 +92,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         self.nudges.write(agent.id, answers, context)
         self.required_commands.open(agent.id, answers.delivered_nudges, context)
         self.timing.stamp("call_saved")
+        for row in handed_lines.rows:
+            self.event_rows.remember(row)
         for row in handed_lines.rows:
             self.bus.dispatch(DeliverAgentLine(row.id, call.id, context.timestamp), context)
         outcomes = [(rule, *self.run_command(rule_command, context)) for rule, rule_command in moves.runnable if rule not in answers.refused_rewriters]

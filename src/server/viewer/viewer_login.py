@@ -15,8 +15,8 @@ KEY_BYTES = 24
 
 class ViewerLogin:
     """The viewer's logins: a one-time key opened once, and the session token it leaves in a
-    cookie, which a restart keeps, each naming who the viewer acts for: a person, a person's
-    phone, or one share. A phone's token and a share link's are asked of their modules, not held
+    cookie, which a restart keeps, each naming who the viewer acts for: a person, the main agent, a
+    person's phone, or one share. A phone's token and a share link's are asked of their modules, not held
     here, so they outlive a restart and end with the unpairing or the revoking; a link is never
     spent."""
 
@@ -27,7 +27,7 @@ class ViewerLogin:
         self.sessions: dict[str, ViewerSession] = self.kept_sessions()
 
     def kept_sessions(self) -> dict[str, ViewerSession]:
-        return {token: ViewerSession(SessionType.PERSON, person_id=person) for token, person in (self.kept.load() if self.kept else {}).items()}
+        return self.kept.load() if self.kept else {}
 
     def reload_sessions(self) -> None:
         with self.lock:
@@ -62,7 +62,7 @@ class ViewerLogin:
 
     def keep(self) -> None:
         if self.kept is not None:
-            self.kept.save({token: session.person_id for token, session in self.sessions.items() if session.type is SessionType.PERSON and session.person_id is not None})
+            self.kept.save(self.sessions)
 
     def session(self, token: str) -> ViewerSession:
         with self.lock:
