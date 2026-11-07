@@ -3,6 +3,7 @@ from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_place import WindowPlace
 from core.base.guard.guard_switches import GuardSwitches
 from core.modules.settings.migrations.m001_settings import SettingsTableMigration
@@ -50,7 +51,7 @@ class SettingsModule(Module):
     windows = [WindowDeclaration("settings.settings", "Settings", "settings.js", WindowLoading.COMPONENT, skeleton=SETTINGS_SETTINGS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU, search=WindowReadSearch("setting tree", "Find a setting", ("title", "description", "key")),
                                  reads=["setting tree", "environment list", "environment cards", "alias saved"], runs=["setting set", "setting switch", "environment delete"], events=["setting.*", "environment.*", "alias.*"]),
                WindowDeclaration("settings.project-hooks", "Project hooks", "project_hooks.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU, skeleton=PROJECT_HOOKS_SKELETON,
-                                 reads=["managed-hook list", "hook-call feed"], runs=["managed-hook set", "managed-hook scan", "managed-hook give-back"], events=["managed-hook.*", "hook_call.*"])]
+                                 reads=["managed-hook list", "hook-call feed"], keys=[WindowKey("hooks", "managed-hook list", events=["managed-hook.*"])], runs=["managed-hook set", "managed-hook scan", "managed-hook give-back"], events=["managed-hook.*", "hook_call.*"])]
     subcommands = [SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand, ListManagedHooksSubcommand, SetManagedHookSubcommand, ScanManagedHooksSubcommand, RestoreManagedHooksSubcommand]
     bindings = {GuardSwitches: SettingGuardSwitches, SyncNotes: UndeclaredSettingNotes}
     guards = [PersonSetSettingGuard]
