@@ -46,7 +46,7 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
         self.differences.record(committed.task_id, command.differences, context)
         for started in tuple(self.tasks.holder(context.actor.id).started().all_rows()):
             self.repository.save_change(started, started.moved(TaskLifecycle.test), context)
-        delivered = self.repository.save_change(committed, committed.moved(WorktreeLifecycle.deliver, logs_read_at=None, logs_output_id=None, tests_passed_at=None, left_to_main_at=None), context)
+        delivered = self.repository.save_change(committed, committed.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, logs_read_at=None, logs_output_id=None, tests_passed_at=None, left_to_main_at=None), context)
         task = self.rows.required(Task, committed.task_id)
         group = self.phases.group(delivered, task)
         if group is None:

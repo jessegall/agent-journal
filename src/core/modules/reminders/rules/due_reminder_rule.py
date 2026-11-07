@@ -39,8 +39,8 @@ class DueReminderRule(DriverRule):
         due = [reminder for reminder in reminders if reminder.should_fire(hook.timestamp, tool_uses.get(reminder.id, 0), closed_tasks.get(reminder.id, 0))]
         if not due:
             return RuleAnswer.allowed()
-        blocks = (BlockUntil(hook.agent_id, REMINDER_BLOCK.nudge(reminder=reminder.id, text=reminder.text), self.conditions.built(reminder.block_condition, reminder.block_subject)) for reminder in due if reminder.block_condition)
-        return RuleAnswer.with_nudges(*(REMINDER_LINE.nudge(reminder=reminder.id, text=reminder.text) for reminder in due)).running(*(RecordReminderFired(reminder.id) for reminder in due), *blocks)
+        blocks = (BlockUntil(hook.agent_id, REMINDER_BLOCK.nudge(reminder=reminder.id), self.conditions.built(reminder.block_condition, reminder.block_subject)) for reminder in due if reminder.block_condition)
+        return RuleAnswer.with_nudges(*(REMINDER_LINE.nudge(reminder=reminder.id) for reminder in due)).running(*(RecordReminderFired(reminder.id) for reminder in due), *blocks)
 
     def tool_uses(self, reminders: list[Reminder], hook: AgentHook) -> dict[int, int]:
         counting = [reminder for reminder in reminders if reminder.due_at is None and reminder.interval_tool_uses]

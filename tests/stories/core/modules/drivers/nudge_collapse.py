@@ -47,9 +47,9 @@ def test_nudges_of_one_kind_from_different_rules_collapse_and_name_the_first_rul
     expect_row(answers, rule_lines=[("rule_0", "tasks 1, 2 are still queued for worker 425")])
 
 
-def test_a_field_that_differs_is_listed_once_per_value():
+def test_tasks_for_different_workers_stay_separate():
     answers = answers_of(QUEUED.nudge(task=1, worker=4), QUEUED.nudge(task=2, worker=5), QUEUED.nudge(task=3, worker=4))
-    expect_row(answers, lines=["tasks 1, 2, 3 are still queued for worker 4, 5"])
+    expect_row(answers, lines=["tasks 1, 3 are still queued for worker 4", "task 2 is still queued for worker 5"])
 
 
 def test_the_collapsed_line_keeps_its_key_type_and_labelled_words():

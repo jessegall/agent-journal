@@ -16,6 +16,7 @@ class ProfileFields(TypedDict, total=False):
     model: str
     tier: ModelTier | None
     codex_model: str
+    program_models: dict[str, str]
     independent: bool
     mcp_tools: tuple[str, ...]
     module: str

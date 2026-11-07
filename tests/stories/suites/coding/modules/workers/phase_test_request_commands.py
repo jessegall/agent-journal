@@ -29,7 +29,8 @@ def test_asking_saves_one_request_logs_it_on_the_task_and_tells_the_main_agent_o
     requested.story.expect_rows(requested.run_requests() == tuple([REQUESTED]))
     requested.story.expect_text("task inspect 1 --json", TEST_LINE, WHY, actor=requested.story.agent)
     lines = requested.main_agent_lines()
-    requested.story.expect_rows(len(lines) == 1 and TEST_LINE in lines[0] and WHY in lines[0] and ALLOW in lines[0])
+    requested.story.expect_text("worker-test-request show 1", TEST_LINE, WHY, actor=requested.story.agent)
+    requested.story.expect_rows(len(lines) == 1 and TEST_LINE not in lines[0] and WHY not in lines[0] and "worker-test-request show 1" in lines[0])
 
 
 def test_asking_for_another_command_saves_its_own_request(requested):
@@ -48,7 +49,7 @@ def test_a_worker_cannot_allow_its_own_request_through_the_command(requested):
 
 def test_allow_test_allows_once_and_tells_the_worker(requested):
     requested.story.expect_success(ALLOW, actor=requested.story.agent)
-    requested.story.expect_rows(any("request 1" in line and TEST_LINE in line for line in requested.worker_lines()))
+    requested.story.expect_rows(any("request 1" in line and "worker-test-request show 1" in line for line in requested.worker_lines()))
     requested.story.expect_refusal(ALLOW, "already allowed", actor=requested.story.agent)
 
 

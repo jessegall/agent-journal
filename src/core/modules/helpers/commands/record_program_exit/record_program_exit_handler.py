@@ -1,3 +1,4 @@
+from core.base.profile.agent_profile import AgentProfile
 from core.base.log_level import LogLevel
 from datetime import timedelta
 
@@ -21,7 +22,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.helpers.commands.record_program_exit.record_program_exit import RecordProgramExit
-from core.modules.helpers.commands.report_program_fault.report_program_fault import ReportProgramFault
+from core.modules.helpers.commands.send_program_fault.send_program_fault import SendProgramFault
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.helpers.support.exit_reasons import ExitReasons
 from core.modules.helpers.support.helper_job_source import HELPER_JOB_SOURCE
@@ -76,6 +77,9 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
         if not command.exit_code:
             return
         profile = self.profiles.registered(agent.profile)
-        if profile is None or profile.reports_to_parent:
-            return
-        self.bus.run(ReportProgramFault(agent.id, command.exit_code), actor, environment_id=agent.environment_id)
+        if self.needs_fault_notice(profile, command):
+            self.bus.run(SendProgramFault(agent.id, command.exit_code), actor, environment_id=agent.environment_id)
+
+    @staticmethod
+    def needs_fault_notice(profile: AgentProfile | None, command: RecordProgramExit) -> bool:
+        return bool(command.exit_code) and profile is not None and not profile.reports_to_parent

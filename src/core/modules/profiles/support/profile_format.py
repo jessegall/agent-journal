@@ -3,6 +3,7 @@ import json
 from core.base.access import Access
 from core.base.provider.model_tier import ModelTier
 from core.base.refusal import Refusal
+from core.base.type_guards import is_mapping
 from core.modules.profiles.support.profile_fields import ProfileFields
 from core.modules.profiles.support.profile_text import ProfileText
 
@@ -35,6 +36,11 @@ class ProfileFormat:
                 if value not in (True, False, "true", "false"):
                     raise Refusal(f"{name.replace('_', '-')} must be true or false")
                 fields[name] = value is True or value == "true"
+        if "program_models" in fields:
+            models = json.loads(fields["program_models"]) if isinstance(fields["program_models"], str) else fields["program_models"]
+            if not is_mapping(models) or not all(isinstance(name, str) and isinstance(model, str) for name, model in models.items()):
+                raise Refusal("program-models must contain a model name for each program name")
+            fields["program_models"] = {name: "" if model == "inherit" else model for name, model in models.items()}
         if "mcp_tools" in fields:
             fields["mcp_tools"] = ProfileFormat.tools(fields["mcp_tools"])
         return fields

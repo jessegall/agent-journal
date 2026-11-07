@@ -29,6 +29,7 @@ class Worktree(Removable, EnvironmentScoped, Model):
     base_commit: str = ""
     state: WorktreeState = WorktreeState.NEW
     cut_at: Timestamp | None = None
+    delivered_at: Timestamp | None = None
     logs_read_at: Timestamp | None = None
     logs_output_id: int | None = None
     tests_passed_at: Timestamp | None = None

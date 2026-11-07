@@ -27,7 +27,7 @@ class EndedOutputText:
         self.outputs, self.readers, self.visibility, self.judge, self.writers, self.rows = outputs, readers, visibility, judge, writers, rows
 
     def nudges(self, process: Process) -> tuple[Nudge, ...]:
-        ended = (OUTPUT_ENDED.nudge(output=process.id, result=self.result(process)), *self.silent_failure_nudges(process))
+        ended = (OUTPUT_ENDED.nudge(output=process.id), *self.silent_failure_nudges(process))
         if not self.writers.allows(Actor(process.session_agent_id, ActorType.AGENT)) or not self.visibility.is_visible(process):
             return ended
         program = self.read_program(process)
@@ -40,12 +40,6 @@ class EndedOutputText:
             return ()
         saved = next((part.saved_command for part in self.visibility.parts(process.id) if part.saved_command), "")
         return tuple([SILENT_SAVED_FAILURE.nudge(name=saved)]) if saved else ()
-
-    def result(self, process: Process) -> str:
-        if process.expired_at is not None:
-            return "timed out"
-        summary = self.summary(process)
-        return summary if summary else self.outcome(process)
 
     def read_program(self, process: Process) -> str | None:
         parts = self.visibility.parts(process.id)
@@ -79,12 +73,3 @@ class EndedOutputText:
         name = PurePath(first).name
         return not self.readers.with_name(name).exists()
 
-    def summary(self, process: Process) -> str:
-        output = self.outputs.process_output(process.id)
-        return output.reader_summary if output else ""
-
-    @staticmethod
-    def outcome(process: Process) -> str:
-        if process.state is ProcessState.FAILED:
-            return f"failed with exit code {process.exit_code}"
-        return process.state.value

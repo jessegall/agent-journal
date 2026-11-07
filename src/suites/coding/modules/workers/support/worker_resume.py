@@ -14,7 +14,7 @@ from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_program import AgentProgram
-from suites.coding.modules.workers.commands.report_silent_agent.report_silent_agent import ReportSilentAgent
+from suites.coding.modules.workers.support.worker_recovery_reports import WorkerRecoveryReports
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
@@ -40,10 +40,10 @@ class WorkerResume:
     """Resumes ended workers on waiting jobs and retries a job that did not start."""
 
     def __init__(self, launcher: AgentLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock, requirement: TaskBriefRequirement,
-                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes) -> None:
+                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports) -> None:
         self.launcher, self.queries, self.worktrees, self.worker_command, self.bus, self.clock = launcher, queries, worktrees, worker_command, bus, clock
         self.requirement, self.places, self.program = requirement, places, program
-        self.states = states
+        self.states, self.reports = states, reports
         self.shares, self.environments, self.scopes = shares, environments, scopes
 
     def program_state(self, worker: Agent) -> ProgramState:
@@ -60,7 +60,7 @@ class WorkerResume:
             return
         self.program.stop(worker)
         if self.resume(worker, actor) is LaunchAnswer.RUNNING:
-            self.bus.run(ReportSilentAgent(worker.id, self.running_program_reason(worker), worker.ended_at), Actor.core(), environment_id=worker.environment_id)
+            self.reports.report(worker, self.running_program_reason(worker), worker.ended_at)
 
     @staticmethod
     def running_program_reason(worker: Agent) -> str:

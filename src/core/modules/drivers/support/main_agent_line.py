@@ -1,4 +1,5 @@
 from core.base.command.context import Context
+from core.base.driver.nudge import Nudge
 from core.base.query.queries import Queries
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.support.nudger import Nudger
@@ -13,3 +14,7 @@ class MainAgentLine:
     def send(self, text: str, source: str, context: Context) -> None:
         for agent in MainAgentFinder.rows(self.queries):
             self.nudger.send_text(agent.id, text, source, context, wakes_agent=True)
+
+    def send_nudge(self, nudge: Nudge, source: str, context: Context) -> None:
+        for agent in MainAgentFinder.rows(self.queries):
+            self.nudger.send_nudge(agent.id, nudge, source, context, wakes_agent=True)

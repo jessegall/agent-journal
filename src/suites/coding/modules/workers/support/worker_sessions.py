@@ -19,7 +19,7 @@ from core.modules.agents.support.agent_session_state import AgentSessionState
 from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from suites.coding.modules.workers.commands.report_silent_agent.report_silent_agent import ReportSilentAgent
+from suites.coding.modules.workers.support.worker_recovery_reports import WorkerRecoveryReports
 from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES
 
 
@@ -27,9 +27,9 @@ class WorkerSessions(AgentLaunchGuard):
     """Serializes session launches and confirms its previous process tree has ended before a resume."""
 
     def __init__(self, home: JournalHome, queries: Queries, processes: ProcessQuery, settings: SettingValues,
-                 clock: Clock, providers: Providers, program: AgentProgram, bus: Bus, rows: EventRows) -> None:
+                 clock: Clock, providers: Providers, program: AgentProgram, bus: Bus, rows: EventRows, reports: WorkerRecoveryReports) -> None:
         self.home, self.queries, self.processes, self.settings = home, queries, processes, settings
-        self.clock, self.providers, self.program, self.bus, self.rows = clock, providers, program, bus, rows
+        self.clock, self.providers, self.program, self.bus, self.rows, self.reports = clock, providers, program, bus, rows, reports
 
     @contextmanager
     def lock(self, session: str) -> Generator[bool]:
@@ -62,5 +62,5 @@ class WorkerSessions(AgentLaunchGuard):
             return AgentSessionState.RUNNING
         if self.program.stop_tree(current.pid, program):
             return AgentSessionState.READY
-        self.bus.run(ReportSilentAgent(current.id, "its process could not be stopped", activity.last_hook_at if activity.last_hook_at is not None else activity.created_at), Actor.core(), environment_id=current.environment_id)
+        self.reports.report(current, "its process could not be stopped", activity.last_hook_at if activity.last_hook_at is not None else activity.created_at)
         return AgentSessionState.BLOCKED

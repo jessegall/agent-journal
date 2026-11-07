@@ -5,7 +5,7 @@ import pytest
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.query.queries import Queries
-from core.modules.agents.support.report_nudges import EMPTY_REPORT_TEXT, SHORT_REPORT_CHARACTERS
+from core.modules.agents.support.report_nudges import EMPTY_REPORT_TEXT
 from core.modules.messages.models.message import Message
 from core.modules.drivers.ticks.end_silent_helpers_tick import EndSilentHelpersTick
 from core.testing.fake_launcher import FakeLauncher
@@ -60,21 +60,24 @@ def test_the_agent_card_reads_reports_through_the_viewer(new_story):
 
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
-def test_a_short_report_arrives_inside_the_parents_line(new_story, helper_fixture):
+def test_a_short_report_names_its_readable_message(new_story, helper_fixture):
     story = reported(new_story, helper_fixture, "The cart adds tax twice.")
-    story.expect_text(LINES.format(agent=story.agent.id), f"agent:{helper_agent(story).id} reports", "The cart adds tax twice.")
+    story.expect_text(LINES.format(agent=story.agent.id), f"journal message read {helper_report(story).id}")
+    story.expect_no_text(LINES.format(agent=story.agent.id), "The cart adds tax twice.")
+    story.expect_text(f"message read {helper_report(story).id}", "The cart adds tax twice.")
 
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
 def test_a_long_report_gives_the_parent_its_message_number(new_story, helper_fixture):
-    story = reported(new_story, helper_fixture, "x" * (SHORT_REPORT_CHARACTERS + 1))
+    story = reported(new_story, helper_fixture, "x" * 2001)
     story.expect_text(LINES.format(agent=story.agent.id), f"journal message read {helper_report(story).id}")
 
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
 def test_a_helper_that_says_nothing_still_reports(new_story, helper_fixture):
     story = reported(new_story, helper_fixture, "")
-    story.expect_text(LINES.format(agent=story.agent.id), EMPTY_REPORT_TEXT)
+    story.expect_text(f"message read {helper_report(story).id}", EMPTY_REPORT_TEXT)
+    story.expect_no_text(LINES.format(agent=story.agent.id), EMPTY_REPORT_TEXT)
 
 
 @pytest.mark.parametrize("helper_fixture", [ReportedHelper, ReportedCodexHelper])
@@ -90,7 +93,8 @@ def test_a_report_to_a_parent_that_ended_for_good_goes_to_the_running_main_agent
     second = Actor(story.new_row_id("agent start s-2 claude main --environment main"), ActorType.AGENT)
     story.run(f"agent end {story.agent.id}", actor=story.user)
     story.hook(helper_agent(story).session, stop_with_report("The cart adds tax twice."))
-    story.expect_text(LINES.format(agent=second.id), "The cart adds tax twice.")
+    story.expect_text(LINES.format(agent=second.id), f"journal message read {helper_report(story).id}")
+    story.expect_text(f"message read {helper_report(story).id}", "The cart adds tax twice.", actor=second)
 
 
 def test_a_resumed_helper_reports_its_next_job_the_same_way(new_story, monkeypatch):
@@ -125,7 +129,7 @@ def exited(story, code, terminal=""):
 def test_a_program_that_exits_with_no_report_tells_the_parent_why(new_story, helper_fixture, code, terminal, reason):
     story = new_story(fixture=helper_fixture)
     exited(story, code, terminal)
-    story.expect_text(LINES.format(agent=story.agent.id), reason)
+    story.expect_text(f"message read {helper_report(story).id}", reason)
     story.expect_rows(helper_agent(story).ended_at is not None, jobs_of(story, helper_agent(story))[0].ended_at is not None)
 
 
@@ -146,7 +150,8 @@ def test_a_helper_that_ends_with_its_job_open_tells_the_parent(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_success(f"agent end {helper_agent(story).id}", actor=Actor(helper_agent(story).id, ActorType.AGENT))
     story.run_listeners()
-    story.expect_text(LINES.format(agent=story.agent.id), EMPTY_REPORT_TEXT)
+    story.expect_text(f"message read {helper_report(story).id}", EMPTY_REPORT_TEXT)
+    story.expect_no_text(LINES.format(agent=story.agent.id), EMPTY_REPORT_TEXT)
 
 
 def test_a_silent_helper_ends_with_no_agent_to_carry_the_tick(new_story):
@@ -176,22 +181,24 @@ def test_a_new_main_agent_takes_over_a_running_helper_and_its_report(new_story):
     second = Actor(story.new_row_id("agent start s-2 claude main --environment main"), ActorType.AGENT)
     story.expect_rows(helper_agent(story).parent_id == second.id)
     story.hook(helper_agent(story).session, stop_with_report("The cart adds tax twice."))
-    story.expect_text(LINES.format(agent=second.id), "The cart adds tax twice.")
+    story.expect_text(LINES.format(agent=second.id), f"journal message read {helper_report(story).id}")
+    story.expect_text(f"message read {helper_report(story).id}", "The cart adds tax twice.", actor=second)
 
 
 def test_a_new_main_agent_takes_the_report_lines_left_on_the_ended_one(new_story):
     story = reported(new_story, StartedHelper, "Nothing left to read.")
     story.run(f"agent end {story.agent.id}", actor=story.user)
     second = Actor(story.new_row_id("agent start s-2 claude main --environment main"), ActorType.AGENT)
-    story.expect_text(LINES.format(agent=second.id), "Nothing left to read.")
+    story.expect_text(LINES.format(agent=second.id), f"journal message read {helper_report(story).id}")
     story.expect_text("message reports --environment main", f"message:{helper_report(story).id}", actor=second)
+    story.expect_text(f"message read {helper_report(story).id}", "Nothing left to read.", actor=second)
 
 
 def test_a_helper_stopped_as_its_launch_ended_tells_the_parent_so(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_success(f"agent exited {helper_agent(story).id} 143 --launch-ended")
     story.run_listeners()
-    story.expect_text(LINES.format(agent=story.agent.id), "the journal launch that ran it ended")
+    story.expect_text(f"message read {helper_report(story).id}", "the journal launch that ran it ended")
 
 
 def enforced(story, minutes):
@@ -206,7 +213,7 @@ def test_a_helper_past_its_time_is_stopped_and_the_parent_hears_why(new_story):
     story.expect_text(LINES.format(agent=story.agent.id), "near its time limit")
     launcher = FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n", request_count=2)
     enforced(story, 12)
-    story.expect_text(LINES.format(agent=story.agent.id), "stopped at its time limit")
+    story.expect_text(f"message read {helper_report(story).id}", "stopped at its time limit")
     story.expect_rows(helper_agent(story).ended_at is not None, launcher.requests == [{"agent_id": helper_agent(story).id, "stop": True}])
 
 
@@ -223,7 +230,7 @@ def test_a_helper_past_its_cost_is_stopped(new_story):
     story.run(f"setting set {HELPER_MAX_COST} 5 --project", actor=story.user)
     save_status_file(story, helper_agent(story).session, {"cost": {"total_cost_usd": 6}})
     enforced(story, 1)
-    story.expect_text(LINES.format(agent=story.agent.id), "stopped at its cost limit")
+    story.expect_text(f"message read {helper_report(story).id}", "stopped at its cost limit")
 
 
 def test_a_helper_with_no_cost_is_held_by_time_alone(new_story):
@@ -249,4 +256,4 @@ def test_a_helper_a_trigger_starts_reports_to_the_main_agent(new_story):
     story.home.socket("launcher").unlink()
     story.expect_rows(helper_agent(story).parent_id == story.agent.id)
     story.hook(helper_agent(story).session, stop_with_report("The diff is clean."))
-    story.expect_text(LINES.format(agent=story.agent.id), "The diff is clean.")
+    story.expect_text(f"message read {helper_report(story).id}", "The diff is clean.")

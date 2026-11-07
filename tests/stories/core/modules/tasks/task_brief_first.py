@@ -1,3 +1,10 @@
+import sqlite3
+
+from core.base.refusal import Refusal
+from core.base.query.queries import Queries
+from core.modules.tasks.models.task_read import TaskRead
+
+from core.modules.documents.support.work_context_reader import WorkContextReader
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
 from unittest.mock import patch
 
@@ -117,6 +124,38 @@ def test_resetting_many_task_reads_reads_each_row_no_more(new_story):
     with patch.object(Database, "rows", autospec=True, side_effect=Database.rows) as reads:
         story.container.get(Bus).run(ResetTaskReads(story.agent.id), story.agent)
     story.expect_rows(not [call for call in reads.call_args_list if "FROM task_reads WHERE id IN" in call.args[1].sql])
+
+
+def test_reading_the_overview_context_holds_no_write_lock(new_story, monkeypatch):
+    story = new_story(fixture=BuilderWithUnreadTask)
+    original = WorkContextReader.overview
+    observed = []
+
+    def read_without_lock(reader, task, caller):
+        writer = sqlite3.connect(story.home.database, timeout=0, autocommit=True)
+        try:
+            writer.execute("BEGIN IMMEDIATE")
+            observed.append(True)
+            return original(reader, task, caller)
+        finally:
+            writer.rollback()
+            writer.close()
+
+    monkeypatch.setattr(WorkContextReader, "overview", read_without_lock)
+    story.expect_success("task overview 1", actor=story.agent)
+    story.expect_rows(observed == [True])
+
+
+def test_an_overview_that_cannot_read_its_context_records_no_task_read(new_story, monkeypatch):
+    story = new_story(fixture=BuilderWithUnreadTask)
+
+    def unavailable(reader, task, caller):
+        raise Refusal("the context is unavailable")
+
+    monkeypatch.setattr(WorkContextReader, "overview", unavailable)
+    story.expect_refusal("task overview 1", "the context is unavailable", actor=story.agent)
+    reads = story.container.get(Queries).query(TaskRead).filter(task_id=1, session_agent_id=story.agent.id)
+    story.expect_rows(not reads.exists())
 
 
 def test_redirecting_or_piping_a_task_overview_does_not_mark_the_brief_read(new_story):

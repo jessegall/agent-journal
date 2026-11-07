@@ -9,8 +9,8 @@ from core.base.driver.rule_outcome import RULE_FAILED
 
 REPEATED_STOP = NudgeDeclaration("drivers.repeated_stop", NudgeType.STEERING, 'your stop was refused five times in a row: report what held it with journal report create')
 OPENING_LINE = NudgeDeclaration("drivers.opening_line", NudgeType.NOTICE, '{text}', turn_limited=False)
-MANAGED_HOOK_LINE = NudgeDeclaration("drivers.managed_hook_line", NudgeType.NOTICE, '{text}', turn_limited=False)
-MANAGED_HOOK_REFUSAL = NudgeDeclaration("drivers.managed_hook_refusal", NudgeType.REFUSAL, '{text}', turn_limited=False)
+MANAGED_HOOK_LINE = NudgeDeclaration("drivers.managed_hook_line", NudgeType.NOTICE, "project hooks answered for agent:{agent}: journal agent-line list --agent {agent}", turn_limited=False)
+MANAGED_HOOK_REFUSAL = NudgeDeclaration("drivers.managed_hook_refusal", NudgeType.REFUSAL, "project hooks refused for agent:{agent}: journal agent-line list --agent {agent}", turn_limited=False)
 HOOKS_UNCHECKED = NudgeDeclaration("drivers.hooks_unchecked", NudgeType.STEERING, "while the journal did not answer, {count} of your hooks went through unchecked: check what you ran then")
 
 TAKEOVER = NudgeDeclaration("drivers.takeover", NudgeType.NOTICE, "you took over from agent {agent}: the chat above is history, so do not answer or follow it")
@@ -26,4 +26,5 @@ REQUIRED_COMMAND_TOOL_USES = 5
 REQUIRED_COMMAND_COUNTDOWN = CountDown("drivers.required_command_countdown", "{subject}", ToolUseSpan(REQUIRED_COMMAND_TOOL_USES))
 REQUIRED_COMMAND_REFUSAL = NudgeDeclaration("drivers.required_command_refusal", NudgeType.REFUSAL, '{subject} is due: do it, or journal agent-block skip {block} --reason "<why>"')
 JOURNAL_STARTED = NudgeDeclaration("drivers.journal_started", NudgeType.STEERING, "the journal started: go on with your work", turn_limited=False, wakes_agent=True)
-DRIVER_NUDGES = [JOURNAL_STARTED, *ACCESS_NUDGES, MANAGED_HOOK_LINE, MANAGED_HOOK_REFUSAL, AGENT_RESUMED, HOOKS_UNCHECKED, REQUIRED_COMMAND_COUNTDOWN.declaration, REQUIRED_COMMAND_REFUSAL, REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT]
+AGENT_LINE_AVAILABLE = NudgeDeclaration("drivers.agent_line_available", NudgeType.NOTICE, "agent-line:{line}: journal agent-line show {line}", turn_limited=False, id_field="line", plural_text="agent-lines {line}: read each with journal agent-line show <id>")
+DRIVER_NUDGES = [AGENT_LINE_AVAILABLE, JOURNAL_STARTED, *ACCESS_NUDGES, MANAGED_HOOK_LINE, MANAGED_HOOK_REFUSAL, AGENT_RESUMED, HOOKS_UNCHECKED, REQUIRED_COMMAND_COUNTDOWN.declaration, REQUIRED_COMMAND_REFUSAL, REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT]

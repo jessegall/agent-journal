@@ -10,7 +10,7 @@ UNREAD_TOOL_USES = 20
 UNREAD_MESSAGE_STOP = NudgeDeclaration("messages.unread_at_stop", NudgeType.REFUSAL, 'message {message} is unread: journal message read {message}')
 UNREAD_DISPLAY_REFUSAL = NudgeDeclaration("messages.unread_show", NudgeType.REFUSAL, 'message {message} is unread, so it cannot be shown: journal message read {message}')
 NEW_MESSAGE = NudgeDeclaration("messages.new_message", NudgeType.STEERING, 'new message {message}', turn_limited=False)
-MESSAGE_REACTION = NudgeDeclaration("messages.reaction", NudgeType.STEERING, "the user reacted to message:{message}: act if it asks; closing text is not in chat; use journal message send", wakes_agent=True)
+MESSAGE_REACTION = NudgeDeclaration("messages.reaction", NudgeType.STEERING, "the user reacted to message:{message}: journal message show {message}", wakes_agent=True, plural_text="the user reacted to messages {message}: read each with journal message show <id>", id_field="message")
 MESSAGE_UPDATED = NudgeDeclaration("messages.message_updated", NudgeType.NOTICE,
                                    'message:{message} updated; journal message show {message}; select: journal message work-from {message}')
 NEW_MESSAGES = NudgeDeclaration("messages.new_messages", NudgeType.STEERING, '{count} new messages', turn_limited=False)

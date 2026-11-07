@@ -14,8 +14,8 @@ class ProfileModels:
         allowed = self.allowed.allowed(provider)
         if tier is not None:
             return provider.nearest_model(tier, allowed)
-        profile_model = next((name for name in (profile.model, profile.codex_model) if name in allowed), None)
-        if profile_model is not None:
+        profile_model = provider.profile_model(profile)
+        if profile_model in allowed:
             return profile_model
         if profile.tier is not None:
             return provider.nearest_model(profile.tier, allowed)

@@ -1,3 +1,4 @@
+from core.modules.tasks.commands.record_task_read.record_task_read_handler import RecordTaskReadHandler
 from core.modules.tasks.commands.edit_task.edit_task_subcommand import EditTaskSubcommand
 from core.modules.tasks.guards.task_edit_access_guard import TaskEditAccessGuard
 from core.modules.tasks.migrations.m017_block_waiting_tasks import BlockWaitingTasksMigration
@@ -136,7 +137,7 @@ class TasksModule(Module):
     migrations = [BlockWaitingTasksMigration, TaskLogImportantMigration, TaskReadSessionMigration, PendingWaitsIndexMigration, OpenTaskEdgeIndexMigration, ClosedTaskIndexMigration, TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration, DelegatedTaskIndexMigration, TaskReadsTableMigration, TaskBlockRenewalsMigration, TaskClosedCursorIndexMigration, AllEnvironmentsTaskStateIndexMigration, TaskComplexityMigration, TaskTagsMigration]
     subcommands = [TagTaskSubcommand, RemoveTaskTagSubcommand, TaskTagsSubcommand, TaskListSubcommand, EditTaskSubcommand, AssignTaskSubcommand, CommentTaskSubcommand, TaskCommentsSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, ReadTaskBriefSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand]
-    handlers = [TagTaskHandler, RemoveTaskTagHandler, AssignTaskHandler, ClearDelegatedTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
+    handlers = [TagTaskHandler, RemoveTaskTagHandler, RecordTaskReadHandler, AssignTaskHandler, ClearDelegatedTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
     moves = [TasksMove]
     guards = [TaskTagAccessGuard, TaskTagWordGuard, TaskEditAccessGuard, VisibleDependencyGuard, NoDependencyLoopGuard, DependenciesClosedGuard, UserWaitGuard]
     views = [TaskTagWord, OpenDependency, TaskCard, TaskEdge, EnvironmentCard, TaskInspectionRow, TaskBlockReview]

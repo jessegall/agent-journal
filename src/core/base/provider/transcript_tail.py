@@ -11,6 +11,10 @@ class TranscriptTail:
     def __init__(self, path: Path) -> None:
         self.path = path
 
+    def first_line(self) -> str:
+        with self.path.open(encoding="utf-8") as log:
+            return log.readline()
+
     def lines(self, count: int = 0) -> list[str]:
         if not self.path.is_file():
             return []

@@ -25,4 +25,4 @@ class ScheduledTriggerRule(DriverRule):
         due = [trigger for trigger in self.triggers.due(hook.timestamp) if self.conditions.all_pass(trigger, hook)]
         if not due:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(*(TRIGGER_LINE.nudge(text=trigger.agent_line) for trigger in due)).running(*(FireTrigger(trigger.id) for trigger in due))
+        return RuleAnswer.with_nudges(*(TRIGGER_LINE.nudge(trigger=trigger.id) for trigger in due)).running(*(FireTrigger(trigger.id) for trigger in due))

@@ -3,7 +3,7 @@ import {createApp, h} from "vue";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
 import {context, settle} from "./support/windowContext.js";
 import HelperStartForm from "../../core/modules/profiles/web/src/HelperStartForm.vue";
-import {profileWindowContext} from "./support/profileWindowContext.js";
+import {profileWindowContext, PROGRAMS} from "./support/profileWindowContext.js";
 
 const IDLE = {can_start: false, reason: 'helper 42 is idle: journal helper send 42 "<job>"', programs: ["claude", "codex"], idle_helpers: [{id: 42, name: "Lady Lovelace"}], can_start_fresh: true, fresh_reason: ""};
 let app, host;
@@ -17,7 +17,7 @@ async function drawn(state = IDLE, run = async () => ({ok: true})) {
     const window = {...profileWindowContext({}), read: vi.fn(async () => ({ok: true, value: state})), run: vi.fn(run)};
     host = document.createElement("div");
     document.body.append(host);
-    app = createApp({render: () => h(HelperStartForm, {profile: "journal-researcher"})});
+    app = createApp({render: () => h(HelperStartForm, {profile: "journal-researcher", programs: PROGRAMS})});
     app.provide(WINDOW_CONTEXT, window);
     app.mount(host);
     await settle();

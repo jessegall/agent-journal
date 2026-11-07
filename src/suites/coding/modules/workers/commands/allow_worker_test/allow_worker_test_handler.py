@@ -36,7 +36,7 @@ class AllowWorkerTestHandler(Handler[AllowWorkerTest, WorkerTestRequest]):
             raise Refusal(f"request {request.id} is already {request.state}", "journal worker-test-request list shows the requests")
         allowed = self.repository.save_change(request, request.moved(WorkerTestRequestLifecycle.allow), context)
         self.bus.dispatch(MakeTaskLog(request.task_id, f"{context.actor.type} {context.actor.id} allowed the run of request {request.id}"), context)
-        self.nudger.send(request.worker_id, WORKER_TEST_ALLOWED, WORKER_JOB_SOURCE, context, request=request.id, command=request.command)
+        self.nudger.send(request.worker_id, WORKER_TEST_ALLOWED, WORKER_JOB_SOURCE, context, request=request.id)
         return allowed
 
     def verify_allowed(self, request: WorkerTestRequest, actor: Actor) -> None:

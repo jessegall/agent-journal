@@ -6,7 +6,10 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 from core.base.provider.hook_trust import HookTrust
+from core.base.provider.program_hooks import ProgramHooks
 from core.base.type_guards import is_list, is_mapping
+from core.modules.codex.providers.support.codex_hook_definition import CodexHookDefinition
+from core.modules.codex.providers.support.codex_hook_event import CodexHookEvent
 
 CAPITAL = re.compile(r"(?<!^)(?=[A-Z])")
 STATE_TABLE = re.compile(r'''(?ms)^\[hooks\.state\.(?:"(?:[^"\\]|\\.)*"|'[^']*')\][ \t]*(?:\r?\n|$).*?(?=^\[|\Z)''')
@@ -20,20 +23,49 @@ class CodexTrust:
         self.config_file = config_file
 
     def trust(self, hook_file: Path, hook_names: Sequence[str]) -> HookTrust:
-        trusted = {key.rsplit(":", 3)[1] for key, state in self.states().items() if key.startswith(f"{hook_file}:") and key.count(":") >= 3
-                   and (not is_mapping(state) or state.get("enabled", True) is not False)}
-        if not trusted:
+        states = self.states()
+        if not any(key.startswith(f"{hook_file}:") and is_mapping(state) and isinstance(state.get("trusted_hash"), str) for key, state in states.items()):
             return HookTrust.UNTRUSTED
-        return HookTrust.READY if trusted >= {CAPITAL.sub("_", name).lower() for name in hook_names} else HookTrust.CHANGED
+        hashes = self.hashes(hook_file)
+        present = {key.rsplit(":", 3)[1] for key in hashes}
+        expected = {CAPITAL.sub("_", name).lower() for name in hook_names}
+        if not present >= expected:
+            return HookTrust.CHANGED
+        return HookTrust.READY if all(self.is_trusted(states.get(key), digest) for key, digest in hashes.items()
+                                     if key.rsplit(":", 3)[1] in expected) else HookTrust.CHANGED
 
     def copied(self, source_file: Path, target_file: Path) -> None:
         states = self.states()
         source, target = f"{source_file}:", f"{target_file}:"
+        source_hashes, target_hashes = self.hashes(source_file), self.hashes(target_file)
         added = {target + key.removeprefix(source): state for key, state in states.items()
-                 if key.startswith(source) and target + key.removeprefix(source) not in states}
+                 if key.startswith(source) and target + key.removeprefix(source) not in states
+                 and self.is_trusted(state, source_hashes.get(key))
+                 and source_hashes[key] == target_hashes.get(target + key.removeprefix(source))}
         if added:
             tables = "\n".join(self.state_table(key, state) for key, state in added.items())
             FileAccess.shared().write(self.config_file, FileAccess.shared().read(self.config_file).rstrip("\n") + "\n\n" + tables)
+
+    @staticmethod
+    def is_trusted(state: object, digest: str | None) -> bool:
+        return digest is not None and is_mapping(state) and state.get("enabled", True) is not False and state.get("trusted_hash") == digest
+
+    @staticmethod
+    def hashes(hook_file: Path) -> dict[str, str | None]:
+        events = ProgramHooks.read(hook_file).get("hooks")
+        if not is_mapping(events):
+            return {}
+        definitions: dict[str, str | None] = {}
+        for event in CodexHookEvent:
+            blocks = events.get(event.value)
+            if not is_list(blocks):
+                continue
+            for group, block in enumerate(blocks):
+                if not is_mapping(block) or not is_list(entries := block.get("hooks")):
+                    continue
+                definitions.update({f"{hook_file}:{event.key}:{group}:{index}": CodexHookDefinition(event, block.get("matcher"), entry).current_hash()
+                                    for index, entry in enumerate(entries) if is_mapping(entry) and ProgramHooks.is_journals(entry)})
+        return definitions
 
     def states(self) -> Mapping[str, object]:
         settings: object = tomllib.loads(FileAccess.shared().read(self.config_file)) if self.config_file.is_file() else {}

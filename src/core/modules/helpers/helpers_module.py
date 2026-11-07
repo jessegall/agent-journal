@@ -1,4 +1,4 @@
-from core.modules.helpers.commands.report_program_fault.report_program_fault_handler import ReportProgramFaultHandler
+from core.modules.helpers.commands.send_program_fault.send_program_fault_handler import SendProgramFaultHandler
 from core.modules.helpers.commands.agent_mix.agent_mix_subcommand import AgentMixSubcommand
 from core.modules.helpers.migrations.m001_helper_limit_key import HelperLimitKeyMigration
 from core.modules.helpers.migrations.m002_settle_old_helpers import RetireOldHelpersMigration
@@ -58,7 +58,7 @@ class HelpersModule(Module):
     marks = PROGRAM_MARKS
     settings = HELPER_SETTINGS
     guards = [OpenJobRetireGuard, ProviderOutageProgramGuard, ProgramSplitGuard]
-    handlers = [ReportProgramFaultHandler, StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler, EndProviderOutagesHandler]
+    handlers = [SendProgramFaultHandler, StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler, EndProviderOutagesHandler]
     tick_handlers = [TickHandler(TickInterval(seconds=60), HelperLimitsTick(), "helper limits")]
     nudges = HELPER_NUDGES
     skills = [SkillDeclaration("journal-helpers", "Start a helper for a bounded read, send it more, stop it, and read its report; read it before the first helper command of a session", keywords=["helper start"])]

@@ -1,3 +1,4 @@
+from core.modules.mcp.support.server_configs import ServerConfigs
 from argparse import ArgumentParser, Namespace
 from collections.abc import Sequence
 
@@ -6,8 +7,6 @@ from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_tuple
 from core.modules.mcp.queries.mcp_server_query import McpServerQuery
-from core.modules.mcp.support.claude_server_file import FILE as CLAUDE_FILE, ClaudeServerFile
-from core.modules.mcp.support.codex_server_file import FILE as CODEX_FILE, CodexServerFile
 from core.modules.mcp.support.server_standing import NEEDS_KEY, ServerStanding
 
 
@@ -18,14 +17,14 @@ class McpCheckSubcommand(ReadSubcommand[Sequence[str]]):
     cli_name = "mcp"
     name = "check"
 
-    def __init__(self, servers: McpServerQuery, standing: ServerStanding, claude: ClaudeServerFile, codex: CodexServerFile) -> None:
-        self.servers, self.standing, self.claude, self.codex = servers, standing, claude, codex
+    def __init__(self, servers: McpServerQuery, standing: ServerStanding, configs: ServerConfigs) -> None:
+        self.servers, self.standing, self.configs = servers, standing, configs
 
     def arguments(self, parser: ArgumentParser) -> None:
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[str]:
-        config_names = {str(CLAUDE_FILE): self.claude.names(), str(CODEX_FILE): self.codex.names()}
+        config_names = self.configs.names()
         lines: list[str] = []
         for server in self.servers.oldest().all_rows():
             missing = [file for file, names in config_names.items() if server.name not in names]

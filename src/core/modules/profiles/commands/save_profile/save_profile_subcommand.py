@@ -5,6 +5,7 @@ from core.base.access import Access
 from core.base.provider.model_tier import ModelTier
 from core.base.caller.caller import Caller
 from core.base.profile.agent_profile import AgentProfile
+from core.base.provider.providers import Providers
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
@@ -21,13 +22,15 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
     name = "save"
     outward = True
 
-    def __init__(self, files: ProfileFiles) -> None:
-        self.files = files
+    def __init__(self, files: ProfileFiles, providers: Providers) -> None:
+        self.files, self.providers = files, providers
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("profile_name")
-        for name in ("title", "type", "model", "codex-model", "program", "mcp-tools"):
+        for name in ("title", "type", "program", "mcp-tools"):
             parser.add_argument(f"--{name}")
+        for provider in self.providers.all():
+            parser.add_argument(provider.model_option, dest=f"program_model_{provider.name}")
         parser.add_argument("--tier", help="fast, general or strongest; blank uses the profile models")
         parser.add_argument("--description", default="")
         parser.add_argument("--body", default="")
@@ -42,14 +45,19 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
                 raise Refusal(profile.problem, "fix the file or use journal profile reset")
         else:
             profile = AgentProfile(arguments.profile_name, description=arguments.description, body=arguments.body)
-        fields = {name: value for name, value in vars(arguments).items() if name in ("title", "description", "model", "codex_model", "body", "program", "program_if_possible", "access", "independent") and value is not None}
+        fields = {name: value for name, value in vars(arguments).items() if name in ("title", "description", "body", "program", "program_if_possible", "access", "independent") and value is not None}
         if arguments.tier is not None:
             fields["tier"] = ModelTier.automatic(arguments.tier) if arguments.tier else None
         if arguments.type is not None:
             fields["agent_type"] = arguments.type
         if arguments.mcp_tools is not None:
             fields["mcp_tools"] = ProfileFormat.tools(arguments.mcp_tools)
-        return SaveProfile(replace(profile, **fields))
+        profile = replace(profile, **fields)
+        for provider in self.providers.all():
+            model = getattr(arguments, f"program_model_{provider.name}")
+            if model is not None:
+                profile = provider.with_profile_model(profile, model)
+        return SaveProfile(profile)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, AgentProfile):

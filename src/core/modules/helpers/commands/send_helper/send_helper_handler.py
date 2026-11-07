@@ -78,7 +78,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
         self.limits.checked_running(helper.profile)
         if not self.folders.has_folder(helper):
             raise Refusal(f"helper {helper.id} worked in a folder that is gone", 'start a new helper with --fresh "<why>"')
-        if not self.providers.provider(helper.program).session_resumes_here(self.folders.folder(helper), helper.session):
+        if not self.providers.provider(helper.program).session_matches_folder(self.folders.folder(helper), helper.session):
             raise Refusal(f"helper {helper.id}'s session is gone: journal agent retire {helper.id} --reason \"session gone\"", "start a new helper")
 
     @staticmethod

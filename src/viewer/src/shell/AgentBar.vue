@@ -12,13 +12,14 @@ const emit = defineEmits(["open", "changed"]);
 const LOADING_BARS = [{width: "220px", height: 12}];
 const {failure, paused, toggle} = useAgentPause(toRef(props, "agent"), props.run, () => emit("changed"));
 const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
-const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" : "Working"));
+const pendingWork = computed(() => props.agent?.work_status);
+const word = computed(() => (pendingWork.value ? `Status: ${pendingWork.value}` : !running.value ? "Ended" : paused.value ? "Paused" : "Working"));
 </script>
 
 <template>
     <div class="agent-state" data-agent-bar>
         <template v-if="agent || !loading">
-            <span :class="['dot', {running: running && !paused, paused}]" />
+            <span :class="['dot', {running: running && !paused, paused: paused || pendingWork}]" />
         </template>
         <template v-if="agent">
             <strong data-agent-word>{{ word }}</strong>

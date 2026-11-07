@@ -15,9 +15,6 @@ from core.modules.tasks.models.task_block_review import TaskBlockReview
 from core.modules.tasks.support.block_conditions.task_blocks_reviewed import TaskBlocksReviewed
 from core.modules.tasks.support.task_nudges import BLOCK_REVIEW, BLOCK_REVIEW_REQUIRED, BLOCK_REVIEW_INTERVAL, USER_BLOCK_REVIEW
 
-SHOWN_TASK_COUNT = 10
-
-
 class UnopenableBlockRule(DriverRule):
     """Periodically holds the main agent until it reviews tasks that need manual release."""
 
@@ -37,9 +34,9 @@ class UnopenableBlockRule(DriverRule):
         if block is not None and TaskBlocksReviewed.stored(block.condition_text).pending(tasks):
             return RuleAnswer.allowed()
         passed = BLOCK_REVIEW_INTERVAL.has_passed_many(self.spans, hook.agent_id, [task.reviewed_at for task in tasks], hook.timestamp)
-        due = [task for task, passed_span in zip(tasks, passed) if passed_span][:SHOWN_TASK_COUNT]
+        due = [task for task, passed_span in zip(tasks, passed) if passed_span]
         notices = [replace((USER_BLOCK_REVIEW if task.user_wait else BLOCK_REVIEW).nudge(task=task.task_id),
-                           key=f"{BLOCK_REVIEW.key}.{task.task_id}", interval=None, declaration=None) for task in due]
+                           interval=None, record_keys=tuple([f"{BLOCK_REVIEW.key}.{task.task_id}"])) for task in due]
         manual = [task for task in due if not task.user_wait]
         answer = RuleAnswer.with_nudges(*notices)
         if not manual:

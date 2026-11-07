@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from core.base.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
+from core.testing.story_fixture import StoryFixture
 from suites.coding.modules.workers.support.worker_nudges import WORKER_UNMERGED
 from suites.coding.modules.workers.listeners.worker_merge_block_listener import WorkerMergeBlockListener
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
@@ -13,8 +14,15 @@ MAIN_SESSION = "s-1"
 REMINDER_INTERVAL = timedelta(seconds=WORKER_UNMERGED.interval.seconds)
 
 
+class MainAgentMerges(StoryFixture):
+    parent = OrchestratorWithOpenTask
+
+    def steps(self, story):
+        story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+
+
 def test_a_worker_whose_delivered_work_is_not_merged_is_named_to_its_main_agent_again_every_interval(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=MainAgentMerges)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     reminder = f"worker:{worker.id} delivered task:1, unmerged"
@@ -28,7 +36,7 @@ def test_a_worker_whose_delivered_work_is_not_merged_is_named_to_its_main_agent_
 
 
 def test_a_worker_whose_delivered_work_is_merged_is_not_named_again(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=MainAgentMerges)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     reminder = f"worker:{worker.id} delivered task:1, unmerged"
@@ -44,7 +52,7 @@ def test_a_worker_whose_delivered_work_is_merged_is_not_named_again(new_story):
 
 
 def test_a_worker_whose_work_is_released_is_not_named_again(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=MainAgentMerges)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     reminder = f"worker:{worker.id} delivered task:1, unmerged"
@@ -57,7 +65,7 @@ def test_a_worker_whose_work_is_released_is_not_named_again(new_story):
 
 
 def test_a_worker_that_has_delivered_nothing_is_not_named(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=MainAgentMerges)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.advance(REMINDER_INTERVAL)
@@ -66,7 +74,7 @@ def test_a_worker_that_has_delivered_nothing_is_not_named(new_story):
 
 
 def test_the_unmerged_line_names_the_check_while_a_proof_waits(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=MainAgentMerges)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     story.tick(MAIN_SESSION)
@@ -91,21 +99,21 @@ def merge_block_rows(story, worker_id: int) -> list[AgentBlock]:
 
 
 def test_two_reminders_do_not_hold_the_main_agent(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=MainAgentMerges)
     worker = delivered_worker(story, repository_environment(story))
     remind(story, 2)
     expect_value(merge_block_rows(story, worker.id), [])
 
 
 def test_the_third_reminder_holds_the_main_agent_until_it_merges_or_gives_a_reason(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=MainAgentMerges)
     worker = delivered_worker(story, repository_environment(story))
     remind(story, 3)
     expect_value(len(merge_block_rows(story, worker.id)), 1)
 
 
 def test_a_reason_starts_the_next_round_of_three_reminders(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=MainAgentMerges)
     worker = delivered_worker(story, repository_environment(story))
     remind(story, 3)
     block = merge_block_rows(story, worker.id)[0]

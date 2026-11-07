@@ -1,9 +1,10 @@
 from collections.abc import Iterable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING
 
 from core.base.driver.interval import Interval
 from core.base.driver.nudge_type import NudgeType
+from core.base.driver.stored_nudge import StoredNudge
 
 if TYPE_CHECKING:
     from core.base.driver.nudge_declaration import NudgeDeclaration
@@ -24,6 +25,7 @@ class Nudge:
     required_command: str = ""
     fields: tuple[tuple[str, object], ...] = field(default=(), compare=False)
     declaration: "NudgeDeclaration | None" = field(default=None, compare=False)
+    record_keys: tuple[str, ...] = ()
 
     @property
     def labelled(self) -> str:
@@ -37,11 +39,33 @@ class Nudge:
     def is_mergeable(self) -> bool:
         return self.declaration is not None and self.declaration.is_mergeable
 
+    @property
+    def merge_context(self) -> tuple[tuple[str, str], ...]:
+        if self.declaration is None or not self.declaration.is_mergeable:
+            return tuple([("text", self.text)])
+        id_field = self.declaration.id_field or next(iter(dict(self.fields)), None)
+        return tuple(sorted((name, str(value)) for name, value in self.fields if name != id_field))
+
+    @property
+    def records(self) -> "tuple[Nudge, ...]":
+        if not self.record_keys:
+            return tuple([self])
+        return tuple(replace(self, key=key, record_keys=()) for key in self.record_keys)
+
+    @property
+    def stored(self) -> StoredNudge:
+        declaration = self.declaration
+        return StoredNudge(self.key, self.type.value, declaration.text if declaration is not None else "{text}",
+                           declaration.plural_text if declaration is not None else "", declaration.id_field if declaration is not None else None,
+                           declaration.required_command if declaration is not None else None,
+                           tuple(declaration.path_fields) if declaration is not None else (),
+                           {name: str(value) for name, value in self.fields} if declaration is not None else {"text": self.text})
+
     @staticmethod
     def collapsed(nudges: "Iterable[Nudge]") -> "list[Nudge]":
-        groups: dict[tuple[str, str], list[Nudge]] = {}
+        groups: dict[tuple[str, tuple[tuple[str, str], ...]], list[Nudge]] = {}
         for nudge in nudges:
-            groups.setdefault((nudge.key, "" if nudge.is_mergeable else nudge.text), []).append(nudge)
+            groups.setdefault((nudge.key, nudge.merge_context), []).append(nudge)
         return [Nudge.merged(group) for group in groups.values()]
 
     @staticmethod

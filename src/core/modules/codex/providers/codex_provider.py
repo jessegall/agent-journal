@@ -1,3 +1,6 @@
+from core.base.provider.program_server_file import ProgramServerFile
+from core.modules.codex.providers.support.codex_server_file import CodexServerFile
+from dataclasses import replace
 import html
 import json
 import re
@@ -30,6 +33,7 @@ from core.modules.codex.providers.support.codex_token_count import CodexTokenCou
 from core.modules.codex.providers.support.codex_session_effort import CodexSessionEffort
 from core.modules.codex.providers.support.codex_event import CodexEvent
 from core.modules.codex.providers.support.codex_trust import CodexTrust
+from core.modules.codex.providers.support.codex_hook_event import CodexHookEvent
 
 HOME_VARIABLE = "CODEX_HOME"
 DEVELOPER_ROLE = "developer"
@@ -45,11 +49,7 @@ class CodexProvider(Provider):
     name = "codex"
     title = "Codex"
     executable = "codex"
-    hook_events = {"SessionStart": HookEventName.SESSION_START, "UserPromptSubmit": HookEventName.PROMPT,
-                   "PreToolUse": HookEventName.PRE_TOOL_USE, "PostToolUse": HookEventName.POST_TOOL_USE,
-                   "PreCompact": HookEventName.COMPACT, "Stop": HookEventName.STOP,
-                   
-                   "SessionEnd": HookEventName.SESSION_END}
+    hook_events = {event.value: event.event for event in CodexHookEvent}
     line_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE]
     plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT]
     refusals = {HookEventName.STOP: RefusalStyle.BLOCK}
@@ -61,6 +61,7 @@ class CodexProvider(Provider):
     decoder = HookDecoder.CODEX
     matchers = {"PreToolUse": "tool_name", "PostToolUse": "tool_name", "SessionStart": "source", "SessionEnd": "reason",}
     hook_files = tuple([Path(".codex/hooks.json")])
+    worktree_hook_files = hook_files
     hook_file = HookFile(Path(".codex/hooks.json"), {}, {
         "SessionStart": {"additionalContextLimit": 0},
         "UserPromptSubmit": {"additionalContextLimit": 0},
@@ -74,13 +75,24 @@ class CodexProvider(Provider):
     models = [ProgramModel("gpt-6-luna", ModelTier.FAST), ProgramModel("gpt-6.1-terra", ModelTier.GENERAL), ProgramModel("gpt-6.1-sol", ModelTier.STRONGEST),
               ProgramModel("gpt-6-astra", ModelTier.RARE)]
 
+    profile_model_setting = "journal.core.profiles.model-codex"
+
     def __init__(self, folders: ProgramFolders, keys: ServerKeys) -> None:
         super().__init__(folders)
         self.keys = keys
         self.rollouts: dict[str, Path] = {}
 
+    def readable_folders(self) -> tuple[Path, ...]:
+        return tuple([self.folders.folder(HOME_VARIABLE, ".codex")])
+
+    def server_files(self, folder: Path) -> tuple[ProgramServerFile, ...]:
+        return tuple([CodexServerFile(folder)])
+
     def profile_model(self, profile: AgentProfile) -> str:
-        return profile.codex_model
+        return profile.program_models.get(self.name, profile.codex_model)
+
+    def with_profile_model(self, profile: AgentProfile, model: str) -> AgentProfile:
+        return replace(super().with_profile_model(profile, model), codex_model=model)
 
     def session_command(self, launch: Launch) -> LaunchCommand:
         skip = ["--dangerously-bypass-approvals-and-sandbox"] if launch.skip_prompts else []
@@ -134,12 +146,11 @@ class CodexProvider(Provider):
             return ""
         return CodexSessionEffort(path, "model").read()
 
-    def session_resumes_here(self, project: Path, session: str) -> bool:
+    def session_matches_folder(self, project: Path, session: str) -> bool:
         rollout = self.transcript(project, session)
         if rollout is None:
             return False
-        with rollout.open(encoding="utf-8") as lines:
-            header: object = json.loads(next(lines, "{}") or "{}")
+        header: object = json.loads(TranscriptTail(rollout).first_line() or "{}")
         payload = header.get("payload") if is_mapping(header) else None
         return is_mapping(payload) and payload.get("cwd") == str(project)
 

@@ -5,6 +5,8 @@ import pytest
 
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
+from core.base.query.queries import Queries
+from core.modules.tasks.models.task_block_review import TaskBlockReview
 from tests.stories.core.modules.tasks.task_waits import posted
 from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask
 
@@ -97,7 +99,7 @@ def test_a_review_holds_until_each_task_has_been_answered(new_story):
     story.run('task make "Keys" --environment main', actor=story.agent)
     story.run('task block 2 --reason "Needs the key"', actor=story.agent)
     story.clock.advance(timedelta(hours=1))
-    expects_review(story)
+    expect_line(review(story), "review blocked tasks 1, 2")
     story.run('task block 1 --reason "Still needs the list"', actor=story.agent)
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "review blocked task")
     story.run("task unblock 2", actor=story.agent)
@@ -145,6 +147,57 @@ def test_a_user_wait_asks_for_a_line_but_does_not_hold_the_agent(new_story):
     expect_review_absent(story)
 
 
+class ManyUserWaits(StoryFixture):
+    parent = BuilderWithOpenTask
+
+    def steps(self, story):
+        for task_id in range(1, 32):
+            if task_id != 1:
+                story.run(f'task make "Approval {task_id}" --environment main', actor=story.agent)
+            story.run(f'task block {task_id} --until-user --reason "Approve the release"', actor=story.agent)
+
+
+@pytest.fixture
+def reviewed_user_waits(new_story):
+    story = new_story(fixture=ManyUserWaits)
+    story.clock.advance(timedelta(hours=1))
+    return story, review(story)
+
+
+def test_all_due_user_waits_share_one_line_and_each_review_is_recorded(reviewed_user_waits):
+    story, answer = reviewed_user_waits
+    ids = ", ".join(str(task_id) for task_id in range(1, 32))
+    expect_matching_lines(answer, "wait on the user", [f"tasks {ids} wait on the user: tell the user what is still needed"])
+    rows = list(story.container.get(Queries).query(TaskBlockReview).all_rows())
+    expect_reviewed_rows(rows, story.clock.timestamp())
+    story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
+    expect_absent_line(review(story), "wait on the user")
+    story.clock.advance(timedelta(hours=1))
+    expect_matching_lines(review(story), "wait on the user", [f"tasks {ids} wait on the user: tell the user what is still needed"])
+
+
+class MixedBlockReviews(StoryFixture):
+    parent = ManuallyBlockedTask
+
+    def steps(self, story):
+        for task_id in range(2, 5):
+            story.run(f'task make "Approval {task_id}" --environment main', actor=story.agent)
+            user_wait = "--until-user " if task_id > 2 else ""
+            story.run(f'task block {task_id} {user_wait}--reason "Approve the release"', actor=story.agent)
+
+
+def test_manual_reviews_and_user_waits_each_get_their_own_plural_line(new_story):
+    story = new_story(fixture=MixedBlockReviews)
+    story.clock.advance(timedelta(hours=1))
+    answer = review(story)
+    expect_matching_lines(answer, "review blocked tasks", ['review blocked tasks 1, 2: renew each with journal task block <id> --reason "<why>", unblock it, or close it'])
+    expect_matching_lines(answer, "wait on the user", ["tasks 3, 4 wait on the user: tell the user what is still needed"])
+    story.run('task block 1 --reason "Still needs the list"', actor=story.agent)
+    story.run("task unblock 2", actor=story.agent)
+    expect_matching_lines(review(story), "review blocked tasks", [])
+    expect_absent_line(review(story), "wait on the user")
+
+
 @pytest.mark.parametrize("reason", ["", '--reason "  "'])
 def test_a_renewal_without_a_written_reason_is_refused(new_story, reason):
     story = new_story(fixture=ManuallyBlockedTask)
@@ -174,3 +227,12 @@ def expect_line(answer, text):
 
 def expect_absent_line(answer, text):
     assert not any(text in line for line in answer.lines), answer
+
+
+def expect_matching_lines(answer, text, expected):
+    assert [line for line in answer.lines if text in line] == expected, answer
+
+
+def expect_reviewed_rows(rows, reviewed_at):
+    assert len(rows) == 31
+    assert all(row.reviewed_at == reviewed_at for row in rows)

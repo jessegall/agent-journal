@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import pytest
@@ -5,24 +6,97 @@ import pytest
 from core.base.provider.hook_trust import HookTrust
 from core.modules.codex.providers.support.codex_trust import CodexTrust
 
-HOOKS = Path("/work/app/.codex/hooks.json")
+FIXTURES = Path(__file__).parent / "fixtures"
 HOOK_NAMES = ["SessionStart", "PreToolUse", "Stop"]
 
 
-def config(tmp_path: Path, states: list[str]) -> Path:
-    path = tmp_path / "config.toml"
-    path.write_text("".join(f'[hooks.state."{HOOKS}:{state}:0:0"]\nenabled = true\n\n' for state in states))
-    return path
+@pytest.fixture
+def trusted_hooks(tmp_path):
+    hooks = tmp_path / "project" / ".codex" / "hooks.json"
+    hooks.parent.mkdir(parents=True)
+    hooks.write_text((FIXTURES / "hooks.json").read_text())
+    config = tmp_path / "config.toml"
+    config.write_text((FIXTURES / "trusted_hooks.toml").read_text().replace("/work/app/.codex/hooks.json", str(hooks)))
+    return hooks, config
 
 
-@pytest.mark.parametrize(("states", "trust"), [([], HookTrust.UNTRUSTED), (["session_start", "pre_tool_use"], HookTrust.CHANGED),
-                                               (["session_start", "pre_tool_use", "stop"], HookTrust.READY)])
-def test_a_hook_files_trust_is_read_from_codexs_config(tmp_path, states, trust):
-    assert CodexTrust(config(tmp_path, states)).trust(HOOKS, HOOK_NAMES) is trust
+def test_current_codex_hash_fixtures_are_ready_without_an_enabled_field(trusted_hooks):
+    hooks, config = trusted_hooks
+    assert CodexTrust(config).trust(hooks, HOOK_NAMES) is HookTrust.READY
 
 
-def test_a_worktrees_hook_file_takes_the_trust_of_the_main_checkouts(tmp_path):
-    settings = config(tmp_path, ["session_start", "pre_tool_use", "stop"])
-    worktree_hooks = Path("/work/app/.journal/worktrees/w1/.codex/hooks.json")
-    CodexTrust(settings).copied(HOOKS, worktree_hooks)
-    assert CodexTrust(settings).trust(worktree_hooks, HOOK_NAMES) is HookTrust.READY
+@pytest.mark.parametrize("entry", [{}, {"enabled": True}, {"enabled": False}, {"trusted_hash": "sha256:old"}])
+def test_missing_or_stale_hashes_cannot_make_hooks_ready(trusted_hooks, entry):
+    hooks, config = trusted_hooks
+    config.write_text("\n".join(CodexTrust.state_table(f"{hooks}:{name}:0:0", entry) for name in ("session_start", "pre_tool_use", "stop")))
+    expected = HookTrust.CHANGED if "trusted_hash" in entry else HookTrust.UNTRUSTED
+    assert CodexTrust(config).trust(hooks, HOOK_NAMES) is expected
+
+
+@pytest.mark.parametrize(("field", "value"), [("command", "journal-hook codex /work/other"), ("timeout", 12), ("async", True),
+                                              ("statusMessage", "Checking"), ("additionalContextLimit", 0)])
+def test_a_changed_definition_requires_review(trusted_hooks, field, value):
+    hooks, config = trusted_hooks
+    settings = json.loads(hooks.read_text())
+    settings["hooks"]["PreToolUse"][0]["hooks"][0][field] = value
+    hooks.write_text(json.dumps(settings))
+    assert CodexTrust(config).trust(hooks, HOOK_NAMES) is HookTrust.CHANGED
+
+
+def test_a_changed_matcher_requires_review(trusted_hooks):
+    hooks, config = trusted_hooks
+    settings = json.loads(hooks.read_text())
+    settings["hooks"]["PreToolUse"][0]["matcher"] = "read_file"
+    hooks.write_text(json.dumps(settings))
+    assert CodexTrust(config).trust(hooks, HOOK_NAMES) is HookTrust.CHANGED
+
+
+def test_a_disabled_hook_is_not_ready(trusted_hooks):
+    hooks, config = trusted_hooks
+    config.write_text(config.read_text() + '\nenabled = false\n')
+    assert CodexTrust(config).trust(hooks, HOOK_NAMES) is HookTrust.CHANGED
+
+
+def test_another_trusted_hook_in_the_same_event_does_not_trust_the_journal_hook(trusted_hooks):
+    hooks, config = trusted_hooks
+    settings = json.loads(hooks.read_text())
+    settings["hooks"]["PreToolUse"][0]["hooks"].insert(0, {"type": "command", "command": "echo unrelated", "timeout": 90})
+    hooks.write_text(json.dumps(settings))
+    assert CodexTrust(config).trust(hooks, HOOK_NAMES) is HookTrust.CHANGED
+
+
+def test_equivalent_defaults_and_formatting_keep_the_same_hash(trusted_hooks):
+    hooks, config = trusted_hooks
+    settings = json.loads(hooks.read_text())
+    for event in settings["hooks"].values():
+        event[0]["hooks"][0]["async"] = False
+        event[0]["hooks"][0]["additionalContextLimit"] = 2500
+    settings["hooks"]["Stop"][0]["matcher"] = "ignored"
+    hooks.write_text(json.dumps(settings, indent=4))
+    assert CodexTrust(config).trust(hooks, HOOK_NAMES) is HookTrust.READY
+
+
+def test_a_worktree_copies_only_matching_approved_definitions(trusted_hooks, tmp_path):
+    hooks, config = trusted_hooks
+    target = tmp_path / "worker" / ".codex" / "hooks.json"
+    target.parent.mkdir(parents=True)
+    target.write_text(hooks.read_text())
+    CodexTrust(config).copied(hooks, target)
+    assert CodexTrust(config).trust(target, HOOK_NAMES) is HookTrust.READY
+    assert CodexTrust(config).trust(hooks, HOOK_NAMES) is HookTrust.READY
+    assert 'model = "sample"' in config.read_text()
+
+
+@pytest.mark.parametrize("changed", ["source", "target", "approval"])
+def test_a_worktree_never_creates_trust_for_changed_or_unapproved_hooks(trusted_hooks, tmp_path, changed):
+    hooks, config = trusted_hooks
+    target = tmp_path / "worker" / ".codex" / "hooks.json"
+    target.parent.mkdir(parents=True)
+    target.write_text(hooks.read_text())
+    if changed == "approval":
+        config.write_text('model = "sample"\n')
+    else:
+        path = hooks if changed == "source" else target
+        path.write_text(path.read_text().replace("journal-hook codex /work/app", "journal-hook codex /work/changed"))
+    CodexTrust(config).copied(hooks, target)
+    assert CodexTrust(config).trust(target, HOOK_NAMES) is HookTrust.UNTRUSTED

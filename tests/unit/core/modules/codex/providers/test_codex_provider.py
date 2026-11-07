@@ -109,6 +109,6 @@ def test_a_session_resumes_only_in_the_folder_it_started_in(provider, tmp_path, 
     rollout = tmp_path / "rollout-thread.jsonl"
     rollout.write_text(json.dumps({"type": "session_meta", "payload": {"cwd": str(project)}}) + "\n")
     monkeypatch.setattr(provider, "transcript", lambda _project, session: rollout if session == "thread" else None)
-    assert provider.session_resumes_here(project, "thread")
-    assert not provider.session_resumes_here(tmp_path / "other", "thread")
-    assert not provider.session_resumes_here(project, "launch-name-only")
+    assert provider.session_matches_folder(project, "thread")
+    assert not provider.session_matches_folder(tmp_path / "other", "thread")
+    assert not provider.session_matches_folder(project, "launch-name-only")

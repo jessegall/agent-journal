@@ -1,4 +1,5 @@
-from core.modules.plugins.support.plugin_nudges import PLUGIN_LINE, PLUGIN_REFUSAL
+from core.modules.plugins.support.plugin_nudges import PLUGIN_REFUSAL
+from core.modules.drivers.commands.record_agent_notice.record_agent_notice import RecordAgentNotice
 import json
 
 from core.base.agent_role import AgentRole
@@ -67,8 +68,10 @@ class PluginRule(DriverRule):
                     continue
                 refusal = self.refusal_text(hook, runnable, event, lines, commands, facts)
                 if refusal:
-                    return RuleAnswer(refusal=refusal, nudges=(*(PLUGIN_LINE.nudge(text=line) for line in lines), PLUGIN_REFUSAL.nudge(text=refusal)), commands=tuple(commands))
-        return RuleAnswer(nudges=tuple(PLUGIN_LINE.nudge(text=line) for line in lines), commands=tuple(commands))
+                    notice = PLUGIN_REFUSAL.nudge(plugin=plugin.id)
+                    commands.extend(RecordAgentNotice(hook.agent_id, line, self.name) for line in [*lines, refusal])
+                    return RuleAnswer(refusal=notice.text, nudges=tuple([notice]), commands=tuple(commands))
+        return RuleAnswer.allowed().running(*commands, *(RecordAgentNotice(hook.agent_id, line, self.name) for line in lines))
 
     def queued(self, hook: AgentHook, plugin: Plugin, lines: list[str], commands: list[Command[object]]) -> None:
         queue = PluginQueue(self.folders.data(plugin.name))
