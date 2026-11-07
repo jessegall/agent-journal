@@ -4,10 +4,11 @@ from pathlib import Path
 from core.base.actor import Actor
 from core.base.command.bus import Bus
 from core.base.container import Container
-from core.base.error_log import ErrorLog
 from core.base.file_access import FileAccess
 from core.base.journal_home import JournalHome
+from core.base.log_level import LogLevel
 from core.base.query.queries import Queries
+from core.base.system_log_writer import SystemLogWriter
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.messages.commands.reset_message_deliveries.reset_message_deliveries import ResetMessageDeliveries
 
@@ -37,7 +38,7 @@ class HookDeliveryRetries:
             container.get(Bus).run(ResetMessageDeliveries(call.id), Actor.core(), environment_id=call.environment_id)
         except sqlite3.OperationalError as error:
             if error.sqlite_errorcode & PRIMARY_ERROR_CODE_MASK == sqlite3.SQLITE_BUSY:
-                container.get(ErrorLog).noted(f"delivery reset of lost hook answer {path.name} will retry at the next hook: {error}")
+                container.get(SystemLogWriter).write(LogLevel.WARNING, f"delivery reset of lost hook answer {path.name} will retry at the next hook: {error}")
                 return
             self.note_removal(path, error, container)
         except Exception as error:
@@ -46,4 +47,4 @@ class HookDeliveryRetries:
 
     @staticmethod
     def note_removal(path: Path, error: Exception, container: Container) -> None:
-        container.get(ErrorLog).noted(f"lost hook answer {path.name} cannot be retried and is removed: {type(error).__name__}: {error}")
+        container.get(SystemLogWriter).write(LogLevel.WARNING, f"lost hook answer {path.name} cannot be retried and is removed: {type(error).__name__}: {error}")
