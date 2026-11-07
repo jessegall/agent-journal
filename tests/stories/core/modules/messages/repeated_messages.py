@@ -25,38 +25,38 @@ class FirstMessageSent(StoryFixture):
 
 def sent(story, text: str) -> None:
     story.advance(timedelta(seconds=1))
-    story.expect_success(f'message send "{text}" --environment main', "type: agent", actor=story.agent)
+    story.expect_success(f'message send "{text}"', "type: agent", actor=story.agent)
 
 
 def test_a_reworded_repeat_of_one_of_the_last_five_messages_is_held(new_story):
-    story = new_story(fixture=FirstMessageSent)
-    story.expect_refusal(f'message send "{REWORDED}" --environment main', "refused by messages.repeated-message: this says much the same as your message 1",
+    story = new_story(fixture=FirstMessageSent, environment="main")
+    story.expect_refusal(f'message send "{REWORDED}"', "refused by messages.repeated-message: this says much the same as your message 1",
                          actor=story.agent)
     story.advance(timedelta(seconds=1))
-    story.expect_success(f'message send "{REWORDED}" --confirm --skip-reason "the card number changed" --environment main', "type: agent", actor=story.agent)
+    story.expect_success(f'message send "{REWORDED}" --confirm --skip-reason "the card number changed"', "type: agent", actor=story.agent)
 
 
 def test_a_different_message_and_a_short_one_pass(new_story):
-    story = new_story(fixture=FirstMessageSent)
+    story = new_story(fixture=FirstMessageSent, environment="main")
     sent(story, DIFFERENT)
     sent(story, "Done, installed.")
     sent(story, "Done, installed now.")
 
 
 def test_only_the_last_five_messages_are_compared(new_story):
-    story = new_story(fixture=FirstMessageSent)
+    story = new_story(fixture=FirstMessageSent, environment="main")
     for filler in FILLERS:
         sent(story, filler)
     sent(story, REWORDED)
 
 
 def test_closing_words_much_like_an_earlier_turns_message_are_held_and_the_agent_is_told(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    story.run('message send "Is the merge done?" --environment main', actor=story.user)
+    story = new_story(fixture=BuilderWithUser, environment="main")
+    story.run('message send "Is the merge done?"', actor=story.user)
     story.hook("s-1", HookSamples.prompt("go on"))
     story.run(f'message reply 1 "{FIRST}"', actor=story.agent)
-    story.run('message send "And the cart?" --environment main', actor=story.user)
+    story.run('message send "And the cart?"', actor=story.user)
     story.hook("s-1", HookSamples.prompt("go on"))
     shown = story.hook("s-1", HookSamples.message_display(REWORDED))
     assert "your closing words say much the same as message 3, so they were not shown" in shown.lines
-    assert REWORDED not in story.run("message list --environment main", actor=story.user).output_text
+    assert REWORDED not in story.run("message list", actor=story.user).output_text

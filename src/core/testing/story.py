@@ -74,6 +74,7 @@ class Story:
         self.results: list[LineOutcome] = []
         self.steps: list[str] = []
         self.agent, self.user, self.helper = state.agent, state.user, state.helper
+        self.environment: str | None = None
 
     @classmethod
     def opened(cls, home: JournalHome, state: StoryState) -> "Story":
@@ -89,12 +90,18 @@ class Story:
 
     def run(self, line: str, actor: Actor | None = None, environment_id: int | None = None) -> LineOutcome:
         stream = io.StringIO()
+        line = self.in_environment(line)
         caller = Caller(actor or Actor.core(), environment_id)
         self.steps.append(f"command {caller.actor.id} {environment_id}: {line}")
         with self.repeated_work.request():
             code = self.container.get(Console).run(shlex.split(line), caller, stream)
         self.results.append(LineOutcome(line, code, stream.getvalue()))
         return self.results[-1]
+
+    def in_environment(self, line: str) -> str:
+        if self.environment is None or "--environment" in shlex.split(line):
+            return line
+        return f"{line} --environment {shlex.quote(self.environment)}"
 
     def run_requested(self, line: str, request: CallerRequest) -> LineOutcome:
         stream = io.StringIO()
