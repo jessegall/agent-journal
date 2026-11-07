@@ -10,20 +10,20 @@ import {useWindow} from "../../kit/windowContextKey.js";
 const TONES = {running: "var(--tone-work)", finished: "var(--tone-good)", failed: "var(--danger)"};
 const ICONS = {finished: "tick", failed: "cross", stopped: "stop", orphaned: "stop"};
 const props = defineProps({item: {type: Object, required: true}});
-const window = useWindow();
+const view = useWindow();
 const key = computed(() => `run.${props.item.target_id}`);
-const card = computed(() => window.props[key.value].data.value);
+const card = computed(() => view.props[key.value].data.value);
 const running = computed(() => !card.value || card.value.state === "running" || card.value.state === "background");
 const name = computed(() => card.value?.title || card.value?.line || props.item.title || "");
 const tone = computed(() => (running.value ? TONES.running : TONES[card.value.state] ?? "var(--text-3)"));
 
-const load = () => window.reload(key.value);
+const load = () => view.reload(key.value);
 
 // the card is read once and again whenever an event announces a change of this run
 let stop = null;
 onMounted(() => {
     load();
-    stop = window.subscriptions?.follow(`run chip ${props.item.id}`, ["process.*"], (event) => {
+    stop = view.subscriptions?.follow(`run chip ${props.item.id}`, ["process.*"], (event) => {
         if (!event.row_id || event.row_id === props.item.target_id) load();
     });
 });

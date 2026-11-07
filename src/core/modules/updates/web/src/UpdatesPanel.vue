@@ -2,19 +2,19 @@
 import {computed, ref, watch} from "vue";
 import {Btn, RowList, TextDisplay, WindowRoom, useWindow} from "@journal/window-kit";
 
-const window = useWindow();
-const releases = window.props.releases;
-const {failure: checkFailure} = window.props.standing;
-const standing = computed(() => checkFailure.value ? null : window.props.standing.data.value);
+const view = useWindow();
+const releases = view.props.releases;
+const {failure: checkFailure} = view.props.standing;
+const standing = computed(() => checkFailure.value ? null : view.props.standing.data.value);
 const installing = ref(false);
 const installFailure = ref("");
 const installationRequested = ref(false);
 const installed = computed(() => installationRequested.value && standing.value?.is_current && standing.value?.installation?.step === "finished");
 const notes = ref([]);
 const notesPage = ref(1);
-const lastPage = computed(() => window.props.notes.data.value?.is_last_page ?? true);
-const {failure: notesFailure} = window.props.notes;
-watch(() => window.props.notes.data.value, (answer) => {
+const lastPage = computed(() => view.props.notes.data.value?.is_last_page ?? true);
+const {failure: notesFailure} = view.props.notes;
+watch(() => view.props.notes.data.value, (answer) => {
     if (answer) notes.value = notesPage.value === 1 ? answer.notes : [...notes.value, ...answer.notes];
 });
 const checkLine = computed(() => {
@@ -24,23 +24,23 @@ const checkLine = computed(() => {
 });
 
 async function check() {
-    await window.reload("standing");
+    await view.reload("standing");
 }
 
 async function install() {
     installing.value = true;
-    const result = await window.run(["update", "install"]);
+    const result = await view.run(["update", "install"]);
     installFailure.value = result.ok ? "" : result.error;
     installing.value = false;
-    await window.reload({only: result.ok ? ["releases", "standing"] : ["releases"]});
+    await view.reload({only: result.ok ? ["releases", "standing"] : ["releases"]});
     if (!result.ok) return;
     installationRequested.value = true;
 }
 
 async function readNotes(page) {
     notesPage.value = page;
-    window.state["notes.page"] = String(page);
-    await window.reload("notes");
+    view.state["notes.page"] = String(page);
+    await view.reload("notes");
 }
 
 const reload = () => globalThis.location.reload();

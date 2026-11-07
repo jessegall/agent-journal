@@ -23,7 +23,7 @@
                 "fileMatches": "(^|/)src/core/modules/skills/listeners/(keyword_skills_listener|skill_read_listener)\\.py$"
             },
             {
-                "fileMatches": "(^|/)src/core/modules/(messages/rules/agent_text_rule|usage/commands/usage_tool/usage_tool_subcommand)\\.py$"
+                "fileMatches": "(^|/)src/core/modules/(messages/rules/agent_text_rule|messages/support/agent_text_filter|usage/commands/usage_tool/usage_tool_subcommand)\\.py$"
             }
         ]
     },

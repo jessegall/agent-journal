@@ -2,8 +2,8 @@
 import {computed, ref} from "vue";
 import {RowList, SearchBar, WindowRoom, useWindow} from "@journal/window-kit";
 
-const window = useWindow();
-const {rows, failure, loaded, more, older} = window.props.edits;
+const view = useWindow();
+const {rows, failure, loaded, more, older} = view.props.edits;
 const filter = ref("");
 const shown = computed(() => {
     const wanted = filter.value.trim().toLowerCase();

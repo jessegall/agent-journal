@@ -5,21 +5,21 @@ import DumpForm from "./DumpForm.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
 import {READ_RATES, coalesced, Btn, DockStack, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, openInChat, patched, removed, shownMarks, usePins, useWindow, withDayLines} from "@journal/window-kit";
 
-const window = useWindow();
-const {rows: messages, failure, loaded, load, loadLatest, older, act} = window.props.messages;
-const settingOf = (key) => window.props[key].data.value?.value;
-window.markMotion = computed(() => settingOf("mark-motion") === true);
-const {rows: allMarks, older: olderMarks, loadLatest: latestMarks} = window.props.marks;
-const {rows: docked} = window.props.docks;
+const view = useWindow();
+const {rows: messages, failure, loaded, load, loadLatest, older, act} = view.props.messages;
+const settingOf = (key) => view.props[key].data.value?.value;
+view.markMotion = computed(() => settingOf("mark-motion") === true);
+const {rows: allMarks, older: olderMarks, loadLatest: latestMarks} = view.props.marks;
+const {rows: docked} = view.props.docks;
 const dockedRows = computed(() => new Set(docked.value.filter((item) => item.state === "docked").map((item) => `${item.target_model}:${item.target_id}`)));
-const {rows: pins, act: runOnPin} = window.props.pins;
+const {rows: pins, act: runOnPin} = view.props.pins;
 const openQuestion = ref(0);
 const releaseQuestions = openInChat("question", (id) => {
     openQuestion.value = id;
     return true;
 });
 onUnmounted(releaseQuestions);
-const marks = computed(() => shownMarks(allMarks.value, markDeclaration, (key) => window.option(key).value));
+const marks = computed(() => shownMarks(allMarks.value, markDeclaration, (key) => view.option(key).value));
 const outgoing = ref([]);
 // a sent message shows at once as an echo, until its own row has been read: the echo goes for good when a message of the user with the same words has landed since, so an edit of that row brings it back no more
 const landed = (echo) => messages.value.some((row) => row.type === echo.type && row.text === echo.text && Date.parse(row.created_at) >= echo.created_at - ECHO_SLACK_MS);
@@ -32,13 +32,13 @@ const {visible: pinned} = usePins(() => pins.value);
 const quoteOf = (message) => messages.value.find((row) => row.id === message.parent_id)?.text ?? "";
 // the tool the agent has in hand, read each time a hook call lands, empty until it begins the next
 // the figure is the one the pane names, or by default the voice the user chose, shown as the figure settings say: always, only while the agent works, or never
-const voice = computed(() => (window.props["voice-profile"].loaded.value ? {profile: settingOf("voice-profile"), avatar: settingOf("voice-avatar"), avatar_shown: settingOf("voice-avatar-shown")} : null));
+const voice = computed(() => (view.props["voice-profile"].loaded.value ? {profile: settingOf("voice-profile"), avatar: settingOf("voice-avatar"), avatar_shown: settingOf("voice-avatar-shown")} : null));
 const voiceFigure = () => {
     if (!voice.value?.avatar || voice.value.avatar_shown === "never") return "";
     return voice.value.avatar_shown === "working" && !runningTool.value ? "" : voice.value.profile;
 };
 const figureVoice = computed(() => {
-    const chosen = window.option("figure").value;
+    const chosen = view.option("figure").value;
     if (chosen === "voice") return voiceFigure();
     return chosen && chosen !== "none" ? chosen : "";
 });
@@ -69,7 +69,7 @@ const shownVoice = ref("");
 watch(figureVoice, (chosen) => {
     if (chosen) shownVoice.value = chosen;
 }, {immediate: true});
-const {data: toolProp, failure: toolFailure} = window.props.tool;
+const {data: toolProp, failure: toolFailure} = view.props.tool;
 watch([toolProp, toolFailure], () => {
     const tool = toolFailure.value ? {} : (toolProp.value ?? {});
     runningTool.value = tool.tool ?? "";
@@ -78,9 +78,9 @@ watch([toolProp, toolFailure], () => {
     asking.value = Boolean(tool.asking);
 });
 heardAt.value = Date.now() / 1000;
-window.follow(["hook_call.*", "dock_item.*", "process_part.*"], coalesced(() => {
+view.follow(["hook_call.*", "dock_item.*", "process_part.*"], coalesced(() => {
     heardAt.value = Date.now() / 1000;
-    window.reload("tool");
+    view.reload("tool");
 }, READ_RATES.runningTool));
 const FOLD_AFTER_MS = 500;
 const ECHO_SLACK_MS = 2000;
@@ -150,13 +150,13 @@ function returned() {
     if (document.activeElement === document.body || document.activeElement === null) focusComposer();
 }
 onMounted(() => {
-    globalThis.addEventListener("focus", returned);
+    window.addEventListener("focus", returned);
     document.addEventListener("visibilitychange", returned);
 });
 onBeforeUnmount(() => {
     takeFromBox();
     if (!editing.value) keepDraft(text.value);
-    globalThis.removeEventListener("focus", returned);
+    window.removeEventListener("focus", returned);
     document.removeEventListener("visibilitychange", returned);
 });
 const dragging = ref(false);
@@ -167,7 +167,7 @@ async function attach(files) {
         if (attached.value.some((entry) => entry.name === file.name)) continue;
         const entry = {name: file.name, pending: "", failure: ""};
         attached.value = [...attached.value, entry];
-        const result = await window.upload(file);
+        const result = await view.upload(file);
         entry.pending = result.ok ? result.value : "";
         entry.failure = result.ok ? "" : result.error;
         attached.value = [...attached.value];
@@ -246,7 +246,7 @@ async function saveEdit() {
     leaveEdit();
     // a message on its way has no number to edit: it goes with these words, or is edited once its send has answered
     if (row.local) return;
-    const result = await window.run(["message", "edit", String(row.id), "--text", words]);
+    const result = await view.run(["message", "edit", String(row.id), "--text", words]);
     sendFailure.value = result.ok ? "" : result.error;
     if (!result.ok) {
         row.text = before;
@@ -266,11 +266,11 @@ function sentLine(answering, commented, line, files) {
 let delivered = Promise.resolve();
 async function deliver(echo, answering, commented, files, sent) {
     let words = echo.text;
-    const result = await window.run(sentLine(answering, commented, words, files));
+    const result = await view.run(sentLine(answering, commented, words, files));
     if (!result.ok) (sendFailure.value = result.error, text.value = echo.text === sent.line ? sent.text : echo.text, attached.value = sent.attached, commenting.value = commented);
     while (result.ok && echo.text !== words) {
         words = echo.text;
-        const edited = await window.run(["message", "edit", String(result.value.id), "--text", words]);
+        const edited = await view.run(["message", "edit", String(result.value.id), "--text", words]);
         sendFailure.value = edited.ok ? "" : edited.error;
     }
     await load();
@@ -312,10 +312,10 @@ function slashFocus(event) {
     event.preventDefault();
     focusComposer();
 }
-globalThis.addEventListener("keydown", slashFocus);
-onUnmounted(() => globalThis.removeEventListener("keydown", slashFocus));
+window.addEventListener("keydown", slashFocus);
+onUnmounted(() => window.removeEventListener("keydown", slashFocus));
 // the words typed survive the window being closed or the page reloaded, one draft for each environment
-const draftKey = `journal.draft.${window.environment}`;
+const draftKey = `journal.draft.${view.environment}`;
 function readDraft() {
     try {
         return localStorage.getItem(draftKey) ?? "";
@@ -414,7 +414,7 @@ const linkOf = (pin) => (pin.link.startsWith("http") ? pin.link : `#open=${pin.l
 // a pin that holds a ! command is a button: it types the command into the main agent's terminal through the journal
 const isCommand = (pin) => pin.link.startsWith("!");
 async function runCommand(pin) {
-    const main = await window.readKey("main-agent");
+    const main = await view.readKey("main-agent");
     if (main.ok && main.value.id) await runOnPin(["agent", "type", String(main.value.id), pin.link]);
 }
 </script>
@@ -470,7 +470,7 @@ async function runCommand(pin) {
                 </button>
             </Transition>
         </div>
-        <template v-if="window.option('floors').value">
+        <template v-if="view.option('floors').value">
             <FigureFloors />
         </template>
         <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" :idle="waitingFor ? `waiting for ${waitingFor}` : 'waiting'" /></p>
@@ -478,7 +478,7 @@ async function runCommand(pin) {
             <DockStack :items="docked" :folded="short" :collapsed="!docksOpen" :data-figure-docked-bars="dockedRows.size ? '' : null" />
         </div>
         <template v-if="dumping">
-            <DumpForm :run="window.run" @made="dumping = false" @close="dumping = false" />
+            <DumpForm :run="view.run" @made="dumping = false" @close="dumping = false" />
         </template>
         <template v-if="replying || commenting || editing">
             <p class="composer-quote" data-composer-quote>

@@ -16,11 +16,11 @@ const filters = ref(savedFilters());
 const paused = ref(false);
 const options = ref({family: ["process bookkeeping"], sender: []});
 const count = computed(() => Object.values(filters.value).reduce((sum, values) => sum + values.length, 0));
-const window = useWindow();
-const {data: requests, failure, loaded, reload: load} = usePausedProp(window, "requests", paused);
+const view = useWindow();
+const {data: requests, failure, loaded, reload: load} = usePausedProp(view, "requests", paused);
 const filterArguments = {kind: "kinds", family: "families", sender: "senders"};
 function setFilters(value) {
-    for (const [name, values] of Object.entries(value)) window.state[`requests.${filterArguments[name]}`] = JSON.stringify(values);
+    for (const [name, values] of Object.entries(value)) view.state[`requests.${filterArguments[name]}`] = JSON.stringify(values);
 }
 setFilters(filters.value);
 const rows = computed(() => requests.value?.rows ?? []);
@@ -45,7 +45,7 @@ const durationOf = (row) => `${Math.round(row.duration_ms)} ms`;
 function togglePause() {
     toggleFeedPause(paused, load);
 }
-usePoll(() => loaded.value && load(), () => !paused.value && window.visible.value);
+usePoll(() => loaded.value && load(), () => !paused.value && view.visible.value);
 </script>
 
 <template>

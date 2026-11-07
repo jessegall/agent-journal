@@ -3,10 +3,10 @@ import { computed, unref } from "vue";
 import {READ_RATES, coalesced, peekRef, SkeletonLine, useDockCard, useWindow} from "@journal/window-kit";
 
 const PREVIEW_PHASES = 5;
-const window = useWindow();
+const view = useWindow();
 const card = useDockCard();
-const item = window.option("row");
-const foot = window.option("foot");
+const item = view.option("row");
+const foot = view.option("foot");
 const progress = card.data;
 const loading = computed(() => !card.data.value);
 const phases = computed(() => card.data.value?.phases ?? []);
@@ -17,7 +17,7 @@ const agents = computed(() => [
 const hidden = computed(() =>
   Math.max(0, phases.value.length - PREVIEW_PHASES),
 );
-window.follow(["phase.*", "phase_task.*", "task.*", "agent.*"], coalesced(card.reload, READ_RATES.planCard));
+view.follow(["phase.*", "phase_task.*", "task.*", "agent.*"], coalesced(card.reload, READ_RATES.planCard));
 </script>
 
 <template>

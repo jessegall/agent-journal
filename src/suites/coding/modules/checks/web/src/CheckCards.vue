@@ -5,8 +5,8 @@ import CheckDialog from "./CheckDialog.vue";
 import CheckRunBar from "./CheckRunBar.vue";
 
 // a click on a card opens its dialog; a run shows at once and the server's answer settles it, a refusal naming why
-const window = useWindow();
-const {rows, failure, loaded} = window.props.checks;
+const view = useWindow();
+const {rows, failure, loaded} = view.props.checks;
 const tools = useListTools(rows, {title: (row) => row.title, isOpen: (row) => !row.stopped});
 const openedId = ref(null);
 const opened = computed(() => rows.value.find((row) => row.id === openedId.value) || null);
@@ -15,14 +15,14 @@ const refusal = ref("");
 
 async function start(row) {
     refusal.value = "";
-    const answer = await window.run(["check", "start", String(row.id)]);
+    const answer = await view.run(["check", "start", String(row.id)]);
     if (!answer.ok) refusal.value = answer.error;
 }
 
 async function run(row) {
     refusal.value = "";
     runningIds.value = new Set([...runningIds.value, row.id]);
-    const answer = await window.run(["check", "run", String(row.id)]);
+    const answer = await view.run(["check", "run", String(row.id)]);
     runningIds.value = new Set([...runningIds.value].filter((id) => id !== row.id));
     if (!answer.ok) refusal.value = answer.error;
 }

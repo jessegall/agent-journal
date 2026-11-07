@@ -3,8 +3,8 @@ import {ref} from "vue";
 import {Btn, RowList, WindowRoom, removed, useWindow} from "@journal/window-kit";
 
 // the worktrees of this repository and who holds each; removing one asks first, shows it gone at once, keeps its branch and says why when it is refused
-const window = useWindow();
-const {rows, failure, loaded, act} = window.props.worktrees;
+const view = useWindow();
+const {rows, failure, loaded, act} = view.props.worktrees;
 const asking = ref("");
 const refusal = ref({});
 

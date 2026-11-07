@@ -2,9 +2,9 @@
 import {WindowRoom, useWindow} from "@journal/window-kit";
 
 // what an agent's load is made of: the messages reaching it an hour against those it answers, and those waiting to be read
-const window = useWindow();
-window.state["fitness.agent"] = String(window.agent);
-const {data: fitness, failure} = window.props.fitness;
+const view = useWindow();
+view.state["fitness.agent"] = String(view.agent);
+const {data: fitness, failure} = view.props.fitness;
 </script>
 
 <template>
