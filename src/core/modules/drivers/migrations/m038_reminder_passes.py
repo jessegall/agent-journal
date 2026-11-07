@@ -2,7 +2,7 @@ from core.base.database.migration import Migration
 
 
 class ReminderPassesMigration(Migration):
-    """Keeps how often an agent let a repeating reminder pass for each thing it names, and lets a block be skipped with a reason."""
+    """Keeps how often an agent let a repeating reminder pass, and lets a block be skipped with a reason."""
 
     number = 38
     statements = [

@@ -27,7 +27,8 @@ HELP_FLAG = "--help"
 
 class AccessRule(ReadonlyRule):
     """An agent with read-only access reads, searches and runs journal commands, on every program and under every
-    overlay; a line no one can judge, and a journal line that reaches past the journal, are refused."""
+    overlay; a line no one can judge, and a journal line that reaches past the journal, are refused. A file change
+    inside a folder its profile lets it write is allowed."""
 
     name = "drivers.access"
     drivers = ["*"]
@@ -40,7 +41,7 @@ class AccessRule(ReadonlyRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
-        if hook.access != Access.READ or tool is None or self.is_listed(hook, tool) or self.writes_within_paths(hook, tool):
+        if hook.access != Access.READ or tool is None or self.is_listed(hook, tool) or self.is_writable(hook, tool):
             return RuleAnswer.allowed()
         if tool.category in LIMITED_TOOL_TYPES:
             return RuleAnswer.refused(LIMITED_TOOL.nudge(tool=tool.name))
@@ -82,14 +83,13 @@ class AccessRule(ReadonlyRule):
             return True
         return tool.name.startswith(MCP_PREFIX) and tool.name in self.profile_tools(hook.agent_id)
 
-    def writes_within_paths(self, hook: AgentHook, tool: Tool) -> bool:
-        """A file change is allowed when every file it names lies in a folder the agent's profile may write."""
+    def is_writable(self, hook: AgentHook, tool: Tool) -> bool:
         if not tool.category.writes_files or not tool.files:
             return False
         agent = self.queries.query(Agent).find(hook.agent_id)
         root = self.folders.folder(agent)
-        allowed = [(root / path).resolve() for path in self.profiles.effective(agent.profile).write_paths]
-        return all(any((root / file).resolve().is_relative_to(folder) for folder in allowed) for file in tool.files)
+        writable = [(root / name).resolve() for name in self.profiles.effective(agent.profile).writable_folders]
+        return all(any((root / file).resolve().is_relative_to(folder) for folder in writable) for file in tool.files)
 
     def profile_tools(self, agent_id: int) -> tuple[str, ...]:
         return self.profiles.effective(self.queries.query(Agent).find(agent_id).profile).mcp_tools

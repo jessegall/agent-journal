@@ -20,9 +20,9 @@ class ReminderPass(Model):
     key: str
     counts: str = "{}"
 
-    def passes_by_subject(self) -> dict[str, tuple[int, Timestamp]]:
+    def subject_counts(self) -> dict[str, tuple[int, Timestamp]]:
         return {subject: (passes, Timestamp.parsed(counted_at)) for subject, (passes, counted_at) in json.loads(self.counts).items()}
 
     @staticmethod
-    def counted(counts: Mapping[str, tuple[int, Timestamp]]) -> str:
+    def counts_text(counts: Mapping[str, tuple[int, Timestamp]]) -> str:
         return json.dumps({subject: [passes, counted_at.text] for subject, (passes, counted_at) in counts.items()})

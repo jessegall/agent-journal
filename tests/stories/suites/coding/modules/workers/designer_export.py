@@ -6,7 +6,7 @@ from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 
-SAVE_DESIGNER = 'profile save designer --type helper --access read-only --write-paths docs/designs --description "Designs a screen" --body "Design in Claude Design and save the page and its picture."'
+SAVE_DESIGNER = 'profile save designer --type helper --access read-only --writable-folders docs/designs --description "Designs a screen" --body "Design in Claude Design and save the page and its picture."'
 START_DESIGNER = 'helper start designer --brief "Design the agent settings page" --environment main'
 DESIGN_FOLDER = "docs/designs/agent-settings"
 REFUSED = "reads and searches only"

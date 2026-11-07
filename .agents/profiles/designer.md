@@ -7,7 +7,7 @@ model: "opus"
 codex-model: ""
 independent: false
 mcp-tools: ["mcp__claude_design__get_claude_design_prompt", "mcp__claude_design__list_projects", "mcp__claude_design__create_project", "mcp__claude_design__get_project", "mcp__claude_design__list_files", "mcp__claude_design__read_file", "mcp__claude_design__write_files", "mcp__claude_design__copy_files", "mcp__claude_design__delete_files", "mcp__claude_design__render_preview", "mcp__claude_design__list_design_systems", "mcp__claude_design__read_design_skill", "mcp__claude_design__finalize_plan", "mcp__claude_design__list_comments", "mcp__claude_design__ack_comments", "mcp__playwright__browser_navigate", "mcp__playwright__browser_resize", "mcp__playwright__browser_take_screenshot", "mcp__playwright__browser_close"]
-write-paths: ["docs/designs"]
+writable-folders: ["docs/designs"]
 name: "designer"
 moved-from: "bcfb09fdad9c98b3110265d58d156a0a34d8f908ef9228b5ff5ba05521ca834c"
 ---

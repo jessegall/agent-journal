@@ -15,9 +15,8 @@ from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 class AgentBlock(Model):
     """An agent held from all but reading and journal commands: the line its refused tools are told, what ends
     the block and when it ended. A block with a grace holds only after that many tool uses or seconds, says
-    its countdown line meanwhile, and may be skipped with a reason; so may a block declared skippable. A block that holds the stop only leaves
-    the
-    agent's tools alone."""
+    its countdown line meanwhile, and may be skipped with a reason; so may a block declared skippable. A block
+    that holds the stop only leaves the agent's tools alone."""
 
     model_name = "agent_block"
     cli_name = "agent-block"
