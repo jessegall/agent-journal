@@ -14,9 +14,11 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.base.query.queries import Queries
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
+from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.skills.models.agent_skill import AgentSkill
 from core.modules.skills.models.enums.agent_skill_state import AgentSkillState
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, installed_story
+from tests.stories.core.modules.plugins.support.notices import expect_plugin_notice
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from tests.stories.core.modules.plugins.support.event_stories import SECOND_JOB, TASK_CREATED, EventPluginStarted, event_folder, event_plugin_story, plugin_row, script_calls
 from tests.stories.core.modules.plugins.support.plugin_samples import SKILL
@@ -62,27 +64,27 @@ def mark_rules_loaded(story, digest):
 def test_a_plugin_is_told_the_skills_the_agent_has_loaded(new_story):
     story = installed_story(new_story)
     mark_rules_loaded(story, skill_digest(story, "sample-rules"))
-    story.expect_hook_allowed("s-1", GIT_REMOTE_SAMPLE, "[plugin sample] the rules are loaded")
+    expect_plugin_notice(story, GIT_REMOTE_SAMPLE, "[plugin sample] the rules are loaded")
 
 
 def test_a_skill_the_agent_has_not_loaded_is_not_listed(new_story):
     story = installed_story(new_story)
-    story.expect_hook_allowed("s-1", GIT_REMOTE_SAMPLE, "[plugin sample] the rules are not loaded")
+    expect_plugin_notice(story, GIT_REMOTE_SAMPLE, "[plugin sample] the rules are not loaded")
 
 
 def test_a_skill_read_in_an_older_text_is_not_listed(new_story):
     story = installed_story(new_story)
     mark_rules_loaded(story, "an-older-text")
-    story.expect_hook_allowed("s-1", GIT_REMOTE_SAMPLE, "[plugin sample] the rules are not loaded")
+    expect_plugin_notice(story, GIT_REMOTE_SAMPLE, "[plugin sample] the rules are not loaded")
 
 
 def test_s41_a_compaction_resets_the_skills_and_the_next_event_lists_none(new_story):
     story = installed_story(new_story)
     mark_rules_loaded(story, skill_digest(story, "sample-rules"))
-    story.expect_hook_allowed("s-1", GIT_REMOTE_SAMPLE, "[plugin sample] the rules are loaded")
+    expect_plugin_notice(story, GIT_REMOTE_SAMPLE, "[plugin sample] the rules are loaded")
     story.hook("s-1", HookSamples.sample("compact"))
     story.run_listeners()
-    story.expect_hook_allowed("s-1", GIT_REMOTE_SAMPLE, "[plugin sample] the rules are not loaded")
+    expect_plugin_notice(story, GIT_REMOTE_SAMPLE, "[plugin sample] the rules are not loaded")
 
 
 def plugin_with_the_rules(new_story, **manifest):
@@ -159,13 +161,16 @@ def test_s44_a_plugin_asks_for_a_missing_skill_once_and_then_sends_neither_line_
     story.run_listeners()
     story.expect_rows(rules_state(story) == AgentSkillState.DUE)
     mark_rules_loaded(story, skill_digest(story, "sample-rules"))
-    story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin events] cart.py has a sin")
+    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin events] cart.py has a sin")
     scanned_edit(story, "s-1", "cart.py")
     story.run_listeners()
     calls = script_calls(story, "judge.sh")
     story.expect_rows(len(calls) == 2)
     story.expect_rows("sample-rules" not in calls[0]["skills"], "sample-rules" in calls[1]["skills"])
-    story.expect_absent_hook_line("s-1", LISTING_SAMPLE, "[plugin events] cart.py has a sin")
+    lines_before = {row.id for row in story.container.get(Queries).query(AgentLine).all_rows()}
+    story.hook("s-1", LISTING_SAMPLE)
+    lines_after = {row.id for row in story.container.get(Queries).query(AgentLine).all_rows()}
+    assert lines_after == lines_before
     story.expect_rows(rules_state(story) == AgentSkillState.LOADED)
 
 

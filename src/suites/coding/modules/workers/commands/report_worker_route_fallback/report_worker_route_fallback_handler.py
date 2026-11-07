@@ -20,4 +20,4 @@ class ReportWorkerRouteFallbackHandler(Handler[ReportWorkerRouteFallback, None])
         if worker.parent_id is None:
             return
         self.nudger.send(worker.parent_id, WORKER_ROUTE_FALLBACK, f"workers.route_fallback:{worker.id}", context,
-                         route=command.fallback.line, tasks=command.task_text, program=worker.program)
+                         route=command.fallback.route_id, tasks=command.task_text, program=worker.program)

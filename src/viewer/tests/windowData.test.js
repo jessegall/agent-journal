@@ -11,11 +11,12 @@ const DECLARED = {
     usage: {tab: "", events: [], reload_seconds: 10},
 };
 
-function mounted({answer, visible = ref(true), tab = ref("open")}) {
+function mounted({answer, waitForServer = () => null, visible = ref(true), tab = ref("open")}) {
     const asked = [];
     const followed = [];
     const context = {
         visible,
+        waitForServer,
         follow: (patterns, heard) => followed.push({patterns, heard}),
         readKeys: async (request) => {
             asked.push(request);
@@ -138,6 +139,64 @@ test("a key's timer reloads it alone, and not while the window is hidden", async
     visible.value = false;
     await vi.advanceTimersByTimeAsync(10060);
     expect(asked).toHaveLength(2);
+});
+
+test("a failed read waits for its rate and reads as soon as the server returns", async () => {
+    const declared = {usage: {tab: "", events: [], reload_seconds: 30, loading: "first"}};
+    let failing = false;
+    let returned;
+    const server = new Promise((resolve) => (returned = resolve));
+    const {app, asked, data} = mounted({waitForServer: () => server, answer: () => failing
+        ? {ok: false, failure: "unreachable", error: "Server unavailable"}
+        : {ok: true, value: {declared, keys: {usage: {ok: true, value: "available"}}}}});
+    await settled();
+    failing = true;
+    await vi.advanceTimersByTimeAsync(30060);
+    expect(asked).toHaveLength(2);
+    await vi.advanceTimersByTimeAsync(29000);
+    expect(asked).toHaveLength(2);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(asked).toHaveLength(3);
+    failing = false;
+    returned();
+    await settled();
+    expect(asked).toHaveLength(4);
+    expect(data.props.usage.data.value).toBe("available");
+    app.unmount();
+});
+
+test("a failed response waits for its declared rate", async () => {
+    const declared = {usage: {tab: "", events: [], reload_seconds: 60, loading: "first"}};
+    let failing = false;
+    const {app, asked} = mounted({answer: () => failing
+        ? {ok: false, failure: "fault", error: "Failed"}
+        : {ok: true, value: {declared, keys: {usage: {ok: true, value: "available"}}}}});
+    await settled();
+    failing = true;
+    await vi.advanceTimersByTimeAsync(60060);
+    expect(asked).toHaveLength(2);
+    await vi.advanceTimersByTimeAsync(59000);
+    expect(asked).toHaveLength(2);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(asked).toHaveLength(3);
+    app.unmount();
+});
+
+test("an unreachable server is retried within 30 seconds for a slower key", async () => {
+    const declared = {usage: {tab: "", events: [], reload_seconds: 60, loading: "first"}};
+    let failing = false;
+    const {app, asked} = mounted({answer: () => failing
+        ? {ok: false, failure: "unreachable", error: "Server unavailable"}
+        : {ok: true, value: {declared, keys: {usage: {ok: true, value: "available"}}}}});
+    await settled();
+    failing = true;
+    await vi.advanceTimersByTimeAsync(60060);
+    expect(asked).toHaveLength(2);
+    await vi.advanceTimersByTimeAsync(29000);
+    expect(asked).toHaveLength(2);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(asked).toHaveLength(3);
+    app.unmount();
 });
 
 test("a key that fails says so and keeps its last value", async () => {

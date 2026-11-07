@@ -5,7 +5,7 @@ import pytest
 
 from core.base.provider.providers import Providers
 from core.base.provider.program_model import ProgramModel
-from core.base.model_tier import ModelTier
+from core.base.provider.model_tier import ModelTier
 from core.base.refusal import Refusal
 from core.base.provider.unknown_program_error import UnknownProgramError
 from core.base.dotted_path.dotted_path import DottedPath

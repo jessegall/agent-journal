@@ -1,3 +1,4 @@
+from core.base.duration_unit import DurationUnit
 from collections import defaultdict
 from datetime import timedelta
 
@@ -14,7 +15,6 @@ from core.modules.tasks.models.task import Task
 
 MAIN_ROLE = "main"
 DAY_SECONDS = 86400
-HOUR_SECONDS = 3600
 MAX_IDLE_AGENTS = 4
 
 
@@ -58,7 +58,7 @@ class AgentUse:
 
     def age(self, agent: Agent) -> str:
         seconds = int(agent.ended_at.elapsed_seconds(self.clock.timestamp()))
-        return f"{seconds // DAY_SECONDS}d" if seconds >= DAY_SECONDS else f"{seconds // HOUR_SECONDS}h"
+        return f"{seconds // DAY_SECONDS}d" if seconds >= DAY_SECONDS else f"{seconds // DurationUnit.HOUR.seconds}h"
 
     def report(self) -> str:
         models = self.models()

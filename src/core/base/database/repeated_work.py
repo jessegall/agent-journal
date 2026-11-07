@@ -102,9 +102,9 @@ class RepeatedWork(PointTally):
             yield
         finally:
             OPEN_REQUEST.reset(token)
-        self.conclude()
+        self.finish()
 
-    def conclude(self) -> None:
+    def finish(self) -> None:
         if self.findings:
             raise RepeatedCallsError("\n".join(finding.text for finding in self.findings))
 
@@ -124,7 +124,7 @@ class RepeatedWork(PointTally):
         if self.reads[statement] == 1:
             self.read_origins[statement] = self.shown_calls()
         if self.reads[statement] == READ_LIMIT_REPEATS + 1:
-            self.reject(self.found("read", self.sql_without_parameters(statement), f"one request read this more than {READ_LIMIT_REPEATS} times: {statement.sql} {statement.parameters}\nfirst read:\n{self.read_origins[statement]}\nrepeated read:"))
+            self.reject(self.found("read", self.sql_without_parameters(statement), f"one request read this more than {READ_LIMIT_REPEATS} times: {statement.sql} {statement.parameters}\nfirst read: {self.read_origins[statement]}\nrepeated read:"))
         if self.read_texts[statement.sql] == self.read_text_limit + 1:
             self.reject(self.found("read-sql", self.sql_without_parameters(statement), f"one request read this SQL more than {self.read_text_limit} times: {statement.sql} {statement.parameters}"))
 

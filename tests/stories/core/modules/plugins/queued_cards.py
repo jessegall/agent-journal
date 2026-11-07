@@ -8,10 +8,12 @@ from core.base.command.bus import Bus
 from core.base.database.database import Database
 from core.base.journal_container import synced_container
 from core.base.query.queries import Queries
+from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
 from core.modules.plugins.models.plugin_output import PluginOutput
 from core.modules.plugins.ticks.plugin_card_reading import PluginCardReading
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, installed_story
+from tests.stories.core.modules.plugins.support.notices import expect_plugin_notice
 from tests.stories.support.story_checks import expect_value
 
 CARD = {"kind": "state", "key": "queued", "label": "Queue was judged"}
@@ -40,7 +42,7 @@ def test_a_queued_line_still_reaches_the_agent_at_its_next_hook_after_the_card_s
     queued_card(story, "1.json", {"tell": "one sin in b.py"})
     PluginCardReading()(story.container)
     story.run_listeners()
-    story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] one sin in b.py")
+    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] one sin in b.py")
 
 
 def test_a_card_read_on_the_tick_is_not_kept_a_second_time_by_the_next_hook(new_story):
@@ -96,7 +98,7 @@ def test_ticks_leave_a_line_only_file_untouched_until_its_hook(new_story, monkey
     PluginCardReading()(story.container)
     PluginCardReading()(story.container)
     story.expect_rows(path.stat().st_mtime_ns == modified_at, not renamed)
-    story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] Read this next")
+    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] Read this next")
 
 
 def test_a_claim_left_by_a_stopped_server_restores_its_card_and_line(new_story):
@@ -108,7 +110,7 @@ def test_a_claim_left_by_a_stopped_server_restores_its_card_and_line(new_story):
     story.run_listeners()
 
     story.expect_text("chat-mark list --environment 1", "Queue was judged", actor=story.user)
-    story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] The saved line")
+    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] The saved line")
 
 
 def test_a_bad_agent_file_does_not_lose_good_cards_before_or_after_it(new_story):
@@ -148,7 +150,7 @@ def test_a_failed_card_save_keeps_the_card_and_every_unread_file(new_story, monk
     PluginCardReading()(story.container)
     story.run_listeners()
     story.expect_text("chat-mark list --environment 1", "Queue was judged", "Last card", actor=story.user)
-    story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] First line")
+    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] First line")
 
 
 def test_an_empty_card_list_saves_no_plugin_output(new_story):
@@ -213,10 +215,13 @@ def test_a_hook_does_not_recover_a_card_claim_while_the_tick_is_saving_it(new_st
     def run_hook(bus, command, *arguments, **options):
         if isinstance(command, AddPluginOutput) and not visited:
             visited.append(True)
-            story.expect_absent_hook_line("s-1", LISTING_SAMPLE, "[plugin sample] After the card")
+            query = story.container.get(Queries).query(AgentLine)
+            before = {row.id for row in query.all_rows()}
+            story.expect_hook_allowed("s-1", LISTING_SAMPLE)
+            assert {row.id for row in query.all_rows()} == before
         return original(bus, command, *arguments, **options)
 
     monkeypatch.setattr(Bus, "run", run_hook)
     PluginCardReading()(story.container)
     story.expect_rows(bool(visited))
-    story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] After the card")
+    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] After the card")

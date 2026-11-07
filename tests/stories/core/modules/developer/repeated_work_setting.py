@@ -92,7 +92,8 @@ def test_the_report_reaches_the_main_agent_through_its_error_line(new_story, mon
     run_as_core(story)
     monkeypatch.undo()
     story.run_listeners()
-    story.expect_text(LINES.format(agent=story.agent.id), "RepeatedCallsError")
+    story.expect_text(LINES.format(agent=story.agent.id), "journal-exception:1: journal journal-exception show 1")
+    story.expect_text("journal-exception show 1", "RepeatedCallsError", actor=story.agent)
 
 
 @pytest.mark.parametrize("tools,repeated_work", [("on", "false"), ("off", "true")])

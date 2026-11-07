@@ -64,7 +64,7 @@ def expect_helper_refusal(story: Story, text: str) -> None:
 
 
 def test_an_unknown_build_is_stopped_and_told_how_to_register_it(unsaved_hook):
-    unsaved_hook.expect_denied("npm run build 2>&1 | tail -5", 'journal alias add <name> "npm run build 2>&1" --category "build"')
+    unsaved_hook.expect_denied("npm run build 2>&1 | tail -5", 'journal alias add <name> "<command>" --category "build"')
 
 
 def test_a_skip_at_the_head_of_a_line_lets_it_run_as_written(unsaved_hook):

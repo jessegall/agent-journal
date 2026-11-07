@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from suites.coding.modules.workers.rules.idle_worker_stop_rule import HOUR_SECONDS
+from core.base.duration_unit import DurationUnit
 from suites.coding.modules.workers.support.worker_settings import WORKER_IDLE_HOURS
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, checked_worker, dispatched_worker, repository_environment
@@ -152,7 +152,7 @@ def test_a_worker_that_never_started_is_retired_and_opens_the_task(new_story):
     story, _, worker = working_story(new_story)
     task_id = waiting_task(story, worker)
     hours = story.container.get(SettingValues).number(WORKER_IDLE_HOURS)
-    story.clock.advance(timedelta(seconds=hours * HOUR_SECONDS))
+    story.clock.advance(timedelta(seconds=hours * DurationUnit.HOUR.seconds))
     story.tick(MAIN_SESSION)
     story.expect_success(f"task show {task_id}", "state: open", actor=story.agent)
 

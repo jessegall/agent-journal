@@ -9,6 +9,7 @@ from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE
+from tests.stories.core.modules.plugins.support.notices import expect_plugin_notice
 from tests.stories.core.modules.plugins.support.checkout_stories import (
     CHANGED_ORDER_TEXT, ORDER, ORDER_TEXT, checkout_of, checkout_story, delivery_changes, edit_event, edit_events, file_of, moved_worktree_row, real)
 from tests.stories.core.modules.plugins.support.event_stories import event_data, plugin_row
@@ -88,7 +89,7 @@ def test_s45_a_plugin_that_joins_on_relative_finds_its_entry(new_story):
     story = checkout_story(new_story, scripts={"join.sh": JOINS_ON_RELATIVE}, program="join.sh")
     scanned_edit(story, story.worker_session, ORDER, folder=story.worktree)
     story.run_listeners()
-    story.expect_hook_allowed(story.worker_session, LISTING_SAMPLE, "[plugin events] order entry found")
+    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin events] order entry found", session=story.worker_session, agent_id=story.worker.id)
 
 
 def test_s46_an_edit_in_the_main_checkout_gives_the_same_path_twice_and_kind_main(new_story):

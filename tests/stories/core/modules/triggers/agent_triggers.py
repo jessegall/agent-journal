@@ -1,12 +1,13 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.modules.triggers.support.trigger_settings import AGENTS_ENABLE_SETTING
+from core.modules.triggers.support.trigger_nudges import TRIGGER_LINE as TRIGGER_FIRED
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
 TRIGGER_LINE = 'trigger make "deploy" "Check the release notes" --environment main'
 PROMPT = HookSamples.prompt("We deploy now")
-TRIGGER_TEXT = "Check the release notes"
+TRIGGER_TEXT = TRIGGER_FIRED.nudge(trigger=1).text
 
 
 def prompt_lines(story) -> list[str]:

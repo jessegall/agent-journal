@@ -24,9 +24,10 @@ def test_command_output_goes_to_the_agent_that_fired_it_once(new_story, tmp_path
     expect_row(process, session_agent_id=story.agent.id)
     end_run(story, process, "chosen folder output\ncommand warning\n", exit_code=3)
     story.run_listeners()
-    story.expect_hook_allowed("s-1", HookSamples.prompt("Continue"), "chosen folder output", "command warning", "exit 3")
+    story.expect_hook_allowed("s-1", HookSamples.prompt("Continue"), "agent-line:1: journal agent-line show 1")
+    story.expect_text("agent-line show 1", "chosen folder output", "command warning", "exit 3", actor=story.agent)
     story.run_listeners()
-    story.expect_absent_hook_line("s-1", HookSamples.prompt("Continue again"), "chosen folder output")
+    story.expect_absent_hook_line("s-1", HookSamples.prompt("Continue again"), "agent-line:1: journal agent-line show 1")
 
 
 def test_output_stays_out_of_the_agent_when_the_switch_is_off(new_story):

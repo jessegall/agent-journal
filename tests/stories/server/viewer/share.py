@@ -4,6 +4,7 @@ import http.client
 import json
 import re
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from urllib.parse import urlparse
 
 from tests.stories.core.support import story_lines as lines
@@ -233,6 +234,7 @@ def test_a_person_lists_and_revokes_their_links(shared_plan_link):
 
 def test_a_link_stays_open_when_the_server_restarts(new_story):
     journal = new_story(fixture=PlanAndPersonFixture)
+    journal.advance(datetime.now(timezone.utc) - journal.clock.timestamp().value)
     with server_story(journal) as story:
         _, share = shared_link(story)
         visitor = opened(story, share)
@@ -250,7 +252,9 @@ def test_a_spent_login_link_opened_with_only_a_share_cookie_is_refused(shared_pl
 
 @pytest.fixture
 def plan_server(new_story):
-    with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
+    journal = new_story(fixture=PlanAndPersonFixture)
+    journal.advance(datetime.now(timezone.utc) - journal.clock.timestamp().value)
+    with server_story(journal) as story:
         yield story
 
 

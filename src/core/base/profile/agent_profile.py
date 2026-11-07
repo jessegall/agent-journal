@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from collections.abc import Mapping
 from typing import Any
 from core.base.access import Access
-from core.base.model_tier import ModelTier
+from core.base.provider.model_tier import ModelTier
 
 
 @dataclass(frozen=True)

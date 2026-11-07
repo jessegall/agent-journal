@@ -15,6 +15,7 @@ class TaskInspectionRow(ViewModel):
     select = TASK_INSPECTIONS_SELECT
 
     task_id: int
+    tags: tuple[str, ...]
     waits: str
     logs: str
     openers: str

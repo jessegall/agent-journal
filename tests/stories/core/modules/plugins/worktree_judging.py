@@ -3,6 +3,7 @@ import json
 import pytest
 
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE
+from tests.stories.core.modules.plugins.support.notices import expect_plugin_notice
 from tests.stories.core.modules.plugins.support.worktree_plugin import worktree_plugin_folder
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
@@ -33,7 +34,7 @@ def test_a_workers_file_is_judged_in_its_worktree_and_answered_only_to_that_work
     scanned_edit(story, story.worker_session, "cart.py", folder=story.worktree)
     story.run_listeners()
     story.expect_absent_hook_line("s-1", LISTING_SAMPLE, "mutable default")
-    story.expect_hook_allowed(story.worker_session, LISTING_SAMPLE, f"{story.worktree / 'cart.py'}: mutable default")
+    expect_plugin_notice(story, LISTING_SAMPLE, f"[plugin worktree-judge] {story.worktree / 'cart.py'}: mutable default", session=story.worker_session, agent_id=story.worker.id)
 
 
 def test_a_main_checkout_sin_reaches_only_the_main_agent(worktree_story):
@@ -42,7 +43,7 @@ def test_a_main_checkout_sin_reaches_only_the_main_agent(worktree_story):
     scanned_edit(story, "s-1", "cart.py", folder=story.repository.folder)
     story.run_listeners()
     story.expect_absent_hook_line(story.worker_session, LISTING_SAMPLE, "mutable default")
-    story.expect_hook_allowed("s-1", LISTING_SAMPLE, f"{story.repository.folder / 'cart.py'}: mutable default")
+    expect_plugin_notice(story, LISTING_SAMPLE, f"[plugin worktree-judge] {story.repository.folder / 'cart.py'}: mutable default")
 
 
 @pytest.mark.parametrize("command", ["worker next --differences none", "worker deliver --differences none"])

@@ -55,10 +55,15 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
 
     def handle(self, command: SendSilentAgentLines, context: Context) -> None:
         agents = tuple(self.queries.query(Agent).all_rows())
+        if all(agent.role == CodingAgentRole.MAIN for agent in agents) and not self.settings.flag(AUTO_MODE_SETTING):
+            return
         agent_ids = tuple(agent.id for agent in agents)
         activities = {row.id: row for row in self.queries.query(AgentActivity).matching(Among("id", agent_ids)).all_rows()}
-        tasks = tuple(self.queries.query(Task).matching(Among("state", [TaskState.OPEN, TaskState.STARTED])).all_rows())
-        working = {agent_id for task in tasks for agent_id in [task.holder_id, task.delegated_to] if agent_id is not None}
+        tasks = self.queries.query(Task).matching(Among("state", [TaskState.OPEN, TaskState.STARTED]))
+        held = tasks.matching(Among("holder_id", agent_ids)).all_rows()
+        delegated = tasks.matching(Among("delegated_to", agent_ids)).all_rows()
+        working = {agent_id for task in (*held, *delegated) for agent_id in [task.holder_id, task.delegated_to] if agent_id is not None}
+        main_has_work = self.settings.flag(AUTO_MODE_SETTING) and tasks.exists()
         worktrees = tuple(self.queries.query(Worktree).all_rows())
         workers = {row.session_agent_id for row in worktrees}
         excluded = self.waiting(agent_ids, context)
@@ -71,7 +76,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
             lines[line.session_agent_id].append(line)
         span = self.settings.minutes(SILENT_AGENT_MINUTES)
         for agent in agents:
-            has_work = agent.id in working or (agent.role == CodingAgentRole.MAIN and bool(tasks) and self.settings.flag(AUTO_MODE_SETTING))
+            has_work = agent.id in working or (agent.role == CodingAgentRole.MAIN and main_has_work)
             activity = activities[agent.id]
             if not has_work or agent.id in excluded or agent.paused_at is not None or not activity.is_inactive(context.timestamp, span.count):
                 continue

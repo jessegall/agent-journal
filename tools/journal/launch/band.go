@@ -17,8 +17,8 @@ const (
 	eraseLineCode   = "\x1b[2K"
 )
 
-// screenDisturbance is what a program may print that would wipe the band's row or change its scroll region.
-var screenDisturbance = regexp.MustCompile(`\x1b\[[0-9;]*r|\x1b\[[0-3]?J|\x1bc`)
+// screenReset matches codes that clear the band's row or change its scroll region.
+var screenReset = regexp.MustCompile(`\x1b\[[0-9;]*r|\x1b\[[0-3]?J|\x1bc`)
 
 // ShowsBand says whether the person sits at a terminal that can hold the band: both what they type and what they see.
 func ShowsBand() bool {
@@ -98,7 +98,7 @@ func (band *Band) Write(data []byte) (int, error) {
 	band.mutex.Lock()
 	defer band.mutex.Unlock()
 	shown := string(data)
-	if screenDisturbance.Match(data) {
+	if screenReset.Match(data) {
 		shown += "\x1b7" + band.region() + band.line() + "\x1b8"
 	}
 	_, err := io.WriteString(band.screen, shown)

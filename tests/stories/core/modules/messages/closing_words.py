@@ -4,6 +4,7 @@ from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.core.modules.documents.support.trail_fixtures import viewer
 from core.modules.agents.support.terminal_typing import TerminalTyping
+from core.modules.messages.support.message_nudges import MESSAGE_REACTION
 
 
 def chat(story) -> str:
@@ -131,7 +132,7 @@ def reaction_turn(new_story, monkeypatch):
     viewer(story, "messages.chat", ["message", "react", "1", "👍"])
     story.expect_rows(len(lines) == 1, lines[0][0] == story.agent.id)
     line = lines[0][1]
-    story.expect_rows("the user reacted to message:1" in line, "act if it asks" in line, "closing text is not in chat" in line, "journal message send" in line, "👍" not in line)
+    story.expect_rows(MESSAGE_REACTION.nudge(message=1).text in line, "👍" not in line)
     story.hook("s-1", HookSamples.prompt(line))
     return story
 

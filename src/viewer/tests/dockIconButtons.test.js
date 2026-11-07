@@ -1,7 +1,7 @@
 import {createApp, h} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import {settled} from "./settled.js";
-import {perLine} from "./support/windowContext.js";
+import {context as windowContext, perLine} from "./support/windowContext.js";
 import DockWrapper from "../src/chat/DockWrapper.vue";
 import {dockLook} from "../src/domain/dockLook.js";
 
@@ -30,7 +30,7 @@ async function drawn(item = ITEM) {
     vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 0, value: null, error: ""})})));
     const element = document.createElement("div");
     document.body.append(element);
-    createApp({setup: () => () => h(DockWrapper, {item}), provide: {[WINDOW_CONTEXT]: {environment: "main"}}}).mount(element);
+    createApp({setup: () => () => h(DockWrapper, {item}), provide: {[WINDOW_CONTEXT]: windowContext({})}}).mount(element);
     mounted.push(element);
     await settled();
     return element;

@@ -28,6 +28,8 @@ def faults_of(story, group: str, subcommand: str, flags: tuple[str, ...]) -> lis
 
 def test_every_command_and_flag_a_shipped_skill_names_exists(new_story):
     story = new_story(fixture=BuilderStarted)
+    # The code-commandments plugin supplies this alias in an installed journal.
+    story.expect_success('alias add sins "printf ok" --category check --agents', actor=story.user)
     commands = commands_in_skill_files()
     expect_commands_count_greater(commands, 50)
     faults = sorted(fault for group, subcommand, flags in commands for fault in faults_of(story, group, subcommand, flags))

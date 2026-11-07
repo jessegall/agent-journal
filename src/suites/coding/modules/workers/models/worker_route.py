@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.positioned import Positioned
-from core.base.model_tier import ModelTier
+from core.base.provider.model_tier import ModelTier
 from core.modules.tasks.models.support.task_complexity import MOST_COMPLEXITY, TaskComplexity
 
 

@@ -6,7 +6,7 @@ import (
 	"unicode/utf8"
 )
 
-// The colour codes the boot menu paints with.
+// The colour codes used by the boot menu.
 const (
 	boldCode   = "\x1b[1m"
 	dimCode    = "\x1b[2m"
@@ -26,30 +26,30 @@ type Style struct {
 	Columns int
 }
 
-func (style Style) paint(code, text string) string {
+func (style Style) colour(code, text string) string {
 	if !style.Colour {
 		return text
 	}
 	return code + text + resetCode
 }
 
-// Accent paints the marks that lead the eye: the question mark, the cursor and the banner's frame.
-func (style Style) Accent(text string) string { return style.paint(accentCode, text) }
+// Accent colours the question mark, cursor and banner frame.
+func (style Style) Accent(text string) string { return style.colour(accentCode, text) }
 
-// Bold paints a heading or the option under the cursor.
-func (style Style) Bold(text string) string { return style.paint(boldCode, text) }
+// Bold colours a heading or the option under the cursor.
+func (style Style) Bold(text string) string { return style.colour(boldCode, text) }
 
-// Dim paints the notes and the key hints.
-func (style Style) Dim(text string) string { return style.paint(dimCode, text) }
+// Dim colours the notes and the key hints.
+func (style Style) Dim(text string) string { return style.colour(dimCode, text) }
 
-// Good paints a finished step.
-func (style Style) Good(text string) string { return style.paint(goodCode, text) }
+// Good colours a finished step.
+func (style Style) Good(text string) string { return style.colour(goodCode, text) }
 
-// Badge paints a fact set after an option, in square brackets.
-func (style Style) Badge(text string) string { return style.paint(badgeCode, "["+text+"]") }
+// Badge colours a fact set after an option, in square brackets.
+func (style Style) Badge(text string) string { return style.colour(badgeCode, "["+text+"]") }
 
-// Warn paints the heading of a question that asks before something is stopped or removed.
-func (style Style) Warn(text string) string { return style.paint(warnCode+boldCode, text) }
+// Warn colours the heading of a question asked before something is stopped or removed.
+func (style Style) Warn(text string) string { return style.colour(warnCode+boldCode, text) }
 
 // Fit cuts a line to the columns of the terminal, keeping its colour codes whole, so a long line never wraps into the next.
 func (style Style) Fit(line string) string {

@@ -6,6 +6,7 @@ import {matches} from "../src/windows/windowSubscriptions.js";
 const RELOAD_JOIN_MS = 50;
 const REFRESH_EVENT = "refresh";
 const TIMER_TICK_MS = 1000;
+const SERVER_RETRY_MS = 30000;
 const REQUESTED = "requested";
 const AFTER_WINDOW = "after_window";
 const DEFAULT_PAGE_SIZE = 50;
@@ -21,9 +22,11 @@ export function useWindowData(context) {
     const waiting = new Set();
     const joined = {names: new Set(), answer: null};
     const readNumbers = {};
+    const unreachable = new Set();
     let declared = {};
     let join = 0;
     let latestRead = 0;
+    let disposed = false;
 
     function propOf(name) {
         const key = () => declared[name] ?? declared[`${name.slice(0, name.lastIndexOf("."))}.*`] ?? {};
@@ -68,7 +71,20 @@ export function useWindowData(context) {
         names.forEach((name) => (readNumbers[name] = number));
         const answer = await context.readKeys({only, state: {...state}});
         if (!answer.ok) {
-            if (answer.failure !== "cancelled") (only.length ? only : Object.keys(held)).filter((name) => (readNumbers[name] ?? 0) <= number).forEach((name) => props[name].showFirst(answer));
+            if (answer.failure === "cancelled") return false;
+            const failed = (only.length ? only : Object.keys(held)).filter((name) => (readNumbers[name] ?? 0) <= number);
+            failed.forEach((name) => {
+                props[name].readAt = Date.now();
+                if (answer.failure === "unreachable") unreachable.add(name);
+                else unreachable.delete(name);
+                props[name].showFirst(answer);
+            });
+            const server = answer.failure === "unreachable" && context.waitForServer?.();
+            if (server) server.then(() => {
+                if (disposed) return;
+                const retry = failed.filter((name) => readNumbers[name] === number);
+                if (retry.length || (!only.length && !failed.length && latestRead === number)) read(retry);
+            });
             return false;
         }
         follow(answer.value.declared);
@@ -76,6 +92,7 @@ export function useWindowData(context) {
             if ((readNumbers[name] ?? 0) > number) return;
             readNumbers[name] = number;
             props[name].readAt = Date.now();
+            unreachable.delete(name);
             if (result.ok) props[name].data.value = result.value;
             props[name].showFirst(result);
         });
@@ -131,10 +148,13 @@ export function useWindowData(context) {
         const only = Object.keys(declared).filter((name) => !name.endsWith(ID_KEY_SUFFIX) && isOnScreen(name) && !props[name].readAt);
         if (only.length) read(only);
     });
-    onUnmounted(() => clearTimeout(join));
+    onUnmounted(() => {
+        disposed = true;
+        clearTimeout(join);
+    });
     function reloadDueKeys() {
         const now = Date.now();
-        const due = Object.keys(declared).filter((name) => declared[name].reload_seconds > 0 && isOnScreen(name)).flatMap(loadedNames).filter((name) => now - props[name].readAt >= reloadSecondsOf(name) * 1000);
+        const due = Object.keys(declared).filter((name) => declared[name].reload_seconds > 0 && isOnScreen(name)).flatMap(loadedNames).filter((name) => now - props[name].readAt >= (unreachable.has(name) ? Math.min(reloadSecondsOf(name) * 1000, SERVER_RETRY_MS) : reloadSecondsOf(name) * 1000));
         if (due.length) reloadSoon(due);
     }
     usePoll(reloadDueKeys, () => context.visible.value, TIMER_TICK_MS);

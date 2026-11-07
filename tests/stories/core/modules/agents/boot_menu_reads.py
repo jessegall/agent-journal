@@ -13,7 +13,7 @@ def rows_of(story, line: str) -> list[dict[str, object]]:
 
 
 @pytest.fixture
-def crowded_story(new_story):
+def many_agents_story(new_story):
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
     for number in range(WORKER_ROWS):
         story.run(f"agent start worker-{number} claude worker --environment main")
@@ -24,19 +24,19 @@ def crowded_story(new_story):
     return story
 
 
-def test_the_environment_menu_says_a_main_runs_past_a_thousand_agent_rows(crowded_story):
-    rows = rows_of(crowded_story, "environment menu")
-    crowded_story.expect_rows([(row["name"], row["suite"], row["main_running"]) for row in rows] == [("main", "samples", True)])
+def test_the_environment_menu_says_a_main_runs_past_a_thousand_agent_rows(many_agents_story):
+    rows = rows_of(many_agents_story, "environment menu")
+    many_agents_story.expect_rows([(row["name"], row["suite"], row["main_running"]) for row in rows] == [("main", "samples", True)])
 
 
-def test_the_running_mains_are_named_past_a_thousand_agent_rows(crowded_story):
-    rows = rows_of(crowded_story, "agent running-main-agents --environment main")
-    crowded_story.expect_rows([row["id"] for row in rows] == [crowded_story.main_id])
+def test_the_running_mains_are_named_past_a_thousand_agent_rows(many_agents_story):
+    rows = rows_of(many_agents_story, "agent running-main-agents --environment main")
+    many_agents_story.expect_rows([row["id"] for row in rows] == [many_agents_story.main_id])
 
 
-def test_the_main_sessions_of_a_program_come_newest_first_with_no_worker(crowded_story):
-    rows = rows_of(crowded_story, "agent main-sessions claude --environment main")
-    crowded_story.expect_rows([row["session"] for row in rows] == ["s-new", "s-old"])
+def test_the_main_sessions_of_a_program_come_newest_first_with_no_worker(many_agents_story):
+    rows = rows_of(many_agents_story, "agent main-sessions claude --environment main")
+    many_agents_story.expect_rows([row["session"] for row in rows] == ["s-new", "s-old"])
 
 
 def test_the_environment_menu_says_no_main_runs_once_it_ended(new_story):

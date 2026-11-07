@@ -154,10 +154,12 @@ def test_strict_route_refuses_when_its_program_is_out_non_strict_uses_split(spli
     story = split_story
     story.expect_success('worker-route make --program codex --tags fallback --environment main', actor=story.agent)
     story.expect_success('task tag 1 fallback --confirm', actor=story.agent)
-    outage(story)
+    outage_id, ends_at = outage(story)
     set_split(story, viewer=split_viewer)
     expect_program(story, dispatch(story), 'claude')
-    story.expect_text(f'agent-line list --agent {story.agent.id}', 'route 1', 'codex', 'out until', 'claude')
+    story.expect_text(f'agent-line list --agent {story.agent.id}', 'route 1', 'task 1', 'claude')
+    story.expect_text('worker-route show 1', 'codex', actor=story.agent)
+    story.expect_text(f'provider-outage show {outage_id}', 'codex', ends_at, actor=story.agent)
 
 
 def test_complexity_route_needs_a_score(split_story):

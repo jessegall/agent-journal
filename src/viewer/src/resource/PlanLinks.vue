@@ -25,7 +25,7 @@ useResourceEvents(["link.*", "phase.*", "phase_task.*"], load);
 
 <template>
     <template v-if="total"><FoldGroup label="Links" :count="total" :open="open" flush data-plan-links @toggle="open = !open">
-        <ResourceLinks model="plan" :id="id" :document-id="documentId" :read="read" :changes="changes" outside-plan link-attribute="data-plan-link" @open="$emit('open', $event)" />
+        <ResourceLinks model="plan" :id="id" :document-id="documentId" :read="read" :changes="changes" outside-plan grouped link-attribute="data-plan-link" @open="$emit('open', $event)" />
     </FoldGroup></template>
     <template v-if="failure"><p role="alert">{{ failure }}</p></template>
 </template>

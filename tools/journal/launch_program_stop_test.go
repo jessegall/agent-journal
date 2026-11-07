@@ -34,7 +34,7 @@ func stopAnswer(t *testing.T, path string, agentID int) string {
 	return strings.TrimSpace(answer)
 }
 
-func TestAStopOnTheSocketEndsTheLaunchsOwnProgramAndIsAnsweredBeforeTheLaunchCloses(t *testing.T) {
+func TestAStopOnTheSocketEndsTheLaunchOwnProgramAndIsAnsweredBeforeTheLaunchCloses(t *testing.T) {
 	home, err := os.MkdirTemp("", "lp")
 	if err != nil {
 		t.Fatal(err)
