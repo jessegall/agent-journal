@@ -51,6 +51,13 @@ def test_an_alias_name_a_project_alias_holds_already_is_skipped_and_the_project_
     story.expect_success("greet", "mine", actor=story.user)
 
 
+def test_two_aliases_on_one_reader_read_that_reader_once_on_install(new_story):
+    story = plugin_with_aliases(new_story, [*ALIASES, {"name": "sample-judge-again", "line": "bin/judge", "reader": "sample-reader"}])
+    story.expect_success(f"plugin install {story.plugin_folder} --yes", actor=story.user)
+    reader = next(row for row in json.loads(story.run("reader list --json", actor=story.user).output_text)["rows"] if row["name"] == "sample-reader")
+    story.expect_text("alias show 3", "name: sample-judge-again", f"reader_id: {reader['id']}", actor=story.user)
+
+
 def test_a_plugin_s_aliases_go_with_the_plugin(new_story):
     story = plugin_with_aliases(new_story)
     story.run(f"plugin install {story.plugin_folder} --yes", actor=story.user)
@@ -129,5 +136,5 @@ def test_a_manifest_alias_for_agents_is_open_to_a_worker_on_install(new_story):
     judge = folder / "judge"
     judge.write_text('#!/bin/sh\necho judged\n')
     judge.chmod(0o755)
-    story.expect_success(f"plugin install {folder} --yes", actor=story.agent)
+    story.expect_success(f"plugin install {folder} --yes", actor=story.user)
     story.expect_success("sample-judge --changes", "judged", actor=worker)
