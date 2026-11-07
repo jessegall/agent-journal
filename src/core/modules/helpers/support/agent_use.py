@@ -15,7 +15,7 @@ from core.modules.tasks.models.task import Task
 MAIN_ROLE = "main"
 DAY_SECONDS = 86400
 HOUR_SECONDS = 3600
-IDLE_AGE_LIMIT = 4
+MAX_IDLE_AGENTS = 4
 
 
 class AgentUse:
@@ -67,6 +67,6 @@ class AgentUse:
         days = self.settings.number(AGENT_USE_DAYS)
         lines = [f"jobs of the last {days} days, and the agents kept"]
         for model_use in models:
-            idle_ages = ", ".join(self.age(agent) for agent in model_use.idle()[:IDLE_AGE_LIMIT])
+            idle_ages = ", ".join(self.age(agent) for agent in model_use.idle()[:MAX_IDLE_AGENTS])
             lines.append(f"{model_use.agent_type}, {model_use.model}: jobs {model_use.jobs}, kept {len(model_use.agents)}" + (f", idle {idle_ages}" if idle_ages else ""))
         return "\n".join(lines)

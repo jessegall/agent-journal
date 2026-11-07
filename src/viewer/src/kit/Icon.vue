@@ -33,6 +33,8 @@ const alias = {
     chevron: "arrow",
 };
 const shapes = {
+    time: '<circle cx="8" cy="8" r="5.5"/><path d="M8 4.5V8l2.4 1.5"/>',
+    allowance: '<path d="M3 4.5h10v7H3zM5 6.5h1M10 9.5h1"/><circle cx="8" cy="8" r="1.4"/>',
     phone: '<rect x="4.5" y="1.5" width="7" height="13" rx="1.6"/><path d="M7 12.2h2"/>',
     key: '<circle cx="5.5" cy="10.5" r="2.8"/><path d="M7.5 8.5 13 3M10.8 5.2l1.7 1.7M9.2 6.8l1.2 1.2"/>',
     terminal: '<path d="M2 3.5h12v9H2zM4.8 6.4 6.9 8l-2.1 1.6M8.4 10h3"/>',
@@ -150,6 +152,7 @@ const shapes = {
 <template>
     <svg
         class="ico"
+        :data-icon="name"
         :style="{
             ...(size ? {'--icon-size': `${size}px`} : {}),
             ...(props.facing === 'right' ? {} : {transform: `rotate(${TURNS[props.facing]}deg)`}),
