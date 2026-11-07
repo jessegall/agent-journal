@@ -41,6 +41,7 @@ from core.base.driver.block_condition import BlockCondition
 from core.base.performance.performance_tool import PerformanceTool
 from core.base.template.template_declaration import TemplateDeclaration
 from core.base.viewer.button_declaration import ButtonDeclaration
+from core.base.viewer.inspector_declaration import InspectorDeclaration
 
 ListenerClass = type[DeletionListener] | type[SaveListener] | type[CommitListener]
 SubcommandClass = type[Subcommand[Command[object], object]] | type[ReadSubcommand[object]]
@@ -83,6 +84,7 @@ class Module:
     templates: ClassVar[list[TemplateDeclaration]] = []
     buttons: ClassVar[list[ButtonDeclaration]] = []
     button_slots: ClassVar[list[str]] = []
+    inspectors: ClassVar[list[InspectorDeclaration]] = []
     added_states: ClassVar[Sequence[StateAddition]] = ()
     agent_types: ClassVar[list[AgentType]] = []
     profiles: ClassVar[list[AgentProfile]] = []

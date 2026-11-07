@@ -245,6 +245,10 @@ class Story:
         windows = [window for window in Registry.read(self.container.get(Database)).windows if window.name == name]
         assert windows and text in windows[0].unavailable_reason, f"window {name} is registered as {windows}"
 
+    def expect_registered_inspectors(self, models: list[type[Model]]) -> None:
+        registered = [inspector.declaration.model for inspector in Registry.read(self.container.get(Database)).inspectors]
+        assert registered == models, f"inspectors are registered for {registered}"
+
     def expect_registered_provider(self, name: str, module: str) -> None:
         providers = [provider for provider in Registry.read(self.container.get(Database)).providers if provider.name == name]
         assert [provider.module for provider in providers] == [module], f"agent program {name} is registered as {providers}"

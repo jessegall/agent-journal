@@ -28,6 +28,7 @@ from core.base.registry.button_window import ButtonWindow
 from core.base.registry.dock_entry import DockEntry
 from core.base.registry.template_entry import TemplateEntry
 from core.base.registry.button_entry import ButtonEntry
+from core.base.registry.inspector_entry import InspectorEntry
 from core.base.registry.mark_entry import MarkEntry
 from core.base.registry.nudge_entry import NudgeEntry
 from core.base.registry.setting_entry import SettingEntry
@@ -77,6 +78,7 @@ class Registry:
     templates: tuple[TemplateEntry, ...] = ()
     buttons: tuple[ButtonEntry, ...] = ()
     button_slots: tuple[str, ...] = ()
+    inspectors: tuple[InspectorEntry, ...] = ()
     inspector_slots: tuple[str, ...] = ()
     state_additions: tuple[StateAdditionEntry, ...] = ()
     agent_types: tuple[AgentTypeEntry, ...] = ()
@@ -154,6 +156,7 @@ class Registry:
             docks=tuple(DockEntry.restored(dock) for dock in entries.get("docks", [])),
             templates=tuple(TemplateEntry.restored(template) for template in entries.get("templates", [])),
             buttons=tuple(ButtonEntry.restored(button) for button in entries.get("buttons", [])),
+            inspectors=tuple(InspectorEntry.restored(inspector) for inspector in entries.get("inspectors", [])),
             state_additions=tuple(StateAdditionEntry.restored(addition) for addition in entries.get("state_additions", [])),
             agent_types=tuple(AgentTypeEntry.restored(entry) for entry in entries.get("agent_types", [])),
             profiles=tuple(ProfileEntry.restored(entry) for entry in entries.get("profiles", [])),
@@ -210,6 +213,7 @@ class Registry:
             "docks": [asdict(dock) for dock in self.docks],
             "templates": [asdict(template) for template in self.templates],
             "buttons": [asdict(button) for button in self.buttons],
+            "inspectors": [inspector.stored() for inspector in self.inspectors],
             "state_additions": [asdict(addition) for addition in self.state_additions],
             "agent_types": [asdict(entry) for entry in self.agent_types],
             "profiles": [asdict(entry) for entry in self.profiles],

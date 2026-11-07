@@ -44,6 +44,7 @@ from core.base.registry.registry import Registry
 from core.base.registry.dock_entry import DockEntry
 from core.base.registry.template_entry import TemplateEntry
 from core.base.registry.button_entry import ButtonEntry
+from core.base.registry.inspector_entry import InspectorEntry
 from core.base.registry.move_entry import MoveEntry
 from core.base.registry.skill_entry import SkillEntry
 from core.base.skill.skill_declaration import SKILLS_FOLDER
@@ -160,6 +161,7 @@ class ModuleSync:
             templates=tuple(TemplateEntry(module.name, declaration) for module in modules for declaration in module.templates),
             buttons=self.buttons(modules),
             button_slots=self.button_slots(modules),
+            inspectors=self.inspectors(modules),
             inspector_slots=tuple(sorted(InspectorSlots(modules).owners)),
             state_additions=tuple(StateAdditionEntry.declared(module.name, addition, module not in self.finder.default_modules()) for module in modules for addition in module.added_states),
             agent_types=tuple(AgentTypeEntry.declared(module.name, declaration) for module in modules for declaration in module.agent_types),
@@ -213,6 +215,10 @@ class ModuleSync:
     def buttons(self, modules: tuple[type[Module], ...]) -> tuple[ButtonEntry, ...]:
         shipped = set(self.finder.default_modules())
         return tuple(ButtonEntry(module.name, button, module in shipped) for module in modules for button in module.buttons)
+
+    def inspectors(self, modules: tuple[type[Module], ...]) -> tuple[InspectorEntry, ...]:
+        shipped = set(self.finder.default_modules())
+        return tuple(InspectorEntry(module.name, inspector, module in shipped) for module in modules for inspector in module.inspectors)
 
     def button_slots(self, modules: tuple[type[Module], ...]) -> tuple[str, ...]:
         return tuple(sorted(ButtonSlots(modules).owners))
