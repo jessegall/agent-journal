@@ -388,7 +388,7 @@ def untitled_docked_run(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
     story.advance(timedelta(seconds=6))
-    wanted = f'journal output title {process.id} "<what it does>"'
+    wanted = f"output {process.id} has its raw command as its title: give it a title"
     return story, process, wanted
 
 
