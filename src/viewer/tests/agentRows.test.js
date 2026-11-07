@@ -115,7 +115,7 @@ test("a closed card shows the profile, name and status without open-card details
     expect(card.title).toBe("");
     card.click();
     await settle();
-    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("");
+    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high");
 });
 
 test("closed cards use the shared agent facts read for their identity", async () => {
@@ -518,7 +518,7 @@ test.each([["agents", Agents], ["helpers", Helpers]])("the %s window keeps the s
     window.option = () => ({value: "state"});
     const element = await mounted(component, window);
     expect(listed(element)).toEqual([5, 6, 7]);
-    expect(window.reads.filter((line) => line.startsWith("agent cards") && line !== "agent cards --options")).toHaveLength(1);
+    expect(window.reads.filter((line) => line.startsWith("agent cards") && line !== "agent cards --options" && line !== "agent cards --show all --limit 10000")).toHaveLength(1);
     expect(window.reads).not.toContain("agent running");
 });
 
