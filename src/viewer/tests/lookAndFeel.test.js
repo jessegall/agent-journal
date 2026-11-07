@@ -247,11 +247,14 @@ async function pasteFiles(element, names) {
     await settled();
 }
 
-test("composer: the offer to dump several files shows only while the box holds no text", async () => {
+test("composer: two files ask nothing, three ask whether to switch to dump mode, and only while the box holds no text", async () => {
     const element = await mountedChat();
     await pasteFiles(element, ["one.png", "two.png"]);
     const offer = () => element.querySelector("[data-dump-offer]");
-    expect(offer()?.textContent.trim()).toBe("Dump 2 files");
+    expect(offer()).toBeNull();
+    expect(element.textContent).not.toContain("Dump 2 files");
+    await pasteFiles(element, ["three.png"]);
+    expect(offer()?.textContent).toContain("Switch to dump mode for these 3 files?");
     const box = element.querySelector("textarea");
     box.value = "Look at these";
     box.dispatchEvent(new Event("input"));
@@ -262,6 +265,21 @@ test("composer: the offer to dump several files shows only while the box holds n
     box.dispatchEvent(new Event("input"));
     await settled();
     expect(offer()).not.toBeNull();
+});
+
+test("composer: choosing the switch opens the dump form, and keeping the files asks no more", async () => {
+    const element = await mountedChat();
+    await pasteFiles(element, ["one.png", "two.png", "three.png"]);
+    element.querySelector("[data-dump-yes]").click();
+    await settled();
+    expect(element.querySelector("[data-dump-form]")).not.toBeNull();
+    expect(element.querySelector("[data-dump-offer]")).toBeNull();
+    const other = await mountedChat();
+    await pasteFiles(other, ["a.png", "b.png", "c.png"]);
+    other.querySelector("[data-dump-no]").click();
+    await settled();
+    expect(other.querySelector("[data-dump-offer]")).toBeNull();
+    expect(other.querySelector("[data-dump-form]")).toBeNull();
 });
 
 test("composer: a second file with the same name is left out, so one chip and one upload", async () => {

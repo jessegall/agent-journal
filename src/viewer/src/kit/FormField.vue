@@ -1,4 +1,6 @@
 <script setup>
+import InfoTip from "./InfoTip.vue";
+
 defineProps({
     label: {type: String, required: true},
     for: {type: String, default: ""},
@@ -10,14 +12,14 @@ defineProps({
     <div class="form-field">
         <div class="form-field-head">
             <label class="form-field-label" :for="$props.for">{{ label }}</label>
+            <template v-if="help">
+                <InfoTip :lines="[help]" :label="`About ${label}`" />
+            </template>
             <template v-if="$slots.aside">
                 <span class="form-field-aside"><slot name="aside" /></span>
             </template>
         </div>
         <slot />
-        <template v-if="help">
-            <p class="form-field-help">{{ help }}</p>
-        </template>
     </div>
 </template>
 

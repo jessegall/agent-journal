@@ -1,6 +1,6 @@
 <script setup>
 import {computed, useId} from "vue";
-import {FormField, Segmented, Switch, SwitchCase, TextArea, TextInput} from "@journal/window-kit";
+import {FormField, InfoTip, Segmented, Switch, SwitchCase, TextArea, TextInput} from "@journal/window-kit";
 import {childrenOf, isOn, shownValue} from "./pluginSettingGroups.js";
 
 // one setting of a plugin, with the control its type asks for, saved as it changes; the settings under a switch that is off are dimmed
@@ -20,7 +20,7 @@ const say = (text) => emit("configure", props.setting, String(text));
                 <div class="plugin-setting-names">
                     <span class="plugin-setting-title">{{ setting.title }}</span>
                     <template v-if="setting.help">
-                        <span class="plugin-setting-help">{{ setting.help }}</span>
+                        <InfoTip :lines="[setting.help]" :label="`About ${setting.title}`" />
                     </template>
                 </div>
                 <Switch :on="isOn(setting)" :title="setting.title" @change="say" />
