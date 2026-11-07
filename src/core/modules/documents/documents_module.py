@@ -1,3 +1,4 @@
+from core.modules.documents.migrations.m008_message_link_paths import MessageLinkPathsMigration
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.plans.commands.plan_context.read_plan_context_subcommand import ReadPlanContextSubcommand
 from core.modules.documents.commands.plan_context.read_plan_context_handler import ReadPlanContextHandler
@@ -104,7 +105,7 @@ class DocumentsModule(Module):
     nudges = [DOCUMENT_OPEN]
     models = [ModelDeclaration(OpenDocument, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Doc, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Report, excluded_subcommands=ALL_SUBCOMMANDS),
               ModelDeclaration(DocRevision, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Link, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(CommentSelection, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(LinkCorrection, excluded_subcommands=ALL_SUBCOMMANDS)]
-    migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration, CommentSelectionsMigration, ProjectDocumentsMigration, RevisionAuthorsMigration, LinkCorrectionsMigration]
+    migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration, CommentSelectionsMigration, ProjectDocumentsMigration, RevisionAuthorsMigration, LinkCorrectionsMigration, MessageLinkPathsMigration]
     driver_rules = [OpenDocumentRule]
     block_conditions = [DocumentClosed]
     tick_handlers = [TickHandler(TickInterval(seconds=5), CloseEndedDocumentsTick(), "close ended documents", starts_immediately=True)]

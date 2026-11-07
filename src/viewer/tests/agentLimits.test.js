@@ -8,7 +8,7 @@ const idle = {id: 42, role: "worker", state: "idle", program: "claude", created_
 afterEach(() => { document.body.innerHTML = ""; });
 async function counts({readOnly = false} = {}) {
     const row = structuredClone(worker);
-    const held = context({"agent limits": page([row]), "agent cards --show all --limit 10000": page([idle])});
+    const held = context({"agent limits": page([row]), "agent cards --show all --kept --role worker --page 1": page([idle])});
     held.readOnly = readOnly;
     held.run = vi.fn(async (command) => {
         if (command[0] === "setting") row.run_limit = Number(command[3]);
@@ -20,9 +20,10 @@ async function counts({readOnly = false} = {}) {
 async function open(element) { element.querySelector("[data-agent-counts]").click(); await settle(); }
 
 test("the badge counts full rows and the modal shows counts without status words", async () => {
-    const {element} = await counts();
+    const {element, held} = await counts();
     expect(element.querySelector("[data-agent-count-badge]").textContent).toBe("1");
     await open(element);
+    expect(held.reads.some((line) => line.startsWith("agent cards --show all"))).toBe(false);
     expect(document.body.querySelector("[data-agent-limit-type='worker']").textContent).toContain("1 of 13 of 3");
     expect(document.body.textContent).not.toContain("At limit");
 });

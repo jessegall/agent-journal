@@ -35,3 +35,10 @@ AGENT_FILTER_OPTIONS_SELECT = (
     "SELECT environment_id, json_group_array(DISTINCT role) AS roles,"
     " json_group_array(DISTINCT profile) AS profiles FROM agents GROUP BY environment_id"
 )
+
+AGENT_COUNTS_SELECT = """
+SELECT environment_id, role, profile, count(*) AS kept,
+       sum(CASE WHEN ended_at IS NULL THEN 1 ELSE 0 END) AS running
+FROM agents WHERE retired_at IS NULL
+GROUP BY environment_id, role, profile
+"""

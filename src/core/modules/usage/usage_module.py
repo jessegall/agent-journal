@@ -1,5 +1,6 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.usage.models.agent_listing import AgentListing
+from core.modules.usage.models.agent_counts import AgentCounts
 from core.modules.usage.models.agent_filter_options_view import AgentFilterOptionsView
 from core.modules.usage.commands.agent_cards.agent_cards_subcommand import AgentCardsSubcommand
 from core.modules.usage.commands.agent_limits.agent_limits_subcommand import AgentLimitsSubcommand
@@ -35,7 +36,7 @@ class UsageModule(Module):
     dependencies = ["journal.core.agents", "journal.core.environments", "journal.core.tasks", "journal.core.questions", "journal.core.drivers", "journal.core.messages", "journal.core.waits", "journal.core.plans", "journal.core.processes"]
     models = [ModelDeclaration(Statistic, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
     migrations = [StatisticsTableMigration]
-    views = [AgentCard, AgentListing, AgentFilterOptionsView]
+    views = [AgentCard, AgentListing, AgentFilterOptionsView, AgentCounts]
     listeners = [EndedAgentStatusListener]
     moves = [StatisticsMove]
     subcommands = [AgentLimitsSubcommand, AgentCardsSubcommand, UsageAgentsSubcommand, UsageFitnessSubcommand, UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, UsageAgentSubcommand, StatisticListSubcommand]

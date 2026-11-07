@@ -33,15 +33,15 @@ class WorkContextMessages:
                     JOIN messages m ON m.id = child.parent_id AND m.environment_id = ?
                     WHERE context_walk.depth + 1 < ? {excluded}
                 UNION SELECT m.id, context_walk.depth + 1, 0 FROM context_walk
-                    JOIN messages m ON m.parent_id = context_walk.id AND m.environment_id = ?
+                    CROSS JOIN messages m ON m.parent_id = context_walk.id AND m.environment_id = ?
                     WHERE context_walk.depth + 1 < ? {excluded}
                 UNION SELECT m.id, context_walk.depth + 1, context_walk.ancestor FROM context_walk
-                    JOIN links l ON l.source_model = 'message' AND l.source_id = context_walk.id
+                    CROSS JOIN links l ON l.source_model = 'message' AND l.source_id = context_walk.id
                         AND l.target_model = 'message' AND l.link_type = 'comments_on'
                     JOIN messages m ON m.id = l.target_id AND m.environment_id = ?
                     WHERE context_walk.depth + 1 < ? {excluded}
                 UNION SELECT m.id, context_walk.depth + 1, 0 FROM context_walk
-                    JOIN links l ON l.target_model = 'message' AND l.target_id = context_walk.id
+                    CROSS JOIN links l ON l.target_model = 'message' AND l.target_id = context_walk.id
                         AND l.source_model = 'message' AND l.link_type = 'comments_on'
                     JOIN messages m ON m.id = l.source_id AND m.environment_id = ?
                     WHERE context_walk.depth + 1 < ? {excluded}

@@ -2,6 +2,7 @@ from pathlib import Path
 
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.modules.agents.models.agent import Agent
+from core.base.query.conditions.among import Among
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.environments.support.environment_rows import EnvironmentRows
@@ -14,6 +15,26 @@ class WorkerFolders(AgentFolders):
     def __init__(self, agents: AgentRows, environments: EnvironmentRows, worktrees: WorktreeQuery) -> None:
         super().__init__(agents, environments)
         self.worktrees = worktrees
+
+    def resume_locations(self, agents: tuple[Agent, ...]) -> dict[int, tuple[bool, Path]]:
+        parents = {agent.parent_id: self.agents.find(agent.parent_id) for agent in agents if agent.parent_id is not None}
+        ids = tuple({agent.id for agent in agents} | set(parents))
+        worktrees = self.worktrees.with_removed().matching(Among("session_agent_id", ids)).oldest().all_rows()
+        latest = {worktree.session_agent_id: worktree for worktree in worktrees}
+        active = {worktree.session_agent_id: worktree for worktree in worktrees if worktree.removed_at is None}
+        locations = {}
+        for agent in agents:
+            parent = parents.get(agent.parent_id)
+            available = parent is None or parent.role != AgentRole.WORKER or parent.id in active
+            worktree = latest.get(agent.id)
+            if worktree is not None:
+                folder = Path(worktree.folder)
+            elif parent is not None and parent.id in active:
+                folder = Path(active[parent.id].folder)
+            else:
+                folder = Path(self.environments.find(agent.environment_id).folder)
+            locations[agent.id] = (available, folder)
+        return locations
 
     def has_folder(self, agent: Agent) -> bool:
         parent = self.agents.find(agent.parent_id) if agent.parent_id is not None else None
