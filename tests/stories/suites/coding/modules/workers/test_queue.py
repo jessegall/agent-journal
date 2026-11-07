@@ -333,3 +333,16 @@ def test_a_worker_waiting_for_tests_or_merge_is_not_reported_as_stopped(new_stor
     story.advance(timedelta(minutes=20))
     story.tick("s-1")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")
+
+
+def test_a_queued_proof_whose_runner_never_started_is_launched_again_and_counts(new_story, monkeypatch):
+    from suites.coding.modules.workers.ticks.unlaunched_worker_tests import UnlaunchedWorkerTests
+    story, _, _, started = queued_story(new_story, monkeypatch)
+    expect_answers(started, 1)
+    story.advance(timedelta(seconds=40))
+    UnlaunchedWorkerTests()(story.container)
+    expect_answers(started, 2)
+    expect_answers(set(started), 1)
+    story.expect_text("proof show 1", "state: running", actor=story.agent)
+    ended(story, started[0], 0)
+    story.expect_text("proof show 1", "state: checked", actor=story.agent)
