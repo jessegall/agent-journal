@@ -4,6 +4,7 @@ from core.base.container import Container
 from core.base.module.performance_tools import PerformanceTools
 from core.base.repository.stale_row_error import StaleRowError
 from core.base.scope.scopes import Scopes
+from core.base.database.points import Points
 from core.modules.developer.support.slow_tick_tool import SlowTickTool, TICK_LIMIT_POINTS
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
 from core.modules.processes.models.process import Process
@@ -31,7 +32,7 @@ class OutputReading:
         has_read = self.read(container)
         cost = tools.cost(started)
         if cost is not None:
-            self.warn_if_slow(container, cost.total)
+            self.warn_if_slow(container, cost)
         return has_read
 
     def read(self, container: Container) -> bool:
@@ -54,7 +55,8 @@ class OutputReading:
             except StaleRowError:
                 container.get(Bus).run(ReadNewOutput(process.id), Actor.core(), environment_id=process.environment_id)
 
-    def warn_if_slow(self, container: Container, points: int) -> None:
+    def warn_if_slow(self, container: Container, cost: Points) -> None:
+        points = cost.total
         if points <= TICK_LIMIT_POINTS:
             self.last_warned_points = 0
             self.ticks_since_warning = 0
@@ -62,6 +64,6 @@ class OutputReading:
         self.ticks_since_warning += 1
         if points <= self.last_warned_points and self.ticks_since_warning < WARNING_REPEAT_TICKS:
             return
-        if container.get(PerformanceTools).run(SlowTickTool, points):
+        if container.get(PerformanceTools).run(SlowTickTool, points, cost.line()):
             self.last_warned_points = points
             self.ticks_since_warning = 0

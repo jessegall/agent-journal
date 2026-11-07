@@ -49,6 +49,10 @@ func main() {
 	program, root := os.Args[1], os.Args[2]
 	folder, _ := os.Getwd()
 	context, skip := hookContext(os.Getenv, root, folder, os.Getpid(), started)
+	if Panicking(root, context.Role) {
+		NotePanicBypass(root, program)
+		os.Exit(0)
+	}
 	if skip {
 		os.Exit(projectHooksOnly(program, root, os.Stdin, os.Stdout, os.Stderr))
 	}

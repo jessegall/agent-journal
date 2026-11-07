@@ -1,3 +1,4 @@
+from core.base.driver.command_category import CommandCategory
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.duration import Duration
@@ -39,7 +40,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
         process = self.repository.save(Process(session_agent_id=agent.id, hook_call_id=command.hook_call_id, creator_id=context.actor.id,
                                                line=command.line, folder=command.folder, shell=command.shell, category=command.category,
                                                limit_seconds=command.limit_seconds, is_full_test_run=command.is_full_test_run,
-                                               queued_at=context.timestamp, is_queue_run=bool(command.parts) and all(part.category.is_long_running for part in command.parts),
+                                               queued_at=context.timestamp, is_queue_run=any(part.category.is_queued for part in command.parts) and all(part.category.is_queued or part.category is CommandCategory.JOURNAL for part in command.parts),
                                                owner_agent_id=command.owner_agent_id, task_id=command.task_id, timeout_seconds=min(timeouts, default=None)), context)
         parts: list[ProcessPart] = []
         for position, spec in enumerate(command.parts, 1):
