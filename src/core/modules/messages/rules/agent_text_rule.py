@@ -21,6 +21,6 @@ class AgentTextRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         text = hook.event.displayed_text
-        if not text or self.texts.is_held_after_reply(hook.agent_id, hook.timestamp) or self.texts.is_acknowledgement(hook.agent_id, text, hook.timestamp):
+        if not text or self.texts.is_held_after_reply(hook.agent_id, text, hook.timestamp) or self.texts.is_acknowledgement(hook.agent_id, text, hook.timestamp):
             return RuleAnswer.allowed()
         return RuleAnswer.allowed().running(SendMessage(text))

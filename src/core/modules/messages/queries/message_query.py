@@ -33,6 +33,9 @@ class MessageQuery(Query[Message]):
     def latest_reply(self, creator_id: int, start_at: Timestamp, end_at: Timestamp) -> Message | None:
         return self.agent_messages().filter(creator_id=creator_id).matching(HasValue("parent_id")).matching(Minimum("created_at", start_at.text)).matching(Maximum("created_at", end_at.text)).newest().first()
 
+    def replies_between(self, creator_id: int, start_at: Timestamp, end_at: Timestamp) -> tuple[Message, ...]:
+        return tuple(self.agent_messages().filter(creator_id=creator_id).matching(HasValue("parent_id")).matching(Minimum("created_at", start_at.text)).matching(Maximum("created_at", end_at.text)).oldest().all_rows())
+
     def has_text_after(self, creator_id: int, text: str, cutoff_at: Timestamp) -> bool:
         return self.filter(creator_id=creator_id, text=text).matching(Minimum("created_at", cutoff_at.text)).exists()
 
