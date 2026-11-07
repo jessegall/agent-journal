@@ -3,19 +3,31 @@ import {createApp, h, nextTick} from "vue";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
 import WorkMode from "../../suites/coding/web/src/WorkMode.vue";
 import {settle as settled} from "./support/windowContext.js";
+import {context as windowContext} from "./support/windowContext.js";
+
+const KEYS = {
+    mode: {line: "suite current {environment}", events: ["setting.*"]},
+    auto: {line: "setting show journal.suites.coding.auto-mode", events: ["setting.*"]},
+    dispatches: {line: "setting show journal.suites.coding.workers.builder-dispatches-workers", tab: "settings", events: ["setting.*"]},
+    merger: {line: "setting show journal.suites.coding.workers.merger-on", tab: "settings", events: ["setting.*"]},
+    bars: {line: "usage bars", loading: "requested"},
+};
 
 const mounted = [];
-afterEach(() => mounted.splice(0).forEach((element) => element.remove()));
+afterEach(() => mounted.splice(0).forEach(({app, element}) => { app.unmount(); element.remove(); }));
 
 async function mount({driver = "coding.builder", values = {}, follow = () => {}} = {}) {
     const runs = [];
     const opened = [];
     const context = {
+        ...windowContext({}, null, KEYS),
         environment: "main",
         read: async (line) => {
+            context.reads.push(line);
             if (line.startsWith("suite current")) return {ok: true, value: {suite: "coding", drivers: `main: ${driver}, worker: coding.worker`}};
+            if (line.startsWith("usage bars")) return {ok: true, value: {task_id: null, helpers: 0}};
             const key = line.split(" ")[2];
-            return {ok: true, value: {value: values[key]}};
+            return {ok: true, value: {value: values[key] ?? true}};
         },
         run: async (line) => {
             runs.push(line);
@@ -27,8 +39,9 @@ async function mount({driver = "coding.builder", values = {}, follow = () => {}}
     };
     const element = document.createElement("div");
     document.body.append(element);
-    mounted.push(element);
-    createApp({setup: () => () => h(WorkMode), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
+    const app = createApp({setup: () => () => h(WorkMode), provide: {[WINDOW_CONTEXT]: context}});
+    mounted.push({app, element});
+    app.mount(element);
     await settled();
     return {element, runs, opened, context};
 }
@@ -57,13 +70,13 @@ test("the settings menu has the merger's switch only while the builder sends wor
 
 test("opening the menu reads its remaining settings for this environment", async () => {
     const {element, context} = await mount();
+    expect(context.reads).toEqual(["suite current main", "setting show journal.suites.coding.auto-mode"]);
     const reads = [];
     const read = context.read;
     context.read = async (line) => { reads.push(line); return read(line); };
     element.querySelector("[data-work-settings]").click();
     await settled();
-    expect(reads).toContain("setting show journal.suites.coding.auto-mode --environment main");
-    expect(reads).toContain("setting show journal.suites.coding.workers.builder-dispatches-workers --environment main");
+    expect(reads).toEqual(["setting show journal.suites.coding.workers.builder-dispatches-workers", "setting show journal.suites.coding.workers.merger-on"]);
     expect(reads.some((line) => line.includes("worker-run-limit"))).toBe(false);
 });
 
@@ -75,6 +88,7 @@ test("a setting event refreshes the mode menu settings", async () => {
     await settled();
     values["journal.suites.coding.workers.builder-dispatches-workers"] = false;
     followed.find((one) => one.patterns.includes("setting.*")).handler({event: "setting.update"});
+    await new Promise((resolve) => setTimeout(resolve, 60));
     await settled();
     expect(element.querySelector("[data-work-menu] [role=switch]").getAttribute("aria-checked")).toBe("false");
 });

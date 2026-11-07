@@ -1,150 +1,150 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-2d6f7e79dc51")) { const style = document.createElement("style"); style.id = "window-styles-2d6f7e79dc51"; style.textContent = ".file-feed[data-v-8b399261]{display:flex;flex:1;flex-direction:column;min-height:0}.file-feed-older[data-v-8b399261]{align-self:flex-start;margin:0 0 6px;padding:2px 8px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.file-feed-older[data-v-8b399261]:hover{background:var(--hover);color:var(--text)}.main[data-v-54b1097d]{flex:1}.note[data-v-54b1097d]{color:var(--text-3);font-size:12px}.feed-bar-lines[data-v-db39481b]{display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding:6px 10px;font-size:13px}.file-feed[data-v-56c0605f]{display:flex;flex-direction:column;height:100%;min-height:0;container-type:inline-size}.file-feed-flow[data-v-56c0605f]{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;padding:12px}.file-feed.flush .file-feed-flow[data-v-56c0605f]{gap:0;padding:0}.file-feed-failure[data-v-56c0605f]{padding:8px 12px;color:var(--danger)}.files[data-v-53725006]{display:flex;flex-direction:column;height:100%;min-height:0}.files-bar[data-v-53725006]{flex-wrap:wrap;gap:4px}.files-body[data-v-53725006]{display:grid;flex:1;grid-template-columns:minmax(220px,1fr) 3fr;min-height:0}.files-list[data-v-53725006]{overflow-y:auto;padding:6px;border-right:1px solid var(--border)}.files-row[data-v-53725006]{display:flex;gap:8px;align-items:center;width:100%;padding:4px 8px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;font-size:13px;text-align:left;cursor:pointer}.files-row[data-v-53725006]:hover,.files-row.on[data-v-53725006]{background:var(--hover)}.files-name[data-v-53725006]{overflow:hidden;min-width:0;text-overflow:ellipsis;white-space:nowrap}.files-reader[data-v-53725006]{overflow:auto;padding:14px 18px}.files-path[data-v-53725006]{margin:0 0 10px;font-size:14px;font-weight:600}.files-text[data-v-53725006]{margin:0;font-family:var(--mono, monospace);font-size:12.5px;line-height:1.5}.files-line[data-v-53725006]{display:block;white-space:pre}.files-line.target[data-v-53725006]{background:var(--hover)}.files-number[data-v-53725006]{display:inline-block;width:44px;margin-right:12px;color:var(--text-3);text-align:right;-webkit-user-select:none;user-select:none}.files-note[data-v-53725006]{margin:6px 8px;color:var(--text-2);font-size:13px}.git[data-v-499ce3dc]{display:flex;flex-direction:column;gap:24px;padding:24px 28px}.part[data-v-499ce3dc]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}h3[data-v-499ce3dc]{margin:0;font-size:13px;font-weight:600}.row[data-v-499ce3dc]{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;width:100%;font-size:13px}.row.current .name[data-v-499ce3dc]{font-weight:600}.name[data-v-499ce3dc],.subject[data-v-499ce3dc]{min-width:0;overflow-wrap:anywhere}.subject[data-v-499ce3dc]{flex:1}.sha[data-v-499ce3dc],.fact[data-v-499ce3dc]{color:var(--text-3);font-size:12px}.sha[data-v-499ce3dc]{font-family:var(--font-mono, ui-monospace, monospace)}.fact.failed[data-v-499ce3dc]{color:var(--danger)}.output-lines[data-v-c2fb1783]{overflow:auto}.output-follow[data-v-c2fb1783]{position:sticky;bottom:8px;display:block;width:fit-content;margin-left:auto;padding:3px 10px;border:1px solid var(--border-2);border-radius:999px;background:var(--raised);color:var(--text);font:inherit;font-size:11.5px;cursor:pointer;-webkit-user-select:none;user-select:none}.output-follow[data-v-c2fb1783]:hover{border-color:var(--accent)}.terminal-output[data-v-9b455f08]{max-height:240px;margin:4px 0 8px 18px;color:var(--text-3);white-space:pre-wrap;overflow-wrap:anywhere}.terminal[data-v-cc873736]{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--code-bg)}.terminal[data-v-cc873736] .terminal-body{flex:1;min-height:0;margin:0;padding:8px 12px;overflow:auto;color:var(--text-1);font-family:var(--font-mono, ui-monospace, monospace);font-size:12px;line-height:1.45}.terminal-row[data-v-cc873736]{display:flex;gap:7px;align-items:baseline}.terminal-mark[data-v-cc873736],.terminal-state[data-v-cc873736]{flex:none;color:var(--text-3)}.terminal-row.refused .terminal-text[data-v-cc873736],.terminal-row.refused .terminal-state[data-v-cc873736]{color:var(--danger)}.terminal-text[data-v-cc873736]{min-width:0;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.terminal-text.open[data-v-cc873736]{overflow-wrap:anywhere;white-space:pre-wrap}.terminal-run[data-v-cc873736]{display:flex;align-items:center;gap:8px;padding:6px 12px;border-top:1px solid var(--border);font-family:var(--font-mono, ui-monospace, monospace);font-size:12px}.terminal-prompt[data-v-cc873736]{color:var(--text-3)}.terminal-input[data-v-cc873736]{flex:1;min-width:0;border:0;outline:0;background:transparent;color:inherit;font:inherit}.terminal-failure[data-v-cc873736]{padding:8px 12px;color:var(--text-3)}.agentset[data-v-5e189437]{position:relative;display:flex;align-items:center;gap:10px;padding:3px 4px 3px 8px;border:1px solid var(--border-2);border-radius:8px}.agentset-settings[data-v-5e189437]{display:inline-flex;align-items:center;padding:3px 5px;border:0;border-radius:5px;background:none;color:var(--text-2);cursor:pointer}.agentset-settings[data-v-5e189437]:hover,.agentset-settings[aria-expanded=true][data-v-5e189437]{background:var(--hover);color:var(--text)}.agentset-menu[data-v-5e189437]{position:absolute;top:calc(100% + 8px);right:0;z-index:40;display:flex;flex-direction:column;gap:10px;width:260px;padding:12px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised);box-shadow:0 12px 32px #00000073}.agentset-row[data-v-5e189437]{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--text-2);font-size:12.5px}.agentset-failure[data-v-5e189437]{margin:0;color:var(--danger);font-size:12px}.agentset-ask[data-v-5e189437]{margin:0 0 8px;font-size:13px}.agentset-ask-buttons[data-v-5e189437]{display:flex;justify-content:flex-end;gap:8px}\n"; document.head.appendChild(style); }
-import { ref as s, onUnmounted as O, openBlock as g, createBlock as N, unref as u, withCtx as R, createElementVNode as a, createVNode as w, createElementBlock as h, toDisplayString as j, createCommentVNode as p, withModifiers as q } from "vue";
-import { useWindow as P, useOutside as U, WindowRoom as z, Switch as E, Segmented as G, Icon as H } from "@journal/window-kit";
-import { _ as K } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const F = {
+if (!document.getElementById("window-styles-b6e1ff8bb933")) { const style = document.createElement("style"); style.id = "window-styles-b6e1ff8bb933"; style.textContent = ".file-feed[data-v-9177a858]{display:flex;flex:1;flex-direction:column;min-height:0}.file-feed-older[data-v-9177a858]{align-self:flex-start;margin:0 0 6px;padding:2px 8px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.file-feed-older[data-v-9177a858]:hover{background:var(--hover);color:var(--text)}.main[data-v-14b3f513]{flex:1}.note[data-v-14b3f513]{color:var(--text-3);font-size:12px}.feed-bar-lines[data-v-91d6f280]{display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding:6px 10px;font-size:13px}.file-feed[data-v-664713bb]{display:flex;flex-direction:column;height:100%;min-height:0;container-type:inline-size}.file-feed-flow[data-v-664713bb]{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;padding:12px}.file-feed.flush .file-feed-flow[data-v-664713bb]{gap:0;padding:0}.file-feed-failure[data-v-664713bb]{padding:8px 12px;color:var(--danger)}.files[data-v-6331643f]{display:flex;flex-direction:column;height:100%;min-height:0}.files-bar[data-v-6331643f]{flex-wrap:wrap;gap:4px}.files-body[data-v-6331643f]{display:grid;flex:1;grid-template-columns:minmax(220px,1fr) 3fr;min-height:0}.files-list[data-v-6331643f]{overflow-y:auto;padding:6px;border-right:1px solid var(--border)}.files-row[data-v-6331643f]{display:flex;gap:8px;align-items:center;width:100%;padding:4px 8px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;font-size:13px;text-align:left;cursor:pointer}.files-row[data-v-6331643f]:hover,.files-row.on[data-v-6331643f]{background:var(--hover)}.files-name[data-v-6331643f]{overflow:hidden;min-width:0;text-overflow:ellipsis;white-space:nowrap}.files-reader[data-v-6331643f]{overflow:auto;padding:14px 18px}.files-path[data-v-6331643f]{margin:0 0 10px;font-size:14px;font-weight:600}.files-text[data-v-6331643f]{margin:0;font-family:var(--mono, monospace);font-size:12.5px;line-height:1.5}.files-line[data-v-6331643f]{display:block;white-space:pre}.files-line.target[data-v-6331643f]{background:var(--hover)}.files-number[data-v-6331643f]{display:inline-block;width:44px;margin-right:12px;color:var(--text-3);text-align:right;-webkit-user-select:none;user-select:none}.files-note[data-v-6331643f]{margin:6px 8px;color:var(--text-2);font-size:13px}.git[data-v-c8ab2a5b]{display:flex;flex-direction:column;gap:24px;padding:24px 28px}.part[data-v-c8ab2a5b]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}h3[data-v-c8ab2a5b]{margin:0;font-size:13px;font-weight:600}.row[data-v-c8ab2a5b]{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;width:100%;font-size:13px}.row.current .name[data-v-c8ab2a5b]{font-weight:600}.name[data-v-c8ab2a5b],.subject[data-v-c8ab2a5b]{min-width:0;overflow-wrap:anywhere}.subject[data-v-c8ab2a5b]{flex:1}.sha[data-v-c8ab2a5b],.fact[data-v-c8ab2a5b]{color:var(--text-3);font-size:12px}.sha[data-v-c8ab2a5b]{font-family:var(--font-mono, ui-monospace, monospace)}.fact.failed[data-v-c8ab2a5b]{color:var(--danger)}.output-lines[data-v-07980c45]{overflow:auto}.output-follow[data-v-07980c45]{position:sticky;bottom:8px;display:block;width:fit-content;margin-left:auto;padding:3px 10px;border:1px solid var(--border-2);border-radius:999px;background:var(--raised);color:var(--text);font:inherit;font-size:11.5px;cursor:pointer;-webkit-user-select:none;user-select:none}.output-follow[data-v-07980c45]:hover{border-color:var(--accent)}.terminal-output[data-v-684bbf73]{max-height:240px;margin:4px 0 8px 18px;color:var(--text-3);white-space:pre-wrap;overflow-wrap:anywhere}.terminal[data-v-6f0b24af]{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--code-bg)}.terminal[data-v-6f0b24af] .terminal-body{flex:1;min-height:0;margin:0;padding:8px 12px;overflow:auto;color:var(--text-1);font-family:var(--font-mono, ui-monospace, monospace);font-size:12px;line-height:1.45}.terminal-row[data-v-6f0b24af]{display:flex;gap:7px;align-items:baseline}.terminal-mark[data-v-6f0b24af],.terminal-state[data-v-6f0b24af]{flex:none;color:var(--text-3)}.terminal-row.refused .terminal-text[data-v-6f0b24af],.terminal-row.refused .terminal-state[data-v-6f0b24af]{color:var(--danger)}.terminal-text[data-v-6f0b24af]{min-width:0;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.terminal-text.open[data-v-6f0b24af]{overflow-wrap:anywhere;white-space:pre-wrap}.terminal-run[data-v-6f0b24af]{display:flex;align-items:center;gap:8px;padding:6px 12px;border-top:1px solid var(--border);font-family:var(--font-mono, ui-monospace, monospace);font-size:12px}.terminal-prompt[data-v-6f0b24af]{color:var(--text-3)}.terminal-input[data-v-6f0b24af]{flex:1;min-width:0;border:0;outline:0;background:transparent;color:inherit;font:inherit}.terminal-failure[data-v-6f0b24af]{padding:8px 12px;color:var(--text-3)}.agentset[data-v-248fc705]{position:relative;display:flex;align-items:center;gap:10px;padding:3px 4px 3px 8px;border:1px solid var(--border-2);border-radius:8px}.agentset-settings[data-v-248fc705]{display:inline-flex;align-items:center;padding:3px 5px;border:0;border-radius:5px;background:none;color:var(--text-2);cursor:pointer}.agentset-settings[data-v-248fc705]:hover,.agentset-settings[aria-expanded=true][data-v-248fc705]{background:var(--hover);color:var(--text)}.agentset-menu[data-v-248fc705]{position:absolute;top:calc(100% + 8px);right:0;z-index:40;display:flex;flex-direction:column;gap:10px;width:260px;padding:12px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised);box-shadow:0 12px 32px #00000073}.agentset-row[data-v-248fc705]{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--text-2);font-size:12.5px}.agentset-failure[data-v-248fc705]{margin:0;color:var(--danger);font-size:12px}.agentset-ask[data-v-248fc705]{margin:0 0 8px;font-size:13px}.agentset-ask-buttons[data-v-248fc705]{display:flex;justify-content:flex-end;gap:8px}\n"; document.head.appendChild(style); }
+import { ref as a, watch as y, onUnmounted as O, openBlock as v, createBlock as I, unref as u, withCtx as N, createElementVNode as s, createVNode as k, createElementBlock as p, toDisplayString as j, createCommentVNode as w, withModifiers as R } from "vue";
+import { useWindow as V, useOutside as q, WindowRoom as P, Switch as E, Segmented as U, Icon as z } from "@journal/window-kit";
+import { _ as G } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+const H = {
   key: 0,
   class: "agentset-menu",
   role: "dialog",
   "aria-label": "Switch the work mode",
   "data-mode-ask": ""
-}, J = { class: "agentset-ask" }, Q = { class: "agentset-ask-buttons" }, X = ["aria-expanded"], Y = {
+}, K = { class: "agentset-ask" }, F = { class: "agentset-ask-buttons" }, J = ["aria-expanded"], Q = {
   key: 1,
   class: "agentset-menu",
   role: "dialog",
   "aria-label": "Work mode settings",
   "data-work-menu": ""
-}, Z = { class: "agentset-row" }, ee = {
+}, X = { class: "agentset-row" }, Y = {
   key: 0,
   class: "agentset-row",
   title: "A helper merges workers whose tests passed and passes on what the main agent must judge"
-}, te = {
+}, Z = {
   key: 1,
   class: "agentset-failure",
   role: "alert"
-}, A = "journal.suites.coding.auto-mode", B = "journal.suites.coding.workers.builder-dispatches-workers", T = "journal.suites.coding.workers.merger-on", ne = {
+}, ee = "journal.suites.coding.auto-mode", te = "journal.suites.coding.workers.builder-dispatches-workers", oe = "journal.suites.coding.workers.merger-on", ne = {
   __name: "WorkMode",
-  setup(oe) {
-    const k = [
+  setup(se) {
+    const m = [
       { key: "coding.builder", label: "Builder", tip: { title: "Builder", line: "The agent writes code and assigns work to workers when useful." } },
       { key: "coding.orchestrator", label: "Orchestrator", tip: { title: "Orchestrator", line: "The agent plans, hands the work to workers, then reviews and merges it; it writes code itself only where no worker can." } }
-    ], n = P(), m = s(k[0].key), d = s(!0), r = s(!0), c = s(!0), l = s(!1), S = s(null);
-    U(S, () => l.value = !1);
-    const f = s(""), _ = async (t) => {
-      var o;
-      const e = await n.read(`setting show ${t} --environment ${n.environment}`);
-      return e.ok ? (o = e.value) == null ? void 0 : o.value : void 0;
-    };
-    async function y() {
-      const t = await n.read(`suite current ${n.environment}`), e = t.ok ? k.find((o) => {
-        var v;
-        return String(((v = t.value) == null ? void 0 : v.drivers) ?? "").includes(o.key);
-      }) : null;
-      e && (m.value = e.key), d.value = await _(A) !== !1, r.value = await _(B) !== !1, c.value = await _(T) !== !1;
+    ], o = V();
+    o.state["mode.environment"] = o.environment;
+    const h = a(m[0].key), d = a(!0), r = a(!0), c = a(!0), l = a(!1), M = a(null);
+    q(M, () => l.value = !1);
+    const f = a("");
+    y(o.props.mode.data, (e) => {
+      if (!e) return;
+      const t = m.find((n) => e.drivers.includes(n.key));
+      t && (h.value = t.key);
+    }, { immediate: !0 });
+    for (const [e, t] of [["auto", d], ["dispatches", r], ["merger", c]])
+      y(o.props[e].data, (n) => {
+        n && (t.value = n.value);
+      }, { immediate: !0 });
+    y(l, (e) => o.state.tab = e ? "settings" : "");
+    async function S(e) {
+      const t = await o.run(e);
+      return f.value = t.ok ? "" : t.error, t.ok;
     }
-    async function M(t) {
-      const e = await n.run(t);
-      return f.value = e.ok ? "" : e.error, e.ok;
+    const i = a(null);
+    async function $(e) {
+      i.value = null, await S(`driver choose ${e} --environment ${o.environment}`) && (h.value = e);
     }
-    const i = s(null);
-    async function C(t) {
-      i.value = null, await M(`driver choose ${t} --environment ${n.environment}`) && (m.value = t);
+    async function A(e) {
+      if (e === h.value) return;
+      const t = await o.reload("bars"), n = o.props.bars, C = m.find((L) => L.key === e).label, g = t && !n.failure.value ? n.data.value : null, x = g ? g.task_id ? `Switch to ${C}? The agent is working on task ${g.task_id}.` : g.helpers ? `Switch to ${C}? The agent has ${g.helpers} helpers out.` : "" : "";
+      x ? i.value = { key: e, question: x } : await $(e);
     }
-    async function W(t) {
-      if (t === m.value) return;
-      const e = await n.read(`usage bars --environment ${n.environment}`), o = k.find((I) => I.key === t).label, v = e.ok ? e.value.task_id ? `Switch to ${o}? The agent is working on task ${e.value.task_id}.` : e.value.helpers ? `Switch to ${o}? The agent has ${e.value.helpers} helpers out.` : "" : "";
-      v ? i.value = { key: t, question: v } : await C(t);
+    const b = (e, t) => S(`setting set ${e} ${t} --environment ${o.environment}`);
+    async function _() {
+      await b(ee, !d.value) && (d.value = !d.value);
     }
-    const b = (t, e) => M(`setting set ${t} ${e} --environment ${n.environment}`);
-    async function $() {
-      await b(A, !d.value) && (d.value = !d.value);
+    globalThis.addEventListener("journal:toggle-auto", _), O(() => globalThis.removeEventListener("journal:toggle-auto", _));
+    async function B() {
+      await b(te, !r.value) && (r.value = !r.value);
     }
-    window.addEventListener("journal:toggle-auto", $), O(() => window.removeEventListener("journal:toggle-auto", $));
-    async function D() {
-      await b(B, !r.value) && (r.value = !r.value);
+    async function W() {
+      await b(oe, !c.value) && (c.value = !c.value);
     }
-    async function L() {
-      await b(T, !c.value) && (c.value = !c.value);
+    function D() {
+      l.value = !l.value;
     }
-    n.follow(["setting.*"], y);
-    async function V() {
-      l.value = !l.value, l.value && await y();
-    }
-    const x = (t) => t.key === "Escape" && (l.value = !1);
-    return window.addEventListener("keydown", x), O(() => window.removeEventListener("keydown", x)), y(), (t, e) => (g(), N(u(z), null, {
-      default: R(() => [
-        a("span", {
+    const T = (e) => e.key === "Escape" && (l.value = !1);
+    return globalThis.addEventListener("keydown", T), O(() => globalThis.removeEventListener("keydown", T)), (e, t) => (v(), I(u(P), null, {
+      default: N(() => [
+        s("span", {
           ref_key: "root",
-          ref: S,
+          ref: M,
           class: "agentset",
           "data-work-mode": ""
         }, [
-          w(u(E), {
+          k(u(E), {
             on: d.value,
             word: "Auto",
             title: "Auto mode: the agent is given the next open task when it stops or leaves its task",
             "data-auto-toggle": "",
-            onChange: $
+            onChange: _
           }, null, 8, ["on"]),
-          w(u(G), {
+          k(u(U), {
             class: "agentset-mode",
-            options: k,
-            value: m.value,
-            onPick: W
+            options: m,
+            value: h.value,
+            onPick: A
           }, null, 8, ["value"]),
-          i.value ? (g(), h("div", F, [
-            a("p", J, j(i.value.question), 1),
-            a("div", Q, [
-              a("button", {
+          i.value ? (v(), p("div", H, [
+            s("p", K, j(i.value.question), 1),
+            s("div", F, [
+              s("button", {
                 type: "button",
                 "data-mode-keep": "",
-                onClick: e[0] || (e[0] = (o) => i.value = null)
+                onClick: t[0] || (t[0] = (n) => i.value = null)
               }, "Keep the mode"),
-              a("button", {
+              s("button", {
                 type: "button",
                 "data-mode-switch": "",
-                onClick: e[1] || (e[1] = (o) => C(i.value.key))
+                onClick: t[1] || (t[1] = (n) => $(i.value.key))
               }, "Switch")
             ])
-          ])) : p("", !0),
-          a("button", {
+          ])) : w("", !0),
+          s("button", {
             type: "button",
             class: "agentset-settings",
             "data-work-settings": "",
             title: "Work mode settings",
             "aria-expanded": l.value,
-            onClick: q(V, ["stop"])
+            onClick: R(D, ["stop"])
           }, [
-            w(u(H), {
+            k(u(z), {
               name: "caret",
               size: 12
             })
-          ], 8, X),
-          l.value ? (g(), h("div", Y, [
-            a("label", Z, [
-              e[2] || (e[2] = a("span", null, "Builder sends workers", -1)),
-              w(u(E), {
+          ], 8, J),
+          l.value ? (v(), p("div", Q, [
+            s("label", X, [
+              t[2] || (t[2] = s("span", null, "Builder sends workers", -1)),
+              k(u(E), {
                 on: r.value,
-                onChange: D
+                onChange: B
               }, null, 8, ["on"])
             ]),
-            r.value ? (g(), h("label", ee, [
-              e[3] || (e[3] = a("span", null, "Merger takes in workers", -1)),
-              w(u(E), {
+            r.value ? (v(), p("label", Y, [
+              t[3] || (t[3] = s("span", null, "Merger takes in workers", -1)),
+              k(u(E), {
                 on: c.value,
                 "data-merger-toggle": "",
-                onChange: L
+                onChange: W
               }, null, 8, ["on"])
-            ])) : p("", !0),
-            f.value ? (g(), h("p", te, j(f.value), 1)) : p("", !0)
-          ])) : p("", !0)
+            ])) : w("", !0),
+            f.value ? (v(), p("p", Z, j(f.value), 1)) : w("", !0)
+          ])) : w("", !0)
         ], 512)
       ]),
       _: 1
     }));
   }
-}, re = /* @__PURE__ */ K(ne, [["__scopeId", "data-v-5e189437"]]);
+}, ie = /* @__PURE__ */ G(ne, [["__scopeId", "data-v-248fc705"]]);
 export {
-  re as default
+  ie as default
 };
