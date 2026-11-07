@@ -62,4 +62,4 @@ def test_raw_agent_text_is_read_by_its_row_number_on_a_hook_and_in_a_terminal(ne
     with story.container.get(Database).transaction():
         next_row = nudger.send_text(story.agent.id, "Another private instruction", "sample.raw", context)
     story.container.get(LineTyping).enter_line(next_row, Actor.core())
-    story.expect_rows(terminal_lines == [f"[journal] agent-line:{next_row.id}: journal agent-line show {next_row.id}"])
+    story.expect_rows(terminal_lines == [f"[journal] agent-line:{next_row.id}"])

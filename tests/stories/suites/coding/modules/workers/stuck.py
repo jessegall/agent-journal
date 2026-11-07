@@ -33,7 +33,7 @@ def test_a_worker_that_stops_before_delivering_is_refused_every_time(new_story):
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
     for _ in range(STOP_REFUSAL_COUNT + 2):
-        story.expect_hook_refusal(session, HookSamples.stop(), "if you cannot go on: journal wait stuck")
+        story.expect_hook_refusal(session, HookSamples.stop(), "if you cannot go on, say you are stuck and why")
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
 
 
@@ -87,7 +87,7 @@ def test_a_stuck_worker_tells_its_main_agent_at_once_and_shows_a_mark_in_the_mai
     last_reply(tmp_path, worker_session(story, worker), "The build tool is gone from the path")
     story.expect_success('wait stuck "the build tool is missing"', actor=worker)
     story.run_listeners()
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} is stuck on task:1, wait:", f"journal worker send {worker.id}")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} is stuck on task:1, wait:", "send it a job")
     story.expect_text("chat-mark list --environment 1", f"Worker {worker.id} is stuck: the build tool is missing")
     story.expect_text(f"chat-mark show {stop_mark(story, 'help request')}", "Tasks left: task 1", "Task 1: ", "Last words: The build tool is gone from the path", f"target_id: {worker.id}", "outcome: warned")
     story.expect_absent(f"chat-mark show {stop_mark(story, 'help request')}", "agent_id:")
@@ -180,7 +180,7 @@ def test_a_worker_that_keeps_ending_is_named_to_the_main_agent(new_story, monkey
     story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} ended with task:1 left: journal worker send {worker.id}")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} ended with task:1 left: send it a job, or release it")
 
 
 def test_a_worker_that_ends_with_many_tasks_left_gives_the_main_agent_one_line(new_story, monkeypatch):

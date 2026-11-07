@@ -64,7 +64,7 @@ def expect_helper_refusal(story: Story, text: str) -> None:
 
 
 def test_an_unknown_build_is_stopped_and_told_how_to_register_it(unsaved_hook):
-    unsaved_hook.expect_denied("npm run build 2>&1 | tail -5", 'journal alias add <name> "<command>" --category "build"')
+    unsaved_hook.expect_denied("npm run build 2>&1 | tail -5", 'save this command as an alias of category build')
 
 
 def test_a_skip_at_the_head_of_a_line_lets_it_run_as_written(unsaved_hook):
@@ -76,7 +76,7 @@ def test_a_saved_build_refuses_the_command_written_out(saved_hook):
 
 
 def test_a_build_written_another_way_is_told_the_saved_builds(saved_hook):
-    saved_hook.expect_denied("make all", 'use a saved build with --tail, --head or --cut: journal alias list names them')
+    saved_hook.expect_denied("make all", 'use a saved build with --tail, --head or --cut')
 
 
 def test_a_test_or_build_is_refused_beside_any_other_command(saved_hook):
@@ -95,7 +95,7 @@ def test_a_skip_is_refused_when_a_command_of_that_kind_is_saved(saved_hook):
 
 def test_a_helper_is_told_to_ask_its_parent(new_story):
     story = new_story(fixture=BuilderStarted)
-    expect_helper_refusal(story, "a helper only reads: ask your parent to run journal alias add for this build")
+    expect_helper_refusal(story, "a helper only reads: ask your parent to save an alias for this build")
 
 
 def test_saving_a_build_writes_its_name_for_the_hook(new_story):

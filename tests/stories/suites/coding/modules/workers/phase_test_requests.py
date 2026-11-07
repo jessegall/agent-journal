@@ -107,7 +107,7 @@ def test_a_flagged_saved_test_alias_sends_one_request(alias_saved):
 
 def test_an_allowed_request_tells_the_worker_and_that_command_runs_once(requested):
     requested.story.expect_success(ALLOW, actor=requested.story.agent)
-    requested.story.expect_rows(any("request 1" in line and "worker-test-request show 1" in line for line in requested.worker_lines()))
+    requested.story.expect_rows(any("request 1 is allowed" in line for line in requested.worker_lines()))
     expect_reply_allowed(requested.run_test())
     expect_requests(requested, RunRequest(1, TEST_LINE, WHY, "used"))
 
@@ -138,7 +138,7 @@ def test_the_main_agent_reads_the_command_and_reason_from_the_request(on_plan):
     on_plan.run_test(asking_main(TEST_LINE, WHY))
     lines = on_plan.main_agent_lines()
     on_plan.story.expect_rows(len(lines) == 1)
-    on_plan.story.expect_rows("worker-test-request show 1" in lines[0], TEST_LINE not in lines[0], WHY not in lines[0])
+    on_plan.story.expect_rows("request:1" in lines[0], TEST_LINE not in lines[0], WHY not in lines[0])
     on_plan.story.expect_text("worker-test-request show 1", TEST_LINE, WHY, actor=on_plan.story.agent)
 
 

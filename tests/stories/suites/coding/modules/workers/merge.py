@@ -93,7 +93,7 @@ def test_a_base_branch_that_moved_with_a_clash_sends_the_task_back_to_the_worker
     story.expect_text(f"worker merge --wait {worker.id}", "clashed on cart.py", actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
     story.expect_success("worker-worktree show 1", "state: cut")
-    story.expect_text(f"agent-line list --agent {worker.id}", f"{ENVIRONMENT_BRANCH} is merged into your worktree and clashes on cart.py: settle the markers there, then journal worker deliver")
+    story.expect_text(f"agent-line list --agent {worker.id}", f"{ENVIRONMENT_BRANCH} is merged into your worktree and clashes on cart.py: settle the markers there, then deliver")
     expect_worktree_folder_repository_with(repository, worker, "cart.py", "<<<<<<<")
     repository.expect_branch_tip(repository.worker_branch(worker.id), worker_tip)
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)

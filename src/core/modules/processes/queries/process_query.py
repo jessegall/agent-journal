@@ -34,7 +34,7 @@ class ProcessQuery(Query[Process]):
     def agent(self, agent_id: int) -> Self:
         return self.filter(session_agent_id=agent_id)
 
-    def started_by(self, agent_id: int) -> Self:
+    def agent_started(self, agent_id: int) -> Self:
         return self.filter(session_agent_id=agent_id, creator_id=agent_id)
 
     def ended(self) -> Self:

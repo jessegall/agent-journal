@@ -93,7 +93,7 @@ def test_a_helper_of_a_paused_agent_cannot_resume_it(new_story):
     story = new_story(fixture=UserJoined)
     helper = Actor(story.new_row_id(f"agent start s-sub claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
-    story.expect_refusal(f"agent resume {story.agent.id}", "A person was asked in the dock", actor=helper)
+    story.expect_refusal(f"agent resume {story.agent.id}", "The main agent was asked to review this request", actor=helper)
     story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
 
 

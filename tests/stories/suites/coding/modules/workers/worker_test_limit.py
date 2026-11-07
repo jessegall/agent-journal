@@ -175,7 +175,7 @@ def test_a_listing_that_fails_shows_why_in_the_output_summary(limited_run):
     story.container.get(OutputFolder).write_count(process.id, "zsh: no such file: vitest\n", 1)
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
     lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=process.session_agent_id, source="processes.worker-test-limit").all_rows())
-    story.expect_rows(len(lines) == 1, f"journal output read {process.id} --summary" in lines[0].text)
+    story.expect_rows(len(lines) == 1, f"output {process.id} stopped" in lines[0].text)
     story.expect_text(f"output read {process.id} --summary", "no such file: vitest", actor=reader_worker(story))
 
 

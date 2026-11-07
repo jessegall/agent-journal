@@ -6,7 +6,7 @@ from tests.stories.core.base.driver.support.samples import SAMPLES
 def test_a_tool_hook_names_waiting_lines_in_order_and_marks_them_delivered(new_story):
     story = new_story(SAMPLES, fixture=LeadLinesWaiting)
     lines = story.hook("s-1", HookSamples.edit("src/cart.py")).lines
-    assert "agent-lines 1, 2, 3, 4, 5: read each with journal agent-line show <id>" in lines, lines
+    assert "agent-lines 1, 2, 3, 4, 5" in lines, lines
     story.expect_text(f"agent-line list --agent {story.agent.id} --state delivered", "line 1", "line 5")
 
 

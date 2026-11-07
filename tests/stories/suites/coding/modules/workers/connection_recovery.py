@@ -307,7 +307,7 @@ def test_a_stopped_worker_with_work_is_reported_after_fifteen_minutes_and_every_
     story, worker = recovery.story, recovery.worker
     monkeypatch.setattr(recovery, "request", lambda *_args: b"failed\n")
     story.expect_success(f"agent end {worker.id}", actor=worker)
-    line = f"worker:{worker.id} has stopped: journal worker status {worker.id}"
+    line = f"worker:{worker.id} has stopped"
     recovery.advance(14 * 60)
     story.tick("s-1")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", line)
@@ -341,7 +341,7 @@ def test_a_delivery_without_tests_passed_is_reported_as_stopped(recovery):
     story.expect_success(f"agent end {worker.id}", actor=worker)
     recovery.advance(20 * 60)
     story.tick("s-1")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped: journal worker status {worker.id}")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")
 
 
 def test_the_stopped_worker_warning_intervals_are_settings(recovery, monkeypatch):
@@ -350,7 +350,7 @@ def test_the_stopped_worker_warning_intervals_are_settings(recovery, monkeypatch
     story.expect_success("setting set journal.suites.coding.workers.idle-worker-minutes 2 --environment main", actor=story.user)
     story.expect_success("setting set journal.suites.coding.workers.idle-worker-repeat-minutes 1 --environment main", actor=story.user)
     story.expect_success(f"agent end {worker.id}", actor=worker)
-    line = f"worker:{worker.id} has stopped: journal worker status {worker.id}"
+    line = f"worker:{worker.id} has stopped"
     recovery.advance(2 * 60)
     story.tick("s-1")
     notices = story.run(f"agent-line list --agent {story.agent.id}").output_text
