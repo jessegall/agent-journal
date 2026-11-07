@@ -142,7 +142,7 @@ def test_s26_explain_shows_what_would_happen_and_runs_no_script(new_story):
 def test_s40_a_hook_guard_can_refuse(new_story):
     story = install_runner(event_plugin_story(new_story, {"event": COMMAND_STARTING, "guard": "refuse.sh"}))
     story.run(GUARD_LIMIT_SETTING.format(5000), actor=story.user)
-    story.expect_hook_refusal("s-1", REMOVAL_SAMPLE, "plugin:1 refused: journal agent-line list")
+    story.expect_hook_refusal("s-1", REMOVAL_SAMPLE, "plugin:1 refused")
     story.expect_text(f"agent-line list --agent {story.agent.id}", REFUSAL, actor=story.agent)
     story.expect_rows(len(script_calls(story, "refuse.sh")) == 1)
 

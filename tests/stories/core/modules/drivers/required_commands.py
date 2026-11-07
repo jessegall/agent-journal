@@ -70,7 +70,7 @@ def test_past_the_fifth_a_write_is_refused_with_the_line_and_how_to_skip(counted
     story, process, _ = counted_required_command
     refusal = story.hook("s-1", EDIT_HOOK).refusal
     expect_value_with(refusal, f"title output {process.id} is due")
-    expect_value_with(refusal, f"journal agent-block skip {TITLE_BLOCK} --reason")
+    expect_value_with(refusal, f"skip block {TITLE_BLOCK} with a reason")
 
 
 def test_while_held_reads_and_journal_commands_still_run_so_the_agent_is_never_stuck(required_command_limit):

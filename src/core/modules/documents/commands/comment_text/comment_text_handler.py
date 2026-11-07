@@ -33,7 +33,7 @@ class CommentTextHandler(Handler[CommentText, Message]):
             raise Refusal("give the comment's text")
         text_row = self.rows.required(command.text_model, command.row_id)
         quoted = f'"{command.quote[:QUOTE_LIMIT_CHARACTERS]}": ' if command.quote else ""
-        message = self.bus.dispatch(SendMessage(f"{quoted}{body}", commented_row=(text_row.model_name, text_row.id), is_chat_visible=command.is_chat_visible), context)
+        message = self.bus.dispatch(SendMessage(f"{quoted}{body}", commented_row=(text_row.model_name, text_row.id)), context)
         self.links.save(Link(creator_id=context.actor.id, source_model=message.model_name, source_id=message.id, target_model=text_row.model_name, target_id=text_row.id,
                                   link_type=LinkType.COMMENT), context)
         if isinstance(text_row, TextRow):

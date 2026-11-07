@@ -13,7 +13,7 @@ from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.messages.models.message import Message
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.support.message_files import MessageFiles
-from core.modules.messages.support.message_module import MESSAGES_MODULE
+from core.modules.messages.support.messages_module_name import MESSAGES_MODULE
 from core.modules.messages.support.message_targets import MessageTargets
 from core.modules.messages.support.work_sources import WorkSources
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES

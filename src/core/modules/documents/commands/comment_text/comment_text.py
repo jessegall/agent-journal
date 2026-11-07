@@ -16,4 +16,3 @@ class CommentText(Command[Message]):
     quote: str = ""
     position: int | None = None
     selection_type: CommentSelectionType = CommentSelectionType.TEXT
-    is_chat_visible: bool = True

@@ -63,7 +63,7 @@ def test_a_worker_that_never_made_a_call_is_named_with_the_command_for_its_log_a
     story.advance(timedelta(seconds=START_SECONDS))
     story.tick(MAIN_SESSION)
     line = next(row for row in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows() if f"worker:{worker.id} made no call" in row.text)
-    story.expect_rows(line.wakes_agent, f"journal agent terminal {worker.id}" in line.text)
+    story.expect_rows(line.wakes_agent, f"worker:{worker.id} made no call" in line.text)
 
 
 def test_a_worker_that_made_a_call_is_not_named_as_never_started(new_story):

@@ -31,8 +31,7 @@ class SendTemplateHandler(Handler[SendTemplate, Message]):
             raise Refusal(f"template {template.id} is not offered here", "journal template list shows those that are")
         target = self.targets.row(command.target, template, context.environment_id)
         purpose = PURPOSES.get(template.purpose, PLAIN_PURPOSE)
-        is_chat_visible = not (template.purpose == "critique" and target.model.model_name == "plan")
-        commenting = CommentText(target.model, target.id, purpose.text(template, target, command.values), is_chat_visible=is_chat_visible)
+        commenting = CommentText(target.model, target.id, purpose.text(template, target, command.values))
         message = self.bus.dispatch(commenting, context.nested(commenting))
         if purpose.move and self.has_move(target.model, purpose.move):
             moving = MoveRow(target.model.model_name, target.id, purpose.move)

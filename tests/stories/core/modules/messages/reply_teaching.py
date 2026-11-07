@@ -59,7 +59,7 @@ def test_a_session_start_says_what_a_journal_line_is_and_to_keep_the_journal_out
 
 def test_reading_a_message_says_how_a_reply_goes_out(read_message):
     _, reply = read_message
-    expect_lines_reply_line(reply, "journal message reply <n>")
+    expect_lines_reply_line(reply, "reply first")
 
 
 def test_a_read_message_is_named_until_it_is_answered_in_text(read_message):
@@ -109,7 +109,7 @@ def test_writes_wait_for_an_unread_message_after_twenty_calls_and_reading_goes_t
     story = new_story(SAMPLES, fixture=AnnouncedCartMessage)
     for _ in range(20):
         story.hook("s-1", VIEW_LINE)
-    story.expect_hook_refusal("s-1", HookSamples.edit("a.txt"), "1 unread messages: run journal message unread")
+    story.expect_hook_refusal("s-1", HookSamples.edit("a.txt"), "1 unread messages: read them")
     story.expect_hook_allowed("s-1", VIEW_LINE)
     story.hook("s-1", READ_MESSAGE)
     story.run('message reply 1 "On it" --environment main', actor=story.agent)

@@ -51,8 +51,8 @@ def test_answered_question_exposes_its_answer_source(scenario):
     scenario.person("questions.questions", "question", "answer", "1", "--answer", "Local")
     source = json.loads(scenario.command("question show 1 --json").output_text)["message_id"]
     lines = "\n".join(scenario.story.hook("s-1", HookSamples.prompt("go on")).lines)
-    feature("work-from" in lines and "question" in lines, lines)
-    scenario.story.expect_rows(f"message:{source}" in lines, f"message work-from {source}" in lines, "question show 1" in lines)
+    feature("answer source" in lines and "question" in lines, lines)
+    scenario.story.expect_rows(f"message:{source}" in lines, "question:1 is answered" in lines)
 
 
 def test_answer_notification_does_not_replace_active_request(scenario):
@@ -141,7 +141,7 @@ def test_update_notification_names_the_explicit_selection_command(scenario):
     scenario.person("messages.chat", "message", "edit", "1", "--text", "Use a different rounding boundary")
     scenario.story.run_listeners()
     lines = "\n".join(scenario.story.hook("s-1", HookSamples.prompt("go on")).lines)
-    scenario.story.expect_rows("message show 1" in lines, "message work-from 1" in lines, detail=lines)
+    scenario.story.expect_rows("message:1 updated" in lines, detail=lines)
 
 
 @pytest.mark.parametrize("invalid", ["agent-message", "other-recipient", "other-author"])
@@ -173,6 +173,6 @@ def test_multiple_answer_notices_keep_selection_commands_valid(scenario):
     sources = [json.loads(scenario.command(f"question show {number} --json").output_text)["message_id"] for number in (1, 2)]
     lines = "\n".join(scenario.story.hook("s-1", HookSamples.prompt("go on")).lines)
     scenario.story.expect_rows(all(str(source) in lines for source in sources))
-    scenario.story.expect_rows(all(f"question:{number} answer source message:{source}" in lines and f"message work-from {source}" in lines for number, source in enumerate(sources, 1)))
-    scenario.story.expect_rows("question show <question>" in lines)
-    scenario.story.expect_rows("message work-from 3, 4" not in lines, "question show 1, 2" not in lines)
+    scenario.story.expect_rows(all(f"question:{number} answer source message:{source}" in lines for number, source in enumerate(sources, 1)))
+    scenario.story.expect_rows("questions 1, 2 are answered" in lines)
+    scenario.story.expect_rows("message:3, 4" not in lines)

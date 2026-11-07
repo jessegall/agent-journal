@@ -8,6 +8,7 @@ from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
+from core.modules.plan_reviews.commands.plan_review_tip.plan_review_tip_subcommand import PlanReviewTipSubcommand
 from core.modules.plan_reviews.commands.plan_rounds.plan_rounds_subcommand import PlanRoundsSubcommand
 from core.modules.plan_reviews.listeners.critique_report_listener import CritiqueReportListener
 from core.modules.plan_reviews.support.review_state import REVIEW_STATE
@@ -25,7 +26,7 @@ class PlanReviewsModule(Module):
     skills = [SkillDeclaration("journal-plan-review-applying", "Working a critique of a plan into the plan is a light job; read it before you work a report of reviews into a plan or end its review", keywords=("review", "critique"), commands=tuple(["plan reviewed"]))]
     added_states = tuple([REVIEW_STATE])
     listeners = [CritiqueReportListener]
-    subcommands = [PlanRoundsSubcommand]
+    subcommands = [PlanRoundsSubcommand, PlanReviewTipSubcommand]
     buttons = [ButtonDeclaration("plan_reviews.critique", ("dock.plans.waiting", "row.plan"), "Ask for a critique of the plan",
                                  "template send {template} --on=plan:{row_id} --set=agents={agents} --set=size={size}", icon="review",
                                  condition=ButtonCondition("state", tuple(["ready"])), tip="Reviewers read it before you approve",

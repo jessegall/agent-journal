@@ -3,15 +3,15 @@ import Folded from "../kit/Folded.vue";
 import ProgressBar from "../kit/ProgressBar.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {delegationWord} from "../domain/plans.js";
-import {stateLabel, stateLook} from "@journal/window-kit";
+import {StateBadge, stateLook} from "@journal/window-kit";
 
-defineProps({plan: {type: Object, required: true}});
+defineProps({plan: {type: Object, required: true}, read: {type: Function, default: null}});
 </script>
 
 <template>
     <div class="plan-details" data-plan-details>
         <div class="state-line">
-            <span :class="['status', stateLook('plan', plan.state)]" data-plan-status>{{ stateLabel("plan", plan.state) }}</span>
+            <StateBadge type="plan" :state="plan.state" :row-id="plan.id" :read="read" :class="['status', stateLook('plan', plan.state)]" data-plan-status />
             <template v-if="plan.current_phase">
                 <span class="phase-count">Phase {{ plan.current_phase }} of {{ plan.phases.length }}</span>
             </template>

@@ -52,6 +52,7 @@ TASK_BLOCK_REVIEWS_SELECT = (
     " max(coalesce((SELECT max(created_at) FROM task_block_renewals WHERE task_id = tasks.id), tasks.updated_at),"
     " coalesce((SELECT max(last_delivered_at) FROM nudge_records WHERE session_agent_id = agents.id"
     " AND key = 'tasks.block_review.' || tasks.id), '')) AS reviewed_at,"
+    " max(tasks.updated_at, coalesce((SELECT max(created_at) FROM task_block_renewals WHERE task_id = tasks.id), '')) AS moved_at,"
     f" {USER_TASK_WAIT} AS user_wait,"
     f" {AUTOMATIC_TASK_WAIT} AS automatic"
     " FROM tasks JOIN agents ON agents.environment_id = tasks.environment_id AND agents.role = 'main'"
