@@ -32,7 +32,11 @@ class CheckShowSubcommand(LibraryAwareShow, ReadSubcommand[Check | LibraryReadin
         if isinstance(value, LibraryReading):
             self.write_library(value, output)
             return
-        super().write_output(value, output)
+        if isinstance(value, Check):
+            values = {**output.values(value), "state": value.state}
+            output.write("\n".join(f"{column}: {shown}" for column, shown in values.items() if shown not in (None, {}, "")), values)
+        else:
+            super().write_output(value, output)
         if isinstance(value, Check) and not output.json_output:
             for line in self.links.lines(value.model_name, value.id):
                 output.line(line)

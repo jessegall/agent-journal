@@ -82,6 +82,10 @@ from core.modules.plans.bindings.plan_row_authors import PlanRowAuthors
 
 PLAN_COMMANDS = (ApprovePlan, BlockPlan, CancelPlan, ClosePlan, ReworkPlan, StartPlan)
 
+from core.modules.plans.support.plan_inspector import PLAN_INSPECTOR
+from core.base.viewer.skeleton_part import SkeletonPart
+from core.base.viewer.window_place import WindowPlace
+
 
 class PlansModule(Module):
     """Adds plans: a goal, its phases in order, and the tasks placed in each."""
@@ -107,7 +111,7 @@ class PlansModule(Module):
     nudges = PLAN_NUDGES
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule, PlanContextRule]
     docks = PLAN_DOCKS
-    buttons = [ButtonDeclaration("plans.approve", tuple(["row.plan"]), "Approve", "plan approve {row_id}",
+    buttons = [ButtonDeclaration("plans.approve", tuple(["row.plan"]), "Approve the plan", "plan approve {row_id}",
                                  icon="check", primary=True, condition=ButtonCondition("state", tuple(["ready"])),
                                  tip="Approve the plan; the agent starts it", menu_label="Other ways to approve",
                                  menu=tuple([ButtonMenuItem("Approve with a message", "plan approve {row_id} --message={message}",
@@ -120,6 +124,12 @@ class PlansModule(Module):
                                        WindowKey("older-open", "plan board", loading=KeyLoading.REQUESTED, arguments=["before-id"]),
                                        WindowKey("older-closed", "plan board --closed", loading=KeyLoading.REQUESTED, arguments=["before-id"]),
                                        WindowKey("plan.*", "plan show {id}", loading=KeyLoading.REQUESTED)],
-                                 tabs=[WindowTab("open", "Open", "plan board", "open_total"), WindowTab("closed", "Closed", "plan board --closed", "closed_total")])]
+                                 tabs=[WindowTab("open", "Open", "plan board", "open_total"), WindowTab("closed", "Closed", "plan board --closed", "closed_total")]),
+               WindowDeclaration("plans.plan-details", "Details", "plan-details.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.PLAN, skeleton=[SkeletonPart.line()]),
+               WindowDeclaration("plans.plan-phases", "Phases", "plan-phases.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.PLAN, skeleton=[SkeletonPart.line()]),
+               WindowDeclaration("plans.plan-timeline", "Timeline", "plan-timeline.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.PLAN, skeleton=[SkeletonPart.line()],
+                                 reads=["plan timeline"], events=["plan.*"])]
+    inspectors = [PLAN_INSPECTOR]
+
     shared_rows = [PlanSharedRows]
     seeders = [PlansSeeder]

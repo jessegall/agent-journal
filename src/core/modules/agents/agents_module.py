@@ -54,6 +54,9 @@ from core.modules.agents.commands.end_replaced_main.end_replaced_main_handler im
 from core.modules.agents.commands.record_menu_answer.record_menu_answer_handler import RecordMenuAnswerHandler
 from core.modules.agents.commands.record_menu_answer.record_menu_answer_subcommand import RecordMenuAnswerSubcommand
 from core.modules.agents.support.agent_marks import AGENT_MARKS
+from core.modules.agents.support.agent_inspector import AGENT_INSPECTOR
+from core.base.viewer.skeleton_part import SkeletonPart
+from core.base.viewer.window_place import WindowPlace
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.module.module import Module
 from core.modules.agents.migrations.m009_agent_access import AgentAccessMigration
@@ -119,7 +122,10 @@ class AgentsModule(Module):
                WindowDeclaration("agents.helpers", "Helpers", "helpers.js", WindowLoading.COMPONENT, skeleton=AGENTS_HELPERS_SKELETON, icon=WindowIcon.SUBAGENT, shows=WindowShows.SELECTED_AGENT, search=WindowSearch(AgentSearcher, "Search the agents"), reads=CARD_READS, runs=["setting set", "message send", "helper send", "helper stop", "agent retire"],
                                  events=CARD_EVENTS, tabs=CARD_TABS, keys=CARD_KEYS),
                WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, skeleton=AGENTS_TRANSCRIPT_SKELETON, icon=WindowIcon.DOCUMENT, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM,
-                                 reads=["agent transcript", "hook-call feed"], runs=["message send"], events=["hook_call.*"], keys=[WindowKey("transcript.*", "agent transcript {id}")])]
+                                 reads=["agent transcript", "hook-call feed"], runs=["message send"], events=["hook_call.*"], keys=[WindowKey("transcript.*", "agent transcript {id}")]),
+               WindowDeclaration("agents.agent-detail", "Agent", "agent-detail.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.AGENT, skeleton=[SkeletonPart.line()],
+                                 reads=["agent show", "agent list", "usage agents", "usage agent", "usage tool", "agent-skill list"], events=["agent.*"])]
+    inspectors = [AGENT_INSPECTOR]
     listeners = [MenuAnswerMarkListener, EndedAgentProgramListener]
     marks = AGENT_MARKS
     seeders = [AgentsSeeder]

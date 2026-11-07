@@ -73,3 +73,8 @@ class WindowIcon(StrEnum):
     RULES = "rules"
     QUESTIONS = "questions"
     INBOX = "inbox"
+    PAUSE = "pause"
+    RESUME = "resume"
+    START = "start"
+    RESTORE = "restore"
+    LOCK = "lock"

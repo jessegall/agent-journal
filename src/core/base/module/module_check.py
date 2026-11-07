@@ -20,6 +20,7 @@ from core.base.module.suite_check import SuiteCheck
 from core.base.module.window_check import WindowCheck
 from core.base.module.mark_check import MarkCheck
 from core.base.module.dock_check import DockCheck
+from core.base.module.inspector_check import InspectorCheck
 from core.base.module.move_check import MoveCheck
 from core.base.module.skill_check import SkillCheck
 from core.base.registry.driver_rule_entry import DriverRuleEntry
@@ -43,7 +44,7 @@ class ModuleCheck:
 
     def __init__(self, tables: Tables, suites: SuiteCheck, windows: WindowCheck, providers: ProviderCheck, marks: MarkCheck,
                  docks: DockCheck, settings: SettingCheck, skills: SkillCheck, moves: MoveCheck, templates: TemplateCheck,
-                 buttons: ButtonCheck, finder: ModuleFinder, states: StateCheck, agent_types: AgentTypeCheck, profiles: ProfileCheck) -> None:
+                 buttons: ButtonCheck, finder: ModuleFinder, states: StateCheck, agent_types: AgentTypeCheck, profiles: ProfileCheck, inspectors: InspectorCheck) -> None:
         self.tables, self.suites, self.windows, self.providers, self.marks, self.docks = tables, suites, windows, providers, marks, docks
         self.settings, self.skills, self.moves = settings, skills, moves
         self.templates = templates
@@ -51,6 +52,7 @@ class ModuleCheck:
         self.agent_types = agent_types
         self.profiles = profiles
         self.buttons, self.finder = buttons, finder
+        self.inspectors = inspectors
 
     def known_events(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         book = modules_book(modules)
@@ -75,13 +77,16 @@ class ModuleCheck:
 
     def check(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> None:
         problems = (self.duplicate_names(modules, rules) + self.lifecycle_problems(modules) + self.event_problems(modules) + self.duplicate_event_keys(modules) + self.duplicate_handlers(modules)
-                    + self.duplicate_subcommands(modules) + self.suites.problems(modules, rules) + self.windows.problems(modules, self.known_events(modules))
+                    + self.duplicate_subcommands(modules) + self.suites.problems(modules, rules) + self.windows.problems(modules, self.known_events(modules)) + self.inspectors.problems(modules, self.known_events(modules))
                     + self.providers.problems(modules) + self.marks.problems(modules) + self.docks.problems(modules) + self.settings.problems(modules)
                     + self.skills.problems(modules, self.known_events(modules)) + self.moves.problems(modules) + self.templates.problems(modules) + self.states.problems(modules)
                     + self.buttons.declared_problems(modules, frozenset(module.name for module in self.finder.default_modules()))
                     + self.agent_types.problems(modules, rules) + self.profiles.problems(modules))
         if problems:
             raise ModuleError("the modules cannot be synced: " + "; ".join(problems))
+
+    def button_warnings(self, modules: Sequence[type[Module]]) -> dict[str, str]:
+        return self.buttons.declared_warnings(modules, frozenset(module.name for module in self.finder.default_modules()))
 
     def models(self, modules: Sequence[type[Module]]) -> tuple[type[Model], ...]:
         return tuple(declaration.model for module in modules for declaration in module.models)

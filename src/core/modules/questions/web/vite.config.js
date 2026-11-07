@@ -10,6 +10,7 @@ export default windowBuild({
         "open-questions-dock": here("./src/open-questions-dock.js"),
         questions: here("./src/questions.js"),
         waiting: here("./src/waiting.js"),
+        "question-options": here("./src/question-options.js"),
     },
     outDir: here("./dist"),
 });

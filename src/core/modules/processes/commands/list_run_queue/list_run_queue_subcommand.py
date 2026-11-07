@@ -59,7 +59,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
             "limit_setting": ProcessSetting.RUN_BATCH_SIZE.key, "suite_limits": self.suite_limits(),
             "count_main_runs": main_spots, "main_spots_setting": ProcessSetting.MAIN_RUNS_USE_SLOTS.key,
             "used_slots": sum(bool(row["uses_slot"]) for row in running), "waiting_count": len(waiting),
-            "halted": self.halt.is_halted, "halt_reason": self.halt.reason, "halt_kind": self.halt.halt_type,
+            "halted": self.halt.is_halted, "halt_state": "halted" if self.halt.is_halted else "running", "halt_reason": self.halt.reason, "halt_kind": self.halt.halt_type,
             "running": running, "waiting": waiting, "recent": recent, "recent_total": query.filter(section=QueueSection.RECENT).count()}
         queue_runs = tuple(self.queue_runs.query().oldest().all_rows())
         number, size = max(1, arguments.page), min(MAX_PAGE_SIZE, max(1, arguments.limit))

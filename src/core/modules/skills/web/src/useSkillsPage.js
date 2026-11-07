@@ -84,7 +84,7 @@ export function useSkillsPage() {
     window.addEventListener("popstate", followHistory);
     onUnmounted(() => window.removeEventListener("popstate", followHistory));
     view.follow(["agent_skill.*"], coalesced(() => {if (mainAgent.value) view.reload("loaded");}, READ_RATES.openPanel));
-    if (marked.value) view.readKey(`agent-skill.${marked.value.skillId}`).then((answer) => answer.ok ? open(answer.value.skill, false) : (openFailure.value = answer.error));
+    if (marked.value) view.readKey(`agent-skill.${marked.value.skillId ?? marked.value.id}`).then((answer) => answer.ok ? open(answer.value.skill, false) : (openFailure.value = answer.error));
     else followHistory();
     return {skills, selected, selectedTriggers, triggers, requirements, mainAgent, answered, failure, busy, opened, text, openFailure, tab, draft, marked, load, open, run, requireSkill, readNow};
 }

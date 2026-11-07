@@ -1,6 +1,6 @@
 import {createApp, h} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
-import DocumentInspector from "../src/resource/document/DocumentInspector.vue";
+import DocumentBody from "../src/resource/document/DocumentBody.vue";
 import {settle} from "./support/windowContext.js";
 
 const apps = [];
@@ -30,7 +30,7 @@ async function inspector(width = 980) {
     };
     const element = document.createElement("div");
     document.body.append(element);
-    const app = createApp({render: () => h(DocumentInspector, {table: "docs", id: 4, read})});
+    const app = createApp({render: () => h(DocumentBody, {noun: "doc", id: 4, read})});
     apps.push(app);
     app.mount(element);
     await settle();

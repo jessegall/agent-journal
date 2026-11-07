@@ -1,16 +1,12 @@
 <script setup>
-import ButtonSlot from "../kit/ButtonSlot.vue";
 import Folded from "../kit/Folded.vue";
 import ProgressBar from "../kit/ProgressBar.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {delegationWord} from "../domain/plans.js";
-import {StateBadge, stateLook} from "@journal/window-kit";
-import PlanLinks from "./PlanLinks.vue";
-import PlanPhases from "./PlanPhases.vue";
-import InspectorSections from "../windows/InspectorSections.vue";
+import StateBadge from "../../kit/StateBadge.vue";
+import {stateLook} from "../domain/states.js";
 
-defineProps({plan: {type: Object, required: true}, environment: {type: String, required: true}, read: {type: Function, required: true}, readOnly: Boolean});
-const emit = defineEmits(["select", "open", "done"]);
+defineProps({plan: {type: Object, required: true}, read: {type: Function, default: null}});
 </script>
 
 <template>
@@ -39,7 +35,6 @@ const emit = defineEmits(["select", "open", "done"]);
         <template v-if="plan.delegated">
             <p class="delegation" data-plan-delegated>{{ delegationWord(plan) }}</p>
         </template>
-        <ButtonSlot name="row.plan" :row="{...plan, noun: 'plan'}" :environment="environment" :read-only="readOnly" @done="emit('done')" />
         <template v-if="plan.brief">
             <section class="part">
                 <h4>The brief</h4>
@@ -48,12 +43,6 @@ const emit = defineEmits(["select", "open", "done"]);
                 </Folded>
             </section>
         </template>
-        <section class="part">
-            <h4>Phases</h4>
-            <PlanPhases :phases="plan.phases" :current-phase="plan.current_phase" @select="emit('select', $event)" />
-        </section>
-        <PlanLinks :id="plan.id" :document-id="plan.document_id" :read="read" @open="emit('open', $event)" />
-        <InspectorSections slot-name="inspector.plan" :row="plan" />
     </div>
 </template>
 

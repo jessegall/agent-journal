@@ -53,6 +53,13 @@ A line typed into your terminal starts with `[journal]`: the journal typed it, n
 - Write a number that names a row with its type, task 3399 or plan 1032, so the chat links it.
 - Say in the chat only what the user needs to know.
 
+## Messaging an agent
+
+- `journal message send "<text>" --to agent:N` is the one way to message an agent. The receiver gets a line naming the
+  message, and a stopped receiver is woken. A main agent messages its own helpers and workers and they message it; the
+  merger and the workers and helpers under the same main agent message each other. Any other agent is refused.
+- `journal worker report` and `journal merger tell` send through it with their own checks.
+
 ## Questions
 
 A choice only the user can make is asked as a question, not written into a reply.

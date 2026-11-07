@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
+from core.base.refusal import Refusal
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.processes.commands.halt_run_queue.halt_run_queue import HaltRunQueue
 
@@ -14,7 +15,11 @@ class HaltRunQueueSubcommand(Subcommand[HaltRunQueue, str]):
     outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("reason")
+        parser.add_argument("reason", nargs="?", default="")
+        parser.add_argument("--reason", dest="reason_flag", default="", help="the reason, written as a flag so a button can fill it")
 
     def command(self, arguments: Namespace, caller: Caller) -> HaltRunQueue:
-        return HaltRunQueue(arguments.reason)
+        reason = arguments.reason or arguments.reason_flag
+        if not reason:
+            raise Refusal("a halt needs a reason", "say why with the reason or --reason")
+        return HaltRunQueue(reason)

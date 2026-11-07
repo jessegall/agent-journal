@@ -24,4 +24,4 @@ class ButtonCommandCheck:
     @staticmethod
     def declared_lines(modules: Sequence[type[Module]], shipped: set[str] | frozenset[str]) -> tuple[ButtonLine, ...]:
         return tuple(ButtonLine(module.name, action.runs, module.name in shipped) for module in modules
-                     for button in module.buttons for action in (button, *button.menu))
+                     for button in module.declared_buttons() for action in (button, *button.menu))

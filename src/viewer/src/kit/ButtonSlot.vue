@@ -24,16 +24,27 @@ const failed = computed(() => !props.readOnly && catalogue.value?.failed.value);
 const reload = () => catalogue.value.load().catch(() => {});
 const buttons = computed(() => (props.readOnly ? [] : buttonsAt(props.environment, props.name, props.row)));
 const asking = ref(null);
+const confirming = ref(null);
 const failure = ref("");
 const sending = ref(false);
-const tip = (button) => [button.from ? `From ${button.from}` : "", button.tip].filter(Boolean).join(" · ");
+const tip = (button) => [button.from ? `From ${button.from}` : "", button.tip, button.warning].filter(Boolean).join(" · ");
+const iconOf = (button) => button.icon || (button.warning ? "dot" : "");
 
-async function press(button) {
+function press(button) {
     if (sending.value || props.readOnly) return;
     if (button.fields.length) {
         asking.value = button;
         return;
     }
+    if (button.confirm) {
+        confirming.value = button;
+        return;
+    }
+    return run(button);
+}
+
+async function run(button) {
+    confirming.value = null;
     failure.value = "";
     emit("failure", "");
     sending.value = true;
@@ -51,6 +62,13 @@ async function press(button) {
         <template v-if="!waiting && failed">
             <span class="button-slot-failure" role="alert">Buttons could not be loaded.</span>
             <Btn small @click="reload">Try again</Btn>
+        </template>
+        <template v-else-if="!waiting && confirming">
+            <span class="button-slot-confirm" data-button-confirm>
+                <span class="button-slot-confirm-text">{{ confirming.confirm }}</span>
+                <Btn small :variant="confirming.danger ? 'ghost' : 'primary'" :bordered="confirming.danger" :class="{danger: confirming.danger}" data-button-confirm-yes @click="run(confirming)">{{ confirming.label }}</Btn>
+                <Btn small variant="ghost" data-button-confirm-back @click="confirming = null">Back</Btn>
+            </span>
         </template>
         <template v-else-if="!waiting">
             <template v-for="button in buttons" :key="button.name">
@@ -79,7 +97,8 @@ async function press(button) {
                         small
                         :variant="button.primary ? 'primary' : 'ghost'"
                         :bordered="!button.primary"
-                        :icon="button.icon"
+                        :class="{danger: button.danger}"
+                        :icon="iconOf(button)"
                         :disabled="sending"
                         :title="tip(button)"
                         :data-button="button.name"
@@ -115,6 +134,20 @@ async function press(button) {
 }
 .button-slot.loading {
     min-height: 24px;
+}
+.button-slot-confirm {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+.button-slot-confirm-text {
+    color: var(--text-2);
+    font-size: 12.5px;
+}
+.danger {
+    border-color: color-mix(in oklab, var(--danger) 55%, var(--border-2));
+    color: var(--danger);
 }
 .button-slot-failure {
     color: var(--danger);

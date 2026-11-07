@@ -82,6 +82,8 @@ from core.modules.documents.seeders.documents_seeder import DocumentsSeeder
 from core.modules.documents.upgrade.documents_move import DocumentsMove
 from core.modules.documents.upgrade.message_links_move import MessageLinksMove
 from core.modules.documents.support.skeletons import DOCUMENTS_DOCUMENTS_SKELETON
+from core.modules.documents.support.text_inspectors import DOC_INSPECTOR, REPORT_INSPECTOR
+from core.base.viewer.skeleton_part import SkeletonPart
 from core.modules.documents.listeners.phase_mention_listener import PhaseMentionListener
 from core.modules.documents.listeners.task_log_mention_listener import TaskLogMentionListener
 from core.modules.documents.listeners.deleted_row_link_listener import DeletedRowLinkListener
@@ -114,7 +116,11 @@ class DocumentsModule(Module):
     seeders = [DocumentsSeeder]
     windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.PANE_OR_PAGE, group="project", icon=WindowIcon.DOCUMENT,
                                  reads=["document library", "doc show", "report show", "doc inspect", "report inspect", "doc comments", "report comments", "link list"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"],
-                                 keys=[WindowKey("library", "document library", arguments=["type", "state", "after"])])]
+                                 keys=[WindowKey("library", "document library", arguments=["type", "state", "after"])]),
+               WindowDeclaration("documents.document-body", "Text", "document-body.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.DOCUMENT, skeleton=[SkeletonPart.line()],
+                                 reads=["doc inspect", "report inspect", "doc comments", "report comments", "doc revisions", "doc revision", "question list"],
+                                 runs=["doc comment", "report comment", "doc close", "doc edit", "report edit"], events=["doc.*", "report.*", "question.*"])]
+    inspectors = [DOC_INSPECTOR, REPORT_INSPECTOR]
     views = [DocumentRow]
     handlers = [OpenDocHandler, RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler, RemoveLinkHandler, ReadPlanContextHandler]
     listeners = [CloseEndedDocumentListener, PlanDocumentLinkListener, ReplyLinkListener, WorkSourceLinkListener, DocMentionListener, ReportMentionListener, PlanMentionListener, TaskMentionListener, MessageMentionListener, PhaseMentionListener, TaskLogMentionListener, DeletedRowLinkListener, NewDocDockListener, NewReportDockListener, TextReadMarkListener, LinkCorrectionResetListener]

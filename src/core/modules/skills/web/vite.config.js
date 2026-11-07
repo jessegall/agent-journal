@@ -6,6 +6,7 @@ const here = (path) => fileURLToPath(new URL(path, import.meta.url));
 export default windowBuild({
     entries: {
         skills: here("./src/skills.js"),
+        "skill-body": here("./src/skill-body.js"),
     },
     outDir: here("./dist"),
 });

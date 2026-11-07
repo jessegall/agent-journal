@@ -26,6 +26,8 @@ try {
     for (const card of await cards.all()) {
         assert.equal(await card.locator(".chat-dock-foot").isVisible(), false);
         assert.equal(await card.locator("[data-dock-age]").isVisible(), true);
+        // a collapsed card keeps Open and the X in its head
+        assert.deepEqual(await card.locator(".chat-dock-head button").evaluateAll((buttons) => buttons.map((button) => button.title)), ["Open in the inspector", "Dismiss this card"]);
     }
     await page.screenshot({path: `${capture}-collapsed.png`, animations: "disabled"});
     await history.evaluate((element) => { element.scrollTop = element.scrollHeight; });

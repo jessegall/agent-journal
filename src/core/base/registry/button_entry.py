@@ -12,13 +12,16 @@ class ButtonEntry:
     module: str
     declaration: ButtonDeclaration
     shipped: bool
+    warning: str = ""
 
     def listed(self) -> dict[str, Any]:
         listing = {**asdict(self.declaration), "module": self.module}
         if not self.shipped:
             listing["from"] = self.module
+        if self.warning:
+            listing["warning"] = self.warning
         return listing
 
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "ButtonEntry":
-        return cls(stored["module"], ButtonDeclaration.restored(stored["declaration"]), stored["shipped"])
+        return cls(stored["module"], ButtonDeclaration.restored(stored["declaration"]), stored["shipped"], stored.get("warning", ""))
