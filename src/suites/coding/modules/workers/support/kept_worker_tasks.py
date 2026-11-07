@@ -47,12 +47,15 @@ class KeptWorkerTasks:
             if self.proof_queue.tests_pending(worktree):
                 raise Refusal(f"the tests of worker {worker.id} are running", "send the task when they have passed")
             return ()
+        self.check_recut(worker)
+        return tasks
+
+    def check_recut(self, worker: Agent) -> None:
         last = self.worktrees.newest_worktree(worker.id)
         if last is None:
             raise Refusal(f"worker {worker.id} has no worktree", "journal worker dispatch <task> starts a new one")
         if self.git.has_unmerged_branch(self.environments.find(worker.environment_id).folder, last):
             raise Refusal(f"worker {worker.id} has unmerged work on {last.branch}", f"journal worker merge {worker.id}, or merge the branch by hand")
-        return tasks
 
     def handed(self, worker: Agent, worktree: Worktree, task_ids: tuple[int, ...], job: str, context: Context) -> AgentLine:
         tasks = self.queries.query(Task).find_many(list(task_ids))

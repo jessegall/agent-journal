@@ -115,6 +115,8 @@ To say you could not judge something, answer with a `tell`, and put the reason i
 | `journal plugin file <relative> [--from checkout, project or base]` | The text of a file. A name that is not there exits with code 4. | The same; an agent reads the project only in declared folders. |
 | `journal plugin run [--agent <n>] [--read-only] -- <command>` | Runs a command at the root of a checkout with the sandbox of its agent. | A plugin or a person, never an agent. |
 
+A `journal worker send <worker> "<job>"` call exits with code 5 when the worker is retired; a general refusal exits with code 1.
+
 ## project_reads
 
 A worker's shell reads its own worktree and not the main checkout. `project_reads` lists folders of the project, by relative path, that it may read for this plugin:
