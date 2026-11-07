@@ -1,14 +1,15 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, Dialog, RowCards, removed, useRows} from "@journal/window-kit";
+import {Btn, Dialog, RowCards, removed, useWindow} from "@journal/window-kit";
 import NewSequence from "./NewSequence.vue";
 import SequenceRuns from "./SequenceRuns.vue";
 import SequenceSteps from "./SequenceSteps.vue";
 import SequenceTriggers from "./SequenceTriggers.vue";
 import {startWords} from "./sequenceTriggers.js";
 
-const {rows, failure, loaded, act} = useRows("sequence list", ["sequence.*"]);
-const {rows: runs} = useRows("sequence-run list", ["sequence_run.*", "sequence.*"]);
+const window = useWindow();
+const {rows, data, failure, loaded, act} = window.props.board;
+const runs = computed(() => data.value?.runs ?? []);
 const drafting = ref(false);
 const openedId = ref(null);
 const deleting = ref(false);
