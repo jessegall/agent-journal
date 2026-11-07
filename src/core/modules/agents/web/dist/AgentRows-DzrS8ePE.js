@@ -897,12 +897,12 @@ const ka = ["disabled", "title"], ya = ["title"], ba = { class: "gauge usage" },
   "data-fact": "branch",
   title: "Current branch"
 }, ja = ["title"], Ta = {
-  class: "context-meter",
-  "data-context-menu-meter": ""
-}, Ra = { class: "gauge" }, za = { class: "context-used" }, Oa = {
   class: "context-compaction",
   "data-context-menu-compaction": ""
-}, Ba = 75, Va = {
+}, Ra = {
+  class: "context-meter",
+  "data-context-menu-meter": ""
+}, za = { class: "gauge" }, Oa = { class: "context-used" }, Ba = 75, Va = {
   __name: "InformationBar",
   props: {
     agent: { type: Object, default: null },
@@ -1227,15 +1227,15 @@ const ka = ["disabled", "title"], ya = ["title"], ba = { class: "gauge usage" },
                   _: 1
                 }),
                 T.value === "context" ? (t(), l(H, { key: 0 }, [
-                  v("div", Ta, [
-                    v("span", Ra, [
+                  v("p", Ta, p(r(fa)(((M = E.value) == null ? void 0 : M.last_compaction) ?? null)), 1),
+                  v("div", Ra, [
+                    v("span", za, [
                       v("span", {
                         style: ve({ width: `${K.value}%` })
                       }, null, 4)
                     ]),
-                    v("span", za, p(K.value) + "%", 1)
-                  ]),
-                  v("p", Oa, p(r(fa)(((M = E.value) == null ? void 0 : M.last_compaction) ?? null)), 1)
+                    v("span", Oa, p(K.value) + "%", 1)
+                  ])
                 ], 64)) : m("", !0),
                 (t(!0), l(H, null, Q(A.value.choices, (i) => (t(), F(pe, {
                   key: i.value,
@@ -1255,7 +1255,7 @@ const ka = ["disabled", "title"], ya = ["title"], ba = { class: "gauge usage" },
       ], 2);
     };
   }
-}, Ha = /* @__PURE__ */ ee(Va, [["__scopeId", "data-v-c49c145a"]]), La = ["data-agent-open", "aria-expanded", "role", "tabindex"], Ia = { class: "agent-head" }, Ea = ["data-state"], Na = {
+}, Ha = /* @__PURE__ */ ee(Va, [["__scopeId", "data-v-8331d791"]]), La = ["data-agent-open", "aria-expanded", "role", "tabindex"], Ia = { class: "agent-head" }, Ea = ["data-state"], Na = {
   class: "agent-title",
   "data-agent-title": "",
   "data-agent-motion": ""
