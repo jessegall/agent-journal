@@ -8,12 +8,8 @@ from core.modules.documents.support.work_context_reader import WorkContextReader
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
 from unittest.mock import patch
 
-from core.base.command.bus import Bus
-from core.base.query.queries import Queries
-from core.modules.tasks.models.task_read import TaskRead
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from core.base.database.database import Database
-from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
 from datetime import timedelta
 
 from core.base.driver.command_category import CommandCategory
@@ -118,12 +114,22 @@ def test_a_story_that_is_not_about_the_brief_is_not_blocked(new_story):
 
 def test_resetting_many_task_reads_reads_each_row_no_more(new_story):
     story = new_story(fixture=BuilderWithStartedTask)
-    for number in range(12):
+    for number in range(30):
         task_id = story.new_row_id(f'task make "Read me {number}"', actor=story.agent)
         story.expect_success(f"task overview {task_id}", actor=story.agent)
-    with patch.object(Database, "rows", autospec=True, side_effect=Database.rows) as reads:
-        story.container.get(Bus).run(ResetTaskReads(story.agent.id), story.agent)
-    story.expect_rows(not [call for call in reads.call_args_list if "FROM task_reads WHERE id IN" in call.args[1].sql])
+    link_reads = []
+    original = Database.rows
+
+    def read(database, statement):
+        rows = original(database, statement)
+        if "FROM links " in statement.sql:
+            link_reads.append((statement, rows))
+        return rows
+
+    with patch.object(Database, "rows", autospec=True, side_effect=read):
+        story.expect_hook_allowed("s-1", COMPACTION)
+    story.expect_rows(len(link_reads) == 2, all(not rows for _, rows in link_reads))
+    story.expect_rows(not story.container.get(Queries).query(TaskRead).filter(session_agent_id=story.agent.id).exists())
 
 
 def test_reading_the_overview_context_holds_no_write_lock(new_story, monkeypatch):

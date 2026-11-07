@@ -1,5 +1,5 @@
 import sqlite3
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import fields, replace
 from typing import TypeVar
 
@@ -70,10 +70,24 @@ class Repository:
     def delete_stored(self, model: Model, context: Context) -> None:
         self.delete_change(model, model, context)
 
+    def delete_many_stored(self, models: Sequence[Model], context: Context) -> None:
+        if not models:
+            return
+        if any(type(model) is not type(models[0]) for model in models):
+            raise ValueError("delete_many_stored needs rows of the same model")
+        changes = [Change(model, None, context) for model in models]
+        skipped = [self.guards.ask(change) for change in changes]
+        self.listeners.run_deletion_listeners_many(changes)
+        for model, change, skipped_guards in zip(models, changes, skipped, strict=True):
+            self.remove_stored(model, change, skipped_guards)
+
     def delete_change(self, stored: Model | None, model: Model, context: Context) -> None:
         change: Change[Model] = Change(stored, None, context)
         skipped = self.guards.ask(change)
         self.listeners.run_deletion_listeners(change)
+        self.remove_stored(model, change, skipped)
+
+    def remove_stored(self, model: Model, change: Change[Model], skipped: frozenset[str]) -> None:
         table = self.tables.table(type(model))
         deleted_count = self.guarded(lambda: self.database.update(TableStatements(table).delete(model.id, model.version)), table, True)
         if deleted_count == 0:
