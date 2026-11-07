@@ -29,7 +29,7 @@ def test_a_spent_login_key_opened_again_in_the_logged_in_browser_opens_the_viewe
 
 def test_an_unknown_login_key_with_no_session_cookie_is_still_refused(person_server):
     story = person_server
-    story.expect_viewer_status("/?key=unknown", 401, cookie="journal_viewer=unknown")
+    story.expect_viewer_status("/?key=unknown", 401, cookie=f"{story.cookie_name("journal_viewer")}=unknown")
 
 
 def test_a_login_redirect_keeps_the_query_the_person_opened_and_drops_the_key(person_server):

@@ -57,7 +57,7 @@ def revoke(story: ServerStory, share: SharedLink) -> None:
 def opened(story: ServerStory, share: SharedLink) -> str:
     status, headers, body = viewer_answer(story.viewer_port(), share.path, "", "")
     cookie = headers.get("Set-Cookie", "")
-    assert status == 200 and '<div id="app">' in body and cookie.startswith("journal_share=") and "HttpOnly" in cookie and "SameSite=Strict" in cookie, (status, headers, body)
+    assert status == 200 and '<div id="app">' in body and cookie.startswith(story.cookie_name("journal_share") + "=") and "HttpOnly" in cookie and "SameSite=Strict" in cookie, (status, headers, body)
     return cookie.split(";", 1)[0]
 
 
@@ -130,7 +130,7 @@ def test_a_dead_link_page_clears_the_share_cookie_a_visitor_holds(shared_plan_li
     story, ((_, share)) = shared_plan_link
     visitor = opened(story, share)
     _, headers, _ = viewer_answer(story.viewer_port(), "/viewer/share/not-a-link", visitor, "")
-    expect_headers_with(headers, "Set-Cookie", "", "journal_share=;")
+    expect_headers_with(headers, "Set-Cookie", "", f"{story.cookie_name("journal_share")}=;")
     expect_cookie_headers_with(headers, "Max-Age=0")
 
 
