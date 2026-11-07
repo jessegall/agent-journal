@@ -156,7 +156,11 @@ class Provider(ABC):
         pass
 
     @classmethod
-    def hooks_written(cls, path: Path, hooks: Mapping[str, object]) -> None:
+    def record_hook_write(cls, path: Path, hooks: Mapping[str, object]) -> None:
+        pass
+
+    @classmethod
+    def hooks_copied(cls, source: Path, target: Path) -> None:
         pass
 
     def user_hook_files(self) -> tuple[Path, ...]:

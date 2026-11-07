@@ -41,6 +41,7 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
                 target = Path(command.folder) / file
                 target.parent.mkdir(parents=True, exist_ok=True)
                 ProgramHooks.store(target, ProgramHooks.read(source))
+                provider.hooks_copied(source, target)
                 self.libraries.exclude(command.folder, [str(file)])
 
     def handle(self, command: PrepareWorktree, context: Context) -> None:

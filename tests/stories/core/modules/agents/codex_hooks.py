@@ -6,6 +6,7 @@ import pytest
 from core.base.provider.program_hooks import ProgramHooks
 from core.base.provider.providers import Providers
 from core.testing.story import Story
+from core.testing.fake_launcher import FakeLauncher
 from core.modules.codex.providers.codex_provider import CodexProvider
 from install.hook_writer import HookWriter
 from tests.stories.core.modules.helpers.program_split import helper_split_story
@@ -58,6 +59,7 @@ def test_an_agent_cannot_trust_a_foreign_hook_file_by_reading_its_trust(installe
     original = config.read_bytes()
     story.expect_success(f'program trust codex "{foreign}"', 'untrusted', actor=story.agent)
     story.expect_success(f'environment edit 1 --folder "{foreign}"')
+    FakeLauncher(story.home.socket('launcher'))
     story.expect_refusal(f'{START} --program codex --model gpt-6.1-sol', 'untrusted codex hooks', actor=story.agent)
     story.expect_rows(config.read_bytes() == original)
 
@@ -69,6 +71,7 @@ def test_a_foreign_edit_is_not_approved_when_an_agent_asks_to_start(installed_co
     settings['hooks']['PreToolUse'][0]['hooks'][0]['command'] += ' --foreign'
     ProgramHooks.store(hooks.path, settings)
     original = config.read_bytes()
+    FakeLauncher(story.home.socket('launcher'))
     story.expect_refusal(f'{START} --program codex --model gpt-6.1-sol', 'untrusted codex hooks', actor=story.agent)
     story.expect_success(f'program trust codex "{folder}"', 'changed', actor=story.agent)
     story.expect_rows(config.read_bytes() == original)

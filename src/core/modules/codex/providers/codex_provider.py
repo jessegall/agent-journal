@@ -184,10 +184,17 @@ class CodexProvider(Provider):
 
     @classmethod
     def hooks_rewritten(cls, path: Path, original_hooks: object, updated_hooks: object) -> None:
-        config = ProgramFolders().folder(HOME_VARIABLE, ".codex") / "config.toml"
-        CodexTrust(config).remapped(path.resolve(), original_hooks, updated_hooks)
+        cls.configured_trust().remapped(path.resolve(), original_hooks, updated_hooks)
 
     @classmethod
-    def hooks_written(cls, path: Path, hooks: Mapping[str, object]) -> None:
+    def record_hook_write(cls, path: Path, hooks: Mapping[str, object]) -> None:
+        cls.configured_trust().record_generated(path.resolve(), hooks)
+
+    @classmethod
+    def hooks_copied(cls, source: Path, target: Path) -> None:
+        cls.configured_trust().copied(source.resolve(), target.resolve())
+
+    @staticmethod
+    def configured_trust() -> CodexTrust:
         config = ProgramFolders().folder(HOME_VARIABLE, ".codex") / "config.toml"
-        CodexTrust(config).written(path.resolve(), hooks)
+        return CodexTrust(config)

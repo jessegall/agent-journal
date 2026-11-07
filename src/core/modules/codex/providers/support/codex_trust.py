@@ -34,16 +34,18 @@ class CodexTrust:
                                      if key.rsplit(":", 3)[1] in expected) else HookTrust.CHANGED
 
     def copied(self, source_file: Path, target_file: Path) -> None:
-        states = self.states()
+        original = self.read()
+        states = dict(self.state_values(original))
         source, target = f"{source_file}:", f"{target_file}:"
         source_hashes, target_hashes = self.hashes(source_file), self.hashes(target_file)
         added = {target + key.removeprefix(source): state for key, state in states.items()
-                 if key.startswith(source) and target + key.removeprefix(source) not in states
+                 if key.startswith(source)
                  and self.is_trusted(state, source_hashes.get(key))
                  and source_hashes[key] == target_hashes.get(target + key.removeprefix(source))}
-        if added:
-            tables = "\n".join(self.state_table(key, state) for key, state in added.items())
-            FileAccess.shared().write(self.config_file, FileAccess.shared().read(self.config_file).rstrip("\n") + "\n\n" + tables)
+        if not added:
+            return
+        states.update(added)
+        self.store(states, original)
 
     @staticmethod
     def is_trusted(state: object, digest: str | None) -> bool:
@@ -69,30 +71,38 @@ class CodexTrust:
                                     for index, entry in enumerate(entries) if is_mapping(entry) and ProgramHooks.is_journals(entry)})
         return definitions
 
-    def written(self, hook_file: Path, hooks: Mapping[str, object]) -> None:
-        states = dict(self.states())
+    def record_generated(self, hook_file: Path, hooks: Mapping[str, object]) -> None:
+        original = self.read()
+        states = dict(self.state_values(original))
         states.update({key: {"enabled": True, "trusted_hash": digest}
                        for key, digest in self.definition_hashes(hook_file, hooks).items() if digest is not None})
-        self.store(states)
+        self.store(states, original)
 
     def states(self) -> Mapping[str, object]:
-        settings: object = tomllib.loads(FileAccess.shared().read(self.config_file)) if self.config_file.is_file() else {}
+        return self.state_values(self.read())
+
+    def read(self) -> str:
+        return FileAccess.shared().read(self.config_file) if self.config_file.is_file() else ""
+
+    @staticmethod
+    def state_values(text: str) -> Mapping[str, object]:
+        settings: object = tomllib.loads(text)
         hooks = settings.get("hooks") if is_mapping(settings) else None
         states = hooks.get("state") if is_mapping(hooks) else None
         return {str(key): state for key, state in states.items()} if is_mapping(states) else {}
 
     def remapped(self, hook_file: Path, original_hooks: object, updated_hooks: object) -> None:
-        states = dict(self.states())
+        original = self.read()
+        states = dict(self.state_values(original))
         positions = self.positions(hook_file, original_hooks)
         moved = {target: states[source] for identity, target in self.positions(hook_file, updated_hooks).items()
                  if (source := positions.get(identity)) in states and source != target}
         if not moved:
             return
         states.update(moved)
-        self.store(states)
+        self.store(states, original)
 
-    def store(self, states: Mapping[str, object]) -> None:
-        original = FileAccess.shared().read(self.config_file) if self.config_file.is_file() else ""
+    def store(self, states: Mapping[str, object], original: str) -> None:
         settings = STATE_TABLE.sub("", original).rstrip("\n")
         tables = "\n".join(self.state_table(key, state) for key, state in states.items())
         self.config_file.parent.mkdir(parents=True, exist_ok=True)
