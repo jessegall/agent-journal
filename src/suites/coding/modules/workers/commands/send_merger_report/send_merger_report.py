@@ -6,6 +6,6 @@ from core.base.driver.nudge import Nudge
 
 @dataclass(frozen=True)
 class SendMergerReport(Command[None]):
-    """Sends the main agent a line of the merger."""
+    """Sends the main agent a message of the merger."""
 
     text: str | Nudge

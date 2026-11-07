@@ -1,3 +1,5 @@
+from core.modules.messages.models.message import Message
+from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 import pytest
 from datetime import timedelta
 
@@ -103,7 +105,8 @@ def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent
     expect_marks_text(story, f"Worker {worker.id} had")
     story.hook(merger.session, HookSamples.stop())
     lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
-    story.expect_rows(f"the merger merged worker:{worker.id}" in lines, f"agent:{merger.id} reports" not in lines, detail=lines)
+    merged = next((row for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows() if "the merger merged" in row.text), None)
+    story.expect_rows(merged is not None and f"the merger merged worker:{worker.id}" in merged.text, f"agent:{merger.id} reports in message:{merged.id}" in lines, detail=lines)
     story.expect_success(f'merger findings {worker.id} "Fix the merged code"', actor=actor)
     story.run_listeners()
     mark = story.container.get(Queries).query(ChatMark).filter(text=f"The merger sent Worker {worker.id} back").first()
@@ -130,11 +133,11 @@ def test_a_workers_report_goes_to_the_merger_and_the_merger_tells_the_main_agent
     merger = Actor(merger_of(story).id, ActorType.AGENT)
     story.expect_text("merger next", "reports: Converted the window", actor=merger)
     story.expect_success('merger tell "Worker asks which reader to keep"', actor=merger)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "Worker asks which reader to keep", actor=story.agent)
-    saved = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, text="Worker asks which reader to keep").first()
-    reply = story.hook("s-1", HookSamples.prompt("Continue"))
-    story.expect_rows("Worker asks which reader to keep" not in "\n".join(reply.lines), saved.nudge.text == f"agent-line:{saved.id}: journal agent-line show {saved.id}")
-    story.expect_text(f"agent-line show {saved.id}", "Worker asks which reader to keep", actor=story.agent)
+    told = story.container.get(Queries).query(Message).filter(session_agent_id=merger.id, text="Worker asks which reader to keep").first()
+    line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).newest().first()
+    story.expect_rows(told is not None, line.state is AgentLineState.WAITING, line.wakes_agent, f"in message:{told.id}" in line.text,
+                      "Worker asks which reader to keep" not in line.text, detail=f"{line.state} {line.text}")
+    story.expect_text(f"message read {told.id}", "Worker asks which reader to keep", actor=story.agent)
 
     story.expect_success(f'merger findings {worker.id} "The tax is added twice"', actor=merger)
     expect_marks_text(story, f"The merger sent Worker {worker.id} back")
@@ -184,8 +187,8 @@ def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkey
         MergerRetry()(story.container)
         MergerRetry()(story.container)
         story.expect_rows(len(jobs.helper_jobs(merger.id)) == job_count)
-        lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
-        story.expect_rows(lines.count("The merge waits for cart.py to be committed") == 1)
+        told = [row for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows() if "The merge waits for cart.py to be committed" in row.text]
+        story.expect_rows(len(told) == 1, detail=str(told))
         repository.git("add", "cart.py")
         repository.git("commit", "-m", "Commit main change")
         repository.checkout("main")
