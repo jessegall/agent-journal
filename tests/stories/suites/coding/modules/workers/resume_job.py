@@ -8,6 +8,7 @@ from core.base.command.bus import Bus
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.query.queries import Queries
+from core.modules.agents.commands.record_agent_process.record_agent_process import RecordAgentProcess
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
@@ -37,6 +38,7 @@ def test_a_resumed_workers_job_is_entered_once(new_story, monkeypatch, entered_d
     def record_launch(launcher, agent, environment, command):
         job = story.container.get(Queries).query(AgentLine).filter(session_agent_id=agent.id, source=WORKER_JOB_SOURCE).newest().first()
         job_ids.append(job.id)
+        story.container.get(Bus).run(RecordAgentProcess(agent.id, 123456789), Actor.core(), environment_id=environment.id)
         if entered_during_hand:
             story.container.get(Bus).run(EnterAgentLine(job.id), Actor(agent.id, ActorType.AGENT), environment_id=environment.id)
         return LaunchAnswer.STARTED
