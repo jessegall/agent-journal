@@ -584,7 +584,7 @@ test("an open agent keeps its updated card after it leaves the list", async () =
 });
 
 
-test("a worker's list card shows its pace beneath the time only after a task is completed", async () => {
+test("a worker's list card shows its pace on the identity line only after a task is completed", async () => {
     const started = "2026-11-01T08:00:00Z";
     const finished = "2026-11-01T10:00:00Z";
     const workers = [
@@ -598,7 +598,7 @@ test("a worker's list card shows its pace beneath the time only after a task is 
     const element = await mounted(AgentRows, context({"agent cards --options": agentFilterOptions, "agent cards": page(workers), "worker progress": page(progress)}), {empty: "No agents yet"});
     const pace = cardOf(element, 4).querySelector("[data-agent-list-pace]");
     expect(pace.textContent.trim()).toBe("1 per hour");
-    expect(pace.previousElementSibling.classList.contains("agent-time")).toBe(true);
+    expect(pace.previousElementSibling.classList.contains("agent-identity")).toBe(true);
     expect(cardOf(element, 5).querySelector("[data-agent-list-pace]")).toBeNull();
 });
 
