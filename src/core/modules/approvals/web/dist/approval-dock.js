@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-a94119309606")) { const style = document.createElement("style"); style.id = "window-styles-a94119309606"; style.textContent = ".approval-question[data-v-25efc170]{margin:4px 14px 8px 36px;white-space:pre-wrap}.approval-details[data-v-25efc170]{margin:4px 14px 8px 36px}.approval-details pre[data-v-25efc170]{white-space:pre-wrap;overflow-wrap:anywhere}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-7f76889f31ff")) { const style = document.createElement("style"); style.id = "window-styles-7f76889f31ff"; style.textContent = ".approval-question[data-v-ce60f027]{margin:4px 14px 8px 36px;white-space:pre-wrap}.approval-details[data-v-ce60f027]{margin:4px 14px 8px 36px}.approval-details pre[data-v-ce60f027]{white-space:pre-wrap;overflow-wrap:anywhere}\n"; document.head.appendChild(style); }
 import { computed as v, openBlock as _, createElementBlock as m, Fragment as f, createElementVNode as r, toDisplayString as l, createCommentVNode as g } from "vue";
 import { useDockCard as k, useWindow as x } from "@journal/window-kit";
 const y = (s, c) => {
@@ -29,7 +29,7 @@ const y = (s, c) => {
       ], 64);
     };
   }
-}, B = /* @__PURE__ */ y(w, [["__scopeId", "data-v-25efc170"]]);
+}, B = /* @__PURE__ */ y(w, [["__scopeId", "data-v-ce60f027"]]);
 export {
   B as default
 };
