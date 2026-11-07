@@ -652,5 +652,5 @@ test("an opened card has no task bar or blocked row above its commands and perfo
     expect(element.querySelector("[data-agent-work-status]")).toBeNull();
     expect(element.querySelector("[data-agent-tasks]")).toBeNull();
     expect(element.querySelector("[data-agent-blocked-tasks]")).toBeNull();
-    expect(held.reads.slice(initialReads).some((line) => line.startsWith("task ") || line.startsWith("worker progress"))).toBe(false);
+    expect(held.reads.slice(initialReads).filter((line) => line.startsWith("task ") || line.startsWith("worker progress"))).toEqual([]);
 });
