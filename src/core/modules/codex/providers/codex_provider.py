@@ -30,6 +30,7 @@ from core.modules.codex.providers.support.codex_token_count import CodexTokenCou
 from core.modules.codex.providers.support.codex_session_effort import CodexSessionEffort
 from core.modules.codex.providers.support.codex_event import CodexEvent
 from core.modules.codex.providers.support.codex_trust import CodexTrust
+from core.modules.codex.providers.support.codex_hook_event import CodexHookEvent
 
 HOME_VARIABLE = "CODEX_HOME"
 DEVELOPER_ROLE = "developer"
@@ -45,11 +46,7 @@ class CodexProvider(Provider):
     name = "codex"
     title = "Codex"
     executable = "codex"
-    hook_events = {"SessionStart": HookEventName.SESSION_START, "UserPromptSubmit": HookEventName.PROMPT,
-                   "PreToolUse": HookEventName.PRE_TOOL_USE, "PostToolUse": HookEventName.POST_TOOL_USE,
-                   "PreCompact": HookEventName.COMPACT, "Stop": HookEventName.STOP,
-                   
-                   "SessionEnd": HookEventName.SESSION_END}
+    hook_events = {event.value: event.event for event in CodexHookEvent}
     line_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE]
     plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT]
     refusals = {HookEventName.STOP: RefusalStyle.BLOCK}
