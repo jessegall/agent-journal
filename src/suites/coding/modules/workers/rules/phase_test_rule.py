@@ -1,4 +1,3 @@
-from collections.abc import Sequence
 from dataclasses import replace
 
 from core.modules.settings.bindings.support.setting_values import SettingValues
@@ -57,14 +56,17 @@ class PhaseTestRule(DriverRule):
             return RuleAnswer.refused(TEST_REQUEST_UNNEEDED.nudge()) if any(flag.is_flagged for flag in flags) else RuleAnswer.allowed()
         if any(flag.is_flagged and not flag.reason for flag in flags):
             return RuleAnswer.refused(TEST_REQUEST_REASON_MISSING.nudge())
-        saved_refusals = [self.saved_commands.part_refusal(part, tool.shell, hook.role) for part in test_parts]
         task_id = self.worktrees.worker_worktree(hook.agent_id).task_id
         open_requests = self.queries.query(WorkerTestRequest).filter(worker_id=hook.agent_id, task_id=task_id).matching(Among("state", OPEN_REQUEST_STATES)).oldest().all_rows()
         used = self.queries.query(WorkerPhaseTestRun).filter(worker_id=hook.agent_id, phase_id=phase.id).count()
         remaining = self.settings.number(WORKER_PHASE_TEST_RUNS) - used
         answers = []
-        for flag, saved_refusal in zip(flags, saved_refusals, strict=True):
-            answer = self.part_answer(flag, saved_refusal, hook.agent_id, task_id, phase, open_requests, remaining)
+        for part, flag in zip(test_parts, flags, strict=True):
+            wanted = self.identity.key(flag.command)
+            request = next((row for row in open_requests if self.identity.key(row.command) == wanted), None)
+            checks_saved_command = flag.is_flagged or (request is not None and request.state is WorkerTestRequestState.ALLOWED)
+            saved_refusal = self.saved_commands.part_refusal(part, tool.shell, hook.role) if checks_saved_command else None
+            answer = self.part_answer(flag, saved_refusal, hook.agent_id, task_id, phase, request, remaining)
             answers.append(answer)
             remaining -= sum(isinstance(command, RecordWorkerPhaseTestRun) for command in answer.commands_unrefused)
         return self.line_answer(answers)
@@ -72,9 +74,7 @@ class PhaseTestRule(DriverRule):
     def is_test_part(self, part: Part, shell: ShellLine) -> bool:
         return self.commands.part_command(part, shell).category is CommandCategory.TEST_RUN and not ASKING_FLAGS.intersection(part.arguments)
 
-    def part_answer(self, flag: WorkerTestFlag, saved_refusal: Nudge | None, worker_id: int, task_id: int, phase: Phase, open_requests: Sequence[WorkerTestRequest], remaining: int) -> RuleAnswer:
-        wanted = self.identity.key(flag.command)
-        request = next((row for row in open_requests if self.identity.key(row.command) == wanted), None)
+    def part_answer(self, flag: WorkerTestFlag, saved_refusal: Nudge | None, worker_id: int, task_id: int, phase: Phase, request: WorkerTestRequest | None, remaining: int) -> RuleAnswer:
         is_allowed = request is not None and request.state is WorkerTestRequestState.ALLOWED
         if saved_refusal is not None and (flag.is_flagged or is_allowed):
             return RuleAnswer.refused(saved_refusal)

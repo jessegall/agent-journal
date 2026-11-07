@@ -33,16 +33,21 @@ def test_three_runs_count_down_and_the_fourth_is_refused_with_the_hand_in_reason
     spent.story.expect_rows(spent.main_agent_lines() == ())
 
 
-def test_the_same_phase_keeps_its_count_when_the_worker_moves_to_another_task(spent):
+@pytest.fixture
+def moved(spent):
     spent.prove_and_move_on()
-    expect_reply_refusal(spent.run_test(), "--ask-main")
+    return spent
 
 
-def test_the_next_phase_starts_a_new_count(spent):
-    for _ in range(3):
-        spent.prove_and_move_on()
-    spent.story.expect_rows(spent.current_task() == 4)
-    expect_counted(spent, 2)
+def test_the_same_phase_keeps_its_count_when_the_worker_moves_to_another_task(moved):
+    expect_reply_refusal(moved.run_test(), "--ask-main")
+
+
+def test_the_next_phase_starts_a_new_count(moved):
+    for _ in range(2):
+        moved.prove_and_move_on()
+    moved.story.expect_rows(moved.current_task() == 4)
+    expect_counted(moved, 2)
 
 
 def test_an_allowed_request_does_not_spend_the_phase_allowance(spent):

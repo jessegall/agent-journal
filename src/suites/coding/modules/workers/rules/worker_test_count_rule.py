@@ -28,10 +28,10 @@ class WorkerTestCountRule(DriverRule):
         tool = hook.event.tool
         if limit <= 0 or tool is None or tool.shell is None:
             return RuleAnswer.allowed()
-        for part in tool.shell.parts:
-            if part.classification.category is not CommandCategory.TEST_RUN or ASKING_FLAGS.intersection(part.arguments):
-                continue
-            count = self.listings.previous_count(part.text)
+        test_lines = dict.fromkeys(part.text for part in tool.shell.parts
+                                   if part.classification.category is CommandCategory.TEST_RUN and not ASKING_FLAGS.intersection(part.arguments))
+        for line in test_lines:
+            count = self.listings.previous_count(line)
             if count > limit:
                 return RuleAnswer.refused(TEST_LIMIT_REFUSAL.nudge(count=count, limit=limit))
         return RuleAnswer.allowed()
