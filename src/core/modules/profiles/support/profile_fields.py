@@ -1,6 +1,7 @@
 from typing import TypedDict
 
 from core.base.access import Access
+from core.base.provider.model_tier import ModelTier
 
 
 class ProfileFields(TypedDict, total=False):
@@ -13,6 +14,7 @@ class ProfileFields(TypedDict, total=False):
     program: str
     program_if_possible: bool
     model: str
+    tier: ModelTier | None
     codex_model: str
     program_models: dict[str, str]
     independent: bool

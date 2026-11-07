@@ -11,11 +11,15 @@ OPEN_DEPENDENCIES_SELECT = (
 )
 
 TASK_CARDS_SELECT = (
-    "SELECT tasks.id, tasks.environment_id, tasks.title, tasks.state, tasks.priority, tasks.reason, tasks.closed_at, tasks.delegated_to,"
+    "SELECT tasks.id, tasks.environment_id, tasks.title, tasks.state, tasks.priority, tasks.complexity, tasks.reason, tasks.closed_at, tasks.delegated_to,"
+    " (SELECT coalesce('[' || group_concat(json_quote(word)) || ']', '[]') FROM"
+    " (SELECT word FROM task_tags WHERE task_id = tasks.id ORDER BY word)) AS tags,"
     f" ({AUTOMATIC_TASK_WAIT} AND NOT {USER_TASK_WAIT}) AS automatic, "
     " (SELECT coalesce(nullif(agents.given_name, ''), 'Agent ' || agents.id) FROM agents WHERE agents.id = tasks.delegated_to) AS delegated_name"
     " FROM tasks"
 )
+
+TASK_TAG_COUNTS_SELECT = "SELECT word, count(*) AS count FROM task_tags GROUP BY word"
 
 TASK_EDGES_SELECT = (
     "SELECT task_id, dependency_id AS blocker_id FROM task_dependencies"

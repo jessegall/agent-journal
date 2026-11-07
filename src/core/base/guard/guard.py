@@ -9,6 +9,7 @@ class Guard(EventSubscriber[E]):
 
     name: ClassVar[str]
     short_flag: ClassVar[str] = ""
+    is_confirmation: ClassVar[bool] = False
     is_safety: ClassVar[bool] = False
     runs_last: ClassVar[bool] = False
 

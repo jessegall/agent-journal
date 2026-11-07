@@ -8,6 +8,7 @@ from core.base.actor import Actor
 from core.base.change.change import Change
 from core.base.change.changed import Changed
 from core.base.change.created import Created
+from core.base.change.deleted import Deleted
 from core.base.change.event_type import EventType
 from core.base.change.journal_booting import JournalBooting
 from core.base.change.logged_event import LoggedEvent
@@ -72,6 +73,21 @@ def test_a_created_event_holds_the_row():
 
 def test_a_row_that_is_gone_gives_no_event():
     assert EventBuilder(ItemRows(None), Tables(), StateBook()).built(EventType(Created, Item), logged("item.create", {})) is None
+
+
+@pytest.mark.parametrize("declared", [Deleted, Changed])
+def test_a_deleted_event_restores_public_fields_without_the_row(declared):
+    event = EventBuilder(ItemRows(None), Tables(), StateBook()).built(
+        EventType(declared, Item), logged("item.delete", {"title": ("Old title", None), "state": ("reviewing", None)}))
+    assert isinstance(event, Deleted)
+    assert event.row.id == 7 and event.row.title == "Old title"
+    assert event.row.state == AddedState("reviewing")
+
+
+def test_a_deleted_hidden_row_is_not_restored_from_a_mask():
+    event = EventBuilder(ItemRows(None), Tables(), StateBook()).built(
+        EventType(Deleted, HiddenTitleItem), logged("item.delete", {"title": ("hidden", "hidden")}))
+    assert event is None
 
 
 def test_a_moved_event_puts_the_old_values_back_and_finds_the_move():

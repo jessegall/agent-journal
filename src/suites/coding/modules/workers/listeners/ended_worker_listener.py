@@ -13,6 +13,8 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_ENDED_WIT
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
 from core.base.command.context import Context
+from suites.coding.modules.workers.support.worker_resume import WorkerResume
+from suites.coding.modules.workers.support.worker_program_wait import WorkerProgramWait
 
 SOURCE = "workers.ended-worker"
 RESUME_LIMIT_COUNT = 3
@@ -28,8 +30,9 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
     name = "workers.ended-worker"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, nudger: Nudger, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop) -> None:
+    def __init__(self, nudger: Nudger, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, resume: WorkerResume, waits: WorkerProgramWait) -> None:
         self.nudger, self.queries, self.unfinished, self.stop = nudger, queries, unfinished, stop
+        self.resume, self.waits = resume, waits
 
     def handle(self, event: AgentEnded, context: Context) -> None:
         new = event.row
@@ -49,6 +52,10 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
                 return
             if not help_requested:
                 self.nudger.send(new.id, WORKER_UNFINISHED_TASKS, UNFINISHED_TASKS_SOURCE, context)
+                state = self.resume.program_state(new)
+                if not state.is_ready:
+                    self.waits.notify_wait(new, state, context)
+                    return
                 self.nudger.send(new.parent_id, WORKER_RESTARTED, SOURCE, context, worker=new.id, tasks=tasks)
                 return
         self.nudger.send(new.parent_id, WORKER_ENDED_WITH_TASKS, SOURCE, context, worker=new.id, tasks=tasks)

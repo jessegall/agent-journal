@@ -26,19 +26,22 @@ const tab = computed({get: () => view.state.tab, set: (value) => (view.state.tab
 const states = ref([]);
 const display = ref({grouping: "state", number: true, reason: false, showDone: false});
 const searched = computed(() => list.value?.query ?? "");
-const filtered = computed(() => tab.value === "list" && Boolean(states.value.length || searched.value));
+const filtered = computed(() => tab.value === "list" && Boolean(states.value.length || searched.value || list.value?.tag));
 const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 
 function clearFilter() {
     states.value = [];
-    if (list.value) list.value.query = "";
+    if (list.value) {
+        list.value.query = "";
+        list.value.tag = "";
+    }
 }
 
 function deleted() {
     inspecting.value = false;
     selected.value = 0;
 }
-const stopFollowing = view.follow(["task.*", "task_log.*"], () => (changes.value += 1));
+const stopFollowing = view.follow(["task.*", "task_log.*", "task_tag.*"], () => (changes.value += 1));
 onUnmounted(() => stopFollowing?.());
 
 const order = computed(() => (list.value?.groups ?? []).flatMap(({tasks}) => tasks.map((task) => task.id)));

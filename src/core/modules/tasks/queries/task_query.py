@@ -16,6 +16,7 @@ from core.base.query.select import Select
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.open_dependency import OpenDependency
+from core.modules.tasks.conditions.task_tag_match import TaskTagMatch
 
 FOLLOWED_PLAN_STATES = ("approved", "started")
 
@@ -74,6 +75,9 @@ class TaskQuery(Query[Task]):
 
     def open_tasks(self) -> Self:
         return self.filter(state=TaskState.OPEN)
+
+    def tagged(self, word: str) -> Self:
+        return self.matching(TaskTagMatch(word))
 
     def delegation_candidates(self, excluded_agent_ids: Sequence[int]) -> Self:
         active_delegates = SubqueryMatch("delegated_to", Select("agents").matching(IsNull("ended_at")).column("id"))

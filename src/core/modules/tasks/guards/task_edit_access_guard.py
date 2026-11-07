@@ -23,5 +23,7 @@ class TaskEditAccessGuard(Guard[Updated[Task]]):
         if context.actor.type is not ActorType.AGENT or not isinstance(context.command, EditCommand):
             return
         agent = self.queries.query(Agent).find(context.actor.id)
+        if agent.access == Access.READ and "complexity" in context.command.changed_fields():
+            raise Refusal("a read-only agent sets complexity only when making a task", "ask the main agent to change the score")
         if agent.access == Access.READ and event.old_row is not None and event.old_row.creator_id != agent.id:
             raise Refusal("a read-only agent edits only tasks it created", "ask the task's creator to edit it")

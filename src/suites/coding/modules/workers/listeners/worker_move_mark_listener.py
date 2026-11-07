@@ -53,7 +53,8 @@ class WorkerMoveMarkListener(MarkListener[Moved[Worktree]]):
         queued = self.tasks.queued_tasks(agent.id)
         variant, move = MOVE_TEXTS[event.move.name]
         name = agent.given_name or f"Worker {agent.id}"
-        self.show(logged, WorkerMarkType.WORKER, variant, f"{name} {move.format(tasks=self.tasks_text(event.move, worktree, task))}", None, AGENTS_TABLE, agent.id, detail=f"On {agent.program} {agent.program_model}{self.queue_text(queued)}\n\nTask {task.id}: {task.title}\n\n{task.brief}")
+        choice_reason = f"; {worktree.route_reason}" if worktree.route_reason else ""
+        self.show(logged, WorkerMarkType.WORKER, variant, f"{name} {move.format(tasks=self.tasks_text(event.move, worktree, task))}", None, AGENTS_TABLE, agent.id, detail=f"On {agent.program} {agent.program_model}{choice_reason}{self.queue_text(queued)}\n\nTask {task.id}: {task.title}\n\n{task.brief}")
         if event.move is WorktreeLifecycle.cut:
             self.show_plan(logged, worktree, agent, name, (worktree.task_id, *(row.id for row in queued)))
 

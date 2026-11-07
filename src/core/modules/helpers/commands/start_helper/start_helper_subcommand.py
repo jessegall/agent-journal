@@ -1,5 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
+from core.base.provider.model_tier import ModelTier
+
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
@@ -22,13 +24,14 @@ class StartHelperSubcommand(Subcommand[StartHelper, HelperStarted]):
         parser.add_argument("profile")
         parser.add_argument("--brief", required=True)
         parser.add_argument("--program", default="")
+        parser.add_argument("--tier", type=ModelTier.automatic, choices=[ModelTier.FAST, ModelTier.GENERAL, ModelTier.STRONGEST], default=None)
         parser.add_argument("--model", default="")
         parser.add_argument("--name", default="")
         parser.add_argument("--plan", type=int, default=None, help="the plan this helper reviews")
         parser.add_argument("--fresh", default="", metavar="REASON", help="start a new helper though one is idle, and why")
 
     def command(self, arguments: Namespace, caller: Caller) -> StartHelper:
-        return StartHelper(arguments.profile, arguments.brief, arguments.program, arguments.model, arguments.name, arguments.fresh, arguments.plan)
+        return StartHelper(arguments.profile, arguments.brief, arguments.program, arguments.model, arguments.name, arguments.fresh, arguments.plan, arguments.tier)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, HelperStarted):

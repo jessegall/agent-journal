@@ -2,6 +2,7 @@
 import {computed} from "vue";
 import {AgentRowList, InnerTabs, SwitchCase, TabBody, WindowRoom, useWindow} from "@journal/window-kit";
 import WorkerRecent from "./WorkerRecent.vue";
+import WorkerSplit from "./WorkerSplit.vue";
 
 // the workers this environment sent, and beside them what the workers did lately, as version 4's list showed both
 const view = useWindow();
@@ -20,6 +21,9 @@ const {rows, failure, loaded} = view.props.workers;
                 </template>
                 <template #recent>
                     <WorkerRecent />
+                </template>
+                <template #split>
+                    <WorkerSplit />
                 </template>
             </SwitchCase>
         </TabBody>

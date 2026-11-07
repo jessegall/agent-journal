@@ -29,6 +29,10 @@ class LoggedEvent:
     def is_creation(self) -> bool:
         return self.event.endswith(CREATION) or ("id" in self.data and self.data["id"][0] is None)
 
+    @property
+    def is_deletion(self) -> bool:
+        return self.event.endswith(".delete")
+
     @classmethod
     def parsed(cls, row: sqlite3.Row) -> "LoggedEvent":
         return cls(id=row["id"], event=row["name"], row_table=row["row_table"], row_id=row["row_id"], environment_id=row["environment_id"],

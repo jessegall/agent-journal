@@ -16,6 +16,9 @@ and then it is followed.
 - `journal task make "<title>" --phase <phase>` makes a task at the end of that phase in one command. A missing phase
   or an ended plan refuses the command and leaves no new task.
 - How thorough a plan is, is in the skill journal-planning, read before `plan make` and `phase make`.
+- A planner scores and tags each task as it writes it. Read `journal task tags` first and reuse its words.
+  Give each `journal task make` its `--complexity <1-5>` and repeated `--tag <word>` flags; the score anchors are in
+  journal-tasks. Use `--confirm` for a new word. A read-only planner sets these on creation and cannot edit them later.
 - `journal plan ready <n>` when every phase has its tasks. A phase with one task is refused until you give the reason one
   task is enough: `--skip-guard plans.one-task-phase --skip-reason "<why>"`. Only the user approves; `journal plan start <n>`
   begins it.

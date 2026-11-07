@@ -5,6 +5,9 @@ from pathlib import Path
 
 import pytest
 
+from core.testing.story import Story
+from tests.stories.support.program_states import bind_ready_programs
+
 pytest_plugins = ["core.testing.pytest_plugin"]
 STORY_SUPPORT_FOLDER = "support"
 REAL_PROGRAM_FLAG = "--real-program"
@@ -92,3 +95,15 @@ def pytest_collect_file(file_path: Path, parent: pytest.Collector):
     if is_story and not file_path.name.startswith("test_") and not parent.session.isinitpath(file_path):
         return pytest.Module.from_parent(parent, path=file_path)
     return None
+
+
+@pytest.fixture(autouse=True)
+def story_program_readiness(monkeypatch):
+    opened = Story.opened
+
+    def ready_story(cls, home, state):
+        story = opened(home, state)
+        bind_ready_programs(story)
+        return story
+
+    monkeypatch.setattr(Story, 'opened', classmethod(ready_story))

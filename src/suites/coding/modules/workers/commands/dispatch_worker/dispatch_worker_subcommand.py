@@ -1,5 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
+from core.base.provider.model_tier import ModelTier
+
 from core.base.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 import shlex
@@ -14,7 +16,8 @@ from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 
 
 class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
-    """`journal worker dispatch (<task> [<task> ...] | --plan <plan> [--phase <phase>]) --model <model>
+    """`journal worker dispatch (<task> [<task> ...] | --plan <plan> [--phase <phase>])
+    [--model <model> | --tier <tier>]
     [--profile <profile>] [--name <name>] [--library-link <folder>] [--library-copy <folder>]`: a worker for
     the tasks, or for the open tasks of a plan or of one of its phases, which it takes one by one."""
 
@@ -32,6 +35,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         parser.add_argument("--library-link", action="append", default=[], help="a folder of the environment to link into the worktree")
         parser.add_argument("--library-copy", action="append", default=[], help="a folder of the environment to copy into the worktree")
         parser.add_argument("--program", default="", help="the agent program the worker runs; the dispatching agent's own when not named")
+        parser.add_argument("--tier", type=ModelTier.automatic, choices=[ModelTier.FAST, ModelTier.GENERAL, ModelTier.STRONGEST], default=None)
         parser.add_argument("--model", default="", help="the model the worker runs on, else the profile's: journal worker models lists them")
         parser.add_argument("--profile", default="", help="the worker profile it starts from, else journal-worker")
         parser.add_argument("--fresh", default="", metavar="REASON", help="start a new worker though a stopped one could take the task, and why")
@@ -39,7 +43,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
 
     def command(self, arguments: Namespace, caller: Caller) -> DispatchWorker:
         task_ids = self.picked(arguments)
-        return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], arguments.model, arguments.profile, arguments.name, arguments.fresh)
+        return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], arguments.model, arguments.profile, arguments.name, arguments.fresh, arguments.tier)
 
     def picked(self, arguments: Namespace) -> tuple[int, ...]:
         if arguments.plan is None:

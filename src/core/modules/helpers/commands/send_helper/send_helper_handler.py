@@ -18,6 +18,7 @@ from core.modules.messages.support.work_source_copy import WorkSourceCopy
 from core.modules.messages.support.work_sources import WorkSources
 from core.base.scope.scopes import Scopes
 from core.base.scope.actor_scope import ActorScope
+from core.modules.helpers.support.kept_helpers import KeptHelpers
 
 SHORT_JOB_CHARACTERS = 200
 
@@ -27,11 +28,12 @@ class SendHelperHandler(Handler[SendHelper, int]):
 
     command = SendHelper
 
-    def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobRows, nudger: Nudger, repository: Repository, folders: AgentFolders, sources: WorkSources, scopes: Scopes, providers: Providers) -> None:
+    def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobRows, nudger: Nudger, repository: Repository, folders: AgentFolders, sources: WorkSources, scopes: Scopes, providers: Providers, kept: KeptHelpers) -> None:
         self.reach, self.limits, self.jobs, self.nudger, self.repository, self.folders = reach, limits, jobs, nudger, repository, folders
         self.sources = sources
         self.scopes = scopes
         self.providers = providers
+        self.kept = kept
 
     def handle(self, command: SendHelper, context: Context) -> int:
         helper = self.reach.checked_helper(command.helper_id, context.actor)
@@ -41,6 +43,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
         last_job = jobs[-1]
         if command.review_plan_id is not None and any(job.review_plan_id == command.review_plan_id for job in jobs):
             raise Refusal(f"helper {helper.id} reviewed plan {command.review_plan_id} already", "an independent review needs another helper: journal helper start")
+        self.kept.check_program(helper)
         source_context = replace(context, environment_id=helper.environment_id)
         source = self.sources.source_copy(source_context)
         if helper.ended_at is None:

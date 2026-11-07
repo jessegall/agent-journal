@@ -1,6 +1,7 @@
 import json
 
 from core.base.access import Access
+from core.base.provider.model_tier import ModelTier
 from core.base.refusal import Refusal
 from core.base.type_guards import is_mapping
 from core.modules.profiles.support.profile_fields import ProfileFields
@@ -21,6 +22,9 @@ class ProfileFormat:
             fields["body"] = source.body
         if "access" in fields:
             fields["access"] = Access(fields["access"])
+        if "tier" in fields:
+            value = fields["tier"]
+            fields["tier"] = None if value in (None, "", "null") else ModelTier.automatic(value)
         for name in ("model", "codex_model"):
             if fields.get(name) == "inherit":
                 fields[name] = ""

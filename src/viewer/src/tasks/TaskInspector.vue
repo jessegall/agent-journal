@@ -13,6 +13,7 @@ import {updatedAt} from "../domain/row.js";
 import TimeAgo from "../../kit/TimeAgo.vue";
 import TaskDetails from "./TaskDetails.vue";
 import TaskLog from "./TaskLog.vue";
+import TaskTags from "./TaskTags.vue";
 import CommentSide from "../resource/CommentSide.vue";
 import Segmented from "../kit/Segmented.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
@@ -86,13 +87,19 @@ watch(textComments.open, (open) => {
     if (open) tab.value = "comments";
 });
 
-async function setPriority(priority) {
-    const originalPriority = task.value.priority;
-    task.value.priority = Number(priority);
-    const answer = await props.read(["task", "edit", String(props.id), "--priority", priority]);
+async function setNumber(field, value) {
+    const original = task.value[field];
+    task.value[field] = Number(value);
+    const answer = await props.read(["task", "edit", String(props.id), `--${field}`, value]);
     refusal.value = answer.ok ? "" : answer.error;
     if (answer.ok) return load();
-    task.value.priority = originalPriority;
+    task.value[field] = original;
+}
+
+async function changeTag(action, word) {
+    const answer = await props.read(["task", action, String(props.id), word]);
+    refusal.value = answer.ok ? "" : answer.error;
+    if (answer.ok) await load();
 }
 
 function pick(move) {
@@ -134,6 +141,7 @@ defineExpose({openStatus});
                     <TimeAgo :at="updatedAt(task)" />
                 </div>
                 <h3 class="title" data-resource-title>{{ task.title }}</h3>
+                <TaskTags :tags="task.tags" @add="changeTag('tag', $event)" @remove="changeTag('untag', $event)" />
             </header>
             <div class="tabs" data-task-tabs>
                 <Segmented :options="TABS" :value="tab" @pick="tab = $event" />
@@ -147,7 +155,8 @@ defineExpose({openStatus});
                             :graph="graph"
                             :refusal="refusal"
                             @status="openStatus"
-                            @priority="setPriority"
+                            @priority="setNumber('priority', $event)"
+                            @complexity="setNumber('complexity', $event)"
                             @select="emit('select', $event)"
                         />
                         <InspectorSections slot-name="inspector.task" :row="task" />

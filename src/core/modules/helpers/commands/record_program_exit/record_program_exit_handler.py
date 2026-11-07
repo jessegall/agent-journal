@@ -1,5 +1,9 @@
 from core.base.profile.agent_profile import AgentProfile
 from core.base.log_level import LogLevel
+from datetime import timedelta
+
+from core.base.clock import Clock
+from core.base.timestamp import Timestamp
 from core.base.system_log_writer import SystemLogWriter
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
@@ -22,6 +26,9 @@ from core.modules.helpers.commands.send_program_fault.send_program_fault import 
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.helpers.support.exit_reasons import ExitReasons
 from core.modules.helpers.support.helper_job_source import HELPER_JOB_SOURCE
+from core.modules.helpers.commands.make_provider_outage.make_provider_outage import MakeProviderOutage
+
+OUTAGE_MINUTES = 15
 
 
 class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
@@ -31,17 +38,24 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
 
     command = RecordProgramExit
 
-    def __init__(self, queries: Queries, jobs: HelperJobRows, providers: Providers, folders: AgentFolders, reasons: ExitReasons, bus: Bus, system_log: SystemLogWriter, profiles: ProfileFiles) -> None:
-        self.queries, self.jobs, self.providers, self.folders, self.reasons, self.bus, self.system_log, self.profiles = queries, jobs, providers, folders, reasons, bus, system_log, profiles
+    def __init__(self, queries: Queries, jobs: HelperJobRows, providers: Providers, folders: AgentFolders, reasons: ExitReasons, bus: Bus, system_log: SystemLogWriter, clock: Clock, profiles: ProfileFiles) -> None:
+        self.queries, self.jobs, self.providers, self.folders, self.reasons, self.bus, self.system_log = queries, jobs, providers, folders, reasons, bus, system_log
+        self.clock, self.profiles = clock, profiles
 
     def handle(self, command: RecordProgramExit, context: Context) -> None:
         agent = self.queries.query(Agent).find(command.agent_id)
         if agent.role == AgentRole.MAIN or self.is_earlier_run(agent, command):
             return
         actor = Actor(agent.id, ActorType.AGENT)
+        terminal = self.reasons.terminal_tail(agent)
+        if command.exit_code != 0 and not command.launch_ended:
+            problem = self.reasons.program_problem(agent, terminal)
+            if problem:
+                ends_at = Timestamp(self.clock.timestamp().value + timedelta(minutes=OUTAGE_MINUTES))
+                self.bus.run(MakeProviderOutage(agent.program, problem, ends_at), Actor.core(), environment_id=agent.environment_id)
         job = self.jobs.open_job(agent.id)
         if job is not None and self.needs_exit_report(agent):
-            self.report_exit(agent, job, command, actor)
+            self.report_exit(agent, job, command, actor, terminal)
         if agent.ended_at is None:
             self.bus.run(EndAgent(agent.id), actor, environment_id=agent.environment_id)
 
@@ -55,10 +69,12 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
         has_waiting_job = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING, source=HELPER_JOB_SOURCE).exists()
         return agent.parent_id is not None and not has_waiting_job
 
-    def report_exit(self, agent: Agent, job: HelperJob, command: RecordProgramExit, actor: Actor) -> None:
+    def report_exit(self, agent: Agent, job: HelperJob, command: RecordProgramExit, actor: Actor, terminal: str) -> None:
         transcript_text = self.providers.provider(agent.program).last_reply(self.folders.folder(agent), agent.session)
-        text = transcript_text or self.reasons.reason(agent, command.exit_code, command.launch_ended)
+        text = transcript_text or self.reasons.reason(agent, command.exit_code, command.launch_ended, terminal)
         self.bus.run(RecordParentReport(agent.id, agent.parent_id, text, job.id), actor, environment_id=agent.environment_id)
+        if not command.exit_code:
+            return
         profile = self.profiles.registered(agent.profile)
         if self.needs_fault_notice(profile, command):
             self.bus.run(SendProgramFault(agent.id, command.exit_code), actor, environment_id=agent.environment_id)

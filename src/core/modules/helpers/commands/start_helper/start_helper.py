@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from core.base.provider.model_tier import ModelTier
+
 from core.base.command.command import Command
 from core.modules.helpers.commands.start_helper.helper_started import HelperStarted
 
@@ -15,3 +17,4 @@ class StartHelper(Command[HelperStarted]):
     given_name: str = ""
     new_agent_reason: str = ""
     review_plan_id: int | None = None
+    tier: ModelTier | None = None

@@ -12,3 +12,4 @@ class OpenWorkerWorktree(Command[OpenedWorker]):
     start: StartAgent
     task_id: int
     new_agent_reason: str = ""
+    route_reason: str = ""

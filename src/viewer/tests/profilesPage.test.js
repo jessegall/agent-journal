@@ -104,7 +104,7 @@ test("Save waits until something changed, and an edit with a new model is saved 
     expect(panel().querySelector("[data-drop-head]").textContent.trim()).toBe("opus");
     save.click();
     await settle();
-    expect(lines).toContainEqual(["profile", "save", "journal-researcher", "--description", "Researches a question in the code", "--type", "helper", "--access", "read-only", "--program", "", "--no-program-if-possible", "--model", "opus", "--codex-model", "gpt-6.1-sol", "--mcp-tools", "", "--no-independent", "--body", "You research."]);
+    expect(lines).toContainEqual(["profile", "save", "journal-researcher", "--description", "Researches a question in the code", "--type", "helper", "--access", "read-only", "--program", "", "--no-program-if-possible", "--tier", "", "--model", "opus", "--codex-model", "gpt-6.1-sol", "--mcp-tools", "", "--no-independent", "--body", "You research."]);
     expect(host.querySelector("[data-profile-notice]").textContent).toBe("journal-researcher saved. The agent will use it the next time it starts a helper with this profile.");
 });
 
@@ -123,6 +123,24 @@ test("a new profile asks for a name and a description before it can be saved, an
     await settle();
     expect(lines.at(-1).slice(0, 3)).toEqual(["profile", "save", "critic"]);
     expect(lines.at(-1)).toContain("helper");
+});
+
+test("a profile can save a tier without naming a model", async () => {
+    const lines = await drawn();
+    host.querySelector("[data-profile-new]").click();
+    await settle();
+    await type(panel().querySelector("#profile-name"), "tier-reader");
+    await type(panel().querySelector("#profile-description"), "Reads a difficult question");
+    const choices = [...panel().querySelectorAll("[data-profile-tier] button")];
+    choices.find((button) => button.textContent.trim() === "Strongest").click();
+    await settle();
+    document.querySelector("[data-profile-save]").click();
+    await settle();
+    const line = lines.at(-1);
+    expect(line.slice(0, 3)).toEqual(["profile", "save", "tier-reader"]);
+    expect(line[line.indexOf("--tier") + 1]).toBe("strongest");
+    expect(line[line.indexOf("--model") + 1]).toBe("");
+    expect(line[line.indexOf("--codex-model") + 1]).toBe("");
 });
 
 test("a name with a space cannot be saved", async () => {

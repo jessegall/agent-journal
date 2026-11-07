@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.view_model import ViewModel
 from core.modules.tasks.models.support.task_priority import TaskPriority
+from core.modules.tasks.models.support.task_complexity import TaskComplexity
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.support.views import TASK_CARDS_SELECT
 
@@ -21,6 +22,8 @@ class TaskCard(EnvironmentScoped, ViewModel):
     title: str
     state: TaskState
     priority: TaskPriority
+    complexity: TaskComplexity | None
+    tags: tuple[str, ...]
     reason: str
     automatic: bool
     closed_at: str | None

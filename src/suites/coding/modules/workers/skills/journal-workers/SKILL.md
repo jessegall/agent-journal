@@ -17,10 +17,10 @@ stays kept on the same agent number and session until retired.
   the work. `journal worker send <n> --task <task> [<task> ...]` assigns its next tasks. A kept worker can take them on
   its open worktree; after its work is merged, a send creates a new worktree in its old folder on the same session.
   What it already delivered and its proofs stay recorded. An unmerged branch is never overwritten.
-- `journal worker dispatch <task> [<task> ...] --model <model>` starts a worker on the tasks; `--profile` is a checked worker profile, journal-worker by default, whose text the worker starts from, and `--model` falls back to that profile's model (`--name` shows on its card), which it takes one by one with no report in
+- `journal worker dispatch <task> [<task> ...] --tier general` starts a worker on the tasks; `--profile` is a checked worker profile, journal-worker by default, whose text the worker starts from. `--tier fast|general|strongest` chooses the model of the selected program; with no tier, the profile chooses it. `--model <model>` names one exact model (`--name` shows on its card). It takes the tasks one by one with no report in
   between; outside a plan the journal runs the tests of each before the next starts and tells you when the last passes. `--library-link <folder>` links a folder such as
   `.venv` into its worktree and `--library-copy <folder>` copies it. `--program <program>` names the agent program.
-- `journal worker dispatch --plan <plan> [--phase <phase>] --model <model>` hands a worker the open tasks of an approved or
+- `journal worker dispatch --plan <plan> [--phase <phase>] --tier strongest` hands a worker the open tasks of an approved or
   started plan, or of one phase of it, in the plan's order. The plan then shows as delegated, with each task's agent named.
 - By default, a started plan runs the tests of a phase at its end, and you hear nothing until then. A proof with no test on a
   phase needs no check from you; you can still read it and send it back. When a worker asks to run one test, you get
@@ -28,6 +28,17 @@ stays kept on the same agent number and session until retired.
   decline, do nothing: the worker goes on and the request stays on the task's log.
 - Give a worker many tasks at once: a large batch runs long and bothers you less than many small dispatches.
 - `journal worker models` lists each program's models from the cheapest to the strongest.
+- With no program flags, a dispatch follows the first matching route, then the split, then your own program.
+  `journal worker split --task <task>` previews the program, model and reason without starting anything.
+  `journal worker-route list` shows the routes in order. A route tests all its tags and its complexity range together.
+- A strict route waits when its program is out. Read the reason and end time in the refusal. A route that needs a
+  missing score names `journal task edit <task> --complexity <1-5>`; score it before dispatching. A batch whose tasks
+  choose different programs must be split into the named groups; use `--phase` for a suitable part of a plan.
+- An agent cannot override the program of a ready route by naming another. After that refusal, an authorized exception
+  uses `--skip-guard workers.route-holds --skip-reason "<why>"`. The skip and its reason stay in the log and a chat mark.
+  A person can choose any program. An agent cannot change a route a person made.
+- Only a person changes the split and its plan-window threshold. Ask with `journal setting request` when it needs
+  changing. A worker or helper changes neither routes nor program outages, and a worker dispatches no workers.
 - `journal worker send <n> "<job>"` adds instructions to a kept worker's existing work. Use `--task` for new assigned
   tasks. A dispatch is refused when a compatible idle worker can take those tasks. Use `--fresh "<why>"` on dispatch
   only when a separate session is needed; its reason stays with the new worktree.

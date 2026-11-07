@@ -18,6 +18,11 @@ reads; work that writes goes to a worker or stays with you.
   `journal profile list` names the profiles. It works in your folder, on the profile's model. When a compatible idle
   helper can take the job, a start is refused with its send command. Use `--fresh "<why>"` only when a separate
   session is needed; its reason stays on the job. An independent review may use another helper.
+- `journal helper start journal-researcher --tier general --brief "Read the task's call sites"` asks for a tier of
+  the chosen program. Tiers are `fast`, `general` and `strongest`; a rare model must be named with `--model`.
+  The program order is a named `--program`, the profile's program, the split, then the parent's program. A profile
+  with a program stays there. With no split or program choice, the helper runs on its parent's program.
+  Helpers count their tasks separately from workers. An out program passes its share to ready programs.
 - `journal helper send <n> "<job>"` gives a kept helper its next job. It resumes the same session after its process
   stopped. `--plan <n>` names the plan a review is for; a reviewer cannot review the same plan again.
 - `journal helper send <n> --steer "<text>"` adds to a busy helper's current job. Without `--steer`, a new job for a
@@ -25,8 +30,8 @@ reads; work that writes goes to a worker or stays with you.
 - `journal helper stop <n>` stops its program and ends its job, keeping the agent available for reuse.
 - `journal agent retire <n> --reason "<why>"` permanently retires a stopped helper. It keeps its record and transcript,
   but cannot receive another job or resume. Stop a running helper before retiring it; a report alone is not retirement.
-- Its report comes to you as a line: a short one holds the text, a long one names a message to read with
-  `journal message read <n>`. `journal message reports` lists the reports nobody has read yet.
+- Its report comes to you as a line naming a message to read with `journal message read <n>`.
+  `journal message reports` lists the reports nobody has read yet.
 - With a terminal the report wakes you, so you may stop. With none it arrives at your next hook, so keep working and read
   `journal overview`. The start's line says which applies.
 - A helper near its time or cost limit is named to you once; past it, the journal stops it and tells you why. A helper
