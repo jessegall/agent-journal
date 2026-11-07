@@ -612,3 +612,21 @@ test("a worker shows its worktree task and notes another blocked task", async ()
         if (!open) expect(element.querySelector(".agent-dot").dataset.state).toBe("running");
     }
 });
+
+test("the task line names its plan after the title, and a task outside a plan has no plan link", async () => {
+    const row = {id: 4, role: "worker", state: "running", ended_at: null};
+    for (const planId of [7, null]) {
+        const tasks = [{id: 1, title: "Add the tax", state: "started", plan_id: planId, plan_title: "Cart plan"}, {id: 2, title: "Later", state: "open", plan_id: 9}];
+        const facts = {job_enabled: true, task_id: 1, task_title: "Add the tax", tasks};
+        const element = await mounted({render: () => h(AgentCard, {row, facts, open: true})}, context({}));
+        const job = element.querySelector("[data-agent-job]");
+        const plan = element.querySelector("[data-agent-plan]");
+        expect(job.textContent).toContain("Add the tax");
+        if (planId) {
+            expect(plan.textContent).toBe("plan 7");
+            expect(plan.closest("[data-agent-job]")).toBe(job);
+            expect(plan.dataset.peek).toBe("plans:7");
+        } else expect(plan).toBeNull();
+        expect(job.textContent).not.toContain("Cart plan");
+    }
+});
