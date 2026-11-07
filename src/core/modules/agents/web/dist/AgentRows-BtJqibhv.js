@@ -1556,7 +1556,7 @@ const ka = ["disabled", "title"], ya = ["title"], ba = { class: "gauge usage" },
       return z.value ? "Change the maximums" : ((y = i.value) == null ? void 0 : y.label) || "Agent counts";
     });
     async function n(y, d = 1) {
-      a.state["count-agents.role"] = y.type, a.state["count-agents.profile"] = y.profile || "", a.state["count-agents.page"] = String(d), await a.reload("count-agents");
+      a.state["count-agents.role"] = y.type, y.profile ? a.state["count-agents.profile"] = y.profile : delete a.state["count-agents.profile"], a.state["count-agents.page"] = String(d), await a.reload("count-agents");
       const h = a.props["count-agents"];
       j.value = d === 1 ? [...h.rows.value] : [...j.value, ...h.rows.value], C.value = d, O.value = h.more.value;
     }
@@ -1818,7 +1818,7 @@ const ka = ["disabled", "title"], ya = ["title"], ba = { class: "gauge usage" },
       }, 8, ["title"])) : g("", !0)
     ], 64));
   }
-}, Sn = /* @__PURE__ */ ne(Cn, [["__scopeId", "data-v-7c2adb6b"]]), An = {
+}, Sn = /* @__PURE__ */ ne(Cn, [["__scopeId", "data-v-e441d4fc"]]), An = {
   key: 0,
   class: "agents-upgrade",
   "data-agents-upgrade": ""
