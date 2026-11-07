@@ -1,10 +1,8 @@
 from argparse import Namespace
-from dataclasses import dataclass
 import json
 
 from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
-from core.base.subcommand.output import Output
 from core.modules.processes.commands.page_output.page_output_subcommand import PageOutputSubcommand
 from core.modules.processes.models.process import Process
 from core.modules.drivers.models.hook_call import HookCall
@@ -12,14 +10,7 @@ from core.modules.processes.support.output_access import OutputAccess
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.output_page import OutputPage
 from core.modules.processes.support.runner_line import RunnerLine
-
-
-@dataclass(frozen=True)
-class HookOutputPage(OutputPage):
-    command: str = ""
-
-    def write(self, output: Output) -> None:
-        output.write("\n".join(self.lines), {"lines": list(self.lines), "first_byte": self.first_byte, "last_byte": self.last_byte, "total": self.total, "cut_bytes": self.cut_bytes, "command": self.command})
+from core.modules.processes.support.hook_output_page import HookOutputPage
 
 
 class HookOutputPageSubcommand(PageOutputSubcommand):

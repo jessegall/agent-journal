@@ -23,6 +23,7 @@ from core.modules.documents.support.doc_library_share import DocLibraryShare
 from core.modules.documents.support.doc_searcher import DocSearcher
 from core.modules.documents.support.document_nudges import DOCUMENT_OPEN
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
@@ -111,7 +112,8 @@ class DocumentsModule(Module):
     moves = [DocumentsMove, MessageLinksMove]
     seeders = [DocumentsSeeder]
     windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.EITHER, group="project", icon=WindowIcon.DOCUMENT,
-                                 reads=["document library", "doc show", "report show", "doc inspect", "report inspect", "doc comments", "report comments", "link list"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"])]
+                                 reads=["document library", "doc show", "report show", "doc inspect", "report inspect", "doc comments", "report comments", "link list"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"],
+                                 keys=[WindowKey("library", "document library", arguments=["type", "state", "after"])])]
     views = [DocumentRow]
     handlers = [OpenDocHandler, RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler, RemoveLinkHandler, ReadPlanContextHandler]
     listeners = [CloseEndedDocumentListener, PlanDocumentLinkListener, ReplyLinkListener, WorkSourceLinkListener, DocMentionListener, ReportMentionListener, PlanMentionListener, TaskMentionListener, MessageMentionListener, PhaseMentionListener, TaskLogMentionListener, DeletedRowLinkListener, NewDocDockListener, NewReportDockListener, TextReadMarkListener, LinkCorrectionResetListener]

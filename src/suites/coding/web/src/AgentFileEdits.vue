@@ -1,12 +1,17 @@
 <script setup>
-import {computed} from "vue";
-import {AutoScrollPane, DiffCard, RowList, useRows} from "@journal/window-kit";
+import {computed, onUnmounted} from "vue";
+import {AutoScrollPane, DiffCard, RowList, useWindow} from "@journal/window-kit";
 
 // the files one agent changed, oldest first with the newest edit at the foot, where the pane opens and stays as edits arrive; scrolling up stops
 // that and shows Newest; each edit is a diff card of its first lines, and older edits are read from the button above
 const CARD_LINES = 5;
 const props = defineProps({agent: {type: Number, required: true}});
-const {rows, failure, loaded, more, older} = useRows(`file-edit list --agent ${props.agent}`, ["file_edit.create"], {incremental: true});
+const window = useWindow();
+const feed = window.props[`agent-edits.${props.agent}`];
+const {rows, failure, loaded, more, older} = feed;
+feed.loadLatest();
+const stopFollowing = window.follow(["file_edit.create"], feed.heard);
+onUnmounted(() => stopFollowing?.());
 const edits = computed(() => rows.value.map((edit) => ({...edit, lines: JSON.parse(edit.rows || "[]")})).reverse());
 const newest = computed(() => rows.value[0]?.id ?? 0);
 </script>

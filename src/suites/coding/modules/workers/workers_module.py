@@ -91,6 +91,7 @@ from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_tab import WindowTab
 from core.base.viewer.window_extension import WindowExtension
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_source import WindowSource
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
@@ -195,7 +196,7 @@ from suites.coding.modules.workers.listeners.merger_wake_listener import MergerW
 from suites.coding.modules.workers.migrations.m029_worktree_tests_passed import WorktreeTestsPassedMigration
 from suites.coding.modules.workers.migrations.m030_merger_lines import MergerLinesMigration
 from suites.coding.modules.workers.models.merger_line import MergerLine
-from suites.coding.modules.workers.support.merger_nudges import MERGER_MERGED, MERGER_PASSED
+from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
 from suites.coding.modules.workers.models.worker_test_failure import WorkerTestFailure
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
@@ -247,12 +248,14 @@ class WorkersModule(Module):
     templates = WORKER_TEMPLATES
     window_extensions = [*(WindowExtension(name, reads=["proof list", "worker waits", "worker progress"], runs=["worker send"],
                                           events=["proof.*", "worker_worktree.*"],
+                                          keys=[WindowKey("waits", "worker waits", events=["agent.*", "task.*", "proof.*", "worker_worktree.*"]),
+                                                WindowKey("progress", "worker progress", events=["task.*", "worker_worktree.*"])],
                                           sources=[WindowSource("waits", "worker waits", ["agent.*", "task.*", "proof.*", "worker_worktree.*"]),
                                                    WindowSource("progress", "worker progress", ["task.*", "worker_worktree.*"]),
                                                    WindowSource("queue", "proof list --limit 50", ["proof.*"])]) for name in ("agents.agents", "agents.helpers")),
                          WindowExtension("viewer.shell", reads=["worker-worktree points", "worker-worktree list", "proof list"],
                                          runs=["worker send", "worker merge", "worker release"])]
-    nudges = [APPROVED_PLAN_WAIT, MERGER_MERGED, MERGER_PASSED, *WORKER_NUDGES, TEST_COUNT_UNKNOWN, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]
+    nudges = [APPROVED_PLAN_WAIT, MERGER_PASSED, *WORKER_NUDGES, TEST_COUNT_UNKNOWN, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]
     seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS

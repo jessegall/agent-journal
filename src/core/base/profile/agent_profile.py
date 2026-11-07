@@ -30,6 +30,7 @@ class AgentProfile:
     uses: int = 0
     last_used: int = 0
     title: str = ""
+    reports_to_parent: bool = True
 
     @property
     def display_title(self) -> str:

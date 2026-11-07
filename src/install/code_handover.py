@@ -10,6 +10,7 @@ from core.base.log_level import LogLevel
 from install.update_steps import FAILED, FINISHED, HANDOVER, PROOF, SERVING, UpdateSteps
 from server.server_files import ServerFiles
 from server.successor_start import PROOF_LIMIT_SECONDS
+from install.launcher_replacement import LauncherReplacement
 
 TAKEOVER_LIMIT_SECONDS = 90
 PID_POLL_SECONDS = 0.02
@@ -65,6 +66,7 @@ class CodeHandover:
             self.versions.switch(tag)
         elif (status := self.takeover_status(tag)) != 200:
             self.refuse(tag, status)
+        LauncherReplacement(self.home).run()
 
     def refuse(self, tag: str, status: int) -> None:
         raise Refusal(f"code version {tag} was not taken over: status {status}", f"the running server keeps serving: read {self.files.log}")

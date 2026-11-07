@@ -29,6 +29,8 @@ type Options struct {
 	QueueWait            time.Duration
 	SlotWaitLimitSeconds int
 	OnlyReads            bool
+	FileCommands         bool
+	FileCommandLimit     time.Duration
 	ReadOnlyShell        bool
 	WriteFolder          string
 	ReadFolders          []string

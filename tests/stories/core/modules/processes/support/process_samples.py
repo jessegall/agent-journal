@@ -43,10 +43,11 @@ def sample_category(text: str, category: CommandCategory | None) -> CommandCateg
 
 
 def runner_line(story: Story, process_id: int, line: str, limit: int = 15, background: bool = False, session: str = "s-1", read_command: bool = False, has_long_part: bool = False, queue_run: bool = True, sandbox: bool = False, progress_count: str = "", progress_position: int = 0, progress_pattern: str = "") -> str:
+    file_commands = " JOURNAL_RUN_FILE_COMMANDS=1" if read_command else ""
     flag = (" --background" if background else "") + (" --only-reads" if read_command else "")
     if sandbox or session == "sub-1":
         flag += " --read-only-shell"
-    variables = f" JOURNAL_RUN_MOST_OUTPUT={(100 if has_long_part else 10) << 20}"
+    variables = file_commands + f" JOURNAL_RUN_MOST_OUTPUT={(100 if has_long_part else 10) << 20}"
     if limit > 0 and has_long_part and not read_command and queue_run:
         flag += " --queue"
         variables += " JOURNAL_RUN_QUEUE_WAIT=5"

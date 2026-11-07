@@ -31,8 +31,8 @@ const TABS = [
 ];
 const OPTIONS = {working: true, waiting: true, idle: true, stopped: true, environment: true, worker: true, helper: true, order: "number", every: false};
 const drawn = async () => {
-    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, {
-        ...context({"agent list --show running --search \"worker\"": page(AGENTS.filter((row) => row.role === "worker")), "agent list": page(AGENTS), "agent running": page(AGENTS), "usage agents --closed": page([]), "agent transcript 4": page([{id: 1, author: "user", text: "Read the cart"}])}),
+    const element = await mounted({render: () => h(AgentRows, {line: "agent cards", empty: "No agents yet"})}, {
+        ...context({"agent cards --show running --search worker": page(AGENTS.filter((row) => row.role === "worker")), "agent cards": page(AGENTS), "agent running": page(AGENTS), "usage agents --closed": page([]), "agent transcript 4": page([{id: 1, author: "user", text: "Read the cart"}])}),
         tabs: TABS,
         option: (key) => ({value: OPTIONS[key]}),
     });

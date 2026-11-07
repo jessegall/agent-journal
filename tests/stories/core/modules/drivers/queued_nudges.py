@@ -36,8 +36,8 @@ def test_separate_tick_answers_keep_their_declaration_until_a_tool_hook(new_stor
         answers = RuleAnswers(["lead"], [RuleRecord("sample.queued", "lead", answer.outcome, answer)])
         with patch.object(DriverRules, "ask", return_value=answers):
             story.hook("s-1", HookSamples.tick())
-    live = RuleAnswer.with_nudges(QUEUED.nudge(task=5, worker=8))
-    with patch.object(DriverRules, "ask", return_value=RuleAnswers(["lead"], [RuleRecord("sample.queued", "lead", live.outcome, live)])):
+    current_answer = RuleAnswer.with_nudges(QUEUED.nudge(task=5, worker=8))
+    with patch.object(DriverRules, "ask", return_value=RuleAnswers(["lead"], [RuleRecord("sample.queued", "lead", current_answer.outcome, current_answer)])):
         delivered = story.hook("s-1", HookSamples.edit("cart.py"))
     expect_queued_lines(delivered, ["tasks 5, 1, 2, 3, 4 are queued for worker 8"])
 

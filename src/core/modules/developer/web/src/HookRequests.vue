@@ -4,6 +4,7 @@ import {MenuItem, MenuLabel, MenuPanel, WindowRoom, peekRef, toggleFilter, usePo
 import RequestQueueInspector from "./RequestQueueInspector.vue";
 import RequestDetails from "./RequestDetails.vue";
 import {toggleFeedPause} from "./toggleFeedPause.js";
+import {usePausedProp} from "./usePausedProp.js";
 
 const key = "journal.hook-requests.filters";
 const emptyFilters = () => ({kind: [], family: [], sender: []});
@@ -15,18 +16,13 @@ const filters = ref(savedFilters());
 const paused = ref(false);
 const options = ref({family: ["process bookkeeping"], sender: []});
 const count = computed(() => Object.values(filters.value).reduce((sum, values) => sum + values.length, 0));
-const context = useWindow();
-const requests = ref(null);
-const failure = ref("");
-let readNumber = 0;
-async function load() {
-    const number = ++readNumber;
-    const line = ["developer hook-requests", ...Object.entries(filters.value).flatMap(([name, values]) => values.map((value) => `--${name} ${JSON.stringify(value)}`))].join(" ");
-    const answer = await context.read(line, {unbatched: true});
-    if (paused.value || number !== readNumber) return;
-    failure.value = answer.ok ? "" : answer.error;
-    if (answer.ok) requests.value = answer.value;
+const window = useWindow();
+const {data: requests, failure, loaded, reload: load} = usePausedProp(window, "requests", paused);
+const filterArguments = {kind: "kinds", family: "families", sender: "senders"};
+function setFilters(value) {
+    for (const [name, values] of Object.entries(value)) window.state[`requests.${filterArguments[name]}`] = JSON.stringify(values);
 }
+setFilters(filters.value);
 const rows = computed(() => requests.value?.rows ?? []);
 watch(requests, (value) => {
     options.value.family = [...new Set(["process bookkeeping", ...(value.families || []), ...filters.value.family])].sort();
@@ -34,6 +30,7 @@ watch(requests, (value) => {
 });
 watch(filters, (value) => {
     try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+    setFilters(value);
     if (!paused.value) load();
 });
 function toggle(name, value) { filters.value = toggleFilter(filters.value, name, value); }
@@ -48,7 +45,7 @@ const durationOf = (row) => `${Math.round(row.duration_ms)} ms`;
 function togglePause() {
     toggleFeedPause(paused, load);
 }
-usePoll(load, () => !paused.value);
+usePoll(() => loaded.value && load(), () => !paused.value && window.visible.value);
 </script>
 
 <template>

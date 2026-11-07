@@ -50,6 +50,24 @@ test("the first load asks for what is on screen, with the tab in its state", asy
     expect(data.props.closed.data.value).toBeUndefined();
 });
 
+test("a late answer cannot replace a newer read of the same key", async () => {
+    const waiting = [];
+    const {app, data} = mounted({answer: (request) => request.only.length
+        ? new Promise((resolve) => waiting.push(resolve))
+        : {ok: true, value: {declared: DECLARED, keys: {}}}});
+    await settled();
+    const older = data.reload("rows");
+    await settled();
+    const newer = data.reload("rows");
+    await settled();
+    waiting[1]({ok: true, value: {declared: DECLARED, keys: {rows: {ok: true, value: "newer"}}}});
+    await newer;
+    waiting[0]({ok: true, value: {declared: DECLARED, keys: {rows: {ok: true, value: "older"}}}});
+    await older;
+    expect(data.props.rows.data.value).toBe("newer");
+    app.unmount();
+});
+
 test("a tab switch asks only for the key of that tab, and not again", async () => {
     const {asked, tab} = mounted({});
     await settled();
@@ -61,6 +79,34 @@ test("a tab switch asks only for the key of that tab, and not again", async () =
     tab.value = "closed";
     await settled();
     expect(asked).toHaveLength(2);
+});
+
+test("switching tabs never requests an id key declaration as a literal name", async () => {
+    const declared = {...DECLARED, "run.*": {tab: null, events: [], reload_seconds: 0, loading: "first"}};
+    const {asked, tab, data} = mounted({answer: (request) => ({ok: true, value: {declared,
+        keys: Object.fromEntries((request.only.length ? request.only : ["rows", "open", "usage"]).map((name) => [name, {ok: true, value: name}]))}})});
+    await settled();
+    tab.value = "closed";
+    await settled();
+    expect(asked[1].only).toEqual(["closed"]);
+    await Promise.all([data.reload("run.12"), vi.advanceTimersByTimeAsync(0)]);
+    expect(asked[2].only).toEqual(["run.12"]);
+});
+
+test("an id key uses its declared page behavior and keeps older rows on refresh", async () => {
+    const declared = {"edits.*": {tab: null, events: [], reload_seconds: 0, loading: "requested", page_size: 2}};
+    const {data} = mounted({answer: (request) => ({ok: true, value: {declared,
+        keys: Object.fromEntries(request.only.map((name) => [name, {ok: true, value: request.state[`${name}.before-id`]
+            ? {rows: [{id: 1}], page: 1, size: 2, total: 1}
+            : {rows: [{id: 3}, {id: 2}], page: 1, size: 2, total: 3}}]))}})});
+    await settled();
+    const edits = data.props["edits.7"];
+    await Promise.all([data.reload("edits.7"), vi.advanceTimersByTimeAsync(0)]);
+    await Promise.all([edits.older(), vi.advanceTimersByTimeAsync(0)]);
+    expect(edits.rows.value.map((row) => row.id)).toEqual([3, 2, 1]);
+    await Promise.all([edits.load(), vi.advanceTimersByTimeAsync(0)]);
+    expect(edits.rows.value.map((row) => row.id)).toEqual([3, 2, 1]);
+    expect(edits.more.value).toBe(false);
 });
 
 test("an event reloads only its key, and a burst is one request", async () => {

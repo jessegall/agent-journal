@@ -5,6 +5,10 @@ from core.base.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
+from core.modules.settings.bindings.support.setting_values import SettingValues
+from core.testing.story import Story
+from core.testing.story_fixture import StoryFixture
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment, worker_session
 
@@ -16,8 +20,20 @@ def stop_with_text(text: str):
     return stop.with_raw({**stop.body["raw"], "last_assistant_message": text})
 
 
+class OrchestratorWithMergerOff(StoryFixture):
+    """The orchestrator's task 1 is open and the main agent hears its workers itself."""
+
+    parent = OrchestratorWithOpenTask
+
+    def steps(self, story: Story) -> None:
+        story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+
+    def expect(self, story: Story) -> None:
+        story.expect_rows(not story.container.get(SettingValues).flag(MERGER_ENABLED))
+
+
 def test_what_a_worker_says_as_it_stops_with_every_task_handed_in_is_its_report_to_its_main_agent_and_not_in_the_chat(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OrchestratorWithMergerOff)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     story.expect_hook_allowed(worker_session(story, worker), stop_with_text(REPORT))
@@ -43,7 +59,7 @@ def test_a_worker_refused_its_stop_leaves_no_report(new_story):
 
 
 def test_a_workers_message_reaches_the_agent_that_sent_it_as_a_line(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OrchestratorWithMergerOff)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success('worker report "The cart needs a tax rate"', actor=worker)
@@ -66,7 +82,7 @@ def test_a_main_agent_cannot_send_a_workers_report(new_story):
 
 
 def test_a_workers_report_stays_out_of_the_chat_and_the_main_agent_reads_it(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OrchestratorWithMergerOff)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success('worker report "The cart needs a tax rate"', actor=worker)

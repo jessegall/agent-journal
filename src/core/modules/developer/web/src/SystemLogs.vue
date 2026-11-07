@@ -2,25 +2,26 @@
 import {computed, ref, watch} from "vue";
 import {READ_RATES, WindowRoom, usePoll, useWindow} from "@journal/window-kit";
 import {toggleFeedPause} from "./toggleFeedPause.js";
+import {usePausedProp} from "./usePausedProp.js";
 
-const context = useWindow();
+const window = useWindow();
 const source = ref("");
 const level = ref("");
 const page = ref(1);
 const paused = ref(false);
-const listing = ref({rows: [], total: 0, size: 50});
-const failure = ref("");
+const {data: listing, failure, loaded, reload} = usePausedProp(window, "logs", paused, {rows: [], total: 0, size: 50});
 const pages = computed(() => Math.max(1, Math.ceil(listing.value.total / listing.value.size)));
-let readNumber = 0;
+function setFlags() {
+    window.state["logs.page"] = String(page.value);
+    for (const [name, value] of [["source", source.value], ["level", level.value]]) {
+        if (value) window.state[`logs.${name}`] = value;
+        else delete window.state[`logs.${name}`];
+    }
+}
+setFlags();
 async function load() {
-    const number = ++readNumber;
-    const flags = [`--page ${page.value}`];
-    if (source.value) flags.push(`--source ${source.value}`);
-    if (level.value) flags.push(`--level ${level.value}`);
-    const answer = await context.read(`developer system-logs ${flags.join(" ")}`, {unbatched: true});
-    if (paused.value || number !== readNumber) return;
-    failure.value = answer.ok ? "" : answer.error;
-    if (answer.ok) listing.value = answer.value;
+    setFlags();
+    await reload();
 }
 watch([source, level], () => {
     if (page.value !== 1) { page.value = 1; return; }
@@ -30,7 +31,7 @@ watch(page, () => { if (!paused.value) load(); });
 function togglePause() {
     toggleFeedPause(paused, load);
 }
-usePoll(load, () => !paused.value, READ_RATES.systemLogs);
+usePoll(() => loaded.value && load(), () => !paused.value && window.visible.value, READ_RATES.systemLogs);
 </script>
 
 <template>

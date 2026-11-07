@@ -41,7 +41,7 @@ A read-only helper works in your own checkout, and the journal refuses it any wr
 **L10 - A worker's work is merged only once each point of its task's brief has a proof you checked, or, on a phase of a plan, one the journal checked at the phase's end, which you can still send back.**
 Read each proof with `journal proof list --task <n>`, check it with `journal proof check <n>` or send it back with
 `journal proof short <n> "<what is missing>"`, and take the work in with `journal worker merge <worker>`, never by hand.
-With the merger on, the merger helper reads the proofs and merges in your place, and passes you every important line and doubtful proof.
+With the merger on, the merger helper reads the proofs and merges in your place, answers the important lines itself, and passes you only what needs your decision.
 
 **L11 - After a failure, re-run only what proves the fix: the failed tests by name and the files you touched since.**
 A full re-run is for a change that reaches wide. A full run the user or a gate requires still runs.
