@@ -1,4 +1,5 @@
 from core.modules.processes.queries.output_query import OutputQuery
+from core.modules.processes.models.output import Output
 from core.modules.processes.support.output_folder import OutputFolder
 
 
@@ -10,5 +11,9 @@ class GrownOutputs:
 
     def has_new_bytes(self, process_id: int) -> bool:
         output = self.outputs.process_output(process_id)
-        return output is not None and output.reader_id is not None and (self.folder.total_bytes(process_id) + self.folder.cut_bytes(process_id) != output.seen_offset
+        return output is not None and self.has_new_output(output)
+
+    def has_new_output(self, output: Output) -> bool:
+        process_id = output.process_id
+        return output.reader_id is not None and (self.folder.total_bytes(process_id) + self.folder.cut_bytes(process_id) != output.seen_offset
                 or (self.folder.progress_count_status(process_id) is not None and not self.folder.progress_count_read(process_id)))

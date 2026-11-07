@@ -3,11 +3,13 @@ from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.container import Container
 from core.base.module.performance_tools import PerformanceTools
+from core.base.repository.stale_row_error import StaleRowError
 from core.base.scope.scopes import Scopes
 from core.base.timestamp import Timestamp
 from core.modules.developer.support.slow_tick_tool import SlowTickTool
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
 from core.modules.processes.models.process import Process
+from core.modules.processes.models.output import Output
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.grown_outputs import GrownOutputs
@@ -35,20 +37,23 @@ class OutputReading:
 
     def read(self, container: Container) -> bool:
         grown = container.get(GrownOutputs)
-        grown_runs = [process for process in tuple(container.get(ProcessQuery).running().oldest().all_rows()) if grown.has_new_bytes(process.id)]
-        for process in grown_runs:
-            self.read_run(container, process)
+        processes = tuple(container.get(ProcessQuery).running().oldest().all_rows())
+        outputs = container.get(OutputQuery).process_outputs(tuple(process.id for process in processes)) if processes else ()
+        by_process = {output.process_id: output for output in outputs}
+        grown_runs = [(process, by_process[process.id]) for process in processes if process.id in by_process and grown.has_new_output(by_process[process.id])]
+        for process, output in grown_runs:
+            self.read_run(container, process, output)
         return bool(grown_runs)
 
     @staticmethod
-    def read_run(container: Container, process: Process) -> None:
-        output = container.get(OutputQuery).process_output(process.id)
-        if output is None:
-            return
+    def read_run(container: Container, process: Process, output: Output) -> None:
         with container.get(Scopes).opened(None, process.environment_id):
             advance = container.get(ReaderStep).advance(process, output, False)
         if advance is not None:
-            container.get(Bus).run(ReadNewOutput(process.id, prepared=PreparedRead(output, advance)), Actor.core(), environment_id=process.environment_id)
+            try:
+                container.get(Bus).run(ReadNewOutput(process.id, prepared=PreparedRead(output, advance)), Actor.core(), environment_id=process.environment_id)
+            except StaleRowError:
+                container.get(Bus).run(ReadNewOutput(process.id), Actor.core(), environment_id=process.environment_id)
 
     def warn_if_slow(self, container: Container, points: int) -> None:
         clock_time = container.get(Clock).timestamp()
