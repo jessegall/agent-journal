@@ -190,6 +190,11 @@ const dropped = (event) => {
 };
 const removeAttached = (entry) => (attached.value = attached.value.filter((other) => other !== entry));
 const sendable = computed(() => (text.value.trim() || attached.value.length) && attached.value.every((entry) => entry.pending));
+const dumpDeclined = ref(false);
+const DUMP_OFFER_FILES = 3;
+// from three attached files on, with no text typed, the composer asks whether to switch to dump mode
+const offersDump = computed(() => sendable.value && attached.value.length >= DUMP_OFFER_FILES && !text.value.trim() && !dumping.value && !dumpDeclined.value);
+watch(() => attached.value.length, (count) => { if (count < DUMP_OFFER_FILES) dumpDeclined.value = false; });
 
 const replying = ref(null);
 const commenting = ref(null);
@@ -524,8 +529,12 @@ async function runCommand(pin) {
                 <template v-else>
                     <Btn small bordered class="composer-send" data-dump-files @click="dumping = !dumping">Dump files</Btn>
                 </template>
-                <template v-if="sendable && attached.length > 1 && !text.trim()">
-                    <Btn small bordered class="composer-send" data-dump-offer @click="dumping = true">Dump {{ attached.length }} files</Btn>
+                <template v-if="offersDump">
+                    <span class="dump-offer" data-dump-offer>
+                        <span>Switch to dump mode for these {{ attached.length }} files?</span>
+                        <Btn small bordered data-dump-yes @click="dumping = true">Switch</Btn>
+                        <Btn small bordered data-dump-no @click="dumpDeclined = true">Keep them</Btn>
+                    </span>
                 </template>
             </div>
         </form>
@@ -844,6 +853,14 @@ async function runCommand(pin) {
 
 .composer-send {
     margin-left: auto;
+}
+
+.dump-offer {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    color: var(--text-3);
+    font-size: 12px;
 }
 
 .composer-failure {

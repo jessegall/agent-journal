@@ -39,6 +39,7 @@ export {ordered} from "../src/domain/orchestra.js";
 export {default as FoldSign} from "../src/kit/FoldSign.vue";
 export {default as Segmented} from "../src/kit/Segmented.vue";
 export {default as FormField} from "../src/kit/FormField.vue";
+export {default as InfoTip} from "../src/kit/InfoTip.vue";
 export {default as ListRow} from "../src/kit/ListRow.vue";
 export {default as ModelPicker} from "../src/kit/ModelPicker.vue";
 export {default as SidePanel} from "../src/kit/SidePanel.vue";

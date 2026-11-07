@@ -90,6 +90,23 @@ def test_a_model_that_is_not_searched_is_refused_with_the_models_that_are(new_st
     story.expect_refusal('search find cart --model ghost', "ghost is no model search reads", actor=story.agent)
 
 
+def test_documents_and_reports_match_words_from_title_and_body_in_any_order(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success('doc make "Cart research" --abstract "Notes" --body "Slow tests need attention"', actor=story.agent)
+    story.expect_success('report make "Cart timings" --abstract "Results" --body "Slow tests need attention"', actor=story.agent)
+    story.expect_text('search find tests slow cart', "doc 1: Cart research", "report 1: Cart timings", actor=story.agent)
+
+
+def test_a_comma_separated_model_filter_searches_only_those_modules(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success('doc make "Cart notes" --abstract "Notes" --body "Slow tests"', actor=story.agent)
+    story.expect_success('report make "Cart report" --abstract "Results" --body "Slow tests"', actor=story.agent)
+    story.expect_success('task make "Cart task" --brief "Slow tests" --environment main', actor=story.agent)
+    output = story.run('search find tests cart --model doc,report', actor=story.agent).output_text
+    story.expect_rows("doc 1: Cart notes" in output, "report 1: Cart report" in output, "task 1:" not in output)
+    story.expect_text('search find tests cart --model task', "task 1: Cart task", actor=story.agent)
+
+
 def test_at_most_forty_hits_are_shown_and_the_line_says_more_were_found(new_story):
     story = new_story(fixture=UserJoined)
     for number in range(45):

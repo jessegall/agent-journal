@@ -21,10 +21,8 @@ def hook_thread(queue: ServerQueue, priority: QueuePriority, name: str, order: l
 
 
 def wait_for_waiting_hooks(queue: ServerQueue, count: int) -> None:
-    deadline = time.monotonic() + WAIT_SECONDS
-    while len(queue.waiting_hooks) < count and time.monotonic() < deadline:
-        time.sleep(0.005)
-    assert len(queue.waiting_hooks) == count
+    with queue.changed:
+        assert queue.changed.wait_for(lambda: len(queue.waiting_hooks) == count, WAIT_SECONDS)
 
 
 def test_the_main_agents_hook_goes_before_a_workers_that_came_first():
@@ -71,14 +69,16 @@ def test_a_failing_hook_gives_up_its_turn():
 
 def test_a_viewer_request_waits_for_a_running_hook():
     queue, order = ServerQueue(viewer_wait_limit_seconds=WAIT_SECONDS), []
+    entered = threading.Event()
 
     def viewer_request() -> None:
+        entered.set()
         queue.let_hooks_finish()
         order.append("viewer")
     with queue.hook_turn(QueuePriority.AGENT_HOOK, WAIT_SECONDS):
         thread = threading.Thread(target=viewer_request)
         thread.start()
-        time.sleep(0.02)
+        assert entered.wait(WAIT_SECONDS)
         order.append("hook")
     thread.join()
     assert order == ["hook", "viewer"]
@@ -165,10 +165,8 @@ def viewer_thread(queue: ServerQueue, window: str, priority: WindowPriority, ord
 
 
 def wait_for_waiting_viewers(queue: ServerQueue, count: int) -> None:
-    deadline = time.monotonic() + WAIT_SECONDS
-    while len(queue.waiting_viewers) < count and time.monotonic() < deadline:
-        time.sleep(0.005)
-    assert len(queue.waiting_viewers) == count
+    with queue.changed:
+        assert queue.changed.wait_for(lambda: len(queue.waiting_viewers) == count, WAIT_SECONDS)
 
 
 def test_a_first_window_does_not_wait_for_a_running_hook():

@@ -22,19 +22,17 @@ from core.modules.plugins.support.plugin_program import PluginProgram, STOP_LIMI
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 
 DETACHED_CHILD_PROGRAM = """#!/bin/sh
-python3 -c 'import os, time; os.setsid(); time.sleep(6)' &
-sleep 6
+python3 -c 'import os, signal; os.setsid(); signal.pause()' &
+python3 -c 'import signal; signal.pause()'
 """
 QUICK_PROGRAM = """#!/bin/sh
 cat > /dev/null
-sleep 1
 echo '{"v": 1, "tell": "done"}'
 """
 WAITING_PROGRAM = """#!/bin/sh
 cat > /dev/null
-sleep 60
+python3 -c 'import signal; signal.pause()'
 """
-POLL_SECONDS = 0.01
 LIMIT_MS = 1000
 END_SECONDS = 2.5
 
@@ -89,9 +87,17 @@ def test_a_call_with_no_limit_waits_for_the_script_it_names(tmp_path: Path) -> N
     assert program.run(call, None).line == "done"
 
 
-def test_a_script_that_was_stopped_is_a_fault_that_says_so_and_does_not_count(tmp_path: Path) -> None:
+def test_a_script_that_was_stopped_is_a_fault_that_says_so_and_does_not_count(tmp_path: Path, monkeypatch) -> None:
     program, call = program_at(tmp_path, WAITING_PROGRAM, "run.sh")
     failures: list[PluginFaultError] = []
+    started = threading.Event()
+    register = program.scripts.start
+
+    def start(*args):
+        register(*args)
+        started.set()
+
+    monkeypatch.setattr(program.scripts, "start", start)
 
     def run() -> None:
         try:
@@ -101,9 +107,7 @@ def test_a_script_that_was_stopped_is_a_fault_that_says_so_and_does_not_count(tm
 
     thread = threading.Thread(target=run)
     thread.start()
-    deadline = time.monotonic() + END_SECONDS
-    while not program.scripts.running("late") and time.monotonic() < deadline:
-        time.sleep(POLL_SECONDS)
+    assert started.wait(END_SECONDS)
     program.scripts.stop("late")
     thread.join(END_SECONDS)
     assert str(failures[0]) == "it was stopped when the plugin was switched off"

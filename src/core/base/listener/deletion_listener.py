@@ -1,4 +1,5 @@
 from typing import ClassVar
+from collections.abc import Sequence
 
 from core.base.change.event_subscriber import E, EventSubscriber
 from core.base.command.context import Context
@@ -12,3 +13,7 @@ class DeletionListener(EventSubscriber[E]):
 
     def handle(self, event: E, context: Context) -> None:
         raise NotImplementedError(f"{type(self).__name__} handles nothing")
+
+    def handle_many(self, events: Sequence[E], context: Context) -> None:
+        for event in events:
+            self.handle(event, context)

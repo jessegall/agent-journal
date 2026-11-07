@@ -50,7 +50,7 @@ def helper_form_server(new_story, monkeypatch):
         with server_story(story, listener_thread_started=False) as server:
             yield server, helper
         story.run_listeners()
-        launcher.thread.join(timeout=5)
+        launcher.wait_for_requests()
     finally:
         launcher.server.close()
         story.home.socket("launcher").unlink(missing_ok=True)

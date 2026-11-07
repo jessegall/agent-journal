@@ -17,7 +17,7 @@ def started_designer(story):
     story.expect_success(SAVE_DESIGNER, actor=story.user)
     story.run(START_DESIGNER, actor=story.agent)
     story.run_listeners()
-    launcher.thread.join(timeout=5)
+    launcher.wait_for_requests()
     launcher.server.close()
     story.home.socket("launcher").unlink()
     return helper_agent(story)

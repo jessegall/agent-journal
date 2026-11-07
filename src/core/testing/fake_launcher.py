@@ -3,19 +3,19 @@ import socket
 import threading
 from pathlib import Path
 
-from core.modules.agents.support.launcher_link import STOP_FIELD
+from core.modules.agents.support.launcher_link import STOP_FIELD, STOPPED_ANSWER
 
 ACCEPT_TIMEOUT_SECONDS = 10
 
 
 class FakeLauncher:
-    """A launcher socket in a story's journal folder that takes start requests and keeps them, under a time
-    limit, answering each as told or, as an older launcher does, not at all. With answers, request number n
-    gets answers[n] and any later request gets the last one."""
+    """A launcher socket in a story's journal folder that takes requests and keeps them until it is closed,
+    answering each as told; told nothing, it answers a stop as the launcher does and a start, as an older launcher
+    does, not at all. With answers, request number n gets answers[n] and any later request gets the last one."""
 
     def __init__(self, path: Path, answer: bytes = b"", request_count: int = 1, answers: tuple[bytes, ...] = ()) -> None:
         self.path, self.requests, self.answer, self.request_count = path, list[dict[str, object]](), answer, request_count
-        self.answers = answers
+        self.answers, self.arrived = answers, threading.Condition()
         self.server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.server.bind(str(path))
         self.server.listen(1)
@@ -24,22 +24,38 @@ class FakeLauncher:
         self.thread.start()
 
     def accepted(self) -> None:
-        while len(self.requests) < self.request_count:
-            connection, _ = self.server.accept()
+        while True:
+            try:
+                connection, _ = self.server.accept()
+            except OSError:
+                return
             with connection, connection.makefile("r") as stream:
                 request = json.loads(stream.readline())
                 if "typed" in request:
                     connection.sendall(b"typed")
                     continue
-                self.requests.append(request)
-                connection.sendall(self.answers[min(len(self.requests), len(self.answers)) - 1] if self.answers else self.answer)
+                with self.arrived:
+                    self.requests.append(request)
+                    self.arrived.notify_all()
+                connection.sendall(self.reply(request))
+
+    def reply(self, request: dict[str, object]) -> bytes:
+        if self.answers:
+            return self.answers[min(len(self.requests), len(self.answers)) - 1]
+        if not self.answer and STOP_FIELD in request:
+            return STOPPED_ANSWER
+        return self.answer
+
+    def wait_for_requests(self) -> None:
+        with self.arrived:
+            self.arrived.wait_for(lambda: len(self.requests) >= self.request_count, ACCEPT_TIMEOUT_SECONDS)
 
     @property
     def starts(self) -> list[dict[str, object]]:
         return [request for request in self.requests if STOP_FIELD not in request]
 
     def expect_started(self, agent_id: int, session: str, folder: Path) -> None:
-        self.thread.join(ACCEPT_TIMEOUT_SECONDS)
+        self.wait_for_requests()
         self.server.close()
         assert self.requests, f"the launcher was handed nothing for agent {agent_id}"
         request = self.requests[0]

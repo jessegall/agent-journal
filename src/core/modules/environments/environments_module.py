@@ -9,6 +9,7 @@ from core.modules.environments.models.environment import Environment
 from core.modules.environments.queries.environment_query import EnvironmentQuery
 from core.modules.environments.seeders.environments_seeder import EnvironmentsSeeder
 from core.modules.environments.upgrade.environments_move import EnvironmentsMove
+from core.modules.environments.commands.environment_list.environment_list_subcommand import EnvironmentListSubcommand
 
 
 class EnvironmentsModule(Module):
@@ -17,7 +18,8 @@ class EnvironmentsModule(Module):
     name = "journal.core.environments"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors"]
-    models = [ModelDeclaration(Environment, query=EnvironmentQuery)]
+    models = [ModelDeclaration(Environment, query=EnvironmentQuery, excluded_subcommands=["list"])]
+    subcommands = [EnvironmentListSubcommand]
     migrations = [EnvironmentsTableMigration, TestEnvironmentsMigration]
     guards = [TestGrantGuard]
     bindings = {EnvironmentNames: EnvironmentTableNames}
