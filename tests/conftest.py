@@ -98,6 +98,11 @@ def pytest_collect_file(file_path: Path, parent: pytest.Collector):
 
 
 @pytest.fixture(autouse=True)
+def program_config_folder(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("CODEX_HOME", str(tmp_path / "codex-home"))
+
+
+@pytest.fixture(autouse=True)
 def story_program_readiness(monkeypatch):
     opened = Story.opened
 

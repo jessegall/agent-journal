@@ -28,9 +28,9 @@ def test_a_folder_with_no_hooks_gets_the_program_s_hooks(new_story, tmp_path, mo
     story.expect_rows((tmp_path / ".claude" / "settings.local.json").is_file())
 
 
-def test_a_program_that_has_not_trusted_the_hooks_is_refused_naming_the_person(new_story, tmp_path, monkeypatch):
+def test_a_program_trusts_the_hooks_the_journal_writes(new_story, tmp_path, monkeypatch):
     story = new_story(fixture=BuilderStarted)
     monkeypatch.setattr(shutil, "which", lambda name: name)
     monkeypatch.setenv("CODEX_HOME", str(tmp_path / "codex-home"))
-    with pytest.raises(Refusal, match="not trusted"):
-        programs(story).checked("codex", tmp_path)
+    programs(story).checked("codex", tmp_path)
+    story.expect_success(f'program trust codex "{tmp_path}"', "ready")
