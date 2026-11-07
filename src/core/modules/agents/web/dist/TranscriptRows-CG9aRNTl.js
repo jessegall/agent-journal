@@ -13,18 +13,18 @@ const F = (r, t) => {
   __name: "TranscriptRows",
   props: { name: { type: String, required: !0 }, agent: { type: Number, default: null }, padding: { type: String, default: "8px 22px 8px 27px" }, helper: Boolean },
   setup(r) {
-    const t = r, a = L(), l = a.props[t.name], { failure: m, loaded: T } = l, b = P.ofRows("transcript", l);
+    const t = r, a = L(), l = a.props[t.name], { failure: m, loaded: T } = l, N = P.ofRows("transcript", l);
     a.reload(t.name);
-    const g = a.follow(["hook_call.*"], () => a.reload(t.name));
-    V(() => g == null ? void 0 : g());
-    const n = h(""), u = h(!1), f = h("");
+    const f = a.follow(["hook_call.*"], () => a.reload(t.name));
+    V(() => f == null ? void 0 : f());
+    const n = h(""), u = h(!1), g = h("");
     async function v() {
       if (t.agent === null || !n.value.trim() || u.value) return;
       u.value = !0;
       const e = await a.run(t.helper ? ["helper", "send", String(t.agent), n.value] : ["message", "send", n.value, "--target-agent", String(t.agent)]);
-      f.value = e.ok ? "" : e.error, e.ok && (n.value = ""), u.value = !1;
+      g.value = e.ok ? "" : e.error, e.ok && (n.value = ""), u.value = !1;
     }
-    function N(e) {
+    function b(e) {
       e.shiftKey || e.isComposing || (e.preventDefault(), v());
     }
     const x = y(() => [...l.rows.value].sort((e, i) => e.id - i.id)), B = y(() => {
@@ -36,7 +36,7 @@ const F = (r, t) => {
         d("div", I, [
           w(s(W), {
             "row-count": B.value,
-            feed: s(b)
+            feed: s(N)
           }, {
             default: c(() => [
               w(s(q), {
@@ -73,7 +73,7 @@ const F = (r, t) => {
               "aria-label": "Message this agent",
               placeholder: "Message this agent",
               rows: "2",
-              onKeydown: E(N, ["enter"])
+              onKeydown: E(b, ["enter"])
             }, null, 544), [
               [K, n.value]
             ]),
@@ -86,14 +86,14 @@ const F = (r, t) => {
               ])]),
               _: 1
             }, 8, ["disabled"]),
-            f.value ? (_(), k("p", H, p(f.value), 1)) : S("", !0)
+            g.value ? (_(), k("p", H, p(g.value), 1)) : S("", !0)
           ], 32)) : S("", !0)
         ])
       ]),
       _: 1
     }, 8, ["padding"]));
   }
-}, Y = /* @__PURE__ */ F(J, [["__scopeId", "data-v-b359de91"]]);
+}, Y = /* @__PURE__ */ F(J, [["__scopeId", "data-v-805fdf18"]]);
 export {
   Y as T,
   F as _
