@@ -3,6 +3,11 @@ from core.modules.helpers.migrations.m001_helper_limit_key import HelperLimitKey
 from core.modules.helpers.migrations.m002_settle_old_helpers import RetireOldHelpersMigration
 from core.modules.helpers.migrations.m003_open_helper_jobs_index import OpenHelperJobsIndexMigration
 from core.base.module.module import Module
+from core.base.module.model_declaration import ModelDeclaration
+from core.modules.helpers.models.provider_outage import ProviderOutage
+from core.modules.helpers.migrations.m004_provider_outages import ProviderOutagesMigration
+from core.modules.helpers.guards.provider_outage_program_guard import ProviderOutageProgramGuard
+from core.modules.helpers.commands.make_provider_outage.make_provider_outage_subcommand import MakeProviderOutageSubcommand
 from core.modules.helpers.guards.open_job_retire_guard import OpenJobRetireGuard
 from core.modules.helpers.commands.end_helper_job.end_helper_job_handler import EndHelperJobHandler
 from core.modules.helpers.commands.send_helper.send_helper_handler import SendHelperHandler
@@ -38,17 +43,18 @@ class HelpersModule(Module):
     from them by message."""
 
     name = "journal.core.helpers"
-    seed_reason = "it keeps no rows of its own yet"
+    seed_reason = "demo programs have no outages"
     move_reason = "version 4 had no helpers"
     requires_core = ">=5,<6"
-    migrations = [OpenHelperJobsIndexMigration, RetireOldHelpersMigration, HelperLimitKeyMigration]
-    dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers"]
+    migrations = [OpenHelperJobsIndexMigration, RetireOldHelpersMigration, HelperLimitKeyMigration, ProviderOutagesMigration]
+    models = [ModelDeclaration(ProviderOutage)]
+    dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers", "journal.core.usage"]
     settings = HELPER_SETTINGS
-    guards = [OpenJobRetireGuard]
+    guards = [OpenJobRetireGuard, ProviderOutageProgramGuard]
     handlers = [StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler]
     tick_handlers = [TickHandler(TickInterval(seconds=60), HelperLimitsTick(), "helper limits")]
     nudges = HELPER_NUDGES
     skills = [SkillDeclaration("journal-helpers", "Start a helper for a bounded read, send it more, stop it, and read its report; read it before the first helper command of a session", keywords=["helper start"])]
-    subcommands = [AgentMixSubcommand, StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand, HelperAvailabilitySubcommand]
+    subcommands = [AgentMixSubcommand, StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand, HelperAvailabilitySubcommand, MakeProviderOutageSubcommand]
     listeners = [NewMainHelpersListener, HelperResumeListener, HelperProgramListener, HelperEndedListener, HelperJobMarkListener, HelperJobSourceListener, DeletedHelperSourceListener]
     driver_rules = [UnstartedHelperRule, HelperReportRule]

@@ -1,6 +1,7 @@
 import importlib
 import importlib.util
 from unittest.mock import Mock
+from core.base.provider.providers import Providers
 
 STATES_MODULE = 'core.modules.helpers.support.program_states'
 STATE_MODULE = 'core.modules.helpers.support.program_state'
@@ -13,6 +14,7 @@ def bind_ready_programs(story):
     state_type = importlib.import_module(STATE_MODULE).ProgramState
     states = Mock(spec=states_type)
     states.state.return_value = state_type.ready()
+    states.ready_programs.return_value = tuple(provider.name for provider in story.container.get(Providers).all())
     story.container.bind(states_type, states)
 
 
