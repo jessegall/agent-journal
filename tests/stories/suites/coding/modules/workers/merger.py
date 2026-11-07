@@ -24,7 +24,7 @@ from core.testing.story_shell_sandbox import StoryShellSandbox
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.merge import expect_marks_text
-from tests.stories.suites.coding.modules.workers.test_queue import ended, queued_story
+from tests.stories.suites.coding.modules.workers.test_queue import PROOF, ended, queued_story, recording_launch
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
 
@@ -33,6 +33,37 @@ from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
 def merger_of(story):
     agents = story.container.get(Queries).query(Agent).filter(profile="journal-merger").all_rows()
     return next(iter(agents), None)
+
+
+@pytest.mark.parametrize("merger_on", [True, False])
+def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_story, monkeypatch, merger_on):
+    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.expect_success(f"setting set journal.suites.coding.workers.merger-on {str(merger_on).lower()} --project", actor=story.user)
+    repository = repository_environment(story)
+    started = recording_launch(monkeypatch)
+    worker = dispatched_worker(story)
+    repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
+    story.expect_success(PROOF, actor=worker)
+    story.expect_success("proof check 1", actor=story.agent)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    try:
+        story.expect_success("worker deliver --differences none", actor=worker)
+        story.run_listeners()
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
+    story.expect_rows(not started)
+    if merger_on:
+        merger = merger_of(story)
+        story.expect_rows(merger is not None)
+        story.expect_text("merger next", f"worker {worker.id}", actor=Actor(merger.id, ActorType.AGENT))
+    else:
+        story.expect_rows(merger_of(story) is None)
+        story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{worker.id} all pass", actor=story.agent)
 
 
 def test_with_the_setting_off_the_main_agent_hears_that_the_tests_passed(new_story):

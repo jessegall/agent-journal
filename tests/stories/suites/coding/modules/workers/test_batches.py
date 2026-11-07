@@ -52,6 +52,15 @@ def test_a_batch_waits_for_the_fourth_task_then_runs_all_its_proofs(submitted):
         submitted.story.expect_text(f"task show {task}", "state: completed", actor=submitted.story.agent)
 
 
+def test_a_batch_of_checked_proofs_moves_on_without_starting_a_test(batch):
+    for _ in range(4):
+        batch.change_and_prove(TEST_LINE)
+        task = batch.current_task()
+        batch.story.expect_success(f"proof check {task}", actor=batch.story.agent)
+        batch.story.expect_success("worker next --differences none", actor=batch.worker)
+    batch.story.expect_rows(batch.current_task() == 5, not batch.started)
+
+
 def test_a_short_batch_runs_at_the_workers_last_task(new_story, monkeypatch):
     worker = worker_outside_plan(new_story, monkeypatch)
     UserJoined().steps(worker.story)
@@ -114,6 +123,14 @@ def test_the_default_batch_size_keeps_testing_each_task(new_story, monkeypatch):
     worker.story.expect_rows(len(worker.started) == 1, worker.current_task() == 1)
     worker.end_all_tests()
     worker.story.expect_rows(worker.current_task() == 2)
+
+
+def test_worker_next_with_a_checked_proof_starts_the_next_task_without_a_test(new_story, monkeypatch):
+    worker = worker_outside_plan(new_story, monkeypatch)
+    worker.change_and_prove(TEST_LINE)
+    worker.story.expect_success("proof check 1", actor=worker.story.agent)
+    worker.story.expect_success("worker next --differences none", actor=worker.worker)
+    worker.story.expect_rows(worker.current_task() == 2, not worker.started)
 
 
 def test_a_large_batch_moves_on_without_repeated_row_reads(new_story, monkeypatch):

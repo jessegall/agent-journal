@@ -49,8 +49,7 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
         delivered = self.repository.save_change(committed, committed.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, logs_read_at=None, logs_output_id=None, tests_passed_at=None, left_to_main_at=None), context)
         task = self.rows.required(Task, committed.task_id)
         group = self.phases.group(delivered, task)
-        if group is None:
-            self.proof_queue.queue(delivered, context)
-        elif not self.proof_queue.queue_group(delivered, task, group, context):
+        queued = self.proof_queue.queue(delivered, context) if group is None else self.proof_queue.queue_group(delivered, task, group, context)
+        if not queued:
             self.results.finish(delivered, context)
         return self.rows.required(Task, committed.task_id)
