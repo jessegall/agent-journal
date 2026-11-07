@@ -107,7 +107,7 @@ const FILES_WINDOW = "coding.files";
 const MENU_PARTS = ".pane-menu,.pane-add,.pane-add-button,.pane-menu-button,.pane-tour";
 const adding = ref(null);
 const agentRow = computed(() => usage.value.agents.find((row) => row.role === "main") ?? null);
-const agentKnown = computed(() => context?.props.usage.loaded.value ?? false);
+const agentKnown = computed(() => Boolean(context?.props.usage.data.value));
 const environmentData = propData("environments", {rows: []});
 const environments = computed(() => environmentData.value.rows);
 const activeData = propData("active-environments", {environment_ids: []});
@@ -156,6 +156,17 @@ watch(() => context?.props.usage.data.value, (measured) => {
     if (!measured || !agentRow.value) return;
     context.state["fitness.agent"] = String(agentRow.value.id);
     context.reload("fitness");
+});
+const controlData = propData("controls", {groups: []});
+const programData = propData("programs", {rows: []});
+const skillData = propData("skills", {rows: []});
+watch(() => [agentKnown.value, agentRow.value?.id, agentRow.value?.ended_at], ([known, id, ended]) => {
+    if (!known) return;
+    if (id && !ended) {
+        context.state["controls.agent"] = String(id);
+        context.state["skills.agent"] = String(id);
+        context.reload(["controls", "skills"]);
+    } else context.reload("programs");
 });
 const readUsage = () => context?.reload("usage");
 // a page opens at its own address and a window in a pane
@@ -332,7 +343,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                         <WindowPane bar :name="window.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" />
                     </template>
             </AgentBar>
-            <InformationBar :agent="agentRow" :loading="!agentKnown" :branch="branch" :jobs="facts.jobs" :usage="usage" :fitness="fitness" :now="now" :run="shellRead" @open="openCount" @changed="readFacts">
+            <InformationBar :control-groups="controlData.groups" :agent-programs="programData.rows" :skills="skillData.rows" @skills="context.reload('skills')" :agent="agentRow" :loading="!agentKnown" :branch="branch" :jobs="facts.jobs" :usage="usage" :fitness="fitness" :now="now" :run="shellRead" @open="openCount" @changed="readFacts">
                     <span class="bar-buttons">
                         <template v-if="presets">
                             <LayoutPicker :list="presets" />

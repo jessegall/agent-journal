@@ -40,7 +40,7 @@ from core.modules.viewer.support.skeletons import VIEWER_SHELL_SKELETON
 
 SHELL_RUNS = ["doc comment", "report comment", "plan comment", "task comment", "message send", "link remove", "doc edit", "report edit", "doc close", "doc settle", "report close", "agent pause", "agent resume", "agent control", "agent stop", "agent launch", "task edit", "question answer", "question close", "setting make", "setting set", "plan ready", "plan start", "plan block", "plan unblock", "plan close", "plan cancel", "task start", "task block", "task unblock",
               "task retest", "task close", "task cancel", "task reopen", "environment make", "update install", "viewer-layout save", "window allow", "person-preset save", "person-preset rename", "person-preset remove", "memory-keyword make", "memory-keyword delete"]
-SHELL_READS = ["agent environments", "agent main", "output list", "pin list", "agent-skill list", "doc inspect", "report inspect", "doc comments", "report comments", "plan comments", "task comments", "template list", "doc revisions", "doc revision", "link list", "phone list", "agent controls", "agent programs", "update check", "task inspect", "task graph", "plan place", "plan inspect", "plan timeline", "environment list", "environment show", "agent list", "agent show", "actor show", "setting list", "setting show", "viewer-layout current",
+SHELL_READS = ["scheduled-job list", "agent environments", "agent main", "output list", "pin list", "agent-skill list", "doc inspect", "report inspect", "doc comments", "report comments", "plan comments", "task comments", "template list", "doc revisions", "doc revision", "link list", "phone list", "agent controls", "agent programs", "update check", "task inspect", "task graph", "plan place", "plan inspect", "plan timeline", "environment list", "environment show", "agent list", "agent show", "actor show", "setting list", "setting show", "viewer-layout current",
                "window permissions", "suite current", "suite layout", "suite presets", "person-preset list", "event list", "task list", "question list", "usage show", "usage bars", "usage agent", "usage agents", "usage tool", "plan show", "plan outline", "plan board", "task board", "phase list", "phase-task list", "task show", "task-log list", "task-dependency list",
                "doc show", "report show", "question show", "suggestion show", "message show", "memory show", "rule show", "process show", "output show", "review show", "sequence show",
                "template show", "dump show", "skill show", "usage fitness", "memory-keyword list", "output peek", "output page", "queue inspect", "queue list"]
@@ -68,6 +68,9 @@ class ViewerModule(Module):
         WindowKey("active-environments", "agent environments", events=["agent.*"]),
         WindowKey("usage", "usage show", reload_seconds=10),
         WindowKey("fitness", "usage fitness", arguments=["agent"], loading=KeyLoading.REQUESTED),
+        WindowKey("controls", "agent controls {agent}", loading=KeyLoading.REQUESTED),
+        WindowKey("programs", "agent programs", loading=KeyLoading.REQUESTED),
+        WindowKey("skills", "agent-skill list", arguments=["agent"], loading=KeyLoading.REQUESTED),
         WindowKey("phones", "phone list", events=["phone.*"]),
         WindowKey("bars", "usage bars"),
         WindowKey("activity", "event list --limit 30", tab="activity", reload_seconds=5),

@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref, toRef, watch} from "vue";
+import {computed, ref, toRef} from "vue";
 import AgentSkillsMenu from "./AgentSkillsMenu.vue";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
@@ -14,6 +14,9 @@ import {compactionLine} from "../domain/compaction.js";
 const props = defineProps({
     agent: {type: Object, default: null},
     card: Boolean,
+    controlGroups: {type: Array, default: () => []},
+    agentPrograms: {type: Array, default: () => []},
+    skills: {type: Array, default: () => []},
     loading: Boolean,
     jobs: {type: Number, default: 0},
     usage: {type: Object, default: () => ({agents: [], windows: []})},
@@ -22,8 +25,8 @@ const props = defineProps({
     fitness: {type: Object, default: null},
     run: {type: Function, default: null},
 });
-const emit = defineEmits(["open", "changed"]);
-const controls = useAgentControls(toRef(props, "agent"), props.run ?? (async () => ({ok: false, error: "nothing to ask"})), () => emit("changed"));
+const emit = defineEmits(["open", "changed", "skills"]);
+const controls = useAgentControls(toRef(props, "agent"), props.run ?? (async () => ({ok: false, error: "nothing to ask"})), () => emit("changed"), {groups: toRef(props, "controlGroups"), programs: toRef(props, "agentPrograms")});
 const anchor = ref(null);
 const opened = ref("");
 const group = computed(() => controls.groups.value.find((one) => one.key === opened.value));
@@ -39,20 +42,11 @@ function closeMenu() {
     controls.asking.value = false;
 }
 
-const skills = ref([]);
-const skillsRead = computed(() => skills.value.filter((row) => row.state === "loaded"));
-
-async function readSkills() {
-    const answer = props.agent && props.run ? await props.run(["agent-skill", "list", "--agent", String(props.agent.id)]) : null;
-    skills.value = answer?.ok ? answer.value.rows ?? [] : [];
-}
-
+const skillsRead = computed(() => props.skills.filter((row) => row.state === "loaded"));
 function openSkills(event) {
     openMenu(event, "skills");
-    readSkills();
+    emit("skills");
 }
-
-watch(() => props.agent?.id, readSkills, {immediate: true});
 
 const offers = (key) => controls.groups.value.some((one) => one.key === key);
 const model = computed(() => controls.chosen.value.model ?? status.value?.model ?? "");

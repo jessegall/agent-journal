@@ -1,25 +1,13 @@
-import {computed, onMounted, ref, watch} from "vue";
+import {computed, ref} from "vue";
 import {runChanged} from "../../kit/runChanged.js";
 
 // what the agent bar does to the agent: each change shows in the client at once, the server is told after it, and a refusal undoes it
-export function useAgentControls(agent, run, changed) {
-    const groups = ref([]);
-    const programs = ref([]);
+export function useAgentControls(agent, run, changed, {groups, programs}) {
     const chosen = ref({});
     const failure = ref("");
     const asking = ref(false);
     const running = computed(() => Boolean(agent.value) && !agent.value.ended_at);
     const paused = computed(() => running.value && Boolean(agent.value.paused_at));
-
-    async function read() {
-        if (running.value) {
-            const answer = await run(["agent", "controls", String(agent.value.id)]);
-            groups.value = answer.ok ? answer.value.groups : [];
-            return;
-        }
-        const answer = await run(["agent", "programs"]);
-        programs.value = answer.ok ? answer.value.rows : [];
-    }
 
     async function send(line, change = null) {
         failure.value = "";
@@ -40,7 +28,5 @@ export function useAgentControls(agent, run, changed) {
 
     const start = (program) => send(["agent", "launch", program.name]);
 
-    onMounted(read);
-    watch(running, read);
     return {groups, programs, chosen, failure, asking, running, paused, choose, stop, start};
 }

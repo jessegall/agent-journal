@@ -530,14 +530,14 @@ test("the shell reads its visible keys together and asks for fitness only after 
     localStorage.clear();
     const shellRead = async (line) => ({ok: true, value: line[0] === "usage" && line[1] === "show"
         ? {agents: [{id: 7, role: "main"}], windows: []}
-        : line[0] === "agent" ? {environment_ids: [1]} : {rows: []}});
+        : line[0] === "agent" ? (line[1] === "controls" ? {groups: []} : {environment_ids: [1]}) : {rows: []}});
     await stage(SHAPE, {stageProps: {shellRead}});
     await settled();
     const requests = fetch.mock.calls.filter(([url]) => String(url).startsWith("/api/window?"));
     expect(requests).toHaveLength(2);
     expect(requests[0][1].headers).toMatchObject({"x-journal-window": "viewer.shell"});
     expect(requests[0][1].headers["x-journal-data-only"]).toBeUndefined();
-    expect(requests[1][1].headers["x-journal-data-only"]).toBe("fitness");
+    expect(new Set(requests[1][1].headers["x-journal-data-only"].split(","))).toEqual(new Set(["fitness", "controls", "skills"]));
     expect(new URL(requests[1][0], "http://localhost").searchParams.get("fitness.agent")).toBe("7");
     expect(requests.some(([url]) => new URL(url, "http://localhost").searchParams.get("tab") === "activity")).toBe(false);
 });

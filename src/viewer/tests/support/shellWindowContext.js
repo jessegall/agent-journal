@@ -6,6 +6,9 @@ export const SHELL_KEYS = {
     branch: {line: "git-overview current", reload_seconds: 30},
     usage: {line: "usage show", reload_seconds: 10},
     fitness: {line: "usage fitness", loading: "requested"},
+    controls: {line: "agent controls {agent}", loading: "requested"},
+    programs: {line: "agent programs", loading: "requested"},
+    skills: {line: "agent-skill list", loading: "requested"},
     phones: {line: "phone list", events: ["phone.*"]},
     bars: {line: "usage bars"},
     activity: {line: "event list --limit 30", tab: "activity", reload_seconds: 5},
@@ -32,7 +35,8 @@ export async function shellKeysAnswer(answer, init, url) {
     return {ok: true, json: async () => ({keys, declared})};
 }
 
-export const lineAnswer = (run) => async (_, init) => {
+export const lineAnswer = (run) => async (url, init) => {
+    if (url !== "/api/line") return {ok: true, json: async () => ({})};
     const answer = await run(JSON.parse(init.body).line);
     return {ok: true, json: async () => ({code: answer.ok ? 0 : 1, value: answer.value, error: answer.error ?? ""})};
 };
