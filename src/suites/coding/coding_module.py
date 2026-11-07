@@ -8,6 +8,7 @@ from suites.coding.support.coding_templates import CODING_TEMPLATES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.module.module import Module
+from core.base.agent_group import AgentGroup
 from core.base.agent_type import AgentType
 from core.base.viewer.window_search import WindowSearch
 from suites.coding.support.file_edit_searcher import FileEditSearcher
@@ -69,6 +70,8 @@ class CodingModule(Module):
     name = "journal.suites.coding"
     profiles = HELPER_PROFILES
     agent_types = [AgentType("verifier", "Verifier")]
+    agent_groups = [AgentGroup("workers", "Workers", "worker"), AgentGroup("merger", "Merger", "helper", ("journal-merger",)),
+                    AgentGroup("designer", "Designer", "helper", ("journal-designer",)), AgentGroup("helpers", "Helpers", "helper")]
     templates = CODING_TEMPLATES
     nudges = [*CODING_NUDGES, TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN]
     seeders = [CodingSeeder]

@@ -1,10 +1,13 @@
 import re
-from collections.abc import Sequence
+from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import fields
 
 from core.base.access import Access
 from core.base.agent_roster import AgentRoster
+from core.base.agent_group_book import AgentGroupBook
 from core.base.agent_type import AgentType
+from core.base.profile.agent_profile import AgentProfile
+from core.base.registry.agent_group_entry import AgentGroupEntry
 from core.base.agent_type_book import AgentTypeBook
 from core.base.module.module import Module
 from core.base.registry.agent_type_entry import AgentTypeEntry
@@ -46,7 +49,19 @@ class AgentTypeCheck:
         uses.extend((rule.name, role) for rule in rules for role in rule.roles)
         problems.extend(f"{owner}: {role} is no registered agent type; register it in a module's agent_types"
                         for owner, role in dict.fromkeys(uses) if role not in names)
+        problems.extend(self.group_problems(modules, names, profiles))
         return tuple(problems)
+
+    @staticmethod
+    def group_problems(modules: Sequence[type[Module]], names: frozenset[str], profiles: Mapping[str, AgentProfile]) -> Iterator[str]:
+        groups = tuple(AgentGroupEntry.declared(module.name, group) for module in modules for group in module.agent_groups)
+        yield from AgentGroupBook(groups).problems(names)
+        for group in groups:
+            for name in group.profiles:
+                if name not in profiles:
+                    yield f"the agent group {group.key} names the profile {name}, which is not registered"
+                elif profiles[name].agent_type != group.agent_type:
+                    yield f"the agent group {group.key} names the profile {name}, which has type {profiles[name].agent_type}, not {group.agent_type}"
 
     def declaration_problems(self, module: type[Module], declaration: AgentType, claimed: dict[str, str]) -> list[str]:
         name = f"{module.name}'s agent type {declaration.key}"

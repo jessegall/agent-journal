@@ -3,6 +3,7 @@ from core.base.file_access import FileAccess
 from collections.abc import Sequence
 
 from core.base.clock import Clock
+from core.base.registry.agent_group_entry import AgentGroupEntry
 from core.base.registry.agent_type_entry import AgentTypeEntry
 from core.base.registry.profile_entry import ProfileEntry
 from core.base.command.delete_command import DeleteCommand
@@ -163,6 +164,7 @@ class ModuleSync:
             inspector_slots=tuple(sorted(InspectorSlots(modules).owners)),
             state_additions=tuple(StateAdditionEntry.declared(module.name, addition, module not in self.finder.default_modules()) for module in modules for addition in module.added_states),
             agent_types=tuple(AgentTypeEntry.declared(module.name, declaration) for module in modules for declaration in module.agent_types),
+            agent_groups=tuple(AgentGroupEntry.declared(module.name, group) for module in modules for group in module.agent_groups),
             profiles=tuple(ProfileEntry.declared(module.name, profile) for module in modules for profile in module.profiles),
             providers=self.providers.providers(modules),
             settings=tuple(entry for module in modules for entry in SettingTree().entries(module.name, module.settings)),
