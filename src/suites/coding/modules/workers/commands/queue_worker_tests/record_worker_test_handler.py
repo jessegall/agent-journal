@@ -46,6 +46,9 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         proof = self.rows.required(Proof, command.proof_id)
         self.repository.save_change(proof, proof.moved(ProofLifecycle.check) if command.passed else proof.moved(ProofLifecycle.short, shortfall=command.output_note), context)
         worktree = self.rows.required(Worktree, proof.worktree_id)
+        self.finish(worktree, context)
+
+    def finish(self, worktree: Worktree, context: Context) -> None:
         proofs = tuple(self.queries.query(Proof).filter(worktree_id=worktree.id).all_rows())
         if any(row.state in TEST_WAITING_STATES for row in proofs):
             return
@@ -56,10 +59,6 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         pending = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).all_rows()
         if any(row.state in (AffectedTestState.QUEUED, AffectedTestState.PICKING, AffectedTestState.TESTING) for row in pending):
             return
-        self.finish_proofs(worktree, proofs, context)
-
-    def finish(self, worktree: Worktree, context: Context) -> None:
-        proofs = tuple(self.queries.query(Proof).filter(worktree_id=worktree.id).all_rows())
         self.finish_proofs(worktree, proofs, context)
 
     def finish_proofs(self, worktree: Worktree, proofs: tuple[Proof, ...], context: Context) -> None:
