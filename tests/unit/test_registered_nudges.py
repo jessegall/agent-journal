@@ -14,7 +14,7 @@ NUDGE_LIST_NAMES = re.compile(r"NUDGES$")
 ALLOWED_PLACEHOLDERS = frozenset({"approval", "recipient", "code", "plugin", "targets", "route", "exception", "line", "trigger", "remaining", "reminder", "tool", "limit", "place", "doc",
     "uses", "action", "agent", "block", "branch", "category", "check", "count", "dump", "emoji", "environment", "folder", "job", "kept", "left", "limit", "lines", "memories", "memory", "message",
     "messages", "minutes", "name", "other", "output", "outputs", "percent", "phase", "place", "plan", "process", "program", "programs", "proof", "proofs", "question", "queue", "refusal", "request",
-    "path", "instruction", "reader", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "transcription", "url", "wait", "worker", "workers", "writes", "hint", "items", "hint",
+    "path", "instruction", "reader", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "transcription", "url", "wait", "worker", "workers", "writes", "hint", "items", "hint", "then",
 })
 # Static driver instructions and runtime rule diagnostics have no stored resource.
 FOREIGN_TEMPLATES = frozenset({"OPENING_LINE", "RULE_FAILED"})
@@ -63,6 +63,9 @@ def test_a_line_carries_a_row_by_its_id_never_by_its_words(name, text, path):
         return
     if name == "TASK_METADATA_REMINDER":
         assert set(PLACEHOLDER.findall(text)) == {"task", "missing", "tag_command", "score_command"}
+        return
+    if name == "TASK_READ_ONLY_METADATA_REMINDER":
+        assert set(PLACEHOLDER.findall(text)) == {"task", "missing", "options"}
         return
     assert PLACEHOLDER.fullmatch(text) is None, f"{name} is only a placeholder, so its words are made on the fly: {text}"
     extra_fields = set(PLACEHOLDER.findall(text)) - ALLOWED_PLACEHOLDERS
