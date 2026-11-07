@@ -1,6 +1,8 @@
 <script setup>
 import {computed, nextTick, onUnmounted, ref, watch} from "vue";
 import {opening, peek, route, unpeek} from "../route.js";
+import {DECLARED_NOUNS} from "./declaredNouns.js";
+import InspectorPanel from "./InspectorPanel.vue";
 import {render} from "../text/index.js";
 import Skeleton from "../kit/Skeleton.vue";
 import ButtonSlot from "../kit/ButtonSlot.vue";
@@ -32,6 +34,7 @@ const failure = ref("");
 const fullyOpen = ref(false);
 let reading = 0;
 
+const declared = computed(() => DECLARED_NOUNS.has(noun.value));
 const LONG_NOUNS = new Set(["plan"]);
 const DOCUMENT_NOUNS = new Set(["doc", "report"]);
 const OWN_INSPECTORS = new Set(["task", "plan", "test-queue", "agent", "agent-skill", ...DOCUMENT_NOUNS]);
@@ -50,7 +53,7 @@ async function load() {
     creator.value = "";
     owner.value = "";
     failure.value = "";
-    if (!open || OWN_INSPECTORS.has(cliOf(open.table))) return;
+    if (!open || OWN_INSPECTORS.has(cliOf(open.table)) || DECLARED_NOUNS.has(cliOf(open.table))) return;
     const name = cliOf(open.table);
     const answer = await props.read([name, "show", String(open.id)]);
     if (turn !== reading) return;
@@ -92,7 +95,23 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     <Teleport to="body">
         <Transition name="side" appear @before-enter="fullyOpen = false" @after-enter="fullyOpen = true">
             <div v-if="opened" :class="['veil', {fades: noun === 'test-queue'}]" @click.self="close">
+                <InspectorPanel
+                    v-if="declared"
+                    :noun="noun"
+                    :id="opened.id"
+                    :table="opened.table"
+                    :read="read"
+                    :catalogue="catalogue"
+                    :environment="environment"
+                    :read-only="readOnly"
+                    :backed="route.stack.length > 1"
+                    :opening="!fullyOpen"
+                    @close="close"
+                    @back="unpeek"
+                    @open="(row) => peek(row.table, row.id)"
+                />
                 <aside
+                    v-else
                     :class="['panel', {wide, opening: !fullyOpen, task: noun === 'task', document: isDocument, queue: noun === 'test-queue', agent: noun === 'agent'}]"
                     ref="panel"
                     tabindex="-1"
@@ -232,18 +251,18 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     box-shadow: -20px 0 50px rgba(0, 0, 0, 0.4);
 }
 
-.panel-opening {
+.panel :deep(.panel-opening) {
     position: absolute;
     z-index: 1;
     inset: 0;
     padding: 20px 24px;
 }
 
-.panel > :not(.panel-opening) {
+.panel > :deep(:not(.panel-opening)) {
     transition: opacity 0.18s ease;
 }
 
-.panel.opening > :not(.panel-opening) {
+.panel.opening > :deep(:not(.panel-opening)) {
     opacity: 0;
     transition: none;
 }
