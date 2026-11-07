@@ -62,7 +62,7 @@ ENVIRONMENT_CARDS_SELECT = (
     "SELECT environments.id, environments.name, environments.folder, environments.branch,"
     " (SELECT count(*) FROM agents WHERE agents.environment_id = environments.id AND agents.ended_at IS NULL) AS running_agent_count,"
     " (SELECT count(*) FROM tasks WHERE tasks.environment_id = environments.id AND tasks.state IN ('open', 'started', 'blocked', 'testing')) AS unfinished_task_count"
-    " FROM environments"
+    " FROM environments WHERE environments.test = 0"
 )
 
 
