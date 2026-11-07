@@ -3,24 +3,24 @@ import {computed, ref, watch} from "vue";
 import {Btn, EmptyState, Skeleton, TimeAgo, useWindow} from "@journal/window-kit";
 import {checksLine, distanceLine, reviewLine, shortSha} from "./gitWords.js";
 
-const window = useWindow();
+const view = useWindow();
 
 function pagedList(key) {
-    const prop = window.props[key];
+    const prop = view.props[key];
     const rows = ref([]);
     watch(prop.data, (page) => {
-        if (page) rows.value = window.state[`${key}.skip`] ? [...rows.value, ...page.rows] : page.rows;
+        if (page) rows.value = view.state[`${key}.skip`] ? [...rows.value, ...page.rows] : page.rows;
     }, {immediate: true});
     const load = () => {
-        window.state[`${key}.skip`] = String(rows.value.length);
-        return window.reload(key);
+        view.state[`${key}.skip`] = String(rows.value.length);
+        return view.reload(key);
     };
     return {...prop, rows, load, more: computed(() => prop.data.value?.is_last_page === false)};
 }
 
 const branches = pagedList("branches");
 const commits = pagedList("commits");
-const {data: pulls, failure: pullsFailure} = window.props.pulls;
+const {data: pulls, failure: pullsFailure} = view.props.pulls;
 </script>
 
 <template>

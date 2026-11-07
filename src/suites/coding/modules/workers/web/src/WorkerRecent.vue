@@ -2,8 +2,8 @@
 import {RowList, TimeAgo, peekRef, useWindow} from "@journal/window-kit";
 
 // the moments the workers' marks in the chat name, newest first; one opens its worker
-const window = useWindow();
-const {rows, failure, loaded, older, more} = window.props.recent;
+const view = useWindow();
+const {rows, failure, loaded, older, more} = view.props.recent;
 </script>
 
 <template>

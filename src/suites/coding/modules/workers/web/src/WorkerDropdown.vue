@@ -4,10 +4,10 @@ import {AgentRowList, InnerTabs, SwitchCase, TabBody, WindowRoom, useWindow} fro
 import WorkerRecent from "./WorkerRecent.vue";
 
 // the workers this environment sent, and beside them what the workers did lately, as version 4's list showed both
-const window = useWindow();
-window.state.tab = window.tabs[0]?.key ?? "workers";
-const tab = computed({get: () => window.tabs.find((tab) => tab.key === window.state.tab), set: (tab) => (window.state.tab = tab.key)});
-const {rows, failure, loaded} = window.props.workers;
+const view = useWindow();
+view.state.tab = view.tabs[0]?.key ?? "workers";
+const tab = computed({get: () => view.tabs.find((tab) => tab.key === view.state.tab), set: (tab) => (view.state.tab = tab.key)});
+const {rows, failure, loaded} = view.props.workers;
 </script>
 
 <template>

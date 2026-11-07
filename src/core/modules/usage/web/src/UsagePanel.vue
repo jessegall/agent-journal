@@ -3,8 +3,8 @@ import {computed} from "vue";
 import {WindowRoom, useWindow} from "@journal/window-kit";
 
 // the plan allowance as version 4's usage menu drew it: a meter for each window of the plan, with when it starts again
-const window = useWindow();
-const {data: usage, failure} = window.props.usage;
+const view = useWindow();
+const {data: usage, failure} = view.props.usage;
 const windows = computed(() => usage.value?.windows ?? []);
 
 const reset = (seconds) => `Starts again ${new Date(seconds * 1000).toLocaleString()}`;
@@ -16,12 +16,12 @@ const reset = (seconds) => `Starts again ${new Date(seconds * 1000).toLocaleStri
         <template v-if="failure">
             <p class="none">{{ failure }}</p>
         </template>
-        <template v-for="window in windows" :key="window.title">
+        <template v-for="window in windows" :key="view.title">
             <div class="meter" data-usage-meter>
-                <span>{{ window.title }}</span>
-                <strong>{{ Math.round(window.used_percent) }}%</strong>
-                <span class="track"><span :style="{width: `${window.used_percent}%`}" /></span>
-                <small>{{ reset(window.reset_epoch_seconds) }}</small>
+                <span>{{ view.title }}</span>
+                <strong>{{ Math.round(view.used_percent) }}%</strong>
+                <span class="track"><span :style="{width: `${view.used_percent}%`}" /></span>
+                <small>{{ reset(view.reset_epoch_seconds) }}</small>
             </div>
         </template>
         <template v-if="usage && !windows.length">

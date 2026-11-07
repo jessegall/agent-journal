@@ -3,9 +3,9 @@ import {CloseButton, Icon, usePoll, useWindow} from "@journal/window-kit";
 import ProcessQueueBand from "../../../../../viewer/src/resource/ProcessQueueBand.vue";
 
 const emit = defineEmits(["close"]);
-const window = useWindow();
-const {data: queue, failure} = window.props.queue;
-usePoll(() => window.reload("queue"), () => window.visible.value);
+const view = useWindow();
+const {data: queue, failure} = view.props.queue;
+usePoll(() => view.reload("queue"), () => view.visible.value);
 const elapsed = (row) => `${Math.round(row.waited_ms)} ms`;
 </script>
 

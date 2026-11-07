@@ -6,11 +6,11 @@ import {AutoScrollPane, DiffCard, RowList, useWindow} from "@journal/window-kit"
 // that and shows Newest; each edit is a diff card of its first lines, and older edits are read from the button above
 const CARD_LINES = 5;
 const props = defineProps({agent: {type: Number, required: true}});
-const window = useWindow();
-const feed = window.props[`agent-edits.${props.agent}`];
+const view = useWindow();
+const feed = view.props[`agent-edits.${props.agent}`];
 const {rows, failure, loaded, more, older} = feed;
 feed.loadLatest();
-const stopFollowing = window.follow(["file_edit.create"], feed.heard);
+const stopFollowing = view.follow(["file_edit.create"], feed.heard);
 onUnmounted(() => stopFollowing?.());
 const edits = computed(() => rows.value.map((edit) => ({...edit, lines: JSON.parse(edit.rows || "[]")})).reverse());
 const newest = computed(() => rows.value[0]?.id ?? 0);

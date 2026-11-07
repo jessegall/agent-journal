@@ -4,9 +4,9 @@ import {Btn, RowList, WindowRoom, useWindow} from "@journal/window-kit";
 import {nextRun, scheduleWords} from "./cron.js";
 
 // the jobs this agent scheduled for itself; a stop asks the agent to delete the job, so it stays listed until the agent has
-const window = useWindow();
-window.state["jobs.agent"] = String(window.agent);
-const {rows, failure, loaded} = window.props.jobs;
+const view = useWindow();
+view.state["jobs.agent"] = String(view.agent);
+const {rows, failure, loaded} = view.props.jobs;
 const refusal = ref("");
 const firstLine = (prompt) => prompt.split("\n")[0];
 
@@ -21,9 +21,9 @@ function words(row) {
 }
 
 async function stop(row) {
-    const answer = await window.run(["scheduled-job", "stop", String(row.id)]);
+    const answer = await view.run(["scheduled-job", "stop", String(row.id)]);
     refusal.value = answer.ok ? "" : answer.error;
-    if (answer.ok) window.reload("jobs");
+    if (answer.ok) view.reload("jobs");
 }
 </script>
 

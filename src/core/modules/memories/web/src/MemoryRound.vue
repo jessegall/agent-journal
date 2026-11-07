@@ -4,8 +4,8 @@ import {FoldGroup, peekRef, useWindow} from "@journal/window-kit";
 import {roundOf} from "./round.js";
 
 // one compaction's round of memories, as its mark keeps it, in two groups shut until clicked: those still shown, and those faded out; a row opens its memory in the inspector
-const window = useWindow();
-const mark = window.option("row");
+const view = useWindow();
+const mark = view.option("row");
 const parts = computed(() => roundOf(mark.value?.lines) || []);
 const opened = ref(new Set());
 

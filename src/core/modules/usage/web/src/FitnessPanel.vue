@@ -2,9 +2,9 @@
 import {WindowRoom, useWindow} from "@journal/window-kit";
 
 // the measures behind an agent's fitness score, each with its value and the level it should stay under
-const window = useWindow();
-window.state["fitness.agent"] = String(window.agent);
-const {data: fitness, failure} = window.props.fitness;
+const view = useWindow();
+view.state["fitness.agent"] = String(view.agent);
+const {data: fitness, failure} = view.props.fitness;
 </script>
 
 <template>

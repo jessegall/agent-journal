@@ -4,9 +4,9 @@ import {Btn, ListTools, QrCode, RowList, WindowRoom, removed, useListTools, useW
 
 const ABILITIES = ["Read the chat and see what needs you", "Answer questions", "Read reports, documents, plans and tasks", "Approve a plan or ask for changes", "Send the agent instructions"];
 
-const window = useWindow();
-const {rows, failure, loaded, act, actionFailure, answer} = window.props.phones;
-const {data: tunnel} = window.props.tunnel;
+const view = useWindow();
+const {rows, failure, loaded, act, actionFailure, answer} = view.props.phones;
+const {data: tunnel} = view.props.tunnel;
 const paired = computed(() => rows.value.filter((row) => row.state === "paired"));
 const tools = useListTools(paired, {title: (row) => row.name});
 </script>

@@ -5,8 +5,8 @@ import {ListTools, Skeleton, WindowRoom, useListTools, useWindow} from "@journal
 const STATES = {new: "New", noted: "Noted", filed: "Filed", failed: "Failed"};
 const TYPES = {docs: "Document", doc: "Document", plans: "Plan", plan: "Plan", tasks: "Task", task: "Task", reports: "Report", report: "Report"};
 const SETTLED = ["noted", "filed", "failed"];
-const window = useWindow();
-const {data, failure: readFailure, loaded} = window.props.dumps;
+const view = useWindow();
+const {data, failure: readFailure, loaded} = view.props.dumps;
 const cards = ref([]);
 const actionFailure = ref("");
 const failure = computed(() => actionFailure.value || readFailure.value);
@@ -29,7 +29,7 @@ const madeOf = (card) => card.items.flatMap((item) => item.refs.map((ref) => ({r
 const typeOf = (ref) => TYPES[ref.split(":")[0]] || ref.split(":")[0];
 
 async function more() {
-    const answer = await window.readKey("dumps", {before: Math.min(...cards.value.map((card) => card.id))});
+    const answer = await view.readKey("dumps", {before: Math.min(...cards.value.map((card) => card.id))});
     if (!answer.ok) return void (actionFailure.value = answer.error);
     cards.value = [...cards.value, ...answer.value.dumps];
 }
@@ -43,7 +43,7 @@ async function rename(card) {
     const title = draft.value.trim();
     renaming.value = null;
     if (!title || title === card.title) return;
-    const answer = await window.run(["dump", "name", String(card.id), title]);
+    const answer = await view.run(["dump", "name", String(card.id), title]);
     if (!answer.ok) actionFailure.value = answer.error;
 }
 </script>
