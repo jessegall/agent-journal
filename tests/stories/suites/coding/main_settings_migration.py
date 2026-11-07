@@ -2,7 +2,7 @@ import json
 import shlex
 
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.support.coding_fixtures import BuilderWithUser, OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask, BuilderWithUser
 from tests.stories.suites.coding.main_file_permissions import MAIN_SESSION, PROJECT_FILE
 from tests.stories.support.story_checks import expect_value
 
@@ -20,7 +20,7 @@ def test_old_builder_auto_off_keeps_value_and_explains_refused_edits(new_story):
 
 
 def test_s50_a_fresh_environment_reads_auto_from_its_declared_default(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=BuilderWithOpenTask)
     story.expect_text(f"setting show {AUTO} --environment main", "from: default", actor=story.user)
 
 
