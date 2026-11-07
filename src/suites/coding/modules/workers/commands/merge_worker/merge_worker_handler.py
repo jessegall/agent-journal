@@ -25,6 +25,8 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.merge_checks import MergeChecks
+from suites.coding.modules.workers.commands.record_merge_request.record_merge_request import RecordMergeRequest
+from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 
 class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     """Merges a checked worktree into its base branch in the environment's folder, in the order of doc 1101
@@ -69,11 +71,24 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
             return self.bus.run_with_context(RecordWorktreeMerge(worktree.id, conflicts), context)
         self.git.rebuild(worktree, environment.folder)
         commit_before_merge = self.git.tip(environment.folder, worktree.base_branch)
+        refusal = self.refused_merge(worktree, environment, commit_before_merge, context)
+        if refusal:
+            return MergeOutcome(self.rows.required(Worktree, worktree.id), (), refusal)
         self.git.merge(environment.folder, worktree, f"task {task.id}: {task.title}, from worker {worktree.session_agent_id}")
         self.commands.run(environment.folder, worktree.base_branch, self.settings.texts(MERGE_COMMANDS), (), MERGE_COMMANDS_NAME)
         merge_outcome =self.bus.run_with_context(RecordWorktreeMerge(worktree.id, (), commit_before_merge, self.git.tip(environment.folder, worktree.base_branch)), context)
         self.git.remove(environment.folder, merge_outcome.worktree)
         return MergeOutcome(self.bus.run_with_context(RecordWorktreeRemoval(worktree.id), context), ())
+
+    def refused_merge(self, worktree: Worktree, environment: Environment, target_commit: str, context: Context) -> str:
+        branch_commit = self.git.tip(environment.folder, worktree.branch)
+        try:
+            self.bus.run_with_context(RecordMergeRequest(worktree.id, target_commit, branch_commit, worktree.folder), context)
+        except Refusal as refusal:
+            findings = f"{refusal.reason}: {refusal.suggestion}" if refusal.suggestion else refusal.reason
+            self.bus.run_with_context(SendWorker(worktree.session_agent_id, f"Your merge into {worktree.base_branch} was refused before anything was merged:\n{findings}\nFix it in your worktree and deliver again."), context)
+            return findings
+        return ""
 
     def keep_answer(self, worktree: Worktree, review: WorkerReview, answer: str, context: Context) -> None:
         for task in review.tasks:
