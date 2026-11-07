@@ -23,6 +23,7 @@ class TaskCard(EnvironmentScoped, ViewModel):
     state: TaskState
     priority: TaskPriority
     complexity: TaskComplexity | None
+    tags: tuple[str, ...]
     reason: str
     closed_at: str | None
     delegated_to: int | None

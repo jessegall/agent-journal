@@ -26,12 +26,15 @@ const view = computed({get: () => window.state.tab, set: (value) => (window.stat
 const states = ref([]);
 const display = ref({grouping: "state", number: true, reason: false, showDone: false});
 const searched = computed(() => list.value?.query ?? "");
-const filtered = computed(() => view.value === "list" && Boolean(states.value.length || searched.value));
+const filtered = computed(() => view.value === "list" && Boolean(states.value.length || searched.value || list.value?.tag));
 const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 
 function clearFilter() {
     states.value = [];
-    if (list.value) list.value.query = "";
+    if (list.value) {
+        list.value.query = "";
+        list.value.tag = "";
+    }
 }
 
 function deleted() {

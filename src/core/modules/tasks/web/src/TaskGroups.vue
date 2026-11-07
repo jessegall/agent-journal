@@ -23,7 +23,7 @@ const failure = computed(() => pageFailure.value || window.props.board.failure.v
 const loaded = computed(() => window.shared ? window.props[`task.${window.shared.id}`].loaded.value : window.props.board.loaded.value);
 const extended = ref(new Set());
 const query = ref("");
-const tag = ref("");
+const tag = ref(window.state["board.tag"] || "");
 const tags = computed(() => window.props.tags.rows.value);
 // the rows each group shows on a page, chosen in the window's menu and kept on the pane
 const pageRows = window.option("rows");

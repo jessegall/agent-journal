@@ -3,7 +3,6 @@ from core.base.query.conditions.has_value import HasValue
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.less import Less
 from core.base.query.condition import Condition
-from core.base.query.conditions.subquery_match import SubqueryMatch
 from core.modules.tasks.conditions.closed_task_cursor import ClosedTaskCursor
 from argparse import ArgumentParser, Namespace
 
@@ -18,7 +17,7 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_card import TaskCard
 from core.modules.tasks.support.task_board import TaskBoard
 from core.modules.tasks.support.task_group import TaskGroup
-from core.modules.tasks.queries.task_query import TaskQuery
+from core.modules.tasks.conditions.task_tag_match import TaskTagMatch
 
 ACTIVE_STATES = (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED, TaskState.OPEN)
 FINISHED_STATES = (TaskState.COMPLETED, TaskState.CANCELLED)
@@ -37,8 +36,8 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
     name = "board"
     environment_refusal = "the board is shown for one environment"
 
-    def __init__(self, queries: Queries, book: StateBook, tasks: TaskQuery) -> None:
-        self.queries, self.book, self.tasks = queries, book, tasks
+    def __init__(self, queries: Queries, book: StateBook) -> None:
+        self.queries, self.book = queries, book
 
     def added_states(self) -> tuple[str, ...]:
         lifecycle = self.book.lifecycle(Task)
@@ -83,8 +82,7 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
     def cards(self, state: TaskState | str, tags: list[str]) -> Query[TaskCard]:
         cards = self.queries.query(TaskCard)
         for word in tags:
-            tasks = self.tasks.tagged(word)
-            cards = cards.matching(SubqueryMatch("id", tasks.select.column("id")))
+            cards = cards.matching(TaskTagMatch(word))
         if state == DELEGATED:
             return cards.matching(HasValue("delegated_to")).matching(Among("state", [active.value for active in ACTIVE_STATES]))
         cards = cards.filter(state=state)

@@ -7,6 +7,7 @@ class EditTaskSubcommand(EditSubcommand):
     """Edits the fields of a task."""
 
     cli_name = "task"
+    outward = True
 
     def __init__(self, tables: Tables) -> None:
         super().__init__(tables.table(Task))

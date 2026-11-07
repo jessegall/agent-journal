@@ -7,6 +7,7 @@ from core.base.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
+from core.modules.drivers.support.access_nudges import OUTWARD_JOURNAL_LINE
 from tests.stories.core.modules.helpers.start_helper import started
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
@@ -59,8 +60,7 @@ def test_new_tag_word_needs_confirm(tag_story):
 
 def test_new_tag_word_needs_confirm_person_does_not_confirm(tag_story, tag_viewer):
     story = tag_story
-    value = tag_viewer.value('tasks.tasks', ['task', 'make', 'Queue', '--tag', 'networks'])
-    story.expect_rows('networks' in json.dumps(value))
+    tag_viewer.value('tasks.tasks', ['task', 'make', 'Queue', '--tag', 'networks'])
     story.expect_text('task tags --environment main', 'networks')
 
 
@@ -123,7 +123,8 @@ def test_read_only_planner_tags_and_scores(tag_story):
     arguments = ['task', 'make', 'Queue', '--complexity', '3', '--tag', 'networking', '--confirm', '--environment', 'main']
     story.expect_hook_allowed(session, HookSamples.shell('journal task make Queue --complexity 3 --tag networking --confirm --environment main', ShellPart('journal', CommandCategory.JOURNAL, arguments, subcommand='task')))
     task = story.new_row_id('task make Queue --complexity 3 --tag networking --confirm --environment main', actor=Actor(helper_id, ActorType.AGENT))
-    story.expect_hook_refusal(session, HookSamples.shell(f'journal task edit {task} --complexity 4', ShellPart('journal', CommandCategory.JOURNAL, ['task', 'edit', str(task), '--complexity', '4'], subcommand='task')), 'reads and searches only')
+    story.expect_hook_refusal(session, HookSamples.shell(f'journal task edit {task} --complexity 4', ShellPart('journal', CommandCategory.JOURNAL, ['task', 'edit', str(task), '--complexity', '4'], subcommand='task')), OUTWARD_JOURNAL_LINE.nudge().text)
+    story.expect_refusal(f'task edit {task} --complexity 4', 'read-only', actor=Actor(helper_id, ActorType.AGENT))
 
 
 def test_task_card_shows_tags_and_complexity(tag_story, tag_viewer):

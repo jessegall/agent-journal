@@ -14,8 +14,11 @@ class GuardEntry:
     path: DottedPath
     position: int
     short_flag: str
+    confirmation_only: bool = False
 
     @property
     def skip_flag(self) -> str:
         flag = f"--{self.short_flag}" if self.short_flag else f"--skip-guard {self.name}"
+        if self.confirmation_only:
+            return flag
         return f"{flag} --skip-reason '<why>'"
