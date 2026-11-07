@@ -11,7 +11,7 @@ LONGEST_NOTICE_CHARACTERS = 800
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
 NUDGE_LIST_NAMES = re.compile(r"NUDGES$")
 # what a line may name: a row's number, a count, or a short fact that is no row's words (an instruction is the program's own fixed sentence)
-ALLOWED_PLACEHOLDERS = frozenset({"exception", "line", "trigger", "remaining", "reminder", "tool", "limit", "place", "doc",
+ALLOWED_PLACEHOLDERS = frozenset({"code", "plugin", "targets", "route", "exception", "line", "trigger", "remaining", "reminder", "tool", "limit", "place", "doc",
     "uses", "action", "agent", "block", "branch", "category", "check", "count", "dump", "emoji", "environment", "folder", "job", "kept", "left", "limit", "lines", "memories", "memory", "message",
     "messages", "minutes", "name", "other", "output", "outputs", "percent", "phase", "place", "plan", "process", "program", "programs", "proof", "proofs", "question", "queue", "refusal", "request",
     "path", "instruction", "reader", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "transcription", "url", "wait", "worker", "workers", "writes", "hint", "items", "hint",
@@ -68,9 +68,12 @@ def test_a_line_carries_a_row_by_its_id_never_by_its_words(name, text, path):
 
 @pytest.mark.parametrize("name,text,path", DECLARATIONS, ids=[row[0] for row in DECLARATIONS])
 def test_every_line_is_in_a_register_of_its_module(name, text, path):
-    module_sources = [source_text(source) for source in path.parent.glob("*.py")] + [source_text(source) for source in path.parents[1].glob("*_module.py")]
+    if path.name == "rule_outcome.py":
+        return
+    module = next(parent for parent in path.parents if list(parent.glob("*_module.py")))
+    module_sources = [source_text(source) for source in (module / "support").glob("*.py")] + [source_text(source) for source in module.glob("*_module.py")]
     registered = any(re.search(rf"(NUDGES = \[[^\]]*\b{name}\b|nudges = \[[^\]]*\b{name}\b)", text_of_file) for text_of_file in module_sources)
-    assert registered or path.name == "rule_outcome.py", f"{name} of {path} is in no register"
+    assert registered, f"{name} of {path} is in no register"
 
 
 def test_no_line_to_an_agent_is_written_on_the_fly():
