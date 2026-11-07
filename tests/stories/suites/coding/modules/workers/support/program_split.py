@@ -1,0 +1,108 @@
+import json
+import shutil
+from contextlib import contextmanager
+from datetime import timedelta
+
+import pytest
+
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
+from core.base.journal_home import JournalHome
+from core.base.module.module import Module
+from core.base.provider.managed_hooks import ManagedHooks
+from core.base.provider.model_tier import ModelTier
+from core.base.provider.program_model import ProgramModel
+from core.base.provider.providers import Providers
+from core.modules.helpers.support.helper_programs import HelperPrograms
+from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.server.support.server_client import server_story
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
+from tests.unit.core.base.samples.program_sample import SampleProgram
+
+SPLIT = 'journal.core.helpers.program-split'
+SAMPLE_MODULE = 'tests.stories.suites.coding.modules.workers.support.program_split:SplitProgramModule'
+
+
+class SplitProgram(SampleProgram):
+    """A third provider with a model for every tier."""
+
+    models = [ProgramModel('sample-fast', ModelTier.FAST), ProgramModel('sample-general', ModelTier.GENERAL),
+              ProgramModel('sample-strongest', ModelTier.STRONGEST)]
+
+
+class SplitProgramModule(Module):
+    name = 'sample.split-program'
+    requires_core = '>=5,<6'
+    providers = [SplitProgram]
+
+
+@pytest.fixture
+def split_story(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    monkeypatch.setattr(shutil, 'which', lambda name: name)
+    return story
+
+
+def set_split(story, shares='claude 80,codex 20', actor=None):
+    story.expect_success(f'setting set {SPLIT} "{shares}" --project', actor=actor or story.agent)
+
+
+def dispatch(story, tasks='1', flags='', actor=None):
+    worker_id = story.new_row_id(f'worker dispatch {tasks} {flags}', actor=actor or story.agent)
+    return Actor(worker_id, ActorType.AGENT)
+
+
+def expect_program(story, worker, program, model=''):
+    story.expect_text(f'agent show {worker.id}', f'program: {program}', *([f'program_model: {model}'] if model else []))
+
+
+def make_task(story, title, flags=''):
+    return story.new_row_id(f'task make "{title}" --brief "Implement {title}" --environment main {flags}', actor=story.agent)
+
+
+def outage(story, program='codex', minutes=15, reason='it hit a rate limit'):
+    ends_at = (story.clock.timestamp().value + timedelta(minutes=minutes)).isoformat()
+    row_id = story.new_row_id(f'provider-outage make {program} "{reason}" --ends-at {ends_at}', actor=story.agent)
+    return row_id, ends_at
+
+
+def exit_program(story, worker, code=1, text='API Error: 429 rate limit reached'):
+    terminal = story.home.terminal_file(worker.id)
+    terminal.parent.mkdir(parents=True, exist_ok=True)
+    terminal.write_text(text)
+    story.expect_success(f'agent exited {worker.id} {code}')
+    story.run_listeners()
+
+
+def real_program_checks(story):
+    story.container.bind(HelperPrograms, HelperPrograms(story.container.get(JournalHome), story.container.get(Providers), story.container.get(ManagedHooks)))
+
+
+class SplitViewer:
+    def __init__(self, server, cookie):
+        self.server, self.cookie = server, cookie
+
+    def value(self, window, line):
+        return self.server.viewer_line_value(self.cookie, {'window': window, 'environment': 'main', 'line': line})
+
+
+@contextmanager
+def viewer_client(story):
+    with server_story(story) as server:
+        cookie = server.expect_viewer_login(server.viewer_key('Ada'))
+        yield SplitViewer(server, cookie)
+
+
+@pytest.fixture
+def split_viewer(split_story):
+    with viewer_client(split_story) as viewer:
+        yield viewer
+
+
+def remove_sample(story):
+    modules = json.loads(story.home.module_list.read_text())
+    story.home.module_list.write_text(json.dumps([module for module in modules if module != SAMPLE_MODULE]))
+    code, output = story.synced()
+    assert code == 0, output

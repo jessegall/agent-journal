@@ -1,0 +1,280 @@
+import json
+from datetime import timedelta
+
+import pytest
+
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
+from tests.stories.suites.coding.modules.workers.support.program_split import (
+    SAMPLE_MODULE, dispatch, expect_program, make_task, outage, remove_sample, set_split, split_story, split_viewer,
+)
+
+
+def test_named_model_of_another_program_is_refused(split_story):
+    story = split_story
+    story.expect_success('worker-route make --program codex --tags networking --environment main', actor=story.agent)
+    story.expect_success('task edit 1 --tag networking --confirm', actor=story.agent)
+    story.expect_refusal('worker dispatch 1 --model sonnet', '--tier', actor=story.agent)
+    story.expect_text('worker-worktree list', 'nothing found')
+
+
+def test_route_tasks_count_toward_the_split(split_story):
+    story = split_story
+    set_split(story, 'claude 50,codex 50')
+    story.expect_success('worker-route make --program codex --tags routed --environment main', actor=story.agent)
+    tasks = [make_task(story, f'Routed {number}', '--tag routed --confirm') for number in range(10)]
+    expect_program(story, dispatch(story, ' '.join(map(str, tasks))), 'codex')
+    expect_program(story, dispatch(story), 'claude')
+    rows = json.loads(story.run('worker split --json').output_text)['rows']
+    story.expect_rows(next(row for row in rows if row['id'] == 'codex')['recent'] == 10)
+
+
+def test_route_beats_the_split(split_story):
+    story = split_story
+    story.expect_success('task edit 1 --tag networking --tag linux --confirm', actor=story.agent)
+    set_split(story, 'claude 100,codex 0')
+    story.expect_success('worker-route make --program codex --tags networking,linux --environment main', actor=story.agent)
+    expect_program(story, dispatch(story), 'codex', 'gpt-6.1-terra')
+    story.run_listeners()
+    story.expect_text('chat-mark list --json', 'route 1', 'networking', 'linux')
+
+
+def test_first_route_wins_by_position(split_story):
+    story = split_story
+    first = story.new_row_id('worker-route make --program codex --tags linux --environment main', actor=story.agent)
+    second = story.new_row_id('worker-route make --program claude --tags linux --environment main', actor=story.agent)
+    story.expect_success('task edit 1 --tag linux --confirm', actor=story.agent)
+    story.expect_text('worker split --task 1', f'route {first}', 'codex')
+    story.expect_success(f'worker-route move {second} --to 1', actor=story.agent)
+    expect_program(story, dispatch(story), 'claude')
+    story.expect_text('worker-route list', 'claude', 'codex')
+
+
+def test_route_needs_tags_and_complexity_both(split_story):
+    story = split_story
+    story.expect_success('worker-route make --program codex --tags linux --complexity-from 4 --environment main', actor=story.agent)
+    story.expect_success('task edit 1 --tag linux --complexity 2 --confirm', actor=story.agent)
+    set_split(story, 'claude 100,codex 0')
+    expect_program(story, dispatch(story), 'claude')
+
+
+@pytest.mark.parametrize('program,model', [('claude', 'haiku'), ('codex', 'gpt-6-luna')])
+def test_route_with_only_a_tier_keeps_the_program_of_the_split(split_story, program, model):
+    story = split_story
+    set_split(story, f'{program} 100')
+    story.expect_success('worker-route make --complexity-to 2 --tier fast --environment main', actor=story.agent)
+    story.expect_success('task edit 1 --complexity 2', actor=story.agent)
+    expect_program(story, dispatch(story), program, model)
+
+
+def test_batch_across_programs_is_refused(split_story):
+    story = split_story
+    story.expect_success('worker-route make --program codex --tags networking --environment main', actor=story.agent)
+    story.expect_success('worker-route make --program claude --tags windows --environment main', actor=story.agent)
+    story.expect_success('task edit 1 --tag networking --confirm', actor=story.agent)
+    second = make_task(story, 'Windows task', '--tag windows --confirm')
+    story.expect_refusal(f'worker dispatch 1 {second}', 'codex', actor=story.agent)
+    refusal = story.results[-1].output_text
+    story.expect_rows('claude' in refusal, str(second) in refusal, '1' in refusal)
+    story.expect_text('worker-worktree list', 'nothing found')
+
+
+def test_batch_across_programs_is_refused_unrouted_goes_with_the_routed_task(split_story):
+    story = split_story
+    story.expect_success('worker-route make --program codex --tags batch --environment main', actor=story.agent)
+    second = make_task(story, 'Routed batch task', '--tag batch --confirm')
+    expect_program(story, dispatch(story, f'1 {second}'), 'codex')
+    story.expect_text('worker status --json', 'Routed batch task')
+
+
+def test_batch_across_programs_is_refused_plan_names_phase(split_story):
+    story = split_story
+    plan = story.new_row_id('plan make "Two programs" --environment main', actor=story.agent)
+    first = story.new_row_id(f'phase make "Linux" --plan {plan}', actor=story.agent)
+    second = story.new_row_id(f'phase make "Windows" --plan {plan}', actor=story.agent)
+    make_task(story, 'Linux task', f'--phase {first} --tag linux --confirm')
+    make_task(story, 'Windows task', f'--phase {second} --tag windows --confirm')
+    story.expect_success('worker-route make --program codex --tags linux --environment main', actor=story.agent)
+    story.expect_success('worker-route make --program claude --tags windows --environment main', actor=story.agent)
+    story.expect_refusal(f'worker dispatch --plan {plan}', '--phase', actor=story.agent)
+
+
+def test_strict_route_refuses_when_its_program_is_out(split_story):
+    story = split_story
+    route = story.new_row_id('worker-route make --program codex --tags strict --strict --environment main', actor=story.agent)
+    story.expect_success('task edit 1 --tag strict --confirm', actor=story.agent)
+    _, ends_at = outage(story)
+    story.expect_refusal('worker dispatch 1', ends_at, actor=story.agent)
+    story.expect_rows('codex' in story.results[-1].output_text)
+    story.expect_text('worker-worktree list', 'nothing found')
+
+
+def test_strict_route_refuses_when_its_program_is_out_non_strict_uses_split(split_story):
+    story = split_story
+    story.expect_success('worker-route make --program codex --tags fallback --environment main', actor=story.agent)
+    story.expect_success('task edit 1 --tag fallback --confirm', actor=story.agent)
+    outage(story)
+    set_split(story)
+    expect_program(story, dispatch(story), 'claude')
+    story.expect_text(f'agent-line list --agent {story.agent.id}', 'route 1', 'codex', 'out until', 'claude')
+
+
+def test_complexity_route_needs_a_score(split_story):
+    story = split_story
+    story.expect_success('worker-route make --complexity-from 4 --program codex --environment main', actor=story.agent)
+    story.expect_refusal('worker dispatch 1', 'journal task edit 1 --complexity', actor=story.agent)
+    story.expect_text('worker-worktree list', 'nothing found')
+
+
+def test_complexity_route_needs_a_score_no_complexity_route_stops_nothing(split_story):
+    story = split_story
+    story.expect_success('worker-route make --tags absent --program codex --environment main', actor=story.agent)
+    expect_program(story, dispatch(story), 'claude')
+
+
+@pytest.mark.parametrize('flags,reason', [('--program codex', 'tags'), ('--tags linux', 'program'), ('--tags linux --tier fast --strict', 'program')])
+def test_malformed_route_is_refused(split_story, flags, reason):
+    story = split_story
+    story.expect_refusal(f'worker-route make {flags} --environment main', reason, actor=story.agent)
+    story.expect_text('worker-route list --environment main', 'nothing found')
+
+
+def test_route_of_a_removed_provider_matches_nothing(split_story):
+    story = split_story
+    story.expect_sync_success(SAMPLE_MODULE)
+    route = story.new_row_id('worker-route make --program sample --tags removed --environment main', actor=story.agent)
+    story.expect_success('task edit 1 --tag removed --confirm', actor=story.agent)
+    remove_sample(story)
+    story.expect_text('worker-route list --environment main', 'sample', 'gone')
+    expect_program(story, dispatch(story), 'claude')
+
+
+def test_worker_split_previews_a_task(split_story):
+    story = split_story
+    story.expect_success('task edit 1 --tag preview --confirm', actor=story.agent)
+    route = story.new_row_id('worker-route make --program codex --tags preview --environment main', actor=story.agent)
+    story.expect_text('worker split --task 1', 'codex', 'gpt-6.1-terra', f'route {route}')
+    story.expect_text('worker-worktree list', 'nothing found')
+    story.expect_text('agent list --role worker', 'nothing found')
+    story.expect_text('task show 1', 'state: open')
+
+
+def test_task_assign_holds_the_route(split_story):
+    story = split_story
+    worker = dispatch(story, flags='--program claude')
+    route = story.new_row_id('worker-route make --program codex --tags assigned --environment main', actor=story.agent)
+    task = make_task(story, 'Assigned task', '--tag assigned --confirm')
+    story.expect_refusal(f'task assign {task} --to {worker.id}', f'route {route}', actor=story.agent)
+    story.expect_absent(f'task show {task}', f'delegated_to: {worker.id}')
+
+
+def test_task_assign_holds_the_route_started_task_is_released_too(split_story):
+    story = split_story
+    worker = dispatch(story, flags='--program codex')
+    story.expect_success('task edit 1 --tag held --confirm', actor=story.agent)
+    route = story.new_row_id('worker-route make --program codex --tags held --environment main', actor=story.agent)
+    other = make_task(story, 'Claude worker')
+    claude = dispatch(story, str(other), '--program claude')
+    story.expect_refusal(f'task assign 1 --to {claude.id}', f'route {route}', actor=story.agent)
+    story.expect_text('task show 1', f'holder_id: {worker.id}', 'state: started')
+
+
+def test_task_assign_holds_the_route_person_passes(split_story, split_viewer):
+    story = split_story
+    worker = dispatch(story, flags='--program claude')
+    story.expect_success('worker-route make --program codex --tags person --environment main', actor=story.agent)
+    task = make_task(story, 'Person assigned task', '--tag person --confirm')
+    split_viewer.value('tasks.tasks', ['task', 'assign', str(task), '--to', str(worker.id)])
+    story.expect_text(f'task show {task}', f'delegated_to: {worker.id}')
+
+
+def test_task_assign_holds_the_route_out_program_passes(split_story):
+    story = split_story
+    worker = dispatch(story, flags='--program claude')
+    outage(story)
+    story.expect_success('worker-route make --program codex --tags outage --environment main', actor=story.agent)
+    task = make_task(story, 'Out program task', '--tag outage --confirm')
+    story.expect_success(f'task assign {task} --to {worker.id}', actor=story.agent)
+    story.expect_text(f'task show {task}', f'delegated_to: {worker.id}')
+
+
+def test_agent_naming_another_program_is_refused_before_git(split_story):
+    story = split_story
+    route = story.new_row_id('worker-route make --program codex --tags protected --environment main', actor=story.agent)
+    story.expect_success('task edit 1 --tag protected --confirm', actor=story.agent)
+    story.expect_refusal('worker dispatch 1 --program claude', f'route {route}', actor=story.agent)
+    story.expect_text('worker-worktree list', 'nothing found')
+    story.expect_rows(not list((story.home.folder.parent / 'project' / '.journal' / 'worktrees').glob('*/*')))
+
+
+def test_agent_naming_another_program_is_refused_before_git_explicit_skip_is_logged(split_story):
+    story = split_story
+    story.expect_success('worker-route make --program codex --tags skip --environment main', actor=story.agent)
+    story.expect_success('task edit 1 --tag skip --confirm', actor=story.agent)
+    worker = dispatch(story, flags='--program claude --skip-guard workers.route-holds --skip-reason "The person asked for a comparison"')
+    expect_program(story, worker, 'claude')
+    story.expect_text('worker-worktree list', 'cut')
+    story.expect_text('guard-skip list --json', 'workers.route-holds', 'The person asked for a comparison')
+
+
+def test_person_names_any_program(split_story):
+    story = split_story
+    worker = dispatch(story, flags='--program codex --model gpt-6.1-terra --environment main', actor=story.user)
+    expect_program(story, worker, 'codex', 'gpt-6.1-terra')
+
+
+def test_person_names_any_program_over_a_route(split_story):
+    story = split_story
+    story.expect_success('worker-route make --program claude --tags override --environment main', actor=story.agent)
+    story.expect_success('task edit 1 --tag override --confirm', actor=story.agent)
+    worker = dispatch(story, flags='--program codex --environment main', actor=story.user)
+    expect_program(story, worker, 'codex')
+
+
+def test_agent_cannot_change_a_route_a_person_made(split_story, split_viewer):
+    story = split_story
+    split_viewer.value('workers.workers', ['worker-route', 'make', '--tags', 'owned', '--program', 'codex'])
+    story.expect_refusal('worker-route edit 1 --program claude', 'person', actor=story.agent)
+    story.expect_refusal('worker-route delete 1', 'person', actor=story.agent)
+    story.expect_text('worker-route show 1', 'program: codex')
+
+
+def test_agent_cannot_change_a_route_a_person_made_own_route_can_change(split_story):
+    story = split_story
+    route = story.new_row_id('worker-route make --program codex --tags own --environment main', actor=story.agent)
+    story.expect_success(f'worker-route edit {route} --program claude', actor=story.agent)
+    story.expect_text(f'worker-route show {route}', 'program: claude')
+
+
+def test_agent_cannot_change_a_route_a_person_made_agent_change_has_a_mark(split_story):
+    story = split_story
+    set_split(story, 'claude 70,codex 30')
+    story.expect_success('worker-route make --program codex --tags marked --environment main', actor=story.agent)
+    story.run_listeners()
+    story.expect_text('chat-mark list --json', 'split', 'route', 'codex')
+
+
+def test_worker_cannot_dispatch_by_a_route(split_story):
+    story = split_story
+    worker = Actor(story.new_row_id(f'agent start worker-session claude worker --parent {story.agent.id} --environment main'), ActorType.AGENT)
+    story.expect_refusal('worker dispatch 1 --model sonnet', 'a worker dispatches no workers', actor=worker)
+    story.expect_text('worker-worktree list', 'nothing found')
+
+
+def test_worker_cannot_dispatch_by_a_route_even_with_a_matching_route(split_story):
+    story = split_story
+    story.expect_success('worker-route make --program codex --tags nested --environment main', actor=story.agent)
+    story.expect_success('task edit 1 --tag nested --confirm', actor=story.agent)
+    worker = Actor(story.new_row_id(f'agent start nested-worker claude worker --parent {story.agent.id} --environment main'), ActorType.AGENT)
+    story.expect_refusal('worker dispatch 1', 'a worker dispatches no workers', actor=worker)
+    story.expect_text('worker-worktree list', 'nothing found')
+
+
+def test_job_to_a_known_worker_stays_on_its_program(split_story):
+    story = split_story
+    worker = dispatch(story, flags='--program claude')
+    story.expect_success('worker-route make --program codex --tags known --environment main', actor=story.agent)
+    task = make_task(story, 'Known worker task', '--tag known --confirm')
+    story.expect_success(f'worker send {worker.id} "Read the known worker task"', actor=story.agent)
+    expect_program(story, worker, 'claude')
+    story.expect_refusal(f'worker dispatch {task}', f'journal worker send {worker.id}', actor=story.agent)
