@@ -7,4 +7,4 @@ from core.modules.plans.models.plan import Plan
 REVIEWING = AddedState("reviewing")
 REVIEW_MOVE = Move("review", [PlanState.READY], REVIEWING)
 REVIEWED_MOVE = Move("reviewed", [REVIEWING], PlanState.READY)
-REVIEW_STATE = StateAddition(Plan, REVIEWING, "Under review", PlanState.READY, PlanState.READY, (REVIEW_MOVE, REVIEWED_MOVE), editable=True)
+REVIEW_STATE = StateAddition(Plan, REVIEWING, "Under review", PlanState.READY, PlanState.READY, (REVIEW_MOVE, REVIEWED_MOVE), editable=True, tip_read="plan review-tip {row_id}")
