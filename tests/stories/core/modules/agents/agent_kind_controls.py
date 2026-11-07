@@ -6,6 +6,7 @@ from core.modules.helpers.support.agent_options import AgentOptions
 from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.start_helper import START
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.support.main_controls_fixture import in_environment
 from tests.stories.suites.coding.modules.workers.support.program_split import dispatch, exit_program, expect_program, new_task, split_story, split_viewer
 from tests.stories.support.story_checks import expect_absent_value, expect_value
@@ -177,3 +178,52 @@ def test_s52_lifecycle_a_kept_worker_on_a_program_the_options_now_forbid_is_not_
     worker, launcher = stopped_worker(split_story)
     viewer_options(split_viewer, "worker allowed_providers=codex")
     split_story.expect_refusal(f'worker send {worker.id} "go on"', "worker may not use claude", actor=split_story.agent)
+
+
+RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"
+PROFILE_LIMITS = "journal.core.helpers.helper-profile-limits"
+
+
+def helper_profiles(story) -> dict[str, dict]:
+    rows = json.loads(story.run("agent limits --json --environment main", actor=story.agent).output_text)["rows"]
+    return {row["profile"]: row for row in next(row for row in rows if row["key"] == "helper")["profiles"]}
+
+
+def test_s20_inheritance_an_unused_helper_profile_shows_the_common_limits_with_no_counts(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    merger = helper_profiles(story)["journal-merger"]
+    expect_value((merger["running"], merger["kept"], merger["run_limit"], merger["kept_limit"]), (0, 0, 4, 8))
+
+
+def test_s21_inheritance_an_explicit_profile_limit_changes_only_that_profile(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    story.expect_success(f"setting set {PROFILE_LIMITS} {shlex.quote(json.dumps(['journal-merger:1:2']))} --environment main", actor=story.user)
+    profiles = helper_profiles(story)
+    merger, researcher = profiles["journal-merger"], profiles["journal-researcher"]
+    expect_value(((merger["run_limit"], merger["kept_limit"]), (researcher["run_limit"], researcher["kept_limit"])), ((1, 2), (4, 8)))
+
+
+def test_s21_inheritance_a_worker_run_limit_of_zero_starts_no_worker(split_story, split_viewer):
+    split_viewer.value("settings.settings", ["setting", "set", RUN_LIMIT, "0", "--environment", "main"])
+    expect_no_worker(split_story, "worker dispatch 1", "0 workers are running")
+
+
+def test_pending_openings_share_one_limit(split_story, split_viewer):
+    split_viewer.value("settings.settings", ["setting", "set", RUN_LIMIT, "1", "--environment", "main"])
+    expect_program(split_story, dispatch(split_story), "claude")
+    second = new_task(split_story, "Total the cart")
+    split_story.expect_refusal(f"worker dispatch {second}", "1 workers are running", actor=split_story.agent)
+    split_story.expect_text("worker-worktree list", "task_id: 1")
+    split_story.expect_no_text("worker-worktree list", f"task_id: {second}")
+
+
+def test_failed_opening_releases_place_once(split_story, split_viewer):
+    split_viewer.value("settings.settings", ["setting", "set", RUN_LIMIT, "1", "--environment", "main"])
+    split_story.run("environment edit 1 --branch missing-branch")
+    failed = split_story.run("worker dispatch 1", actor=split_story.agent)
+    expect_value(failed.code != 0, True)
+    split_story.expect_text("worker-worktree list", "nothing found")
+    split_story.expect_success(f"environment edit 1 --branch {ENVIRONMENT_BRANCH}")
+    expect_program(split_story, dispatch(split_story), "claude")
+    second = new_task(split_story, "Total the cart")
+    split_story.expect_refusal(f"worker dispatch {second}", "1 workers are running", actor=split_story.agent)
