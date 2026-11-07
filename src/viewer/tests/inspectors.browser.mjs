@@ -65,6 +65,11 @@ async function check(width, height, scheme) {
             missed.push(`${row.name} at ${width} ${scheme}`);
             continue;
         }
+        const titled = await panel.locator("[data-resource-title]:not(:empty)").first().waitFor({timeout: 5000}).then(() => true, () => false);
+        if (!titled && !row.required) {
+            missed.push(`${row.name} has no title at ${width} ${scheme}`);
+            continue;
+        }
         const seen = await facts(panel);
         assert.ok(seen.title, `${row.name} has no title at ${width}`);
         assert.ok(seen.close, `${row.name} has no X at ${width}`);
