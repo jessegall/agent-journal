@@ -1,4 +1,5 @@
 from core.modules.helpers.support.agent_use import AgentUse
+from core.base.agent_work import AgentWork
 from datetime import timedelta
 
 from core.base.clock import Clock
@@ -25,16 +26,17 @@ KEPT_NAMES_SHOWN = 5
 
 
 class WorkerPlaces:
-    """How many workers run against the run limit. A run place is a process that has not ended; a new
-    worker and a resume also count a resume handed over in the last two minutes that has not bound yet.
-    Delivered work with its process stopped takes no run place."""
+    """Counts processes, starts in progress and delivered work against the worker limit."""
 
-    def __init__(self, agents: AgentRows, queries: Queries, limits: AgentTypeLimits, kept: KeptRows, clock: Clock, scopes: Scopes, use: AgentUse) -> None:
+    def __init__(self, agents: AgentRows, queries: Queries, limits: AgentTypeLimits, kept: KeptRows, clock: Clock, scopes: Scopes, use: AgentUse, work: AgentWork) -> None:
+        self.work = work
         self.use = use
         self.agents, self.queries, self.limits, self.kept, self.clock, self.scopes = agents, queries, limits, kept, clock, scopes
 
     def running(self) -> tuple[Agent, ...]:
-        return self.agents.running(CodingAgentRole.WORKER)
+        running = self.agents.running(CodingAgentRole.WORKER)
+        held = self.queries.query(Agent).find_many(tuple(self.work.held()))
+        return tuple({worker.id: worker for worker in (*running, *held)}.values())
 
     def kept_workers(self) -> tuple[Agent, ...]:
         return self.kept.scoped_read(AGENTS_TABLE, self.kept_rows, "role = ?", [CodingAgentRole.WORKER.value], name="workers.kept")
@@ -47,12 +49,13 @@ class WorkerPlaces:
 
     def can_start_new(self) -> bool:
         workers = self.kept_workers()
-        all_kept_run = self.kept_limit() != UNLIMITED_AGENT_COUNT and len(workers) >= self.kept_limit() and all(worker.ended_at is None for worker in workers)
+        running_ids = {worker.id for worker in self.running()}
+        all_kept_run = self.kept_limit() != UNLIMITED_AGENT_COUNT and len(workers) >= self.kept_limit() and all(worker.id in running_ids for worker in workers)
         return not all_kept_run and len(self.running()) < self.run_limit()
 
     def check_new_place(self) -> None:
         if len(self.running()) + self.resuming_count() >= self.run_limit():
-            raise Refusal(f"{self.run_limit()} workers are running", "wait for one to report, or stop one")
+            raise Refusal(f"{self.run_limit()} workers are running", "wait for a merge, release or retirement")
         workers = self.kept_workers()
         if self.kept_limit() != UNLIMITED_AGENT_COUNT and len(workers) >= self.kept_limit():
             names = ", ".join(f"agent:{worker.id}" for worker in workers[:KEPT_NAMES_SHOWN])
@@ -71,7 +74,8 @@ class WorkerPlaces:
         return tuple(self.queries.query(AgentLine).filter(state=AgentLineState.ENTERED).matching(Greater("updated_at", cutoff_at)).all_rows())
 
     def resuming_count(self) -> int:
-        workers = {worker.id: worker for worker in self.kept_workers() if worker.ended_at is not None}
+        held = self.work.held()
+        workers = {worker.id: worker for worker in self.kept_workers() if worker.ended_at is not None and worker.id not in held}
         return len({line.session_agent_id for line in self.resuming_lines() if line.source in RESUMING_SOURCES and line.session_agent_id in workers
                     and line.updated_at.text > workers[line.session_agent_id].ended_at.text})
 
@@ -79,4 +83,6 @@ class WorkerPlaces:
         if worker.ended_at is None:
             return True
         with self.scopes.row_scope(worker):
+            if worker.id in self.work.held():
+                return True
             return len(self.running()) + self.resuming_count() < self.run_limit()
