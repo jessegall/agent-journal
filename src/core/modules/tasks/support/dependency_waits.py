@@ -2,6 +2,7 @@ from collections.abc import Sequence
 
 from core.base.command.context import Context
 from core.base.database.kept_rows import KeptRows
+from core.base.listener.event_rows import EventRows
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
@@ -18,8 +19,8 @@ class DependencyWaits:
     """Keeps a task's waits in line with its dependencies: a task that waits on an open task is blocked with a wait
     on it, and the wait ends once that dependency is no longer open. A started task keeps running."""
 
-    def __init__(self, queries: Queries, repository: Repository, waits: TaskWaits, kept: KeptRows) -> None:
-        self.queries, self.repository, self.waits, self.kept = queries, repository, waits, kept
+    def __init__(self, queries: Queries, repository: Repository, waits: TaskWaits, kept: KeptRows, rows: EventRows) -> None:
+        self.queries, self.repository, self.waits, self.kept, self.rows = queries, repository, waits, kept, rows
 
     def pairs(self) -> tuple[TaskDependency, ...]:
         return self.kept.read("task_dependencies", lambda: tuple(self.queries.query(TaskDependency).all_rows()), name="tasks.dependency_pairs")
@@ -33,7 +34,9 @@ class DependencyWaits:
     def update_tasks(self, task_ids: Sequence[int], context: Context) -> None:
         pairs = [pair for pair in self.pairs() if pair.task_id in task_ids or pair.dependency_id in task_ids]
         open_ids = {row.id for row in self.queries.query(OpenDependency).matching(Among("id", tuple(pair.id for pair in pairs))).all_rows()}
-        tasks = {task.id: task for task in self.queries.query(Task).matching(Among("id", tuple({pair.task_id for pair in pairs}))).all_rows()}
+        task_ids_waiting = tuple({pair.task_id for pair in pairs})
+        self.rows.prepare(Task, task_ids_waiting)
+        tasks = {task_id: self.rows.required(Task, task_id) for task_id in task_ids_waiting}
         ended: list[TaskWait] = []
         for pair in pairs:
             if pair.id in open_ids:
