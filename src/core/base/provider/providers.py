@@ -3,6 +3,7 @@ from core.base.journal_home import JournalHome
 from core.base.provider.provider import Provider
 from core.base.provider.unknown_program_error import UnknownProgramError
 from core.base.registry.registry import Registry
+from core.base.refusal import Refusal
 
 
 class Providers:
@@ -28,6 +29,14 @@ class Providers:
 
     def all(self) -> list[Provider]:
         return [self.provider(entry.name) for entry in self.registry.providers]
+
+    def program_for_model(self, model: str) -> str:
+        programs = [provider.name for provider in self.all() if model in provider.model_names()]
+        if not programs:
+            raise Refusal(f"no program offers model {model}", "name --program explicitly, or use --tier to choose by capability")
+        if len(programs) > 1:
+            raise Refusal(f"model {model} is offered by {', '.join(programs)}", "name --program explicitly")
+        return programs[0]
 
     def skill_folders(self) -> tuple[str, ...]:
         return tuple(dict.fromkeys(provider.skills_folder for provider in self.all()))

@@ -1,8 +1,12 @@
 from dataclasses import replace
+from copy import copy
 
 import pytest
 
 from core.base.provider.providers import Providers
+from core.base.provider.program_model import ProgramModel
+from core.base.model_tier import ModelTier
+from core.base.refusal import Refusal
 from core.base.provider.unknown_program_error import UnknownProgramError
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.provider_entry import ProviderEntry
@@ -29,3 +33,23 @@ def test_every_registered_program_is_listed(providers):
 def test_a_program_no_module_provides_is_refused_by_its_name(providers):
     with pytest.raises(UnknownProgramError, match="no module provides the agent program 'gemini'"):
         providers.provider("gemini")
+
+
+def test_a_named_model_finds_the_provider_that_offers_it(providers, monkeypatch):
+    monkeypatch.setattr(providers.provider("sample"), "models", [ProgramModel("sample-model", ModelTier.GENERAL)])
+    assert providers.program_for_model("sample-model") == "sample"
+
+
+def test_a_model_no_provider_offers_is_refused(providers):
+    with pytest.raises(Refusal, match="no program offers model missing"):
+        providers.program_for_model("missing")
+
+
+def test_a_model_offered_twice_needs_an_explicit_program(providers, monkeypatch):
+    provider = providers.provider("sample")
+    monkeypatch.setattr(provider, "models", [ProgramModel("shared", ModelTier.GENERAL)])
+    other = copy(provider)
+    other.name = "other"
+    monkeypatch.setattr(providers, "all", lambda: [provider, other])
+    with pytest.raises(Refusal, match="name --program explicitly"):
+        providers.program_for_model("shared")

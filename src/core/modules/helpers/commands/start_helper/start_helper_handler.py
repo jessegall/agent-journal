@@ -99,8 +99,12 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
             raise refusal from None
 
     def selected_program(self, command: StartHelper, profile: AgentProfile, parent: Agent) -> str:
-        if command.program or profile.program:
-            return command.program or profile.program
+        if command.program:
+            return command.program
+        if command.program_model:
+            return self.providers.program_for_model(command.program_model)
+        if profile.program:
+            return profile.program
         if not self.shares.is_configured:
             return parent.program
         folder = self.folders.folder(parent)
