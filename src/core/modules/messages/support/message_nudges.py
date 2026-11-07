@@ -17,6 +17,7 @@ NEW_MESSAGES = NudgeDeclaration("messages.new_messages", NudgeType.STEERING, '{c
 MESSAGE_FILE = NudgeDeclaration("messages.message_file", NudgeType.STEERING, '  file .journal/files/message/{message}/{name}', turn_limited=False)
 MESSAGE_NOTE = NudgeDeclaration("messages.act_on_messages", NudgeType.NOTICE, 'act on what you read: steering you follow, an update you give now, work you file as a task; else answer it', turn_limited=False)
 IMAGE_TAG_REQUEST = NudgeDeclaration("messages.tag_the_image", NudgeType.STEERING, 'message:{message} has an image "{name}": tag it with what it shows', required_command="journal message tag {message}")
+REPEATED_CLOSING = NudgeDeclaration("messages.repeated_closing", NudgeType.STEERING, "your closing words say much the same as message {message}, so they were not shown")
 REPLY_COMMAND = NudgeDeclaration("messages.reply_command", NudgeType.STEERING, "your chat words are your reply; in a turn that goes on, reply first", interval=Interval(Seconds(1800)))
 UNANSWERED = NudgeDeclaration("messages.unanswered", NudgeType.STEERING, "answer message {messages} before you go on", interval=Interval(Seconds(300)))
 UNANSWERED_COUNTDOWN = CountDown("messages.unanswered_countdown", "reply to message {messages}", ToolUseSpan(UNANSWERED_TOOL_USES))

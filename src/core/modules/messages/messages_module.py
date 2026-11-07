@@ -28,6 +28,7 @@ from core.modules.messages.listeners.message_edited_mark_listener import Message
 from core.modules.messages.listeners.read_message_edit_listener import ReadMessageEditListener
 from core.modules.messages.support.message_nudges import MESSAGE_NUDGES
 from core.modules.messages.guards.one_reply_per_message_guard import OneReplyPerMessageGuard
+from core.modules.messages.guards.repeated_message_guard import RepeatedMessageGuard
 from core.modules.messages.guards.question_message_guard import QuestionMessageGuard
 from core.modules.messages.commands.read_message.read_message_handler import ReadMessageHandler
 from core.modules.messages.commands.read_message.read_message_subcommand import ReadMessageSubcommand
@@ -121,7 +122,7 @@ class MessagesModule(Module):
     moves = [MessagesMove]
     views = [AttachedFile, ChatMessage, MainChatMark]
     migrations = [MainMessageTargetsMigration, MessageSessionMigration, MessageTargetMigration, VisibleMessageIndexMigration, MessageReplyIndexMigration, MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration, MessageVisibilityMigration, MessageTypeIndexesMigration, MessageWorkSourcesMigration, WorkSourceSelectionsMigration, MessageParentEnvironmentMigration]
-    guards = [OneReplyPerMessageGuard, QuestionMessageGuard]
+    guards = [OneReplyPerMessageGuard, RepeatedMessageGuard, QuestionMessageGuard]
     handlers = [RecordTypedPromptHandler, ResetMessageDeliveriesHandler, RecordParentReportHandler, RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, SendAgentMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler, ChooseWorkSourceHandler, ClearWorkSourceHandler, NoteMessageReadHandler]
     driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, ToolMessageRule, TranscriptMessageRule, TypedPromptRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]
     subcommands = [AgentReportsSubcommand, UnreadReportsSubcommand, AttachmentListSubcommand, CommentMessageSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand, ChooseWorkSourceSubcommand, ClearWorkSourceSubcommand, WorkSourceSubcommand]

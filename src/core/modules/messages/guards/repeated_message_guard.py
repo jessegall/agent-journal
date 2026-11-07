@@ -1,0 +1,26 @@
+from core.base.change.created import Created
+from core.base.command.context import Context
+from core.base.guard.guard import Guard
+from core.base.refusal import Refusal
+from core.modules.messages.models.enums.message_type import MessageType
+from core.modules.messages.models.message import Message
+from core.modules.messages.support.repeated_messages import RepeatedMessages
+
+
+class RepeatedMessageGuard(Guard[Created[Message]]):
+    """An agent's message that says much the same as one of its last five is held until it confirms that it means
+    to send it again."""
+
+    name = "messages.repeated-message"
+    short_flag = "confirm"
+
+    def __init__(self, repeats: RepeatedMessages) -> None:
+        self.repeats = repeats
+
+    def check(self, event: Created[Message], context: Context) -> None:
+        message = event.row
+        if message.type is not MessageType.AGENT:
+            return
+        repeated = self.repeats.repeated(message.creator_id, message.text, message.id)
+        if repeated is not None:
+            raise Refusal(f"this says much the same as your message {repeated.id}", "leave it out, or send it anyway with a reason if it adds something new")
