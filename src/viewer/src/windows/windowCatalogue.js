@@ -17,6 +17,7 @@ export class WindowCatalogue {
         this.bars = shallowRef([]);
         this.pages = shallowRef([]);
         this.sections = shallowRef([]);
+        this.inspectors = shallowRef({});
         this.loaded = shallowRef(false);
         this.person = null;
         this.keptWindows = browserCopy.read(KEPT_WINDOWS_KEY) ?? {};
@@ -31,6 +32,7 @@ export class WindowCatalogue {
         this.sections.value = offered.filter((window) => window.place === "section");
         this.bars.value = offered.filter((window) => window.place === "bar");
         this.dropdowns.value = offered.filter((window) => window.place === "dropdown");
+        this.inspectors.value = Object.fromEntries((offers.inspectors ?? []).map((inspector) => [inspector.noun, inspector]));
         this.loaded.value = true;
         this.keptWindows = Object.fromEntries(offered.map((window) => [window.name, {skeleton: window.skeleton ?? [], icon: window.icon}]));
         browserCopy.write(KEPT_WINDOWS_KEY, this.keptWindows);
@@ -79,6 +81,11 @@ export class WindowCatalogue {
 
     sectionsAt(slot) {
         return this.sections.value.filter((section) => section.slots.includes(slot));
+    }
+
+    // the listed inspector of a noun, or null while the registry lists none
+    inspector(noun) {
+        return this.inspectors.value[noun] ?? null;
     }
 
     dropdown(name) {
