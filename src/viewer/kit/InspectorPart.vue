@@ -13,6 +13,7 @@ defineProps({title: {type: String, required: true}});
 <style scoped>
 .inspector-part {
     margin-bottom: 18px;
+    padding: 0 16px;
     color: var(--text-2);
     font-size: 13px;
 }

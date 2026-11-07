@@ -15,7 +15,7 @@ from core.base.viewer.inspector_width import InspectorWidth
 class InspectorDeclaration:
     """The inspector of one model: the line that reads its row, its label, title and description written with the row's
     fields in braces, its width, the actions on the row, the parts the module draws itself, the events that reload it
-    and its links section (None for a row that has none). `named` is the noun of a row no model of that noun holds,
+    its links section (None for a row that has none) and whether it lists the row's fields. `named` is the noun of a row no model of that noun holds,
     such as the test queue; the model is then the one that supplies its data."""
 
     model: type[Model] | type[ViewModel]
@@ -30,6 +30,7 @@ class InspectorDeclaration:
     events: Sequence[str] = ()
     links: InspectorLinks | None = InspectorLinks()
     named: str = ""
+    lists_fields: bool = True
 
     @classmethod
     def default_for(cls, model: type[Model] | type[ViewModel]) -> "InspectorDeclaration":
@@ -64,4 +65,5 @@ class InspectorDeclaration:
                    actions=tuple(ButtonDeclaration.restored(action) for action in stored.get("actions", ())),
                    components=tuple(InspectorComponent(**component) for component in stored.get("components", ())),
                    comments=stored.get("comments", False), events=tuple(stored.get("events", ())),
-                   links=InspectorLinks(**{**links, "kinds": tuple(links["kinds"])}) if links is not None else None, named=stored.get("named", ""))
+                   links=InspectorLinks(**{**links, "kinds": tuple(links["kinds"])}) if links is not None else None, named=stored.get("named", ""),
+                   lists_fields=stored.get("lists_fields", True))
