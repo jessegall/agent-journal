@@ -173,6 +173,26 @@ def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent
     story.expect_text("task list", "Fix the merged code", actor=worker)
 
 
+def test_the_merger_and_a_worker_message_each_other_but_two_workers_do_not(new_story, monkeypatch):
+    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
+    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    try:
+        ended(story, started[0], 0)
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
+    merger = Actor(merger_of(story).id, ActorType.AGENT)
+    other = Actor(story.new_row_id(f"agent start s-other claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
+    story.expect_success(f'message send "Rebase on main first" --to agent:{worker.id}', actor=merger)
+    story.expect_text(f"agent-line list --agent {worker.id}", f"agent:{merger.id} reports in message:", actor=worker)
+    story.expect_success(f'message send "Rebased" --to agent:{merger.id}', actor=worker)
+    story.expect_text(f"agent-line list --agent {merger.id}", f"agent:{worker.id} reports in message:", actor=merger)
+    story.expect_refusal(f'message send "Hello" --to agent:{other.id}', "not yours to message", actor=worker)
+
+
 def test_a_workers_report_goes_to_the_merger_and_the_merger_tells_the_main_agent_what_it_must_act_on(new_story, monkeypatch):
     monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)

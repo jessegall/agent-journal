@@ -34,6 +34,7 @@ class AgentProfile:
     last_used: int = 0
     title: str = ""
     reports_to_parent: bool = True
+    messages_siblings: bool = False
     program_models: Mapping[str, str] = field(default_factory=dict)
 
     @property

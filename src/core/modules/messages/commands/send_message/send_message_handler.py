@@ -39,7 +39,7 @@ class SendMessageHandler(Handler[SendMessage, Message]):
             raise Refusal(f"a reply of only {command.text} is not posted", f'react instead: journal message react {command.parent_id} "{command.text}"')
         actor = context.actor
         if actor.type is ActorType.AGENT and self.rows.required(Agent, actor.id).role != AgentRole.MAIN:
-            raise Refusal("only a main agent writes in the chat", "say it in the report to the agent that sent you")
+            raise Refusal("only a main agent writes in the chat", "message the agent that sent you with --to agent:N")
         if command.parent_id is None:
             return self.sent(command, None, context)
         parent = self.rows.required(Message, command.parent_id)
