@@ -1,14 +1,14 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-3b70049bf1b2")) { const style = document.createElement("style"); style.id = "window-styles-3b70049bf1b2"; style.textContent = ".task-tag[data-v-57ba413a]{padding:2px 6px;border-radius:8px;background:var(--hover);color:var(--text-2);font-size:11px}.task-score[data-v-57ba413a]{color:var(--text-3);font-size:12px}.task-agent[data-v-57ba413a]{flex:none;color:var(--text-3);font-size:12px}.task-reason[data-v-57ba413a]{overflow:hidden;min-width:0;max-width:40%;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}.tasks-more[data-v-57ba413a]{margin:4px 0 0 8px;padding:2px 8px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.tasks-more[data-v-57ba413a]:hover{background:var(--hover);color:var(--text)}.tasks[data-v-57ba413a]{display:flex;flex-direction:column;gap:14px;padding:0 12px 8px}.tasks-tools[data-v-57ba413a]{margin:0 -12px}.tasks-fold[data-v-57ba413a]{display:inline-flex;gap:4px;align-items:center;padding:0;border:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}.tasks-fold[data-v-57ba413a]:hover{color:var(--text)}.tasks-caret.closed[data-v-57ba413a]{transform:rotate(-90deg)}.tasks-group-head[data-v-57ba413a]{margin:0 0 4px;color:var(--text-3);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}.tasks-count[data-v-57ba413a]{margin-left:4px}.task[data-v-57ba413a]{cursor:pointer;display:flex;gap:10px;align-items:center;padding:6px 8px;border-radius:6px}.task[data-v-57ba413a]:hover{background:var(--hover)}.task.selected[data-v-57ba413a]{background:var(--raised)}.tasks-group[data-state=testing] .tasks-fold[data-v-57ba413a]{color:var(--tone-sequence)}.task-id[data-v-57ba413a]{flex:none;width:40px;color:var(--text-3);font-size:12px}.task-title[data-v-57ba413a]{flex:1;min-width:0}.tasks-note[data-v-57ba413a]{margin:0;color:var(--text-3);font-size:12px}.task-draft[data-v-a9fd4273]{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;padding:12px 14px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised)}.line[data-v-a9fd4273]{display:flex;gap:8px;align-items:center}.title[data-v-a9fd4273],.brief[data-v-a9fd4273]{width:100%;padding:0;border:0;outline:0;background:none;color:var(--text);font:inherit}.title[data-v-a9fd4273]{font-weight:500}.brief[data-v-a9fd4273]{resize:vertical;color:var(--text-2);font-size:13px}.failure[data-v-a9fd4273]{margin:0;color:var(--danger);font-size:12.5px}.foot[data-v-a9fd4273]{display:flex;gap:6px;align-items:center;justify-content:flex-end}.hint[data-v-a9fd4273]{flex:1;color:var(--text-3);font-size:11.5px}.graph[data-v-2c78474f]{overflow:auto;padding:16px 20px}.graph-note[data-v-2c78474f]{margin:0;color:var(--text-2)}.graph-canvas[data-v-2c78474f]{position:relative}.graph-lines[data-v-2c78474f]{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none}.graph-lines path[data-v-2c78474f]{fill:none;stroke:var(--border-2);stroke-width:1.5}.graph-node[data-v-2c78474f]{position:absolute;display:flex;gap:8px;align-items:center;box-sizing:border-box;padding:6px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--raised);color:inherit;text-align:left;cursor:pointer}.graph-node[data-v-2c78474f]:hover,.graph-node.selected[data-v-2c78474f]{border-color:var(--accent)}.graph-title[data-v-2c78474f]{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-size:12.5px;line-height:1.3}.key-line[data-v-55f1f115]{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:4px 10px;color:var(--text-2);font-size:13px}kbd[data-v-55f1f115]{color:var(--text-3);font:inherit;font-size:12px}.menu-note[data-v-55f1f115]{margin:4px 10px;color:var(--text-2);font-size:12px}.filters[data-v-fb71d626]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 16px;border-bottom:1px solid var(--border)}.chip[data-v-fb71d626]{display:inline-flex;gap:4px;align-items:center;padding:1px 4px 1px 8px;border-radius:99px;background:var(--hover);color:var(--text-2);font-size:12px}.chip button[data-v-fb71d626],.clear[data-v-fb71d626]{border:0;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.tasks-dialog[data-v-fb71d626]{position:relative;display:flex;flex:1;flex-direction:column;min-height:0;height:100%}.tasks-head[data-v-fb71d626]{display:flex;flex:none;align-items:center;gap:10px;height:52px;padding:0 12px 0 18px;border-bottom:1px solid var(--border)}h2[data-v-fb71d626]{margin:0;font-size:15px;font-weight:600}.standing[data-v-fb71d626]{color:var(--text-3);font-size:12px}.grow[data-v-fb71d626]{flex:1}.tasks-body[data-v-fb71d626]{display:flex;flex:1;min-height:0}.tasks-list[data-v-fb71d626]{flex:1;min-width:0;overflow:auto;padding:0}\n"; document.head.appendChild(style); }
-import { ref as _, computed as G, watch as ne, openBlock as l, createElementBlock as v, createBlock as A, unref as n, toDisplayString as $, Fragment as P, createVNode as k, withCtx as h, withDirectives as re, createElementVNode as M, renderList as q, vModelSelect as _e, renderSlot as xe, createCommentVNode as V, normalizeClass as ce, createTextVNode as I, withKeys as oe, onMounted as we, withModifiers as ke, vModelText as fe, normalizeStyle as ye, onUnmounted as me, vShow as Te, nextTick as De, createSlots as Ie } from "vue";
+if (!document.getElementById("window-styles-29dbb84bc703")) { const style = document.createElement("style"); style.id = "window-styles-29dbb84bc703"; style.textContent = ".task-tag[data-v-8bdf8fe6]{padding:2px 6px;border-radius:8px;background:var(--hover);color:var(--text-2);font-size:11px}.task-score[data-v-8bdf8fe6]{color:var(--text-3);font-size:12px}.task-agent[data-v-8bdf8fe6]{flex:none;color:var(--text-3);font-size:12px}.task-reason[data-v-8bdf8fe6]{overflow:hidden;min-width:0;max-width:40%;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}.tasks-more[data-v-8bdf8fe6]{margin:4px 0 0 8px;padding:2px 8px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.tasks-more[data-v-8bdf8fe6]:hover{background:var(--hover);color:var(--text)}.tasks[data-v-8bdf8fe6]{display:flex;flex-direction:column;gap:14px;padding:0 12px 8px}.tasks-tools[data-v-8bdf8fe6]{margin:0 -12px}.tasks-fold[data-v-8bdf8fe6]{display:inline-flex;gap:4px;align-items:center;padding:0;border:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}.tasks-fold[data-v-8bdf8fe6]:hover{color:var(--text)}.tasks-caret.closed[data-v-8bdf8fe6]{transform:rotate(-90deg)}.tasks-group-head[data-v-8bdf8fe6]{margin:0 0 4px;color:var(--text-3);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}.tasks-count[data-v-8bdf8fe6]{margin-left:4px}.task[data-v-8bdf8fe6]{cursor:pointer;display:flex;gap:10px;align-items:center;padding:6px 8px;border-radius:6px}.task[data-v-8bdf8fe6]:hover{background:var(--hover)}.task.selected[data-v-8bdf8fe6]{background:var(--raised)}.tasks-group[data-state=testing] .tasks-fold[data-v-8bdf8fe6]{color:var(--tone-sequence)}.task-id[data-v-8bdf8fe6]{flex:none;width:40px;color:var(--text-3);font-size:12px}.task-title[data-v-8bdf8fe6]{flex:1;min-width:0}.tasks-note[data-v-8bdf8fe6]{margin:0;color:var(--text-3);font-size:12px}.task-draft[data-v-5b8438d2]{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;padding:12px 14px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised)}.line[data-v-5b8438d2]{display:flex;gap:8px;align-items:center}.title[data-v-5b8438d2],.brief[data-v-5b8438d2]{width:100%;padding:0;border:0;outline:0;background:none;color:var(--text);font:inherit}.title[data-v-5b8438d2]{font-weight:500}.brief[data-v-5b8438d2]{resize:vertical;color:var(--text-2);font-size:13px}.failure[data-v-5b8438d2]{margin:0;color:var(--danger);font-size:12.5px}.foot[data-v-5b8438d2]{display:flex;gap:6px;align-items:center;justify-content:flex-end}.hint[data-v-5b8438d2]{flex:1;color:var(--text-3);font-size:11.5px}.graph[data-v-a0d2cb8c]{overflow:auto;padding:16px 20px}.graph-note[data-v-a0d2cb8c]{margin:0;color:var(--text-2)}.graph-canvas[data-v-a0d2cb8c]{position:relative}.graph-lines[data-v-a0d2cb8c]{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none}.graph-lines path[data-v-a0d2cb8c]{fill:none;stroke:var(--border-2);stroke-width:1.5}.graph-node[data-v-a0d2cb8c]{position:absolute;display:flex;gap:8px;align-items:center;box-sizing:border-box;padding:6px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--raised);color:inherit;text-align:left;cursor:pointer}.graph-node[data-v-a0d2cb8c]:hover,.graph-node.selected[data-v-a0d2cb8c]{border-color:var(--accent)}.graph-title[data-v-a0d2cb8c]{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-size:12.5px;line-height:1.3}.key-line[data-v-114887fe]{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:4px 10px;color:var(--text-2);font-size:13px}kbd[data-v-114887fe]{color:var(--text-3);font:inherit;font-size:12px}.menu-note[data-v-114887fe]{margin:4px 10px;color:var(--text-2);font-size:12px}.filters[data-v-78a28e7d]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 16px;border-bottom:1px solid var(--border)}.chip[data-v-78a28e7d]{display:inline-flex;gap:4px;align-items:center;padding:1px 4px 1px 8px;border-radius:99px;background:var(--hover);color:var(--text-2);font-size:12px}.chip button[data-v-78a28e7d],.clear[data-v-78a28e7d]{border:0;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.tasks-dialog[data-v-78a28e7d]{position:relative;display:flex;flex:1;flex-direction:column;min-height:0;height:100%}.tasks-head[data-v-78a28e7d]{display:flex;flex:none;align-items:center;gap:10px;height:52px;padding:0 12px 0 18px;border-bottom:1px solid var(--border)}h2[data-v-78a28e7d]{margin:0;font-size:15px;font-weight:600}.standing[data-v-78a28e7d]{color:var(--text-3);font-size:12px}.grow[data-v-78a28e7d]{flex:1}.tasks-body[data-v-78a28e7d]{display:flex;flex:1;min-height:0}.tasks-list[data-v-78a28e7d]{flex:1;min-width:0;overflow:auto;padding:0}\n"; document.head.appendChild(style); }
+import { ref as _, computed as G, watch as ne, openBlock as l, createElementBlock as v, createBlock as A, unref as n, toDisplayString as $, Fragment as P, createVNode as k, withCtx as h, withDirectives as re, createElementVNode as M, renderList as q, vModelSelect as _e, renderSlot as xe, createCommentVNode as V, normalizeClass as ce, createTextVNode as I, withKeys as oe, onMounted as we, withModifiers as ke, vModelText as fe, normalizeStyle as ye, onUnmounted as me, vShow as De, nextTick as Te, createSlots as Ie } from "vue";
 import { useWindow as J, Skeleton as be, SearchBar as Me, Icon as ve, TaskStatusIcon as pe, priorityLabel as Ne, PriorityIcon as Ee, peekRef as Ke, Btn as Y, MenuPanel as $e, MenuItem as z, SwitchCase as Oe, MenuLabel as ee, Dialog as Le, Segmented as Ve, TaskInspector as Ge, steppedItem as Pe } from "@journal/window-kit";
 async function Ce(m) {
   return await m.reload("places"), m.props.places.failure.value ? [] : m.props.places.rows.value.map((L) => ({ phaseId: L.id, label: L.label, taskIds: L.task_ids }));
 }
 const te = (m, L) => {
   const K = m.__vccOpts || m;
-  for (const [T, f] of L)
-    K[T] = f;
+  for (const [D, f] of L)
+    K[D] = f;
   return K;
 }, Fe = { class: "tasks" }, Be = {
   key: 1,
@@ -42,7 +42,7 @@ const te = (m, L) => {
   emits: ["select"],
   setup(m, { expose: L, emit: K }) {
     var le;
-    const T = /* @__PURE__ */ new Set(["completed", "cancelled"]), f = m, x = K, a = J();
+    const D = /* @__PURE__ */ new Set(["completed", "cancelled"]), f = m, x = K, a = J();
     (le = a.state).tab ?? (le.tab = a.shared ? "shared" : "list");
     const b = _(null), y = _([]), g = _(""), e = G(() => g.value || a.props.board.failure.value), C = G(() => a.shared ? a.props[`task.${a.shared.id}`].loaded.value : a.props.board.loaded.value), w = _(/* @__PURE__ */ new Set()), N = _(""), O = _(a.state["board.tag"] || ""), B = G(() => a.props.tags.rows.value), E = a.option("rows"), o = G(() => Number(E.value) > 0 ? String(Number(E.value)) : void 0);
     function t() {
@@ -64,37 +64,37 @@ const te = (m, L) => {
     let Q = 0;
     async function ie(s) {
       if (!s) return;
-      const c = ++Q, u = new Map(y.value.map((p) => [p.state, p])), D = [];
-      for (const p of s.groups) D.push(await X(p, u.get(p.state)));
-      c === Q && (y.value = D);
+      const c = ++Q, u = new Map(y.value.map((p) => [p.state, p])), T = [];
+      for (const p of s.groups) T.push(await X(p, u.get(p.state)));
+      c === Q && (y.value = T);
     }
     ne(() => a.props.board.data.value, ie, { immediate: !0 });
     async function X(s, c) {
       if (!w.value.has(s.state) || !(c != null && c.rows.length)) return s;
       const u = { state: s.state, limit: String(c.rows.length) };
       O.value && (u.tag = O.value);
-      const D = await a.readKey("group", u);
-      return D.ok ? D.value.groups[0] : s;
+      const T = await a.readKey("group", u);
+      return T.ok ? T.value.groups[0] : s;
     }
     async function W(s) {
       const c = { state: s.state };
-      O.value && (c.tag = O.value), o.value && (c.limit = o.value), s.rows.length && (c["before-id"] = String(T.has(s.state) ? s.rows.at(-1).id : Math.min(...s.rows.map((F) => F.id))), T.has(s.state) && (c["before-closed-at"] = s.rows.at(-1).closed_at));
+      O.value && (c.tag = O.value), o.value && (c.limit = o.value), s.rows.length && (c["before-id"] = String(D.has(s.state) ? s.rows.at(-1).id : Math.min(...s.rows.map((F) => F.id))), D.has(s.state) && (c["before-closed-at"] = s.rows.at(-1).closed_at));
       const u = await a.readKey("group", c);
       if (g.value = u.ok ? "" : u.error, !u.ok) return;
       w.value = /* @__PURE__ */ new Set([...w.value, s.state]);
-      const D = y.value.find((F) => F.state === s.state), p = new Set(D.rows.map((F) => F.id));
-      D.rows = [...D.rows, ...u.value.groups[0].rows.filter((F) => !p.has(F.id))];
+      const T = y.value.find((F) => F.state === s.state), p = new Set(T.rows.map((F) => F.id));
+      T.rows = [...T.rows, ...u.value.groups[0].rows.filter((F) => !p.has(F.id))];
     }
-    const ue = (s) => s.total && (f.states.length ? f.states.includes(s.state) : f.display.showDone || !T.has(s.state)), ae = _([]), Z = ["started", "testing", "blocked", "open"], se = (s) => s.state === "delegated" ? [...s.rows].sort((c, u) => Z.indexOf(c.state) - Z.indexOf(u.state)) : s.rows, i = G(() => {
+    const ue = (s) => s.total && (f.states.length ? f.states.includes(s.state) : f.display.showDone || !D.has(s.state)), ae = _([]), Z = ["started", "testing", "blocked", "open"], se = (s) => s.state === "delegated" ? [...s.rows].sort((c, u) => Z.indexOf(c.state) - Z.indexOf(u.state)) : s.rows, i = G(() => {
       const s = N.value.trim().toLowerCase();
       return y.value.filter(ue).map((c) => ({ group: c, tasks: se(c).filter((u) => !s || `${u.title} ${u.id}`.toLowerCase().includes(s)) })).filter(({ tasks: c }) => !s || c.length);
     }), r = G(() => {
-      const s = new Map(ae.value.flatMap((D) => D.taskIds.map((p) => [p, D.label]))), c = /* @__PURE__ */ new Map();
-      for (const D of i.value.flatMap(({ tasks: p }) => p)) {
-        const p = s.get(D.id) ?? de;
-        c.set(p, [...c.get(p) ?? [], D]);
+      const s = new Map(ae.value.flatMap((T) => T.taskIds.map((p) => [p, T.label]))), c = /* @__PURE__ */ new Map();
+      for (const T of i.value.flatMap(({ tasks: p }) => p)) {
+        const p = s.get(T.id) ?? de;
+        c.set(p, [...c.get(p) ?? [], T]);
       }
-      return [...c.keys()].sort((D, p) => (D === de) - (p === de) || D.localeCompare(p)).map((D) => ({ group: { state: D, label: D, total: c.get(D).length, rows: c.get(D) }, tasks: c.get(D) }));
+      return [...c.keys()].sort((T, p) => (T === de) - (p === de) || T.localeCompare(p)).map((T) => ({ group: { state: T, label: T, total: c.get(T).length, rows: c.get(T) }, tasks: c.get(T) }));
     }), S = G(() => f.display.grouping === "plan" ? r.value : i.value);
     ne(() => f.display.grouping, async (s) => {
       s === "plan" && (ae.value = await Ce(a));
@@ -142,7 +142,7 @@ const te = (m, L) => {
           _: 3
         }, 8, ["modelValue"]),
         S.value.length ? V("", !0) : (l(), v("p", qe, $(N.value ? "No task matches" : "No tasks yet"), 1)),
-        (l(!0), v(P, null, q(S.value, ({ group: u, tasks: D }) => (l(), v("section", {
+        (l(!0), v(P, null, q(S.value, ({ group: u, tasks: T }) => (l(), v("section", {
           key: u.state,
           class: "tasks-group",
           "data-state": u.state
@@ -164,7 +164,7 @@ const te = (m, L) => {
               M("span", je, $(u.total), 1)
             ], 8, Ye)
           ])) : V("", !0),
-          (l(!0), v(P, null, q(d.value.has(u.state) ? [] : D, (p) => (l(), v("div", {
+          (l(!0), v(P, null, q(d.value.has(u.state) ? [] : T, (p) => (l(), v("div", {
             key: p.id,
             class: ce(["task", { selected: m.selectable && p.id === m.selected }]),
             "data-row": p.id,
@@ -214,7 +214,7 @@ const te = (m, L) => {
       }))
     ]));
   }
-}, Se = /* @__PURE__ */ te(tt, [["__scopeId", "data-v-57ba413a"]]), at = { class: "line" }, st = ["onKeydown"], lt = {
+}, Se = /* @__PURE__ */ te(tt, [["__scopeId", "data-v-8bdf8fe6"]]), at = { class: "line" }, st = ["onKeydown"], lt = {
   key: 0,
   class: "failure",
   role: "alert"
@@ -222,13 +222,13 @@ const te = (m, L) => {
   __name: "NewTask",
   emits: ["filed", "cancel"],
   setup(m, { emit: L }) {
-    const K = L, T = J(), f = _(""), x = _(""), a = _(""), b = _(null), y = G(() => !!f.value.trim());
+    const K = L, D = J(), f = _(""), x = _(""), a = _(""), b = _(null), y = G(() => !!f.value.trim());
     async function g() {
       if (!y.value) return;
-      const E = await T.run(["task", "make", f.value.trim(), ...x.value.trim() ? ["--brief", x.value.trim()] : []]);
+      const E = await D.run(["task", "make", f.value.trim(), ...x.value.trim() ? ["--brief", x.value.trim()] : []]);
       if (a.value = E.ok ? "" : E.error, !!E.ok) {
         if (e.value) {
-          const o = await T.run(["phase", "place", String(E.value.id), "--phase", String(e.value.phaseId)]);
+          const o = await D.run(["phase", "place", String(E.value.id), "--phase", String(e.value.phaseId)]);
           a.value = o.ok ? "" : o.error;
         }
         K("filed", E.value.id);
@@ -236,7 +236,7 @@ const te = (m, L) => {
     }
     const e = _(null), C = _([]), w = _(null);
     async function N(E) {
-      w.value = E.currentTarget, C.value = await Ce(T);
+      w.value = E.currentTarget, C.value = await Ce(D);
     }
     function O(E) {
       e.value = E, w.value = null;
@@ -337,16 +337,16 @@ const te = (m, L) => {
       ])
     ], 32));
   }
-}, rt = /* @__PURE__ */ te(ot, [["__scopeId", "data-v-a9fd4273"]]), U = { width: 188, height: 52, gapX: 40, gapY: 12 };
+}, rt = /* @__PURE__ */ te(ot, [["__scopeId", "data-v-5b8438d2"]]), U = { width: 188, height: 52, gapX: 40, gapY: 12 };
 function it(m, L) {
   var g;
   const K = new Map(m.map((e) => [e.id, []]));
   for (const [e, C] of L) (g = K.get(e)) == null || g.push(C);
-  const T = /* @__PURE__ */ new Map(), f = (e, C = /* @__PURE__ */ new Set()) => {
-    if (T.has(e)) return T.get(e);
+  const D = /* @__PURE__ */ new Map(), f = (e, C = /* @__PURE__ */ new Set()) => {
+    if (D.has(e)) return D.get(e);
     if (C.has(e)) return 0;
     const w = (K.get(e) ?? []).map((O) => f(O, /* @__PURE__ */ new Set([...C, e])) + 1), N = w.length ? Math.max(...w) : 0;
-    return T.set(e, N), N;
+    return D.set(e, N), N;
   }, x = /* @__PURE__ */ new Map(), a = m.map((e) => {
     const C = f(e.id), w = x.get(C) ?? 0;
     return x.set(C, w + 1), { task: e, x: C * (U.width + U.gapX), y: w * (U.height + U.gapY) };
@@ -372,9 +372,9 @@ const ut = {
   props: { selected: { type: Number, default: 0 } },
   emits: ["select"],
   setup(m, { emit: L }) {
-    const K = L, T = J();
-    T.state.tab = "graph";
-    const { data: f, failure: x } = T.props.graph, a = G(() => {
+    const K = L, D = J();
+    D.state.tab = "graph";
+    const { data: f, failure: x } = D.props.graph, a = G(() => {
       var y, g;
       return it(((y = f.value) == null ? void 0 : y.tasks) ?? [], ((g = f.value) == null ? void 0 : g.edges) ?? []);
     }), b = (y) => {
@@ -418,7 +418,7 @@ const ut = {
       }))
     ]));
   }
-}, mt = /* @__PURE__ */ te(yt, [["__scopeId", "data-v-2c78474f"]]), ht = {
+}, mt = /* @__PURE__ */ te(yt, [["__scopeId", "data-v-a0d2cb8c"]]), ht = {
   key: 0,
   class: "menu-note",
   role: "alert"
@@ -427,7 +427,7 @@ const ut = {
   props: { states: { type: Array, required: !0 }, display: { type: Object, required: !0 }, selected: { type: Number, default: 0 } },
   emits: ["states", "display", "deleted"],
   setup(m, { emit: L }) {
-    const K = ["started", "open", "delegated", "blocked", "testing", "completed", "cancelled"], T = [
+    const K = ["started", "open", "delegated", "blocked", "testing", "completed", "cancelled"], D = [
       { key: "state", label: "Status" },
       { key: "plan", label: "Plan and phase" },
       { key: "none", label: "Nothing" }
@@ -542,7 +542,7 @@ const ut = {
                 ])]),
                 _: 1
               }),
-              (l(), v(P, null, q(T, (d) => k(n(z), {
+              (l(), v(P, null, q(D, (d) => k(n(z), {
                 key: d.key,
                 on: m.display.grouping === d.key,
                 "data-grouping": d.key,
@@ -621,7 +621,7 @@ const ut = {
       }, 8, ["anchor"])) : V("", !0)
     ], 64));
   }
-}, wt = /* @__PURE__ */ te(gt, [["__scopeId", "data-v-55f1f115"]]), bt = {
+}, wt = /* @__PURE__ */ te(gt, [["__scopeId", "data-v-114887fe"]]), bt = {
   class: "tasks-dialog",
   "data-tasks-dialog": ""
 }, $t = { class: "tasks-head" }, Ct = {
@@ -637,16 +637,16 @@ const ut = {
 }, xt = {
   key: 1,
   class: "chip"
-}, Tt = { class: "tasks-body" }, Dt = { class: "tasks-list" }, ge = "input,textarea,select,[contenteditable],.menu-panel", It = {
+}, Dt = { class: "tasks-body" }, Tt = { class: "tasks-list" }, ge = "input,textarea,select,[contenteditable],.menu-panel", It = {
   __name: "TasksDialog",
   emits: ["close"],
   setup(m, { emit: L }) {
-    const K = L, T = J(), f = _(!0), x = _(null), a = _(null), b = _(0), y = _(!1), g = _(!1), e = _(0), C = [
+    const K = L, D = J(), f = _(!0), x = _(null), a = _(null), b = _(0), y = _(!1), g = _(!1), e = _(0), C = [
       { key: "list", label: "List" },
       { key: "graph", label: "Graph" }
     ];
-    T.state.tab = "list";
-    const w = G({ get: () => T.state.tab, set: (i) => T.state.tab = i }), N = _([]), O = _({ grouping: "state", number: !0, reason: !1, showDone: !1 }), B = G(() => {
+    D.state.tab = "list";
+    const w = G({ get: () => D.state.tab, set: (i) => D.state.tab = i }), N = _([]), O = _({ grouping: "state", number: !0, reason: !1, showDone: !1 }), B = G(() => {
       var i;
       return ((i = x.value) == null ? void 0 : i.query) ?? "";
     }), E = G(() => {
@@ -659,7 +659,7 @@ const ut = {
     function d() {
       y.value = !1, b.value = 0;
     }
-    const R = T.follow(["task.*", "task_log.*", "task_tag.*"], () => e.value += 1);
+    const R = D.follow(["task.*", "task_log.*", "task_tag.*"], () => e.value += 1);
     me(() => R == null ? void 0 : R());
     const Q = G(() => {
       var i;
@@ -673,7 +673,7 @@ const ut = {
       b.value = i, y.value = !0;
     }
     function W(i) {
-      Q.value.length && (b.value = Pe(Q.value, b.value, i), De(() => {
+      Q.value.length && (b.value = Pe(Q.value, b.value, i), Te(() => {
         var r;
         return (r = document.querySelector(`.tasks-dialog [data-row="${b.value}"]`)) == null ? void 0 : r.scrollIntoView({ block: "nearest" });
       }));
@@ -709,9 +709,9 @@ const ut = {
       i.key !== "Escape" || i.defaultPrevented || (S = (r = i.target).closest) != null && S.call(r, ge) || (y.value ? y.value = !1 : f.value = !1);
     }
     return we(() => {
-      globalThis.addEventListener("keydown", Z, !0), globalThis.addEventListener("keydown", se);
+      window.addEventListener("keydown", Z, !0), window.addEventListener("keydown", se);
     }), me(() => {
-      globalThis.removeEventListener("keydown", Z, !0), globalThis.removeEventListener("keydown", se), T.state.tab = "list";
+      window.removeEventListener("keydown", Z, !0), window.removeEventListener("keydown", se), D.state.tab = "list";
     }), (i, r) => (l(), A(n(Le), {
       wide: "",
       tall: "",
@@ -796,8 +796,8 @@ const ut = {
               onClick: t
             }, "Clear all")
           ])) : V("", !0),
-          M("div", Tt, [
-            M("div", Dt, [
+          M("div", Dt, [
+            M("div", Tt, [
               g.value ? (l(), A(rt, {
                 key: 0,
                 onFiled: ue,
@@ -819,7 +819,7 @@ const ut = {
                   onSelect: X
                 }, null, 8, ["selected", "states", "display"])
               ], 512), [
-                [Te, w.value === "list"]
+                [De, w.value === "list"]
               ])
             ]),
             y.value && b.value ? (l(), A(n(Ge), {
@@ -828,7 +828,7 @@ const ut = {
               ref: a,
               stepped: "",
               id: b.value,
-              read: n(T).run,
+              read: n(D).run,
               changes: e.value,
               onClose: r[8] || (r[8] = (S) => y.value = !1),
               onStep: W,
@@ -840,11 +840,11 @@ const ut = {
       _: 1
     }, 8, ["open"]));
   }
-}, Mt = /* @__PURE__ */ te(It, [["__scopeId", "data-v-fb71d626"]]), Kt = {
+}, Mt = /* @__PURE__ */ te(It, [["__scopeId", "data-v-78a28e7d"]]), Kt = {
   __name: "TasksWindow",
   setup(m) {
     const L = J(), K = _(!1);
-    return (T, f) => (l(), v(P, null, [
+    return (D, f) => (l(), v(P, null, [
       k(Se, null, Ie({ _: 2 }, [
         n(L).shared ? void 0 : {
           name: "tools",

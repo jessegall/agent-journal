@@ -2,23 +2,23 @@
 import {computed, ref, watch} from "vue";
 import {Btn, Icon, SearchBar, Skeleton, useWindow} from "@journal/window-kit";
 
-const window = useWindow();
-window.state["entries.folder"] = "";
+const view = useWindow();
+view.state["entries.folder"] = "";
 const folder = ref("");
 const words = ref("");
-const list = computed(() => window.props[words.value.trim() ? "matches" : "entries"]);
+const list = computed(() => view.props[words.value.trim() ? "matches" : "entries"]);
 const rows = computed(() => list.value.loaded.value ? list.value.rows.value : null);
 const failure = computed(() => list.value.failure.value);
-const {data: chosen, failure: refusal} = window.props.file;
+const {data: chosen, failure: refusal} = view.props.file;
 const targetLine = ref(0);
 const crumbs = computed(() => (folder.value ? folder.value.split("/") : []));
 const crumbPath = (index) => crumbs.value.slice(0, index + 1).join("/");
 const lines = computed(() => (chosen.value?.text ?? "").split("\n"));
 function load() {
     const wanted = words.value.trim();
-    window.state["entries.folder"] = folder.value;
-    window.state["matches.words"] = wanted;
-    window.reload(wanted ? "matches" : "entries");
+    view.state["entries.folder"] = folder.value;
+    view.state["matches.words"] = wanted;
+    view.reload(wanted ? "matches" : "entries");
 }
 
 function scrolledTo(element, number) {
@@ -32,8 +32,8 @@ function open(row, lineNumber = 0) {
         return;
     }
     targetLine.value = lineNumber;
-    window.state["file.path"] = row.id;
-    window.reload("file");
+    view.state["file.path"] = row.id;
+    view.reload("file");
 }
 
 watch([folder, words], load);

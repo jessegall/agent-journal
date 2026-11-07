@@ -6,7 +6,7 @@ import {peekRef} from "../route.js";
 
 // what came in while the page was out of sight for five minutes or more, as version 4's card told it: the pins since, each opening its row
 const AWAY_MILLISECONDS = 5 * 60 * 1000;
-const window = useWindow();
+const view = useWindow();
 const pins = ref([]);
 let hiddenAt = 0;
 
@@ -17,8 +17,8 @@ async function heardVisibility() {
     }
     if (!hiddenAt || Date.now() - hiddenAt < AWAY_MILLISECONDS) return;
     const since = hiddenAt;
-    await window.reload("pins");
-    pins.value = window.props.pins.failure.value ? [] : (window.props.pins.data.value?.rows ?? []).filter((row) => new Date(row.created_at).getTime() >= since);
+    await view.reload("pins");
+    pins.value = view.props.pins.failure.value ? [] : (view.props.pins.data.value?.rows ?? []).filter((row) => new Date(row.created_at).getTime() >= since);
 }
 
 function open(pin) {

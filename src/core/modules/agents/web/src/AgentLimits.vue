@@ -2,8 +2,8 @@
 import {computed, ref} from "vue";
 import {Btn, Icon, TextInput, useWindow} from "@journal/window-kit";
 
-const window = useWindow();
-const {rows, failure: readFailure} = window.props.limits;
+const view = useWindow();
+const {rows, failure: readFailure} = view.props.limits;
 const open = ref(false);
 const editing = ref(false);
 const pending = ref(false);
@@ -30,7 +30,7 @@ function toggleEditing() {
     editing.value = !editing.value;
 }
 async function change(row, key, previous, event) {
-    if (pending.value || window.readOnly) return;
+    if (pending.value || view.readOnly) return;
     const value = Number(event.target.value);
     if (!Number.isInteger(value) || value < 0 || !event.target.value.trim()) {
         failure.value = "Use a whole number of 0 or more.";
@@ -40,13 +40,13 @@ async function change(row, key, previous, event) {
     pending.value = true;
     notice.value = "";
     try {
-        const answer = await window.run(["setting", "set", key, String(value), "--environment", window.environment]);
+        const answer = await view.run(["setting", "set", key, String(value), "--environment", view.environment]);
         failure.value = answer.ok ? "" : answer.error;
         if (!answer.ok) {
             event.target.value = String(previous);
             return;
         }
-        await window.reload("limits");
+        await view.reload("limits");
         notice.value = `${row.label} limits saved.`;
     } finally {
         pending.value = false;
@@ -66,7 +66,7 @@ async function change(row, key, previous, event) {
                 <Icon name="caret" :size="12" />
             </button>
             <div v-show="open" class="limits-panel">
-                <div class="limits-head"><strong>Agent limits</strong><Btn small :disabled="pending || window.readOnly" data-agent-limits-edit @click="toggleEditing">{{ editing ? 'Done' : 'Edit limits' }}</Btn></div>
+                <div class="limits-head"><strong>Agent limits</strong><Btn small :disabled="pending || view.readOnly" data-agent-limits-edit @click="toggleEditing">{{ editing ? 'Done' : 'Edit limits' }}</Btn></div>
                 <template v-if="!editing">
                     <div class="table-head"><span>Agent</span><span>Running</span><span>Kept</span><span>Status</span></div>
                     <template v-for="row in entries" :key="row.key">
@@ -82,11 +82,11 @@ async function change(row, key, previous, event) {
                     <template v-for="row in rows" :key="row.key">
                         <div class="edit-row" :data-agent-limit-type="row.key">
                             <strong>{{ row.label }}</strong>
-                            <label class="limit-field"><span>Running<template v-if="row.per_profile"> per profile</template></span><TextInput type="number" min="0" :value="String(row.run_limit)" :disabled="pending || window.readOnly" :data-agent-run-limit="row.key" @change="change(row, row.run_setting, row.run_limit, $event)" /><small>{{ row.run_source }}</small></label>
-                            <label class="limit-field"><span>Kept<template v-if="row.per_profile"> per profile</template></span><TextInput type="number" min="0" :value="String(row.kept_limit)" :disabled="pending || window.readOnly" :data-agent-kept-limit="row.key" @change="change(row, row.kept_setting, row.kept_limit, $event)" /><small>{{ row.kept_source }}</small></label>
+                            <label class="limit-field"><span>Running<template v-if="row.per_profile"> per profile</template></span><TextInput type="number" min="0" :value="String(row.run_limit)" :disabled="pending || view.readOnly" :data-agent-run-limit="row.key" @change="change(row, row.run_setting, row.run_limit, $event)" /><small>{{ row.run_source }}</small></label>
+                            <label class="limit-field"><span>Kept<template v-if="row.per_profile"> per profile</template></span><TextInput type="number" min="0" :value="String(row.kept_limit)" :disabled="pending || view.readOnly" :data-agent-kept-limit="row.key" @change="change(row, row.kept_setting, row.kept_limit, $event)" /><small>{{ row.kept_source }}</small></label>
                         </div>
                     </template>
-                    <p>Running 0 starts no agents. Kept 0 means no limit. Changes apply to {{ window.environment }}.</p>
+                    <p>Running 0 starts no agents. Kept 0 means no limit. Changes apply to {{ view.environment }}.</p>
                 </template>
             </div>
         </template>

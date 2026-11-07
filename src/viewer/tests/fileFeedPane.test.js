@@ -33,6 +33,10 @@ const SHAPE = {dir: "row", r: 0.5, a: {tabs: [FEEDS[0]], active: FEEDS[0]}, b: {
 // the journal's answer to each line: the old per-window setting is the one given, every other read is refused
 const answers = (setting) => perLine(async (url, init) => {
     if (String(url).endsWith("/api/session")) return {ok: true, json: async () => ({tour_completed: true})};
+    if (String(url).startsWith("/api/window?")) return {ok: true, json: async () => ({
+        declared: {edits: {loading: "first", events: [], page_size: 50}, view: {loading: "first", events: [], page_size: 0}},
+        keys: {edits: {code: 0, value: {rows: [], total: 0}}, view: setting ? {code: 0, value: {value: setting}} : {code: 1, error: "refused"}},
+    })};
     const line = JSON.parse(init.body).line;
     const value = line[1] === "setting" && setting ? {code: 0, value: {value: setting}} : {code: 1, value: null, error: "refused"};
     return {ok: true, json: async () => value};

@@ -3,9 +3,9 @@ import {RowList, WindowRoom, useWindow} from "@journal/window-kit";
 
 const STATE_TEXT = {pending: "to do", in_progress: "doing", completed: "done"};
 
-const window = useWindow();
-window.state["todos.agent"] = String(window.agent);
-const {rows, failure, loaded} = window.props.todos;
+const view = useWindow();
+view.state["todos.agent"] = String(view.agent);
+const {rows, failure, loaded} = view.props.todos;
 </script>
 
 <template>

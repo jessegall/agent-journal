@@ -3,9 +3,9 @@ import {RowList, WindowRoom, useWindow} from "@journal/window-kit";
 import {hookEventLabel} from "./labels.js";
 import StopChecks from "./StopChecks.vue";
 
-const window = useWindow();
-window.state["calls.session-agent-id"] = String(window.agent);
-const {rows, failure, loaded} = window.props.calls;
+const view = useWindow();
+view.state["calls.session-agent-id"] = String(view.agent);
+const {rows, failure, loaded} = view.props.calls;
 </script>
 
 <template>

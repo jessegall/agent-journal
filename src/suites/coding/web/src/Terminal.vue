@@ -11,16 +11,16 @@ const JOURNAL_LINE = /^(\S+=\S+\s+)*(\S*\/)?journal(\s|$)/;
 const OPENING_LINES = 100;
 const TOP_PIXELS = 8;
 
-const window = useWindow();
+const view = useWindow();
 const props = defineProps({agent: {type: Number, default: null}});
-const agent = props.agent ?? window.agent;
+const agent = props.agent ?? view.agent;
 const embedded = props.agent !== null;
-if (!embedded) window.state["calls.session-agent-id"] = String(agent);
-const feed = window.props[embedded ? `terminal-calls.${agent}` : "calls"];
+if (!embedded) view.state["calls.session-agent-id"] = String(agent);
+const feed = view.props[embedded ? `terminal-calls.${agent}` : "calls"];
 const {rows, failure, loaded, older} = feed;
 if (embedded) {
     onMounted(() => feed.loadLatest());
-    const stop = window.follow(["hook_call.*"], feed.heard);
+    const stop = view.follow(["hook_call.*"], feed.heard);
     onUnmounted(stop);
 }
 const typed = ref("");
@@ -39,7 +39,7 @@ const isShown = {
     everything: () => true,
 };
 const isJournalLine = (row) => JOURNAL_LINE.test(row.summary);
-const level = window.option("verbosity");
+const level = view.option("verbosity");
 const commands = computed(() => rows.value.filter((row) => row.hook === "pre_tool_use" && row.summary && isShown[level.value ?? "everything"](row)).sort((one, two) => one.id - two.id));
 const markOf = (row) => (isJournalLine(row) ? "#" : COMMAND_TOOLS.has(row.tool) ? "$" : ">");
 
@@ -80,7 +80,7 @@ async function send() {
     const line = typed.value;
     if (!line.trim()) return;
     typed.value = "";
-    const result = await window.run(["agent", "type", String(agent), line]);
+    const result = await view.run(["agent", "type", String(agent), line]);
     refusal.value = result.ok ? "" : result.error;
     if (!result.ok) typed.value = line;
 }

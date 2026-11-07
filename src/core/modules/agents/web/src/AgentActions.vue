@@ -5,7 +5,7 @@ import AgentJobForm from "./AgentJobForm.vue";
 import AgentRetireForm from "./AgentRetireForm.vue";
 
 const props = defineProps({row: {type: Object, required: true}});
-const window = useWindow();
+const view = useWindow();
 const mode = ref("");
 const text = ref("");
 const reason = ref("");
@@ -42,9 +42,9 @@ async function readTasks() {
     if (loading.value) return;
     loading.value = true;
     try {
-        window.state["jobs.page"] = String(taskPage.value + 1);
-        await window.reload("jobs");
-        const jobs = window.props.jobs;
+        view.state["jobs.page"] = String(taskPage.value + 1);
+        await view.reload("jobs");
+        const jobs = view.props.jobs;
         failure.value = jobs.failure.value;
         if (!failure.value) {
             tasks.value = [...tasks.value, ...jobs.rows.value];
@@ -60,7 +60,7 @@ async function run(command, success) {
     pending.value = true;
     failure.value = "";
     try {
-        const answer = await window.run(command);
+        const answer = await view.run(command);
         failure.value = answer.ok ? "" : answer.error;
         if (answer.ok) {
             choose("");

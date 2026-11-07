@@ -20,7 +20,7 @@ const props = defineProps({
     folded: Boolean,
 });
 
-const window = useWindow();
+const view = useWindow();
 const lines = computed(() =>
     String(props.mark.lines || "")
         .split("\n")
@@ -31,7 +31,7 @@ const TASK_MODEL = "task";
 const stopReason = computed(() => (STOPPED_VARIANTS.has(props.mark.variant) ? props.mark.detail || "" : ""));
 const taskId = computed(() => (props.mark.target_model === TASK_MODEL ? props.mark.target_id : 0));
 const pages = useOutputPages(
-    readOutputProp(window),
+    readOutputProp(view),
     () => props.mark.target_id
 );
 const outputLines = pages.lines;

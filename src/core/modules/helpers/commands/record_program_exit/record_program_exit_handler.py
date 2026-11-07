@@ -73,7 +73,9 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
         transcript_text = self.providers.provider(agent.program).last_reply(self.folders.folder(agent), agent.session)
         text = transcript_text or self.reasons.reason(agent, command.exit_code, command.launch_ended, terminal)
         self.bus.run(RecordParentReport(agent.id, agent.parent_id, text, job.id), actor, environment_id=agent.environment_id)
+        if not command.exit_code:
+            return
         profile = self.profiles.registered(agent.profile)
-        if not command.exit_code or profile is None or profile.reports_to_parent:
+        if profile is None or profile.reports_to_parent:
             return
         self.bus.run(ReportProgramFault(agent.id, command.exit_code), actor, environment_id=agent.environment_id)

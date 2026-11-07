@@ -2,20 +2,20 @@
 import {computed, ref} from "vue";
 import {Btn, WindowRoom, useWindow} from "@journal/window-kit";
 
-const window = useWindow();
+const view = useWindow();
 const costliestFirst = ref(false);
-const {data: numbers, failure} = window.props.numbers;
-const load = () => window.reload("numbers");
+const {data: numbers, failure} = view.props.numbers;
+const load = () => view.reload("numbers");
 const rows = computed(() => numbers.value?.rows ?? []);
 
 function sortByCost() {
     costliestFirst.value = !costliestFirst.value;
-    window.state["numbers.costliest"] = String(costliestFirst.value);
+    view.state["numbers.costliest"] = String(costliestFirst.value);
     load();
 }
 
 async function reset() {
-    const answer = await window.run(["developer", "reset-numbers"]);
+    const answer = await view.run(["developer", "reset-numbers"]);
     failure.value = answer.ok ? "" : answer.error;
     load();
 }

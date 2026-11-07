@@ -124,13 +124,13 @@ def test_sixty_percent_overlap_is_held_and_less_reaches_chat(reply_ready):
 @pytest.fixture
 def reaction_turn(new_story, monkeypatch):
     story = new_story(fixture=BuilderWithUser)
-    typed = []
-    monkeypatch.setattr(TerminalTyping, "type_line", lambda _typing, agent_id, line: typed.append((agent_id, line)))
+    lines = []
+    monkeypatch.setattr(TerminalTyping, "type_line", lambda _typing, agent_id, line: lines.append((agent_id, line)))
     story.expect_success('message send "The cart is ready" --environment main', actor=story.agent)
     story.hook("s-1", HookSamples.stop())
     viewer(story, "messages.chat", ["message", "react", "1", "👍"])
-    story.expect_rows(len(typed) == 1, typed[0][0] == story.agent.id)
-    line = typed[0][1]
+    story.expect_rows(len(lines) == 1, lines[0][0] == story.agent.id)
+    line = lines[0][1]
     story.expect_rows("the user reacted to message:1" in line, "act if it asks" in line, "closing text is not in chat" in line, "journal message send" in line, "👍" not in line)
     story.hook("s-1", HookSamples.prompt(line))
     return story

@@ -1,4 +1,5 @@
 import {planWindowContext} from "./support/planWindowContext.js";
+import {taskWindowContext} from "./support/taskWindowContext.js";
 import {expect, test, vi} from "vitest";
 import {ref} from "vue";
 import {context, drawn, mounted, page, settle} from "./support/windowContext.js";
@@ -67,7 +68,7 @@ test("the chat's pinned links shrink to a corner and come back", async () => {
 });
 
 test("the tasks window shows each task's title and state", async () => {
-    const text = await drawn(TaskList, context({"task board": {ok: true, value: {groups: [{state: "started", total: 1, rows: [{id: 7, title: "Fix the cart", state: "started"}]}]}}}));
+    const text = await drawn(TaskList, taskWindowContext({"task board": {ok: true, value: {groups: [{state: "started", total: 1, rows: [{id: 7, title: "Fix the cart", state: "started"}]}]}}}));
     expect(text).toContain("Fix the cart");
     expect(text).toContain("Started");
 });
@@ -115,7 +116,7 @@ test("the file edits window shows every agent's edits", async () => {
 });
 
 test("a window shows the reason a read was refused", async () => {
-    expect(await drawn(TaskList, context({}))).toContain("no answer for task board");
+    expect(await drawn(TaskList, taskWindowContext({}))).toContain("no answer for task board");
 });
 
 test("the terminal window lists its agent's commands in order, marks journal lines and refusals, and opens a long line", async () => {

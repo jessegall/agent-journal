@@ -14,19 +14,19 @@ const props = defineProps({
     display: {type: Object, default: () => ({grouping: "state", number: true, reason: false, showDone: true})},
 });
 const emit = defineEmits(["select"]);
-const window = useWindow();
-window.state.tab ??= window.shared ? "shared" : "list";
+const view = useWindow();
+view.state.tab ??= view.shared ? "shared" : "list";
 const search = ref(null);
 const board = ref([]);
 const pageFailure = ref("");
-const failure = computed(() => pageFailure.value || window.props.board.failure.value);
-const loaded = computed(() => window.shared ? window.props[`task.${window.shared.id}`].loaded.value : window.props.board.loaded.value);
+const failure = computed(() => pageFailure.value || view.props.board.failure.value);
+const loaded = computed(() => view.shared ? view.props[`task.${view.shared.id}`].loaded.value : view.props.board.loaded.value);
 const extended = ref(new Set());
 const query = ref("");
-const tag = ref(window.state["board.tag"] || "");
-const tags = computed(() => window.props.tags.rows.value);
+const tag = ref(view.state["board.tag"] || "");
+const tags = computed(() => view.props.tags.rows.value);
 // the rows each group shows on a page, chosen in the window's menu and kept on the pane
-const pageRows = window.option("rows");
+const pageRows = view.option("rows");
 const pageLimit = computed(() => (Number(pageRows.value) > 0 ? String(Number(pageRows.value)) : undefined));
 
 // the groups folded away, kept for this browser
@@ -60,14 +60,14 @@ async function readBoard(answer) {
     for (const group of answer.groups) groups.push(await withHeldRows(group, held.get(group.state)));
     if (request === loading) board.value = groups;
 }
-watch(() => window.props.board.data.value, readBoard, {immediate: true});
+watch(() => view.props.board.data.value, readBoard, {immediate: true});
 
 // a group shown past its first page reads again as many rows as it shows, so a task that moved leaves it
 async function withHeldRows(group, held) {
     if (!extended.value.has(group.state) || !held?.rows.length) return group;
     const flags = {state: group.state, limit: String(held.rows.length)};
     if (tag.value) flags.tag = tag.value;
-    const answer = await window.readKey("group", flags);
+    const answer = await view.readKey("group", flags);
     return answer.ok ? answer.value.groups[0] : group;
 }
 
@@ -79,7 +79,7 @@ async function more(group) {
         flags["before-id"] = String(FINISHED.has(group.state) ? group.rows.at(-1).id : Math.min(...group.rows.map((row) => row.id)));
         if (FINISHED.has(group.state)) flags["before-closed-at"] = group.rows.at(-1).closed_at;
     }
-    const answer = await window.readKey("group", flags);
+    const answer = await view.readKey("group", flags);
     pageFailure.value = answer.ok ? "" : answer.error;
     if (!answer.ok) return;
     extended.value = new Set([...extended.value, group.state]);
@@ -114,27 +114,27 @@ const planGroups = computed(() => {
 });
 const groups = computed(() => (props.display.grouping === "plan" ? planGroups.value : stateGroups.value));
 watch(() => props.display.grouping, async (grouping) => {
-    if (grouping === "plan") places.value = await readPlanPlaces(window);
+    if (grouping === "plan") places.value = await readPlanPlaces(view);
 }, {immediate: true});
 const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 const pick = (id) => (props.selectable ? emit("select", id) : peekRef(`tasks:${id}`));
 watch(pageRows, () => {
     extended.value = new Set();
-    if (pageLimit.value) window.state["board.limit"] = pageLimit.value;
-    else delete window.state["board.limit"];
-    if (window.props.board.data.value) window.reload("board");
+    if (pageLimit.value) view.state["board.limit"] = pageLimit.value;
+    else delete view.state["board.limit"];
+    if (view.props.board.data.value) view.reload("board");
 }, {immediate: true});
 watch(tag, () => {
     extended.value = new Set();
-    if (tag.value) window.state["board.tag"] = tag.value;
-    else delete window.state["board.tag"];
-    window.reload("board");
+    if (tag.value) view.state["board.tag"] = tag.value;
+    else delete view.state["board.tag"];
+    view.reload("board");
 });
-if (window.shared) {
-    const name = `task.${window.shared.id}`;
-    window.reload(name).then(() => {
-        const row = window.props[name].data.value;
-        pageFailure.value = window.props[name].failure.value;
+if (view.shared) {
+    const name = `task.${view.shared.id}`;
+    view.reload(name).then(() => {
+        const row = view.props[name].data.value;
+        pageFailure.value = view.props[name].failure.value;
         if (row) board.value = [{state: row.state, total: 1, rows: [row]}];
     });
 }

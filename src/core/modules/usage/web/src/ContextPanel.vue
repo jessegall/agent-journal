@@ -3,8 +3,8 @@ import {computed} from "vue";
 import {WindowRoom, useWindow} from "@journal/window-kit";
 
 // the main agent's context window as version 4's context menu drew it: a meter of how full it is, and when it was last compacted
-const window = useWindow();
-const {data: usage} = window.props.usage;
+const view = useWindow();
+const {data: usage} = view.props.usage;
 const main = computed(() => usage.value?.agents?.find((agent) => agent.role === "main") ?? null);
 const compacted = computed(() => (main.value?.last_compacted_at ? new Date(main.value.last_compacted_at).toLocaleString() : "Not yet"));
 
