@@ -7,9 +7,9 @@ def test_work_mode_reads_only_visible_settings_and_asks_for_activity_on_a_pick(n
     story = new_story(fixture=BuilderWithUser)
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-        query = "environment=main&mode.environment=main"
+        query = "environment=main"
         status, answer = window_data(server, cookie, window="coding.work-mode", query=query)
-        story.expect_rows(status == 200, set(answer["keys"]) == {"mode", "auto"},
+        story.expect_rows(status == 200, set(answer["keys"]) == {"work", "auto"},
                           all(key_answer["code"] == 0 for key_answer in answer["keys"].values()))
         status, settings = window_data(server, cookie, keys="dispatches,merger", window="coding.work-mode", query=f"{query}&tab=settings")
         story.expect_rows(status == 200, set(settings["keys"]) == {"dispatches", "merger"},

@@ -99,8 +99,8 @@ def field_values(reading: dict, group: str) -> dict:
 
 def test_s24_tests_tab_fields_are_read_and_applied_together(new_story):
     story = new_story(fixture=MainControlsActors)
+    story.expect_text(f"setting show {TEST_BATCH} --environment main", "value:", actor=story.user)
     with person_viewer(story) as viewer:
-        viewer.set_setting("journal.suites.coding.continue-while-delegatable", "false")
         shown = work_reading(viewer)
         expect_value(len(field_values(shown, "tests")) > 0, True)
         viewer.server.viewer_line_value(viewer.cookie, {"window": WINDOW, "environment": "main", "line": ["work-settings", "apply", "--revision", shown["revision"], f"{TEST_BATCH}=4", f"{FAILURES}=7"]})
@@ -110,8 +110,8 @@ def test_s24_tests_tab_fields_are_read_and_applied_together(new_story):
 
 def test_s30_advanced_tab_refuses_a_fraction_for_a_whole_number_and_changes_nothing(new_story):
     story = new_story(fixture=MainControlsActors)
+    story.expect_text(f"setting show {RUN_LIMIT} --environment main", "value:", actor=story.user)
     with person_viewer(story) as viewer:
-        viewer.set_setting("journal.suites.coding.designer-enabled", "false")
         shown = work_reading(viewer)
         before = field_values(shown, "advanced")[RUN_LIMIT]
         viewer.server.expect_viewer_line(viewer.cookie, {"window": WINDOW, "environment": "main", "line": ["work-settings", "apply", "--revision", shown["revision"], f"{RUN_LIMIT}=2.5", f"{TEST_BATCH}=9"]}, 200, "whole number")
