@@ -1,6 +1,8 @@
 from core.base.environment_names import EnvironmentNames
 from core.modules.environments.bindings.environment_table_names import EnvironmentTableNames
+from core.modules.environments.guards.test_grant_guard import TestGrantGuard
 from core.modules.environments.migrations.m001_environments import EnvironmentsTableMigration
+from core.modules.environments.migrations.m002_test_environments import TestEnvironmentsMigration
 from core.base.module.module import Module
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.environments.models.environment import Environment
@@ -16,7 +18,8 @@ class EnvironmentsModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors"]
     models = [ModelDeclaration(Environment, query=EnvironmentQuery)]
-    migrations = [EnvironmentsTableMigration]
+    migrations = [EnvironmentsTableMigration, TestEnvironmentsMigration]
+    guards = [TestGrantGuard]
     bindings = {EnvironmentNames: EnvironmentTableNames}
     seeders = [EnvironmentsSeeder]
     moves = [EnvironmentsMove]

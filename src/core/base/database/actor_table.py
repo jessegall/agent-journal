@@ -13,6 +13,7 @@ MODULE_ACTOR_ID = Statement("SELECT id FROM actors WHERE type = ? AND name = ?")
 MODULE_ACTOR_IDS = Statement("SELECT id, name FROM actors WHERE type = 'module'")
 ACTOR_ROW = Statement("SELECT 1 FROM actors WHERE id = ? AND type = ?")
 AGENT_OWNER = Statement("SELECT role, environment_id FROM agents WHERE id = ?")
+TEST_ENVIRONMENT_GRANT = Statement("SELECT 1 FROM environments WHERE id = ? AND test = 1 AND test_agent_id = ?")
 NEWEST_MAIN_AGENT_ID = Statement("SELECT id FROM agents WHERE environment_id = ? AND role = 'main' ORDER BY id DESC LIMIT 1")
 
 
@@ -66,6 +67,9 @@ class ActorTable:
             return None
         agent = MAIN_AGENT if rows[0]["role"] == AgentRole.MAIN else actor_id
         return RowOwner(agent, rows[0]["environment_id"])
+
+    def is_granted_test_environment(self, actor_id: int, environment_id: int) -> bool:
+        return bool(self.database.rows(Statement(TEST_ENVIRONMENT_GRANT.sql, [environment_id, actor_id])))
 
     def newest_main_agent_id(self, environment_id: int) -> int | None:
         rows = self.database.rows(Statement(NEWEST_MAIN_AGENT_ID.sql, [environment_id]))
