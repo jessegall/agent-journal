@@ -44,9 +44,10 @@ export function context(answers, agent = null, keys = WINDOW_KEYS) {
         async readKeys({only = [], state = {}}) {
             const names = only.length ? only : Object.keys(keys).filter((name) => !keys[name].loading && !name.endsWith(".*") && (!keys[name].tab || keys[name].tab === state.tab));
             const results = await Promise.all(names.map((name) => {
+                const key = keys[name] ?? keys[`${name.split(".")[0]}.*`];
                 const line = keyLine(name, keys);
                 const filled = line.replace(/\{([^}]+)\}/g, (place, flag) => state[`${name}.${flag}`] ?? state[flag] ?? place);
-                return this.read(`${filled}${keyFlags(name, state, line)}${keys[name]?.page_size && !(`${name}.limit` in state) ? ` --limit ${keys[name].page_size}` : ""}`);
+                return this.read(`${filled}${keyFlags(name, state, line)}${key?.page_size && !(`${name}.limit` in state) ? ` --limit ${key.page_size}` : ""}`);
             }));
             const declared = Object.fromEntries(Object.entries(keys).map(([name, key]) => [name, {tab: key.tab ?? null, events: key.events ?? [], reload_seconds: 0, loading: key.loading ?? "first", page_size: key.page_size ?? 0}]));
             return {ok: true, value: {declared, keys: Object.fromEntries(names.map((name, index) => [name, results[index]]))}};

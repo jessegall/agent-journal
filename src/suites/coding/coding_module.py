@@ -65,7 +65,8 @@ class CodingModule(Module):
     nudges = [*CODING_NUDGES, TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN]
     seeders = [CodingSeeder]
     window_extensions = [*(WindowExtension(name, reads=["file-edit list"], runs=["agent type"], events=["file_edit.create"],
-                                          keys=[WindowKey("agent-edits.*", "file-edit list --agent {id}", arguments=["limit", "before-id", "after-id"], page_size=50)],
+                                          keys=[WindowKey("agent-edits.*", "file-edit list --agent {id}", arguments=["limit", "before-id", "after-id"], page_size=50),
+                                                WindowKey("terminal-calls.*", "hook-call feed --session-agent-id {id}", arguments=["limit", "before-id", "after-id"], page_size=200)],
                                           tabs=[WindowTab("file-feed", "File feed", "file-edit list", component="/modules/journal.suites.coding/agent-file-edits.js"),
                                                 WindowTab("terminal", "Terminal", "hook-call feed", component="/modules/journal.suites.coding/terminal.js")]) for name in ("agents.agents", "agents.helpers")),
                          WindowExtension("viewer.shell", reads=["git-overview current"]),
@@ -102,5 +103,7 @@ class CodingModule(Module):
                WindowDeclaration("coding.file-edits", "File edits", "file-edits.js", WindowLoading.COMPONENT, skeleton=CODING_FILE_EDITS_SKELETON, search=WindowSearch(FileEditSearcher, "Filter files"), icon=WindowIcon.COMMIT, reads=[*FILE_EDIT_READS, "agent list"],
                                  events=["file_edit.create"], keys=[WindowKey("edits", "file-edit list", events=["file_edit.create"], arguments=["limit", "before-id", "after-id"], page_size=50)]),
                WindowDeclaration("coding.terminal", "Terminal", "terminal.js", WindowLoading.COMPONENT, skeleton=CODING_TERMINAL_SKELETON, icon=WindowIcon.TERMINAL, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM,
-                                 reads=["agent terminal", "hook-call feed"], runs=["agent type"], events=["hook_call.*"],
+                                 reads=["agent terminal", "hook-call feed", "output hook-page"], runs=["agent type"], events=["hook_call.*"],
+                                 keys=[WindowKey("calls", "hook-call feed", events=["hook_call.*"], arguments=["session-agent-id", "limit", "before-id", "after-id"], page_size=200),
+                                       WindowKey("terminal-output.*", "output hook-page {id}", arguments=["before", "after"])],
                                  options=[ChoiceOption("verbosity", "Detail level", [("commands", "Commands"), ("journal", "Commands and journal"), ("everything", "Show everything")], "everything")])]

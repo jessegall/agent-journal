@@ -1,6 +1,6 @@
 <script setup>
-import {computed, nextTick, ref, watch} from "vue";
-import {AutoScrollPane, EmptyState, Skeleton, useRows, useWindow} from "@journal/window-kit";
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
+import {AutoScrollPane, EmptyState, Skeleton, useWindow} from "@journal/window-kit";
 import TerminalOutput from "./TerminalOutput.vue";
 
 // Commands are listed oldest first and open to their full text; a line typed here goes to the agent's terminal.
@@ -9,13 +9,20 @@ const JOURNAL_LINE = /^(\S+=\S+\s+)*(\S*\/)?journal(\s|$)/;
 
 // the terminal opens with at least this many lines, reading older pages of the agent's hook calls until it has them or the record ends, and reads one more page each time it is scrolled to the top
 const OPENING_LINES = 100;
-const PAGE_CALLS = 200;
 const TOP_PIXELS = 8;
 
-const context = useWindow();
+const window = useWindow();
 const props = defineProps({agent: {type: Number, default: null}});
-const agent = props.agent ?? context.agent;
-const {rows, failure, loaded, older} = useRows(`hook-call feed --session-agent-id ${agent} --limit ${PAGE_CALLS}`, ["hook_call.*"], {incremental: true});
+const agent = props.agent ?? window.agent;
+const embedded = props.agent !== null;
+if (!embedded) window.state["calls.session-agent-id"] = String(agent);
+const feed = window.props[embedded ? `terminal-calls.${agent}` : "calls"];
+const {rows, failure, loaded, older} = feed;
+if (embedded) {
+    onMounted(() => feed.loadLatest());
+    const stop = window.follow(["hook_call.*"], feed.heard);
+    onUnmounted(stop);
+}
 const typed = ref("");
 const refusal = ref("");
 const input = ref(null);
@@ -32,7 +39,7 @@ const isShown = {
     everything: () => true,
 };
 const isJournalLine = (row) => JOURNAL_LINE.test(row.summary);
-const level = context.option("verbosity");
+const level = window.option("verbosity");
 const commands = computed(() => rows.value.filter((row) => row.hook === "pre_tool_use" && row.summary && isShown[level.value ?? "everything"](row)).sort((one, two) => one.id - two.id));
 const markOf = (row) => (isJournalLine(row) ? "#" : COMMAND_TOOLS.has(row.tool) ? "$" : ">");
 
@@ -73,13 +80,13 @@ async function send() {
     const line = typed.value;
     if (!line.trim()) return;
     typed.value = "";
-    const result = await context.run(["agent", "type", String(agent), line]);
+    const result = await window.run(["agent", "type", String(agent), line]);
     refusal.value = result.ok ? "" : result.error;
     if (!result.ok) typed.value = line;
 }
 
 function focusInput(event) {
-    if (String(window.getSelection()) || event.target.closest("button, a, input, textarea, .terminal-text")) return;
+    if (String(globalThis.getSelection()) || event.target.closest("button, a, input, textarea, .terminal-text")) return;
     input.value?.focus();
 }
 </script>

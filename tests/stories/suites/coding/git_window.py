@@ -12,7 +12,7 @@ def test_the_git_window_reads_its_keys_together_then_pages_only_commits(new_stor
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         status, answer = window_data(server, cookie, window="coding.git", query="environment=main&commits.limit=1")
         story.expect_rows(status == 200, set(answer["keys"]) == {"branches", "commits", "pulls"},
-                          all(result["code"] == 0 for result in answer["keys"].values()),
+                          all(key_answer["code"] == 0 for key_answer in answer["keys"].values()),
                           answer["keys"]["commits"]["value"]["rows"][0]["subject"] == "The next change",
                           not answer["keys"]["commits"]["value"]["is_last_page"])
         status, older = window_data(server, cookie, keys="commits", window="coding.git", query="environment=main&commits.limit=1&commits.skip=1")

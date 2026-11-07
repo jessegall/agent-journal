@@ -1,10 +1,12 @@
 import {context as baseContext} from "./windowContext.js";
 import {AGENT_EDIT_KEYS} from "./fileFeedWindowContext.js";
+import {AGENT_TERMINAL_KEYS} from "./terminalWindowContext.js";
 
 export {mounted, page, pickButton, settle, settleTransition, typeInto} from "./windowContext.js";
 
 export const AGENT_KEYS = {
     ...AGENT_EDIT_KEYS,
+    ...AGENT_TERMINAL_KEYS,
     reports: {line: "message agent-reports", tab: "reports", events: ["message.*"]},
     agents: {line: "agent cards", events: ["agent.*", "task.*", "hook_call.*"]},
     filters: {line: "agent cards --options", events: ["agent.*"]},

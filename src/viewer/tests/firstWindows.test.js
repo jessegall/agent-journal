@@ -5,6 +5,7 @@ import {context, drawn, mounted, page, settle} from "./support/windowContext.js"
 import {fileEditsWindowContext} from "./support/fileEditsWindowContext.js";
 import {fileFeedWindowContext} from "./support/fileFeedWindowContext.js";
 import {projectFilesWindowContext} from "./support/projectFilesWindowContext.js";
+import {terminalWindowContext} from "./support/terminalWindowContext.js";
 import {context as agentContext} from "./support/agentWindowContext.js";
 import Chat from "../../core/modules/messages/web/src/Chat.vue";
 import TaskList from "../../core/modules/tasks/web/src/tasks.js";
@@ -117,7 +118,7 @@ test("a window shows the reason a read was refused", async () => {
 });
 
 test("the terminal window lists its agent's commands in order, marks journal lines and refusals, and opens a long line", async () => {
-    const windowContext = context({"hook-call feed": page([
+    const windowContext = terminalWindowContext({"hook-call feed": page([
         {id: 3, agent_id: 2, hook: "pre_tool_use", tool: "Bash", summary: "rm -rf build", refusal: "not this"},
         {id: 2, agent_id: 2, hook: "pre_tool_use", tool: "Bash", summary: "journal task list", refusal: ""},
         {id: 1, agent_id: 2, hook: "pre_tool_use", tool: "Bash", summary: "pytest -q", refusal: ""},
@@ -143,7 +144,7 @@ test("the terminal's detail level shows commands alone, the journal's lines too,
         {id: 3, agent_id: 2, hook: "pre_tool_use", tool: "Read", summary: "a.py", refusal: ""},
     ])};
     const shown = async (verbosity) => {
-        const windowContext = {...context(answers, 2), option: () => ref(verbosity)};
+        const windowContext = {...terminalWindowContext(answers, 2), option: () => ref(verbosity)};
         const element = await mounted(Terminal, windowContext);
         return [...element.querySelectorAll("[data-terminal-command] .terminal-text")].map((row) => row.textContent);
     };
@@ -153,7 +154,7 @@ test("the terminal's detail level shows commands alone, the journal's lines too,
 });
 
 test("the terminal window of an agent with no commands says so", async () => {
-    expect(await drawn(Terminal, context({"hook-call feed": page([])}, 2))).toContain("No commands from this agent yet");
+    expect(await drawn(Terminal, terminalWindowContext({"hook-call feed": page([])}, 2))).toContain("No commands from this agent yet");
 });
 
 
@@ -167,7 +168,7 @@ test("the transcript window shows one agent's conversation, each turn under its 
 });
 
 test("a line typed in the terminal goes to the agent, and a refusal gives it back with the reason", async () => {
-    const window = {...context({"hook-call feed": page([])}, 7), lines: []};
+    const window = {...terminalWindowContext({"hook-call feed": page([])}, 7), lines: []};
     window.run = async (line) => (window.lines.push(line), {ok: false, error: "no launcher is running here"});
     const element = await mounted(Terminal, window);
     const form = element.querySelector("[data-terminal-run]");
