@@ -63,6 +63,7 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
             <template v-else>
                 <span class="agent-time" data-agent-motion>{{ runTime }}</span>
             </template>
+                <template v-if="!open && row.role === 'worker' && tasksPerHour"><span class="agent-list-pace" data-agent-list-pace>{{ tasksPerHour }}</span></template>
             </span>
         </span>
         <span class="agent-line">
@@ -223,6 +224,7 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
 .agent-card { gap: 2px; padding: 9px 14px; }
 .agent-head { gap: 6px; }
 .agent-times { display: flex; flex-direction: column; align-items: flex-end; flex: none; margin-left: auto; }
+.agent-list-pace { color: var(--text-3); font-size: 12px; font-variant-numeric: tabular-nums; }
 .agent-first-dispatched, .agent-last-heard { color: var(--text-4); font-size: 10px; white-space: nowrap; }
 .agent-first-dispatched .ico { margin-right: 4px; vertical-align: middle; }
 .agent-dot { margin-right: 3px; }

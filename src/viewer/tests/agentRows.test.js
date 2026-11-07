@@ -580,3 +580,22 @@ test("an open agent keeps its updated card after it leaves the list", async () =
     expect(cardOf(element, 3)).toBeNull();
     expect(cardOf(element, 2)).not.toBeNull();
 });
+
+
+test("a worker's list card shows its pace beneath the time only after a task is completed", async () => {
+    const started = "2026-11-01T08:00:00Z";
+    const finished = "2026-11-01T10:00:00Z";
+    const workers = [
+        {id: 4, session: "finished", program: "claude", role: "worker", created_at: started, ended_at: null},
+        {id: 5, session: "new", program: "claude", role: "worker", created_at: started, ended_at: null},
+    ];
+    const progress = [
+        {agent_id: 4, started_at: started, finished_at: finished, completed_count: 2, task_count: 3},
+        {agent_id: 5, started_at: started, finished_at: finished, completed_count: 0, task_count: 1},
+    ];
+    const element = await mounted(AgentRows, context({"agent cards --options": agentFilterOptions, "agent cards": page(workers), "worker progress": page(progress)}), {empty: "No agents yet"});
+    const pace = cardOf(element, 4).querySelector("[data-agent-list-pace]");
+    expect(pace.textContent.trim()).toBe("1 per hour");
+    expect(pace.previousElementSibling.classList.contains("agent-time")).toBe(true);
+    expect(cardOf(element, 5).querySelector("[data-agent-list-pace]")).toBeNull();
+});
