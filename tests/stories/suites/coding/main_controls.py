@@ -99,16 +99,12 @@ def test_s01_s52_fixture_matrix_names_78_control_cases_8_regressions_and_the_tra
     expect_value((len(cases), len(set(cases)), sum(case.startswith("C") for case in cases)), (104, 104, 78))
 
 
-def test_s45_fixture_actors_are_distinct_agents_with_their_own_roles(new_story):
+def test_s45_fixture_actors_are_distinct_agents_that_are_all_refused_a_person_only_setting(new_story):
     story = new_story(fixture=MainControlsActors)
     actors = agent_actors(story)
     expect_value((len({actor.id for actor in actors.values()}), list(actors)), (5, ["main", "worker", "helper", "merger", "designer"]))
     story.expect_text(f"agent show {actors['merger'].id}", "journal-merger", actor=story.user)
     story.expect_text(f"agent show {actors['designer'].id}", "journal-designer", actor=story.user)
-
-
-def test_s45_fixture_agents_of_every_role_are_refused_a_person_only_setting(new_story):
-    story = new_story(fixture=MainControlsActors)
-    for actor in agent_actors(story).values():
+    for actor in actors.values():
         story.expect_refusal("setting set journal.suites.coding.auto-mode off --environment main", "change", actor=actor)
     story.expect_success("setting show journal.suites.coding.auto-mode --environment main", "value: True", actor=story.user)
