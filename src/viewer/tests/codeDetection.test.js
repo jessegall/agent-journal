@@ -74,6 +74,15 @@ test("a document draws code from a fence and guesses nothing", () => {
     expect(element.textContent).toContain("def unfenced():");
 });
 
+test("a document draws the adjacent js and vue fences in section 10 separately", () => {
+    const element = document.createElement("div");
+    const text = readFileSync(resolve(__dirname, "corpus/doc1223-section10.md"), "utf8");
+    element.innerHTML = render(text, {env: "", rowNames: false, document: true});
+    const blocks = [...element.querySelectorAll(".chat-code-block")];
+    expect(blocks.map((block) => block.dataset.language)).toEqual(["js", "vue"]);
+    expect(blocks[1].querySelector("code").textContent).toContain("<script setup>");
+});
+
 const drawn = (text) => {
     const element = document.createElement("div");
     element.innerHTML = render(text, {env: "", rowNames: false, document: true});
