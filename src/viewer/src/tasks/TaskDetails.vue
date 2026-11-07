@@ -9,7 +9,7 @@ import TaskSections from "./TaskSections.vue";
 import TaskStatusIcon from "./TaskStatusIcon.vue";
 
 defineProps({task: {type: Object, required: true}, place: {type: Object, default: null}, graph: {type: Object, default: null}, refusal: {type: String, default: ""}});
-const emit = defineEmits(["status", "priority", "select"]);
+const emit = defineEmits(["status", "priority", "complexity", "select"]);
 const label = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 </script>
 
@@ -46,7 +46,7 @@ const label = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
         <template v-if="graph">
             <TaskChain :task="task" :graph="graph" @select="emit('select', $event)" />
         </template>
-        <TaskFacts :task="task" :place="place" :refusal="refusal" @priority="emit('priority', $event)" />
+        <TaskFacts :task="task" :place="place" :refusal="refusal" @priority="emit('priority', $event)" @complexity="emit('complexity', $event)" />
         <TaskSections :task="task" @select="emit('select', $event)" />
         <TaskBlockRenewals :renewals="task.block_renewals" />
     </div>

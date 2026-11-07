@@ -26,7 +26,7 @@ def tag_viewer(tag_story):
 def test_task_takes_many_tags(tag_story):
     story = tag_story
     task_id = story.new_row_id('task make "Network queue" --tag networking --tag linux --confirm --environment main', actor=story.agent)
-    story.expect_text('task board --environment main', 'networking', 'linux')
+    story.expect_text('task board --environment main --json', 'networking', 'linux')
     rows = json.loads(story.run('task tags --json --environment main').output_text)['rows']
     story.expect_rows({row['word']: row['count'] for row in rows} == {'networking': 1, 'linux': 1})
 

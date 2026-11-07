@@ -20,7 +20,7 @@ test("the tasks window reads ten tasks of each group while its pane has chosen n
     const real = windowContext({window: "tasks.tasks", environment: "main", visible: () => true, options: ref({}), declared: DECLARED, subscriptions: {follow: () => () => {}}});
     const window = windowOf(real.option("rows"));
     await mounted(TaskGroups, window);
-    expect(window.reads).toEqual(["task board --limit 10"]);
+    expect(window.reads.filter((line) => line.startsWith("task board"))).toEqual(["task board --limit 10"]);
 });
 
 test("a page size chosen in the menu reads the board again with it", async () => {
@@ -29,11 +29,11 @@ test("a page size chosen in the menu reads the board again with it", async () =>
     await mounted(TaskGroups, window);
     rows.value = "5";
     await settle();
-    expect(window.reads).toEqual(["task board --limit 10", "task board --limit 5"]);
+    expect(window.reads.filter((line) => line.startsWith("task board"))).toEqual(["task board --limit 10", "task board --limit 5"]);
 });
 
 test("a page size the window was not given reads the board with the server's own page", async () => {
     const window = taskWindowContext({"task board": BOARD});
     await mounted(TaskGroups, window);
-    expect(window.reads).toEqual(["task board"]);
+    expect(window.reads.filter((line) => line.startsWith("task board"))).toEqual(["task board"]);
 });

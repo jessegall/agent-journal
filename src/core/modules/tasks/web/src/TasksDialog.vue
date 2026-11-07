@@ -38,7 +38,7 @@ function deleted() {
     inspecting.value = false;
     selected.value = 0;
 }
-const stopFollowing = window.follow(["task.*", "task_log.*"], () => (changes.value += 1));
+const stopFollowing = window.follow(["task.*", "task_log.*", "task_tag.*"], () => (changes.value += 1));
 onUnmounted(() => stopFollowing?.());
 
 const order = computed(() => (list.value?.groups ?? []).flatMap(({tasks}) => tasks.map((task) => task.id)));

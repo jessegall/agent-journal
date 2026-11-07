@@ -132,11 +132,12 @@ class TasksModule(Module):
     marks = TASK_MARKS
     docks = TASK_DOCKS
     driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
-    windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.COMPONENT, skeleton=TASKS_TASKS_SKELETON, search=WindowSearch(TaskSearcher, "Search the tasks"), icon=WindowIcon.TASK, reads=["task board", "task graph", "task list", "task show", "task inspect", "task comments", "link list", "plan place", "plan places", "plan board", "plan outline", "task-log list"],
+    windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.COMPONENT, skeleton=TASKS_TASKS_SKELETON, search=WindowSearch(TaskSearcher, "Search the tasks"), icon=WindowIcon.TASK, reads=["task board", "task tags", "task graph", "task list", "task show", "task inspect", "task comments", "link list", "plan place", "plan places", "plan board", "plan outline", "task-log list"],
                                options=[ChoiceOption("rows", "Tasks per page", [("5", "5"), ("10", "10"), ("25", "25"), ("50", "50")], "10")],
-              runs=["phase place", "task make", "task edit", "task delete", "task start", "task block", "task unblock", "task retest", "task close", "task cancel", "task reopen"], events=["task.*", "task_log.*", "task_block_renewal.*"],
-              keys=[WindowKey("board", "task board", tab="list", arguments=["limit"], events=["task.*"]),
-                    WindowKey("group", "task board", arguments=["state", "limit", "before-id", "before-closed-at"], loading=KeyLoading.REQUESTED),
+              runs=["phase place", "task make", "task edit", "task tag", "task untag", "task delete", "task start", "task block", "task unblock", "task retest", "task close", "task cancel", "task reopen"], events=["task.*", "task_tag.*", "task_log.*", "task_block_renewal.*"],
+              keys=[WindowKey("board", "task board", tab="list", arguments=["limit", "tag"], events=["task.*", "task_tag.*"]),
+                    WindowKey("tags", "task tags", tab="list", events=["task_tag.*"]),
+                    WindowKey("group", "task board", arguments=["state", "limit", "before-id", "before-closed-at", "tag"], loading=KeyLoading.REQUESTED),
                     WindowKey("graph", "task graph", tab="graph", events=["task.*"]),
                     WindowKey("places", "plan places", loading=KeyLoading.REQUESTED),
                     WindowKey("task.*", "task show {id}", loading=KeyLoading.REQUESTED)])]
