@@ -19,6 +19,7 @@ def configured_plugin(new_story):
     program.write_text(program.read_text().replace('line=$(cat)', 'line=$(cat)\nprintf "%s\\n" "$line" >> "$JOURNAL_PLUGIN_DATA/inputs"'))
     with viewer_client(story) as viewer:
         viewer.value("plugins.plugins", ["plugin", "install", str(folder), "--yes"])
+        viewer.value("settings.settings", ["setting", "set", "journal.core.plugins.hold_window_ms", "5000", "--project"])
         viewer.value("plugins.plugins", ["plugin", "configure", "sample", "level", "2"])
         viewer.value("viewer.shell", ["environment", "make", "sandbox", "/work/sandbox", "--test", "--test-agent-id", str(story.agent.id)])
         viewer.server.viewer_line_value(viewer.cookie, {"window": "plugins.plugins", "environment": "sandbox",
