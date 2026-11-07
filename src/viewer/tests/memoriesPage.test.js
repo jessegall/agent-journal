@@ -134,7 +134,7 @@ test("an ended agent's memories say that they reach no agent while it is ended",
     expect(element.querySelector("[data-ended-note]").textContent).toContain("reach no agent while it is ended");
 });
 
-test("the workers and helpers are listed under the agent each memory belongs to, their names read together", async () => {
+test("the workers and helpers are listed under the agent each memory belongs to, with names in the page", async () => {
     const window_ = answered();
     const element = await mounted(MemoriesPage, window_);
     await settle();
