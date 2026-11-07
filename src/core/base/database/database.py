@@ -103,9 +103,6 @@ class Database:
     def change_mark(self) -> tuple[int, int]:
         return self.connection.execute("PRAGMA data_version").fetchone()[0], self.connection.total_changes
 
-    def schema_version(self) -> int:
-        return self.connection.execute("PRAGMA schema_version").fetchone()[0]
-
     def record_rollback(self, changes: int) -> None:
         if changes != self.connection.total_changes:
             self.write_rollback_count += 1
