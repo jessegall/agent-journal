@@ -24,7 +24,7 @@ class Agent(EnvironmentScoped, Model):
     cli_name = "agent"
     search_fields = ["given_name", "program", "program_model", "profile", "session"]
     filter_fields = ["role"]
-    shown_properties = ("activity", "display_name")
+    shown_properties = ("activity", "display_name", "working_role")
 
     environment_id: int = 0
     parent_id: int | None = None
@@ -62,6 +62,11 @@ class Agent(EnvironmentScoped, Model):
         if self.ended_at is not None:
             return AgentActivity.ENDED
         return AgentActivity.PAUSED if self.paused_at is not None else AgentActivity.WORKING
+
+    @property
+    def working_role(self) -> str:
+        """Its role while its session lives, and nothing once it ended, so a button for one role never shows on an ended agent."""
+        return "" if self.ended_at is not None else self.role
 
     @property
     def display_name(self) -> str:

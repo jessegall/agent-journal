@@ -39,6 +39,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
         WorkerCommandRequest.arguments(parser)
         parser.add_argument("worker_id", type=int)
         parser.add_argument("job", nargs="?", default="")
+        parser.add_argument("--job", dest="job_flag", default="", help="the job, written as a flag so a button can fill it")
         parser.add_argument("--task", type=int, nargs="+", default=[], help="tasks the worker takes next")
         parser.add_argument("--plan", type=int, default=None, help="hand the worker a plan in phase order")
         parser.add_argument("--phase", type=int, default=None, help="with --plan, only this phase")
@@ -56,8 +57,9 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
                 worker = self.agents.find(arguments.worker_id)
                 self.policy.check_tasks(self.tasks.check_tasks(task_ids),
                                         WorkerRouteRequest(worker.program, caller.actor.type, self.flags.skipped_guards(arguments)))
-        command = SendWorker(arguments.worker_id, arguments.job, task_ids, tuple(arguments.library_link), tuple(arguments.library_copy))
-        argv = ["worker", "send", str(arguments.worker_id), arguments.job]
+        job = arguments.job or arguments.job_flag
+        command = SendWorker(arguments.worker_id, job, task_ids, tuple(arguments.library_link), tuple(arguments.library_copy))
+        argv = ["worker", "send", str(arguments.worker_id), job]
         if arguments.plan is not None:
             argv.extend(("--plan", str(arguments.plan)))
             if arguments.phase is not None:

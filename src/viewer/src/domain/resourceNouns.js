@@ -60,19 +60,6 @@ const TASK_MOVES = {
 };
 
 // what a person can do to a row in its state; a move with a flag asks for its words first
-// what a person can do to an agent: hold it or let it carry on, and stop its program after asking
-const agentMoves = (row) => (!row || row.ended_at ? [] : [
-    row.paused_at ? {word: "resume", label: "Resume", main: true} : {word: "pause", label: "Pause"},
-    {word: "stop", label: "Stop", confirm: "Stop the agent? It stops what it is doing.", danger: true},
-]);
-
-// a worker is an agent too, with its own commands: its work merged, or it taken off its task; a job or a reason goes after its number
-const workerMoves = (row) => (row?.role !== "worker" || row.ended_at ? [] : [
-    {noun: "worker", word: "send", label: "Send a job", ask: "What should it do?", positional: true},
-    {noun: "worker", word: "merge", label: "Merge", main: true, confirm: "Merge its work? Each point needs a checked proof."},
-    {noun: "worker", word: "release", label: "Release", ask: "Why is it taken off its task?", positional: true},
-]);
-
 const textMoves = (row) => (!row || row.close_reason ? [] : [{word: "close", label: "Needs no action", icon: "check", bordered: true, flag: "--why", ask: "Why does it need no action?"}]);
 
 // the moves of a plan or a task: an added state keeps those of the state it looks like that it may also take
@@ -83,4 +70,4 @@ function stateMoves(noun, row) {
     return (table?.[stateLook(noun, row.state)] ?? []).filter((move) => open.includes(move.word));
 }
 
-export const movesOf = (noun, row) => (noun === "doc" || noun === "report" ? textMoves(row).map(move => ({...move, word: noun === "doc" ? "settle" : move.word})) : noun === "agent" ? [...workerMoves(row), ...agentMoves(row)] : stateMoves(noun, row));
+export const movesOf = (noun, row) => (noun === "doc" || noun === "report" ? textMoves(row).map(move => ({...move, word: noun === "doc" ? "settle" : move.word})) : stateMoves(noun, row));

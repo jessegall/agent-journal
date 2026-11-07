@@ -6,7 +6,6 @@ import InspectorPanel from "./InspectorPanel.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import TaskInspector from "../tasks/TaskInspector.vue";
-import AgentInspector from "./agent/AgentInspector.vue";
 import PlanInspector from "./PlanInspector.vue";
 import ProcessQueueInspector from "./ProcessQueueInspector.vue";
 import {cliOf, titleOf} from "../domain/resourceNouns.js";
@@ -19,7 +18,7 @@ const noun = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
 const fullyOpen = ref(false);
 
 // every noun whose old branch is gone is drawn by the shared layout, and so is each noun a later task adds to the set
-const OWN_INSPECTORS = new Set(["task", "plan", "test-queue", "agent"]);
+const OWN_INSPECTORS = new Set(["task", "plan", "test-queue"]);
 const declared = computed(() => DECLARED_NOUNS.has(noun.value) || !OWN_INSPECTORS.has(noun.value));
 const wide = computed(() => noun.value === "plan");
 const title = computed(() => titleOf(noun.value, null, opened.value?.id));
@@ -65,7 +64,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                 />
                 <aside
                     v-else
-                    :class="['panel', {wide, opening: !fullyOpen, task: noun === 'task', queue: noun === 'test-queue', agent: noun === 'agent'}]"
+                    :class="['panel', {wide, opening: !fullyOpen, task: noun === 'task', queue: noun === 'test-queue'}]"
                     ref="panel"
                     tabindex="-1"
                     role="dialog"
@@ -76,9 +75,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                         <div class="panel-opening" data-resource-opening><Skeleton /></div>
                     </template>
                     <SwitchCase :value="noun">
-                        <template #agent>
-                            <AgentInspector :id="opened.id" :backed="route.stack.length > 1" :read="read" :environment="environment" @close="close" @back="unpeek" />
-                        </template>
                         <template #task>
                             <TaskInspector
                                 lone
@@ -171,10 +167,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 
 .panel.task {
     width: min(640px, 100vw);
-}
-
-.panel.agent {
-    width: min(600px, 100vw);
 }
 
 .panel.wide {
