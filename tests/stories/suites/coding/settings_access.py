@@ -8,8 +8,8 @@ def test_s45_direct_row_writes_are_refused_to_every_agent_role_and_the_person_va
     story = new_story(fixture=MainControlsActors)
     actors = agent_actors(story)
     for actor in actors.values():
-        story.expect_refusal(f"setting make {AUTO} false --environment main", "change", actor=actor)
-        story.expect_refusal(f"setting make {WORKER_LIMIT} 9 --environment main", "change", actor=actor)
+        story.expect_refusal(f"setting make {AUTO} false --environment main", "A person was asked", actor=actor)
+        story.expect_refusal(f"setting make {WORKER_LIMIT} 9 --environment main", "A person was asked", actor=actor)
     story.expect_success(f"setting set {WORKER_LIMIT} 4 --environment main", actor=story.user)
     for actor in actors.values():
         story.expect_success(f"setting show {WORKER_LIMIT} --environment main", "value: 4", actor=actor)

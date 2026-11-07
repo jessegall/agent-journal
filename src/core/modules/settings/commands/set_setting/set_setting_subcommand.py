@@ -19,6 +19,7 @@ class SetSettingSubcommand(CurrentSettingOutput, Subcommand[SetSetting, CurrentS
         parser.add_argument("key")
         parser.add_argument("value")
         parser.add_argument("--project", action="store_true")
+        parser.add_argument("--expected-revision", default="")
 
     def command(self, arguments: Namespace, caller: Caller) -> SetSetting:
-        return SetSetting(arguments.key, arguments.value, arguments.project)
+        return SetSetting(arguments.key, arguments.value, arguments.project, arguments.expected_revision)
