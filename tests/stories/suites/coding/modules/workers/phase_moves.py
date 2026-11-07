@@ -1,8 +1,14 @@
 import pytest
+from unittest.mock import patch
 
 from core.testing.expect_reply import expect_reply_allowed, expect_reply_refusal
 from core.testing.hook_samples import HookSamples
 from suites.coding.modules.workers.listeners.worker_test_listener import WorkerTestListener
+from suites.coding.modules.workers.support.worker_phases import WorkerPhases
+from suites.coding.modules.workers.queries.proof_query import ProofQuery
+from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from core.modules.plans.support.task_plans import TaskPlans
+from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.ticks.stalled_worker_tests import StalledWorkerTests
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_folder
@@ -99,6 +105,28 @@ def test_worker_next_inside_a_phase_commits_and_gives_the_next_task_with_nothing
     proved.story.expect_rows(proved.started == [])
     proved.repository.expect_clean(proved.worker.id)
     proved.story.expect_text("task show 1", "state: testing", actor=proved.story.agent)
+
+
+def test_a_workers_phase_is_found_with_one_membership_lookup(on_plan):
+    story = on_plan.story
+    plans = story.container.get(TaskPlans)
+    task = story.row(Task, on_plan.current_task())
+    with patch.object(plans, "find_phase", wraps=plans.find_phase) as find_phase:
+        phase = story.container.get(WorkerPhases).phase(task)
+    story.expect_rows(phase is not None, phase.id == 1, find_phase.call_count == 1)
+
+
+def test_a_worker_status_reuses_its_phase_worktree_and_waiting_test_reads(on_plan):
+    story = on_plan.story
+    worktrees = story.container.get(WorktreeQuery)
+    proofs = story.container.get(ProofQuery)
+    plans = story.container.get(TaskPlans)
+    task_id = on_plan.current_task()
+    with story.repeated_work.request():
+        worktree = worktrees.worker_worktree(on_plan.worker.id)
+        answers = [(worktrees.worker_worktree(on_plan.worker.id), worktrees.newest_worktree(on_plan.worker.id),
+                    proofs.tests_waiting(worktree.id), plans.find_phase(task_id)) for _ in range(12)]
+    story.expect_rows(all(row[0].id == worktree.id and row[1].id == worktree.id and not row[2] and row[3].id == 1 for row in answers))
 
 
 def test_worker_next_is_still_refused_for_a_point_with_no_proof(on_plan):

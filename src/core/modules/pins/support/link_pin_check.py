@@ -1,7 +1,7 @@
 import re
 from dataclasses import replace
 from datetime import timedelta
-from urllib.parse import unquote, urlsplit
+from urllib.parse import parse_qs, unquote, urlsplit
 
 from core.base.clock import Clock
 from core.base.database.kept_rows import KeptRows
@@ -9,6 +9,7 @@ from core.base.driver.nudge import Nudge
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.is_null import IsNull
+from core.base.query.conditions.prefix import Prefix
 from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
 from core.base.type_guards import is_list, is_mapping
@@ -53,21 +54,41 @@ class LinkPinCheck:
 
     def pull_request_pins(self, text: str) -> list[MakePin]:
         pins = self.queries.query(Pin)
-        links = dict.fromkeys(PR_ADDRESS.findall(text))
+        links = dict.fromkeys(url.rstrip(".,;:/") for url in LINK.findall(text) if self.is_complete_link(url) and PR_ADDRESS.fullmatch(url.rstrip(".,;:/")))
         return [MakePin(f"Pull request {url.rsplit('/', 1)[-1]}", url, OPEN_LABEL) for url in links if not pins.matching(Among("link", (url, f"{url}/"))).exists()]
 
     def design_pins(self, text: str) -> list[MakePin]:
-        pins = self.queries.query(Pin)
-        links = dict.fromkeys(url.rstrip(".,;:/") for url in LINK.findall(text) if DESIGN_ADDRESS.match(url))
-        return [MakePin(self.design_title(url), url, OPEN_LABEL) for url in links if not pins.matching(Among("link", (url, f"{url}/"))).exists()]
+        links = dict.fromkeys(url.rstrip(".,;:/") for url in LINK.findall(text) if self.is_complete_link(url) and DESIGN_ADDRESS.fullmatch(url))
+        pins = list(self.queries.query(Pin).matching(Prefix("link", "https://claude.ai/design/")).all_rows()) if links else []
+        existing = {self.design_key(pin.link) for pin in pins}
+        made = []
+        for url in links:
+            project, filename = self.design_key(url)
+            if (project, filename) in existing or (not filename and any(key[0] == project for key in existing)):
+                continue
+            made.append(MakePin(self.design_title(url), url, OPEN_LABEL))
+            existing.add((project, filename))
+        return made
 
     @staticmethod
     def design_title(url: str) -> str:
-        name = unquote(urlsplit(url).path.rstrip("/").rsplit("/", 1)[-1]).replace("-", " ").replace("_", " ")
+        parsed = urlsplit(url)
+        name = parse_qs(parsed.query).get("file", [parsed.path.rstrip("/").rsplit("/", 1)[-1]])[0]
+        name = unquote(name).replace("-", " ").replace("_", " ")
         return f"Design: {name}"[:80]
 
+    @staticmethod
+    def design_key(url: str) -> tuple[str, str]:
+        parsed = urlsplit(url)
+        return parsed.path.rstrip("/"), parse_qs(parsed.query).get("file", [""])[0]
+
+    @staticmethod
+    def is_complete_link(url: str) -> bool:
+        decoded = unquote(url)
+        return "…" not in decoded and "..." not in decoded and "\\" not in decoded
+
     def first_unpinned(self, text: str) -> str | None:
-        links = dict.fromkeys(url.rstrip(".,;:") for url in LINK.findall(text) if not LOCAL_ADDRESS.match(url) and not PR_ADDRESS.match(url) and not DESIGN_ADDRESS.match(url))
+        links = dict.fromkeys(url.rstrip(".,;:") for url in LINK.findall(text) if self.is_complete_link(url) and not LOCAL_ADDRESS.match(url) and not PR_ADDRESS.match(url) and not DESIGN_ADDRESS.match(url))
         pins = self.queries.query(Pin).matching(IsNull("closed_at"))
         return next((url for url in links if not self.kept.scoped_read(
             "pins", lambda: pins.matching(Among("link", (url.rstrip("/"), f"{url.rstrip('/')}/"))).exists(),
