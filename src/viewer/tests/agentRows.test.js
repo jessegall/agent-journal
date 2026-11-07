@@ -638,7 +638,7 @@ test("the task line names its plan after the title, and a task outside a plan ha
 });
 
 
-test("an opened card has no task bar or blocked row above its commands and performs no extra task read", async () => {
+test("an opened card has no task bar or blocked row above its commands and uses only shared progress", async () => {
     const row = {id: 4, role: "worker", state: "running", created_at: new Date().toISOString()};
     const facts = {job_enabled: true, task_id: 1, task_title: "Current task", state: "changes requested", tasks: [{id: 1, title: "Current task", state: "started"}, {id: 2, title: "Blocked task", state: "blocked"}]};
     const held = context({"usage tool --agent 4": {ok: true, value: {tool: "journal status", note: ""}}});
@@ -652,5 +652,5 @@ test("an opened card has no task bar or blocked row above its commands and perfo
     expect(element.querySelector("[data-agent-work-status]")).toBeNull();
     expect(element.querySelector("[data-agent-tasks]")).toBeNull();
     expect(element.querySelector("[data-agent-blocked-tasks]")).toBeNull();
-    expect(held.reads.slice(initialReads).filter((line) => line.startsWith("task ") || line.startsWith("worker progress"))).toEqual([]);
+    expect(held.reads.slice(initialReads).filter((line) => line.startsWith("task ") || line.startsWith("worker progress"))).toEqual(["worker progress"]);
 });
