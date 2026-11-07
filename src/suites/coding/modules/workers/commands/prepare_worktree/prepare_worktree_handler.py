@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.file_access import FileAccess
+from core.base.provider.program_hooks import ProgramHooks
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.environment_names import EnvironmentNames
@@ -40,7 +40,7 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
                     continue
                 target = Path(command.folder) / file
                 target.parent.mkdir(parents=True, exist_ok=True)
-                FileAccess.shared().write_binary(target, FileAccess.shared().binary(source))
+                ProgramHooks.store(target, ProgramHooks.read(source))
                 self.libraries.exclude(command.folder, [str(file)])
 
     def handle(self, command: PrepareWorktree, context: Context) -> None:
