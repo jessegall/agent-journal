@@ -107,8 +107,6 @@ class WindowDeclaration:
             problems.append(f"{self.name} searches with {self.search.read}, which is not one of its reads")
         if not self.skeleton:
             problems.append(f"{self.name} declares no skeleton of itself to draw while it loads")
-        if self.place is WindowPlace.SECTION and not self.slots:
-            problems.append(f"{self.name} is a section and names no slot")
         if self.slots and self.place is not WindowPlace.SECTION:
             problems.append(f"{self.name} names slots, and only a section has them")
         return problems

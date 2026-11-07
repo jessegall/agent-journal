@@ -3,6 +3,7 @@ import io
 import json
 import re
 import shlex
+from unittest.mock import patch
 from dataclasses import asdict
 from uuid import uuid4
 from typing import TypeVar, cast
@@ -28,6 +29,8 @@ from core.base.journal_container import synced_container
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.journal_home import JournalHome
 from core.base.model.model import Model
+from core.modules import DEFAULT_MODULES
+from core.base.module.module import Module
 from core.base.model.tables import Tables
 from core.base.subcommand.output import Output
 from core.base.query.queries import Queries
@@ -241,9 +244,18 @@ class Story:
         code, output_text = self.synced_with(module)
         assert code == 0, f"module sync with {module} gave {code}: {output_text}"
 
+    def expect_shipped_sync_refusal(self, module: type[Module], text: str) -> None:
+        with patch("core.modules.DEFAULT_MODULES", (*DEFAULT_MODULES, module)):
+            code, output_text = self.synced()
+        assert code != 0 and text in output_text, f"module sync with the shipped {module.name} gave {code}: {output_text}"
+
     def expect_registered_window(self, name: str, text: str) -> None:
         windows = [window for window in Registry.read(self.container.get(Database)).windows if window.name == name]
         assert windows and text in windows[0].unavailable_reason, f"window {name} is registered as {windows}"
+
+    def expect_registered_inspectors(self, models: list[type[Model]]) -> None:
+        registered = [inspector.declaration.model for inspector in Registry.read(self.container.get(Database)).inspectors]
+        assert registered == models, f"inspectors are registered for {registered}"
 
     def expect_registered_provider(self, name: str, module: str) -> None:
         providers = [provider for provider in Registry.read(self.container.get(Database)).providers if provider.name == name]

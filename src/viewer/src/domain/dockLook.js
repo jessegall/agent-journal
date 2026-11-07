@@ -11,17 +11,18 @@ const own = (action, icon, label, runs) => ({action, icon, label, runs});
 const leavesByItself = (item, declaration) => Boolean(item.leaves_at || item.kept || declaration?.leaves_after_seconds > 0);
 const pin = (item) => ({...(item.kept ? own("unkeep", "pins", "Let this card close", `dock unkeep ${item.id}`) : own("keep", "pins", "Keep this card", `dock keep ${item.id}`)), pressed: Boolean(item.kept)});
 
-// the buttons drawn as their icon alone, with their words as the tooltip and the screen reader label
-const ICON_ONLY = ["pins"];
-const withLook = (button) => ({...button, iconOnly: ICON_ONLY.includes(button.icon)});
+// the panel's own actions, drawn as their icon alone in the head with their words as the tooltip and the screen reader label; picked by what they do,
+// never by their icon, since a module's own button may use the close icon and keeps its words
+export const PANEL_ACTIONS = ["keep", "unkeep", "open", "undock"];
+const withLook = (button) => ({...button, iconOnly: PANEL_ACTIONS.includes(button.action)});
 
 // the buttons of a docked item: the pin while the item leaves by itself; the declaration's own; open when its row has an inspector, unless its body draws the head and unfolds there; then undock
 function dockButtons(item, declaration) {
     return [
         ...(leavesByItself(item, declaration) ? [pin(item)] : []),
         ...(declaration?.buttons || []).map((button) => ({...button, module: declaration.module, action: "declared"})),
-        ...(!declaration?.draws_head && (declaration?.reads?.length || meta(item.target_model)) ? [{action: "open", icon: "open", label: "Open", runs: ""}] : []),
-        own("undock", "close", "Close this card", `dock remove ${item.id}`),
+        ...(!declaration?.draws_head && (declaration?.reads?.length || meta(item.target_model)) ? [{action: "open", icon: "open", label: "Open in the inspector", runs: ""}] : []),
+        own("undock", "close", "Dismiss this card", `dock remove ${item.id}`),
     ].map(withLook);
 }
 

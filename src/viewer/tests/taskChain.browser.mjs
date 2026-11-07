@@ -24,7 +24,7 @@ try {
     assert.deepEqual(await numbers(), ["5", "4", "3", "2", "1"]);
     await page.screenshot({path: `${shot}.png`});
     await chain.locator(".task-chain-link").nth(3).click();
-    await page.locator("[data-task-inspector] [data-resource-title]", {hasText: "Task two"}).waitFor();
+    await page.locator("[data-inspector] [data-resource-title]", {hasText: "Task two"}).waitFor();
 } finally {
     await browser.close();
 }

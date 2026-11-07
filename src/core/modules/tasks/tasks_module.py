@@ -100,6 +100,9 @@ from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_key import WindowKey
 from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_icon import WindowIcon
+from core.base.viewer.window_place import WindowPlace
+from core.modules.tasks.support.task_inspector import TASK_INSPECTOR
+from core.base.viewer.skeleton_part import SkeletonPart
 from core.base.viewer.window_loading import WindowLoading
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.tasks.models.open_dependency import OpenDependency
@@ -153,5 +156,12 @@ class TasksModule(Module):
                     WindowKey("group", "task board", arguments=["state", "limit", "before-id", "before-closed-at", "tag"], loading=KeyLoading.REQUESTED),
                     WindowKey("graph", "task graph", tab="graph", events=["task.*"]),
                     WindowKey("places", "plan places", loading=KeyLoading.REQUESTED),
-                    WindowKey("task.*", "task show {id}", loading=KeyLoading.REQUESTED)])]
+                    WindowKey("task.*", "task show {id}", loading=KeyLoading.REQUESTED)]),
+               WindowDeclaration("tasks.task-details", "Details", "task-details.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TASK, skeleton=[SkeletonPart.line()],
+                                 reads=["plan place"], runs=["task edit"]),
+               WindowDeclaration("tasks.task-chain", "What waits on what", "task-chain.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TASK, skeleton=[SkeletonPart.line()],
+                                 reads=["task graph"], events=["task.*"], keys=[WindowKey("graph", "task graph", events=["task.*"])]),
+               WindowDeclaration("tasks.task-log", "Log", "task-log.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TASK, skeleton=[SkeletonPart.line()],
+                                 reads=["task-log list"], events=["task_log.*"])]
+    inspectors = [TASK_INSPECTOR]
     seeders = [TasksSeeder]

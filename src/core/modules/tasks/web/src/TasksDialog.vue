@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, onMounted, onUnmounted, ref} from "vue";
-import {Btn, Dialog, Icon, Segmented, TaskInspector, steppedItem, useWindow} from "@journal/window-kit";
+import {Btn, Dialog, Icon, Segmented, HostedInspector, peekRef, steppedItem, useWindow} from "@journal/window-kit";
 import NewTask from "./NewTask.vue";
 import TaskGraphView from "./TaskGraphView.vue";
 import TaskGroups from "./TaskGroups.vue";
@@ -76,7 +76,6 @@ const KEYS = {
     " ": () => selected.value && (inspecting.value = !inspecting.value),
     c: () => ((tab.value = "list"), (drafting.value = true)),
     v: () => (tab.value = tab.value === "list" ? "graph" : "list"),
-    s: () => inspecting.value && inspector.value?.openStatus(document.querySelector(".tasks-dialog [data-task-state]")),
     "/": () => list.value?.focusSearch(),
 };
 
@@ -149,7 +148,7 @@ onUnmounted(() => {
                     </div>
                 </div>
                 <template v-if="inspecting && selected">
-                    <TaskInspector ref="inspector" stepped :id="selected" :read="view.run" :changes="changes" @close="inspecting = false" @step="step" @select="select" />
+                    <HostedInspector noun="task" stepped embedded :id="selected" :read="view.run" :environment="view.environment" @step="step" @open="(row) => peekRef(`${row.table}:${row.id}`)" />
                 </template>
             </div>
         </div>

@@ -91,9 +91,9 @@ test("the keys walk the list, open the inspector and step it", async () => {
     await press("j");
     expect(shown.querySelector(".task.selected").dataset.row).toBe("7");
     await press("Enter");
-    expect(shown.querySelector("[data-task-inspector] [data-resource-title]").textContent).toBe("Fix the cart");
+    expect(shown.querySelector("[data-inspector] [data-resource-title]").textContent).toBe("Fix the cart");
     await press("j");
-    expect(shown.querySelector("[data-task-inspector] [data-resource-title]").textContent).toBe("Fix the totals");
+    expect(shown.querySelector("[data-inspector] [data-resource-title]").textContent).toBe("Fix the totals");
     await press("Escape");
     expect(shown.querySelector("[data-task-inspector]")).toBeNull();
 });
@@ -125,7 +125,7 @@ test("a new task is filed with its brief, and opens in the inspector", async () 
     await settle();
     expect(ran).toContainEqual(["task", "make", "Fix the totals", "--brief", "They add up"]);
     expect(shown.querySelector("[data-task-draft]")).toBeNull();
-    expect(shown.querySelector("[data-task-inspector] [data-resource-title]").textContent).toBe("Fix the totals");
+    expect(shown.querySelector("[data-inspector] [data-resource-title]").textContent).toBe("Fix the totals");
 });
 
 test("a priority is changed from the inspector", async () => {
@@ -211,23 +211,4 @@ test("the plan places are read through one window key", async () => {
     const window = {reload: async (key) => calls.push(key), props: {places: {failure: {value: ""}, rows: {value: [{id: 7, label: "Plan 3: Checkout › Payment", task_ids: [40]}]}}}};
     expect(await readPlanPlaces(window)).toEqual([{phaseId: 7, label: "Plan 3: Checkout › Payment", taskIds: [40]}]);
     expect(calls).toEqual(["places"]);
-});
-
-test("a block from the inspector can name what opens the task", async () => {
-    const lines = [];
-    const {default: RowMoves} = await import("../src/resource/RowMoves.vue");
-    const {createApp, h, nextTick} = await import("vue");
-    const element = document.createElement("div");
-    createApp({render: () => h(RowMoves, {noun: "task", id: 7, row: {state: "started"}, read: async (line) => (lines.push(line), {ok: true, value: {}})})}).mount(element);
-    element.querySelector('[data-move="block"]').click();
-    await nextTick();
-    const [reason, opener] = element.querySelectorAll("input");
-    reason.value = "needs the key";
-    reason.dispatchEvent(new Event("input"));
-    opener.value = "question:4";
-    opener.dispatchEvent(new Event("input"));
-    await nextTick();
-    element.querySelector("form").dispatchEvent(new Event("submit"));
-    await nextTick();
-    expect(lines).toEqual([["task", "block", "7", "--reason", "needs the key", "--on", "question:4"]]);
 });

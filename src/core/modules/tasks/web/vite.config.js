@@ -7,6 +7,9 @@ export default windowBuild({
     entries: {
         "tasks": here("./src/tasks.js"),
         "task-dock": here("./src/task-dock.js"),
+        "task-details": here("./src/task-details.js"),
+        "task-chain": here("./src/task-chain.js"),
+        "task-log": here("./src/task-log.js"),
     },
     outDir: here("./dist"),
 });

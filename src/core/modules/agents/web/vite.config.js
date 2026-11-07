@@ -8,6 +8,7 @@ export default windowBuild({
         "agents": here("./src/agents.js"),
         "helpers": here("./src/helpers.js"),
         "transcript": here("./src/transcript.js"),
+        "agent-detail": here("./src/agent-detail.js"),
     },
     outDir: here("./dist"),
 });

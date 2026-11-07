@@ -111,19 +111,21 @@ try {
     for (const card of await cards.all()) {
         assert.equal(await card.locator(".chat-dock-head").count(), 1);
         assert.equal(await card.locator(".chat-dock-foot").count(), 1);
-        assert.equal((await card.locator(".chat-dock-foot button").last().innerText()).trim(), "Close");
+        assert.equal(await card.locator(".chat-dock-head button").last().getAttribute("title"), "Dismiss this card");
+        assert.equal(await card.locator(".chat-dock-foot button", {hasText: /^(Open|Close)$/}).count(), 0);
         assert.equal(await card.locator(".chat-dock-head button:not(.icon)").count(), 0);
     }
     const doc = cards.nth(0),
         waiting = cards.nth(4),
         run = cards.nth(14);
-    assert.equal(await doc.locator(".chat-dock-foot").innerText(), "Document\nOpen\nClose");
-    assert.match(await cards.nth(2).locator(".dock-facts").innerText(), /Tasks: 12/);
-    assert.match(await cards.nth(3).locator(".dock-facts").innerText(), /Tasks: 7 of 12/);
-    assert.match(await cards.nth(9).locator(".dock-facts").innerText(), /Task: /);
-    assert.match(await cards.nth(10).locator(".dock-facts").innerText(), /Memory.*Weight: 3/s);
-    assert.match(await cards.nth(11).locator(".dock-facts").innerText(), /Question: /);
-    assert.match(await cards.nth(12).locator(".dock-facts").innerText(), /Dump.*Items: 4/s);
+    assert.match(await doc.locator(".chat-dock-head").innerText(), /Document 1/);
+    assert.equal(await doc.locator(".chat-dock-foot").innerText(), "");
+    assert.match(await cards.nth(2).innerText(), /Tasks: 12/);
+    assert.match(await cards.nth(3).innerText(), /Tasks: 7 of 12/);
+    assert.match(await cards.nth(9).innerText(), /Task: /);
+    assert.match(await cards.nth(10).innerText(), /Memory.*Weight: 3/s);
+    assert.match(await cards.nth(11).innerText(), /Question: /);
+    assert.match(await cards.nth(12).innerText(), /Dump.*Items: 4/s);
     assert.match(await cards.nth(13).locator(".chat-dock-head").innerText(), /Agent asked 3 questions/);
     assert.match(await waiting.getAttribute("aria-label"), /waiting for you$/);
     assert.match(await cards.nth(13).locator("[data-dock-age]").innerText(), /ago$/);
@@ -131,10 +133,8 @@ try {
         "Phases",
         "Approve",
         "Ask for a critique",
-        "Open",
-        "Close",
     ]);
-    assert.deepEqual((await cards.nth(8).locator(".chat-dock-foot button").allTextContents()).map(text => text.trim()), ["Approve", "Deny", "Open", "Close"]);
+    assert.deepEqual((await cards.nth(8).locator(".chat-dock-foot button").allTextContents()).map(text => text.trim()), ["Approve", "Deny"]);
     for (const width of [800, 492, 390, 340, 280]) {
         await page.locator("#cards").evaluate((el, width) => (el.style.width = `${width}px`), width);
         const measurements = await cards.evaluateAll((cards) =>
@@ -180,7 +180,7 @@ try {
     const pin = run.locator('[data-dock-action="unkeep"]');
     assert.equal(await pin.getAttribute("aria-pressed"), "true");
     assert.equal(await pin.getAttribute("title"), "Let this card close");
-    assert.match(await run.locator(".dock-facts").innerText(), /Kept/);
+    assert.match(await run.innerText(), /Kept/);
     for (const [state, standing] of [
         ["failed", "bad"],
         ["stopped", "stopped"],
@@ -195,7 +195,7 @@ try {
     planState = "reviewing";
     await page.evaluate(() => window.dockDesign.subscriptions.dispatch({event: "plan.change", row_id: 5}));
     await waiting.getByRole("button", {name: "End the review", exact: true}).waitFor();
-    assert.deepEqual((await waiting.locator(".chat-dock-foot button").allTextContents()).map(text => text.trim()), ["Phases", "End the review", "Open", "Close"]);
+    assert.deepEqual((await waiting.locator(".chat-dock-foot button").allTextContents()).map(text => text.trim()), ["Phases", "End the review"]);
     await page.evaluate(() => {
         const {items} = window.dockDesign;
         items.push(...[16, 17].map((id) => ({...items[14], id, target_id: id, kept: false})));

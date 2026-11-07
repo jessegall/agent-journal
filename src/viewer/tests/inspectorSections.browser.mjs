@@ -113,7 +113,7 @@ const scenes = {
         await run(["plan", "review", "1"]);
         await rounds.getByRole("heading", {name: "Review rounds: 3", exact: true}).waitFor();
         await rows.nth(0).getByText("Running").waitFor();
-        await panel.getByRole("button", {name: "End the review", exact: true}).click();
+        await panel.getByRole("button", {name: "End the review of the plan", exact: true}).click();
         await rows.nth(0).getByText("Running").waitFor({state: "detached"});
     },
 };

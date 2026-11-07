@@ -13,7 +13,7 @@ afterEach(() => {
     document.body.innerHTML = "";
     vi.unstubAllGlobals();
 });
-async function draw(declaration, extra = {}, folded = true) {
+async function draw(declaration, extra = {}, folded = true, collapsed = false, listeners = {}) {
     vi.stubGlobal(
         "ResizeObserver",
         class {
@@ -38,6 +38,8 @@ async function draw(declaration, extra = {}, folded = true) {
                     ...extra,
                 },
                 folded,
+                collapsed,
+                ...listeners,
             }),
     });
     app.provide(WINDOW_CONTEXT, dockWindow());
@@ -47,15 +49,17 @@ async function draw(declaration, extra = {}, folded = true) {
     return host;
 }
 test.each(["Document", "Report", "Memory", "Dump", "Task", "Question"])(
-    "%s has a title and time above its worded actions",
+    "%s has a title and time above, and its worded actions below",
     async (word) => {
         const host = await draw({word});
         expect(host.querySelector(".chat-dock-head").textContent).toContain("Example");
         expect(host.querySelector(".dock-title").title).toBe("Example");
         expect(host.querySelector("[data-dock-age]").textContent).toBe("10m ago");
         const foot = host.querySelector(".chat-dock-foot");
-        expect(foot.querySelector("[data-dock-row]").textContent).toBe(`${word} 3`);
-        expect([...foot.querySelectorAll("button")].map((b) => b.textContent.trim())).toEqual(["Open", "Close"]);
+        expect(host.querySelector(".chat-dock-head [data-dock-row]").textContent).toBe(`${word} 3`);
+        expect(foot.querySelector("[data-dock-row]")).toBeNull();
+        expect([...foot.querySelectorAll("button")].map((b) => b.textContent.trim())).toEqual([]);
+        expect([...host.querySelectorAll(".chat-dock-head button")].map((b) => b.title)).toEqual(["Open in the inspector", "Dismiss this card"]);
         expect(host.querySelector("[data-dock-fold]")).toBeNull();
     }
 );
@@ -70,10 +74,10 @@ test("a dock without a declared word names its row type and number", async () =>
     const host = await draw({}, {target_model: "task", target_id: 17});
     expect(host.querySelector("[data-dock-row]").textContent).toBe("Task 17");
 });
-test("each plan state has its pill and Phases before Open and Close", async () => {
+test("each plan state has its pill in the head and Phases in the foot", async () => {
     for (const badge of ["Planned", "Started", "Paused", "Done", "Cancelled"]) {
         const host = await draw({badge, folds: "Phases"});
-        expect(host.querySelector(".chat-dock-foot .dock-badge").textContent).toBe(badge);
+        expect(host.querySelector(".chat-dock-head .dock-badge").textContent).toBe(badge);
         expect(host.querySelector("[data-dock-fold]").classList.contains("bordered")).toBe(false);
         expect(host.querySelector("[data-dock-acts], .dock-acts").previousElementSibling).toBe(host.querySelector("[data-dock-fold]"));
         expect(host.querySelector("[data-dock-fold]").textContent).toContain("Phases");
@@ -95,7 +99,7 @@ test("a kept run has flush controls before its duration and Kept on the bottom l
     expect(pin.getAttribute("aria-pressed")).toBe("true");
     expect(pin.getAttribute("aria-label")).toBe("Let this card close");
     expect(host.querySelector(".chat-dock-head .dock-controls")).toContain(pin);
-    expect(host.querySelector(".chat-dock-foot").textContent).toContain("Kept");
+    expect(host.querySelector(".chat-dock-head").textContent).toContain("Kept");
     expect(host.querySelector("[data-dock-fold]").textContent).toContain("Output");
 });
 
@@ -105,3 +109,19 @@ test("a plan under review says so with a badge, and any other waiting card has n
     expect(dockBadgeOf("Started", {state: "started"})).toBe("Started");
 });
 
+
+test("a collapsed card keeps Open and the X, and pressing the X dismisses it without expanding it", async () => {
+    const told = [];
+    const host = await draw({}, {}, true, true, {onUndock: (button) => told.push(button.action), onOpen: () => told.push("expand")});
+    expect([...host.querySelectorAll(".chat-dock-head button")].map((b) => b.title)).toEqual(["Open in the inspector", "Dismiss this card"]);
+    host.querySelector("[data-dock-action='undock']").click();
+    expect(told).toEqual(["undock"]);
+});
+
+test("a collapsed card hides the pin and the card elsewhere still expands it", async () => {
+    const told = [];
+    const host = await draw({leaves_after_seconds: 5}, {}, true, true, {onOpen: () => told.push("expand")});
+    expect(host.querySelector("[data-dock-action='keep']")).toBeNull();
+    host.querySelector(".dock-title").click();
+    expect(told).toEqual(["expand"]);
+});

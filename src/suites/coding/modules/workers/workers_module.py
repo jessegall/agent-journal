@@ -126,6 +126,9 @@ from suites.coding.modules.workers.migrations.m023_worker_task_sources import Wo
 from suites.coding.modules.workers.listeners.worker_job_source_listener import WorkerJobSourceListener
 from suites.coding.modules.workers.listeners.deleted_worker_source_listener import DeletedWorkerSourceListener
 from core.base.module.module import Module
+from core.base.viewer.button_condition import ButtonCondition
+from core.base.viewer.button_declaration import ButtonDeclaration
+from core.base.viewer.text_field import TextField
 from core.base.access import Access
 from core.base.agent_type import AgentType
 from suites.coding.modules.workers.bindings.worker_roster import WorkerRoster
@@ -311,7 +314,8 @@ class WorkersModule(Module):
                              default_profile="journal-worker", start_line="journal worker dispatch", roster=WorkerRoster, run_limit_key=WORKER_RUN_LIMIT, kept_limit_key=WORKER_KEPT_LIMIT, job_command=("worker", "send"), job_task_flag="--task")]
     parent_suite = "coding"
     templates = WORKER_TEMPLATES
-    window_extensions = [*(WindowExtension(name, reads=["proof list", "worker waits", "worker progress"], runs=["worker send"],
+    window_extensions = [WindowExtension("agents.agent-detail", reads=["worker-worktree points"]),
+                         *(WindowExtension(name, reads=["proof list", "worker waits", "worker progress"], runs=["worker send"],
                                           events=["proof.*", "worker_worktree.*"],
                                           key_events={"agents": ["proof.*", "worker_worktree.*"], "limits": ["worker_worktree.*"]},
                                           keys=[WindowKey("waits", "worker waits", events=["agent.*", "task.*", "proof.*", "worker_worktree.*"]),
@@ -327,6 +331,12 @@ class WorkersModule(Module):
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS
     dependencies = ["journal.suites.coding", "journal.core.agents", "journal.core.tasks", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.plugins", "journal.core.processes", "journal.core.chat", "journal.core.messages", "journal.core.documents", "journal.core.usage", "journal.core.aliases", "journal.core.viewer", "journal.core.mcp", "journal.core.waits", "journal.core.reviews"]
+    buttons = [ButtonDeclaration("workers.send-job", ("row.agent",), "Send the worker a job", "worker send {row_id} --job={job}", icon="send", condition=ButtonCondition("working_role", ("worker",)),
+                                 fields=(TextField("job", "What should it do?"),)),
+               ButtonDeclaration("workers.merge", ("row.agent",), "Merge the work of the worker", "worker merge {row_id}", icon="branch", primary=True, condition=ButtonCondition("working_role", ("worker",)),
+                                 confirm="Merge its work? Each point needs a checked proof."),
+               ButtonDeclaration("workers.release", ("row.agent",), "Release the worker from its task", "worker release {row_id} --reason={reason}", icon="restore", condition=ButtonCondition("working_role", ("worker",)),
+                                 fields=(TextField("reason", "Why is it taken off its task?"),))]
     skills = [SkillDeclaration("journal-workers", "Send a worker to write a bounded job, check its proofs and merge its work; read it before dispatching one", keywords=("worker", "workers", "worktree"), commands=("worker", "proof"))]
     models = [ModelDeclaration(WorkerOperation, query=WorkerOperationQuery, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(WorkerRoute, excluded_subcommands=["make", "edit", "delete", "list"]), ModelDeclaration(WorkerTestRun, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(AffectedTest, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(WorkerRefusalCount), ModelDeclaration(MergerLine, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(WorkerTestFailure, excluded_subcommands=["make", "edit", "delete", "show", "list"]), ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
               ModelDeclaration(Proof, query=ProofQuery, excluded_subcommands=["make", "edit", "delete", "revise", "queue", "run"]),

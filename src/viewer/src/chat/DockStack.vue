@@ -34,7 +34,7 @@ async function undock(item, button) {
     const answer = await pressButton(button, {id: item.target_id}, context.environment);
     if (answer?.ok !== false) return;
     closed.value = new Set([...closed.value].filter((id) => id !== item.id));
-    refusals.value = {...refusals.value, [item.id]: `Could not close this card: ${answer.error}`};
+    refusals.value = {...refusals.value, [item.id]: `Could not dismiss this card: ${answer.error}`};
 }
 
 const docked = computed(() =>

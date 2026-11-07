@@ -18,5 +18,5 @@ class AcmeLegalModule(Module):
     dependencies = ["journal.core.tasks", "journal.suites.coding"]
     added_states = tuple([StateAddition(Task, ADDED_STATE, "Legal hold", TaskState.BLOCKED, TaskState.OPEN,
                                         (Move("hold", [TaskState.OPEN], ADDED_STATE), Move("release-hold", [ADDED_STATE], TaskState.OPEN)))])
-    buttons = [ButtonDeclaration("legal.hold", tuple(["row.task"]), "Hold for legal", "task hold {row_id}", condition=ButtonCondition("state", tuple(["open"]))),
-               ButtonDeclaration("legal.release", tuple(["row.task"]), "Release the hold", "task release-hold {row_id}", condition=ButtonCondition("state", tuple(["legal-hold"])))]
+    buttons = [ButtonDeclaration("legal.hold", tuple(["row.task"]), "Hold for legal", "task hold {row_id}", icon="lock", condition=ButtonCondition("state", tuple(["open"]))),
+               ButtonDeclaration("legal.release", tuple(["row.task"]), "Release the hold", "task release-hold {row_id}", icon="restore", condition=ButtonCondition("state", tuple(["legal-hold"])))]

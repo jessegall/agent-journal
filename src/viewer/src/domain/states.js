@@ -15,4 +15,3 @@ const addedState = (type, state) => added[type]?.[state];
 export const stateLabel = (type, state) => addedState(type, state)?.label ?? wordLabel(state);
 export const stateLook = (type, state) => addedState(type, state)?.looks_like ?? state;
 export const stateTipRead = (type, state) => addedState(type, state)?.tip_read ?? "";
-export const stateOpenMoves = (type, state) => addedState(type, state)?.open_moves ?? null;

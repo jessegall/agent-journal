@@ -118,7 +118,7 @@ def test_the_mark_is_a_process_mark_that_folds_open_in_place_and_has_a_stop_and_
     story = install_runner(new_story(fixture=BuilderStarted))
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "processes.command")
     expect_row(mark, family="processes.commands", family_title="Commands", group="work", click="unfold", process=True)
-    expect_label_button_runs(mark, [("Stop", "output stop {row_id}"), ("Dock", "dock add processes.output process {row_id}")])
+    expect_label_button_runs(mark, [("Stop the process", "output stop {row_id}"), ("Dock the output", "dock add processes.output process {row_id}")])
 
 
 def test_a_finished_process_cannot_be_docked_and_stop_and_dock_are_only_for_a_running_one(new_story):
@@ -388,7 +388,7 @@ def untitled_docked_run(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
     story.advance(timedelta(seconds=6))
-    wanted = f'journal output title {process.id} "<what it does>"'
+    wanted = f"output {process.id} has its raw command as its title: give it a title"
     return story, process, wanted
 
 

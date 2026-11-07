@@ -28,7 +28,7 @@ class Output:
         self.write(text, {"line": text})
 
     def row(self, record: object) -> None:
-        values = self.values(record)
+        values = {**self.values(record), **self.properties(record)}
         is_confirmed = isinstance(record, Model) and bool(self.confirmation)
         self.write(self.confirmation if is_confirmed else "\n".join(f"{column}: {value}" for column, value in values.items() if value not in (None, {}, "")), values)
 
@@ -57,6 +57,10 @@ class Output:
         if is_dataclass(record) and not isinstance(record, type):
             return {record_field.name: self.json_value(getattr(record, record_field.name)) for record_field in fields(record)}
         return {"value": self.json_value(record)}
+
+    def properties(self, record: object) -> dict[str, object]:
+        """The derived values a model shows beside its columns when one row is shown, never in a list."""
+        return {name: self.json_value(getattr(record, name)) for name in type(record).shown_properties} if isinstance(record, Model) else {}
 
     def json_value(self, value: object) -> object:
         if isinstance(value, bool):

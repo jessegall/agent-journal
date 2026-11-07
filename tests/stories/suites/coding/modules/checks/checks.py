@@ -4,6 +4,7 @@ import json
 from datetime import timedelta
 
 from core.base.periodic_checks import PeriodicChecks
+from core.base.registry.registry import Registry
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
 from core.testing.expect_row import expect_row
@@ -126,3 +127,20 @@ def expect_output_runs_with_2(runs, expected) -> None:
 def expect_passed_runs(runs, expected) -> None:
     actual = [run['passed'] for run in runs]
     assert actual == expected, actual
+
+
+def test_a_running_check_offers_run_and_stop(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('check make "Suite" --command "true" --every 0', actor=story.user)
+    story.expect_text("check show 1", "state: running", actor=story.user)
+    buttons = {entry.declaration.name: entry.declaration for entry in story.container.get(Registry).buttons}
+    story.expect_rows(buttons["checks.run"].condition.values == ("running",), buttons["checks.stop"].condition.values == ("running",), tuple(buttons["checks.run"].slots) == ("row.check",))
+
+
+def test_a_stopped_check_offers_to_start_again(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('check make "Suite" --command "true" --every 0', actor=story.user)
+    story.run("check stop 1", actor=story.user)
+    story.expect_text("check show 1", "state: stopped", actor=story.user)
+    buttons = {entry.declaration.name: entry.declaration for entry in story.container.get(Registry).buttons}
+    story.expect_rows(buttons["checks.start"].condition.values == ("stopped",), buttons["checks.start"].label == "Start the check again")

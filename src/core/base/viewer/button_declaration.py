@@ -28,6 +28,8 @@ class ButtonDeclaration:
     menu: Sequence[ButtonMenuItem] = ()
     menu_label: str = ""
     tip: str = ""
+    confirm: str = ""
+    danger: bool = False
 
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "ButtonDeclaration":
@@ -36,4 +38,5 @@ class ButtonDeclaration:
                    icon=stored.get("icon", ""), primary=stored.get("primary", False), fields=restored_fields(stored.get("fields", ())),
                    condition=ButtonCondition(condition["field"], tuple(condition["values"])) if condition is not None else None,
                    menu=tuple(ButtonMenuItem.restored(item) for item in stored.get("menu", ())),
-                   menu_label=stored.get("menu_label", ""), tip=stored.get("tip", ""))
+                   menu_label=stored.get("menu_label", ""), tip=stored.get("tip", ""),
+                   confirm=stored.get("confirm", ""), danger=stored.get("danger", False))

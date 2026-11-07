@@ -8,5 +8,5 @@ class DemoReviewModule(Module):
     parent_suite = "coding"
     dependencies = ["journal.core.plans", "journal.core.viewer", "journal.suites.coding"]
     buttons = [ButtonDeclaration("demo.review", ("dock.plans.waiting", "row.plan"), "Review the plan",
-                                 "plan edit {row_id} --brief=Reviewed",
+                                 "plan edit {row_id} --brief=Reviewed", icon="review",
                                  condition=ButtonCondition("state", tuple(["ready"])))]

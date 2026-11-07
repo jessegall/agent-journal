@@ -6,7 +6,7 @@ import {chromium} from "playwright-core";
 
 const entry = `
 import {createApp, h} from 'vue';
-import Inspector from '/src/resource/ProcessQueueInspector.vue';
+import Inspector from '/src/resource/ProcessQueueBody.vue';
 let queue = {
     environment_name: 'main', parallel_limit: 2, used_slots: 0, waiting_count: 0,
     running: [], waiting: [], recent: [],
