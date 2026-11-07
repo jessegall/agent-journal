@@ -1,7 +1,7 @@
 from core.base.setting.list_rule import ListRule
 from core.base.setting.number_rule import NumberRule
 from core.base.setting.ruled_settings import ruled_settings
-from core.base.setting.setting_rule import SettingRuleText
+from core.base.setting.setting_rule_text import SettingRuleText
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
 

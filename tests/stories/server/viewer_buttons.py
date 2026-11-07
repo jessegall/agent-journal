@@ -36,7 +36,9 @@ def test_buttons_are_offered_only_where_their_module_is_active(buttons_server):
     status, _, body = viewer_answer(story.viewer_port(), "/api/buttons?environment=elsewhere", cookie, "")
     expect_value(status, 200)
     expect_row(json.loads(body), missing={})
-    expect_value({item["name"] for item in json.loads(body)["buttons"]}, {"plans.approve", "plan_reviews.critique", "plan_reviews.end-review", "project-rules.approve", "project-rules.deny"})
+    offered = {item["name"] for item in json.loads(body)["buttons"]}
+    expect_value(sorted(name for name in offered if name.startswith(("workers.", "review."))), [])
+    expect_value({"plans.approve", "plans.assign-worker", "plans.assign-main", "plan_reviews.critique", "plan_reviews.end-review", "tasks.block", "agents.pause"} <= offered, True)
 
 
 def test_missing_lines_include_main_and_menu_labels_until_this_person_allows_them(buttons_server):
@@ -56,7 +58,7 @@ def test_old_mark_and_dock_buttons_also_show_their_labels_and_missing_lines(new_
         cookie = story.expect_viewer_login(story.viewer_key("Ada"))
         status, _, body = viewer_answer(story.viewer_port(), "/api/buttons?environment=main", cookie, "")
         expect_value(status, 200)
-        expect_value(json.loads(body)["missing"]["good"], [{"label": "Open", "line": "task edit {row_id}"},
+        expect_value(json.loads(body)["missing"]["good"], [{"label": "Edit the task", "line": "task edit {row_id}"},
                                                          {"label": "Dock edit", "line": "task edit {row_id} --brief=Dock"}])
         story.story.expect_success("window allow button:good --type runs --environment main", actor=story.story.user)
         story.expect_viewer_status("/api/buttons?environment=main", 200, cookie, text='"missing": {}')

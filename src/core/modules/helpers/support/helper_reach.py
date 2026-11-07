@@ -2,7 +2,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
 from core.base.refusal import Refusal
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 
@@ -20,7 +20,7 @@ class HelperReach:
         if helper.retired_at is not None:
             raise Refusal(f"helper {helper.id} is retired, for good", "journal helper start starts a new one")
         if actor.type is ActorType.AGENT and not self.may_reach(helper, actor.id):
-            raise UserApproval(f"Allow this action on helper {helper.id}, which belongs to agent {helper.parent_id}?")
+            raise UserApprovalRefusal(f"Allow this action on helper {helper.id}, which belongs to agent {helper.parent_id}?")
         return helper
 
     def new_parent(self, helper: Agent, actor: Actor) -> int | None:

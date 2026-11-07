@@ -1,4 +1,4 @@
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from argparse import ArgumentParser, Namespace
 
 from core.base.access import Access
@@ -39,7 +39,7 @@ class MemoryAgentsSubcommand(ReadSubcommand[Page[MemoryHolderRow]]):
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[MemoryHolderRow]:
         if caller.actor.type is ActorType.AGENT:
-            raise UserApproval("Show the people using the viewer which agents hold memories?", returns_output=True)
+            raise UserApprovalRefusal("Show the people using the viewer which agents hold memories?", returns_output=True)
         query = self.queries.query(MemoryHolder)
         if arguments.role:
             query = query.filter(role=arguments.role)
