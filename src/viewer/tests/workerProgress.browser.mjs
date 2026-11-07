@@ -11,12 +11,14 @@ try {
     target.searchParams.set("page", "agents.agents");
     await page.goto(target.href);
     const card = page.locator(`[data-agent-open="${worker}"]`);
-    await card.locator("[data-agent-tasks]").waitFor();
+    await card.waitFor();
     await page.locator(".window-cover").waitFor({state: "detached"});
-    await page.waitForFunction(({worker, count}) => document.querySelector(`[data-agent-open="${worker}"] [data-agent-tasks]`)?.textContent.trim() === count, {worker, count});
-    assert.equal((await card.locator("[data-agent-tasks]").textContent()).trim(), count);
-    if (pace) assert.equal((await card.locator("[data-agent-pace]").textContent()).trim(), pace);
-    else assert.equal(await card.locator("[data-agent-pace]").count(), 0);
+    if (pace) await card.locator("[data-agent-list-pace]").waitFor();
+    if (pace) assert.equal((await card.locator("[data-agent-list-pace]").textContent()).trim(), pace);
+    else assert.equal(await card.locator("[data-agent-list-pace]").count(), 0);
+    await card.click();
+    await card.locator("[data-agent-command]").waitFor();
+    assert.equal(await card.locator("[data-agent-job], [data-agent-tasks], [data-agent-blocked-tasks]").count(), 0);
     await card.screenshot({path: `/tmp/journal-worker-progress-461-${capture}.png`});
 } finally {
     await browser.close();

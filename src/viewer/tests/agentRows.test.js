@@ -209,7 +209,7 @@ const TASKS = [
     {id: 13, title: "Print the receipt", state: "open"},
 ];
 
-test("the card counts what is completed and lists its tasks when opened, under the state names of the tasks window", async () => {
+test("the opened card lists its tasks under the state names without a task count bar", async () => {
     const element = await drawn([{...FACTS[0], tasks: TASKS}]);
     let card = cardOf(element, 2);
     expect(card.querySelector("[data-agent-tasks]")).toBeNull();
@@ -217,7 +217,7 @@ test("the card counts what is completed and lists its tasks when opened, under t
     card.click();
     await settle();
     card = cardOf(element, 2);
-    expect(card.querySelector("[data-agent-tasks]").textContent.trim()).toBe("1 of 3 tasks");
+    expect(card.querySelector("[data-agent-tasks]")).toBeNull();
     const labels = [...card.querySelectorAll("[data-agent-section]")].map((section) => `${section.querySelector(".fold-label").textContent.trim()} ${section.querySelector(".fold-count").textContent.trim()}`);
     expect(labels).toEqual(["Started 1", "Blocked 0", "Open 1", "Completed 1"]);
     let rows = [...card.querySelectorAll("[data-agent-delegated]")];
@@ -409,7 +409,7 @@ test("one read supplies every worker's short reason without commands or paths", 
     }
 });
 
-test("a worker's card shows its completed tasks per hour", async () => {
+test("an opened worker card shows its command without a task pace bar", async () => {
     const started = new Date(Date.now() - 2 * 3600000).toISOString();
     const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null, created_at: started};
     const tasks = [{id: 11, title: "Fix the cart", state: "completed"}, {id: 12, title: "Add the totals", state: "completed"}, {id: 13, title: "Print", state: "started"}];
@@ -417,12 +417,12 @@ test("a worker's card shows its completed tasks per hour", async () => {
     const element = await mounted({render: () => h(AgentRows, {line: "agent cards", empty: "No agents yet"})}, context(lines));
     cardOf(element, 4).click();
     await settle();
-    expect(element.querySelector("[data-agent-pace]").textContent.trim()).toBe("1 per hour");
-    expect(element.querySelector("[data-agent-tasks]").previousElementSibling).toBe(element.querySelector("[data-agent-pace]"));
+    expect(element.querySelector("[data-agent-pace]")).toBeNull();
+    expect(element.querySelector("[data-agent-tasks]")).toBeNull();
     expect(parseFloat(getComputedStyle(element.querySelector("[data-agent-command]")).paddingLeft)).toBe(0);
 });
 
-test("worker totals and pace use its current worktree instead of session history", async () => {
+test("an opened worker card has no task count or pace bar", async () => {
     const started = new Date(Date.now() - 1.5 * 3600000).toISOString();
     const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null,
         created_at: new Date(Date.now() - 24 * 3600000).toISOString(), process_started_at: new Date(Date.now() - 3600000).toISOString()};
@@ -432,9 +432,8 @@ test("worker totals and pace use its current worktree instead of session history
     const element = await mounted({render: () => h(AgentRows, {line: "agent cards", empty: "No agents yet"})}, context(lines));
     cardOf(element, 4).click();
     await settle();
-    expect(cardOf(element, 4).querySelector("[data-agent-tasks]").textContent.trim()).toBe("1 of 2 tasks");
-    expect(cardOf(element, 4).querySelector("[data-agent-pace]").textContent.trim()).toBe("1 per hour");
-    expect(cardOf(element, 4).querySelector("[data-agent-tasks]").previousElementSibling).toBe(cardOf(element, 4).querySelector("[data-agent-pace]"));
+    expect(cardOf(element, 4).querySelector("[data-agent-tasks]")).toBeNull();
+    expect(cardOf(element, 4).querySelector("[data-agent-pace]")).toBeNull();
 });
 
 test("a worker's opened card shows its context and cost", async () => {
@@ -607,9 +606,14 @@ test("a worker shows its worktree task and notes another blocked task", async ()
     const progress = {task_id: 1};
     for (const open of [false, true]) {
         const element = await mounted({render: () => h(AgentCard, {row, facts, progress, open})}, context({}));
-        expect(element.querySelector("[data-agent-job]").textContent).toBe("Current task");
-        expect(element.querySelector("[data-agent-blocked-tasks]").textContent).toBe("Blocked: task 2");
-        if (!open) expect(element.querySelector(".agent-dot").dataset.state).toBe("running");
+        if (open) {
+            expect(element.querySelector("[data-agent-job]")).toBeNull();
+            expect(element.querySelector("[data-agent-blocked-tasks]")).toBeNull();
+        } else {
+            expect(element.querySelector("[data-agent-job]").textContent).toBe("Current task");
+            expect(element.querySelector("[data-agent-blocked-tasks]").textContent).toBe("Blocked: task 2");
+            expect(element.querySelector(".agent-dot").dataset.state).toBe("running");
+        }
     }
 });
 
@@ -618,7 +622,7 @@ test("the task line names its plan after the title, and a task outside a plan ha
     for (const planId of [7, null]) {
         const tasks = [{id: 1, title: "Add the tax", state: "started", plan_id: planId, plan_title: "Cart plan"}, {id: 2, title: "Later", state: "open", plan_id: 9}];
         const facts = {job_enabled: true, task_id: 1, task_title: "Add the tax", tasks};
-        const element = await mounted({render: () => h(AgentCard, {row, facts, open: true})}, context({}));
+        const element = await mounted({render: () => h(AgentCard, {row, facts})}, context({}));
         const job = element.querySelector("[data-agent-job]");
         const plan = element.querySelector("[data-agent-plan]");
         expect(job.textContent).toContain("Add the tax");
@@ -631,4 +635,18 @@ test("the task line names its plan after the title, and a task outside a plan ha
         } else expect(plan).toBeNull();
         expect(job.textContent).not.toContain("Cart plan");
     }
+});
+
+
+test("an opened card has no task bar or blocked row above its commands and performs no extra task read", async () => {
+    const row = {id: 4, role: "worker", state: "running", created_at: new Date().toISOString()};
+    const facts = {job_enabled: true, task_id: 1, task_title: "Current task", state: "changes requested", tasks: [{id: 1, title: "Current task", state: "started"}, {id: 2, title: "Blocked task", state: "blocked"}]};
+    const held = context({"usage tool --agent 4": {ok: true, value: {tool: "journal status", note: ""}}});
+    const element = await mounted({render: () => h(AgentCard, {row, facts, progress: {task_id: 1, task_count: 2, completed_count: 1}, open: true})}, held);
+    expect(element.querySelector("[data-agent-command]")).not.toBeNull();
+    expect(element.querySelector("[data-agent-job]")).toBeNull();
+    expect(element.querySelector("[data-agent-work-status]")).toBeNull();
+    expect(element.querySelector("[data-agent-tasks]")).toBeNull();
+    expect(element.querySelector("[data-agent-blocked-tasks]")).toBeNull();
+    expect(held.reads.some((line) => line.startsWith("task ") || line.startsWith("worker progress"))).toBe(false);
 });
