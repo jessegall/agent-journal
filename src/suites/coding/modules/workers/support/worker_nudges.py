@@ -9,7 +9,7 @@ from core.base.driver.nudge_type import NudgeType
 APPROVED_PLAN_WAIT = NudgeDeclaration("workers.approved_plan_wait", NudgeType.REFUSAL, 'plan:{plan} is approved and a worker place is free: start it with journal plan start {plan}, then assign its work')
 
 HELPER_INACTIVE = NudgeDeclaration("workers.helper_inactive", NudgeType.STEERING, '{name}:{agent} has used no tool for {minutes} minutes{queue}: {action}', turn_limited=False, wakes_agent=True)
-BUILDER_BUILDS = NudgeDeclaration("workers.builder_builds", NudgeType.REFUSAL, 'this builder builds its tasks itself: coding.builder-dispatches-workers is false')
+BUILDER_BUILDS = NudgeDeclaration("workers.builder_builds", NudgeType.REFUSAL, 'the main agent sends no workers here: {then}')
 PROOF_CHECK = NudgeDeclaration("workers.check_the_proof", NudgeType.REFUSAL, 'worker:{worker} delivered task:{task}: journal proof check {proofs}, or journal proof short <proof> "<what is missing>"')
 WORKER_UNSTARTED = NudgeDeclaration("workers.unstarted", NudgeType.STEERING, 'worker:{worker} made no call in {seconds} seconds: journal agent terminal {worker}', interval=Interval(Seconds(600)), turn_limited=False, wakes_agent=True,
                                    plural_text='workers {worker} made no call in {seconds} seconds: inspect each with journal agent terminal <id>', id_field="worker")

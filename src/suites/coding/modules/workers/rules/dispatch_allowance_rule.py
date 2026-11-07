@@ -1,4 +1,5 @@
 from suites.coding.modules.workers.support.worker_nudges import BUILDER_BUILDS
+from suites.coding.support.auto_advice import AutoAdvice
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.driver_rule import DriverRule
@@ -11,15 +12,15 @@ from suites.coding.modules.workers.support.dispatch_arguments import DISPATCH_AR
 
 
 class DispatchAllowanceRule(DriverRule):
-    """A builder dispatches no workers while the setting coding.builder-dispatches-workers is false."""
+    """The main agent dispatches no workers while the setting builder-dispatches-workers is off."""
 
     name = "workers.dispatch-allowed"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["coding.builder", "coding.orchestrator", "coding.main"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, settings: SettingValues) -> None:
-        self.settings = settings
+    def __init__(self, settings: SettingValues, advice: AutoAdvice) -> None:
+        self.settings, self.advice = settings, advice
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
@@ -27,4 +28,4 @@ class DispatchAllowanceRule(DriverRule):
                                                for part in shell.parts)
         if not dispatches or self.settings.value(DISPATCHES_WORKERS_SETTING) is not False:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(BUILDER_BUILDS.nudge())
+        return RuleAnswer.refused(BUILDER_BUILDS.nudge(then=self.advice.without_workers()))
