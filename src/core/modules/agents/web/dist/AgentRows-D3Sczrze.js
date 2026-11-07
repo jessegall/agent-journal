@@ -251,7 +251,7 @@ const ct = {
       ]);
     };
   }
-}, Ot = /* @__PURE__ */ te(Rt, [["__scopeId", "data-v-71b8d2b0"]]), zt = { class: "action-field" }, Bt = ["value", "disabled"], Vt = ["value"], Lt = { key: 1 }, Ht = {
+}, Ot = /* @__PURE__ */ te(Rt, [["__scopeId", "data-v-3f66c406"]]), zt = { class: "action-field" }, Bt = ["value", "disabled"], Vt = ["value"], Lt = { key: 1 }, Ht = {
   key: 1,
   class: "action-field"
 }, It = { class: "action-buttons" }, Et = {
@@ -1473,7 +1473,7 @@ const pa = ["disabled", "title"], ga = ["title"], ma = { class: "gauge usage" },
       ], 42, Oa);
     };
   }
-}, _a = /* @__PURE__ */ te(Xa, [["__scopeId", "data-v-97cfdaa5"]]), en = ["data-edit-type"], tn = { key: 0 }, an = { class: "stepper" }, nn = ["disabled", "onClick"], ln = ["value", "disabled", "data-agent-limit-input", "onChange"], on = ["disabled", "onClick"], sn = { key: 0 }, rn = { key: 1 }, un = {
+}, _a = /* @__PURE__ */ te(Xa, [["__scopeId", "data-v-a345cf52"]]), en = ["data-edit-type"], tn = { key: 0 }, an = { class: "stepper" }, nn = ["disabled", "onClick"], ln = ["value", "disabled", "data-agent-limit-input", "onChange"], on = ["disabled", "onClick"], sn = { key: 0 }, rn = { key: 1 }, un = {
   __name: "AgentLimitEditor",
   props: { rows: { type: Array, required: !0 }, pending: Boolean, readOnly: Boolean, environment: { type: String, required: !0 } },
   emits: ["change"],
