@@ -100,11 +100,8 @@ class HookEndpoint:
             outcome = HookAnswer.REFUSED if reply.refusal else HookAnswer.ALLOWED
             return reply
         finally:
-            try:
-                database.set_busy_timeout(REQUEST_LOG_BUSY_SECONDS)
-                container.get(HookRequestLog).record_hook(program, headers, data, (perf_counter() - started_at) * 1000, outcome, queued_ms, sender.session)
-            except sqlite3.Error as error:
-                self.context.files.log_line(f"request recording failed: {error}", LogLevel.WARNING)
+            database.set_busy_timeout(REQUEST_LOG_BUSY_SECONDS)
+            self.context.request_log.record_hook(lambda: container.get(HookRequestLog).record_hook(program, headers, data, (perf_counter() - started_at) * 1000, outcome, queued_ms, sender.session))
 
     def prepared_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, container: Container, deadline: float, sender: HookSender) -> HookReply:
         event = self.event(data, program, headers, container.get(Providers))
