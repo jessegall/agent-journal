@@ -43,6 +43,8 @@ class MergeWorkerSubcommand(Subcommand[Command[object], MergeOutcome]):
         if not isinstance(value, MergeOutcome):
             return
         output.row(value.worktree)
+        if value.refusal:
+            output.line(f"the merge of worker {value.worktree.session_agent_id} was refused before anything was merged: {value.refusal}; the findings went back to the worker")
         if value.conflicts:
             output.line(f"merging {value.worktree.base_branch} in clashed on {', '.join(value.conflicts)}: task {value.worktree.task_id} went back to"
                         f" worker {value.worktree.session_agent_id}")
