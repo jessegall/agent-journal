@@ -50,11 +50,15 @@ def test_retire_settles_what_a_worker_holds(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
+    general = story.run(f"worker send {worker.id}", actor=story.agent)
+    story.expect_rows(general.code == 1)
     stopped(story, worker)
     story.expect_success(f"agent retire {worker.id} {REASON}", f"retired agent {worker.id}", actor=story.agent)
     story.expect_success("worker-worktree show 1", "state: removed")
     story.expect_success("task show 1", "state: open")
     repository.expect_no_folder(worker.id)
+    retired = story.run(f'worker send {worker.id} "Another job"', actor=story.agent)
+    story.expect_rows(retired.code == 5, "retired" in retired.output_text)
 
 
 def test_retire_refused_with_a_preserved_branch(new_story):
@@ -268,6 +272,6 @@ def test_a_plain_job_after_merge_starts_a_task_and_keeps_the_worktree_links(new_
     story.expect_success(f'worker send {worker.id} "Fix the findings"', actor=story.agent)
     worktree = story.container.get(WorktreeQuery).worker_worktree(worker.id)
     story.expect_text(f"task show {worktree.task_id}", "Fix the findings", "state: started", f"holder_id: {worker.id}", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {worker.id}", "Fix the findings", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {worker.id}", "Fix the findings", actor=worker)
     story.expect_rows(worker_session(story, worker) == session)
     repository.expect_link(worker.id, "node_modules")
