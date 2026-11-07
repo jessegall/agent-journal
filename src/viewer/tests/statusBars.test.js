@@ -36,7 +36,7 @@ test("the allowance gauge names the window its percentage is of", () => {
 
 test("the information bar holds no window counts, and its scheduled jobs open with an icon and a count", () => {
     const opened = [];
-    const element = mounted(InformationBar, {agent: MAIN, jobs: 2, onOpen: (name) => opened.push(name)});
+    const element = mounted(InformationBar, {agent: MAIN, agentPrograms: [{name: "claude", title: "Claude"}], jobs: 2, onOpen: (name) => opened.push(name)});
     expect(element.textContent).toContain("Claude");
     expect(element.querySelector("[data-count]")).toBeNull();
     const jobs = element.querySelector('[data-fact="jobs"]');
@@ -134,6 +134,7 @@ test("the agent bar names a paused agent, says nothing of what waits, and has on
     const element = mounted(AgentBar, {agent: {...MAIN, paused_at: "2026-11-01T10:00:00Z"}, helpers: 3, onOpen: (name, anchor) => opened.push([name, anchor])});
     expect(element.querySelector("[data-agent-word]").textContent).toBe("Paused");
     expect(element.querySelector("[data-workers]")).toBeNull();
+    expect(element.querySelectorAll("[data-icon='agents']")).toHaveLength(1);
     expect(element.querySelector("[data-reviewers]")).toBeNull();
     const helpers = element.querySelector("[data-helpers]");
     expect(helpers.textContent.trim()).toBe("3");
