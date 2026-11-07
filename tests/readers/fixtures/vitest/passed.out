@@ -1,0 +1,8 @@
+ RUN  v2.1.8 /work/project
+
+ ✓ tests/cart.test.js (2 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  10:00:00
+   Duration  120ms

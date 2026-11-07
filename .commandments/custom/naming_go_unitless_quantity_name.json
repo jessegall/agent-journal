@@ -1,0 +1,35 @@
+{
+  "$schema": "../rule.schema.json",
+  "engine": "go",
+  "find": {
+    "select": "identifier",
+    "where": [
+      {
+        "nameMatches": "(^|[a-z0-9_])(After|Every|Within|Limit|Longest|Largest|Shortest|Timeout|Interval|Wait|Tail|Page|Recent|Length|Delay|Window)$"
+      },
+      {
+        "of": "parent",
+        "kind": "ValueSpec"
+      },
+      {
+        "of": "parent",
+        "all": [
+          {
+            "of": "child:values",
+            "is": "literal"
+          },
+          {
+            "of": "child:values",
+            "textMatches": "^-?[0-9][0-9_.]*$"
+          }
+        ]
+      }
+    ]
+  },
+  "sin": {
+    "name": "go-unitless-quantity-name",
+    "description": "A constant holding a quantity is named without its unit: NEXT_TASK_AFTER = 60, KEPT_LIMIT = 400, PAGE = 50.",
+    "rule": "Name the unit the number counts in: NEXT_TASK_AFTER_SECONDS, KEPT_LINES, PAGE_ROWS.",
+    "skill": "plain-code-words"
+  }
+}

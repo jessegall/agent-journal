@@ -1,0 +1,52 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "type-declaration"
+                        },
+                        {
+                            "extendsAny": "DriverRule"
+                        }
+                    ]
+                }
+            },
+            {
+                "of": "parent",
+                "all": [
+                    {
+                        "is": "assignment"
+                    },
+                    {
+                        "descendant": {
+                            "all": [
+                                {
+                                    "is": "identifier"
+                                },
+                                {
+                                    "name": "hook"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "hook-named-by-a-string",
+        "description": "A driver rule names its hook by a string, so a misspelt hook passes until sync and the names are written out again in every rule.",
+        "rule": "Name the hook by its member: hook = HookEventName.PRE_TOOL_USE, or HookWildcard.ALL_HOOKS for a rule on every hook.",
+        "skill": "plain-code-words"
+    }
+}

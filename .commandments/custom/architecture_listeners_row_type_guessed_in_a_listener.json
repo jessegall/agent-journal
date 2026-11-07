@@ -1,0 +1,51 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "isinstance"
+            },
+            {
+                "fileMatches": "(^|/)src/(core/modules|suites)/.+/(listeners|guards)/[^/]+\\.py$"
+            },
+            {
+                "not": {
+                    "argument": {
+                        "at": 0,
+                        "name": "event"
+                    }
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "argument": {
+                    "at": 0,
+                    "all": [
+                        {
+                            "name": "command"
+                        },
+                        {
+                            "of": "receiver",
+                            "name": "context"
+                        }
+                    ]
+                }
+            },
+            {
+                "fileMatches": "/(task_wait_listener|target_resolution_listener|secret_value_guard|phase_position_guard)\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "row-type-guessed-in-a-listener",
+        "description": "A listener or guard asks what type its row is, so it hears more than it wants and works out the rest by hand. Asking what type context.command is stays allowed: the type parameter declares the row, and no type parameter declares the command that caused the change.",
+        "rule": "Declare the event as the type parameter, as CommitListener[AgentCompacted] or SaveListener[Created[Task]], and read event.row.",
+        "skill": "plain-code-words"
+    }
+}

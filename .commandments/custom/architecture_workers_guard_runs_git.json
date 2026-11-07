@@ -1,0 +1,37 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "identifier",
+        "where": [
+            {
+                "file": "modules/workers/**"
+            },
+            {
+                "extendsAny": "Guard",
+                "of": "enclosingType"
+            },
+            {
+                "any": [
+                    {
+                        "resolves": "subprocess"
+                    },
+                    {
+                        "resolvesLike": "*WorktreeGit"
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "guard-runs-git",
+        "description": "A workers guard runs a subprocess or WorktreeGit, so a guard that should read rows only waits on git inside the save.",
+        "rule": "Keep a guard to rows: a check that needs git runs in the handler before any row changes, as the merge handler checks the checkout.",
+        "skill": "workers-architecture"
+    }
+}

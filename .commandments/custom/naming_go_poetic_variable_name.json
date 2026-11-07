@@ -1,0 +1,111 @@
+{
+  "$schema": "../rule.schema.json",
+  "engine": "go",
+  "find": {
+    "select": "identifier",
+    "where": [
+      {
+        "nameMatches": "(?i)(^|_)(${poetic}|${poetic_values})(_|$)"
+      }
+    ],
+    "reject": [
+      {
+        "of": "parent",
+        "all": [
+          {
+            "is": "call"
+          },
+          {
+            "of": "child:func",
+            "nameMatches": "^(print|save|delete|remove|add|create|push|pull|show|write|load|fetch|tell|ask|make|do|go|take|put|give|send|open|run|exec|next|iter|map|filter|sorted|reversed|any|all|len|str|int|float|bool|list|dict|set|tuple|range|enumerate|zip|min|max|sum|type|getattr|setattr|hasattr|isinstance|repr|round|abs|format|input|id|hash|vars|dir|super|property|staticmethod|classmethod)$"
+          }
+        ]
+      },
+      {
+        "nameMatches": "^(object|glob|tmp_path|do_[A-Z]+)$"
+      },
+      {
+        "nameMatches": "^(tmp_path|tmp_path_factory|capsys|monkeypatch|request)$"
+      },
+      {
+        "of": "parent",
+        "kind": "SelectorExpr"
+      },
+      {
+        "of": "parent",
+        "all": [
+          {
+            "kind": "CallExpr"
+          },
+          {
+            "of": "child:fun",
+            "is": "identifier"
+          }
+        ]
+      },
+      {
+        "all": [
+          {
+            "of": "parent",
+            "kind": "FuncDecl"
+          },
+          {
+            "nameMatches": "^(Write|Read|Close|String|Error)$"
+          }
+        ]
+      },
+      {
+        "nameMatches": "^(ctx|ok|err)$"
+      },
+      {
+        "nameMatches": "^(break|default|func|interface|select|case|defer|go|map|struct|chan|else|goto|package|switch|const|fallthrough|if|range|type|continue|for|import|return|var)$"
+      },
+      {
+        "all": [
+          {
+            "nameMatches": "^(append|cap|clear|close|complex|copy|delete|imag|len|make|max|min|new|panic|print|println|real|recover)$"
+          },
+          {
+            "of": "parent",
+            "kind": "CallExpr"
+          }
+        ]
+      },
+      {
+        "resolvesLike": "database/sql.Result"
+      },
+      {
+        "all": [
+          {
+            "nameMatches": "^(Kind|Kinds|kind)$"
+          },
+          {
+            "fileMatches": "(^|/)tools/journal-shared/"
+          }
+        ]
+      },
+      {
+        "all": [
+          {
+            "name": "result"
+          },
+          {
+            "of": "closest:function",
+            "descendant": {
+              "nameIn": [
+                "LastInsertId",
+                "RowsAffected"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "sin": {
+    "name": "go-poetic-variable-name",
+    "description": "A variable, an attribute or an argument is named by a word that does not say what it is: said, whisper, tale, magic, made, thing, stuff, got, done.",
+    "rule": "Name it for what it holds, in an ordinary word: nudge, line, values.",
+    "skill": "plain-code-words"
+  }
+}

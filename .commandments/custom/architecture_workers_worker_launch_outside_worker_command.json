@@ -1,0 +1,44 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "fileMatches": "(^|/)suites/coding/modules/workers/"
+            },
+            {
+                "any": [
+                    {
+                        "of": "child:func",
+                        "resolves": "core.base.provider.helper_launch.HelperLaunch"
+                    },
+                    {
+                        "of": "child:func",
+                        "resolves": "core.base.provider.launch_command.LaunchCommand"
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "type-declaration"
+                        },
+                        {
+                            "name": "WorkerCommand"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "sin": {
+        "name": "worker-launch-outside-worker-command",
+        "description": "Worker code constructs launch data outside WorkerCommand and can omit or replace the saved model.",
+        "rule": "Construct HelperLaunch and LaunchCommand only in WorkerCommand, using the recorded worker model.",
+        "skill": "workers-architecture"
+    }
+}

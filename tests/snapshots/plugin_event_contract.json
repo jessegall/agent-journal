@@ -1,0 +1,7149 @@
+{
+  "core.actors.actor.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "name",
+      "type"
+    ]
+  },
+  "core.actors.actor.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "name",
+      "type"
+    ]
+  },
+  "core.actors.actor.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "name",
+      "type"
+    ]
+  },
+  "core.agents.agent.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "access",
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "given_name",
+      "launch_agent_id",
+      "launch_name",
+      "parent_id",
+      "paused_at",
+      "pid",
+      "process_started_at",
+      "profile",
+      "program",
+      "program_model",
+      "retired_at",
+      "retirement_reason",
+      "retiring_actor_id",
+      "role",
+      "session"
+    ]
+  },
+  "core.agents.agent.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "access",
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "given_name",
+      "launch_agent_id",
+      "launch_name",
+      "parent_id",
+      "paused_at",
+      "pid",
+      "process_started_at",
+      "profile",
+      "program",
+      "program_model",
+      "retired_at",
+      "retirement_reason",
+      "retiring_actor_id",
+      "role",
+      "session"
+    ]
+  },
+  "core.agents.agent.end": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "access",
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "given_name",
+      "launch_agent_id",
+      "launch_name",
+      "parent_id",
+      "paused_at",
+      "pid",
+      "process_started_at",
+      "profile",
+      "program",
+      "program_model",
+      "retired_at",
+      "retirement_reason",
+      "retiring_actor_id",
+      "role",
+      "session"
+    ]
+  },
+  "core.agents.agent.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "access",
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "given_name",
+      "launch_agent_id",
+      "launch_name",
+      "parent_id",
+      "paused_at",
+      "pid",
+      "process_started_at",
+      "profile",
+      "program",
+      "program_model",
+      "retired_at",
+      "retirement_reason",
+      "retiring_actor_id",
+      "role",
+      "session"
+    ]
+  },
+  "core.agents.menu_answer.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answer",
+      "creator_id",
+      "question",
+      "session_agent_id"
+    ]
+  },
+  "core.agents.menu_answer.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answer",
+      "creator_id",
+      "question",
+      "session_agent_id"
+    ]
+  },
+  "core.agents.menu_answer.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answer",
+      "creator_id",
+      "question",
+      "session_agent_id"
+    ]
+  },
+  "core.aliases.alias.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_access",
+      "background",
+      "category",
+      "creator_id",
+      "description",
+      "line",
+      "name",
+      "plugin_id",
+      "reader_id",
+      "variables"
+    ]
+  },
+  "core.aliases.alias.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_access",
+      "background",
+      "category",
+      "creator_id",
+      "description",
+      "line",
+      "name",
+      "plugin_id",
+      "reader_id",
+      "variables"
+    ]
+  },
+  "core.aliases.alias.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_access",
+      "background",
+      "category",
+      "creator_id",
+      "description",
+      "line",
+      "name",
+      "plugin_id",
+      "reader_id",
+      "variables"
+    ]
+  },
+  "core.chat.chat_mark.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "detail",
+      "ended_at",
+      "environment_id",
+      "figure",
+      "fraction",
+      "key",
+      "lines",
+      "outcome",
+      "run_key",
+      "run_step",
+      "session_agent_id",
+      "state",
+      "target_id",
+      "target_model",
+      "text",
+      "type",
+      "variant"
+    ]
+  },
+  "core.chat.chat_mark.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "detail",
+      "ended_at",
+      "environment_id",
+      "figure",
+      "fraction",
+      "key",
+      "lines",
+      "outcome",
+      "run_key",
+      "run_step",
+      "session_agent_id",
+      "state",
+      "target_id",
+      "target_model",
+      "text",
+      "type",
+      "variant"
+    ]
+  },
+  "core.chat.chat_mark.end": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "detail",
+      "ended_at",
+      "environment_id",
+      "figure",
+      "fraction",
+      "key",
+      "lines",
+      "outcome",
+      "run_key",
+      "run_step",
+      "session_agent_id",
+      "state",
+      "target_id",
+      "target_model",
+      "text",
+      "type",
+      "variant"
+    ]
+  },
+  "core.chat.chat_mark.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "detail",
+      "ended_at",
+      "environment_id",
+      "figure",
+      "fraction",
+      "key",
+      "lines",
+      "outcome",
+      "run_key",
+      "run_step",
+      "session_agent_id",
+      "state",
+      "target_id",
+      "target_model",
+      "text",
+      "type",
+      "variant"
+    ]
+  },
+  "core.chat.journal_exception.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "message",
+      "source"
+    ]
+  },
+  "core.chat.journal_exception.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "message",
+      "source"
+    ]
+  },
+  "core.chat.journal_exception.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "message",
+      "source"
+    ]
+  },
+  "core.docking.dock.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id"
+    ]
+  },
+  "core.docking.dock.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id"
+    ]
+  },
+  "core.docking.dock.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id"
+    ]
+  },
+  "core.docking.dock_item.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "dock_id",
+      "kept",
+      "leaves_at",
+      "session_agent_id",
+      "state",
+      "target_id",
+      "target_model",
+      "text",
+      "title",
+      "type",
+      "undocked_at"
+    ]
+  },
+  "core.docking.dock_item.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "dock_id",
+      "kept",
+      "leaves_at",
+      "session_agent_id",
+      "state",
+      "target_id",
+      "target_model",
+      "text",
+      "title",
+      "type",
+      "undocked_at"
+    ]
+  },
+  "core.docking.dock_item.dock": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "dock_id",
+      "kept",
+      "leaves_at",
+      "session_agent_id",
+      "state",
+      "target_id",
+      "target_model",
+      "text",
+      "title",
+      "type",
+      "undocked_at"
+    ]
+  },
+  "core.docking.dock_item.undock": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "dock_id",
+      "kept",
+      "leaves_at",
+      "session_agent_id",
+      "state",
+      "target_id",
+      "target_model",
+      "text",
+      "title",
+      "type",
+      "undocked_at"
+    ]
+  },
+  "core.docking.dock_item.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "dock_id",
+      "kept",
+      "leaves_at",
+      "session_agent_id",
+      "state",
+      "target_id",
+      "target_model",
+      "text",
+      "title",
+      "type",
+      "undocked_at"
+    ]
+  },
+  "core.documents.comment_selection.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "body",
+      "creator_id",
+      "message_id",
+      "position",
+      "quote",
+      "revision",
+      "selection_type"
+    ]
+  },
+  "core.documents.comment_selection.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "body",
+      "creator_id",
+      "message_id",
+      "position",
+      "quote",
+      "revision",
+      "selection_type"
+    ]
+  },
+  "core.documents.comment_selection.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "body",
+      "creator_id",
+      "message_id",
+      "position",
+      "quote",
+      "revision",
+      "selection_type"
+    ]
+  },
+  "core.documents.doc.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "abstract",
+      "body",
+      "close_reason",
+      "creator_id",
+      "title"
+    ]
+  },
+  "core.documents.doc.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "abstract",
+      "body",
+      "close_reason",
+      "creator_id",
+      "title"
+    ]
+  },
+  "core.documents.doc.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "abstract",
+      "body",
+      "close_reason",
+      "creator_id",
+      "title"
+    ]
+  },
+  "core.documents.doc_revision.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "abstract",
+      "author_id",
+      "body",
+      "change",
+      "closes_at",
+      "creator_id",
+      "doc_id",
+      "number",
+      "title"
+    ]
+  },
+  "core.documents.doc_revision.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "abstract",
+      "author_id",
+      "body",
+      "change",
+      "closes_at",
+      "creator_id",
+      "doc_id",
+      "number",
+      "title"
+    ]
+  },
+  "core.documents.doc_revision.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "abstract",
+      "author_id",
+      "body",
+      "change",
+      "closes_at",
+      "creator_id",
+      "doc_id",
+      "number",
+      "title"
+    ]
+  },
+  "core.documents.link.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "link_type",
+      "source_id",
+      "source_model",
+      "target_id",
+      "target_model"
+    ]
+  },
+  "core.documents.link.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "link_type",
+      "source_id",
+      "source_model",
+      "target_id",
+      "target_model"
+    ]
+  },
+  "core.documents.link.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "link_type",
+      "source_id",
+      "source_model",
+      "target_id",
+      "target_model"
+    ]
+  },
+  "core.documents.link_correction.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "link_creator_id",
+      "link_id",
+      "link_type",
+      "source_id",
+      "source_model",
+      "target_id",
+      "target_model"
+    ]
+  },
+  "core.documents.link_correction.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "link_creator_id",
+      "link_id",
+      "link_type",
+      "source_id",
+      "source_model",
+      "target_id",
+      "target_model"
+    ]
+  },
+  "core.documents.link_correction.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "link_creator_id",
+      "link_id",
+      "link_type",
+      "source_id",
+      "source_model",
+      "target_id",
+      "target_model"
+    ]
+  },
+  "core.documents.open_document.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "author_id",
+      "doc_id",
+      "revision_id"
+    ]
+  },
+  "core.documents.open_document.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "author_id",
+      "doc_id",
+      "revision_id"
+    ]
+  },
+  "core.documents.open_document.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "author_id",
+      "doc_id",
+      "revision_id"
+    ]
+  },
+  "core.documents.report.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "abstract",
+      "body",
+      "close_reason",
+      "creator_id",
+      "title"
+    ]
+  },
+  "core.documents.report.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "abstract",
+      "body",
+      "close_reason",
+      "creator_id",
+      "title"
+    ]
+  },
+  "core.documents.report.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "abstract",
+      "body",
+      "close_reason",
+      "creator_id",
+      "title"
+    ]
+  },
+  "core.drivers.agent_block.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "blocks_stop",
+      "closed_at",
+      "condition_name",
+      "condition_text",
+      "countdown_key",
+      "countdown_text",
+      "creator_id",
+      "grace_seconds",
+      "grace_tool_uses",
+      "nudge_key",
+      "nudge_text",
+      "session_agent_id",
+      "skip_reason",
+      "strict"
+    ]
+  },
+  "core.drivers.agent_block.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "blocks_stop",
+      "closed_at",
+      "condition_name",
+      "condition_text",
+      "countdown_key",
+      "countdown_text",
+      "creator_id",
+      "grace_seconds",
+      "grace_tool_uses",
+      "nudge_key",
+      "nudge_text",
+      "session_agent_id",
+      "skip_reason",
+      "strict"
+    ]
+  },
+  "core.drivers.agent_block.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "blocks_stop",
+      "closed_at",
+      "condition_name",
+      "condition_text",
+      "countdown_key",
+      "countdown_text",
+      "creator_id",
+      "grace_seconds",
+      "grace_tool_uses",
+      "nudge_key",
+      "nudge_text",
+      "session_agent_id",
+      "skip_reason",
+      "strict"
+    ]
+  },
+  "core.drivers.agent_line.claim": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "delivered_at",
+      "hook_call_id",
+      "repeats_without_hook",
+      "session_agent_id",
+      "source",
+      "state",
+      "text",
+      "wakes_agent"
+    ]
+  },
+  "core.drivers.agent_line.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "delivered_at",
+      "hook_call_id",
+      "repeats_without_hook",
+      "session_agent_id",
+      "source",
+      "state",
+      "text",
+      "wakes_agent"
+    ]
+  },
+  "core.drivers.agent_line.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "delivered_at",
+      "hook_call_id",
+      "repeats_without_hook",
+      "session_agent_id",
+      "source",
+      "state",
+      "text",
+      "wakes_agent"
+    ]
+  },
+  "core.drivers.agent_line.deliver": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "delivered_at",
+      "hook_call_id",
+      "repeats_without_hook",
+      "session_agent_id",
+      "source",
+      "state",
+      "text",
+      "wakes_agent"
+    ]
+  },
+  "core.drivers.agent_line.enter": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "delivered_at",
+      "hook_call_id",
+      "repeats_without_hook",
+      "session_agent_id",
+      "source",
+      "state",
+      "text",
+      "wakes_agent"
+    ]
+  },
+  "core.drivers.agent_line.release": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "delivered_at",
+      "hook_call_id",
+      "repeats_without_hook",
+      "session_agent_id",
+      "source",
+      "state",
+      "text",
+      "wakes_agent"
+    ]
+  },
+  "core.drivers.agent_line.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "delivered_at",
+      "hook_call_id",
+      "repeats_without_hook",
+      "session_agent_id",
+      "source",
+      "state",
+      "text",
+      "wakes_agent"
+    ]
+  },
+  "core.drivers.helper_job.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "creator_id",
+      "description",
+      "ended_at",
+      "environment_id",
+      "helper_id",
+      "instruction",
+      "new_agent_reason",
+      "profile",
+      "program_model",
+      "report_message_id",
+      "returned",
+      "review_plan_id",
+      "session_agent_id",
+      "source_line_id",
+      "source_message_id",
+      "source_unavailable",
+      "source_version",
+      "started_at",
+      "tool_key"
+    ]
+  },
+  "core.drivers.helper_job.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "creator_id",
+      "description",
+      "ended_at",
+      "environment_id",
+      "helper_id",
+      "instruction",
+      "new_agent_reason",
+      "profile",
+      "program_model",
+      "report_message_id",
+      "returned",
+      "review_plan_id",
+      "session_agent_id",
+      "source_line_id",
+      "source_message_id",
+      "source_unavailable",
+      "source_version",
+      "started_at",
+      "tool_key"
+    ]
+  },
+  "core.drivers.helper_job.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "creator_id",
+      "description",
+      "ended_at",
+      "environment_id",
+      "helper_id",
+      "instruction",
+      "new_agent_reason",
+      "profile",
+      "program_model",
+      "report_message_id",
+      "returned",
+      "review_plan_id",
+      "session_agent_id",
+      "source_line_id",
+      "source_message_id",
+      "source_unavailable",
+      "source_version",
+      "started_at",
+      "tool_key"
+    ]
+  },
+  "core.drivers.hook_call.compact": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "answer",
+      "creator_id",
+      "driver",
+      "environment_id",
+      "firing",
+      "hook",
+      "lines",
+      "lines_added",
+      "lines_removed",
+      "refusal",
+      "session_agent_id",
+      "suite",
+      "summary",
+      "tool",
+      "updated_input",
+      "writes_files"
+    ]
+  },
+  "core.drivers.hook_call.created": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "answer",
+      "creator_id",
+      "driver",
+      "environment_id",
+      "firing",
+      "hook",
+      "lines",
+      "lines_added",
+      "lines_removed",
+      "refusal",
+      "session_agent_id",
+      "suite",
+      "summary",
+      "tool",
+      "updated_input",
+      "writes_files"
+    ]
+  },
+  "core.drivers.hook_call.deleted": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "answer",
+      "creator_id",
+      "driver",
+      "environment_id",
+      "firing",
+      "hook",
+      "lines",
+      "lines_added",
+      "lines_removed",
+      "refusal",
+      "session_agent_id",
+      "suite",
+      "summary",
+      "tool",
+      "updated_input",
+      "writes_files"
+    ]
+  },
+  "core.drivers.hook_call.prompt": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "answer",
+      "creator_id",
+      "driver",
+      "environment_id",
+      "firing",
+      "hook",
+      "lines",
+      "lines_added",
+      "lines_removed",
+      "refusal",
+      "session_agent_id",
+      "suite",
+      "summary",
+      "tool",
+      "updated_input",
+      "writes_files"
+    ]
+  },
+  "core.drivers.hook_call.session_start": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "answer",
+      "creator_id",
+      "driver",
+      "environment_id",
+      "firing",
+      "hook",
+      "lines",
+      "lines_added",
+      "lines_removed",
+      "refusal",
+      "session_agent_id",
+      "suite",
+      "summary",
+      "tool",
+      "updated_input",
+      "writes_files"
+    ]
+  },
+  "core.drivers.hook_call.stop_allowed": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "answer",
+      "creator_id",
+      "driver",
+      "environment_id",
+      "firing",
+      "hook",
+      "lines",
+      "lines_added",
+      "lines_removed",
+      "refusal",
+      "session_agent_id",
+      "suite",
+      "summary",
+      "tool",
+      "updated_input",
+      "writes_files"
+    ]
+  },
+  "core.drivers.hook_call.stop_refused": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "answer",
+      "creator_id",
+      "driver",
+      "environment_id",
+      "firing",
+      "hook",
+      "lines",
+      "lines_added",
+      "lines_removed",
+      "refusal",
+      "session_agent_id",
+      "suite",
+      "summary",
+      "tool",
+      "updated_input",
+      "writes_files"
+    ]
+  },
+  "core.drivers.hook_call.updated": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "answer",
+      "creator_id",
+      "driver",
+      "environment_id",
+      "firing",
+      "hook",
+      "lines",
+      "lines_added",
+      "lines_removed",
+      "refusal",
+      "session_agent_id",
+      "suite",
+      "summary",
+      "tool",
+      "updated_input",
+      "writes_files"
+    ]
+  },
+  "core.drivers.nudge_record.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "delivery_count",
+      "key",
+      "last_delivered_at",
+      "session_agent_id",
+      "text"
+    ]
+  },
+  "core.drivers.nudge_record.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "delivery_count",
+      "key",
+      "last_delivered_at",
+      "session_agent_id",
+      "text"
+    ]
+  },
+  "core.drivers.nudge_record.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "delivery_count",
+      "key",
+      "last_delivered_at",
+      "session_agent_id",
+      "text"
+    ]
+  },
+  "core.drivers.refusal_skip.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "name",
+      "reason",
+      "restored_at",
+      "session_agent_id",
+      "streak",
+      "used_at"
+    ]
+  },
+  "core.drivers.refusal_skip.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "name",
+      "reason",
+      "restored_at",
+      "session_agent_id",
+      "streak",
+      "used_at"
+    ]
+  },
+  "core.drivers.refusal_skip.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "name",
+      "reason",
+      "restored_at",
+      "session_agent_id",
+      "streak",
+      "used_at"
+    ]
+  },
+  "core.drivers.rule_history.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "last_answer_at",
+      "last_due_outcome",
+      "layer",
+      "rule",
+      "session_agent_id"
+    ]
+  },
+  "core.drivers.rule_history.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "last_answer_at",
+      "last_due_outcome",
+      "layer",
+      "rule",
+      "session_agent_id"
+    ]
+  },
+  "core.drivers.rule_history.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "last_answer_at",
+      "last_due_outcome",
+      "layer",
+      "rule",
+      "session_agent_id"
+    ]
+  },
+  "core.dumps.dump.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "creator_id",
+      "files",
+      "outcome",
+      "title"
+    ]
+  },
+  "core.dumps.dump.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "creator_id",
+      "files",
+      "outcome",
+      "title"
+    ]
+  },
+  "core.dumps.dump.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "creator_id",
+      "files",
+      "outcome",
+      "title"
+    ]
+  },
+  "core.dumps.dump_item.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "dump_id",
+      "note",
+      "position",
+      "refs",
+      "state",
+      "summary",
+      "text"
+    ]
+  },
+  "core.dumps.dump_item.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "dump_id",
+      "note",
+      "position",
+      "refs",
+      "state",
+      "summary",
+      "text"
+    ]
+  },
+  "core.dumps.dump_item.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "dump_id",
+      "note",
+      "position",
+      "refs",
+      "state",
+      "summary",
+      "text"
+    ]
+  },
+  "core.environments.environment.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "branch",
+      "creator_id",
+      "folder",
+      "name"
+    ]
+  },
+  "core.environments.environment.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "branch",
+      "creator_id",
+      "folder",
+      "name"
+    ]
+  },
+  "core.environments.environment.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "branch",
+      "creator_id",
+      "folder",
+      "name"
+    ]
+  },
+  "core.helpers.provider_outage.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "ends_at",
+      "program",
+      "reason"
+    ]
+  },
+  "core.helpers.provider_outage.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "ends_at",
+      "program",
+      "reason"
+    ]
+  },
+  "core.helpers.provider_outage.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "ends_at",
+      "program",
+      "reason"
+    ]
+  },
+  "core.journal.booting": {
+    "forms": [
+      "commit"
+    ],
+    "fields": []
+  },
+  "core.library.library_connection.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "address",
+      "creator_id",
+      "failure",
+      "name",
+      "reached_at",
+      "role",
+      "server_key",
+      "stopped",
+      "user_name"
+    ]
+  },
+  "core.library.library_connection.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "address",
+      "creator_id",
+      "failure",
+      "name",
+      "reached_at",
+      "role",
+      "server_key",
+      "stopped",
+      "user_name"
+    ]
+  },
+  "core.library.library_connection.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "address",
+      "creator_id",
+      "failure",
+      "name",
+      "reached_at",
+      "role",
+      "server_key",
+      "stopped",
+      "user_name"
+    ]
+  },
+  "core.library.library_copy.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_digest",
+      "base_version",
+      "creator_id",
+      "item_id",
+      "note",
+      "row_id",
+      "server_version",
+      "share",
+      "state",
+      "unsent_digest"
+    ]
+  },
+  "core.library.library_copy.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_digest",
+      "base_version",
+      "creator_id",
+      "item_id",
+      "note",
+      "row_id",
+      "server_version",
+      "share",
+      "state",
+      "unsent_digest"
+    ]
+  },
+  "core.library.library_copy.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_digest",
+      "base_version",
+      "creator_id",
+      "item_id",
+      "note",
+      "row_id",
+      "server_version",
+      "share",
+      "state",
+      "unsent_digest"
+    ]
+  },
+  "core.mcp.mcp_server.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "args",
+      "auth",
+      "command",
+      "creator_id",
+      "key_variable",
+      "name",
+      "title",
+      "transport",
+      "url"
+    ]
+  },
+  "core.mcp.mcp_server.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "args",
+      "auth",
+      "command",
+      "creator_id",
+      "key_variable",
+      "name",
+      "title",
+      "transport",
+      "url"
+    ]
+  },
+  "core.mcp.mcp_server.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "args",
+      "auth",
+      "command",
+      "creator_id",
+      "key_variable",
+      "name",
+      "title",
+      "transport",
+      "url"
+    ]
+  },
+  "core.memories.memory.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_id",
+      "creator_id",
+      "environment_id",
+      "reason",
+      "removed_at",
+      "state",
+      "task_id",
+      "text",
+      "weight"
+    ]
+  },
+  "core.memories.memory.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_id",
+      "creator_id",
+      "environment_id",
+      "reason",
+      "removed_at",
+      "state",
+      "task_id",
+      "text",
+      "weight"
+    ]
+  },
+  "core.memories.memory.remove": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_id",
+      "creator_id",
+      "environment_id",
+      "reason",
+      "removed_at",
+      "state",
+      "task_id",
+      "text",
+      "weight"
+    ]
+  },
+  "core.memories.memory.restore": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_id",
+      "creator_id",
+      "environment_id",
+      "reason",
+      "removed_at",
+      "state",
+      "task_id",
+      "text",
+      "weight"
+    ]
+  },
+  "core.memories.memory.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_id",
+      "creator_id",
+      "environment_id",
+      "reason",
+      "removed_at",
+      "state",
+      "task_id",
+      "text",
+      "weight"
+    ]
+  },
+  "core.memories.memory_delivery.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "cause",
+      "creator_id",
+      "memory_id",
+      "session_agent_id"
+    ]
+  },
+  "core.memories.memory_delivery.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "cause",
+      "creator_id",
+      "memory_id",
+      "session_agent_id"
+    ]
+  },
+  "core.memories.memory_delivery.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "cause",
+      "creator_id",
+      "memory_id",
+      "session_agent_id"
+    ]
+  },
+  "core.memories.memory_keyword.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "memory_id",
+      "word"
+    ]
+  },
+  "core.memories.memory_keyword.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "memory_id",
+      "word"
+    ]
+  },
+  "core.memories.memory_keyword.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "memory_id",
+      "word"
+    ]
+  },
+  "core.memories.memory_mark.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "closed_at",
+      "creator_id",
+      "opened_at",
+      "percent",
+      "reason",
+      "session_agent_id",
+      "state"
+    ]
+  },
+  "core.memories.memory_mark.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "closed_at",
+      "creator_id",
+      "opened_at",
+      "percent",
+      "reason",
+      "session_agent_id",
+      "state"
+    ]
+  },
+  "core.memories.memory_mark.skip": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "closed_at",
+      "creator_id",
+      "opened_at",
+      "percent",
+      "reason",
+      "session_agent_id",
+      "state"
+    ]
+  },
+  "core.memories.memory_mark.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "closed_at",
+      "creator_id",
+      "opened_at",
+      "percent",
+      "reason",
+      "session_agent_id",
+      "state"
+    ]
+  },
+  "core.memories.memory_mark.weigh": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "closed_at",
+      "creator_id",
+      "opened_at",
+      "percent",
+      "reason",
+      "session_agent_id",
+      "state"
+    ]
+  },
+  "core.messages.message.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "captions",
+      "creator_id",
+      "delivered_at",
+      "environment_id",
+      "files",
+      "flowchart_edges",
+      "parent_id",
+      "peer",
+      "peer_key",
+      "reactions",
+      "read_at",
+      "read_notice_at",
+      "recipient",
+      "session_agent_id",
+      "target_agent_id",
+      "text",
+      "type"
+    ]
+  },
+  "core.messages.message.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "captions",
+      "creator_id",
+      "delivered_at",
+      "environment_id",
+      "files",
+      "flowchart_edges",
+      "parent_id",
+      "peer",
+      "peer_key",
+      "reactions",
+      "read_at",
+      "read_notice_at",
+      "recipient",
+      "session_agent_id",
+      "target_agent_id",
+      "text",
+      "type"
+    ]
+  },
+  "core.messages.message.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "captions",
+      "creator_id",
+      "delivered_at",
+      "environment_id",
+      "files",
+      "flowchart_edges",
+      "parent_id",
+      "peer",
+      "peer_key",
+      "reactions",
+      "read_at",
+      "read_notice_at",
+      "recipient",
+      "session_agent_id",
+      "target_agent_id",
+      "text",
+      "type"
+    ]
+  },
+  "core.messages.message_work_source.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_id",
+      "creator_id",
+      "environment_id",
+      "message_id",
+      "origin",
+      "provisional",
+      "selection_number",
+      "used"
+    ]
+  },
+  "core.messages.message_work_source.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_id",
+      "creator_id",
+      "environment_id",
+      "message_id",
+      "origin",
+      "provisional",
+      "selection_number",
+      "used"
+    ]
+  },
+  "core.messages.message_work_source.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_id",
+      "creator_id",
+      "environment_id",
+      "message_id",
+      "origin",
+      "provisional",
+      "selection_number",
+      "used"
+    ]
+  },
+  "core.phone.phone.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "name",
+      "notice_waiting",
+      "person_id",
+      "state"
+    ]
+  },
+  "core.phone.phone.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "name",
+      "notice_waiting",
+      "person_id",
+      "state"
+    ]
+  },
+  "core.phone.phone.unpair": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "name",
+      "notice_waiting",
+      "person_id",
+      "state"
+    ]
+  },
+  "core.phone.phone.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "name",
+      "notice_waiting",
+      "person_id",
+      "state"
+    ]
+  },
+  "core.phone.phone_code.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "expires_at",
+      "person_id",
+      "state"
+    ]
+  },
+  "core.phone.phone_code.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "expires_at",
+      "person_id",
+      "state"
+    ]
+  },
+  "core.phone.phone_code.spend": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "expires_at",
+      "person_id",
+      "state"
+    ]
+  },
+  "core.phone.phone_code.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "expires_at",
+      "person_id",
+      "state"
+    ]
+  },
+  "core.pins.pin.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "closed_at",
+      "creator_id",
+      "environment_id",
+      "label",
+      "link",
+      "title"
+    ]
+  },
+  "core.pins.pin.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "closed_at",
+      "creator_id",
+      "environment_id",
+      "label",
+      "link",
+      "title"
+    ]
+  },
+  "core.pins.pin.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "closed_at",
+      "creator_id",
+      "environment_id",
+      "label",
+      "link",
+      "title"
+    ]
+  },
+  "core.plans.phase.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "checkpoint",
+      "creator_id",
+      "goal",
+      "plan_id",
+      "position",
+      "test_command",
+      "title"
+    ]
+  },
+  "core.plans.phase.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "checkpoint",
+      "creator_id",
+      "goal",
+      "plan_id",
+      "position",
+      "test_command",
+      "title"
+    ]
+  },
+  "core.plans.phase.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "checkpoint",
+      "creator_id",
+      "goal",
+      "plan_id",
+      "position",
+      "test_command",
+      "title"
+    ]
+  },
+  "core.plans.phase_task.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "phase_id",
+      "position",
+      "task_id"
+    ]
+  },
+  "core.plans.phase_task.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "phase_id",
+      "position",
+      "task_id"
+    ]
+  },
+  "core.plans.phase_task.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "phase_id",
+      "position",
+      "task_id"
+    ]
+  },
+  "core.plans.plan.approve": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "creator_id",
+      "document_id",
+      "environment_id",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.plans.plan.block": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "creator_id",
+      "document_id",
+      "environment_id",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.plans.plan.cancel": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "creator_id",
+      "document_id",
+      "environment_id",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.plans.plan.close": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "creator_id",
+      "document_id",
+      "environment_id",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.plans.plan.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "creator_id",
+      "document_id",
+      "environment_id",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.plans.plan.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "creator_id",
+      "document_id",
+      "environment_id",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.plans.plan.ready": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "creator_id",
+      "document_id",
+      "environment_id",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.plans.plan.review": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "creator_id",
+      "document_id",
+      "environment_id",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.plans.plan.reviewed": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "creator_id",
+      "document_id",
+      "environment_id",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.plans.plan.rework": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "creator_id",
+      "document_id",
+      "environment_id",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.plans.plan.start": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "creator_id",
+      "document_id",
+      "environment_id",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.plans.plan.unblock": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "creator_id",
+      "document_id",
+      "environment_id",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.plans.plan.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "creator_id",
+      "document_id",
+      "environment_id",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.plans.plan_context_read.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "plan_id",
+      "session_agent_id",
+      "start_event_id"
+    ]
+  },
+  "core.plans.plan_context_read.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "plan_id",
+      "session_agent_id",
+      "start_event_id"
+    ]
+  },
+  "core.plans.plan_context_read.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "plan_id",
+      "session_agent_id",
+      "start_event_id"
+    ]
+  },
+  "core.plugins.command_starting": {
+    "forms": [
+      "commit",
+      "guard"
+    ],
+    "fields": []
+  },
+  "core.plugins.compacting": {
+    "forms": [
+      "commit",
+      "guard"
+    ],
+    "fields": []
+  },
+  "core.plugins.file_edited": {
+    "forms": [
+      "commit",
+      "guard"
+    ],
+    "fields": []
+  },
+  "core.plugins.idle": {
+    "forms": [
+      "commit",
+      "guard"
+    ],
+    "fields": []
+  },
+  "core.plugins.plugin.created": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "creator_id",
+      "enabled",
+      "failing",
+      "fault_count",
+      "files_digest",
+      "last_fault",
+      "name",
+      "release",
+      "source",
+      "title"
+    ]
+  },
+  "core.plugins.plugin.deleted": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "creator_id",
+      "enabled",
+      "failing",
+      "fault_count",
+      "files_digest",
+      "last_fault",
+      "name",
+      "release",
+      "source",
+      "title"
+    ]
+  },
+  "core.plugins.plugin.updated": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "creator_id",
+      "enabled",
+      "failing",
+      "fault_count",
+      "files_digest",
+      "last_fault",
+      "name",
+      "release",
+      "source",
+      "title"
+    ]
+  },
+  "core.plugins.plugin_setting.created": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "creator_id",
+      "key",
+      "plugin_id",
+      "value"
+    ]
+  },
+  "core.plugins.plugin_setting.deleted": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "creator_id",
+      "key",
+      "plugin_id",
+      "value"
+    ]
+  },
+  "core.plugins.plugin_setting.updated": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "creator_id",
+      "key",
+      "plugin_id",
+      "value"
+    ]
+  },
+  "core.plugins.prompt_submitted": {
+    "forms": [
+      "commit",
+      "guard"
+    ],
+    "fields": []
+  },
+  "core.plugins.session_ended": {
+    "forms": [
+      "commit",
+      "guard"
+    ],
+    "fields": []
+  },
+  "core.plugins.session_started": {
+    "forms": [
+      "commit",
+      "guard"
+    ],
+    "fields": []
+  },
+  "core.plugins.ticked": {
+    "forms": [
+      "commit",
+      "guard"
+    ],
+    "fields": []
+  },
+  "core.plugins.tool_starting": {
+    "forms": [
+      "commit",
+      "guard"
+    ],
+    "fields": []
+  },
+  "core.processes.output.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "byte_count",
+      "creator_id",
+      "ended_at",
+      "folder",
+      "full_read_output_id",
+      "fully_read_at",
+      "line_count",
+      "process_id",
+      "progress",
+      "pruned_at",
+      "read_at",
+      "read_lines",
+      "read_offset",
+      "reader_id",
+      "reader_lines",
+      "reader_position",
+      "reader_summary",
+      "seen_offset",
+      "state",
+      "steps_failed",
+      "steps_passed",
+      "test_count",
+      "title"
+    ]
+  },
+  "core.processes.output.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "byte_count",
+      "creator_id",
+      "ended_at",
+      "folder",
+      "full_read_output_id",
+      "fully_read_at",
+      "line_count",
+      "process_id",
+      "progress",
+      "pruned_at",
+      "read_at",
+      "read_lines",
+      "read_offset",
+      "reader_id",
+      "reader_lines",
+      "reader_position",
+      "reader_summary",
+      "seen_offset",
+      "state",
+      "steps_failed",
+      "steps_passed",
+      "test_count",
+      "title"
+    ]
+  },
+  "core.processes.output.end": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "byte_count",
+      "creator_id",
+      "ended_at",
+      "folder",
+      "full_read_output_id",
+      "fully_read_at",
+      "line_count",
+      "process_id",
+      "progress",
+      "pruned_at",
+      "read_at",
+      "read_lines",
+      "read_offset",
+      "reader_id",
+      "reader_lines",
+      "reader_position",
+      "reader_summary",
+      "seen_offset",
+      "state",
+      "steps_failed",
+      "steps_passed",
+      "test_count",
+      "title"
+    ]
+  },
+  "core.processes.output.prune": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "byte_count",
+      "creator_id",
+      "ended_at",
+      "folder",
+      "full_read_output_id",
+      "fully_read_at",
+      "line_count",
+      "process_id",
+      "progress",
+      "pruned_at",
+      "read_at",
+      "read_lines",
+      "read_offset",
+      "reader_id",
+      "reader_lines",
+      "reader_position",
+      "reader_summary",
+      "seen_offset",
+      "state",
+      "steps_failed",
+      "steps_passed",
+      "test_count",
+      "title"
+    ]
+  },
+  "core.processes.output.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "byte_count",
+      "creator_id",
+      "ended_at",
+      "folder",
+      "full_read_output_id",
+      "fully_read_at",
+      "line_count",
+      "process_id",
+      "progress",
+      "pruned_at",
+      "read_at",
+      "read_lines",
+      "read_offset",
+      "reader_id",
+      "reader_lines",
+      "reader_position",
+      "reader_summary",
+      "seen_offset",
+      "state",
+      "steps_failed",
+      "steps_passed",
+      "test_count",
+      "title"
+    ]
+  },
+  "core.processes.process.background": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "exit_code",
+      "expired_at",
+      "folder",
+      "hook_call_id",
+      "is_full_test_run",
+      "is_queue_run",
+      "limit_seconds",
+      "line",
+      "moved_at",
+      "owner_agent_id",
+      "pid",
+      "progress",
+      "queued_at",
+      "sandbox_level",
+      "session_agent_id",
+      "shell",
+      "slot_assigned",
+      "started_at",
+      "state",
+      "task_id",
+      "timeout_seconds"
+    ]
+  },
+  "core.processes.process.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "exit_code",
+      "expired_at",
+      "folder",
+      "hook_call_id",
+      "is_full_test_run",
+      "is_queue_run",
+      "limit_seconds",
+      "line",
+      "moved_at",
+      "owner_agent_id",
+      "pid",
+      "progress",
+      "queued_at",
+      "sandbox_level",
+      "session_agent_id",
+      "shell",
+      "slot_assigned",
+      "started_at",
+      "state",
+      "task_id",
+      "timeout_seconds"
+    ]
+  },
+  "core.processes.process.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "exit_code",
+      "expired_at",
+      "folder",
+      "hook_call_id",
+      "is_full_test_run",
+      "is_queue_run",
+      "limit_seconds",
+      "line",
+      "moved_at",
+      "owner_agent_id",
+      "pid",
+      "progress",
+      "queued_at",
+      "sandbox_level",
+      "session_agent_id",
+      "shell",
+      "slot_assigned",
+      "started_at",
+      "state",
+      "task_id",
+      "timeout_seconds"
+    ]
+  },
+  "core.processes.process.fail": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "exit_code",
+      "expired_at",
+      "folder",
+      "hook_call_id",
+      "is_full_test_run",
+      "is_queue_run",
+      "limit_seconds",
+      "line",
+      "moved_at",
+      "owner_agent_id",
+      "pid",
+      "progress",
+      "queued_at",
+      "sandbox_level",
+      "session_agent_id",
+      "shell",
+      "slot_assigned",
+      "started_at",
+      "state",
+      "task_id",
+      "timeout_seconds"
+    ]
+  },
+  "core.processes.process.finish": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "exit_code",
+      "expired_at",
+      "folder",
+      "hook_call_id",
+      "is_full_test_run",
+      "is_queue_run",
+      "limit_seconds",
+      "line",
+      "moved_at",
+      "owner_agent_id",
+      "pid",
+      "progress",
+      "queued_at",
+      "sandbox_level",
+      "session_agent_id",
+      "shell",
+      "slot_assigned",
+      "started_at",
+      "state",
+      "task_id",
+      "timeout_seconds"
+    ]
+  },
+  "core.processes.process.orphan": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "exit_code",
+      "expired_at",
+      "folder",
+      "hook_call_id",
+      "is_full_test_run",
+      "is_queue_run",
+      "limit_seconds",
+      "line",
+      "moved_at",
+      "owner_agent_id",
+      "pid",
+      "progress",
+      "queued_at",
+      "sandbox_level",
+      "session_agent_id",
+      "shell",
+      "slot_assigned",
+      "started_at",
+      "state",
+      "task_id",
+      "timeout_seconds"
+    ]
+  },
+  "core.processes.process.stop": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "exit_code",
+      "expired_at",
+      "folder",
+      "hook_call_id",
+      "is_full_test_run",
+      "is_queue_run",
+      "limit_seconds",
+      "line",
+      "moved_at",
+      "owner_agent_id",
+      "pid",
+      "progress",
+      "queued_at",
+      "sandbox_level",
+      "session_agent_id",
+      "shell",
+      "slot_assigned",
+      "started_at",
+      "state",
+      "task_id",
+      "timeout_seconds"
+    ]
+  },
+  "core.processes.process.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "exit_code",
+      "expired_at",
+      "folder",
+      "hook_call_id",
+      "is_full_test_run",
+      "is_queue_run",
+      "limit_seconds",
+      "line",
+      "moved_at",
+      "owner_agent_id",
+      "pid",
+      "progress",
+      "queued_at",
+      "sandbox_level",
+      "session_agent_id",
+      "shell",
+      "slot_assigned",
+      "started_at",
+      "state",
+      "task_id",
+      "timeout_seconds"
+    ]
+  },
+  "core.processes.process_part.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "command",
+      "ended_at",
+      "exit_code",
+      "is_visible",
+      "piped",
+      "position",
+      "process_id",
+      "program",
+      "reader_request_id",
+      "started_at",
+      "state",
+      "text"
+    ]
+  },
+  "core.processes.process_part.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "command",
+      "ended_at",
+      "exit_code",
+      "is_visible",
+      "piped",
+      "position",
+      "process_id",
+      "program",
+      "reader_request_id",
+      "started_at",
+      "state",
+      "text"
+    ]
+  },
+  "core.processes.process_part.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "command",
+      "ended_at",
+      "exit_code",
+      "is_visible",
+      "piped",
+      "position",
+      "process_id",
+      "program",
+      "reader_request_id",
+      "started_at",
+      "state",
+      "text"
+    ]
+  },
+  "core.processes.reader.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "commands",
+      "count_command",
+      "count_pattern",
+      "creator_id",
+      "environment_id",
+      "failed_pattern",
+      "finished_pattern",
+      "is_default",
+      "lines_pattern",
+      "name",
+      "plugin_name",
+      "progress_pattern",
+      "proved_on",
+      "script",
+      "step_pattern",
+      "subject",
+      "summary_pattern",
+      "title",
+      "topic_pattern",
+      "type"
+    ]
+  },
+  "core.processes.reader.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "commands",
+      "count_command",
+      "count_pattern",
+      "creator_id",
+      "environment_id",
+      "failed_pattern",
+      "finished_pattern",
+      "is_default",
+      "lines_pattern",
+      "name",
+      "plugin_name",
+      "progress_pattern",
+      "proved_on",
+      "script",
+      "step_pattern",
+      "subject",
+      "summary_pattern",
+      "title",
+      "topic_pattern",
+      "type"
+    ]
+  },
+  "core.processes.reader.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "commands",
+      "count_command",
+      "count_pattern",
+      "creator_id",
+      "environment_id",
+      "failed_pattern",
+      "finished_pattern",
+      "is_default",
+      "lines_pattern",
+      "name",
+      "plugin_name",
+      "progress_pattern",
+      "proved_on",
+      "script",
+      "step_pattern",
+      "subject",
+      "summary_pattern",
+      "title",
+      "topic_pattern",
+      "type"
+    ]
+  },
+  "core.processes.reader_request.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "command",
+      "command_key",
+      "completed_at",
+      "creator_id",
+      "environment_id",
+      "expires_at",
+      "reader_id",
+      "reason",
+      "sample_process_id",
+      "skip_reason"
+    ]
+  },
+  "core.processes.reader_request.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "command",
+      "command_key",
+      "completed_at",
+      "creator_id",
+      "environment_id",
+      "expires_at",
+      "reader_id",
+      "reason",
+      "sample_process_id",
+      "skip_reason"
+    ]
+  },
+  "core.processes.reader_request.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "command",
+      "command_key",
+      "completed_at",
+      "creator_id",
+      "environment_id",
+      "expires_at",
+      "reader_id",
+      "reason",
+      "sample_process_id",
+      "skip_reason"
+    ]
+  },
+  "core.processes.watch.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "given_percent",
+      "process_id",
+      "session_agent_id",
+      "state"
+    ]
+  },
+  "core.processes.watch.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "given_percent",
+      "process_id",
+      "session_agent_id",
+      "state"
+    ]
+  },
+  "core.processes.watch.end": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "given_percent",
+      "process_id",
+      "session_agent_id",
+      "state"
+    ]
+  },
+  "core.processes.watch.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "given_percent",
+      "process_id",
+      "session_agent_id",
+      "state"
+    ]
+  },
+  "core.project-rules.rule.approve": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "state",
+      "text"
+    ]
+  },
+  "core.project-rules.rule.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "state",
+      "text"
+    ]
+  },
+  "core.project-rules.rule.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "state",
+      "text"
+    ]
+  },
+  "core.project-rules.rule.deny": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "state",
+      "text"
+    ]
+  },
+  "core.project-rules.rule.remove": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "state",
+      "text"
+    ]
+  },
+  "core.project-rules.rule.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "state",
+      "text"
+    ]
+  },
+  "core.questions.question.answer": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answer",
+      "context",
+      "creator_id",
+      "environment_id",
+      "message_id",
+      "options",
+      "position",
+      "quote",
+      "recommended",
+      "row_id",
+      "row_model",
+      "selection_type",
+      "session_agent_id",
+      "state",
+      "text"
+    ]
+  },
+  "core.questions.question.close": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answer",
+      "context",
+      "creator_id",
+      "environment_id",
+      "message_id",
+      "options",
+      "position",
+      "quote",
+      "recommended",
+      "row_id",
+      "row_model",
+      "selection_type",
+      "session_agent_id",
+      "state",
+      "text"
+    ]
+  },
+  "core.questions.question.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answer",
+      "context",
+      "creator_id",
+      "environment_id",
+      "message_id",
+      "options",
+      "position",
+      "quote",
+      "recommended",
+      "row_id",
+      "row_model",
+      "selection_type",
+      "session_agent_id",
+      "state",
+      "text"
+    ]
+  },
+  "core.questions.question.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answer",
+      "context",
+      "creator_id",
+      "environment_id",
+      "message_id",
+      "options",
+      "position",
+      "quote",
+      "recommended",
+      "row_id",
+      "row_model",
+      "selection_type",
+      "session_agent_id",
+      "state",
+      "text"
+    ]
+  },
+  "core.questions.question.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answer",
+      "context",
+      "creator_id",
+      "environment_id",
+      "message_id",
+      "options",
+      "position",
+      "quote",
+      "recommended",
+      "row_id",
+      "row_model",
+      "selection_type",
+      "session_agent_id",
+      "state",
+      "text"
+    ]
+  },
+  "core.registry.sync": {
+    "forms": [
+      "commit"
+    ],
+    "fields": []
+  },
+  "core.reminders.reminder.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "block_condition",
+      "block_subject",
+      "creator_id",
+      "due_at",
+      "ended_at",
+      "environment_id",
+      "interval_seconds",
+      "interval_tasks",
+      "interval_tool_uses",
+      "last_fired_at",
+      "single_use",
+      "text"
+    ]
+  },
+  "core.reminders.reminder.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "block_condition",
+      "block_subject",
+      "creator_id",
+      "due_at",
+      "ended_at",
+      "environment_id",
+      "interval_seconds",
+      "interval_tasks",
+      "interval_tool_uses",
+      "last_fired_at",
+      "single_use",
+      "text"
+    ]
+  },
+  "core.reminders.reminder.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "block_condition",
+      "block_subject",
+      "creator_id",
+      "due_at",
+      "ended_at",
+      "environment_id",
+      "interval_seconds",
+      "interval_tasks",
+      "interval_tool_uses",
+      "last_fired_at",
+      "single_use",
+      "text"
+    ]
+  },
+  "core.reviews.review.abandon": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "environment_id",
+      "point_count",
+      "report",
+      "reported_at",
+      "requester_id",
+      "reviewer_id",
+      "state",
+      "subject_id",
+      "subject_model"
+    ]
+  },
+  "core.reviews.review.approve": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "environment_id",
+      "point_count",
+      "report",
+      "reported_at",
+      "requester_id",
+      "reviewer_id",
+      "state",
+      "subject_id",
+      "subject_model"
+    ]
+  },
+  "core.reviews.review.assign": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "environment_id",
+      "point_count",
+      "report",
+      "reported_at",
+      "requester_id",
+      "reviewer_id",
+      "state",
+      "subject_id",
+      "subject_model"
+    ]
+  },
+  "core.reviews.review.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "environment_id",
+      "point_count",
+      "report",
+      "reported_at",
+      "requester_id",
+      "reviewer_id",
+      "state",
+      "subject_id",
+      "subject_model"
+    ]
+  },
+  "core.reviews.review.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "environment_id",
+      "point_count",
+      "report",
+      "reported_at",
+      "requester_id",
+      "reviewer_id",
+      "state",
+      "subject_id",
+      "subject_model"
+    ]
+  },
+  "core.reviews.review.leave_undecided": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "environment_id",
+      "point_count",
+      "report",
+      "reported_at",
+      "requester_id",
+      "reviewer_id",
+      "state",
+      "subject_id",
+      "subject_model"
+    ]
+  },
+  "core.reviews.review.reject": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "environment_id",
+      "point_count",
+      "report",
+      "reported_at",
+      "requester_id",
+      "reviewer_id",
+      "state",
+      "subject_id",
+      "subject_model"
+    ]
+  },
+  "core.reviews.review.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "environment_id",
+      "point_count",
+      "report",
+      "reported_at",
+      "requester_id",
+      "reviewer_id",
+      "state",
+      "subject_id",
+      "subject_model"
+    ]
+  },
+  "core.reviews.review_point.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "finding",
+      "number",
+      "reason",
+      "review_id"
+    ]
+  },
+  "core.reviews.review_point.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "finding",
+      "number",
+      "reason",
+      "review_id"
+    ]
+  },
+  "core.reviews.review_point.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "finding",
+      "number",
+      "reason",
+      "review_id"
+    ]
+  },
+  "core.reviews.review_step.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "outcome",
+      "review_id",
+      "text"
+    ]
+  },
+  "core.reviews.review_step.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "outcome",
+      "review_id",
+      "text"
+    ]
+  },
+  "core.reviews.review_step.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "outcome",
+      "review_id",
+      "text"
+    ]
+  },
+  "core.reviews.reviewer.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "model",
+      "program",
+      "state"
+    ]
+  },
+  "core.reviews.reviewer.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "model",
+      "program",
+      "state"
+    ]
+  },
+  "core.reviews.reviewer.end": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "model",
+      "program",
+      "state"
+    ]
+  },
+  "core.reviews.reviewer.finish": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "model",
+      "program",
+      "state"
+    ]
+  },
+  "core.reviews.reviewer.retire": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "model",
+      "program",
+      "state"
+    ]
+  },
+  "core.reviews.reviewer.start": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "model",
+      "program",
+      "state"
+    ]
+  },
+  "core.reviews.reviewer.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "model",
+      "program",
+      "state"
+    ]
+  },
+  "core.schedules.scheduled_job.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "cron",
+      "ended_at",
+      "environment_id",
+      "is_recurring",
+      "job_id",
+      "last_run_at",
+      "prompt",
+      "session_agent_id",
+      "stop_requested_at"
+    ]
+  },
+  "core.schedules.scheduled_job.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "cron",
+      "ended_at",
+      "environment_id",
+      "is_recurring",
+      "job_id",
+      "last_run_at",
+      "prompt",
+      "session_agent_id",
+      "stop_requested_at"
+    ]
+  },
+  "core.schedules.scheduled_job.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "cron",
+      "ended_at",
+      "environment_id",
+      "is_recurring",
+      "job_id",
+      "last_run_at",
+      "prompt",
+      "session_agent_id",
+      "stop_requested_at"
+    ]
+  },
+  "core.secrets.secret.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "creator_id",
+      "deleted_at",
+      "fields",
+      "filled",
+      "helpers",
+      "programs",
+      "proposed",
+      "secret_type",
+      "title"
+    ]
+  },
+  "core.secrets.secret.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "creator_id",
+      "deleted_at",
+      "fields",
+      "filled",
+      "helpers",
+      "programs",
+      "proposed",
+      "secret_type",
+      "title"
+    ]
+  },
+  "core.secrets.secret.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "creator_id",
+      "deleted_at",
+      "fields",
+      "filled",
+      "helpers",
+      "programs",
+      "proposed",
+      "secret_type",
+      "title"
+    ]
+  },
+  "core.sequences.sequence.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "step_guards",
+      "steps",
+      "title",
+      "triggers"
+    ]
+  },
+  "core.sequences.sequence.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "step_guards",
+      "steps",
+      "title",
+      "triggers"
+    ]
+  },
+  "core.sequences.sequence.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "step_guards",
+      "steps",
+      "title",
+      "triggers"
+    ]
+  },
+  "core.sequences.sequence_run.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "ended_at",
+      "environment_id",
+      "outcome",
+      "sequence_id",
+      "session_agent_id",
+      "step_number",
+      "step_started",
+      "subject_id"
+    ]
+  },
+  "core.sequences.sequence_run.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "ended_at",
+      "environment_id",
+      "outcome",
+      "sequence_id",
+      "session_agent_id",
+      "step_number",
+      "step_started",
+      "subject_id"
+    ]
+  },
+  "core.sequences.sequence_run.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "ended_at",
+      "environment_id",
+      "outcome",
+      "sequence_id",
+      "session_agent_id",
+      "step_number",
+      "step_started",
+      "subject_id"
+    ]
+  },
+  "core.setting-requests.setting_request.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "key",
+      "project",
+      "question_id",
+      "value"
+    ]
+  },
+  "core.setting-requests.setting_request.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "key",
+      "project",
+      "question_id",
+      "value"
+    ]
+  },
+  "core.setting-requests.setting_request.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "key",
+      "project",
+      "question_id",
+      "value"
+    ]
+  },
+  "core.settings.managed-hook.changed": {
+    "forms": [
+      "commit"
+    ],
+    "fields": []
+  },
+  "core.settings.managed-hook.restored": {
+    "forms": [
+      "commit"
+    ],
+    "fields": []
+  },
+  "core.settings.managed-hook.scanned": {
+    "forms": [
+      "commit"
+    ],
+    "fields": []
+  },
+  "core.settings.secret_setting.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "key"
+    ]
+  },
+  "core.settings.secret_setting.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "key"
+    ]
+  },
+  "core.settings.secret_setting.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "key"
+    ]
+  },
+  "core.settings.setting.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "key",
+      "value"
+    ]
+  },
+  "core.settings.setting.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "key",
+      "value"
+    ]
+  },
+  "core.settings.setting.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "key",
+      "value"
+    ]
+  },
+  "core.sharing.share_comment.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "share_link_id",
+      "text",
+      "visitor_name"
+    ]
+  },
+  "core.sharing.share_comment.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "share_link_id",
+      "text",
+      "visitor_name"
+    ]
+  },
+  "core.sharing.share_comment.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "share_link_id",
+      "text",
+      "visitor_name"
+    ]
+  },
+  "core.sharing.share_link.accept": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "comments",
+      "creator_id",
+      "environment_id",
+      "expires_at",
+      "locked",
+      "row_id",
+      "row_model",
+      "state",
+      "view_count"
+    ]
+  },
+  "core.sharing.share_link.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "comments",
+      "creator_id",
+      "environment_id",
+      "expires_at",
+      "locked",
+      "row_id",
+      "row_model",
+      "state",
+      "view_count"
+    ]
+  },
+  "core.sharing.share_link.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "comments",
+      "creator_id",
+      "environment_id",
+      "expires_at",
+      "locked",
+      "row_id",
+      "row_model",
+      "state",
+      "view_count"
+    ]
+  },
+  "core.sharing.share_link.deny": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "comments",
+      "creator_id",
+      "environment_id",
+      "expires_at",
+      "locked",
+      "row_id",
+      "row_model",
+      "state",
+      "view_count"
+    ]
+  },
+  "core.sharing.share_link.revoke": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "comments",
+      "creator_id",
+      "environment_id",
+      "expires_at",
+      "locked",
+      "row_id",
+      "row_model",
+      "state",
+      "view_count"
+    ]
+  },
+  "core.sharing.share_link.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "comments",
+      "creator_id",
+      "environment_id",
+      "expires_at",
+      "locked",
+      "row_id",
+      "row_model",
+      "state",
+      "view_count"
+    ]
+  },
+  "core.skills.agent_skill.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "digest",
+      "loaded_at",
+      "session_agent_id",
+      "skill",
+      "state"
+    ]
+  },
+  "core.skills.agent_skill.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "digest",
+      "loaded_at",
+      "session_agent_id",
+      "skill",
+      "state"
+    ]
+  },
+  "core.skills.agent_skill.load": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "digest",
+      "loaded_at",
+      "session_agent_id",
+      "skill",
+      "state"
+    ]
+  },
+  "core.skills.agent_skill.reset": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "digest",
+      "loaded_at",
+      "session_agent_id",
+      "skill",
+      "state"
+    ]
+  },
+  "core.skills.agent_skill.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "digest",
+      "loaded_at",
+      "session_agent_id",
+      "skill",
+      "state"
+    ]
+  },
+  "core.skills.skill_request.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "session_agent_id",
+      "skill"
+    ]
+  },
+  "core.skills.skill_request.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "session_agent_id",
+      "skill"
+    ]
+  },
+  "core.skills.skill_request.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "session_agent_id",
+      "skill"
+    ]
+  },
+  "core.suggestions.suggestion.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answer",
+      "creator_id",
+      "environment_id",
+      "key",
+      "title"
+    ]
+  },
+  "core.suggestions.suggestion.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answer",
+      "creator_id",
+      "environment_id",
+      "key",
+      "title"
+    ]
+  },
+  "core.suggestions.suggestion.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answer",
+      "creator_id",
+      "environment_id",
+      "key",
+      "title"
+    ]
+  },
+  "core.tasks.task.block": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "complexity",
+      "creator_id",
+      "delegated_to",
+      "environment_id",
+      "holder_id",
+      "outcome",
+      "priority",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.tasks.task.cancel": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "complexity",
+      "creator_id",
+      "delegated_to",
+      "environment_id",
+      "holder_id",
+      "outcome",
+      "priority",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.tasks.task.close": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "complexity",
+      "creator_id",
+      "delegated_to",
+      "environment_id",
+      "holder_id",
+      "outcome",
+      "priority",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.tasks.task.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "complexity",
+      "creator_id",
+      "delegated_to",
+      "environment_id",
+      "holder_id",
+      "outcome",
+      "priority",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.tasks.task.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "complexity",
+      "creator_id",
+      "delegated_to",
+      "environment_id",
+      "holder_id",
+      "outcome",
+      "priority",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.tasks.task.release": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "complexity",
+      "creator_id",
+      "delegated_to",
+      "environment_id",
+      "holder_id",
+      "outcome",
+      "priority",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.tasks.task.reopen": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "complexity",
+      "creator_id",
+      "delegated_to",
+      "environment_id",
+      "holder_id",
+      "outcome",
+      "priority",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.tasks.task.retest": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "complexity",
+      "creator_id",
+      "delegated_to",
+      "environment_id",
+      "holder_id",
+      "outcome",
+      "priority",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.tasks.task.start": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "complexity",
+      "creator_id",
+      "delegated_to",
+      "environment_id",
+      "holder_id",
+      "outcome",
+      "priority",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.tasks.task.test": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "complexity",
+      "creator_id",
+      "delegated_to",
+      "environment_id",
+      "holder_id",
+      "outcome",
+      "priority",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.tasks.task.unblock": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "complexity",
+      "creator_id",
+      "delegated_to",
+      "environment_id",
+      "holder_id",
+      "outcome",
+      "priority",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.tasks.task.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "complexity",
+      "creator_id",
+      "delegated_to",
+      "environment_id",
+      "holder_id",
+      "outcome",
+      "priority",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
+  "core.tasks.task_block_renewal.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "reason",
+      "task_id",
+      "task_version"
+    ]
+  },
+  "core.tasks.task_block_renewal.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "reason",
+      "task_id",
+      "task_version"
+    ]
+  },
+  "core.tasks.task_block_renewal.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "reason",
+      "task_id",
+      "task_version"
+    ]
+  },
+  "core.tasks.task_dependency.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "dependency_id",
+      "task_id"
+    ]
+  },
+  "core.tasks.task_dependency.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "dependency_id",
+      "task_id"
+    ]
+  },
+  "core.tasks.task_dependency.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "dependency_id",
+      "task_id"
+    ]
+  },
+  "core.tasks.task_log.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "important",
+      "line",
+      "task_id"
+    ]
+  },
+  "core.tasks.task_log.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "important",
+      "line",
+      "task_id"
+    ]
+  },
+  "core.tasks.task_log.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "important",
+      "line",
+      "task_id"
+    ]
+  },
+  "core.tasks.task_read.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "session_agent_id",
+      "task_id"
+    ]
+  },
+  "core.tasks.task_read.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "session_agent_id",
+      "task_id"
+    ]
+  },
+  "core.tasks.task_read.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "session_agent_id",
+      "task_id"
+    ]
+  },
+  "core.tasks.task_tag.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "task_id",
+      "word"
+    ]
+  },
+  "core.tasks.task_tag.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "task_id",
+      "word"
+    ]
+  },
+  "core.tasks.task_tag.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "task_id",
+      "word"
+    ]
+  },
+  "core.tasks.task_wait.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "creator_id",
+      "ended_at",
+      "interval_minutes",
+      "target",
+      "task_id"
+    ]
+  },
+  "core.tasks.task_wait.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "creator_id",
+      "ended_at",
+      "interval_minutes",
+      "target",
+      "task_id"
+    ]
+  },
+  "core.tasks.task_wait.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "creator_id",
+      "ended_at",
+      "interval_minutes",
+      "target",
+      "task_id"
+    ]
+  },
+  "core.templates.template.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "commands",
+      "creator_id",
+      "module",
+      "parts",
+      "purpose",
+      "targets",
+      "title"
+    ]
+  },
+  "core.templates.template.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "commands",
+      "creator_id",
+      "module",
+      "parts",
+      "purpose",
+      "targets",
+      "title"
+    ]
+  },
+  "core.templates.template.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "commands",
+      "creator_id",
+      "module",
+      "parts",
+      "purpose",
+      "targets",
+      "title"
+    ]
+  },
+  "core.transcriptions.transcription.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "source",
+      "text",
+      "title"
+    ]
+  },
+  "core.transcriptions.transcription.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "source",
+      "text",
+      "title"
+    ]
+  },
+  "core.transcriptions.transcription.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "source",
+      "text",
+      "title"
+    ]
+  },
+  "core.triggers.trigger.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "action",
+      "conditions",
+      "creator_id",
+      "cron_line",
+      "description",
+      "end_at",
+      "ended_at",
+      "extra_actions",
+      "fire_limit",
+      "fired_count",
+      "interval_minutes",
+      "match_mode",
+      "name",
+      "needs_enabling",
+      "next_at",
+      "paused_at",
+      "phrases",
+      "skill",
+      "text",
+      "watch_places"
+    ]
+  },
+  "core.triggers.trigger.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "action",
+      "conditions",
+      "creator_id",
+      "cron_line",
+      "description",
+      "end_at",
+      "ended_at",
+      "extra_actions",
+      "fire_limit",
+      "fired_count",
+      "interval_minutes",
+      "match_mode",
+      "name",
+      "needs_enabling",
+      "next_at",
+      "paused_at",
+      "phrases",
+      "skill",
+      "text",
+      "watch_places"
+    ]
+  },
+  "core.triggers.trigger.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "action",
+      "conditions",
+      "creator_id",
+      "cron_line",
+      "description",
+      "end_at",
+      "ended_at",
+      "extra_actions",
+      "fire_limit",
+      "fired_count",
+      "interval_minutes",
+      "match_mode",
+      "name",
+      "needs_enabling",
+      "next_at",
+      "paused_at",
+      "phrases",
+      "skill",
+      "text",
+      "watch_places"
+    ]
+  },
+  "core.triggers.trigger_action_run.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "delivered_at",
+      "notify_agent",
+      "process_id",
+      "trigger_id"
+    ]
+  },
+  "core.triggers.trigger_action_run.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "delivered_at",
+      "notify_agent",
+      "process_id",
+      "trigger_id"
+    ]
+  },
+  "core.triggers.trigger_action_run.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "delivered_at",
+      "notify_agent",
+      "process_id",
+      "trigger_id"
+    ]
+  },
+  "core.updates.release.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "checksum",
+      "creator_id",
+      "tag"
+    ]
+  },
+  "core.updates.release.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "checksum",
+      "creator_id",
+      "tag"
+    ]
+  },
+  "core.updates.release.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "checksum",
+      "creator_id",
+      "tag"
+    ]
+  },
+  "core.updates.release_install.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "checksum",
+      "code_version",
+      "creator_id",
+      "detail",
+      "step",
+      "tag"
+    ]
+  },
+  "core.updates.release_install.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "checksum",
+      "code_version",
+      "creator_id",
+      "detail",
+      "step",
+      "tag"
+    ]
+  },
+  "core.updates.release_install.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "checksum",
+      "code_version",
+      "creator_id",
+      "detail",
+      "step",
+      "tag"
+    ]
+  },
+  "core.upgrade.finished": {
+    "forms": [
+      "commit"
+    ],
+    "fields": []
+  },
+  "core.upgrade.moved": {
+    "forms": [
+      "commit"
+    ],
+    "fields": []
+  },
+  "core.usage.statistic.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "key",
+      "value"
+    ]
+  },
+  "core.usage.statistic.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "key",
+      "value"
+    ]
+  },
+  "core.usage.statistic.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "key",
+      "value"
+    ]
+  },
+  "core.viewer.person_preset.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "name",
+      "page",
+      "person_id",
+      "shape"
+    ]
+  },
+  "core.viewer.person_preset.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "name",
+      "page",
+      "person_id",
+      "shape"
+    ]
+  },
+  "core.viewer.person_preset.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "name",
+      "page",
+      "person_id",
+      "shape"
+    ]
+  },
+  "core.viewer.viewer_layout.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "driver",
+      "environment_id",
+      "layout",
+      "page",
+      "person_id",
+      "suite"
+    ]
+  },
+  "core.viewer.viewer_layout.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "driver",
+      "environment_id",
+      "layout",
+      "page",
+      "person_id",
+      "suite"
+    ]
+  },
+  "core.viewer.viewer_layout.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "driver",
+      "environment_id",
+      "layout",
+      "page",
+      "person_id",
+      "suite"
+    ]
+  },
+  "core.viewer.window_permission.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "fingerprint",
+      "lines",
+      "person_id",
+      "subject",
+      "type"
+    ]
+  },
+  "core.viewer.window_permission.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "fingerprint",
+      "lines",
+      "person_id",
+      "subject",
+      "type"
+    ]
+  },
+  "core.viewer.window_permission.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "fingerprint",
+      "lines",
+      "person_id",
+      "subject",
+      "type"
+    ]
+  },
+  "core.waits.wait.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "ended_at",
+      "focus",
+      "opened_at",
+      "outcome",
+      "session_agent_id",
+      "state",
+      "type"
+    ]
+  },
+  "core.waits.wait.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "ended_at",
+      "focus",
+      "opened_at",
+      "outcome",
+      "session_agent_id",
+      "state",
+      "type"
+    ]
+  },
+  "core.waits.wait.end": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "ended_at",
+      "focus",
+      "opened_at",
+      "outcome",
+      "session_agent_id",
+      "state",
+      "type"
+    ]
+  },
+  "core.waits.wait.resume": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "ended_at",
+      "focus",
+      "opened_at",
+      "outcome",
+      "session_agent_id",
+      "state",
+      "type"
+    ]
+  },
+  "core.waits.wait.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "ended_at",
+      "focus",
+      "opened_at",
+      "outcome",
+      "session_agent_id",
+      "state",
+      "type"
+    ]
+  },
+  "core.waits.wait_target.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "resolved_at",
+      "row_id",
+      "row_table",
+      "wait_id"
+    ]
+  },
+  "core.waits.wait_target.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "resolved_at",
+      "row_id",
+      "row_table",
+      "wait_id"
+    ]
+  },
+  "core.waits.wait_target.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "resolved_at",
+      "row_id",
+      "row_table",
+      "wait_id"
+    ]
+  },
+  "suites.coding.checks.check.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "command",
+      "creator_id",
+      "hidden",
+      "interval_minutes",
+      "last_output",
+      "last_passed",
+      "last_run_at",
+      "removed_at",
+      "reported_at",
+      "run_percent",
+      "stopped",
+      "task_wait_id",
+      "title"
+    ]
+  },
+  "suites.coding.checks.check.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "command",
+      "creator_id",
+      "hidden",
+      "interval_minutes",
+      "last_output",
+      "last_passed",
+      "last_run_at",
+      "removed_at",
+      "reported_at",
+      "run_percent",
+      "stopped",
+      "task_wait_id",
+      "title"
+    ]
+  },
+  "suites.coding.checks.check.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "command",
+      "creator_id",
+      "hidden",
+      "interval_minutes",
+      "last_output",
+      "last_passed",
+      "last_run_at",
+      "removed_at",
+      "reported_at",
+      "run_percent",
+      "stopped",
+      "task_wait_id",
+      "title"
+    ]
+  },
+  "suites.coding.file_edit.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "added",
+      "creator_id",
+      "edit_type",
+      "environment_id",
+      "path",
+      "removed",
+      "rows",
+      "session_agent_id"
+    ]
+  },
+  "suites.coding.file_edit.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "added",
+      "creator_id",
+      "edit_type",
+      "environment_id",
+      "path",
+      "removed",
+      "rows",
+      "session_agent_id"
+    ]
+  },
+  "suites.coding.file_edit.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "added",
+      "creator_id",
+      "edit_type",
+      "environment_id",
+      "path",
+      "removed",
+      "rows",
+      "session_agent_id"
+    ]
+  },
+  "suites.coding.workers.affected_test.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "picker_command",
+      "process_id",
+      "state",
+      "task_id",
+      "test_command",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.affected_test.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "picker_command",
+      "process_id",
+      "state",
+      "task_id",
+      "test_command",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.affected_test.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "picker_command",
+      "process_id",
+      "state",
+      "task_id",
+      "test_command",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.merger_line.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "environment_id",
+      "fallback_source",
+      "read_at",
+      "read_output_id",
+      "text"
+    ]
+  },
+  "suites.coding.workers.merger_line.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "environment_id",
+      "fallback_source",
+      "read_at",
+      "read_output_id",
+      "text"
+    ]
+  },
+  "suites.coding.workers.merger_line.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "environment_id",
+      "fallback_source",
+      "read_at",
+      "read_output_id",
+      "text"
+    ]
+  },
+  "suites.coding.workers.proof.check": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "point",
+      "process_id",
+      "shortfall",
+      "state",
+      "task_id",
+      "test_command",
+      "text",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.proof.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "point",
+      "process_id",
+      "shortfall",
+      "state",
+      "task_id",
+      "test_command",
+      "text",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.proof.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "point",
+      "process_id",
+      "shortfall",
+      "state",
+      "task_id",
+      "test_command",
+      "text",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.proof.queue": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "point",
+      "process_id",
+      "shortfall",
+      "state",
+      "task_id",
+      "test_command",
+      "text",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.proof.revise": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "point",
+      "process_id",
+      "shortfall",
+      "state",
+      "task_id",
+      "test_command",
+      "text",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.proof.run": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "point",
+      "process_id",
+      "shortfall",
+      "state",
+      "task_id",
+      "test_command",
+      "text",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.proof.short": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "point",
+      "process_id",
+      "shortfall",
+      "state",
+      "task_id",
+      "test_command",
+      "text",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.proof.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "point",
+      "process_id",
+      "shortfall",
+      "state",
+      "task_id",
+      "test_command",
+      "text",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.todo_item.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "position",
+      "session_agent_id",
+      "state",
+      "text"
+    ]
+  },
+  "suites.coding.workers.todo_item.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "position",
+      "session_agent_id",
+      "state",
+      "text"
+    ]
+  },
+  "suites.coding.workers.todo_item.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "position",
+      "session_agent_id",
+      "state",
+      "text"
+    ]
+  },
+  "suites.coding.workers.worker_clocking_out": {
+    "forms": [
+      "commit",
+      "guard"
+    ],
+    "fields": []
+  },
+  "suites.coding.workers.worker_delivering": {
+    "forms": [
+      "commit",
+      "guard"
+    ],
+    "fields": []
+  },
+  "suites.coding.workers.worker_merging": {
+    "forms": [
+      "commit",
+      "guard"
+    ],
+    "fields": []
+  },
+  "suites.coding.workers.worker_operation.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "actor_type",
+      "creator_id",
+      "ended_at",
+      "line",
+      "name",
+      "plugin_script",
+      "process_id",
+      "selecting_actor_id",
+      "source_message_id",
+      "source_origin",
+      "source_unavailable",
+      "source_version",
+      "started_at",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_operation.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "actor_type",
+      "creator_id",
+      "ended_at",
+      "line",
+      "name",
+      "plugin_script",
+      "process_id",
+      "selecting_actor_id",
+      "source_message_id",
+      "source_origin",
+      "source_unavailable",
+      "source_version",
+      "started_at",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_operation.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "actor_type",
+      "creator_id",
+      "ended_at",
+      "line",
+      "name",
+      "plugin_script",
+      "process_id",
+      "selecting_actor_id",
+      "source_message_id",
+      "source_origin",
+      "source_unavailable",
+      "source_version",
+      "started_at",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_refusal_count.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "count",
+      "creator_id",
+      "notice_at",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worker_refusal_count.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "count",
+      "creator_id",
+      "notice_at",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worker_refusal_count.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "count",
+      "creator_id",
+      "notice_at",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worker_route.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "maximum_complexity",
+      "minimum_complexity",
+      "position",
+      "program",
+      "strict",
+      "tags",
+      "tier"
+    ]
+  },
+  "suites.coding.workers.worker_route.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "maximum_complexity",
+      "minimum_complexity",
+      "position",
+      "program",
+      "strict",
+      "tags",
+      "tier"
+    ]
+  },
+  "suites.coding.workers.worker_route.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "maximum_complexity",
+      "minimum_complexity",
+      "position",
+      "program",
+      "strict",
+      "tags",
+      "tier"
+    ]
+  },
+  "suites.coding.workers.worker_task_source.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "source_line_id",
+      "source_message_id",
+      "source_unavailable",
+      "source_version",
+      "started_at",
+      "task_id",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worker_task_source.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "source_line_id",
+      "source_message_id",
+      "source_unavailable",
+      "source_version",
+      "started_at",
+      "task_id",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worker_task_source.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "source_line_id",
+      "source_message_id",
+      "source_unavailable",
+      "source_version",
+      "started_at",
+      "task_id",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_failure.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "source",
+      "task_id",
+      "test_name",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_failure.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "source",
+      "task_id",
+      "test_name",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_failure.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "source",
+      "task_id",
+      "test_name",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_request.allow": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "reason",
+      "state",
+      "task_id",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_request.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "reason",
+      "state",
+      "task_id",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_request.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "reason",
+      "state",
+      "task_id",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_request.restore": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "reason",
+      "state",
+      "task_id",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_request.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "reason",
+      "state",
+      "task_id",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_request.use": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "reason",
+      "state",
+      "task_id",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_run.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "group_key",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_run.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "group_key",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_run.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "group_key",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.abandon": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "left_to_main_at",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "route_reason",
+      "session_agent_id",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.advance": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "left_to_main_at",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "route_reason",
+      "session_agent_id",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "left_to_main_at",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "route_reason",
+      "session_agent_id",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.cut": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "left_to_main_at",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "route_reason",
+      "session_agent_id",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "left_to_main_at",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "route_reason",
+      "session_agent_id",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.deliver": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "left_to_main_at",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "route_reason",
+      "session_agent_id",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.fail": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "left_to_main_at",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "route_reason",
+      "session_agent_id",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.mark_tests_passed": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "left_to_main_at",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "route_reason",
+      "session_agent_id",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.merge": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "left_to_main_at",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "route_reason",
+      "session_agent_id",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.remove": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "left_to_main_at",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "route_reason",
+      "session_agent_id",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.return_worker": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "left_to_main_at",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "route_reason",
+      "session_agent_id",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.review_logs": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "left_to_main_at",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "route_reason",
+      "session_agent_id",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.rework": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "left_to_main_at",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "route_reason",
+      "session_agent_id",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "left_to_main_at",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "route_reason",
+      "session_agent_id",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  }
+}

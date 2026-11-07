@@ -1,0 +1,34 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "WindowDeclaration"
+                ]
+            },
+            {
+                "not": {
+                    "descendant": {
+                        "nameIn": [
+                            "icon"
+                        ]
+                    }
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "window-declared-without-icon",
+        "description": "A WindowDeclaration names no icon, so its tab and its reopen button show the plain default.",
+        "rule": "Give every window its title and an icon from the shell's set: WindowDeclaration(name, title, entry, loading, icon=WindowIcon.X).",
+        "skill": "plain-code-words"
+    }
+}

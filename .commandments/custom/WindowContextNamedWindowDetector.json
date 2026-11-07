@@ -1,0 +1,23 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "reject": [],
+        "select": "kind:VariableDeclaration",
+        "where": [
+            {
+                "name": "window"
+            },
+            {
+                "of": "child:initializer",
+                "all": [{"is": "call"}, {"name": "useWindow"}]
+            }
+        ]
+    },
+    "sin": {
+        "description": "A local window context hides the browser window.",
+        "name": "window-context-named-window",
+        "rule": "Name the window context view so window continues to name the browser window.",
+        "skill": "plain-code-words"
+    }
+}

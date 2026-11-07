@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "fileMatches": "src/core/(base/provider|modules/[a-z_]+/providers)/"
+            },
+            {
+                "any": [
+                    {
+                        "nameMatches": "^(subprocess|multiprocessing|pty)$"
+                    },
+                    {
+                        "descendant": {
+                            "nameMatches": "^(subprocess|multiprocessing|pty)$"
+                        }
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "provider-runs-a-program",
+        "description": "A provider imports a way to run a program, so starting an agent happens in two places.",
+        "rule": "A provider builds the command line (LaunchCommand); the launcher runs it.",
+        "skill": "providers-architecture"
+    }
+}

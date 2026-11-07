@@ -1,0 +1,39 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "go",
+    "find": {
+        "select": "kind:KeyValueExpr",
+        "where": [
+            {
+                "any": [
+                    {
+                        "of": "child:key",
+                        "textMatches": "^(PreToolUse|PostToolUse|PostToolUseFailure|UserPromptSubmit|Stop|StopFailure|SessionStart|SessionEnd|PreCompact|SubagentStart|SubagentStop|MessageDisplay)$"
+                    },
+                    {
+                        "of": "child:value",
+                        "textMatches": "^(PreToolUse|PostToolUse|PostToolUseFailure|UserPromptSubmit|Stop|StopFailure|SessionStart|SessionEnd|PreCompact|SubagentStart|SubagentStop|MessageDisplay)$"
+                    },
+                    {
+                        "of": "child:value",
+                        "textMatches": "^(shell|edit|write|read|search|agent|other)$"
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "file": "**/journal-hook/programs/**"
+            }
+        ]
+    },
+    "sin": {
+        "name": "go-hook-names-outside-the-program-table",
+        "description": "A Go map lists hook names or tool categories outside the programs package, so a program's names are written down twice and drift from the program table the providers write.",
+        "rule": "Read hook names, line events and tool categories from the program table (programs.LoadTable) or the decoders in tools/journal-hook/programs.",
+        "skill": "plain-code-words"
+    }
+}

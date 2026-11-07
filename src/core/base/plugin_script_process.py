@@ -1,0 +1,19 @@
+import subprocess
+from dataclasses import dataclass
+
+from core.base.model.event_form import EventForm
+from core.base.timestamp import Timestamp
+
+
+@dataclass(frozen=True)
+class PluginScriptProcess:
+    """A running plugin script and the event it handles."""
+
+    process: "subprocess.Popen[str]"
+    plugin: str
+    key: str
+    form: EventForm
+    started_at: Timestamp
+
+
+RunningScript = PluginScriptProcess

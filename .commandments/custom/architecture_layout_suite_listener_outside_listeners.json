@@ -1,0 +1,39 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/"
+            },
+            {
+                "any": [
+                    {
+                        "extendsAny": "SaveListener"
+                    },
+                    {
+                        "extendsAny": "CommitListener"
+                    },
+                    {
+                        "extendsAny": "DeletionListener"
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/[^/]+/(drivers/[^/]+/|modules/[^/]+/)?listeners/[^/]+\\.py$"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "suite-listener-outside-listeners",
+        "description": "A suite's or module's listener sits outside a listeners folder.",
+        "rule": "A suite's or module's listeners live in its listeners folder: src/suites/<suite>/listeners/, beneath a driver for one driver's, or in its module's.",
+        "skill": "plain-code-words"
+    }
+}

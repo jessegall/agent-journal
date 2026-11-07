@@ -1,0 +1,19 @@
+from argparse import ArgumentParser, Namespace
+
+from core.base.caller.caller import Caller
+from core.base.subcommand.subcommand import Subcommand
+from core.modules.helpers.commands.stop_helper.stop_helper import StopHelper
+
+
+class StopHelperSubcommand(Subcommand[StopHelper, None]):
+    """`journal helper stop <n>`."""
+
+    cli_name = "helper"
+    name = "stop"
+    outward = True
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("helper_id", type=int)
+
+    def command(self, arguments: Namespace, caller: Caller) -> StopHelper:
+        return StopHelper(arguments.helper_id)

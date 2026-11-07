@@ -1,0 +1,9 @@
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mReference to undeclared input variable[0m
+[31m│[0m [0m
+[31m│[0m [0m[0m  on main.tf line 2, in resource "terraform_data" "sample":
+[31m│[0m [0m   2:   input = [4mvar.missing[0m[0m
+[31m│[0m [0m
+[31m│[0m [0mAn input variable with the name "missing" has not been declared. This
+[31m│[0m [0mvariable can be declared with a variable "missing" {} block.
+[31m╵[0m[0m

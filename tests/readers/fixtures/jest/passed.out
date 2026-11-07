@@ -1,0 +1,7 @@
+PASS tests/cart.test.js
+  ✓ the total (2 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        0.42 s

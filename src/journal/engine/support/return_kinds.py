@@ -1,2 +1,0 @@
-TERMINAL = "terminal"
-QUEUED = "queued"

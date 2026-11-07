@@ -1,0 +1,22 @@
+from argparse import Namespace
+
+from core.base.caller.caller import Caller
+from core.base.subcommand.output import Output
+from core.base.subcommand.read_subcommand import ReadSubcommand
+from suites.coding.support.project_git import ProjectGit
+
+
+class GitOverviewCurrentSubcommand(ReadSubcommand[str]):
+    """`journal git-overview current`: the branch the environment's checkout is on."""
+
+    cli_name = "git-overview"
+    name = "current"
+
+    def __init__(self, git: ProjectGit) -> None:
+        self.git = git
+
+    def read(self, arguments: Namespace, caller: Caller) -> str:
+        return self.git.git_output("branch", "--show-current").strip()
+
+    def write_output(self, value: object, output: Output) -> None:
+        output.write(str(value), {"branch": value})

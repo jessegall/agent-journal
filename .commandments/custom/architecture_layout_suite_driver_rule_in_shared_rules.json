@@ -1,0 +1,50 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/[^/]+/rules/[^/]+\\.py$"
+            },
+            {
+                "extendsAny": "DriverRule"
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "identifier"
+                        },
+                        {
+                            "name": "drivers"
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "literal"
+                        },
+                        {
+                            "textMatches": "^[\"']?[a-z_.]*\\*[\"']?$"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "sin": {
+        "name": "suite-driver-rule-in-shared-rules",
+        "description": "A rule that names its drivers sits in a suite's or module's shared rules folder, which holds only rules for every driver.",
+        "rule": "A rule that names its drivers belongs to them: move it to src/suites/<suite>/drivers/<driver>/rules/.",
+        "skill": "plain-code-words"
+    }
+}

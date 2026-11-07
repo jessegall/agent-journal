@@ -1,0 +1,69 @@
+from collections.abc import Sequence
+
+from core.modules.tasks.support.task_nudges import TASK_REOPENED
+from core.base.database.kept_rows import KeptRows
+from core.base.command.context import Context
+from core.modules.drivers.support.nudger import Nudger
+from core.base.query.conditions.is_null import IsNull
+from core.base.query.queries import Queries
+from core.base.repository.repository import Repository
+from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
+from core.modules.tasks.models.task import Task
+from core.modules.tasks.models.task_wait import TaskWait
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
+
+
+WAIT_ENDED_SOURCE = "tasks.wait-ended"
+
+TASK_TARGET_PREFIX = "tasks:"
+
+
+class TaskWaits:
+    """Ends a blocked task's waits, and opens the task when the last of them has ended."""
+
+    def __init__(self, queries: Queries, repository: Repository, nudger: Nudger, kept: KeptRows) -> None:
+        self.queries, self.repository, self.nudger = queries, repository, nudger
+        self.kept = kept
+
+    def resolved(self, waits: Sequence[TaskWait], context: Context) -> None:
+        for wait in waits:
+            self.repository.update(wait, context, ended_at=context.timestamp)
+        opened = [task for task in self.queries.query(Task).find_many(list(dict.fromkeys(wait.task_id for wait in waits)))
+                  if task.state is TaskState.BLOCKED and not self.pending_task(task.id)]
+        for task in opened:
+            self.repository.save_change(task, task.moved(TaskLifecycle.unblock), context)
+        if opened:
+            self.notify_agents(opened, context)
+
+    def waits_target_tasks(self, task_id: int) -> bool:
+        return all(wait.target.startswith(TASK_TARGET_PREFIX) for wait in self.pending_task(task_id))
+
+    def notify_agents(self, tasks: Sequence[Task], context: Context) -> None:
+        reopened = [task for task in tasks if task.delegated_to is None]
+        for agent in MainAgentFinder.rows(self.queries) if reopened else ():
+            for task in reopened:
+                self.nudger.send(agent.id, TASK_REOPENED, WAIT_ENDED_SOURCE, context, task=task.id)
+
+    def open_waits(self, task_id: int):
+        return self.queries.query(TaskWait).filter(task_id=task_id).matching(IsNull("ended_at"))
+
+    def pending_task(self, task_id: int) -> tuple[TaskWait, ...]:
+        return tuple(wait for wait in self.pending_rows() if wait.task_id == task_id)
+
+    def pending_target(self, target: str) -> tuple[TaskWait, ...]:
+        return tuple(wait for wait in self.pending_rows() if wait.target == target)
+
+    def pending_rows(self) -> tuple[TaskWait, ...]:
+        return self.kept.read("task_waits", lambda: tuple(self.queries.query(TaskWait).matching(IsNull("ended_at")).oldest().all_rows()),
+                              "ended_at IS NULL", name="tasks.pending_waits")
+
+    def remember(self, wait: TaskWait) -> None:
+        self.replace_cached(wait, tuple([wait]) if wait.ended_at is None else ())
+
+    def remove(self, wait: TaskWait) -> None:
+        self.replace_cached(wait, ())
+
+    def replace_cached(self, wait: TaskWait, pending: tuple[TaskWait, ...]) -> None:
+        self.kept.update("task_waits", lambda waits: tuple(sorted([row for row in waits if row.id != wait.id] + list(pending), key=lambda row: row.id)),
+                         "ended_at IS NULL", name="tasks.pending_waits")

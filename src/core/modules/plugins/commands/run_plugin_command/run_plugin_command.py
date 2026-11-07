@@ -1,0 +1,16 @@
+from dataclasses import dataclass
+
+from core.base.command.command import Command
+from core.modules.plugins.support.plugin_command_run import PluginCommandRun
+
+
+@dataclass(frozen=True)
+class RunPluginCommand(Command[PluginCommandRun]):
+    """Runs a shell line at the root of the checkout of an agent, for a plugin or a person."""
+
+    lock = False
+
+    agent_id: int
+    line: str
+    is_readonly: bool
+    plugin: str

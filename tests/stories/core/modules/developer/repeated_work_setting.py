@@ -1,0 +1,185 @@
+import io
+import os
+
+import pytest
+
+from core.base.actor import Actor
+from core.base.caller.caller import Caller
+from core.base.caller.caller_request import CallerRequest
+from core.base.cli.console import Console
+from core.base.cli.line_run import LineRun
+from core.base.database.repeated_work import READ_LIMIT_REPEATS, READ_TEXT_LIMIT_REPEATS
+from core.base.database.reported_findings import ReportedFindings
+from server.listener_thread import ListenerThread
+from server.viewer.line_route import LineRoute
+from core.base.database.statement import Statement
+from core.base.query.queries import Queries
+from core.modules.chat.models.journal_exception import JournalException
+from core.modules.developer.support.developer_settings import REPEATED_WORK_SETTING, TOOLS_SETTING
+from core.modules.drivers.bindings.agent_hook_route import AgentHookRoute
+from core.testing.hook_samples import HookSamples
+from core.testing.story_fixture import StoryFixture
+from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.server.support.server_client import server_story
+
+LINES = "agent-line list --agent {agent}"
+REPEATED_READ = Statement("SELECT 1")
+SHORT_FINDING_LINES = 8
+
+
+class RepeatedWorkOn(StoryFixture):
+    parent = UserJoined
+
+    def steps(self, story):
+        story.expect_success(f"setting switch {TOOLS_SETTING} on --project", actor=story.user)
+        story.expect_success(f"setting set {REPEATED_WORK_SETTING} true --project", actor=story.user)
+
+
+def duplicate_read(database):
+    for _ in range(READ_LIMIT_REPEATS + 1):
+        database.rows(REPEATED_READ)
+
+
+def read_in_a_loop(database):
+    for row_id in range(READ_TEXT_LIMIT_REPEATS + 1):
+        database.rows(Statement("SELECT ?", [row_id]))
+
+
+def replace_console_run(monkeypatch, work):
+    def run(console, argv, *arguments):
+        work(console.events.table.database)
+        arguments[-1].write("{}")
+        return 0
+
+    monkeypatch.setattr(Console, "run", run)
+    monkeypatch.setattr(Console, "requested_run", run)
+
+
+def run_as_core(story, line_run=None):
+    return (line_run or LineRun(story.home)).run_as(["task", "list"], lambda container: Caller(Actor.core()), io.StringIO())
+
+
+def run_direct(story, line_run=None):
+    request = CallerRequest(dict(os.environ), os.getcwd(), os.getpid())
+    return (line_run or LineRun(story.home)).run(["task", "list"], request, io.StringIO())
+
+
+def reported(story) -> list[str]:
+    return [row.message for row in story.container.get(Queries).query(JournalException).limited(20) if "RepeatedCallsError" in row.message]
+
+
+@pytest.mark.parametrize("start", [run_as_core, run_direct])
+def test_with_the_setting_on_a_duplicate_query_in_a_request_is_reported_and_the_request_finishes(new_story, monkeypatch, start):
+    story = new_story(fixture=RepeatedWorkOn)
+    replace_console_run(monkeypatch, duplicate_read)
+    story.expect_rows(start(story) == 0)
+    messages = reported(story)
+    story.expect_rows(len(messages) == 1, "one request read this more than 1 times: SELECT 1" in messages[0])
+
+
+@pytest.mark.parametrize("start", [run_as_core, run_direct])
+def test_with_the_setting_on_a_query_per_row_in_a_request_is_reported_and_the_request_finishes(new_story, monkeypatch, start):
+    story = new_story(fixture=RepeatedWorkOn)
+    replace_console_run(monkeypatch, read_in_a_loop)
+    story.expect_rows(start(story) == 0)
+    messages = reported(story)
+    story.expect_rows(len(messages) == 1, "one request read this SQL more than 10 times: SELECT ?" in messages[0])
+
+
+def test_the_report_reaches_the_main_agent_through_its_error_line(new_story, monkeypatch):
+    story = new_story(fixture=RepeatedWorkOn)
+    replace_console_run(monkeypatch, duplicate_read)
+    run_as_core(story)
+    monkeypatch.undo()
+    story.run_listeners()
+    story.expect_text(LINES.format(agent=story.agent.id), "journal-exception:1: journal journal-exception show 1")
+    story.expect_text("journal-exception show 1", "RepeatedCallsError", actor=story.agent)
+
+
+@pytest.mark.parametrize("tools,repeated_work", [("on", "false"), ("off", "true")])
+def test_with_the_setting_off_nothing_is_reported(new_story, monkeypatch, tools, repeated_work):
+    story = new_story(fixture=UserJoined)
+    story.expect_success(f"setting switch {TOOLS_SETTING} {tools} --project", actor=story.user)
+    story.expect_success(f"setting set {REPEATED_WORK_SETTING} {repeated_work} --project", actor=story.user)
+    replace_console_run(monkeypatch, duplicate_read)
+    story.expect_rows(run_as_core(story) == 0)
+    story.expect_rows(reported(story) == [])
+
+
+def test_the_setting_is_off_until_a_person_switches_it_on(new_story, monkeypatch):
+    story = new_story(fixture=UserJoined)
+    story.expect_success(f"setting switch {TOOLS_SETTING} on --project", actor=story.user)
+    replace_console_run(monkeypatch, duplicate_read)
+    story.expect_rows(run_as_core(story) == 0)
+    story.expect_rows(reported(story) == [])
+
+
+def test_the_same_finding_in_two_requests_is_reported_once(new_story, monkeypatch):
+    story = new_story(fixture=RepeatedWorkOn)
+    replace_console_run(monkeypatch, duplicate_read)
+    line_run = LineRun(story.home)
+    for _ in range(2):
+        run_as_core(story, line_run)
+    story.expect_rows(len(reported(story)) == 1)
+
+
+def read_twice_per_row(*row_ids):
+    remaining = iter(row_ids)
+
+    def read_twice_for_next_row(database):
+        row_id = next(remaining)
+        for _ in range(READ_LIMIT_REPEATS + 1):
+            database.rows(Statement("SELECT ? AS row_id", [row_id]))
+
+    return read_twice_for_next_row
+
+
+def test_the_same_sql_read_for_two_rows_in_two_requests_is_reported_once_with_a_short_text(new_story, monkeypatch):
+    story = new_story(fixture=RepeatedWorkOn)
+    replace_console_run(monkeypatch, read_twice_per_row(106281, 106286))
+    line_run = LineRun(story.home)
+    for _ in range(2):
+        run_as_core(story, line_run)
+    messages = reported(story)
+    story.expect_rows(len(messages) == 1, len(messages[0].splitlines()) <= SHORT_FINDING_LINES, "(106281,)" in messages[0], "(106286,)" not in messages[0])
+
+
+def test_a_viewer_line_and_a_cli_line_share_the_reported_findings(new_story, monkeypatch):
+    story = new_story(fixture=RepeatedWorkOn)
+    replace_console_run(monkeypatch, read_twice_per_row(106281, 106286))
+    shared = ReportedFindings()
+    viewer_run = LineRoute(story.home, ListenerThread(lambda: None, lambda error: None), shared).line_run
+    run_as_core(story, LineRun(story.home, reported=shared))
+    run_as_core(story, viewer_run)
+    story.expect_rows(viewer_run.reported is shared, len(reported(story)) == 1)
+
+
+def test_with_the_setting_on_a_duplicate_query_in_a_hook_is_reported_and_the_hook_is_answered(new_story, monkeypatch):
+    started = new_story(fixture=RepeatedWorkOn)
+    answer = AgentHookRoute.answer
+
+    def duplicated_answer(route, event):
+        duplicate_read(route.queries.database)
+        return answer(route, event)
+
+    monkeypatch.setattr(AgentHookRoute, "answer", duplicated_answer)
+    sample = HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", firing="repeated-1")
+    with server_story(started) as server:
+        server.expect_hook_answer("/hook", dict(sample.body), 200, '"refusal":')
+    started.expect_rows(len(reported(started)) == 1)
+
+
+def test_with_the_setting_off_a_duplicate_query_in_a_hook_is_not_reported(new_story, monkeypatch):
+    started = new_story(fixture=UserJoined)
+    started.expect_success(f"setting switch {TOOLS_SETTING} on --project", actor=started.user)
+    answer = AgentHookRoute.answer
+
+    def duplicated_answer(route, event):
+        duplicate_read(route.queries.database)
+        return answer(route, event)
+
+    monkeypatch.setattr(AgentHookRoute, "answer", duplicated_answer)
+    sample = HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", firing="repeated-2")
+    with server_story(started) as server:
+        server.expect_hook_answer("/hook", dict(sample.body), 200, '"refusal":')
+    started.expect_rows(reported(started) == [])

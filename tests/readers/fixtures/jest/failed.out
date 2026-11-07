@@ -1,0 +1,6 @@
+FAIL tests/cart.test.js
+  ✕ the total (2 ms)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 passed, 2 total
+Time:        0.42 s

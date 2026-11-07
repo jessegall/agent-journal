@@ -1,0 +1,33 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "fileMatches": "src/(core|server)/"
+            },
+            {
+                "textMatches": "^(claude|codex)$"
+            },
+            {
+                "of": "parent",
+                "is": "comparison"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "src/core/modules/(claude_code|codex)/"
+            }
+        ]
+    },
+    "sin": {
+        "name": "program-name-compared-outside-its-provider",
+        "description": "Code outside a provider module compares an agent program's name, so a third program means finding every comparison.",
+        "rule": "Ask the program's provider through Providers.provider(program) for what differs between programs.",
+        "skill": "providers-architecture"
+    }
+}

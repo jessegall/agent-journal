@@ -1,0 +1,40 @@
+import json
+import sqlite3
+from collections.abc import Mapping
+from dataclasses import dataclass
+from types import MappingProxyType
+
+from core.base.timestamp import Timestamp
+
+CREATION = ".create"
+
+
+@dataclass(frozen=True)
+class LoggedEvent:
+    """One change as the event log recorded it."""
+
+    id: int
+    event: str
+    row_table: str
+    row_id: int
+    environment_id: int | None
+    actor_id: int
+    command: str
+    cause_id: int | None
+    skipped_guards: frozenset[str]
+    timestamp: Timestamp
+    data: Mapping[str, tuple[object, object]]
+
+    @property
+    def is_creation(self) -> bool:
+        return self.event.endswith(CREATION) or ("id" in self.data and self.data["id"][0] is None)
+
+    @property
+    def is_deletion(self) -> bool:
+        return self.event.endswith(".delete")
+
+    @classmethod
+    def parsed(cls, row: sqlite3.Row) -> "LoggedEvent":
+        return cls(id=row["id"], event=row["name"], row_table=row["row_table"], row_id=row["row_id"], environment_id=row["environment_id"],
+                   actor_id=row["actor_id"], command=row["command"], cause_id=row["cause_id"], skipped_guards=frozenset(json.loads(row["skipped_guards"])),
+                   timestamp=Timestamp.parsed(row["created_at"]), data=MappingProxyType({key: tuple(pair) for key, pair in json.loads(row["data"]).items()}))

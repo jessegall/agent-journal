@@ -1,0 +1,32 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/"
+            },
+            {
+                "extendsAny": "StrEnum"
+            },
+            {
+                "nameMatches": "(MarkType|MarkVariant|DockType)$"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/[^/]+/(modules/[^/]+/)?models/enums/[^/]+\\.py$"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "mark-enum-outside-enums",
+        "description": "The enum of a module's mark types, mark variants or dock types sits outside the module's models/enums folder.",
+        "rule": "A module's mark type, mark variant and dock type enums live in models/enums/, one to a file, beside its other enums.",
+        "skill": "chat-architecture"
+    }
+}

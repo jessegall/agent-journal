@@ -1,0 +1,294 @@
+package shell
+
+import (
+	"regexp"
+	"strings"
+
+	"mvdan.cc/sh/v3/syntax"
+)
+
+// Command is one command of a shell line: its text as the line writes it and where it stands in the text it was cut
+// from, the operator that joins it to the next command, and the command its output is piped into.
+type Command struct {
+	Text string
+	// Source is the text Start, End and Through count in: the line, or the line inside an eval the line wraps.
+	Source string
+	Start  int
+	End    int
+	// BodyEnd is where the command's text ends with its here-documents' bodies, which may follow other commands.
+	BodyEnd int
+	// JoinedBy is &&, ||, ; or & between this command and the next, or empty after the last.
+	JoinedBy string
+	// PipedInto is the index of the command this one's output is piped into, or -1.
+	PipedInto int
+	// Recorded is false for the shell's own wrapping around a line Claude Code hands to eval, as version 4 marks it.
+	Recorded bool
+}
+
+var (
+	// Claude Code quotes the command it evals, unless the command is one word its quoting leaves bare: version 4's
+	// Chain WRAPPED.
+	evalWrapped = regexp.MustCompile(`(?s)^eval (?:'(.*)'|([^\s'"]+))(?: < /dev/null)?\n?\z`)
+	// a comment at the end of a command's line, which version 4 keeps in the command's text
+	trailingComment = regexp.MustCompile(`^[ \t]+#[^\n]*`)
+)
+
+// The quote Claude Code writes for a ' inside the line it evals.
+const evalQuote = `'"'"'`
+
+// Split reads a shell line as shfmt's parser reads it, first as bash and then as zsh, and gives its commands and the
+// text of every redirect in it. A command is a simple command, a subshell, a group in braces or a compound command
+// (if, for, while, until, case, select, a function, zsh's foreach), each kept whole as version 4's Chain keeps them:
+// a part of version 4 is a run of commands joined by || or a pipe. A line Claude Code hands to eval is read as the
+// line inside it, as version 4 reads it. A line neither shell can read gives the parser's error.
+func Split(line string) ([]Command, []string, error) {
+	commands, redirects, err := read(line)
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, command := range commands {
+		if !evalWrapped.MatchString(command.Text) {
+			continue
+		}
+		return unwrapped(commands), redirects, nil
+	}
+	return commands, redirects, nil
+}
+
+// Parse reads shell syntax using the supported Bash and Zsh grammars.
+func Parse(line string) (*syntax.File, error) {
+	file, err := parsed(line, syntax.LangBash)
+	if err != nil {
+		if zsh, zshErr := parsed(line, syntax.LangZsh); zshErr == nil {
+			file, err = zsh, nil
+		}
+	}
+	return file, err
+}
+
+func read(line string) ([]Command, []string, error) {
+	file, err := Parse(line)
+	if err != nil {
+		return nil, nil, err
+	}
+	reader := splitter{line: line}
+	for index, statement := range file.Stmts {
+		following := ""
+		if statement.Background {
+			following = "&"
+		} else if index < len(file.Stmts)-1 {
+			following = ";"
+		}
+		reader.statement(statement, following)
+	}
+	syntax.Walk(file, func(node syntax.Node) bool {
+		if redirect, present := node.(*syntax.Redirect); present {
+			reader.redirects = append(reader.redirects, line[redirect.Pos().Offset():redirect.Word.End().Offset()])
+		}
+		return true
+	})
+	if reader.redirects == nil {
+		reader.redirects = []string{}
+	}
+	return foreachJoined(reader.commands), reader.redirects, nil
+}
+
+// unwrapped reads each command that evals a line as the commands of that line, as Chain.build does: they are the
+// agent's own, the commands around them the shell's wrapping.
+func unwrapped(commands []Command) []Command {
+	var expanded []Command
+	// where each command of the line begins among the commands found, so a pipe into it still points at it
+	begins := make([]int, len(commands)+1)
+	outer := map[int]bool{}
+	for index, command := range commands {
+		begins[index] = len(expanded)
+		wrapped := evalWrapped.FindStringSubmatch(command.Text)
+		if wrapped == nil {
+			command.Recorded = false
+			outer[len(expanded)] = true
+			expanded = append(expanded, command)
+			continue
+		}
+		content := wrapped[1]
+		if content == "" {
+			content = wrapped[2]
+		}
+		inner, _, err := read(strings.ReplaceAll(content, evalQuote, "'"))
+		if err != nil || len(inner) == 0 {
+			outer[len(expanded)] = true
+			expanded = append(expanded, command)
+			continue
+		}
+		for position := range inner {
+			if inner[position].PipedInto < 0 {
+				continue
+			}
+			inner[position].PipedInto += len(expanded)
+		}
+		last := &inner[len(inner)-1]
+		last.JoinedBy, last.PipedInto = command.JoinedBy, command.PipedInto
+		expanded = append(expanded, inner...)
+		outer[len(expanded)-1] = true
+	}
+	begins[len(commands)] = len(expanded)
+	for index := range expanded {
+		if !outer[index] || expanded[index].PipedInto < 0 {
+			continue
+		}
+		expanded[index].PipedInto = begins[expanded[index].PipedInto]
+	}
+	return expanded
+}
+
+// emptyBody is where a here-document with no lines stands, which the parser gives no node: its closing line right after
+// the line of its statement.
+func emptyBody(line string, redirect *syntax.Redirect, end int) (int, int) {
+	lineEnd := strings.IndexByte(line[end:], '\n')
+	if lineEnd < 0 {
+		return end, end
+	}
+	start := end + lineEnd + 1
+	closing, _, _ := strings.Cut(line[start:], "\n")
+	marker := strings.Trim(line[redirect.Word.Pos().Offset():redirect.Word.End().Offset()], `'"\`)
+	if strings.TrimLeft(closing, "\t") != marker {
+		return end, end
+	}
+	return start, start + len(closing)
+}
+
+// foreachJoined keeps a zsh foreach loop whole: the commands from its foreach to its end, which the parser reads as
+// commands of their own, become one.
+func foreachJoined(commands []Command) []Command {
+	var joined []Command
+	for index := 0; index < len(commands); index++ {
+		command := commands[index]
+		if !strings.HasPrefix(command.Text, "foreach ") {
+			joined = append(joined, command)
+			continue
+		}
+		last := index
+		for last < len(commands) && commands[last].Text != "end" {
+			last++
+		}
+		if last == len(commands) {
+			joined = append(joined, command)
+			continue
+		}
+		closing := commands[last]
+		command.Text = strings.TrimSpace(command.Source[command.Start:closing.End])
+		command.End, command.BodyEnd, command.JoinedBy, command.PipedInto = closing.End, max(closing.BodyEnd, closing.End), closing.JoinedBy, closing.PipedInto
+		joined = append(joined, command)
+		index = last
+	}
+	return joined
+}
+
+func parsed(line string, language syntax.LangVariant) (*syntax.File, error) {
+	return syntax.NewParser(syntax.KeepComments(false), syntax.Variant(language)).Parse(strings.NewReader(line), "")
+}
+
+type splitter struct {
+	line      string
+	commands  []Command
+	redirects []string
+}
+
+// statement adds the commands of one statement; after is the operator that joins its last command to what follows.
+func (reader *splitter) statement(statement *syntax.Stmt, following string) {
+	binary, present := statement.Cmd.(*syntax.BinaryCmd)
+	if !present || statement.Negated || len(statement.Redirs) > 0 {
+		reader.single(statement, following)
+		return
+	}
+	switch binary.Op {
+	case syntax.AndStmt, syntax.OrStmt:
+		reader.statement(binary.X, binary.Op.String())
+		reader.statement(binary.Y, following)
+	case syntax.Pipe, syntax.PipeAll:
+		reader.statement(binary.X, "")
+		reader.commands[len(reader.commands)-1].PipedInto = len(reader.commands)
+		reader.statement(binary.Y, following)
+	}
+}
+
+// single adds a statement as one command, its text running from its start to its end without a closing ;, with a
+// comment that ends its line and the bodies of its here-documents: a body right after the command runs on in the line,
+// and a body that follows other commands of the line, as one piped on (cat <<EOF | grep x), is added to the text
+// after a newline.
+func (reader *splitter) single(statement *syntax.Stmt, following string) {
+	start, end := int(statement.Pos().Offset()), ownEnd(statement)
+	if comment := trailingComment.FindString(reader.line[end:]); comment != "" && !statement.Background {
+		end += len(comment)
+	}
+	textEnd := end
+	var bodies []string
+	syntax.Walk(statement, func(node syntax.Node) bool {
+		redirect, present := node.(*syntax.Redirect)
+		if !present || (redirect.Op != syntax.Hdoc && redirect.Op != syntax.DashHdoc) {
+			return true
+		}
+		bodyStart, bodyEnd := emptyBody(reader.line, redirect, end)
+		if redirect.Hdoc != nil {
+			bodyStart, bodyEnd = int(redirect.Hdoc.Pos().Offset()), int(redirect.Hdoc.End().Offset())
+		}
+		if bodyEnd <= end {
+			return true
+		}
+		if strings.TrimSpace(reader.line[end:bodyStart]) == "" {
+			end = bodyEnd
+		} else {
+			bodies = append(bodies, reader.line[bodyStart:bodyEnd])
+		}
+		textEnd = max(textEnd, bodyEnd)
+		return true
+	})
+	reader.commands = append(reader.commands, Command{
+		Text:      strings.Join(append([]string{strings.TrimSpace(reader.line[start:end])}, bodies...), "\n"),
+		Source:    reader.line,
+		Start:     start,
+		End:       end,
+		BodyEnd:   max(textEnd, end),
+		JoinedBy:  following,
+		PipedInto: -1,
+		Recorded:  true,
+	})
+}
+
+// ownEnd is where a statement's own text ends: after a background &, else after its command and its redirects' words,
+// a closing ; and its here-documents' bodies left out.
+func ownEnd(statement *syntax.Stmt) int {
+	if statement.Background {
+		return int(statement.End().Offset())
+	}
+	end := int(statement.Position.Offset())
+	if statement.Negated {
+		end++
+	}
+	if statement.Cmd != nil {
+		end = max(end, int(statement.Cmd.End().Offset()))
+	}
+	for _, redirect := range statement.Redirs {
+		if redirect.Hdoc != nil {
+			end = max(end, int(redirect.Word.End().Offset()))
+		} else {
+			end = max(end, int(redirect.End().Offset()))
+		}
+	}
+	return end
+}
+
+// Runs are the parts of version 4's Chain: the commands joined by || or a pipe stay one part.
+func Runs(commands []Command) [][]Command {
+	var runs [][]Command
+	for index, command := range commands {
+		if index == 0 || !joinsOn(commands[index-1]) {
+			runs = append(runs, nil)
+		}
+		runs[len(runs)-1] = append(runs[len(runs)-1], command)
+	}
+	return runs
+}
+
+func joinsOn(command Command) bool {
+	return command.JoinedBy == "||" || command.PipedInto >= 0
+}

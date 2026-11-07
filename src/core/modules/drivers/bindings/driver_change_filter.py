@@ -1,0 +1,27 @@
+from core.base.actor_type import ActorType
+from core.base.change.change import Change
+from core.base.guard.change_filter import ChangeFilter
+from core.base.model.model import Model
+from core.base.listener.event_rows import EventRows
+from core.base.registry.registry import Registry
+from core.modules.agents.models.agent import Agent
+from core.modules.drivers.support.suite_choice import SuiteChoice
+
+
+class DriverChangeFilter(ChangeFilter):
+    """A guard a driver lists applies only to changes an agent that driver drives makes, never to a person's;
+    every other guard and listener applies to every change."""
+
+    def __init__(self, registry: Registry, rows: EventRows, choice: SuiteChoice) -> None:
+        self.registry, self.rows, self.choice = registry, rows, choice
+
+    def applies(self, entry_name: str, change: Change[Model]) -> bool:
+        listing = {driver.name for driver in self.registry.drivers if entry_name in driver.guards}
+        if not listing:
+            return True
+        actor = change.context.actor
+        if actor.type is not ActorType.AGENT:
+            return False
+        agent = self.rows.find(Agent, actor.id)
+        driver = self.choice.driver(agent.role) if agent is not None else None
+        return driver is not None and driver.name in listing

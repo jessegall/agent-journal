@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": ["DockItem", "Dock"]
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/core/modules/docking/"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "dock-written-outside-docking",
+        "description": "A module builds a Dock or a DockItem itself, so the item skips the dock's guards: its declared type, one item to a row and the limits.",
+        "rule": "Dock a row by running AddDockItem, and take it out with RemoveDockItem; only the docking module builds and saves the rows.",
+        "skill": "chat-architecture"
+    }
+}

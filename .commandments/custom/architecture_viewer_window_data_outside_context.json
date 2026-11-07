@@ -1,0 +1,28 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "fetch"
+                ]
+            },
+            {
+                "file": "**/web/src/**"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "window-data-outside-context",
+        "description": "A window's code asks the server directly, so its lines skip the window's name and the server's check of what it may read.",
+        "rule": "A window reads, runs and follows only through its window context (useWindow, or connect in a frame); never fetch, the api client or an event stream of its own.",
+        "skill": "plain-code-words"
+    }
+}

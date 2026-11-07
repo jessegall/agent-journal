@@ -1,0 +1,128 @@
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
+from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
+from core.testing.helper_expectation import HelperExpectation
+from core.testing.hook_samples import HookSamples
+from core.testing.story import Story
+from core.testing.story_fixture import StoryFixture
+from tests.stories.core.base.driver.support.hook_agents import hook_agent
+from tests.stories.core.support import story_lines as lines
+from tests.stories.core.support.fixtures import MainEnvironment
+
+
+class CodingEnvironment(StoryFixture):
+    """Environment main runs the coding suite, whose builder drives the main agent."""
+
+    parent = MainEnvironment
+
+    def steps(self, story: Story) -> None:
+        story.run("suite choose coding --environment main")
+
+    def expect(self, story: Story) -> None:
+        story.expect_text(lines.CURRENT_SUITE, "suite: coding", "main: coding.builder")
+
+
+class BuilderStarted(StoryFixture):
+    """Session s-1 sent its first hook, which started story.agent under the builder."""
+
+    parent = CodingEnvironment
+
+    def steps(self, story: Story) -> None:
+        story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
+
+    def expect(self, story: Story) -> None:
+        story.expect_success(f"agent show {story.agent.id}", "session: s-1", "role: main")
+
+
+class BuilderWithOpenTask(StoryFixture):
+    """Task 1, Fix the cart, is open in main and nobody holds it."""
+
+    parent = BuilderStarted
+
+    def steps(self, story: Story) -> None:
+        story.run(lines.NEW_TASK)
+
+    def expect(self, story: Story) -> None:
+        story.expect_success(lines.TASK_DETAILS, "state: open")
+
+
+class OrchestratorWithOpenTask(StoryFixture):
+    """The orchestrator drives the main agent in main, and task 1, Fix the cart, is open."""
+
+    parent = BuilderWithOpenTask
+
+    def steps(self, story: Story) -> None:
+        story.run("driver choose coding.orchestrator --environment main")
+
+    def expect(self, story: Story) -> None:
+        story.expect_text(lines.CURRENT_SUITE, "main: coding.orchestrator")
+
+
+class HelperUnderBuilder(HelperExpectation, StoryFixture):
+    """The builder's session s-1 has a helper with session sub-1 under it: story.helper."""
+
+    parent = BuilderStarted
+
+    def steps(self, story: Story) -> None:
+        story.helper = Actor(story.new_row_id(f"agent start sub-1 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
+
+
+class BuilderWithStartedTask(StoryFixture):
+    """The builder's agent started task 1, Fix the cart, and holds it."""
+
+    parent = BuilderWithOpenTask
+
+    def steps(self, story: Story) -> None:
+        story.run(lines.TASK_START, actor=story.agent)
+
+    def expect(self, story: Story) -> None:
+        story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {story.agent.id}")
+
+
+class BuilderWithUser(StoryFixture):
+    """A person, Ada, beside the started builder: story.user."""
+
+    parent = BuilderStarted
+
+    def steps(self, story) -> None:
+        story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+
+    def expect(self, story) -> None:
+        story.expect_success(f"actor show {story.user.id}", "type: user", "name: Ada")
+
+
+class BuilderWithBriefedTask(StoryFixture):
+    """Task 1, Fix the cart, has a brief and is open; nobody holds it."""
+
+    parent = BuilderWithUser
+
+    def steps(self, story) -> None:
+        story.run('task make "Fix the cart" --brief "the total is in cents" --environment main', actor=story.agent)
+
+    def expect(self, story) -> None:
+        story.expect_success(lines.TASK_DETAILS, "state: open", "brief: the total is in cents")
+
+
+class BuilderWithUnreadTask(StoryFixture):
+    """The builder's agent started task 1 and has not read its brief, so it is blocked."""
+
+    parent = BuilderWithBriefedTask
+
+    def steps(self, story) -> None:
+        story.container.get(TaskBriefRequirement).is_required = True
+        story.run(lines.TASK_START, actor=story.agent)
+
+    def expect(self, story) -> None:
+        story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {story.agent.id}")
+
+
+class BuilderWithReadTask(StoryFixture):
+    """The builder's agent holds task 1 and ran its brief, so it is no longer blocked."""
+
+    parent = BuilderWithUnreadTask
+
+    def steps(self, story) -> None:
+        story.run("task overview 1", actor=story.agent)
+
+    def expect(self, story) -> None:
+        story.expect_success("task overview 1", "task 1: Fix the cart", actor=story.agent)

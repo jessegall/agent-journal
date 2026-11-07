@@ -1,0 +1,19 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "go",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "nameMatches": "(^|[a-z0-9])(${poetic}|${poetic_types})([A-Z0-9]|$)"
+            }
+        ],
+        "reject": []
+    },
+    "sin": {
+        "name": "go-poetic-type-name",
+        "description": "A class is named by a word that does not say what it is, alone or as a part of its name: Said, Worded, ReportMadeCard, HeldLine, Watching.",
+        "rule": "Name a class for what it holds or does, in an ordinary word: a line with its values is a Nudge, a snapshot of the options is Settings.",
+        "skill": "plain-code-words"
+    }
+}

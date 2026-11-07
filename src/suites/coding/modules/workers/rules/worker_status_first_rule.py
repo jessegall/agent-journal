@@ -1,0 +1,26 @@
+from core.base.driver.agent_hook import AgentHook
+from core.base.driver.block_until import BlockUntil
+from core.base.driver.conditions.ran_command import RanCommand
+from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_event_name import HookEventName
+from core.base.driver.rule_answer import RuleAnswer
+from suites.coding.modules.workers.support.worker_nudges import WORKER_STATUS_FIRST
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+
+STATUS_COMMAND = "journal worker status"
+
+
+class WorkerStatusFirstRule(DriverRule):
+    """After a compaction a worker is blocked until it has run journal worker status, which says where it stands
+    and which skills it must load; a new start needs none, since the brief is its prompt."""
+
+    name = "workers.status-first"
+    start_line_rule = True
+    hook = HookEventName.SESSION_START
+    drivers = ["*"]
+    roles = [AgentRole.WORKER]
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        if not hook.event.is_compaction_start:
+            return RuleAnswer.allowed()
+        return RuleAnswer.allowed().running(BlockUntil(hook.agent_id, WORKER_STATUS_FIRST.nudge(), RanCommand(STATUS_COMMAND)))

@@ -1,0 +1,76 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/viewer/public/phone-sw\\.js$"
+            },
+            {
+                "any": [
+                    {
+                        "all": [
+                            {
+                                "nameIn": [
+                                    "put",
+                                    "add",
+                                    "addAll"
+                                ]
+                            },
+                            {
+                                "descendant": {
+                                    "all": [
+                                        {
+                                            "is": "literal"
+                                        },
+                                        {
+                                            "textMatches": "/(api|modules)"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "name": "showNotification"
+                            },
+                            {
+                                "descendant": {
+                                    "all": [
+                                        {
+                                            "is": "member-access"
+                                        },
+                                        {
+                                            "nameIn": [
+                                                "title",
+                                                "text",
+                                                "detail",
+                                                "summary",
+                                                "question",
+                                                "name"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "worker-keeps-data",
+        "description": "The phone's service worker caches a /api or /modules response, or puts a row's text in a notice.",
+        "rule": "The worker keeps only the shell page and its own files, and a notice says how many things wait, never what they are.",
+        "skill": "plain-code-words"
+    }
+}

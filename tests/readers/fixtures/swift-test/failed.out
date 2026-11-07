@@ -1,0 +1,20 @@
+[0/1] Planning build
+Building for debugging...
+[0/5] Write sources
+[1/6] /work/project/.build/arm64-apple-macosx/debug/CartPackageTests.derived/runner.swift
+[2/6] Write sources
+[3/6] Write swift-version--1AB21518FC5DEDBE.txt
+error: emit-module command failed with exit code 1 (use -v to see invocation)
+[5/8] Emitting module CartTests
+/work/project/Tests/CartTests/CartTests.swift:1:8: error: no such module 'Testing'
+1 | import Testing
+  |        `- error: no such module 'Testing'
+2 | @testable import Cart
+3 | 
+[6/8] Compiling CartTests CartTests.swift
+/work/project/Tests/CartTests/CartTests.swift:1:8: error: no such module 'Testing'
+1 | import Testing
+  |        `- error: no such module 'Testing'
+2 | @testable import Cart
+3 | 
+error: fatalError

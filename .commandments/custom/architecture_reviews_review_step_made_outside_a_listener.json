@@ -1,0 +1,59 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "fileMatches": "(^|/)(src/core/modules/reviews|samples/reviews)/"
+            },
+            {
+                "nameIn": [
+                    "run",
+                    "dispatch",
+                    "save"
+                ]
+            },
+            {
+                "argument": {
+                    "at": 0,
+                    "all": [
+                        {
+                            "is": "call"
+                        },
+                        {
+                            "nameIn": [
+                                "MakeReviewStep",
+                                "ShowMark",
+                                "ReviewStep"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "any": [
+                    {
+                        "extendsAny": "CommitListener",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "SaveListener",
+                        "of": "enclosingType"
+                    }
+                ]
+            }
+        ]
+    },
+    "sin": {
+        "name": "review-step-made-outside-a-listener",
+        "description": "A step of a review or a mark about a review is made by a handler or another class, so it is written inside the command that caused it.",
+        "rule": "A step and a mark are consequences of a review event: a listener of the reviews module makes each one from the event.",
+        "skill": "reviews-architecture"
+    }
+}

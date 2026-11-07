@@ -1,0 +1,22 @@
+from core.base.module.module import Module
+from core.base.setting.setting_type import SettingType
+from core.base.setting.setting_value import SettingValue
+
+
+class SampleNotesModule(Module):
+    """A module sample that declares its settings."""
+    move_reason = "it is a sample with no version 4 table"
+    seed_reason = "it is a sample with no rows to show"
+
+    name = "journal.core.sample_notes"
+    settings = [
+        # @sin naming_plain_setting_text
+        SettingValue("saved", "Window settings", "Each window saves its own data.", SettingType.NUMBER, default=1),
+        SettingValue("limit", "Note limit", "How many notes the window lists.", SettingType.NUMBER, default=20),
+        SettingValue("depth", "Depth",
+                     # @sin naming_plain_setting_text
+                     "How deep the notes ride before the engine keeps them.", SettingType.NUMBER, default=3),
+        # @sin architecture_settings_secret_setting_with_default
+        SettingValue("token", "Token", "The token of the notes service.", SettingType.TEXT, default="abc", secret=True),
+        SettingValue("password", "Password", "The password of the notes service.", SettingType.TEXT, secret=True),
+    ]

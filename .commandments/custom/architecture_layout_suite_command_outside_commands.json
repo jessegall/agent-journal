@@ -1,0 +1,42 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/"
+            },
+            {
+                "any": [
+                    {
+                        "extendsAny": "Command"
+                    },
+                    {
+                        "extendsAny": "Handler"
+                    },
+                    {
+                        "extendsAny": "Subcommand"
+                    },
+                    {
+                        "extendsAny": "ReadSubcommand"
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/[^/]+/(modules/[^/]+/)?commands/[^/]+/[^/]+\\.py$"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "suite-command-outside-commands",
+        "description": "A suite's or module's command, handler or subcommand does not sit in a folder of its own under a commands folder.",
+        "rule": "Each command has its own folder in its module's commands folder, holding the command, its handler and its subcommand: commands/<name>/<name>.py, <name>_handler.py and <name>_subcommand.py.",
+        "skill": "plain-code-words"
+    }
+}

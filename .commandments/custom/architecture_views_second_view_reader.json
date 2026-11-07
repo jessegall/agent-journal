@@ -1,0 +1,16 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {"nameIn": ["View", "ViewQuery", "ViewReader", "ViewRows"]}
+        ]
+    },
+    "sin": {
+        "name": "second-view-reader",
+        "description": "A class reads or declares database views beside Query and ViewModel, so view reading is written twice.",
+        "rule": "Read a view through Queries.query(ViewModel) like any table, and declare it as a ViewModel with its select.",
+        "skill": "views-architecture"
+    }
+}

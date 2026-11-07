@@ -1,0 +1,4 @@
+=== RUN   TestTotal
+--- PASS: TestTotal (0.00s)
+PASS
+ok  	example.org/cart	0.109s

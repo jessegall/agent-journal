@@ -1,0 +1,36 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "DockDeclaration"
+            },
+            {
+                "argument": {
+                    "at": 2,
+                    "all": [
+                        {
+                            "is": "literal"
+                        },
+                        {
+                            "text": ""
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "dock-type-without-title",
+        "description": "A dock type declares an empty title, so each card of it draws with no title.",
+        "rule": "Give the dock type a title, such as {row_title} or Memory {row_id}.",
+        "skill": "plain-code-words"
+    }
+}

@@ -1,0 +1,31 @@
+from pathlib import Path
+
+from core.base.database.database import Database
+from core.base.database.migration import Migration
+from core.base.database.statement import Statement
+from core.base.journal_home import JournalHome
+from core.modules.processes.support.output_folder import OutputFolder
+
+READ_SIZE = 200
+
+
+class QueueMembershipMigration(Migration):
+    """Keeps queue membership after admission and recovers active runs from their existing slot files."""
+
+    number = 17
+    statements = ["ALTER TABLE processes ADD COLUMN is_queue_run INTEGER NOT NULL DEFAULT 0",
+                  "UPDATE processes SET is_queue_run = 1 WHERE is_queued = 1"]
+
+    def run(self, database: Database) -> None:
+        super().run(database)
+        database_file = database.rows(Statement("PRAGMA database_list"))[0][2]
+        if not database_file:
+            return
+        folder = OutputFolder(JournalHome(Path(database_file).parent))
+        last_id = 0
+        while rows := database.rows(Statement("SELECT id FROM processes WHERE id > ? AND state IN ('running', 'background')"
+                                              " AND is_queue_run = 0 ORDER BY id LIMIT ?", [last_id, READ_SIZE])):
+            for row in rows:
+                if folder.has_slot(row[0]):
+                    database.update(Statement("UPDATE processes SET is_queue_run = 1 WHERE id = ?", [row[0]]))
+            last_id = rows[-1][0]

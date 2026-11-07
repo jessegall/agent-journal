@@ -1,0 +1,63 @@
+import shutil
+import sqlite3
+from datetime import datetime, timezone
+from pathlib import Path
+
+from core.base.journal_home import JournalHome
+from core.base.provider.hook_manager import HookManager
+from core.base.provider.managed_hooks import ManagedHooks
+from install.code_replacement import CodeReplacement
+from install.hook_switch import HookSwitch
+from install.upgrade_outcome import UpgradeOutcome
+from install.version_four_backup import DATABASE, VersionFourBackup
+from install.version_four_files import CODE_FOLDER, READERS_FOLDER, SHELL_ENTRY, VersionFourFiles
+
+INTEGRITY_PASS = "ok"
+SIDE_FILES = ("-wal", "-shm")
+
+
+class RestoreVersionFour:
+    """Puts version 4 back: with the server stopped and its lock kept, moves the version 5 database aside as a
+    dated file and puts the backup back as version 4's journal.db, with version 4's code beside it. It refuses
+    when the backup is missing or fails sqlite's integrity check."""
+
+    def __init__(self, home: JournalHome) -> None:
+        self.home = home
+
+    def run(self) -> UpgradeOutcome:
+        backup = VersionFourBackup(self.home.folder).latest()
+        if backup is None:
+            return UpgradeOutcome(1, f"no backup of version 4 in {self.home.folder / 'version-4'}: nothing to restore")
+        if self.integrity(backup) != INTEGRITY_PASS:
+            return UpgradeOutcome(1, f"the backup {backup} fails its integrity check: it is not restored")
+        lines: list[str] = []
+        CodeReplacement(self.home).run([lambda: self.restore(backup, lines)])
+        return UpgradeOutcome(0, "\n".join(lines))
+
+    def integrity(self, backup: Path) -> str:
+        connection = sqlite3.connect(f"{backup.resolve().as_uri()}?mode=ro", uri=True)
+        try:
+            return str(connection.execute("PRAGMA integrity_check").fetchone()[0])
+        except sqlite3.DatabaseError as error:
+            return str(error)
+        finally:
+            connection.close()
+
+    def restore(self, backup: Path, lines: list[str]) -> None:
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        moved_names = [f"{self.home.database.name}{suffix}" for suffix in ("", *SIDE_FILES) if (self.home.folder / f"{self.home.database.name}{suffix}").exists()]
+        for name in moved_names:
+            shutil.move(self.home.folder / name, self.home.folder / name.replace("version-5", f"version-5.{stamp}", 1))
+        shutil.copy2(backup, self.home.folder / DATABASE)
+        retired = VersionFourFiles(self.home.folder).retired / CODE_FOLDER
+        if retired.is_dir() and not (self.home.folder / CODE_FOLDER).exists():
+            shutil.copytree(retired, self.home.folder / CODE_FOLDER)
+        readers = VersionFourFiles(self.home.folder).retired / READERS_FOLDER
+        if readers.is_dir() and not (self.home.folder / READERS_FOLDER).exists():
+            shutil.copytree(readers, self.home.folder / READERS_FOLDER)
+        entry = VersionFourFiles(self.home.folder).retired / SHELL_ENTRY
+        if entry.is_file():
+            shutil.copy2(entry, self.home.folder / SHELL_ENTRY)
+        HookManager(self.home.project_folder, ManagedHooks(self.home)).restore()
+        lines.extend([f"version 5's database moved aside as version-5.{stamp}.db", f"version 4's journal.db restored from {backup}",
+                      *HookSwitch(self.home.folder.parent).restore()])

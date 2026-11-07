@@ -1,0 +1,61 @@
+from core.modules.agents.events.agent_ended import AgentEnded
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from core.base.listener.save_listener import SaveListener
+from core.base.model.model import Model
+from core.base.query.queries import Queries
+from core.base.scope.actor_scope import ActorScope
+from core.modules.agents.models.agent import Agent
+from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.support.nudger import Nudger
+from core.base.query.conditions.minimum import Minimum
+from suites.coding.modules.workers.support.worker_job import UNFINISHED_TASKS_SOURCE
+from suites.coding.modules.workers.support.worker_nudges import WORKER_ENDED_WITH_TASKS, WORKER_RESTARTED, WORKER_UNFINISHED_TASKS
+from suites.coding.modules.workers.support.worker_stop import WorkerStop
+from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
+from core.base.command.context import Context
+from suites.coding.modules.workers.support.worker_resume import WorkerResume
+from suites.coding.modules.workers.support.worker_program_wait import WorkerProgramWait
+
+SOURCE = "workers.ended-worker"
+RESUME_LIMIT_COUNT = 3
+
+
+class EndedWorkerListener(SaveListener[AgentEnded]):
+    """A worker that ends with delegated tasks unfinished is told to carry on, which resumes it, so its main
+    agent gets one quiet line; one that ended while its tests wait gets its next task from them, and one that
+    ended while a run of its own goes is started again when the run ends. A worker a person or another agent
+    stopped holds no delegated task or was ended by them; that one, one that reported being stuck and one that
+    keeps ending leave its main agent one line naming all its tasks."""
+
+    name = "workers.ended-worker"
+    disabled_scopes = [ActorScope]
+
+    def __init__(self, nudger: Nudger, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, resume: WorkerResume, waits: WorkerProgramWait) -> None:
+        self.nudger, self.queries, self.unfinished, self.stop = nudger, queries, unfinished, stop
+        self.resume, self.waits = resume, waits
+
+    def handle(self, event: AgentEnded, context: Context) -> None:
+        new = event.row
+        if new.role != AgentRole.WORKER or new.parent_id is None:
+            return
+        unfinished = self.unfinished.rows(new.id)
+        if not unfinished:
+            return
+        delegated = any(task.delegated_to == new.id for task in unfinished)
+        tasks = self.unfinished.names(unfinished)
+        help_requested = self.stop.has_open_help_request(new.id)
+        progress = Minimum("created_at", self.unfinished.last_progress_text(new.id))
+        resume_count = self.queries.query(AgentLine).filter(session_agent_id=new.id, source=UNFINISHED_TASKS_SOURCE).matching(progress).count()
+        should_resume = delegated and not self.stop.is_final(new, context.actor.id) and resume_count < RESUME_LIMIT_COUNT
+        if should_resume:
+            if self.unfinished.has_running_process(new.id):
+                return
+            if not help_requested:
+                self.nudger.send(new.id, WORKER_UNFINISHED_TASKS, UNFINISHED_TASKS_SOURCE, context)
+                state = self.resume.program_state(new)
+                if not state.is_ready:
+                    self.waits.notify_wait(new, context)
+                    return
+                self.nudger.send(new.parent_id, WORKER_RESTARTED, SOURCE, context, worker=new.id, tasks=tasks)
+                return
+        self.nudger.send(new.parent_id, WORKER_ENDED_WITH_TASKS, SOURCE, context, worker=new.id, tasks=tasks)

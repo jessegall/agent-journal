@@ -1,81 +1,56 @@
 ---
 name: writing-story-tests
-description: How a new feature or a change in behaviour starts in this project - its requirements written first as stories, every case and edge case in one file, run red together, then the code. Load it before writing any feature, command or state change.
+description: Write stories of agent behaviour, using this checkout's real commands, hooks and StoryFixture API.
 ---
 
 # Writing story tests
 
-**Behaviour that drives the agent is written as a story before it is built.** Anything that changes what the journal
-tells the agent, what it lets the agent do or refuses, or where the agent's stack goes, is a behaviour that drives the
-agent. Its stories come first: every case it can meet, written and run red, then the code that makes them pass. This is
-how every such feature, fix and change is made here, in a plan or outside one. The parts beneath it, the engine, a
-repository, a parser, a model's pure method, are not stories: they get unit tests of their own, or none.
+Write the behaviour as stories. Cover the ordinary case, the relevant row states and callers,
+refusals and recovery. Put related cases in one file under `tests/stories/core/modules/<module>/` or
+`tests/stories/suites/coding/modules/<module>/`, following the neighbouring files.
 
-A feature starts as its requirements, written as stories in `tests/stories/`, before any of its code. The stories
-are the specification: a case without a story is a case nobody decided.
+## Use the API in this checkout
 
-Stories are the preferred way to test behaviour. A unit test still fits a single part on its own, a parser or a
-model's pure method; the older behaviour tests in `tests/` are looked
-over one by one, those a story now covers are removed, and no new behaviour test is added there.
+Tests receive the `new_story` pytest fixture. Start with `new_story(fixture=SomeStoryFixture)`.
+Read `src/core/testing/story.py`, `src/core/testing/story_fixture.py` and a nearby story before adding a helper.
+The available fixtures live in `tests/stories/core/support/` and module-specific `support/` folders.
 
-## 1. Think every case through first
+```python
+from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
 
-Before a line of a story, write down for yourself what the feature does in each situation it can meet:
 
-- **The plain case**: what it does when nothing is in the way.
-- **Every state a row can be in**: open, started, paused, in testing, blocked, closed. A feature that moves or changes a
-  row keeps its state exactly unless the feature is about changing it.
-- **Every agent that holds the row**: the agent working on it now, a plan that will start it next, a worker or a queue
-  that owns it, a wait on it, an agent in another environment that receives it. Say what each one is told and where its
-  stack ends.
-- **How nobody gets stuck**: after the feature runs, every agent can still stop, go on with its next work, or is told
-  what to do. A refusal names the way out (a flag, a command to run first).
-- **What is refused, and what a flag such as `--force` allows**, and what it never allows.
+def test_a_started_task_names_its_holder(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    story.expect_text("task show 1", "state: started", f"holder_id: {story.agent.id}", actor=story.agent)
+```
 
-## 2. Write every story in one file, in one go
+`story.run(command, actor=actor)` runs the real console and returns a `LineOutcome` with `code` and `output_text`.
+Use `expect_success` for complete output lines, `expect_text` for substrings, `expect_refusal` for a refused write,
+and `expect_rows` for row checks. Set settings through their real commands. Read JSON with `--json` when checking a
+structured response. Exercise hooks through `HookSamples` and `story.hook`, `expect_hook_allowed` or
+`expect_hook_refusal`. Check nudges through their declaration rather than copying their prose.
 
-- File it by subject, then topic: `tests/stories/<subject>/<topic>/<behaviour>.py`, the subject being the agent the story is about
-  its expectations take (`main`, `worker`, `subagent`, `reviewer`, `verifier`), read from the folder; one file per
-  behaviour, named for it: `main/tasks/task_transfer.py`, never `environments.py`. It holds every case of that behaviour
-  and nothing else; another concern gets its own small file. Fixtures go in `tests/stories/fixtures/<subject>/`.
-- One story per case, its name the sentence of what happens:
-  `test_a_paused_task_arrives_paused_and_is_no_longer_offered_here`.
-- Start each story from the fixture whose rows it uses and name the work mode it plays in
-  (`@story(StartedTask, mode=BUILDER_MODE, subject=AgentRole.MAIN)`, the subject the one its folder names; a list or `ALL_MODES` runs it once per mode, its stack's bottom written
-  `ModeFloor`), and close it with
-  `story.expect_stack(story.agents.subject, Ready, Working)`, the stack it leaves, bottom first; the run fails a story that does not close on it.
-- Every agent step and agent check names its agent first, written out, never a default: `story.agents.subject` for the
-  agent the story is about, `story.agents.main`, `story.agents.workers.first()` or `story.agents.workers.get(n)`, the same
-  for reviewers and verifiers, and `story.agents.subagent`: `story.agent_runs(story.agents.subject, "clock-in")`,
-  `result.expect_agent_told(story.agents.main, WorkersNudges.WORKER_REPORTED)`.
-- A step returns what it brought, and a check of it is made on that result: `result = story.agent_writes(...)`, then
-  `result.expect_refused(story.agents.subject, PausingNudges.PAUSED)`; `result.expect_command_text(...)` after
-  `result = story.agent_runs(...)`. Checks of rows and the stack (`expect_task`, `expect_stack`) stay on the story.
-- A fixture keeps the rows it made by kind, `self.tasks.started = story.agent_takes_a_task(story.agents.main, "the footer")`,
-  its helpers as `self.workers.first`, and plays its steps as `story.agents.main`; a story reads them on the story by
-  kind, `story.tasks.started`, `story.plans.first`, `story.messages.second`, and the helpers from `story.agents`, never
-  from the fixture itself. Each row's name says which row it is: started, briefed, first, second, open.
-- Play the agent through `story.agent_runs(...)` and hooks, the user through the viewer's routes, never the CLI.
-- A setting the story needs is set with `@setting(TasksOptions.WAKE_MINUTES, 10)` above the story, one per setting, repeated for more:
-  the user sets it through the viewer's route after the start fixture and before the first step, and the story fails
-  when the journal never reads it. No `@values`: each case is a story of its own, from a fixture.
-- A story runs once, on a VoidProvider that sends and expects nothing of Claude or Codex; `@provider("codex")` marks the
-  few stories where the provider is what is tested.
-- A story holds no assert: every check is an expect method of the builder, which holds the assert. The
-  StoryAssertDetector flags an assert in `tests/stories/`.
-- Numbers come from the code, never copied: `MemoryThresholds.CONTEXT[0]`, `story.setting(option) + 1`,
-  `story.agent_consumes(option)` for as many tool uses as a setting allows.
-- Check what reaches the agent on the step's result (`result.expect_agent_told`, `result.expect_refused`), the rows (`expect_task`, `task_numbers_in`) and
-  the stack.
-- A step the builder lacks is added to the builder in `tests/stories/builder/`, once, for every story to use.
+Shared setup belongs in a `StoryFixture` subclass with `parent`, `steps(story)` and `expect(story)`, or a pytest fixture
+for runtime resources that cannot be cached in a database fixture. Reuse the closest existing fixture. The overlap
+check rejects stories in one file that share two or more first steps; fixture setup does not count as story steps.
+Each test body starts with the action that distinguishes its case.
 
-## 3. Run them together, see them fail
+Drive state changes through the public command or hook that owns them. Do not write a command's rows directly to make
+its test pass. Use the existing `Story` methods; there is no `@story` decorator, `story.agents` collection or
+`story.agent_runs` API in this checkout. A helper belongs in the relevant support module or in `core.testing` when it
+serves all stories. Unit tests cover individual building blocks, rather than replacing stories of agent behaviour.
 
-Run the file once: `journal suite tests/stories/<subject>/<topic>/<behaviour>.py -q`. Every new case should fail for the
-reason you expect. A story that passes before the code exists tests nothing new; a story failing for another reason is
-fixed first.
+## Run the affected stories
 
-## 4. Then write the code
+Run the file and the affected neighbouring files when the behaviour is written:
 
-Write the code until the whole file passes. Then run every story once (`journal suite tests/stories -q`): the path
-overlay fails a story that walks nothing of its own, so two stories that check the same path become one.
+```sh
+.venv/bin/python -m pytest tests/stories/suites/coding/modules/workers/status.py -q
+```
+
+After a failure, run the failed
+tests by name and the files changed since. Workers run only the tests of their changes; the main agent owns any
+required full-suite run. The `journal suite` command is unavailable in this checkout.
+
+A worker's background run is watched automatically. Continue independent work or stop and receive its result when
+it ends. A worker does not need a Monitor or repeated status reads.

@@ -1,0 +1,23 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {"nameIn": ["find", "first"]},
+            {"fileMatches": "(^|/)src/(core/modules|suites)/"},
+            {"of": "child:func", "is": "member-access"},
+            {"inside": {"any": [{"kind": "For"}, {"kind": "AsyncFor"}, {"kind": "ListComp"}, {"kind": "SetComp"}, {"kind": "DictComp"}, {"kind": "GeneratorExp"}]}}
+        ],
+        "reject": [
+            {"testCode": true},
+            {"fileMatches": "/core/modules/plugins/ticks/plugin_card_reading\\.py$"}
+        ]
+    },
+    "sin": {
+        "name": "read-in-a-loop",
+        "description": "A loop reads one row on each turn.",
+        "rule": "Read the rows together with find_many before the loop, then work on the held rows. PluginCardReading is the one file left out: it claims one queued card file at a time and the claim holds the file's lock until the next turn, so the agent ids of the cards are not known before the loop.",
+        "skill": "plain-code-words"
+    }
+}

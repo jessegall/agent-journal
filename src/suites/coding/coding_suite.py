@@ -1,0 +1,68 @@
+from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from core.base.driver.suite import Suite
+from core.base.viewer.layout_preset import LayoutPreset
+from core.base.viewer.layout_shape import split, tabs
+from suites.coding.modules.workers.support.worker_settings import WORKER_TEST_LIMIT
+from suites.coding.support.next_task import NextTask
+from core.base.agent_policy import AgentPolicy
+
+AGENT_WORK_TABS = ("coding.terminal", "coding.file-feed", "tasks.tasks", "drivers.hook-calls", "agents.helpers")
+
+
+class CodingSuite(Suite):
+    """Building software: the builder or the orchestrator drives the main agent, which starts workers,
+    reviewers and verifiers, while helpers read for it; the viewer shows its chat,
+    tasks, plans, agents, questions and their activity and file edits, a phone layout, and version 4's
+    layout presets."""
+
+    name = "coding"
+    task_assigner = NextTask
+    agent_policy = AgentPolicy(
+        job_roles=tuple(["worker"]),
+        active_task_unblocked_roles=tuple(["worker"]),
+        task_roles=("main", "worker"), prompt_roles=("main", "worker"), plugin_roles=("main", "worker"),
+        dispatch_roles=("main", "worker"), stop_required_roles=("main", "worker"),
+        private_output_roles=tuple(["worker"]), reader_request_roles=tuple(["worker"]), queued_run_roles=tuple(["worker"]),
+       automatic_watch_roles=tuple(["worker"]), continuing_run_roles=tuple(["worker"]),
+        project_skill_roles=tuple(["worker"]),
+        pause_retention_roles=tuple(["worker"]),
+        restricted_alias_roles=tuple(["worker"]),
+        saved_command_roles=("main", "worker", "helper", "reviewer", "verifier"),
+        queue_limit_settings=tuple([WORKER_TEST_LIMIT]),
+    )
+    defaults = {AgentRole.MAIN: "coding.builder", AgentRole.WORKER: "coding.worker", AgentRole.HELPER: "coding.helper", AgentRole.REVIEWER: "coding.reviewer",
+                AgentRole.VERIFIER: "coding.verifier"}
+    windows = ["messages.chat", "questions.waiting", "questions.questions", "tasks.tasks", "plans.plans", "agents.agents", "agents.helpers", "schedules.jobs", "memories.memories", "project-rules.rules", "workers.workers", "reviews.reviewers", "agents.transcript", "drivers.hook-calls", "coding.file-feed",
+               "coding.file-edits", "coding.files", "coding.git", "workers.worktrees", "workers.models", "messages.attachments", "coding.terminal", "processes.outputs", "processes.output", "search.search", "dumps.dumps", "secrets.secrets", "skills.skills", "mcp.integrations", "profiles.profiles", "transcriptions.transcriptions", "reminders.reminders", "sharing.shares", "library.teams", "tunnel.tunnel", "reviews.reviewer", "updates.updates", "developer.numbers", "developer.hook-requests", "developer.system-logs", "drivers.nudges", "workers.points", "workers.todos", "documents.documents", "sequences.sequences", "templates.templates", "plugins.plugins", "suggestions.suggestions", "phone.phones", "settings.settings", "settings.project-hooks", "triggers.triggers", "checks.checks", "usage.fitness", "usage.load", "usage.usage", "usage.cost", "usage.context", "coding.work-mode"]
+    layouts = {
+        "home": split("row", 0.5, tabs("messages.chat", "coding.terminal"), tabs("tasks.tasks", "plans.plans", "questions.questions", "coding.file-feed", active="coding.file-feed")),
+        "home@coding.orchestrator": split("row", 0.5, tabs("agents.agents", "coding.file-edits"),
+                                          split("col", 0.5, tabs("tasks.tasks", "plans.plans"), tabs("messages.chat"))),
+        "agent": split("row", 0.5, tabs("messages.chat"), tabs("coding.file-feed", "drivers.hook-calls", "agents.helpers", "coding.terminal")),
+        "phone": tabs("messages.chat", "questions.waiting", "questions.questions", "tasks.tasks", "plans.plans", "agents.agents", "coding.file-feed"),
+        "agent@coding.worker": split("row", 0.5, tabs("coding.file-feed", "coding.terminal"),
+                                     tabs("workers.points", "workers.todos", "drivers.hook-calls", "tasks.tasks")),
+    }
+    presets = {
+        "home": [
+            LayoutPreset("default", "Default", "Chat and side panels", split("row", 0.5, tabs("messages.chat", "coding.terminal"), tabs("tasks.tasks", "plans.plans", "questions.questions", "coding.file-feed", active="coding.file-feed"))),
+            LayoutPreset("developer", "Developer", "A layout for developers",
+                         split("row", 0.62, tabs("messages.chat"), split("col", 0.74, tabs("coding.file-feed", "tasks.tasks"), tabs("coding.terminal")))),
+            LayoutPreset("chat", "Chat only", "Only the chat", tabs("messages.chat")),
+            LayoutPreset("terminal", "Terminal", "Big terminal, small chat", split("row", 0.72, tabs("coding.terminal"), tabs("messages.chat"))),
+            LayoutPreset("review", "Review", "Feed and chat", split("row", 0.5, tabs("coding.file-feed"), tabs("messages.chat"))),
+            LayoutPreset("monitor", "Monitor", "Terminal, feed, tasks",
+                         split("row", 0.62, tabs("coding.terminal"), split("col", 0.55, tabs("coding.file-feed"), tabs("tasks.tasks")))),
+            LayoutPreset("inbox", "Inbox", "Chat, plans, tasks", split("row", 0.6, tabs("messages.chat"), split("col", 0.5, tabs("plans.plans"), tabs("tasks.tasks")))),
+            LayoutPreset("agents", "Agents", "Agents", split("row", 0.34, tabs("messages.chat"), tabs("agents.agents"))),
+        ],
+        "agent": [
+            LayoutPreset("default", "Default", "The chat on the left, the rest on the right",
+                         split("row", 0.5, tabs("messages.chat", "agents.transcript"), tabs(*AGENT_WORK_TABS))),
+            LayoutPreset("chat", "Chat only", "One wide column", tabs("messages.chat", "agents.transcript", *AGENT_WORK_TABS)),
+            LayoutPreset("terminal", "Terminal", "The terminal wide, the chat beside it",
+                         split("row", 0.62, tabs(*AGENT_WORK_TABS), tabs("messages.chat", "agents.transcript"))),
+            LayoutPreset("file-edits", "File edits", "What it changed, next to what it says",
+                         split("row", 0.5, tabs("coding.file-feed", *(name for name in AGENT_WORK_TABS if name != "coding.file-feed")), tabs("messages.chat", "agents.transcript"))),
+        ],
+    }

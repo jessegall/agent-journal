@@ -1,0 +1,11 @@
+3.13: install_deps> python -m pip install 'pytest>=8'
+3.13: commands[0]> pytest tests
+========================= 3 passed in 0.12s =========================
+3.13: OK ✔ in 5.43s
+lint: install_deps> python -m pip install ruff
+lint: commands[0]> ruff check .
+All checks passed!
+lint: OK ✔ in 2.11s
+3.13: OK (5.43=setup[3.21]+cmd[2.22] seconds)
+lint: OK (2.11=setup[1.05]+cmd[1.06] seconds)
+congratulations :)

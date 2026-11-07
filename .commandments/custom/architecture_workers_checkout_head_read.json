@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "file": "modules/workers/**"
+            },
+            {
+                "textMatches": "^(--abbrev-ref|checkout|switch)$"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "checkout-head-read",
+        "description": "The workers module reads the branch a checkout is on with rev-parse --abbrev-ref, or checks out or switches a folder, which moved the environment's checkout under the user in version 4.",
+        "rule": "Name the branch from the worktree row (base_branch, branch) and never move a checkout: the merge refuses while the checkout is on another branch.",
+        "skill": "workers-architecture"
+    }
+}

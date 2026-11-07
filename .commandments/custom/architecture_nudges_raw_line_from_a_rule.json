@@ -1,0 +1,33 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "with_nudges",
+                    "refused",
+                    "final_allowance"
+                ]
+            },
+            {
+                "argument": {
+                    "at": 0,
+                    "is": "literal"
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "raw-line-from-a-rule",
+        "description": "A driver rule says a line as a string, so the line is registered nowhere and has no type.",
+        "rule": "Declare the line as a NudgeDeclaration in the module's <module>_nudges.py, list it in the module's nudges, and say it with its .nudge(...).",
+        "skill": "plain-code-words"
+    }
+}

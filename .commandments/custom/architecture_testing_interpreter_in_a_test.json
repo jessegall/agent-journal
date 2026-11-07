@@ -1,0 +1,30 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "member-access",
+        "where": [
+            {
+                "name": "executable"
+            },
+            {
+                "of": "child:value",
+                "name": "sys"
+            },
+            {
+                "fileMatches": "(^|/)tests/(stories|unit)/"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)tests/(stories/core/base/upgrade/support/released_journal|stories/server/support/server_process|unit/core/base/cli/test_entry_point|unit/core/base/test_leftover_process|unit/server/test_server_files)\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "interpreter-in-a-test",
+        "description": "A story or a unit test starts a fresh Python interpreter, which costs far more than the test around it.",
+        "rule": "Run the code in the test's own process. A test whose subject is a real process belongs in tests/install, or is named in this rule with that reason.",
+        "skill": "plain-code-words"
+    }
+}

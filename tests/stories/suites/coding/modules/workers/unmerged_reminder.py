@@ -1,0 +1,159 @@
+from datetime import timedelta
+
+from core.base.query.queries import Queries
+from core.modules.drivers.models.agent_block import AgentBlock
+from core.testing.story_fixture import StoryFixture
+from suites.coding.modules.workers.support.worker_nudges import WORKER_UNMERGED
+from suites.coding.modules.workers.listeners.worker_merge_block_listener import WorkerMergeBlockListener
+from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from tests.stories.support.story_checks import expect_value
+
+MAIN_SESSION = "s-1"
+REMINDER_INTERVAL = timedelta(seconds=WORKER_UNMERGED.interval.seconds)
+
+
+class MainAgentMerges(StoryFixture):
+    parent = OrchestratorWithOpenTask
+
+    def steps(self, story):
+        story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+
+
+def test_a_worker_whose_delivered_work_is_not_merged_is_named_to_its_main_agent_again_every_interval(new_story):
+    story = new_story(fixture=MainAgentMerges)
+    repository = repository_environment(story)
+    worker = delivered_worker(story, repository)
+    reminder = f"worker:{worker.id} delivered task:1, unmerged"
+    main_lines = f"agent-line list --agent {story.agent.id}"
+    story.tick(MAIN_SESSION)
+    story.tick(MAIN_SESSION)
+    story.expect_rows(story.run(main_lines).output_text.count(reminder) == 1)
+    story.advance(REMINDER_INTERVAL)
+    story.tick(MAIN_SESSION)
+    story.expect_rows(story.run(main_lines).output_text.count(reminder) == 2)
+
+
+def test_a_worker_whose_delivered_work_is_merged_is_not_named_again(new_story):
+    story = new_story(fixture=MainAgentMerges)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    reminder = f"worker:{worker.id} delivered task:1, unmerged"
+    main_lines = f"agent-line list --agent {story.agent.id}"
+    story.tick(MAIN_SESSION)
+    story.expect_rows(story.run(main_lines).output_text.count(reminder) == 1)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    story.advance(REMINDER_INTERVAL)
+    story.tick(MAIN_SESSION)
+    story.expect_rows(story.run(main_lines).output_text.count(reminder) == 1)
+
+
+def test_a_worker_whose_work_is_released_is_not_named_again(new_story):
+    story = new_story(fixture=MainAgentMerges)
+    repository = repository_environment(story)
+    worker = delivered_worker(story, repository)
+    reminder = f"worker:{worker.id} delivered task:1, unmerged"
+    main_lines = f"agent-line list --agent {story.agent.id}"
+    story.tick(MAIN_SESSION)
+    story.expect_success(f'worker release {worker.id} "not wanted"', actor=story.agent)
+    story.advance(REMINDER_INTERVAL)
+    story.tick(MAIN_SESSION)
+    story.expect_rows(story.run(main_lines).output_text.count(reminder) == 1)
+
+
+def test_a_worker_that_has_delivered_nothing_is_not_named(new_story):
+    story = new_story(fixture=MainAgentMerges)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    story.advance(REMINDER_INTERVAL)
+    story.tick(MAIN_SESSION)
+    story.expect_rows(f"worker:{worker.id} delivered" not in story.run(f"agent-line list --agent {story.agent.id}").output_text)
+
+
+def test_the_unmerged_line_names_the_check_while_a_proof_waits(new_story):
+    story = new_story(fixture=MainAgentMerges)
+    repository = repository_environment(story)
+    worker = delivered_worker(story, repository)
+    story.tick(MAIN_SESSION)
+    lines = story.run(f"agent-line list --agent {story.agent.id}")
+    lines.expect_text("journal proof check 1")
+    lines.expect_no_text(f"journal worker merge {worker.id}")
+    story.expect_success("proof check 1", actor=story.agent)
+    story.advance(REMINDER_INTERVAL)
+    story.tick(MAIN_SESSION)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"journal worker merge {worker.id}")
+
+
+def remind(story, count: int) -> None:
+    for _ in range(count):
+        story.advance(REMINDER_INTERVAL)
+        story.tick(MAIN_SESSION)
+
+
+def merge_block_rows(story, worker_id: int) -> list[AgentBlock]:
+    return [row for row in story.container.get(Queries).query(AgentBlock).filter(session_agent_id=story.agent.id).all_rows()
+            if f"journal worker merge {worker_id}" in row.condition_text and row.closed_at is None]
+
+
+def test_two_reminders_do_not_hold_the_main_agent(new_story):
+    story = new_story(fixture=MainAgentMerges)
+    worker = delivered_worker(story, repository_environment(story))
+    remind(story, 2)
+    expect_value(merge_block_rows(story, worker.id), [])
+
+
+def test_the_third_reminder_holds_the_main_agent_until_it_merges_or_gives_a_reason(new_story):
+    story = new_story(fixture=MainAgentMerges)
+    worker = delivered_worker(story, repository_environment(story))
+    remind(story, 3)
+    expect_value(len(merge_block_rows(story, worker.id)), 1)
+
+
+def test_a_reason_starts_the_next_round_of_three_reminders(new_story):
+    story = new_story(fixture=MainAgentMerges)
+    worker = delivered_worker(story, repository_environment(story))
+    remind(story, 3)
+    block = merge_block_rows(story, worker.id)[0]
+    story.expect_success(f'agent-block skip {block.id} --reason "The user wants this held"', actor=story.agent)
+    remind(story, 2)
+    expect_value(merge_block_rows(story, worker.id), [])
+    remind(story, 1)
+    expect_value(len(merge_block_rows(story, worker.id)), 1)
+
+
+def test_a_merged_worker_with_a_new_worktree_has_no_merge_due_block(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+    worker = checked_worker(story, repository)
+    remind(story, 3)
+    expect_value(len(merge_block_rows(story, worker.id)), 1)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    expect_value(merge_block_rows(story, worker.id), [])
+    story.expect_success(f'worker send --wait {worker.id} "Another job"', actor=story.agent)
+    story.tick(MAIN_SESSION)
+    expect_value(merge_block_rows(story, worker.id), [])
+    remind(story, 3)
+    expect_value(merge_block_rows(story, worker.id), [])
+
+
+def test_a_merge_block_left_by_an_older_server_is_closed_on_the_next_tick(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+    worker = checked_worker(story, repository)
+    remind(story, 3)
+    expect_value(len(merge_block_rows(story, worker.id)), 1)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+    with monkeypatch.context() as old_server:
+        old_server.setattr(WorkerMergeBlockListener, "handle", lambda self, event, context: None)
+        story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    expect_value(len(merge_block_rows(story, worker.id)), 1)
+    story.tick(MAIN_SESSION)
+    expect_value(merge_block_rows(story, worker.id), [])

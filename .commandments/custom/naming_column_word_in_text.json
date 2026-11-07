@@ -1,0 +1,23 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "\\b[a-z]+ [a-z]+(_[a-z]+)*_at [a-z]+\\b"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "column-word-in-text",
+        "description": "A word that reads as a column, ending in _at, stands between the words of a sentence: a rename of a variable reached the text.",
+        "rule": "Write the sentence in the words a person uses, such as since your last skip, and keep the _at name in the code.",
+        "skill": "plain-code-words"
+    }
+}

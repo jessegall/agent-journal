@@ -1,0 +1,115 @@
+import re
+from dataclasses import replace
+from datetime import timedelta
+from urllib.parse import parse_qs, unquote, urlsplit
+
+from core.base.clock import Clock
+from core.base.database.kept_rows import KeptRows
+from core.base.driver.nudge import Nudge
+from core.base.driver.tool import Tool
+from core.base.driver.tool_type import ToolType
+from core.base.query.conditions.among import Among
+from core.base.query.conditions.greater import Greater
+from core.base.query.conditions.is_null import IsNull
+from core.base.query.conditions.prefix import Prefix
+from core.base.query.queries import Queries
+from core.base.timestamp import Timestamp
+from core.base.type_guards import is_list, is_mapping
+from core.modules.pins.commands.make_pin.make_pin import MakePin
+from core.modules.pins.models.pin import Pin
+from core.modules.pins.support.pin_nudges import BANG_BUTTON_REQUEST, LINK_PIN_REQUEST, UNPINNED_CLAIM
+
+FILE_TOOLS = (ToolType.READ, ToolType.SEARCH, ToolType.EDIT, ToolType.NEW_FILE)
+LINK = re.compile(r"https?://[^\s<>()\[\]\"'`]+")
+LOCAL_ADDRESS = re.compile(r"^https?://(?:[^/.:]+|127\.0\.0\.1)(?:[:/]|$)")
+PIN_CLAIM = re.compile(r"\b(pinned (?:above|at the top|for you)|(?:i've|i have|i) pinned|(?:it's|it is|now) pinned)\b", re.IGNORECASE)
+PR_ADDRESS = re.compile(r"https://github\.com/[\w.-]+/[\w.-]+/pull/\d+")
+DESIGN_ADDRESS = re.compile(r"^https://claude\.ai/design/[^\s]+$")
+OPEN_LABEL = "Open"
+CLAIM_WINDOW_SECONDS = 60
+BANG_COMMAND = re.compile(r"(?:^|`|\b(?:run|type|enter|try)\s+)!\s?([^\s`][^`\n]*)", re.IGNORECASE | re.MULTILINE)
+
+
+class LinkPinCheck:
+    """The lines a text gets: words that claim a pin no pin in the last minute exists for are named, else
+    the first link no open pin has is offered, each link on its own count, and a ! command the agent asks the
+    user to run is asked to become a button. The link of a closed pin is offered again."""
+
+    def __init__(self, queries: Queries, clock: Clock, kept: KeptRows) -> None:
+        self.queries, self.clock, self.kept = queries, clock, kept
+
+    @staticmethod
+    def is_file_or_read(tool: Tool) -> bool:
+        return tool.category in FILE_TOOLS or (tool.shell is not None and tool.shell.is_readonly)
+
+    def nudges(self, agent_text: str, tool_output: str = "") -> list[Nudge]:
+        if self.claims_missing_pin(agent_text):
+            return [UNPINNED_CLAIM.nudge()]
+        unpinned = self.first_unpinned(f"{agent_text}\n{tool_output}")
+        nudges = [self.keyed(LINK_PIN_REQUEST.nudge(url=unpinned), unpinned)] if unpinned is not None else []
+        command = self.first_unpinned_command(agent_text)
+        return [*nudges, self.keyed(BANG_BUTTON_REQUEST.nudge(), command)] if command is not None else nudges
+
+    @staticmethod
+    def keyed(nudge: Nudge, name: str) -> Nudge:
+        return replace(nudge, key=f"{nudge.key}.{name}")
+
+    def first_unpinned_command(self, text: str) -> str | None:
+        commands = dict.fromkeys(f"! {line.strip()}" for line in BANG_COMMAND.findall(text))
+        pins = self.queries.query(Pin).matching(IsNull("closed_at"))
+        return next((command for command in commands if not pins.filter(link=command).exists()), None)
+
+    def pull_request_pins(self, text: str) -> list[MakePin]:
+        pins = self.queries.query(Pin)
+        links = dict.fromkeys(url.rstrip(".,;:/") for url in LINK.findall(text) if self.is_complete_link(url) and PR_ADDRESS.fullmatch(url.rstrip(".,;:/")))
+        return [MakePin(f"Pull request {url.rsplit('/', 1)[-1]}", url, OPEN_LABEL) for url in links if not pins.matching(Among("link", (url, f"{url}/"))).exists()]
+
+    def design_pins(self, text: str) -> list[MakePin]:
+        links = dict.fromkeys(url.rstrip(".,;:/") for url in LINK.findall(text) if self.is_complete_link(url) and DESIGN_ADDRESS.fullmatch(url))
+        pins = list(self.queries.query(Pin).matching(Prefix("link", "https://claude.ai/design/")).all_rows()) if links else []
+        existing = {self.design_key(pin.link) for pin in pins}
+        made = []
+        for url in links:
+            project, filename = self.design_key(url)
+            if (project, filename) in existing or (not filename and any(key[0] == project for key in existing)):
+                continue
+            made.append(MakePin(self.design_title(url), url, OPEN_LABEL))
+            existing.add((project, filename))
+        return made
+
+    @staticmethod
+    def design_title(url: str) -> str:
+        parsed = urlsplit(url)
+        name = parse_qs(parsed.query).get("file", [parsed.path.rstrip("/").rsplit("/", 1)[-1]])[0]
+        name = unquote(name).replace("-", " ").replace("_", " ")
+        return f"Design: {name}"[:80]
+
+    @staticmethod
+    def design_key(url: str) -> tuple[str, str]:
+        parsed = urlsplit(url)
+        return parsed.path.rstrip("/"), parse_qs(parsed.query).get("file", [""])[0]
+
+    @staticmethod
+    def is_complete_link(url: str) -> bool:
+        decoded = unquote(url)
+        return "…" not in decoded and "..." not in decoded and "\\" not in decoded
+
+    def first_unpinned(self, text: str) -> str | None:
+        links = dict.fromkeys(url.rstrip(".,;:") for url in LINK.findall(text) if self.is_complete_link(url) and not LOCAL_ADDRESS.match(url) and not PR_ADDRESS.match(url) and not DESIGN_ADDRESS.match(url))
+        pins = self.queries.query(Pin).matching(IsNull("closed_at"))
+        return next((url for url in links if not self.kept.scoped_read(
+            "pins", lambda: pins.matching(Among("link", (url.rstrip("/"), f"{url.rstrip('/')}/"))).exists(),
+            "closed_at IS NULL AND link IN (?, ?)", [url.rstrip("/"), f"{url.rstrip('/')}/"], name="pins.open_link")), None)
+
+    def claims_missing_pin(self, text: str) -> bool:
+        if not PIN_CLAIM.search(text):
+            return False
+        window_start = Timestamp(self.clock.timestamp().value - timedelta(seconds=CLAIM_WINDOW_SECONDS)).text
+        return not self.queries.query(Pin).matching(Greater("created_at", window_start)).exists()
+
+    def joined_text(self, value: object) -> str:
+        if isinstance(value, str):
+            return value
+        if is_mapping(value):
+            return "\n".join(self.joined_text(item) for item in value.values())
+        return "\n".join(self.joined_text(item) for item in value) if is_list(value) else ""

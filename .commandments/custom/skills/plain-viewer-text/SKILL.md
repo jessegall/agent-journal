@@ -25,6 +25,14 @@ says what it is about, or what happens when they press it, in the words a newcom
 
 ## How to fix it
 
+- Show a stored state through `stateLabel(model, state)`, including states added by installed modules.
+  Show agent roles through their shared display label. Stored words remain suitable for comparisons and
+  styling, but a template never prints `.state` or `.role` directly.
+
+- A window search uses `SearchBar` or `ListTools` from the window kit and declares its search on
+  `WindowDeclaration`. Use `WindowSearch` for model searches or `WindowReadSearch` for an existing read command.
+  The shared bar owns sticky positioning, spacing and the bottom border; do not wrap it in a second toolbar.
+
 - Write a tag, badge or status as a label, a colon and the value: "Helper: Leslie", "Helpers: Hedy, Benny",
   "Ticket: 12", "Waiting: the agent", "Working: 3 jobs", "Agent: running"; "Delegated" when there is no value.
 
@@ -32,6 +40,9 @@ says what it is about, or what happens when they press it, in the words a newcom
 - Say the thing the user sees: "item", "to-do", "message", "entry", not "row"; "comes with the journal",
   not "ships with".
 - A button says what happens when it is pressed: "Close the document", "Pause the plan".
+- Name the action and its object: "Add credentials", "Create secret", "Edit secret". Avoid vague prompts such as
+  "Enter the values", "Needs a value", "Type what it needs" and "Make it". Explain saved credentials with
+  "Leave blank to keep the saved credential". Name stored settings and data directly, without "its own".
 - A heading names what the user is choosing or reading, in a newcomer's words: "Trigger when",
   never "Where the words count" (rule 59). A heading never ends in a preposition, and an option finishes
   its heading's sentence: "Trigger when" -> "A word appears anywhere".

@@ -1,0 +1,22 @@
+from core.base.database.database import Database
+from core.base.database.kept_rows import KeptRows
+from core.base.model.tables import Tables
+from core.base.query.query import Query
+from core.modules.library.models.library_connection import LibraryConnection
+
+
+class LibraryConnectionQuery(Query[LibraryConnection]):
+    """Reads this journal's connection to a shared server, of which there is at most one."""
+
+    def __init__(self, database: Database, tables: Tables, kept: KeptRows) -> None:
+        super().__init__(database, tables, LibraryConnection)
+        self.kept = kept
+
+    def current(self) -> LibraryConnection | None:
+        return self.kept.read(self.table.name, self.oldest().first, name="library.current_connection")
+
+    def remember(self, connection: LibraryConnection) -> None:
+        self.kept.update(self.table.name, lambda previous: connection, name="library.current_connection")
+
+    def remove(self) -> None:
+        self.kept.update(self.table.name, lambda previous: None, name="library.current_connection")

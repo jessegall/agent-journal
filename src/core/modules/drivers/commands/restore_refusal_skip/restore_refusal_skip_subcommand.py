@@ -1,0 +1,25 @@
+from argparse import ArgumentParser, Namespace
+
+from core.base.caller.caller import Caller
+from core.base.subcommand.output import Output
+from core.base.subcommand.subcommand import Subcommand
+from core.modules.drivers.commands.restore_refusal_skip.restore_refusal_skip import RestoreRefusalSkip
+from core.modules.drivers.models.refusal_skip import RefusalSkip
+
+
+class RestoreRefusalSkipSubcommand(Subcommand[RestoreRefusalSkip, RefusalSkip]):
+    """`journal refusal restore <agent>`: gives an agent its skip back after it lost it."""
+
+    cli_name = "refusal"
+    name = "restore"
+    outward = True
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("agent_id", type=int)
+
+    def command(self, arguments: Namespace, caller: Caller) -> RestoreRefusalSkip:
+        return RestoreRefusalSkip(arguments.agent_id)
+
+    def write_output(self, value: object, output: Output) -> None:
+        if isinstance(value, RefusalSkip):
+            output.line(f"agent:{value.session_agent_id} has its skip back")

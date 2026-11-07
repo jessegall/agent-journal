@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "go",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "(hookSpecificOutput|permissionDecision|additionalContext)"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "file": "**/journal-hook/answer.go"
+            }
+        ]
+    },
+    "sin": {
+        "name": "go-answer-shape-outside-answer",
+        "description": "Go code outside answer.go writes a program's answer shape, so two places decide what the agent program is told.",
+        "rule": "Print every answer through ProgramAnswer in tools/journal-hook/answer.go, from the program's row in the table.",
+        "skill": "plain-code-words"
+    }
+}

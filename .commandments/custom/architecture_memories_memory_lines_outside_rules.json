@@ -1,0 +1,37 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "identifier",
+        "where": [
+            {
+                "name": "MemoryLines"
+            },
+            {
+                "file": "src/core/**"
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/core/modules/memories/rules/**"
+            },
+            {
+                "file": "src/core/modules/memories/memory_lines.py"
+            },
+            {
+                "inside": {
+                    "is": "import"
+                }
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "memory-lines-outside-rules",
+        "description": "Memory lines are written outside the memory module's driver rules, so memories reach the agent by a path no rule, overlay or switch governs.",
+        "rule": "Memories reach the agent only through the memory module's driver rules, which write their lines with MemoryLines.",
+        "skill": "plain-code-words"
+    }
+}

@@ -1,0 +1,43 @@
+Wrote tarball sdist to
+/home/farzeen/Projects/CHIP8_Haskell/dist-newstyle/sdist/CHIP8-Haskell-0.1.0.0.tar.gz
+Resolving dependencies...
+Build profile: -w ghc-8.6.5 -O1
+In order, the following will be built (use -v for more details):
+ - microlens-mtl-0.2.0.1 (lib) (requires build)
+ - vty-5.26 (lib) (requires build)
+ - vty-5.26 (exe:vty-demo) (requires build)
+ - vty-5.26 (exe:vty-mode-demo) (requires build)
+Starting     microlens-mtl-0.2.0.1 (lib)
+Building     microlens-mtl-0.2.0.1 (lib)
+Symlinking vty-mode-demo
+Symlinking vty-demo
+
+Failed to build microlens-mtl-0.2.0.1.
+Build log (
+/home/farzeen/.cabal/logs/ghc-8.6.5/microlens-mtl-0.2.0.1-7f417dfce27f756c385800304bd46c1af81b501ab82fcb967eadb910dc2a13ca.log
+):
+Configuring library for microlens-mtl-0.2.0.1..
+Preprocessing library for microlens-mtl-0.2.0.1..
+Building library for microlens-mtl-0.2.0.1..
+[1 of 2] Compiling Lens.Micro.Mtl.Internal ( src/Lens/Micro/Mtl/Internal.hs, dist/build/Lens/Micro/Mtl/Internal.o )
+
+src/Lens/Micro/Mtl/Internal.hs:68:1: error:
+    Could not find module ‘Lens.Micro’
+    There are files missing in the ‘microlens-0.4.11.2’ package,
+    try running 'ghc-pkg check'.
+    Use -v to see a list of the files searched for.
+   |
+68 | import Lens.Micro
+   | ^^^^^^^^^^^^^^^^^
+
+src/Lens/Micro/Mtl/Internal.hs:69:1: error:
+    Could not find module ‘Lens.Micro.Internal’
+    There are files missing in the ‘microlens-0.4.11.2’ package,
+    try running 'ghc-pkg check'.
+    Use -v to see a list of the files searched for.
+   |
+69 | import Lens.Micro.Internal
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+cabal: Failed to build microlens-mtl-0.2.0.1 (which is required by
+exe:vty-demo from vty-5.26 and exe:vty-mode-demo from vty-5.26). See the build
+log above for details.

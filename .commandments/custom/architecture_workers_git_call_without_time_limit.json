@@ -1,0 +1,58 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "identifier"
+                        },
+                        {
+                            "resolves": "subprocess"
+                        }
+                    ]
+                }
+            },
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "type-declaration"
+                        },
+                        {
+                            "name": "WorktreeGit"
+                        }
+                    ]
+                }
+            },
+            {
+                "not": {
+                    "descendant": {
+                        "all": [
+                            {
+                                "kind": "keyword"
+                            },
+                            {
+                                "name": "timeout"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "git-call-without-time-limit",
+        "description": "A subprocess call in WorktreeGit passes no timeout, so a hung git holds the dispatch or the merge, and its transaction, for ever.",
+        "rule": "Pass timeout= on every subprocess call in WorktreeGit, from its GIT_LIMIT_SECONDS or CHECKOUT_LIMIT_SECONDS.",
+        "skill": "workers-architecture"
+    }
+}

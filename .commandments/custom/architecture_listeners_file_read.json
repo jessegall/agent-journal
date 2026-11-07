@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {"any": [
+                {"nameIn": ["glob", "rglob", "read_text", "read_bytes", "plugin_skills"]},
+                {"all": [
+                    {"name": "skills"},
+                    {"of": "child:func", "all": [
+                        {"of": "child:value", "resolves": "core.modules.skills.support.skill_catalogue.SkillCatalogue"}
+                    ]}
+                ]}
+            ]},
+            {"any": [
+                {"extendsAny": "CommitListener", "of": "enclosingType"},
+                {"all": [
+                    {"name": "SkillCatalogue", "of": "enclosingType"},
+                    {"name": "plugin_skills", "of": "enclosingFunction"}
+                ]}
+            ]}
+        ],
+        "reject": [
+            {"testCode": true},
+            {"fileMatches": "/core/modules/drivers/listeners/bypass_log_listener\\.py$"}
+        ]
+    },
+    "sin": {
+        "name": "file-read-in-a-listener",
+        "description": "A commit listener scans files or asks the skill catalogue to scan them.",
+        "rule": "Read file declarations when they change and supply the held declarations to listeners. The skill catalogue's plugin_skills is reached from skill listeners and is checked too: it lists a skill folder only through SkillCatalogue.listed_skill_files, which runs again only when the folder's version changes. BypassLogListener consumes and removes a new log written by the external Go hook, so reading that new input is required.",
+        "skill": "plain-code-words"
+    }
+}

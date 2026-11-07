@@ -1,0 +1,64 @@
+import json
+import shlex
+import subprocess
+import time
+from pathlib import Path
+
+from core.base.journal_home import JournalHome
+from core.base.performance.performance_state import PerformanceState
+from core.base.timing import Timing
+from core.base.timing_log import TimingLog
+from server.server_files import ServerFiles, socket_path
+from tests.stories.server.support.go_build import GoBuild
+from tests.stories.server.support.server_client import request_answer
+
+ROOT = Path(__file__).resolve().parents[4]
+RUN_TIMEOUT_SECONDS = 30
+
+
+class ClientBinary:
+    """The Go client built once into a story's folder and run against the real server on the story's journal;
+    the server it starts is stopped when the story ends, and every run has a time limit."""
+
+    def __init__(self, home: JournalHome, build_folder: Path) -> None:
+        self.home, self.binary = home, build_folder / "journal-client"
+
+    def __enter__(self) -> "ClientBinary":
+        GoBuild.built("journal", self.binary)
+        return self
+
+    def __exit__(self, *details: object) -> None:
+        self.run("server stop")
+
+    def run(self, line: str) -> subprocess.CompletedProcess[str]:
+        environment = GoBuild.environment(JOURNAL_HOME=str(self.home.folder), JOURNAL_SOURCE=str(ROOT / "src"))
+        return subprocess.run([str(self.binary), *shlex.split(line)], env=environment, capture_output=True, text=True, timeout=RUN_TIMEOUT_SECONDS)
+
+    def expect_answer(self, line: str, expected_line: str) -> None:
+        finished = self.run(line)
+        assert finished.returncode == 0 and expected_line in finished.stdout.splitlines(), (finished.returncode, finished.stdout, finished.stderr)
+
+    def server_pid(self) -> object:
+        health = request_answer(socket_path(self.home), "GET", "/health").json()
+        assert isinstance(health, dict)
+        return health["pid"]
+
+    def expect_server_pid(self, pid: object) -> None:
+        assert self.server_pid() == pid
+
+    def wait_for_finished_start(self) -> None:
+        state, deadline = PerformanceState(self.home), time.monotonic() + RUN_TIMEOUT_SECONDS
+        while not state.can_measure and time.monotonic() < deadline:
+            request_answer(socket_path(self.home), "GET", "/health")
+        assert state.can_measure
+
+    def expect_timing_names(self, line: str, names: list[str]) -> None:
+        log_lines = [json.loads(raw) for raw in TimingLog(self.home).path.read_text().splitlines()]
+        timings = [(entry["request_id"], Timing.parsed(entry["timing"]).stamps) for entry in log_lines if entry["line"] == line]
+        assert [[name for name, _ in stamps] for _, stamps in timings] == [names], log_lines
+        assert timings[0][0].endswith(f"-{timings[0][1][0][1]}"), log_lines
+
+    def expect_no_server(self) -> None:
+        files = ServerFiles(self.home)
+        assert not socket_path(self.home).exists() and files.acquire_lock()
+        files.release_lock()

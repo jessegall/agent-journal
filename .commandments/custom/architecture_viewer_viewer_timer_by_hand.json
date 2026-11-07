@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "setInterval"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)(src/viewer/src/composables/now\\.js|src/viewer/kit/useNow\\.js|src/viewer/kit/frameBridgeClient\\.js|src/viewer/src/platform/busyField\\.js|src/viewer/src/windows/FrameContent\\.vue|src/core/modules/plugins/web/src/PluginServices\\.vue|src/core/modules/agents/web/src/AgentRows\\.vue)$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "viewer-timer-by-hand",
+        "description": "A viewer file starts its own timer to read or to tick, so what an event or the one clock could do becomes another request or another clock.",
+        "rule": "Follow an event with context.follow, read the shared clock with useNow or useSharedNow, or read on an interval with usePoll. A timer is added to this rule's list only for what no event announces.",
+        "skill": "plain-code-words"
+    }
+}

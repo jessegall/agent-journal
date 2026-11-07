@@ -1,0 +1,31 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "fileMatches": "(^|/)(src/core/modules/reviews|samples/reviews)/"
+            },
+            {
+                "nameIn": [
+                    "moved"
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "/models/"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "review-moved-outside-its-model",
+        "description": "A review or a reviewer is moved to another state by code outside its model, so the move skips the command, its guards and its event.",
+        "rule": "A state changes only through the move command of the row: handlers and listeners dispatch AssignReview, AbandonReview, StartReviewer or EndReviewer.",
+        "skill": "reviews-architecture"
+    }
+}

@@ -1,0 +1,37 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "member-access",
+        "where": [
+            {
+                "nameMatches": "^(line|_source_line|display_text|runner_text)$"
+            },
+            {
+                "of": "receiver",
+                "typeLike": "*ShellLine"
+            },
+            {
+                "fileMatches": "(^|/)src/(core|suites)/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(record_hook_call_handler|start_process|runner_rewrite_rule)\\.py$"
+            },
+            {
+                "of": "receiver",
+                "is": "self-reference"
+            }
+        ]
+    },
+    "sin": {
+        "name": "whole-shell-line-read",
+        "description": "Code reads the whole shell line to decide something, so a command is judged by where it stands in a chain rather than by what each part does.",
+        "rule": "Read the parts of the line, or ask an aggregate on ShellLine: has_test_run_part, has_part_writing_files, is_read_only, has_part_running, has_part_matching, parts_running_journal_command, part_texts. Add a new aggregate to ShellLine if none fits. The source line is private to ShellLine: display_text shows it and runner_text hands it to the runner.",
+        "skill": "plain-code-words"
+    }
+}

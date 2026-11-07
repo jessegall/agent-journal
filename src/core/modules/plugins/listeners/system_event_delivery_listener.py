@@ -1,0 +1,39 @@
+import json
+
+from core.base.change.journal_booting import JournalBooting
+from core.base.change.logged_event import LoggedEvent
+from core.base.change.registry_synced import RegistrySynced
+from core.base.change.upgrade_finished import UpgradeFinished
+from core.base.change.upgrade_moved import UpgradeMoved
+from core.base.command.bus import Bus
+from core.base.listener.commit_listener import CommitListener
+from core.base.model.event_form import EventForm
+from core.base.module.module_actors import ModuleActors
+from core.base.query.queries import Queries
+from core.base.registry.registry import Registry
+from core.modules.actors.models.actor_record import ActorRecord
+from core.modules.plugins.commands.deliver_plugin_event.deliver_plugin_event import DeliverPluginEvent
+from core.modules.plugins.support.plugin_payload import PluginPayload
+from core.modules.plugins.support.plugin_subscriptions import PluginSubscriptions
+from core.modules.plugins.support.plugins_module_name import MODULE_NAME
+from core.modules.settings.support.managed_hook_changed import ManagedHookChanged
+from core.modules.settings.support.managed_hook_restored import ManagedHookRestored
+from core.modules.settings.support.managed_hook_scanned import ManagedHookScanned
+
+
+class SystemEventDeliveryListener(CommitListener[JournalBooting | RegistrySynced | UpgradeMoved | UpgradeFinished | ManagedHookChanged | ManagedHookScanned | ManagedHookRestored]):
+    """Saves plugin deliveries for system and file events."""
+
+    name = "plugins.system-event-delivery"
+
+    def __init__(self, subscriptions: PluginSubscriptions, bus: Bus, actors: ModuleActors, registry: Registry, queries: Queries) -> None:
+        self.subscriptions, self.bus, self.actors, self.registry, self.queries = subscriptions, bus, actors, registry, queries
+
+    def handle(self, event: object, logged: LoggedEvent) -> None:
+        subscriptions = self.subscriptions.scripts(logged.event, EventForm.COMMIT)
+        if not subscriptions:
+            return
+        key = self.registry.event_key(logged.event)
+        data = json.dumps(PluginPayload.logged(logged, self.queries.query(ActorRecord).find(logged.actor_id).type.value, {}, {}))
+        for subscription in subscriptions:
+            self.bus.run(DeliverPluginEvent(subscription.plugin_id, None, key, data, subscription.script, logged.id, logged.environment_id), self.actors.actor(MODULE_NAME), cause_id=logged.id)

@@ -1,0 +1,30 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "fileMatches": "(^|/)(src/core/modules/reviews/support/review_report\\.py|samples/reviews/report_sample\\.py)$"
+            },
+            {
+                "any": [
+                    {
+                        "nameMatches": "(database|quer|repositor)"
+                    },
+                    {
+                        "descendant": {
+                            "nameMatches": "(database|quer|repositor)"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "sin": {
+        "name": "report-parser-reads-the-database",
+        "description": "The report parser imports the database, a query or a repository, so reading a report needs a running journal.",
+        "rule": "The parser reads the report text and nothing else; the handler that calls it reads and saves the rows.",
+        "skill": "reviews-architecture"
+    }
+}

@@ -1,0 +1,39 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "vue",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "usePoll"
+            },
+            {
+                "of": "root",
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "call"
+                        },
+                        {
+                            "name": "follow"
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/(viewer/src/windows/PaneStage\\.vue|core/modules/processes/web/src/OutputDock\\.vue)$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "poll-in-a-window-that-follows-events",
+        "description": "A window follows events and also reads on a clock, so what an event announces is read again every few seconds.",
+        "rule": "Read the row again when its event arrives and draw the figures the journal wrote on the row; keep usePoll only for what no event announces. PaneStage reads the usage files of the agent programs on a clock because no event announces them. OutputDock reads a running command's output lines on a clock because no event announces a new line.",
+        "skill": "plain-code-words"
+    }
+}

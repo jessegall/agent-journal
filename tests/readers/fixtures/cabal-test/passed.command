@@ -1,0 +1,1 @@
+cabal new-test

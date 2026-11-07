@@ -1,0 +1,68 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "kind:Module",
+        "where": [
+            {
+                "fileMatches": "(^|/)(src/core|core-boundary/core)/"
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "not": {
+                                "textMatches": "^[\\x22\\x27]?worker(output|input)[\\x22\\x27]?$"
+                            }
+                        },
+                        {
+                            "any": [
+                                {
+                                    "all": [
+                                        {
+                                            "is": "import"
+                                        },
+                                        {
+                                            "any": [
+                                                {
+                                                    "nameMatches": "^suites(\\.|$)"
+                                                },
+                                                {
+                                                    "descendant": {
+                                                        "nameMatches": "^suites(\\.|$)"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "nameMatches": "(?i)(^coding$|worker)"
+                                },
+                                {
+                                    "all": [
+                                        {
+                                            "is": "literal"
+                                        },
+                                        {
+                                            "textMatches": "(?i)(\\bsuites[./][a-z]|\\bcoding\\b|worker)"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "commentMatches": "(?i)(\\bsuites[./][a-z]|\\bcoding\\b|worker)"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "sin": {
+        "description": "Core names a suite or a concept owned by a suite.",
+        "name": "core-names-no-suite",
+        "rule": "Core supplies building blocks and generic contracts; suites declare their own concepts and behavior.",
+        "skill": "core-names-no-suite"
+    }
+}

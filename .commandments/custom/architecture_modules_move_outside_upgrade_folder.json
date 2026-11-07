@@ -1,0 +1,29 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "extendsAny": "VersionFourMove"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/[^/]+/upgrade/|(^|/)src/suites/[^/]+(/modules/[^/]+)?/upgrade/"
+            },
+            {
+                "fileMatches": "(^|/)src/core/base/"
+            }
+        ]
+    },
+    "sin": {
+        "name": "move-outside-upgrade-folder",
+        "description": "An upgrade move sits outside its module's upgrade folder, so the moves of a module are not found in one place.",
+        "rule": "Put a module's VersionFourMove classes in <module>/upgrade.",
+        "skill": "plain-code-words"
+    }
+}

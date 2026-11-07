@@ -1,0 +1,16 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "kind:AnnAssign",
+        "where": [
+            {"next": {"all": [{"is": "expression-statement"}, {"child": {"is": "literal"}}]}}
+        ]
+    },
+    "sin": {
+        "name": "field-docstring",
+        "description": "A docstring under a field or a constant.",
+        "rule": "Name the field so it needs none, or say it in the class's one line.",
+        "skill": "plain-code-words"
+    }
+}

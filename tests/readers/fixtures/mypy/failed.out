@@ -1,0 +1,2 @@
+src/cart.py:1: error: Name "missing" is not defined  [name-defined]
+Found 1 error in 1 file (checked 3 source files)

@@ -1,0 +1,62 @@
+from enum import StrEnum
+
+from core.base.actor import Actor
+from core.base.chat.dock_declaration import DockDeclaration
+from core.base.command.bus import Bus
+from core.base.module.module import Module
+from core.base.module.module_finder import ModuleFinder
+from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
+from core.modules.docking.models.dock_item import DockItem
+from core.testing.story import Story
+
+SAMPLE = "tests.stories.core.modules.docking.support.dock_samples:DockSampleModule"
+TIMEOUT_SECONDS = 10
+
+
+class SampleDockType(StrEnum):
+    TASK = "docksample.task"
+    UNKNOWN_TYPE = "docksample.ghost"
+    UNTITLED = "docksample.untitled"
+
+
+class DockSampleModule(Module):
+    """A sample module the journal does not ship: tasks may be docked, two at most, and leave ten seconds
+    after they end."""
+
+    name = "docksample"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.core.docking", "journal.core.tasks"]
+    docks = [DockDeclaration(SampleDockType.TASK, "task", "Task {row_id}", "task.js", most=2, leaves_after_seconds=TIMEOUT_SECONDS, reads=["task show"]),
+             DockDeclaration(SampleDockType.UNTITLED, "task", "", "task.js", most=2, reads=["task show"])]
+
+
+def ended_task(story: Story, title: str) -> int:
+    task_id = story.new_row_id(f'task make "{title}" --environment main', actor=story.user)
+    story.run(f"task start {task_id}", actor=story.agent)
+    story.run(f'task close {task_id} --outcome "done"', actor=story.agent)
+    return task_id
+
+
+def running_task(story: Story, title: str) -> int:
+    task_id = story.new_row_id(f'task make "{title}" --environment main', actor=story.user)
+    story.run(f"task start {task_id}", actor=story.agent)
+    return task_id
+
+
+def docked(story: Story, task_id: int, type: SampleDockType = SampleDockType.TASK) -> DockItem:
+    return story.container.get(Bus).run(AddDockItem(type, "task", task_id), story.user, environment_id=1)
+
+
+def docked_state(story: Story, item: DockItem) -> str:
+    return story.row(DockItem, item.id).state.value
+
+
+def expect_docked_state(story: Story, item: DockItem, expected) -> None:
+    actual = docked_state(story, item)
+    assert actual == expected, actual
+
+
+def leave_tick(story: Story) -> None:
+    handlers = [handler for module in ModuleFinder(story.home).modules() for handler in module.tick_handlers if handler.label == "dock item leaves"]
+    story.expect_rows(len(handlers) == 1)
+    handlers[0].handler(story.container)

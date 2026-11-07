@@ -1,0 +1,77 @@
+from core.base.driver.command_category import CommandCategory
+from core.base.driver.command_effect import CommandEffect
+from core.base.module.driver_entries import DRIVERS_MODULE
+from core.base.query.queries import Queries
+from core.modules.drivers.models.hook_call import HookCall
+from core.testing.hook_samples import HookSamples
+from core.testing.shell_part import ShellPart
+from tests.stories.core.base.driver.support.fixtures import LeadStarted
+from tests.stories.core.base.driver.support.samples import REMOVAL, SAMPLES
+from core.testing.expect_reply import expect_absent_reply_line, expect_reply_line, expect_reply_refusal
+from tests.stories.support.story_checks import expect_refusal_reply, expect_updated_input_reply
+
+LISTING = HookSamples.shell("ls build", ShellPart("ls", CommandCategory.SEARCH, ["build"], effects=[CommandEffect.READS_FILES]))
+
+
+def managed(sample, answer):
+    return sample.with_fields(foreign=[{"id": "project-check", "exit_code": 0, "stdout": "", "stderr": "", "milliseconds": 1, "timed_out": False, "answer": answer}])
+
+
+def test_a_project_hook_refuses_a_tool_and_the_call_names_it(new_story):
+    story = new_story(SAMPLES, fixture=LeadStarted)
+    reply = story.hook("s-1", managed(LISTING, {"refusal": "unsafe"}))
+    expect_reply_refusal(reply, "project hooks refused for agent:")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "project-check: unsafe", actor=story.agent)
+    story.expect_text(f"hook-call show {reply.hook_call_id}", "refused", "drivers.managed-hooks")
+
+
+def test_a_project_hook_refuses_a_stop(new_story):
+    story = new_story(SAMPLES, fixture=LeadStarted)
+    story.expect_hook_refusal("s-1", managed(HookSamples.stop(), {"refusal": "unfinished"}), "project hooks refused for agent:")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "project-check: unfinished", actor=story.agent)
+
+
+def test_a_project_hook_allow_does_not_override_a_journal_refusal(new_story):
+    story = new_story(SAMPLES, fixture=LeadStarted)
+    story.expect_hook_refusal("s-1", managed(REMOVAL, {"hookSpecificOutput": {"permissionDecision": "allow"}}), "the lead removes no folder")
+
+
+def test_a_project_hook_rewrites_the_tool_input(new_story):
+    story = new_story(SAMPLES, fixture=LeadStarted)
+    reply = story.hook("s-1", managed(LISTING, {"updated_input": {"command": "safe"}}))
+    expect_updated_input_reply(reply, {"command": "safe"})
+
+
+def test_two_rewriters_are_refused_by_name(new_story):
+    story = new_story(SAMPLES, fixture=LeadStarted)
+    story.run("setting make samples.rewrite true")
+    reply = story.hook("s-1", managed(LISTING, {"updated_input": {"command": "safe"}}))
+    expect_reply_refusal(reply, "samples.shell-rewrite")
+    expect_reply_refusal(reply, "project-check")
+
+
+def test_a_journal_refusal_comes_before_a_project_refusal(new_story):
+    story = new_story(SAMPLES, fixture=LeadStarted)
+    story.expect_hook_refusal("s-1", managed(REMOVAL, {"hookSpecificOutput": {"permissionDecision": "deny", "permissionDecisionReason": "foreign"}}), "the lead removes no folder")
+
+
+def test_project_context_is_kept_on_a_line_event(new_story):
+    story = new_story(SAMPLES, fixture=LeadStarted)
+    reply = story.hook("s-1", managed(LISTING, {"lines": ["project guidance"]}))
+    expect_reply_line(reply, "project hooks answered for agent:")
+    expect_absent_reply_line(reply, "project guidance")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "project guidance", actor=story.agent)
+
+
+def test_project_context_is_dropped_on_an_event_without_lines(new_story):
+    story = new_story(SAMPLES, fixture=LeadStarted)
+    reply = story.hook("s-1", managed(HookSamples.sample("session_end").with_fields(accepts_lines=False), {"lines": ["project guidance"]}))
+    expect_absent_reply_line(reply, "project guidance")
+    call = story.container.get(Queries).query(HookCall).find(reply.hook_call_id)
+    rules = call.metadata.module_part(DRIVERS_MODULE)["rules"]
+    expect_rule_rules("rule", "drivers.managed-hooks", "dropped_lines", 1, rules)
+
+
+def expect_rule_rules(text, text_2, text_3, number, rules) -> None:
+    actual = any((rule.get(text) == text_2 and rule.get(text_3) == number for rule in rules))
+    assert actual, actual

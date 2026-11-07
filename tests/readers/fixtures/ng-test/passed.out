@@ -1,0 +1,6 @@
+02 11 2022 09:08:28.605:INFO [karma-server]: Karma v6.4.1 server started at http://localhost:9876/
+02 11 2022 09:08:28.607:INFO [launcher]: Launching browsers Chrome with concurrency unlimited
+02 11 2022 09:08:28.620:INFO [launcher]: Starting browser Chrome
+02 11 2022 09:08:31.312:INFO [Chrome]: Connected on socket -LaEYvD2R7MdcS0-AAAB with id 31534482
+Chrome: Executed 3 of 3 SUCCESS (0.193 secs / 0.172 secs)
+TOTAL: 3 SUCCESS

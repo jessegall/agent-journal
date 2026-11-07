@@ -1,0 +1,47 @@
+[
+    {
+        "line": "echo done grep -n 'x' src/app.py && npm test )",
+        "parts": null,
+        "reason": "Not a shell line: a lone ) that neither bash nor zsh parses. Version 4's Chain reads any text; the front door gives parse_error and no parts, and Python treats the line as unknown."
+    },
+    {
+        "line": "npm test npm test && python3 -m pytest -q 2>&1 | python3 -m pytest -q )",
+        "parts": null,
+        "reason": "Not a shell line: a lone ) that neither bash nor zsh parses."
+    },
+    {
+        "line": "cat notes.txt git status && git status 2>&1 | cat notes.txt | ls -la )",
+        "parts": null,
+        "reason": "Not a shell line: a lone ) that neither bash nor zsh parses."
+    },
+    {
+        "line": "case \"$1\" in\n  start) ls -la ;;\n  stop) cat notes.txt | tail -1;;\n  *) echo none ;;\nesac",
+        "parts": [["case \"$1\" in\n  start) ls -la ;;\n  stop) cat notes.txt | tail -1;;\n  *) echo none ;;\nesac", "R;;", ["case \"$1\" in\n  start) ls -la ;;\n  stop) cat notes.txt | tail -1;;\n  *) echo none ;;\nesac"]]],
+        "reason": "A case statement is no pipe: the | inside one of its branches pipes within that branch. Version 4's Part.stages cuts the whole case at it, since a branch's ) lowers its bracket depth to the top."
+    },
+    {
+        "line": "case \"$1\" in\n  start) grep -n 'x' src/app.py ;;\n  stop) npm test | tail -1;;\n  *) echo none ;;\nesac",
+        "parts": [["case \"$1\" in\n  start) grep -n 'x' src/app.py ;;\n  stop) npm test | tail -1;;\n  *) echo none ;;\nesac", "R;;", ["case \"$1\" in\n  start) grep -n 'x' src/app.py ;;\n  stop) npm test | tail -1;;\n  *) echo none ;;\nesac"]]],
+        "reason": "A case statement is no pipe: the | inside one of its branches pipes within that branch."
+    },
+    {
+        "line": "cat > notes.txt <<EOF && npm test\nbody for done\nEOF",
+        "parts": [["cat > notes.txt <<EOF\nbody for done\nEOF", "R;&", ["cat > notes.txt <<EOF\nbody for done\nEOF"]], ["npm test", "R&;", ["npm test"]]],
+        "reason": "The && after a here-document's operator joins a second command: bash writes the body to cat and then runs npm test. Version 4's Chain takes the rest of the line into the here-document's part."
+    },
+    {
+        "line": "eval 'echo '\"'\"'quoted'\"'\"' && ls -la' < /dev/null && pwd -P >| /tmp/cwd",
+        "parts": [["echo 'quoted'", "R;&", ["echo 'quoted'"]], ["ls -la", "R&&", ["ls -la"]], ["pwd -P >| /tmp/cwd", "S&;", ["pwd -P >| /tmp/cwd"]]],
+        "reason": ">| writes the output to a file even with noclobber set; it is no pipe. Version 4's Part.stages cuts at its |, where Part.commands rightly does not."
+    },
+    {
+        "line": "eval 'echo '\"'\"'quoted'\"'\"' && npm test' < /dev/null && pwd -P >| /tmp/cwd",
+        "parts": [["echo 'quoted'", "R;&", ["echo 'quoted'"]], ["npm test", "R&&", ["npm test"]], ["pwd -P >| /tmp/cwd", "S&;", ["pwd -P >| /tmp/cwd"]]],
+        "reason": ">| is no pipe."
+    },
+    {
+        "line": "eval pwd < /dev/null && pwd -P >| /tmp/cwd",
+        "parts": [["pwd", "R;&", ["pwd"]], ["pwd -P >| /tmp/cwd", "S&;", ["pwd -P >| /tmp/cwd"]]],
+        "reason": ">| is no pipe."
+    }
+]

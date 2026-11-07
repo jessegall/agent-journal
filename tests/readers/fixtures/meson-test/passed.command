@@ -1,0 +1,1 @@
+meson test --exclude buggy

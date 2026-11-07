@@ -1,0 +1,36 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "WindowDeclaration"
+            },
+            {
+                "argument": {
+                    "at": 2,
+                    "all": [
+                        {
+                            "is": "literal"
+                        },
+                        {
+                            "textMatches": "/"
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "panel-outside-web-folder",
+        "description": "A window declares an entry file with a path, so its panel may come from the shell or another module instead of its own web folder.",
+        "rule": "A window's entry is the name of a file in its own module's web/dist, such as plans.js, never a path.",
+        "skill": "plain-code-words"
+    }
+}

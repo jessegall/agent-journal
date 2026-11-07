@@ -1,0 +1,36 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/"
+            },
+            {
+                "any": [
+                    {
+                        "extendsAny": "Model"
+                    },
+                    {
+                        "extendsAny": "ViewModel"
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/[^/]+/(modules/[^/]+/)?models/[^/]+\\.py$"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "suite-model-outside-models",
+        "description": "A suite's or module's model sits outside a models folder.",
+        "rule": "A suite's or module's models, and those of its modules, live in their models folder: src/suites/<suite>/models/ or src/suites/<suite>/modules/<module>/models/.",
+        "skill": "plain-code-words"
+    }
+}

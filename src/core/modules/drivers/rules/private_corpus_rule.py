@@ -1,0 +1,33 @@
+import re
+
+from core.base.driver.agent_hook import AgentHook
+from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_event_name import HookEventName
+from core.base.driver.part import Part
+from core.base.driver.rule_answer import RuleAnswer
+from core.modules.drivers.support.access_nudges import PRIVATE_CORPUS
+
+CORPUS_FOLDER = ".journal/corpus"
+SANDBOXED_TEST = re.compile(r"^(?:\S+=\S+\s+)*go\s+(?:-C\s+\S+\s+)?test\b")
+SANDBOXED_TEST_ALIAS = re.compile(r"^journal\s+alias\s+add\s+\S+\s+[\"']?(?:\S+=\S+\s+)*go\s+(?:-C\s+\S+\s+)?test\b[^;&|<>]*[\"']?(?:\s+--category\s+[\"']?[\w ]+[\"']?)?$")
+
+
+class PrivateCorpusRule(DriverRule):
+    """The private command corpus under .journal/corpus is never named by a shell line, whoever runs it, except to
+    hand its path to a go test, which the corpus tests run in a sandbox; the refusal has no skip."""
+
+    name = "drivers.private-corpus"
+    hook = HookEventName.PRE_TOOL_USE
+    drivers = ["*"]
+    overlay_proof = True
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        shell = hook.event.tool.shell if hook.event.tool is not None else None
+        if shell is None:
+            return RuleAnswer.allowed()
+        names_corpus = any(CORPUS_FOLDER in redirect for redirect in shell.redirects) or any(self.has_private_corpus(part) for part in shell.parts)
+        return RuleAnswer.refused(PRIVATE_CORPUS.nudge()) if names_corpus else RuleAnswer.allowed()
+
+    @staticmethod
+    def has_private_corpus(part: Part) -> bool:
+        return CORPUS_FOLDER in part.text and not (SANDBOXED_TEST.match(part.text.strip()) or SANDBOXED_TEST_ALIAS.match(part.text.strip()))

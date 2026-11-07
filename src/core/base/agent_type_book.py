@@ -1,0 +1,43 @@
+from collections.abc import Sequence
+
+from core.base.access import Access
+from core.base.refusal import Refusal
+from core.base.registry.agent_type_entry import AgentTypeEntry
+
+
+class AgentTypeBook:
+    """Finds registered agent types and follows their inheritance."""
+
+    def __init__(self, entries: Sequence[AgentTypeEntry] = ()) -> None:
+        self.entries = {entry.key: entry for entry in entries}
+
+    def find(self, key: str) -> AgentTypeEntry:
+        if key not in self.entries:
+            raise Refusal(f"{key} is no agent type: no installed module registers it", "register it in a module's agent_types")
+        return self.entries[key]
+
+    def label(self, key: str) -> str:
+        return self.entries[key].label if key in self.entries else key.capitalize()
+
+    def keys_with(self, access: Access) -> tuple[str, ...]:
+        return tuple(entry.key for entry in self.startable() if entry.access is access)
+
+    def extends(self, key: str, base: str) -> bool:
+        return base in self.entries and base in self.type_chain(key)
+
+    def type_chain(self, key: str) -> tuple[str, ...]:
+        chain: list[str] = []
+        visited: set[str] = set()
+        while key:
+            chain.append(key)
+            if key in visited or key not in self.entries:
+                break
+            visited.add(key)
+            key = self.entries[key].extends
+        return tuple(chain)
+
+    def derived_types(self, base: str) -> tuple[str, ...]:
+        return tuple(key for key in self.entries if self.extends(key, base))
+
+    def startable(self) -> tuple[AgentTypeEntry, ...]:
+        return tuple(entry for entry in self.entries.values() if entry.key != "main")

@@ -1,0 +1,11 @@
+{
+    "include": [
+        "src/core",
+        "src/server",
+        "src/suites"
+    ],
+    "pythonVersion": "3.14",
+    "typeCheckingMode": "strict",
+    "venvPath": ".",
+    "venv": ".venv"
+}

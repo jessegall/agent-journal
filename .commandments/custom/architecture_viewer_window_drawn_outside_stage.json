@@ -1,0 +1,44 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "literal"
+                        },
+                        {
+                            "textMatches": "(WindowHost|PageWindow|FrameWindow|DocumentWindow|WindowPane)\\.vue$"
+                        }
+                    ]
+                }
+            },
+            {
+                "file": "src/viewer/src/**"
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/viewer/src/windows/**"
+            },
+            {
+                "file": "src/viewer/src/layout/DetachedWindows.vue"
+            },
+            {
+                "file": "src/viewer/src/layout/ViewWindow.vue"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "window-drawn-outside-stage",
+        "description": "A page or component draws a window itself, so that window skips the pane stage's trust, allowance and failure handling.",
+        "rule": "Every window is drawn by WindowPane, and WindowPane only by PaneStage, a float or a view window; a page mounts PaneStage and nothing else.",
+        "skill": "plain-code-words"
+    }
+}

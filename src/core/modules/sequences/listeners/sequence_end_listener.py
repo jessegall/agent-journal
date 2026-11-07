@@ -1,0 +1,29 @@
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
+from core.base.change.logged_event import LoggedEvent
+from core.base.command.bus import Bus
+from core.base.listener.commit_listener import CommitListener
+from core.base.query.conditions.is_null import IsNull
+from core.base.query.conditions.among import Among
+from core.modules.sequences.commands.move_sequence_run.move_sequence_run import END, MoveSequenceRun
+from core.modules.sequences.support.sequence_events import SequenceEvents
+from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
+from core.modules.sequences.queries.sequence_query import SequenceQuery
+from core.base.change.touched import Touched
+from core.base.model.model import Model
+
+
+class SequenceEndListener(CommitListener[Touched[Model]]):
+    """Ends the run a row started when that row reaches an event its sequence ends on."""
+
+    name = "sequences.end"
+
+    def __init__(self, events: SequenceEvents, runs: SequenceRunQuery, bus: Bus) -> None:
+        self.events, self.runs, self.bus = events, runs, bus
+
+    def handle(self, event: Touched[Model], logged: LoggedEvent) -> None:
+        sequence_ids = self.events.ending(logged.event)
+        if not sequence_ids:
+            return
+        for run in self.runs.filter(subject_id=logged.row_id).matching(IsNull("ended_at")).matching(Among("sequence_id", tuple(sequence_ids))).all_rows():
+            self.bus.run(MoveSequenceRun(END, reason=logged.event, run_id=run.id), Actor(run.session_agent_id, ActorType.AGENT), cause_id=logged.id)

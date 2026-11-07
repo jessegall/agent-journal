@@ -1,0 +1,11 @@
+1/2 testing_failure.test.expect this to fail...FAIL (TestUnexpectedResult)
+/home/ci/work/zig-bootstrap/out/host/lib/zig/std/testing.zig:585:14: 0x12533f9 in expect (std.zig)
+    if (!ok) return error.TestUnexpectedResult;
+             ^
+/home/ci/work/zig-bootstrap/zig/doc/langref/testing_failure.zig:4:5: 0x12534e9 in test.expect this to fail (testing_failure.zig)
+    try std.testing.expect(false);
+    ^
+2/2 testing_failure.test.expect this to succeed...OK
+1 passed; 0 skipped; 1 failed.
+error: the following test command failed with exit code 1:
+/home/ci/work/zig-bootstrap/out/zig-local-cache/o/fa9632522351b2314f3ebe51baf9f089/test --seed=0x26953957

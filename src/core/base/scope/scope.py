@@ -1,0 +1,15 @@
+from collections.abc import Callable
+
+from core.base.change.change import Change
+from core.base.change.logged_event import LoggedEvent
+from core.base.model.model import Model
+from core.base.scope.scope_opening import ScopeOpening
+
+
+class Scope:
+    """Something always active that keeps rows from a reader. A listener, handler, rule or read that may pass it
+    names it in disabled_scopes; the scope itself lists no exceptions."""
+
+    @classmethod
+    def when(cls, passes: Callable[[LoggedEvent | Change[Model]], bool]) -> ScopeOpening:
+        return ScopeOpening(cls, passes)

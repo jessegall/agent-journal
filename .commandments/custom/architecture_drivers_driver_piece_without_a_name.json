@@ -1,0 +1,54 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "any": [
+                    {
+                        "extendsAny": "DriverRule"
+                    },
+                    {
+                        "extendsAny": "Overlay"
+                    },
+                    {
+                        "extendsAny": "Suite"
+                    },
+                    {
+                        "extendsAny": "Driver"
+                    }
+                ]
+            },
+            {
+                "not": {
+                    "descendant": {
+                        "all": [
+                            {
+                                "is": "identifier"
+                            },
+                            {
+                                "name": "name"
+                            },
+                            {
+                                "is": "assignment",
+                                "of": "parent"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "driver-piece-without-a-name",
+        "description": "A suite, driver, driver rule or overlay declares no name, so it cannot be found, listed, switched or recorded.",
+        "rule": "Give it name = \"<module>.<what it is>\" as a class attribute.",
+        "skill": "drivers-architecture"
+    }
+}
