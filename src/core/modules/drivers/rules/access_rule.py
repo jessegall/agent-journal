@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from core.base.access import Access
 from core.base.caller.caller_request import SESSION_VARIABLE
 from core.base.cli.shell_handoff import RUNNER_VARIABLE
@@ -12,6 +13,7 @@ from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.modules.agents.models.agent import Agent
+from core.base.plan_authors import PLAN_AUTHOR_LINES, PlanAuthors
 from core.modules.drivers.rules.readonly_rule import ReadonlyRule
 from core.modules.drivers.support.access_nudges import LIMITED_TOOL, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, UNJUDGED_LINE
 from core.modules.profiles.support.profile_files import ProfileFiles
@@ -31,8 +33,9 @@ class AccessRule(ReadonlyRule):
     overlay_proof = True
     allowed_tools = (ToolType.READ, ToolType.SEARCH, ToolType.SHELL)
 
-    def __init__(self, registry: Registry, providers: Providers, profiles: ProfileFiles, queries: Queries, lookup: SubcommandLookup) -> None:
+    def __init__(self, registry: Registry, providers: Providers, profiles: ProfileFiles, queries: Queries, lookup: SubcommandLookup, plan_authors: PlanAuthors) -> None:
         self.registry, self.providers, self.profiles, self.queries, self.lookup = registry, providers, profiles, queries, lookup
+        self.plan_authors = plan_authors
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
@@ -45,14 +48,20 @@ class AccessRule(ReadonlyRule):
             return RuleAnswer.refused(OLD_HOOK_LINE.nudge())
         if shell is not None and shell.has_uncertain_part:
             return RuleAnswer.refused(UNJUDGED_LINE.nudge())
-        if shell is not None and self.reaches_outward(shell):
+        if shell is not None and self.reaches_outward(shell, hook.agent_id):
             return RuleAnswer.refused(OUTWARD_JOURNAL_LINE.nudge())
         return super().answer(hook)
 
-    def reaches_outward(self, shell: ShellLine) -> bool:
+    def reaches_outward(self, shell: ShellLine, agent_id: int) -> bool:
         if shell.contains_fragment(self.identity_variables()):
             return True
-        return any(self.is_outward(" ".join(part.arguments[:2])) for part in shell.parts_running_journal_command() if HELP_FLAG not in part.arguments)
+        return any(self.is_outward(" ".join(part.arguments[:2])) and not self.plan_author_line(part.arguments, agent_id)
+                   for part in shell.parts_running_journal_command() if HELP_FLAG not in part.arguments)
+
+    def plan_author_line(self, arguments: Sequence[str], agent_id: int) -> bool:
+        line = " ".join(arguments[:2])
+        row_id = next((int(word) for word in arguments[2:] if word.isdigit()), None)
+        return line in PLAN_AUTHOR_LINES and row_id is not None and self.plan_authors.is_author(agent_id, line, row_id)
 
     def is_outward(self, line: str) -> bool:
         if not self.registry.is_outward(line) or line in self.registry.subcommands:

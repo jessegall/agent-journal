@@ -27,3 +27,21 @@ def test_a_read_only_helper_is_still_refused_a_command_that_writes(new_story):
     story.expect_hook_refusal(helper.session, journal_line("task", "delete", "1"), OUTWARD)
     story.expect_hook_refusal(helper.session, journal_line("task", "close", "1"), OUTWARD)
 
+
+
+def test_a_planner_helper_edits_links_and_readies_only_the_plan_it_made(new_story):
+    story = new_story(fixture=StartedHelper)
+    helper = helper_agent(story)
+    helper_actor = Actor(helper.id, ActorType.AGENT)
+    story.expect_success('plan make "Own plan" --environment main', actor=helper_actor)
+    story.expect_success('phase make --plan 1 "Build"', actor=helper_actor)
+    first_task = story.new_row_id('task make "First" --phase 1', actor=helper_actor)
+    second_task = story.new_row_id('task make "Second" --phase 1', actor=helper_actor)
+    story.expect_success('plan make "Other plan" --environment main', actor=story.agent)
+    story.expect_success('phase make --plan 2 "Build"', actor=story.agent)
+    second_plan_task = story.new_row_id('task make "Other" --phase 2', actor=story.agent)
+    for arguments in (("task", "edit", str(first_task), "--complexity", "2"), ("task", "depend", str(second_task), "--on", str(first_task)),
+                  ("task", "comment", str(first_task), "Read doc 1 first"), ("phase", "edit", "1", "--goal", "It builds"), ("plan", "ready", "1")):
+        story.expect_hook_allowed(helper.session, journal_line(*arguments))
+    for arguments in (("task", "depend", str(second_plan_task), "--on", str(first_task)), ("plan", "ready", "2")):
+        story.expect_hook_refusal(helper.session, journal_line(*arguments), OUTWARD)
