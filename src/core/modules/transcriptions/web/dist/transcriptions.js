@@ -1,10 +1,10 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-539865033d93")) { const style = document.createElement("style"); style.id = "window-styles-539865033d93"; style.textContent = ".transcriptions[data-v-8511cfff],.form[data-v-8511cfff],.opened[data-v-8511cfff]{display:flex;flex-direction:column;gap:8px}.bar[data-v-8511cfff]{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.note[data-v-8511cfff]{margin:0;color:var(--text-3);font-size:12px;font-weight:400}.failure[data-v-8511cfff]{margin:0;color:var(--bad, var(--text-2));font-size:12px}.row[data-v-8511cfff]{display:flex;flex-direction:column;gap:2px;width:100%;padding:8px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.title[data-v-8511cfff]{margin:0;font-size:inherit;font-weight:600}input[data-v-8511cfff],textarea[data-v-8511cfff]{box-sizing:border-box;width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface, none);color:inherit;font:inherit}\n"; document.head.appendChild(style); }
-import { ref as v, computed as z, openBlock as r, createBlock as R, unref as n, withCtx as u, createElementVNode as s, createVNode as l, createTextVNode as p, createElementBlock as m, Fragment as A, renderList as I, toDisplayString as d, createCommentVNode as w, withModifiers as K, withDirectives as L, vModelText as N } from "vue";
+if (!document.getElementById("window-styles-309c7b71215c")) { const style = document.createElement("style"); style.id = "window-styles-309c7b71215c"; style.textContent = ".transcriptions[data-v-5ab956f1],.form[data-v-5ab956f1],.opened[data-v-5ab956f1]{display:flex;flex-direction:column;gap:8px}.bar[data-v-5ab956f1]{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.note[data-v-5ab956f1]{margin:0;color:var(--text-3);font-size:12px;font-weight:400}.failure[data-v-5ab956f1]{margin:0;color:var(--bad, var(--text-2));font-size:12px}.row[data-v-5ab956f1]{display:flex;flex-direction:column;gap:2px;width:100%;padding:8px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.title[data-v-5ab956f1]{margin:0;font-size:inherit;font-weight:600}input[data-v-5ab956f1],textarea[data-v-5ab956f1]{box-sizing:border-box;width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface, none);color:inherit;font:inherit}\n"; document.head.appendChild(style); }
+import { ref as f, computed as z, openBlock as r, createBlock as R, unref as n, withCtx as u, createElementVNode as s, createVNode as l, createTextVNode as p, createElementBlock as m, Fragment as A, renderList as I, toDisplayString as d, createCommentVNode as w, withModifiers as K, withDirectives as L, vModelText as N } from "vue";
 import { useWindow as P, useListTools as j, WindowRoom as q, Btn as k, ListTools as G, RowList as H, TimeAgo as J, ResourceLinks as Q, peekRef as X } from "@journal/window-kit";
-const Y = (b, f) => {
+const Y = (b, v) => {
   const x = b.__vccOpts || b;
-  for (const [g, T] of f)
+  for (const [g, T] of v)
     x[g] = T;
   return x;
 }, Z = {
@@ -24,7 +24,7 @@ const Y = (b, f) => {
 }, rt = { class: "title" }, ut = { class: "bar" }, dt = {
   __name: "TranscriptionRows",
   setup(b) {
-    const f = P(), { rows: x, failure: g, loaded: T, act: h, actionFailure: V } = f.props.transcriptions, S = f.props.sources, $ = j(x, { title: (a) => `${a.title} ${a.text}` }), _ = v(!1), o = v({ title: "", text: "" }), i = v(null), c = v(""), C = v(""), B = z(() => o.value.title.trim() && o.value.text.trim()), F = (a) => a.text.trim().slice(0, 140);
+    const v = P(), { rows: x, failure: g, loaded: T, act: h, actionFailure: V } = v.props.transcriptions, S = v.props.sources, $ = j(x, { title: (a) => `${a.title} ${a.text}` }), _ = f(!1), o = f({ title: "", text: "" }), i = f(null), c = f(""), C = f(""), B = z(() => o.value.title.trim() && o.value.text.trim()), F = (a) => a.text.trim().slice(0, 140);
     async function M() {
       (await h(["transcription", "make", o.value.title.trim(), "--text", o.value.text])).ok && (o.value = { title: "", text: "" }, _.value = !1);
     }
@@ -38,7 +38,7 @@ const Y = (b, f) => {
         const y = a.indexOf(`--${e}`);
         y >= 0 && (t[e] = a[y + 1]);
       }
-      return f.readKey(`links.${i.value.id}`, t);
+      return v.readKey(`links.${i.value.id}`, t);
     }
     async function E() {
       (await h(["transcription", "edit", String(i.value.id), "--text", c.value])).ok && (i.value = { ...i.value, text: c.value });
@@ -182,7 +182,7 @@ const Y = (b, f) => {
       _: 1
     }));
   }
-}, ft = /* @__PURE__ */ Y(dt, [["__scopeId", "data-v-8511cfff"]]);
+}, vt = /* @__PURE__ */ Y(dt, [["__scopeId", "data-v-5ab956f1"]]);
 export {
-  ft as default
+  vt as default
 };

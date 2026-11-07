@@ -4,6 +4,6 @@ from core.base.command.command import Command
 
 
 @dataclass(frozen=True)
-class NotifyProgramFault(Command[None]):
+class SendProgramFault(Command[None]):
     agent_id: int
     exit_code: int

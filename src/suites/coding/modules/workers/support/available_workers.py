@@ -28,6 +28,6 @@ class AvailableWorkers:
         if last is None or self.git.has_unmerged_branch(folder, last):
             return False
         provider = self.providers.provider(worker.program)
-        if not provider.session_resumes_here(last.folder, worker.session):
+        if not provider.session_matches_folder(last.folder, worker.session):
             return False
         return (provider.context_percent(self.home, worker.session) or 0) < FULL_SESSION_PERCENT

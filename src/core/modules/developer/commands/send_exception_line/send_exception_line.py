@@ -8,5 +8,4 @@ class SendExceptionLine(Command[None]):
     """Tells the running main agent about an exception that showed in the chat."""
 
     agent_id: int
-    source: str
-    message: str
+    exception_id: int

@@ -4,6 +4,7 @@ from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
+from core.base.row_owner import RowOwner
 
 
 class RollbackRequested(Exception):
@@ -151,3 +152,47 @@ def test_a_write_by_another_connection_is_read_after_a_rollback_that_wrote_nothi
     script.update(Statement("UPDATE notes SET version = 2, text = 'Written by the script' WHERE id = 1"))
     script.close()
     assert kept.read("notes", lambda: texts(database), name="notes.texts") == tuple(["Written by the script"])
+
+
+def test_current_results_reuse_reads_and_refresh_after_a_write(database):
+    kept = KeptRows(database)
+    calls = []
+
+    def load():
+        calls.append(True)
+        return texts(database)
+
+    assert kept.scoped_current(load, name="notes.current") == tuple(["Saved"])
+    assert kept.scoped_current(load, name="notes.current") == tuple(["Saved"])
+    assert len(calls) == 1
+    database.update(Statement("UPDATE notes SET text = 'Changed', version = version + 1"))
+    assert kept.scoped_current(load, name="notes.current") == tuple(["Changed"])
+    assert len(calls) == 2
+
+
+def test_current_results_refresh_after_rollback(database):
+    kept = KeptRows(database)
+    with pytest.raises(RollbackRequested), database.transaction():
+        database.update(Statement("UPDATE notes SET text = 'Temporary', version = version + 1"))
+        assert kept.scoped_current(lambda: texts(database), name="notes.current") == tuple(["Temporary"])
+        raise RollbackRequested
+    assert kept.scoped_current(lambda: texts(database), name="notes.current") == tuple(["Saved"])
+
+
+def test_current_results_keep_environments_separate(database):
+    kept = KeptRows(database)
+    database.row_owner = RowOwner(None, 1)
+    assert kept.scoped_current(lambda: "First", name="notes.current") == "First"
+    database.row_owner = RowOwner(None, 2)
+    assert kept.scoped_current(lambda: "Second", name="notes.current") == "Second"
+    database.row_owner = RowOwner(None, 1)
+    assert kept.scoped_current(lambda: "Unexpected reload", name="notes.current") == "First"
+
+
+def test_current_results_refresh_after_an_external_write(database, tmp_path):
+    kept = KeptRows(database)
+    assert kept.scoped_current(lambda: texts(database), name="notes.current") == tuple(["Saved"])
+    second_database = Database.opened(JournalHome(tmp_path))
+    second_database.update(Statement("UPDATE notes SET text = 'External', version = version + 1"))
+    second_database.close()
+    assert kept.scoped_current(lambda: texts(database), name="notes.current") == tuple(["External"])

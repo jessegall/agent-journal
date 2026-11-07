@@ -1,0 +1,49 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "sin": {
+        "name": "stored-text-in-a-nudge",
+        "description": "A nudge template carries stored text instead of a row number.",
+        "rule": "Name the row and its number, and give a read command. Keep its text in that row. path_fields preserves paths, never commands or reasons.",
+        "skill": "plain-code-words"
+    },
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "of": "child:func",
+                "resolvesLike": "core.base.driver.nudge_declaration.NudgeDeclaration"
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "literal"
+                        },
+                        {
+                            "textMatches": "\\{(?:[a-z]+_)*(?:text|reason|why|command|words|title|summary|report|description|details|content|body|outcome|result|listing|failures)(?:_[a-z]+)*\\}"
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "any": [
+                    {
+                        "argument": {
+                            "at": 0,
+                            "text": "drivers.opening_line"
+                        }
+                    },
+                    {
+                        "argument": {
+                            "at": 0,
+                            "text": "drivers.rule_failed"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

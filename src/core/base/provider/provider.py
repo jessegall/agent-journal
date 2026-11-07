@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from dataclasses import replace
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import ClassVar
@@ -20,6 +21,7 @@ from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.model_tier import ModelTier
 from core.base.provider.peer_note import PeerNote
 from core.base.provider.program_model import ProgramModel
+from core.base.provider.program_server_file import ProgramServerFile
 from core.base.driver.refusal_style import RefusalStyle
 from core.base.provider.session_line import SessionLine
 from core.base.provider.transcript_author import AGENT_AUTHOR, USER_AUTHOR
@@ -52,14 +54,22 @@ class Provider(ABC):
     skills_folder: ClassVar[str] = ".agents/skills"
     hook_file: ClassVar[HookFile]
     hook_files: ClassVar[tuple[Path, ...]] = ()
+    worktree_hook_files: ClassVar[tuple[Path, ...]] = ()
     controls: ClassVar[Sequence[ControlGroup]] = ()
     session_variable: ClassVar[str]
     markers: ClassVar[Sequence[str]]
     models: ClassVar[Sequence[ProgramModel]]
     session_tier: ClassVar[ModelTier] = ModelTier.GENERAL
+    profile_model_setting: ClassVar[str] = ""
 
     def __init__(self, folders: ProgramFolders) -> None:
         self.folders = folders
+
+    def readable_folders(self) -> tuple[Path, ...]:
+        return ()
+
+    def server_files(self, folder: Path) -> tuple[ProgramServerFile, ...]:
+        return ()
 
     def skill_instruction(self, skill: str, path: Path) -> str:
         return f"read this first: {path}"
@@ -68,7 +78,14 @@ class Provider(ABC):
         return [model.name for model in self.models]
 
     def profile_model(self, profile: AgentProfile) -> str:
-        return profile.model
+        return profile.program_models.get(self.name, "")
+
+    @property
+    def model_option(self) -> str:
+        return f"--{self.name}-model"
+
+    def with_profile_model(self, profile: AgentProfile, model: str) -> AgentProfile:
+        return replace(profile, program_models={**profile.program_models, self.name: model})
 
     def session_model(self) -> str:
         return next(model.name for model in self.models if model.tier is self.session_tier)
@@ -99,7 +116,7 @@ class Provider(ABC):
     @abstractmethod
     def transcript_row(self, line: str, position: int) -> TranscriptRow | None: ...
 
-    def session_resumes_here(self, project: Path, session: str) -> bool:
+    def session_matches_folder(self, project: Path, session: str) -> bool:
         return self.transcript(project, session) is not None
 
     def last_reply(self, project: Path, session: str) -> str:

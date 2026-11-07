@@ -1,13 +1,13 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-bbfc27ef32ba")) { const style = document.createElement("style"); style.id = "window-styles-bbfc27ef32ba"; style.textContent = ".worker-models[data-v-703d4f39]{display:flex;flex-direction:column;gap:8px}.worker-models-note[data-v-703d4f39]{margin:0;color:var(--text-3);font-size:12px}.worker-models-refusal[data-v-703d4f39]{margin:0;color:var(--danger);font-size:12.5px}.worker-model[data-v-703d4f39]{display:flex;flex:1;gap:14px;align-items:center;padding:4px 0}.worker-model-program[data-v-703d4f39]{flex:0 0 120px;color:var(--text-2);font-size:12px;font-weight:600}.worker-model-name[data-v-703d4f39]{display:flex;gap:8px;align-items:center}.number[data-v-470549ee]{color:var(--text-3);font-size:12px}.main[data-v-470549ee]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-470549ee]{color:var(--text-3);font-size:12px}.main[data-v-7b462dac]{flex:1}.note[data-v-7b462dac]{color:var(--text-3);font-size:12px}.worker-moment[data-v-b883c89e]{display:flex;gap:10px;justify-content:space-between;width:100%;padding:6px 0;border:0;background:none;color:var(--text-2);font:inherit;font-size:13px;text-align:left;cursor:pointer}.worker-moment time[data-v-b883c89e]{flex:none;color:var(--text-3);font-size:12px}.worker-tab-body[data-v-2e45450f]{padding:14px 16px}.worktree[data-v-e50e6690]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.worktree-names[data-v-e50e6690]{flex:1;min-width:0}.worktree-holder[data-v-e50e6690]{font-weight:500}.worktree-folder[data-v-e50e6690]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.worktree-refusal[data-v-e50e6690]{margin:2px 0 0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
-import { openBlock as p, createBlock as m, unref as e, withCtx as n, createElementVNode as u, toDisplayString as b, createVNode as a, computed as h } from "vue";
-import { useWindow as w, RowList as v, peekRef as y, TimeAgo as g, WindowRoom as x, InnerTabs as W, TabBody as R, SwitchCase as C, AgentRowList as N } from "@journal/window-kit";
-import { _ as k } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+if (!document.getElementById("window-styles-43f28005cf6c")) { const style = document.createElement("style"); style.id = "window-styles-43f28005cf6c"; style.textContent = ".worker-models[data-v-f2e1dbd2]{display:flex;flex-direction:column;gap:8px}.worker-models-note[data-v-f2e1dbd2]{margin:0;color:var(--text-3);font-size:12px}.worker-models-refusal[data-v-f2e1dbd2]{margin:0;color:var(--danger);font-size:12.5px}.worker-model[data-v-f2e1dbd2]{display:flex;flex:1;gap:14px;align-items:center;padding:4px 0}.worker-model-program[data-v-f2e1dbd2]{flex:0 0 120px;color:var(--text-2);font-size:12px;font-weight:600}.worker-model-name[data-v-f2e1dbd2]{display:flex;gap:8px;align-items:center}.number[data-v-d52c1a26]{color:var(--text-3);font-size:12px}.main[data-v-d52c1a26]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-d52c1a26]{color:var(--text-3);font-size:12px}.main[data-v-dca1eb21]{flex:1}.note[data-v-dca1eb21]{color:var(--text-3);font-size:12px}.worker-moment[data-v-774d56be]{display:flex;gap:10px;justify-content:space-between;width:100%;padding:6px 0;border:0;background:none;color:var(--text-2);font:inherit;font-size:13px;text-align:left;cursor:pointer}.worker-moment time[data-v-774d56be]{flex:none;color:var(--text-3);font-size:12px}.worker-tab-body[data-v-ac3caed9]{padding:14px 16px}.worktree[data-v-a10f9f34]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.worktree-names[data-v-a10f9f34]{flex:1;min-width:0}.worktree-holder[data-v-a10f9f34]{font-weight:500}.worktree-folder[data-v-a10f9f34]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.worktree-refusal[data-v-a10f9f34]{margin:2px 0 0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
+import { openBlock as p, createBlock as m, unref as e, withCtx as n, createElementVNode as u, toDisplayString as b, createVNode as a, computed as v } from "vue";
+import { useWindow as k, RowList as h, peekRef as y, TimeAgo as g, WindowRoom as x, InnerTabs as W, TabBody as R, SwitchCase as C, AgentRowList as N } from "@journal/window-kit";
+import { _ as w } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const $ = ["onClick"], B = { class: "worker-moment-text" }, D = {
   __name: "WorkerRecent",
   setup(f) {
-    const o = w(), { rows: r, failure: l, loaded: c, older: i, more: d } = o.props.recent;
-    return (s, _) => (p(), m(e(v), {
+    const o = k(), { rows: r, failure: l, loaded: c, older: i, more: d } = o.props.recent;
+    return (s, _) => (p(), m(e(h), {
       rows: e(r),
       failure: e(l),
       loaded: e(c),
@@ -32,13 +32,13 @@ const $ = ["onClick"], B = { class: "worker-moment-text" }, D = {
       _: 1
     }, 8, ["rows", "failure", "loaded", "older", "more"]));
   }
-}, I = /* @__PURE__ */ k(D, [["__scopeId", "data-v-b883c89e"]]), T = {
+}, I = /* @__PURE__ */ w(D, [["__scopeId", "data-v-774d56be"]]), T = {
   __name: "WorkerDropdown",
   setup(f) {
     var d;
-    const o = w();
+    const o = k();
     o.state.tab = ((d = o.tabs[0]) == null ? void 0 : d.key) ?? "workers";
-    const r = h({ get: () => o.tabs.find((s) => s.key === o.state.tab), set: (s) => o.state.tab = s.key }), { rows: l, failure: c, loaded: i } = o.props.workers;
+    const r = v({ get: () => o.tabs.find((s) => s.key === o.state.tab), set: (s) => o.state.tab = s.key }), { rows: l, failure: c, loaded: i } = o.props.workers;
     return (s, _) => (p(), m(e(x), { padding: "0" }, {
       default: n(() => [
         a(e(W), {
@@ -76,7 +76,7 @@ const $ = ["onClick"], B = { class: "worker-moment-text" }, D = {
       _: 1
     }));
   }
-}, E = /* @__PURE__ */ k(T, [["__scopeId", "data-v-2e45450f"]]);
+}, E = /* @__PURE__ */ w(T, [["__scopeId", "data-v-ac3caed9"]]);
 export {
   E as default
 };

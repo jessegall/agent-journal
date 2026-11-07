@@ -26,5 +26,5 @@ class ExceptionLineListener(CommitListener[Created[JournalException]]):
         if main_agent is None or event.row.message in self.told_messages or not self.settings.flag(EXCEPTION_LINES_SETTING):
             return
         self.told_messages.add(event.row.message)
-        command = SendExceptionLine(main_agent.id, event.row.source, event.row.message)
+        command = SendExceptionLine(main_agent.id, event.row.id)
         self.bus.run(command, Actor.core(), cause_id=logged.id, environment_id=main_agent.environment_id)

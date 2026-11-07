@@ -222,6 +222,7 @@
         "ViewerVersionTextDetector",
         "ViewerVersionAttributeDetector",
         "ViewerVersionScriptDetector",
+        "architecture_nudges_stored_text",
         "WindowContextNamedWindowDetector",
         "WindowContextAssignedWindowDetector"
     ],

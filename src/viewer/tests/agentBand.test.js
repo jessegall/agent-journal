@@ -30,3 +30,16 @@ test("an opened worker shows its branch without a helper stop button", async () 
     expect(band.textContent).toContain("40%");
     expect(band.querySelector("[data-helper-stop]")).toBeNull();
 });
+
+test.each([
+    ["tests running", false], ["judging", false], ["waiting for the merge", false], ["with the main agent", false],
+    ["tests running", true], ["judging", true], ["waiting for the merge", true], ["with the main agent", true],
+])("a card keeps the pending work status %s when open is %s", async (status, open) => {
+    const row = {id: 8, role: "worker", access: "writing", session: "s-8", program: "codex", state: "running", created_at: "2026-11-01T10:00:00Z", ended_at: "2026-11-01T11:00:00Z"};
+    const facts = {id: 8, tasks: [{id: 1, state: "completed"}], work_status: status};
+    const element = await mounted({render: () => h(AgentCard, {row, facts, open})}, context({"usage tool --agent 8": {ok: true, value: {tool: "", note: ""}}}));
+    expect(element.querySelector("[data-agent-work-status]").textContent).toBe(`Status: ${status}`);
+    expect(element.querySelector(".agent-dot").dataset.state).toBe("waiting");
+    expect(element.querySelector(".agent-time").textContent).toContain("Process ended:");
+    expect(element.querySelector("[data-agent-stopped]")).toBeNull();
+});

@@ -11,13 +11,13 @@ LONGEST_NOTICE_CHARACTERS = 800
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
 NUDGE_LIST_NAMES = re.compile(r"NUDGES$")
 # what a line may name: a row's number, a count, or a short fact that is no row's words (an instruction is the program's own fixed sentence)
-ALLOWED_PLACEHOLDERS = frozenset({"failures", "reason", "tool", "limit", "place", "listing", "doc",
-    "uses", "action", "agent", "block", "branch", "category", "check", "command", "count", "dump", "emoji", "environment", "folder", "job", "kept", "left", "limit", "lines", "memories", "memory", "message",
-    "messages", "minutes", "name", "other", "outcome", "output", "outputs", "percent", "phase", "place", "plan", "process", "program", "programs", "proof", "proofs", "question", "queue", "refusal", "request",
-    "path", "instruction", "reader", "result", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "transcription", "url", "wait", "worker", "workers", "writes", "hint", "items", "hint",
+ALLOWED_PLACEHOLDERS = frozenset({"exception", "line", "trigger", "remaining", "reminder", "tool", "limit", "place", "doc",
+    "uses", "action", "agent", "block", "branch", "category", "check", "count", "dump", "emoji", "environment", "folder", "job", "kept", "left", "limit", "lines", "memories", "memory", "message",
+    "messages", "minutes", "name", "other", "output", "outputs", "percent", "phase", "place", "plan", "process", "program", "programs", "proof", "proofs", "question", "queue", "refusal", "request",
+    "path", "instruction", "reader", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "transcription", "url", "wait", "worker", "workers", "writes", "hint", "items", "hint",
 })
-# whole lines that come from outside the journal's own words: a plugin's, a trigger the user wrote, a driver's declared opening, a rule's failure
-FOREIGN_TEMPLATES = frozenset({"PARENT_SHORT_REPORT", "REMINDER_LINE", "REMINDER_BLOCK", "PLUGIN_LINE", "PLUGIN_REFUSAL", "TRIGGER_LINE", "TRIGGER_DENIES", "OPENING_LINE", "RULE_FAILED", "MANAGED_HOOK_LINE", "MANAGED_HOOK_REFUSAL"})
+# Static driver instructions and runtime rule diagnostics have no stored resource.
+FOREIGN_TEMPLATES = frozenset({"OPENING_LINE", "RULE_FAILED"})
 
 def source_files() -> list[Path]:
     return [path for folder in ("src/core", "src/suites") for path in (ROOT / folder).rglob("*.py")]

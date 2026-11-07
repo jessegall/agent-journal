@@ -3,6 +3,9 @@ from dataclasses import dataclass, replace
 from core.base.model.model import Model
 from core.base.model.session_private import SessionPrivate
 from core.base.timestamp import Timestamp
+from core.base.driver.nudge import Nudge
+from core.modules.drivers.support.driver_nudges import AGENT_LINE_AVAILABLE
+from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.modules.drivers.models.lifecycles.agent_line_lifecycle import AgentLineLifecycle
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 
@@ -15,6 +18,7 @@ class AgentLine(SessionPrivate, Model):
     hidden_state = AgentLineState.HIDDEN
     model_name = "agent_line"
     cli_name = "agent-line"
+    hidden_fields = frozenset(["nudge_json"])
     lifecycle = AgentLineLifecycle
 
     session_agent_id: int
@@ -26,4 +30,11 @@ class AgentLine(SessionPrivate, Model):
     repeats_without_hook: bool = False
     state: AgentLineState = AgentLineState.WAITING
     delivered_at: Timestamp | None = None
+    nudge_json: str | None = None
+
+    @property
+    def nudge(self) -> Nudge:
+        if self.nudge_json is None:
+            return AGENT_LINE_AVAILABLE.nudge(line=self.id)
+        return NudgeDeclaration.restore(self.nudge_json)
 

@@ -1,11 +1,20 @@
 from core.base.database.statement import Statement
+from core.base.agent_work import AgentWork
 
 
 class AgentActivity:
-    """An agent whose process runs and whose session is not retired."""
+    """An agent whose process runs or whose work still holds its place."""
+
+    def __init__(self, work: AgentWork) -> None:
+        self.work = work
 
     def statement(self) -> Statement:
-        return Statement("ended_at IS NULL AND retired_at IS NULL")
+        pending = tuple(self.work.pending())
+        if not pending:
+            return Statement("ended_at IS NULL AND retired_at IS NULL")
+        placeholders = ", ".join("?" for _ in pending)
+        return Statement(f"(ended_at IS NULL OR id IN ({placeholders})) AND retired_at IS NULL", pending)
 
     def idle(self) -> Statement:
-        return Statement("(ended_at IS NOT NULL AND retired_at IS NULL)")
+        active = self.statement()
+        return Statement(f"(NOT ({active.sql}) AND retired_at IS NULL)", active.parameters)

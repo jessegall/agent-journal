@@ -7,7 +7,7 @@ from core.modules.messages.commands.record_parent_report.record_parent_report im
 from core.modules.agents.support.receivers import Receivers
 from core.modules.agents.models.agent import Agent
 from core.modules.profiles.support.profile_files import ProfileFiles
-from core.modules.agents.support.report_nudges import EMPTY_REPORT_TEXT, PARENT_REPORT, PARENT_REPORT_SOURCE, PARENT_SHORT_REPORT, SHORT_REPORT_CHARACTERS
+from core.modules.agents.support.report_nudges import EMPTY_REPORT_TEXT, PARENT_REPORT, PARENT_REPORT_SOURCE
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.messages.models.enums.message_type import MessageType
@@ -15,8 +15,7 @@ from core.modules.messages.models.message import Message
 
 
 class RecordParentReportHandler(Handler[RecordParentReport, Message]):
-    """Saves a private report, ends the job it answers and gives the receiver the message number by a line that
-    wakes it; a short report on a job goes inside the line, so the receiver needs no turn to read it."""
+    """Saves a private report, ends its job and gives the receiver the message number."""
 
     command = RecordParentReport
     disabled_scopes = [ActorScope]
@@ -44,7 +43,4 @@ class RecordParentReportHandler(Handler[RecordParentReport, Message]):
 
     def notify_receiver(self, command: RecordParentReport, message: Message, context: Context) -> None:
         receiver = self.receivers.receiver(command.parent_id)
-        if command.job_id is not None and len(message.text) <= SHORT_REPORT_CHARACTERS:
-            self.nudger.send(receiver.id, PARENT_SHORT_REPORT, PARENT_REPORT_SOURCE, context, agent=command.agent_id, message=message.id, report=message.text)
-            return
         self.nudger.send(receiver.id, PARENT_REPORT, PARENT_REPORT_SOURCE, context, agent=command.agent_id, message=message.id)

@@ -25,9 +25,11 @@ WAIT_DESCRIPTION = NudgeDeclaration("tasks.wait_in_words", NudgeType.STEERING, "
 PLAIN_BLOCK = NudgeDeclaration("tasks.plain_block", NudgeType.STEERING, "use --on task, question, plan, worker or helper, or --until; a plain reason waits for a person", turn_limited=False)
 TASK_NAME = NudgeDeclaration("tasks.named_task", NudgeType.STEERING, "task {task} names open task {other}; if it waits on it: journal task block {task} --on task:{other}", turn_limited=False)
 BLOCK_REVIEW_INTERVAL = Interval(Seconds(3600), ClosedTasks(5), Stops(5))
-BLOCK_REVIEW = NudgeDeclaration("tasks.block_review", NudgeType.NOTICE, 'review blocked task {task}: renew with journal task block {task} --reason "<why>", unblock it, or close it', interval=BLOCK_REVIEW_INTERVAL, turn_limited=False)
+BLOCK_REVIEW = NudgeDeclaration("tasks.block_review", NudgeType.NOTICE, 'review blocked task {task}: renew with journal task block {task} --reason "<why>", unblock it, or close it', interval=BLOCK_REVIEW_INTERVAL, turn_limited=False,
+                               plural_text='review blocked tasks {task}: renew each with journal task block <id> --reason "<why>", unblock it, or close it', id_field="task")
 BLOCK_REVIEW_REQUIRED = NudgeDeclaration("tasks.block_review_hold", NudgeType.REFUSAL, 'review blocked task {tasks}: renew each with --reason "<why>", unblock it, or close it')
-USER_BLOCK_REVIEW = NudgeDeclaration("tasks.user_block_review", NudgeType.NOTICE, 'task {task} waits on the user: tell the user what is still needed', turn_limited=False)
+USER_BLOCK_REVIEW = NudgeDeclaration("tasks.user_block_review", NudgeType.NOTICE, 'task {task} waits on the user: tell the user what is still needed', turn_limited=False,
+                                    plural_text='tasks {task} wait on the user: tell the user what is still needed', id_field="task")
 TASK_BRIEF_FIRST = NudgeDeclaration("tasks.brief_first", NudgeType.REFUSAL, "read task {task} first: journal task overview {task}")
 TASK_FILED = NudgeDeclaration("tasks.filed", NudgeType.STEERING, "filed: leave it open, do not start it", turn_limited=False)
 TASK_FILED_KEEP_CURRENT = NudgeDeclaration("tasks.filed_keep_current", NudgeType.STEERING, "filed: carry on with task:{task}, and leave the new one open", turn_limited=False)

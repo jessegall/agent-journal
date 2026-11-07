@@ -11,7 +11,7 @@ from suites.coding.modules.workers.support.merger_nudges import MERGER_MERGED
 
 
 class MergeNextWorkerHandler(Handler[MergeNextWorker, MergeOutcome]):
-    """Merges the worker, and tells the main agent one line."""
+    """Merges a worker after the merger reviews its logs."""
 
     command = MergeNextWorker
     transactional = False
@@ -23,5 +23,5 @@ class MergeNextWorkerHandler(Handler[MergeNextWorker, MergeOutcome]):
         require_merger(self.agents, context)
         outcome = self.bus.run(MergeWorker(command.worker_id, command.read_important), context.actor, environment_id=context.environment_id)
         if not outcome.conflicts:
-            self.bus.run(SendMergerReport(MERGER_MERGED.nudge(worker=command.worker_id).text), context.actor, environment_id=context.environment_id)
+            self.bus.run(SendMergerReport(MERGER_MERGED.nudge(worker=command.worker_id)), context.actor, environment_id=context.environment_id)
         return outcome

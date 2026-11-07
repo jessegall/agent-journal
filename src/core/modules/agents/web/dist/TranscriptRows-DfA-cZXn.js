@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-import { onUnmounted as b, ref as v, computed as B, openBlock as _, createBlock as V, unref as s, withCtx as c, createElementVNode as i, createVNode as w, toDisplayString as m, createElementBlock as x, withModifiers as C, withDirectives as D, withKeys as M, vModelText as R, createTextVNode as E, createCommentVNode as y } from "vue";
+import { onUnmounted as b, ref as h, computed as B, openBlock as _, createBlock as V, unref as s, withCtx as c, createElementVNode as i, createVNode as w, toDisplayString as m, createElementBlock as x, withModifiers as C, withDirectives as D, withKeys as M, vModelText as R, createTextVNode as E, createCommentVNode as y } from "vue";
 import { useWindow as K, WindowRoom as O, AutoScrollPane as L, RowList as U, Btn as W } from "@journal/window-kit";
 const q = (r, t) => {
   const a = r.__vccOpts || r;
@@ -17,15 +17,15 @@ const q = (r, t) => {
     a.reload(t.name);
     const g = a.follow(["hook_call.*"], () => a.reload(t.name));
     b(() => g == null ? void 0 : g());
-    const n = v(""), d = v(!1), f = v("");
-    async function h() {
+    const n = h(""), d = h(!1), f = h("");
+    async function v() {
       if (t.agent === null || !n.value.trim() || d.value) return;
       d.value = !0;
       const e = await a.run(t.helper ? ["helper", "send", String(t.agent), n.value] : ["message", "send", n.value, "--target-agent", String(t.agent)]);
       f.value = e.ok ? "" : e.error, e.ok && (n.value = ""), d.value = !1;
     }
     function S(e) {
-      e.shiftKey || e.isComposing || (e.preventDefault(), h());
+      e.shiftKey || e.isComposing || (e.preventDefault(), v());
     }
     const T = B(() => {
       var e;
@@ -63,7 +63,7 @@ const q = (r, t) => {
           r.agent !== null ? (_(), x("form", {
             key: 0,
             class: "agent-message",
-            onSubmit: C(h, ["prevent"])
+            onSubmit: C(v, ["prevent"])
           }, [
             D(i("textarea", {
               "onUpdate:modelValue": u[0] || (u[0] = (o) => n.value = o),
@@ -76,7 +76,7 @@ const q = (r, t) => {
             ]),
             w(s(W), {
               disabled: d.value || !n.value.trim(),
-              onClick: h
+              onClick: v
             }, {
               default: c(() => [...u[1] || (u[1] = [
                 E("Send", -1)
@@ -90,7 +90,7 @@ const q = (r, t) => {
       _: 1
     }, 8, ["padding"]));
   }
-}, J = /* @__PURE__ */ q(F, [["__scopeId", "data-v-0582f2f0"]]);
+}, J = /* @__PURE__ */ q(F, [["__scopeId", "data-v-a38d5769"]]);
 export {
   J as T,
   q as _

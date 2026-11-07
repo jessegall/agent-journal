@@ -21,4 +21,4 @@ class SendReaderRequestNoticeHandler(Handler[SendReaderRequestNotice, None]):
         request = self.requests.find(command.request_id)
         if request.completed_at is not None or self.notices.has_recent_notice(command.agent_id, request.id, context.timestamp):
             return
-        self.main_line.send(self.request_text.line(request).text, self.notices.source(request.id), context)
+        self.main_line.send_nudge(self.request_text.line(request), self.notices.source(request.id), context)

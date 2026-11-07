@@ -9,6 +9,9 @@ from core.base.file_access import FileAccess
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.command_effect import CommandEffect
 from core.modules.plugins.support.login_path import LoginPath
+from core.base.query.queries import Queries
+from core.modules.drivers.models.agent_line import AgentLine
+from core.testing.expect_reply import expect_reply_allowed, expect_absent_reply_line
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.support.scanned_edits import scanned_edit
@@ -31,7 +34,8 @@ def installed_story(new_story):
 
 def test_a_command_the_plugin_holds_and_refuses_is_refused_with_its_reason(new_story):
     story = installed_story(new_story)
-    story.expect_hook_refusal("s-1", REMOVAL_SAMPLE, "[plugin sample] no deletes here")
+    story.expect_hook_refusal("s-1", REMOVAL_SAMPLE, "plugin:")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "[plugin sample] no deletes here", actor=story.agent)
 
 
 def test_a_command_the_plugin_allows_goes_through(new_story):
@@ -43,14 +47,14 @@ def test_a_file_edit_reaches_the_plugin_after_the_reply_and_its_line_reaches_the
     story = installed_story(new_story)
     scanned_edit(story, "s-1", "a.py")
     story.run_listeners()
-    story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] a.py was judged")
+    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] a.py was judged")
 
 
 def test_a_file_edit_reaches_the_plugin_with_the_lines_the_edit_wrote(new_story):
     story = installed_story(new_story)
     scanned_edit(story, "s-1", "b.py", rows=[{"line_type": "add", "line": 1, "text": "total = 0"}])
     story.run_listeners()
-    story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] b.py wrote total = 0")
+    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] b.py wrote total = 0")
 
 
 def test_a_line_in_the_plugins_queue_reaches_the_agent_once(new_story):
@@ -58,7 +62,7 @@ def test_a_line_in_the_plugins_queue_reaches_the_agent_once(new_story):
     queue = story.home.folder / "plugin-data" / "sample" / "queue"
     queue.mkdir(parents=True, exist_ok=True)
     (queue / "1.json").write_text(json.dumps({"v": 1, "env": "main", "tell": "two sins in b.py"}))
-    story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] two sins in b.py")
+    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] two sins in b.py")
     story.expect_absent_hook_line("s-1", LISTING_SAMPLE, "two sins in b.py")
 
 
@@ -66,10 +70,11 @@ def test_a_changed_plugin_file_switches_the_plugin_off_until_the_user_switches_i
     story = installed_story(new_story)
     program = story.home.folder / "plugins" / "sample" / "run.sh"
     program.write_text(program.read_text() + "\n")
-    story.expect_hook_allowed("s-1", REMOVAL_SAMPLE, "[plugin sample] switched off: its files changed since it was installed")
+    expect_plugin_notice(story, REMOVAL_SAMPLE, "[plugin sample] switched off: its files changed since it was installed")
     story.expect_text("plugin list", "sample", "off", actor=story.user)
     story.run("plugin enable sample", actor=story.user)
-    story.expect_hook_refusal("s-1", REMOVAL_SAMPLE, "[plugin sample] no deletes here")
+    story.expect_hook_refusal("s-1", REMOVAL_SAMPLE, "plugin:")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "[plugin sample] no deletes here", actor=story.agent)
 
 
 def test_a_switched_off_plugin_hears_nothing(new_story):
@@ -87,7 +92,7 @@ def test_a_queue_file_that_is_not_json_is_set_aside_as_the_plugins_fault_and_the
     story.run_listeners()
     story.expect_text("plugin list", "last fault: its queue file 1.json is not JSON", actor=story.user)
     (queue / "2.json").write_text(json.dumps({"v": 1, "env": "main", "tell": "two sins in c.py"}))
-    story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] two sins in c.py")
+    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] two sins in c.py")
 
 
 def test_a_line_reserved_by_a_hook_that_never_committed_is_offered_again(new_story):
@@ -97,7 +102,7 @@ def test_a_line_reserved_by_a_hook_that_never_committed_is_offered_again(new_sto
     reserved_file = queue / "1.json.rolled-back.reserved"
     reserved_file.write_text(json.dumps({"v": 1, "env": "main", "tell": "three sins in d.py"}))
     os.utime(reserved_file, (0, 0))
-    story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] three sins in d.py")
+    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] three sins in d.py")
 
 
 def test_a_line_whose_hook_committed_is_never_offered_again_though_its_file_waits_to_be_deleted(new_story):
@@ -105,7 +110,7 @@ def test_a_line_whose_hook_committed_is_never_offered_again_though_its_file_wait
     queue = story.home.folder / "plugin-data" / "sample" / "queue"
     queue.mkdir(parents=True, exist_ok=True)
     (queue / "1.json").write_text(json.dumps({"v": 1, "env": "main", "tell": "five sins in f.py"}))
-    story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] five sins in f.py")
+    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] five sins in f.py")
     for reserved_file in queue.glob("*.reserved"):
         os.utime(reserved_file, (0, 0))
     story.expect_absent_hook_line("s-1", LISTING_SAMPLE, "five sins in f.py")
@@ -116,7 +121,7 @@ def test_a_line_read_by_a_hook_is_not_read_again_before_it_is_deleted(new_story)
     queue = story.home.folder / "plugin-data" / "sample" / "queue"
     queue.mkdir(parents=True, exist_ok=True)
     (queue / "1.json").write_text(json.dumps({"v": 1, "env": "main", "tell": "four sins in e.py"}))
-    story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] four sins in e.py")
+    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] four sins in e.py")
     story.expect_absent_hook_line("s-1", LISTING_SAMPLE, "four sins in e.py")
     story.run_listeners()
     story.expect_rows(not any(queue.iterdir()))
@@ -158,7 +163,6 @@ def read_counter(monkeypatch, file: Path) -> list[Path]:
 
 
 def start_counter(monkeypatch, program: str) -> list[str]:
-    """The plugin of each start of the program, in order."""
     starts: list[str] = []
     popen = subprocess.Popen
 
@@ -168,3 +172,15 @@ def start_counter(monkeypatch, program: str) -> list[str]:
 
     monkeypatch.setattr(subprocess, "Popen", counted)
     return starts
+
+
+def expect_plugin_notice(story, sample, text):
+    reply = story.hook("s-1", sample)
+    expect_reply_allowed(reply)
+    expect_absent_reply_line(reply, text)
+    saved = next((line for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows() if text in line.text), None)
+    assert saved is not None
+    story.expect_text(f"agent-line show {saved.id}", text, actor=story.agent)
+    next_reply = story.hook("s-1", LISTING_SAMPLE)
+    story.expect_rows(any("agent-line" in line for line in next_reply.lines), text not in "\n".join(next_reply.lines))
+    story.expect_absent_hook_line("s-1", LISTING_SAMPLE, saved.nudge.text)

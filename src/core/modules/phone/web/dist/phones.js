@@ -1,17 +1,17 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-0343b3c1d417")) { const style = document.createElement("style"); style.id = "window-styles-0343b3c1d417"; style.textContent = ".phones[data-v-10e2b08e]{display:flex;flex-direction:column;gap:16px}.phones-pair[data-v-10e2b08e]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}.phones-code[data-v-10e2b08e]{margin:0;font-size:18px;letter-spacing:.08em}.phones-hint[data-v-10e2b08e],.phones-failure[data-v-10e2b08e]{margin:0;color:var(--text-2)}.phones-abilities[data-v-10e2b08e]{margin:0;padding-left:18px;color:var(--text-3);font-size:12.5px}.phones-name[data-v-10e2b08e]{flex:1}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-0d8d30318c4c")) { const style = document.createElement("style"); style.id = "window-styles-0d8d30318c4c"; style.textContent = ".phones[data-v-0d6c6d71]{display:flex;flex-direction:column;gap:16px}.phones-pair[data-v-0d6c6d71]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}.phones-code[data-v-0d6c6d71]{margin:0;font-size:18px;letter-spacing:.08em}.phones-hint[data-v-0d6c6d71],.phones-failure[data-v-0d6c6d71]{margin:0;color:var(--text-2)}.phones-abilities[data-v-0d6c6d71]{margin:0;padding-left:18px;color:var(--text-3);font-size:12.5px}.phones-name[data-v-0d6c6d71]{flex:1}\n"; document.head.appendChild(style); }
 import { computed as N, openBlock as s, createBlock as T, unref as e, withCtx as c, createElementVNode as o, createElementBlock as l, toDisplayString as a, createCommentVNode as h, createVNode as d, createTextVNode as x, Fragment as C, renderList as A } from "vue";
-import { useWindow as I, useListTools as P, WindowRoom as S, Btn as R, QrCode as V, ListTools as E, RowList as b, removed as q } from "@journal/window-kit";
-const F = (u, _) => {
+import { useWindow as I, useListTools as P, WindowRoom as S, Btn as R, QrCode as V, ListTools as E, RowList as q, removed as F } from "@journal/window-kit";
+const O = (u, _) => {
   const r = u.__vccOpts || u;
   for (const [m, f] of _)
     r[m] = f;
   return r;
-}, O = { class: "phones" }, W = {
+}, W = { class: "phones" }, $ = {
   key: 0,
   class: "phones-failure",
   "data-phone-tunnel": ""
-}, $ = { class: "phones-pair" }, j = { class: "phones-code" }, D = {
+}, b = { class: "phones-pair" }, j = { class: "phones-code" }, D = {
   key: 0,
   "data-phone-qr": ""
 }, Q = { class: "phones-hint" }, U = {
@@ -28,9 +28,9 @@ const F = (u, _) => {
       default: c(() => {
         var y;
         return [
-          o("div", O, [
-            ((y = e(g)) == null ? void 0 : y.state) === "disconnected" ? (s(), l("p", W, "A phone can't reach this journal yet: " + a(e(g).reason), 1)) : h("", !0),
-            o("div", $, [
+          o("div", W, [
+            ((y = e(g)) == null ? void 0 : y.state) === "disconnected" ? (s(), l("p", $, "A phone can't reach this journal yet: " + a(e(g).reason), 1)) : h("", !0),
+            o("div", b, [
               d(e(R), {
                 variant: "primary",
                 onClick: n[0] || (n[0] = (t) => e(v)(["phone", "pair"]))
@@ -55,7 +55,7 @@ const F = (u, _) => {
               ])
             ]),
             d(e(E), { tools: e(k) }, null, 8, ["tools"]),
-            d(e(b), {
+            d(e(q), {
               rows: e(k).shown.value,
               failure: e(f),
               loaded: e(B),
@@ -67,7 +67,7 @@ const F = (u, _) => {
                 o("span", G, a(t.name), 1),
                 d(e(R), {
                   small: "",
-                  onClick: (J) => e(v)(["phone", "unpair", String(t.id)], e(q)(t.id))
+                  onClick: (J) => e(v)(["phone", "unpair", String(t.id)], e(F)(t.id))
                 }, {
                   default: c(() => [...n[2] || (n[2] = [
                     x("Unpair", -1)
@@ -83,7 +83,7 @@ const F = (u, _) => {
       _: 1
     }));
   }
-}, X = /* @__PURE__ */ F(H, [["__scopeId", "data-v-10e2b08e"]]);
+}, X = /* @__PURE__ */ O(H, [["__scopeId", "data-v-0d6c6d71"]]);
 export {
   X as default
 };

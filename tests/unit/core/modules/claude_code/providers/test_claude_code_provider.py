@@ -94,10 +94,10 @@ def test_the_hook_file_runs_the_hook_program_as_the_status_line(provider, tmp_pa
 
 def test_a_session_found_under_another_project_does_not_resume_here(provider, tmp_path, monkeypatch):
     monkeypatch.setenv(CONFIG_VARIABLE, str(tmp_path))
-    project, other = tmp_path / "project", tmp_path / "other"
-    transcript = tmp_path / "projects" / ClaudeFolderName.folder_name(other) / "thread.jsonl"
+    project, session_folder = tmp_path / "project", tmp_path / "session-project"
+    transcript = tmp_path / "projects" / ClaudeFolderName.folder_name(session_folder) / "thread.jsonl"
     transcript.parent.mkdir(parents=True)
     transcript.write_text("{}\n")
     assert provider.transcript(project, "thread") == transcript
-    assert not provider.session_resumes_here(project, "thread")
-    assert provider.session_resumes_here(other, "thread")
+    assert not provider.session_matches_folder(project, "thread")
+    assert provider.session_matches_folder(session_folder, "thread")

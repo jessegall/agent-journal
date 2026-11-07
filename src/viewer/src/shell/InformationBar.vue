@@ -6,7 +6,6 @@ import MenuItem from "../kit/MenuItem.vue";
 import MenuLabel from "../kit/MenuLabel.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import {useAgentControls} from "../composables/agentControls.js";
-import {providerName} from "../domain/agents.js";
 import {compactionLine} from "../domain/compaction.js";
 
 // the one line under the agent bar: who the agent is, its state, the plan's allowance used, how full its context is, its model and cost, how
@@ -69,7 +68,7 @@ const uptime = computed(() => {
 <template>
     <div :class="['information', {card}]" data-information-bar>
         <template v-if="agent">
-            <button type="button" class="fact lead" :disabled="card" data-fact="agent" :title="`Session ${agent.session}: stop it`" @click="openMenu($event, 'agent')"><Icon name="agents" :size="12" /> {{ providerName(agent.program) }}</button>
+            <button type="button" class="fact lead" :disabled="card" data-fact="agent" :title="`Session ${agent.session}: stop it`" @click="openMenu($event, 'agent')"><Icon name="agents" :size="12" /> {{ agentPrograms.find((program) => program.name === agent.program)?.title || agent.program }}</button>
             <template v-if="used !== null">
                 <button type="button" class="fact" data-fact="usage" :title="`${used}% of the plan's ${allowance.title} allowance used`" @click="emit('open', 'usage', $event.currentTarget)">
                     <Icon name="allowance" :size="12" /> <span class="gauge usage"><span :style="{width: `${used}%`}" /></span> {{ used }}%

@@ -29,7 +29,7 @@ class LineTyping:
         except Refusal:
             return False
         try:
-            self.typing.type_line(self.agents.find(line.session_agent_id).terminal_id, f"{TERMINAL_PREFIX}{line.text}")
+            self.typing.type_line(self.agents.find(line.session_agent_id).terminal_id, f"{TERMINAL_PREFIX}{line.nudge.text}")
         except Exception as error:
             self.bus.run(ReleaseAgentLine(line.id), actor)
             if isinstance(error, Refusal):
