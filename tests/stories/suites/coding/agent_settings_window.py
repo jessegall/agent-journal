@@ -70,6 +70,7 @@ def work_reading(viewer) -> dict:
 
 def test_s44_the_window_applies_a_preset_in_one_step_and_reads_the_workflow_back(new_story):
     story = new_story(fixture=MainControlsActors)
+    story.expect_text("work-settings show --environment main", "workflow: builder", actor=story.user)
     with person_viewer(story) as viewer:
         shown = work_reading(viewer)
         expect_value((shown["workflow"], shown["controls"][AUTO_MODE]), ("builder", True))
@@ -80,6 +81,7 @@ def test_s44_the_window_applies_a_preset_in_one_step_and_reads_the_workflow_back
 
 def test_s51_the_window_refuses_a_draft_made_from_an_older_reading_and_changes_nothing(new_story):
     story = new_story(fixture=MainControlsActors)
+    story.expect_text("setting show journal.suites.coding.continue-while-delegatable --environment main", "value:", actor=story.user)
     with person_viewer(story) as viewer:
         viewer.set_setting(AUTO_MODE, "true")
         old = work_reading(viewer)["revision"]
