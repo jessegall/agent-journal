@@ -174,6 +174,7 @@ const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props
                 :actions="actions"
                 :time="time"
                 :folded="folded"
+                :collapsed="collapsed"
             />
         </template>
     </ChatDock>

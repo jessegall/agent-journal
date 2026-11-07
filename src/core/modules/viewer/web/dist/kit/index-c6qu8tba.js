@@ -7980,6 +7980,7 @@ const xk = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\
     actions: { type: Object, default: null },
     time: { type: Object, default: null },
     folded: Boolean,
+    collapsed: Boolean,
     environment: { type: String, default: "" }
   },
   setup(e) {
@@ -8007,7 +8008,7 @@ const xk = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\
       subscriptions: R(a),
       environment: R(s),
       permissions: o,
-      options: { row: e.row, head: e.head, foot: e.foot, actions: e.actions, time: e.time, folded: e.folded }
+      options: { row: e.row, head: e.head, foot: e.foot, actions: e.actions, time: e.time, folded: e.folded, collapsed: e.collapsed }
     }, null, 8, ["entry", "subscriptions", "environment", "options"])) : (u(), F(Li, {
       key: 1,
       entry: i.value,
@@ -8037,7 +8038,8 @@ const xk = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\
     foot: { type: Object, default: null },
     actions: { type: Object, default: null },
     time: { type: Object, default: null },
-    folded: Boolean
+    folded: Boolean,
+    collapsed: Boolean
   },
   setup(e) {
     const t = e, n = ze(), a = C(
@@ -8069,8 +8071,9 @@ const xk = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\
           foot: e.foot,
           actions: e.actions,
           time: e.time,
-          folded: e.folded
-        }, null, 8, ["declaration", "row", "head", "foot", "actions", "time", "folded"])) : (u(), f(q, { key: 1 }, [
+          folded: e.folded,
+          collapsed: e.collapsed
+        }, null, 8, ["declaration", "row", "head", "foot", "actions", "time", "folded", "collapsed"])) : (u(), f(q, { key: 1 }, [
           s.value ? (u(), f(q, { key: 0 }, [
             b[2] || (b[2] = m("p", { class: "mark-label" }, "Why it stopped", -1)),
             m("p", Ok, y(s.value), 1)
@@ -8095,7 +8098,7 @@ const xk = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\
       ])
     ], 2));
   }
-}, ps = /* @__PURE__ */ V(Bk, [["__scopeId", "data-v-2f996108"]]), Lk = ["title", "aria-label", "onClick"], Nk = {
+}, ps = /* @__PURE__ */ V(Bk, [["__scopeId", "data-v-d5db6cd9"]]), Lk = ["title", "aria-label", "onClick"], Nk = {
   key: 0,
   class: "mark-refusal",
   role: "alert"
@@ -8559,15 +8562,16 @@ const Ew = { class: "dock-text" }, Aw = ["title"], Ow = {
               foot: r.value,
               actions: c.value,
               time: d.value,
-              folded: e.folded
-            }, null, 8, ["declaration", "mark", "head", "foot", "actions", "time", "folded"])) : w("", !0)
+              folded: e.folded,
+              collapsed: e.collapsed
+            }, null, 8, ["declaration", "mark", "head", "foot", "actions", "time", "folded", "collapsed"])) : w("", !0)
           ];
         }),
         _: 1
       }, 8, ["label", "type", "folded", "body", "collapsed", "data-figure-closing"]);
     };
   }
-}, el = /* @__PURE__ */ V(Lw, [["__scopeId", "data-v-5c6ac3c0"]]), Nw = ["title", "aria-label"], qw = { class: "run-chip-in" }, Dw = {
+}, el = /* @__PURE__ */ V(Lw, [["__scopeId", "data-v-990215c2"]]), Nw = ["title", "aria-label"], qw = { class: "run-chip-in" }, Dw = {
   key: 0,
   class: "run-chip-ring"
 }, Pw = { class: "run-chip-name" }, jw = { class: "run-chip-bar" }, Fw = {
@@ -13573,7 +13577,7 @@ function TM(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const IM = Zr(() => import("./VoiceFigure-ChDE9_Kw.js").then((e) => e.V)), RM = "1.2.0", BM = "3.5";
+const IM = Zr(() => import("./VoiceFigure-CTpXuYiO.js").then((e) => e.V)), RM = "1.2.0", BM = "3.5";
 export {
   Sf as $,
   Ae as A,
