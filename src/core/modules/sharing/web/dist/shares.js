@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-903fa1901b11")) { const style = document.createElement("style"); style.id = "window-styles-903fa1901b11"; style.textContent = ".shares[data-v-83b4b3d6]{display:flex;flex-direction:column;gap:12px}.shares-make[data-v-83b4b3d6],.shares-waiting[data-v-83b4b3d6],.shares-opens[data-v-83b4b3d6],.shares-open[data-v-83b4b3d6]{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}.shares-make[data-v-83b4b3d6],.shares-waiting[data-v-83b4b3d6],.shares-opens[data-v-83b4b3d6]{align-items:flex-start}.shares-target[data-v-83b4b3d6]{width:100%;min-width:0}.shares-option[data-v-83b4b3d6],.shares-row[data-v-83b4b3d6]{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}.shares-label[data-v-83b4b3d6]{margin:0;color:var(--text-3);font-size:12px;font-weight:500}.shares-name[data-v-83b4b3d6]{flex:1;min-width:0}.shares-link[data-v-83b4b3d6],.shares-comment[data-v-83b4b3d6]{margin:0;overflow-wrap:anywhere}.shares-hint[data-v-83b4b3d6],.shares-failure[data-v-83b4b3d6]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-783327b747fc")) { const style = document.createElement("style"); style.id = "window-styles-783327b747fc"; style.textContent = ".shares[data-v-64244b46]{display:flex;flex-direction:column;gap:12px}.shares-make[data-v-64244b46],.shares-waiting[data-v-64244b46],.shares-opens[data-v-64244b46],.shares-open[data-v-64244b46]{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}.shares-make[data-v-64244b46],.shares-waiting[data-v-64244b46],.shares-opens[data-v-64244b46]{align-items:flex-start}.shares-target[data-v-64244b46]{width:100%;min-width:0}.shares-option[data-v-64244b46],.shares-row[data-v-64244b46]{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}.shares-label[data-v-64244b46]{margin:0;color:var(--text-3);font-size:12px;font-weight:500}.shares-name[data-v-64244b46]{flex:1;min-width:0}.shares-link[data-v-64244b46],.shares-comment[data-v-64244b46]{margin:0;overflow-wrap:anywhere}.shares-hint[data-v-64244b46],.shares-failure[data-v-64244b46]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
 import { computed as M, ref as c, openBlock as t, createBlock as B, unref as l, withCtx as d, createElementVNode as n, withModifiers as z, withDirectives as O, vModelText as q, createVNode as u, createElementBlock as i, createCommentVNode as v, Fragment as _, renderList as E, toDisplayString as o, createTextVNode as h } from "vue";
 import { useWindow as G, useListTools as H, WindowRoom as J, Segmented as Q, Switch as X, Btn as f, ListTools as Z, RowList as ee } from "@journal/window-kit";
 const se = (x, N) => {
@@ -272,7 +272,7 @@ const se = (x, N) => {
       _: 1
     }));
   }
-}, Ce = /* @__PURE__ */ se(ge, [["__scopeId", "data-v-83b4b3d6"]]);
+}, Ce = /* @__PURE__ */ se(ge, [["__scopeId", "data-v-64244b46"]]);
 export {
   Ce as default
 };
