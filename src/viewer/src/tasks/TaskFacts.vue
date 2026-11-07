@@ -1,4 +1,5 @@
 <script setup>
+import Icon from "../kit/Icon.vue";
 import Segmented from "../kit/Segmented.vue";
 import {peekRef} from "../route.js";
 import {PRIORITY_LEVELS, namedPriority} from "../domain/taskPriority.js";
@@ -6,6 +7,8 @@ import {PRIORITY_LEVELS, namedPriority} from "../domain/taskPriority.js";
 // where a task sits: its plan and phase, the agent it is queued for or held by, and its priority
 const PRIORITIES = PRIORITY_LEVELS.map(({key, label}) => ({key: String(key), label}));
 const COMPLEXITIES = [1, 2, 3, 4, 5].map((score) => ({key: String(score), label: String(score)}));
+// what each score means, in the words the journal-tasks skill gives agents
+const SCORE_MEANINGS = ["a line or two, nothing to decide", "one file, the way is clear", "a few files in one module", "several modules, or a choice to make", "core paths, migrations, concurrency, or a design"];
 defineProps({task: {type: Object, required: true}, place: {type: Object, default: null}, refusal: {type: String, default: ""}});
 const emit = defineEmits(["priority", "complexity"]);
 const HELD_STATES = new Set(["started", "testing", "blocked"]);
@@ -47,9 +50,18 @@ const HELD_STATES = new Set(["started", "testing", "blocked"]);
             </div>
         </template>
         <div class="fact wide">
-            <span class="fact-label">Complexity</span>
+            <span class="fact-label">
+                Complexity
+                <span class="score-help">
+                    <button type="button" class="score-help-icon" aria-label="What the scores mean" data-complexity-help><Icon name="info" :size="13" /></button>
+                    <span class="score-help-tip" role="tooltip" data-complexity-tip>
+                        <template v-for="(meaning, index) in SCORE_MEANINGS" :key="index">
+                            <span class="score-help-line">{{ index + 1 }}: {{ meaning }}</span>
+                        </template>
+                    </span>
+                </span>
+            </span>
             <Segmented :options="COMPLEXITIES" :value="task.complexity ? String(task.complexity) : ''" data-task-complexity @pick="emit('complexity', $event)" />
-            <span class="fact-label">1: a few lines. 5: a design with risk.</span>
         </div>
         <div class="fact wide">
             <span class="fact-label">Priority</span>
@@ -67,6 +79,48 @@ const HELD_STATES = new Set(["started", "testing", "blocked"]);
     margin: 0;
     color: var(--text-3);
     font-size: 12px;
+}
+
+.score-help {
+    position: relative;
+    display: inline-flex;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.score-help-icon {
+    display: inline-flex;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text-3);
+    cursor: help;
+}
+
+.score-help-tip {
+    position: absolute;
+    z-index: 5;
+    top: 100%;
+    left: 0;
+    display: none;
+    flex-direction: column;
+    gap: 3px;
+    width: max-content;
+    max-width: 320px;
+    margin-top: 4px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--raised);
+    color: var(--text-2);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+.score-help:hover .score-help-tip,
+.score-help:focus-within .score-help-tip {
+    display: flex;
 }
 
 .agent-link {

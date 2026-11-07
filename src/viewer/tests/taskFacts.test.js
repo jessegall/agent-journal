@@ -58,3 +58,18 @@ test("the plan of a task is a link that opens it, and a task in no plan says so"
     expect(noPlan.querySelector("[data-task-plan-link]")).toBeNull();
     expect(noPlan.textContent).toContain("Not in a plan");
 });
+
+test("the complexity picker has an information icon whose tooltip explains all five scores, and no hint line", () => {
+    const element = mounted("open", []);
+    expect(element.querySelector("[data-complexity-help]")).not.toBeNull();
+    const lines = [...element.querySelectorAll("[data-complexity-tip] .score-help-line")].map((line) => line.textContent);
+    expect(lines).toEqual([
+        "1: a line or two, nothing to decide",
+        "2: one file, the way is clear",
+        "3: a few files in one module",
+        "4: several modules, or a choice to make",
+        "5: core paths, migrations, concurrency, or a design",
+    ]);
+    expect(element.textContent).not.toContain("a design with risk");
+    expect(element.querySelector("[data-complexity-tip]").getAttribute("role")).toBe("tooltip");
+});
