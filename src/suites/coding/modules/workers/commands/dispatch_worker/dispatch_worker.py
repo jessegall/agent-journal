@@ -10,6 +10,8 @@ class DispatchWorker(Command[WorkerLaunch]):
     program named or else the dispatching agent's own, on the model named; more tasks may be delegated
     to it, which it takes after the first. Its profile and given name show on its card."""
 
+    lock = False
+
     task_id: int
     library_links: tuple[str, ...] = ()
     library_copies: tuple[str, ...] = ()

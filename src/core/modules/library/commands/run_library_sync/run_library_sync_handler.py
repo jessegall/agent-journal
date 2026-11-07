@@ -11,7 +11,6 @@ class RunLibrarySyncHandler(Handler[RunLibrarySync, SyncOutcome]):
     command of its own. It starts with no memory of an earlier round."""
 
     command = RunLibrarySync
-    transactional = False
 
     def __init__(self, sync: LibrarySync) -> None:
         self.sync = sync

@@ -9,5 +9,7 @@ class SendLibraryItem(Command[SharedLibraryItem]):
     """Shares a local row with the team: uploads its fields as a new item of the shared server and makes the row
     follow it."""
 
+    lock = False
+
     share: str
     row_id: int

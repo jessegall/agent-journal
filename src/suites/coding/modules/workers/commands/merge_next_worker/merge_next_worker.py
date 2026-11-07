@@ -8,5 +8,7 @@ from suites.coding.modules.workers.support.merge_outcome import MergeOutcome
 class MergeNextWorker(Command[MergeOutcome]):
     """The merger takes a worker's work into the branch, answering its important lines if it has any."""
 
+    lock = False
+
     worker_id: int
     read_important: str = ""

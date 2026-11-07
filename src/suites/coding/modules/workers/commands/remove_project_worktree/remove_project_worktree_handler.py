@@ -13,7 +13,6 @@ class RemoveProjectWorktreeHandler(Handler[RemoveProjectWorktree, str]):
 
     command = RemoveProjectWorktree
     disabled_scopes = [EnvironmentScope]
-    transactional = False
 
     def __init__(self, worktrees: ProjectWorktrees, git: WorktreeGit) -> None:
         self.worktrees, self.git = worktrees, git

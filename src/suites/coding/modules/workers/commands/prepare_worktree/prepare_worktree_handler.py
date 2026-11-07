@@ -24,7 +24,6 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
     its setup commands hold no write lock."""
 
     command = PrepareWorktree
-    transactional = False
 
     def __init__(self, environment_names: EnvironmentNames, settings: SettingValues, git: WorktreeGit, libraries: LibraryFolders, commands: WorktreeCommands,
                  skills: SkillFiles, home: JournalHome, managed: ManagedHooks, providers: Providers) -> None:

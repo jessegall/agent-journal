@@ -19,7 +19,6 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
     transaction; a release whose git failed goes on from the abandoned worktree."""
 
     command = ReleaseWorker
-    transactional = False
 
     def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, environments: EnvironmentRows, bus: Bus) -> None:
         self.worktrees, self.git, self.environments, self.bus = worktrees, git, environments, bus

@@ -33,7 +33,6 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
 
     command = MergeWorker
     disabled_scopes = [ActorScope]
-    transactional = False
 
     def __init__(self, rows: EventRows, worktrees: WorktreeQuery, checks: MergeChecks, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, settings: SettingValues, commands: WorktreeCommands, log_lines: WorkerLogLines) -> None:
         self.log_lines = log_lines

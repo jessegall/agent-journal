@@ -11,7 +11,6 @@ class RemoveLibraryUserHandler(Handler[RemoveLibraryUser, LibraryUser]):
     admin."""
 
     command = RemoveLibraryUser
-    transactional = False
 
     def __init__(self, people: LibraryPeople) -> None:
         self.people = people

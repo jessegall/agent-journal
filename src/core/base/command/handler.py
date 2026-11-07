@@ -11,13 +11,10 @@ R = TypeVar("R", covariant=True)
 
 class Handler(Generic[C, R]):
     """Carries out one type of command: reads what it needs through queries and saves through the repository;
-    the work outside the database that must be done before its transaction opens, such as a program that
-    writes to the journal itself, is done in prepare; a handler that only runs an outside program and saves
-    nothing sets transactional to False, so its wait holds no write lock; a handler whose work outside the
-    database cannot be repeated or undone sets runs_once, so nothing rolls its command back to run it again."""
+    work that must finish before the command's transaction opens belongs in prepare. A handler whose work
+    cannot be repeated or undone sets runs_once, so a rollback cannot run that work again."""
 
     command: ClassVar[type[Command[object]]]
-    transactional: ClassVar[bool] = True
     runs_once: ClassVar[bool] = False
     caller_prepares: ClassVar[bool] = False
     disabled_scopes: ClassVar[WholeScopes] = ()

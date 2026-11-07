@@ -221,6 +221,7 @@ class KeptItemHandler(CreateItemWithOutsideWorkHandler):
 
 @dataclass(frozen=True)
 class CreateItemsWithOutsideWork(Command[Item]):
+    lock = False
     first: str
     second: str
 
@@ -229,7 +230,6 @@ class CreateItemsWithOutsideWorkHandler(Handler[CreateItemsWithOutsideWork, Item
     """Runs two commands of its own, as a handler with outside work between them does."""
 
     command = CreateItemsWithOutsideWork
-    transactional = False
 
     def __init__(self, bus: Bus) -> None:
         self.bus = bus
@@ -254,12 +254,11 @@ class RecordContextHandler(Handler[RecordContext, int]):
 
 @dataclass(frozen=True)
 class PassedOn(Command[int]):
-    pass
+    lock = False
 
 
 class PassedOnHandler(Handler[PassedOn, int]):
     command = PassedOn
-    transactional = False
 
     def __init__(self, bus: Bus) -> None:
         self.bus = bus
@@ -353,8 +352,8 @@ def test_a_command_is_run_at_the_top_outside_a_transaction_and_nested_only_insid
     with container.get(Database).transaction():
         with pytest.raises(TransactionError, match="dispatch it"):
             bus.run(MakeItem(title="Dune"), AGENT)
-    with pytest.raises(TransactionError, match="run it instead"):
-        bus.dispatch(MakeItem(title="Dune"), Context(AGENT, bus.clock.timestamp(), MakeItem(title="Dune")))
+    item = bus.dispatch(MakeItem(title="Dune"), Context(AGENT, bus.clock.timestamp(), MakeItem(title="Dune")))
+    assert item.title == "Dune"
 
 
 def test_a_command_no_handler_carries_out_is_a_clear_fault(container):

@@ -15,7 +15,6 @@ class SendMergeFindingsHandler(Handler[SendMergeFindings, None]):
     """Sends what the merger found back to the worker that wrote the work."""
 
     command = SendMergeFindings
-    transactional = False
 
     def __init__(self, agents: AgentRows, bus: Bus) -> None:
         self.agents, self.bus = agents, bus

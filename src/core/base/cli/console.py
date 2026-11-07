@@ -148,7 +148,7 @@ class Console:
             raise Refusal(f"journal {' '.join(argv[:2])} only reads, so it has no place in a transaction")
         command = subcommand.command(arguments, replace(caller, environment_id=environment_id))
         handler = self.bus.handler(command)
-        if not handler.transactional or type(handler).prepare is not Handler.prepare:
+        if type(handler).prepare is not Handler.prepare:
             raise Refusal(f"journal {' '.join(argv[:2])} works outside the database, so it cannot run inside a transaction")
         with self.scopes.command_scope(handler.disabled_scopes, caller.actor, environment_id):
             return self.bus.dispatch(command, replace(context, actor=caller.actor, environment_id=environment_id))

@@ -8,6 +8,8 @@ from tunnels.tunler.support.tunler_login import TunlerLogin
 class LoginTunler(Command[TunlerLogin]):
     """Logs this machine in to a tunler server, making the account when a master password comes with it."""
 
+    lock = False
+
     host: str
     username: str
     password: str = field(repr=False)

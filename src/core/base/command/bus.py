@@ -33,8 +33,8 @@ class Bus:
         handler = self.handler(command)
         handler.prepare(command, actor)
         with self.scopes.command_scope(handler.disabled_scopes, actor, environment_id):
-            runs = self.create_deferred_runs(handler, plugin_script)
-            if not handler.transactional:
+            runs = self.create_deferred_runs(command, handler, plugin_script)
+            if not command.lock:
                 return self.result(handler.handle(command, Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, self.scopes.environment_id or environment_id, outside_runs=runs)), command)
             while True:
                 try:
@@ -50,13 +50,15 @@ class Bus:
                 except OutsideRunRollbackError as rollback:
                     rollback.work.run(runs)
 
-    def create_deferred_runs(self, handler: Handler[Command[object], object], plugin_script: str) -> OutsideRuns:
-        if handler.runs_once or not handler.transactional:
+    def create_deferred_runs(self, command: Command[object], handler: Handler[Command[object], object], plugin_script: str) -> OutsideRuns:
+        if handler.runs_once or not command.lock:
             return OutsideRuns(True, plugin_script, SINGLE_RUN_REASON)
         return OutsideRuns(not self.policy.guards_run, plugin_script, SERVER_THREAD_REASON)
 
     def run_with_context(self, command: Command[R], context: Context) -> R:
-        return self.run(command, context.actor, context.skipped_guards, environment_id=context.environment_id, plugin_script=context.outside_runs.plugin_script)
+        if self.database.has_transaction:
+            return self.dispatch(command, context)
+        return self.run(command, context.actor, context.skipped_guards, cause_id=context.cause_id, environment_id=context.environment_id, plugin_script=context.outside_runs.plugin_script)
 
     def explain(self, command: Command[object], actor: Actor, skipped_guards: frozenset[str] = frozenset(), environment_id: int | None = None) -> Explanation:
         if self.database.has_transaction:
@@ -71,7 +73,7 @@ class Bus:
 
     def dispatch(self, command: Command[R], context: Context) -> R:
         if not self.database.has_transaction:
-            raise TransactionError(f"{command.label()} was dispatched outside a transaction: run it instead")
+            return self.run_with_context(command, context)
         handler = self.handler(command)
         if type(handler).prepare is not Handler.prepare and not handler.caller_prepares:
             raise TransactionError(f"{command.label()} has a prepare step, which a dispatch skips: run it instead")
