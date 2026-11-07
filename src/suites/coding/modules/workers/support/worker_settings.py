@@ -13,6 +13,8 @@ WORKER_RUN_LIMIT = f"{MODULE_KEY}.worker-run-limit"
 WORKER_KEPT_LIMIT = f"{MODULE_KEY}.worker-kept-limit"
 DEFAULT_WORKER_COUNT = 2
 SILENT_AGENT_MINUTES = f"{MODULE_KEY}.silent-agent-minutes"
+IDLE_WORKER_MINUTES = f"{MODULE_KEY}.idle-worker-minutes"
+IDLE_WORKER_REPEAT_MINUTES = f"{MODULE_KEY}.idle-worker-repeat-minutes"
 INACTIVE_HELPER_MINUTES = f"{MODULE_KEY}.quiet-helper-minutes"
 INACTIVE_HELPER_GRACE_MINUTES = f"{MODULE_KEY}.quiet-helper-grace-minutes"
 WORKER_BATCH_SIZE = f"{MODULE_KEY}.worker-batch-size"
@@ -28,6 +30,8 @@ WORKER_RUN_FAILURE_LIMIT = f"{MODULE_KEY}.own-test-failures-to-flag"
 AFFECTED_TESTS_COMMAND = f"{MODULE_KEY}.affected-tests-command"
 PROJECT_TEST_COMMAND = f"{MODULE_KEY}.project-test-command"
 WORKER_SETTINGS = [
+    SettingValue("idle-worker-minutes", "Worker idle warning", "Minutes without activity before a worker with work left is reported.", SettingType.NUMBER, default=15, person_set=True),
+    SettingValue("idle-worker-repeat-minutes", "Worker idle warning repeat", "Minutes between warnings about a worker with work left.", SettingType.NUMBER, default=5, person_set=True),
     SettingValue("test-at-phase-end", "Test at phase end", "Test plan tasks together at the end of each phase. Off tests each task when handed in.", SettingType.FLAG, default=True, person_set=True),
     SettingValue("test-batch-size", "Tasks per test batch", "Tasks outside a plan to finish before testing together. The last task also ends a batch.", SettingType.NUMBER, default=1, person_set=True),
     SettingValue("worker-phase-test-runs", "Test commands per phase or batch", "Test commands a worker may run in each phase or batch before asking the main agent.", SettingType.NUMBER, default=3, person_set=True),

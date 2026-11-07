@@ -66,6 +66,8 @@ class TranscriptMessageRule(DriverRule):
         return [SendMessage(text)]
 
     def is_filtered(self, hook: AgentHook, text: str, created_at: Timestamp) -> bool:
+        if self.texts.is_reaction_closing(hook, created_at):
+            return True
         if self.texts.is_acknowledgement(hook.agent_id, text, created_at):
             return True
         return self.texts.is_duplicate_reply(hook.agent_id, text, created_at)

@@ -47,11 +47,11 @@ def test_the_agent_is_told_of_a_face_the_user_puts_on_but_not_of_its_own_or_one_
     story = reaction_story(new_story)
     story.hook("s-1", HookSamples.stop())
     story.run('message react 1 "👍"', actor=story.agent)
-    story.expect_absent_hook_line("s-1", HookSamples.stop(), "the user put")
+    story.expect_absent_hook_line("s-1", HookSamples.stop(), "the user reacted")
     story.run('message react 1 "🎉"', actor=story.user)
-    expect_reply_line(story.hook("s-1", HookSamples.stop()), "the user put 🎉 on message:1")
+    expect_reply_line(story.hook("s-1", HookSamples.stop()), "the user reacted to message:1")
     story.run('message react 1 "🎉"', actor=story.user)
-    story.expect_absent_hook_line("s-1", HookSamples.stop(), "the user put")
+    story.expect_absent_hook_line("s-1", HookSamples.stop(), "the user reacted")
 
 
 def test_a_face_the_user_puts_on_wakes_the_agent(new_story):

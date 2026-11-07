@@ -10,7 +10,6 @@ from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.report_nudges import REPORT_FIELD
 from core.modules.drivers.models.helper_job import HelperJob
-from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 
 
@@ -25,19 +24,15 @@ class HelperReportRule(DriverRule):
     roles = [AgentRole.HELPER]
     overlay_proof = True
 
-    def __init__(self, agents: AgentRows, jobs: HelperJobRows, providers: Providers, folders: AgentFolders, profiles: ProfileFiles) -> None:
-        self.agents, self.jobs, self.providers, self.folders, self.profiles = agents, jobs, providers, folders, profiles
+    def __init__(self, agents: AgentRows, jobs: HelperJobRows, providers: Providers, folders: AgentFolders) -> None:
+        self.agents, self.jobs, self.providers, self.folders = agents, jobs, providers, folders
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         helper = self.agents.find(hook.agent_id)
         job = self.jobs.open_job(helper.id)
         if helper.parent_id is None or job is None:
             return RuleAnswer.allowed()
-        return RuleAnswer.allowed().running(RecordParentReport(helper.id, helper.parent_id, self.report(hook, helper), job.id, self.reports_to_parent(helper)))
-
-    def reports_to_parent(self, helper: Agent) -> bool:
-        profile = self.profiles.registered(helper.profile)
-        return profile is None or profile.reports_to_parent
+        return RuleAnswer.allowed().running(RecordParentReport(helper.id, helper.parent_id, self.report(hook, helper), job.id))
 
     def report(self, hook: AgentHook, helper: Agent) -> str:
         stop_text = f"{hook.event.raw.get(REPORT_FIELD, '')}".strip()

@@ -1,4 +1,10 @@
 from core.base.command.bus import Bus
+from core.base.driver.command_category import CommandCategory
+from core.base.query.queries import Queries
+from core.modules.messages.models.message import Message
+from core.testing.hook_samples import HookSamples
+from core.testing.shell_part import ShellPart
+from tests.stories.core.modules.processes.support.process_samples import install_runner
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from tests.stories.core.support.fixtures import UnansweredMessage
 from tests.stories.core.support import story_lines as lines
@@ -40,3 +46,15 @@ def test_a_message_has_no_make_and_needs_an_environment(new_story):
     story = user_story(new_story)
     story.expect_usage_error('message make "hello"')
     story.expect_refusal('message send "hello"', "a message needs an environment", actor=story.user)
+
+
+def test_a_redirected_or_piped_message_read_does_not_mark_the_message(new_story):
+    story = install_runner(new_story(fixture=UnansweredMessage))
+    read = ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal message read 1 > /tmp/message", read, redirects=["> /tmp/message"]), "run the read command directly, without a pipe or redirect")
+    piped = ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message", pipe_target=1)
+    sink = ShellPart("cat", CommandCategory.READ, [])
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal message read 1 && cat", piped, sink), "run the read command directly, without a pipe or redirect")
+    story.expect_rows(story.container.get(Queries).query(Message).find(1).read_at is None)
+    story.expect_success("message read 1", actor=story.agent)
+    story.expect_rows(story.container.get(Queries).query(Message).find(1).read_at is not None)

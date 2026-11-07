@@ -12,6 +12,7 @@ class Caller:
     actor: Actor
     environment_id: int | None = None
     plugin_script: str = ""
+    process_id: int | None = None
 
     @property
     def read_actor_id(self) -> int | None:

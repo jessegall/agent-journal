@@ -33,6 +33,9 @@ class OutputTexts:
         shown = {"summary": self.summary, "all": self.full_lines, "lines": self.range, "tail": self.tail, "reader": self.reader_lines}
         return shown[wanted[0]](process, command)
 
+    def is_complete(self, process_id: int) -> bool:
+        return self.folder.cut_bytes(process_id) == 0
+
     def full_lines(self, process: Process, command: ReadOutput) -> list[str]:
         return self.folder.all_output(process.id).splitlines()
 

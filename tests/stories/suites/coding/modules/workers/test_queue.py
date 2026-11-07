@@ -1,5 +1,6 @@
 import json
 import subprocess
+from datetime import timedelta
 import pytest
 
 from core.base.actor import Actor
@@ -310,3 +311,18 @@ def test_three_failed_hand_ins_of_a_task_give_the_main_agent_a_line_the_worker_n
     story.run_listeners()
     ended(story, started[3], 0)
     story.expect_text(f"worker logs {worker.id}", "! failed 3 hand-ins", actor=story.agent)
+
+
+def test_a_worker_waiting_for_tests_or_merge_is_not_reported_as_stopped(new_story, monkeypatch):
+    from datetime import timedelta
+
+    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+    story.expect_success(f"agent end {worker.id}", actor=worker)
+    story.advance(timedelta(minutes=20))
+    story.tick("s-1")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")
+    ended(story, started[0], 0)
+    story.advance(timedelta(minutes=20))
+    story.tick("s-1")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")

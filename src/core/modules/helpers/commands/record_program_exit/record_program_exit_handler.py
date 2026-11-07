@@ -21,6 +21,8 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.helpers.commands.record_program_exit.record_program_exit import RecordProgramExit
+from core.modules.helpers.commands.notify_program_fault.notify_program_fault import NotifyProgramFault
+from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.helpers.support.exit_reasons import ExitReasons
 from core.modules.helpers.support.helper_job_source import HELPER_JOB_SOURCE
 from core.modules.helpers.commands.make_provider_outage.make_provider_outage import MakeProviderOutage
@@ -36,9 +38,9 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
     command = RecordProgramExit
     transactional = False
 
-    def __init__(self, queries: Queries, jobs: HelperJobRows, providers: Providers, folders: AgentFolders, reasons: ExitReasons, bus: Bus, system_log: SystemLogWriter, clock: Clock) -> None:
+    def __init__(self, queries: Queries, jobs: HelperJobRows, providers: Providers, folders: AgentFolders, reasons: ExitReasons, bus: Bus, system_log: SystemLogWriter, clock: Clock, profiles: ProfileFiles) -> None:
         self.queries, self.jobs, self.providers, self.folders, self.reasons, self.bus, self.system_log = queries, jobs, providers, folders, reasons, bus, system_log
-        self.clock = clock
+        self.clock, self.profiles = clock, profiles
 
     def handle(self, command: RecordProgramExit, context: Context) -> None:
         agent = self.queries.query(Agent).find(command.agent_id)
@@ -71,3 +73,6 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
         transcript_text = self.providers.provider(agent.program).last_reply(self.folders.folder(agent), agent.session)
         text = transcript_text or self.reasons.reason(agent, command.exit_code, command.launch_ended, terminal)
         self.bus.run(RecordParentReport(agent.id, agent.parent_id, text, job.id), actor, environment_id=agent.environment_id)
+        profile = self.profiles.registered(agent.profile)
+        if command.exit_code and profile is not None and not profile.reports_to_parent:
+            self.bus.run(NotifyProgramFault(agent.id, command.exit_code), actor, environment_id=agent.environment_id)
