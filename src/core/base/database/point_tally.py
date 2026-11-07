@@ -22,6 +22,9 @@ class PointTally:
         self.statements: Counter[str] = Counter()
         self.update_statements: Counter[str] = Counter()
 
+    def before_read(self) -> None:
+        return
+
     def loaded(self, rows: Sequence[sqlite3.Row], statement: Statement) -> None:
         sql = statement.sql
         if COUNT_PATTERN.match(sql):
