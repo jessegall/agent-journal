@@ -1,5 +1,8 @@
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
+from core.modules.helpers.support.command_pair_rule import CommandPairRule
+from core.modules.helpers.support.list_rule import ListRule
+from core.modules.helpers.support.number_rule import NumberRule
 
 MODULE_KEY = "journal.suites.coding.workers"
 DISPATCHES_WORKERS_SETTING = f"{MODULE_KEY}.builder-dispatches-workers"
@@ -29,31 +32,54 @@ DELIVERY_FAILURE_LIMIT = f"{MODULE_KEY}.hand-in-failures-to-flag"
 WORKER_RUN_FAILURE_LIMIT = f"{MODULE_KEY}.own-test-failures-to-flag"
 AFFECTED_TESTS_COMMAND = f"{MODULE_KEY}.affected-tests-command"
 PROJECT_TEST_COMMAND = f"{MODULE_KEY}.project-test-command"
+MAIN_MERGES_WORKERS = f"{MODULE_KEY}.main-agent-may-merge"
+RESUME_SILENT_AGENTS = f"{MODULE_KEY}.resume-silent-agents"
+WORKERS_START_HELPERS = f"{MODULE_KEY}.workers-start-helpers"
 WORKER_SETTINGS = [
     SettingValue("idle-worker-minutes", "Worker idle warning", "Minutes without activity before a worker with work left is reported.", SettingType.NUMBER, default=15, person_set=True),
     SettingValue("idle-worker-repeat-minutes", "Worker idle warning repeat", "Minutes between warnings about a worker with work left.", SettingType.NUMBER, default=5, person_set=True),
     SettingValue("test-at-phase-end", "Test at phase end", "Test plan tasks together at the end of each phase. Off tests each task when handed in.", SettingType.FLAG, default=True, person_set=True),
     SettingValue("test-batch-size", "Tasks per test batch", "Tasks outside a plan to finish before testing together. The last task also ends a batch.", SettingType.NUMBER, default=1, person_set=True),
     SettingValue("worker-phase-test-runs", "Test commands per phase or batch", "Test commands a worker may run in each phase or batch before asking the main agent.", SettingType.NUMBER, default=3, person_set=True),
-    SettingValue("silent-agent-minutes", "Silent agent minutes", "Minutes without tool use or a running command before an agent with unfinished work is resumed.", SettingType.NUMBER, default=3),
-    SettingValue("affected-tests-command", "Affected tests command", "Find tests for changed files, one argument per line. Set the project test command too.", SettingType.TEXT, default=""),
-    SettingValue("project-test-command", "Project test command", "Run selected test arguments. Set the affected tests command too.", SettingType.TEXT, default=""),
+    SettingValue("silent-agent-minutes", "Silent agent minutes", "Minutes without tool use or a running command before an agent with unfinished work is resumed.", SettingType.NUMBER, default=3, person_set=True),
+    SettingValue("affected-tests-command", "Affected tests command", "Find tests for changed files, one argument per line. Set the project test command too.", SettingType.TEXT, default="", person_set=True),
+    SettingValue("project-test-command", "Project test command", "Run selected test arguments. Set the affected tests command too.", SettingType.TEXT, default="", person_set=True),
     SettingValue("worker-run-most-tests", "Test limit per worker command", "A worker command running more tests than this is refused or stopped. 0 means no limit. Journal runs do not count.", SettingType.NUMBER, default=25, person_set=True),
-    SettingValue("hand-in-failures-to-flag", "Failed hand-ins to flag", "Failed hand-ins of a task after which the main agent must read a line about it.", SettingType.NUMBER, default=3),
-    SettingValue("own-test-failures-to-flag", "Failed own tests to flag", "Failures of one test file in a worker's own runs after which the main agent must read a line about it.", SettingType.NUMBER, default=5),
+    SettingValue("hand-in-failures-to-flag", "Failed hand-ins to flag", "Failed hand-ins of a task after which the main agent must read a line about it.", SettingType.NUMBER, default=3, person_set=True),
+    SettingValue("own-test-failures-to-flag", "Failed own tests to flag", "Failures of one test file in a worker's own runs after which the main agent must read a line about it.", SettingType.NUMBER, default=5, person_set=True),
     SettingValue("merger-on", "Merger takes in workers", "A helper merges workers whose tests passed, and passes on what the main agent must judge.", SettingType.FLAG, default=True, person_set=True),
-    SettingValue("merger-commands", "Merger commands", "Lines the merger runs after each merge, sending what they find to the worker. {commit} is the commit before it.", SettingType.LIST, default=()),
-    SettingValue("builder-dispatches-workers", "Builder sends workers", "Whether the builder may send workers.", SettingType.FLAG, default=True, person_set=True),
+    SettingValue("merger-commands", "Merger commands", "Lines the merger runs after each merge, sending what they find to the worker. {commit} is the commit before it.", SettingType.LIST, default=(), person_set=True),
+    SettingValue("builder-dispatches-workers", "Main agent sends workers", "Whether the main agent may send workers to do tasks.", SettingType.FLAG, default=True, person_set=True),
+    SettingValue("main-agent-may-merge", "Main agent may merge workers", "Whether the main agent may merge the work of a worker itself.", SettingType.FLAG, default=True, person_set=True),
+    SettingValue("resume-silent-agents", "Resume silent agents", "Whether a worker or helper with unfinished work that has gone silent is resumed.", SettingType.FLAG, default=True, person_set=True),
+    SettingValue("workers-start-helpers", "Workers may use ordinary helpers", "Whether a worker may start ordinary helpers for the task it works on.", SettingType.FLAG, default=True, person_set=True),
     SettingValue("worker-run-limit", "Workers running", "Workers that run at once in an environment. At 0 none run.", SettingType.NUMBER, default=DEFAULT_WORKER_COUNT, person_set=True),
     SettingValue("worker-kept-limit", "Workers kept", "Workers kept, running or idle, until retired. At 0 there is no limit.", SettingType.NUMBER, default=8, person_set=True),
-    SettingValue("worker-idle-hours", "Worker idle hours", "Hours without tool use before an unfinished worker's process stops. Its task and working folder stay.", SettingType.NUMBER, default=6),
-    SettingValue("worker-batch-size", "Worker batch size", "Recommended tasks per worker assignment. The main agent is prompted to add more when fewer are assigned.", SettingType.NUMBER, default=3),
-    SettingValue("quiet-helper-grace-minutes", "Quiet helper grace minutes", "Minutes without tool use, or with work that has not started, before the main agent first hears of a worker or helper.", SettingType.NUMBER, default=15),
-    SettingValue("quiet-helper-minutes", "Quiet helper minutes", "Minutes between the reminders to the main agent, until the worker or helper is stopped or back at work.", SettingType.NUMBER, default=5),
+    SettingValue("worker-idle-hours", "Worker idle hours", "Hours without tool use before an unfinished worker's process stops. Its task and working folder stay.", SettingType.NUMBER, default=6, person_set=True),
+    SettingValue("worker-batch-size", "Worker batch size", "Recommended tasks per worker assignment. The main agent is prompted to add more when fewer are assigned.", SettingType.NUMBER, default=3, person_set=True),
+    SettingValue("quiet-helper-grace-minutes", "Quiet helper grace minutes", "Minutes without tool use, or with work that has not started, before the main agent first hears of a worker or helper.", SettingType.NUMBER, default=15, person_set=True),
+    SettingValue("quiet-helper-minutes", "Quiet helper minutes", "Minutes between the reminders to the main agent, until the worker or helper is stopped or back at work.", SettingType.NUMBER, default=5, person_set=True),
     SettingValue("library-links", "Library links", "Folders each worker's worktree links from the main checkout.", SettingType.LIST, default=()),
     SettingValue("library-copies", "Library copies", "Folders each worker's worktree gets a copy of.", SettingType.LIST, default=()),
     SettingValue(WORKTREE_COMMANDS_NAME, "Worktree commands", "Commands run in each new worker worktree before the worker starts.",
                  SettingType.LIST, default=()),
     SettingValue(MERGE_COMMANDS_NAME, "Merge commands", "Commands run in the main checkout after each worker merge, such as a push. The task closes only when they all succeed.",
-                 SettingType.LIST, default=()),
+                 SettingType.LIST, default=(), person_set=True),
 ]
+WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
+                        WORKER_KEPT_LIMIT: NumberRule(0),
+                        WORKER_BATCH_SIZE: NumberRule(1),
+                        SILENT_AGENT_MINUTES: NumberRule(1),
+                        WORKER_IDLE_HOURS: NumberRule(0, integer=False, exclusive=True),
+                        IDLE_WORKER_MINUTES: NumberRule(1),
+                        IDLE_WORKER_REPEAT_MINUTES: NumberRule(1),
+                        INACTIVE_HELPER_GRACE_MINUTES: NumberRule(1),
+                        INACTIVE_HELPER_MINUTES: NumberRule(1),
+                        TEST_BATCH_SIZE: NumberRule(1),
+                        WORKER_PHASE_TEST_RUNS: NumberRule(0),
+                        WORKER_TEST_LIMIT: NumberRule(0),
+                        DELIVERY_FAILURE_LIMIT: NumberRule(1),
+                        WORKER_RUN_FAILURE_LIMIT: NumberRule(1),
+                        MERGER_COMMANDS: ListRule(),
+                        MERGE_COMMANDS: ListRule()}
+TEST_COMMAND_PAIR = CommandPairRule(AFFECTED_TESTS_COMMAND, PROJECT_TEST_COMMAND)
