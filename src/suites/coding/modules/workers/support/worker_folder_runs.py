@@ -1,0 +1,55 @@
+from pathlib import Path
+
+from core.base.actor import Actor
+from core.base.command.bus import Bus
+from core.base.query.queries import Queries
+from core.base.refusal import Refusal
+from core.base.scope.environment_scope import EnvironmentScope
+from core.base.scope.scopes import Scopes
+from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_program import AgentProgram
+from core.modules.processes.commands.stop_process.stop_process import StopProcess
+from core.modules.processes.queries.process_query import ProcessQuery
+from core.modules.processes.support.output_folder import OutputFolder
+from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+
+
+class WorkerFolderRuns:
+    """Stops programs using a worker's folder before it is removed or reused."""
+
+    def __init__(self, worktrees: WorktreeQuery, processes: ProcessQuery, queries: Queries, scopes: Scopes,
+                 program: AgentProgram, outputs: OutputFolder, bus: Bus) -> None:
+        self.worktrees, self.processes, self.queries, self.scopes = worktrees, processes, queries, scopes
+        self.program, self.outputs, self.bus = program, outputs, bus
+
+    def check_owner(self, worktree: Worktree) -> None:
+        folder = Path(worktree.folder)
+        if folder.is_symlink():
+            raise Refusal(f"worker folder {folder} is a symlink", "remove the link before preparing or removing this worktree")
+        with self.scopes.opened(None, disabled=[EnvironmentScope]):
+            owners = self.worktrees.open_worktrees()
+        owner = next((row for row in owners if row.id != worktree.id and Path(row.folder).resolve() == folder.resolve()), None)
+        if owner is not None:
+            raise Refusal(f"worker {owner.session_agent_id} still owns {folder}", "merge or release its worktree first")
+
+    def stop(self, worktree: Worktree) -> None:
+        folder = Path(worktree.folder).resolve()
+        with self.scopes.opened(None, disabled=[EnvironmentScope]):
+            worker = self.queries.query(Agent).find(worktree.session_agent_id)
+            self.stop_agent(worker, folder)
+            helpers = tuple(self.queries.query(Agent).filter(parent_id=worker.id).all_rows())
+            for helper in helpers:
+                self.stop_agent(helper, folder)
+            processes = tuple(self.processes.running().all_rows())
+        for process in processes:
+            if not Path(process.folder).resolve().is_relative_to(folder):
+                continue
+            pid = process.pid or self.outputs.pid(process.id)
+            if pid is not None and not self.program.stop_tree(pid, f"processes/{process.id}/"):
+                raise Refusal(f"output {process.id} is still using {folder}", f"journal output stop {process.id}, then try again")
+            self.bus.run(StopProcess(process.id), Actor.core(), environment_id=process.environment_id)
+
+    def stop_agent(self, agent: Agent, folder: Path) -> None:
+        if agent.pid is not None and not self.program.stop(agent):
+            raise Refusal(f"agent {agent.id} is still using {folder}", "stop its program before removing the worktree")

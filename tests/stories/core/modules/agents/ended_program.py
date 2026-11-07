@@ -101,7 +101,7 @@ def test_with_no_launcher_the_recorded_process_stops_after_the_processes_under_i
     story = new_story(fixture=UserJoined)
     stopped_pids: list[int] = []
     monkeypatch.setattr(LeftoverProcess, "stop", lambda pid, program: stopped_pids.append(pid))
-    monkeypatch.setattr(LeftoverProcess, "command_line", staticmethod(lambda pid: "" if stopped_pids else f"program {pid}"))
+    monkeypatch.setattr(LeftoverProcess, "command_line", staticmethod(lambda pid: "" if stopped_pids else f"claude program {pid}"))
     story.use_processes(ProcessRow(CHILD_PID, PROGRAM_PID, PROCESS_STARTED_AT), ProcessRow(GRANDCHILD_PID, CHILD_PID, PROCESS_STARTED_AT))
     worker_id = story.new_row_id(f"agent start s-program claude worker --parent {story.agent.id} --pid {PROGRAM_PID} --environment main")
     story.expect_success(f"agent end {worker_id}", actor=story.user)

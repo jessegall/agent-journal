@@ -26,6 +26,8 @@ class AgentProgram:
         self.launcher.request_stop(agent.terminal_id)
 
     def stop_tree(self, pid: int, program: str) -> bool:
+        if program not in LeftoverProcess.command_line(pid):
+            return True
         children = self.descendants(pid)
         commands = {child: LeftoverProcess.command_line(child) for child in children}
         for child in reversed(children):

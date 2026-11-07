@@ -79,10 +79,13 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         try:
             base_commit = self.git.tip(environment.folder, environment.branch)
             self.git.cut(environment.folder, opened.worktree)
-            self.bus.run_with_context(PrepareWorktree(opened.worktree.folder, environment.folder, environment.name, command.library_links, command.library_copies), context)
-            worktree = self.bus.run_with_context(RecordWorktreeCut(opened.worktree.id, base_commit, tuple(listed.id for listed in tasks), task_sources, json.dumps(tuple(dict.fromkeys((*self.settings.texts(LIBRARY_LINKS), *command.library_links))))), context)
+            try:
+                self.bus.run_with_context(PrepareWorktree(opened.worktree.folder, environment.folder, environment.name, command.library_links, command.library_copies), context)
+                worktree = self.bus.run_with_context(RecordWorktreeCut(opened.worktree.id, base_commit, tuple(listed.id for listed in tasks), task_sources, json.dumps(tuple(dict.fromkeys((*self.settings.texts(LIBRARY_LINKS), *command.library_links))))), context)
+            except Exception:
+                self.git.remove(environment.folder, opened.worktree)
+                raise
         except Exception:
-            self.git.remove(environment.folder, opened.worktree)
             self.bus.run_with_context(CancelWorkerOpening(opened.worktree.id), context)
             raise
         if choice.fallback is not None:

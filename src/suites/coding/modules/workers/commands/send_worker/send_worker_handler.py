@@ -111,11 +111,14 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         try:
             base_commit = self.git.tip(environment.folder, environment.branch)
             self.git.cut(environment.folder, opened)
-            self.bus.run(PrepareWorktree(opened.folder, environment.folder, environment.name, extra_links, command.library_copies), actor,
-                         environment_id=worker.environment_id)
-            self.bus.run(RecordWorktreeCut(opened.id, base_commit, tuple(task.id for task in tasks), library_links=json.dumps(tuple(dict.fromkeys((*configured, *links))))), actor, environment_id=worker.environment_id)
+            try:
+                self.bus.run(PrepareWorktree(opened.folder, environment.folder, environment.name, extra_links, command.library_copies), actor,
+                             environment_id=worker.environment_id)
+                self.bus.run(RecordWorktreeCut(opened.id, base_commit, tuple(task.id for task in tasks), library_links=json.dumps(tuple(dict.fromkeys((*configured, *links))))), actor, environment_id=worker.environment_id)
+            except Exception:
+                self.git.remove(environment.folder, opened)
+                raise
         except Exception:
-            self.git.remove(environment.folder, opened)
             self.bus.run(CancelWorkerOpening(opened.id, retain_agent=True), actor, environment_id=worker.environment_id)
             raise
 
