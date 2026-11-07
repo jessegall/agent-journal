@@ -95,6 +95,20 @@ def test_both_plans_reuse_stays_on_the_chosen_program_for_a_helper(split_story, 
     story.expect_rows(next_helper != helper_id)
 
 
+def test_both_plans_reuse_stays_on_the_chosen_program_counts_each_helper_job(split_story, split_viewer, monkeypatch):
+    story = split_story
+    set_split(story, 'claude 100,codex 0', viewer=split_viewer)
+    helper_id, _ = started(story)
+    story.expect_success(f'agent end {helper_id}', actor=story.user)
+    helper = story.container.get(Queries).query(Agent).find(helper_id)
+    resumable_session(story, helper, monkeypatch)
+    launcher = FakeLauncher(story.home.socket('launcher'))
+    story.expect_success(f'helper send {helper_id} "Read the next queue"', actor=story.agent)
+    story.run_listeners()
+    counts = json.loads(story.run('worker split --json').output_text)['rows']
+    story.expect_rows(next(row for row in counts if row['id'] == 'claude')['helpers_recent'] == 2, len(launcher.starts) == 1)
+
+
 @pytest.mark.parametrize('program,model,shares', [('claude', 'sonnet', 'codex 100,claude 0'), ('codex', 'gpt-6.1-terra', 'claude 100,codex 0')])
 @pytest.mark.parametrize('agent_role', ['worker', 'helper'])
 def test_named_model_fixes_the_program(split_story, program, model, shares, agent_role, split_viewer):
@@ -230,6 +244,21 @@ def test_profile_with_tools_stays_on_its_program(split_story, split_viewer):
     set_split(story, 'codex 100,claude 0', viewer=split_viewer)
     helper_id, _ = started(story, 'helper start tool-reader --brief "Read the design" --environment main')
     story.expect_text(f'agent show {helper_id}', 'program: claude')
+
+
+def test_profile_with_tools_stays_on_its_program_for_a_worker(split_story, split_viewer):
+    story = split_story
+    split_viewer.value('profiles.profiles', ['profile', 'save', 'tool-worker', '--type', 'worker', '--description', 'Writes the design', '--body', 'Write the design.', '--model', 'sonnet', '--mcp-tools', 'mcp__design__read'])
+    set_split(story, 'codex 100,claude 0', viewer=split_viewer)
+    expect_program(story, dispatch(story, flags='--profile tool-worker'), 'claude')
+
+
+def test_profile_with_tools_stays_on_its_program_when_the_profile_names_one(split_story, split_viewer):
+    story = split_story
+    split_viewer.value('profiles.profiles', ['profile', 'save', 'codex-tools', '--description', 'Reads the design', '--body', 'Read the design.', '--program', 'codex', '--model', 'gpt-6.1-terra', '--mcp-tools', 'mcp__design__read'])
+    set_split(story, 'claude 100,codex 0', viewer=split_viewer)
+    helper_id, _ = started(story, 'helper start codex-tools --brief "Read the design" --environment main')
+    story.expect_text(f'agent show {helper_id}', 'program: codex')
 
 
 def test_read_only_helper_tags_only_when_making_a_task(split_story):

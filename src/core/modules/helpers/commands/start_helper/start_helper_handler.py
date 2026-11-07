@@ -105,6 +105,8 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
             return self.providers.program_for_model(command.program_model)
         if profile.program:
             return profile.program
+        if profile.mcp_tools:
+            return parent.program
         if not self.shares.is_configured:
             return parent.program
         folder = self.folders.folder(parent)
