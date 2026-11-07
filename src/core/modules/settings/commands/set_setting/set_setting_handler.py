@@ -23,9 +23,11 @@ class SetSettingHandler(Handler[SetSetting, CurrentSetting]):
 
     def handle(self, command: SetSetting, context: Context) -> CurrentSetting:
         entry = self.declared.value(command.key)
-        if command.expected_revision and command.expected_revision != self.revision.current(entry.key):
-            raise Refusal(f"{entry.key} changed since this change was asked for", "ask for the change again")
         value = CheckedSettingValue().value(entry, command.text)
+        if command.expected_revision and command.expected_revision != self.revision.current(entry.key):
+            if self.values.current(entry.key).value == value:
+                return self.values.current(entry.key)
+            raise Refusal(f"{entry.key} changed since this change was asked for", "ask for the change again")
         environment_id = self.environment(entry, command.project, context.environment_id)
         if entry.secret:
             self.store.write_secret(entry.key, str(value), environment_id, context)
