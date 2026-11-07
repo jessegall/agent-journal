@@ -63,9 +63,9 @@ def test_split_passes_over_a_program_not_trusted_named_program_keeps_the_refusal
 
 
 @pytest.mark.parametrize('shares,reason', [('claude 80,codex 10', '100'), ('claude 80,unknown 20', 'unknown')])
-def test_split_setting_must_add_to_100(helper_split_story, shares, reason):
+def test_split_setting_must_add_to_100(helper_split_story, helper_viewer, shares, reason):
     story = helper_split_story
-    story.expect_refusal(f'setting set {SPLIT} "{shares}" --project', reason, actor=story.agent)
+    helper_viewer.refusal('settings.settings', ['setting', 'set', SPLIT, shares, '--project'], reason)
     story.expect_absent(f'setting show {SPLIT}', shares)
 
 
@@ -77,9 +77,9 @@ def test_split_setting_must_add_to_100_empty_means_today(helper_split_story):
 
 
 @pytest.mark.parametrize('shares,reason', [('claude -1,codex 101', 'whole'), ('claude 50.5,codex 49.5', 'whole'), ('claude 100,codex 0,claude 0', 'twice'), ('claude', 'whole')])
-def test_split_setting_must_add_to_100_invalid_lines_are_refused(helper_split_story, shares, reason):
+def test_split_setting_must_add_to_100_invalid_lines_are_refused(helper_split_story, helper_viewer, shares, reason):
     story = helper_split_story
-    story.expect_refusal(f'setting set {SPLIT} "{shares}" --project', reason, actor=story.agent)
+    helper_viewer.refusal('settings.settings', ['setting', 'set', SPLIT, shares, '--project'], reason)
 
 
 def test_helper_goes_by_the_split(helper_split_story):

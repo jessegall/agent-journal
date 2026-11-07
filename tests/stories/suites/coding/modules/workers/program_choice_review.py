@@ -260,6 +260,7 @@ def test_batch_combines_route_constraints(batch_route_story, reverse):
 def test_only_a_person_changes_the_split(split_story):
     story = split_story
     story.expect_refusal(f'setting set {SPLIT} "claude 50,codex 50" --project', 'person', actor=story.agent)
+    story.expect_success(f'setting request {SPLIT} "claude 50,codex 50" --reason "Share new work evenly" --project --environment main', actor=story.agent)
     story.run_listeners()
     story.expect_text('chat-mark list --json', 'split', 'claude', 'codex')
     story.expect_absent(f'setting show {SPLIT}', 'claude 50')

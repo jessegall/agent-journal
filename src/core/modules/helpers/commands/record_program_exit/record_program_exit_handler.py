@@ -53,7 +53,7 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
             problem = self.reasons.program_problem(agent, terminal)
             if problem:
                 ends_at = Timestamp(self.clock.timestamp().value + timedelta(minutes=OUTAGE_MINUTES))
-                self.bus.run(MakeProviderOutage(agent.program, problem, ends_at), actor, environment_id=agent.environment_id)
+                self.bus.run(MakeProviderOutage(agent.program, problem, ends_at), Actor.core(), environment_id=agent.environment_id)
         job = self.jobs.open_job(agent.id)
         if job is not None and self.needs_exit_report(agent):
             self.report_exit(agent, job, command, actor, terminal)

@@ -1,3 +1,6 @@
+from core.base.command.context import Context
+from core.base.guard.guard_refusal import GuardRefusal
+from suites.coding.modules.workers.support.worker_route_policy import ROUTE_HOLDS
 from dataclasses import replace
 from pathlib import Path
 
@@ -28,11 +31,12 @@ class WorkerRouting:
         self.shares, self.states, self.counts, self.environments = shares, states, counts, environments
         self.providers, self.models, self.programs, self.routes = providers, models, programs, routes
 
-    def choice(self, command: WorkerProgramRequest, tasks: list[Task], caller: Agent | None, profile: AgentProfile) -> WorkerChoice:
+    def choice(self, command: WorkerProgramRequest, tasks: list[Task], caller: Agent | None, profile: AgentProfile, context: Context | None = None) -> WorkerChoice:
         if caller is None and not command.program:
             raise Refusal("a person's dispatch needs the program the worker runs", "add --program, such as the program of the environment's main agent")
         route = self.routes.common_route(tasks)
         if command.program:
+            self.check_named(command, tasks, caller, route, context)
             self.programs.installed(command.program)
             return self.selected(command, profile, command.program, "named at dispatch", route)
         if route is None and not self.shares.is_configured:
@@ -72,3 +76,17 @@ class WorkerRouting:
         if wanted_tier is not None and tier is not wanted_tier:
             reason = f"{reason}; the {wanted_tier.value} tier was not allowed, so it uses {model}"
         return WorkerChoice(program, model, reason)
+
+
+    def check_named(self, command: WorkerProgramRequest, tasks: list[Task], caller: Agent | None,
+                    route: WorkerRoute | None, context: Context | None) -> None:
+        if caller is None or route is None or not route.program or route.program == command.program:
+            return
+        if context is not None and ROUTE_HOLDS in context.skipped_guards:
+            return
+        environment = self.environments.find(tasks[0].environment_id)
+        if not self.states.state(route.program, Path(environment.folder)).is_ready:
+            return
+        refusal = Refusal(f"task {tasks[0].id} goes to {route.program} by route {route.id}",
+                          "journal worker-route list shows the routes")
+        raise GuardRefusal(ROUTE_HOLDS, refusal, f"--skip-guard {ROUTE_HOLDS} --skip-reason '<why>'")

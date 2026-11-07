@@ -1,3 +1,4 @@
+from core.modules.helpers.support.program_change_access import ProgramChangeAccess
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
@@ -11,10 +12,11 @@ class EndProviderOutagesHandler(Handler[EndProviderOutages, None]):
 
     command = EndProviderOutages
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, queries: Queries, repository: Repository, access: ProgramChangeAccess) -> None:
+        self.queries, self.repository, self.access = queries, repository, access
 
     def handle(self, command: EndProviderOutages, context: Context) -> None:
+        self.access.check(context.actor)
         for row in self.queries.query(ProviderOutage).filter(program=command.program).all_rows():
             if row.ends_at <= context.timestamp:
                 continue

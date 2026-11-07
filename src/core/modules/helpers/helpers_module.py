@@ -1,3 +1,5 @@
+from core.modules.helpers.guards.provider_outage_access_guard import ProviderOutageAccessGuard
+from core.modules.helpers.commands.make_provider_outage.make_provider_outage_handler import MakeProviderOutageHandler
 from core.modules.helpers.commands.send_program_fault.send_program_fault_handler import SendProgramFaultHandler
 from core.modules.helpers.commands.agent_mix.agent_mix_subcommand import AgentMixSubcommand
 from core.modules.helpers.migrations.m001_helper_limit_key import HelperLimitKeyMigration
@@ -57,8 +59,8 @@ class HelpersModule(Module):
     dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers", "journal.core.usage", "journal.core.chat"]
     marks = PROGRAM_MARKS
     settings = HELPER_SETTINGS
-    guards = [OpenJobRetireGuard, ProviderOutageProgramGuard, ProgramSplitGuard]
-    handlers = [SendProgramFaultHandler, StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler, EndProviderOutagesHandler]
+    guards = [ProviderOutageAccessGuard, OpenJobRetireGuard, ProviderOutageProgramGuard, ProgramSplitGuard]
+    handlers = [MakeProviderOutageHandler, SendProgramFaultHandler, StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler, EndProviderOutagesHandler]
     tick_handlers = [TickHandler(TickInterval(seconds=60), HelperLimitsTick(), "helper limits")]
     nudges = HELPER_NUDGES
     skills = [SkillDeclaration("journal-helpers", "Start a helper for a bounded read, send it more, stop it, and read its report; read it before the first helper command of a session", keywords=["helper start"])]

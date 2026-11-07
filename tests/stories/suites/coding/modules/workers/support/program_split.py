@@ -16,7 +16,7 @@ from core.base.provider.program_model import ProgramModel
 from core.base.provider.providers import Providers
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
-from tests.stories.server.support.server_client import server_story
+from tests.stories.server.support.server_client import server_story, viewer_answer
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.unit.core.base.samples.program_sample import SampleProgram
 from tests.stories.support.program_states import real_program_states
@@ -51,7 +51,8 @@ def split_story(new_story, monkeypatch):
 
 
 def set_split(story, shares='claude 80,codex 20', actor=None):
-    story.expect_success(f'setting set {SPLIT} "{shares}" --project', actor=actor or story.agent)
+    with viewer_client(story) as viewer:
+        viewer.value('settings.settings', ['setting', 'set', SPLIT, shares, '--project'])
 
 
 def dispatch(story, tasks='1', flags='', actor=None):
@@ -94,6 +95,13 @@ class SplitViewer:
 
     def value(self, window, line):
         return self.server.viewer_line_value(self.cookie, {'window': window, 'environment': 'main', 'line': line})
+
+    def refusal(self, window, line, reason):
+        body = {"window": window, "environment": "main", "line": line}
+        self.server.story.steps.append(f"viewer line {json.dumps(body, sort_keys=True)}")
+        status, _, answer = viewer_answer(self.server.viewer_port(), "/api/line", self.cookie, "", body)
+        result = json.loads(answer)
+        assert status == 200 and result["code"] == 1 and reason in result["error"], (status, result)
 
 
 @contextmanager

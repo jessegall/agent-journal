@@ -20,3 +20,8 @@ class WorkerMarkVariant(StrEnum):
     HELP_REQUEST = "help request"
     TEST_REQUEST = "test request"
     TEST_ALLOWED = "test allowed"
+
+    ROUTE = "route"
+    SPLIT = "split"
+    TASK_ROUTE = "task route"
+    ROUTE_SKIPPED = "route skipped"

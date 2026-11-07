@@ -8,5 +8,5 @@ from suites.coding.modules.workers.models.enums.worker_mark_variant import Worke
 
 WORKERS_FAMILY = MarkFamily("workers.workers", "Workers", "agent", MarkGroup.AGENT, MarkColouring.OUTCOME)
 
-WORKER_MARKS = [MarkDeclaration(WorkerMarkType.TESTS, WorkerMarkVariant, WORKERS_FAMILY, "Worker tests", "agent", process=True),
+WORKER_MARKS = [MarkDeclaration(WorkerMarkType.SPLIT, WorkerMarkVariant, WORKERS_FAMILY, "Program split and routes", "agent", click=MarkClick.OPEN_ROW), MarkDeclaration(WorkerMarkType.TESTS, WorkerMarkVariant, WORKERS_FAMILY, "Worker tests", "agent", process=True),
                 MarkDeclaration(WorkerMarkType.WORKER, WorkerMarkVariant, WORKERS_FAMILY, "Workers", "agent", click=MarkClick.OPEN_ROW, group_label="Workers: {count} updates")]

@@ -18,5 +18,5 @@ HELPER_SETTINGS = [SettingValue("agent-use-days", "Days of agent use counted", "
                    SettingValue("allowed-models", "Allowed models", "Models that agents may run, as program and model; empty allows all.", SettingType.LIST, default=(), person_set=True),
                    SettingValue("helper-max-minutes", "Longest helper job", "Minutes a helper may work on one job before it is stopped.", SettingType.NUMBER, default=60, person_set=True),
                    SettingValue("helper-max-cost", "Largest helper cost", "Dollars a helper may cost before it is stopped; 0 sets no limit.", SettingType.NUMBER, default=0, person_set=True),
-                   SettingValue("program-window-percent", "Plan allowance used", "Stop assigning new agents when a plan window reaches this percent; 0 turns this check off.", SettingType.NUMBER, default=95),
-                   SettingValue("program-split", "Program split", "Percentage of new work for each program. Task routes take priority.", SettingType.LIST, default=())]
+                   SettingValue("program-window-percent", "Plan allowance used", "Stop assigning new agents when a plan window reaches this percent; 0 turns this check off.", SettingType.NUMBER, default=95, person_set=True),
+                   SettingValue("program-split", "Program split", "Percentage of new work for each program. Task routes take priority.", SettingType.LIST, default=(), person_set=True)]

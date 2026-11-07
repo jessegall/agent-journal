@@ -70,7 +70,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         caller = self.rows.find(Agent, context.actor.id)
         parent_id = caller.id if caller is not None else None
         profile = self.worker_profile(command.profile)
-        choice = self.routing.choice(command, tasks, caller, profile)
+        choice = self.routing.choice(command, tasks, caller, profile, context)
         program, model = choice.program, choice.model
         self.check_model(program, model)
         if not command.new_agent_reason.strip():

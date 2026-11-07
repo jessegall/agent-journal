@@ -1,3 +1,4 @@
+from core.modules.helpers.support.program_change_access import ProgramChangeAccess
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
@@ -12,10 +13,12 @@ class MakeWorkerRouteHandler(Handler[MakeWorkerRoute, WorkerRoute]):
 
     command = MakeWorkerRoute
 
-    def __init__(self, positions: Positions, repository: Repository) -> None:
+    def __init__(self, positions: Positions, repository: Repository, access: ProgramChangeAccess) -> None:
         self.positions, self.repository = positions, repository
+        self.access = access
 
     def handle(self, command: MakeWorkerRoute, context: Context) -> WorkerRoute:
+        self.access.check(context.actor)
         if context.environment_id is None:
             raise Refusal("a route needs an environment", "add --environment <name>")
         return self.repository.save(WorkerRoute(creator_id=context.actor.id,
