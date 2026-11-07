@@ -28,9 +28,9 @@ def configured_plugin(new_story):
 
 def test_each_environment_sends_its_own_setting_to_the_plugin(configured_plugin):
     story = configured_plugin
-    story.expect_success("agent start s-9 claude main --environment sandbox", actor=story.agent)
     sample = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
     story.expect_hook_allowed("s-1", sample)
+    story.expect_success("agent start s-9 claude main --environment sandbox", actor=story.agent)
     story.expect_hook_allowed("s-9", sample)
     inputs = [json.loads(line) for line in (story.home.folder / "plugin-data" / "sample" / "inputs").read_text().splitlines()]
     events = [line for line in inputs if line["event"] == "command_starting"]
