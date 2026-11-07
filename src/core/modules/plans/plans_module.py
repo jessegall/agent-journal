@@ -76,6 +76,8 @@ from core.modules.plans.seeders.plans_seeder import PlansSeeder
 from core.modules.plans.support.block_conditions.plan_approved import PlanApproved
 from core.modules.plans.support.block_conditions.plan_finished import PlanFinished
 from core.modules.plans.support.skeletons import PLANS_PLANS_SKELETON
+from core.base.plan_authors import PlanAuthors
+from core.modules.plans.bindings.plan_row_authors import PlanRowAuthors
 
 PLAN_COMMANDS = (ApprovePlan, BlockPlan, CancelPlan, ClosePlan, ReworkPlan, StartPlan)
 
@@ -86,6 +88,7 @@ class PlansModule(Module):
     name = "journal.core.plans"
     requires_core = ">=5,<6"
     block_conditions = [PlanApproved, PlanFinished, PlanContextReadCondition]
+    bindings = {PlanAuthors: PlanRowAuthors}
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking", "journal.core.drivers", "journal.core.messages"]
     skills = [SkillDeclaration("journal-plans", "Build and follow a plan of ordered tasks; read it before the first plan command of a session, or when the user asks for a plan or a roadmap", keywords=("plan", "plans", "roadmap", "phases"), commands=("plan", "phase")),
               SkillDeclaration("journal-planning", "How thorough a plan is: real steps in each phase, one task per step, and a brief an agent can carry out alone; read it before you make a plan or a phase", keywords=("plan", "phases"), commands=("plan make", "phase make"))]
