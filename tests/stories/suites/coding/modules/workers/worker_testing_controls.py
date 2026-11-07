@@ -2,6 +2,8 @@ import json
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.command.bus import Bus
+from suites.coding.modules.workers.commands.record_own_test_failure.record_own_test_failure import RecordOwnTestFailure
 from core.base.driver.command_category import CommandCategory
 from core.base.shell_sandbox import ShellSandbox
 from core.modules.helpers.support.helper_programs import HelperPrograms
@@ -15,6 +17,7 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.suites.coding.modules.workers.important_lines import WORKER_RUN_LINE, proved_worker
 from tests.stories.suites.coding.modules.workers.merger import merger_of
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -128,3 +131,14 @@ def test_manual_merge_keeps_mechanical_judging(new_story, monkeypatch):
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
+
+
+def test_s42_the_own_test_failure_limit_is_a_setting_and_counts_failures_already_recorded(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    _, worker = proved_worker(story)
+    bus = story.container.get(Bus)
+    for _ in range(3):
+        bus.run(RecordOwnTestFailure(worker.id, 1, WORKER_RUN_LINE), Actor.core(), environment_id=1)
+    story.expect_success("setting set journal.suites.coding.workers.own-test-failures-to-flag 3 --environment main", actor=story.user)
+    story.expect_success("worker deliver --wait --differences none", actor=worker)
+    story.expect_text(f"worker logs {worker.id}", "! its own runs failed 3 times: tests/stories/cart.py", actor=story.agent)
