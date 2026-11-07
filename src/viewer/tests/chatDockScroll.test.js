@@ -120,3 +120,37 @@ test("the all-docks header sticks to the top while the cards scroll under it", (
     expect(source).not.toMatch(/\.dock-stack\s*\{[^}]*overflow:\s*hidden;/);
     expect(readFileSync(resolve(__dirname, "../../core/modules/messages/web/src/Chat.vue"), "utf8")).toMatch(/\.chat-foot\s*\{[^}]*overflow-y:\s*auto;/);
 });
+
+const approval = (id) => ({...item(id), type: "approvals.request", target_model: "approval"});
+
+async function mixedStack(items, collapsed) {
+    loadDockDeclarations([{type: "documents.doc", icon: "document", title: "Document", buttons: [], reads: []}, {type: "approvals.request", icon: "question", title: "Approval", buttons: [], reads: [], needs_user: true}]);
+    const host = document.createElement("div");
+    document.body.append(host);
+    const app = createApp({render: () => h(DockStack, {items: items.value, collapsed: collapsed.value})});
+    app.provide(WINDOW_CONTEXT, dockWindow());
+    app.mount(host);
+    await nextTick();
+    return {host, app};
+}
+
+test("a card that waits on the person docks open among folded cards, can be folded by hand, and a card that waits on nobody keeps the folded default", async () => {
+    localStorage.clear();
+    const items = ref([item(1), item(2), approval(3)]);
+    const stack = await mixedStack(items, ref(true));
+    const folded = () => [...stack.host.querySelectorAll(".chat-dock")].map((card) => card.classList.contains("collapsed"));
+    expect(folded()).toEqual([true, true, false]);
+    items.value = [...items.value, approval(4)];
+    await nextTick();
+    expect(folded()).toEqual([true, true, false, false]);
+    stack.host.querySelector("[data-dock-all]").click();
+    await nextTick();
+    stack.host.querySelector("[data-dock-all]").click();
+    await nextTick();
+    expect(folded()).toEqual([true, true, true, true]);
+    stack.host.querySelectorAll(".chat-dock.collapsed")[2].click();
+    await nextTick();
+    expect(folded()).toEqual([true, true, false, true]);
+    stack.app.unmount();
+    localStorage.clear();
+});
