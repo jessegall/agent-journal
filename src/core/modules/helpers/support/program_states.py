@@ -72,7 +72,8 @@ class ProgramStates:
         except UnknownProgramError:
             return ProgramState.unavailable(f"{program} has no installed provider module")
         checked_at = self.clock.timestamp()
-        outages = self.queries.query(ProviderOutage).filter(program=program).descending("ends_at").all_rows()
+        outages = self.kept_rows.read("provider_outages", lambda: self.queries.query(ProviderOutage).filter(program=program).descending("ends_at").all_rows(),
+                                     "program = ?", [program], name="helpers.program_outages")
         outage = next((row for row in outages if row.ends_at > checked_at), None)
         if outage is None:
             return ProgramState.ready()
