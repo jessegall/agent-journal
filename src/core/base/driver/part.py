@@ -22,6 +22,7 @@ class Part:
     saved_command: str = ""
     read_flag: str = ""
     timeout_duration: str | None = None
+    nested_journal_commands: tuple[tuple[str, ...], ...] = ()
 
     @classmethod
     def parsed(cls, data: object) -> "Part":
@@ -34,4 +35,5 @@ class Part:
             raise HookEventError(f"piped_into is a part's number, not {pipe_target!r}")
         return cls(text(fields, "text"), text(fields, "program"), text(fields, "subcommand"), texts(fields, "arguments"),
                    Classification.parsed(fields.get("classification")), texts(fields, "read_paths"), texts(fields, "write_paths"),
-                   text(fields, "joined_by"), pipe_target, fields.get("is_full_test_run") is True, text(fields, "saved_command"), text(fields, "read_flag"), timeout)
+                   text(fields, "joined_by"), pipe_target, fields.get("is_full_test_run") is True, text(fields, "saved_command"), text(fields, "read_flag"), timeout,
+                   tuple(tuple(command) for command in fields.get("nested_journal_commands", [])))

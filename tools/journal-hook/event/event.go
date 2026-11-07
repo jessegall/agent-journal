@@ -77,6 +77,7 @@ type Part struct {
 	SavedCommand    string         `json:"saved_command,omitempty"`
 	ReadFlag        string         `json:"read_flag,omitempty"`
 	TimeoutDuration *string        `json:"timeout_duration,omitempty"`
+	NestedJournalCommands [][]string `json:"nested_journal_commands,omitempty"`
 }
 
 type Classification struct {

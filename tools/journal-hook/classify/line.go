@@ -60,6 +60,7 @@ func (classifier *Classifier) part(command shell.Command, classification Classif
 		WritePaths:     nonEmpty(classifier.WritePaths(command.Text)),
 		JoinedBy:       command.JoinedBy,
 		IsFullTestRun:  classifier.IsFullTestRun(command.Text, classification),
+		NestedJournalCommands: nestedJournalCommands(command.Text),
 	}
 	if command.PipedInto >= 0 {
 		target := command.PipedInto
