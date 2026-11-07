@@ -3,7 +3,7 @@ from datetime import timedelta
 from core.base.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
 from suites.coding.modules.workers.support.worker_nudges import WORKER_UNMERGED
-from suites.coding.modules.workers.listeners.settled_worker_block_listener import SettledWorkerBlockListener
+from suites.coding.modules.workers.listeners.worker_merge_block_listener import WorkerMergeBlockListener
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -144,7 +144,7 @@ def test_a_merge_block_left_by_an_older_server_is_closed_on_the_next_tick(new_st
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     with monkeypatch.context() as old_server:
-        old_server.setattr(SettledWorkerBlockListener, "handle", lambda self, event, context: None)
+        old_server.setattr(WorkerMergeBlockListener, "handle", lambda self, event, context: None)
         story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     expect_value(len(merge_block_rows(story, worker.id)), 1)
     story.tick(MAIN_SESSION)

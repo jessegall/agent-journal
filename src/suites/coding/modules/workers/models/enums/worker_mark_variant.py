@@ -14,7 +14,7 @@ class WorkerMarkVariant(StrEnum):
     HANDED_PLAN = "handed plan"
     DELIVERED = "delivered"
     MERGED = "merged"
-    LEFT_TO_MAIN = "left to main"
+    PASS = "left to main"
     RELEASED = "released"
     ENDED_EARLY = "ended early"
     HELP_REQUEST = "help request"

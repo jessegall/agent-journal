@@ -12,7 +12,7 @@ from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import W
 from suites.coding.modules.workers.models.worktree import Worktree
 
 
-class SettledWorkerBlockListener(SaveListener[Moved[Worktree]]):
+class WorkerMergeBlockListener(SaveListener[Moved[Worktree]]):
     """Ends the merge reminder when the delivered work no longer waits for a merge."""
 
     name = "workers.settled-worker-block"
@@ -23,7 +23,8 @@ class SettledWorkerBlockListener(SaveListener[Moved[Worktree]]):
         self.queries, self.bus = queries, bus
 
     def handle(self, event: Moved[Worktree], context: Context) -> None:
-        command = f"journal worker merge {event.row.session_agent_id}"
+        worker_id = event.row.session_agent_id
+        command = f"journal worker merge {worker_id}"
         key = f"{REQUIRED_COMMAND_REFUSAL.key}:{command}"
         blocks = self.queries.query(AgentBlock).filter(nudge_key=key, condition_text=command).matching(IsNull("closed_at")).all_rows()
         for block in blocks:

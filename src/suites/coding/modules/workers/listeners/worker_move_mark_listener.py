@@ -33,7 +33,7 @@ class WorkerMoveMarkListener(MarkListener[Moved[Worktree]]):
     the worker; a worker started on queued tasks that all belong to one plan also shows the plan handed to it."""
 
     name = "workers.move-mark"
-    moves = (WorktreeLifecycle.cut, WorktreeLifecycle.advance, WorktreeLifecycle.deliver, WorktreeLifecycle.merge, WorktreeLifecycle.abandon, WorktreeLifecycle.pass_to_main)
+    moves = (WorktreeLifecycle.cut, WorktreeLifecycle.advance, WorktreeLifecycle.deliver, WorktreeLifecycle.merge, WorktreeLifecycle.abandon, WorktreeLifecycle.return_worker)
     disabled_scopes = [ActorScope]
     module_name = "journal.suites.coding.workers"
 
@@ -44,10 +44,10 @@ class WorkerMoveMarkListener(MarkListener[Moved[Worktree]]):
     def handle(self, event: Moved[Worktree], logged: LoggedEvent) -> None:
         worktree = event.row
         agent = self.event_rows.required(Agent, worktree.session_agent_id)
-        if event.move is WorktreeLifecycle.pass_to_main:
+        if event.move is WorktreeLifecycle.return_worker:
             name = agent.given_name or f"Worker {agent.id}"
-            reason = str(logged.data.get("left_to_main_reason", ("", worktree.left_to_main_reason))[1])
-            self.show(logged, WorkerMarkType.WORKER, WorkerMarkVariant.LEFT_TO_MAIN, f"The merger left {name} to the main agent", None, AGENTS_TABLE, agent.id, detail=reason)
+            reason = str(logged.data.get("pass_reason", ("", worktree.pass_reason))[1])
+            self.show(logged, WorkerMarkType.WORKER, WorkerMarkVariant.PASS, f"The merger left {name} to the main agent", None, AGENTS_TABLE, agent.id, detail=reason)
             return
         task = self.event_rows.required(Task, worktree.task_id)
         queued = self.tasks.queued_tasks(agent.id)

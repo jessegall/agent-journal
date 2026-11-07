@@ -25,5 +25,5 @@ class ReturnWorkerHandler(Handler[ReturnWorker, None]):
         worktree: Worktree | None = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
             raise Refusal(f"worker {command.worker_id} has nothing delivered")
-        self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.pass_to_main, left_to_main_at=context.timestamp, left_to_main_reason=command.reason), context)
+        self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.return_worker, left_to_main_at=context.timestamp, pass_reason=command.reason), context)
         self.main_line.send(MERGER_PASSED.nudge(worker=command.worker_id, reason=command.reason).text, MERGER_SOURCE, context)

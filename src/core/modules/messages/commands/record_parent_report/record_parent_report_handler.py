@@ -5,6 +5,8 @@ from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 from core.modules.agents.support.receivers import Receivers
+from core.modules.agents.models.agent import Agent
+from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.agents.support.report_nudges import EMPTY_REPORT_TEXT, PARENT_REPORT, PARENT_REPORT_SOURCE, PARENT_SHORT_REPORT, SHORT_REPORT_CHARACTERS
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.nudger import Nudger
@@ -19,8 +21,8 @@ class RecordParentReportHandler(Handler[RecordParentReport, Message]):
     command = RecordParentReport
     disabled_scopes = [ActorScope]
 
-    def __init__(self, repository: Repository, nudger: Nudger, receivers: Receivers, rows: EventRows) -> None:
-        self.repository, self.nudger, self.receivers, self.rows = repository, nudger, receivers, rows
+    def __init__(self, repository: Repository, nudger: Nudger, receivers: Receivers, rows: EventRows, profiles: ProfileFiles) -> None:
+        self.repository, self.nudger, self.receivers, self.rows, self.profiles = repository, nudger, receivers, rows, profiles
 
     def handle(self, command: RecordParentReport, context: Context) -> Message:
         text = command.text or EMPTY_REPORT_TEXT
@@ -29,7 +31,9 @@ class RecordParentReportHandler(Handler[RecordParentReport, Message]):
         if command.job_id is not None:
             job = self.rows.required(HelperJob, command.job_id)
             self.repository.save(job.changed(ended_at=context.timestamp, returned=text, report_message_id=message.id), context)
-        if command.tells_receiver:
+        agent = self.rows.required(Agent, command.agent_id)
+        profile = self.profiles.registered(agent.profile)
+        if command.tells_receiver and (profile is None or profile.reports_to_parent):
             self.notify_receiver(command, message, context)
         return message
 
