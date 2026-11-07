@@ -1,6 +1,7 @@
 import json
 import shutil
 from dataclasses import dataclass
+from datetime import datetime, timezone
 
 import pytest
 
@@ -196,6 +197,7 @@ def test_with_no_connection_a_library_number_is_refused_in_plain_words(new_story
 
 def test_a_share_session_reads_the_shared_document_and_never_the_library_item_with_that_number(new_story):
     story = new_story(fixture=BuilderWithUser)
+    story.advance(datetime.now(timezone.utc) - story.clock.timestamp().value)
     story.expect_success('doc make "Shared one" --abstract "About it" --body "Plain words."', actor=story.user)
     made = json.loads(story.run("share make docs:1 --environment main --json", actor=story.user).output_text)
     with server_story(story) as server:

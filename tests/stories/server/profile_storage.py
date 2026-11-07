@@ -109,7 +109,8 @@ def test_only_changed_fields_are_saved_and_other_fields_follow_an_upgrade(change
     change_version(story, "ProfileVersionTwo")
     row = profile_row(story, "module-reader")
     expect_value((row["description"], row["body"], row["model"]), ("Reads a changed question", "Read the new files.", "opus"))
-    expect_value(row["changed"], ["model"])
+    expect_value(row["changed"], ["model", "program_models"])
+    expect_value(row["program_models"], {"claude": "opus", "codex": "gpt-6.1-sol"})
 
 
 @pytest.mark.parametrize("body", ["Read our wiki first.", ""], ids=["instructions", "empty"])

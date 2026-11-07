@@ -166,6 +166,9 @@ test("task 6894: counterpart pages append once and preserve every label", async 
     expect(element.querySelector("[data-page-more]").textContent).toContain("Show 1 more");
     element.querySelector("[data-page-more]").click();
     await settle();
+    expect(element.querySelectorAll("[data-plan-link]")).toHaveLength(3);
+    element.querySelector("[data-link-show-more]").click();
+    await settle();
     expect(element.querySelectorAll("[data-plan-link]")).toHaveLength(11);
     expect(element.textContent).toContain("edited");
     expect(requests.at(-1)).toContain("--group-counterparts");
@@ -189,6 +192,9 @@ test("link filters read the selected kind and show counts for all kinds", async 
     expect([...element.querySelectorAll('[role="radio"]')].map((node) => node.textContent.trim())).toEqual(["All 10", "Tasks 8", "Reports 2"]);
     [...element.querySelectorAll('[role="radio"]')].find((node) => node.textContent.includes("Tasks")).click();
     await settle();
+    expect(element.querySelectorAll('[data-plan-link][data-link-model="task"]')).toHaveLength(3);
+    element.querySelector("[data-link-show-more]").click();
+    await settle();
     expect(element.querySelectorAll('[data-plan-link][data-link-model="task"]')).toHaveLength(8);
     expect(requests.at(-1)).toContain("--kind");
     expect(requests.at(-1)).toContain("task");
@@ -200,7 +206,7 @@ test("task 6894: a relation failure remains visible", async () => {
 });
 
 test("task 6894: transcription links request bounded counterpart pages", async () => {
-    const windowContext = context({});
+    const windowContext = context({}, null, {transcriptions: {line: "transcription list"}, sources: {line: "transcription sources"}, "links.*": {line: "link list --row transcription:{id} --group-counterparts", loading: "requested"}});
     const requests = [];
     windowContext.read = async (line) => {
         const words = Array.isArray(line) ? line : line.split(" ");

@@ -21,11 +21,11 @@ try {
     }
     await page.locator("[data-resource-panel]:not(.opening)").waitFor();
     const more = section.locator("[data-page-more]");
-    const signature = () => page.evaluate(() => [...document.querySelectorAll("[data-link-kind]")].map((node) => node.textContent).join("|"));
+    const signature = () => section.getAttribute("data-loaded");
     while (await more.count()) {
         const before = await signature();
         await more.click();
-        await page.waitForFunction((was) => !document.querySelector("[data-page-more]") || [...document.querySelectorAll("[data-link-kind]")].map((node) => node.textContent).join("|") !== was, before, {timeout: 5000});
+        await page.waitForFunction((was) => !document.querySelector("[data-page-more]") || document.querySelector("[data-resource-links]")?.getAttribute("data-loaded") !== was, before, {timeout: 5000});
     }
     const kinds = (await section.locator("[data-link-kind]").allInnerTexts()).map((text) => text.replace(/\s+/g, " ").trim());
     assert.deepEqual(kinds, ["Task 70", "Message 30"]);
