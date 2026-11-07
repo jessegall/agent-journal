@@ -9,7 +9,7 @@ from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.environment_scope import EnvironmentScope
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.enums.plan_dock_type import PlanDockType
@@ -37,7 +37,7 @@ class PlanApprovalListener(CommitListener[Changed[Plan] | RegistrySynced]):
         actor = self.actors.actor("journal.core.plans")
         arguments = ("plan", "approve", str(plan.id))
         if plan.state is PlanState.READY:
-            approval = UserApproval(f"Approve the plan {plan.title}?\n{plan.brief}", arguments, source_version=plan.version)
+            approval = UserApprovalRefusal(f"Approve the plan {plan.title}?\n{plan.brief}", arguments, source_version=plan.version)
             self.bus.run(RequestUserApproval(approval, arguments, plan.creator_id), actor, cause_id=cause_id, environment_id=plan.environment_id)
             waiting = tuple(self.items.type_items(PlanDockType.WAITING.value).row_items(Plan.model_name, plan.id).filter(state=DockItemState.DOCKED).all_rows())
             for item in waiting:

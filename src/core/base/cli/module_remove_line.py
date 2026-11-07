@@ -14,7 +14,7 @@ from core.base.model.tables import Tables
 from core.base.module.module_error import ModuleError
 from core.base.module.module_removal import ModuleRemoval
 from core.base.refusal import Refusal
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.base.subcommand.output import Output
 
 MODULE_REMOVAL_ARGUMENTS = ["module", "remove"]
@@ -46,7 +46,7 @@ class ModuleRemoveLine:
         output = Output(self.tables, arguments.json, stream)
         try:
             if caller.actor.type is ActorType.AGENT:
-                raise UserApproval(f"Remove the module {arguments.name}?", tuple(argv))
+                raise UserApprovalRefusal(f"Remove the module {arguments.name}?", tuple(argv))
             if caller.actor.type is not ActorType.USER:
                 raise Refusal("module removal requires a person")
             self.removal.remove(arguments.name)

@@ -1,5 +1,5 @@
 from core.base.refusal import Refusal
 
 
-class Block(Refusal):
+class BlockRefusal(Refusal):
     """Stops an action until its required condition is met."""

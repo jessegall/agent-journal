@@ -10,7 +10,7 @@ from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.environment_scope import EnvironmentScope
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.modules.sharing.commands.support.share_targets import ShareTargets
 from core.modules.sharing.models.enums.share_link_state import ShareLinkState
 from core.modules.sharing.models.share_link import ShareLink
@@ -37,7 +37,7 @@ class ShareApprovalListener(CommitListener[Created[ShareLink] | Moved[ShareLink]
         arguments = ("share", "accept", str(link.id))
         if link.state is ShareLinkState.WAITING:
             shared = self.targets.shared_row(link)
-            approval = UserApproval(f"Share {shared.title} with a read-only link?", arguments,
+            approval = UserApprovalRefusal(f"Share {shared.title} with a read-only link?", arguments,
                                     ("share", "deny", str(link.id)), source_version=link.version, returns_output=True)
             self.bus.run(RequestUserApproval(approval, arguments, link.creator_id), actor,
                          cause_id=cause_id, environment_id=link.environment_id)

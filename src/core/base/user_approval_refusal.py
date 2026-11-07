@@ -1,7 +1,7 @@
-from core.base.block import Block
+from core.base.block_refusal import BlockRefusal
 
 
-class UserApproval(Block):
+class UserApprovalRefusal(BlockRefusal):
     """An action that waits for a person to accept or refuse it in the dock."""
 
     def __init__(self, question: str, arguments: tuple[str, ...] = (), refused_arguments: tuple[str, ...] = (),

@@ -1,4 +1,4 @@
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.base.actor_type import ActorType
 from core.base.change.deleted import Deleted
 from core.base.change.updated import Updated
@@ -26,4 +26,4 @@ class WorkerRouteOwnerGuard(Guard[Updated[WorkerRoute] | Deleted[WorkerRoute]]):
             return
         owner = self.rows.required(ActorRecord, event.row.creator_id)
         if owner.type is ActorType.USER:
-            raise UserApproval(f"Change task route {event.row.id}?")
+            raise UserApprovalRefusal(f"Change task route {event.row.id}?")

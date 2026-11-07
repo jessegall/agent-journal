@@ -3,7 +3,7 @@ from core.base.change.registry_synced import RegistrySynced
 from core.base.command.bus import Bus
 from core.base.command.request_user_approval import RequestUserApproval
 from core.base.command.close_user_approval import CloseUserApproval
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
@@ -47,7 +47,7 @@ class RuleDockListener(CommitListener[Changed[ProjectRule] | RegistrySynced]):
         if rule.state is RuleState.PROPOSED:
             if environment_id is None:
                 environment_id = self.queries.query(Agent).find(rule.creator_id).environment_id
-            approval = UserApproval(f"Add this project rule?\n{rule.text}", arguments, ("rule", "deny", str(rule.id)), source_version=rule.version)
+            approval = UserApprovalRefusal(f"Add this project rule?\n{rule.text}", arguments, ("rule", "deny", str(rule.id)), source_version=rule.version)
             self.bus.run(RequestUserApproval(approval, arguments, rule.creator_id), actor, cause_id=logged.id, environment_id=environment_id)
             return
         self.bus.run(CloseUserApproval(arguments), actor, cause_id=logged.id, environment_id=environment_id)

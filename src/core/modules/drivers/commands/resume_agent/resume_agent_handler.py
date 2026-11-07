@@ -6,7 +6,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.resume_agent.resume_agent import ResumeAgent
@@ -31,7 +31,7 @@ class ResumeAgentHandler(Handler[ResumeAgent, Agent]):
             raise Refusal(f"agent {agent.id} is not paused")
         helpers = self.queries.query(Agent).filter(parent_id=agent.id).all_rows()
         if context.actor.id in (agent.id, *(helper.id for helper in helpers)):
-            raise UserApproval(f"Resume the paused agent {agent.id}?")
+            raise UserApprovalRefusal(f"Resume the paused agent {agent.id}?")
         resumed =self.repository.save(replace(agent, paused_at=None), context)
         self.nudger.send(agent.id, AGENT_RESUMED, RESUME_SOURCE, context)
         return resumed

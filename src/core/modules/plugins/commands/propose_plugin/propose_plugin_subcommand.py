@@ -5,7 +5,7 @@ from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plugins.support.plugin_manifest import PluginManifest
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 
 
 class ProposePluginSubcommand(ReadSubcommand[PluginManifest]):
@@ -21,7 +21,7 @@ class ProposePluginSubcommand(ReadSubcommand[PluginManifest]):
 
     def read(self, arguments: Namespace, caller: Caller) -> PluginManifest:
         manifest = PluginManifest.read(Path(arguments.source))
-        raise UserApproval(f"Install {manifest.title}?\n{arguments.why}", ("plugin", "install", arguments.source, "--yes"))
+        raise UserApprovalRefusal(f"Install {manifest.title}?\n{arguments.why}", ("plugin", "install", arguments.source, "--yes"))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PluginManifest):
