@@ -6,13 +6,13 @@ def chat(story) -> str:
     return story.run("message list --environment main", actor=story.user).output_text
 
 
-def test_words_after_a_reply_by_command_stay_out_of_the_chat(new_story):
+def test_words_after_a_reply_by_command_reach_the_chat_once(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.run('message send "are you there" --environment main', actor=story.user)
     story.hook("s-1", HookSamples.prompt("go on"))
     story.run('message reply 1 "yes"', actor=story.agent)
     story.hook("s-1", HookSamples.message_display("I told you where it stands."))
-    expect_absent_chat(story, "I told you where it stands")
+    expect_chat(story, "I told you where it stands.")
 
 
 def test_words_after_a_person_wrote_again_since_the_reply_reach_the_chat(new_story):
