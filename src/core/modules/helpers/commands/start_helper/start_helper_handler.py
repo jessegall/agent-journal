@@ -16,6 +16,9 @@ from core.base.profile.agent_profile import AgentProfile
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_reuse import HelperReuse
 from core.modules.helpers.support.kept_helpers import KeptHelpers
+from core.modules.helpers.support.helper_counts import HelperCounts
+from core.modules.helpers.support.program_shares import ProgramShares
+from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.helpers.commands.start_helper.helper_started import HelperStarted
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from core.modules.helpers.support.helper_limits import HelperLimits
@@ -41,12 +44,13 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
 
     command = StartHelper
 
-    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers, sources: WorkSources, sandbox: ShellSandbox, kept: KeptHelpers, models: ProfileModels) -> None:
+    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers, sources: WorkSources, sandbox: ShellSandbox, kept: KeptHelpers, models: ProfileModels, shares: ProgramShares, states: ProgramStates, counts: HelperCounts) -> None:
         self.kept, self.models = kept, models
         self.sandbox = sandbox
         self.profiles, self.types, self.limits, self.bus, self.repository, self.reuse = profiles, types, limits, bus, repository, reuse
         self.programs, self.folders, self.providers = programs, folders, providers
         self.sources = sources
+        self.shares, self.states, self.counts = shares, states, counts
 
     def prepare(self, command: StartHelper, actor: Actor) -> None:
         self.sandbox.check()
@@ -79,9 +83,10 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
         return HelperStarted(helper, selection.note)
 
     def startable_program(self, command: StartHelper, profile: AgentProfile, parent: Agent) -> HelperProgram:
-        preferred = command.program or profile.program or parent.program
+        preferred = self.selected_program(command, profile, parent)
         try:
-            return HelperProgram(preferred, self.checked_start(preferred, command.program_model, profile, parent, command.tier))
+            model = self.checked_start(preferred, command.program_model, profile, parent, command.tier)
+            return HelperProgram(preferred, model, self.availability_note(command, preferred))
         except Refusal as refusal:
             if not (profile.program_if_possible and profile.program and not command.program):
                 raise
@@ -92,6 +97,26 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
                 except Refusal:
                     continue
             raise refusal from None
+
+    def selected_program(self, command: StartHelper, profile: AgentProfile, parent: Agent) -> str:
+        if command.program or profile.program:
+            return command.program or profile.program
+        if not self.shares.is_configured:
+            return parent.program
+        folder = self.folders.folder(parent)
+        program = self.shares.next_program(self.counts.recent(parent.environment_id), self.states.ready_programs(folder))
+        if program is None:
+            raise Refusal(f"no program can take this helper: {self.states.earliest_line(folder)}", "name --program explicitly, or wait")
+        return program
+
+    def availability_note(self, command: StartHelper, program: str) -> str:
+        if not command.program:
+            return ""
+        state = self.states.allowance_state(program)
+        if state.is_ready:
+            return ""
+        availability = f" until {state.ends_at.text}" if state.ends_at is not None else ""
+        return f"{program} is out{availability}: {state.line}; started as requested"
 
     def checked_start(self, program: str, program_model: str, profile: AgentProfile, parent: Agent, tier: ModelTier | None) -> str:
         model = self.limits.checked_model(program, program_model or self.models.model(profile, self.providers.provider(program), tier))

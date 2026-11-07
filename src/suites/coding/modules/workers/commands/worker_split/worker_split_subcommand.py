@@ -9,6 +9,7 @@ from core.base.subcommand.row_list import RowList
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.helpers.support.program_shares import ProgramShares
 from core.modules.helpers.support.program_states import ProgramStates
+from core.modules.helpers.support.helper_counts import HelperCounts
 from suites.coding.modules.workers.support.worker_counts import WorkerCounts
 
 
@@ -20,13 +21,16 @@ class WorkerSplitSubcommand(ReadSubcommand[RowList]):
     row_line = "{id}  share {share}%  recent {recent}  {line}  {ends_at}"
 
     def __init__(self, providers: Providers, shares: ProgramShares, states: ProgramStates,
-                 counts: WorkerCounts, environments: EnvironmentRows, home: JournalHome) -> None:
+                 counts: WorkerCounts, environments: EnvironmentRows, home: JournalHome, helpers: HelperCounts) -> None:
         self.providers, self.shares, self.states, self.counts, self.environments = providers, shares, states, counts, environments
         self.home = home
+        self.helpers = helpers
 
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
         folder = self.home.project_folder if caller.environment_id is None else Path(self.environments.find(caller.environment_id).folder)
         shares, counts = self.shares.shares(), self.counts.recent(caller.environment_id)
+        helper_counts = self.helpers.recent(caller.environment_id)
         return RowList([{"id": provider.name, "title": provider.title, "share": shares.get(provider.name, 0),
-                         "recent": counts[provider.name], **self.states.state(provider.name, folder).listed()}
+                         "recent": counts[provider.name], "helpers_recent": helper_counts[provider.name],
+                         **self.states.state(provider.name, folder).listed()}
                         for provider in self.providers.all()])

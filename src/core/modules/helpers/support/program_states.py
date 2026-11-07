@@ -39,6 +39,9 @@ class ProgramStates:
             return ProgramState.unavailable(refusal.text)
         if provider.hook_trust(folder) is not HookTrust.READY:
             return ProgramState.unavailable(f"{program} has not trusted the journal hooks in {folder}")
+        return self.allowance_state(program)
+
+    def allowance_state(self, program: str) -> ProgramState:
         outage = self.outage_state(program)
         if not outage.is_ready:
             return outage
