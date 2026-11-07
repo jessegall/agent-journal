@@ -10,7 +10,7 @@ from core.modules.messages.commands.record_parent_report.record_parent_report im
 from core.modules.agents.models.agent import Agent
 from core.modules.messages.models.message import Message
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from suites.coding.modules.workers.commands.merger.merger_commands import ReportToMerger
+from suites.coding.modules.workers.commands.send_merger_input.send_merger_input import SendMergerInput
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 
@@ -27,14 +27,14 @@ class SendWorkerReportSubcommand(Subcommand[RecordParentReport, Message]):
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("text")
 
-    def command(self, arguments: Namespace, caller: Caller) -> RecordParentReport | ReportToMerger:
+    def command(self, arguments: Namespace, caller: Caller) -> RecordParentReport | SendMergerInput:
         worker = self.queries.query(Agent).filter(id=caller.actor.id, role=AgentRole.WORKER).first()
         if worker is None:
             raise Refusal("only a worker reports to its main agent", "journal message send writes a main agent's message")
         if worker.parent_id is None:
             raise Refusal("the worker has no main agent", f"journal agent show {worker.id}")
         if self.settings.flag(MERGER_ENABLED):
-            return ReportToMerger(worker.id, arguments.text)
+            return SendMergerInput(worker.id, arguments.text)
         return RecordParentReport(worker.id, worker.parent_id, arguments.text)
 
     def write_output(self, value: object, output: Output) -> None:

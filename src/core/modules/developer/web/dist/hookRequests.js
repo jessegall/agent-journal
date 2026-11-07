@@ -4,7 +4,7 @@ import { openBlock as n, createElementBlock as l, normalizeStyle as X, createVNo
 import { useWindow as Q, usePoll as D, Icon as ae, CloseButton as re, highlight as ne, WindowRoom as le, MenuPanel as se, MenuLabel as I, MenuItem as S, peekRef as oe, toggleFilter as ie } from "@journal/window-kit";
 import { _ as R } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 import { t as de } from "./toggleFeedPause-Dh68BHHr.js";
-const he = ["stroke-width", "innerHTML"], ce = {
+const ce = ["data-icon", "stroke-width", "innerHTML"], he = {
   __name: "Icon",
   props: {
     name: { type: String, default: "dot" },
@@ -12,8 +12,8 @@ const he = ["stroke-width", "innerHTML"], ce = {
     facing: { type: String, default: "right" },
     bold: Boolean
   },
-  setup(o) {
-    const p = o, _ = { right: 0, down: 90, left: 180, up: 270 }, d = {
+  setup(s) {
+    const p = s, _ = { right: 0, down: 90, left: 180, up: 270 }, d = {
       mail: "inbox",
       circle: "todos",
       play: "work",
@@ -37,7 +37,9 @@ const he = ["stroke-width", "innerHTML"], ce = {
       send: "arrow",
       more: "dots",
       chevron: "arrow"
-    }, s = {
+    }, o = {
+      time: '<circle cx="8" cy="8" r="5.5"/><path d="M8 4.5V8l2.4 1.5"/>',
+      allowance: '<path d="M3 4.5h10v7H3zM5 6.5h1M10 9.5h1"/><circle cx="8" cy="8" r="1.4"/>',
       phone: '<rect x="4.5" y="1.5" width="7" height="13" rx="1.6"/><path d="M7 12.2h2"/>',
       key: '<circle cx="5.5" cy="10.5" r="2.8"/><path d="M7.5 8.5 13 3M10.8 5.2l1.7 1.7M9.2 6.8l1.2 1.2"/>',
       terminal: '<path d="M2 3.5h12v9H2zM4.8 6.4 6.9 8l-2.1 1.6M8.4 10h3"/>',
@@ -145,33 +147,34 @@ const he = ["stroke-width", "innerHTML"], ce = {
       family: '<rect x="6" y="1.8" width="4" height="3.4" rx="1"/><rect x="1.8" y="10.8" width="4" height="3.4" rx="1"/><rect x="10.2" y="10.8" width="4" height="3.4" rx="1"/><path d="M8 5.2v2.6M3.8 10.8V9.4q0-1.6 1.6-1.6h5.2q1.6 0 1.6 1.6v1.4"/>',
       loop: '<path d="M12.6 6.2A4.9 4.9 0 0 0 3.4 6M3.4 9.8a4.9 4.9 0 0 0 9.2.2"/><path d="M12.8 3v3.3H9.5M3.2 13V9.7h3.3"/>'
     };
-    return (h, g) => (n(), l("svg", {
+    return (c, x) => (n(), l("svg", {
       class: "ico",
+      "data-icon": s.name,
       style: X({
-        ...o.size ? { "--icon-size": `${o.size}px` } : {},
+        ...s.size ? { "--icon-size": `${s.size}px` } : {},
         ...p.facing === "right" ? {} : { transform: `rotate(${_[p.facing]}deg)` }
       }),
       viewBox: "0 0 16 16",
       fill: "none",
       stroke: "currentColor",
-      "stroke-width": o.bold ? 2 : 1.4,
+      "stroke-width": s.bold ? 2 : 1.4,
       "stroke-linecap": "round",
       "stroke-linejoin": "round",
       "aria-hidden": "true",
-      innerHTML: s[d[o.name] || o.name] || s.dot
-    }, null, 12, he));
+      innerHTML: o[d[s.name] || s.name] || o.dot
+    }, null, 12, ce));
   }
 }, ue = { class: "band" }, pe = { key: 0 }, Me = {
   __name: "ProcessQueueBand",
   props: { icon: { type: String, required: !0 }, count: { type: Number, default: null } },
-  setup(o) {
+  setup(s) {
     return (p, _) => (n(), l("h2", ue, [
-      k(ce, {
-        name: o.icon,
+      k(he, {
+        name: s.icon,
         size: 12
       }, null, 8, ["name"]),
       Y(p.$slots, "default", {}, void 0, !0),
-      o.count !== null ? (n(), l("span", pe, r(o.count), 1)) : m("", !0)
+      s.count !== null ? (n(), l("span", pe, r(s.count), 1)) : m("", !0)
     ]));
   }
 }, Z = /* @__PURE__ */ R(Me, [["__scopeId", "data-v-1758914f"]]), ve = {
@@ -185,21 +188,21 @@ const he = ["stroke-width", "innerHTML"], ce = {
   key: 0,
   class: "empty",
   "data-request-queue-empty": ""
-}, ge = {
+}, xe = {
   key: 1,
   class: "empty"
-}, xe = {
+}, ge = {
   __name: "RequestQueueInspector",
   emits: ["close"],
-  setup(o, { emit: p }) {
-    const _ = p, d = Q(), s = f(null), h = f("");
-    async function g() {
-      const x = await d.read("developer request-queue", { unbatched: !0 });
-      h.value = x.ok ? "" : x.error, x.ok && (s.value = x.value);
+  setup(s, { emit: p }) {
+    const _ = p, d = Q(), o = f(null), c = f("");
+    async function x() {
+      const g = await d.read("developer request-queue", { unbatched: !0 });
+      c.value = g.ok ? "" : g.error, g.ok && (o.value = g.value);
     }
-    D(g, () => !0);
-    const H = (x) => `${Math.round(x.waited_ms)} ms`;
-    return (x, M) => (n(), l("aside", ve, [
+    D(x, () => !0);
+    const H = (g) => `${Math.round(g.waited_ms)} ms`;
+    return (g, M) => (n(), l("aside", ve, [
       t("header", null, [
         k(v(ae), {
           name: "terminal",
@@ -208,63 +211,63 @@ const he = ["stroke-width", "innerHTML"], ce = {
         M[1] || (M[1] = t("h1", null, "Request queue", -1)),
         k(v(re), {
           title: "Close the request queue",
-          onClick: M[0] || (M[0] = (c) => _("close"))
+          onClick: M[0] || (M[0] = (h) => _("close"))
         })
       ]),
-      h.value ? (n(), l("p", ye, r(h.value), 1)) : s.value ? (n(), l(q, { key: 1 }, [
-        t("div", ke, "Hooks at once: " + r(s.value.hook_limit) + " · Main agent wait: " + r(s.value.main_hook_seconds) + " s · Other agent wait: " + r(s.value.agent_hook_seconds) + " s · Viewer wait: " + r(s.value.viewer_wait_seconds) + " s", 1),
+      c.value ? (n(), l("p", ye, r(c.value), 1)) : o.value ? (n(), l(q, { key: 1 }, [
+        t("div", ke, "Hooks at once: " + r(o.value.hook_limit) + " · Main agent wait: " + r(o.value.main_hook_seconds) + " s · Other agent wait: " + r(o.value.agent_hook_seconds) + " s · Viewer wait: " + r(o.value.viewer_wait_seconds) + " s", 1),
         k(Z, {
           icon: "start",
-          count: s.value.running.length
+          count: o.value.running.length
         }, {
           default: y(() => [...M[2] || (M[2] = [
             u("Running", -1)
           ])]),
           _: 1
         }, 8, ["count"]),
-        s.value.running.length ? m("", !0) : (n(), l("p", me, "Nothing is running.")),
-        (n(!0), l(q, null, V(s.value.running, (c, w) => (n(), l("div", {
+        o.value.running.length ? m("", !0) : (n(), l("p", me, "Nothing is running.")),
+        (n(!0), l(q, null, V(o.value.running, (h, w) => (n(), l("div", {
           key: `running-${w}`,
           class: "entry",
           "data-request-queue-running": ""
         }, [
           t("span", null, [
-            u(r(c.sender), 1),
-            c.priority ? (n(), l(q, { key: 0 }, [
-              u(" · " + r(c.priority), 1)
+            u(r(h.sender), 1),
+            h.priority ? (n(), l(q, { key: 0 }, [
+              u(" · " + r(h.priority), 1)
             ], 64)) : m("", !0)
           ]),
-          t("strong", null, r(c.event), 1),
-          t("span", null, r(H(c)), 1)
+          t("strong", null, r(h.event), 1),
+          t("span", null, r(H(h)), 1)
         ]))), 128)),
         k(Z, {
           icon: "clock",
-          count: s.value.waiting.length
+          count: o.value.waiting.length
         }, {
           default: y(() => [...M[3] || (M[3] = [
             u("Waiting", -1)
           ])]),
           _: 1
         }, 8, ["count"]),
-        s.value.waiting.length ? m("", !0) : (n(), l("p", ge, "Nothing is waiting.")),
-        (n(!0), l(q, null, V(s.value.waiting, (c, w) => (n(), l("div", {
+        o.value.waiting.length ? m("", !0) : (n(), l("p", xe, "Nothing is waiting.")),
+        (n(!0), l(q, null, V(o.value.waiting, (h, w) => (n(), l("div", {
           key: `waiting-${w}`,
           class: "entry",
           "data-request-queue-waiting": ""
         }, [
           t("span", null, [
-            u(r(c.sender), 1),
-            c.priority ? (n(), l(q, { key: 0 }, [
-              u(" · " + r(c.priority), 1)
+            u(r(h.sender), 1),
+            h.priority ? (n(), l(q, { key: 0 }, [
+              u(" · " + r(h.priority), 1)
             ], 64)) : m("", !0)
           ]),
-          t("strong", null, r(c.event), 1),
-          t("span", null, r(H(c)), 1)
+          t("strong", null, r(h.event), 1),
+          t("span", null, r(H(h)), 1)
         ]))), 128))
       ], 64)) : m("", !0)
     ]));
   }
-}, fe = /* @__PURE__ */ R(xe, [["__scopeId", "data-v-15282424"]]), qe = {
+}, fe = /* @__PURE__ */ R(ge, [["__scopeId", "data-v-15282424"]]), qe = {
   key: 0,
   "data-hook-request-detail": ""
 }, _e = { class: "detail-head" }, we = ["innerHTML"], be = ["innerHTML"], Ve = {
@@ -273,25 +276,25 @@ const he = ["stroke-width", "innerHTML"], ce = {
 }, $e = {
   __name: "RequestDetails",
   props: { request: { type: Object, default: null } },
-  setup(o) {
-    const p = (h) => ne(JSON.stringify(h, null, 2), "json").join(`
-`), _ = (h) => h.outcome === "refused", d = (h) => !_(h) && h.duration_ms >= 500, s = (h) => `${Math.round(h.duration_ms)} ms`;
-    return (h, g) => o.request ? (n(), l("div", qe, [
+  setup(s) {
+    const p = (c) => ne(JSON.stringify(c, null, 2), "json").join(`
+`), _ = (c) => c.outcome === "refused", d = (c) => !_(c) && c.duration_ms >= 500, o = (c) => `${Math.round(c.duration_ms)} ms`;
+    return (c, x) => s.request ? (n(), l("div", qe, [
       t("div", _e, [
-        t("h2", null, r(o.request.event), 1),
+        t("h2", null, r(s.request.event), 1),
         t("span", {
-          class: F({ slow: d(o.request), refused: _(o.request) })
-        }, r(o.request.sender) + " · queued " + r(Math.round(o.request.queued_ms)) + " ms · " + r(o.request.outcome) + " · " + r(s(o.request)), 3)
+          class: F({ slow: d(s.request), refused: _(s.request) })
+        }, r(s.request.sender) + " · queued " + r(Math.round(s.request.queued_ms)) + " ms · " + r(s.request.outcome) + " · " + r(o(s.request)), 3)
       ]),
-      g[0] || (g[0] = t("h3", { class: "heading" }, "Headers", -1)),
+      x[0] || (x[0] = t("h3", { class: "heading" }, "Headers", -1)),
       t("pre", {
         "data-hook-request-headers": "",
-        innerHTML: p(o.request.headers)
+        innerHTML: p(s.request.headers)
       }, null, 8, we),
-      g[1] || (g[1] = t("h3", { class: "heading" }, "Body", -1)),
+      x[1] || (x[1] = t("h3", { class: "heading" }, "Body", -1)),
       t("pre", {
         "data-hook-request-body": "",
-        innerHTML: p(o.request.body)
+        innerHTML: p(s.request.body)
       }, null, 8, be)
     ])) : (n(), l("p", Ve, "Select a request to see its headers and body."));
   }
@@ -327,7 +330,7 @@ const he = ["stroke-width", "innerHTML"], ce = {
   "aria-label": "Request details"
 }, P = "journal.hook-requests.filters", Ke = {
   __name: "HookRequests",
-  setup(o) {
+  setup(s) {
     const p = () => ({ kind: [], family: [], sender: [] });
     function _() {
       try {
@@ -336,33 +339,33 @@ const he = ["stroke-width", "innerHTML"], ce = {
         return p();
       }
     }
-    const d = f(_()), s = f(!1), h = f({ family: ["process bookkeeping"], sender: [] }), g = A(() => Object.values(d.value).reduce((i, a) => i + a.length, 0)), H = Q(), x = f(null), M = f("");
-    let c = 0;
+    const d = f(_()), o = f(!1), c = f({ family: ["process bookkeeping"], sender: [] }), x = A(() => Object.values(d.value).reduce((i, a) => i + a.length, 0)), H = Q(), g = f(null), M = f("");
+    let h = 0;
     async function w() {
-      const i = ++c, a = ["developer hook-requests", ...Object.entries(d.value).flatMap(([b, U]) => U.map((G) => `--${b} ${JSON.stringify(G)}`))].join(" "), e = await H.read(a, { unbatched: !0 });
-      s.value || i !== c || (M.value = e.ok ? "" : e.error, e.ok && (x.value = e.value));
+      const i = ++h, a = ["developer hook-requests", ...Object.entries(d.value).flatMap(([b, U]) => U.map((G) => `--${b} ${JSON.stringify(G)}`))].join(" "), e = await H.read(a, { unbatched: !0 });
+      o.value || i !== h || (M.value = e.ok ? "" : e.error, e.ok && (g.value = e.value));
     }
     const N = A(() => {
       var i;
-      return ((i = x.value) == null ? void 0 : i.rows) ?? [];
+      return ((i = g.value) == null ? void 0 : i.rows) ?? [];
     });
-    j(x, (i) => {
-      h.value.family = [.../* @__PURE__ */ new Set(["process bookkeeping", ...i.families || [], ...d.value.family])].sort(), h.value.sender = [.../* @__PURE__ */ new Set([...i.senders || [], ...d.value.sender])].sort();
+    j(g, (i) => {
+      c.value.family = [.../* @__PURE__ */ new Set(["process bookkeeping", ...i.families || [], ...d.value.family])].sort(), c.value.sender = [.../* @__PURE__ */ new Set([...i.senders || [], ...d.value.sender])].sort();
     }), j(d, (i) => {
       try {
         localStorage.setItem(P, JSON.stringify(i));
       } catch {
       }
-      s.value || w();
+      o.value || w();
     });
     function T(i, a) {
       d.value = ie(d.value, i, a);
     }
     const z = f(null), $ = f(0), L = f(!1), E = A(() => N.value.find((i) => i.id === $.value)), O = (i) => i.outcome === "refused", J = (i) => !O(i) && i.duration_ms >= 500, K = (i) => `${Math.round(i.duration_ms)} ms`;
     function W() {
-      de(s, w);
+      de(o, w);
     }
-    return D(w, () => !s.value), (i, a) => (n(), C(v(le), { padding: "0" }, {
+    return D(w, () => !o.value), (i, a) => (n(), C(v(le), { padding: "0" }, {
       default: y(() => [
         t("div", He, [
           t("section", ze, [
@@ -373,14 +376,14 @@ const he = ["stroke-width", "innerHTML"], ce = {
                 onClick: a[0] || (a[0] = (e) => z.value = e.currentTarget)
               }, [
                 a[6] || (a[6] = u("Filters", -1)),
-                g.value ? (n(), l("span", Se, " (" + r(g.value) + ")", 1)) : m("", !0)
+                x.value ? (n(), l("span", Se, " (" + r(x.value) + ")", 1)) : m("", !0)
               ]),
               t("button", {
                 type: "button",
                 "data-feed-pause": "",
-                "aria-pressed": s.value,
+                "aria-pressed": o.value,
                 onClick: W
-              }, r(s.value ? "Resume" : "Pause"), 9, Re),
+              }, r(o.value ? "Resume" : "Pause"), 9, Re),
               t("button", {
                 type: "button",
                 "data-request-queue-open": "",
@@ -420,7 +423,7 @@ const he = ["stroke-width", "innerHTML"], ce = {
                     ])]),
                     _: 1
                   }),
-                  (n(!0), l(q, null, V(h.value.family, (e) => (n(), C(v(S), {
+                  (n(!0), l(q, null, V(c.value.family, (e) => (n(), C(v(S), {
                     key: e,
                     "data-filter-family": e,
                     role: "menuitemcheckbox",
@@ -439,7 +442,7 @@ const he = ["stroke-width", "innerHTML"], ce = {
                     ])]),
                     _: 1
                   }),
-                  (n(!0), l(q, null, V(h.value.sender, (e) => (n(), C(v(S), {
+                  (n(!0), l(q, null, V(c.value.sender, (e) => (n(), C(v(S), {
                     key: e,
                     role: "menuitemcheckbox",
                     checked: d.value.sender.includes(e),
@@ -451,7 +454,7 @@ const he = ["stroke-width", "innerHTML"], ce = {
                     ]),
                     _: 2
                   }, 1032, ["checked", "aria-checked", "onClick"]))), 128)),
-                  g.value ? (n(), C(v(S), {
+                  x.value ? (n(), C(v(S), {
                     key: 0,
                     "data-filter-clear": "",
                     onClick: a[2] || (a[2] = (e) => d.value = p())

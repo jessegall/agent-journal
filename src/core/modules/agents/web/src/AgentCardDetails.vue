@@ -4,7 +4,6 @@ import {READ_RATES, coalesced, EmptyState, FoldGroup, InnerTabs, loadWindowCompo
 import AgentCommand from "./AgentCommand.vue";
 import AgentTaskGroup from "./AgentTaskGroup.vue";
 import TranscriptRows from "./TranscriptRows.vue";
-import AgentActions from "./AgentActions.vue";
 
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, tasks: {type: Array, required: true}, stoppedWithWork: Boolean, open: Boolean});
 const TASK_STATES = ["started", "blocked", "open", "completed"];
@@ -52,7 +51,6 @@ watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true
     <div class="agent-more" data-agent-more @click.stop>
         <template v-if="row.retirement_reason"><p class="agent-summary" data-agent-retirement-reason>Retirement reason: {{ row.retirement_reason }}</p></template>
         <template v-if="row.resume_reason"><p class="agent-summary" data-agent-resume-reason>{{ row.resume_reason }}</p></template>
-        <AgentActions :row="row" />
                 <template v-if="showsCommand"><AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" /></template>
                 <template v-if="endedReason"><p class="agent-ended-reason" data-agent-ended-reason>{{ endedReason }}</p></template>
                 <InnerTabs class="agent-tabs" :tabs="cardTabs" :active="tab" :answer="{tasks: tasks.length, reports: reports.length}" @choose="tab = $event" />

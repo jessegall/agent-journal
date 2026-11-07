@@ -120,18 +120,24 @@ test("closed cards use the shared agent facts read for their identity", async ()
 });
 
 test("worker identity changes from list details to its number when opened", async () => {
-    const row = {id: 4, session: "s-worker", program: "codex", role: "worker", ended_at: null};
+    const row = {id: 4, session: "s-worker", program: "codex", role: "worker", ended_at: null, created_at: new Date(Date.now() - 6 * 60000).toISOString(), process_started_at: new Date(Date.now() - 60000).toISOString()};
     const facts = {model: "gpt-6.1-sol", effort: "high", given_name: "Mary Shelley", last_activity: "2026-11-01T10:00:00Z", job_enabled: true, task_title: "Window converter", tasks: []};
     const element = await mounted({render: () => h(AgentCard, {row, facts})}, context({}));
     const card = element.querySelector("[data-agent-open]");
     const identity = card.querySelector("[data-agent-identity]");
     expect(identity.textContent).toBe("codex · gpt-6.1-sol · high · worker 4");
+    expect(card.querySelector("[data-agent-first-dispatched]")).toBeNull();
     expect(identity.parentElement.previousElementSibling.classList.contains("agent-head")).toBe(true);
     expect(identity.parentElement.nextElementSibling.querySelector("[data-agent-job]").textContent).toBe("Window converter");
     const opened = await mounted({render: () => h(AgentCard, {row, facts, open: true})}, context({}));
     expect(opened.querySelector("[data-agent-identity]").textContent).toBe("worker 4");
     expect(opened.querySelector("[data-agent-open]").title).toBe("");
     expect(opened.querySelector("[data-agent-last-heard]").parentElement).toBe(opened.querySelector("[data-agent-identity]").parentElement);
+    const dispatched = opened.querySelector("[data-agent-first-dispatched]");
+    expect(dispatched.textContent).toBe("First dispatched: 6m ago");
+    expect(dispatched.querySelector("[data-icon]").dataset.icon).toBe("time");
+    expect(dispatched.querySelector("time").dateTime).toBe(row.created_at);
+    expect(dispatched.nextElementSibling).toBe(opened.querySelector("[data-agent-last-heard]"));
     expect(opened.querySelector("[data-information-bar]").previousElementSibling).toBe(opened.querySelector("[data-agent-identity]").parentElement);
 });
 

@@ -2,6 +2,7 @@
 import {computed} from "vue";
 import {age, perHour, Btn, Icon, TimeAgo, peekRef, useNow, useWindow} from "@journal/window-kit";
 import AgentCardDetails from "./AgentCardDetails.vue";
+import AgentActions from "./AgentActions.vue";
 import AgentTaskCount from "./AgentTaskCount.vue";
 import InformationBar from "../../../../../viewer/src/shell/InformationBar.vue";
 
@@ -65,9 +66,11 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
         </span>
         <span class="agent-line">
             <span class="agent-identity" data-agent-identity data-agent-motion>{{ open && facts?.job_enabled ? `${row.role} ${row.id}` : open ? '' : identity }}</span>
+            <template v-if="open"><span class="agent-first-dispatched" data-agent-first-dispatched><Icon name="time" :size="12" />First dispatched: <TimeAgo :at="row.created_at" /></span></template>
             <template v-if="open && facts?.last_activity"><span class="agent-last-heard" data-agent-last-heard>Last heard: <TimeAgo :at="facts.last_activity" /></span></template>
         </span>
         <template v-if="open"><InformationBar :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: []}" card>
+            <AgentActions :row="row" />
             <template v-if="row.role === 'helper' && !row.ended_at"><Btn variant="ghost" small data-helper-stop @click.stop="context.run(['helper', 'stop', String(row.id)])">Stop</Btn></template>
         </InformationBar></template>
         <template v-if="open && totalCount && !job"><span class="agent-line"><AgentTaskCount :count="taskCount" :rate="tasksPerHour" /></span></template>
@@ -219,7 +222,8 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
 .agent-card { gap: 2px; padding: 9px 14px; }
 .agent-head { gap: 6px; }
 .agent-times { display: flex; flex-direction: column; align-items: flex-end; flex: none; margin-left: auto; }
-.agent-last-heard { margin-left: auto; color: var(--text-4); font-size: 10px; white-space: nowrap; }
+.agent-first-dispatched, .agent-last-heard { color: var(--text-4); font-size: 10px; white-space: nowrap; }
+.agent-first-dispatched .ico { margin-right: 4px; vertical-align: middle; }
 .agent-dot { margin-right: 3px; }
 .agent-name { flex: 0 1 auto; }
 .agent-head { flex-wrap: wrap; }
