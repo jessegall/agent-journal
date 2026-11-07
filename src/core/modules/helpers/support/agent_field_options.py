@@ -3,7 +3,7 @@ from collections.abc import Iterator
 from dataclasses import dataclass, replace
 
 from core.modules.helpers.support.malformed_agent_options import MalformedAgentOptions
-from core.modules.helpers.support.number_rule import NumberRule
+from core.base.setting.number_rule import NumberRule
 
 ALLOW_NEW = "allow_new"
 ALLOW_RESUME = "allow_resume"

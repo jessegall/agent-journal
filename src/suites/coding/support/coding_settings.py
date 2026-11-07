@@ -1,8 +1,9 @@
 from core.base.driver.command_category import CommandCategory
 from core.base.setting.setting_scope import SettingScope
+from core.base.setting.ruled_settings import ruled_settings
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
-from core.modules.helpers.support.list_rule import ListRule
+from core.base.setting.list_rule import ListRule
 
 
 MODULE_KEY = "journal.suites.coding"
@@ -11,7 +12,7 @@ AUTO_MODE_SETTING = f"{MODULE_KEY}.auto-mode"
 COMMAND_TYPES = f"{MODULE_KEY}.worker-command-types"
 KEEP_RUNNING_SETTING = f"{MODULE_KEY}.continue-while-delegatable"
 DESIGNER_ENABLED_SETTING = f"{MODULE_KEY}.designer-enabled"
-CODING_SETTINGS = [
+CODING_SETTING_VALUES = [
     SettingValue("auto-mode", "Auto mode", "The main agent may also write code itself", SettingType.FLAG, default=True,
                  scope=SettingScope.ENVIRONMENT, person_set=True),
     SettingValue("builder-starts-helpers", "Use ordinary helpers", "Whether the main agent may start ordinary helpers.",
@@ -25,3 +26,4 @@ CODING_SETTINGS = [
                           CommandCategory.BUILD.value), person_set=True),
 ]
 CODING_SETTING_RULES = {COMMAND_TYPES: ListRule(choices=tuple(category.value for category in CommandCategory))}
+CODING_SETTINGS = ruled_settings(MODULE_KEY, CODING_SETTING_VALUES, CODING_SETTING_RULES)

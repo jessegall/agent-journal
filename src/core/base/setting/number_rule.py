@@ -8,6 +8,8 @@ class NumberRule:
     """What a number setting accepts: a finite number, a whole number when integer is set, at least the minimum
     (more than the minimum when exclusive is set) and at most the maximum when there is one."""
 
+    name = "number"
+
     minimum: float
     integer: bool = True
     maximum: float | None = None

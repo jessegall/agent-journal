@@ -1,7 +1,8 @@
+from core.base.setting.ruled_settings import ruled_settings
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
-from core.modules.helpers.support.list_rule import ListRule
-from core.modules.helpers.support.number_rule import NumberRule
+from core.base.setting.list_rule import ListRule
+from core.base.setting.number_rule import NumberRule
 
 MODULE_KEY = "journal.core.helpers"
 HELPER_RUN_LIMIT = f"{MODULE_KEY}.helper-run-limit"
@@ -14,7 +15,7 @@ AGENT_USE_DAYS = "journal.core.helpers.agent-use-days"
 PROGRAM_WINDOW_PERCENT = f"{MODULE_KEY}.program-window-percent"
 PROGRAM_SPLIT = f"{MODULE_KEY}.program-split"
 AGENT_OPTIONS = f"{MODULE_KEY}.agent-options"
-HELPER_SETTINGS = [SettingValue("agent-use-days", "Days of agent use counted", "Days of jobs counted when suggesting which kept agent to retire.", SettingType.NUMBER, default=14),
+HELPER_SETTING_VALUES = [SettingValue("agent-use-days", "Days of agent use counted", "Days of jobs counted when suggesting which kept agent to retire.", SettingType.NUMBER, default=14),
                    SettingValue("helper-run-limit", "Helpers running, per profile", "Helpers of each profile that run at once; six profiles at 4 make 24. At 0 none run.", SettingType.NUMBER, default=4, person_set=True),
                    SettingValue("helper-kept-limit", "Helpers kept, per profile", "Helpers kept of each profile, running or idle, until retired. At 0 there is no limit.", SettingType.NUMBER, default=8, person_set=True),
                    SettingValue("helper-profile-limits", "Limits for one profile", "Entries of profile:run:kept, each winning for its profile. An environment list replaces the project list.", SettingType.LIST, default=(), person_set=True),
@@ -32,3 +33,4 @@ HELPER_SETTING_RULES = {HELPER_RUN_LIMIT: NumberRule(0),
                         HELPER_MAX_COST: NumberRule(0, integer=False),
                         PROGRAM_WINDOW_PERCENT: NumberRule(0, maximum=100),
                         PROGRAM_SPLIT: ListRule(pattern=r"\S+ \d+", total=100)}
+HELPER_SETTINGS = ruled_settings(MODULE_KEY, HELPER_SETTING_VALUES, HELPER_SETTING_RULES)

@@ -5,9 +5,9 @@ import pytest
 from core.modules.helpers.support.agent_field_options import AgentFieldOptions
 from core.modules.helpers.support.agent_options_value import AgentOptionsValue
 from core.modules.helpers.support.command_pair_rule import CommandPairRule
-from core.modules.helpers.support.list_rule import ListRule
+from core.base.setting.list_rule import ListRule
 from core.modules.helpers.support.malformed_agent_options import MalformedAgentOptions
-from core.modules.helpers.support.number_rule import NumberRule
+from core.base.setting.number_rule import NumberRule
 
 AGENT_TYPES = ("worker", "helper")
 

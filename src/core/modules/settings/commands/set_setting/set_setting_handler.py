@@ -22,7 +22,10 @@ class SetSettingHandler(Handler[SetSetting, CurrentSetting]):
 
     def handle(self, command: SetSetting, context: Context) -> CurrentSetting:
         entry = self.declared.value(command.key)
-        value =SettingText().value(entry, command.text)
+        value = SettingText().value(entry, command.text)
+        problems = entry.problems(value)
+        if problems:
+            raise Refusal("; ".join(problems), f"{entry.key} is unchanged; set a value that follows its rule")
         environment_id = self.environment(entry, command.project, context.environment_id)
         if entry.secret:
             self.store.write_secret(entry.key, str(value), environment_id, context)

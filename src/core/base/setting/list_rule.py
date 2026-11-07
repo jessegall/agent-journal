@@ -10,6 +10,8 @@ class ListRule:
     """What a list setting accepts: text lines that are not blank or repeated, each matching the pattern and
     listed in the choices when those are given, with the numbers at their ends adding up to the total if set."""
 
+    name = "list"
+
     pattern: str = ""
     choices: Sequence[str] = ()
     total: int = 0

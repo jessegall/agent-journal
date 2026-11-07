@@ -1,8 +1,9 @@
+from core.base.setting.ruled_settings import ruled_settings
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
 from core.modules.helpers.support.command_pair_rule import CommandPairRule
-from core.modules.helpers.support.list_rule import ListRule
-from core.modules.helpers.support.number_rule import NumberRule
+from core.base.setting.list_rule import ListRule
+from core.base.setting.number_rule import NumberRule
 
 MODULE_KEY = "journal.suites.coding.workers"
 DISPATCHES_WORKERS_SETTING = f"{MODULE_KEY}.builder-dispatches-workers"
@@ -35,7 +36,7 @@ PROJECT_TEST_COMMAND = f"{MODULE_KEY}.project-test-command"
 MAIN_MERGES_WORKERS = f"{MODULE_KEY}.main-agent-may-merge"
 RESUME_SILENT_AGENTS = f"{MODULE_KEY}.resume-silent-agents"
 WORKERS_START_HELPERS = f"{MODULE_KEY}.workers-start-helpers"
-WORKER_SETTINGS = [
+WORKER_SETTING_VALUES = [
     SettingValue("idle-worker-minutes", "Worker idle warning", "Minutes without activity before a worker with work left is reported.", SettingType.NUMBER, default=15, person_set=True),
     SettingValue("idle-worker-repeat-minutes", "Worker idle warning repeat", "Minutes between warnings about a worker with work left.", SettingType.NUMBER, default=5, person_set=True),
     SettingValue("test-at-phase-end", "Test at phase end", "Test plan tasks together at the end of each phase. Off tests each task when handed in.", SettingType.FLAG, default=True, person_set=True),
@@ -82,4 +83,5 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         WORKER_RUN_FAILURE_LIMIT: NumberRule(1),
                         MERGER_COMMANDS: ListRule(),
                         MERGE_COMMANDS: ListRule()}
+WORKER_SETTINGS = ruled_settings(MODULE_KEY, WORKER_SETTING_VALUES, WORKER_SETTING_RULES)
 TEST_COMMAND_PAIR = CommandPairRule(AFFECTED_TESTS_COMMAND, PROJECT_TEST_COMMAND)
