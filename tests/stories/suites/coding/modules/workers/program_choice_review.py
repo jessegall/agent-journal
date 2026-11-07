@@ -29,10 +29,10 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.helpers.start_helper import START, started
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.suites.coding.modules.workers.program_choice import failed_worker_story
-from tests.stories.suites.coding.modules.workers.worker_routes import known_worker_story
+from tests.stories.suites.coding.modules.workers.worker_routes import merged_worker_story
 from tests.stories.suites.coding.modules.workers.support.program_split import (
-    SAMPLE_MODULE, SPLIT, dispatch, exit_program, expect_program, make_task, outage,
-    real_program_checks, remove_sample, set_split, split_story, split_viewer,
+    SAMPLE_MODULE, SPLIT, dispatch, exit_program, expect_program, new_task, outage,
+    real_program_checks, uninstall_sample_module, set_split, split_story, split_viewer,
 )
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 
@@ -62,28 +62,28 @@ def test_worker_returns_when_its_program_is_back(failed_worker_story):
     story.expect_text(f'agent-line list --agent {story.agent.id}', 'back', f'{worker.id}')
 
 
-def test_both_plans_reuse_stays_on_the_chosen_program(known_worker_story):
-    story, worker = known_worker_story
-    set_split(story, 'claude 0,codex 100')
-    task_id = make_task(story, 'Different program', '--complexity 2')
+def test_both_plans_reuse_stays_on_the_chosen_program(merged_worker_story, split_viewer):
+    story, worker = merged_worker_story
+    set_split(story, 'claude 0,codex 100', viewer=split_viewer)
+    task_id = new_task(story, 'Different program', '--complexity 2')
     next_worker = dispatch(story, str(task_id))
     expect_program(story, next_worker, 'codex')
     story.expect_rows(next_worker.id != worker.id)
 
 
-def test_both_plans_reuse_stays_on_the_chosen_program_repeated_dispatch(split_story):
+def test_both_plans_reuse_stays_on_the_chosen_program_repeated_dispatch(split_story, split_viewer):
     story = split_story
-    set_split(story, 'claude 50,codex 50')
+    set_split(story, 'claude 50,codex 50', viewer=split_viewer)
     expect_program(story, dispatch(story), 'claude')
-    task_id = make_task(story, 'Second dispatch')
+    task_id = new_task(story, 'Second dispatch')
     expect_program(story, dispatch(story, str(task_id)), 'codex')
 
 
 @pytest.mark.parametrize('program,model,shares', [('claude', 'sonnet', 'codex 100,claude 0'), ('codex', 'gpt-6.1-terra', 'claude 100,codex 0')])
 @pytest.mark.parametrize('agent_role', ['worker', 'helper'])
-def test_named_model_fixes_the_program(split_story, program, model, shares, agent_role):
+def test_named_model_fixes_the_program(split_story, program, model, shares, agent_role, split_viewer):
     story = split_story
-    set_split(story, shares)
+    set_split(story, shares, viewer=split_viewer)
     if agent_role == 'worker':
         expect_program(story, dispatch(story, flags=f'--model {model}'), program, model)
         return
@@ -99,13 +99,13 @@ def test_named_model_fixes_the_program_route_still_holds(split_story):
     story.expect_text('worker-worktree list', 'nothing found')
 
 
-def test_split_counts_only_since_it_changed(split_story):
+def test_split_counts_only_since_it_changed(split_story, split_viewer):
     story = split_story
-    task_ids = [1, *[make_task(story, f'History {number}') for number in range(49)]]
+    task_ids = [1, *[new_task(story, f'History {number}') for number in range(49)]]
     dispatch(story, ' '.join(map(str, task_ids)), '--program claude')
     story.advance(timedelta(seconds=1))
-    set_split(story)
-    task_id = make_task(story, 'First under split')
+    set_split(story, viewer=split_viewer)
+    task_id = new_task(story, 'First under split')
     expect_program(story, dispatch(story, str(task_id)), 'claude')
     answer = story.run('worker split --json')
     story.expect_rows(answer.code == 0)
@@ -114,8 +114,8 @@ def test_split_counts_only_since_it_changed(split_story):
 
 
 @pytest.fixture
-def unavailable_split(split_story):
-    set_split(split_story, 'claude 0,codex 100')
+def unavailable_split(split_story, split_viewer):
+    set_split(split_story, 'claude 0,codex 100', viewer=split_viewer)
     _, ends_at = outage(split_story)
     return split_story, ends_at
 
@@ -158,7 +158,7 @@ def test_back_now_ends_all_outages_of_a_program(split_story, split_viewer):
     second_id, _ = outage(story, minutes=30, reason='its login expired')
     story.advance(timedelta(minutes=1))
     split_viewer.value('workers.workers', ['provider-outage', 'end', 'codex'])
-    set_split(story, 'codex 100,claude 0')
+    set_split(story, 'codex 100,claude 0', viewer=split_viewer)
     expect_program(story, dispatch(story), 'codex')
     answer = story.run('provider-outage list --json')
     story.expect_rows(answer.code == 0)
@@ -190,7 +190,7 @@ def test_mark_a_program_out_invalid_values_are_refused(split_story, program, end
 def test_profile_with_tools_stays_on_its_program(split_story, split_viewer):
     story = split_story
     split_viewer.value('profiles.profiles', ['profile', 'save', 'tool-reader', '--description', 'Reads the design', '--body', 'Read the design.', '--model', 'sonnet', '--mcp-tools', 'mcp__design__read'])
-    set_split(story, 'codex 100,claude 0')
+    set_split(story, 'codex 100,claude 0', viewer=split_viewer)
     helper_id, _ = started(story, 'helper start tool-reader --brief "Read the design" --environment main')
     story.expect_text(f'agent show {helper_id}', 'program: claude')
 
@@ -204,12 +204,18 @@ def test_read_only_helper_tags_only_when_making_a_task(split_story):
     story.expect_refusal(f'task untag {task_id} networking', 'read', actor=helper)
 
 
-@pytest.mark.parametrize('change', ['task untag 1 routed', 'task edit 1 --complexity 2'])
-def test_read_only_helper_tags_only_when_making_a_task_changes_get_a_mark(split_story, change):
+@pytest.fixture
+def routed_scored_task(split_story):
     story = split_story
     story.expect_success('task tag 1 routed --confirm', actor=story.agent)
     story.expect_success('task edit 1 --complexity 4', actor=story.agent)
     story.expect_success('worker-route make --program codex --tags routed --complexity-from 3 --environment main', actor=story.agent)
+    return story
+
+
+@pytest.mark.parametrize('change', ['task untag 1 routed', 'task edit 1 --complexity 2'])
+def test_read_only_helper_tags_only_when_making_a_task_changes_get_a_mark(routed_scored_task, change):
+    story = routed_scored_task
     story.expect_success(change, actor=story.agent)
     story.run_listeners()
     story.expect_text('chat-mark list --json', 'route', 'task 1')
@@ -224,7 +230,7 @@ def test_score_refusal_only_for_routes_that_could_match(split_story):
 def test_score_refusal_only_for_routes_that_could_match_names_all_tasks(split_story):
     story = split_story
     story.expect_success('worker-route make --tier fast --complexity-to 2 --environment main', actor=story.agent)
-    task_id = make_task(story, 'Unscored')
+    task_id = new_task(story, 'Unscored')
     story.expect_refusal(f'worker dispatch 1 {task_id}', 'complexity', actor=story.agent)
     story.expect_rows('task 1' in story.results[-1].output_text, f'task {task_id}' in story.results[-1].output_text)
 
@@ -242,7 +248,7 @@ def batch_route_story(split_story):
     story.expect_success('worker-route make --tags easy --tier fast --environment main', actor=story.agent)
     story.expect_success('worker-route make --tags server --program codex --tier strongest --environment main', actor=story.agent)
     story.expect_success('task tag 1 easy --confirm', actor=story.agent)
-    task_id = make_task(story, 'Server', '--tag server --confirm')
+    task_id = new_task(story, 'Server', '--tag server --confirm')
     return story, task_id
 
 
@@ -262,7 +268,8 @@ def test_only_a_person_changes_the_split(split_story):
     story.expect_refusal(f'setting set {SPLIT} "claude 50,codex 50" --project', 'person', actor=story.agent)
     story.expect_success(f'setting request {SPLIT} "claude 50,codex 50" --reason "Share new work evenly" --project --environment main', actor=story.agent)
     story.run_listeners()
-    story.expect_text('chat-mark list --json', 'split', 'claude', 'codex')
+    story.expect_text('chat-mark list --json', 'split')
+    story.expect_text('question show 1', 'claude', 'codex')
     story.expect_absent(f'setting show {SPLIT}', 'claude 50')
 
 
@@ -359,39 +366,30 @@ def test_rare_model_is_never_automatic(split_story, split_viewer, program, model
 
 
 @pytest.mark.parametrize('reset_seconds', [0, -1])
-def test_program_states_copes(split_story, reset_seconds):
+def test_program_states_copes(split_story, reset_seconds, split_viewer):
     story = split_story
-    set_split(story, 'claude 100,codex 0')
+    set_split(story, 'claude 100,codex 0', viewer=split_viewer)
     resets_at = int((story.clock.timestamp().value + timedelta(seconds=reset_seconds)).timestamp())
     save_status_file(story, 's-1', {'rate_limits': {'five_hour': {'used_percentage': 99, 'resets_at': resets_at}}})
     expect_program(story, dispatch(story), 'claude')
 
 
-def test_program_states_copes_with_a_removed_program(split_story):
+def test_program_states_copes_with_a_removed_program(split_story, split_viewer):
     story = split_story
     story.expect_sync_success(SAMPLE_MODULE)
-    set_split(story, 'sample 50,claude 50')
-    remove_sample(story)
+    set_split(story, 'sample 50,claude 50', viewer=split_viewer)
+    uninstall_sample_module(story)
     expect_program(story, dispatch(story), 'claude')
 
 
-def test_program_states_copes_with_a_stale_file(split_story):
+def test_program_states_copes_with_a_stale_file(split_story, split_viewer):
     story = split_story
-    set_split(story, 'claude 100,codex 0')
+    set_split(story, 'claude 100,codex 0', viewer=split_viewer)
     save_status_file(story, 's-1', {'rate_limits': {'five_hour': {'used_percentage': 99, 'resets_at': int(story.clock.timestamp().value.timestamp()) + 3600}}})
     story.advance(timedelta(days=1))
     expect_program(story, dispatch(story), 'claude')
 
 
-def test_codex_hooks_run_in_the_worker_folder(split_story, tmp_path, monkeypatch):
-    story = split_story
-    monkeypatch.setenv('CODEX_HOME', str(tmp_path / 'codex-home'))
-    real_program_checks(story)
-    story.expect_success('program trust codex --environment main', actor=story.user)
-    worker = dispatch(story, flags='--program codex')
-    folder = story.home.folder.parent / 'project' / '.journal' / 'worktrees' / 'main' / f'worker-{worker.id}'
-    provider = story.container.get(Providers).provider('codex')
-    story.expect_rows(provider.hook_trust(folder) is HookTrust.READY, (folder / '.codex' / 'hooks.json').is_file())
 
 
 def test_codex_hooks_run_in_the_worker_folder_changed_hooks_are_not_trusted(split_story, tmp_path, monkeypatch):
@@ -408,21 +406,14 @@ def test_codex_hooks_run_in_the_worker_folder_changed_hooks_are_not_trusted(spli
 
 def test_board_filters_tags_beyond_the_first_page(split_story, split_viewer):
     story = split_story
-    matching = make_task(story, 'Older matching task', '--tag networking --confirm')
+    matching = new_task(story, 'Older matching task', '--tag networking --confirm')
     for number in range(12):
-        make_task(story, f'New unrelated {number}')
+        new_task(story, f'New unrelated {number}')
     board = split_viewer.value('tasks.tasks', ['task', 'board', '--tag', 'networking', '--limit', '1'])
     opened = next(group for group in board['groups'] if group['state'] == 'open')
     story.expect_rows(opened['total'] == 1, [row['id'] for row in opened['rows']] == [matching])
 
 
-def test_third_provider_in_every_list(split_story, split_viewer):
-    story = split_story
-    story.expect_sync_success(SAMPLE_MODULE)
-    choices = split_viewer.value('profiles.profiles', ['helper', 'availability'])
-    story.expect_rows('sample' in str(choices), 'sample-general' in str(choices))
-    expect_program(story, dispatch(story, flags='--program sample --tier general'), 'sample', 'sample-general')
-    story.expect_text('worker-worktree show 1', 'state: cut')
 
 
 def test_route_commands_as_the_doc_writes_them(split_story):

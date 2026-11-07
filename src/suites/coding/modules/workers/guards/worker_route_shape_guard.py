@@ -30,7 +30,7 @@ class WorkerRouteShapeGuard(Guard[Created[WorkerRoute] | Updated[WorkerRoute]]):
             raise Refusal("a route cannot use the rare tier", "name that model explicitly at dispatch")
         if any(not TAG_WORD.fullmatch(word) for word in route.tags):
             raise Refusal("route tags use lower case letters, digits and hyphens")
-        if route.complexity_from is not None and route.complexity_to is not None and route.complexity_from > route.complexity_to:
+        if route.minimum_complexity is not None and route.maximum_complexity is not None and route.minimum_complexity > route.maximum_complexity:
             raise Refusal("the complexity range must start at or below its end")
         changing_program = event.old_row is None or event.old_row.program != route.program
         if changing_program and route.program and route.program not in {provider.name for provider in self.providers.all()}:

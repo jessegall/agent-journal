@@ -21,7 +21,7 @@ class WorkerRouteListSubcommand(ReadSubcommand[RowList]):
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
         programs = {provider.name for provider in self.providers.all()}
         return RowList([{"id": route.id, "position": route.position, "program": route.program,
-                         "tier": route.tier, "tags": route.tags, "complexity_from": route.complexity_from,
-                         "complexity_to": route.complexity_to, "strict": route.strict, "creator_id": route.creator_id,
+                         "tier": route.tier, "tags": route.tags, "complexity_from": route.minimum_complexity,
+                         "complexity_to": route.maximum_complexity, "strict": route.strict, "creator_id": route.creator_id,
                          "status": "gone" if route.program and route.program not in programs else "ready"}
                         for route in self.routes.listed()])

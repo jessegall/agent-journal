@@ -13,7 +13,7 @@ from pathlib import Path
 from tests.stories.core.modules.helpers.start_helper import START, started
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.suites.coding.modules.workers.support.program_split import (
-    SAMPLE_MODULE, dispatch, exit_program, expect_program, make_task, outage, real_program_checks,
+    SAMPLE_MODULE, dispatch, exit_program, expect_program, new_task, outage, real_program_checks,
     set_split, split_story, split_viewer,
 )
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
@@ -96,9 +96,9 @@ def test_allowed_models_narrow_a_tier_named_model_is_refused(split_story, split_
     story.expect_refusal('worker dispatch 1 --model opus --program claude', 'sonnet', actor=story.agent)
 
 
-def test_split_passes_over_a_program_not_installed(split_story, monkeypatch):
+def test_split_passes_over_a_program_not_installed(split_story, monkeypatch, split_viewer):
     story = split_story
-    set_split(story, 'claude 20,codex 80')
+    set_split(story, 'claude 20,codex 80', viewer=split_viewer)
     real_program_checks(story)
     story.container.get(HelperPrograms).checked('claude', Path(story.container.get(EnvironmentRows).find(1).folder))
     monkeypatch.setattr(shutil, 'which', lambda name: None if name == 'codex' else name)
@@ -108,8 +108,8 @@ def test_split_passes_over_a_program_not_installed(split_story, monkeypatch):
 
 
 @pytest.fixture
-def window_split_story(split_story, request):
-    set_split(split_story)
+def window_split_story(split_story, request, split_viewer):
+    set_split(split_story, viewer=split_viewer)
     resets_at = int((split_story.clock.timestamp().value + timedelta(hours=1)).timestamp())
     save_status_file(split_story, 's-1', {'rate_limits': {'five_hour': {'used_percentage': request.param, 'resets_at': resets_at}}})
     return split_story, dispatch(split_story)
@@ -120,7 +120,7 @@ def test_split_passes_over_a_nearly_used_plan_window(window_split_story):
     story, worker = window_split_story
     expect_program(story, worker, 'codex')
     story.advance(timedelta(hours=1, seconds=1))
-    next_task = make_task(story, 'After reset')
+    next_task = new_task(story, 'After reset')
     expect_program(story, dispatch(story, str(next_task)), 'claude')
 
 
@@ -130,9 +130,9 @@ def test_split_passes_over_a_nearly_used_plan_window_at_94_is_ready(window_split
     expect_program(story, worker, 'claude')
 
 
-def test_split_passes_over_a_nearly_used_plan_window_no_status_is_ready(split_story):
+def test_split_passes_over_a_nearly_used_plan_window_no_status_is_ready(split_story, split_viewer):
     story = split_story
-    set_split(story, 'codex 100,claude 0')
+    set_split(story, 'codex 100,claude 0', viewer=split_viewer)
     expect_program(story, dispatch(story), 'codex')
 
 
@@ -166,10 +166,10 @@ def test_exit_on_a_limit_opens_an_outage_for_an_expired_login(split_story):
     story.expect_text('provider-outage list', 'claude', 'login expired')
 
 
-def test_outage_ends_on_time(split_story):
+def test_outage_ends_on_time(split_story, split_viewer):
     story = split_story
     row_id, ends_at = outage(story)
-    set_split(story, 'codex 100,claude 0')
+    set_split(story, 'codex 100,claude 0', viewer=split_viewer)
     story.expect_text('worker split', 'codex', ends_at)
     story.advance(timedelta(minutes=15, seconds=1))
     expect_program(story, dispatch(story), 'codex')
@@ -180,7 +180,7 @@ def test_outage_ends_on_time_back_now_ends_it_early(split_story, split_viewer):
     story = split_story
     row_id, _ = outage(story)
     split_viewer.value('workers.workers', ['provider-outage', 'delete', str(row_id)])
-    set_split(story, 'codex 100,claude 0')
+    set_split(story, 'codex 100,claude 0', viewer=split_viewer)
     expect_program(story, dispatch(story), 'codex')
 
 
@@ -202,50 +202,50 @@ def test_worker_on_an_out_program_does_not_restart_until_the_outage_ends(failed_
     story.expect_rows(len(launcher.requests) == 2, launcher.requests[-1]['agent_id'] == worker.id)
 
 
-def test_every_program_out_refuses_a_dispatch(split_story):
+def test_every_program_out_refuses_a_dispatch(split_story, split_viewer):
     story = split_story
     _, earliest = outage(story, 'claude', 10)
     outage(story, 'codex', 20)
-    set_split(story)
+    set_split(story, viewer=split_viewer)
     story.expect_refusal('worker dispatch 1', earliest, actor=story.agent)
     story.expect_text('worker-worktree list', 'nothing found')
     story.expect_rows(not list((story.home.folder.parent / 'project' / '.journal' / 'worktrees').glob('*/*')))
 
 
-def test_split_counts_tasks_not_workers(split_story):
+def test_split_counts_tasks_not_workers(split_story, split_viewer):
     story = split_story
-    second = make_task(story, 'Second')
-    third = make_task(story, 'Third')
+    second = new_task(story, 'Second')
+    third = new_task(story, 'Third')
     dispatch(story, f'1 {second} {third}', '--program codex')
-    set_split(story, 'claude 50,codex 50')
+    set_split(story, 'claude 50,codex 50', viewer=split_viewer)
     story.expect_text('worker-worktree show 1', 'task_count: 3')
     answer = story.run('worker split --json')
     story.expect_rows(answer.code == 0)
     rows = json.loads(answer.output_text)['rows']
     story.expect_rows(next(row for row in rows if row['id'] == 'codex')['recent'] == 3)
-    fourth = make_task(story, 'Fourth')
+    fourth = new_task(story, 'Fourth')
     expect_program(story, dispatch(story, str(fourth)), 'claude')
 
 
 def test_out_program_share_goes_to_the_others(split_story, split_viewer):
     story = split_story
     split_viewer.value('settings.settings', ['setting', 'set', 'journal.suites.coding.workers.worker-run-limit', '3', '--environment', 'main'])
-    set_split(story, 'claude 50,codex 50')
+    set_split(story, 'claude 50,codex 50', viewer=split_viewer)
     outage(story)
     expect_program(story, dispatch(story), 'claude')
-    second = make_task(story, 'During outage')
+    second = new_task(story, 'During outage')
     expect_program(story, dispatch(story, str(second)), 'claude')
     story.advance(timedelta(minutes=15, seconds=1))
-    third = make_task(story, 'After outage')
+    third = new_task(story, 'After outage')
     expect_program(story, dispatch(story, str(third)), 'codex')
 
 
-def test_provider_added_later_takes_a_share(split_story):
+def test_provider_added_later_takes_a_share(split_story, split_viewer):
     story = split_story
     story.expect_sync_success(SAMPLE_MODULE)
     answer = story.run('worker split --json')
     story.expect_rows(answer.code == 0)
     rows = json.loads(answer.output_text)['rows']
     story.expect_rows(next(row for row in rows if row['id'] == 'sample')['share'] == 0)
-    set_split(story, 'sample 100,claude 0,codex 0')
+    set_split(story, 'sample 100,claude 0,codex 0', viewer=split_viewer)
     expect_program(story, dispatch(story), 'sample', 'sample-general')

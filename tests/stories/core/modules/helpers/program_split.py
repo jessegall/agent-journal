@@ -42,9 +42,9 @@ def test_helper_with_nothing_set_runs_on_its_parent_program_profile_can_name_one
     story.expect_text(f'agent show {helper_id}', 'program: codex')
 
 
-def test_split_passes_over_a_program_not_trusted(helper_split_story, tmp_path, monkeypatch):
+def test_split_passes_over_a_program_not_trusted(helper_split_story, tmp_path, monkeypatch, helper_viewer):
     story = helper_split_story
-    set_split(story, 'claude 20,codex 80')
+    set_split(story, 'claude 20,codex 80', viewer=helper_viewer)
     monkeypatch.setenv('CODEX_HOME', str(tmp_path / 'codex-config'))
     monkeypatch.setattr('shutil.which', lambda name: name)
     real_program_checks(story)
@@ -69,9 +69,9 @@ def test_split_setting_must_add_to_100(helper_split_story, helper_viewer, shares
     story.expect_absent(f'setting show {SPLIT}', shares)
 
 
-def test_split_setting_must_add_to_100_empty_means_today(helper_split_story):
+def test_split_setting_must_add_to_100_empty_means_today(helper_split_story, helper_viewer):
     story = helper_split_story
-    set_split(story, '')
+    set_split(story, '', viewer=helper_viewer)
     helper_id, _ = started(story)
     story.expect_text(f'agent show {helper_id}', 'program: claude')
 
@@ -82,9 +82,9 @@ def test_split_setting_must_add_to_100_invalid_lines_are_refused(helper_split_st
     helper_viewer.refusal('settings.settings', ['setting', 'set', SPLIT, shares, '--project'], reason)
 
 
-def test_helper_goes_by_the_split(helper_split_story):
+def test_helper_goes_by_the_split(helper_split_story, helper_viewer):
     story = helper_split_story
-    set_split(story, 'claude 0,codex 100')
+    set_split(story, 'claude 0,codex 100', viewer=helper_viewer)
     helper_id, _ = started(story)
     story.expect_text(f'agent show {helper_id}', 'program: codex', 'program_model: gpt-6.1-terra')
     rows = json.loads(story.run('worker split --json --environment main').output_text)['rows']
@@ -95,7 +95,7 @@ def test_helper_goes_by_the_split(helper_split_story):
 def test_helper_goes_by_the_split_profile_program_wins(helper_split_story, helper_viewer):
     story = helper_split_story
     helper_viewer.value('profiles.profiles', ['profile', 'save', 'claude-reader', '--description', 'Reads files', '--body', 'Read files.', '--program', 'claude', '--model', 'sonnet'])
-    set_split(story, 'codex 100,claude 0')
+    set_split(story, 'codex 100,claude 0', viewer=helper_viewer)
     helper_id, _ = started(story, 'helper start claude-reader --brief "Read the queue" --environment main')
     story.expect_text(f'agent show {helper_id}', 'program: claude')
 

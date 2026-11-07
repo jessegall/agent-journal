@@ -19,8 +19,8 @@ class WorkerRoute(EnvironmentScoped, Positioned):
     environment_id: int = 0
     program: str = ""
     tags: tuple[str, ...] = ()
-    complexity_from: TaskComplexity | None = None
-    complexity_to: TaskComplexity | None = None
+    minimum_complexity: TaskComplexity | None = None
+    maximum_complexity: TaskComplexity | None = None
     tier: ModelTier | None = None
     strict: bool = False
 
@@ -29,7 +29,7 @@ class WorkerRoute(EnvironmentScoped, Positioned):
 
     @property
     def needs_complexity(self) -> bool:
-        return self.complexity_from is not None or self.complexity_to is not None
+        return self.minimum_complexity is not None or self.maximum_complexity is not None
 
     def matches(self, task_tags: Collection[str], complexity: TaskComplexity | None) -> bool:
         if not self.matches_tags(task_tags):
@@ -38,8 +38,8 @@ class WorkerRoute(EnvironmentScoped, Positioned):
             return True
         if complexity is None:
             return False
-        lower = self.complexity_from if self.complexity_from is not None else 1
-        upper = self.complexity_to if self.complexity_to is not None else MOST_COMPLEXITY
+        lower = self.minimum_complexity if self.minimum_complexity is not None else 1
+        upper = self.maximum_complexity if self.maximum_complexity is not None else MOST_COMPLEXITY
         return lower <= complexity <= upper
 
     @property

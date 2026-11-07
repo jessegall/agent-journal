@@ -1,6 +1,8 @@
 import json
 import shutil
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
+from unittest.mock import patch
+from core.base.clock import Clock
 from datetime import timedelta
 
 import pytest
@@ -50,9 +52,9 @@ def split_story(new_story, monkeypatch):
     return story
 
 
-def set_split(story, shares='claude 80,codex 20', actor=None):
-    with viewer_client(story) as viewer:
-        viewer.value('settings.settings', ['setting', 'set', SPLIT, shares, '--project'])
+def set_split(story, shares='claude 80,codex 20', viewer=None):
+    with (viewer_client(story) if viewer is None else nullcontext(viewer)) as person:
+        person.value('settings.settings', ['setting', 'set', SPLIT, shares, '--project'])
 
 
 def dispatch(story, tasks='1', flags='', actor=None):
@@ -64,7 +66,7 @@ def expect_program(story, worker, program, model=''):
     story.expect_text(f'agent show {worker.id}', f'program: {program}', *([f'program_model: {model}'] if model else []))
 
 
-def make_task(story, title, flags=''):
+def new_task(story, title, flags=''):
     return story.new_row_id(f'task make "{title}" --brief "Implement {title}" --environment main {flags}', actor=story.agent)
 
 
@@ -106,7 +108,7 @@ class SplitViewer:
 
 @contextmanager
 def viewer_client(story):
-    with server_story(story) as server:
+    with patch.object(Clock, "timestamp", story.clock.timestamp), server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key('Ada'))
         yield SplitViewer(server, cookie)
 
@@ -117,7 +119,7 @@ def split_viewer(split_story):
         yield viewer
 
 
-def remove_sample(story):
+def uninstall_sample_module(story):
     modules = json.loads(story.home.module_list.read_text())
     story.home.module_list.write_text(json.dumps([module for module in modules if module != SAMPLE_MODULE]))
     code, output = story.synced()

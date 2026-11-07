@@ -10,7 +10,7 @@ from suites.coding.modules.workers.models.worker_route import WorkerRoute
 class MakeWorkerRoute(Command[WorkerRoute]):
     program: str = ""
     tags: tuple[str, ...] = ()
-    complexity_from: TaskComplexity | None = None
-    complexity_to: TaskComplexity | None = None
+    minimum_complexity: TaskComplexity | None = None
+    maximum_complexity: TaskComplexity | None = None
     tier: ModelTier | None = None
     strict: bool = False
