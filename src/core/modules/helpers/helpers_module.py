@@ -1,4 +1,4 @@
-from core.modules.helpers.commands.notify_program_fault.notify_program_fault_handler import NotifyProgramFaultHandler
+from core.modules.helpers.commands.report_program_fault.report_program_fault_handler import ReportProgramFaultHandler
 from core.modules.helpers.commands.agent_mix.agent_mix_subcommand import AgentMixSubcommand
 from core.modules.helpers.migrations.m001_helper_limit_key import HelperLimitKeyMigration
 from core.modules.helpers.migrations.m002_settle_old_helpers import RetireOldHelpersMigration
@@ -13,6 +13,7 @@ from core.modules.helpers.commands.end_provider_outages.end_provider_outages_han
 from core.modules.helpers.commands.end_provider_outages.end_provider_outages_subcommand import EndProviderOutagesSubcommand
 from core.modules.helpers.listeners.provider_outage_mark_listener import ProviderOutageMarkListener
 from core.modules.helpers.support.program_marks import PROGRAM_MARKS
+from core.modules.helpers.guards.program_split_guard import ProgramSplitGuard
 from core.modules.helpers.guards.open_job_retire_guard import OpenJobRetireGuard
 from core.modules.helpers.commands.end_helper_job.end_helper_job_handler import EndHelperJobHandler
 from core.modules.helpers.commands.send_helper.send_helper_handler import SendHelperHandler
@@ -56,8 +57,8 @@ class HelpersModule(Module):
     dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers", "journal.core.usage", "journal.core.chat"]
     marks = PROGRAM_MARKS
     settings = HELPER_SETTINGS
-    guards = [OpenJobRetireGuard, ProviderOutageProgramGuard]
-    handlers = [NotifyProgramFaultHandler, StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler, EndProviderOutagesHandler]
+    guards = [OpenJobRetireGuard, ProviderOutageProgramGuard, ProgramSplitGuard]
+    handlers = [ReportProgramFaultHandler, StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler, EndProviderOutagesHandler]
     tick_handlers = [TickHandler(TickInterval(seconds=60), HelperLimitsTick(), "helper limits")]
     nudges = HELPER_NUDGES
     skills = [SkillDeclaration("journal-helpers", "Start a helper for a bounded read, send it more, stop it, and read its report; read it before the first helper command of a session", keywords=["helper start"])]

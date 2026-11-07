@@ -21,7 +21,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.helpers.commands.record_program_exit.record_program_exit import RecordProgramExit
-from core.modules.helpers.commands.notify_program_fault.notify_program_fault import NotifyProgramFault
+from core.modules.helpers.commands.report_program_fault.report_program_fault import ReportProgramFault
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.helpers.support.exit_reasons import ExitReasons
 from core.modules.helpers.support.helper_job_source import HELPER_JOB_SOURCE
@@ -74,5 +74,6 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
         text = transcript_text or self.reasons.reason(agent, command.exit_code, command.launch_ended, terminal)
         self.bus.run(RecordParentReport(agent.id, agent.parent_id, text, job.id), actor, environment_id=agent.environment_id)
         profile = self.profiles.registered(agent.profile)
-        if command.exit_code and profile is not None and not profile.reports_to_parent:
-            self.bus.run(NotifyProgramFault(agent.id, command.exit_code), actor, environment_id=agent.environment_id)
+        if not command.exit_code or profile is None or profile.reports_to_parent:
+            return
+        self.bus.run(ReportProgramFault(agent.id, command.exit_code), actor, environment_id=agent.environment_id)

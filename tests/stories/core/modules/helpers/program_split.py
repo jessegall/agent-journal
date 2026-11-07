@@ -71,6 +71,12 @@ def test_split_setting_must_add_to_100_empty_means_today(helper_split_story):
     story.expect_text(f'agent show {helper_id}', 'program: claude')
 
 
+@pytest.mark.parametrize('shares,reason', [('claude -1,codex 101', 'whole'), ('claude 50.5,codex 49.5', 'whole'), ('claude 100,codex 0,claude 0', 'twice'), ('claude', 'whole')])
+def test_split_setting_must_add_to_100_invalid_lines_are_refused(helper_split_story, shares, reason):
+    story = helper_split_story
+    story.expect_refusal(f'setting set {SPLIT} "{shares}" --project', reason, actor=story.agent)
+
+
 def test_helper_goes_by_the_split(helper_split_story):
     story = helper_split_story
     set_split(story, 'claude 0,codex 100')
