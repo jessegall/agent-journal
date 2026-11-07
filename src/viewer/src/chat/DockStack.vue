@@ -169,6 +169,10 @@ function release(item) {
     min-height: 28px;
     padding: 0 4px;
     background: var(--raised);
+    /* the header stays at the top of the chat's foot while the cards scroll under it */
+    position: sticky;
+    top: 0;
+    z-index: 2;
 }
 
 .dock-all :deep([data-dock-all]) {
@@ -179,7 +183,8 @@ function release(item) {
 .dock-stack {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    /* clip, not hidden: hidden would make the stack a scroll container and the sticky header would never stick */
+    overflow: clip;
     border: 1px solid var(--border);
     border-radius: 10px;
     background: var(--raised);

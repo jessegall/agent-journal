@@ -66,3 +66,12 @@ def test_the_main_agent_can_return_a_checked_proof_with_a_reason(new_story):
     story.expect_refusal('proof short 1 "wrong task"', 'main agent', actor=worker)
     story.expect_success('proof short 1 "wrong task"', 'state: short', 'shortfall: wrong task', actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, 'state: started', f'holder_id: {worker.id}')
+
+
+def test_a_short_proof_is_replaced_with_the_command_its_refusal_names(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = delivered_worker(story, repository)
+    story.expect_success('proof short 1 "wrong task"', 'state: short', actor=story.agent)
+    story.expect_refusal('proof short 1 "again"', "journal proof revise 1", actor=story.agent)
+    story.expect_success('proof revise 1 "cart.py:1, the right task" --test "pytest tests/cart.py"', 'state: shown', 'text: cart.py:1, the right task', 'test_command: pytest tests/cart.py', actor=worker)
