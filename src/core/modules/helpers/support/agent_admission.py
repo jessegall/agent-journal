@@ -28,11 +28,16 @@ class AgentAdmission:
             reasons.append(f"stopped {agent_type} sessions may not resume")
         return reasons
 
+    def provider_reasons(self, agent_type: str, profile: str, provider: str) -> list[str]:
+        allowed = self.options.reading(agent_type, profile).options.allowed_providers
+        return [] if allowed is None or provider in allowed else [f"{agent_type} may not use {provider}"]
+
+    def checked_provider(self, agent_type: str, profile: str, provider: str) -> None:
+        self.refuse(self.provider_reasons(agent_type, profile, provider), "choose a program the agent options allow")
+
     def model_reasons(self, agent_type: str, profile: str, provider: str, model: str) -> list[str]:
         options = self.options.reading(agent_type, profile).options
-        reasons = []
-        if options.allowed_providers is not None and provider not in options.allowed_providers:
-            reasons.append(f"{agent_type} may not use {provider}")
+        reasons = self.provider_reasons(agent_type, profile, provider)
         if options.allowed_models is not None and f"{provider}:{model}" not in options.allowed_models:
             reasons.append(f"{agent_type} may not use {provider} {model}")
         environment_models = self.settings.texts(ALLOWED_MODELS)

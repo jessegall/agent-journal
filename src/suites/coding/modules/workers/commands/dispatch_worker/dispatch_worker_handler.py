@@ -69,7 +69,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         profile = self.worker_profile(command.profile)
         choice = self.routing.choice(command, tasks, caller, profile, context)
         program, model = choice.program, choice.model
-        self.check_model(program, model)
+        self.check_model(program, model, profile.name)
         if not command.new_agent_reason.strip():
             self.check_idle(environment.folder, WorkerRequest(profile.name, program, model), tasks, command)
         start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
@@ -108,7 +108,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             raise Refusal(f"{profile.name} is a {self.types.find(profile.agent_type).label}: journal helper start runs it")
         return profile
 
-    def check_model(self, program: str, model: str) -> None:
-        names = self.models.allowed(self.providers.provider(program))
+    def check_model(self, program: str, model: str, profile: str) -> None:
+        names = self.models.allowed(self.providers.provider(program), "worker", profile)
         if model not in names:
             raise Refusal(f"{model} cannot run on {program}; choose a model {program} may run: {', '.join(names)}", "use --tier for a model of that program; journal worker models lists them")
