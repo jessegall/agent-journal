@@ -40,6 +40,7 @@ import AwayCard from "../shell/AwayCard.vue";
 import Breadcrumb from "../shell/Breadcrumb.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import QuickMenu from "../shell/QuickMenu.vue";
+import LoginLink from "../shell/LoginLink.vue";
 import {colorScheme, nextColorScheme, pageTitle, SCHEMES} from "./colorScheme.js";
 import {shellKeyAction} from "./shellKeys.js";
 import SidebarPages from "../shell/SidebarPages.vue";
@@ -256,6 +257,7 @@ function messageTheAgent(words = "") {
     }
     composer.focus();
 }
+const loginLinkOpen = ref(false);
 const quickCommands = computed(() => [
     {label: "Message the agent", keys: "write send", icon: "arrow", run: () => messageTheAgent()},
     ...[...props.catalogue.windows.value, ...props.catalogue.pages.value].map((window, index) => ({label: `Go to ${window.title}`, keys: window.title, key: index < 9 ? String(index + 1) : "", markIcon: window.icon || "window", run: () => goTo(window.name)})),
@@ -263,6 +265,7 @@ const quickCommands = computed(() => [
     {label: shell.wide ? "Leave full screen" : "Full screen", keys: "full screen wide zen", icon: "wide", run: () => (shell.wide = !shell.wide)},
     ...(props.catalogue.window(FILES_WINDOW) ? [{label: "Open project file", keys: "file files open find", icon: "file", run: () => goTo(FILES_WINDOW)}] : []),
     {label: "Search", keys: "search find everything", icon: "search", run: () => goTo("search.search")},
+    {label: "Log in another browser", keys: "login link browser sign in key", icon: "arrow", run: () => (loginLinkOpen.value = true)},
     {label: "Show what happened while you were away", keys: "away digest recap activity", icon: "activity", run: () => (activityOpen.value = true)},
     {label: "Pause or resume auto mode", keys: "auto mode", icon: "activity", run: () => window.dispatchEvent(new CustomEvent("journal:toggle-auto"))},
     {label: `Color scheme: ${schemeLabel.value}`, keys: "theme dark light color", icon: "wide", run: nextColorScheme},
@@ -452,6 +455,9 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
         </template>
         <template v-if="quickOpen">
             <QuickMenu :commands="quickCommands" @close="quickOpen = false" @message="messageTheAgent" />
+        </template>
+        <template v-if="loginLinkOpen">
+            <LoginLink @close="loginLinkOpen = false" />
         </template>
     </div>
 </template>

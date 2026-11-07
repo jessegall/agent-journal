@@ -1,6 +1,7 @@
 from collections.abc import Mapping, Sequence
 from contextlib import nullcontext
 from types import MappingProxyType
+import html
 import json
 from time import perf_counter
 from dataclasses import asdict, replace
@@ -64,6 +65,7 @@ MARKS_ROUTE = "/api/marks"
 DOCKS_ROUTE = "/api/docks"
 STATES_ROUTE = "/api/states"
 SESSION_ROUTE = "/api/session"
+LOGIN_LINK_ROUTE = "/api/login-link"
 SERVER_STATE_ROUTE = "/api/server-state"
 NOTICES_ROUTE = "/api/push"
 FILES_ROUTE = "/api/files"
@@ -76,6 +78,17 @@ PHONE_FILES = (PHONE_WORKER, "manifest.webmanifest", "icon-180.png", "icon-192.p
 WORKER_HEADERS = {"Service-Worker-Allowed": "/", "Cache-Control": "no-cache"}
 SKILLS_ROUTE = "/api/skills"
 MODULES_ROUTE = "/modules/"
+LOGIN_PAGE_REASON = "This browser is not logged in."
+LOGIN_PAGE = """<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Not logged in</title><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="font-family: system-ui, sans-serif; max-width: 34rem; margin: 4rem auto; padding: 0 1rem; line-height: 1.5">
+<h1>Not logged in</h1>
+<p>{reason}</p>
+<p>To log this browser in, open the journal viewer in a browser that is logged in and choose <strong>Log in another browser</strong> from its menu. Copy the link it shows into this browser. The link works once.</p>
+</body>
+</html>
+"""
 FRAME_POLICY = ("sandbox allow-scripts; default-src 'none'; script-src {listener}; style-src {listener} 'unsafe-inline'; img-src {listener} data:;"
                 " connect-src 'none'; form-action 'none'")
 
@@ -115,7 +128,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
                 token = viewer.login.session_token(key)
             except UnknownLoginKeyError as error:
                 if not self.session_cookie(self.cookie_name(COOKIE_NAME)):
-                    self.answer(401, {"error": str(error)})
+                    self.answer_login_page(str(error))
                     return
                 self.answer_redirect(kept_query, {})
                 return
@@ -143,7 +156,10 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return
         token = self.cookie_token()
         if not viewer.login.has_session(token):
-            self.answer(401, {"error": "open the address journal viewer prints to log in"})
+            if route.path.startswith("/api/"):
+                self.answer(401, {"error": "this browser is not logged in"})
+            else:
+                self.answer_login_page(LOGIN_PAGE_REASON)
             return
         session = viewer.login.session(token)
         if session.type is SessionType.SHARE and route.path.startswith("/api/") and route.path not in (SESSION_ROUTE, EVENTS_ROUTE, SHARE_COMMENTS_ROUTE, WINDOW_ROUTE):
@@ -231,6 +247,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         token = self.cookie_token()
         if not viewer.login.has_session(token):
             self.answer(401, {"error": "open the address journal viewer prints to log in"})
+            return
+        if urlsplit(self.path).path == LOGIN_LINK_ROUTE:
+            self.answer_login_link(viewer, viewer.login.session(token))
             return
         if urlsplit(self.path).path == NOTICES_ROUTE:
             self.answer_notices(viewer, token, body)
@@ -458,6 +477,20 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.send_header("X-Content-Type-Options", "nosniff")
         self.end_headers()
         self.wfile.write(download.data)
+
+    def answer_login_link(self, viewer: ViewerServer, session: ViewerSession) -> None:
+        if session.type is not SessionType.PERSON or session.person_id is None:
+            self.answer(403, {"error": "only a person's own viewer can log in another browser"})
+            return
+        self.answer(200, {"link": f"http://{viewer.host}/?key={viewer.login.new_key(session.person_id)}"})
+
+    def answer_login_page(self, reason: str) -> None:
+        body = LOGIN_PAGE.format(reason=html.escape(reason)).encode()
+        self.send_response(401)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def answer_redirect(self, kept_query: list[tuple[str, str]], headers: dict[str, str]) -> None:
         self.send_response(303)
