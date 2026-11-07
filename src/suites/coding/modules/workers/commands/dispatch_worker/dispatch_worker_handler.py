@@ -41,9 +41,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
-    """Starts a worker: its agent row, a worktree cut from the environment's branch, its first task and the
-    tasks delegated after it. Its rows are saved in short transactions before and after the git and prepare
-    work, which run with no write open; a failure undoes the first."""
+    """Starts a worker and its tasks, runs git without a write lock and removes an opening that fails."""
 
     runs_once = True
     command = DispatchWorker
@@ -59,7 +57,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     def handle(self, command: DispatchWorker, context: Context) -> WorkerLaunch:
         tasks = self.queries.query(Task).find_many([command.task_id, *command.delegated_ids])
         with self.scopes.row_scope(tasks[0]):
-            return self.dispatched(command, tasks, context)
+            return self.dispatched(command, tasks, replace(context, environment_id=tasks[0].environment_id))
 
     def dispatched(self, command: DispatchWorker, tasks: list[Task], context: Context) -> WorkerLaunch:
         task = tasks[0]

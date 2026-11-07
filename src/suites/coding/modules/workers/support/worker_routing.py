@@ -32,17 +32,17 @@ class WorkerRouting:
         self.providers, self.models, self.programs, self.routes = providers, models, programs, routes
 
     def choice(self, command: WorkerProgramRequest, tasks: list[Task], caller: Agent | None, profile: AgentProfile, context: Context | None = None) -> WorkerChoice:
-        named_program = command.program or (self.providers.model_program(command.program_model) if command.program_model else "")
-        if not named_program and profile.mcp_tools:
-            named_program = profile.program or (caller.program if caller is not None else "")
-        if caller is None and not named_program:
+        if caller is None and not command.program:
             raise Refusal("a person's dispatch needs the program the worker runs", "add --program, such as the program of the environment's main agent")
+        requested_program = command.program or (self.providers.model_program(command.program_model) if command.program_model else "")
+        if not requested_program and profile.mcp_tools:
+            requested_program = profile.program or (caller.program if caller is not None else "")
         route = self.routes.common_route(tasks)
-        if named_program:
-            self.check_named(command, tasks, caller, route, context, named_program)
-            self.programs.installed(named_program)
+        if requested_program:
+            self.check_named(command, tasks, caller, route, context, requested_program)
+            self.programs.installed(requested_program)
             reason = "named at dispatch" if command.program else "the named model" if command.program_model else "the profile's tools"
-            return self.selected(command, profile, named_program, reason, route)
+            return self.selected(command, profile, requested_program, reason, route)
         if route is None and not self.shares.is_configured:
             self.programs.installed(caller.program)
             return self.selected(command, profile, caller.program, "the program of the agent that sent it")

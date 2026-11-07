@@ -97,7 +97,7 @@ def test_worker_commands_return_before_slow_git_and_notify_once(worker_command, 
         return original(git, *args, **kwargs)
 
     monkeypatch.setattr(WorktreeGit, method, slow_git)
-    original_result = Bus.result
+    original_command_output = Bus.result
     completed_commands = []
 
     def checked_result(bus, value, command):
@@ -105,7 +105,7 @@ def test_worker_commands_return_before_slow_git_and_notify_once(worker_command, 
             story.expect_rows(bus.database.has_transaction == command.lock,
                               detail=f"{command.label()} must own its transaction setting")
             completed_commands.append(command)
-        return original_result(bus, value, command)
+        return original_command_output(bus, value, command)
 
     monkeypatch.setattr(Bus, "result", checked_result)
     line = f"worker {name} --differences none" if name in ("next", "deliver") else f'worker {name} {worker.id}'
