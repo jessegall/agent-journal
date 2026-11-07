@@ -21,3 +21,4 @@ class BlockUntil(Command[object]):
     countdown: Nudge | None = None
     blocks_stop: bool = False
     strict: bool = False
+    is_skippable: bool = False

@@ -15,7 +15,7 @@ from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 class AgentBlock(Model):
     """An agent held from all but reading and journal commands: the line its refused tools are told, what ends
     the block and when it ended. A block with a grace holds only after that many tool uses or seconds, says
-    its countdown line meanwhile, and may be skipped with a reason. A block that holds the stop only leaves
+    its countdown line meanwhile, and may be skipped with a reason; so may a block declared skippable. A block that holds the stop only leaves
     the
     agent's tools alone."""
 
@@ -36,6 +36,7 @@ class AgentBlock(Model):
     skip_reason: str = ""
     blocks_stop: bool = False
     strict: bool = False
+    is_skippable: bool = False
 
     def is_finished(self, conditions: BlockConditions, hook: AgentHook, container: Container) -> bool:
         return conditions.built(self.condition_name, self.condition_text).is_true(BlockCheck(hook, self.creation_timestamp(), container))
