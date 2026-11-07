@@ -21,7 +21,8 @@ def configured_plugin(new_story):
         viewer.value("plugins.plugins", ["plugin", "install", str(folder), "--yes"])
         viewer.value("plugins.plugins", ["plugin", "configure", "sample", "level", "2"])
         viewer.value("viewer.shell", ["environment", "make", "sandbox", "/work/sandbox", "--test", "--test-agent-id", str(story.agent.id)])
-        viewer.value("plugins.plugins", ["plugin", "configure", "sample", "level", "3", "--environment", "sandbox"])
+        viewer.server.viewer_line_value(viewer.cookie, {"window": "plugins.plugins", "environment": "sandbox",
+                                                        "line": ["plugin", "configure", "sample", "level", "3", "--environment", "sandbox"]})
     return story
 
 

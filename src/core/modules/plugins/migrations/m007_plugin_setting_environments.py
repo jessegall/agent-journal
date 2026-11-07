@@ -14,4 +14,5 @@ class PluginSettingEnvironmentsMigration(Migration):
         "ALTER TABLE plugin_settings_new RENAME TO plugin_settings",
         "CREATE UNIQUE INDEX plugin_setting_project ON plugin_settings (plugin_id, key) WHERE environment_id IS NULL",
         "CREATE UNIQUE INDEX plugin_setting_environment ON plugin_settings (plugin_id, key, environment_id) WHERE environment_id IS NOT NULL",
+        "CREATE INDEX plugin_setting_plugin ON plugin_settings (plugin_id)",
     )
