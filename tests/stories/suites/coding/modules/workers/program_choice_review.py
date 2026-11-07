@@ -83,6 +83,18 @@ def test_both_plans_reuse_stays_on_the_chosen_program_repeated_dispatch(split_st
     expect_program(story, dispatch(story, str(task_id)), 'codex')
 
 
+def test_both_plans_reuse_stays_on_the_chosen_program_for_a_helper(split_story, split_viewer, monkeypatch):
+    story = split_story
+    helper_id, _ = started(story)
+    story.expect_success(f'agent end {helper_id}', actor=story.user)
+    helper = story.container.get(Queries).query(Agent).find(helper_id)
+    resumable_session(story, helper, monkeypatch)
+    set_split(story, 'claude 0,codex 100', viewer=split_viewer)
+    next_helper, _ = started(story, 'helper start journal-researcher --brief "Read the new queue" --environment main')
+    story.expect_text(f'agent show {next_helper}', 'program: codex')
+    story.expect_rows(next_helper != helper_id)
+
+
 @pytest.mark.parametrize('program,model,shares', [('claude', 'sonnet', 'codex 100,claude 0'), ('codex', 'gpt-6.1-terra', 'claude 100,codex 0')])
 @pytest.mark.parametrize('agent_role', ['worker', 'helper'])
 def test_named_model_fixes_the_program(split_story, program, model, shares, agent_role, split_viewer):
