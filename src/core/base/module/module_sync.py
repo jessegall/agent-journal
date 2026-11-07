@@ -197,7 +197,7 @@ class ModuleSync:
     def docks(self, modules: tuple[type[Module], ...]) -> tuple[DockEntry, ...]:
         shipped = set(self.finder.default_modules())
         return tuple(DockEntry(dock.type.value, module.name, dock.icon, dock.title, dock.body, tuple(button.listed() for button in dock.buttons), dock.most,
-                               dock.leaves_after_seconds, tuple(dock.reads), module in shipped, unavailable_reason(dock.kit), dock.badge, dock.draws_head, dock.folds, dock.needs_user, dock.word)
+                               dock.leaves_after_seconds, tuple(dock.reads), module in shipped, unavailable_reason(dock.kit), dock.badge, dock.draws_head, dock.folds, dock.needs_user, dock.word, dock.reads_target)
                      for module in modules for dock in module.docks)
 
     def skills(self, modules: tuple[type[Module], ...]) -> tuple[SkillEntry, ...]:

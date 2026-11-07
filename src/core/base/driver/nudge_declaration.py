@@ -49,7 +49,10 @@ class NudgeDeclaration:
 
     def merged(self, nudges: Sequence[Nudge]) -> Nudge:
         values = {name: ", ".join(dict.fromkeys(str(dict(nudge.fields)[name]) for nudge in nudges)) for name, _ in nudges[0].fields}
-        rendered = self.rendered(self.plural_text or self.text, values)
+        text = self.plural_text or self.text
+        if "count" not in values:
+            text = text.replace("{count}", str(len(nudges)))
+        rendered = self.rendered(text, values)
         return replace(rendered, interval=nudges[0].interval, turn_limited=nudges[0].turn_limited,
                        record_keys=tuple(dict.fromkeys(key for nudge in nudges for key in nudge.record_keys)))
 

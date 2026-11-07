@@ -23,3 +23,4 @@ class DockDeclaration:
     needs_user: bool = False
     word: str = ""
     draws_head: bool = False
+    reads_target: bool = True
