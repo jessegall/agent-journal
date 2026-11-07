@@ -40,12 +40,18 @@ def test_a_module_that_is_no_suite_registers_a_profile_and_keeps_its_origin(new_
 def test_shipped_profiles_have_registered_types_and_independent_review(new_story):
     story = new_story()
     registry = Registry.read(story.container.get(Database))
-    for name in ("journal-researcher", "journal-planner", "journal-debugger", "journal-plan-reviewer"):
+    for name in ("journal-researcher", "journal-planner", "journal-debugger", "journal-plan-reviewer", "journal-code-reviewer"):
         story.expect_rows(registry.profile(name).profile.agent_type == "helper")
     for name in ("journal-senior", "journal-medior", "journal-worker"):
         story.expect_rows(registry.profile(name).profile.agent_type == "worker")
     story.expect_rows(registry.profile("journal-plan-reviewer").profile.independent,
                       registry.agent_type_book().find("worker").default_profile == "journal-worker")
+
+
+def test_the_shipped_code_reviewer_reads_the_diff_itself_and_files_critical_tasks(new_story):
+    story = new_story()
+    reviewer = Registry.read(story.container.get(Database)).profile("journal-code-reviewer").profile
+    story.expect_rows(reviewer.agent_type == "helper", "git diff <range>" in reviewer.body, "--priority critical" in reviewer.body, "journal task overview <n>" in reviewer.body)
 
 
 def test_the_planner_profile_says_a_plan_is_written_thoroughly(new_story):
