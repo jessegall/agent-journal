@@ -4,7 +4,7 @@ from core.base.database.migration import Migration
 class WorkerTestGroupsMigration(Migration):
     """Keeps counted runs for either a phase or a batch."""
 
-    number = 32
+    number = 33
     statements = (
         "CREATE TABLE worker_test_runs (id INTEGER PRIMARY KEY, worker_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT,"
         " group_key TEXT NOT NULL, version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)),"

@@ -1,6 +1,6 @@
-from suites.coding.modules.workers.migrations.m032_worker_test_groups import WorkerTestGroupsMigration
+from suites.coding.modules.workers.migrations.m033_worker_test_groups import WorkerTestGroupsMigration
 from suites.coding.modules.workers.models.worker_test_run import WorkerTestRun
-from suites.coding.modules.workers.migrations.m031_worker_phase_test_runs import WorkerPhaseTestRunsMigration
+from suites.coding.modules.workers.migrations.m032_worker_phase_test_runs import WorkerPhaseTestRunsMigration
 from suites.coding.modules.workers.commands.record_worker_test_run.record_worker_test_run_handler import RecordWorkerTestRunHandler
 from suites.coding.modules.workers.rules.approved_plan_stop_rule import ApprovedPlanStopRule
 from suites.coding.modules.workers.support.worker_nudges import APPROVED_PLAN_WAIT
@@ -38,6 +38,7 @@ from suites.coding.modules.workers.listeners.blocked_worker_task_listener import
 from suites.coding.modules.workers.listeners.worker_help_request_listener import WorkerHelpRequestListener
 from suites.coding.modules.workers.listeners.worker_move_mark_listener import WorkerMoveMarkListener
 from suites.coding.modules.workers.listeners.worker_job_mark_listener import WorkerJobMarkListener
+from suites.coding.modules.workers.listeners.worker_test_request_mark_listener import WorkerTestRequestMarkListener
 from suites.coding.modules.workers.listeners.worker_stopped_mark_listener import WorkerStoppedMarkListener
 from suites.coding.modules.workers.listeners.worker_help_request_mark_listener import WorkerHelpRequestMarkListener
 from suites.coding.modules.workers.listeners.worker_test_mark_listener import WorkerTestMarkListener
@@ -58,6 +59,7 @@ from core.base.ticker.tick_handler import TickHandler
 from core.base.ticker.tick_interval import TickInterval
 from suites.coding.modules.workers.ticks.stalled_worker_tests import StalledWorkerTests
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
+from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from suites.coding.modules.workers.commands.queue_worker_tests.queue_stalled_tests_handler import QueueStalledTestsHandler
 from core.base.viewer.window_icon import WindowIcon
 from core.base.module.model_declaration import ModelDeclaration, ALL_SUBCOMMANDS
@@ -198,8 +200,9 @@ from suites.coding.modules.workers.commands.return_worker.return_worker_subcomma
 from suites.coding.modules.workers.listeners.merger_wake_listener import MergerWakeListener
 from suites.coding.modules.workers.migrations.m029_worktree_tests_passed import WorktreeTestsPassedMigration
 from suites.coding.modules.workers.migrations.m030_merger_lines import MergerLinesMigration
+from suites.coding.modules.workers.migrations.m031_worktree_library_links import WorktreeLibraryLinksMigration
 from suites.coding.modules.workers.models.merger_line import MergerLine
-from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
+from suites.coding.modules.workers.support.merger_nudges import MERGER_MERGED, MERGER_PASSED
 from suites.coding.modules.workers.models.worker_test_failure import WorkerTestFailure
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
@@ -258,7 +261,7 @@ class WorkersModule(Module):
                                                    WindowSource("queue", "proof list --limit 50", ["proof.*"])]) for name in ("agents.agents", "agents.helpers")),
                          WindowExtension("viewer.shell", reads=["worker-worktree points", "worker-worktree list", "proof list"],
                                          runs=["worker send", "worker merge", "worker release"])]
-    nudges = [APPROVED_PLAN_WAIT, MERGER_PASSED, *WORKER_NUDGES, TEST_COUNT_UNKNOWN, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]
+    nudges = [APPROVED_PLAN_WAIT, MERGER_MERGED, MERGER_PASSED, *WORKER_NUDGES, TEST_COUNT_UNKNOWN, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]
     seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS
@@ -268,7 +271,7 @@ class WorkersModule(Module):
               ModelDeclaration(Proof, query=ProofQuery, excluded_subcommands=["make", "edit", "delete", "revise", "queue", "run"]),
               ModelDeclaration(WorkerTestRequest, excluded_subcommands=["make", "edit", "delete", "allow", "use"]),
               ModelDeclaration(TodoItem, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(WorkerTaskSource, excluded_subcommands=ALL_SUBCOMMANDS)]
-    migrations = [WorkerTestGroupsMigration, WorkerPhaseTestRunsMigration, WorktreeReasonNameMigration, WorkerTestFailuresMigration, WorktreeTestsPassedMigration, MergerLinesMigration, WorktreeNewAgentReasonMigration, RetireOldWorkersMigration, WorkerLimitKeysMigration, WorkerTaskSourcesMigration, WorkerTestRequestsMigration, ProofPhaseTestPointMigration, WorktreeMergeCommitsMigration, WorkerLogsReadMigration, StartsHelpersKeyMigration, WorkerSessionMigration, AllowedModelsKeyMigration, WorkerQueueReadIndexesMigration, WorkerReadIndexesMigration, AffectedTestsMigration, ProcessOwnerMigration, ProofProcessWorkMigration, WorkerRefusalsMigration, WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration, WorkerTestSettingMigration, ReportVisibilityMigration, AliasAccessMigration, OpenWorktreeIndexMigration]
+    migrations = [WorktreeLibraryLinksMigration,WorkerTestGroupsMigration, WorkerPhaseTestRunsMigration, WorktreeReasonNameMigration, WorkerTestFailuresMigration, WorktreeTestsPassedMigration, MergerLinesMigration, WorktreeNewAgentReasonMigration, RetireOldWorkersMigration, WorkerLimitKeysMigration, WorkerTaskSourcesMigration, WorkerTestRequestsMigration, ProofPhaseTestPointMigration, WorktreeMergeCommitsMigration, WorkerLogsReadMigration, StartsHelpersKeyMigration, WorkerSessionMigration, AllowedModelsKeyMigration, WorkerQueueReadIndexesMigration, WorkerReadIndexesMigration, AffectedTestsMigration, ProcessOwnerMigration, ProofProcessWorkMigration, WorkerRefusalsMigration, WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration, ProofTestsMigration, WorkerTestSettingMigration, ReportVisibilityMigration, AliasAccessMigration, OpenWorktreeIndexMigration]
     views = [WorkerPoints, WorkerWait, WorkerProgress]
     moves = [WorkersMove, AliasPermissionsMove]
     handlers = [RecordWorkerTestRunHandler, SendMergerInputHandler, SendMergerReportHandler, StartMergerHandler, ReadNextMergeHandler, MergeNextWorkerHandler, ReturnWorkerHandler, SendMergeFindingsHandler, RecordOwnTestFailureHandler, OpenKeptWorktreeHandler, EndIdleWorkerHandler, AskWorkerTestHandler, AllowWorkerTestHandler, UseWorkerTestHandler, RestoreWorkerTestsHandler, ReadWorkerLogsHandler, QueueStalledTestsHandler, SendSilentAgentLinesHandler, ReportSilentAgentHandler, RecordAffectedTestHandler, EndGoneWorkerHandler, RecordWorkerRefusalHandler, ClearWorkerRefusalsHandler, StartWorkerTestsHandler, RecordWorkerTestHandler, SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, RecordWorktreeBaseHandler, RecordWorktreeMergeHandler, RecordWorktreeRemovalHandler, RecordWorktreeReleaseHandler, OpenWorkerWorktreeHandler, RecordWorktreeCutHandler, CancelWorkerOpeningHandler, StartNextWorkerTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler, RemoveOrphanWorktreesHandler]
@@ -278,8 +281,8 @@ class WorkersModule(Module):
     marks = WORKER_MARKS
     declared_plugin_events = ["worker_clocking_out", "worker_delivering", "worker_merging"]
     bindings = {AssignedWorkSources: WorkerTaskSources, AgentFolders: WorkerFolders, AgentStops: WorkerAgentStops, AgentLaunchGuard: WorkerSessions, AgentWriteFolder: WorkerWriteFolder, AgentCheckouts: WorkerCheckouts, TaskAssignees: WorkerTaskAssignees, SkillProjects: WorkerSkillProjects, TaskWaitTargets: WorkerTaskWaitTargets, QueueRunWorkers: WorkerQueueRunWorkers, RunCounts: WorkerTestListings, PartVisibility: WorkerPartVisibility}
-    listeners = [MergerWakeListener, DeletedWorkerSourceListener, WorkerJobSourceListener, WorktreeRowsListener, SilentWorkerLineListener, WorkerTestCountListener, RemovedWorktreeAgentListener, ReaderSampleReadyListener,WorkerHelpRequestListener, WorkerStoppedMarkListener, WorkerHelpRequestMarkListener, WorkerStopResultListener, MainAgentWorkersListener, BlockedWorkerTaskListener, ReassignedTaskListener, DelegatedTaskCommentListener, WorkerCountRaisedListener, WorkerMoveMarkListener, WorkerJobMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerProofRowsListener, AffectedTestRowsListener, WorkerTaskWaitListener]
-    tick_handlers = [TickHandler(TickInterval(seconds=10), WorkerResumeRetry(), "worker resume retry"), TickHandler(TickInterval(seconds=60), StalledWorkerTests(), "stalled worker tests")]
+    listeners = [MergerWakeListener, DeletedWorkerSourceListener, WorkerJobSourceListener, WorktreeRowsListener, SilentWorkerLineListener, WorkerTestCountListener, RemovedWorktreeAgentListener, ReaderSampleReadyListener,WorkerHelpRequestListener, WorkerStoppedMarkListener, WorkerHelpRequestMarkListener, WorkerStopResultListener, MainAgentWorkersListener, BlockedWorkerTaskListener, ReassignedTaskListener, DelegatedTaskCommentListener, WorkerCountRaisedListener, WorkerMoveMarkListener, WorkerJobMarkListener, WorkerTestRequestMarkListener, WorkerTestListener, WorkerTestMarkListener, EndedWorkerListener, WorkerRunEndedListener, BootOrphanWorktreesListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener, WorkerProofRowsListener, AffectedTestRowsListener, WorkerTaskWaitListener]
+    tick_handlers = [TickHandler(TickInterval(seconds=60), MergerRetry(), "merger retry"), TickHandler(TickInterval(seconds=10), WorkerResumeRetry(), "worker resume retry"), TickHandler(TickInterval(seconds=60), StalledWorkerTests(), "stalled worker tests")]
     windows =[WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, skeleton=WORKERS_POINTS_SKELETON, icon=WindowIcon.CHECK, shows=WindowShows.SELECTED_AGENT,
                                  reads=["worker-worktree points", "proof points"], events=["proof.*", "worker_worktree.*"], keys=[WindowKey("points", "worker-worktree points", arguments=["agent"], events=["proof.*", "worker_worktree.*"])]),
                WindowDeclaration("workers.todos", "Tasks", "todos.js", WindowLoading.COMPONENT, skeleton=WORKERS_TODOS_SKELETON, icon=WindowIcon.TASK, shows=WindowShows.SELECTED_AGENT, reads=["todo-item list"],

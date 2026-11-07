@@ -5,5 +5,6 @@ MERGER_PROFILE = "journal-merger"
 MERGER_SOURCE = "merger"
 MERGER_JOB = "A worker waits for its merge: journal merger next"
 NO_WORKER_WAITING = "no worker waits: stop"
-SENT_BACK_BY_MERGER = "From the merger, please fix this: "
+MERGER_FINDINGS_PREFIX = "From the merger, please fix this: "
+MERGER_MERGED = NudgeDeclaration("workers.merger_merged", NudgeType.STEERING, "the merger merged worker:{worker}")
 MERGER_PASSED = NudgeDeclaration("workers.merger_passed", NudgeType.STEERING, "the merger leaves worker:{worker} to you: {reason}. Read journal worker logs {worker}")

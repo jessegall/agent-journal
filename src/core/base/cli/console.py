@@ -30,12 +30,11 @@ from core.base.module.module_finder import ModuleFinder
 from core.base.registry.registry import Registry
 from core.base.driver.refusal_skips import RefusalSkips
 from core.base.registry.stale_registry_error import StaleRegistryError
-from core.base.missing_file_refusal import MissingFileRefusal
 from core.base.refusal import Refusal
 from core.base.refusal_log import RefusalLog
 from core.base.scope.scopes import Scopes
 
-SUCCESS_CODE, REFUSED_CODE, USAGE_CODE, ERROR_CODE, MISSING_FILE_CODE = 0, 1, 2, 3, 4
+SUCCESS_CODE, REFUSED_CODE, USAGE_CODE, ERROR_CODE = 0, 1, 2, 3
 HELP_FLAGS = ("--help", "-h")
 
 
@@ -77,7 +76,7 @@ class Console:
         except Refusal as refusal:
             self.refusals.record(caller.actor, " ".join(argv[:2]), refusal)
             output.refusal(refusal)
-            return MISSING_FILE_CODE if isinstance(refusal, MissingFileRefusal) else REFUSED_CODE
+            return refusal.exit_code
         except BrokenPipeError:
             return ERROR_CODE
         except Exception as error:

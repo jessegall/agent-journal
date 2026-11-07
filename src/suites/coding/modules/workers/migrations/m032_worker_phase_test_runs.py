@@ -4,7 +4,7 @@ from core.base.database.migration import Migration
 class WorkerPhaseTestRunsMigration(Migration):
     """Records counted test commands by worker and phase."""
 
-    number = 31
+    number = 32
     statements = (
         "CREATE TABLE worker_phase_test_runs (id INTEGER PRIMARY KEY, worker_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT,"
         " phase_id INTEGER NOT NULL REFERENCES phases(id) ON DELETE RESTRICT, version INTEGER NOT NULL DEFAULT 1,"
