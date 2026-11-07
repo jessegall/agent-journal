@@ -16,9 +16,11 @@ const tokens = ref(null);
 const failure = ref("");
 
 async function readTokens() {
-    const answer = await context.read(`library-user tokens ${props.user.id}`);
-    failure.value = answer.ok ? "" : answer.error;
-    tokens.value = answer.ok ? answer.value.tokens : null;
+    context.state["tokens.user"] = String(props.user.id);
+    await context.reload("tokens");
+    const prop = context.props.tokens;
+    failure.value = prop.failure.value;
+    tokens.value = prop.failure.value ? null : prop.data.value.tokens;
 }
 
 async function toggle() {

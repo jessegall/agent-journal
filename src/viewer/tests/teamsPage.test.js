@@ -1,5 +1,5 @@
 import {afterEach, expect, test} from "vitest";
-import {context, mounted, settle} from "./support/windowContext.js";
+import {context, mounted, settle} from "./support/teamsContext.js";
 import TeamsPage from "../../core/modules/library/web/src/TeamsPage.vue";
 
 afterEach(() => document.body.replaceChildren());
@@ -15,9 +15,9 @@ const VERSIONS = {versions: [{version: 8, action: "update", user: "Grace", token
 function window(status, extra = {}) {
     const answers = {
         "library status": {ok: true, value: {...LINKED, ...status}},
-        "library list": {ok: true, value: {page: 1, size: 30, total: ITEMS.length, rows: ITEMS}},
+        "library browse": {ok: true, value: {page: 1, size: 30, total: ITEMS.length, rows: ITEMS}},
         "library show": {ok: true, value: SHOWN},
-        "library versions": {ok: true, value: VERSIONS},
+        "library inspect": {ok: true, value: {item: SHOWN, versions: VERSIONS.versions}},
         "library copies": {ok: true, value: {rows: []}},
         ...extra,
     };
@@ -98,7 +98,7 @@ test("a stopped sync shows why, with the connect form and no library", async () 
 test("the library lists items live and marks those that are already on this journal", async () => {
     const result = window({});
     const element = await mounted(TeamsPage, result);
-    expect(result.reads).toContain("library list --type doc");
+    expect(result.reads).toContain("library browse");
     const rows = [...element.querySelectorAll("[data-library-item]")];
     expect(rows.map((row) => row.dataset.libraryItem)).toEqual(["doc:12", "check:12"]);
     expect(rows[0].textContent).toContain("Document, Version: 8, Changed by: Grace");
@@ -112,7 +112,7 @@ test("choosing a type reads the library again for that type", async () => {
     const element = await mounted(TeamsPage, result);
     [...element.querySelectorAll("[data-library-type] button")].find((button) => button.textContent.trim() === "Sequences").click();
     await settle();
-    expect(result.reads).toContain("library list --type sequence");
+    expect(result.reads).toContain("library browse --type sequence");
 });
 
 test("typing in the search reads the library with those words", async () => {
@@ -120,7 +120,7 @@ test("typing in the search reads the library with those words", async () => {
     const element = await mounted(TeamsPage, result);
     type(element.querySelector("[data-library-search] input, input[data-library-search]"), "release notes");
     await new Promise((resolve) => setTimeout(resolve, 400));
-    expect(result.reads).toContain('library list --type doc --search "release notes"');
+    expect(result.reads).toContain('library browse --search release notes');
 });
 
 test("only an admin sees Remove, and it removes that item", async () => {
@@ -141,8 +141,7 @@ test("opening an item shows its text and versions, and an editor can restore an 
     element.querySelector("[data-library-open]").click();
     await settle();
     const panel = document.body.querySelector("[data-library-panel]");
-    expect(result.reads).toContain("library show doc 12");
-    expect(result.reads).toContain("library versions doc 12");
+    expect(result.reads).toContain("library inspect doc 12");
     expect(panel.querySelector("[data-library-fields]").textContent).toContain("Tag first.");
     expect([...panel.querySelectorAll("[data-library-version]")].map((item) => item.dataset.libraryVersion)).toEqual(["8", "7"]);
     expect(panel.querySelectorAll("[data-library-restore-version]").length).toBe(1);
@@ -164,7 +163,7 @@ test("a reader sees no restore of an old version and no field to share", async (
 });
 
 test("an admin brings back a removed item from its panel", async () => {
-    const result = window({role: "admin"}, {"library show": {ok: true, value: {...SHOWN, removed_at: "2026-11-04T17:00:00+00:00"}}});
+    const result = window({role: "admin"}, {"library inspect": {ok: true, value: {item: {...SHOWN, removed_at: "2026-11-04T17:00:00+00:00"}, versions: VERSIONS.versions}}});
     const element = await mounted(TeamsPage, result);
     element.querySelector("[data-library-open]").click();
     await settle();
@@ -204,7 +203,7 @@ test("a share field that is not a type and a number is not sent", async () => {
 });
 
 test("a library that cannot be reached says so in place of the list", async () => {
-    const result = window({}, {"library list": {ok: false, failure: "refused", error: "The library cannot be reached. Items you already got still work."}});
+    const result = window({}, {"library browse": {ok: false, failure: "refused", error: "The library cannot be reached. Items you already got still work."}});
     const element = await mounted(TeamsPage, result);
     expect(element.textContent).toContain("The library cannot be reached. Items you already got still work.");
 });

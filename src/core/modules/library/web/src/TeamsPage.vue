@@ -1,6 +1,6 @@
 <script setup>
-import {computed, onMounted, ref} from "vue";
-import {READ_RATES, Btn, Segmented, SwitchCase, TimeAgo, WindowRoom, usePoll, useReadLine, useRunLine, useWindow} from "@journal/window-kit";
+import {computed, ref} from "vue";
+import {Btn, Segmented, SwitchCase, TimeAgo, WindowRoom, useRunLine, useWindow} from "@journal/window-kit";
 import LibraryBrowse from "./LibraryBrowse.vue";
 import LibraryConnect from "./LibraryConnect.vue";
 import LibraryCopies from "./LibraryCopies.vue";
@@ -10,8 +10,8 @@ const ROLE_WORDS = {admin: "Admin", edit: "Edit", read: "Read-only"};
 
 // the page of the team's shared server: the connect form until this journal is connected, then the header, the library and the items that follow it
 const context = useWindow();
-const {value: status, failure, load: loadStatus} = useReadLine(() => "library status");
-const {value: copies, load: loadCopies} = useReadLine(() => "library copies");
+const {data: status, failure} = context.props.status;
+const {data: copies} = context.props.copies;
 const tab = ref("library");
 const isLinked = computed(() => Boolean(status.value?.is_connected) && !status.value.stopped);
 const canWrite = computed(() => status.value?.role === "admin" || status.value?.role === "edit");
@@ -25,13 +25,11 @@ const tabs = computed(() => [
 
 // a local edit writes no copy, and the status is worked out when it is read, so the copies are read again every few seconds as well as when one changes
 async function load() {
-    await Promise.all([loadStatus(), loadCopies()]);
+    await context.reload(["status", "copies"]);
 }
 
 const {refusal, run} = useRunLine(load);
 
-usePoll(load, () => true, READ_RATES.libraryCopies);
-onMounted(() => context.follow(["library_copy.*"], load));
 </script>
 
 <template>

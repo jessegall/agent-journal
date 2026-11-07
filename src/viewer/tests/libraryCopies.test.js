@@ -1,6 +1,5 @@
 import {afterEach, expect, test, vi} from "vitest";
-import {READ_RATES} from "../src/composables/readRates.js";
-import {context, mounted, settle} from "./support/windowContext.js";
+import {context, mounted, settle} from "./support/teamsContext.js";
 import TeamsPage from "../../core/modules/library/web/src/TeamsPage.vue";
 import {diffRows} from "../../core/modules/library/web/src/copyDiff.js";
 
@@ -39,7 +38,7 @@ const STATUSES = [
 function window(rows, status = {}, extra = {}) {
     const result = context({
         "library status": {ok: true, value: {...LINKED, ...status}},
-        "library list": {ok: true, value: {page: 1, size: 30, total: 2, rows: [
+        "library browse": {ok: true, value: {page: 1, size: 30, total: 2, rows: [
             {share: "doc", id: 12, version: 8, title: "Release checklist", abstract: "What to do", excerpt: "", creator: "Ada", updated_by: "Grace", updated_at: "2026-11-04T16:20:00+00:00", copy_id: null},
             {share: "check", id: 5, version: 2, title: "Cut a release", abstract: "", excerpt: "", creator: "Ada", updated_by: "Ada", updated_at: "2026-11-03T10:00:00+00:00", copy_id: null},
         ]}},
@@ -177,17 +176,10 @@ test("Sync now runs one round and reads the page again", async () => {
     expect(result.reads.length).toBeGreaterThan(reads);
 });
 
-test("the page reads again when a copy changes and at its read rate", async () => {
-    const delays = [];
-    const real = globalThis.setTimeout;
-    vi.spyOn(globalThis, "setTimeout").mockImplementation((callback, delay, ...rest) => {
-        delays.push(delay);
-        return real(callback, delay, ...rest);
-    });
+test("the page follows connection and copy changes", async () => {
     const result = window([]);
     await mounted(TeamsPage, result);
-    expect(result.followed).toEqual([["library_copy.*"]]);
-    expect(delays).toContain(READ_RATES.libraryCopies);
+    expect(result.followed).toEqual([["library_connection.*", "library_copy.*"]]);
 });
 
 test("the difference of two texts marks the lines only in one of them", () => {
@@ -270,5 +262,5 @@ test("the dialog of a check shows its command and Cancel gets nothing", async ()
 test("the Library tab with All chosen reads documents, sequences and checks", async () => {
     const result = window([]);
     await mounted(TeamsPage, result);
-    expect(result.reads).toEqual(expect.arrayContaining(["library list --type doc", "library list --type sequence", "library list --type check"]));
+    expect(result.reads).toContain("library browse");
 });

@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {Btn, FormField, RowList, Segmented, TextInput, useReadLine, useRunLine} from "@journal/window-kit";
+import {Btn, FormField, RowList, Segmented, TextInput, useRunLine, useWindow} from "@journal/window-kit";
 import LibraryPerson from "./LibraryPerson.vue";
 
 const ROLES = [
@@ -11,7 +11,9 @@ const ROLES = [
 
 // the users of the shared server, for an admin: add one, change a role, remove one, and read and revoke tokens; the
 // server decides each of them, so a refusal shows as the server worded it
-const {value: users, failure, load} = useReadLine(() => "library-user list");
+const context = useWindow();
+const {data: users, failure} = context.props.users;
+const load = () => context.reload("users");
 const {refusal, run} = useRunLine(load);
 const name = ref("");
 const role = ref("read");
