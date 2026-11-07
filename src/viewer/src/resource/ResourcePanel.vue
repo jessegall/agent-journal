@@ -15,7 +15,8 @@ import PlanInspector from "./PlanInspector.vue";
 import ProcessQueueInspector from "./ProcessQueueInspector.vue";
 import RowMoves from "./RowMoves.vue";
 import ResourceHeading from "./ResourceHeading.vue";
-import {cliOf, creatorNameOf, fieldsOf, headingOf, ownerNameOf, titleOf} from "../domain/resourceNouns.js";
+import {cliOf, fieldsOf, headingOf, ownerNameOf, titleOf} from "../domain/resourceNouns.js";
+import {creatorFor, ownerFor} from "./rowPeople.js";
 import InspectorSections from "../windows/InspectorSections.vue";
 import ModuleBody from "../windows/ModuleBody.vue";
 
@@ -55,23 +56,16 @@ async function load() {
     if (turn !== reading) return;
     failure.value = answer.ok ? "" : answer.error;
     row.value = answer.ok ? answer.value : null;
-    if (row.value?.creator_id) creator.value = await creatorOf(row.value.creator_id, turn);
-    if (row.value?.agent_id) owner.value = await ownerOf(row.value, turn);
+    if (row.value?.creator_id) creator.value = await named(turn, creatorFor(props.read, row.value.creator_id));
+    if (row.value?.agent_id) owner.value = await named(turn, ownerFor(props.read, row.value));
     else if (row.value) owner.value = ownerNameOf(row.value, null);
 }
 
-// the agent a row belongs to is read once for the row, by name
-async function ownerOf(owned, turn) {
-    const agent = await props.read(["agent", "show", String(owned.agent_id)]);
-    return turn === reading && agent.ok ? ownerNameOf(owned, agent.value) : "";
-}
-
-// the creator is read once for the row: its actor, and its agent when the actor is one
-async function creatorOf(id, turn) {
-    const actor = await props.read(["actor", "show", String(id)]);
-    const agent = actor.ok && actor.value.type === "agent" ? await props.read(["agent", "show", String(id)]) : {ok: false};
-    return turn === reading && actor.ok ? creatorNameOf(actor.value, agent.ok ? agent.value : null) : "";
-}
+// a name read for the row, dropped when another row has opened since
+const named = async (turn, reading_) => {
+    const name = await reading_;
+    return turn === reading ? name : "";
+};
 
 watch(() => `${opened.value?.table}:${opened.value?.id}`, load, {immediate: true});
 
