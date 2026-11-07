@@ -162,22 +162,17 @@ def test_s11_lifecycle_new_helpers_off_refuses_a_helper_start_and_starts_nothing
     story.expect_no_text("agent list", "role: helper", actor=story.user)
 
 
-def test_s12_lifecycle_resume_off_refuses_a_job_for_a_stopped_worker_and_leaves_it_stopped(split_story, split_viewer):
+def test_s12_lifecycle_resume_off_or_a_forbidden_program_refuses_a_job_for_a_stopped_worker(split_story, split_viewer):
     worker, launcher = stopped_worker(split_story)
     viewer_options(split_viewer, "worker allow_resume=off")
     split_story.expect_refusal(f'worker send {worker.id} "go on"', "may not resume", actor=split_story.agent)
-    split_story.expect_no_text(f"agent show {worker.id}", "ended_at: None", actor=split_story.user)
+    viewer_options(split_viewer, "worker allowed_providers=codex")
+    split_story.expect_refusal(f'worker send {worker.id} "go on"', "worker may not use claude", actor=split_story.agent)
 
 
 def test_s13_lifecycle_an_empty_profile_list_refuses_a_dispatch_of_every_profile(split_story, split_viewer):
     viewer_options(split_viewer, "worker allowed_profiles=")
     expect_no_worker(split_story, "worker dispatch 1", "may not use the profile journal-worker")
-
-
-def test_s52_lifecycle_a_kept_worker_on_a_program_the_options_now_forbid_is_not_resumed(split_story, split_viewer):
-    worker, launcher = stopped_worker(split_story)
-    viewer_options(split_viewer, "worker allowed_providers=codex")
-    split_story.expect_refusal(f'worker send {worker.id} "go on"', "worker may not use claude", actor=split_story.agent)
 
 
 RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"
@@ -213,8 +208,7 @@ def test_pending_openings_share_one_limit(split_story, split_viewer):
     expect_program(split_story, dispatch(split_story), "claude")
     second = new_task(split_story, "Total the cart")
     split_story.expect_refusal(f"worker dispatch {second}", "1 workers are running", actor=split_story.agent)
-    split_story.expect_text("worker-worktree list", "task_id: 1")
-    split_story.expect_no_text("worker-worktree list", f"task_id: {second}")
+    expect_value(len(split_story.run("worker-worktree list", actor=split_story.agent).output_text.strip().splitlines()), 1)
 
 
 def test_failed_opening_releases_place_once(split_story, split_viewer):

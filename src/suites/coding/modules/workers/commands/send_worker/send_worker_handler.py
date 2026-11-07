@@ -74,6 +74,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
     def check_rows(self, command: SendWorker, actor: Actor) -> None:
         worker = self.rows.required(Agent, command.worker_id)
         self.check_job(command, worker)
+        self.check_session(worker)
         if command.task_ids:
             self.kept_tasks.check_tasks(command.task_ids)
         if self.worktrees.newest_worktree(worker.id) is None:

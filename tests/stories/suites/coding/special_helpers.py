@@ -55,7 +55,10 @@ def test_s05_the_merger_takes_in_workers_while_ordinary_helpers_are_off(new_stor
 
 def test_s07_the_designer_starts_only_once_a_person_turns_it_on_and_reads_without_writing(new_story):
     story = new_story(fixture=BuilderWithUser)
+    launcher = FakeLauncher(story.home.socket("launcher"), request_count=1)
     story.expect_refusal(START_DESIGNER, "starts no designer", actor=story.agent)
+    launcher.server.close()
+    story.home.socket("launcher").unlink()
     story.expect_success(f"setting set {DESIGNER} on --environment main", actor=story.user)
     helper_id, launcher = started(story, START_DESIGNER)
     story.expect_text(f"agent show {helper_id}", "profile: journal-designer", "access: read", actor=story.user)
