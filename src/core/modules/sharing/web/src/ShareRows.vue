@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, ListTools, RowList, Segmented, Switch, WindowRoom, useListTools, useWindow} from "@journal/window-kit";
+import {Btn, InfoTip, ListTools, RowList, Segmented, Switch, WindowRoom, useListTools, useWindow} from "@journal/window-kit";
 
 const ENDS = [
     {key: "1d", label: "1 day"},
@@ -91,7 +91,7 @@ async function toggleComments(row) {
                     <span class="shares-label">Password</span>
                     <input v-model="password" class="shares-password" type="password" autocomplete="new-password" placeholder="None" aria-label="Password" />
                     <template v-if="password">
-                        <span class="shares-hint">Visitors enter any name and this password.</span>
+                        <InfoTip :lines="['Visitors enter any name and this password.']" label="About the password" />
                     </template>
                 </div>
                 <div class="shares-option">
