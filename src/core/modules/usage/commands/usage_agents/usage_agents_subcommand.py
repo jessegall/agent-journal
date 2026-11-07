@@ -75,7 +75,9 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         return next((line.strip()[:100] for line in card.helper_job_brief.splitlines() if line.strip()), "")
 
     def context_percent(self, card: AgentCard, status: SessionStatus) -> int | None:
-        return status.context_percent if status.context_percent is not None else self.providers.context_percent(card.program, self.home, card.session)
+        if status.context_percent is not None or status.is_reported:
+            return status.context_percent
+        return self.providers.context_percent(card.program, self.home, card.session)
 
     def reported_model(self, card: AgentCard) -> str:
         return self.providers.reported_model(card.program, self.home, card.session)
