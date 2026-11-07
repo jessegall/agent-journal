@@ -8,6 +8,7 @@ JOURNAL_LINE = "[journal] "
 USER_ACTION_PREFIXES = ("[journal] new message", "[journal] question:", "[journal] the user")
 MESSAGE_COUNT_TEXT = " new messages"
 SHORT_CHARACTERS = 240
+HOLDS_TEXT_AFTER_REPLY = False
 
 
 class AgentTextFilter:
@@ -22,6 +23,9 @@ class AgentTextFilter:
             return False
         reply = self.messages.latest_reply(agent_id, prompt.creation_timestamp(), created_at)
         return reply is not None and not self.messages.has_person_message_past(reply.id)
+
+    def is_held_after_reply(self, agent_id: int, created_at: Timestamp) -> bool:
+        return HOLDS_TEXT_AFTER_REPLY and self.has_recent_reply(agent_id, created_at)
 
     def is_acknowledgement(self, agent_id: int, text: str, created_at: Timestamp) -> bool:
         prompt = self.hook_calls.latest_prompt(agent_id, created_at)

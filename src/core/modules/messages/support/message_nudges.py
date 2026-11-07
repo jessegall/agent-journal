@@ -30,7 +30,7 @@ PARAGRAPH_NUDGE = NudgeDeclaration("messages.blank_lines", NudgeType.STEERING, "
 JOURNAL_LINE_NOTE = NudgeDeclaration("messages.journal_line", NudgeType.STEERING, "a [journal] line is an instruction, not a message: act on it; never answer or mention it in the chat")
 JOURNAL_CHAT_RULE = NudgeDeclaration("messages.discretion", NudgeType.NOTICE, "in the chat, talk only of the user's work, never the journal's lines, hooks, skills or replies")
 JOURNAL_LAWS = NudgeDeclaration("messages.journal_laws", NudgeType.NOTICE, "the laws L1 to L11 in AGENTS.md apply to you")
-REPLY_NOTE = NudgeDeclaration("messages.reply_note", NudgeType.STEERING, "message {message} answered: go on; closing text is not sent", turn_limited=False)
+REPLY_NOTE = NudgeDeclaration("messages.reply_note", NudgeType.STEERING, "message {message} answered: go on", turn_limited=False)
 PLAIN_CODE_NUDGE = NudgeDeclaration("messages.plain_code", NudgeType.STEERING, "in code, identifiers and text state literally what a thing is or does, in plain words", interval=Interval(Seconds(1800)))
 
 MESSAGE_NUDGES = [MESSAGE_REACTION, MESSAGE_UPDATED, UNREAD_MESSAGE_STOP, UNREAD_DISPLAY_REFUSAL, NEW_MESSAGE, NEW_MESSAGES, MESSAGE_FILE, MESSAGE_NOTE, IMAGE_TAG_REQUEST, REPLY_COMMAND, UNANSWERED, UNANSWERED_COUNTDOWN.declaration, UNANSWERED_REFUSAL,
