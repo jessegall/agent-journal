@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-import { ref as h, computed as N, openBlock as v, createBlock as b, unref as o, withCtx as u, createElementVNode as i, createVNode as _, toDisplayString as c, createElementBlock as w, withModifiers as B, withDirectives as R, withKeys as V, vModelText as C, createTextVNode as D, createCommentVNode as x } from "vue";
+import { ref as h, computed as b, openBlock as v, createBlock as N, unref as o, withCtx as u, createElementVNode as i, createVNode as _, toDisplayString as c, createElementBlock as w, withModifiers as B, withDirectives as R, withKeys as V, vModelText as C, createTextVNode as D, createCommentVNode as x } from "vue";
 import { useRows as M, WindowRoom as E, AutoScrollPane as K, RowList as O, Btn as L } from "@journal/window-kit";
 const q = (s, t) => {
   const r = s.__vccOpts || s;
@@ -23,11 +23,11 @@ const q = (s, t) => {
     function k(e) {
       e.shiftKey || e.isComposing || (e.preventDefault(), f());
     }
-    const S = N(() => {
+    const S = b(() => {
       var e;
       return ((e = r.value.at(-1)) == null ? void 0 : e.id) ?? 0;
     }), T = (e) => e.time ? new Date(e.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "";
-    return (e, d) => (v(), b(o(E), { padding: s.padding }, {
+    return (e, d) => (v(), N(o(E), { padding: s.padding }, {
       default: u(() => [
         i("div", A, [
           _(o(K), { "row-count": S.value }, {
@@ -86,7 +86,7 @@ const q = (s, t) => {
       _: 1
     }, 8, ["padding"]));
   }
-}, G = /* @__PURE__ */ q(W, [["__scopeId", "data-v-229f56cf"]]);
+}, G = /* @__PURE__ */ q(W, [["__scopeId", "data-v-1b0ee923"]]);
 export {
   G as T,
   q as _

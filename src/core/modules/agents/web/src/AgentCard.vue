@@ -2,6 +2,7 @@
 import {computed} from "vue";
 import {age, perHour, Btn, Icon, TimeAgo, peekRef, useNow, useWindow} from "@journal/window-kit";
 import AgentCardDetails from "./AgentCardDetails.vue";
+import AgentActions from "./AgentActions.vue";
 import AgentTaskCount from "./AgentTaskCount.vue";
 import InformationBar from "../../../../../viewer/src/shell/InformationBar.vue";
 
@@ -69,6 +70,7 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
             <template v-if="open && facts?.last_activity"><span class="agent-last-heard" data-agent-last-heard>Last heard: <TimeAgo :at="facts.last_activity" /></span></template>
         </span>
         <template v-if="open"><InformationBar :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: []}" card>
+            <AgentActions :row="row" />
             <template v-if="row.role === 'helper' && !row.ended_at"><Btn variant="ghost" small data-helper-stop @click.stop="context.run(['helper', 'stop', String(row.id)])">Stop</Btn></template>
         </InformationBar></template>
         <template v-if="open && totalCount && !job"><span class="agent-line"><AgentTaskCount :count="taskCount" :rate="tasksPerHour" /></span></template>

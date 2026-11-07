@@ -57,6 +57,8 @@ const timeOf = (row) => (row.time ? new Date(row.time).toLocaleTimeString([], {h
     min-height: 0;
 }
 
+.transcript :deep(.row-list-row) { padding: 8px 14px; }
+
 .agent-message { display: flex; flex-wrap: wrap; flex: none; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--border); }
 .agent-message textarea { flex: 1; min-width: 0; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); font: inherit; resize: vertical; }
 .agent-message p { flex-basis: 100%; margin: 0; color: var(--danger); }
