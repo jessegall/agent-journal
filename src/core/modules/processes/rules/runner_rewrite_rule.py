@@ -9,6 +9,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.agent_type_book import AgentTypeBook
 from core.base.access import Access
 from core.base.agent_checkouts import AgentCheckouts
+from core.base.agent_sandbox_choice import AgentSandboxChoice
 from core.base.agent_write_folder import AgentWriteFolder
 from core.base.project_reads import ProjectReads
 from core.base.shell_sandbox import ShellSandbox
@@ -38,20 +39,21 @@ class RunnerRewriteRule(DriverRule):
     history = True
     overlay_proof = True
 
-    def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory, listings: RunCounts, types: AgentTypeBook, folders: AgentWriteFolder, shell_sandbox: ShellSandbox, project_reads: ProjectReads, checkouts: AgentCheckouts, progress_listing: ProgressListing) -> None:
+    def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory, listings: RunCounts, types: AgentTypeBook, folders: AgentWriteFolder, shell_sandbox: ShellSandbox, project_reads: ProjectReads, checkouts: AgentCheckouts, progress_listing: ProgressListing, choice: AgentSandboxChoice) -> None:
         self.limits, self.runner, self.hook_history, self.listings = limits, runner, hook_history, listings
         self.types = types
         self.folders = folders
         self.shell_sandbox = shell_sandbox
         self.project_reads, self.checkouts = project_reads, checkouts
         self.progress_listing = progress_listing
+        self.choice = choice
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is None:
             return RuleAnswer.allowed()
         agent_type = self.types.find(hook.role)
-        sandbox = self.shell_sandbox.is_required and (agent_type.access is Access.READ or agent_type.separate_folder)
+        sandbox = self.shell_sandbox.is_required and (agent_type.access is Access.READ or agent_type.separate_folder) and self.choice.sandboxed(hook.agent_id)
         if shell.parse_error:
             if sandbox:
                 return RuleAnswer.refused(SANDBOX_PARSE_ERROR.nudge())
