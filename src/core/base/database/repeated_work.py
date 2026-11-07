@@ -87,7 +87,7 @@ class RepeatedWork(PointTally):
         self.allowed_scans: dict[Statement, str] = {}
         self.file_reads: Counter[str] = Counter()
         self.file_versions: dict[str, int] = {}
-        self.read_mark: tuple[int, int] | None = None
+        self.read_mark: tuple[int, int, int] | None = None
 
     @contextmanager
     def request(self) -> Generator[None]:
@@ -129,7 +129,7 @@ class RepeatedWork(PointTally):
             self.reject(self.found("read-sql", self.sql_without_parameters(statement), f"one request read this SQL more than {self.read_text_limit} times: {statement.sql} {statement.parameters}"))
 
     def reset_stale_reads(self) -> None:
-        change_mark = self.database.change_mark() if self.database is not None else None
+        change_mark = self.database.content_mark() if self.database is not None else None
         if change_mark != self.read_mark:
             self.reads, self.read_mark = Counter(), change_mark
             self.read_origins.clear()

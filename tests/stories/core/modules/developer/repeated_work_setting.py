@@ -1,4 +1,5 @@
 import io
+from contextlib import suppress
 import os
 
 import pytest
@@ -38,6 +39,18 @@ class RepeatedWorkOn(StoryFixture):
 def duplicate_read(database):
     for _ in range(READ_LIMIT_REPEATS + 1):
         database.rows(REPEATED_READ)
+
+
+def read_around_a_rolled_back_write(database):
+    with suppress(RolledBackWrite), database.transaction():
+        database.update(Statement("UPDATE settings SET version = version + 1"))
+        database.rows(REPEATED_READ)
+        raise RolledBackWrite()
+    database.rows(REPEATED_READ)
+
+
+class RolledBackWrite(Exception):
+    """Ends a story's write so its transaction rolls back."""
 
 
 def read_in_a_loop(database):
@@ -84,6 +97,13 @@ def test_with_the_setting_on_a_query_per_row_in_a_request_is_reported_and_the_re
     story.expect_rows(start(story) == 0)
     messages = reported(story)
     story.expect_rows(len(messages) == 1, "one request read this SQL more than 10 times: SELECT ?" in messages[0])
+
+
+def test_a_read_after_a_rolled_back_write_is_not_a_repeated_read(new_story, monkeypatch):
+    story = new_story(fixture=RepeatedWorkOn)
+    replace_console_run(monkeypatch, read_around_a_rolled_back_write)
+    story.expect_rows(run_as_core(story) == 0)
+    story.expect_rows(reported(story) == [])
 
 
 def test_the_report_reaches_the_main_agent_through_its_error_line(new_story, monkeypatch):
