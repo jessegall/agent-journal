@@ -1,7 +1,7 @@
 import os
 import subprocess
-import time
 from pathlib import Path
+from threading import Event
 from typing import NamedTuple
 from unittest.mock import patch
 
@@ -47,8 +47,19 @@ def worker_runner(new_story):
 
 
 @pytest.mark.parametrize("command_name", ["send", "next", "deliver"])
-def test_a_queued_worker_command_runs_through_the_real_runner_and_cli(worker_runner, command_name):
+def test_a_queued_worker_command_runs_through_the_real_runner_and_cli(worker_runner, monkeypatch, command_name):
     story, worker, binary, variables = worker_runner
+    children, spawned = [], Event()
+    original_popen = subprocess.Popen
+
+    def recorded_popen(arguments, *args, **kwargs):
+        child = original_popen(arguments, *args, **kwargs)
+        if isinstance(arguments, str) and str(binary.with_name("journal-run")) in arguments:
+            children.append(child)
+            spawned.set()
+        return child
+
+    monkeypatch.setattr(subprocess, "Popen", recorded_popen)
     arguments = ["worker", command_name, "--differences", "none"]
     actor = worker
     task_id = None
@@ -65,9 +76,8 @@ def test_a_queued_worker_command_runs_through_the_real_runner_and_cli(worker_run
     story.expect_rows(accepted.returncode == 0, "command accepted" in accepted.stdout,
                       detail=accepted.stdout + accepted.stderr)
     operation = story.container.get(Queries).query(WorkerOperation).filter(worker_id=worker.id).newest().first()
-    deadline = time.monotonic() + 20
-    while story.row(WorkerOperation, operation.id).ended_at is None and time.monotonic() < deadline:
-        time.sleep(0.02)
+    story.expect_rows(spawned.wait(20), detail="the queued command did not start its runner")
+    story.expect_rows(len(children) == 1, children[0].wait(timeout=20) == 0)
     process = story.row(Process, operation.process_id)
     output = story.run(f"output read {process.id} --all", actor=worker).output_text
     story.expect_rows(story.row(WorkerOperation, operation.id).started_at is not None,
