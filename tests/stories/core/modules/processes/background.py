@@ -14,6 +14,7 @@ from core.modules.processes.commands.start_process.start_process import StartPro
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
 from core.modules.processes.queries.process_query import ProcessQuery
+from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.rules.silent_run_rule import STALLED_SECONDS
 
 from core.base.driver.command_category import CommandCategory
@@ -41,6 +42,14 @@ def test_the_end_of_a_background_run_tells_the_agent_once_with_the_readers_summa
     story, process = ended_test_output
     expect_lines_of(story, NOTHING, ENDED)
     expect_absent_lines_of(story, NOTHING, ENDED)
+
+
+def test_one_hook_reuses_the_ended_runs_output(ended_test_output):
+    story, process = ended_test_output
+    outputs = story.container.get(OutputQuery)
+    with story.repeated_work.request():
+        rows = [outputs.process_output(process.id) for _ in range(12)]
+    story.expect_rows(all(row is not None and row.process_id == process.id for row in rows))
 
 
 def test_only_the_part_that_ran_past_the_limit_sends_a_later_line_to_the_background(new_story):
