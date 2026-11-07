@@ -42,7 +42,7 @@ def test_a_stop_holds_a_codex_agent_until_it_runs_the_monitor_command_in_its_she
     story = codex_story(new_story)
     process = moved_run(story, "make test")
     refusal = story.hook("s-1", STOP).refusal
-    expect_value_with(refusal, "wait for it in a Monitor before you stop")
+    expect_value_with(refusal, "wait for it before you stop")
     expect_value_without(refusal, "Monitor")
 
 
@@ -50,21 +50,21 @@ def test_the_monitor_command_in_its_shell_lets_a_codex_agent_stop(new_story):
     story = codex_story(new_story)
     process = moved_run(story, "make test")
     expect_reply_allowed(story.hook("s-1", shell_line(f"journal output monitor {process.id}")))
-    expect_absent_reply_refusal(story.hook("s-1", STOP), "journal output monitor")
+    expect_absent_reply_refusal(story.hook("s-1", STOP), "still runs")
 
 
 def test_the_monitor_command_on_another_run_does_not_let_a_codex_agent_stop(new_story):
     story = codex_story(new_story)
     process = moved_run(story, "make test")
     story.hook("s-1", shell_line(f"journal output monitor {process.id + 1}"))
-    story.expect_hook_refusal("s-1", STOP, "wait for it in a Monitor before you stop")
+    story.expect_hook_refusal("s-1", STOP, "wait for it before you stop")
 
 
 def test_a_run_that_ended_no_longer_holds_a_codex_agents_stop(new_story):
     story = codex_story(new_story)
     process = moved_run(story, "make test")
     end_run(story, process, "done\n")
-    expect_absent_reply_refusal(story.hook("s-1", STOP), "journal output monitor")
+    expect_absent_reply_refusal(story.hook("s-1", STOP), "still runs")
 
 
 def test_reads_and_journal_commands_still_go_through_while_a_codex_agent_is_held(new_story):
@@ -77,7 +77,7 @@ def test_a_codex_agent_that_asks_for_a_runs_status_is_told_to_run_the_monitor_co
     story = codex_story(new_story)
     process = moved_run(story, "make test")
     lines = story.hook("s-1", shell_line(f"journal output status {process.id}")).lines
-    expect_lines_6("wait for it in a Monitor before you stop", "Monitor on", lines)
+    expect_lines_6("wait for it, which ends when the run does", "Monitor", lines)
 
 
 def test_a_claude_agent_still_may_not_run_the_monitor_command_in_its_shell(new_story):

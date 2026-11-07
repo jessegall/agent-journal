@@ -21,9 +21,9 @@ READER_DRAFT = NudgeDeclaration("processes.draft_a_reader", NudgeType.STEERING, 
 MONITOR_NOTE = NudgeDeclaration("processes.use_a_monitor", NudgeType.STEERING, 'do not ask again for output {output}: set a Monitor on its wait',
                                plural_text='do not ask again for outputs {output}: set a Monitor on each wait', id_field="output")
 REQUIRED_MONITOR = NudgeDeclaration("processes.monitor_required", NudgeType.REFUSAL, 'output {output} still runs: set a Monitor on its wait before you stop')
-REQUIRED_MONITOR_COMMAND = NudgeDeclaration("processes.monitor_command_required", NudgeType.REFUSAL, 'output {output} still runs: wait for it in a Monitor before you stop')
-MONITOR_COMMAND_NOTE = NudgeDeclaration("processes.use_the_monitor_command", NudgeType.STEERING, 'do not ask again for output {output}: wait for it in a Monitor, which ends when the run does',
-                                       plural_text='do not ask again for outputs {output}: wait for each in a Monitor, which ends when its run does', id_field="output")
+REQUIRED_MONITOR_COMMAND = NudgeDeclaration("processes.monitor_command_required", NudgeType.REFUSAL, 'output {output} still runs: wait for it before you stop')
+MONITOR_COMMAND_NOTE = NudgeDeclaration("processes.use_the_monitor_command", NudgeType.STEERING, 'do not ask again for output {output}: wait for it, which ends when the run does',
+                                       plural_text='do not ask again for outputs {output}: wait for each, which ends when its run does', id_field="output")
 AUTOMATIC_RUN_WATCHED = NudgeDeclaration("processes.automatic_run_watched", NudgeType.STEERING, 'output {output} is watched for you: go on working or stop; you are told when it ends, or started again if you stopped',
                                        plural_text='outputs {output} are watched for you: go on working or stop; you are told when they end, or started again if you stopped', id_field="output")
 MONITOR_TOOL_REQUIRED = NudgeDeclaration("processes.monitor_command_outside", NudgeType.REFUSAL, 'the output wait runs only in a Monitor: give it to the Monitor tool and keep working')
